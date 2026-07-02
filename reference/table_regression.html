@@ -116,6 +116,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  show_re <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  re_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sd"</span>, <span class="st">"variance"</span><span class="op">)</span>,</span>
 <span>  re_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"est"</span>, <span class="st">"se"</span>, <span class="st">"ci"</span><span class="op">)</span>,</span>
+<span>  re_test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"lrt"</span>, <span class="st">"rlrt"</span><span class="op">)</span>,</span>
 <span>  model_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  outcome_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stars <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -459,6 +460,35 @@ profile-likelihood intervals are available directly on the
 fitted model (<code>confint(fit, method = "profile")</code> for
 <code>lmer</code>) when robustness is critical. See the
 <em>Mixed-effects models</em> section of <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p></dd>
+
+
+<dt id="arg-re-test">re_test<a class="anchor" aria-label="anchor" href="#arg-re-test"></a></dt>
+<dd><p>One of <code>"none"</code> (default), <code>"lrt"</code>, or <code>"rlrt"</code>.
+Opt-in <strong>per-term significance test</strong> for the random-effect
+variance components, filling the otherwise-empty p column of
+the Random effects rows. Never a Wald test (invalid at the
+boundary sigma = 0):</p><ul><li><p><code>"lrt"</code>: likelihood-ratio test of each random term vs
+the model refitted without it (the term's variance plus its
+covariances with the other terms of its bar), referred to
+the boundary-corrected chi-bar-squared mixture
+<code>0.5 chi2(q-1) + 0.5 chi2(q)</code> (Self &amp; Liang 1987; Stram &amp;
+Lee 1994). The reduction scheme matches
+<code><a href="https://rdrr.io/pkg/lmerTest/man/ranova.html" class="external-link">lmerTest::ranova()</a></code>; the mixture reference makes the
+p-value exact-asymptotic rather than conservative. A bar's
+intercept is tested only when it is the bar's single term.
+Supported: <code>lmer</code>, <code>glmer</code>, <code>glmmTMB</code>.</p></li>
+<li><p><code>"rlrt"</code>: exact restricted likelihood-ratio test with a
+simulated finite-sample null (<code><a href="https://rdrr.io/pkg/RLRsim/man/exactRLRT.html" class="external-link">RLRsim::exactRLRT()</a></code>;
+Crainiceanu &amp; Ruppert 2004). Only defined for a Gaussian
+<code>lmer</code> fit with a single variance component.</p></li>
+</ul><p>The test statistic and df stay out of the displayed t/z column
+(they are chi-square-scale, not t/z) but are carried in
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> (<code>test_type</code> <code>"chibar2"</code> / <code>"rlrt"</code>). The
+whole-block LR test in the footer is unaffected. Correlation
+and residual rows are never tested (a correlation is tested
+jointly with its slope; the residual has no zero-variance
+null). Refits happen once per random term: expect a
+noticeable cost on large models.</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>

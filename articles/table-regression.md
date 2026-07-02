@@ -1207,9 +1207,9 @@ model**, whose p-value already applies the chi-bar-squared correction.
 For a per-term question (“do we need this random slope?”), LRT-based
 model comparison
 ([`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html),
-`RLRsim::exactRLRT()`) remains the recommended path. Note that
-`lmerTest`’s Satterthwaite p-values apply to the **fixed effects** of an
-`lmer` fit (and
+[`RLRsim::exactRLRT()`](https://rdrr.io/pkg/RLRsim/man/exactRLRT.html))
+remains the recommended path. Note that `lmerTest`’s Satterthwaite
+p-values apply to the **fixed effects** of an `lmer` fit (and
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 will pick them up automatically when the fit object inherits from
 `lmerModLmerTest`); they do not apply to variance components.

@@ -100,6 +100,8 @@
 <code>ci_method = "profile"</code> gives profile-likelihood CIs for <code>glm</code>, <code>polr</code>, and <code>clm</code>; the footer discloses <code>95% CIs: profile likelihood.</code> when used.</li>
 <li>
 <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code> partial-proportional-odds fits (<code>nominal = ~</code>) are now supported (previously refused): the non-proportional terms render as a <code>Non-proportional effects</code> block, one coefficient per cut-point. Robust SEs are not available for them; profile CIs cover the proportional terms.</li>
+<li>
+<code>re_test = "lrt"</code> / <code>"rlrt"</code> adds an opt-in per-term significance test for the random-effect variance components (never Wald): a likelihood-ratio test vs the reduced random structure with the chi-bar-squared boundary correction, or <code>RLRsim</code>’s exact restricted LRT for a single variance component. The p fills the <code>Random effects</code> rows; a footer line names the test.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
