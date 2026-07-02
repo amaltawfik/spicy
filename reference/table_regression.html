@@ -107,6 +107,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  drop <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_intercept <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_thresholds <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  show_components <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  intercept_position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"first"</span>, <span class="st">"last"</span><span class="op">)</span>,</span>
 <span>  factor_layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grouped"</span>, <span class="st">"flat"</span><span class="op">)</span>,</span>
 <span>  reference_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"row"</span>, <span class="st">"annotation"</span>, <span class="st">"footer"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
@@ -294,8 +295,25 @@ Has no effect on non-ordinal models, and the rows are shown only
 when a coefficient column (<code>"b"</code>/<code>"beta"</code>) is in <code>show_columns</code>.</p></dd>
 
 
-<dt id="arg-intercept-position">intercept_position<a class="anchor" aria-label="anchor" href="#arg-intercept-position"></a></dt>
-<dd><p>Where to place the intercept when
+<dt id="arg-show-components">show_components<a class="anchor" aria-label="anchor" href="#arg-show-components"></a></dt>
+<dd><p>For two-part count models, whether to display
+the non-primary model components as labelled subordinate blocks of
+rows below the (count / conditional) coefficients. Default <code>TRUE</code>:</p><ul><li><p><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code> and <code>glmmTMB(ziformula = )</code>: a
+<code>Zero-inflation</code> block – the model for the probability of a
+<strong>structural (excess) zero</strong>.</p></li>
+<li><p><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle</a></code>: a <code>Zero hurdle</code> block – the model for the
+probability of a <strong>nonzero count</strong> (note the opposite direction
+vs zero-inflation; the footer names each block's meaning).</p></li>
+<li><p><code>glmmTMB(dispformula = )</code>: a <code>Dispersion</code> block (only when
+dispersion was actually modelled; log scale, never
+exponentiated).</p></li>
+</ul><p>Component rows carry full Wald inference (B / SE / z / p / CI),
+join the <code>p_adjust</code> family, and take significance stars. Under
+<code>exponentiate = TRUE</code> a component is exponentiated <strong>only when its
+link makes the result an odds ratio</strong> (the logit zero components);
+probit / cauchit / cloglog zero links and count-type hurdle zero
+parts stay on the link scale, disclosed in the footer. <code>FALSE</code>
+omits the blocks (the title still names the model type).
 shown. <code>"first"</code> (default, APA) or <code>"last"</code> (Stata-style,
 intercept just above the fit-stats footer). Ignored when
 <code>show_intercept = FALSE</code> (with <code>spicy_ignored_arg</code> warning).</p></dd>

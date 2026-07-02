@@ -27,6 +27,7 @@ table_regression(
   drop = NULL,
   show_intercept = TRUE,
   show_thresholds = TRUE,
+  show_components = TRUE,
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
@@ -215,12 +216,34 @@ table_regression(
   shown only when a coefficient column (`"b"`/`"beta"`) is in
   `show_columns`.
 
-- intercept_position:
+- show_components:
 
-  Where to place the intercept when shown. `"first"` (default, APA) or
-  `"last"` (Stata-style, intercept just above the fit-stats footer).
-  Ignored when `show_intercept = FALSE` (with `spicy_ignored_arg`
-  warning).
+  For two-part count models, whether to display the non-primary model
+  components as labelled subordinate blocks of rows below the (count /
+  conditional) coefficients. Default `TRUE`:
+
+  - [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
+    `glmmTMB(ziformula = )`: a `Zero-inflation` block – the model for
+    the probability of a **structural (excess) zero**.
+
+  - [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html): a
+    `Zero hurdle` block – the model for the probability of a **nonzero
+    count** (note the opposite direction vs zero-inflation; the footer
+    names each block's meaning).
+
+  - `glmmTMB(dispformula = )`: a `Dispersion` block (only when
+    dispersion was actually modelled; log scale, never exponentiated).
+
+  Component rows carry full Wald inference (B / SE / z / p / CI), join
+  the `p_adjust` family, and take significance stars. Under
+  `exponentiate = TRUE` a component is exponentiated **only when its
+  link makes the result an odds ratio** (the logit zero components);
+  probit / cauchit / cloglog zero links and count-type hurdle zero parts
+  stay on the link scale, disclosed in the footer. `FALSE` omits the
+  blocks (the title still names the model type). shown. `"first"`
+  (default, APA) or `"last"` (Stata-style, intercept just above the
+  fit-stats footer). Ignored when `show_intercept = FALSE` (with
+  `spicy_ignored_arg` warning).
 
 - factor_layout:
 
