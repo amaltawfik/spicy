@@ -90,6 +90,12 @@ See `vignette("table-regression")` for the walk-throughs.
   `pscl::zeroinfl` / `hurdle`, covering both components with one estimator.
 * The AME column now populates for `pscl` fits (combined-response
   `avg_slopes()`; it was silently empty).
+* New `table_regression_models()`: the machine-readable registry of the
+  supported model classes (family, engine, AME estimand, exponentiate
+  semantics, labelled blocks). Its documentation page is the per-family
+  behaviour reference (also reachable as `?table_regression_mixed`,
+  `?table_regression_ordinal`, ...); a test guards the registry against
+  drifting from the actual dispatch methods.
 
 ## Minor improvements
 

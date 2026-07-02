@@ -1079,12 +1079,11 @@ to a world beyond "p < 0.05". \emph{The American Statistician},
 73(sup1), 1-19.
 }
 \seealso{
-Per-family behaviour reference:
-\link{table_regression_models} (the supported-classes map), and the
-family pages \link{table_regression_mixed}, \link{table_regression_ordinal},
-\link{table_regression_categorical}, \link{table_regression_counts},
-\link{table_regression_survival}, \link{table_regression_robust},
-\link{table_regression_bayesian}.
+\code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported model
+classes and the per-family behaviour reference (also reachable as
+\code{?table_regression_mixed}, \code{?table_regression_ordinal}, ...). If a
+class is not listed there, try \code{table_regression(fit)} anyway --
+unsupported classes error with a clear message.
 Other regression-table functions:
 \code{\link[=table_continuous_lm]{table_continuous_lm()}} for one-predictor-by-many-outcomes
 descriptive tables.

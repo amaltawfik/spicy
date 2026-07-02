@@ -843,12 +843,11 @@
 #' [`spicy`][spicy::spicy-package] for the full taxonomy.
 #'
 #' @seealso
-#' Per-family behaviour reference:
-#' [table_regression_models] (the supported-classes map), and the
-#' family pages [table_regression_mixed], [table_regression_ordinal],
-#' [table_regression_categorical], [table_regression_counts],
-#' [table_regression_survival], [table_regression_robust],
-#' [table_regression_bayesian].
+#' [table_regression_models()] for the registry of supported model
+#' classes and the per-family behaviour reference (also reachable as
+#' `?table_regression_mixed`, `?table_regression_ordinal`, ...). If a
+#' class is not listed there, try `table_regression(fit)` anyway --
+#' unsupported classes error with a clear message.
 #' Other regression-table functions:
 #' [table_continuous_lm()] for one-predictor-by-many-outcomes
 #' descriptive tables.

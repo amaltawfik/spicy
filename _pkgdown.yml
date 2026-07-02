@@ -126,21 +126,15 @@ reference:
       - table_continuous_lm
       - table_regression
       - as_structured
-  - title: Regression tables by model family
+  - title: Supported models
     desc: >
-      What `table_regression()` does for each supported model family:
-      engines, inference, robust-variance backends, exponentiate
-      semantics, marginal effects, fit statistics, and the family's
-      labelled blocks.
+      The registry of model classes `table_regression()` supports --
+      one function returning the machine-readable list, whose
+      documentation page also describes the per-family behaviour
+      (inference, robust-variance backends, exponentiate semantics,
+      marginal effects, labelled blocks).
     contents:
       - table_regression_models
-      - table_regression_mixed
-      - table_regression_ordinal
-      - table_regression_categorical
-      - table_regression_counts
-      - table_regression_survival
-      - table_regression_robust
-      - table_regression_bayesian
   - title: Export
     contents:
       - copy_clipboard
