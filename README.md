@@ -50,7 +50,7 @@ extraction, and row-wise summaries.
   below): classical / heteroskedasticity-robust / cluster-robust /
   bootstrap / jackknife variance with each class’s field-standard
   backend, standardised coefficients, family-aware `exponentiate` (OR /
-  IRR / HR / RR / MR – link-gated, never mislabelled), Wald or
+  IRR / HR / RR / MR, link-gated), Wald or
   profile-likelihood CIs, average marginal effects (per-category for
   ordinal and multinomial models), partial *f²* / *η²* / *ω²* / *χ²*
   effect sizes, class-aware fit statistics (pseudo-*R²*, Nakagawa
@@ -98,7 +98,7 @@ optional boundary-correct per-term likelihood-ratio test), ordinal
 thresholds, non-proportional effects, zero-inflation and dispersion
 components. Robust variance requests use each class’s field-standard
 backend and are refused with a clear message when no valid backend
-exists – never silently ignored.
+exists.
 
 ## Installation
 
@@ -512,6 +512,8 @@ Each workflow has a dedicated vignette:
   tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
 - [Regression coefficient
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+- [Mixed-effects regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 

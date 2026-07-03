@@ -781,6 +781,18 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 .mixed_inference_label_for_frame <- function(frame) {
   cls <- frame$info$class %||% ""
   ci  <- frame$info$ci_method %||% ""
+  vk  <- frame$info$vcov_kind %||% "model"
+  # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
+  # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
+  # the footer must attribute the df source truthfully (t for the
+  # t-referenced engines, z for glmmTMB whose robust path is Wald-z).
+  if (startsWith(vk, "CR") && cls %in% c("lmerMod", "lme")) {
+    return(paste0("p-values: Satterthwaite t-test, cluster-robust df ",
+                  "(clubSandwich)."))
+  }
+  if (startsWith(vk, "CR") && cls == "glmmTMB") {
+    return("p-values: Wald-z, cluster-robust (clubSandwich).")
+  }
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
     return("p-values: Satterthwaite t-test (lmerTest).")
   }

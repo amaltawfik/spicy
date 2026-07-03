@@ -399,8 +399,16 @@ as_regression_frame.glmerMod <- function(fit,
     nobs           = as.integer(stats::nobs(fit))
   )
 
-  # Default ci_method: Satterthwaite if lmer + lmerTest, Wald otherwise.
-  if (is.null(ci_method)) {
+  # Resolve the inference regime actually carried by the rows.
+  # .merMod_coefs() reads Satterthwaite t (df + p) from the lmerTest
+  # summary UNCONDITIONALLY when the fit is lmerModLmerTest -- so
+  # info$ci_method must record that, or the footer lies ("p-values:
+  # Wald-z ... Load lmerTest" over Satterthwaite rows). The orchestrator
+  # always passes its match.arg() default "wald", which is a default
+  # REQUEST, not an override: treat it like NULL. ("profile" and
+  # "boot_percentile" never reach mixed frames -- both are refused
+  # upstream for these classes.)
+  if (is.null(ci_method) || identical(ci_method, "wald")) {
     ci_method <- if (!is_glm && inherits(fit, "lmerModLmerTest")) {
       "satterthwaite"
     } else {

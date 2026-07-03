@@ -183,3 +183,28 @@ test_that("table_regression() footer surfaces the inference annotation", {
   expect_match(combined, "p-values:", fixed = TRUE)
   expect_match(combined, "Wald-z",    fixed = TRUE)
 })
+
+test_that("orchestrator path keeps the Satterthwaite footer (default ci_method)", {
+  skip_if_not_installed("lmerTest")
+  # table_regression() always passes its match.arg default "wald" to the
+  # frames; that request must not override the Satterthwaite regime the
+  # rows actually carry (the footer used to say "Wald-z ... Load
+  # lmerTest" over Satterthwaite-t rows).
+  fit <- lmerTest::lmer(Reaction ~ Days + (Days | Subject),
+                        data = lme4::sleepstudy)
+  out <- table_regression(fit)
+  note <- paste(attr(out, "note"), collapse = "\n")
+  expect_match(note, "Satterthwaite t-test (lmerTest)", fixed = TRUE)
+  expect_false(grepl("Load `lmerTest`", note, fixed = TRUE))
+})
+
+test_that("CR* on mixed fits attributes the Satterthwaite df to clubSandwich", {
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("clubSandwich")
+  fit <- lmerTest::lmer(Reaction ~ Days + (1 | Subject),
+                        data = lme4::sleepstudy)
+  out <- table_regression(fit, vcov = "CR2", cluster = ~Subject)
+  note <- paste(attr(out, "note"), collapse = "\n")
+  expect_match(note, "cluster-robust df (clubSandwich)", fixed = TRUE)
+  expect_false(grepl("Satterthwaite t-test (lmerTest)", note, fixed = TRUE))
+})
