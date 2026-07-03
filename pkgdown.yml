@@ -11,11 +11,12 @@ articles:
   table-continuous: table-continuous.html
   table-regression-counts: table-regression-counts.html
   table-regression-mixed: table-regression-mixed.html
+  table-regression-multinomial: table-regression-multinomial.html
   table-regression-ordinal: table-regression-ordinal.html
   table-regression-survival: table-regression-survival.html
   table-regression: table-regression.html
   variable-exploration: variable-exploration.html
-last_built: 2026-07-03T11:25Z
+last_built: 2026-07-03T13:05Z
 urls:
   reference: https://amaltawfik.github.io/spicy/reference
   article: https://amaltawfik.github.io/spicy/articles

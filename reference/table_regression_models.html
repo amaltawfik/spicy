@@ -64,6 +64,7 @@ supported set. Feature requests are welcome on the issue tracker."><meta propert
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -191,9 +192,14 @@ odds ratios of each outcome against the reference outcome – the
 baseline-category logits are log-odds (Agresti; SAS prints
 "Odds Ratio Estimates" under its generalized-logit link; Stata's <code>mlogit, rrr</code> labels
 the same quantity a relative-risk ratio). AME is per-outcome.
+<code>nested = TRUE</code> compares nested <code>multinom</code> fits by likelihood-ratio test
+(the <code>anova.multinom()</code> convention).
 <code>mlogit</code> renders
 per-alternative rows; AME is refused (no <code>slopes()</code> method exists for
-its data format); <code>HC*</code> and <code>CR*</code> are available.</p>
+its data format). <code>CR*</code> is available with one cluster value per choice
+situation, and <code>n</code> counts choice situations; <code>HC*</code> is refused
+(<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the meat for mlogit's per-chooser
+score structure).</p>
     </div>
     <div class="section level2">
     <h2 id="survival-models">Survival models<a class="anchor" aria-label="anchor" href="#survival-models"></a></h2>

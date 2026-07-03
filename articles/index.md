@@ -113,6 +113,17 @@
   [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) engines,
   and the partial-proportional-odds caveat.
 
+- [Multinomial regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md):
+
+  Publication-ready tables for multinomial logistic regression in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  per-outcome coefficient blocks, odds ratios (what Stata labels
+  relative-risk ratios), per-category average marginal effects, changing
+  the reference category, nested comparison by likelihood-ratio test,
+  and the [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html)
+  engine plus the `mlogit` discrete-choice engine.
+
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 

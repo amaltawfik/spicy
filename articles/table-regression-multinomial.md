@@ -1,0 +1,655 @@
+# Multinomial regression tables
+
+``` r
+
+library(spicy)
+library(nnet)
+```
+
+This vignette covers **multinomial logistic regression** — models for a
+*nominal* outcome, a categorical response whose categories have no
+natural order: employment status, party choice, transport mode. The
+companion vignette [*Publication-ready regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+covers the shared mechanics (`vcov`, `ci_level`, output formats,
+multi-model layouts, broom integration), and [*Ordinal regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
+covers the case where the categories *are* ordered. Here we focus on
+what is specific to nominal outcomes: per-outcome coefficient blocks,
+the choice of reference category, and the distance between a
+coefficient’s sign and its effect on a probability.
+
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+supports both engines:
+
+- **[`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html)** —
+  the baseline-category logit model on characteristics of the *person*
+  (case-specific covariates); the social-science standard.
+- **[`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html)** —
+  McFadden’s conditional logit on characteristics of the *alternatives*
+  (discrete-choice data).
+
+The running example is employment status in the bundled `sochealth`
+survey
+([`?sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md))
+— four categories with `Employed` by far the most frequent:
+
+``` r
+
+d <- sochealth
+table(d$employment_status)
+#> 
+#>   Employed    Student Unemployed   Inactive 
+#>        762        143        174        121
+```
+
+One recoding first. `education` is stored as an *ordered* factor, and R
+gives ordered factors polynomial contrasts by default — the model would
+estimate `.L` (linear) and `.Q` (quadratic) components that fit
+identically but are awkward to report. Applied tables conventionally
+show treatment dummies against a reference level (Fox & Weisberg 2019),
+so we drop the ordering and keep the level order:
+
+``` r
+
+d$education <- factor(as.character(d$education),
+                      levels = c("Lower secondary", "Upper secondary",
+                                 "Tertiary"))
+```
+
+## The baseline-category logit model in one paragraph
+
+For an outcome with \\J\\ categories, the model fits \\J-1\\ logit
+equations simultaneously by maximum likelihood, each comparing one
+category against a common reference (the *baseline*): \\\log\[P(Y =
+j)/P(Y = J)\] = \alpha_j + x^\top\beta_j\\ (Agresti 2013, ch. 8). Two
+consequences shape the table. Each predictor gets **one coefficient per
+non-reference outcome** — there is no single “effect of education”, only
+its effect on each comparison — and the \\J-1\\ fitted equations
+determine the logit for *every* pair of categories, so nothing is lost
+by picking one baseline. Fitting separate binary logits instead of the
+simultaneous model is consistent but less efficient; the loss is minor
+when the baseline is the most frequent category (Begg & Gray 1984) — and
+Stata’s `mlogit` defaults to the most frequent outcome.
+[`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) uses the
+factor’s first level — here `Employed`, which happens to be both first
+and most frequent: large and substantively meaningful, exactly what a
+reference should be.
+
+## Basic table
+
+``` r
+
+fit <- multinom(employment_status ~ age + sex + education,
+                data = d, trace = FALSE)
+table_regression(fit)
+#> Multinomial logistic regression: employment_status
+#> 
+#>  Variable                             │    B      SE       95% CI        p   
+#> ──────────────────────────────────────┼──────────────────────────────────────
+#>  (Intercept):                         │                                      
+#>    Student: (Intercept)               │   -1.43  0.39  [-2.18, -0.67]  <.001 
+#>    Unemployed: (Intercept)            │   -0.72  0.33  [-1.38, -0.07]   .030 
+#>    Inactive: (Intercept)              │   -1.75  0.40  [-2.53, -0.97]  <.001 
+#>  age:                                 │                                      
+#>    Student: age                       │   -0.01  0.01  [-0.02,  0.00]   .097 
+#>    Unemployed: age                    │   -0.00  0.01  [-0.01,  0.01]   .562 
+#>    Inactive: age                      │    0.00  0.01  [-0.01,  0.02]   .719 
+#>  sex:                                 │                                      
+#>    Student: Female (ref.)             │     –     –          –          –    
+#>    Unemployed: Female (ref.)          │     –     –          –          –    
+#>    Inactive: Female (ref.)            │     –     –          –          –    
+#>    Student: Male                      │    0.12  0.18  [-0.24,  0.48]   .520 
+#>    Unemployed: Male                   │    0.23  0.17  [-0.10,  0.57]   .172 
+#>    Inactive: Male                     │    0.14  0.20  [-0.24,  0.53]   .464 
+#>  education:                           │                                      
+#>    Student: Lower secondary (ref.)    │     –     –          –          –    
+#>    Unemployed: Lower secondary (ref.) │     –     –          –          –    
+#>    Inactive: Lower secondary (ref.)   │     –     –          –          –    
+#>    Student: Upper secondary           │    0.32  0.26  [-0.20,  0.84]   .224 
+#>    Unemployed: Upper secondary        │   -0.80  0.20  [-1.19, -0.42]  <.001 
+#>    Inactive: Upper secondary          │   -0.37  0.25  [-0.86,  0.13]   .145 
+#>    Student: Tertiary                  │    0.14  0.28  [-0.40,  0.68]   .614 
+#>    Unemployed: Tertiary               │   -1.23  0.23  [-1.68, -0.78]  <.001 
+#>    Inactive: Tertiary                 │   -0.35  0.26  [-0.86,  0.17]   .186 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                    │ 1200                                 
+#>  AIC                                  │ 2515.8                               
+#> 
+#> Note. Multinomial logistic regression.
+#> Std. errors: Wald asymptotic (z).
+```
+
+Reading the table:
+
+- Rows come in **per-outcome blocks** under each predictor:
+  `Unemployed: Tertiary` is the tertiary-education coefficient in the
+  *Unemployed-versus-Employed* equation. Every row answers “compared to
+  `Employed`”.
+- The `(Intercept)` block is one intercept per equation — the log-odds
+  of each category against `Employed` at the reference levels and age 0.
+  It anchors the equations rather than carrying substantive interest.
+- Inference is **Wald-z** (`df = Inf`), matching
+  [`summary()`](https://rdrr.io/r/base/summary.html)-based practice for
+  ML fits and Stata `mlogit`; `nnet` itself prints no p-values.
+- The model-fit block reports **n** and **AIC**.
+- In the call, `trace = FALSE` just silences the optimizer’s iteration
+  log; unlike `polr()`, no `Hess = TRUE` is needed.
+
+One scope note: `multinom` fits report **classical Wald-z inference
+only** — a robust or cluster-robust `vcov` request is refused with an
+explanatory error rather than silently ignored.
+
+## Odds ratios — and what Stata calls them
+
+`exponentiate = TRUE` puts the estimates and CI bounds on the ratio
+scale:
+
+``` r
+
+table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
+#> Multinomial logistic regression: employment_status
+#> 
+#>  Variable                             │   OR        95% CI       p   
+#> ──────────────────────────────────────┼──────────────────────────────
+#>  (Intercept):                         │                              
+#>    Student: (Intercept)               │    0.24  [0.11, 0.51]  <.001 
+#>    Unemployed: (Intercept)            │    0.49  [0.25, 0.93]   .030 
+#>    Inactive: (Intercept)              │    0.17  [0.08, 0.38]  <.001 
+#>  age:                                 │                              
+#>    Student: age                       │    0.99  [0.98, 1.00]   .097 
+#>    Unemployed: age                    │    1.00  [0.99, 1.01]   .562 
+#>    Inactive: age                      │    1.00  [0.99, 1.02]   .719 
+#>  sex:                                 │                              
+#>    Student: Female (ref.)             │     –         –         –    
+#>    Unemployed: Female (ref.)          │     –         –         –    
+#>    Inactive: Female (ref.)            │     –         –         –    
+#>    Student: Male                      │    1.12  [0.79, 1.61]   .520 
+#>    Unemployed: Male                   │    1.26  [0.90, 1.76]   .172 
+#>    Inactive: Male                     │    1.15  [0.79, 1.70]   .464 
+#>  education:                           │                              
+#>    Student: Lower secondary (ref.)    │     –         –         –    
+#>    Unemployed: Lower secondary (ref.) │     –         –         –    
+#>    Inactive: Lower secondary (ref.)   │     –         –         –    
+#>    Student: Upper secondary           │    1.38  [0.82, 2.31]   .224 
+#>    Unemployed: Upper secondary        │    0.45  [0.30, 0.66]  <.001 
+#>    Inactive: Upper secondary          │    0.69  [0.42, 1.13]   .145 
+#>    Student: Tertiary                  │    1.15  [0.67, 1.98]   .614 
+#>    Unemployed: Tertiary               │    0.29  [0.19, 0.46]  <.001 
+#>    Inactive: Tertiary                 │    0.71  [0.42, 1.18]   .186 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                    │ 1200                         
+#>  AIC                                  │ 2515.8                       
+#> 
+#> Note. Multinomial logistic regression.
+#> Std. errors: Wald asymptotic (z).
+#> OR = odds ratio.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+```
+
+Each value is an **odds ratio against the reference outcome**: compared
+with lower-secondary graduates of the same age and sex, tertiary
+graduates have 0.29 times the odds of being unemployed rather than
+employed — a 71% reduction, the education gradient the table is really
+about. Formally it is the odds ratio of the *conditional* distribution
+restricted to the two categories in the comparison (Agresti 2013).
+
+One terminology note, because readers will meet it: Stata’s
+`mlogit, rrr` labels these same numbers **relative-risk ratios** —
+\\e^\beta\\ is also the multiplicative change in the probability ratio
+of outcome \\j\\ versus the baseline — while SAS prints “Odds Ratio
+Estimates” for its generalized logits. Same quantity, two readings;
+`spicy` labels it `OR`, the reading that generalizes from binary
+logistic regression.
+
+## Changing the reference category
+
+The reference is a *presentation* choice, not a modeling one: refit with
+another baseline and it is the same model, reparameterized — same
+likelihood, same AIC, same fitted probabilities; only the comparisons
+displayed change.
+
+``` r
+
+d2 <- d
+d2$employment_status <- relevel(d2$employment_status, ref = "Unemployed")
+fit_unemp <- multinom(employment_status ~ age + sex + education,
+                      data = d2, trace = FALSE)
+c(AIC(fit), AIC(fit_unemp))
+#> [1] 2515.786 2515.786
+table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
+#> Multinomial logistic regression: employment_status
+#> 
+#>  Variable                           │   OR       p   
+#> ────────────────────────────────────┼────────────────
+#>  (Intercept):                       │                
+#>    Employed: (Intercept)            │    2.06   .030 
+#>    Student: (Intercept)             │    0.49   .127 
+#>    Inactive: (Intercept)            │    0.36   .030 
+#>  age:                               │                
+#>    Employed: age                    │    1.00   .562 
+#>    Student: age                     │    0.99   .369 
+#>    Inactive: age                    │    1.01   .476 
+#>  sex:                               │                
+#>    Employed: Female (ref.)          │     –     –    
+#>    Student: Female (ref.)           │     –     –    
+#>    Inactive: Female (ref.)          │     –     –    
+#>    Employed: Male                   │    0.79   .172 
+#>    Student: Male                    │    0.89   .613 
+#>    Inactive: Male                   │    0.91   .706 
+#>  education:                         │                
+#>    Employed: Lower secondary (ref.) │     –     –    
+#>    Student: Lower secondary (ref.)  │     –     –    
+#>    Inactive: Lower secondary (ref.) │     –     –    
+#>    Employed: Upper secondary        │    2.23  <.001 
+#>    Student: Upper secondary         │    3.08  <.001 
+#>    Inactive: Upper secondary        │    1.55   .129 
+#>    Employed: Tertiary               │    3.43  <.001 
+#>    Student: Tertiary                │    3.94  <.001 
+#>    Inactive: Tertiary               │    2.43   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                  │ 1200           
+#>  AIC                                │ 2515.8         
+#> 
+#> Note. Multinomial logistic regression.
+#> Std. errors: Wald asymptotic (z).
+#> OR = odds ratio.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+```
+
+Against `Employed`, education looked irrelevant for the `Student`
+contrast; against `Unemployed`, every `Tertiary` contrast is strong
+(`Student: Tertiary` OR 3.94, p \< .001; even `Inactive: Tertiary`
+reaches p = .005; only `Inactive: Upper secondary` stays inconclusive).
+The p-values moved because the *questions* changed, not the model — a
+multinomial table only ever shows \\J-1\\ of the \\J(J-1)/2\\ pairwise
+comparisons, and any of the others can be recovered by releveling
+(Agresti 2013; Long 1997). Report the baseline that makes your
+substantive comparisons direct.
+
+## The sign trap, and marginal effects
+
+The most common misreading of a multinomial table is to treat a
+coefficient’s sign as the direction of the effect on that category’s
+*probability*. It is not: the marginal effect of \\x_k\\ on \\P(Y=m)\\
+is \\P_m(\beta\_{k,m} - \sum_j \beta\_{k,j} P_j)\\ — the coefficient
+*minus a probability-weighted average of all categories’ coefficients* —
+so its sign can differ from the coefficient’s, and can even change
+across the range of \\x_k\\ (Long & Freese 2014; Wulff 2015). The
+categories compete for probability mass.
+
+The probability-scale summary is the per-category **average marginal
+effect** (AME): within each predictor block, one row per response
+category:
+
+``` r
+
+table_regression(fit, show_columns = c("b", "ame"))
+#> Multinomial logistic regression: employment_status
+#> 
+#>  Variable                             │    B      AME  
+#> ──────────────────────────────────────┼────────────────
+#>  (Intercept):                         │                
+#>    Student: (Intercept)               │   -1.43        
+#>    Unemployed: (Intercept)            │   -0.72        
+#>    Inactive: (Intercept)              │   -1.75        
+#>  age:                                 │                
+#>    Student: age                       │   -0.01  -0.00 
+#>    Unemployed: age                    │   -0.00  -0.00 
+#>    Inactive: age                      │    0.00   0.00 
+#>    Employed: age                      │           0.00 
+#>  sex:                                 │                
+#>    Student: Female (ref.)             │     –          
+#>    Unemployed: Female (ref.)          │     –          
+#>    Inactive: Female (ref.)            │     –          
+#>    Student: Male                      │    0.12   0.01 
+#>    Unemployed: Male                   │    0.23   0.02 
+#>    Inactive: Male                     │    0.14   0.01 
+#>    Employed: Male                     │          -0.04 
+#>  education:                           │                
+#>    Student: Lower secondary (ref.)    │     –          
+#>    Unemployed: Lower secondary (ref.) │     –          
+#>    Inactive: Lower secondary (ref.)   │     –          
+#>    Student: Upper secondary           │    0.32   0.05 
+#>    Unemployed: Upper secondary        │   -0.80  -0.12 
+#>    Inactive: Upper secondary          │   -0.37  -0.02 
+#>    Employed: Upper secondary          │           0.09 
+#>    Student: Tertiary                  │    0.14   0.04 
+#>    Unemployed: Tertiary               │   -1.23  -0.16 
+#>    Inactive: Tertiary                 │   -0.35  -0.01 
+#>    Employed: Tertiary                 │           0.14 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                    │ 1200           
+#>  AIC                                  │ 2515.8         
+#> 
+#> Note. Multinomial logistic regression.
+#> Std. errors: Wald asymptotic (z).
+#> AME = average marginal effect on a response-category probability.
+```
+
+Three things to read off, using the `Tertiary` rows:
+
+- The **reference category is back**: `Employed` has no coefficient rows
+  (it is the baseline of every equation), yet it carries the largest
+  *positive* probability effect in the table (+0.14 for `Tertiary`,
+  second in magnitude only to `Unemployed`’s −0.16). The log-odds side
+  never shows this; the probability side must, because the effects on
+  all \\J\\ categories **sum to ≈ 0** — the mass that tertiary education
+  moves out of `Unemployed` lands mainly in `Employed`.
+- Cells are **on the probability scale**: −0.16 is a drop of 16
+  **percentage points** in the probability of unemployment for tertiary
+  relative to lower-secondary education, averaged over the observed
+  covariates
+  ([`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html);
+  Williams 2012). Add `"ame_se"`, `"ame_ci"`, or `"ame_p"` to
+  `show_columns` for delta-method inference on these effects.
+- Here every AME happens to share its coefficient’s sign; do not count
+  on it. When an outcome’s coefficient sits close to the
+  probability-weighted average of all the coefficients, the probability
+  effect can flip sign — the reason Wulff (2015) recommends never
+  interpreting a multinomial model from its coefficient signs alone.
+
+## An ordinal predictor: scores or dummies?
+
+`education` is ordered — Lower secondary \< Upper secondary \< Tertiary
+— and the dummy coding above ignores that. The alternative is to enter
+it as **numeric scores** (1, 2, 3): one slope per equation instead of
+two dummies, a model that is both simpler and nested in the factor
+model. Agresti (2007, sec. 4.4.3) gives the workflow: fit both codings
+and let a likelihood-ratio test judge whether the category coefficients
+depart from a linear trend in the scores. `nested = TRUE` runs exactly
+that comparison:
+
+``` r
+
+d$educ_score <- as.numeric(d$education)   # 1 / 2 / 3
+fit_lin <- multinom(employment_status ~ age + sex + educ_score,
+                    data = d, trace = FALSE)
+table_regression(list(fit_lin, fit), nested = TRUE,
+                 show_columns = c("b", "p"))
+#> Hierarchical multinomial logistic regression: employment_status
+#> 
+#>                                            Model 1          Model 2     
+#>                                         ──────────────  ─────────────── 
+#>  Variable                             │    B       p       B        p   
+#> ──────────────────────────────────────┼─────────────────────────────────
+#>  (Intercept):                         │                                 
+#>    Student: (Intercept)               │   -1.27   .002    -1.43   <.001 
+#>    Unemployed: (Intercept)            │   -0.16   .663    -0.72    .030 
+#>    Inactive: (Intercept)              │   -1.71  <.001    -1.75   <.001 
+#>  age:                                 │                                 
+#>    Student: age                       │   -0.01   .090    -0.01    .097 
+#>    Unemployed: age                    │   -0.00   .581    -0.00    .562 
+#>    Inactive: age                      │    0.00   .697     0.00    .719 
+#>  sex:                                 │                                 
+#>    Student: Female (ref.)             │     –     –         –      –    
+#>    Unemployed: Female (ref.)          │     –     –         –      –    
+#>    Inactive: Female (ref.)            │     –     –         –      –    
+#>    Student: Male                      │    0.11   .549     0.12    .520 
+#>    Unemployed: Male                   │    0.24   .160     0.23    .172 
+#>    Inactive: Male                     │    0.15   .444     0.14    .464 
+#>  educ_score:                          │                                 
+#>    Student: educ_score                │    0.03   .843                  
+#>    Unemployed: educ_score             │   -0.64  <.001                  
+#>    Inactive: educ_score               │   -0.16   .239                  
+#>  education:                           │                                 
+#>    Student: Lower secondary (ref.)    │                     –      –    
+#>    Unemployed: Lower secondary (ref.) │                     –      –    
+#>    Inactive: Lower secondary (ref.)   │                     –      –    
+#>    Student: Upper secondary           │                    0.32    .224 
+#>    Unemployed: Upper secondary        │                   -0.80   <.001 
+#>    Inactive: Upper secondary          │                   -0.37    .145 
+#>    Student: Tertiary                  │                    0.14    .614 
+#>    Unemployed: Tertiary               │                   -1.23   <.001 
+#>    Inactive: Tertiary                 │                   -0.35    .186 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                    │ 1200            1200            
+#>  AIC                                  │ 2514.3          2515.8          
+#>  Δχ²                                  │     –             +4.52         
+#>  p (change)                           │     –               .211        
+#> 
+#> Note. Multinomial logistic regression models.
+#> Std. errors: Wald asymptotic (z).
+```
+
+The change rows read: freeing education from the linear trend buys a
+chi-squared of 4.52 on 3 degrees of freedom (one per equation), p = .211
+— no evidence the dummies improve on the scores, and AIC agrees (2514.3
+vs 2515.8). On Agresti’s grounds the scores model is preferable when it
+fits: simpler to report, and more powerful because it concentrates the
+trend in one parameter per equation instead of two.
+
+Three caveats keep the decision honest. A non-significant test does not
+*prove* linearity — in modest samples several codings fit adequately
+(Agresti 2007). Integer scores assume the steps are equally spaced,
+which is a substantive claim about education levels, not a statistical
+default (Agresti 2007, sec. 2.5.4). And testing first, then reporting
+the scores model as if it had been chosen in advance, inflates the Type
+I error of the subsequent test (Grambsch & O’Brien 1991) — with only
+three levels the dummies cost one extra parameter per equation, and
+Harrell (2015) reasonably recommends just keeping them. Present the LRT
+as a transparent simplification decision, not a proof.
+
+## Independence of irrelevant alternatives, briefly
+
+The multinomial logit assumes the odds between any two categories do not
+depend on what other alternatives exist — the *independence of
+irrelevant alternatives* (IIA), of red-bus/blue-bus fame (the critique
+goes back to Debreu 1960). Formal tests exist (Hausman & McFadden 1984;
+Small & Hsiao 1985), but simulation evidence shows them to be
+unsatisfactory for applied work — different tests reach conflicting
+verdicts on the same data (Cheng & Long 2007) — and Long & Freese (2014)
+do not recommend them. The working advice remains McFadden’s (1974): use
+the model when the alternatives are “distinct and weighed independently”
+— not close substitutes. For a fixed, exhaustive set like employment
+status, where no alternative is ever added or removed, IIA is rarely the
+practical concern it is in choice modeling; where alternatives genuinely
+substitute (two bus lines), the remedy is a different model (nested or
+mixed logit), not a mechanical test.
+
+## Discrete choice: `mlogit`
+
+[`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) models the
+chooser; McFadden’s **conditional logit** models the *choices*. When
+covariates describe the alternatives — the price of each travel mode,
+the catch rate of each fishing mode — the coefficient is one per
+*attribute*, shared across alternatives (McFadden 1974; Croissant 2020).
+The `mlogit` engine renders both kinds of covariate in one table. The
+classic `Fishing` data: 1182 anglers choose among four modes; `price`
+and `catch` vary by alternative, `income_k` (income in thousands of
+dollars) describes the angler:
+
+``` r
+
+library(mlogit)
+data("Fishing", package = "mlogit")
+Fishing$income_k <- Fishing$income / 1000
+Fish <- dfidx(Fishing, varying = 2:9, choice = "mode", shape = "wide")
+
+fit_choice <- mlogit(mode ~ price + catch | income_k, data = Fish)
+table_regression(fit_choice, exponentiate = TRUE,
+                 show_columns = c("b", "ci", "p"))
+#> Discrete-choice multinomial logit (mlogit): mode
+#> 
+#>  Variable               │   OR        95% CI       p   
+#> ────────────────────────┼──────────────────────────────
+#>  (Intercept):           │                              
+#>    boat: (Intercept)    │    1.69  [1.09, 2.62]   .018 
+#>    charter: (Intercept) │    5.44  [3.51, 8.44]  <.001 
+#>    pier: (Intercept)    │    2.18  [1.41, 3.35]  <.001 
+#>  price                  │    0.98  [0.97, 0.98]  <.001 
+#>  catch                  │    1.43  [1.15, 1.77]   .001 
+#>  income_k:              │                              
+#>    boat: income_k       │    1.09  [0.99, 1.21]   .074 
+#>    charter: income_k    │    0.97  [0.88, 1.07]   .508 
+#>    pier: income_k       │    0.88  [0.80, 0.97]   .012 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                      │ 1182                         
+#>  AIC                    │ 2446.3                       
+#> 
+#> Note. Discrete-choice multinomial logit (mlogit).
+#> Std. errors: Wald asymptotic (z).
+#> OR = odds ratio.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+```
+
+Reading it: the **alternative-specific** covariates (`price`, `catch`)
+get a single row each — one more dollar of price multiplies a mode’s
+odds by 0.98 *whichever mode it is* — while the **case-specific**
+covariate (`income_k`) works like `multinom` and needs one coefficient
+per non-reference alternative. The footer’s `n` counts **choice
+situations** (1182 anglers), not the 4728 rows of the long-format data:
+each angler contributes one choice, and that is the model’s sample size.
+
+Three guardrails: average marginal effects are refused for `mlogit`
+(`marginaleffects` has no slopes method for its one-row-per-choice
+structure); the robust `vcov` family is `CR0`–`CR3` only, with one
+cluster value per choice situation, not per long-format row; and `HC*`
+is refused outright —
+[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+mis-scales the sandwich for mlogit’s per-choice-situation scores.
+
+## Several models side by side
+
+Multinomial fits compare like any other class — here the education
+gradient before and after adjustment:
+
+``` r
+
+fit_min <- multinom(employment_status ~ education, data = d, trace = FALSE)
+table_regression(list(Unadjusted = fit_min, Adjusted = fit),
+                 exponentiate = TRUE, show_columns = c("b", "p"))
+#> Multinomial logistic regression comparison: employment_status
+#> 
+#>                                           Unadjusted       Adjusted    
+#>                                         ──────────────  ────────────── 
+#>  Variable                             │   OR       p      OR       p   
+#> ──────────────────────────────────────┼────────────────────────────────
+#>  (Intercept):                         │                                
+#>    Student: (Intercept)               │    0.15  <.001     0.24  <.001 
+#>    Unemployed: (Intercept)            │    0.46  <.001     0.49   .030 
+#>    Inactive: (Intercept)              │    0.21  <.001     0.17  <.001 
+#>  education:                           │                                
+#>    Student: Lower secondary (ref.)    │     –     –         –     –    
+#>    Unemployed: Lower secondary (ref.) │     –     –         –     –    
+#>    Inactive: Lower secondary (ref.)   │     –     –         –     –    
+#>    Student: Upper secondary           │    1.38   .225     1.38   .224 
+#>    Unemployed: Upper secondary        │    0.45  <.001     0.45  <.001 
+#>    Inactive: Upper secondary          │    0.69   .141     0.69   .145 
+#>    Student: Tertiary                  │    1.14   .640     1.15   .614 
+#>    Unemployed: Tertiary               │    0.29  <.001     0.29  <.001 
+#>    Inactive: Tertiary                 │    0.71   .196     0.71   .186 
+#>  age:                                 │                                
+#>    Student: age                       │                    0.99   .097 
+#>    Unemployed: age                    │                    1.00   .562 
+#>    Inactive: age                      │                    1.00   .719 
+#>  sex:                                 │                                
+#>    Student: Female (ref.)             │                     –     –    
+#>    Unemployed: Female (ref.)          │                     –     –    
+#>    Inactive: Female (ref.)            │                     –     –    
+#>    Student: Male                      │                    1.12   .520 
+#>    Unemployed: Male                   │                    1.26   .172 
+#>    Inactive: Male                     │                    1.15   .464 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                    │ 1200            1200           
+#>  AIC                                  │ 2509.4          2515.8         
+#> 
+#> Note. Multinomial logistic regression models.
+#> Std. errors: Wald asymptotic (z).
+#> OR = odds ratio.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+```
+
+## Output formats
+
+Everything above used the default console output. The same table renders
+as a raw data frame, a long broom-style tibble, or — with the
+corresponding Suggests package — a rich `gt`, `flextable`, `tinytable`,
+Excel, or Word table:
+
+``` r
+
+head(table_regression(fit, exponentiate = TRUE, output = "data.frame"))
+#>                    Variable      OR   SE       95% CI     p
+#> 1              (Intercept):                                
+#> 2      Student: (Intercept)    0.24 0.09 [0.11, 0.51] <.001
+#> 3   Unemployed: (Intercept)    0.49 0.16 [0.25, 0.93]  .030
+#> 4     Inactive: (Intercept)    0.17 0.07 [0.08, 0.38] <.001
+#> 5                      age:                                
+#> 6              Student: age    0.99 0.01 [0.98, 1.00]  .097
+```
+
+``` r
+
+table_regression(fit, show_columns = c("b", "ame"), output = "gt")
+```
+
+[TABLE]
+
+*Note.* Multinomial logistic regression. Std. errors: Wald asymptotic
+(z). AME = average marginal effect on a response-category probability.
+
+[`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,
+one row per `(term, estimate_type)`; the per-outcome structure is
+carried in the term labels, and AME rows cover all \\J\\ categories
+including the reference:
+
+``` r
+
+broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
+#> # A tibble: 31 × 15
+#>    model_id outcome    term  estimate_type estimate std.error conf.low conf.high
+#>    <chr>    <chr>      <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
+#>  1 M1       employmen… Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672   
+#>  2 M1       employmen… Unem… B             -7.23e-1  0.333    -1.38e+0 -0.0716  
+#>  3 M1       employmen… Inac… B             -1.75e+0  0.400    -2.53e+0 -0.965   
+#>  4 M1       employmen… Stud… ame           -1.06e-3  0.000641 -2.32e-3  0.000199
+#>  5 M1       employmen… Stud… B             -1.04e-2  0.00627  -2.27e-2  0.00188 
+#>  6 M1       employmen… Unem… ame           -2.72e-4  0.000683 -1.61e-3  0.00107 
+#>  7 M1       employmen… Unem… B             -3.38e-3  0.00583  -1.48e-2  0.00804 
+#>  8 M1       employmen… Inac… ame            3.91e-4  0.000591 -7.67e-4  0.00155 
+#>  9 M1       employmen… Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155  
+#> 10 M1       employmen… Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278 
+#> # ℹ 21 more rows
+#> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
+#> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
+```
+
+## References
+
+- Agresti, A. (2007). *An Introduction to Categorical Data Analysis*
+  (2nd ed.). Wiley.
+- Agresti, A. (2013). *Categorical Data Analysis* (3rd ed.). Wiley.
+- Begg, C. B., & Gray, R. (1984). Calculation of polychotomous logistic
+  regression parameters using individualized regressions. *Biometrika*,
+  71(1), 11–18.
+- Cheng, S., & Long, J. S. (2007). Testing for IIA in the multinomial
+  logit model. *Sociological Methods & Research*, 35(4), 583–600.
+- Croissant, Y. (2020). Estimation of random utility models in R: The
+  mlogit package. *Journal of Statistical Software*, 95(11), 1–41.
+- Debreu, G. (1960). Review of R. D. Luce, *Individual Choice Behavior*.
+  *American Economic Review*, 50(1), 186–188.
+- Fox, J., & Weisberg, S. (2019). *An R Companion to Applied Regression*
+  (3rd ed.). Sage.
+- Grambsch, P. M., & O’Brien, P. C. (1991). The effects of
+  transformations and preliminary tests for non-linearity in regression.
+  *Statistics in Medicine*, 10(5), 697–709.
+- Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
+  Springer.
+- Hausman, J. A., & McFadden, D. (1984). Specification tests for the
+  multinomial logit model. *Econometrica*, 52(5), 1219–1240.
+- Long, J. S. (1997). *Regression Models for Categorical and Limited
+  Dependent Variables*. Sage.
+- Long, J. S., & Freese, J. (2014). *Regression Models for Categorical
+  Dependent Variables Using Stata* (3rd ed.). Stata Press.
+- McFadden, D. (1974). Conditional logit analysis of qualitative choice
+  behavior. In P. Zarembka (Ed.), *Frontiers in Econometrics*
+  (pp. 105–142). Academic Press.
+- Small, K. A., & Hsiao, C. (1985). Multinomial logit specification
+  tests. *International Economic Review*, 26(3), 619–627.
+- Williams, R. (2012). Using the margins command to estimate and
+  interpret adjusted predictions and marginal effects. *The Stata
+  Journal*, 12(2), 308–331.
+- Wulff, J. N. (2015). Interpreting results from the multinomial logit
+  model: Demonstrated by foreign market entry. *Organizational Research
+  Methods*, 18(2), 300–325.

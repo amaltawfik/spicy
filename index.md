@@ -552,6 +552,8 @@ Each workflow has a dedicated vignette:
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-survival.html)
 - [Ordinal regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
+- [Multinomial regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 

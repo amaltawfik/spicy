@@ -140,8 +140,13 @@ ratios of each outcome against the reference outcome – the
 baseline-category logits are log-odds (Agresti; SAS prints "Odds Ratio
 Estimates" under its generalized-logit link; Stata's `mlogit, rrr`
 labels the same quantity a relative-risk ratio). AME is per-outcome.
-`mlogit` renders per-alternative rows; AME is refused (no `slopes()`
-method exists for its data format); `HC*` and `CR*` are available.
+`nested = TRUE` compares nested `multinom` fits by likelihood-ratio test
+(the `anova.multinom()` convention). `mlogit` renders per-alternative
+rows; AME is refused (no `slopes()` method exists for its data format).
+`CR*` is available with one cluster value per choice situation, and `n`
+counts choice situations; `HC*` is refused
+([`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+mis-scales the meat for mlogit's per-chooser score structure).
 
 ## Survival models
 
