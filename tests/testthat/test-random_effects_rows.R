@@ -347,3 +347,95 @@ test_that("raising the size cap restores the variance-component SEs", {
   out <- paste(capture.output(print(tr)), collapse = "\n")
   expect_false(grepl("SE and CI not computed", out, fixed = TRUE))
 })
+
+## ---- 12. Profile-likelihood CIs for variance components (re_ci) -----------
+
+test_that("re_ci = 'profile' matches the confint profile oracle exactly", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject),
+                    data = lme4::sleepstudy)
+  orc <- suppressWarnings(suppressMessages(
+    confint(fit, parm = "theta_", method = "profile", oldNames = FALSE,
+            quiet = TRUE)
+  ))
+
+  tr <- table_regression(fit, re_ci = "profile")
+  tt <- broom::tidy(tr)
+  vc <- tt[tt$estimate_type == "vc", ]
+
+  # No SE, by construction (the interval is the uncertainty summary).
+  expect_true(all(is.na(vc$std.error)))
+
+  ci_of <- function(term) {
+    r <- vc[vc$term == term, ]
+    c(r$conf.low, r$conf.high)
+  }
+  expect_equal(ci_of("re::Subject::(Intercept)"),
+               unname(orc["sd_(Intercept)|Subject", ]), tolerance = 1e-6)
+  expect_equal(ci_of("re::Subject::Days"),
+               unname(orc["sd_Days|Subject", ]), tolerance = 1e-6)
+  expect_equal(ci_of("re::Subject::(Intercept), Days::cor"),
+               unname(orc["cor_Days.(Intercept)|Subject", ]),
+               tolerance = 1e-6)
+  expect_equal(ci_of("re::Residual::"),
+               unname(orc["sigma", ]), tolerance = 1e-6)
+
+  # Footer discloses the method (a profile CI has no reconstructing SE).
+  out <- paste(capture.output(print(tr)), collapse = "\n")
+  expect_match(out, "profile likelihood CIs", fixed = TRUE)
+
+  # Likelihood intervals transform exactly: the variance-scale display
+  # shows the squared SD bounds (the profile CI for sigma^2 itself).
+  ttv <- broom::tidy(table_regression(fit, re_ci = "profile",
+                                      re_scale = "variance"))
+  vcv <- ttv[ttv$estimate_type == "vc", ]
+  r <- vcv[vcv$term == "re::Subject::(Intercept)", ]
+  expect_equal(c(r$conf.low, r$conf.high),
+               unname(orc["sd_(Intercept)|Subject", ])^2, tolerance = 1e-6)
+})
+
+test_that("re_ci = 'profile' sidesteps the size cap without note or warning", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  old <- options(spicy.re_se_max_n = 50L)   # sleepstudy has n = 180
+  on.exit(options(old), add = TRUE)
+
+  expect_no_warning(tr <- table_regression(fit, re_ci = "profile"))
+  out <- paste(capture.output(print(tr)), collapse = "\n")
+  expect_false(grepl("SE and CI not computed", out, fixed = TRUE))
+  expect_match(out, "profile likelihood CIs", fixed = TRUE)
+  tt <- broom::tidy(tr)
+  vc <- tt[tt$estimate_type == "vc", ]
+  expect_true(all(is.finite(vc$conf.low)))
+})
+
+test_that("re_ci validates its value and its engine support", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  expect_error(table_regression(fit, re_ci = "banana"),
+               class = "spicy_invalid_input")
+  expect_error(table_regression(fit, re_ci = "profile", show_re = FALSE),
+               class = "spicy_invalid_input")
+  skip_if_not_installed("glmmTMB")
+  gt <- suppressWarnings(glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
+                                          data = lme4::sleepstudy))
+  err <- tryCatch(table_regression(gt, re_ci = "profile"),
+                  error = function(e) e)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "lme4", fixed = TRUE)
+})
+
+test_that("re_ci default (wald) is unchanged and differs from profile", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  tw <- broom::tidy(table_regression(fit))
+  tp <- broom::tidy(table_regression(fit, re_ci = "profile"))
+  vw <- tw[tw$estimate_type == "vc" &
+             tw$term == "re::Subject::(Intercept)", ]
+  vp <- tp[tp$estimate_type == "vc" &
+             tp$term == "re::Subject::(Intercept)", ]
+  expect_true(is.finite(vw$std.error))       # Wald SE present
+  expect_true(is.na(vp$std.error))           # profile: no SE
+  expect_false(isTRUE(all.equal(vw$conf.low, vp$conf.low)))
+})

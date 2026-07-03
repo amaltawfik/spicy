@@ -95,6 +95,7 @@ build_regression_footer_from_frames <- function(
     build_stars_footer_block(stars),
     build_singular_footer_block_from_frames(frames),
     build_re_se_skipped_footer_block_from_frames(frames),
+    build_re_profile_footer_block_from_frames(frames),
     build_polynomial_contrasts_footer_block_from_frames(
       frames, displayed_parent_vars = displayed_parent_vars),
     build_reference_categories_footer_block_from_frames(frames,
@@ -1181,6 +1182,24 @@ build_singular_footer_block_from_frames <- function(frames) {
 .is_mixed_frame <- function(frame) {
   cls <- frame$info$class %||% ""
   cls %in% c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
+}
+
+
+# re_ci = "profile": the CI cells of the variance-component rows are
+# profile-likelihood intervals (asymmetric; no SE by construction), so
+# the footer must disclose the method -- a profile CI cannot be
+# reconstructed from any SE, mirroring the fixed-effects profile
+# disclosure for polr / clm.
+build_re_profile_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  flags <- vapply(frames, function(f) {
+    identical(f$info$extras$re_ci %||% "wald", "profile")
+  }, logical(1))
+  if (!any(flags)) return(NULL)
+  # `re_ci` is a single table-wide argument and only mixed frames carry
+  # variance-component rows, so one shared line is always unambiguous.
+  paste0("Random-effect variance components: profile likelihood CIs; ",
+         "no SE (asymmetric intervals).")
 }
 
 

@@ -30,6 +30,7 @@ table_regression(
   re_scale = c("sd", "variance"),
   re_columns = c("est", "se", "ci"),
   re_test = c("none", "lrt", "rlrt"),
+  re_ci = c("wald", "profile"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -395,13 +396,13 @@ for journals that want only standard errors
 data (\code{broom::tidy()}, \code{\link[=as_structured]{as_structured()}}) always carries the
 full SE + CI.
 
-Note. Standard errors and CIs are Wald (\verb{est ± z * SE},
-clamped at 0 for variances). Wald can be optimistic near
-the variance boundary (Self & Liang 1987 chi-bar-squared);
-profile-likelihood intervals are available directly on the
-fitted model (\code{confint(fit, method = "profile")} for
-\code{lmer}) when robustness is critical. See the
-\emph{Mixed-effects models} section of \code{vignette("table-regression")}.
+Note. Under the default \code{re_ci = "wald"} the SE and CI are Wald
+(\verb{est ± z * SE}, clamped at 0 for variances). Wald can be
+optimistic near the variance boundary (Self & Liang 1987
+chi-bar-squared); request boundary-respecting profile-likelihood
+intervals with \code{re_ci = "profile"} when robustness is critical.
+See the \emph{Mixed-effects models} section of
+\code{vignette("table-regression")}.
 
 For \code{lmer} / \code{glmer} fits these SEs come from \code{merDeriv}, whose
 cost grows superlinearly with the number of observations (about a
@@ -442,6 +443,28 @@ and residual rows are never tested (a correlation is tested
 jointly with its slope; the residual has no zero-variance
 null). Refits happen once per random term: expect a
 noticeable cost on large models.}
+
+\item{re_ci}{One of \code{"wald"} (default) or \code{"profile"}. Uncertainty
+route for the random-effect variance-component rows of \code{lmer} /
+\code{glmer} fits:
+\itemize{
+\item \code{"wald"}: SE and symmetric CI from the observed
+information (\code{merDeriv}), subject to the
+\code{options("spicy.re_se_max_n")} size cap (see \code{re_columns}).
+\item \code{"profile"}: \strong{profile-likelihood CIs} via
+\code{confint(fit, method = "profile")} -- the route lme4 itself
+documents and defaults to. The intervals are asymmetric and
+respect the boundary at 0; no SE is shown (lme4's position:
+a symmetric SE misdescribes the skewed sampling distribution
+of a variance). Sidesteps the size cap entirely (roughly two
+seconds per variance parameter even at n ~ 7,000; \code{glmer}
+profiles cost more). The footer discloses the method, and
+likelihood intervals transform exactly, so
+\code{re_scale = "variance"} shows the profile CI of the variance
+itself.
+}
+\code{glmmTMB} and \code{nlme::lme} fits keep their engine-native CIs
+(TMB's \code{sdreport}; nlme's \code{apVar}) and refuse \code{"profile"}.}
 
 \item{model_labels}{Per-model labels used as the \strong{column-group
 spanner} above each model's sub-columns (console + gt /

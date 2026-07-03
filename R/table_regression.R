@@ -682,13 +682,13 @@
 #'   data (`broom::tidy()`, [as_structured()]) always carries the
 #'   full SE + CI.
 #'
-#'   Note. Standard errors and CIs are Wald (`est ± z * SE`,
-#'   clamped at 0 for variances). Wald can be optimistic near
-#'   the variance boundary (Self & Liang 1987 chi-bar-squared);
-#'   profile-likelihood intervals are available directly on the
-#'   fitted model (`confint(fit, method = "profile")` for
-#'   `lmer`) when robustness is critical. See the
-#'   *Mixed-effects models* section of `vignette("table-regression")`.
+#'   Note. Under the default `re_ci = "wald"` the SE and CI are Wald
+#'   (`est ± z * SE`, clamped at 0 for variances). Wald can be
+#'   optimistic near the variance boundary (Self & Liang 1987
+#'   chi-bar-squared); request boundary-respecting profile-likelihood
+#'   intervals with `re_ci = "profile"` when robustness is critical.
+#'   See the *Mixed-effects models* section of
+#'   `vignette("table-regression")`.
 #'
 #'   For `lmer` / `glmer` fits these SEs come from `merDeriv`, whose
 #'   cost grows superlinearly with the number of observations (about a
@@ -728,6 +728,27 @@
 #'   jointly with its slope; the residual has no zero-variance
 #'   null). Refits happen once per random term: expect a
 #'   noticeable cost on large models.
+#' @param re_ci One of `"wald"` (default) or `"profile"`. Uncertainty
+#'   route for the random-effect variance-component rows of `lmer` /
+#'   `glmer` fits:
+#'   \itemize{
+#'     \item `"wald"`: SE and symmetric CI from the observed
+#'       information (`merDeriv`), subject to the
+#'       `options("spicy.re_se_max_n")` size cap (see `re_columns`).
+#'     \item `"profile"`: **profile-likelihood CIs** via
+#'       `confint(fit, method = "profile")` -- the route lme4 itself
+#'       documents and defaults to. The intervals are asymmetric and
+#'       respect the boundary at 0; no SE is shown (lme4's position:
+#'       a symmetric SE misdescribes the skewed sampling distribution
+#'       of a variance). Sidesteps the size cap entirely (roughly two
+#'       seconds per variance parameter even at n ~ 7,000; `glmer`
+#'       profiles cost more). The footer discloses the method, and
+#'       likelihood intervals transform exactly, so
+#'       `re_scale = "variance"` shows the profile CI of the variance
+#'       itself.
+#'   }
+#'   `glmmTMB` and `nlme::lme` fits keep their engine-native CIs
+#'   (TMB's `sdreport`; nlme's `apVar`) and refuse `"profile"`.
 #' @param model_labels Per-model labels used as the **column-group
 #'   spanner** above each model's sub-columns (console + gt /
 #'   flextable / tinytable / Excel / Word renderers). `NULL`
@@ -1088,6 +1109,7 @@ table_regression <- function(
   re_scale = c("sd", "variance"),
   re_columns = c("est", "se", "ci"),
   re_test = c("none", "lrt", "rlrt"),
+  re_ci = c("wald", "profile"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -1525,6 +1547,16 @@ table_regression <- function(
       )
     }
   }
+  re_ci_val <- .validate_re_ci(re_ci, models)
+  if (identical(re_ci_val, "profile") && !isTRUE(show_re)) {
+    spicy_abort(
+      c(
+        "`re_ci` requires the random-effects rows (`show_re = TRUE`).",
+        "i" = "The profile CIs fill the CI cells of those rows."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
 
   # Phase E -- cross-arg semantic warnings (no errors). The
   # standardized x non-additive caveat is emitted later (after
@@ -1644,7 +1676,8 @@ table_regression <- function(
       show_columns          = show_columns,
       show_fit_stats        = show_fit_stats,
       use_ame_satterthwaite = use_ame_satt,
-      cluster_name          = cluster_name_list[i]
+      cluster_name          = cluster_name_list[i],
+      re_ci                 = re_ci_val
     )
     # Exponentiate centrally so EVERY model class honours `exponentiate = TRUE`
     # (OR / IRR / HR / RR / MR / TR), driven by each frame's own info$family /

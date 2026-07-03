@@ -7,6 +7,7 @@ alphanumerics
 AME
 APA
 appliquée
+apVar
 Arel
 ASA's
 AStA
@@ -57,14 +58,14 @@ Cramer's
 Cramer’s
 Cribari
 crosstable
-customise
 Customise
+customise
 Customising
 da
 dataset's
 Davison
-De
 de
+De
 Debreu
 deduplicated
 deduplicates
@@ -91,8 +92,8 @@ estimand
 estimands
 et
 Excel's
-Exponentiate
 exponentiate
+Exponentiate
 exponentiates
 exponentiating
 factorisation
@@ -112,8 +113,8 @@ Gelman's
 generalisation
 generalisations
 generalise
-generalised
 Generalised
+generalised
 glm
 glmer
 GLMM
@@ -194,6 +195,7 @@ Menard
 merDeriv
 Merkle
 mis
+misdescribes
 mislabelled
 mlogit
 mlogit's
@@ -216,8 +218,8 @@ NEJM
 Neto
 nlme
 nlme's
-noncentral
 Noncentral
+noncentral
 noncentrality
 Noncentrality
 normalised
@@ -239,8 +241,8 @@ poisson
 polychotomous
 POSIXct
 Pre
-pre
 PRE
+pre
 PROC
 PSPP
 Pustejovsky
@@ -274,6 +276,7 @@ Scheepers
 Schielzeth
 Schirm
 Schoot
+sdreport
 SEs
 Signorell
 Skaug
@@ -285,8 +288,8 @@ sortable
 Souza
 spicy's
 Springer
-stabilising
 Stabilising
+stabilising
 Standardisation
 standardisation
 Standardised
@@ -312,6 +315,8 @@ Tily
 tinytable
 Tipton
 Tjur
+TMB
+TMB's
 Tofighi
 Trivedi
 TSV
@@ -346,8 +351,8 @@ Zeileis
 zi
 β
 Δf
-ΔR
 Δr
+ΔR
 ε
 η
 λ

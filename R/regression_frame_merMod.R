@@ -44,6 +44,7 @@ as_regression_frame.lmerMod <- function(fit,
                                          standardized = "none",
                                          exponentiate = FALSE,
                                          model_id = "M1",
+                                         re_ci = "wald",
                                          ...) {
   .check_lme4_available()
 
@@ -64,7 +65,8 @@ as_regression_frame.lmerMod <- function(fit,
                         ci_level   = ci_level,
                         ci_method  = ci_method,
                         is_glm     = FALSE,
-                        model_id   = model_id)
+                        model_id   = model_id,
+                        re_ci      = re_ci)
   # Footer names the robust estimator actually applied (overrides the
   # model-based label set by .merMod_info()).
   if (!vcov %in% c("model", "classical")) {
@@ -117,6 +119,7 @@ as_regression_frame.glmerMod <- function(fit,
                                           standardized = "none",
                                           exponentiate = FALSE,
                                           model_id = "M1",
+                                          re_ci = "wald",
                                           ...) {
   .check_lme4_available()
 
@@ -134,7 +137,8 @@ as_regression_frame.glmerMod <- function(fit,
                         ci_level   = ci_level,
                         ci_method  = ci_method,
                         is_glm     = TRUE,
-                        model_id   = model_id)
+                        model_id   = model_id,
+                        re_ci      = re_ci)
   # Phase 7c16: exp() on the B / beta rows for non-identity links
   # (e.g. binomial logit -> OR, poisson log -> IRR). Delta-method on
   # SE; CI bounds exponentiated. AME rows pass through unchanged.
@@ -354,7 +358,7 @@ as_regression_frame.glmerMod <- function(fit,
 # (random / (random + residual)) for a single-random-intercept model;
 # NA when more complex.
 .merMod_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                          is_glm, model_id) {
+                          is_glm, model_id, re_ci = "wald") {
   fam <- .merMod_family_info(fit, is_glm)
   dv  <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
@@ -374,7 +378,7 @@ as_regression_frame.glmerMod <- function(fit,
   }
 
   # Random effects: variance_components + icc.
-  re <- .merMod_random_effects(fit)
+  re <- .merMod_random_effects(fit, re_ci = re_ci, ci_level = ci_level)
 
   # Fit statistics. r_squared / adj_r_squared / pseudo_r2 are NA for
   # mixed-effects models (classical R^2 is not defined). Phase 7c9a:
@@ -434,8 +438,10 @@ as_regression_frame.glmerMod <- function(fit,
     lme4::isSingular(fit), error = function(e) FALSE))
   # Variance-component SE / CI skipped for size (see .re_se_skipped_by_size):
   # record n so the footer can state the fact and the orchestrator can
-  # advise once. Singular fits already carry their own omission note.
-  re_se_skipped_n <- if (!is_singular && .re_se_skipped_by_size(fit)) {
+  # advise once. Singular fits already carry their own omission note, and
+  # re_ci = "profile" sidesteps merDeriv entirely (no cap involved).
+  re_se_skipped_n <- if (!identical(re_ci, "profile") && !is_singular &&
+                           .re_se_skipped_by_size(fit)) {
     as.integer(stats::nobs(fit))
   } else {
     NA_integer_
@@ -446,6 +452,7 @@ as_regression_frame.glmerMod <- function(fit,
     has_singular          = is_singular,
     singular_terms        = character(0),
     re_se_skipped_n       = re_se_skipped_n,
+    re_ci                 = re_ci,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = if (is_glm) {
@@ -524,7 +531,11 @@ as_regression_frame.glmerMod <- function(fit,
 #     residual variance; NA when the structure is more complex (multiple
 #     grouping factors, random slopes, or glmer where residual variance
 #     is fixed).
-.merMod_random_effects <- function(fit) {
+# `re_ci` selects the uncertainty route for the variance-component rows:
+# "wald" (merDeriv observed information, subject to the size cap) or
+# "profile" (lme4's own confint profile-likelihood intervals -- no SE,
+# asymmetric CI; the route lme4 documents as the supported one).
+.merMod_random_effects <- function(fit, re_ci = "wald", ci_level = 0.95) {
   # lme4 estimates lmer by REML (default) or ML; glmer is always
   # Laplace / AGQ likelihood (REML is not defined for GLMM in the
   # standard sense). The method label feeds the footer's clarifying
@@ -603,11 +614,20 @@ as_regression_frame.glmerMod <- function(fit,
   # parameters and remain NA in this sub-phase (improvement deferred).
   vc_df <- .merMod_append_correlation_rows(vc_df, fit)
 
-  # Phase 7c7a: extend with Wald SE + 95% CI on the variance scale via
-  # merDeriv. Falls back to NA when (a) merDeriv is not installed, (b)
-  # the fit is singular (merDeriv crashes on var ~= 0), or (c) merDeriv
-  # errors for any other reason. The body renderer treats NAs as em-dash.
-  vc_df <- .merMod_attach_wald_se_ci(vc_df, fit)
+  # Uncertainty for the variance-component rows, per `re_ci`:
+  #   * "profile": lme4's own profile-likelihood intervals (no SE by
+  #     construction; asymmetric, boundary-respecting CIs). Skips
+  #     merDeriv entirely, so it also sidesteps the size cap.
+  #   * "wald" (default): Phase 7c7a merDeriv observed-information SE +
+  #     CI on the variance scale. Falls back to NA when (a) merDeriv is
+  #     not installed, (b) the fit is singular (merDeriv crashes on
+  #     var ~= 0), (c) n exceeds the size cap (.re_se_skipped_by_size),
+  #     or (d) merDeriv errors. The body renderer treats NAs as em-dash.
+  vc_df <- if (identical(re_ci, "profile")) {
+    .merMod_attach_profile_ci(vc_df, fit, ci_level = ci_level)
+  } else {
+    .merMod_attach_wald_se_ci(vc_df, fit)
+  }
 
   icc <- .merMod_icc(vc_df, fit = fit)
 
@@ -678,6 +698,130 @@ as_regression_frame.glmerMod <- function(fit,
 .re_se_skipped_by_size <- function(fit) {
   n <- tryCatch(as.numeric(stats::nobs(fit)), error = function(e) NA_real_)
   is.finite(n) && n > .re_se_size_cap()
+}
+
+
+# Attach profile-likelihood CI columns to the variance-components
+# data.frame (re_ci = "profile"). stats::confint(fit, method = "profile",
+# oldNames = FALSE, parm = "theta_") profiles the SD / correlation
+# parameters directly and names them "sd_<term>|<group>",
+# "cor_<term_j>.<term_i>|<group>", and "sigma". Likelihood intervals are
+# invariant under monotone reparametrization, so the SD-scale bounds are
+# SQUARED into the frame's variance-scale contract (the display layer
+# takes the square root back -- exact, no Delta step; re_scale =
+# "variance" shows the squared bounds, which ARE the profile CI for
+# sigma^2). Correlation bounds pass through on their own scale.
+#
+# No SE is produced, by construction: the profile route exists because
+# lme4 holds that a symmetric SE misdescribes a skewed, boundary-bounded
+# sampling distribution -- the interval IS the uncertainty summary.
+# Returns the same column contract as the Wald path (`std_error` all NA,
+# `ci_method` = "profile").
+.merMod_attach_profile_ci <- function(vc_df, fit, ci_level = 0.95) {
+  na_block <- function(df) {
+    df$std_error <- NA_real_
+    df$ci_lower  <- NA_real_
+    df$ci_upper  <- NA_real_
+    df$ci_method <- NA_character_
+    df
+  }
+  if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
+  # Singular fits: a boundary variance has no meaningful interval and
+  # profiling routinely fails there; keep the Wald path's precedence
+  # (the singular table note explains the omission).
+  if (isTRUE(lme4::isSingular(fit))) return(na_block(vc_df))
+
+  # Descriptive parameter names: lme4 spells the argument `oldNames`
+  # historically and `signames` in recent releases (`oldNames` is
+  # deprecated but still honoured). Try both spellings so the helper
+  # survives the eventual removal on either side.
+  prof <- NULL
+  for (nm_arg in list(list(oldNames = FALSE), list(signames = FALSE))) {
+    prof <- tryCatch(
+      suppressWarnings(suppressMessages(do.call(
+        stats::confint,
+        c(list(fit, parm = "theta_", method = "profile",
+               level = ci_level, quiet = TRUE), nm_arg)
+      ))),
+      error = function(e) NULL
+    )
+    if (!is.null(prof)) break
+  }
+  if (is.null(prof) || is.null(rownames(prof))) {
+    spicy_warn(
+      c(
+        "Profile-likelihood CIs for the random-effect variance components could not be computed.",
+        "i" = paste0(
+          "`confint(fit, method = \"profile\")` failed for this fit; ",
+          "the CI cells render as em-dashes. `re_ci = \"wald\"` (the ",
+          "default) may still provide Wald intervals."
+        )
+      ),
+      class = "spicy_caveat"
+    )
+    return(na_block(vc_df))
+  }
+
+  is_corr  <- if ("is_correlation" %in% colnames(vc_df)) {
+    vc_df$is_correlation %in% TRUE
+  } else {
+    rep(FALSE, nrow(vc_df))                                            # nocov
+  }
+  is_resid <- !is.na(vc_df$group) & vc_df$group == "Residual"
+
+  # Build each row's profile-parameter name with the SAME constructions
+  # lme4 uses for oldNames = FALSE, matching correlation pairs through a
+  # VarCorr walk (identical to .merMod_append_correlation_rows) so terms
+  # containing ", " can never mis-split.
+  prof_name <- rep(NA_character_, nrow(vc_df))
+  prof_name[!is_corr & !is_resid] <- sprintf(
+    "sd_%s|%s",
+    vc_df$term[!is_corr & !is_resid], vc_df$group[!is_corr & !is_resid]
+  )
+  prof_name[is_resid] <- "sigma"
+  if (any(is_corr)) {
+    vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
+    if (!is.null(vc)) {
+      corr_map <- list()
+      for (group in names(vc)) {
+        corr_mat <- attr(vc[[group]], "correlation")
+        if (is.null(corr_mat) || nrow(corr_mat) < 2L) next
+        nms <- rownames(corr_mat)
+        for (i in seq_len(nrow(corr_mat) - 1L)) {
+          for (j in seq(from = i + 1L, to = ncol(corr_mat))) {
+            key <- paste0(group, "\r", paste(nms[i], nms[j], sep = ", "))
+            corr_map[[key]] <- sprintf("cor_%s.%s|%s", nms[j], nms[i], group)
+          }
+        }
+      }
+      for (r in which(is_corr)) {
+        key <- paste0(vc_df$group[r], "\r", vc_df$term[r])
+        prof_name[r] <- corr_map[[key]] %||% NA_character_
+      }
+    }
+  }
+
+  idx <- match(prof_name, rownames(prof))
+  vc_df$std_error <- NA_real_
+  vc_df$ci_lower  <- NA_real_
+  vc_df$ci_upper  <- NA_real_
+  vc_df$ci_method <- NA_character_
+  for (r in seq_len(nrow(vc_df))) {
+    if (is.na(idx[r])) next
+    lo <- prof[idx[r], 1L]
+    hi <- prof[idx[r], 2L]
+    if (!is.finite(lo) || !is.finite(hi)) next
+    if (is_corr[r]) {
+      vc_df$ci_lower[r] <- lo
+      vc_df$ci_upper[r] <- hi
+    } else {
+      # SD-scale profile bounds -> variance-scale storage (exact).
+      vc_df$ci_lower[r] <- max(0, lo)^2
+      vc_df$ci_upper[r] <- max(0, hi)^2
+    }
+    vc_df$ci_method[r] <- "profile"
+  }
+  vc_df
 }
 
 

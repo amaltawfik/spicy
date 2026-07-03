@@ -332,3 +332,56 @@
     class = "spicy_invalid_input"
   )
 }
+
+
+# `re_ci`: uncertainty route for the random-effect variance-component
+# rows. "wald" = merDeriv observed-information SE + CI (subject to the
+# spicy.re_se_max_n size cap); "profile" = lme4's profile-likelihood
+# intervals (no SE, asymmetric CI -- lme4's own supported route).
+.validate_re_ci <- function(x, models) {
+  choices <- c("wald", "profile")
+  val <- if (identical(x, choices)) {
+    "wald"                                           # unset default vector
+  } else if (length(x) == 1L && !is.na(x) && x %in% choices) {
+    x
+  } else {
+    spicy_abort(
+      c(
+        "`re_ci` must be \"wald\" or \"profile\".",
+        "x" = sprintf(
+          "You supplied %s.",
+          paste(encodeString(as.character(x), quote = "\""), collapse = ", ")
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (identical(val, "profile")) {
+    # Profile CIs run through lme4's confint machinery: lmer / glmer
+    # only. glmmTMB and nlme::lme have their own native CI routes
+    # (TMB::sdreport; apVar), which the default already uses.
+    bad <- vapply(models, function(m) {
+      inherits(m, c("glmmTMB", "lme"))
+    }, logical(1))
+    if (any(bad)) {
+      spicy_abort(
+        c(
+          "`re_ci = \"profile\"` is available for lme4 fits (`lmer` / `glmer`) only.",
+          "x" = sprintf(
+            "Model%s %s %s not fitted with lme4.",
+            if (sum(bad) > 1L) "s" else "",
+            paste(which(bad), collapse = ", "),
+            if (sum(bad) > 1L) "are" else "is"
+          ),
+          "i" = paste0(
+            "glmmTMB and nlme::lme variance-component CIs already come ",
+            "from their own engines (TMB's sdreport; nlme's apVar) under ",
+            "the default `re_ci = \"wald\"`."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  val
+}

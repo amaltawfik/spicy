@@ -61,6 +61,15 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## New features
 
+* `table_regression(re_ci = "profile")`: the random-effect
+  variance-component rows of `lmer` / `glmer` fits can now carry
+  **profile-likelihood CIs** (`confint(fit, method = "profile")`,
+  lme4's own supported route) instead of the merDeriv Wald SE + CI.
+  The intervals are asymmetric, respect the boundary at 0, transform
+  exactly to the variance scale under `re_scale = "variance"`, and
+  sidestep the `spicy.re_se_max_n` size cap; no SE is shown (the
+  footer discloses the method). `glmmTMB` / `nlme::lme` keep their
+  engine-native CIs and refuse the option with a clear error.
 * New vignette *Count and two-part regression tables*: the
   Poisson-to-negative-binomial-to-two-part escalation on real data, the
   zero-inflation vs hurdle reading (and how to choose), per-block
