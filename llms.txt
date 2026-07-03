@@ -546,6 +546,10 @@ Each workflow has a dedicated vignette:
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
+- [Count and two-part regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.html)
+- [Ordinal regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 
@@ -859,6 +863,17 @@ Documented here for direct invocation with custom arguments (e.g.,
   chi-bar-squared test, opt-in per-term LRT / RLRT, ICC and Nakagawa
   R-squared, Satterthwaite inference, odds ratios for `glmer`, and the
   `lme4`, `glmmTMB`, and `nlme` engines.
+
+- [Count and two-part regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md):
+
+  Publication-ready tables for count regression in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  Poisson and negative-binomial rate ratios, zero-inflated and hurdle
+  models with their zero component as a labelled block, per-block
+  exponentiation, combined average marginal effects, cluster-robust
+  variance across both components, and zero-inflated mixed models with
+  `glmmTMB`.
 
 - [Ordinal regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md):

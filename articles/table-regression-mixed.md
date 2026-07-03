@@ -139,6 +139,7 @@ omits them and says why in the footer:
 
 ``` r
 
+# (the accompanying console warning is suppressed in this rendering)
 set.seed(2026)
 d <- data.frame(x = rnorm(120), g = factor(rep(1:12, each = 10)))
 d$y <- 2 + 0.5 * d$x + rnorm(120)   # no group effect at all
@@ -167,13 +168,15 @@ table_regression(sfit)
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = -0.00, p = 0.500.
-#> Singular fit: random-effect variance component(s) at the boundary 0. Wald SE and CI on the variance components are unreliable at the boundary and have been omitted; consider simplifying the random structure or refitting on the affected grouping factor.
+#> Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.
 ```
 
 The chi-bar-squared test reads p = 0.500 — the boundary value when the
-data show no group variance at all. The footer’s advice is the
-substantive one: simplify the random structure rather than report a zero
-variance with invented uncertainty.
+data show no group variance at all. The note states the fact for the
+table’s reader; the actionable advice arrives as a console warning when
+the table is built: simplify the random structure, or test the component
+with `re_test = "lrt"`, rather than report a zero variance with invented
+uncertainty.
 
 ## Testing individual components: `re_test`
 
@@ -181,8 +184,11 @@ When a reviewer asks about one *specific* component — “do you really
 need the random slope?” — request an opt-in per-term test.
 `re_test = "lrt"` refits the model without each testable component and
 fills the p column of its row with the boundary-corrected
-likelihood-ratio test (the same statistic as
-[`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html)):
+likelihood-ratio test. The statistic is the one
+[`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html)
+computes (a REML deviance difference); `ranova` refers it to a plain χ²,
+which is conservative at the boundary, so spicy applies the
+chi-bar-squared mixture instead:
 
 ``` r
 
@@ -309,8 +315,8 @@ carries the full set (estimate, SE, CI) for the variance-component rows
 ## Random intercept or random slope? Models side by side
 
 Model comparison is where the row layout pays off: the variance
-components align across columns like any coefficient, and each model’s
-chi-bar-squared test gets its own footer line.
+components align across columns like any coefficient, and each model
+gets its own footer line.
 
 ``` r
 
@@ -348,15 +354,53 @@ table_regression(
 #> Model 2: Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
 ```
 
-Two details of this table repay attention. The **ICC** row (0.59)
-appears only for the intercept-only model: with a random slope, the
-correlation between two observations from the same subject depends on
-*when* they were taken, so a single ICC no longer exists — printing one
-would be wrong, so spicy does not. And the fixed `Days` SE **doubles**
-(0.80 → 1.55) once slopes are allowed to vary: the intercept-only model
-was overstating the precision of the average slope by ignoring
-between-subject slope variation — the statistical argument for the
-random slope, visible in the table itself.
+**What is — and is not — being tested here.** Each footer’s
+chi-bar-squared line answers one question only: *does this model need
+its random part at all?* — the fit against a plain linear regression.
+Neither footer compares the two columns to each other. That comparison —
+*does the slope earn its place on top of the intercept?* — is the
+per-term test of the previous section: `re_test = "lrt"` on the slope
+model refits exactly the intercept-only model of column 1 and refers the
+REML deviance difference (42.8) to the 50:50 mixture of χ²(1) and χ²(2),
+p ≈ 3 × 10⁻¹⁰ — the textbook procedure for retaining a random slope
+(Snijders & Bosker 2012, §6.2; Stram & Lee 1994). AIC and BIC agree
+(1794.5 → 1755.6; 1807.2 → 1774.8). For hierarchies that grow the
+*fixed* part instead, `nested = TRUE` adds chi-squared, AIC, and BIC
+change rows — an ML-refit test with a plain χ² reference, appropriate
+there but conservative for random-structure changes, which is why the
+slope decision belongs to `re_test`.
+
+**Reading the two R² rows — without over-reading them.** The Nakagawa
+pair is descriptive, and each member answers a different question.
+*Marginal* R² is the share of variance explained by the fixed effects
+alone: it is 0.28 in both columns because both models have the same
+fixed part — the average trajectory explains what it explains, whatever
+the random structure around it. *Conditional* R² adds the random
+effects: it rises (0.70 → 0.80) because individual slopes let each
+subject’s own trajectory absorb variance the first model left in the
+residual. The trap: a conditional R² can hardly go *down* when the
+random structure grows, so its increase is **not** evidence that the
+slope is needed — it measures how much the grouping structure explains,
+never whether a component earns its place. Selection belongs to the
+boundary-corrected test and the information criteria; the R² pair then
+describes the model you selected.
+
+Two further details repay attention. The **ICC** row (0.59) appears only
+for the intercept-only model: with a random slope, the correlation
+between two observations from the same subject depends on *when* they
+were taken, so a single ICC no longer exists — none is printed. And the
+fixed `Days` SE **doubles** (0.80 → 1.55): a model without the random
+slope overstates the precision of the average slope by ignoring
+between-subject slope variation (Schielzeth & Forstmeier 2009) — the
+inferential stake of the decision, visible in the table itself.
+
+Whether to *test* the slope at all is its own debate. The design-driven
+position includes every slope the design permits (Barr et al. 2013);
+parsimony advocates prune components the data cannot support (Matuschek
+et al. 2017); Gelman & Hill (2007) would rather estimate and let partial
+pooling shrink a near-zero variance. The table serves all three
+positions: the components are always displayed with their uncertainty,
+and the test stays opt-in.
 
 ## Generalized linear mixed models
 
@@ -647,6 +691,9 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 
 ## References
 
+- Barr, D. J., Levy, R., Scheepers, C., & Tily, H. J. (2013). Random
+  effects structure for confirmatory hypothesis testing: Keep it
+  maximal. *Journal of Memory and Language*, 68(3), 255–278.
 - Bates, D., Mächler, M., Bolker, B., & Walker, S. (2015). Fitting
   linear mixed-effects models using lme4. *Journal of Statistical
   Software*, 67(1).
@@ -661,11 +708,20 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 - Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017).
   lmerTest package: Tests in linear mixed effects models. *Journal of
   Statistical Software*, 82(13).
+- Matuschek, H., Kliegl, R., Vasishth, S., Baayen, H., & Bates, D.
+  (2017). Balancing Type I error and power in linear mixed models.
+  *Journal of Memory and Language*, 94, 305–315.
 - Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
   obtaining R² from generalized linear mixed-effects models. *Methods in
   Ecology and Evolution*, 4(2), 133–142.
+- Schielzeth, H., & Forstmeier, W. (2009). Conclusions beyond support:
+  overconfident estimates in mixed models. *Behavioral Ecology*, 20(2),
+  416–420.
 - Self, S. G., & Liang, K.-Y. (1987). Asymptotic properties of maximum
   likelihood estimators and likelihood ratio tests under nonstandard
   conditions. *JASA*, 82(398), 605–610.
+- Snijders, T. A. B., & Bosker, R. J. (2012). *Multilevel Analysis: An
+  Introduction to Basic and Advanced Multilevel Modeling* (2nd ed.).
+  Sage.
 - Stram, D. O., & Lee, J. W. (1994). Variance components testing in the
   longitudinal mixed effects model. *Biometrics*, 50(4), 1171–1177.

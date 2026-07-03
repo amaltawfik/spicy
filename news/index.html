@@ -35,6 +35,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
@@ -92,7 +93,8 @@
 </div>
 <div class="section level3">
 <h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>New vignette <em>Mixed-effects regression tables</em>: the random-effects block row by row, why variance components carry no p-value, the boundary-corrected tests (<code>re_test</code>), model comparison, <code>glmer</code> / <code>glmmTMB</code> / <code>nlme</code>, cluster-robust variance, and standardized coefficients.</li>
+<ul><li>New vignette <em>Count and two-part regression tables</em>: the Poisson-to-negative-binomial-to-two-part escalation on real data, the zero-inflation vs hurdle reading (and how to choose), per-block exponentiation, combined AME, cluster-robust variance across both components, and zero-inflated mixed models.</li>
+<li>New vignette <em>Mixed-effects regression tables</em>: the random-effects block row by row, why variance components carry no p-value, the boundary-corrected tests (<code>re_test</code>), model comparison, <code>glmer</code> / <code>glmmTMB</code> / <code>nlme</code>, cluster-robust variance, and standardized coefficients.</li>
 <li>
 <code>vcov</code> computes heteroskedasticity- and cluster-robust SEs for the supported classes, each via its field-standard backend (<code>clubSandwich</code>, Lin-Wei dfbeta, <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL</a></code>, <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov</a></code>).</li>
 <li>
@@ -155,6 +157,8 @@
 <code>table_regression(standardize = TRUE)</code>: y* standardized coefficients return <code>NA</code> for log-link binomial models (undefined; was an unjustified value).</li>
 <li>
 <code>table_regression(list(...))</code>: no stray zero-width spaces in multi-model <code>tinytable</code> headers.</li>
+<li>The singular-fit table note now states only the fact (“variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted”); the actionable advice (simplify the random structure, test with <code>re_test</code>) moved to a consolidated <code>spicy_caveat</code> warning at build time – advice addresses the analyst, not the reader of a published table.</li>
+<li>The <code>p_adjust</code> footer’s family size m no longer counts component-block intercepts (<code>zero_(Intercept)</code>, …) that the adjustment itself excludes – the reported m now matches the adjustment performed.</li>
 <li>
 <code><a href="../reference/as_structured.html">as_structured()</a></code> and the rich engines (<code>gt</code>, <code>tinytable</code>, <code>flextable</code>, Excel, clipboard) now match the console body exactly: multi-model reference rows stay blank in models that lack the factor (was em-dash everywhere), and the multi-outcome <code>Outcome</code> row is carried through. The structured schema gains <code>reference_models_by_row</code> and <code>outcome_labels_by_col</code> (both documented in <code><a href="../reference/as_structured.html">?as_structured</a></code>).</li>
 <li>

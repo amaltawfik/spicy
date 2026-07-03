@@ -79,6 +79,17 @@
   R-squared, Satterthwaite inference, odds ratios for `glmer`, and the
   `lme4`, `glmmTMB`, and `nlme` engines.
 
+- [Count and two-part regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md):
+
+  Publication-ready tables for count regression in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  Poisson and negative-binomial rate ratios, zero-inflated and hurdle
+  models with their zero component as a labelled block, per-block
+  exponentiation, combined average marginal effects, cluster-robust
+  variance across both components, and zero-inflated mixed models with
+  `glmmTMB`.
+
 - [Ordinal regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md):
 
