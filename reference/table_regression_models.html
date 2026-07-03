@@ -60,6 +60,7 @@ supported set. Feature requests are welcome on the issue tracker."><meta propert
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
@@ -122,13 +123,13 @@ supported set. Feature requests are welcome on the issue tracker.</p>
 
 <ul><li><p>A robust <code>vcov</code> request is honoured through the class's
 field-standard backend, or <strong>refused with a clear error</strong> naming the
-supported set – never silently ignored; the footer always names the
-estimator actually applied.</p></li>
+supported set; the footer always names the estimator actually
+applied.</p></li>
 <li><p><code>exponentiate = TRUE</code> is link-gated: it produces a labelled ratio
 (OR / IRR / HR / RR / MR / TR) only where the link warrants
 one. Identity-link fits warn and are left untouched; non-ratio
 links (probit, cauchit, inverse, ...) are <strong>refused with a clear
-error</strong> – never silently exponentiated.</p></li>
+error</strong>.</p></li>
 <li><p>Class-specific structure renders as labelled subordinate blocks
 of rows in the same table, each explained by a footer line.</p></li>
 <li><p>Fit statistics default to the family's field standard

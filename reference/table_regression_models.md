@@ -74,15 +74,13 @@ A data frame with one row per supported engine and columns `family`,
 ## Shared semantics (all classes)
 
 - A robust `vcov` request is honoured through the class's field-standard
-  backend, or **refused with a clear error** naming the supported set –
-  never silently ignored; the footer always names the estimator actually
-  applied.
+  backend, or **refused with a clear error** naming the supported set;
+  the footer always names the estimator actually applied.
 
 - `exponentiate = TRUE` is link-gated: it produces a labelled ratio (OR
   / IRR / HR / RR / MR / TR) only where the link warrants one.
   Identity-link fits warn and are left untouched; non-ratio links
-  (probit, cauchit, inverse, ...) are **refused with a clear error** –
-  never silently exponentiated.
+  (probit, cauchit, inverse, ...) are **refused with a clear error**.
 
 - Class-specific structure renders as labelled subordinate blocks of
   rows in the same table, each explained by a footer line.

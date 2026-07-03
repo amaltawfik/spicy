@@ -83,6 +83,11 @@ for the walk-throughs.
 
 ### New features
 
+- New vignette *Mixed-effects regression tables*: the random-effects
+  block row by row, why variance components carry no p-value, the
+  boundary-corrected tests (`re_test`), model comparison, `glmer` /
+  `glmmTMB` / `nlme`, cluster-robust variance, and standardized
+  coefficients.
 - `vcov` computes heteroskedasticity- and cluster-robust SEs for the
   supported classes, each via its field-standard backend
   (`clubSandwich`, Lin-Wei dfbeta,
@@ -197,6 +202,15 @@ for the walk-throughs.
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 - The polynomial-trends footer note no longer fires when the ordered
   factor is filtered out by `keep` / `drop`.
+- The mixed-inference footer no longer claims “Wald-z … Load `lmerTest`”
+  over Satterthwaite rows:
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  passed its default `ci_method = "wald"` down to the frame, overriding
+  the Satterthwaite regime that the coefficient rows actually carry on
+  `lmerTest` fits. The footer now reports
+  `p-values: Satterthwaite t-test (lmerTest).` Under a `CR*` vcov the
+  same line attributes the Satterthwaite df to their actual source:
+  `cluster-robust df (clubSandwich)`.
 - AME columns are now genuinely wired for `fixest` (`feols`; `feglm`
   with fixed effects is refused by `marginaleffects` and em-dashes with
   a warning), `estimatr` (`lm_robust`, `iv_robust`),

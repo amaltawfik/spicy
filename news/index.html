@@ -34,6 +34,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
@@ -91,7 +92,8 @@
 </div>
 <div class="section level3">
 <h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>
+<ul><li>New vignette <em>Mixed-effects regression tables</em>: the random-effects block row by row, why variance components carry no p-value, the boundary-corrected tests (<code>re_test</code>), model comparison, <code>glmer</code> / <code>glmmTMB</code> / <code>nlme</code>, cluster-robust variance, and standardized coefficients.</li>
+<li>
 <code>vcov</code> computes heteroskedasticity- and cluster-robust SEs for the supported classes, each via its field-standard backend (<code>clubSandwich</code>, Lin-Wei dfbeta, <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL</a></code>, <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov</a></code>).</li>
 <li>
 <code>"ame"</code> columns populate for <code>betareg</code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>, <code>svyglm</code>, <code>survreg</code>, and per-outcome-category for <code>polr</code> / <code>clm</code> / <code>multinom</code>; the ordinal per-category AME renders as a probability matrix.</li>
@@ -128,6 +130,7 @@
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>Fix decimal-point alignment in <code>gt</code> / <code>tinytable</code> / <code>flextable</code> / Word outputs of <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> / <code><a href="../reference/table_continuous.html">table_continuous()</a></code> / <code><a href="../reference/table_categorical.html">table_categorical()</a></code>.</li>
 <li>The polynomial-trends footer note no longer fires when the ordered factor is filtered out by <code>keep</code> / <code>drop</code>.</li>
+<li>The mixed-inference footer no longer claims “Wald-z … Load <code>lmerTest</code>” over Satterthwaite rows: <code><a href="../reference/table_regression.html">table_regression()</a></code> passed its default <code>ci_method = "wald"</code> down to the frame, overriding the Satterthwaite regime that the coefficient rows actually carry on <code>lmerTest</code> fits. The footer now reports <code>p-values: Satterthwaite t-test (lmerTest).</code> Under a <code>CR*</code> vcov the same line attributes the Satterthwaite df to their actual source: <code>cluster-robust df (clubSandwich)</code>.</li>
 <li>AME columns are now genuinely wired for <code>fixest</code> (<code>feols</code>; <code>feglm</code> with fixed effects is refused by <code>marginaleffects</code> and em-dashes with a warning), <code>estimatr</code> (<code>lm_robust</code>, <code>iv_robust</code>), <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg</a></code>, and <code>rms</code> (<code>ols</code>, <code>lrm</code>, <code>Glm</code>) – these classes declared AME support but rendered an entirely empty column (finding M2 residual; oracle-matched to <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>). Classes with no AME backend (<code>flexsurvreg</code>, <code>sampleSelection</code>, Bayesian fits) now REFUSE the request with a pointer to <code><a href="../reference/table_regression_models.html">?table_regression_models</a></code> instead of the empty column, and the registry’s AME column was corrected accordingly.</li>
 <li>Standardised beta rows on mixed fits now inherit the B rows’ reference distribution: on an <code>lmerTest</code> fit, beta carried Wald z (<code>df = Inf</code>) next to B’s Satterthwaite t – the same statistic printed two different p-values in one table. Beta now reports the same t / df / p, with the CI rebuilt from the t critical value.</li>
 <li>

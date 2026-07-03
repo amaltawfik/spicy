@@ -68,6 +68,17 @@
   and output to console, gt, tinytable, flextable, Excel, Word, or
   clipboard.
 
+- [Mixed-effects regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
+
+  Publication-ready tables for mixed-effects (multilevel) regression in
+  R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  random effects as table rows with SE and CI, the boundary-correct
+  chi-bar-squared test, opt-in per-term LRT / RLRT, ICC and Nakagawa
+  R-squared, Satterthwaite inference, odds ratios for `glmer`, and the
+  `lme4`, `glmmTMB`, and `nlme` engines.
+
 - [Ordinal regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md):
 
