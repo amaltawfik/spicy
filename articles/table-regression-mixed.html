@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Mixed-effects regression tables">
-<meta name="description" content="Publication-ready tables for mixed-effects (multilevel) regression in R with `table_regression()`: random effects as table rows with SE and CI, the boundary-correct chi-bar-squared test, opt-in per-term LRT / RLRT, ICC and Nakagawa R-squared, Satterthwaite inference, odds ratios for `glmer`, and the `lme4`, `glmmTMB`, and `nlme` engines.
+<meta name="description" content="Publication-ready tables for mixed-effects (multilevel) regression in R with `table_regression()`: the textbook model-building sequence on the High School &amp; Beyond data (ICC, contextual effects, random slopes, cross-level interactions), random effects as table rows, the boundary-corrected chi-bar-squared test, opt-in per-term LRT / RLRT, Nakagawa R-squared, Satterthwaite inference, three-level and crossed designs, and the `lme4`, `glmmTMB`, and `nlme` engines.
 ">
-<meta property="og:description" content="Publication-ready tables for mixed-effects (multilevel) regression in R with `table_regression()`: random effects as table rows with SE and CI, the boundary-correct chi-bar-squared test, opt-in per-term LRT / RLRT, ICC and Nakagawa R-squared, Satterthwaite inference, odds ratios for `glmer`, and the `lme4`, `glmmTMB`, and `nlme` engines.
+<meta property="og:description" content="Publication-ready tables for mixed-effects (multilevel) regression in R with `table_regression()`: the textbook model-building sequence on the High School &amp; Beyond data (ICC, contextual effects, random slopes, cross-level interactions), random effects as table rows, the boundary-corrected chi-bar-squared test, opt-in per-term LRT / RLRT, Nakagawa R-squared, Satterthwaite inference, three-level and crossed designs, and the `lme4`, `glmmTMB`, and `nlme` engines.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -134,10 +134,14 @@ space, plus zero-inflation and dispersion submodels.</li>
 <strong><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></strong> — the classical engine
 (containment-df t-tests).</li>
 </ul>
-<p>The running example is <code><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">lme4::sleepstudy</a></code>: reaction times
-of 18 subjects measured on 10 consecutive days of a sleep-restriction
-study. Each subject contributes 10 rows, so observations are not
-independent — the canonical case for a random intercept and slope.</p>
+<p>Two datasets carry the main narrative. The table anatomy is shown on
+<code><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">lme4::sleepstudy</a></code> — reaction times of 18 subjects measured
+on 10 consecutive days of a sleep-restriction study, the canonical case
+for a random intercept and slope. The model-<em>building</em> sequence —
+from a naive OLS to cross-level interactions — then runs on the High
+School &amp; Beyond data of the multilevel textbooks (7,185 pupils in
+160 schools; the data ship with <code>nlme</code>, the models are
+<code><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer()</a></code> fits).</p>
 <div class="section level2">
 <h2 id="the-mixed-model-in-one-paragraph">The mixed model in one paragraph<a class="anchor" aria-label="anchor" href="#the-mixed-model-in-one-paragraph"></a>
 </h2>
@@ -237,6 +241,335 @@ mixture. Here chi-bar-squared(3) = 148.35, p &lt; .001: the random
 structure earns its place.</p>
 </div>
 <div class="section level2">
+<h2 id="from-ols-to-a-multilevel-model-step-by-step">From OLS to a multilevel model, step by step<a class="anchor" aria-label="anchor" href="#from-ols-to-a-multilevel-model-step-by-step"></a>
+</h2>
+<p>The sections above dissect one fitted table. This one walks the
+model-building path most multilevel analyses follow — the sequence
+codified by Raudenbush &amp; Bryk (2002) and taught across the
+multilevel literature (Hox et al. 2018; Snijders &amp; Bosker 2012;
+Bressoux 2010) — on the data those books made canonical: the High School
+&amp; Beyond sample of 7,185 pupils in 160 U.S. schools, modelling
+mathematics achievement from pupil socio-economic status (SES) and
+school sector. Each step adds one ingredient, and one table shows what
+it changes.</p>
+<p>Two derived predictors do a lot of work below: the school mean of
+SES, and the pupil’s SES <em>centered within the school</em>. Keeping
+the two apart is what lets a multilevel model estimate separate within-
+and between-school effects (step 3):</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"MathAchieve"</span>, package <span class="op">=</span> <span class="st">"nlme"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"MathAchSchool"</span>, package <span class="op">=</span> <span class="st">"nlme"</span><span class="op">)</span></span>
+<span><span class="va">hsb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">MathAchieve</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"School"</span>, <span class="st">"SES"</span>, <span class="st">"MathAch"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>             <span class="va">MathAchSchool</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"School"</span>, <span class="st">"Sector"</span><span class="op">)</span><span class="op">]</span>, by <span class="op">=</span> <span class="st">"School"</span><span class="op">)</span></span>
+<span><span class="va">hsb</span><span class="op">$</span><span class="va">School</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">hsb</span><span class="op">$</span><span class="va">School</span><span class="op">)</span></span>
+<span><span class="va">hsb</span><span class="op">$</span><span class="va">meanses</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/ave.html" class="external-link">ave</a></span><span class="op">(</span><span class="va">hsb</span><span class="op">$</span><span class="va">SES</span>, <span class="va">hsb</span><span class="op">$</span><span class="va">School</span><span class="op">)</span>   <span class="co"># school mean of SES</span></span>
+<span><span class="va">hsb</span><span class="op">$</span><span class="va">cses</span>    <span class="op">&lt;-</span> <span class="va">hsb</span><span class="op">$</span><span class="va">SES</span> <span class="op">-</span> <span class="va">hsb</span><span class="op">$</span><span class="va">meanses</span>      <span class="co"># SES centered within school</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="step-0-the-regression-you-would-have-fitted-anyway">Step 0: the regression you would have fitted anyway<a class="anchor" aria-label="anchor" href="#step-0-the-regression-you-would-have-fitted-anyway"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="va">SES</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span></code></pre></div>
+<p>One more SES point buys 3.18 achievement points (SE 0.10; its column
+appears in the step-2 table) — and one silent assumption: that 7,185
+pupils are 7,185 independent observations. They are not; pupils share
+schools, teachers, and neighbourhoods. The next steps make the grouping
+structure part of the model.</p>
+</div>
+<div class="section level3">
+<h3 id="step-1-the-empty-model-how-much-do-schools-matter">Step 1: the empty model — how much do schools matter?<a class="anchor" aria-label="anchor" href="#step-1-the-empty-model-how-much-do-schools-matter"></a>
+</h3>
+<p>The multilevel analysis starts with a model containing <em>no
+predictors at all</em>, only a school random intercept. Its job is a
+single number:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># (the accompanying console warning is suppressed in this rendering)</span></span>
+<span><span class="va">m_empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">m_empty</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: MathAch</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span>    B       SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼───────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)            <span style="color: #9E9E9E;">│</span>    12.64  0.24  [12.15, 13.12]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:        <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>     2.93   –          –          –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>     6.26   –          –          –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span>  7185                                 </span></span>
+<span><span class="co">#&gt;  N (School)             <span style="color: #9E9E9E;">│</span>   160                                 </span></span>
+<span><span class="co">#&gt;  ICC                    <span style="color: #9E9E9E;">│</span>     0.18                              </span></span>
+<span><span class="co">#&gt;  R² (marginal)          <span style="color: #9E9E9E;">│</span>     0.00                              </span></span>
+<span><span class="co">#&gt;  R² (conditional)       <span style="color: #9E9E9E;">│</span>     0.18                              </span></span>
+<span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 47122.8                               </span></span>
+<span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 47143.4                               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 983.92, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
+<p>The <strong>ICC of 0.18</strong> is nothing but the two σ rows
+combined: 2.93² / (2.93² + 6.26²) ≈ 0.18. Eighteen percent of the
+achievement variance lies <em>between</em> schools — the variance
+partition that justifies everything that follows (and matches the number
+Raudenbush &amp; Bryk report for these data). With 160 schools, the
+design sits comfortably above the ~50 groups below which the standard
+errors and interval coverage of the variance components degrade (Maas
+&amp; Hox 2005) — the point estimates themselves hold up with fewer.</p>
+<p>One display note, visible here for the first time: at this sample
+size <code><a href="../reference/table_regression.html">table_regression()</a></code> skips the SE and CI of the variance
+components — the table note states it, and the build-time warning names
+the override (<code>options(spicy.re_se_max_n = )</code>) — because
+their computation grows superlinearly with n. Estimates, ICC, R², and
+the LR test are unaffected, and the random-part inference below runs
+through <code>re_test</code>. The same note (and suppressed warning)
+accompanies every HSB table in this sequence.</p>
+</div>
+<div class="section level3">
+<h3 id="step-2-a-random-intercept-next-to-the-ols">Step 2: a random intercept, next to the OLS<a class="anchor" aria-label="anchor" href="#step-2-a-random-intercept-next-to-the-ols"></a>
+</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m_ri</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>OLS <span class="op">=</span> <span class="va">ols</span>, Multilevel <span class="op">=</span> <span class="va">m_ri</span><span class="op">)</span>,</span>
+<span>                 show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression comparison: MathAch</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                                    OLS                Multilevel       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                          ─────────────────────  ───────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span>    B       SE     p       B       SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)            <span style="color: #9E9E9E;">│</span>    12.75  0.08  &lt;.001     12.66  0.19  &lt;.001 </span></span>
+<span><span class="co">#&gt;  SES                    <span style="color: #9E9E9E;">│</span>     3.18  0.10  &lt;.001      2.39  0.11  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:        <span style="color: #9E9E9E;">│</span>                                              </span></span>
+<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>                            2.18   –     –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>                            6.09   –     –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span>  7185                   7185                 </span></span>
+<span><span class="co">#&gt;  R²                     <span style="color: #9E9E9E;">│</span>     0.13                                     </span></span>
+<span><span class="co">#&gt;  Adj.R²                 <span style="color: #9E9E9E;">│</span>     0.13                                     </span></span>
+<span><span class="co">#&gt;  N (School)             <span style="color: #9E9E9E;">│</span>                          160                 </span></span>
+<span><span class="co">#&gt;  ICC                    <span style="color: #9E9E9E;">│</span>                            0.11              </span></span>
+<span><span class="co">#&gt;  R² (marginal)          <span style="color: #9E9E9E;">│</span>                            0.08              </span></span>
+<span><span class="co">#&gt;  R² (conditional)       <span style="color: #9E9E9E;">│</span>                            0.18              </span></span>
+<span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 47103.9                46653.2               </span></span>
+<span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 47124.6                46680.7               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: linear regression; Model 2: linear mixed-effects regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 1: classical (OLS)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Wald (model-based)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 456.94, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
+<p>Reading the gain, column against column:</p>
+<ul>
+<li>The <strong>intercept SE more than doubles</strong> (0.08 → 0.19).
+OLS treats 7,185 pupils as independent evidence about school-shared
+quantities; the multilevel model counts the 160 schools it actually has.
+The OLS precision was borrowed, not earned.</li>
+<li>The <strong>SES coefficient itself moves</strong> (3.18 → 2.39): a
+raw SES slope mixes two sources of information — pupils compared within
+schools, and schools compared with schools — and the multilevel fit
+reweights them toward the within-school comparison. Step 3 separates the
+two outright.</li>
+<li>The <strong>ICC row reads 0.11</strong>, not step 1’s 0.18: it
+partitions the variance that SES leaves unexplained — not a
+contradiction, a conditional version of the same quantity.</li>
+<li>The footer’s chi-bar-squared test (456.9 on 1 df) says the school
+effect is not optional.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="step-3-one-variable-two-effects-the-contextual-split">Step 3: one variable, two effects — the contextual split<a class="anchor" aria-label="anchor" href="#step-3-one-variable-two-effects-the-contextual-split"></a>
+</h3>
+<p>A pupil’s SES and a school’s SES composition are different variables
+with different effects, and entering raw <code>SES</code> estimates an
+uninterpretable blend of the two. The standard decomposition enters the
+within-school part and the school mean separately (Enders &amp; Tofighi
+2007; Snijders &amp; Bosker 2012, §4.6):</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m_wb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="va">cses</span> <span class="op">+</span> <span class="va">meanses</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">m_wb</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: MathAch</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span>    B       SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼───────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)            <span style="color: #9E9E9E;">│</span>    12.68  0.15  &lt;.001 </span></span>
+<span><span class="co">#&gt;  cses                   <span style="color: #9E9E9E;">│</span>     2.19  0.11  &lt;.001 </span></span>
+<span><span class="co">#&gt;  meanses                <span style="color: #9E9E9E;">│</span>     5.87  0.36  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:        <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>     1.64   –     –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>     6.08   –     –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span>  7185                 </span></span>
+<span><span class="co">#&gt;  N (School)             <span style="color: #9E9E9E;">│</span>   160                 </span></span>
+<span><span class="co">#&gt;  ICC                    <span style="color: #9E9E9E;">│</span>     0.07              </span></span>
+<span><span class="co">#&gt;  R² (marginal)          <span style="color: #9E9E9E;">│</span>     0.17              </span></span>
+<span><span class="co">#&gt;  R² (conditional)       <span style="color: #9E9E9E;">│</span>     0.22              </span></span>
+<span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 46578.6               </span></span>
+<span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 46613.0               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 262.40, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
+<p>Within a school, one SES point is worth 2.19 points of achievement
+(<code>cses</code>); <em>between</em> schools, a one-point difference in
+composition is worth 5.87 (<code>meanses</code>) — more than twice the
+individual effect. The <strong>contextual effect</strong> proper — what
+better-off schoolmates add for the <em>same</em> pupil, over and above
+their own SES — is the difference, 5.87 − 2.19 = 3.68 (Raudenbush &amp;
+Bryk 2002). The OLS slope of 3.18 in step 0 was a weighted blend of the
+within and between effects, answering neither question.</p>
+</div>
+<div class="section level3">
+<h3 id="step-4-does-the-ses-slope-vary-across-schools">Step 4: does the SES slope vary across schools?<a class="anchor" aria-label="anchor" href="#step-4-does-the-ses-slope-vary-across-schools"></a>
+</h3>
+<p>So far every school shares one SES slope. Freeing it —
+<code>(cses | School)</code> — asks whether SES matters <em>more in some
+schools than others</em>, and <code>re_test = "lrt"</code> prices the
+answer with the boundary-corrected test of the earlier sections:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m_rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="va">cses</span> <span class="op">+</span> <span class="va">meanses</span> <span class="op">+</span> <span class="op">(</span><span class="va">cses</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">m_rs</span>, re_test <span class="op">=</span> <span class="st">"lrt"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: MathAch</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span>    B        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                    <span style="color: #9E9E9E;">│</span>    12.68  &lt;.001 </span></span>
+<span><span class="co">#&gt;  cses                           <span style="color: #9E9E9E;">│</span>     2.19  &lt;.001 </span></span>
+<span><span class="co">#&gt;  meanses                        <span style="color: #9E9E9E;">│</span>     5.90  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:                <span style="color: #9E9E9E;">│</span>                 </span></span>
+<span><span class="co">#&gt;    σ School (Intercept)         <span style="color: #9E9E9E;">│</span>     1.64   –    </span></span>
+<span><span class="co">#&gt;    σ School cses                <span style="color: #9E9E9E;">│</span>     0.83   .003 </span></span>
+<span><span class="co">#&gt;    ρ School ((Intercept), cses) <span style="color: #9E9E9E;">│</span>    -0.19   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)                 <span style="color: #9E9E9E;">│</span>     6.06   –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                              <span style="color: #9E9E9E;">│</span>  7185           </span></span>
+<span><span class="co">#&gt;  N (School)                     <span style="color: #9E9E9E;">│</span>   160           </span></span>
+<span><span class="co">#&gt;  R² (marginal)                  <span style="color: #9E9E9E;">│</span>     0.17        </span></span>
+<span><span class="co">#&gt;  R² (conditional)               <span style="color: #9E9E9E;">│</span>     0.23        </span></span>
+<span><span class="co">#&gt;  AIC                            <span style="color: #9E9E9E;">│</span> 46571.7         </span></span>
+<span><span class="co">#&gt;  BIC                            <span style="color: #9E9E9E;">│</span> 46619.8         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 273.03, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
+<p>The slope SD is 0.83 achievement points around the average slope of
+2.19, and its test reads p = .003 — solid evidence that the slope
+genuinely varies across schools — so the random slope stays. (The full
+anatomy of this decision — what the side-by-side comparison does and
+does not test, how the R² pair moves, what happens to the fixed SE — is
+dissected on <code>sleepstudy</code> in <em>Random intercept or random
+slope?</em> below.)</p>
+</div>
+<div class="section level3">
+<h3 id="step-5-why-do-slopes-differ-a-cross-level-interaction">Step 5: why do slopes differ? A cross-level interaction<a class="anchor" aria-label="anchor" href="#step-5-why-do-slopes-differ-a-cross-level-interaction"></a>
+</h3>
+<p>A varying slope is a question, not an answer: <em>what about a
+school</em> flattens or steepens its SES gradient? Interacting the
+pupil-level slope with a school-level predictor — a <strong>cross-level
+interaction</strong> — is the multilevel move that answers it, here with
+school sector:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m_cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="va">cses</span> <span class="op">*</span> <span class="va">Sector</span> <span class="op">+</span> <span class="va">meanses</span> <span class="op">+</span> <span class="op">(</span><span class="va">cses</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>,</span>
+<span>             data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">m_cl</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: MathAch</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span>    B       SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼───────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                    <span style="color: #9E9E9E;">│</span>    12.12  0.20  &lt;.001 </span></span>
+<span><span class="co">#&gt;  cses                           <span style="color: #9E9E9E;">│</span>     2.79  0.16  &lt;.001 </span></span>
+<span><span class="co">#&gt;  Sector:                        <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;    Public (ref.)                <span style="color: #9E9E9E;">│</span>      –     –     –    </span></span>
+<span><span class="co">#&gt;    Catholic                     <span style="color: #9E9E9E;">│</span>     1.25  0.31  &lt;.001 </span></span>
+<span><span class="co">#&gt;  meanses                        <span style="color: #9E9E9E;">│</span>     5.25  0.37  &lt;.001 </span></span>
+<span><span class="co">#&gt;  cses:SectorCatholic            <span style="color: #9E9E9E;">│</span>    -1.35  0.23  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:                <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;    σ School (Intercept)         <span style="color: #9E9E9E;">│</span>     1.54   –     –    </span></span>
+<span><span class="co">#&gt;    σ School cses                <span style="color: #9E9E9E;">│</span>     0.52   –     –    </span></span>
+<span><span class="co">#&gt;    ρ School ((Intercept), cses) <span style="color: #9E9E9E;">│</span>     0.24   –     –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)                 <span style="color: #9E9E9E;">│</span>     6.06   –     –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                              <span style="color: #9E9E9E;">│</span>  7185                 </span></span>
+<span><span class="co">#&gt;  N (School)                     <span style="color: #9E9E9E;">│</span>   160                 </span></span>
+<span><span class="co">#&gt;  R² (marginal)                  <span style="color: #9E9E9E;">│</span>     0.18              </span></span>
+<span><span class="co">#&gt;  R² (conditional)               <span style="color: #9E9E9E;">│</span>     0.23              </span></span>
+<span><span class="co">#&gt;  AIC                            <span style="color: #9E9E9E;">│</span> 46532.5               </span></span>
+<span><span class="co">#&gt;  BIC                            <span style="color: #9E9E9E;">│</span> 46594.5               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 217.17, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
+<p>In public schools the within-school SES slope is 2.79; in Catholic
+schools it is 2.79 − 1.35 = 1.44 — half as steep, while their intercept
+sits 1.25 points higher (both conditional on school composition, since
+<code>meanses</code> stays in the model). This is the classic finding of
+Raudenbush &amp; Bryk’s own analysis of these data: Catholic schooling
+weakens the link between a pupil’s background and achievement. Note
+where the answer lives: the interaction is a <em>fixed</em> effect,
+carried by its own row and Satterthwaite p; the slope variance it
+accounts for shows in the σ <code>cses</code> row shrinking from 0.83 to
+0.52. (One comparison the table deliberately does not make: the
+REML-based AIC is comparable between steps 3 and 4 — same fixed part,
+46,578.6 → 46,571.7 — but not across step 5’s fixed-effects change;
+growing the fixed part is <code>nested = TRUE</code>’s job, with its ML
+refit.)</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="three-levels-and-crossed-designs">Three levels, and crossed designs<a class="anchor" aria-label="anchor" href="#three-levels-and-crossed-designs"></a>
+</h2>
+<p>Nothing above is limited to two levels. A third level enters through
+the grouping formula — <code>(1 | batch/cask)</code> reads “casks nested
+in batches” — and the table gains one variance row and one group count
+per level:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">strength</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">batch</span><span class="op">/</span><span class="va">cask</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">Pastes</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">p3</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: strength</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                   <span style="color: #9E9E9E;">│</span>                     B                       SE  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────┼─────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                <span style="color: #9E9E9E;">│</span>                                     60.05  0.68 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:            <span style="color: #9E9E9E;">│</span>                                                 </span></span>
+<span><span class="co">#&gt;    σ cask:batch (Intercept) <span style="color: #9E9E9E;">│</span>                                      2.90  0.48 </span></span>
+<span><span class="co">#&gt;    σ batch (Intercept)      <span style="color: #9E9E9E;">│</span>                                      1.29  0.91 </span></span>
+<span><span class="co">#&gt;    σ (Residual)             <span style="color: #9E9E9E;">│</span>                                      0.82  0.11 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                          <span style="color: #9E9E9E;">│</span>                                     60          </span></span>
+<span><span class="co">#&gt;  N (groups)                 <span style="color: #9E9E9E;">│</span>               30 (cask:batch), 10 (batch)       </span></span>
+<span><span class="co">#&gt;  R² (marginal)              <span style="color: #9E9E9E;">│</span>                                      0.00       </span></span>
+<span><span class="co">#&gt;  R² (conditional)           <span style="color: #9E9E9E;">│</span>                                      0.94       </span></span>
+<span><span class="co">#&gt;  AIC                        <span style="color: #9E9E9E;">│</span>                                    255.0        </span></span>
+<span><span class="co">#&gt;  BIC                        <span style="color: #9E9E9E;">│</span>                                    263.4        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(2) = 62.27, p &lt; .001.</span></span></span></code></pre></div>
+<p>Both levels of nesting get their σ row, <code>N (groups)</code>
+counts each level, and the footer’s chi-bar-squared test covers the
+random part jointly (2 df here); at n = 60, far below the size cap, the
+SE and CI of the variance components are back. Random slopes can sit at
+any level — <code>(x | school) + (1 | class)</code> renders each block
+under its grouping factor — and <strong>crossed</strong> (non-nested)
+structures such as <code>(1 | plate) + (1 | sample)</code> flow through
+the same machinery: one block per factor, no extra syntax.</p>
+</div>
+<div class="section level2">
 <h2 id="when-the-fit-is-singular">When the fit is singular<a class="anchor" aria-label="anchor" href="#when-the-fit-is-singular"></a>
 </h2>
 <p>The boundary is not only a testing problem — estimates land
@@ -244,7 +577,7 @@ structure earns its place.</p>
 (<code>lme4</code> calls this a <strong>singular fit</strong>), its Wald
 SE and CI are meaningless, so <code><a href="../reference/table_regression.html">table_regression()</a></code> omits them
 and says why in the footer:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># (the accompanying console warning is suppressed in this rendering)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">120</span><span class="op">)</span>, g <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, each <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -293,7 +626,7 @@ likelihood-ratio test. The statistic is the one
 <code><a href="https://rdrr.io/pkg/lmerTest/man/ranova.html" class="external-link">lmerTest::ranova()</a></code> computes (a REML deviance difference);
 <code>ranova</code> refers it to a plain χ², which is conservative at
 the boundary, so spicy applies the chi-bar-squared mixture instead:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, re_test <span class="op">=</span> <span class="st">"lrt"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -331,9 +664,9 @@ likelihood-ratio test of Crainiceanu &amp; Ruppert (2004) instead, with
 a simulated null distribution (via <code><a href="https://rdrr.io/pkg/RLRsim/man/exactRLRT.html" class="external-link">RLRsim::exactRLRT()</a></code>) —
 preferable in small samples where the chi-bar-squared approximation is
 at its weakest:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_ri</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_ri</span>, re_test <span class="op">=</span> <span class="st">"rlrt"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -372,7 +705,7 @@ themselves boundary-fragile — dropping them is a defensible editorial
 choice); <code>show_re = FALSE</code> removes the block and all
 random-effects footer lines, leaving a fixed-effects-only table (the
 <code>N (groups)</code> and R² fit-stat rows remain):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, re_scale <span class="op">=</span> <span class="st">"variance"</span>, re_columns <span class="op">=</span> <span class="st">"est"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -405,10 +738,13 @@ and data are decoupled.</p>
 <div class="section level2">
 <h2 id="random-intercept-or-random-slope-models-side-by-side">Random intercept or random slope? Models side by side<a class="anchor" aria-label="anchor" href="#random-intercept-or-random-slope-models-side-by-side"></a>
 </h2>
-<p>Model comparison is where the row layout pays off: the variance
+<p>The HSB sequence above made this decision on real school data with
+one <code>re_test</code> call; this section dissects its full anatomy on
+<code>sleepstudy</code>, where every quantity is small enough to check
+by hand. Model comparison is where the row layout pays off: the variance
 components align across columns like any coefficient, and each model
 gets its own footer line.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Intercept only"</span> <span class="op">=</span> <span class="va">fit_ri</span>, <span class="st">"+ random slope"</span> <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span></span>
@@ -507,7 +843,7 @@ for <code>glm</code> — odds ratios under logit, rate ratios under log,
 and a hard error on links whose exponential has no meaning (probit). The
 example is <code><a href="https://rdrr.io/pkg/lme4/man/cbpp.html" class="external-link">lme4::cbpp</a></code>, herd-level incidence of a cattle
 disease across four periods:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">glmer</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">incidence</span>, <span class="va">size</span> <span class="op">-</span> <span class="va">incidence</span><span class="op">)</span> <span class="op">~</span> <span class="va">period</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">herd</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">cbpp</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -560,7 +896,7 @@ path, and bring two extra submodels. A zero-inflation
 component renders as its own labelled block of rows, with a footer line
 stating what the component models and on which scale — here with the
 <code>Salamanders</code> count data:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Salamanders"</span>, package <span class="op">=</span> <span class="st">"glmmTMB"</span><span class="op">)</span></span>
 <span><span class="va">zfit</span> <span class="op">&lt;-</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB</a></span><span class="op">(</span></span>
 <span>  <span class="va">count</span> <span class="op">~</span> <span class="va">mined</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">site</span><span class="op">)</span>,</span>
@@ -613,7 +949,7 @@ covered in depth in the counts documentation
 <p>The classical engine renders through the same layout; its
 fixed-effect inference is the <strong>containment-df t-test</strong>
 native to <code>nlme</code>, and the footer says so:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lfit</span> <span class="op">&lt;-</span> <span class="fu">nlme</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span>, random <span class="op">=</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span>,</span>
 <span>                  data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">lfit</span><span class="op">)</span></span>
@@ -651,7 +987,7 @@ freedom computed from the robust covariance — the footer attributes them
 accordingly. Reach for <code>CR*</code> when you suspect the
 random-effects structure does not fully capture the within-group
 dependence:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_ri</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -691,7 +1027,7 @@ refit on z-scored data, the gold standard under correlated predictors
 (Cohen et al. 2003). The β rows inherit the same Satterthwaite reference
 distribution as their unstandardized counterparts, so B and β carry one
 consistent p per term:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"beta"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -734,7 +1070,7 @@ renders as a raw data frame, a long broom-style tibble, or — with the
 corresponding Suggests package — a rich <code>gt</code>,
 <code>flextable</code>, <code>tinytable</code>, Excel, or Word table;
 the random-effects block carries through to every format.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span>, <span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                          Variable       B   SE           95% CI     p</span></span>
 <span><span class="co">#&gt; 1                     (Intercept)  251.41 6.82 [237.01, 265.80] &lt;.001</span></span>
@@ -745,7 +1081,7 @@ the random-effects block carries through to every format.</p>
 <span><span class="co">#&gt; 6   ρ Subject ((Intercept), Days)    0.07 0.33 [ -0.57,   0.70]  –   </span></span>
 <span><span class="co">#&gt; 7                    σ (Residual)   25.59 1.51 [ 22.44,  28.39]  –   </span></span>
 <span><span class="co">#&gt; 8                               n  180</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="rbrvaygbmb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#rbrvaygbmb table { font-family: system-ui, ‘Segoe UI’,
@@ -1198,7 +1534,7 @@ BIC
 variance-component rows are marked <code>estimate_type = "vc"</code> and
 their terms are prefixed <code>re::</code> (correlations carry a
 <code>::cor</code> suffix), so they filter cleanly:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span><span class="va">td</span><span class="op">$</span><span class="va">estimate_type</span> <span class="op">==</span> <span class="st">"vc"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"std.error"</span>, <span class="st">"conf.low"</span>, <span class="st">"conf.high"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 5</span></span></span>
@@ -1219,24 +1555,37 @@ maximal. <em>Journal of Memory and Language</em>, 68(3), 255–278.</li>
 <li>Bates, D., Mächler, M., Bolker, B., &amp; Walker, S. (2015). Fitting
 linear mixed-effects models using lme4. <em>Journal of Statistical
 Software</em>, 67(1).</li>
+<li>Bressoux, P. (2010). <em>Modélisation statistique appliquée aux
+sciences sociales</em> (2nd ed.). De Boeck.</li>
 <li>Cohen, J., Cohen, P., West, S. G., &amp; Aiken, L. S. (2003).
 <em>Applied Multiple Regression/Correlation Analysis for the Behavioral
 Sciences</em> (3rd ed.). Lawrence Erlbaum.</li>
 <li>Crainiceanu, C. M., &amp; Ruppert, D. (2004). Likelihood ratio tests
 in linear mixed models with one variance component. <em>Journal of the
 Royal Statistical Society, Series B</em>, 66(1), 165–185.</li>
+<li>Enders, C. K., &amp; Tofighi, D. (2007). Centering predictor
+variables in cross-sectional multilevel models: A new look at an old
+issue. <em>Psychological Methods</em>, 12(2), 121–138.</li>
 <li>Gelman, A., &amp; Hill, J. (2007). <em>Data Analysis Using
 Regression and Multilevel/Hierarchical Models</em>. Cambridge University
 Press.</li>
+<li>Hox, J. J., Moerbeek, M., &amp; van de Schoot, R. (2018).
+<em>Multilevel Analysis: Techniques and Applications</em> (3rd ed.).
+Routledge.</li>
 <li>Kuznetsova, A., Brockhoff, P. B., &amp; Christensen, R. H. B.
 (2017). lmerTest package: Tests in linear mixed effects models.
 <em>Journal of Statistical Software</em>, 82(13).</li>
+<li>Maas, C. J. M., &amp; Hox, J. J. (2005). Sufficient sample sizes for
+multilevel modeling. <em>Methodology</em>, 1(3), 86–92.</li>
 <li>Matuschek, H., Kliegl, R., Vasishth, S., Baayen, H., &amp; Bates, D.
 (2017). Balancing Type I error and power in linear mixed models.
 <em>Journal of Memory and Language</em>, 94, 305–315.</li>
 <li>Nakagawa, S., &amp; Schielzeth, H. (2013). A general and simple
 method for obtaining R² from generalized linear mixed-effects models.
 <em>Methods in Ecology and Evolution</em>, 4(2), 133–142.</li>
+<li>Raudenbush, S. W., &amp; Bryk, A. S. (2002). <em>Hierarchical Linear
+Models: Applications and Data Analysis Methods</em> (2nd ed.).
+Sage.</li>
 <li>Schielzeth, H., &amp; Forstmeier, W. (2009). Conclusions beyond
 support: overconfident estimates in mixed models. <em>Behavioral
 Ecology</em>, 20(2), 416–420.</li>

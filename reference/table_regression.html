@@ -520,7 +520,15 @@ the variance boundary (Self &amp; Liang 1987 chi-bar-squared);
 profile-likelihood intervals are available directly on the
 fitted model (<code>confint(fit, method = "profile")</code> for
 <code>lmer</code>) when robustness is critical. See the
-<em>Mixed-effects models</em> section of <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p></dd>
+<em>Mixed-effects models</em> section of <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p>
+<p>For <code>lmer</code> / <code>glmer</code> fits these SEs come from <code>merDeriv</code>, whose
+cost grows superlinearly with the number of observations (about a
+minute at n ≈ 2,700). Above <code>options("spicy.re_se_max_n")</code>
+(default <code>1000</code>) they are skipped: the rows keep their estimates,
+the SE / CI cells render as em-dashes, a table note states the
+omission, and a <code>spicy_caveat</code> warning points here. Raise the cap
+(e.g. <code>options(spicy.re_se_max_n = Inf)</code>) to force the
+computation, or test the random terms with <code>re_test = "lrt"</code>.</p></dd>
 
 
 <dt id="arg-re-test">re_test<a class="anchor" aria-label="anchor" href="#arg-re-test"></a></dt>

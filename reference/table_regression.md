@@ -460,6 +460,15 @@ table_regression(
   critical. See the *Mixed-effects models* section of
   [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md).
 
+  For `lmer` / `glmer` fits these SEs come from `merDeriv`, whose cost
+  grows superlinearly with the number of observations (about a minute at
+  n ≈ 2,700). Above `options("spicy.re_se_max_n")` (default `1000`) they
+  are skipped: the rows keep their estimates, the SE / CI cells render
+  as em-dashes, a table note states the omission, and a `spicy_caveat`
+  warning points here. Raise the cap (e.g.
+  `options(spicy.re_se_max_n = Inf)`) to force the computation, or test
+  the random terms with `re_test = "lrt"`.
+
 - re_test:
 
   One of `"none"` (default), `"lrt"`, or `"rlrt"`. Opt-in **per-term

@@ -97,11 +97,19 @@ for the walk-throughs.
   zero-inflation vs hurdle reading (and how to choose), per-block
   exponentiation, combined AME, cluster-robust variance across both
   components, and zero-inflated mixed models.
-- New vignette *Mixed-effects regression tables*: the random-effects
-  block row by row, why variance components carry no p-value, the
-  boundary-corrected tests (`re_test`), model comparison, `glmer` /
-  `glmmTMB` / `nlme`, cluster-robust variance, and standardized
-  coefficients.
+- New vignette *Mixed-effects regression tables*: the textbook
+  model-building sequence on the High School & Beyond data (OLS to empty
+  model / ICC, contextual within-between split, random slope,
+  cross-level interaction), the random-effects block row by row, why
+  variance components carry no p-value, the boundary-corrected tests
+  (`re_test`), model comparison, three-level and crossed designs,
+  `glmer` / `glmmTMB` / `nlme`, cluster-robust variance, and
+  standardized coefficients.
+- New vignette *Multinomial regression tables*: baseline-category logits
+  per outcome, odds ratios and the Stata RRR terminology note, changing
+  the reference category, the coefficient-sign vs probability-effect
+  trap with per-category AME, the ordinal-predictor scores-vs-dummies
+  LRT workflow, IIA in brief, and the `mlogit` discrete-choice engine.
 - `vcov` computes heteroskedasticity- and cluster-robust SEs for the
   supported classes, each via its field-standard backend
   (`clubSandwich`, Lin-Wei dfbeta,
@@ -207,6 +215,19 @@ for the walk-throughs.
 
 ### Bug fixes
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  on a large `lmer` / `glmer` fit no longer spends minutes (or worse)
+  computing the random-effect variance-component SEs: `merDeriv`’s cost
+  grows superlinearly with n (about a minute at n ≈ 2,700). Above
+  `options("spicy.re_se_max_n")` (default 1,000) the SE / CI cells of
+  the `Random effects` rows are now omitted (em-dash), a table note
+  states the omission, and a `spicy_caveat` warning gives the override
+  (`options(spicy.re_se_max_n = Inf)`) and the `re_test` alternative.
+  Estimates, N (groups), ICC, R², and the LR-test footer are unaffected.
+- Multi-factor group counts no longer pluralize grouping-variable names
+  (“30 cask:batchs, 10 batchs”): the `N (groups)` cell now reads “30
+  (cask:batch), 10 (batch)”. The dominant single-factor case
+  (`N (Subject) | 18`) is unchanged.
 - `nested = TRUE` now works for
   [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) fits:
   the comparison rows report the likelihood-ratio chi-square (matching

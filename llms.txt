@@ -863,10 +863,12 @@ Documented here for direct invocation with custom arguments (e.g.,
   Publication-ready tables for mixed-effects (multilevel) regression in
   R with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  random effects as table rows with SE and CI, the boundary-correct
-  chi-bar-squared test, opt-in per-term LRT / RLRT, ICC and Nakagawa
-  R-squared, Satterthwaite inference, odds ratios for `glmer`, and the
-  `lme4`, `glmmTMB`, and `nlme` engines.
+  the textbook model-building sequence on the High School & Beyond data
+  (ICC, contextual effects, random slopes, cross-level interactions),
+  random effects as table rows, the boundary-corrected chi-bar-squared
+  test, opt-in per-term LRT / RLRT, Nakagawa R-squared, Satterthwaite
+  inference, three-level and crossed designs, and the `lme4`, `glmmTMB`,
+  and `nlme` engines.
 
 - [Count and two-part regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md):
