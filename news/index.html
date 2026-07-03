@@ -36,6 +36,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
@@ -158,6 +159,11 @@
 <li>
 <code>table_regression(list(...))</code>: no stray zero-width spaces in multi-model <code>tinytable</code> headers.</li>
 <li>The singular-fit table note now states only the fact (“variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted”); the actionable advice (simplify the random structure, test with <code>re_test</code>) moved to a consolidated <code>spicy_caveat</code> warning at build time – advice addresses the analyst, not the reader of a published table.</li>
+<li>New vignette <em>Survival regression tables</em>: Cox hazard ratios with events and concordance, the proportional-hazards check, cluster-robust Lin-Wei variance, hierarchical Cox comparisons, AFT time ratios and the Weibull HR-TR duality, <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph</a></code>, and <code>flexsurv</code>.</li>
+<li>Multi-model and hierarchical titles keep proper nouns capitalized (“Hierarchical Cox proportional hazards regression”, “Model 1: Poisson regression” – both previously dropped the capital of the surname).</li>
+<li>
+<code>flexsurvreg</code> factor predictors now group under their parent variable with a synthetic reference row, like every other engine (the fit has no <code><a href="https://rdrr.io/r/stats/terms.html" class="external-link">terms()</a></code> method; the metadata now comes from its model frame – they previously rendered as bare contrast names such as <code>sexFemale</code>).</li>
+<li>Hierarchical (<code>nested = TRUE</code>) Cox comparisons now default to the LRT change rows (chi-squared + p) instead of lm’s Delta-R-squared and F-change rows, which have no definition for a partial likelihood and rendered as all-dash rows.</li>
 <li>The <code>p_adjust</code> footer’s family size m no longer counts component-block intercepts (<code>zero_(Intercept)</code>, …) that the adjustment itself excludes – the reported m now matches the adjustment performed.</li>
 <li>
 <code><a href="../reference/as_structured.html">as_structured()</a></code> and the rich engines (<code>gt</code>, <code>tinytable</code>, <code>flextable</code>, Excel, clipboard) now match the console body exactly: multi-model reference rows stay blank in models that lack the factor (was em-dash everywhere), and the multi-outcome <code>Outcome</code> row is carried through. The structured schema gains <code>reference_models_by_row</code> and <code>outcome_labels_by_col</code> (both documented in <code><a href="../reference/as_structured.html">?as_structured</a></code>).</li>

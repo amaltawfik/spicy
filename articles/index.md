@@ -90,6 +90,16 @@
   variance across both components, and zero-inflated mixed models with
   `glmmTMB`.
 
+- [Survival regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md):
+
+  Publication-ready tables for survival regression in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  Cox hazard ratios with events and concordance, cluster-robust
+  (Lin-Wei) variance for multi-centre data, hierarchical Cox comparisons
+  by partial-likelihood ratio test, accelerated failure time models with
+  time ratios, and the `survival`, `rms`, and `flexsurv` engines.
+
 - [Ordinal regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md):
 

@@ -64,6 +64,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
@@ -326,9 +327,9 @@ removable on its own. The footer names the test.</p>
 the random-intercept-only baseline, which returns in the comparison
 below — <code>re_test = "rlrt"</code> uses the exact restricted
 likelihood-ratio test of Crainiceanu &amp; Ruppert (2004) instead, with
-a simulated null distribution (via <code>RLRsim</code>) — preferable in
-small samples where the chi-bar-squared approximation is at its
-weakest:</p>
+a simulated null distribution (via <code><a href="https://rdrr.io/pkg/RLRsim/man/exactRLRT.html" class="external-link">RLRsim::exactRLRT()</a></code>) —
+preferable in small samples where the chi-bar-squared approximation is
+at its weakest:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_ri</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -469,12 +470,21 @@ evidence that the slope is needed — it measures how much the grouping
 structure explains, never whether a component earns its place. Selection
 belongs to the boundary-corrected test and the information criteria; the
 R² pair then describes the model you selected.</p>
-<p>Two further details repay attention. The <strong>ICC</strong> row
-(0.59) appears only for the intercept-only model: with a random slope,
-the correlation between two observations from the same subject depends
-on <em>when</em> they were taken, so a single ICC no longer exists —
-none is printed. And the fixed <code>Days</code> SE
-<strong>doubles</strong> (0.80 → 1.55): a model without the random slope
+<p><strong>The ICC row is an interpretation, not a test.</strong> For
+the intercept-only model it comes straight from the two σ rows above it:
+ICC = σ²(Subject) / (σ²(Subject) + σ²(Residual)) = 37.12² / (37.12² +
+30.99²) ≈ 0.59 — squares, because the block displays standard deviations
+(<code>re_scale = "variance"</code> shows the variances directly). Read
+it two equivalent ways: 59% of the variance remaining after the fixed
+effects lies <em>between</em> subjects rather than within them — the
+variance partition coefficient of the multilevel textbooks (Snijders
+&amp; Bosker 2012, §3.3) — and, equivalently, two observations from the
+same subject are expected to correlate at 0.59. It appears only for the
+intercept-only model: with a random slope, the correlation between two
+observations from the same subject depends on <em>when</em> they were
+taken, so a single ICC no longer exists — none is printed.</p>
+<p>One further detail repays attention: the fixed <code>Days</code> SE
+<strong>doubles</strong> (0.80 → 1.55). A model without the random slope
 overstates the precision of the average slope by ignoring
 between-subject slope variation (Schielzeth &amp; Forstmeier 2009) — the
 inferential stake of the decision, visible in the table itself.</p>
@@ -536,7 +546,8 @@ chi-bar-squared test (14.01 on 1 df, p &lt; .001) confirms the herd
 effect, and the Nakagawa R² pair carries over unchanged. No ICC row
 appears — for a trial-weighted <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> binomial response
 the single-trial latent-scale ICC is not defined, so none is printed; a
-Bernoulli 0/1 <code>glmer</code> shows one.</p>
+Bernoulli 0/1 <code>glmer</code> shows one, computed on the latent logit
+scale (the residual variance is fixed at π²/3 there).</p>
 </div>
 <div class="section level2">
 <h2 id="glmmtmb-beyond-lme4">

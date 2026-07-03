@@ -548,6 +548,8 @@ Each workflow has a dedicated vignette:
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
 - [Count and two-part regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.html)
+- [Survival regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-survival.html)
 - [Ordinal regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 - [Summary tables for APA-style

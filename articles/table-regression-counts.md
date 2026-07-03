@@ -293,7 +293,7 @@ table_regression(
 #>  R² (Nagelkerke) │    0.19            0.11                        
 #>  AIC             │ 3312.3          3134.1          3122.5         
 #> 
-#> Note. Model 1: poisson regression; Model 2: negative-binomial regression; Model 3: negative-binomial zero-inflated regression.
+#> Note. Model 1: Poisson regression; Model 2: negative-binomial regression; Model 3: negative-binomial zero-inflated regression.
 #> Std. errors:
 #>   Model 1: classical (Fisher information)
 #>   Model 2: Model-based (asymptotic)
