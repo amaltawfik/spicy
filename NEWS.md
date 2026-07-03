@@ -54,6 +54,11 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## New features
 
+* New vignette *Count and two-part regression tables*: the
+  Poisson-to-negative-binomial-to-two-part escalation on real data, the
+  zero-inflation vs hurdle reading (and how to choose), per-block
+  exponentiation, combined AME, cluster-robust variance across both
+  components, and zero-inflated mixed models.
 * New vignette *Mixed-effects regression tables*: the random-effects
   block row by row, why variance components carry no p-value, the
   boundary-corrected tests (`re_test`), model comparison, `glmer` /
@@ -200,6 +205,15 @@ See `vignette("table-regression")` for the walk-throughs.
   `NA` for log-link binomial models (undefined; was an unjustified value).
 * `table_regression(list(...))`: no stray zero-width spaces in multi-model
   `tinytable` headers.
+* The singular-fit table note now states only the fact ("variance
+  component(s) estimated at the boundary (0); their Wald SE and CI are
+  omitted"); the actionable advice (simplify the random structure, test
+  with `re_test`) moved to a consolidated `spicy_caveat` warning at
+  build time -- advice addresses the analyst, not the reader of a
+  published table.
+* The `p_adjust` footer's family size m no longer counts component-block
+  intercepts (`zero_(Intercept)`, ...) that the adjustment itself
+  excludes -- the reported m now matches the adjustment performed.
 * `as_structured()` and the rich engines (`gt`, `tinytable`, `flextable`,
   Excel, clipboard) now match the console body exactly: multi-model
   reference rows stay blank in models that lack the factor (was em-dash

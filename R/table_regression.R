@@ -1726,6 +1726,37 @@ table_regression <- function(
     }
   }
 
+  # Singular mixed fits: the table note states the FACT (boundary
+  # estimate, SE/CI omitted); the actionable advice belongs here, to the
+  # analyst, once per table -- not in a published table note.
+  singular_mixed <- vapply(frames, function(fr) {
+    isTRUE(fr$info$extras$has_singular) &&
+      (fr$info$class %||% "") %in%
+        c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
+  }, logical(1))
+  if (any(singular_mixed)) {
+    labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
+      names(models)
+    } else {
+      paste("Model", seq_along(models))
+    }
+    spicy_warn(
+      c(
+        sprintf(
+          "Singular fit (%s): a random-effect variance component is estimated at exactly zero.",
+          paste(labels[singular_mixed], collapse = ", ")
+        ),
+        "i" = paste0(
+          "Consider simplifying the random structure (drop the ",
+          "offending term), or test whether it belongs with ",
+          "`re_test = \"lrt\"`. See `help(\"isSingular\", package = ",
+          "\"lme4\")`."
+        )
+      ),
+      class = "spicy_caveat"
+    )
+  }
+
   # AME capability guard (finding M2): a class with no
   # average-marginal-effects backend (supports$ame = FALSE: mlogit, coxph,
   # flexsurv, selection, nls, Bayesian) must REFUSE the request rather

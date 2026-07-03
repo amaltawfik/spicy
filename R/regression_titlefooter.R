@@ -1160,12 +1160,13 @@ build_singular_footer_block_from_frames <- function(frames) {
 #     reader why.
 .singular_msg_for_frame <- function(frame, is_mixed) {
   if (isTRUE(is_mixed)) {
+    # Table notes state facts about what is shown; the actionable advice
+    # ("consider simplifying the random structure") is for the ANALYST
+    # at build time, not the reader of a published table -- it moved to
+    # the consolidated spicy_caveat warning in table_regression().
     return(paste0(
-      "Singular fit: random-effect variance component(s) at the ",
-      "boundary 0. Wald SE and CI on the variance components are ",
-      "unreliable at the boundary and have been omitted; consider ",
-      "simplifying the random structure or refitting on the affected ",
-      "grouping factor."
+      "Singular fit: random-effect variance component(s) estimated at ",
+      "the boundary (0); their Wald SE and CI are omitted."
     ))
   }
   "Rank-deficient model: dropped coefficient(s) shown as \u2013."
@@ -1253,8 +1254,15 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
   sizes <- vapply(frames, function(f) {
     cf <- f$coefs
     if (is.null(cf) || nrow(cf) == 0L) return(0L)
+    # Mirror apply_p_adjust_to_frame_coefs() exactly: component-block
+    # intercepts ("zero_(Intercept)", "zi.(Intercept)") are excluded
+    # from the family by their display LABEL -- counting them here made
+    # the footer's m overstate the adjustment actually performed.
+    # (label may be absent on synthetic frames; treat as non-intercept.)
+    lbl <- cf$label %||% rep(NA_character_, nrow(cf))
     sum(cf$estimate_type == "B" &
           cf$term != "(Intercept)" &
+          !(lbl %in% "(Intercept)") &
           !cf$is_ref &
           !is.na(cf$p_value))
   }, integer(1))

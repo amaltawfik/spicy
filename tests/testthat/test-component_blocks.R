@@ -245,3 +245,14 @@ test_that("glmmTMB nbinom2 exp header reads IRR", {
                collapse = "\n")
   expect_match(out, "IRR", fixed = TRUE)
 })
+
+test_that("p_adjust footer m matches the family actually adjusted (component intercepts excluded)", {
+  skip_if_not_installed("pscl")
+  data("bioChemists", package = "pscl")
+  fit <- pscl::zeroinfl(art ~ fem + mar + kid5 + ment | ment,
+                        data = bioChemists)
+  out <- table_regression(fit, p_adjust = "holm")
+  note <- paste(attr(out, "note"), collapse = "\n")
+  # Family: 4 count slopes + 1 zero slope; both intercepts excluded.
+  expect_match(note, "m = 5 coefficient(s) per model", fixed = TRUE)
+})

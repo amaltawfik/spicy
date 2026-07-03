@@ -1,0 +1,304 @@
+---
+title: "Count and two-part regression tables"
+description: >
+  Publication-ready tables for count regression in R with
+  `table_regression()`: Poisson and negative-binomial rate ratios,
+  zero-inflated and hurdle models with their zero component as a
+  labelled block, per-block exponentiation, combined average marginal
+  effects, cluster-robust variance across both components, and
+  zero-inflated mixed models with `glmmTMB`.
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Count and two-part regression tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+have_counts <- requireNamespace("pscl", quietly = TRUE) &&
+  requireNamespace("MASS", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = have_counts
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+have_glmmTMB <- have_counts && requireNamespace("glmmTMB", quietly = TRUE)
+have_sandwich <- have_counts && requireNamespace("sandwich", quietly = TRUE)
+have_broom   <- have_counts && requireNamespace("broom", quietly = TRUE)
+have_me      <- have_counts && requireNamespace("marginaleffects", quietly = TRUE)
+source("_pkgdown-helpers.R")
+```
+
+```{r setup, message = FALSE}
+library(spicy)
+library(pscl)     # zeroinfl(), hurdle()
+```
+
+This vignette covers **count regression** — models for a non-negative
+integer outcome such as number of publications, doctor visits, or
+species counts. The companion vignette [*Publication-ready regression
+tables*](table-regression.html) covers the shared mechanics (`vcov`,
+`ci_level`, output formats, multi-model layouts, broom integration);
+here we focus on what is specific to counts: rate ratios,
+overdispersion, and above all the **two-part models** whose zero
+component `table_regression()` renders as its own labelled block.
+
+`table_regression()` supports the full count-model escalation:
+
+* **`stats::glm(family = poisson())`** — the Poisson baseline;
+* **`MASS::glm.nb()`** — negative binomial, for overdispersion;
+* **`pscl::zeroinfl()`** and **`pscl::hurdle()`** — the two-part
+  models (Zeileis, Kleiber & Jackman 2008);
+* **`glmmTMB::glmmTMB()`** — all of the above with random effects.
+
+The running example is `pscl::bioChemists` (Long 1990): the number of
+articles published by 915 biochemistry PhD students in the last three
+years of their doctorate, with gender, marital status, children under
+six, and the mentor's article count as predictors. Thirty percent of
+the students published nothing:
+
+```{r data}
+data("bioChemists", package = "pscl")
+mean(bioChemists$art == 0)
+```
+
+## Count models in one paragraph
+
+A Poisson regression models the *rate* of events through a log link,
+so `exponentiate = TRUE` turns each coefficient into an **incidence
+rate ratio** (IRR) — a multiplicative effect on the expected count.
+Real count data usually violate the Poisson assumption in one or both
+of two ways: the variance exceeds the mean (**overdispersion** — the
+negative binomial's job), and there are more zeros than the count
+process predicts (**excess zeros** — the job of the zero-inflated and
+hurdle models, which add a second, binary submodel for the zeros).
+Each extension changes what the table must show, and the sections
+below follow that escalation.
+
+## Poisson baseline
+
+```{r poisson}
+fit_pois <- glm(art ~ fem + mar + kid5 + ment, data = bioChemists,
+                family = poisson())
+table_regression(fit_pois, exponentiate = TRUE)
+```
+
+Each IRR multiplies the expected article count: women publish about
+20% less than men (IRR 0.80), and each additional mentor publication
+raises a student's rate by 3% (IRR 1.03). Inference is Wald-z on the
+link scale; the footer records the SE and CI conventions.
+
+One remark for rate data: the observation window here is a fixed three
+years for everyone, so no exposure adjustment is needed. With unequal
+exposure — person-years, plot area, time at risk — add
+`offset(log(exposure))` to the formula as usual; the offset is
+absorbed silently (no spurious coefficient row) and the IRRs read as
+rate ratios per unit of exposure.
+
+## Overdispersion: the negative binomial
+
+The articles' variance is far above their mean, and a Poisson model
+reacts by **understating the standard errors**. `MASS::glm.nb()` adds
+a dispersion parameter:
+
+```{r negbin}
+fit_nb <- MASS::glm.nb(art ~ fem + mar + kid5 + ment, data = bioChemists)
+table_regression(fit_nb, exponentiate = TRUE)
+```
+
+The IRRs barely move, but the inference does: marriage drops from
+p = .013 under Poisson to p = .072 here — the Poisson significance was
+an artifact of ignored overdispersion. AIC falls from 3312 to 3134,
+and that comparison returns below.
+
+## Excess zeros: zero-inflation and hurdle
+
+Two-part models tell two different stories about the zeros, and the
+difference matters for interpretation:
+
+* A **zero-inflated** model (`zeroinfl()`; Lambert 1992) says some
+  zeros are *structural*: a latent group that would never publish
+  regardless of the count process. Its zero component models the
+  probability of being such a **structural zero**.
+* A **hurdle** model (`hurdle()`; Mullahy 1986) says all zeros come
+  from one hurdle: first you publish at all or you do not, then a
+  truncated count process decides how much. Its zero component models
+  the probability of a **nonzero count** — the *opposite direction*.
+
+`table_regression()` renders the count coefficients first and the zero
+component as a labelled block, with a footer line stating exactly what
+the block models. Under `exponentiate = TRUE` the exponentiation is
+**per block**: count coefficients become IRR, and the logit zero
+component becomes odds ratios:
+
+```{r zeroinfl}
+fit_zip <- zeroinfl(art ~ fem + mar + kid5 + ment | ment,
+                    data = bioChemists)
+table_regression(fit_zip, exponentiate = TRUE)
+```
+
+```{r hurdle}
+fit_hur <- hurdle(art ~ fem + mar + kid5 + ment | ment,
+                  data = bioChemists)
+table_regression(fit_hur, exponentiate = TRUE)
+```
+
+Compare the `ment` row in the two zero blocks — the same predictor,
+the same substantive finding, and *opposite-looking* odds ratios:
+
+* Zero-inflation block: OR 0.88 — each mentor publication **lowers the
+  odds of being a structural zero**.
+* Zero hurdle block: OR 1.08 — each mentor publication **raises the
+  odds of publishing at all**.
+
+Both say productive mentors get students over the zero. Reading either
+number without its block label invites a sign error; the block labels
+and their footer lines exist to prevent it. As for choosing between
+the two: fit rarely decides — here the AICs are nearly tied (3225.5
+vs 3233.8) — so let the substantive story choose. Zero-inflation fits
+when some units plausibly *can never* experience the event (a latent
+never-publisher class); a hurdle fits when everyone faces the same
+all-or-nothing first stage. Zero-component
+coefficients are substantive hypotheses: they take significance stars
+and join the `p_adjust` family like any other coefficient. To display
+only the count part, set `show_components = FALSE` (the model is still
+estimated in full).
+
+## Which count model? Side by side
+
+The escalation is a model-comparison question, and the table lays it
+out. Per Long (1997) and Cameron & Trivedi (2013), much of what looks
+like zero-inflation *is* overdispersion — the AIC row makes the point.
+(The once-standard Vuong test is not used here: it is no longer
+recommended for testing zero-inflation — Wilson 2015 — so information
+criteria and substantive reasoning carry the comparison.)
+
+```{r side-by-side}
+fit_zinb <- zeroinfl(art ~ fem + mar + kid5 + ment | ment,
+                     data = bioChemists, dist = "negbin")
+table_regression(
+  list(Poisson = fit_pois, "Neg. binomial" = fit_nb, ZINB = fit_zinb),
+  show_columns = c("b", "p"), exponentiate = TRUE
+)
+```
+
+The negative binomial alone recovers most of the fit (AIC
+3312 → 3134); adding the inflation part on top buys a further, modest
+improvement (3122). The zero block simply stays empty in the columns
+of models that have none. Substantively the IRRs agree across all
+three — what changes is the inference and the account of the zeros.
+
+## One number per predictor: the combined AME
+
+Rate ratios live inside one component. For a single response-scale
+summary that spans *both* parts, request average marginal effects: the
+AME of a two-part model is the effect on the **overall expected count**
+E(Y), combining the count and zero processes (computed by
+`marginaleffects::avg_slopes()` on the full model):
+
+```{r ame, eval = have_me}
+table_regression(fit_zip, show_columns = c("b", "ame", "p"))
+```
+
+Being a woman costs about a third of an article (AME −0.36) once both
+channels are combined; the zero-component rows carry no AME of their
+own because the combined effect already includes them.
+
+## Cluster-robust variance
+
+Students cluster in labs, journals, cohorts. The `CR*` family covers
+**both components with one estimator** — `sandwich::vcovCL()` on the
+full score matrix, so the count and zero rows shift together. For
+two-part models every `CR*` variant maps to that same estimator, and
+the footer records it as `CL`:
+
+```{r cr, eval = have_sandwich, message = FALSE}
+set.seed(1)
+bioChemists$lab <- factor(sample(1:60, nrow(bioChemists), replace = TRUE))
+table_regression(fit_zip, vcov = "CR0", cluster = bioChemists$lab,
+                 show_columns = c("b", "se", "p"))
+```
+
+With clustering acknowledged (here a synthetic 60-lab assignment for
+illustration), marriage loses its significance (p = .041 → .147) — the
+usual fate of borderline effects under a proper dependence structure.
+`HC*` and the resampling estimators have no two-part backend and are
+refused with a clear error.
+
+## Mixed counts: `glmmTMB`
+
+When counts are also grouped, `glmmTMB` (Brooks et al. 2017) combines
+everything above with random effects: the zero-inflation block, the random-effects block,
+and per-block exponentiation appear in one table — here salamander
+counts in mined and unmined streams (Price et al. 2016):
+
+```{r glmmtmb, eval = have_glmmTMB}
+data("Salamanders", package = "glmmTMB")
+fit_mix <- glmmTMB::glmmTMB(
+  count ~ mined + (1 | site),
+  ziformula = ~ mined,
+  family = glmmTMB::nbinom2, data = Salamanders
+)
+table_regression(fit_mix, exponentiate = TRUE)
+```
+
+Unmined streams host over four times the salamander rate (IRR 4.34)
+*and* have far lower odds of a structural zero (OR 0.10) — the two
+channels tell one coherent ecological story. The random-effects block
+and its conventions are covered in the companion vignette
+[*Mixed-effects regression tables*](table-regression-mixed.html).
+
+## Output formats
+
+Everything above used the default console output. The same structure —
+zero block included, as the last rows below — carries to a raw data
+frame, a long broom-style tibble, and the rich `gt`, `flextable`,
+`tinytable`, Excel, or Word targets:
+
+```{r outputs-df}
+table_regression(fit_zip, output = "data.frame")
+```
+
+```{r outputs-gt, eval = build_rich_tables && have_counts}
+table_regression(fit_zip, exponentiate = TRUE, output = "gt")
+```
+
+In [`broom::tidy()`](https://broom.tidymodels.org) the zero-component
+terms carry a `zero_` prefix, so the two parts separate cleanly:
+
+```{r broom, eval = have_broom}
+td <- broom::tidy(table_regression(fit_zip))
+td[, c("term", "estimate_type", "estimate", "p.value")]
+```
+
+## References
+
+* Brooks, M. E., Kristensen, K., van Benthem, K. J., Magnusson, A.,
+  Berg, C. W., Nielsen, A., Skaug, H. J., Mächler, M., & Bolker,
+  B. M. (2017). glmmTMB balances speed and flexibility among packages
+  for zero-inflated generalized linear mixed modeling. *The R
+  Journal*, 9(2), 378–400.
+* Cameron, A. C., & Trivedi, P. K. (2013). *Regression Analysis of
+  Count Data* (2nd ed.). Cambridge University Press.
+* Lambert, D. (1992). Zero-inflated Poisson regression, with an
+  application to defects in manufacturing. *Technometrics*, 34(1),
+  1–14.
+* Long, J. S. (1990). The origins of sex differences in science.
+  *Social Forces*, 68(4), 1297–1316.
+* Long, J. S. (1997). *Regression Models for Categorical and Limited
+  Dependent Variables*. Sage.
+* Mullahy, J. (1986). Specification and testing of some modified
+  count data models. *Journal of Econometrics*, 33(3), 341–365.
+* Price, S. J., Muncy, B. L., Bonner, S. J., Drayer, A. N., & Barton,
+  C. D. (2016). Effects of mountaintop removal mining and valley
+  filling on the occupancy and abundance of stream salamanders.
+  *Journal of Applied Ecology*, 53(2), 459–468.
+* Wilson, P. (2015). The misuse of the Vuong test for non-nested
+  models to test for zero-inflation. *Economics Letters*, 127, 51–53.
+* Zeileis, A., Kleiber, C., & Jackman, S. (2008). Regression models
+  for count data in R. *Journal of Statistical Software*, 27(8).

@@ -67,6 +67,8 @@ navbar:
           href: articles/table-regression.html
         - text: Mixed-effects regression tables
           href: articles/table-regression-mixed.html
+        - text: Count and two-part regression tables
+          href: articles/table-regression-counts.html
         - text: Ordinal regression tables
           href: articles/table-regression-ordinal.html
         - text: Summary tables for APA-style reporting
@@ -89,6 +91,7 @@ articles:
       - table-continuous-lm
       - table-regression
       - table-regression-mixed
+      - table-regression-counts
       - table-regression-ordinal
       - summary-tables-reporting
 

@@ -14,7 +14,9 @@
 # read them back via broom::tidy(), which exposes estimate_type.
 .vc_rows <- function(fit, ...) {
   skip_if_not_installed("broom")
-  td <- broom::tidy(table_regression(fit, ...))
+  # suppressWarnings: singular test fixtures now emit the build-time
+  # spicy_caveat advice; these tests target the vc rows, not the caveat.
+  td <- broom::tidy(suppressWarnings(table_regression(fit, ...)))
   td[td$estimate_type == "vc", , drop = FALSE]
 }
 

@@ -38,11 +38,11 @@
 test_that("singular glmer footer message names 'random-effect variance component(s) at the boundary 0'", {
   fit <- .fit_singular_glmer()
   skip_if(!lme4::isSingular(fit), "glmer fit was not singular this round")
-  out <- capture.output(print(table_regression(fit)))
+  out <- capture.output(print(suppressWarnings(table_regression(fit))))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "Singular fit:", fixed = TRUE)
-  expect_match(combined, "boundary 0", fixed = TRUE)
-  expect_match(combined, "unreliable at the boundary", fixed = TRUE)
+  expect_match(combined, "boundary (0)", fixed = TRUE)
+  expect_match(combined, "estimated at the boundary (0); their Wald SE and CI are omitted", fixed = TRUE)
   # The lm rank-deficient phrasing must NOT appear for the mixed case.
   expect_false(grepl("Rank-deficient model", combined, fixed = TRUE))
 })
@@ -52,11 +52,11 @@ test_that("singular glmer footer message names 'random-effect variance component
 
 test_that("rank-deficient lm footer keeps 'Rank-deficient model' wording", {
   fit <- .fit_rank_def_lm()
-  out <- capture.output(print(table_regression(fit)))
+  out <- capture.output(print(suppressWarnings(table_regression(fit))))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "Rank-deficient model", fixed = TRUE)
   # The mixed-specific phrasing must NOT appear for the lm case.
-  expect_false(grepl("boundary 0", combined, fixed = TRUE))
+  expect_false(grepl("boundary (0)", combined, fixed = TRUE))
 })
 
 
@@ -64,7 +64,7 @@ test_that("rank-deficient lm footer keeps 'Rank-deficient model' wording", {
 
 test_that("non-singular lmer has no singular footer line", {
   fit <- .fit_clean_lmer()
-  out <- capture.output(print(table_regression(fit)))
+  out <- capture.output(print(suppressWarnings(table_regression(fit))))
   combined <- paste(out, collapse = "\n")
   expect_false(grepl("Singular fit:",   combined, fixed = TRUE))
   expect_false(grepl("Rank-deficient",  combined, fixed = TRUE))
@@ -95,7 +95,7 @@ test_that(".singular_msg_for_frame branches on is_mixed", {
   msg_lm <- spicy:::.singular_msg_for_frame(frame_lm,   FALSE)
   msg_re <- spicy:::.singular_msg_for_frame(frame_lmer, TRUE)
   expect_match(msg_lm, "Rank-deficient",   fixed = TRUE)
-  expect_match(msg_re, "boundary 0",       fixed = TRUE)
+  expect_match(msg_re, "boundary (0)", fixed = TRUE)
 })
 
 
@@ -106,9 +106,32 @@ test_that("multi-model singular fits use per-Model prefix", {
   skip_if(!lme4::isSingular(fit_singular), "no singular fit this round")
   fit_clean <- .fit_clean_lmer()
   out <- capture.output(print(
-    table_regression(list(fit_clean, fit_singular))
+    suppressWarnings(table_regression(list(fit_clean, fit_singular)))
   ))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "Model 2:", fixed = TRUE)
-  expect_match(combined, "boundary 0", fixed = TRUE)
+  expect_match(combined, "boundary (0)", fixed = TRUE)
+})
+
+test_that("singular fit advice arrives as a build-time spicy_caveat warning", {
+  skip_if_not_installed("lme4")
+  set.seed(2026)
+  d <- data.frame(x = rnorm(120), g = factor(rep(1:12, each = 10)))
+  d$y <- 2 + 0.5 * d$x + rnorm(120)
+  fit <- suppressMessages(suppressWarnings(
+    lme4::lmer(y ~ x + (1 | g), data = d)
+  ))
+  caveat_seen <- FALSE
+  out <- withCallingHandlers(
+    table_regression(fit),
+    spicy_caveat = function(c) {
+      caveat_seen <<- TRUE
+      invokeRestart("muffleWarning")
+    },
+    warning = function(w) invokeRestart("muffleWarning")  # lme4 refit noise
+  )
+  expect_true(caveat_seen)
+  # The note keeps only the fact; the advice lives in the warning.
+  note <- paste(attr(out, "note"), collapse = "\n")
+  expect_false(grepl("consider simplifying", note, ignore.case = TRUE))
 })
