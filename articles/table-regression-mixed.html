@@ -317,13 +317,16 @@ design sits comfortably above the ~50 groups below which the standard
 errors and interval coverage of the variance components degrade (Maas
 &amp; Hox 2005) — the point estimates themselves hold up with fewer.</p>
 <p>One display note, visible here for the first time: at this sample
-size <code><a href="../reference/table_regression.html">table_regression()</a></code> skips the SE and CI of the variance
-components — the table note states it, and the build-time warning names
-the override (<code>options(spicy.re_se_max_n = )</code>) — because
-their computation grows superlinearly with n. Estimates, ICC, R², and
-the LR test are unaffected, and the random-part inference below runs
-through <code>re_test</code>. The same note (and suppressed warning)
-accompanies every HSB table in this sequence.</p>
+size <code><a href="../reference/table_regression.html">table_regression()</a></code> skips the Wald SE and CI of the
+variance components — the table note states it, and the build-time
+warning names the override (<code>options(spicy.re_se_max_n = )</code>)
+— because their computation grows superlinearly with n. Estimates, ICC,
+R², and the LR test are unaffected; the random-part inference below runs
+through <code>re_test</code>, and <code>re_ci = "profile"</code>
+restores boundary-respecting profile-likelihood CIs at any sample size
+(a couple of seconds per variance parameter — the route
+<code>lme4</code> itself recommends over SEs). The same note (and
+suppressed warning) accompanies every HSB table in this sequence.</p>
 </div>
 <div class="section level3">
 <h3 id="step-2-a-random-intercept-next-to-the-ols">Step 2: a random intercept, next to the OLS<a class="anchor" aria-label="anchor" href="#step-2-a-random-intercept-next-to-the-ols"></a>

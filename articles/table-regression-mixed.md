@@ -218,13 +218,15 @@ themselves hold up with fewer.
 
 One display note, visible here for the first time: at this sample size
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-skips the SE and CI of the variance components — the table note states
-it, and the build-time warning names the override
+skips the Wald SE and CI of the variance components — the table note
+states it, and the build-time warning names the override
 (`options(spicy.re_se_max_n = )`) — because their computation grows
 superlinearly with n. Estimates, ICC, R², and the LR test are
-unaffected, and the random-part inference below runs through `re_test`.
-The same note (and suppressed warning) accompanies every HSB table in
-this sequence.
+unaffected; the random-part inference below runs through `re_test`, and
+`re_ci = "profile"` restores boundary-respecting profile-likelihood CIs
+at any sample size (a couple of seconds per variance parameter — the
+route `lme4` itself recommends over SEs). The same note (and suppressed
+warning) accompanies every HSB table in this sequence.
 
 ### Step 2: a random intercept, next to the OLS
 

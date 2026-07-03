@@ -122,6 +122,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  re_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sd"</span>, <span class="st">"variance"</span><span class="op">)</span>,</span>
 <span>  re_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"est"</span>, <span class="st">"se"</span>, <span class="st">"ci"</span><span class="op">)</span>,</span>
 <span>  re_test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"lrt"</span>, <span class="st">"rlrt"</span><span class="op">)</span>,</span>
+<span>  re_ci <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"profile"</span><span class="op">)</span>,</span>
 <span>  model_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  outcome_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stars <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -514,13 +515,13 @@ for journals that want only standard errors
 (<code>re_columns = c("est", "se")</code>). Display-only: the underlying
 data (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, <code><a href="as_structured.html">as_structured()</a></code>) always carries the
 full SE + CI.</p>
-<p>Note. Standard errors and CIs are Wald (<code>est ± z * SE</code>,
-clamped at 0 for variances). Wald can be optimistic near
-the variance boundary (Self &amp; Liang 1987 chi-bar-squared);
-profile-likelihood intervals are available directly on the
-fitted model (<code>confint(fit, method = "profile")</code> for
-<code>lmer</code>) when robustness is critical. See the
-<em>Mixed-effects models</em> section of <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p>
+<p>Note. Under the default <code>re_ci = "wald"</code> the SE and CI are Wald
+(<code>est ± z * SE</code>, clamped at 0 for variances). Wald can be
+optimistic near the variance boundary (Self &amp; Liang 1987
+chi-bar-squared); request boundary-respecting profile-likelihood
+intervals with <code>re_ci = "profile"</code> when robustness is critical.
+See the <em>Mixed-effects models</em> section of
+<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p>
 <p>For <code>lmer</code> / <code>glmer</code> fits these SEs come from <code>merDeriv</code>, whose
 cost grows superlinearly with the number of observations (about a
 minute at n ≈ 2,700). Above <code>options("spicy.re_se_max_n")</code>
@@ -559,6 +560,27 @@ and residual rows are never tested (a correlation is tested
 jointly with its slope; the residual has no zero-variance
 null). Refits happen once per random term: expect a
 noticeable cost on large models.</p></dd>
+
+
+<dt id="arg-re-ci">re_ci<a class="anchor" aria-label="anchor" href="#arg-re-ci"></a></dt>
+<dd><p>One of <code>"wald"</code> (default) or <code>"profile"</code>. Uncertainty
+route for the random-effect variance-component rows of <code>lmer</code> /
+<code>glmer</code> fits:</p><ul><li><p><code>"wald"</code>: SE and symmetric CI from the observed
+information (<code>merDeriv</code>), subject to the
+<code>options("spicy.re_se_max_n")</code> size cap (see <code>re_columns</code>).</p></li>
+<li><p><code>"profile"</code>: <strong>profile-likelihood CIs</strong> via
+<code>confint(fit, method = "profile")</code> – the route lme4 itself
+documents and defaults to. The intervals are asymmetric and
+respect the boundary at 0; no SE is shown (lme4's position:
+a symmetric SE misdescribes the skewed sampling distribution
+of a variance). Sidesteps the size cap entirely (roughly two
+seconds per variance parameter even at n ~ 7,000; <code>glmer</code>
+profiles cost more). The footer discloses the method, and
+likelihood intervals transform exactly, so
+<code>re_scale = "variance"</code> shows the profile CI of the variance
+itself.</p></li>
+</ul><p><code>glmmTMB</code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> fits keep their engine-native CIs
+(TMB's <code>sdreport</code>; nlme's <code>apVar</code>) and refuse <code>"profile"</code>.</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>

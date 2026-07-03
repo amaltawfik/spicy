@@ -38,6 +38,7 @@ table_regression(
   re_scale = c("sd", "variance"),
   re_columns = c("est", "se", "ci"),
   re_test = c("none", "lrt", "rlrt"),
+  re_ci = c("wald", "profile"),
   model_labels = NULL,
   outcome_labels = NULL,
   stars = FALSE,
@@ -452,12 +453,12 @@ table_regression(
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md))
   always carries the full SE + CI.
 
-  Note. Standard errors and CIs are Wald (`est ± z * SE`, clamped at 0
-  for variances). Wald can be optimistic near the variance boundary
-  (Self & Liang 1987 chi-bar-squared); profile-likelihood intervals are
-  available directly on the fitted model
-  (`confint(fit, method = "profile")` for `lmer`) when robustness is
-  critical. See the *Mixed-effects models* section of
+  Note. Under the default `re_ci = "wald"` the SE and CI are Wald
+  (`est ± z * SE`, clamped at 0 for variances). Wald can be optimistic
+  near the variance boundary (Self & Liang 1987 chi-bar-squared);
+  request boundary-respecting profile-likelihood intervals with
+  `re_ci = "profile"` when robustness is critical. See the
+  *Mixed-effects models* section of
   [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md).
 
   For `lmer` / `glmer` fits these SEs come from `merDeriv`, whose cost
@@ -501,6 +502,29 @@ table_regression(
   (a correlation is tested jointly with its slope; the residual has no
   zero-variance null). Refits happen once per random term: expect a
   noticeable cost on large models.
+
+- re_ci:
+
+  One of `"wald"` (default) or `"profile"`. Uncertainty route for the
+  random-effect variance-component rows of `lmer` / `glmer` fits:
+
+  - `"wald"`: SE and symmetric CI from the observed information
+    (`merDeriv`), subject to the `options("spicy.re_se_max_n")` size cap
+    (see `re_columns`).
+
+  - `"profile"`: **profile-likelihood CIs** via
+    `confint(fit, method = "profile")` – the route lme4 itself documents
+    and defaults to. The intervals are asymmetric and respect the
+    boundary at 0; no SE is shown (lme4's position: a symmetric SE
+    misdescribes the skewed sampling distribution of a variance).
+    Sidesteps the size cap entirely (roughly two seconds per variance
+    parameter even at n ~ 7,000; `glmer` profiles cost more). The footer
+    discloses the method, and likelihood intervals transform exactly, so
+    `re_scale = "variance"` shows the profile CI of the variance itself.
+
+  `glmmTMB` and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)
+  fits keep their engine-native CIs (TMB's `sdreport`; nlme's `apVar`)
+  and refuse `"profile"`.
 
 - model_labels:
 
