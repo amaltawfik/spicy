@@ -2,10 +2,12 @@
 title: "Mixed-effects regression tables"
 description: >
   Publication-ready tables for mixed-effects (multilevel) regression in R
-  with `table_regression()`: random effects as table rows with SE and CI,
-  the boundary-correct chi-bar-squared test, opt-in per-term LRT / RLRT,
-  ICC and Nakagawa R-squared, Satterthwaite inference, odds ratios for
-  `glmer`, and the `lme4`, `glmmTMB`, and `nlme` engines.
+  with `table_regression()`: the textbook model-building sequence on the
+  High School & Beyond data (ICC, contextual effects, random slopes,
+  cross-level interactions), random effects as table rows, the
+  boundary-corrected chi-bar-squared test, opt-in per-term LRT / RLRT,
+  Nakagawa R-squared, Satterthwaite inference, three-level and crossed
+  designs, and the `lme4`, `glmmTMB`, and `nlme` engines.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -59,11 +61,13 @@ here we focus on what is *specific* to mixed fits — above all, how the
   and dispersion submodels.
 * **`nlme::lme()`** — the classical engine (containment-df t-tests).
 
-The running example is `lme4::sleepstudy`: reaction times of 18
-subjects measured on 10 consecutive days of a sleep-restriction
-study. Each subject contributes 10 rows, so observations are not
-independent — the
-canonical case for a random intercept and slope.
+Two datasets carry the main narrative. The table anatomy is shown on
+`lme4::sleepstudy` — reaction times of 18 subjects measured on 10
+consecutive days of a sleep-restriction study, the canonical case for
+a random intercept and slope. The model-*building* sequence — from a
+naive OLS to cross-level interactions — then runs on the High School &
+Beyond data of the multilevel textbooks (7,185 pupils in 160 schools;
+the data ship with `nlme`, the models are `lmer()` fits).
 
 ## The mixed model in one paragraph
 
@@ -130,6 +134,188 @@ several parameters jointly it follows Stata's conservative halved-p
 convention, while the per-term tests below use the exact mixture. Here
 chi-bar-squared(3) = 148.35, p < .001: the random structure earns its
 place.
+
+## From OLS to a multilevel model, step by step
+
+The sections above dissect one fitted table. This one walks the
+model-building path most multilevel analyses follow — the sequence
+codified by Raudenbush & Bryk (2002) and taught across the multilevel
+literature (Hox et al. 2018; Snijders & Bosker 2012; Bressoux 2010) —
+on the data those books made canonical: the High School & Beyond
+sample of 7,185 pupils in 160 U.S. schools, modelling mathematics
+achievement from pupil socio-economic status (SES) and school sector.
+Each step adds one ingredient, and one table shows what it changes.
+
+Two derived predictors do a lot of work below: the school mean of SES,
+and the pupil's SES *centered within the school*. Keeping the two
+apart is what lets a multilevel model estimate separate within- and
+between-school effects (step 3):
+
+```{r hsb-data, eval = have_nlme}
+data("MathAchieve", package = "nlme")
+data("MathAchSchool", package = "nlme")
+hsb <- merge(MathAchieve[, c("School", "SES", "MathAch")],
+             MathAchSchool[, c("School", "Sector")], by = "School")
+hsb$School  <- factor(hsb$School)
+hsb$meanses <- ave(hsb$SES, hsb$School)   # school mean of SES
+hsb$cses    <- hsb$SES - hsb$meanses      # SES centered within school
+```
+
+### Step 0: the regression you would have fitted anyway
+
+```{r hsb-ols, eval = have_nlme}
+ols <- lm(MathAch ~ SES, data = hsb)
+```
+
+One more SES point buys 3.18 achievement points (SE 0.10; its column
+appears in the step-2 table) — and one silent assumption: that 7,185
+pupils are 7,185 independent observations. They are not; pupils share
+schools, teachers, and neighbourhoods. The next steps make the
+grouping structure part of the model.
+
+### Step 1: the empty model — how much do schools matter?
+
+The multilevel analysis starts with a model containing *no predictors
+at all*, only a school random intercept. Its job is a single number:
+
+```{r hsb-empty, eval = have_nlme, warning = FALSE}
+# (the accompanying console warning is suppressed in this rendering)
+m_empty <- lmer(MathAch ~ 1 + (1 | School), data = hsb)
+table_regression(m_empty)
+```
+
+The **ICC of 0.18** is nothing but the two σ rows combined:
+2.93² / (2.93² + 6.26²) ≈ 0.18. Eighteen percent of the achievement
+variance lies *between* schools — the variance partition that
+justifies everything that follows (and matches the number Raudenbush &
+Bryk report for these data). With 160 schools, the design sits
+comfortably above the ~50 groups below which the standard errors and
+interval coverage of the variance components degrade (Maas & Hox
+2005) — the point estimates themselves hold up with fewer.
+
+One display note, visible here for the first time: at this sample size
+`table_regression()` skips the SE and CI of the variance components —
+the table note states it, and the build-time warning names the
+override (`options(spicy.re_se_max_n = )`) — because their computation
+grows superlinearly with n. Estimates, ICC, R², and the LR test are
+unaffected, and the random-part inference below runs through
+`re_test`. The same note (and suppressed warning) accompanies every
+HSB table in this sequence.
+
+### Step 2: a random intercept, next to the OLS
+
+```{r hsb-ri, eval = have_nlme, warning = FALSE}
+m_ri <- lmer(MathAch ~ SES + (1 | School), data = hsb)
+table_regression(list(OLS = ols, Multilevel = m_ri),
+                 show_columns = c("b", "se", "p"))
+```
+
+Reading the gain, column against column:
+
+* The **intercept SE more than doubles** (0.08 → 0.19). OLS treats
+  7,185 pupils as independent evidence about school-shared quantities;
+  the multilevel model counts the 160 schools it actually has. The
+  OLS precision was borrowed, not earned.
+* The **SES coefficient itself moves** (3.18 → 2.39): a raw SES slope
+  mixes two sources of information — pupils compared within schools,
+  and schools compared with schools — and the multilevel fit reweights
+  them toward the within-school comparison. Step 3 separates the two
+  outright.
+* The **ICC row reads 0.11**, not step 1's 0.18: it partitions the
+  variance that SES leaves unexplained — not a contradiction, a
+  conditional version of the same quantity.
+* The footer's chi-bar-squared test (456.9 on 1 df) says the school
+  effect is not optional.
+
+### Step 3: one variable, two effects — the contextual split
+
+A pupil's SES and a school's SES composition are different variables
+with different effects, and entering raw `SES` estimates an
+uninterpretable blend of the two. The standard decomposition enters
+the within-school part and the school mean separately (Enders &
+Tofighi 2007; Snijders & Bosker 2012, §4.6):
+
+```{r hsb-wb, eval = have_nlme, warning = FALSE}
+m_wb <- lmer(MathAch ~ cses + meanses + (1 | School), data = hsb)
+table_regression(m_wb, show_columns = c("b", "se", "p"))
+```
+
+Within a school, one SES point is worth 2.19 points of achievement
+(`cses`); *between* schools, a one-point difference in composition is
+worth 5.87 (`meanses`) — more than twice the individual effect. The
+**contextual effect** proper — what better-off schoolmates add for the
+*same* pupil, over and above their own SES — is the difference,
+5.87 − 2.19 = 3.68 (Raudenbush & Bryk 2002). The OLS slope of 3.18 in
+step 0 was a weighted blend of the within and between effects,
+answering neither question.
+
+### Step 4: does the SES slope vary across schools?
+
+So far every school shares one SES slope. Freeing it — `(cses |
+School)` — asks whether SES matters *more in some schools than
+others*, and `re_test = "lrt"` prices the answer with the
+boundary-corrected test of the earlier sections:
+
+```{r hsb-slope, eval = have_nlme, warning = FALSE}
+m_rs <- lmer(MathAch ~ cses + meanses + (cses | School), data = hsb)
+table_regression(m_rs, re_test = "lrt", show_columns = c("b", "p"))
+```
+
+The slope SD is 0.83 achievement points around the average slope of
+2.19, and its test reads p = .003 — solid evidence that the slope
+genuinely varies across schools — so the random slope stays. (The full
+anatomy of this decision — what the side-by-side comparison does and
+does not test, how the R² pair moves, what happens to the fixed SE —
+is dissected on `sleepstudy` in *Random intercept or random slope?*
+below.)
+
+### Step 5: why do slopes differ? A cross-level interaction
+
+A varying slope is a question, not an answer: *what about a school*
+flattens or steepens its SES gradient? Interacting the pupil-level
+slope with a school-level predictor — a **cross-level interaction** —
+is the multilevel move that answers it, here with school sector:
+
+```{r hsb-cross, eval = have_nlme, warning = FALSE}
+m_cl <- lmer(MathAch ~ cses * Sector + meanses + (cses | School),
+             data = hsb)
+table_regression(m_cl, show_columns = c("b", "se", "p"))
+```
+
+In public schools the within-school SES slope is 2.79; in Catholic
+schools it is 2.79 − 1.35 = 1.44 — half as steep, while their
+intercept sits 1.25 points higher (both conditional on school
+composition, since `meanses` stays in the model). This is the classic
+finding of Raudenbush & Bryk's own analysis of these data: Catholic
+schooling weakens the link between a pupil's background and
+achievement. Note where the answer lives: the interaction is a *fixed*
+effect, carried by its own row and Satterthwaite p; the slope variance
+it accounts for shows in the σ `cses` row shrinking from 0.83 to 0.52.
+(One comparison the table deliberately does not make: the REML-based
+AIC is comparable between steps 3 and 4 — same fixed part, 46,578.6 →
+46,571.7 — but not across step 5's fixed-effects change; growing the
+fixed part is `nested = TRUE`'s job, with its ML refit.)
+
+## Three levels, and crossed designs
+
+Nothing above is limited to two levels. A third level enters through
+the grouping formula — `(1 | batch/cask)` reads "casks nested in
+batches" — and the table gains one variance row and one group count
+per level:
+
+```{r pastes, eval = have_mixed}
+p3 <- lmer(strength ~ 1 + (1 | batch/cask), data = Pastes)
+table_regression(p3, show_columns = c("b", "se"))
+```
+
+Both levels of nesting get their σ row, `N (groups)` counts each
+level, and the footer's chi-bar-squared test covers the random part
+jointly (2 df here); at n = 60, far below the size cap, the SE and CI
+of the variance components are back. Random slopes can sit at any
+level — `(x | school) + (1 | class)` renders each block under its
+grouping factor — and **crossed** (non-nested) structures such as
+`(1 | plate) + (1 | sample)` flow through the same machinery: one
+block per factor, no extra syntax.
 
 ## When the fit is singular
 
@@ -210,6 +396,9 @@ are decoupled.
 
 ## Random intercept or random slope? Models side by side
 
+The HSB sequence above made this decision on real school data with one
+`re_test` call; this section dissects its full anatomy on
+`sleepstudy`, where every quantity is small enough to check by hand.
 Model comparison is where the row layout pays off: the variance
 components align across columns like any coefficient, and each model
 gets its own footer line.
@@ -414,23 +603,34 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 * Bates, D., Mächler, M., Bolker, B., & Walker, S. (2015). Fitting
   linear mixed-effects models using lme4. *Journal of Statistical
   Software*, 67(1).
+* Bressoux, P. (2010). *Modélisation statistique appliquée aux sciences
+  sociales* (2nd ed.). De Boeck.
 * Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). *Applied
   Multiple Regression/Correlation Analysis for the Behavioral
   Sciences* (3rd ed.). Lawrence Erlbaum.
 * Crainiceanu, C. M., & Ruppert, D. (2004). Likelihood ratio tests in
   linear mixed models with one variance component. *Journal of the Royal
   Statistical Society, Series B*, 66(1), 165–185.
+* Enders, C. K., & Tofighi, D. (2007). Centering predictor variables in
+  cross-sectional multilevel models: A new look at an old issue.
+  *Psychological Methods*, 12(2), 121–138.
 * Gelman, A., & Hill, J. (2007). *Data Analysis Using Regression and
   Multilevel/Hierarchical Models*. Cambridge University Press.
+* Hox, J. J., Moerbeek, M., & van de Schoot, R. (2018). *Multilevel
+  Analysis: Techniques and Applications* (3rd ed.). Routledge.
 * Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017).
   lmerTest package: Tests in linear mixed effects models. *Journal of
   Statistical Software*, 82(13).
+* Maas, C. J. M., & Hox, J. J. (2005). Sufficient sample sizes for
+  multilevel modeling. *Methodology*, 1(3), 86–92.
 * Matuschek, H., Kliegl, R., Vasishth, S., Baayen, H., & Bates, D.
   (2017). Balancing Type I error and power in linear mixed models.
   *Journal of Memory and Language*, 94, 305–315.
 * Nakagawa, S., & Schielzeth, H. (2013). A general and simple method
   for obtaining R² from generalized linear mixed-effects models.
   *Methods in Ecology and Evolution*, 4(2), 133–142.
+* Raudenbush, S. W., & Bryk, A. S. (2002). *Hierarchical Linear
+  Models: Applications and Data Analysis Methods* (2nd ed.). Sage.
 * Schielzeth, H., & Forstmeier, W. (2009). Conclusions beyond support:
   overconfident estimates in mixed models. *Behavioral Ecology*,
   20(2), 416–420.

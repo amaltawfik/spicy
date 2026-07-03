@@ -432,11 +432,20 @@ as_regression_frame.glmerMod <- function(fit,
   # model-level, not per-coefficient).
   is_singular <- isTRUE(tryCatch(
     lme4::isSingular(fit), error = function(e) FALSE))
+  # Variance-component SE / CI skipped for size (see .re_se_skipped_by_size):
+  # record n so the footer can state the fact and the orchestrator can
+  # advise once. Singular fits already carry their own omission note.
+  re_se_skipped_n <- if (!is_singular && .re_se_skipped_by_size(fit)) {
+    as.integer(stats::nobs(fit))
+  } else {
+    NA_integer_
+  }
   extras <- list(
     cluster_name          = NULL,
     use_ame_satterthwaite = FALSE,
     has_singular          = is_singular,
     singular_terms        = character(0),
+    re_se_skipped_n       = re_se_skipped_n,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = if (is_glm) {
@@ -649,6 +658,29 @@ as_regression_frame.glmerMod <- function(fit,
 }
 
 
+# Size guard for the merDeriv-based variance-component SE / CI.
+# merDeriv::vcov.*(full = TRUE) builds dense per-observation score
+# objects whose cost grows superlinearly with n (measured ~O(n^3.4):
+# ~1.4 s at n ~ 900, ~60 s at n ~ 2700, intractable at n ~ 7000;
+# information = "expected" is no cheaper). A default table must not
+# cost minutes, so above the cap the SE / CI columns are omitted
+# (em-dash), the footer states the fact, and the orchestrator surfaces
+# the advice (raise the option, or use re_test) as a spicy_caveat
+# warning. Override with options(spicy.re_se_max_n = ).
+.re_se_size_cap <- function() {
+  cap <- getOption("spicy.re_se_max_n", 1000L)
+  if (!is.numeric(cap) || length(cap) != 1L || is.na(cap)) {
+    return(1000L)                                                      # nocov
+  }
+  cap
+}
+
+.re_se_skipped_by_size <- function(fit) {
+  n <- tryCatch(as.numeric(stats::nobs(fit)), error = function(e) NA_real_)
+  is.finite(n) && n > .re_se_size_cap()
+}
+
+
 # Attach Wald SE + 95% CI columns to the variance-components data.frame
 # via merDeriv. Always returns a data.frame with the columns
 # `std_error`, `ci_lower`, `ci_upper`, `ci_method`; NAs when the SE
@@ -664,6 +696,7 @@ as_regression_frame.glmerMod <- function(fit,
   if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
   if (!spicy_pkg_available("merDeriv")) return(na_block(vc_df))        # nocov
   if (isTRUE(lme4::isSingular(fit))) return(na_block(vc_df))
+  if (.re_se_skipped_by_size(fit)) return(na_block(vc_df))
 
   # merDeriv::vcov.lmerMod with ranpar = "var" returns the asymptotic
   # covariance matrix of the FULL parameter vector (fixed effects +

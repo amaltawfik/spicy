@@ -341,13 +341,16 @@ as_regression_frame.glm <- function(fit, ...) {
     r2_marginal          = .scalar_or_na(fs$r2_marginal),
     r2_conditional       = .scalar_or_na(fs$r2_conditional),
     # Mixed-effects group structure (fit-stat rows). n_groups is a
-    # pre-formatted character cell ("18 Subjects" / "18 Subjects, 9 Items"),
-    # NA_character_ for non-mixed fits; icc a numeric scalar.
+    # pre-formatted character cell, NA_character_ for non-mixed fits;
+    # icc a numeric scalar. Grouping-factor NAMES are never pluralized
+    # (a naive "+s" mangles names like batch -> "batchs", class ->
+    # "classs"), so multi-factor cells read "30 (cask:batch), 10 (batch)".
+    # The dominant single-factor case renders "N (Subject) | 18" via the
+    # dynamic label in build_fit_stats_rows() and never shows this string.
     icc                  = .scalar_or_na(icc),
     n_groups             = if (!is.null(n_groups) && length(n_groups) > 0L) {
       paste(vapply(seq_along(n_groups), function(k) {
-        sprintf("%d %s%s", as.integer(n_groups[[k]]), names(n_groups)[k],
-                if (n_groups[[k]] > 1L) "s" else "")
+        sprintf("%d (%s)", as.integer(n_groups[[k]]), names(n_groups)[k])
       }, character(1)), collapse = ", ")
     } else {
       NA_character_

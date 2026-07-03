@@ -94,6 +94,7 @@ build_regression_footer_from_frames <- function(
     build_p_adjust_footer_block_from_frames(frames, p_adjust),
     build_stars_footer_block(stars),
     build_singular_footer_block_from_frames(frames),
+    build_re_se_skipped_footer_block_from_frames(frames),
     build_polynomial_contrasts_footer_block_from_frames(
       frames, displayed_parent_vars = displayed_parent_vars),
     build_reference_categories_footer_block_from_frames(frames,
@@ -1180,6 +1181,36 @@ build_singular_footer_block_from_frames <- function(frames) {
 .is_mixed_frame <- function(frame) {
   cls <- frame$info$class %||% ""
   cls %in% c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
+}
+
+
+# Variance-component SE / CI omitted for size (extras$re_se_skipped_n,
+# see .re_se_skipped_by_size): the note states the FACT about what the
+# table shows; the advice (raise the cap, or use re_test) lives in the
+# orchestrator's spicy_caveat warning, per the singular-fit precedent.
+build_re_se_skipped_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  ns <- vapply(frames, function(f) {
+    as.integer(f$info$extras$re_se_skipped_n %||% NA_integer_)
+  }, integer(1))
+  if (all(is.na(ns))) return(NULL)
+  msg <- function(n) {
+    sprintf(paste0("Random-effect variance components: SE and CI not ",
+                   "computed (n = %s exceeds the spicy.re_se_max_n cap)."),
+            format(n, big.mark = ","))
+  }
+  affected <- which(!is.na(ns))
+  if (length(frames) == 1L) return(msg(ns[affected]))
+  # Every model affected with the same n (the common multi-model case):
+  # one shared line instead of per-model repeats.
+  if (length(affected) == length(frames) &&
+      length(unique(ns[affected])) == 1L) {
+    return(msg(ns[affected][1L]))
+  }
+  per <- vapply(affected, function(k) {
+    sprintf("Model %d: %s", k, msg(ns[k]))
+  }, character(1))
+  paste(per, collapse = "\n")
 }
 
 

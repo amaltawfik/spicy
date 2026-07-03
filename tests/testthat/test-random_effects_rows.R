@@ -288,3 +288,62 @@ test_that("n_groups: crossed factors fall back to the generic label + strings", 
   expect_match(cell, "g1", fixed = TRUE)
   expect_match(cell, "g2", fixed = TRUE)
 })
+
+test_that("n_groups: multi-factor counts never pluralize variable names", {
+  skip_if_not_installed("lme4")
+  fit <- suppressMessages(
+    lme4::lmer(strength ~ 1 + (1 | batch/cask), data = lme4::Pastes))
+  df <- table_regression(fit, output = "data.frame")
+  v <- trimws(df$Variable)
+  cell <- trimws(df[[2]][v == "N (groups)"])
+  # "30 (cask:batch), 10 (batch)" -- naive "+s" used to mangle the names
+  # into "cask:batchs" / "batchs".
+  expect_match(cell, "30 (cask:batch)", fixed = TRUE)
+  expect_match(cell, "10 (batch)", fixed = TRUE)
+  expect_false(grepl("batchs", cell, fixed = TRUE))
+})
+
+## ---- 11. Variance-component SE size cap (spicy.re_se_max_n) ---------------
+
+test_that("variance-component SEs are skipped above the size cap", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+
+  old <- options(spicy.re_se_max_n = 50L)   # sleepstudy has n = 180
+  on.exit(options(old), add = TRUE)
+
+  expect_warning(tr <- table_regression(fit), class = "spicy_caveat")
+  out <- paste(capture.output(print(tr)), collapse = "\n")
+  # Fact-only table note; the advice lives in the warning.
+  expect_match(out, "SE and CI not computed", fixed = TRUE)
+  expect_match(out, "spicy.re_se_max_n", fixed = TRUE)
+
+  # tidy: vc rows keep estimates but carry no SE.
+  tt <- suppressWarnings(broom::tidy(table_regression(fit)))
+  vc <- tt[tt$estimate_type == "vc", ]
+  expect_gt(nrow(vc), 0L)
+  expect_true(all(is.finite(vc$estimate)))
+  expect_true(all(is.na(vc$std.error)))
+
+  # The warning names the override and the re_test alternative.
+  w <- tryCatch(table_regression(fit), warning = function(w) w)
+  expect_match(conditionMessage(w), "spicy.re_se_max_n", fixed = TRUE)
+  expect_match(conditionMessage(w), "re_test", fixed = TRUE)
+})
+
+test_that("raising the size cap restores the variance-component SEs", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+
+  old <- options(spicy.re_se_max_n = Inf)
+  on.exit(options(old), add = TRUE)
+
+  expect_no_warning(tr <- table_regression(fit))
+  tt <- broom::tidy(tr)
+  vc <- tt[tt$estimate_type == "vc", ]
+  expect_true(any(is.finite(vc$std.error)))
+  out <- paste(capture.output(print(tr)), collapse = "\n")
+  expect_false(grepl("SE and CI not computed", out, fixed = TRUE))
+})

@@ -689,6 +689,15 @@
 #'   fitted model (`confint(fit, method = "profile")` for
 #'   `lmer`) when robustness is critical. See the
 #'   *Mixed-effects models* section of `vignette("table-regression")`.
+#'
+#'   For `lmer` / `glmer` fits these SEs come from `merDeriv`, whose
+#'   cost grows superlinearly with the number of observations (about a
+#'   minute at n ≈ 2,700). Above `options("spicy.re_se_max_n")`
+#'   (default `1000`) they are skipped: the rows keep their estimates,
+#'   the SE / CI cells render as em-dashes, a table note states the
+#'   omission, and a `spicy_caveat` warning points here. Raise the cap
+#'   (e.g. `options(spicy.re_se_max_n = Inf)`) to force the
+#'   computation, or test the random terms with `re_test = "lrt"`.
 #' @param re_test One of `"none"` (default), `"lrt"`, or `"rlrt"`.
 #'   Opt-in **per-term significance test** for the random-effect
 #'   variance components, filling the otherwise-empty p column of
@@ -1751,6 +1760,37 @@ table_regression <- function(
           "offending term), or test whether it belongs with ",
           "`re_test = \"lrt\"`. See `help(\"isSingular\", package = ",
           "\"lme4\")`."
+        )
+      ),
+      class = "spicy_caveat"
+    )
+  }
+
+  # Variance-component SE / CI skipped for size: the note states the fact;
+  # the advice (raise the cap or test the random terms) belongs here, to
+  # the analyst, once per table.
+  re_se_skipped <- vapply(frames, function(fr) {
+    !is.na(fr$info$extras$re_se_skipped_n %||% NA_integer_)
+  }, logical(1))
+  if (any(re_se_skipped)) {
+    labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
+      names(models)
+    } else {
+      paste("Model", seq_along(models))
+    }
+    spicy_warn(
+      c(
+        sprintf(
+          paste0("Variance-component SEs and CIs skipped for %s: n exceeds ",
+                 "`options(\"spicy.re_se_max_n\")` = %s."),
+          paste(labels[re_se_skipped], collapse = ", "),
+          format(.re_se_size_cap(), big.mark = ",")
+        ),
+        "i" = paste0(
+          "Their computation (merDeriv) grows superlinearly with n ",
+          "(roughly a minute at n \u2248 2,700). Raise the cap, e.g. ",
+          "`options(spicy.re_se_max_n = Inf)`, to compute them anyway, ",
+          "or test the random terms with `re_test = \"lrt\"`."
         )
       ),
       class = "spicy_caveat"
