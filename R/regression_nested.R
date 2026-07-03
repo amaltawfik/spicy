@@ -50,10 +50,12 @@ compute_nested_comparisons <- function(fits) {
     fit_curr <- fits[[k + 1L]]
     pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
     pair_glm   <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
-    # coxph has a proper nested likelihood-ratio test (anova.coxph -> Chisq) but
-    # no classical R^2: route it through the LRT pair path, NOT the lm path
-    # (which reads summary()$r.squared and crashes on a Cox fit).
-    pair_lrt   <- inherits(fit_prev, "coxph") && inherits(fit_curr, "coxph")
+    # coxph and nnet::multinom have a proper nested likelihood-ratio test
+    # (anova.coxph -> Chisq; anova.multinom -> LR stat.) but no classical
+    # R^2: route them through the LRT pair path, NOT the lm path (which
+    # reads summary()$r.squared and crashes on those fits).
+    pair_lrt   <- (inherits(fit_prev, "coxph") && inherits(fit_curr, "coxph")) ||
+      (inherits(fit_prev, "multinom") && inherits(fit_curr, "multinom"))
     stats <- if (pair_mixed) {
       compute_one_pair_mixed(fit_prev, fit_curr)
     } else if (pair_glm || pair_lrt) {
@@ -132,7 +134,7 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
   # AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (sigma).
   aicc <- function(fit, aic_v) {
     k <- length(stats::coef(fit)) + 1L
-    n <- stats::nobs(fit)
+    n <- .spicy_nobs(fit)
     if (n - k - 1L > 0L) aic_v + (2 * k * (k + 1L)) / (n - k - 1L) else NA_real_
   }
   aicc_p <- aicc(fit_prev, aic_p)
@@ -175,19 +177,31 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
     deviance_change = NA_real_, p_change = NA_real_
   )
 
-  av <- tryCatch(
-    suppressWarnings(stats::anova(fit_prev, fit_curr, test = "LRT")),
-    error = function(e) NULL
-  )
+  av <- if (inherits(fit_prev, "multinom")) {
+    # anova.multinom() rejects test = "LRT" (its match.arg allows only
+    # "Chisq" / "none"); its default test IS the likelihood-ratio
+    # chi-square, reported as "LR stat." + "Pr(Chi)".
+    tryCatch(
+      suppressWarnings(stats::anova(fit_prev, fit_curr)),
+      error = function(e) NULL
+    )
+  } else {
+    tryCatch(
+      suppressWarnings(stats::anova(fit_prev, fit_curr, test = "LRT")),
+      error = function(e) NULL
+    )
+  }
   if (is.null(av) || nrow(av) < 2L) return(na)
 
   # Column names vary across R versions and model classes: "Deviance" +
   # "Pr(>Chi)" is standard for binomial / poisson; "Pr(>F)" appears for quasi-
   # families when test = "F" is the natural test; anova.coxph reports the LRT as
-  # "Chisq" + "Pr(>|Chi|)". Look up defensively.
-  lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT", "Chisq"), names(av))
+  # "Chisq" + "Pr(>|Chi|)"; anova.multinom as "LR stat." + "Pr(Chi)". Look up
+  # defensively, new names appended LAST so glm/coxph priority is untouched.
+  lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT", "Chisq", "LR stat."),
+                       names(av))
   p_col <- intersect(
-    c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)"), names(av)
+    c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)", "Pr(Chi)"), names(av)
   )
   lrt_stat <- if (length(lrt_col) > 0L) av[[lrt_col[1L]]][2L] else NA_real_  # nocov
   p_val <- if (length(p_col) > 0L) av[[p_col[1L]]][2L] else NA_real_         # nocov
@@ -197,7 +211,7 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
 
   aicc <- function(fit, aic_v) {
     k <- length(stats::coef(fit)) + 1L
-    n <- stats::nobs(fit)
+    n <- .spicy_nobs(fit)
     if (n - k - 1L > 0L) aic_v + (2 * k * (k + 1L)) / (n - k - 1L) else NA_real_  # nocov
   }
   aicc_p <- aicc(fit_prev, aic_p)
@@ -349,6 +363,7 @@ default_nested_tokens <- function(models) {
   all_mixed <- all(vapply(models, inherits, logical(1), mixed_classes))
   all_glm   <- all(vapply(models, inherits, logical(1), "glm"))
   all_cox   <- all(vapply(models, inherits, logical(1), "coxph"))
+  all_multinom <- all(vapply(models, inherits, logical(1), "multinom"))
   if (all_mixed) {
     # Mixed-effects: AIC + BIC + chi^2 LRT + p. Variance-explained
     # change is reported via the absolute Nakagawa R^2 rows; the
@@ -356,15 +371,34 @@ default_nested_tokens <- function(models) {
     # consensus formula across families (the "marginal vs conditional"
     # split makes a single Delta column ambiguous).
     c("aic_change", "bic_change", "lrt_change", "p_change")
-  } else if (all_glm || all_cox) {
+  } else if (all_glm || all_cox || all_multinom) {
     # Likelihood-based hierarchies (glm; coxph / rms::cph partial
-    # likelihood): the change test is the LRT. The lm tokens
-    # (r2_change / f_change) have no definition here and previously
-    # rendered as all-dash rows in a Cox comparison table.
+    # likelihood; nnet::multinom): the change test is the LRT. The lm
+    # tokens (r2_change / f_change) have no definition here and
+    # previously rendered as all-dash rows in a Cox comparison table.
     c("lrt_change", "p_change")
   } else {
     c("r2_change", "f_change", "p_change")
   }
+}
+
+
+# ---- nobs with class-specific fallbacks ----------------------------------
+
+# stats::nobs() has no method for every supported class: nnet registers
+# no nobs.multinom, so stats::nobs() stops with "no 'nobs' method is
+# available" (locale-translated). The sample count lives on
+# fit$fitted.values -- one row per observation -- matching what
+# as_regression_frame.multinom() reports as n_obs. Shared by the
+# nested-alignment validator (validate_nested_alignment) and the
+# per-pair AICc computation so `nested = TRUE` works for every class
+# with a pairwise anova() method. Returns numeric(1), NOT integer(1):
+# nobs() returns a double for some classes (e.g. coxph).
+.spicy_nobs <- function(fit) {
+  if (inherits(fit, "multinom")) {
+    return(as.numeric(nrow(fit$fitted.values)))
+  }
+  as.numeric(stats::nobs(fit))
 }
 
 

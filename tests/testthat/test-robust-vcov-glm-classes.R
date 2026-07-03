@@ -138,7 +138,7 @@ test_that("betareg CR* matches sandwich::vcovCL on the mean block", {
 
 ## ---- mlogit ---------------------------------------------------------------
 
-test_that("mlogit CR* (vcovCL) and HC* (vcovHC) match their oracles", {
+test_that("mlogit CR* (vcovCL) matches its oracle; HC* is refused", {
   skip_if_not_installed("mlogit")
   skip_if_not_installed("sandwich")
   data("Fishing", package = "mlogit", envir = environment())
@@ -159,11 +159,37 @@ test_that("mlogit CR* (vcovCL) and HC* (vcovHC) match their oracles", {
   expect_identical(fr_cr$info$vcov_label,
                    "cluster-robust (CL), clusters by id")
 
-  fr_hc <- as_regression_frame(m, vcov = "HC3")
-  b_hc  <- b_rows(fr_hc)
-  orc_hc <- sqrt(diag(sandwich::vcovHC(m, type = "HC3")))[b_hc$term]
-  expect_equal(unname(b_hc$std_error), unname(orc_hc), tolerance = 1e-7)
-  expect_identical(fr_hc$info$vcov_label, "heteroskedasticity-robust (HC3)")
+  # HC* is refused: sandwich::vcovHC() mis-scales the meat for mlogit (it
+  # divides by nobs() = long-format rows while estfun() has one row per
+  # choice situation, deflating SEs by ~sqrt(J); HC1-HC5 silently equal
+  # HC0 without a hatvalues method). Both the frame method and the
+  # orchestrator gate refuse rather than report wrong numbers.
+  expect_error(
+    as_regression_frame(m, vcov = "HC3"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(m, vcov = "HC3"),
+    class = "spicy_unsupported_vcov"
+  )
+  err <- tryCatch(table_regression(m, vcov = "HC0"), error = function(e) e)
+  expect_s3_class(err, "spicy_unsupported_vcov")
+  expect_match(conditionMessage(err), "CR0", fixed = TRUE)
+})
+
+test_that("mlogit n counts choice situations, not long-format rows", {
+  skip_if_not_installed("mlogit")
+  data("Fishing", package = "mlogit", envir = environment())
+  fd <- mlogit::mlogit.data(Fishing, varying = 2:9, shape = "wide",
+                            choice = "mode")
+  m  <- mlogit::mlogit(mode ~ price + catch, data = fd)
+  fr <- as_regression_frame(m)
+  # 1182 choice situations (rows of the wide Fishing data); stats::nobs()
+  # returns the long-format count (1182 x 4 alternatives = 4728), which
+  # overstates the sample.
+  expect_identical(fr$info$n_obs, nrow(Fishing))
+  expect_identical(fr$info$fit_stats$nobs, nrow(Fishing))
+  expect_lt(fr$info$n_obs, as.integer(stats::nobs(m)))
 })
 
 test_that("mlogit cluster at the wrong (long-format) length errors clearly", {
@@ -214,4 +240,61 @@ test_that("svyglm default (survey-Taylor) is the design-based SE, untouched", {
   b  <- b_rows(fr)
   orc <- sqrt(diag(stats::vcov(m)))[b$term]
   expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-9)
+})
+
+## ---- multinom (classical-only) ---------------------------------------------
+
+test_that("multinom CR* with a formula cluster refuses cleanly, like HC*", {
+  skip_if_not_installed("nnet")
+  # nnet registers no nobs.multinom: the cluster-resolution fallback used to
+  # hit if(NA) ("missing value where TRUE/FALSE needed") for a formula or
+  # string cluster naming a variable outside the model formula, instead of
+  # reaching the capability gate. All three cluster forms must produce the
+  # same clean refusal as a plain HC* request.
+  fit <- nnet::multinom(employment_status ~ age + sex + education,
+                        data = sochealth, trace = FALSE)
+  for (cl in list(~region, "region", sochealth$region)) {
+    err <- tryCatch(
+      table_regression(fit, vcov = "CR2", cluster = cl),
+      error = function(e) e
+    )
+    expect_s3_class(err, "spicy_unsupported_vcov")
+    expect_match(conditionMessage(err), "multinom", fixed = TRUE)
+    expect_match(conditionMessage(err), "classical", fixed = TRUE)
+  }
+  expect_error(table_regression(fit, vcov = "HC3"),
+               class = "spicy_unsupported_vcov")
+})
+
+## ---- zeroinfl / hurdle formula cluster --------------------------------------
+
+test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
+  skip_if_not_installed("pscl")
+  skip_if_not_installed("sandwich")
+  # Regression guard: stats::nobs() errors for pscl fits, and the cluster
+  # lookup's na.action subsetting used to crash on if(NA) for a formula or
+  # string cluster. These classes DO support CR*, so the request must
+  # compute -- not crash.
+  data("bioChemists", package = "pscl", envir = environment())
+  d <- get("bioChemists", envir = environment())
+  set.seed(1)
+  d$dept <- factor(sample(1:15, nrow(d), TRUE))
+  zi <- pscl::zeroinfl(art ~ fem + ment | ment, data = d)
+  hd <- pscl::hurdle(art ~ fem + ment | ment, data = d)
+  for (m in list(zi, hd)) {
+    fr_cl <- as_regression_frame(m, vcov = "CR0", cluster = d$dept,
+                                 cluster_name = "dept")
+    tab <- table_regression(m, vcov = "CR0", cluster = ~dept,
+                            output = "data.frame")
+    expect_s3_class(tab, "data.frame")
+    fr0 <- as_regression_frame(m)
+    b_r <- b_rows(fr_cl)
+    b_0 <- b_rows(fr0)
+    # Robust SEs actually differ from classical (the sandwich was applied).
+    expect_false(isTRUE(all.equal(b_r$std_error, b_0$std_error)))
+    # The frame's main block strips pscl's "count_" prefix from the terms.
+    orc <- sqrt(diag(sandwich::vcovCL(m, cluster = d$dept)))
+    orc <- orc[paste0("count_", b_r$term)]
+    expect_equal(unname(b_r$std_error), unname(orc), tolerance = 1e-7)
+  }
 })

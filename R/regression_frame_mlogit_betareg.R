@@ -37,9 +37,29 @@ as_regression_frame.mlogit <- function(fit,
                                         ...) {
   .check_mlogit_available()
 
+  # HC* is NUMERICALLY WRONG for mlogit via sandwich::vcovHC (see
+  # .robust_vcov_support): the meat is scaled by nobs() long-format rows
+  # while estfun() has one row per choice situation, deflating SEs by
+  # ~sqrt(J), and HC1-HC5 silently equal HC0 (no hatvalues method). The
+  # orchestrator gate already refuses HC*; guard here too so a direct
+  # frame call cannot produce silently wrong numbers.
+  if (startsWith(vcov %||% "model", "HC")) {
+    spicy_abort(
+      c(
+        sprintf("`vcov = \"%s\"` is not available for `mlogit` models.", vcov),
+        "i" = paste0("`sandwich::vcovHC()` mis-scales the sandwich for ",
+                     "mlogit's per-choice-situation scores. Use a ",
+                     "cluster-robust `vcov` (\"CR0\"-\"CR3\") with one cluster ",
+                     "value per choice situation, or the model-based default.")
+      ),
+      class = "spicy_unsupported_vcov"
+    )
+  }
+
   coefs <- .mlogit_coefs(fit, ci_level = ci_level)
-  # HC* -> sandwich::vcovHC ; CR* -> sandwich::vcovCL cluster sandwich.
-  # Wald z throughout (mlogit is ML-estimated); a no-op for the default.
+  # CR* -> sandwich::vcovCL cluster sandwich, sized off the per-choice-
+  # situation estfun rows (matches sandwich::sandwich()). Wald z throughout
+  # (mlogit is ML-estimated); a no-op for the default.
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
   info  <- .mlogit_info(fit,
@@ -156,6 +176,18 @@ as_regression_frame.mlogit <- function(fit,
   fam <- list(family = "multinomial", link = "logit")
   if (is.null(ci_method)) ci_method <- "wald"
 
+  # n = the number of CHOICE SITUATIONS (one multinomial observation per
+  # chooser), NOT stats::nobs(fit), which counts the long-format rows
+  # (n x J alternatives) and overstates the sample. fit$probabilities has
+  # one row per choice situation; estfun() and the cluster-length check
+  # (.expected_cluster_length) already use the same convention. Stata
+  # asclogit calls this "Number of cases".
+  n_choice <- if (!is.null(fit$probabilities)) {
+    as.integer(nrow(fit$probabilities))
+  } else {
+    as.integer(stats::nobs(fit))                                       # nocov
+  }
+
   fit_stats <- list(
     r_squared      = NA_real_,
     adj_r_squared  = NA_real_,
@@ -166,7 +198,7 @@ as_regression_frame.mlogit <- function(fit,
                               error = function(e) NA_real_),
     deviance       = NA_real_,
     sigma          = NA_real_,
-    nobs           = as.integer(stats::nobs(fit))
+    nobs           = n_choice
   )
 
   supports <- list(
@@ -199,7 +231,7 @@ as_regression_frame.mlogit <- function(fit,
     family         = fam,
     dv             = dv,
     dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit)),
+    n_obs          = n_choice,
     n_groups       = NULL,
     weights_kind   = "none",
     random_effects = empty_random_effects(),

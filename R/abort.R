@@ -243,7 +243,10 @@ cluster_lookup_data <- function(fit, vars) {
     # original data has more rows, subset using the model frame's
     # `na.action` attribute (the standard R idiom for "rows the
     # model actually used").
-    if (nrow(orig) != n_fit && !is.null(mf)) {
+    # n_fit is NA when the class registers no nobs method (e.g.
+    # nnet::multinom, pscl zeroinfl/hurdle): skip the subsetting --
+    # downstream length validation / capability gates handle the rest.
+    if (!is.na(n_fit) && nrow(orig) != n_fit && !is.null(mf)) {
       na_action <- attr(mf, "na.action")
       if (!is.null(na_action) &&
             nrow(orig) - length(na_action) == n_fit) {

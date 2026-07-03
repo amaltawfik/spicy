@@ -737,8 +737,6 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   # Cluster-robust only: clubSandwich CR* is defined, but HC* (an OLS / single-
   # level concept) and the lm/glm-refitting resamplers are not.
   cr_only <- c("classical", paste0("CR", 0:3))
-  # Cluster sandwich classes that ALSO have a working estfun for HC*.
-  hc_cr <- c("classical", paste0("HC", 0:5), paste0("CR", 0:3))
   switch(
     class(fit)[1L],
     lm     = full,
@@ -756,17 +754,23 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
     coxph           = cr_only,
     survreg         = cr_only,
-    # Inc 4: cluster sandwich via sandwich::vcovCL. mlogit also has HC* (it
-    # provides estfun); svyglm uses clubSandwich design-aware CR*. clm is
-    # structure-aware: scale/nominal (partial-PO) fits have no sandwich estfun
-    # method, so CR* is refused for them (-> spicy_unsupported_vcov up front).
+    # Inc 4: cluster sandwich via sandwich::vcovCL. svyglm uses clubSandwich
+    # design-aware CR*. clm is structure-aware: scale/nominal (partial-PO) fits
+    # have no sandwich estfun method, so CR* is refused for them
+    # (-> spicy_unsupported_vcov up front).
     gam             = cr_only,
     bam             = cr_only,
     polr            = cr_only,
     clm             = .clm_robust_vcov_support(fit, cr_only),
     betareg         = cr_only,
     svyglm          = cr_only,
-    mlogit          = hc_cr,
+    # mlogit: CR* only. vcovHC() is NUMERICALLY WRONG for mlogit -- its meat
+    # divides by nobs() (long-format rows, n x J) while estfun() has one row
+    # per choice situation (n), deflating SEs by ~sqrt(J); and without a
+    # hatvalues method HC1-HC5 silently equal HC0. vcovCL() sizes everything
+    # off the estfun rows and matches sandwich::sandwich(), so the cluster
+    # path is correct (verified against the Fishing data, 2026-07-03).
+    mlogit          = cr_only,
     # Inc 4b: rms fits via rms::robcov() native cluster sandwich (needs the
     # fit's x = TRUE, y = TRUE). ols / lrm / cph / Glm.
     ols             = cr_only,

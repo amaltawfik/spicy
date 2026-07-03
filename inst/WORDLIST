@@ -1,5 +1,6 @@
 AER
 Agresti
+Agresti's
 al
 Algina
 alphanumerics
@@ -9,6 +10,7 @@ Arel
 ASA's
 AStA
 Baayen
+Begg
 behaviour
 behavioural
 Benjamini
@@ -27,6 +29,7 @@ cauchit
 centre
 centred
 centring
+Cheng
 CHF
 cli
 cloglog
@@ -48,12 +51,13 @@ Cramer's
 Cramer’s
 Cribari
 crosstable
-customise
 Customise
+customise
 Customising
 da
 dataset's
 Davison
+Debreu
 deduplicated
 deduplicates
 DescTools
@@ -99,8 +103,8 @@ Gelman's
 generalisation
 generalisations
 generalise
-Generalised
 generalised
+Generalised
 glm
 glmer
 GLMM
@@ -116,6 +120,7 @@ handoff
 hardcoded
 Harmonisation
 hatvalues
+Hausman
 Hays’
 HC
 Hedges’
@@ -131,7 +136,9 @@ honour
 honoured
 Hosmer
 Hotelling
+Hsiao
 HTZ
+IIA
 Imbens
 Internationalisation
 intra
@@ -176,6 +183,8 @@ merDeriv
 Merkle
 mis
 mislabelled
+mlogit
+mlogit's
 MLwiN
 modelled
 monospace
@@ -191,13 +200,14 @@ NEJM
 Neto
 nlme
 nlme's
-Noncentral
 noncentral
-Noncentrality
+Noncentral
 noncentrality
+Noncentrality
 normalised
 Olejnik
 Olkin
+optimizer's
 ORCID
 ORs
 oversized
@@ -210,10 +220,11 @@ Pinheiro
 pkgdown
 plaintext
 poisson
+polychotomous
 POSIXct
-pre
-PRE
 Pre
+PRE
+pre
 PROC
 PSPP
 Pustejovsky
@@ -224,6 +235,7 @@ rebranded
 rebranding
 regexes
 relabelled
+releveling
 renderer
 renderers
 resamplers
@@ -255,8 +267,8 @@ Stabilising
 stabilising
 Standardisation
 standardisation
-Standardised
 standardised
+Standardised
 Stata
 Stata's
 Steiger
@@ -269,8 +281,8 @@ Theil's
 Therneau
 throughs
 tibble
-tidyselect
 Tidyselect
+tidyselect
 tidyverse
 Tily
 tinytable
@@ -296,9 +308,11 @@ VCV
 Venables
 Vuong
 Wasserstein
+Weisberg
 Welch
 wellbeing
 WLS
+Wulff
 Yajima
 Zarembka
 Zeger

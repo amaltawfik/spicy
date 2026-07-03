@@ -28,6 +28,13 @@
   chi-bar-squared LR test. Variance-component rows carry no p-value (boundary;
   Self & Liang 1987). `show_re` / `re_scale` / `re_columns` keep their
   meaning; `re_columns` is now display-only (`tidy()` always carries SE + CI).
+* `mlogit`: `vcov = "HC*"` is now refused (`spicy_unsupported_vcov`) --
+  `sandwich::vcovHC()` scales the sandwich by the long-format row count
+  while the scores have one row per choice situation, deflating the SEs
+  by about sqrt(J), and HC1-HC5 silently equal HC0 (no hat values).
+  `CR*` (one cluster value per choice situation) is unaffected and matches
+  `sandwich::vcovCL()`. The `n` fit-stat row now counts choice situations
+  (Stata `asclogit`'s "Number of cases"), not long-format rows.
 
 ## New supported models
 
@@ -149,6 +156,16 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## Bug fixes
 
+* `nested = TRUE` now works for `nnet::multinom` fits: the comparison rows
+  report the likelihood-ratio chi-square (matching `anova.multinom()`),
+  not `lm`'s R²/F-change. It previously crashed -- `nnet` registers no
+  `nobs()` method -- before reaching any comparison.
+* A cluster-robust `vcov` with a formula / string `cluster` naming a
+  variable outside the model formula no longer crashes with
+  `missing value where TRUE/FALSE needed` on classes without a `nobs()`
+  method: `multinom` now gets the same clean `spicy_unsupported_vcov`
+  refusal as `HC*`, and `pscl::zeroinfl` / `hurdle` -- which do support
+  `CR*` -- now compute it instead of crashing.
 * Fix decimal-point alignment in `gt` / `tinytable` / `flextable` / Word
   outputs of `table_continuous_lm()` / `table_continuous()` /
   `table_categorical()`.

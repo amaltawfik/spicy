@@ -1,0 +1,388 @@
+---
+title: "Multinomial regression tables"
+description: >
+  Publication-ready tables for multinomial logistic regression in R with
+  `table_regression()`: per-outcome coefficient blocks, odds ratios (what
+  Stata labels relative-risk ratios), per-category average marginal
+  effects, changing the reference category, nested comparison by
+  likelihood-ratio test, and the `nnet::multinom` engine plus the
+  `mlogit` discrete-choice engine.
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Multinomial regression tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+have_nnet <- requireNamespace("nnet", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = have_nnet
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+have_mlogit <- have_nnet && requireNamespace("mlogit", quietly = TRUE)
+have_broom  <- have_nnet && requireNamespace("broom", quietly = TRUE)
+source("_pkgdown-helpers.R")
+```
+
+```{r setup, message = FALSE}
+library(spicy)
+library(nnet)
+```
+
+This vignette covers **multinomial logistic regression** — models for a
+*nominal* outcome, a categorical response whose categories have no
+natural order: employment status, party choice, transport mode. The
+companion vignette [*Publication-ready regression
+tables*](table-regression.html) covers the shared mechanics (`vcov`,
+`ci_level`, output formats, multi-model layouts, broom integration),
+and [*Ordinal regression tables*](table-regression-ordinal.html) covers
+the case where the categories *are* ordered. Here we focus on what is
+specific to nominal outcomes: per-outcome coefficient blocks, the
+choice of reference category, and the distance between a coefficient's
+sign and its effect on a probability.
+
+`table_regression()` supports both engines:
+
+* **`nnet::multinom()`** — the baseline-category logit model on
+  characteristics of the *person* (case-specific covariates); the
+  social-science standard.
+* **`mlogit::mlogit()`** — McFadden's conditional logit on
+  characteristics of the *alternatives* (discrete-choice data).
+
+The running example is employment status in the bundled `sochealth`
+survey (`?sochealth`) — four categories with `Employed` by far the most
+frequent:
+
+```{r data}
+d <- sochealth
+table(d$employment_status)
+```
+
+One recoding first. `education` is stored as an *ordered* factor, and R
+gives ordered factors polynomial contrasts by default — the model would
+estimate `.L` (linear) and `.Q` (quadratic) components that fit
+identically but are awkward to report. Applied tables conventionally
+show treatment dummies against a reference level (Fox & Weisberg 2019),
+so we drop the ordering and keep the level order:
+
+```{r recode}
+d$education <- factor(as.character(d$education),
+                      levels = c("Lower secondary", "Upper secondary",
+                                 "Tertiary"))
+```
+
+## The baseline-category logit model in one paragraph
+
+For an outcome with $J$ categories, the model fits $J-1$ logit
+equations simultaneously by maximum likelihood, each comparing one
+category against a common reference (the *baseline*):
+$\log[P(Y = j)/P(Y = J)] = \alpha_j + x^\top\beta_j$ (Agresti 2013, ch. 8).
+Two consequences shape the table. Each predictor gets **one coefficient
+per non-reference outcome** — there is no single "effect of education",
+only its effect on each comparison — and the $J-1$ fitted equations
+determine the logit for *every* pair of categories, so nothing is lost
+by picking one baseline. Fitting separate binary logits instead of the
+simultaneous model is consistent but less efficient; the loss is minor
+when the baseline is the most frequent category (Begg & Gray 1984) —
+and Stata's `mlogit` defaults to the most frequent outcome.
+`multinom()` uses the factor's first level — here `Employed`, which
+happens to be both first and most frequent: large and substantively
+meaningful, exactly what a reference should be.
+
+## Basic table
+
+```{r basic}
+fit <- multinom(employment_status ~ age + sex + education,
+                data = d, trace = FALSE)
+table_regression(fit)
+```
+
+Reading the table:
+
+* Rows come in **per-outcome blocks** under each predictor:
+  `Unemployed: Tertiary` is the tertiary-education coefficient in the
+  *Unemployed-versus-Employed* equation. Every row answers "compared to
+  `Employed`".
+* The `(Intercept)` block is one intercept per equation — the log-odds
+  of each category against `Employed` at the reference levels and
+  age 0. It anchors the equations rather than carrying substantive
+  interest.
+* Inference is **Wald-z** (`df = Inf`), matching `summary()`-based
+  practice for ML fits and Stata `mlogit`; `nnet` itself prints no
+  p-values.
+* The model-fit block reports **n** and **AIC**.
+* In the call, `trace = FALSE` just silences the optimizer's iteration
+  log; unlike `polr()`, no `Hess = TRUE` is needed.
+
+One scope note: `multinom` fits report **classical Wald-z inference
+only** — a robust or cluster-robust `vcov` request is refused with an
+explanatory error rather than silently ignored.
+
+## Odds ratios — and what Stata calls them
+
+`exponentiate = TRUE` puts the estimates and CI bounds on the ratio
+scale:
+
+```{r or}
+table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
+```
+
+Each value is an **odds ratio against the reference outcome**:
+compared with lower-secondary graduates of the same age and sex,
+tertiary graduates have 0.29 times the odds of being unemployed rather
+than employed — a 71% reduction, the education gradient the table is
+really about. Formally it is the odds ratio of the *conditional*
+distribution restricted to the two categories in the comparison
+(Agresti 2013).
+
+One terminology note, because readers will meet it: Stata's
+`mlogit, rrr` labels these same numbers **relative-risk ratios** —
+$e^\beta$ is also the multiplicative change in the probability ratio
+of outcome $j$ versus the baseline — while SAS prints "Odds Ratio
+Estimates" for its generalized logits. Same quantity, two readings;
+`spicy` labels it `OR`, the reading that generalizes from binary
+logistic regression.
+
+## Changing the reference category
+
+The reference is a *presentation* choice, not a modeling one: refit
+with another baseline and it is the same model, reparameterized —
+same likelihood, same AIC, same fitted probabilities; only the
+comparisons displayed change.
+
+```{r relevel}
+d2 <- d
+d2$employment_status <- relevel(d2$employment_status, ref = "Unemployed")
+fit_unemp <- multinom(employment_status ~ age + sex + education,
+                      data = d2, trace = FALSE)
+c(AIC(fit), AIC(fit_unemp))
+table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
+```
+
+Against `Employed`, education looked irrelevant for the `Student`
+contrast; against `Unemployed`, every `Tertiary` contrast is strong
+(`Student: Tertiary` OR 3.94, p < .001; even `Inactive: Tertiary`
+reaches p = .005; only `Inactive: Upper secondary` stays
+inconclusive). The p-values moved because the *questions* changed, not
+the model — a multinomial table only ever shows $J-1$ of the
+$J(J-1)/2$ pairwise comparisons, and any of the others can be
+recovered by releveling (Agresti 2013; Long 1997). Report the baseline
+that makes your substantive comparisons direct.
+
+## The sign trap, and marginal effects
+
+The most common misreading of a multinomial table is to treat a
+coefficient's sign as the direction of the effect on that category's
+*probability*. It is not: the marginal effect of $x_k$ on $P(Y=m)$ is
+$P_m(\beta_{k,m} - \sum_j \beta_{k,j} P_j)$ — the coefficient *minus a
+probability-weighted average of all categories' coefficients* — so its
+sign can differ from the coefficient's, and can even change across the
+range of $x_k$ (Long & Freese 2014; Wulff 2015). The categories compete
+for probability mass.
+
+The probability-scale summary is the per-category **average marginal
+effect** (AME): within each predictor block, one row per response
+category:
+
+```{r ame}
+table_regression(fit, show_columns = c("b", "ame"))
+```
+
+Three things to read off, using the `Tertiary` rows:
+
+* The **reference category is back**: `Employed` has no coefficient
+  rows (it is the baseline of every equation), yet it carries the
+  largest *positive* probability effect in the table (+0.14 for
+  `Tertiary`, second in magnitude only to `Unemployed`'s −0.16). The
+  log-odds side never shows this; the probability side must, because
+  the effects on all $J$ categories **sum to ≈ 0** — the mass that
+  tertiary education moves out of `Unemployed` lands mainly in
+  `Employed`.
+* Cells are **on the probability scale**: −0.16 is a drop of 16
+  **percentage points** in the probability of unemployment for
+  tertiary relative to lower-secondary education, averaged over the
+  observed covariates (`marginaleffects::avg_slopes()`; Williams
+  2012). Add `"ame_se"`, `"ame_ci"`, or `"ame_p"` to `show_columns`
+  for delta-method inference on these effects.
+* Here every AME happens to share its coefficient's sign; do not count
+  on it. When an outcome's coefficient sits close to the
+  probability-weighted average of all the coefficients, the
+  probability effect can flip sign — the reason Wulff (2015)
+  recommends never interpreting a multinomial model from its
+  coefficient signs alone.
+
+## An ordinal predictor: scores or dummies?
+
+`education` is ordered — Lower secondary < Upper secondary < Tertiary —
+and the dummy coding above ignores that. The alternative is to enter it
+as **numeric scores** (1, 2, 3): one slope per equation instead of two
+dummies, a model that is both simpler and nested in the factor model.
+Agresti (2007, sec. 4.4.3) gives the workflow: fit both codings and let
+a likelihood-ratio test judge whether the category coefficients depart
+from a linear trend in the scores. `nested = TRUE` runs exactly that
+comparison:
+
+```{r scores}
+d$educ_score <- as.numeric(d$education)   # 1 / 2 / 3
+fit_lin <- multinom(employment_status ~ age + sex + educ_score,
+                    data = d, trace = FALSE)
+table_regression(list(fit_lin, fit), nested = TRUE,
+                 show_columns = c("b", "p"))
+```
+
+The change rows read: freeing education from the linear trend buys a
+chi-squared of 4.52 on 3 degrees of freedom (one per equation),
+p = .211 — no evidence the dummies improve on the scores, and AIC
+agrees (2514.3 vs 2515.8). On Agresti's grounds the scores model is
+preferable when it fits: simpler to report, and more powerful because
+it concentrates the trend in one parameter per equation instead of
+two.
+
+Three caveats keep the decision honest. A non-significant test does
+not *prove* linearity — in modest samples several codings fit
+adequately (Agresti 2007). Integer scores assume the steps are equally
+spaced, which is a substantive claim about education levels, not a
+statistical default (Agresti 2007, sec. 2.5.4). And testing first,
+then reporting the scores model as if it had been chosen in advance,
+inflates the Type I error of the subsequent test (Grambsch & O'Brien
+1991) — with only three levels the dummies cost one extra parameter
+per equation, and Harrell (2015) reasonably recommends just keeping
+them. Present the LRT as a transparent simplification decision, not a
+proof.
+
+## Independence of irrelevant alternatives, briefly
+
+The multinomial logit assumes the odds between any two categories do
+not depend on what other alternatives exist — the *independence of
+irrelevant alternatives* (IIA), of red-bus/blue-bus fame (the critique
+goes back to Debreu 1960). Formal tests exist (Hausman & McFadden
+1984; Small & Hsiao 1985), but simulation evidence shows them to be
+unsatisfactory for applied work — different tests reach conflicting
+verdicts on the same data (Cheng & Long 2007) — and Long & Freese
+(2014) do not recommend them. The working advice remains McFadden's
+(1974): use the model when the alternatives are "distinct and weighed
+independently" — not close substitutes. For a fixed, exhaustive set
+like employment status, where no alternative is ever added or removed,
+IIA is rarely the practical concern it is in choice modeling; where
+alternatives genuinely substitute (two bus lines), the remedy is a
+different model (nested or mixed logit), not a mechanical test.
+
+## Discrete choice: `mlogit`
+
+`multinom()` models the chooser; McFadden's **conditional logit**
+models the *choices*. When covariates describe the alternatives —
+the price of each travel mode, the catch rate of each fishing mode —
+the coefficient is one per *attribute*, shared across alternatives
+(McFadden 1974; Croissant 2020). The `mlogit` engine renders both
+kinds of covariate in one table. The classic `Fishing` data: 1182
+anglers choose among four modes; `price` and `catch` vary by
+alternative, `income_k` (income in thousands of dollars) describes
+the angler:
+
+```{r mlogit, eval = have_mlogit, message = FALSE}
+library(mlogit)
+data("Fishing", package = "mlogit")
+Fishing$income_k <- Fishing$income / 1000
+Fish <- dfidx(Fishing, varying = 2:9, choice = "mode", shape = "wide")
+
+fit_choice <- mlogit(mode ~ price + catch | income_k, data = Fish)
+table_regression(fit_choice, exponentiate = TRUE,
+                 show_columns = c("b", "ci", "p"))
+```
+
+Reading it: the **alternative-specific** covariates (`price`, `catch`)
+get a single row each — one more dollar of price multiplies a mode's
+odds by 0.98 *whichever mode it is* — while the **case-specific**
+covariate (`income_k`) works like `multinom` and needs one coefficient
+per non-reference alternative. The footer's `n` counts **choice
+situations** (1182 anglers), not the 4728 rows of the long-format
+data: each angler contributes one choice, and that is the model's
+sample size.
+
+Three guardrails: average marginal effects are refused for `mlogit`
+(`marginaleffects` has no slopes method for its one-row-per-choice
+structure); the robust `vcov` family is `CR0`–`CR3` only, with one
+cluster value per choice situation, not per long-format row; and
+`HC*` is refused outright — `sandwich::vcovHC()` mis-scales the
+sandwich for mlogit's per-choice-situation scores.
+
+## Several models side by side
+
+Multinomial fits compare like any other class — here the education
+gradient before and after adjustment:
+
+```{r multi}
+fit_min <- multinom(employment_status ~ education, data = d, trace = FALSE)
+table_regression(list(Unadjusted = fit_min, Adjusted = fit),
+                 exponentiate = TRUE, show_columns = c("b", "p"))
+```
+
+## Output formats
+
+Everything above used the default console output. The same table
+renders as a raw data frame, a long broom-style tibble, or — with the
+corresponding Suggests package — a rich `gt`, `flextable`,
+`tinytable`, Excel, or Word table:
+
+```{r outputs-df}
+head(table_regression(fit, exponentiate = TRUE, output = "data.frame"))
+```
+
+```{r outputs-gt, eval = build_rich_tables && have_nnet}
+table_regression(fit, show_columns = c("b", "ame"), output = "gt")
+```
+
+[`broom::tidy()`](https://broom.tidymodels.org) returns the long
+frame, one row per `(term, estimate_type)`; the per-outcome structure is
+carried in the term labels, and AME rows cover all $J$ categories
+including the reference:
+
+```{r broom, eval = have_broom}
+broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
+```
+
+## References
+
+* Agresti, A. (2007). *An Introduction to Categorical Data Analysis*
+  (2nd ed.). Wiley.
+* Agresti, A. (2013). *Categorical Data Analysis* (3rd ed.). Wiley.
+* Begg, C. B., & Gray, R. (1984). Calculation of polychotomous
+  logistic regression parameters using individualized regressions.
+  *Biometrika*, 71(1), 11–18.
+* Cheng, S., & Long, J. S. (2007). Testing for IIA in the multinomial
+  logit model. *Sociological Methods & Research*, 35(4), 583–600.
+* Croissant, Y. (2020). Estimation of random utility models in R: The
+  mlogit package. *Journal of Statistical Software*, 95(11), 1–41.
+* Debreu, G. (1960). Review of R. D. Luce, *Individual Choice
+  Behavior*. *American Economic Review*, 50(1), 186–188.
+* Fox, J., & Weisberg, S. (2019). *An R Companion to Applied
+  Regression* (3rd ed.). Sage.
+* Grambsch, P. M., & O'Brien, P. C. (1991). The effects of
+  transformations and preliminary tests for non-linearity in
+  regression. *Statistics in Medicine*, 10(5), 697–709.
+* Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
+  Springer.
+* Hausman, J. A., & McFadden, D. (1984). Specification tests for the
+  multinomial logit model. *Econometrica*, 52(5), 1219–1240.
+* Long, J. S. (1997). *Regression Models for Categorical and Limited
+  Dependent Variables*. Sage.
+* Long, J. S., & Freese, J. (2014). *Regression Models for Categorical
+  Dependent Variables Using Stata* (3rd ed.). Stata Press.
+* McFadden, D. (1974). Conditional logit analysis of qualitative
+  choice behavior. In P. Zarembka (Ed.), *Frontiers in Econometrics*
+  (pp. 105–142). Academic Press.
+* Small, K. A., & Hsiao, C. (1985). Multinomial logit specification
+  tests. *International Economic Review*, 26(3), 619–627.
+* Williams, R. (2012). Using the margins command to estimate and
+  interpret adjusted predictions and marginal effects. *The Stata
+  Journal*, 12(2), 308–331.
+* Wulff, J. N. (2015). Interpreting results from the multinomial logit
+  model: Demonstrated by foreign market entry. *Organizational
+  Research Methods*, 18(2), 300–325.

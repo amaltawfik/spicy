@@ -144,9 +144,14 @@ odds ratios of each outcome against the reference outcome -- the
 baseline-category logits are log-odds (Agresti; SAS prints
 "Odds Ratio Estimates" under its generalized-logit link; Stata's \verb{mlogit, rrr} labels
 the same quantity a relative-risk ratio). AME is per-outcome.
+\code{nested = TRUE} compares nested \code{multinom} fits by likelihood-ratio test
+(the \code{anova.multinom()} convention).
 \code{mlogit} renders
 per-alternative rows; AME is refused (no \code{slopes()} method exists for
-its data format); \verb{HC*} and \verb{CR*} are available.
+its data format). \verb{CR*} is available with one cluster value per choice
+situation, and \code{n} counts choice situations; \verb{HC*} is refused
+(\code{sandwich::vcovHC()} mis-scales the meat for mlogit's per-chooser
+score structure).
 }
 
 \section{Survival models}{
