@@ -69,6 +69,8 @@ navbar:
           href: articles/table-regression-mixed.html
         - text: Count and two-part regression tables
           href: articles/table-regression-counts.html
+        - text: Survival regression tables
+          href: articles/table-regression-survival.html
         - text: Ordinal regression tables
           href: articles/table-regression-ordinal.html
         - text: Summary tables for APA-style reporting
@@ -92,6 +94,7 @@ articles:
       - table-regression
       - table-regression-mixed
       - table-regression-counts
+      - table-regression-survival
       - table-regression-ordinal
       - summary-tables-reporting
 

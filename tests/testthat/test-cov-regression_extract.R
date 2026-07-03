@@ -288,15 +288,17 @@ test_that(".spicy_get_terms returns NULL for a flexsurvreg fit (terms() errors)"
     survival::Surv(time, status) ~ sex, data = d, dist = "weibull"
   )
 
-  # stats::terms() really does error on the fit (the premise of the branch).
+  # stats::terms() really does error on the fit...
   expect_error(stats::terms(fit))
-  # ... and the helper swallows that and returns the trailing NULL.
-  expect_null(spicy:::.spicy_get_terms(fit))
-  # The not-a-brmsfit guard is also satisfied.
-  expect_false(inherits(fit, "brmsfit"))
-  # Downstream consequence: no factor terms are introspected (empty list),
-  # which is exactly how this NULL propagates to the public frame.
-  expect_length(spicy:::detect_factor_terms(fit), 0L)
+  # ... but the flexsurvreg branch recovers the terms from the model
+  # frame (the fix that gave flexsurv factor grouping + reference rows).
+  trms <- spicy:::.spicy_get_terms(fit)
+  expect_false(is.null(trms))
+  expect_true("sex" %in% attr(trms, "term.labels"))
+  # Downstream consequence: the factor IS introspected now.
+  fts <- spicy:::detect_factor_terms(fit)
+  expect_length(fts, 1L)
+  expect_identical(fts[[1L]]$factor_term, "sex")
 })
 
 

@@ -178,7 +178,7 @@ For a model with a **single** variance component — here the
 random-intercept-only baseline, which returns in the comparison below —
 `re_test = "rlrt"` uses the exact restricted likelihood-ratio test of
 Crainiceanu & Ruppert (2004) instead, with a simulated null
-distribution (via `RLRsim`) — preferable in small samples where the
+distribution (via `RLRsim::exactRLRT()`) — preferable in small samples where the
 chi-bar-squared approximation is at its weakest:
 
 ```{r fit-ri}
@@ -252,15 +252,25 @@ explains, never whether a component earns its place. Selection belongs
 to the boundary-corrected test and the information criteria; the R²
 pair then describes the model you selected.
 
-Two further details repay attention. The **ICC** row (0.59) appears
-only for the intercept-only model: with a random slope, the
-correlation between two observations from the same subject depends on
-*when* they were taken, so a single ICC no longer exists — none is
-printed. And the fixed `Days` SE **doubles** (0.80 → 1.55): a model
-without the random slope overstates the precision of the average slope
-by ignoring between-subject slope variation (Schielzeth & Forstmeier
-2009) — the inferential stake of the decision, visible in the table
-itself.
+**The ICC row is an interpretation, not a test.** For the
+intercept-only model it comes straight from the two σ rows above it:
+ICC = σ²(Subject) / (σ²(Subject) + σ²(Residual)) =
+37.12² / (37.12² + 30.99²) ≈ 0.59 — squares, because the block
+displays standard deviations (`re_scale = "variance"` shows the variances directly).
+Read it two equivalent ways: 59% of the variance remaining after the
+fixed effects lies *between* subjects rather than within them — the
+variance partition coefficient of the multilevel textbooks (Snijders &
+Bosker 2012, §3.3) — and, equivalently, two observations from the same
+subject are expected to correlate at 0.59. It appears only for the
+intercept-only model: with a random slope, the correlation between two
+observations from the same subject depends on *when* they were taken,
+so a single ICC no longer exists — none is printed.
+
+One further detail repays attention: the fixed `Days` SE **doubles**
+(0.80 → 1.55). A model without the random slope overstates the
+precision of the average slope by ignoring between-subject slope
+variation (Schielzeth & Forstmeier 2009) — the inferential stake of
+the decision, visible in the table itself.
 
 Whether to *test* the slope at all is its own debate. The design-driven
 position includes every slope the design permits (Barr et al. 2013);
@@ -294,7 +304,8 @@ substantially in baseline incidence. The footer's chi-bar-squared test
 R² pair carries over unchanged. No ICC row appears — for a
 trial-weighted `cbind()` binomial response the single-trial
 latent-scale ICC is not defined, so none is printed; a Bernoulli 0/1
-`glmer` shows one.
+`glmer` shows one, computed on the latent logit scale (the residual
+variance is fixed at π²/3 there).
 
 ## `glmmTMB`: beyond `lme4`
 

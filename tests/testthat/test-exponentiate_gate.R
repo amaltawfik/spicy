@@ -186,3 +186,23 @@ test_that("flexsurv anc covariates + exponentiate are refused (identity-scale ro
   expect_match(conditionMessage(err), "ancillary", fixed = TRUE)
   expect_s3_class(table_regression(fit), "spicy_regression_table")
 })
+
+test_that("flexsurv factor predictors group with a reference row (xlevels fix)", {
+  skip_if_not_installed("flexsurv")
+  library(survival)
+  d <- na.omit(lung[, c("time", "status", "age", "sex")])
+  d$sex <- factor(d$sex, levels = 1:2, labels = c("Male", "Female"))
+  fit <- flexsurv::flexsurvreg(Surv(time, status) ~ age + sex,
+                               data = d, dist = "weibull")
+  fr <- as_regression_frame(fit)
+  cf <- fr$coefs
+  # Grouped: the contrast row carries parent_var/label, and the dropped
+  # reference level is synthesised as an is_ref row.
+  ref <- cf[cf$is_ref, ]
+  expect_identical(nrow(ref), 1L)
+  expect_identical(ref$parent_var, "sex")
+  expect_identical(ref$label, "Male")
+  con <- cf[cf$term == "sexFemale", ]
+  expect_identical(con$parent_var, "sex")
+  expect_identical(con$label, "Female")
+})

@@ -144,25 +144,18 @@ as_regression_frame.flexsurvreg <- function(fit,
   )
 
   ref_rows <- .flexsurv_reference_rows(fit)
-  # nocov start: .flexsurv_reference_rows() always returns an empty frame for
-  # flexsurvreg fits (stats::terms() errors on the fit, so detect_factor_terms()
-  # cannot introspect factor predictors), so this rbind never fires. See
-  # .flexsurv_reference_rows() below.
   if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
-  # nocov end
   coefs
 }
 
 
 .flexsurv_reference_rows <- function(fit) {
+  # detect_factor_terms() reaches flexsurvreg via the model-frame terms
+  # branch of .spicy_get_terms() / .spicy_get_xlevels() -- factor
+  # predictors group under their parent variable with a reference row,
+  # like every other engine.
   fts <- detect_factor_terms(fit)
   if (length(fts) == 0L) return(.empty_coefs_frame())
-  # nocov start: unreachable for flexsurvreg fits. detect_factor_terms() relies
-  # on stats::terms()/xlevels, but stats::terms() errors on a flexsurvreg object
-  # ("no terms component nor attribute"), so detect_factor_terms() always returns
-  # an empty list and the early return above always fires. (Known limitation:
-  # factor predictors therefore render as bare contrast names with no reference
-  # row -- see findings.)
   rows <- list()
   for (ft in fts) {
     if (!isTRUE(ft$reference_dropped)) next
@@ -189,7 +182,6 @@ as_regression_frame.flexsurvreg <- function(fit,
   }
   if (length(rows) == 0L) return(.empty_coefs_frame())
   do.call(rbind, rows)
-  # nocov end
 }
 
 

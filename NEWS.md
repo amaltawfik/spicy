@@ -211,6 +211,21 @@ See `vignette("table-regression")` for the walk-throughs.
   with `re_test`) moved to a consolidated `spicy_caveat` warning at
   build time -- advice addresses the analyst, not the reader of a
   published table.
+* New vignette *Survival regression tables*: Cox hazard ratios with
+  events and concordance, the proportional-hazards check, cluster-robust
+  Lin-Wei variance, hierarchical Cox comparisons, AFT time ratios and the
+  Weibull HR-TR duality, `rms::cph`, and `flexsurv`.
+* Multi-model and hierarchical titles keep proper nouns capitalized
+  ("Hierarchical Cox proportional hazards regression", "Model 1:
+  Poisson regression" -- both previously dropped the capital of the surname).
+* `flexsurvreg` factor predictors now group under their parent variable
+  with a synthetic reference row, like every other engine (the fit has
+  no `terms()` method; the metadata now comes from its model frame --
+  they previously rendered as bare contrast names such as `sexFemale`).
+* Hierarchical (`nested = TRUE`) Cox comparisons now default to the
+  LRT change rows (chi-squared + p) instead of lm's Delta-R-squared and
+  F-change rows, which have no definition for a partial likelihood and
+  rendered as all-dash rows.
 * The `p_adjust` footer's family size m no longer counts component-block
   intercepts (`zero_(Intercept)`, ...) that the adjustment itself
   excludes -- the reported m now matches the adjustment performed.

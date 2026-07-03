@@ -48,8 +48,8 @@ Cramer's
 Cramer’s
 Cribari
 crosstable
-Customise
 customise
+Customise
 Customising
 da
 dataset's
@@ -65,6 +65,7 @@ DT
 DuMouchel
 DV
 DVs
+ECOG
 Econometrica
 Eicker
 EMMEANS
@@ -107,6 +108,7 @@ GLMMs
 glmmTMB
 Gloeckler
 Goulet
+Grambsch
 Greifer
 Grouven
 HAC
@@ -118,8 +120,8 @@ Hays’
 HC
 Hedges’
 Heiss
-heteroskedasticity
 Heteroskedasticity
+heteroskedasticity
 Hillsdale
 Hinkley
 Hochberg
@@ -143,8 +145,8 @@ Kolesár
 Kristensen
 Kruskal's
 Kuznetsova
-Labelled
 labelled
+Labelled
 Lakens
 Lazar
 Lemeshow
@@ -159,6 +161,7 @@ lm's
 lme
 lmer
 lmerTest
+loglogistic
 LSMEANS
 MacKinnon
 Magnusson
@@ -188,8 +191,8 @@ NEJM
 Neto
 nlme
 nlme's
-noncentral
 Noncentral
+noncentral
 Noncentrality
 noncentrality
 normalised
@@ -200,6 +203,7 @@ ORs
 oversized
 panelling
 parenthesised
+Parmar
 Pelletier
 penalising
 Pinheiro
@@ -208,8 +212,8 @@ plaintext
 poisson
 POSIXct
 pre
-Pre
 PRE
+Pre
 PROC
 PSPP
 Pustejovsky
@@ -229,6 +233,7 @@ RMST
 roadmap
 ROR
 Rothman
+Royston
 RRR
 RStudio
 Ruppert
@@ -248,8 +253,8 @@ spicy's
 Springer
 Stabilising
 stabilising
-standardisation
 Standardisation
+standardisation
 Standardised
 standardised
 Stata
@@ -261,10 +266,11 @@ summarise
 Technometrics
 th
 Theil's
+Therneau
 throughs
 tibble
-Tidyselect
 tidyselect
+Tidyselect
 tidyverse
 Tily
 tinytable

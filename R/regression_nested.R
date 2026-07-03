@@ -348,6 +348,7 @@ default_nested_tokens <- function(models) {
   mixed_classes <- c("merMod", "lmerModLmerTest", "glmmTMB", "lme")
   all_mixed <- all(vapply(models, inherits, logical(1), mixed_classes))
   all_glm   <- all(vapply(models, inherits, logical(1), "glm"))
+  all_cox   <- all(vapply(models, inherits, logical(1), "coxph"))
   if (all_mixed) {
     # Mixed-effects: AIC + BIC + chi^2 LRT + p. Variance-explained
     # change is reported via the absolute Nakagawa R^2 rows; the
@@ -355,7 +356,11 @@ default_nested_tokens <- function(models) {
     # consensus formula across families (the "marginal vs conditional"
     # split makes a single Delta column ambiguous).
     c("aic_change", "bic_change", "lrt_change", "p_change")
-  } else if (all_glm) {
+  } else if (all_glm || all_cox) {
+    # Likelihood-based hierarchies (glm; coxph / rms::cph partial
+    # likelihood): the change test is the LRT. The lm tokens
+    # (r2_change / f_change) have no definition here and previously
+    # rendered as all-dash rows in a Cox comparison table.
     c("lrt_change", "p_change")
   } else {
     c("r2_change", "f_change", "p_change")

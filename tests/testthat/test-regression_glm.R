@@ -967,7 +967,7 @@ test_that("E2E: poisson IRR + nested LRT hierarchy", {
     exponentiate = TRUE,
     nested = TRUE
   )
-  expect_match(attr(out, "title"), "^Hierarchical poisson regression: ")
+  expect_match(attr(out, "title"), "^Hierarchical Poisson regression: ")
   note <- attr(out, "note")
   expect_match(note, "IRR", fixed = TRUE)
   # Change rows in the body (not in the footer)

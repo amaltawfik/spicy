@@ -1,0 +1,283 @@
+---
+title: "Survival regression tables"
+description: >
+  Publication-ready tables for survival regression in R with
+  `table_regression()`: Cox hazard ratios with events and concordance,
+  cluster-robust (Lin-Wei) variance for multi-centre data, hierarchical
+  Cox comparisons by partial-likelihood ratio test, accelerated failure
+  time models with time ratios, and the `survival`, `rms`, and
+  `flexsurv` engines.
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Survival regression tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+have_survival <- requireNamespace("survival", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = have_survival
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+have_rms      <- have_survival && requireNamespace("rms", quietly = TRUE)
+have_flexsurv <- have_survival && requireNamespace("flexsurv", quietly = TRUE)
+have_broom    <- have_survival && requireNamespace("broom", quietly = TRUE)
+source("_pkgdown-helpers.R")
+```
+
+```{r setup, message = FALSE}
+library(spicy)
+library(survival)
+```
+
+This vignette covers **survival (time-to-event) regression** — models
+for how long until an event occurs, with censoring for the subjects
+who never reach it. The companion vignette [*Publication-ready
+regression tables*](table-regression.html) covers the shared mechanics
+(`vcov`, `ci_level`, output formats, multi-model layouts, broom
+integration); here we focus on what is specific to survival fits:
+hazard ratios and time ratios, event counts and concordance, and the
+variance estimators of multi-centre studies.
+
+`table_regression()` supports four survival engines:
+
+* **`survival::coxph()`** — the semiparametric Cox proportional
+  hazards model, the field default;
+* **`survival::survreg()`** — parametric accelerated failure time
+  (AFT) models;
+* **`rms::cph()`** — the Cox model in the `rms` ecosystem;
+* **`flexsurv::flexsurvreg()`** — fully parametric models over a wide
+  family of distributions.
+
+The running example is `survival::lung`: survival of 228 patients with
+advanced lung cancer, with age, sex, and the ECOG performance score
+(0 = fully active, higher is worse) as predictors. One row lacks
+`ph.ecog` and one lacks the enrolling institution, so we declare the
+analytic sample explicitly — the same 226 rows serve every model and,
+later, the cluster variable:
+
+```{r data}
+lung2 <- na.omit(lung[, c("time", "status", "age", "sex",
+                          "ph.ecog", "inst")])
+lung2$sex <- factor(lung2$sex, levels = 1:2,
+                    labels = c("Male", "Female"))
+nrow(lung2)
+```
+
+## The Cox model in one paragraph
+
+The Cox model works on the **hazard** — the instantaneous event rate
+among those still at risk. Each coefficient multiplies that hazard by
+a constant factor at every point in time (the **proportional-hazards
+assumption**), and the baseline hazard itself is left completely
+unspecified: that is the semiparametric trick that made the model
+universal (Cox 1972; Therneau & Grambsch 2000). Two consequences shape
+the table. There is **no
+intercept row** — the baseline hazard absorbs it — and there is no
+residual variance, so the model-fit block reports what a survival
+reader expects instead: the **number of events** and the
+**concordance**.
+
+## Basic table: hazard ratios
+
+```{r cox}
+cx <- coxph(Surv(time, status) ~ age + sex + ph.ecog, data = lung2)
+table_regression(cx, exponentiate = TRUE)
+```
+
+Reading the table:
+
+* `exponentiate = TRUE` turns each log-hazard coefficient into a
+  **hazard ratio**. Women's hazard is 0.57 times men's — a 43% lower
+  hazard at any given moment, all else equal; each ECOG point
+  multiplies the hazard by 1.60. Leave `exponentiate` off for the
+  log-hazard `B` column.
+* Inference is **Wald-z** on the log scale, matching `summary.coxph()`
+  and Stata `stcox`; the statistic and p-value are invariant under the
+  exponentiation.
+* The footer reports **events** (163 deaths among 226 patients — the
+  precision and power of a survival model are governed chiefly by its
+  event count, not its n) and the **concordance** C = 0.64: the probability that, of
+  two comparable patients, the one predicted to fail earlier actually
+  does. 0.5 is a coin flip; 0.64 is modest discrimination
+  (Harrell 2015).
+
+The table reports the model, not its assumption: test proportionality
+with `survival::cox.zph()` before reporting (here the global test
+gives p = .17 — no evidence against it; Therneau & Grambsch 2000).
+
+## Why there is no AME column
+
+Requesting an `"ame"` column on a Cox fit is refused with an
+explanation rather than answered: an average marginal effect needs a
+response scale, and a Cox model deliberately does not commit to one —
+a per-coefficient "effect on survival" would be ambiguous (at what
+time? on which scale?) with unreliable standard errors. The hazard
+ratio *is* the per-coefficient summary of this model. Absolute-scale
+summaries (risk differences at a horizon, restricted mean survival
+time) are a different estimand family, not a per-coefficient column.
+
+## Multi-centre data: cluster-robust variance
+
+The `lung` patients were enrolled by 18 institutions, and outcomes
+within an institution may correlate. The `CR*` request routes to the
+**Lin & Wei (1989)** robust variance — the grouped score (dfbeta)
+sandwich that `coxph(..., cluster = )` and Stata `stcox, vce(cluster)`
+use:
+
+```{r cox-cluster}
+table_regression(cx, vcov = "CR0", cluster = ~inst,
+                 exponentiate = TRUE)
+```
+
+Two lessons here. First, the mechanics: the cluster variable must
+provide **one value per row of the model data** — declaring the
+analytic sample up front (as we did) keeps the cluster aligned when
+predictors carry missing values. Second, the direction: robust
+standard errors are not always larger — the sex SE *shrinks* here.
+Clustering corrects the variance in whichever direction the
+within-centre correlation points; treating it as a conservative
+inflation ritual misreads it.
+
+## Hierarchical Cox models
+
+Does the performance score improve on age and sex? `nested = TRUE`
+compares adjacent models by the **partial-likelihood ratio test** (the
+`anova.coxph()` convention) and appends the change rows:
+
+```{r cox-nested}
+cx0 <- coxph(Surv(time, status) ~ age + sex, data = lung2)
+table_regression(list(cx0, cx), nested = TRUE, exponentiate = TRUE,
+                 show_columns = c("b", "p"))
+```
+
+Adding `ph.ecog` buys a chi-squared change of 16.78 on one degree of
+freedom (p < .001), an AIC drop of 14.8, and lifts the concordance from
+0.60 to 0.64 — three readings of the same improvement, on the
+likelihood, information, and discrimination scales respectively.
+
+## Accelerated failure time: `survreg()`
+
+The parametric alternative models **time itself** (Wei 1992):
+covariates stretch or compress survival time by a constant factor.
+Under `exponentiate = TRUE` the coefficients become **time ratios**
+(TR):
+
+```{r survreg}
+sr <- survreg(Surv(time, status) ~ age + sex + ph.ecog, data = lung2,
+              dist = "weibull")
+table_regression(sr, exponentiate = TRUE)
+```
+
+The intercept is back — a parametric model must anchor the time
+scale, and exp(intercept) ≈ 801 days is that anchor (the extrapolated
+characteristic time at the reference levels and age 0), not a ratio
+despite the column header.
+
+Set the TR next to the Cox HR and the numbers *look* contradictory:
+women have TR 1.50 but HR 0.57. They are the same finding on opposite
+scales — a protective effect **multiplies survival time up** (50%
+longer) and **multiplies the hazard down** (43% lower). Neither
+direction is more correct; the Weibull family is the one distribution
+that is simultaneously AFT and proportional-hazards, and the two
+scales are linked by an exact identity within the fit:
+HR = TR^(−1/scale) = 1.50^(−1/0.73) ≈ 0.57, with the scale parameter
+read from the footer — matching the semiparametric Cox estimate to
+displayed precision (0.575 vs 0.573). The footer names the
+distribution because the interpretation depends on it —
+`exponentiate` produces time ratios only for log-scale distributions
+(Weibull, exponential, lognormal, loglogistic); for an identity-scale
+distribution (`dist = "gaussian"`) the request is skipped with a
+warning, since the coefficients already act on the time scale.
+
+## `rms::cph()`
+
+The `rms` Cox engine renders through the same layout. One requirement
+carried over from `rms` itself: cluster-robust variance uses
+`rms::robcov()`, which needs the design matrices stored at fit time —
+fit with `x = TRUE, y = TRUE` or the robust request errors with that
+exact instruction:
+
+```{r cph, eval = have_rms}
+cph_fit <- rms::cph(Surv(time, status) ~ age + sex, data = lung2,
+                    x = TRUE, y = TRUE)
+table_regression(cph_fit, vcov = "CR0", cluster = ~inst,
+                 exponentiate = TRUE)
+```
+
+## Fully parametric: `flexsurv`
+
+`flexsurv::flexsurvreg()` (Jackson 2016) fits parametric survival
+models over a wide family of distributions (and the Royston–Parmar
+2002 spline models). The location
+coefficients exponentiate to the generic `exp(B)` — the substantive
+reading (time ratio, hazard ratio) depends on the distribution, which
+the footer names together with its ancillary parameters:
+
+```{r flexsurv, eval = have_flexsurv}
+fs <- flexsurv::flexsurvreg(Surv(time, status) ~ age + sex,
+                            data = lung2, dist = "weibull")
+table_regression(fs, exponentiate = TRUE)
+```
+
+Two guardrails apply. A spline model on the `"normal"` scale places
+its coefficients on a probit-like scale whose exponential has no
+meaning, so `exponentiate = TRUE` is refused there; and covariates on
+ancillary parameters (`anc =`) act on their own scales, so they refuse
+exponentiation as a whole rather than print meaningless ratios.
+
+Two Cox extensions flow through the same table without ceremony:
+stratified models (`strata()` terms are absorbed into the baseline, no
+coefficient row) and counting-process data
+(`Surv(tstart, tstop, event)` for time-varying covariates) render like
+any other fit.
+
+## Output formats
+
+Everything above used the default console output. The same table
+renders as a raw data frame, a long broom-style tibble, or — with the
+corresponding Suggests package — a rich `gt`, `flextable`,
+`tinytable`, Excel, or Word table:
+
+```{r outputs-df}
+table_regression(cx, exponentiate = TRUE, output = "data.frame")
+```
+
+```{r outputs-gt, eval = build_rich_tables && have_survival}
+table_regression(cx, exponentiate = TRUE, output = "gt")
+```
+
+[`broom::tidy()`](https://broom.tidymodels.org) returns the long
+frame; with `exponentiate = TRUE` the estimates and CI bounds are on
+the ratio scale, as displayed:
+
+```{r broom, eval = have_broom}
+broom::tidy(table_regression(cx, exponentiate = TRUE))
+```
+
+## References
+
+* Cox, D. R. (1972). Regression models and life-tables. *Journal of
+  the Royal Statistical Society, Series B*, 34(2), 187–220.
+* Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
+  Springer.
+* Jackson, C. H. (2016). `flexsurv`: A platform for parametric
+  survival modeling in R. *Journal of Statistical Software*, 70(8).
+* Lin, D. Y., & Wei, L. J. (1989). The robust inference for the Cox
+  proportional hazards model. *Journal of the American Statistical
+  Association*, 84(408), 1074–1078.
+* Royston, P., & Parmar, M. K. B. (2002). Flexible parametric
+  proportional-hazards and proportional-odds models for censored
+  survival data. *Statistics in Medicine*, 21(15), 2175–2197.
+* Therneau, T. M., & Grambsch, P. M. (2000). *Modeling Survival Data:
+  Extending the Cox Model*. Springer.
+* Wei, L. J. (1992). The accelerated failure time model: a useful
+  alternative to the Cox regression model in survival analysis.
+  *Statistics in Medicine*, 11(14–15), 1871–1879.

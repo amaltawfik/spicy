@@ -38,11 +38,10 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
   identical_dv <- length(unique(outcomes)) == 1L
 
   if (isTRUE(nested)) {
-    lower_prefix <- paste0(
-      tolower(substr(prefix, 1L, 1L)),
-      substr(prefix, 2L, nchar(prefix))
-    )
-    return(sprintf("Hierarchical %s: %s", lower_prefix, outcomes[1]))
+    # lowercase_first() keeps proper-noun titles intact ("Hierarchical
+    # Cox proportional hazards regression", not "Hierarchical cox ...").
+    return(sprintf("Hierarchical %s: %s", lowercase_first(prefix),
+                   outcomes[1]))
   }
   if (identical_dv) {
     return(sprintf("%s comparison: %s", prefix, outcomes[1]))
@@ -148,9 +147,15 @@ build_regression_type_footer_block_from_frames <- function(frames) {
 # Lowercase only the first character of a string (the inverse of
 # capitalize_first()). Used to make a title read naturally in
 # mid-sentence position ("Model 1: linear regression") while
-# preserving any acronyms further in the string.
+# preserving any acronyms further in the string. Titles that START
+# with a proper noun (Cox, Poisson, Weibull, ...) keep their capital:
+# "Hierarchical Cox proportional hazards regression", "Model 1:
+# Poisson regression" -- lowercasing a surname is a typo, not style.
 lowercase_first <- function(s) {
   if (!length(s) || !nzchar(s)) return(s)
+  proper <- c("Cox", "Poisson", "Weibull", "Bayesian", "Tweedie")
+  first_word <- sub("[ -].*$", "", s)
+  if (first_word %in% proper) return(s)
   paste0(tolower(substr(s, 1L, 1L)), substring(s, 2L))
 }
 

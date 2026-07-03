@@ -612,6 +612,17 @@ detect_factor_term_meta <- function(fit) {
       stats::.getXlevels(stats::terms(fit), d)
     }, error = function(e) NULL))
   }
+  # flexsurvreg: no terms() method on the fit itself, but its
+  # model.frame carries the terms attribute -- without this branch the
+  # generic path failed and factor predictors rendered as raw contrast
+  # names ("sexFemale") with no grouping and no reference row.
+  if (inherits(fit, "flexsurvreg")) {
+    return(tryCatch({
+      mf <- stats::model.frame(fit)
+      trms <- attr(mf, "terms") %||% stats::terms(mf)
+      stats::.getXlevels(trms, mf)
+    }, error = function(e) NULL))
+  }
   # nlme lme / gls: stats::model.frame(fit) returns reStruct / corStruct
   # objects (not the data frame). Use nlme::getData() which reconstructs
   # the modelling data frame from fit$call.
@@ -647,10 +658,19 @@ detect_factor_term_meta <- function(fit) {
       return(tryCatch(stats::terms(f), error = function(e) NULL))
     }
   }
-  # Reachable for any non-brmsfit whose stats::terms(fit) errors, e.g.
-  # flexsurv::flexsurvreg (terms() raises "no terms component nor
-  # attribute"): trms stays NULL, the brmsfit branch is skipped, and
-  # execution falls through to here.
+  # flexsurvreg: terms() raises "no terms component nor attribute" on
+  # the fit, but its model.frame carries the terms attribute. Without
+  # this, detect_factor_terms() returned an empty list and factor
+  # predictors lost their reference rows.
+  if (inherits(fit, "flexsurvreg")) {
+    return(tryCatch({
+      mf <- stats::model.frame(fit)
+      attr(mf, "terms") %||% stats::terms(mf)
+    }, error = function(e) NULL))
+  }
+  # Reachable for any non-brmsfit whose stats::terms(fit) errors:
+  # trms stays NULL, the class branches are skipped, and execution
+  # falls through to here.
   NULL
 }
 
