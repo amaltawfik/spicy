@@ -502,7 +502,7 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
   chi2_col <- intersect(c("LRT", "scaled dev.", "Deviance"), names(d1))
   # nocov: drop1(test = "LRT") on a glm always returns a "Df" column and
   # one of "LRT"/"scaled dev."/"Deviance"; an empty match is unreachable.
-  if (length(chi2_col) == 0L || !"Df" %in% names(d1)) return(NULL)
+  if (length(chi2_col) == 0L || !"Df" %in% names(d1)) return(NULL)  # nocov
   chi2 <- d1[[chi2_col[1L]]][2L]
   df1 <- d1[["Df"]][2L]
   if (!is.finite(chi2) || !is.finite(df1) || df1 < 1L || chi2 < 0) {

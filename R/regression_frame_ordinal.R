@@ -238,7 +238,10 @@ as_regression_frame.clm <- function(fit,
   ref_rows <- .ordinal_reference_rows(fit)
   if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
   nonprop <- .ordinal_nonprop_rows(fit, ci_level)
-  if (!is.null(nonprop)) coefs <- .rbind_union(coefs, nonprop)
+  # polr fits never carry alpha.mat, so .ordinal_nonprop_rows() is always
+  # NULL here; the branch is kept for structural symmetry with .clm_coefs
+  # (where partial-PO clm fits do reach it).
+  if (!is.null(nonprop)) coefs <- .rbind_union(coefs, nonprop)        # nocov
   .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
 }
 

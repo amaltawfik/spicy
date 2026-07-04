@@ -113,7 +113,7 @@ as_regression_frame.fixest <- function(fit,
     # nocov: defensive; df.residual.fixest always returns a finite numeric
     # for a valid OLS feols, and the tryCatch above already maps any error
     # to Inf, so this NULL/non-finite normaliser is never exercised.
-    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
+    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf                    # nocov
     df <- rep(as.numeric(dfr), length(est))
     t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
     ci_lower <- est - t_crit * se

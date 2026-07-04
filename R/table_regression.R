@@ -1637,7 +1637,7 @@ table_regression <- function(
     if (length(elems) == n_models) {
       vapply(elems, extract_arg_column_name, character(1))
     } else {
-      rep(NA_character_, n_models)
+      rep(NA_character_, n_models)   # nocov -- validate_vcov_cluster_lists() Step 7 aborts on length mismatch
     }
   } else {
     rep(extract_arg_column_name(cluster_expr), n_models)
@@ -1993,7 +1993,7 @@ table_regression <- function(
   }
 
   full_footer_str <- if (is.null(note)) {
-    if (length(footer_main)) footer_main else NULL
+    if (length(footer_main)) footer_main else NULL   # nocov -- NULL arm unreachable: the type footer block always emits
   } else if (isFALSE(note)) {
     NULL
   } else {

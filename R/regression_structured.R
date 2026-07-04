@@ -948,7 +948,11 @@ build_structured_body <- function(aligned,
   if (is.null(label_map) || !any(nzchar(label_map))) return(NULL)
   labels <- unique(unname(label_map))
   if (length(labels) <= 1L) return(NULL)
+  # nocov start: unreachable defensive twin of the `label_map` guard above --
+  # passing `any(nzchar(label_map))` means `labels` (its unique values)
+  # retains at least one non-empty string, so this can never be TRUE.
   if (!any(nzchar(labels))) return(NULL)
+  # nocov end
 
   out <- list()
   for (lbl in labels) {

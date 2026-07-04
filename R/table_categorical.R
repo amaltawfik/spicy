@@ -826,7 +826,12 @@ table_categorical <- function(
     )[[1]]
     p_op <- if (length(pm) >= 2) pm[2] else NA_character_
     p_val <- if (length(pm) >= 3) {
+      # nocov start: this fallback only fires when cross_tab() skipped its
+      # stats block (degenerate table), and that block is the sole writer
+      # of "p = ..." note text -- the regex can never match here. Same
+      # reasoning as fmt_p()'s `op = "<"` arm below. Defensive.
       suppressWarnings(as.numeric(pm[3]))
+      # nocov end
     } else {
       NA_real_
     }
@@ -841,7 +846,11 @@ table_categorical <- function(
       )
     )[[1]]
     v_val <- if (length(vm) >= 2) {
+      # nocov start: unreachable for the same reason as the p-value arm
+      # above -- measure text is only written together with the numeric
+      # attrs that make parse_stats() take the numeric path. Defensive.
       suppressWarnings(as.numeric(vm[2]))
+      # nocov end
     } else {
       NA_real_
     }

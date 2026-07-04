@@ -337,7 +337,7 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
 attach_nested_stats_to_frames <- function(frames, fits) {
   if (!isTRUE(length(fits) >= 2L)) return(frames)
   comp <- compute_nested_comparisons(fits)
-  if (nrow(comp) == 0L) return(frames)
+  if (nrow(comp) == 0L) return(frames)   # nocov -- >= 2 fits always yield >= 1 comparison row
   na_row <- comp[1L, , drop = FALSE]
   na_row[1L, ] <- NA
   change_cols <- setdiff(names(comp), "comparison")

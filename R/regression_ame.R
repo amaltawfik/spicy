@@ -845,10 +845,14 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 .aliased_coef_terms <- function(coefs) {
   if (is.null(coefs) || nrow(coefs) == 0L) return(character(0))
   is_b <- coefs$estimate_type == "B"
-  ref <- if (!is.null(coefs$is_ref)) {
-    coefs$is_ref %in% TRUE
-  } else if (!is.null(coefs$is_reference)) {
-    coefs$is_reference %in% TRUE
+  # [[ (not $): data.frame $ partial-matches, so `coefs$is_ref` would
+  # silently resolve to a legacy `is_reference` column and the second
+  # branch could never fire -- the two schemas must be told apart
+  # exactly.
+  ref <- if (!is.null(coefs[["is_ref"]])) {
+    coefs[["is_ref"]] %in% TRUE
+  } else if (!is.null(coefs[["is_reference"]])) {
+    coefs[["is_reference"]] %in% TRUE
   } else {
     rep(FALSE, nrow(coefs))
   }

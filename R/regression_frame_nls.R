@@ -71,7 +71,10 @@ as_regression_frame.nls <- function(fit,
     p_value <- 2 * stats::pnorm(-abs(stat))                            # nocov
   }
   dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-  if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf
+  # nocov: defensive; stats' df.residual.nls always returns a finite
+  # numeric for a fitted nls, and the tryCatch above already maps any
+  # error to Inf, so this NULL/non-finite normaliser is never exercised.
+  if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf                      # nocov
   df <- rep(as.numeric(dfr), length(est))
   t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
   ci_lower <- est - t_crit * se

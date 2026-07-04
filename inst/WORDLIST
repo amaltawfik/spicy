@@ -58,8 +58,8 @@ Cramer's
 Cramer’s
 Cribari
 crosstable
-Customise
 customise
+Customise
 Customising
 da
 dataset's
@@ -92,8 +92,8 @@ estimand
 estimands
 et
 Excel's
-exponentiate
 Exponentiate
+exponentiate
 exponentiates
 exponentiating
 factorisation
@@ -164,8 +164,8 @@ Kolesár
 Kristensen
 Kruskal's
 Kuznetsova
-labelled
 Labelled
+labelled
 Lakens
 Lazar
 Lemeshow
@@ -180,6 +180,7 @@ lm's
 lme
 lmer
 lmerTest
+loglog
 loglogistic
 LSMEANS
 Maas
@@ -191,6 +192,7 @@ marginaleffects
 marginality
 Matuschek
 McCaffrey
+McCullagh
 Menard
 merDeriv
 Merkle
@@ -241,8 +243,8 @@ poisson
 polychotomous
 POSIXct
 Pre
-PRE
 pre
+PRE
 PROC
 PSPP
 Pustejovsky
@@ -288,12 +290,12 @@ sortable
 Souza
 spicy's
 Springer
-Stabilising
 stabilising
+Stabilising
 Standardisation
 standardisation
-Standardised
 standardised
+Standardised
 Stata
 Stata's
 statistique
@@ -302,14 +304,15 @@ Stram
 Sturdivant
 summarise
 superlinearly
+survreg
 Technometrics
 th
 Theil's
 Therneau
 throughs
 tibble
-Tidyselect
 tidyselect
+Tidyselect
 tidyverse
 Tily
 tinytable
