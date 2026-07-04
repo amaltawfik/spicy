@@ -288,6 +288,8 @@ pkgdown_dark_gt(
 
 [TABLE]
 
+*Note.* Std. errors: heteroskedasticity-robust (HC3).
+
 This is the better summary-table path when the article is already
 organized around simple linear models, weighted analyses, or robust
 standard errors.

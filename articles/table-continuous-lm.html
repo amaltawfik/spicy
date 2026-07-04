@@ -170,7 +170,9 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL   t      p     R²    n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.65     4.32  &lt;.001  0.02  1200 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93     2.38   .018  0.00  1188</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93     2.38   .018  0.00  1188 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
 <p>The <code>HC*</code> family is computed via [sandwich::vcovHC()] and
 includes <code>"HC0"</code>, <code>"HC1"</code>, <code>"HC2"</code>,
 <code>"HC3"</code> (default for small / moderate samples),
@@ -198,7 +200,9 @@ get cluster-robust inference, dispatched to
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20</span></span></code></pre></div>
+<span><span class="co">#&gt;  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: cluster-robust (CR2), clusters by ID.</span></span></span></code></pre></div>
 <p><code>"CR2"</code> is the recommended default (Bell &amp; McCaffrey
 2002; Pustejovsky &amp; Tipton 2018). It produces fractional
 Satterthwaite degrees of freedom, rendered in the displayed test header
@@ -272,7 +276,9 @@ reports the slope rather than group means:</p>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  B    95% CI LL  95% CI UL    p     R²    n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.04    -0.02      0.10      .176  0.00  1200 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04     0.02      0.05     &lt;.001  0.02  1188</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04     0.02      0.05     &lt;.001  0.02  1188 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
 <p>When you need the underlying returned data for further processing,
 use <code>output = "data.frame"</code> for the wide raw table or
 <code>output = "long"</code> for the analytic long table.</p>
@@ -309,7 +315,8 @@ which estimand they are reading.</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.08       5.23     &lt;.001  0.22  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.19       0.97      .004  0.16  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
 <p><code>covariates</code> accepts the full tidyselect vocabulary
 (<code>c(age, sex)</code>,
 <code>tidyselect::starts_with("life_sat_")</code>,
@@ -377,7 +384,8 @@ covariate proportions are skewed in the observed data.</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.08       5.23     &lt;.001  0.22  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.19       0.97      .004  0.16  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="effect-sizes-under-adjustment">Effect sizes under adjustment<a class="anchor" aria-label="anchor" href="#effect-sizes-under-adjustment"></a>
@@ -649,582 +657,364 @@ summary-table helpers, including <code>tinytable</code>,
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mwlefoodfi table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi tr, #mwlefoodfi td, #mwlefoodfi th {
-  border-style: none;
-}
-
-#mwlefoodfi p {
-  margin: 0;
-  padding: 0;
-}
-
-#mwlefoodfi .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#mwlefoodfi .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#mwlefoodfi .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#mwlefoodfi .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: rgba(255, 255, 255, 0);
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: rgba(255, 255, 255, 0);
-}
-
-#mwlefoodfi .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#mwlefoodfi .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#mwlefoodfi .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#mwlefoodfi .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#mwlefoodfi .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mwlefoodfi .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#mwlefoodfi .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#mwlefoodfi .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: rgba(255, 255, 255, 0);
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#mwlefoodfi .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#mwlefoodfi .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_left {
-  text-align: left;
-}
-
-#mwlefoodfi .gt_center {
-  text-align: center;
-}
-
-#mwlefoodfi .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#mwlefoodfi .gt_font_normal {
-  font-weight: normal;
-}
-
-#mwlefoodfi .gt_font_bold {
-  font-weight: bold;
-}
-
-#mwlefoodfi .gt_font_italic {
-  font-style: italic;
-}
-
-#mwlefoodfi .gt_super {
-  font-size: 65%;
-}
-
-#mwlefoodfi .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#mwlefoodfi .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#mwlefoodfi .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#mwlefoodfi .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#mwlefoodfi .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#mwlefoodfi .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#mwlefoodfi .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#mwlefoodfi .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#mwlefoodfi div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-
-.gt_table thead tr:first-child {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr.gt_spanner_row {
-  border-bottom-style: none !important;
-}
-
-.gt_table thead th, .gt_table thead td {
-  background-color: transparent !important;
-}
-
-.gt_table thead tr:last-child th[id="LL"],
-.gt_table thead tr:last-child th[id="UL"] {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr {
-  border-top-style: none !important;
-  border-bottom-style: none !important;
-}
-
-.gt_table .gt_col_heading, .gt_table .gt_spanner {
-  white-space: nowrap !important;
-}
-
-.gt_table .gt_row .gt_right, .gt_table .gt_row .gt_center {
-  white-space: nowrap !important;
-}
-
+<p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
+Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
+Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
+antialiased; -moz-osx-font-smoothing: grayscale; }</p>
+<p>#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi
+tr, #mwlefoodfi td, #mwlefoodfi th { border-style: none; }</p>
+<p>#mwlefoodfi p { margin: 0; padding: 0; }</p>
+<p>#mwlefoodfi .gt_table { display: table; border-collapse: collapse;
+line-height: normal; margin-left: auto; margin-right: auto; color:
+#333333; font-size: 16px; font-weight: normal; font-style: normal;
+background-color: #FFFFFF; width: auto; border-top-style: solid;
+border-top-width: 0px; border-top-color: #A8A8A8; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3;
+border-bottom-style: solid; border-bottom-width: 0px;
+border-bottom-color: #A8A8A8; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_caption { padding-top: 4px; padding-bottom: 4px;
+}</p>
+<p>#mwlefoodfi .gt_title { color: #333333; font-size: 125%; font-weight:
+initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
+padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
+0; }</p>
+<p>#mwlefoodfi .gt_subtitle { color: #333333; font-size: 85%;
+font-weight: initial; padding-top: 3px; padding-bottom: 5px;
+padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
+border-top-width: 0; }</p>
+<p>#mwlefoodfi .gt_heading { background-color: #FFFFFF; text-align:
+center; border-bottom-color: #FFFFFF; border-left-style: none;
+border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_bottom_border { border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_col_headings { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3;
+border-left-style: none; border-left-width: 1px; border-left-color:
+rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
+1px; border-right-color: rgba(255, 255, 255, 0); }</p>
+<p>#mwlefoodfi .gt_col_heading { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
+padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
+hidden; }</p>
+<p>#mwlefoodfi .gt_column_spanner_outer { color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: normal;
+text-transform: inherit; padding-top: 0; padding-bottom: 0;
+padding-left: 4px; padding-right: 4px; }</p>
+<p>#mwlefoodfi .gt_column_spanner_outer:first-child { padding-left: 0;
+}</p>
+<p>#mwlefoodfi .gt_column_spanner_outer:last-child { padding-right: 0;
+}</p>
+<p>#mwlefoodfi .gt_column_spanner { border-bottom-style: solid;
+border-bottom-width: 0px; border-bottom-color: #D3D3D3; vertical-align:
+bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
+display: inline-block; width: 100%; }</p>
+<p>#mwlefoodfi .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#mwlefoodfi .gt_group_heading { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+text-transform: inherit; border-top-style: solid; border-top-width: 2px;
+border-top-color: #D3D3D3; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
+}</p>
+<p>#mwlefoodfi .gt_empty_group_heading { padding: 0.5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+border-top-style: solid; border-top-width: 2px; border-top-color:
+#D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
+<p>#mwlefoodfi .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#mwlefoodfi .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#mwlefoodfi .gt_row { padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
+solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
+}</p>
+<p>#mwlefoodfi .gt_stub { color: #333333; background-color: #FFFFFF;
+font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_stub_row_group { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
+}</p>
+<p>#mwlefoodfi .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_first_summary_row { border-top-style: solid;
+border-top-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_first_summary_row.thick { border-top-width: 2px;
+}</p>
+<p>#mwlefoodfi .gt_last_summary_row { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_grand_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_first_grand_summary_row { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-top-style: double; border-top-width: 6px; border-top-color:
+#D3D3D3; }</p>
+<p>#mwlefoodfi .gt_last_grand_summary_row_top { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-bottom-style: double; border-bottom-width: 6px;
+border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_striped { background-color: rgba(128, 128, 128,
+0.05); }</p>
+<p>#mwlefoodfi .gt_table_body { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_footnotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_sourcenotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_sourcenote { font-size: 90%; padding-top: 4px;
+padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_left { text-align: left; }</p>
+<p>#mwlefoodfi .gt_center { text-align: center; }</p>
+<p>#mwlefoodfi .gt_right { text-align: right; font-variant-numeric:
+tabular-nums; }</p>
+<p>#mwlefoodfi .gt_font_normal { font-weight: normal; }</p>
+<p>#mwlefoodfi .gt_font_bold { font-weight: bold; }</p>
+<p>#mwlefoodfi .gt_font_italic { font-style: italic; }</p>
+<p>#mwlefoodfi .gt_super { font-size: 65%; }</p>
+<p>#mwlefoodfi .gt_footnote_marks { font-size: 75%; vertical-align:
+0.4em; position: initial; }</p>
+<p>#mwlefoodfi .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#mwlefoodfi .gt_indent_1 { text-indent: 5px; }</p>
+<p>#mwlefoodfi .gt_indent_2 { text-indent: 10px; }</p>
+<p>#mwlefoodfi .gt_indent_3 { text-indent: 15px; }</p>
+<p>#mwlefoodfi .gt_indent_4 { text-indent: 20px; }</p>
+<p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
+<p>#mwlefoodfi .katex-display { display: inline-flex !important;
+margin-bottom: 0.75em !important; }</p>
+<p>#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
+!important; }</p>
+<p>.gt_table thead tr:first-child { border-top: 1px solid currentColor
+!important; }</p>
+<p>.gt_table thead tr.gt_spanner_row { border-bottom-style: none
+!important; }</p>
+<p>.gt_table thead th, .gt_table thead td { background-color:
+transparent !important; }</p>
+<p>.gt_table thead tr:last-child th[id=“LL”], .gt_table thead
+tr:last-child th[id=“UL”] { border-top: 1px solid currentColor
+!important; }</p>
+<p>.gt_table thead tr:last-child { border-bottom: 1px solid currentColor
+!important; }</p>
+<p>.gt_table tbody tr:last-child { border-bottom: 1px solid currentColor
+!important; }</p>
+<p>.gt_table tbody tr { border-top-style: none !important;
+border-bottom-style: none !important; }</p>
+<p>.gt_table .gt_col_heading, .gt_table .gt_spanner { white-space:
+nowrap !important; }</p>
+<p>.gt_table .gt_row .gt_right, .gt_table .gt_row .gt_center {
+white-space: nowrap !important; }</p>
 .gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
-.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
-.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
-  background-color: transparent !important;
-  color: currentColor !important;
-}
-</style>
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title, .gt_subtitle,
+.gt_sourcenotes, .gt_sourcenote { background-color: transparent
+!important; color: currentColor !important; } </style></p>
+<div class="spicy-gt-outer" style="text-align: center;">
+<div class="spicy-gt-wrap" style="display: inline-block; max-width: 100%; text-align: left; vertical-align: top;">
+<style>.spicy-gt-outer th[id^="model_span_"] { position: relative; }.spicy-gt-outer th[id^="model_span_"]::after { content: ""; position: absolute; left: 0.5em; right: 0.5em; bottom: 0; border-bottom: 1px solid #333333; }.spicy-gt-outer .gt_col_headings.gt_spanner_row, .spicy-gt-outer .gt_spanner_row { border-bottom-style: none !important; border-bottom-width: 0 !important; }.spicy-gt-outer .gt_col_heading { border-bottom: 1px solid #333333 !important; }.spicy-gt-outer .gt_table tbody .gt_row { border-top-width: 0 !important; }.spicy-gt-outer .gt_column_spanner { border-bottom-width: 0 !important; border-bottom-color: transparent !important; }</style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_col_headings gt_spanner_row">
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; text-align: left;" scope="col" id="spn_Variable">
-        <div class="gt_column_spanner">Variable</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M..Female.">
-        <div class="gt_column_spanner">M (Female)</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M..Male.">
-        <div class="gt_column_spanner">M (Male)</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Δ..Male...Female.">
-        <div class="gt_column_spanner">Δ (Male - Female)</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="95% CI">
-        <div class="gt_column_spanner">95% CI</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_t">
-        <div class="gt_column_spanner">t</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
-        <div class="gt_column_spanner">p</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_R.">
-        <div class="gt_column_spanner">R²</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_n">
-        <div class="gt_column_spanner">n</div>
-      </th>
-    </tr>
+<div class="gt_column_spanner">
+Variable
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M..Female.">
+<div class="gt_column_spanner">
+M (Female)
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M..Male.">
+<div class="gt_column_spanner">
+M (Male)
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Δ..Male...Female.">
+<div class="gt_column_spanner">
+Δ (Male - Female)
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="95% CI">
+<div class="gt_column_spanner">
+95% CI
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_t">
+<div class="gt_column_spanner">
+t
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
+<div class="gt_column_spanner">
+p
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_R.">
+<div class="gt_column_spanner">
+R²
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_n">
+<div class="gt_column_spanner">
+n
+</div>
+</th>
+</tr>
 <tr class="gt_col_headings">
-<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: left;" scope="col" id="Variable"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Female)"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Male)"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="aΔ-(Male---Female)"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="LL">LL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="UL">UL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="t"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="p"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="R²"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="n"></th>
-    </tr>
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: left;" scope="col" id="Variable">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Female)">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Male)">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="aΔ-(Male---Female)">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="LL">
+LL
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="UL">
+UL
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="t">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="p">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="R²">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="n">
+</th>
+</tr>
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="Variable" class="gt_row gt_left">WHO-5 wellbeing index (0-100)</td>
-<td headers="M (Female)" class="gt_row gt_center">67.16</td>
-<td headers="M (Male)" class="gt_row gt_center">71.05</td>
-<td headers="Δ (Male - Female)" class="gt_row gt_center">3.89</td>
-<td headers="LL" class="gt_row gt_center"> 2.12</td>
-<td headers="UL" class="gt_row gt_center">5.65</td>
-<td headers="t" class="gt_row gt_center">4.32</td>
-<td headers="p" class="gt_row gt_center">&lt;.001</td>
-<td headers="R²" class="gt_row gt_center">0.02</td>
-<td headers="n" class="gt_row gt_center">1200</td>
+<td headers="Variable" class="gt_row gt_left">
+WHO-5 wellbeing index (0-100)
+</td>
+<td headers="M (Female)" class="gt_row gt_center">
+67.16
+</td>
+<td headers="M (Male)" class="gt_row gt_center">
+71.05
+</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_center">
+3.89
+</td>
+<td headers="LL" class="gt_row gt_center">
+ 2.12
+</td>
+<td headers="UL" class="gt_row gt_center">
+5.65
+</td>
+<td headers="t" class="gt_row gt_center">
+4.32
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
+<td headers="R²" class="gt_row gt_center">
+0.02
+</td>
+<td headers="n" class="gt_row gt_center">
+1200
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">Body mass index</td>
-<td headers="M (Female)" class="gt_row gt_center">25.69</td>
-<td headers="M (Male)" class="gt_row gt_center">26.20</td>
-<td headers="Δ (Male - Female)" class="gt_row gt_center">0.51</td>
-<td headers="LL" class="gt_row gt_center"> 0.09</td>
-<td headers="UL" class="gt_row gt_center">0.93</td>
-<td headers="t" class="gt_row gt_center">2.38</td>
-<td headers="p" class="gt_row gt_center"> .018</td>
-<td headers="R²" class="gt_row gt_center">0.00</td>
-<td headers="n" class="gt_row gt_center">1188</td>
+<td headers="Variable" class="gt_row gt_left">
+Body mass index
+</td>
+<td headers="M (Female)" class="gt_row gt_center">
+25.69
+</td>
+<td headers="M (Male)" class="gt_row gt_center">
+26.20
+</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_center">
+0.51
+</td>
+<td headers="LL" class="gt_row gt_center">
+ 0.09
+</td>
+<td headers="UL" class="gt_row gt_center">
+0.93
+</td>
+<td headers="t" class="gt_row gt_center">
+2.38
+</td>
+<td headers="p" class="gt_row gt_center">
+ .018
+</td>
+<td headers="R²" class="gt_row gt_center">
+0.00
+</td>
+<td headers="n" class="gt_row gt_center">
+1188
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">Satisfaction with health (1-5)</td>
-<td headers="M (Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 3.51</td>
-<td headers="M (Male)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 3.59</td>
-<td headers="Δ (Male - Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.08</td>
-<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">-0.06</td>
-<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.22</td>
-<td headers="t" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1.11</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> .267</td>
-<td headers="R²" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">0.00</td>
-<td headers="n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">1192</td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+Satisfaction with health (1-5)
+</td>
+<td headers="M (Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 3.51
+</td>
+<td headers="M (Male)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 3.59
+</td>
+<td headers="Δ (Male - Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+0.08
+</td>
+<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+-0.06
+</td>
+<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+0.22
+</td>
+<td headers="t" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+1.11
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ .267
+</td>
+<td headers="R²" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+0.00
+</td>
+<td headers="n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+1192
+</td>
 </tr>
 </tbody>
 </table>
+<div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
+<em>Note.</em> Std. errors: heteroskedasticity-robust (HC3).
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="section level2">

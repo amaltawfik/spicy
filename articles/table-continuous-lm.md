@@ -72,7 +72,9 @@ table_continuous_lm(
 #>  Variable                      │ 95% CI LL  95% CI UL   t      p     R²    n   
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.12       5.65     4.32  <.001  0.02  1200 
-#>  Body mass index               │   0.09       0.93     2.38   .018  0.00  1188
+#>  Body mass index               │   0.09       0.93     2.38   .018  0.00  1188 
+#> 
+#> Note. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 The `HC*` family is computed via \[sandwich::vcovHC()\] and includes
@@ -101,7 +103,9 @@ table_continuous_lm(
 #> 
 #>  Variable │ M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  
 #> ──────────┼─────────────────────────────────────────────────────────────────────
-#>  extra    │ 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20
+#>  extra    │ 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20 
+#> 
+#> Note. Std. errors: cluster-robust (CR2), clusters by ID.
 ```
 
 `"CR2"` is the recommended default (Bell & McCaffrey 2002; Pustejovsky &
@@ -182,7 +186,9 @@ table_continuous_lm(
 #>  Variable                      │  B    95% CI LL  95% CI UL    p     R²    n   
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ 0.04    -0.02      0.10      .176  0.00  1200 
-#>  Body mass index               │ 0.04     0.02      0.05     <.001  0.02  1188
+#>  Body mass index               │ 0.04     0.02      0.05     <.001  0.02  1188 
+#> 
+#> Note. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 When you need the underlying returned data for further processing, use
@@ -221,6 +227,7 @@ table_continuous_lm(
 #>  Body mass index               │   0.19       0.97      .004  0.16  1188 
 #> 
 #> Note. Adjusted for age, education (proportional).
+#> Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 `covariates` accepts the full tidyselect vocabulary (`c(age, sex)`,
@@ -290,6 +297,7 @@ table_continuous_lm(
 #>  Body mass index               │   0.19       0.97      .004  0.16  1188 
 #> 
 #> Note. Adjusted for age, education (balanced).
+#> Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 ### Effect sizes under adjustment
@@ -580,6 +588,8 @@ pkgdown_dark_gt(
 ```
 
 [TABLE]
+
+*Note.* Std. errors: heteroskedasticity-robust (HC3).
 
 ## Tidying for downstream pipelines
 

@@ -138,6 +138,8 @@
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now discloses a non-classical SE estimator in its table note (“Std. errors: heteroskedasticity-robust (HC3).” / “cluster-robust (CR2), clusters by region.” / “nonparametric bootstrap.”) – it was the one table that silently labelled robust and resampling standard errors – and its notes (the adjustment estimand and the SE disclosure) now carry into every rich output (<code>gt</code>, <code>flextable</code>, <code>tinytable</code>, Excel, Word), which previously dropped them entirely. <code>cluster</code> also accepts the one-sided-formula form (<code>cluster = ~region</code>), matching <code><a href="../reference/table_regression.html">table_regression()</a></code>.</li>
+<li>
 <code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit</a></code> tables title the actual response (“Tobit regression: affairs”), not the internal <code>survival::Surv(ifelse(...), ...)</code> construction the survreg delegate sees.</li>
 <li>Ordinal titles name the shared-slopes assumption by its link: logit keeps “(proportional odds)”, cloglog reads “(proportional hazards)” (the grouped proportional-hazards model; McCullagh 1980), and probit / loglog / cauchit read “(parallel slopes)” – a probit fit has no odds for the old suffix to be proportional about. <code>clm</code> <code>nominal = ~</code> fits keep the “partial” prefix on the same mapping.</li>
 <li>

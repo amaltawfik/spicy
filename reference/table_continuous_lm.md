@@ -287,6 +287,10 @@ table_continuous_lm(
 
   - a single character column name in `data`.
 
+  - a one-sided formula naming a column in `data` (`~ region`), the
+    `sandwich` / `fixest` convention shared with
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
   - an atomic vector of length `nrow(data)` evaluated in the calling
     environment (factor, character, integer, etc.).
 
@@ -1086,6 +1090,8 @@ table_continuous_lm(
 #> ─────────────────────────────────┼─────────────────────────────────
 #>  WHO-5 wellbeing index (0-100)   │  0.04     .176    0.00    1200  
 #>  Body mass index                 │  0.04    <.001    0.02    1188  
+#> 
+#> Note. Std. errors: heteroskedasticity-robust (HC3).
 
 # Cluster-robust SE for repeated-measures data: the `sleep` dataset
 # has 10 subjects measured twice (one observation per group).
@@ -1104,6 +1110,8 @@ table_continuous_lm(
 #>  Variable │ M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL   p     R²   n  
 #> ──────────┼───────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 
+#> 
+#> Note. Std. errors: cluster-robust (CR2), clusters by ID.
 
 # --- Covariate adjustment ----------------------------------------------
 
@@ -1130,6 +1138,7 @@ table_continuous_lm(
 #>  Body mass index               │   0.19       0.97      .004  0.16  1188 
 #> 
 #> Note. Adjusted for age, education (proportional).
+#> Std. errors: heteroskedasticity-robust (HC3).
 
 # Same model with the emmeans / SPSS UNIANOVA convention (equal-weight
 # marginal means on a synthetic covariate grid).
@@ -1154,6 +1163,7 @@ table_continuous_lm(
 #>  Body mass index               │   0.19       0.97      .004  0.16  1188 
 #> 
 #> Note. Adjusted for age, education (balanced).
+#> Std. errors: heteroskedasticity-robust (HC3).
 
 # Effect sizes adjust automatically: f2 / omega2 become partial
 # effect sizes via partial F (drop1) restricted to the focal `by`.

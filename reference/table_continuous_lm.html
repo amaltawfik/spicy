@@ -342,6 +342,8 @@ jackknife when <code>vcov</code> is <code>"bootstrap"</code> / <code>"jackknife"
 for the other (independent-observation) variants. Accepts:</p><ul><li><p><code>NULL</code> (default): no cluster structure.</p></li>
 <li><p>an unquoted column name in <code>data</code>.</p></li>
 <li><p>a single character column name in <code>data</code>.</p></li>
+<li><p>a one-sided formula naming a column in <code>data</code> (<code>~ region</code>), the
+<code>sandwich</code> / <code>fixest</code> convention shared with <code><a href="table_regression.html">table_regression()</a></code>.</p></li>
 <li><p>an atomic vector of length <code>nrow(data)</code> evaluated in the calling
 environment (factor, character, integer, etc.).</p></li>
 </ul><p>Rows with <code>NA</code> in <code>cluster</code> are excluded from the analytic sample
@@ -1043,6 +1045,8 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────────────┼─────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100)   <span style="color: #9E9E9E;">│</span>  0.04     .176    0.00    1200  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index                 <span style="color: #9E9E9E;">│</span>  0.04    &lt;.001    0.02    1188  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cluster-robust SE for repeated-measures data: the `sleep` dataset</span></span></span>
 <span class="r-in"><span><span class="co"># has 10 subjects measured twice (one observation per group).</span></span></span>
@@ -1061,6 +1065,8 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL   p     R²   n  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Std. errors: cluster-robust (CR2), clusters by ID.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Covariate adjustment ----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1087,6 +1093,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.19       0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: heteroskedasticity-robust (HC3).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Same model with the emmeans / SPSS UNIANOVA convention (equal-weight</span></span></span>
 <span class="r-in"><span><span class="co"># marginal means on a synthetic covariate grid).</span></span></span>
@@ -1111,6 +1118,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   0.19       0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: heteroskedasticity-robust (HC3).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Effect sizes adjust automatically: f2 / omega2 become partial</span></span></span>
 <span class="r-in"><span><span class="co"># effect sizes via partial F (drop1) restricted to the focal `by`.</span></span></span>

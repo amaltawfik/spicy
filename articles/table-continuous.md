@@ -174,7 +174,9 @@ table_continuous_lm(
 #> ────────────────────────────────┼─────────────────────────────────
 #>  Body mass index                │    26.35      <.001  0.13  1188 
 #>  WHO-5 wellbeing index (0-100)  │    66.10      <.001  0.21  1200 
-#>  Satisfaction with health (1-5) │     3.35      <.001  0.16  1192
+#>  Satisfaction with health (1-5) │     3.35      <.001  0.16  1192 
+#> 
+#> Note. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 ## Add test statistics and effect sizes

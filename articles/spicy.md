@@ -340,7 +340,9 @@ table_continuous_lm(
 #>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
 #> ───────────────────────────────┼─────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.12       5.65     <.001  0.02  1200 
-#>  Body mass index               │   0.09       0.93      .018  0.00  1188
+#>  Body mass index               │   0.09       0.93      .018  0.00  1188 
+#> 
+#> Note. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
