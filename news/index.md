@@ -207,6 +207,15 @@ for the walk-throughs.
 
 ### Minor improvements
 
+- Test coverage raised to 100% of reachable lines: every previously
+  uncovered line now carries either a behavioral test (10 new
+  coverage-closure test files, oracle-pinned where numeric) or a
+  `# nocov` annotation with a written justification (9 defensive guards
+  unreachable through the public API). Along the way,
+  `.aliased_coef_terms()` now tells the frame and legacy reference
+  columns apart with `[[` – `$` partial matching silently resolved
+  `is_ref` to a legacy `is_reference` column, leaving the documented
+  legacy branch unreachable (same results by accident; now exact).
 - Under `exponentiate = TRUE` with a visible SE column, the footer now
   states the SE scale (“SE on the OR scale (delta method)”; the Stata
   `[R] logistic` convention `se(OR) = OR x se(b)`) and that the CI is
