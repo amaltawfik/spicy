@@ -179,6 +179,8 @@
 #'   - `NULL` (default): no cluster structure.
 #'   - an unquoted column name in `data`.
 #'   - a single character column name in `data`.
+#'   - a one-sided formula naming a column in `data` (`~ region`), the
+#'     `sandwich` / `fixest` convention shared with [table_regression()].
 #'   - an atomic vector of length `nrow(data)` evaluated in the calling
 #'     environment (factor, character, integer, etc.).
 #'
@@ -1121,6 +1123,21 @@ table_continuous_lm <- function(
   }
 
   cluster_quo <- rlang::enquo(cluster)
+  # Accept the one-sided-formula idiom `cluster = ~g` (the sandwich /
+  # fixest convention) by translating it to the column name before
+  # resolution. Anything else (bare column, string, raw vector) flows
+  # to the shared resolver unchanged; a formula that does not name a
+  # single column in `data` also falls through and is rejected there.
+  cluster_expr <- rlang::quo_get_expr(cluster_quo)
+  if (rlang::is_call(cluster_expr, "~", n = 1L)) {
+    cluster_var <- all.vars(cluster_expr)
+    if (length(cluster_var) == 1L && cluster_var %in% names(data)) {
+      cluster_quo <- rlang::new_quosure(
+        cluster_var,
+        env = rlang::quo_get_env(cluster_quo)
+      )
+    }
+  }
   cluster_name <- detect_weights_column_name(cluster_quo, data)
   cluster_vec <- resolve_cluster_argument(cluster_quo, data, "cluster")
 
@@ -1301,6 +1318,9 @@ table_continuous_lm <- function(
   attr(result, "by_var") <- by_name
   attr(result, "by_label") <- by_label
   attr(result, "vcov_type") <- vcov
+  # Cluster variable NAME (for the SE-estimator note); NA when the
+  # cluster was supplied as a raw vector with no recoverable name.
+  attr(result, "cluster_name") <- cluster_name %||% NA_character_
   attr(result, "contrast") <- contrast
   attr(result, "covariates") <- covariates_names
   attr(result, "adjustment") <- if (length(covariates_names) > 0L) {
@@ -1376,7 +1396,8 @@ table_continuous_lm <- function(
     excel_path = excel_path,
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
-    word_path = word_path
+    word_path = word_path,
+    note = .tclm_note_text(result)
   )
 }
 

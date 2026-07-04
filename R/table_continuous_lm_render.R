@@ -323,7 +323,8 @@ export_continuous_lm_table <- function(
   excel_path,
   excel_sheet,
   clipboard_delim,
-  word_path
+  word_path,
+  note = NULL
 ) {
   ci_pct <- paste0(round(ci_level * 100), "%")
   ci_ll <- paste0(ci_pct, " CI LL")
@@ -401,7 +402,13 @@ export_continuous_lm_table <- function(
       gspec[[paste0(ci_pct, " CI")]] <- c(ll_pos, ul_pos)
     }
 
-    tt <- tinytable::tt(display_df)
+    # `notes = note` keeps native footnote rendering for the LaTeX /
+    # typst / markdown backends; the HTML output re-injects the note
+    # outside the table grid via the finalize below.
+    tt <- tinytable::tt(
+      display_df,
+      notes = if (!is.null(note) && nzchar(note)) note else NULL
+    )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- tinytable::theme_empty(tt)
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
@@ -475,6 +482,66 @@ export_continuous_lm_table <- function(
           html_css = "white-space: nowrap;"
         )
       }
+    }
+
+    # ---- Note rendering (HTML): strip the rendered `<tfoot>` and ------
+    # wrap the table together with the note in an `inline-block` flex
+    # sibling. Same mechanism and CSS as table_regression()'s
+    # output_tinytable (regression_dispatch.R): a
+    # `<tfoot><td colspan="N">` cell contributes its max-content
+    # width to every column it spans, so the note is pulled out of
+    # the table grid and re-injected as a flush-left `<div>` that
+    # wraps within the table's width (`width: min-content;
+    # min-width: 100%`). See regression_dispatch.R for the full CSS
+    # rationale; the strings are kept identical so the visual reading
+    # matches across engines.
+    if (!is.null(note) && nzchar(note)) {
+      .html_escape <- function(s) {
+        s <- gsub("&", "&amp;", s, fixed = TRUE)
+        s <- gsub("<", "&lt;",  s, fixed = TRUE)
+        s <- gsub(">", "&gt;",  s, fixed = TRUE)
+        s
+      }
+      note_html <- .html_escape(note)
+      note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
+      note_div <- paste0(
+        "<div class=\"spicy-tt-note\" style=\"",
+        "width: min-content; min-width: 100%; box-sizing: border-box; ",
+        "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
+        "font-size: 0.875rem; line-height: 1.25; ",
+        "text-align: left;\">",
+        note_html,
+        "</div>"
+      )
+      open_outer <- paste0(
+        "<div class=\"spicy-tt-outer\" ",
+        "style=\"text-align: center;\">"
+      )
+      open_inner <- paste0(
+        "<div class=\"spicy-tt-wrap\" style=\"",
+        "display: inline-block; max-width: 100%; ",
+        "text-align: left; vertical-align: top;\">"
+      )
+      close_both <- "</div></div>"
+      tt <- tinytable::style_tt(tt, finalize = function(x) {
+        if (identical(x@output, "html")) {
+          x@table_string <- sub(
+            "<tfoot>[\\s\\S]*?</tfoot>", "",
+            x@table_string, perl = TRUE
+          )
+          x@table_string <- sub(
+            "<table ",
+            paste0(open_outer, open_inner, "<table "),
+            x@table_string, fixed = TRUE
+          )
+          x@table_string <- sub(
+            "</table>",
+            paste0("</table>", note_div, close_both),
+            x@table_string, fixed = TRUE
+          )
+        }
+        x
+      })
     }
     return(tt)
   }
@@ -634,6 +701,17 @@ export_continuous_lm_table <- function(
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
 
+    # Note: NOT added via gt's native `tab_source_note()` (its
+    # `<tfoot>` colspan cell widens the table in narrow viewports;
+    # same pathology as the tinytable / flextable tfoot). Instead
+    # stash the raw note + tag the `spicy_gt` sub-class; the shared
+    # `print.spicy_gt` / `knit_print.spicy_gt` methods
+    # (regression_dispatch.R) post-process the rendered HTML to
+    # inject the note as a `<div>` outside the table.
+    if (!is.null(note) && nzchar(note)) {
+      attr(tbl, "spicy_note") <- note
+      class(tbl) <- c("spicy_gt", class(tbl))
+    }
     return(tbl)
   }
 
@@ -713,15 +791,56 @@ export_continuous_lm_table <- function(
     }
     ft <- flextable::autofit(ft)
 
+    if (!is.null(note) && nzchar(note)) {
+      # APA Manual 7 Section 7.14: general notes form a SINGLE
+      # paragraph ("*Note.* ...") that wraps naturally within the
+      # table width. Collapse embedded newlines (source-side line
+      # breaks meant for ASCII rendering) into spaces, then emit one
+      # footer line whose leading "Note." chunk is italicised and the
+      # remainder is in regular type. Same mechanism as
+      # table_regression()'s output_flextable; `fp_text_lite()` (only
+      # the italic flag set) keeps the footer in the table's default
+      # font -- this builder, unlike table_regression()'s, does not
+      # force a font, so hard-coding one here would make the note
+      # clash with the body.
+      note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+      if (startsWith(note_one_line, "Note.")) {
+        note_para <- flextable::as_paragraph(
+          flextable::as_chunk(
+            "Note.",
+            props = officer::fp_text_lite(italic = TRUE)
+          ),
+          flextable::as_chunk(substring(note_one_line, 6L))
+        )
+      } else {
+        note_para <- flextable::as_paragraph(
+          flextable::as_chunk(note_one_line)
+        )
+      }
+      ft <- flextable::add_footer_lines(ft, top = FALSE, values = note_para)
+    }
+
     if (identical(output, "word")) {
       if (is.null(word_path) || !nzchar(word_path)) {
         spicy_abort(
           "`word_path` must be provided for `output = \"word\"`.", class = "spicy_invalid_input")
       }
+      # The footer added above flows into the docx via the flextable
+      # object, mirroring table_regression()'s word output (which
+      # keeps the in-table footer for docx fidelity).
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
     }
 
+    # Tag with the shared `spicy_flextable` sub-class + stash the raw
+    # note so `print.spicy_flextable` / `knit_print.spicy_flextable`
+    # (regression_dispatch.R) strip the rendered `<tfoot>` and
+    # re-inject the note as a `<div>` outside the table in HTML
+    # contexts (same trick as the tinytable branch above).
+    if (!is.null(note) && nzchar(note)) {
+      attr(ft, "spicy_note") <- note
+      class(ft) <- c("spicy_flextable", class(ft))
+    }
     return(ft)
   }
 
@@ -843,6 +962,16 @@ export_continuous_lm_table <- function(
         dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
         bottom_border = "thin",
         top_border = NULL, left_border = NULL, right_border = NULL
+      )
+    }
+    # Note below the table (one worksheet row per note line), same
+    # placement as table_regression()'s output_excel.
+    if (!is.null(note) && nzchar(note)) {
+      note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
+      wb <- openxlsx2::wb_add_data(
+        wb,
+        x = note_lines,
+        start_row = last_row + 2L
       )
     }
     openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)

@@ -30,8 +30,6 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   r2_type <- attr(x, "r2_type") %||% "r2"
   show_ci <- attr(x, "show_ci") %||% TRUE
   align <- attr(x, "align") %||% "decimal"
-  covariates <- attr(x, "covariates") %||% character()
-  adjustment <- attr(x, "adjustment") %||% NA_character_
 
   display_df <- build_wide_display_df_continuous_lm(
     x,
@@ -90,22 +88,10 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     padding <- 0L
   }
 
-  # APA-style footer when the model is covariate-adjusted. Names the
-  # covariate(s) and the adjustment estimand explicitly because the
-  # interpretation of the displayed `emmean` column changes with the
-  # method: "proportional" = G-computation over the observed
-  # covariate distribution; "balanced" = synthetic-grid equal-weight
-  # marginal means. Without the method tag the user cannot tell
-  # which estimand they are reading.
-  note <- if (length(covariates) > 0L && !is.na(adjustment)) {
-    paste0(
-      "Note. Adjusted for ",
-      paste(covariates, collapse = ", "),
-      " (", adjustment, ")."
-    )
-  } else {
-    NULL
-  }
+  # APA-style footer: covariate-adjustment estimand + non-classical
+  # SE-estimator disclosure, built by the shared helper so the console
+  # and every rich exporter carry the same note.
+  note <- .tclm_note_text(x)
 
   spicy_print_table(
     display_df,
@@ -122,6 +108,88 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   )
 
   invisible(x)
+}
+
+# ---- Shared note builder ---------------------------------------------------
+
+# Internal: build the table note shared by the console print method
+# and every rich exporter from the attributes stored on a
+# `spicy_continuous_lm_table` object.
+#
+#   * Line 1 (covariate-adjusted models only): names the covariate(s)
+#     and the adjustment estimand explicitly because the
+#     interpretation of the displayed `emmean` column changes with
+#     the method: "proportional" = G-computation over the observed
+#     covariate distribution; "balanced" = synthetic-grid
+#     equal-weight marginal means. Without the method tag the user
+#     cannot tell which estimand they are reading.
+#   * Line 2 (non-classical `vcov` only): discloses the SE estimator.
+#     Robust / resampling standard errors are never silently
+#     labelled -- same doctrine as table_regression()'s footers.
+#
+# Returns NULL when there is nothing to disclose; otherwise a single
+# string with "Note. " prefixed to the FIRST line and lines joined by
+# "\n" (the console renderer prints multi-line notes as-is; the rich
+# engines collapse the newlines themselves).
+.tclm_note_text <- function(x) {
+  covariates <- attr(x, "covariates") %||% character()
+  adjustment <- attr(x, "adjustment") %||% NA_character_
+  vcov_type <- attr(x, "vcov_type") %||% "classical"
+  cluster_name <- attr(x, "cluster_name") %||% NA_character_
+
+  lines <- character()
+  if (length(covariates) > 0L && !is.na(adjustment)) {
+    lines <- c(
+      lines,
+      paste0(
+        "Adjusted for ",
+        paste(covariates, collapse = ", "),
+        " (", adjustment, ")."
+      )
+    )
+  }
+  if (!identical(vcov_type, "classical")) {
+    lines <- c(
+      lines,
+      paste0(
+        "Std. errors: ",
+        .tclm_vcov_label(vcov_type, cluster_name),
+        "."
+      )
+    )
+  }
+  if (length(lines) == 0L) {
+    return(NULL)
+  }
+  lines[1L] <- paste0("Note. ", lines[1L])
+  paste(lines, collapse = "\n")
+}
+
+# Internal: human-readable label for a non-classical SE estimator.
+# `cluster_name` (the resolved cluster column name, or NA when the
+# cluster vector was supplied without a recoverable name) is only
+# used by the CR* branch.
+.tclm_vcov_label <- function(vcov_type, cluster_name = NA_character_) {
+  if (startsWith(vcov_type, "HC")) {
+    return(sprintf("heteroskedasticity-robust (%s)", vcov_type))
+  }
+  if (startsWith(vcov_type, "CR")) {
+    label <- sprintf("cluster-robust (%s)", vcov_type)
+    if (
+      is.character(cluster_name) && length(cluster_name) == 1L &&
+        !is.na(cluster_name) && nzchar(cluster_name)
+    ) {
+      label <- paste0(label, ", clusters by ", cluster_name)
+    }
+    return(label)
+  }
+  if (identical(vcov_type, "bootstrap")) {
+    return("nonparametric bootstrap")
+  }
+  if (identical(vcov_type, "jackknife")) {
+    return("jackknife")
+  }
+  vcov_type # nocov -- defensive: `vcov` is validated upstream
 }
 
 # ---- Coercion to plain data.frame / tibble --------------------------------

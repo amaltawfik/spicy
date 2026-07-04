@@ -174,6 +174,15 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## Bug fixes
 
+* `table_continuous_lm()` now discloses a non-classical SE estimator in
+  its table note ("Std. errors: heteroskedasticity-robust (HC3)." /
+  "cluster-robust (CR2), clusters by region." / "nonparametric
+  bootstrap.") -- it was the one table that silently labelled robust
+  and resampling standard errors -- and its notes (the adjustment
+  estimand and the SE disclosure) now carry into every rich output
+  (`gt`, `flextable`, `tinytable`, Excel, Word), which previously
+  dropped them entirely. `cluster` also accepts the one-sided-formula form
+  (`cluster = ~region`), matching `table_regression()`.
 * `AER::tobit` tables title the actual response ("Tobit regression:
   affairs"), not the internal `survival::Surv(ifelse(...), ...)`
   construction the survreg delegate sees.

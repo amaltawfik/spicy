@@ -215,6 +215,8 @@ for the other (independent-observation) variants. Accepts:
 \item \code{NULL} (default): no cluster structure.
 \item an unquoted column name in \code{data}.
 \item a single character column name in \code{data}.
+\item a one-sided formula naming a column in \code{data} (\code{~ region}), the
+\code{sandwich} / \code{fixest} convention shared with \code{\link[=table_regression]{table_regression()}}.
 \item an atomic vector of length \code{nrow(data)} evaluated in the calling
 environment (factor, character, integer, etc.).
 }
