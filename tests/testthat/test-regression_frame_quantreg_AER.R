@@ -173,6 +173,20 @@ test_that("tobit: title_prefix = 'Tobit regression'", {
   expect_identical(fr$info$extras$title_prefix, "Tobit regression")
 })
 
+test_that("tobit: dv is the user's response name, not the Surv() plumbing", {
+  fit <- .fit_tobit_basic()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  # The survreg delegate sees the munged internal formula
+  # (survival::Surv(ifelse(affairs <= 0, 0, affairs), ...)); the frame
+  # must recover the original response so the title reads
+  # "Tobit regression: affairs".
+  expect_identical(fr$info$dv, "affairs")
+  expect_identical(fr$info$dv_label, "affairs")
+  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
+  expect_match(out, "Tobit regression: affairs", fixed = TRUE)
+  expect_false(grepl("Surv(", out, fixed = TRUE))
+})
+
 test_that("tobit: family normalised to gaussian/identity", {
   fit <- .fit_tobit_basic()
   fr <- as_regression_frame(fit, model_id = "M1")

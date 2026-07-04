@@ -425,6 +425,63 @@ test_that("re_ci validates its value and its engine support", {
   expect_match(conditionMessage(err), "lme4", fixed = TRUE)
 })
 
+## ---- 13. ci_level flows into the variance-component CIs -------------------
+
+test_that("ci_level is honored by the vc CI paths of all mixed engines", {
+  skip_if_not_installed("lme4")
+
+  vc_ci <- function(tr, term) {
+    tt <- broom::tidy(tr)
+    r <- tt[tt$estimate_type == "vc" & tt$term == term, ]
+    c(r$conf.low, r$conf.high)
+  }
+  trm <- "re::Subject::(Intercept)"
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+
+  # merDeriv Wald path: on the variance scale the interval is symmetric,
+  # so the 90/95 half-width ratio must be exactly z_.95 / z_.975.
+  skip_if_not_installed("merDeriv")
+  v95 <- vc_ci(table_regression(fit), trm)^2
+  v90 <- vc_ci(table_regression(fit, ci_level = 0.90), trm)^2
+  expect_equal((v90[2] - v90[1]) / (v95[2] - v95[1]),
+               qnorm(0.95) / qnorm(0.975), tolerance = 1e-8)
+
+  # Profile path: matches the confint oracle at the requested level.
+  orc90 <- suppressWarnings(suppressMessages(
+    confint(fit, parm = "theta_", method = "profile", oldNames = FALSE,
+            level = 0.90, quiet = TRUE)
+  ))
+  p90 <- vc_ci(table_regression(fit, re_ci = "profile", ci_level = 0.90), trm)
+  expect_equal(p90, unname(orc90["sd_(Intercept)|Subject", ]),
+               tolerance = 1e-6)
+})
+
+test_that("ci_level reaches the nlme and glmmTMB vc CI paths", {
+  skip_if_not_installed("lme4")
+  vc_ci <- function(tr, term) {
+    tt <- broom::tidy(tr)
+    r <- tt[tt$estimate_type == "vc" & tt$term == term, ]
+    c(r$conf.low, r$conf.high)
+  }
+  trm <- "re::Subject::(Intercept)"
+
+  skip_if_not_installed("nlme")
+  lf <- nlme::lme(Reaction ~ Days, random = ~ 1 | Subject,
+                  data = lme4::sleepstudy)
+  o_lme <- nlme::intervals(lf, level = 0.90, which = "var-cov")
+  expect_equal(vc_ci(table_regression(lf, ci_level = 0.90), trm),
+               as.numeric(o_lme$reStruct$Subject[1, c("lower", "upper")]),
+               tolerance = 1e-6)
+
+  skip_if_not_installed("glmmTMB")
+  gt <- suppressWarnings(glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
+                                          data = lme4::sleepstudy,
+                                          REML = TRUE))
+  o_tmb <- confint(gt, method = "Wald", parm = "theta_", level = 0.90)
+  expect_equal(vc_ci(table_regression(gt, ci_level = 0.90), trm),
+               unname(as.numeric(o_tmb[1, 1:2])), tolerance = 1e-6)
+})
+
 test_that("re_ci default (wald) is unchanged and differs from profile", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("merDeriv")

@@ -430,6 +430,24 @@ as_regression_frame.tobit <- function(fit,
   frame$info$extras$title_prefix      <- "Tobit regression"
   frame$info$family$family            <- "gaussian"
   frame$info$family$link              <- "identity"
+  # The survreg delegate reads the DV off the munged internal formula
+  # ('survival::Surv(ifelse(affairs <= 0, 0, affairs), ...)'); the
+  # user's response name lives in the ORIGINAL tobit call, so the
+  # title reads "Tobit regression: affairs", not the Surv() plumbing.
+  f_orig <- tryCatch({
+    f <- fit$call$formula
+    if (!inherits(f, "formula")) {
+      f <- eval(f, envir = environment(fit$terms))                     # nocov
+    }
+    f
+  }, error = function(e) NULL)
+  if (inherits(f_orig, "formula") && length(f_orig) == 3L) {
+    dv_orig <- all.vars(f_orig[[2L]])[1L]
+    if (length(dv_orig) == 1L && !is.na(dv_orig) && nzchar(dv_orig)) {
+      frame$info$dv       <- dv_orig
+      frame$info$dv_label <- dv_orig
+    }
+  }
   # tobit-specific: censoring boundaries. AER::tobit defaults to
   # left = 0, right = Inf. The values are NOT stored as slots on the
   # fit; they live in fit$call. Eval them in the call environment so

@@ -218,7 +218,8 @@ as_regression_frame.glmmTMB <- function(fit,
     NULL                                                                # nocov
   }
 
-  re <- .glmmTMB_random_effects(fit, is_gaussian_identity = is_gaussian_identity)
+  re <- .glmmTMB_random_effects(fit, is_gaussian_identity = is_gaussian_identity,
+                                ci_level = ci_level)
 
   log_lik <- as.numeric(stats::logLik(fit))
   r2_ns <- .nakagawa_r2(fit)
@@ -462,7 +463,8 @@ as_regression_frame.glmmTMB <- function(fit,
 
 
 # Extract conditional-component random-effects metadata.
-.glmmTMB_random_effects <- function(fit, is_gaussian_identity) {
+.glmmTMB_random_effects <- function(fit, is_gaussian_identity,
+                                    ci_level = 0.95) {
   # glmmTMB estimates by ML by default; REML is opt-in via the REML
   # argument. The method label feeds the footer's "(REML)" / "(ML)"
   # clarification.
@@ -524,7 +526,7 @@ as_regression_frame.glmmTMB <- function(fit,
   # glmmTMB's confint(method = "Wald") returns intervals on the SD
   # scale; we square to convert to variance scale and Delta-method for
   # SE.
-  vc_df <- .glmmTMB_attach_wald_se_ci(vc_df, fit)
+  vc_df <- .glmmTMB_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
 
   icc <- if (is_gaussian_identity) .merMod_icc(vc_df) else NA_real_
 
@@ -593,11 +595,12 @@ as_regression_frame.glmmTMB <- function(fit,
 }
 
 
-# Attach Wald SE + 95% CI on variance scale via glmmTMB's native
-# confint(method = "Wald"). The confint returns CIs on the SD scale,
-# which we square to obtain variance-scale CIs; SE on the variance
-# scale is obtained via the Delta-method (SE(sd^2) = 2 * sd * SE(sd)).
-.glmmTMB_attach_wald_se_ci <- function(vc_df, fit) {
+# Attach Wald SE + CI (at ci_level) on variance scale via glmmTMB's
+# native confint(method = "Wald"). The confint returns CIs on the SD
+# scale, which we square to obtain variance-scale CIs; SE on the
+# variance scale is obtained via the Delta-method
+# (SE(sd^2) = 2 * sd * SE(sd)).
+.glmmTMB_attach_wald_se_ci <- function(vc_df, fit, ci_level = 0.95) {
   na_block <- function(df) {
     df$std_error <- NA_real_
     df$ci_lower  <- NA_real_
@@ -609,7 +612,8 @@ as_regression_frame.glmmTMB <- function(fit,
   if (!spicy_pkg_available("glmmTMB")) return(na_block(vc_df))         # nocov
 
   ci_sd <- tryCatch(
-    stats::confint(fit, method = "Wald", parm = "theta_"),
+    stats::confint(fit, method = "Wald", parm = "theta_",
+                   level = ci_level),
     error = function(e) NULL
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) return(na_block(vc_df))     # nocov
@@ -624,8 +628,9 @@ as_regression_frame.glmmTMB <- function(fit,
   #   "Std.Dev.(Intercept)|Subject"  (variance term in group)
   #   "Cor.Days.(Intercept)|Subject" (correlation -- not in vc_df rows)
   # We need to match rownames to vc_df rows where group != "Residual"
-  # and term matches the parenthesised content.
-  z <- stats::qnorm(0.975)
+  # and term matches the parenthesised content. z at the SAME level as
+  # the confint call: the SE is derived from the interval half-width.
+  z <- stats::qnorm(0.5 + ci_level / 2)
   is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation %in% TRUE
   } else {

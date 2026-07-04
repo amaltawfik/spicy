@@ -626,7 +626,7 @@ as_regression_frame.glmerMod <- function(fit,
   vc_df <- if (identical(re_ci, "profile")) {
     .merMod_attach_profile_ci(vc_df, fit, ci_level = ci_level)
   } else {
-    .merMod_attach_wald_se_ci(vc_df, fit)
+    .merMod_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
   }
 
   icc <- .merMod_icc(vc_df, fit = fit)
@@ -825,11 +825,11 @@ as_regression_frame.glmerMod <- function(fit,
 }
 
 
-# Attach Wald SE + 95% CI columns to the variance-components data.frame
-# via merDeriv. Always returns a data.frame with the columns
+# Attach Wald SE + CI columns (at `ci_level`) to the variance-components
+# data.frame via merDeriv. Always returns a data.frame with the columns
 # `std_error`, `ci_lower`, `ci_upper`, `ci_method`; NAs when the SE
 # could not be computed.
-.merMod_attach_wald_se_ci <- function(vc_df, fit) {
+.merMod_attach_wald_se_ci <- function(vc_df, fit, ci_level = 0.95) {
   na_block <- function(df) {
     df$std_error <- NA_real_
     df$ci_lower  <- NA_real_
@@ -887,7 +887,7 @@ as_regression_frame.glmerMod <- function(fit,
   }
   se_diag <- re_se[diag_positions]
 
-  z <- stats::qnorm(0.975)
+  z <- stats::qnorm(0.5 + ci_level / 2)
   vc_df$std_error <- NA_real_
   vc_df$ci_lower  <- NA_real_
   vc_df$ci_upper  <- NA_real_

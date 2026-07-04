@@ -341,8 +341,8 @@ as_regression_frame.clm <- function(fit,
     singular_terms        = character(0),
     has_weights           = .ordinal_has_weights(fit),
     weighted_n            = NA_real_,
-    title_prefix          = paste0(.polr_link_title(link),
-                                    " regression (proportional odds)"),
+    title_prefix          = paste0(.polr_link_title(link), " regression (",
+                                    .ordinal_assumption_label(link), ")"),
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     response_levels       = as.character(fit$lev %||% character(0)),
@@ -415,6 +415,23 @@ as_regression_frame.clm <- function(fit,
     # nocov: polr$method is always one of the 5 links above.
     paste0("Cumulative ", method)
   )
+}
+
+
+# The shared-slopes restriction is named by its link: "proportional
+# odds" only exists under logit; the cloglog cumulative model is the
+# proportional-hazards (grouped survival) model (McCullagh 1980); for
+# the other links the link-neutral name is the parallel-slopes
+# assumption (Long 1997's parallel regression). Titling a probit fit
+# "proportional odds" would name a quantity the model does not have.
+.ordinal_assumption_label <- function(link, partial = FALSE) {
+  base <- switch(link,
+    logistic = ,
+    logit    = "proportional odds",
+    cloglog  = "proportional hazards",
+    "parallel slopes"
+  )
+  if (partial) paste("partial", base) else base
 }
 
 
@@ -589,8 +606,8 @@ as_regression_frame.clm <- function(fit,
     weighted_n            = NA_real_,
     title_prefix          = paste0(
       .clm_link_title(link), " regression (",
-      if (!is.null(fit$nom.terms)) "partial proportional odds" else
-        "proportional odds", ")"),
+      .ordinal_assumption_label(link, partial = !is.null(fit$nom.terms)),
+      ")"),
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     response_levels       = as.character(fit$y.levels %||% character(0)),

@@ -270,7 +270,7 @@ as_regression_frame.gls <- function(fit,
     NULL  # nocov  (lme fits always carry >= 1 grouping factor)
   }
 
-  re <- .lme_random_effects(fit)
+  re <- .lme_random_effects(fit, ci_level = ci_level)
   fit_stats <- .nlme_fit_stats(fit)
 
   if (is.null(ci_method)) ci_method <- "wald"
@@ -407,7 +407,7 @@ as_regression_frame.gls <- function(fit,
 # Extract random-effects metadata from an lme fit. nlme::VarCorr.lme()
 # returns a CHARACTER matrix with columns "Variance" / "StdDev" and
 # rows labelled with the random-effect term names + "Residual".
-.lme_random_effects <- function(fit) {
+.lme_random_effects <- function(fit, ci_level = 0.95) {
   # nlme::lme exposes the estimator via fit$method: "REML" (default)
   # or "ML". Feeds the footer's "(REML)" / "(ML)" clarification.
   method <- if (!is.null(fit$method) &&
@@ -445,11 +445,12 @@ as_regression_frame.gls <- function(fit,
   # them under names like "cor((Intercept),age)" inside reStruct.
   vc_df <- .lme_append_correlation_rows(vc_df, fit, group_nm)
 
-  # Phase 7c7a: extend with Wald SE + 95% CI via nlme::intervals().
-  # intervals() returns CIs on the SD scale (the natural log-SD
-  # parametrisation backtransformed); we square to convert to variance
-  # scale, and Delta-method for SE (SE(sd^2) = 2*sd*SE(sd)).
-  vc_df <- .lme_attach_wald_se_ci(vc_df, fit)
+  # Phase 7c7a: extend with Wald SE + CI (at ci_level) via
+  # nlme::intervals(). intervals() returns CIs on the SD scale (the
+  # natural log-SD parametrisation backtransformed); we square to
+  # convert to variance scale, and Delta-method for SE
+  # (SE(sd^2) = 2*sd*SE(sd)).
+  vc_df <- .lme_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
 
   icc <- .merMod_icc(vc_df)  # reuse: same variance-ratio rule
   null_lrt <- .compute_null_model_lrt(fit)
@@ -521,8 +522,9 @@ as_regression_frame.gls <- function(fit,
 }
 
 
-# Attach Wald SE + 95% CI on variance scale via nlme::intervals().
-.lme_attach_wald_se_ci <- function(vc_df, fit) {
+# Attach Wald SE + CI (at ci_level) on variance scale via
+# nlme::intervals().
+.lme_attach_wald_se_ci <- function(vc_df, fit, ci_level = 0.95) {
   # nocov start  (only invoked from the defensive guards below)
   na_block <- function(df) {
     df$std_error <- NA_real_
@@ -535,7 +537,7 @@ as_regression_frame.gls <- function(fit,
   if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
 
   ci_obj <- tryCatch(
-    nlme::intervals(fit, which = "var-cov"),
+    nlme::intervals(fit, level = ci_level, which = "var-cov"),
     error = function(e) NULL
   )
   if (is.null(ci_obj)) return(na_block(vc_df))                         # nocov
@@ -545,7 +547,9 @@ as_regression_frame.gls <- function(fit,
   vc_df$ci_upper  <- NA_real_
   vc_df$ci_method <- NA_character_
 
-  z <- stats::qnorm(0.975)
+  # z at the SAME level as the intervals() call: the SE is derived from
+  # the interval half-width, so the two must stay coupled.
+  z <- stats::qnorm(0.5 + ci_level / 2)
   is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation %in% TRUE
   } else {

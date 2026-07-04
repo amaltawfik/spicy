@@ -38,7 +38,27 @@ test_that("polr probit fit reports the probit link and title", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "probit")
   expect_match(fr$info$extras$title_prefix, "Cumulative probit", fixed = TRUE)
+  # A probit model has no odds: the assumption suffix is the
+  # link-neutral parallel-slopes name, never "proportional odds".
+  expect_identical(fr$info$extras$title_prefix,
+                   "Cumulative probit regression (parallel slopes)")
   expect_invisible(spicy:::validate_regression_frame(fr))
+})
+
+test_that("the assumption suffix is named by the link across engines", {
+  # polr logit keeps the canonical proportional-odds name.
+  fit_l <- .fit_polr_link("logistic")
+  fr_l <- as_regression_frame(fit_l, model_id = "M1")
+  expect_identical(fr_l$info$extras$title_prefix,
+                   "Cumulative logit regression (proportional odds)")
+  # clm shares the mapping: probit -> parallel slopes.
+  skip_if_not_installed("ordinal")
+  fit_cp <- .fit_clm_link("probit")
+  fr_cp <- as_regression_frame(fit_cp, model_id = "M1")
+  expect_match(fr_cp$info$extras$title_prefix, "(parallel slopes)",
+               fixed = TRUE)
+  expect_false(grepl("proportional odds", fr_cp$info$extras$title_prefix,
+                     fixed = TRUE))
 })
 
 test_that("polr cloglog fit reports the cloglog link and title", {
@@ -49,11 +69,13 @@ test_that("polr cloglog fit reports the cloglog link and title", {
   # Consistency with the sibling probit test: the constructed frame must
   # pass the schema validator (the gap the audit flagged).
   expect_invisible(spicy:::validate_regression_frame(fr))
-  # Family is a cumulative-link model and the title carries the full
-  # proportional-odds suffix (not just the link token).
+  # Family is a cumulative-link model; the assumption suffix is named
+  # by the link -- the cloglog cumulative model is the grouped
+  # proportional-hazards model (McCullagh 1980); "proportional odds"
+  # only exists under logit.
   expect_identical(fr$info$family$family, "cumulative")
   expect_identical(fr$info$extras$title_prefix,
-                   "Cumulative cloglog regression (proportional odds)")
+                   "Cumulative cloglog regression (proportional hazards)")
   # cloglog is a non-canonical link but exponentiation is still offered
   # (hazard-ratio interpretation), shared by all cumulative-link fits.
   expect_true(isTRUE(fr$info$supports$exponentiate))
@@ -84,11 +106,12 @@ test_that("polr loglog fit reports the loglog link and title", {
   # Consistency with the sibling probit test: the constructed frame must
   # pass the schema validator (the gap the audit flagged).
   expect_invisible(spicy:::validate_regression_frame(fr))
-  # Family is a cumulative-link model and the title carries the full
-  # proportional-odds suffix (not just the link token).
+  # Family is a cumulative-link model; loglog has no odds (or hazard)
+  # reading, so the suffix falls to the link-neutral parallel-slopes
+  # name of the shared restriction.
   expect_identical(fr$info$family$family, "cumulative")
   expect_identical(fr$info$extras$title_prefix,
-                   "Cumulative loglog regression (proportional odds)")
+                   "Cumulative loglog regression (parallel slopes)")
   expect_true(isTRUE(fr$info$supports$exponentiate))
   # housing's Sat has 3 ordered levels -> (k - 1) = 2 cumulative
   # thresholds, named for the adjacent-level cutpoints.
@@ -159,8 +182,9 @@ test_that("clm flexible Aranda-Ordaz link hits the switch fallback title", {
                  link = "Aranda-Ordaz"))
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "Aranda-Ordaz")
+  # A flexible-link family has no odds reading: link-neutral suffix.
   expect_identical(fr$info$extras$title_prefix,
-                   "Cumulative Aranda-Ordaz regression (proportional odds)")
+                   "Cumulative Aranda-Ordaz regression (parallel slopes)")
 })
 
 

@@ -174,6 +174,21 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## Bug fixes
 
+* `AER::tobit` tables title the actual response ("Tobit regression:
+  affairs"), not the internal `survival::Surv(ifelse(...), ...)`
+  construction the survreg delegate sees.
+* Ordinal titles name the shared-slopes assumption by its link:
+  logit keeps "(proportional odds)", cloglog reads "(proportional
+  hazards)" (the grouped proportional-hazards model; McCullagh 1980),
+  and probit / loglog / cauchit read "(parallel slopes)" -- a probit
+  fit has no odds for the old suffix to be proportional about. `clm`
+  `nominal = ~` fits keep the "partial" prefix on the same mapping.
+* `ci_level` now reaches the random-effect variance-component CIs. All
+  three mixed engines hardcoded 95% for those rows (`lmer` / `glmer`
+  via merDeriv, `glmmTMB` via `confint`, `nlme::lme` via
+  `intervals()`), so a `ci_level = 0.90` table showed 95% bounds on
+  its σ rows under a 90% header. The derived variance-scale SEs stay
+  coupled to the same level.
 * `table_regression()` on a large `lmer` / `glmer` fit no longer spends
   minutes (or worse) computing the random-effect variance-component SEs:
   `merDeriv`'s cost grows superlinearly with n (about a minute at
