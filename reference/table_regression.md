@@ -217,8 +217,10 @@ table_regression(
   `"all_f2"`, `"all_eta2"`, `"all_omega2"`). See *Vocabulary tokens* in
   the details for the full enumeration. Default `NULL` selects a
   context-aware layout: `"all_b"` (single model) or `"all_b_compact"`
-  (multi- model). The `"p"` token is always the B / beta p-value; for
-  the AME-specific p-value use `"ame_p"`.
+  (multi-model, and the single-multinomial outcome-as-columns layout,
+  which has the same width pressure – restore CIs with atomic tokens,
+  e.g. `c("b", "se", "ci", "p")`). The `"p"` token is always the B /
+  beta p-value; for the AME-specific p-value use `"ame_p"`.
 
 - keep:
 
@@ -532,7 +534,9 @@ table_regression(
   model's sub-columns (console + gt / flextable / tinytable / Excel /
   Word renderers). `NULL` (default) resolves automatically; see
   *Multi-model semantics* for the full rule. A character vector of
-  length `length(models)` overrides.
+  length `length(models)` overrides. Refused (error) for a single
+  multinomial model: there the column groups are outcome categories,
+  relabelled via `outcome_labels`.
 
 - outcome_labels:
 
@@ -541,7 +545,11 @@ table_regression(
   above the data. A character vector of length `length(models)` forces
   an explicit Outcome row with those values (the spanner stays as
   `"Model 1, ..."` unless `model_labels` is also supplied). `FALSE` also
-  suppresses the row.
+  suppresses the row. **Single multinomial model** (outcome-as-columns
+  layout): repurposed as the category spanner override – a character
+  vector with one label per non-reference outcome category, in model
+  order, e.g. `c("Student vs Employed", ...)`; the reference category's
+  AME-only group (when displayed) keeps its own name.
 
 - stars:
 
@@ -891,6 +899,27 @@ For other classes the t-vs-z axis follows the estimator's native
 reference distribution (e.g. `glm`, `glmmTMB`, survival, ordinal,
 `betareg`, `mlogit` use z; `lm`, `lme`, `lmer`,
 [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) use t).
+
+### Multinomial models: outcome categories as columns
+
+A single [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html)
+model renders the publication layout: predictors as rows, one column
+group per **non-reference outcome category** (spanner = category name),
+so a predictor's effect can be compared across equations along its row.
+The mandatory footer note `Reference outcome: <level>.` names the base
+category (Stata's "base outcome" line); `outcome_labels` relabels the
+spanners (e.g. `"Student vs Employed"`). Fit statistics print once,
+under the first group. When per-category AMEs are requested the
+reference category appears as a last, AME-only group (its coefficient
+cells are empty – the reference has no equation; its AMEs complete the
+zero-sum across categories). The default `show_columns` compacts to B /
+SE / p exactly like multi-model tables; request atomic tokens to restore
+CIs. Multi-model and `nested = TRUE` multinomial tables keep the
+one-row-per-(category, predictor) layout – categories-within-models
+would need two spanner levels. `tidy()`,
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
+and `output = "long"` always return the long form
+(`"<category>: <term>"` rows), whatever the display.
 
 ### Robust SE availability by model class
 

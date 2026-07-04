@@ -297,9 +297,12 @@ per-coefficient columns and their display order. Accepts
 <code>"all_ame"</code>, <code>"all_ame_compact"</code>, <code>"all_f2"</code>, <code>"all_eta2"</code>,
 <code>"all_omega2"</code>). See <em>Vocabulary tokens</em> in the details for
 the full enumeration. Default <code>NULL</code> selects a context-aware
-layout: <code>"all_b"</code> (single model) or <code>"all_b_compact"</code> (multi-
-model). The <code>"p"</code> token is always the B / beta p-value; for
-the AME-specific p-value use <code>"ame_p"</code>.</p></dd>
+layout: <code>"all_b"</code> (single model) or <code>"all_b_compact"</code>
+(multi-model, and the single-multinomial outcome-as-columns
+layout, which has the same width pressure – restore CIs with
+atomic tokens, e.g. <code>c("b", "se", "ci", "p")</code>). The <code>"p"</code>
+token is always the B / beta p-value; for the AME-specific
+p-value use <code>"ame_p"</code>.</p></dd>
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
@@ -589,7 +592,9 @@ spanner</strong> above each model's sub-columns (console + gt /
 flextable / tinytable / Excel / Word renderers). <code>NULL</code>
 (default) resolves automatically; see <em>Multi-model semantics</em>
 for the full rule. A character vector of length
-<code>length(models)</code> overrides.</p></dd>
+<code>length(models)</code> overrides. Refused (error) for a single
+multinomial model: there the column groups are outcome
+categories, relabelled via <code>outcome_labels</code>.</p></dd>
 
 
 <dt id="arg-outcome-labels">outcome_labels<a class="anchor" aria-label="anchor" href="#arg-outcome-labels"></a></dt>
@@ -599,7 +604,12 @@ multi-model spanner the DV is already visible above the data.
 A character vector of length <code>length(models)</code> forces an
 explicit Outcome row with those values (the spanner stays as
 <code>"Model 1, ..."</code> unless <code>model_labels</code> is also supplied).
-<code>FALSE</code> also suppresses the row.</p></dd>
+<code>FALSE</code> also suppresses the row. <strong>Single multinomial model</strong>
+(outcome-as-columns layout): repurposed as the category
+spanner override – a character vector with one label per
+non-reference outcome category, in model order, e.g.
+<code>c("Student vs Employed", ...)</code>; the reference category's
+AME-only group (when displayed) keeps its own name.</p></dd>
 
 
 <dt id="arg-stars">stars<a class="anchor" aria-label="anchor" href="#arg-stars"></a></dt>
@@ -928,6 +938,29 @@ via <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.htm
 </ul><p>For other classes the t-vs-z axis follows the estimator's native
 reference distribution (e.g. <code>glm</code>, <code>glmmTMB</code>, survival, ordinal,
 <code>betareg</code>, <code>mlogit</code> use z; <code>lm</code>, <code>lme</code>, <code>lmer</code>, <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> use t).</p><div class="section">
+<h3 id="multinomial-models-outcome-categories-as-columns">Multinomial models: outcome categories as columns<a class="anchor" aria-label="anchor" href="#multinomial-models-outcome-categories-as-columns"></a></h3>
+
+
+<p>A single <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code> model renders the publication layout:
+predictors as rows, one column group per <strong>non-reference outcome
+category</strong> (spanner = category name), so a predictor's effect can
+be compared across equations along its row. The mandatory footer
+note <code>Reference outcome: &lt;level&gt;.</code> names the base category (Stata's
+"base outcome" line); <code>outcome_labels</code> relabels the spanners (e.g.
+<code>"Student vs Employed"</code>). Fit statistics print once, under the
+first group. When per-category AMEs are requested the reference
+category appears as a last, AME-only group (its coefficient cells
+are empty – the reference has no equation; its AMEs complete the
+zero-sum across categories). The default <code>show_columns</code> compacts
+to B / SE / p exactly like multi-model tables; request atomic
+tokens to restore CIs. Multi-model and <code>nested = TRUE</code> multinomial
+tables keep the one-row-per-(category, predictor) layout –
+categories-within-models would need two spanner levels.
+<code>tidy()</code>, <code><a href="as_structured.html">as_structured()</a></code>, and <code>output = "long"</code> always return
+the long form (<code>"&lt;category&gt;: &lt;term&gt;"</code> rows), whatever the display.</p>
+</div>
+
+<div class="section">
 <h3 id="robust-se-availability-by-model-class">Robust SE availability by model class<a class="anchor" aria-label="anchor" href="#robust-se-availability-by-model-class"></a></h3>
 
 

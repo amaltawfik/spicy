@@ -35,6 +35,22 @@
   (boundary; Self & Liang 1987). `show_re` / `re_scale` / `re_columns`
   keep their meaning; `re_columns` is now display-only (`tidy()` always
   carries SE + CI).
+- Single-model
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) tables
+  now render the publication layout: predictors as rows, one column
+  group per non-reference outcome category (spanner = category name),
+  replacing the per-outcome `"<category>: <term>"` rows. The default
+  `show_columns` compacts to B / SE / p (same rule as multi-model
+  tables; atomic tokens restore CIs); `outcome_labels` now relabels the
+  category spanners (one label per non-reference category,
+  e.g. `"Student vs Employed"`) and `model_labels` is refused for a
+  single multinomial model. With per-category AMEs the reference
+  category appears as a last, AME-only group. Every multinomial table
+  (both layouts) gains a `Reference outcome: <level>.` footer note.
+  Multi-model and `nested = TRUE` multinomial tables keep the rows
+  layout; `tidy()` /
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  / `output = "long"` are unchanged (long form).
 - `mlogit`: `vcov = "HC*"` is now refused (`spicy_unsupported_vcov`) –
   [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
   scales the sandwich by the long-format row count while the scores have

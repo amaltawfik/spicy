@@ -15,8 +15,8 @@ covers the shared mechanics (`vcov`, `ci_level`, output formats,
 multi-model layouts, broom integration), and [*Ordinal regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
 covers the case where the categories *are* ordered. Here we focus on
-what is specific to nominal outcomes: per-outcome coefficient blocks,
-the choice of reference category, and the distance between a
+what is specific to nominal outcomes: one column of effects per outcome
+category, the choice of reference category, and the distance between a
 coefficient’s sign and its effect on a probability.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -85,54 +85,55 @@ fit <- multinom(employment_status ~ age + sex + education,
 table_regression(fit)
 #> Multinomial logistic regression: employment_status
 #> 
-#>  Variable                             │    B      SE       95% CI        p   
-#> ──────────────────────────────────────┼──────────────────────────────────────
-#>  (Intercept):                         │                                      
-#>    Student: (Intercept)               │   -1.43  0.39  [-2.18, -0.67]  <.001 
-#>    Unemployed: (Intercept)            │   -0.72  0.33  [-1.38, -0.07]   .030 
-#>    Inactive: (Intercept)              │   -1.75  0.40  [-2.53, -0.97]  <.001 
-#>  age:                                 │                                      
-#>    Student: age                       │   -0.01  0.01  [-0.02,  0.00]   .097 
-#>    Unemployed: age                    │   -0.00  0.01  [-0.01,  0.01]   .562 
-#>    Inactive: age                      │    0.00  0.01  [-0.01,  0.02]   .719 
-#>  sex:                                 │                                      
-#>    Student: Female (ref.)             │     –     –          –          –    
-#>    Unemployed: Female (ref.)          │     –     –          –          –    
-#>    Inactive: Female (ref.)            │     –     –          –          –    
-#>    Student: Male                      │    0.12  0.18  [-0.24,  0.48]   .520 
-#>    Unemployed: Male                   │    0.23  0.17  [-0.10,  0.57]   .172 
-#>    Inactive: Male                     │    0.14  0.20  [-0.24,  0.53]   .464 
-#>  education:                           │                                      
-#>    Student: Lower secondary (ref.)    │     –     –          –          –    
-#>    Unemployed: Lower secondary (ref.) │     –     –          –          –    
-#>    Inactive: Lower secondary (ref.)   │     –     –          –          –    
-#>    Student: Upper secondary           │    0.32  0.26  [-0.20,  0.84]   .224 
-#>    Unemployed: Upper secondary        │   -0.80  0.20  [-1.19, -0.42]  <.001 
-#>    Inactive: Upper secondary          │   -0.37  0.25  [-0.86,  0.13]   .145 
-#>    Student: Tertiary                  │    0.14  0.28  [-0.40,  0.68]   .614 
-#>    Unemployed: Tertiary               │   -1.23  0.23  [-1.68, -0.78]  <.001 
-#>    Inactive: Tertiary                 │   -0.35  0.26  [-0.86,  0.17]   .186 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                                    │ 1200                                 
-#>  AIC                                  │ 2515.8                               
+#>                                   Student             Unemployed           Inactive      
+#>                             ────────────────────  ──────────────────  ────────────────── 
+#>  Variable                 │    B      SE     p      B     SE     p      B     SE     p   
+#> ──────────────────────────┼──────────────────────────────────────────────────────────────
+#>  (Intercept)              │   -1.43  0.39  <.001  -0.72  0.33   .030  -1.75  0.40  <.001 
+#>  age                      │   -0.01  0.01   .097  -0.00  0.01   .562   0.00  0.01   .719 
+#>  sex:                     │                                                              
+#>    Female (ref.)          │     –     –     –       –     –     –       –     –     –    
+#>    Male                   │    0.12  0.18   .520   0.23  0.17   .172   0.14  0.20   .464 
+#>  education:               │                                                              
+#>    Lower secondary (ref.) │     –     –     –       –     –     –       –     –     –    
+#>    Upper secondary        │    0.32  0.26   .224  -0.80  0.20  <.001  -0.37  0.25   .145 
+#>    Tertiary               │    0.14  0.28   .614  -1.23  0.23  <.001  -0.35  0.26   .186 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1200                                                         
+#>  AIC                      │ 2515.8                                                       
 #> 
 #> Note. Multinomial logistic regression.
 #> Std. errors: Wald asymptotic (z).
+#> Reference outcome: Employed.
 ```
 
-Reading the table:
+This is the layout multinomial results are published in: predictors as
+rows, **one column group per non-reference outcome category**, so a
+predictor’s effects on the \\J-1\\ comparisons sit side by side on its
+row (Long & Freese 2014; the same arrangement SPSS’s NOMREG and most
+journals print). Reading it:
 
-- Rows come in **per-outcome blocks** under each predictor:
-  `Unemployed: Tertiary` is the tertiary-education coefficient in the
-  *Unemployed-versus-Employed* equation. Every row answers “compared to
+- Each column group is one **equation against the reference**: the
+  `Tertiary` cell under `Unemployed` is the tertiary-education
+  coefficient in the *Unemployed-versus-Employed* logit. The footer
+  names the baseline once — `Reference outcome: Employed.` — Stata’s
+  “base outcome” line; every cell in the table answers “compared to
   `Employed`”.
-- The `(Intercept)` block is one intercept per equation — the log-odds
-  of each category against `Employed` at the reference levels and age 0.
-  It anchors the equations rather than carrying substantive interest.
+- The table is wide by construction, so the default trims each group to
+  **B, SE, p** — the same compaction multi-model tables apply. Atomic
+  tokens restore anything, e.g. `show_columns = c("b", "ci", "p")` for
+  CIs.
+- To label the comparisons explicitly — the style some journals ask for
+  — relabel the spanners:
+  `outcome_labels = c("Student vs Employed", "Unemployed vs Employed", "Inactive vs Employed")`.
+- The `(Intercept)` row is one intercept per equation — the log-odds of
+  each category against `Employed` at the reference levels and age 0. It
+  anchors the equations rather than carrying substantive interest.
 - Inference is **Wald-z** (`df = Inf`), matching
   [`summary()`](https://rdrr.io/r/base/summary.html)-based practice for
   ML fits and Stata `mlogit`; `nnet` itself prints no p-values.
-- The model-fit block reports **n** and **AIC**.
+- The model-fit block reports **n** and **AIC**, once, under the first
+  group — they belong to the model, not to an equation.
 - In the call, `trace = FALSE` just silences the optimizer’s iteration
   log; unlike `polr()`, no `Hess = TRUE` is needed.
 
@@ -150,41 +151,28 @@ scale:
 table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #> Multinomial logistic regression: employment_status
 #> 
-#>  Variable                             │   OR        95% CI       p   
-#> ──────────────────────────────────────┼──────────────────────────────
-#>  (Intercept):                         │                              
-#>    Student: (Intercept)               │    0.24  [0.11, 0.51]  <.001 
-#>    Unemployed: (Intercept)            │    0.49  [0.25, 0.93]   .030 
-#>    Inactive: (Intercept)              │    0.17  [0.08, 0.38]  <.001 
-#>  age:                                 │                              
-#>    Student: age                       │    0.99  [0.98, 1.00]   .097 
-#>    Unemployed: age                    │    1.00  [0.99, 1.01]   .562 
-#>    Inactive: age                      │    1.00  [0.99, 1.02]   .719 
-#>  sex:                                 │                              
-#>    Student: Female (ref.)             │     –         –         –    
-#>    Unemployed: Female (ref.)          │     –         –         –    
-#>    Inactive: Female (ref.)            │     –         –         –    
-#>    Student: Male                      │    1.12  [0.79, 1.61]   .520 
-#>    Unemployed: Male                   │    1.26  [0.90, 1.76]   .172 
-#>    Inactive: Male                     │    1.15  [0.79, 1.70]   .464 
-#>  education:                           │                              
-#>    Student: Lower secondary (ref.)    │     –         –         –    
-#>    Unemployed: Lower secondary (ref.) │     –         –         –    
-#>    Inactive: Lower secondary (ref.)   │     –         –         –    
-#>    Student: Upper secondary           │    1.38  [0.82, 2.31]   .224 
-#>    Unemployed: Upper secondary        │    0.45  [0.30, 0.66]  <.001 
-#>    Inactive: Upper secondary          │    0.69  [0.42, 1.13]   .145 
-#>    Student: Tertiary                  │    1.15  [0.67, 1.98]   .614 
-#>    Unemployed: Tertiary               │    0.29  [0.19, 0.46]  <.001 
-#>    Inactive: Tertiary                 │    0.71  [0.42, 1.18]   .186 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                                    │ 1200                         
-#>  AIC                                  │ 2515.8                       
+#>                                       Student                    Unemployed                  Inactive          
+#>                             ────────────────────────────  ─────────────────────────  ───────────────────────── 
+#>  Variable                 │   OR        95% CI       p     OR      95% CI       p     OR      95% CI       p   
+#> ──────────────────────────┼────────────────────────────────────────────────────────────────────────────────────
+#>  (Intercept)              │    0.24  [0.11, 0.51]  <.001  0.49  [0.25, 0.93]   .030  0.17  [0.08, 0.38]  <.001 
+#>  age                      │    0.99  [0.98, 1.00]   .097  1.00  [0.99, 1.01]   .562  1.00  [0.99, 1.02]   .719 
+#>  sex:                     │                                                                                    
+#>    Female (ref.)          │     –         –         –      –         –         –      –         –         –    
+#>    Male                   │    1.12  [0.79, 1.61]   .520  1.26  [0.90, 1.76]   .172  1.15  [0.79, 1.70]   .464 
+#>  education:               │                                                                                    
+#>    Lower secondary (ref.) │     –         –         –      –         –         –      –         –         –    
+#>    Upper secondary        │    1.38  [0.82, 2.31]   .224  0.45  [0.30, 0.66]  <.001  0.69  [0.42, 1.13]   .145 
+#>    Tertiary               │    1.15  [0.67, 1.98]   .614  0.29  [0.19, 0.46]  <.001  0.71  [0.42, 1.18]   .186 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1200                                                                               
+#>  AIC                      │ 2515.8                                                                             
 #> 
 #> Note. Multinomial logistic regression.
 #> Std. errors: Wald asymptotic (z).
 #> OR = odds ratio.
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Reference outcome: Employed.
 ```
 
 Each value is an **odds ratio against the reference outcome**: compared
@@ -220,52 +208,39 @@ c(AIC(fit), AIC(fit_unemp))
 table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
 #> Multinomial logistic regression: employment_status
 #> 
-#>  Variable                           │   OR       p   
-#> ────────────────────────────────────┼────────────────
-#>  (Intercept):                       │                
-#>    Employed: (Intercept)            │    2.06   .030 
-#>    Student: (Intercept)             │    0.49   .127 
-#>    Inactive: (Intercept)            │    0.36   .030 
-#>  age:                               │                
-#>    Employed: age                    │    1.00   .562 
-#>    Student: age                     │    0.99   .369 
-#>    Inactive: age                    │    1.01   .476 
-#>  sex:                               │                
-#>    Employed: Female (ref.)          │     –     –    
-#>    Student: Female (ref.)           │     –     –    
-#>    Inactive: Female (ref.)          │     –     –    
-#>    Employed: Male                   │    0.79   .172 
-#>    Student: Male                    │    0.89   .613 
-#>    Inactive: Male                   │    0.91   .706 
-#>  education:                         │                
-#>    Employed: Lower secondary (ref.) │     –     –    
-#>    Student: Lower secondary (ref.)  │     –     –    
-#>    Inactive: Lower secondary (ref.) │     –     –    
-#>    Employed: Upper secondary        │    2.23  <.001 
-#>    Student: Upper secondary         │    3.08  <.001 
-#>    Inactive: Upper secondary        │    1.55   .129 
-#>    Employed: Tertiary               │    3.43  <.001 
-#>    Student: Tertiary                │    3.94  <.001 
-#>    Inactive: Tertiary               │    2.43   .005 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                                  │ 1200           
-#>  AIC                                │ 2515.8         
+#>                                Employed       Student     Inactive   
+#>                             ──────────────  ───────────  ─────────── 
+#>  Variable                 │   OR       p     OR     p     OR     p   
+#> ──────────────────────────┼──────────────────────────────────────────
+#>  (Intercept)              │    2.06   .030  0.49   .127  0.36   .030 
+#>  age                      │    1.00   .562  0.99   .369  1.01   .476 
+#>  sex:                     │                                          
+#>    Female (ref.)          │     –     –      –     –      –     –    
+#>    Male                   │    0.79   .172  0.89   .613  0.91   .706 
+#>  education:               │                                          
+#>    Lower secondary (ref.) │     –     –      –     –      –     –    
+#>    Upper secondary        │    2.23  <.001  3.08  <.001  1.55   .129 
+#>    Tertiary               │    3.43  <.001  3.94  <.001  2.43   .005 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1200                                     
+#>  AIC                      │ 2515.8                                   
 #> 
 #> Note. Multinomial logistic regression.
 #> Std. errors: Wald asymptotic (z).
 #> OR = odds ratio.
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Reference outcome: Unemployed.
 ```
 
 Against `Employed`, education looked irrelevant for the `Student`
-contrast; against `Unemployed`, every `Tertiary` contrast is strong
-(`Student: Tertiary` OR 3.94, p \< .001; even `Inactive: Tertiary`
-reaches p = .005; only `Inactive: Upper secondary` stays inconclusive).
-The p-values moved because the *questions* changed, not the model — a
-multinomial table only ever shows \\J-1\\ of the \\J(J-1)/2\\ pairwise
-comparisons, and any of the others can be recovered by releveling
-(Agresti 2013; Long 1997). Report the baseline that makes your
-substantive comparisons direct.
+contrast; against `Unemployed`, the whole `Tertiary` row is strong (OR
+3.94, p \< .001 in the `Student` group; even the `Inactive` group
+reaches p = .005; only `Upper secondary` × `Inactive` stays
+inconclusive). The p-values moved because the *questions* changed, not
+the model — a multinomial table only ever shows \\J-1\\ of the
+\\J(J-1)/2\\ pairwise comparisons, and any of the others can be
+recovered by releveling (Agresti 2013; Long 1997). Report the baseline
+that makes your substantive comparisons direct.
 
 ## The sign trap, and marginal effects
 
@@ -279,63 +254,47 @@ across the range of \\x_k\\ (Long & Freese 2014; Wulff 2015). The
 categories compete for probability mass.
 
 The probability-scale summary is the per-category **average marginal
-effect** (AME): within each predictor block, one row per response
-category:
+effect** (AME): one AME column per outcome category, next to that
+category’s coefficients:
 
 ``` r
 
 table_regression(fit, show_columns = c("b", "ame"))
 #> Multinomial logistic regression: employment_status
 #> 
-#>  Variable                             │    B      AME  
-#> ──────────────────────────────────────┼────────────────
-#>  (Intercept):                         │                
-#>    Student: (Intercept)               │   -1.43        
-#>    Unemployed: (Intercept)            │   -0.72        
-#>    Inactive: (Intercept)              │   -1.75        
-#>  age:                                 │                
-#>    Student: age                       │   -0.01  -0.00 
-#>    Unemployed: age                    │   -0.00  -0.00 
-#>    Inactive: age                      │    0.00   0.00 
-#>    Employed: age                      │           0.00 
-#>  sex:                                 │                
-#>    Student: Female (ref.)             │     –          
-#>    Unemployed: Female (ref.)          │     –          
-#>    Inactive: Female (ref.)            │     –          
-#>    Student: Male                      │    0.12   0.01 
-#>    Unemployed: Male                   │    0.23   0.02 
-#>    Inactive: Male                     │    0.14   0.01 
-#>    Employed: Male                     │          -0.04 
-#>  education:                           │                
-#>    Student: Lower secondary (ref.)    │     –          
-#>    Unemployed: Lower secondary (ref.) │     –          
-#>    Inactive: Lower secondary (ref.)   │     –          
-#>    Student: Upper secondary           │    0.32   0.05 
-#>    Unemployed: Upper secondary        │   -0.80  -0.12 
-#>    Inactive: Upper secondary          │   -0.37  -0.02 
-#>    Employed: Upper secondary          │           0.09 
-#>    Student: Tertiary                  │    0.14   0.04 
-#>    Unemployed: Tertiary               │   -1.23  -0.16 
-#>    Inactive: Tertiary                 │   -0.35  -0.01 
-#>    Employed: Tertiary                 │           0.14 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                                    │ 1200           
-#>  AIC                                  │ 2515.8         
+#>                                Student       Unemployed     Inactive    Employed 
+#>                             ──────────────  ────────────  ────────────  ──────── 
+#>  Variable                 │    B      AME     B     AME     B     AME   B   AME  
+#> ──────────────────────────┼──────────────────────────────────────────────────────
+#>  (Intercept)              │   -1.43         -0.72         -1.75                  
+#>  age                      │   -0.01  -0.00  -0.00  -0.00   0.00   0.00      0.00 
+#>  sex:                     │                                                      
+#>    Female (ref.)          │     –             –             –                    
+#>    Male                   │    0.12   0.01   0.23   0.02   0.14   0.01     -0.04 
+#>  education:               │                                                      
+#>    Lower secondary (ref.) │     –             –             –                    
+#>    Upper secondary        │    0.32   0.05  -0.80  -0.12  -0.37  -0.02      0.09 
+#>    Tertiary               │    0.14   0.04  -1.23  -0.16  -0.35  -0.01      0.14 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1200                                                 
+#>  AIC                      │ 2515.8                                               
 #> 
 #> Note. Multinomial logistic regression.
 #> Std. errors: Wald asymptotic (z).
 #> AME = average marginal effect on a response-category probability.
+#> Reference outcome: Employed.
 ```
 
-Three things to read off, using the `Tertiary` rows:
+Three things to read off, using the `Tertiary` row:
 
-- The **reference category is back**: `Employed` has no coefficient rows
-  (it is the baseline of every equation), yet it carries the largest
-  *positive* probability effect in the table (+0.14 for `Tertiary`,
-  second in magnitude only to `Unemployed`’s −0.16). The log-odds side
-  never shows this; the probability side must, because the effects on
-  all \\J\\ categories **sum to ≈ 0** — the mass that tertiary education
-  moves out of `Unemployed` lands mainly in `Employed`.
+- The **reference category is back** — as a last, AME-only column group.
+  `Employed` has no coefficients (it is the baseline of every equation,
+  so its `B` cells are empty), yet it carries the largest *positive*
+  probability effect in the table (+0.14 for `Tertiary`, second in
+  magnitude only to `Unemployed`’s −0.16). The log-odds side never shows
+  this; the probability side must, because the effects on all \\J\\
+  categories **sum to ≈ 0** across each row — the mass that tertiary
+  education moves out of `Unemployed` lands mainly in `Employed`.
 - Cells are **on the probability scale**: −0.16 is a drop of 16
   **percentage points** in the probability of unemployment for tertiary
   relative to lower-secondary education, averaged over the observed
@@ -410,6 +369,7 @@ table_regression(list(fit_lin, fit), nested = TRUE,
 #> 
 #> Note. Multinomial logistic regression models.
 #> Std. errors: Wald asymptotic (z).
+#> Reference outcome: Employed.
 ```
 
 The change rows read: freeing education from the linear trend buys a
@@ -512,7 +472,10 @@ mis-scales the sandwich for mlogit’s per-choice-situation scores.
 ## Several models side by side
 
 Multinomial fits compare like any other class — here the education
-gradient before and after adjustment:
+gradient before and after adjustment. With several models the column
+groups are needed for the *models*, so the table falls back to the
+one-row-per-comparison layout (`Student: Tertiary` rows), as does
+`nested = TRUE` above:
 
 ``` r
 
@@ -558,6 +521,7 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #> Std. errors: Wald asymptotic (z).
 #> OR = odds ratio.
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Reference outcome: Employed.
 ```
 
 ## Output formats
@@ -570,13 +534,20 @@ Excel, or Word table:
 ``` r
 
 head(table_regression(fit, exponentiate = TRUE, output = "data.frame"))
-#>                    Variable      OR   SE       95% CI     p
-#> 1              (Intercept):                                
-#> 2      Student: (Intercept)    0.24 0.09 [0.11, 0.51] <.001
-#> 3   Unemployed: (Intercept)    0.49 0.16 [0.25, 0.93]  .030
-#> 4     Inactive: (Intercept)    0.17 0.07 [0.08, 0.38] <.001
-#> 5                      age:                                
-#> 6              Student: age    0.99 0.01 [0.98, 1.00]  .097
+#>          Variable Student: OR Student: SE Student: p Unemployed: OR Unemployed: SE Unemployed: p Inactive: OR Inactive: SE
+#> 1     (Intercept)        0.24        0.09      <.001           0.49           0.16          .030         0.17         0.07
+#> 2             age        0.99        0.01       .097           1.00           0.01          .562         1.00         0.01
+#> 3            sex:                                                                                                         
+#> 4   Female (ref.)         –           –         –               –              –            –             –            –  
+#> 5            Male        1.12        0.21       .520           1.26           0.22          .172         1.15         0.23
+#> 6      education:                                                                                                         
+#>   Inactive: p
+#> 1       <.001
+#> 2        .719
+#> 3            
+#> 4        –   
+#> 5        .464
+#> 6
 ```
 
 ``` r
@@ -588,31 +559,32 @@ table_regression(fit, show_columns = c("b", "ame"), output = "gt")
 
 *Note.* Multinomial logistic regression. Std. errors: Wald asymptotic
 (z). AME = average marginal effect on a response-category probability.
+Reference outcome: Employed.
 
-[`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,
-one row per `(term, estimate_type)`; the per-outcome structure is
-carried in the term labels, and AME rows cover all \\J\\ categories
-including the reference:
+[`broom::tidy()`](https://broom.tidymodels.org) always returns the long
+frame, one row per `(term, estimate_type)`, whatever the display layout
+— the per-outcome structure is carried in the term labels
+(`"Student: age"`), and AME rows cover all \\J\\ categories including
+the reference:
 
 ``` r
 
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #> # A tibble: 31 × 15
-#>    model_id outcome    term  estimate_type estimate std.error conf.low conf.high
-#>    <chr>    <chr>      <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
-#>  1 M1       employmen… Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672   
-#>  2 M1       employmen… Unem… B             -7.23e-1  0.333    -1.38e+0 -0.0716  
-#>  3 M1       employmen… Inac… B             -1.75e+0  0.400    -2.53e+0 -0.965   
-#>  4 M1       employmen… Stud… ame           -1.06e-3  0.000641 -2.32e-3  0.000199
-#>  5 M1       employmen… Stud… B             -1.04e-2  0.00627  -2.27e-2  0.00188 
-#>  6 M1       employmen… Unem… ame           -2.72e-4  0.000683 -1.61e-3  0.00107 
-#>  7 M1       employmen… Unem… B             -3.38e-3  0.00583  -1.48e-2  0.00804 
-#>  8 M1       employmen… Inac… ame            3.91e-4  0.000591 -7.67e-4  0.00155 
-#>  9 M1       employmen… Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155  
-#> 10 M1       employmen… Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278 
+#>    model_id outcome       term  estimate_type estimate std.error conf.low conf.high statistic    df p.value test_type is_intercept
+#>    <chr>    <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>     <dbl> <dbl>   <dbl> <chr>     <lgl>       
+#>  1 M1       employment_s… Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672       -3.70    Inf 2.13e-4 z         FALSE       
+#>  2 M1       employment_s… Unem… B             -7.23e-1  0.333    -1.38e+0 -0.0716      -2.18    Inf 2.96e-2 z         FALSE       
+#>  3 M1       employment_s… Inac… B             -1.75e+0  0.400    -2.53e+0 -0.965       -4.37    Inf 1.23e-5 z         FALSE       
+#>  4 M1       employment_s… Stud… ame           -1.06e-3  0.000641 -2.32e-3  0.000199    -1.65    Inf 9.89e-2 z         FALSE       
+#>  5 M1       employment_s… Stud… B             -1.04e-2  0.00627  -2.27e-2  0.00188     -1.66    Inf 9.70e-2 z         FALSE       
+#>  6 M1       employment_s… Unem… ame           -2.72e-4  0.000683 -1.61e-3  0.00107     -0.398   Inf 6.91e-1 z         FALSE       
+#>  7 M1       employment_s… Unem… B             -3.38e-3  0.00583  -1.48e-2  0.00804     -0.580   Inf 5.62e-1 z         FALSE       
+#>  8 M1       employment_s… Inac… ame            3.91e-4  0.000591 -7.67e-4  0.00155      0.661   Inf 5.08e-1 z         FALSE       
+#>  9 M1       employment_s… Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155       0.360   Inf 7.19e-1 z         FALSE       
+#> 10 M1       employment_s… Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278      0.998   Inf 3.18e-1 z         FALSE       
 #> # ℹ 21 more rows
-#> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
-#> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
+#> # ℹ 2 more variables: factor_term <chr>, factor_level <chr>
 ```
 
 ## References
