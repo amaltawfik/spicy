@@ -31,11 +31,16 @@ test_that("multinom: term is prefixed with outcome (uniqueness preserved)", {
 
 
 # ---- 2. multinom body output groups by predictor + shows outcome -------
+# (Multi-model tables only: a SINGLE multinom now renders the
+# outcome-as-columns layout, tested in test-multinom_columns.R.)
 
-test_that("table_regression() body shows grouped multinom rows with outcome", {
+test_that("multi-model multinom body shows grouped rows with outcome", {
   fit <- .fit_multinom_iris_oc()
-  combined <- paste(capture.output(print(table_regression(fit))),
-                    collapse = "\n")
+  fit0 <- nnet::multinom(Species ~ Sepal.Length, data = iris, trace = FALSE)
+  combined <- paste(
+    capture.output(print(table_regression(list(fit0, fit)))),
+    collapse = "\n"
+  )
   # Predictor section headers
   expect_match(combined, "(Intercept):",  fixed = TRUE)
   expect_match(combined, "Sepal.Length:", fixed = TRUE)
@@ -45,12 +50,13 @@ test_that("table_regression() body shows grouped multinom rows with outcome", {
   expect_match(combined, "virginica: (Intercept)",  fixed = TRUE)
 })
 
-test_that("multinom body shows DIFFERENT estimates for the two outcomes", {
+test_that("multinom shows DIFFERENT estimates for the two outcomes", {
   fit <- .fit_multinom_iris_oc()
   combined <- paste(capture.output(print(table_regression(fit))),
                     collapse = "\n")
-  # versicolor intercept is -92.10; virginica intercept is -105.10.
-  # If the body deduped to one row per term, we'd never see both values.
+  # versicolor intercept is -92.10; virginica intercept is -105.10 --
+  # now side by side in the two category column groups. If the body
+  # deduped to one value per term, we'd never see both.
   expect_match(combined, "-92.10",  fixed = TRUE)
   expect_match(combined, "-105.10", fixed = TRUE)
 })

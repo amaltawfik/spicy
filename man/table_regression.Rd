@@ -185,9 +185,12 @@ per-coefficient columns and their display order. Accepts
 \code{"all_ame"}, \code{"all_ame_compact"}, \code{"all_f2"}, \code{"all_eta2"},
 \code{"all_omega2"}). See \emph{Vocabulary tokens} in the details for
 the full enumeration. Default \code{NULL} selects a context-aware
-layout: \code{"all_b"} (single model) or \code{"all_b_compact"} (multi-
-model). The \code{"p"} token is always the B / beta p-value; for
-the AME-specific p-value use \code{"ame_p"}.}
+layout: \code{"all_b"} (single model) or \code{"all_b_compact"}
+(multi-model, and the single-multinomial outcome-as-columns
+layout, which has the same width pressure -- restore CIs with
+atomic tokens, e.g. \code{c("b", "se", "ci", "p")}). The \code{"p"}
+token is always the B / beta p-value; for the AME-specific
+p-value use \code{"ame_p"}.}
 
 \item{keep}{Character vector of regexes. Only coefficient rows
 whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g. \code{"wt"},
@@ -471,7 +474,9 @@ spanner} above each model's sub-columns (console + gt /
 flextable / tinytable / Excel / Word renderers). \code{NULL}
 (default) resolves automatically; see \emph{Multi-model semantics}
 for the full rule. A character vector of length
-\code{length(models)} overrides.}
+\code{length(models)} overrides. Refused (error) for a single
+multinomial model: there the column groups are outcome
+categories, relabelled via \code{outcome_labels}.}
 
 \item{outcome_labels}{Optional \strong{Outcome body row} override.
 \code{NULL} (default) hides the row entirely -- under the
@@ -479,7 +484,12 @@ multi-model spanner the DV is already visible above the data.
 A character vector of length \code{length(models)} forces an
 explicit Outcome row with those values (the spanner stays as
 \code{"Model 1, ..."} unless \code{model_labels} is also supplied).
-\code{FALSE} also suppresses the row.}
+\code{FALSE} also suppresses the row. \strong{Single multinomial model}
+(outcome-as-columns layout): repurposed as the category
+spanner override -- a character vector with one label per
+non-reference outcome category, in model order, e.g.
+\code{c("Student vs Employed", ...)}; the reference category's
+AME-only group (when displayed) keeps its own name.}
 
 \item{stars}{Significance asterisks. \code{FALSE} (default, APA 7
 Section 6.46) -- no stars. \code{TRUE} -- APA cutoffs
@@ -809,6 +819,27 @@ via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
 For other classes the t-vs-z axis follows the estimator's native
 reference distribution (e.g. \code{glm}, \code{glmmTMB}, survival, ordinal,
 \code{betareg}, \code{mlogit} use z; \code{lm}, \code{lme}, \code{lmer}, \code{rms::ols} use t).
+\subsection{Multinomial models: outcome categories as columns}{
+
+A single \code{nnet::multinom} model renders the publication layout:
+predictors as rows, one column group per \strong{non-reference outcome
+category} (spanner = category name), so a predictor's effect can
+be compared across equations along its row. The mandatory footer
+note \verb{Reference outcome: <level>.} names the base category (Stata's
+"base outcome" line); \code{outcome_labels} relabels the spanners (e.g.
+\code{"Student vs Employed"}). Fit statistics print once, under the
+first group. When per-category AMEs are requested the reference
+category appears as a last, AME-only group (its coefficient cells
+are empty -- the reference has no equation; its AMEs complete the
+zero-sum across categories). The default \code{show_columns} compacts
+to B / SE / p exactly like multi-model tables; request atomic
+tokens to restore CIs. Multi-model and \code{nested = TRUE} multinomial
+tables keep the one-row-per-(category, predictor) layout --
+categories-within-models would need two spanner levels.
+\code{tidy()}, \code{as_structured()}, and \code{output = "long"} always return
+the long form (\code{"<category>: <term>"} rows), whatever the display.
+}
+
 \subsection{Robust SE availability by model class}{
 
 Not every estimator is defined for every class. A robust \code{vcov}

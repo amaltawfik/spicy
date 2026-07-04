@@ -2,7 +2,7 @@
 title: "Multinomial regression tables"
 description: >
   Publication-ready tables for multinomial logistic regression in R with
-  `table_regression()`: per-outcome coefficient blocks, odds ratios (what
+  `table_regression()`: outcome categories as columns, odds ratios (what
   Stata labels relative-risk ratios), per-category average marginal
   effects, changing the reference category, nested comparison by
   likelihood-ratio test, and the `nnet::multinom` engine plus the
@@ -24,6 +24,9 @@ knitr::opts_chunk$set(
   comment = "#>",
   eval = have_nnet
 )
+# One column group per outcome category makes wide tables -- that is
+# the point of the layout; let the console render them unwrapped.
+options(width = 130)
 
 build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
 have_mlogit <- have_nnet && requireNamespace("mlogit", quietly = TRUE)
@@ -44,9 +47,9 @@ tables*](table-regression.html) covers the shared mechanics (`vcov`,
 `ci_level`, output formats, multi-model layouts, broom integration),
 and [*Ordinal regression tables*](table-regression-ordinal.html) covers
 the case where the categories *are* ordered. Here we focus on what is
-specific to nominal outcomes: per-outcome coefficient blocks, the
-choice of reference category, and the distance between a coefficient's
-sign and its effect on a probability.
+specific to nominal outcomes: one column of effects per outcome
+category, the choice of reference category, and the distance between a
+coefficient's sign and its effect on a probability.
 
 `table_regression()` supports both engines:
 
@@ -104,20 +107,35 @@ fit <- multinom(employment_status ~ age + sex + education,
 table_regression(fit)
 ```
 
-Reading the table:
+This is the layout multinomial results are published in: predictors as
+rows, **one column group per non-reference outcome category**, so a
+predictor's effects on the $J-1$ comparisons sit side by side on its
+row (Long & Freese 2014; the same arrangement SPSS's NOMREG and most
+journals print). Reading it:
 
-* Rows come in **per-outcome blocks** under each predictor:
-  `Unemployed: Tertiary` is the tertiary-education coefficient in the
-  *Unemployed-versus-Employed* equation. Every row answers "compared to
+* Each column group is one **equation against the reference**: the
+  `Tertiary` cell under `Unemployed` is the tertiary-education
+  coefficient in the *Unemployed-versus-Employed* logit. The footer
+  names the baseline once — `Reference outcome: Employed.` — Stata's
+  "base outcome" line; every cell in the table answers "compared to
   `Employed`".
-* The `(Intercept)` block is one intercept per equation — the log-odds
+* The table is wide by construction, so the default trims each group
+  to **B, SE, p** — the same compaction multi-model tables apply.
+  Atomic tokens restore anything, e.g.
+  `show_columns = c("b", "ci", "p")` for CIs.
+* To label the comparisons explicitly — the style some journals ask
+  for — relabel the spanners:
+  `outcome_labels = c("Student vs Employed", "Unemployed vs Employed",
+  "Inactive vs Employed")`.
+* The `(Intercept)` row is one intercept per equation — the log-odds
   of each category against `Employed` at the reference levels and
   age 0. It anchors the equations rather than carrying substantive
   interest.
 * Inference is **Wald-z** (`df = Inf`), matching `summary()`-based
   practice for ML fits and Stata `mlogit`; `nnet` itself prints no
   p-values.
-* The model-fit block reports **n** and **AIC**.
+* The model-fit block reports **n** and **AIC**, once, under the first
+  group — they belong to the model, not to an equation.
 * In the call, `trace = FALSE` just silences the optimizer's iteration
   log; unlike `polr()`, no `Hess = TRUE` is needed.
 
@@ -167,9 +185,9 @@ table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
 ```
 
 Against `Employed`, education looked irrelevant for the `Student`
-contrast; against `Unemployed`, every `Tertiary` contrast is strong
-(`Student: Tertiary` OR 3.94, p < .001; even `Inactive: Tertiary`
-reaches p = .005; only `Inactive: Upper secondary` stays
+contrast; against `Unemployed`, the whole `Tertiary` row is strong
+(OR 3.94, p < .001 in the `Student` group; even the `Inactive` group
+reaches p = .005; only `Upper secondary` × `Inactive` stays
 inconclusive). The p-values moved because the *questions* changed, not
 the model — a multinomial table only ever shows $J-1$ of the
 $J(J-1)/2$ pairwise comparisons, and any of the others can be
@@ -188,21 +206,22 @@ range of $x_k$ (Long & Freese 2014; Wulff 2015). The categories compete
 for probability mass.
 
 The probability-scale summary is the per-category **average marginal
-effect** (AME): within each predictor block, one row per response
-category:
+effect** (AME): one AME column per outcome category, next to that
+category's coefficients:
 
 ```{r ame}
 table_regression(fit, show_columns = c("b", "ame"))
 ```
 
-Three things to read off, using the `Tertiary` rows:
+Three things to read off, using the `Tertiary` row:
 
-* The **reference category is back**: `Employed` has no coefficient
-  rows (it is the baseline of every equation), yet it carries the
-  largest *positive* probability effect in the table (+0.14 for
-  `Tertiary`, second in magnitude only to `Unemployed`'s −0.16). The
-  log-odds side never shows this; the probability side must, because
-  the effects on all $J$ categories **sum to ≈ 0** — the mass that
+* The **reference category is back** — as a last, AME-only column
+  group. `Employed` has no coefficients (it is the baseline of every
+  equation, so its `B` cells are empty), yet it carries the largest
+  *positive* probability effect in the table (+0.14 for `Tertiary`,
+  second in magnitude only to `Unemployed`'s −0.16). The log-odds side
+  never shows this; the probability side must, because the effects on
+  all $J$ categories **sum to ≈ 0** across each row — the mass that
   tertiary education moves out of `Unemployed` lands mainly in
   `Employed`.
 * Cells are **on the probability scale**: −0.16 is a drop of 16
@@ -316,7 +335,10 @@ sandwich for mlogit's per-choice-situation scores.
 ## Several models side by side
 
 Multinomial fits compare like any other class — here the education
-gradient before and after adjustment:
+gradient before and after adjustment. With several models the column
+groups are needed for the *models*, so the table falls back to the
+one-row-per-comparison layout (`Student: Tertiary` rows), as does
+`nested = TRUE` above:
 
 ```{r multi}
 fit_min <- multinom(employment_status ~ education, data = d, trace = FALSE)
@@ -339,10 +361,11 @@ head(table_regression(fit, exponentiate = TRUE, output = "data.frame"))
 table_regression(fit, show_columns = c("b", "ame"), output = "gt")
 ```
 
-[`broom::tidy()`](https://broom.tidymodels.org) returns the long
-frame, one row per `(term, estimate_type)`; the per-outcome structure is
-carried in the term labels, and AME rows cover all $J$ categories
-including the reference:
+[`broom::tidy()`](https://broom.tidymodels.org) always returns the
+long frame, one row per `(term, estimate_type)`, whatever the display
+layout — the per-outcome structure is carried in the term labels
+(`"Student: age"`), and AME rows cover all $J$ categories including
+the reference:
 
 ```{r broom, eval = have_broom}
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))

@@ -98,6 +98,7 @@ build_regression_footer_from_frames <- function(
     build_re_profile_footer_block_from_frames(frames),
     build_polynomial_contrasts_footer_block_from_frames(
       frames, displayed_parent_vars = displayed_parent_vars),
+    build_reference_outcome_footer_block_from_frames(frames),
     build_reference_categories_footer_block_from_frames(frames,
                                                         reference_style),
     build_nested_footer_block(nested)
@@ -1228,6 +1229,32 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
   }
   per <- vapply(affected, function(k) {
     sprintf("Model %d: %s", k, msg(ns[k]))
+  }, character(1))
+  paste(per, collapse = "\n")
+}
+
+
+# Multinomial reference (base) outcome, read from
+# extras$reference_outcome. Stata prints its "base outcome" under
+# every mlogit table; a multinomial table is unreadable without it
+# (every coefficient is a contrast AGAINST that category), so the
+# note is emitted for every multinomial frame in BOTH layouts
+# (outcome-as-columns and per-outcome rows). Fact-only.
+build_reference_outcome_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  refs <- vapply(frames, function(f) {
+    as.character(f$info$extras$reference_outcome %||% NA_character_)
+  }, character(1))
+  if (all(is.na(refs))) return(NULL)
+  affected <- which(!is.na(refs))
+  msg <- function(ref) sprintf("Reference outcome: %s.", ref)
+  # Single model, or every affected model sharing one reference (the
+  # common multi-model case): one shared line.
+  if (length(unique(refs[affected])) == 1L) {
+    return(msg(refs[affected][1L]))
+  }
+  per <- vapply(affected, function(k) {
+    sprintf("Model %d: %s", k, msg(refs[k]))
   }, character(1))
   paste(per, collapse = "\n")
 }

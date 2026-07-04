@@ -162,6 +162,26 @@
 #' reference distribution (e.g. `glm`, `glmmTMB`, survival, ordinal,
 #' `betareg`, `mlogit` use z; `lm`, `lme`, `lmer`, `rms::ols` use t).
 #'
+#' ## Multinomial models: outcome categories as columns
+#'
+#' A single `nnet::multinom` model renders the publication layout:
+#' predictors as rows, one column group per **non-reference outcome
+#' category** (spanner = category name), so a predictor's effect can
+#' be compared across equations along its row. The mandatory footer
+#' note `Reference outcome: <level>.` names the base category (Stata's
+#' "base outcome" line); `outcome_labels` relabels the spanners (e.g.
+#' `"Student vs Employed"`). Fit statistics print once, under the
+#' first group. When per-category AMEs are requested the reference
+#' category appears as a last, AME-only group (its coefficient cells
+#' are empty -- the reference has no equation; its AMEs complete the
+#' zero-sum across categories). The default `show_columns` compacts
+#' to B / SE / p exactly like multi-model tables; request atomic
+#' tokens to restore CIs. Multi-model and `nested = TRUE` multinomial
+#' tables keep the one-row-per-(category, predictor) layout --
+#' categories-within-models would need two spanner levels.
+#' `tidy()`, `as_structured()`, and `output = "long"` always return
+#' the long form (`"<category>: <term>"` rows), whatever the display.
+#'
 #' ## Robust SE availability by model class
 #'
 #' Not every estimator is defined for every class. A robust `vcov`
@@ -484,9 +504,12 @@
 #'   `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
 #'   `"all_omega2"`). See *Vocabulary tokens* in the details for
 #'   the full enumeration. Default `NULL` selects a context-aware
-#'   layout: `"all_b"` (single model) or `"all_b_compact"` (multi-
-#'   model). The `"p"` token is always the B / beta p-value; for
-#'   the AME-specific p-value use `"ame_p"`.
+#'   layout: `"all_b"` (single model) or `"all_b_compact"`
+#'   (multi-model, and the single-multinomial outcome-as-columns
+#'   layout, which has the same width pressure -- restore CIs with
+#'   atomic tokens, e.g. `c("b", "se", "ci", "p")`). The `"p"`
+#'   token is always the B / beta p-value; for the AME-specific
+#'   p-value use `"ame_p"`.
 #' @param keep Character vector of regexes. Only coefficient rows
 #'   whose term name (as in [stats::coef()] -- e.g. `"wt"`,
 #'   `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are
@@ -754,14 +777,21 @@
 #'   flextable / tinytable / Excel / Word renderers). `NULL`
 #'   (default) resolves automatically; see *Multi-model semantics*
 #'   for the full rule. A character vector of length
-#'   `length(models)` overrides.
+#'   `length(models)` overrides. Refused (error) for a single
+#'   multinomial model: there the column groups are outcome
+#'   categories, relabelled via `outcome_labels`.
 #' @param outcome_labels Optional **Outcome body row** override.
 #'   `NULL` (default) hides the row entirely -- under the
 #'   multi-model spanner the DV is already visible above the data.
 #'   A character vector of length `length(models)` forces an
 #'   explicit Outcome row with those values (the spanner stays as
 #'   `"Model 1, ..."` unless `model_labels` is also supplied).
-#'   `FALSE` also suppresses the row.
+#'   `FALSE` also suppresses the row. **Single multinomial model**
+#'   (outcome-as-columns layout): repurposed as the category
+#'   spanner override -- a character vector with one label per
+#'   non-reference outcome category, in model order, e.g.
+#'   `c("Student vs Employed", ...)`; the reference category's
+#'   AME-only group (when displayed) keeps its own name.
 #' @param stars Significance asterisks. `FALSE` (default, APA 7
 #'   Section 6.46) -- no stars. `TRUE` -- APA cutoffs
 #'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric
@@ -1198,16 +1228,40 @@ table_regression <- function(
   validate_nested_alignment(models, nested)
   validate_vcov_cluster_lists(vcov, cluster, models)
 
+  # Multinomial outcome-as-columns gate (single nnet::multinom model,
+  # no nested comparison). Computed early because it drives the
+  # `show_columns` compaction default below and refuses
+  # `model_labels` fail-fast: in this layout the column groups are
+  # outcome categories, not models, and their spanners are relabelled
+  # via `outcome_labels`. See R/regression_multinom_layout.R.
+  mn_columns_active <- .multinom_columns_active(models, nested)
+  if (mn_columns_active && !is.null(model_labels)) {
+    spicy_abort(
+      c(paste0("`model_labels` does not apply to a single multinomial ",
+               "model: the column groups are outcome categories, ",
+               "not models."),
+        "i" = paste0("Use `outcome_labels` to relabel the category ",
+                     "spanners.")),
+      class = "spicy_invalid_input"
+    )
+  }
+
   # Context-aware `show_columns` default. APA-7 Section 6.46 recommends
   # CIs for inference, so a single-model table (the publication
   # workflow) keeps CI in the default ("all_b"). Multi-model tables
   # drop CI to fit the side-by-side layout in a typical console /
-  # page width ("all_b_compact"). The user can pass
-  # `show_columns = "all_b"` (or atomic tokens) to restore CI.
+  # page width ("all_b_compact"); the multinomial columns layout has
+  # the same width pressure (one column set per outcome category) and
+  # compacts identically. The user can pass atomic tokens
+  # (e.g. `c("b", "se", "ci", "p")`) to restore CI.
   if (is.null(show_columns)) {
     is_multi <- is.list(models) && !inherits(models, "lm") &&
                   length(models) >= 2L
-    show_columns <- if (is_multi) "all_b_compact" else "all_b"
+    show_columns <- if (is_multi || mn_columns_active) {
+      "all_b_compact"
+    } else {
+      "all_b"
+    }
   }
   # Phase 7c23 (item d): explicit `"all_b"` / `"all_ame"` group tokens
   # auto-compact in multi-model layouts -- parity with the lm default
@@ -1218,7 +1272,7 @@ table_regression <- function(
   # auto-drop CI for the same multi-model context.
   is_multi <- is.list(models) && !inherits(models, "lm") &&
                 length(models) >= 2L
-  if (is_multi) {
+  if (is_multi || mn_columns_active) {
     if ("all_b"   %in% show_columns) {
       show_columns <- sub("^all_b$",   "all_b_compact",   show_columns)
     }
@@ -1525,7 +1579,13 @@ table_regression <- function(
   validate_keep_drop(keep, drop)
   validate_logical_scalar(exponentiate, "exponentiate")
   validate_model_labels(model_labels, models)
-  validate_outcome_labels(outcome_labels, models)
+  if (!mn_columns_active) {
+    # Multinomial columns layout: `outcome_labels` relabels the
+    # category spanners instead of the per-model Outcome row; its
+    # length (= number of non-reference categories) is validated in
+    # .multinom_columns_spanners() at the explode.
+    validate_outcome_labels(outcome_labels, models)
+  }
   validate_predictor_labels(labels, models)
   # Random-effects display args: validate fail-fast (before the extraction
   # loop), so a bad value errors immediately instead of after the expensive
@@ -1899,12 +1959,42 @@ table_regression <- function(
     frames <- attach_nested_stats_to_frames(frames, models)
   }
 
+  # ---- Multinomial outcome-as-columns explode (display only) -------------
+  # The publication layout for a single multinom model: one column
+  # group per outcome category. The explode swaps in per-category
+  # pseudo-model frames for ALIGN + RENDER only; the title and footer
+  # builders keep reading the ORIGINAL frames (one model), and so does
+  # the dispatch payload below (tidy() / as_structured() /
+  # output = "long" keep the long frame with outcome_level and
+  # prefixed terms). See R/regression_multinom_layout.R.
+  frames_render    <- frames
+  model_ids_render <- model_ids
+  mn_spanners      <- NULL
+  mn_exploded      <- FALSE
+  if (mn_columns_active) {
+    ex <- .explode_multinom_frame(frames[[1L]])
+    if (!is.null(ex)) {
+      frames_render    <- ex$frames
+      model_ids_render <- ex$model_ids
+      mn_spanners <- .multinom_columns_spanners(
+        ex$model_ids,
+        frames[[1L]]$info$extras$reference_outcome %||% NA_character_,
+        outcome_labels
+      )
+      # `outcome_labels` is consumed as the spanner override in this
+      # layout: the renderer's per-model Outcome row must not also
+      # fire on the pseudo-models.
+      outcome_labels <- NULL
+      mn_exploded <- TRUE
+    }
+  }
+
   # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
   # align_frames() consumes the frames list directly and produces the
   # aligned long-format data structure consumed by the body builder.
   aligned <- align_frames(
-    frames,
-    model_ids = model_ids,
+    frames_render,
+    model_ids = model_ids_render,
     show_intercept = show_intercept,
     intercept_position = intercept_position,
     reference_style = reference_style
@@ -1915,6 +2005,26 @@ table_regression <- function(
   # p_adjust (so adjusted p-values reflect the model's full
   # coefficient family, not just the displayed subset).
   aligned <- apply_keep_drop_filter(aligned, keep = keep, drop = drop)
+
+  # Dispatch payload: under the columns layout, tidy() /
+  # as_structured() / `output = "long"` must keep the original long
+  # frame (a DISPLAY-only change), so the data-facing alignment is
+  # rebuilt from the un-exploded frames with the same keep / drop
+  # filter applied.
+  aligned_data <- if (mn_exploded) {
+    apply_keep_drop_filter(
+      align_frames(
+        frames,
+        model_ids = model_ids,
+        show_intercept = show_intercept,
+        intercept_position = intercept_position,
+        reference_style = reference_style
+      ),
+      keep = keep, drop = drop
+    )
+  } else {
+    aligned
+  }
 
   # ---- Title + footer (Step 7) -------------------------------------------
   # `title` / `note` resolution: NULL -> auto, FALSE -> suppress,
@@ -2006,7 +2116,12 @@ table_regression <- function(
   # `c("Step 1", "Model 2")`. validate_models_input() rejects
   # duplicates but accepts partial naming since user intent is
   # unambiguous (named slots win, unnamed slots default).
-  effective_model_labels <- if (!is.null(model_labels)) {
+  effective_model_labels <- if (mn_exploded) {
+    # Columns layout: the "model" labels are the category spanners
+    # (already outcome_labels-overridden); `model_labels` itself was
+    # refused fail-fast up top.
+    mn_spanners
+  } else if (!is.null(model_labels)) {
     model_labels
   } else if (!is.null(names(models)) && any(nzchar(names(models)))) {
     nms <- names(models)
@@ -2047,9 +2162,13 @@ table_regression <- function(
   attr(rendered, "fit_stats_layout") <- fit_stats_layout
 
   # ---- Output dispatch (Step 11) -----------------------------------------
+  # `aligned_data` (not `aligned`): under the multinomial columns
+  # layout the display alignment is the exploded pseudo-model one,
+  # while tidy() / as_structured() / output = "long" read the
+  # original long frame.
   dispatch_regression_output(
     rendered = rendered,
-    aligned = aligned,
+    aligned = aligned_data,
     output = output,
     excel_path = excel_path,
     excel_sheet = excel_sheet,
