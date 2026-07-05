@@ -547,9 +547,10 @@ table_regression(
   `"Model 1, ..."` unless `model_labels` is also supplied). `FALSE` also
   suppresses the row. **Single multinomial model** (outcome-as-columns
   layout): repurposed as the category spanner override – a character
-  vector with one label per non-reference outcome category, in model
-  order, e.g. `c("Student vs Employed", ...)`; the reference category's
-  AME-only group (when displayed) keeps its own name.
+  vector with one label per non-reference outcome category (unique, in
+  model order), e.g. `c("Student vs Employed", ...)`; the reference
+  category's AME-only group (when displayed) keeps its own name, and
+  `FALSE` is a no-op (there is no Outcome row to suppress).
 
 - stars:
 
@@ -916,10 +917,12 @@ zero-sum across categories). The default `show_columns` compacts to B /
 SE / p exactly like multi-model tables; request atomic tokens to restore
 CIs. Multi-model and `nested = TRUE` multinomial tables keep the
 one-row-per-(category, predictor) layout – categories-within-models
-would need two spanner levels. `tidy()`,
-[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
-and `output = "long"` always return the long form
-(`"<category>: <term>"` rows), whatever the display.
+would need two spanner levels. `tidy()` and `output = "long"` always
+return the long form (`"<category>: <term>"` rows), whatever the
+display;
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+mirrors the displayed table (one column set per category), as it does
+for every other layout.
 
 ### Robust SE availability by model class
 

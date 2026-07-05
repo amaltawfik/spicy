@@ -45,12 +45,15 @@
   category spanners (one label per non-reference category,
   e.g. `"Student vs Employed"`) and `model_labels` is refused for a
   single multinomial model. With per-category AMEs the reference
-  category appears as a last, AME-only group. Every multinomial table
-  (both layouts) gains a `Reference outcome: <level>.` footer note.
+  category appears as a last, AME-only group. Every
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) table
+  (both layouts) gains a `Reference outcome: <level>.` footer note,
+  qualified per model when a multi-model table mixes classes.
   Multi-model and `nested = TRUE` multinomial tables keep the rows
-  layout; `tidy()` /
+  layout; `tidy()` and `output = "long"` are unchanged (long form),
+  while
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  / `output = "long"` are unchanged (long form).
+  mirrors the displayed table as for every other layout.
 - `mlogit`: `vcov = "HC*"` is now refused (`spicy_unsupported_vcov`) –
   [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
   scales the sandwich by the long-format row count while the scores have

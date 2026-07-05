@@ -607,9 +607,10 @@ explicit Outcome row with those values (the spanner stays as
 <code>FALSE</code> also suppresses the row. <strong>Single multinomial model</strong>
 (outcome-as-columns layout): repurposed as the category
 spanner override – a character vector with one label per
-non-reference outcome category, in model order, e.g.
+non-reference outcome category (unique, in model order), e.g.
 <code>c("Student vs Employed", ...)</code>; the reference category's
-AME-only group (when displayed) keeps its own name.</p></dd>
+AME-only group (when displayed) keeps its own name, and <code>FALSE</code>
+is a no-op (there is no Outcome row to suppress).</p></dd>
 
 
 <dt id="arg-stars">stars<a class="anchor" aria-label="anchor" href="#arg-stars"></a></dt>
@@ -956,8 +957,10 @@ to B / SE / p exactly like multi-model tables; request atomic
 tokens to restore CIs. Multi-model and <code>nested = TRUE</code> multinomial
 tables keep the one-row-per-(category, predictor) layout –
 categories-within-models would need two spanner levels.
-<code>tidy()</code>, <code><a href="as_structured.html">as_structured()</a></code>, and <code>output = "long"</code> always return
-the long form (<code>"&lt;category&gt;: &lt;term&gt;"</code> rows), whatever the display.</p>
+<code>tidy()</code> and <code>output = "long"</code> always return the long form
+(<code>"&lt;category&gt;: &lt;term&gt;"</code> rows), whatever the display;
+<code><a href="as_structured.html">as_structured()</a></code> mirrors the displayed table (one column set per
+category), as it does for every other layout.</p>
 </div>
 
 <div class="section">
