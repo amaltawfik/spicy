@@ -72,7 +72,17 @@ build_regression_footer_from_frames <- function(
     re_scale = "sd",
     re_columns = c("est", "se", "ci"),
     re_test = "none",
-    displayed_parent_vars = NULL) {
+    displayed_parent_vars = NULL,
+    frames_display = frames) {
+  # `frames_display`: the frames whose coefficient labels match the
+  # DISPLAYED body. Only the multinomial columns layout passes a
+  # different set (the exploded per-category pseudo-frames): the two
+  # themes that read coefficient labels -- reference categories and
+  # polynomial trends -- must see the bare display labels, or they
+  # print category-prefixed pseudo-levels ("sex = Student: Female")
+  # once per equation. Every model-facing theme keeps reading
+  # `frames` (one entry per MODEL), so counts and dedupes stay
+  # single-model ("Multinomial logistic regression.", not "models.").
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
@@ -97,9 +107,9 @@ build_regression_footer_from_frames <- function(
     build_re_se_skipped_footer_block_from_frames(frames),
     build_re_profile_footer_block_from_frames(frames),
     build_polynomial_contrasts_footer_block_from_frames(
-      frames, displayed_parent_vars = displayed_parent_vars),
+      frames_display, displayed_parent_vars = displayed_parent_vars),
     build_reference_outcome_footer_block_from_frames(frames),
-    build_reference_categories_footer_block_from_frames(frames,
+    build_reference_categories_footer_block_from_frames(frames_display,
                                                         reference_style),
     build_nested_footer_block(nested)
   )
@@ -1248,9 +1258,12 @@ build_reference_outcome_footer_block_from_frames <- function(frames) {
   if (all(is.na(refs))) return(NULL)
   affected <- which(!is.na(refs))
   msg <- function(ref) sprintf("Reference outcome: %s.", ref)
-  # Single model, or every affected model sharing one reference (the
-  # common multi-model case): one shared line.
-  if (length(unique(refs[affected])) == 1L) {
+  # One shared line only when EVERY model in the table is multinomial
+  # and shares one reference -- in a mixed-class table an unqualified
+  # line would read as applying to the non-multinomial models too
+  # (same all-affected bar as build_re_se_skipped above).
+  if (length(affected) == length(frames) &&
+      length(unique(refs[affected])) == 1L) {
     return(msg(refs[affected][1L]))
   }
   per <- vapply(affected, function(k) {

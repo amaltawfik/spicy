@@ -487,9 +487,10 @@ explicit Outcome row with those values (the spanner stays as
 \code{FALSE} also suppresses the row. \strong{Single multinomial model}
 (outcome-as-columns layout): repurposed as the category
 spanner override -- a character vector with one label per
-non-reference outcome category, in model order, e.g.
+non-reference outcome category (unique, in model order), e.g.
 \code{c("Student vs Employed", ...)}; the reference category's
-AME-only group (when displayed) keeps its own name.}
+AME-only group (when displayed) keeps its own name, and \code{FALSE}
+is a no-op (there is no Outcome row to suppress).}
 
 \item{stars}{Significance asterisks. \code{FALSE} (default, APA 7
 Section 6.46) -- no stars. \code{TRUE} -- APA cutoffs
@@ -836,8 +837,10 @@ to B / SE / p exactly like multi-model tables; request atomic
 tokens to restore CIs. Multi-model and \code{nested = TRUE} multinomial
 tables keep the one-row-per-(category, predictor) layout --
 categories-within-models would need two spanner levels.
-\code{tidy()}, \code{as_structured()}, and \code{output = "long"} always return
-the long form (\code{"<category>: <term>"} rows), whatever the display.
+\code{tidy()} and \code{output = "long"} always return the long form
+(\code{"<category>: <term>"} rows), whatever the display;
+\code{as_structured()} mirrors the displayed table (one column set per
+category), as it does for every other layout.
 }
 
 \subsection{Robust SE availability by model class}{

@@ -179,8 +179,10 @@
 #' tokens to restore CIs. Multi-model and `nested = TRUE` multinomial
 #' tables keep the one-row-per-(category, predictor) layout --
 #' categories-within-models would need two spanner levels.
-#' `tidy()`, `as_structured()`, and `output = "long"` always return
-#' the long form (`"<category>: <term>"` rows), whatever the display.
+#' `tidy()` and `output = "long"` always return the long form
+#' (`"<category>: <term>"` rows), whatever the display;
+#' `as_structured()` mirrors the displayed table (one column set per
+#' category), as it does for every other layout.
 #'
 #' ## Robust SE availability by model class
 #'
@@ -789,9 +791,10 @@
 #'   `FALSE` also suppresses the row. **Single multinomial model**
 #'   (outcome-as-columns layout): repurposed as the category
 #'   spanner override -- a character vector with one label per
-#'   non-reference outcome category, in model order, e.g.
+#'   non-reference outcome category (unique, in model order), e.g.
 #'   `c("Student vs Employed", ...)`; the reference category's
-#'   AME-only group (when displayed) keeps its own name.
+#'   AME-only group (when displayed) keeps its own name, and `FALSE`
+#'   is a no-op (there is no Outcome row to suppress).
 #' @param stars Significance asterisks. `FALSE` (default, APA 7
 #'   Section 6.46) -- no stars. `TRUE` -- APA cutoffs
 #'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric
@@ -1962,11 +1965,11 @@ table_regression <- function(
   # ---- Multinomial outcome-as-columns explode (display only) -------------
   # The publication layout for a single multinom model: one column
   # group per outcome category. The explode swaps in per-category
-  # pseudo-model frames for ALIGN + RENDER only; the title and footer
-  # builders keep reading the ORIGINAL frames (one model), and so does
-  # the dispatch payload below (tidy() / as_structured() /
-  # output = "long" keep the long frame with outcome_level and
-  # prefixed terms). See R/regression_multinom_layout.R.
+  # pseudo-model frames for ALIGN + RENDER (and the display-facing
+  # footer themes); the title builder keeps reading the ORIGINAL
+  # frames (one model), and so does the dispatch payload below --
+  # tidy() and output = "long" keep the long frame with outcome_level
+  # and prefixed terms. See R/regression_multinom_layout.R.
   frames_render    <- frames
   model_ids_render <- model_ids
   mn_spanners      <- NULL
@@ -1976,6 +1979,10 @@ table_regression <- function(
     if (!is.null(ex)) {
       frames_render    <- ex$frames
       model_ids_render <- ex$model_ids
+      # `outcome_labels = FALSE` is documented as "suppress the
+      # Outcome body row"; the columns layout has no such row, so
+      # FALSE is a no-op here (not an override).
+      if (isFALSE(outcome_labels)) outcome_labels <- NULL
       mn_spanners <- .multinom_columns_spanners(
         ex$model_ids,
         frames[[1L]]$info$extras$reference_outcome %||% NA_character_,
@@ -2006,22 +2013,36 @@ table_regression <- function(
   # coefficient family, not just the displayed subset).
   aligned <- apply_keep_drop_filter(aligned, keep = keep, drop = drop)
 
-  # Dispatch payload: under the columns layout, tidy() /
-  # as_structured() / `output = "long"` must keep the original long
-  # frame (a DISPLAY-only change), so the data-facing alignment is
-  # rebuilt from the un-exploded frames with the same keep / drop
-  # filter applied.
+  # Dispatch payload: under the columns layout, tidy() and
+  # `output = "long"` must keep the original long frame (a
+  # DISPLAY-only change), so the data-facing alignment is rebuilt
+  # from the un-exploded frames. Row selection (keep / drop /
+  # show_intercept) already ran on the DISPLAY alignment against
+  # BARE terms; one namespace must govern both views, so each
+  # prefixed row is mapped to its bare term and kept exactly when
+  # that term survived. Re-running the user regexes against the
+  # prefixed terms instead would silently select different rows
+  # (`keep = "^age$"` matches "age" but not "Student: age"), and
+  # align_frames()'s own intercept filter never matches
+  # "Student: (Intercept)".
   aligned_data <- if (mn_exploded) {
-    apply_keep_drop_filter(
-      align_frames(
-        frames,
-        model_ids = model_ids,
-        show_intercept = show_intercept,
-        intercept_position = intercept_position,
-        reference_style = reference_style
-      ),
-      keep = keep, drop = drop
+    ad <- align_frames(
+      frames,
+      model_ids = model_ids,
+      show_intercept = show_intercept,
+      intercept_position = intercept_position,
+      reference_style = reference_style
     )
+    ca <- ad$coefs_aligned
+    lvl <- ca$outcome_level
+    bare <- ifelse(
+      !is.na(lvl) & startsWith(ca$term, paste0(lvl, ": ")),
+      substring(ca$term, nchar(lvl) + 3L),
+      ca$term
+    )
+    ad$coefs_aligned <- ca[bare %in% unique(aligned$coefs_aligned$term), ,
+                           drop = FALSE]
+    ad
   } else {
     aligned
   }
@@ -2062,8 +2083,14 @@ table_regression <- function(
   displayed_parent_vars <- unique(ifelse(is.na(ca$factor_term),
                                             ca$term, ca$factor_term))
 
+  # Footer: model-facing themes read `frames` (one entry per model);
+  # the label-reading themes (reference categories, polynomial
+  # trends) read the DISPLAY frames -- under the columns layout the
+  # original prefixed labels would print pseudo-levels like
+  # "sex = Student: Female" once per equation.
   footer_main <- build_regression_footer_from_frames(
     frames,
+    frames_display = frames_render,
     standardized = standardized,
     p_adjust = p_adjust,
     stars = stars,
@@ -2088,7 +2115,7 @@ table_regression <- function(
   # any non-intercept row.
   if (identical(reference_style, "none") &&
         identical(factor_layout, "flat") &&
-        any(vapply(frames, function(f) {
+        any(vapply(frames_render, function(f) {
           coefs <- f$coefs
           !is.null(coefs) && nrow(coefs) > 0L &&
             any(coefs$parent_var != coefs$term & coefs$term != "(Intercept)")
@@ -2164,8 +2191,8 @@ table_regression <- function(
   # ---- Output dispatch (Step 11) -----------------------------------------
   # `aligned_data` (not `aligned`): under the multinomial columns
   # layout the display alignment is the exploded pseudo-model one,
-  # while tidy() / as_structured() / output = "long" read the
-  # original long frame.
+  # while tidy() / output = "long" read the original long frame
+  # (as_structured() mirrors the display, via the rendered table).
   dispatch_regression_output(
     rendered = rendered,
     aligned = aligned_data,

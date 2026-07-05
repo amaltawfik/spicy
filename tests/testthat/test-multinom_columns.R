@@ -233,6 +233,93 @@ test_that(".multinom_columns_active gates exactly", {
                                         nested = FALSE))
 })
 
+# ---- Adversarial-review fixes (2026-07-04 second batch) -------------------
+
+test_that("keep/drop and show_intercept govern display AND long payload", {
+  fit <- .fit_multinom_soc()
+  # Anchored regex on the BARE term: pre-fix, the display kept the age
+  # rows while tidy()/long returned 0 rows (two term namespaces).
+  tr <- table_regression(fit, keep = "^age$")
+  df <- as.data.frame(tr)
+  expect_true("age" %in% df$Variable)
+  long <- attr(tr, "spicy_long")
+  expect_identical(sum(grepl(": age$", long$term)), 3L)
+  lg <- table_regression(fit, output = "long", keep = "^age$")
+  expect_identical(sum(grepl(": age$", lg$term)), 3L)
+  # A prefixed-namespace regex is a no-op on BOTH views (bare terms
+  # govern), not just on the display.
+  lg2 <- table_regression(fit, output = "long", drop = "^Student: ")
+  expect_true(any(grepl("^Student: ", lg2$term)))
+  # show_intercept = FALSE reaches the long payload too.
+  lg3 <- table_regression(fit, output = "long", show_intercept = FALSE)
+  expect_false(any(grepl("(Intercept)", lg3$term, fixed = TRUE)))
+})
+
+test_that("reference_style = 'footer' lists bare, deduped levels", {
+  fit <- .fit_multinom_soc()
+  out <- paste(
+    capture.output(print(table_regression(fit,
+                                          reference_style = "footer"))),
+    collapse = "\n"
+  )
+  expect_match(out, "sex = Female", fixed = TRUE)
+  expect_false(grepl("Student: Female", out, fixed = TRUE))
+  # One entry per factor, not one per category equation.
+  expect_identical(
+    lengths(regmatches(out, gregexpr("sex = Female", out, fixed = TRUE))),
+    1L
+  )
+})
+
+test_that("outcome_labels = FALSE is a no-op; duplicates are refused", {
+  fit <- .fit_multinom_soc()
+  df <- as.data.frame(table_regression(fit, outcome_labels = FALSE))
+  expect_true("Student: B" %in% names(df))
+  expect_error(
+    table_regression(fit,
+                     outcome_labels = c("Same", "Same", "Other")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("matrix-response multinom renders (response_levels fallback)", {
+  skip_if_not_installed("nnet")
+  set.seed(7)
+  n <- 150
+  x <- rnorm(n)
+  counts <- t(vapply(x, function(xi) {
+    p <- exp(c(0, 0.4 * xi, -0.3 * xi)); as.vector(rmultinom(1, 5, p))
+  }, numeric(3)))
+  colnames(counts) <- c("a", "b", "c")
+  fitm <- nnet::multinom(counts ~ x, trace = FALSE)
+  df <- as.data.frame(table_regression(fitm))
+  # Pre-fix this rendered a silently EMPTY table (response_levels =
+  # character(0) defeated the %||% fallback).
+  expect_true(any(grepl("[0-9]", unlist(df[df$Variable == "x", -1L]))))
+})
+
+test_that("mixed-class multi-model qualifies the reference-outcome note", {
+  skip_if_not_installed("nnet")
+  d <- sochealth
+  d$emp <- as.integer(d$employment_status == "Employed")
+  fg <- glm(emp ~ age, data = d, family = binomial())
+  fm <- nnet::multinom(employment_status ~ age, data = d, trace = FALSE)
+  out <- paste(capture.output(print(table_regression(list(fg, fm)))),
+               collapse = "\n")
+  expect_match(out, "Model 2: Reference outcome: Employed.", fixed = TRUE)
+  expect_false(grepl("\nReference outcome: Employed.", out, fixed = TRUE))
+})
+
+test_that("ordered-factor predictor gets the polynomial footer note", {
+  fit <- .fit_multinom_soc(employment_status ~ age + education)
+  out <- paste(capture.output(print(table_regression(fit))),
+               collapse = "\n")
+  # education is an ordered factor in sochealth: the .L/.Q rows must
+  # carry the polynomial-trends note (detection was defeated by the
+  # outcome prefix when the footer read the original frames).
+  expect_match(out, "polynomial", ignore.case = TRUE)
+})
+
 test_that("differing reference outcomes get per-model footer lines", {
   skip_if_not_installed("nnet")
   d <- sochealth

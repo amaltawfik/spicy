@@ -68,8 +68,15 @@
 
   ref <- frame$info$extras$reference_outcome %||% NA_character_
   lev <- frame$info$extras$response_levels %||% present
+  # Matrix-response multinom (cbind of counts) has fit$lev = NULL, so
+  # response_levels arrives as character(0) -- which %||% does NOT
+  # catch. Fall back to the levels actually present in the coefs, and
+  # refuse an empty explode outright (NULL -> the orchestrator keeps
+  # the rows layout) rather than render a silently empty table.
+  if (!length(lev)) lev <- present
   cats <- c(setdiff(lev, ref), if (!is.na(ref) && ref %in% present) ref)
   cats <- cats[cats %in% present]
+  if (!length(cats)) return(NULL)                                      # nocov
 
   pseudo <- vector("list", length(cats))
   for (k in seq_along(cats)) {
@@ -110,8 +117,19 @@
   spanners <- cats
   if (is.null(outcome_labels)) return(spanners)
   non_ref_idx <- which(!(cats %in% reference_outcome))
-  if (!is.character(outcome_labels) ||
-        length(outcome_labels) != length(non_ref_idx)) {
+  if (!is.character(outcome_labels)) {
+    spicy_abort(
+      c(
+        paste0("`outcome_labels` must be a character vector for the ",
+               "multinomial columns layout (it relabels the category ",
+               "spanners)."),
+        "x" = sprintf("You supplied a <%s>.",
+                      class(outcome_labels)[[1L]])
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (length(outcome_labels) != length(non_ref_idx)) {
     spicy_abort(
       c(
         paste0("`outcome_labels` must be a character vector with one ",
@@ -127,6 +145,21 @@
       class = "spicy_invalid_input"
     )
   }
-  spanners[non_ref_idx] <- as.character(outcome_labels)
+  # Duplicated spanners would render two indistinguishable column
+  # groups (and dedupe data.frame colnames to "Same: B.2") --
+  # model_labels, the argument these spanners replace, refuses
+  # duplicates fail-fast; hold the override to the same bar.
+  if (anyDuplicated(outcome_labels)) {
+    spicy_abort(
+      c("`outcome_labels` must be unique (they label the category spanners).",
+        "x" = sprintf(
+          "Duplicated: %s.",
+          paste(unique(outcome_labels[duplicated(outcome_labels)]),
+                collapse = ", ")
+        )),
+      class = "spicy_invalid_input"
+    )
+  }
+  spanners[non_ref_idx] <- outcome_labels
   spanners
 }

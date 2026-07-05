@@ -37,10 +37,12 @@
   non-reference category, e.g. `"Student vs Employed"`) and
   `model_labels` is refused for a single multinomial model. With
   per-category AMEs the reference category appears as a last, AME-only
-  group. Every multinomial table (both layouts) gains a
-  `Reference outcome: <level>.` footer note. Multi-model and
-  `nested = TRUE` multinomial tables keep the rows layout; `tidy()` /
-  `as_structured()` / `output = "long"` are unchanged (long form).
+  group. Every `nnet::multinom` table (both layouts) gains a
+  `Reference outcome: <level>.` footer note, qualified per model when a
+  multi-model table mixes classes. Multi-model and `nested = TRUE`
+  multinomial tables keep the rows layout; `tidy()` and
+  `output = "long"` are unchanged (long form), while `as_structured()`
+  mirrors the displayed table as for every other layout.
 * `mlogit`: `vcov = "HC*"` is now refused (`spicy_unsupported_vcov`) --
   `sandwich::vcovHC()` scales the sandwich by the long-format row count
   while the scores have one row per choice situation, deflating the SEs
