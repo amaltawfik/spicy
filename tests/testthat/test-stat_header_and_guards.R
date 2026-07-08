@@ -18,8 +18,13 @@ test_that("statistic header: z for glm, t for lm, per-model in mixed tables", {
   expect_true("t" %in% names(out_l))
 
   out_m <- table_regression(list(l, g), show_columns = c("b", "t", "p"))
-  expect_true(any(grepl(": t$", names(out_m))))
-  expect_true(any(grepl(": z$", names(out_m))))
+  # Unnamed list with distinct DVs: bare DV names become the spanner
+  # labels, and each model carries its own statistic letter (t for lm,
+  # z for glm) -- pin the complete header row.
+  expect_identical(
+    names(out_m),
+    c("Variable", "mpg: B", "mpg: t", "mpg: p", "am: B", "am: z", "am: p")
+  )
 })
 
 test_that("statistic header: z for coxph and Gamma-log glm", {
@@ -43,8 +48,16 @@ test_that("forgotten list(): model passed as vcov gets a clear error", {
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "not a `lm` object", fixed = TRUE)
-  expect_match(conditionMessage(err), "list(m1, m2)", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "`vcov` must be a string or a list of strings, not a `lm` object.",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(err),
+    "Wrap the models instead: `table_regression(list(m1, m2))`.",
+    fixed = TRUE
+  )
 })
 
 test_that("vcov validation still accepts strings and string lists", {
@@ -68,7 +81,11 @@ test_that("AME request on an incapable class is refused, not an empty column", {
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err_cox, "spicy_invalid_input")
-  expect_match(conditionMessage(err_cox), "Cox", fixed = TRUE)
+  expect_match(
+    conditionMessage(err_cox),
+    "Token(s) \"ame\" in `show_columns` are not defined for Cox models.",
+    fixed = TRUE
+  )
 
   # Classes without a specific refusal hit the universal supports$ame
   # guard, which points at the registry (was: silently empty column).
@@ -82,8 +99,12 @@ test_that("AME request on an incapable class is refused, not an empty column", {
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err_fs, "spicy_invalid_input")
-  expect_match(conditionMessage(err_fs), "table_regression_models",
-               fixed = TRUE)
+  expect_match(
+    conditionMessage(err_fs),
+    paste0("No average-marginal-effects backend exists for this class ",
+           "(see ?table_regression_models, column AME)."),
+    fixed = TRUE
+  )
 
   # Mixed table with one capable model still renders (incapable em-dashes).
   l <- lm(mpg ~ wt, data = mtcars)

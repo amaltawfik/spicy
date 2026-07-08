@@ -3,7 +3,7 @@ test_that("freq() works with a simple numeric vector", {
   df <- freq(x, styled = FALSE)
 
   expect_s3_class(df, "data.frame")
-  expect_true(all(c("value", "n", "prop") %in% names(df)))
+  expect_identical(names(df), c("value", "n", "prop", "valid_prop"))
   expect_equal(sum(df$n, na.rm = TRUE), length(x))
   expect_equal(round(sum(df$prop, na.rm = TRUE), 1), 1)
 })
@@ -15,14 +15,15 @@ test_that("freq() works with a data.frame column", {
 
   expect_s3_class(res, "data.frame")
   expect_equal(sum(res$n, na.rm = TRUE), nrow(df))
-  expect_true(any(grepl("C", res$value)))
+  expect_identical(res$value, c("A", "B", "C"))
 })
 
 test_that("freq() requires x when data is a data.frame", {
   expect_error(
     freq(mtcars, styled = FALSE),
     "must supply `x`",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -38,11 +39,11 @@ test_that("freq() handles labelled variables correctly", {
 
   # Prefixed (default)
   f1 <- freq(x, labelled_levels = "prefixed", styled = FALSE)
-  expect_true(any(grepl("\\[1\\]", f1$value)))
+  expect_identical(f1$value, c("[1] Low", "[2] Medium", "[3] High", NA))
 
   # Labels only
   f2 <- freq(x, labelled_levels = "labels", styled = FALSE)
-  expect_true(all(!grepl("\\[", f2$value)))
+  expect_identical(f2$value, c("Low", "Medium", "High", NA))
 
   # Underlying values only
   f1 <- freq(x, styled = FALSE)
@@ -74,7 +75,8 @@ test_that("freq() rejects rescale when sum of weights is zero", {
   expect_error(
     freq(df, x, weights = w, rescale = TRUE, styled = FALSE),
     "strictly positive sum of weights",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -96,8 +98,9 @@ test_that("freq() handles missing value recoding", {
   na_count_f1 <- if (length(na_count_f1)) na_count_f1 else 0
   na_count_f2 <- if (length(na_count_f2)) na_count_f2 else 0
 
-  # Expect the 'Low' category to be removed after recoding
-  expect_false(any(grepl("Low", f2$value)))
+  # Expect the 'Low' category to be removed after recoding:
+  # only Medium, High and the new NA row remain (prefixed default)
+  expect_identical(f2$value, c("[2] Medium", "[3] High", NA))
 
   # Optionally, confirm total frequency unchanged (only recoded)
   expect_equal(
@@ -148,9 +151,21 @@ test_that("freq() handles multiple data types correctly", {
 
 test_that("freq() handles invalid weight and sort arguments", {
   x <- c(1, 2, 3)
-  expect_error(freq(x, weights = c(-1, 0, 1)), "must be non-negative")
-  expect_error(freq(x, weights = c(1, 2)), "same length")
-  expect_error(freq(x, sort = "wrong"), "Invalid value for 'sort'")
+  expect_error(
+    freq(x, weights = c(-1, 0, 1)),
+    "must be non-negative",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(x, weights = c(1, 2)),
+    "same length",
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    freq(x, sort = "wrong"),
+    "Invalid value for 'sort'",
+    class = "spicy_invalid_input"
+  )
 })
 
 
@@ -162,7 +177,10 @@ test_that("freq() prints styled table invisibly", {
 test_that("freq() cum = TRUE adds cumulative columns", {
   x <- c("A", "B", "B", "C")
   res <- freq(x, cum = TRUE, styled = FALSE)
-  expect_true("cum_prop" %in% names(res))
+  expect_identical(
+    names(res),
+    c("value", "n", "prop", "valid_prop", "cum_prop", "cum_valid_prop")
+  )
   cum_vals <- res$cum_prop[!is.na(res$cum_prop)]
   expect_equal(cum_vals[length(cum_vals)], 1)
 })
@@ -170,21 +188,21 @@ test_that("freq() cum = TRUE adds cumulative columns", {
 test_that("freq() valid = FALSE keeps valid_prop as NA", {
   x <- c(1, 2, 2, NA)
   res <- freq(x, valid = FALSE, styled = FALSE)
-  expect_true("valid_prop" %in% names(res))
+  expect_identical(names(res), c("value", "n", "prop", "valid_prop"))
   expect_true(all(is.na(res$valid_prop)))
 })
 
 test_that("freq() valid = TRUE includes valid_prop", {
   x <- c(1, 2, 2, NA)
   res <- freq(x, valid = TRUE, styled = FALSE)
-  expect_true("valid_prop" %in% names(res))
+  expect_identical(names(res), c("value", "n", "prop", "valid_prop"))
 })
 
 test_that("freq() labelled_levels = 'values' shows raw values", {
   skip_if_not_installed("labelled")
   x <- labelled::labelled(c(1, 2, 3), labels = c(A = 1, B = 2, C = 3))
   res <- freq(x, labelled_levels = "values", styled = FALSE)
-  expect_true(any(res$value %in% c("1", "2", "3")))
+  expect_identical(res$value, c("1", "2", "3"))
 })
 
 test_that("freq() with factor input works directly", {
@@ -225,7 +243,7 @@ test_that("freq() works with a tibble containing a labelled column", {
   expect_s3_class(res, "data.frame")
   expect_equal(sum(res$n), 5L)
   # Default labelled_levels = "prefixed"
-  expect_true(any(grepl("\\[1\\] Low", res$value)))
+  expect_identical(res$value, c("[1] Low", "[2] Mid", "[3] High"))
 })
 
 test_that("freq() preserves footer metadata when input is a tibble", {
@@ -244,7 +262,10 @@ test_that("freq() preserves footer metadata when input is a tibble", {
 test_that("freq() cum + weighted works", {
   df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
   res <- freq(df, x, weights = w, cum = TRUE, styled = FALSE)
-  expect_true("cum_prop" %in% names(res))
+  expect_identical(
+    names(res),
+    c("value", "n", "prop", "valid_prop", "cum_prop", "cum_valid_prop")
+  )
 })
 
 test_that("freq() na_val with plain vector", {
@@ -255,7 +276,11 @@ test_that("freq() na_val with plain vector", {
 })
 
 test_that("freq() errors with non-finite weights", {
-  expect_error(freq(c(1, 2), weights = c(1, Inf)), "finite")
+  expect_error(
+    freq(c(1, 2), weights = c(1, Inf)),
+    "finite",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("freq() rejects non-numeric weights with a clear type error", {
@@ -265,17 +290,20 @@ test_that("freq() rejects non-numeric weights with a clear type error", {
   expect_error(
     freq(c(1, 2, 3), weights = c("a", "b", "c")),
     "must be a numeric or logical vector",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
   expect_error(
     freq(c(1, 2, 3), weights = factor(c("a", "b", "c"))),
     "must be a numeric or logical vector",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
   expect_error(
     freq(c(1, 2, 3), weights = list(1, 2, 3)),
     "must be a numeric or logical vector",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -300,7 +328,10 @@ test_that("freq() styled output has class spicy_freq_table", {
 test_that("freq() cum + valid shows cumulative valid column", {
   x <- c("A", "B", "B", NA)
   res <- freq(x, cum = TRUE, valid = TRUE, styled = FALSE)
-  expect_true("cum_valid_prop" %in% names(res))
+  expect_identical(
+    names(res),
+    c("value", "n", "prop", "valid_prop", "cum_prop", "cum_valid_prop")
+  )
 })
 
 test_that("freq() styled weighted output prints invisibly", {
@@ -325,7 +356,8 @@ test_that("freq() errors when weight variable not found", {
   df <- data.frame(x = c("A", "B", "C"))
   expect_error(
     freq(df, x, weights = nonexistent_var, styled = FALSE),
-    "not found"
+    "not found",
+    class = "spicy_missing_column"
   )
 })
 
@@ -437,12 +469,21 @@ test_that("freq() footer does not reveal the ignored `data` vector name", {
   # The analyzed vector (x) appears in the title and the footer;
   # the ignored `data` vector must not appear anywhere.
   expect_false(any(grepl("c\\(1, 2, 3\\)", out)))
-  expect_true(any(grepl("c\\(4, 5, 6\\)", out)))
+  expect_true("Frequency table: c(4, 5, 6)" %in% out)
+  expect_true("Data: c(4, 5, 6)" %in% out)
 })
 
 test_that("freq() errors with invalid digits", {
-  expect_error(freq(c(1, 2), digits = -1), "non-negative")
-  expect_error(freq(c(1, 2), digits = "a"), "non-negative")
+  expect_error(
+    freq(c(1, 2), digits = -1),
+    "non-negative",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(c(1, 2), digits = "a"),
+    "non-negative",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("freq() rejects non-finite digits with the same friendly message", {
@@ -457,6 +498,7 @@ test_that("freq() rejects non-finite digits with the same friendly message", {
       freq(c(1, 2), digits = bad),
       "non-negative integer",
       fixed = TRUE,
+      class = "spicy_invalid_input",
       info = paste("digits =", deparse(bad))
     )
   }
@@ -465,8 +507,16 @@ test_that("freq() rejects non-finite digits with the same friendly message", {
 test_that("freq() rejects non-integer `digits` values", {
   # 0.11.0 tightens `digits` to a non-negative integer (matches the
   # rest of the table_*() / cross_tab() family).
-  expect_error(freq(c(1, 2), digits = 1.5), "non-negative integer")
-  expect_error(freq(c(1, 2), digits = -1), "non-negative integer")
+  expect_error(
+    freq(c(1, 2), digits = 1.5),
+    "non-negative integer",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(c(1, 2), digits = -1),
+    "non-negative integer",
+    class = "spicy_invalid_input"
+  )
   expect_silent(freq(c(1, 2), digits = 0L, styled = FALSE))
   expect_silent(freq(c(1, 2), digits = 3, styled = FALSE)) # 3.0 -> 3L OK
 })
@@ -474,18 +524,22 @@ test_that("freq() rejects non-integer `digits` values", {
 test_that("freq() validates `decimal_mark`", {
   expect_error(
     freq(c(1, 2), decimal_mark = ";"),
-    "decimal_mark"
+    "decimal_mark",
+    class = "spicy_invalid_input"
   )
   expect_error(
     freq(c(1, 2), decimal_mark = c(".", ",")),
-    "decimal_mark"
+    "decimal_mark",
+    class = "spicy_invalid_input"
   )
 })
 
 test_that("freq() honours `decimal_mark = ',' in the printed percentages", {
   out <- capture.output(freq(c(1, 1, 2, 2, 2), decimal_mark = ","))
-  expect_true(any(grepl("60,0", out, fixed = TRUE)))
-  expect_true(any(grepl("40,0", out, fixed = TRUE)))
+  # Pin the complete body and Total rows (\u2502 is the box-bar column separator)
+  expect_true(" Valid      \u2502 1               2       40,0 " %in% out)
+  expect_true("            \u2502 2               3       60,0 " %in% out)
+  expect_true(" Total      \u2502                 5      100,0 " %in% out)
   expect_false(any(grepl("\\b\\d+\\.\\d", out)))
 })
 
@@ -503,6 +557,7 @@ test_that("freq() rejects pathological sort values with the friendly message", {
       freq(c(1, 2), sort = bad),
       "Invalid value for 'sort'",
       fixed = TRUE,
+      class = "spicy_invalid_input",
       info = paste("sort =", deparse(bad))
     )
   }
@@ -512,22 +567,26 @@ test_that("freq() validates logical arguments up front", {
   # Reuses validate_varlist_logical() – same error message format
   # as varlist() / code_book(), so users get a consistent diagnostic
   # across the package.
-  expect_error(freq(c(1, 2), valid = "yes"), "`valid` must be TRUE or FALSE", fixed = TRUE)
-  expect_error(freq(c(1, 2), valid = NA), "`valid` must be TRUE or FALSE", fixed = TRUE)
-  expect_error(freq(c(1, 2), valid = c(TRUE, FALSE)), "`valid` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), valid = "yes"), "`valid` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(freq(c(1, 2), valid = NA), "`valid` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(freq(c(1, 2), valid = c(TRUE, FALSE)), "`valid` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
 
-  expect_error(freq(c(1, 2), cum = "yes"), "`cum` must be TRUE or FALSE", fixed = TRUE)
-  expect_error(freq(c(1, 2), cum = NA), "`cum` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), cum = "yes"), "`cum` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(freq(c(1, 2), cum = NA), "`cum` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
 
-  expect_error(freq(c(1, 2), rescale = "no"), "`rescale` must be TRUE or FALSE", fixed = TRUE)
-  expect_error(freq(c(1, 2), rescale = NA), "`rescale` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), rescale = "no"), "`rescale` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(freq(c(1, 2), rescale = NA), "`rescale` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
 
-  expect_error(freq(c(1, 2), styled = "yes"), "`styled` must be TRUE or FALSE", fixed = TRUE)
-  expect_error(freq(c(1, 2), styled = NA), "`styled` must be TRUE or FALSE", fixed = TRUE)
+  expect_error(freq(c(1, 2), styled = "yes"), "`styled` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(freq(c(1, 2), styled = NA), "`styled` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
 })
 
 test_that("freq() validates sort early", {
-  expect_error(freq(c(1, 2), sort = "bad"), "Invalid value for 'sort'")
+  expect_error(
+    freq(c(1, 2), sort = "bad"),
+    "Invalid value for 'sort'",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("freq() warns with NA weights and reports the count", {
@@ -565,11 +624,13 @@ test_that("freq() drops NA-weighted rows and rescales over the remaining (0.11.0
 test_that("freq() errors when total frequency is zero", {
   expect_error(
     freq(character(0), styled = FALSE),
-    "Total frequency is zero"
+    "Total frequency is zero",
+    class = "spicy_invalid_data"
   )
   expect_error(
     freq(c("A", "B"), weights = c(0, 0), rescale = FALSE, styled = FALSE),
-    "Total frequency is zero"
+    "Total frequency is zero",
+    class = "spicy_invalid_data"
   )
 })
 
@@ -718,8 +779,8 @@ test_that("freq() factor_levels = 'all' keeps unused labelled levels", {
   res <- freq(x, factor_levels = "all", styled = FALSE)
 
   expect_equal(nrow(res), 3L)
-  expect_true(any(grepl("High", res$value)))
-  expect_equal(res$n[grepl("High", res$value)], 0)
+  expect_identical(res$value, c("[1] Low", "[2] Mid", "[3] High"))
+  expect_equal(res$n[res$value == "[3] High"], 0)
 })
 
 test_that("freq() factor_levels = 'all' keeps weighted unused levels at n = 0", {
@@ -792,17 +853,20 @@ test_that("freq() validates factor_levels", {
   expect_error(
     freq(c(1, 2), factor_levels = "bogus"),
     'must be "observed" or "all"',
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
   expect_error(
     freq(c(1, 2), factor_levels = NA_character_),
     'must be "observed" or "all"',
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
   expect_error(
     freq(c(1, 2), factor_levels = c("observed", "bad")),
     'must be "observed" or "all"',
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -825,7 +889,7 @@ test_that("freq() drops unused labelled values from the output", {
   res <- freq(x, styled = FALSE)
 
   expect_equal(nrow(res), 2L)
-  expect_false(any(grepl("High", res$value)))
+  expect_identical(res$value, c("[1] Low", "[2] Mid"))
 })
 
 test_that("freq() handles a single-level factor", {
@@ -853,22 +917,29 @@ test_that("freq() prints integer counts even with fractional weights", {
   out3 <- capture.output(freq(df, x, weights = w, digits = 3, rescale = FALSE))
   expect_false(any(grepl("1\\.1\\b", out1)))
   expect_false(any(grepl("1\\.100", out3)))
-  expect_true(any(grepl("\\b1\\b", out1)))
-  expect_true(any(grepl("\\b2\\b", out1)))
-  expect_true(any(grepl("\\b3\\b", out1)))
+  # Pin the complete body rows: integer Freq. column, digits only
+  # affecting the Percent column.
+  expect_true(" Valid      \u2502 A               1       16.7 " %in% out1)
+  expect_true("            \u2502 B               2       33.3 " %in% out1)
+  expect_true("            \u2502 C               3       50.0 " %in% out1)
+  expect_true(" Valid      \u2502 A               1     16.667 " %in% out3)
+  expect_true("            \u2502 B               2     33.333 " %in% out3)
+  expect_true("            \u2502 C               3     50.000 " %in% out3)
 })
 
 test_that("freq() labelled_levels accepts p/l/v shortcuts via partial matching", {
   skip_if_not_installed("labelled")
   x <- labelled::labelled(c(1, 2, 3), labels = c(Low = 1, Mid = 2, High = 3))
-  expect_true(any(grepl(
-    "\\[1\\]",
-    freq(x, labelled_levels = "p", styled = FALSE)$value
-  )))
-  expect_true(all(
-    !grepl("\\[", freq(x, labelled_levels = "l", styled = FALSE)$value)
-  ))
-  expect_true(any(
-    freq(x, labelled_levels = "v", styled = FALSE)$value %in% c("1", "2", "3")
-  ))
+  expect_identical(
+    freq(x, labelled_levels = "p", styled = FALSE)$value,
+    c("[1] Low", "[2] Mid", "[3] High")
+  )
+  expect_identical(
+    freq(x, labelled_levels = "l", styled = FALSE)$value,
+    c("Low", "Mid", "High")
+  )
+  expect_identical(
+    freq(x, labelled_levels = "v", styled = FALSE)$value,
+    c("1", "2", "3")
+  )
 })

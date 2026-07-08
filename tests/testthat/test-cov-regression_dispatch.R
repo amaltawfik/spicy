@@ -98,6 +98,11 @@ test_that(".spicy_gt_html_postprocess injects an escaped note div and is a no-op
   expect_match(out, "&amp;", fixed = TRUE)   # & escaped
   expect_match(out, "&lt;",  fixed = TRUE)   # < escaped
   expect_match(out, "&gt;",  fixed = TRUE)   # > escaped
+  # Pin the complete rendered note (em-split label + escaped remainder, up to
+  # the closing div) -- the entity checks above alone would pass on scrambled
+  # or truncated note text.
+  expect_match(out, "<em>Note.</em> a &lt; b &amp; c &gt; d</div>",
+               fixed = TRUE)
   # NULL / empty note -> unchanged input
   expect_identical(spicy:::.spicy_gt_html_postprocess(h, NULL), h)
   expect_identical(spicy:::.spicy_gt_html_postprocess(h, ""), h)
@@ -111,6 +116,9 @@ test_that("knit_print.spicy_gt embeds the note via the post-processor", {
   ko <- knit_print.spicy_gt(g)
   expect_s3_class(ko, "knit_asis")
   expect_match(as.character(ko), "spicy-gt-note", fixed = TRUE)
+  # The full note TEXT made it into the payload (the post-processor italicises
+  # the leading "Note." so the rendered form is em-split, not verbatim).
+  expect_match(as.character(ko), "<em>Note.</em> knit gt.</div>", fixed = TRUE)
 })
 
 test_that("print.spicy_gt non-interactive delegates to NextMethod()", {
@@ -135,7 +143,8 @@ test_that("print.spicy_gt non-interactive delegates to NextMethod()", {
   # proof the gt render ran rather than the method merely not erroring.
   joined <- paste(out, collapse = "\n")
   expect_match(joined, "<table", fixed = TRUE)
-  expect_match(joined, "Intercept", fixed = TRUE)
+  # Complete intercept cell text (">...<" pins the whole rendered label).
+  expect_match(joined, ">(Intercept)<", fixed = TRUE)
 })
 
 test_that("print.spicy_gt interactive branch renders browsable HTML with the note", {
@@ -183,6 +192,8 @@ test_that(".spicy_ft_html_postprocess strips tfoot and injects the note div", {
   expect_match(of, "spicy-ft-note", fixed = TRUE)
   expect_false(grepl("<tfoot>", of, fixed = TRUE))   # rendered tfoot removed
   expect_match(of, "border-collapse: collapse", fixed = TRUE)
+  # Pin the complete rendered note text (em-split "Note." label + remainder).
+  expect_match(of, "<em>Note.</em> ft note.</div>", fixed = TRUE)
   expect_identical(spicy:::.spicy_ft_html_postprocess(hf, NULL), hf)
 })
 
@@ -194,6 +205,8 @@ test_that("knit_print.spicy_flextable embeds the note via the post-processor", {
   ko <- knit_print.spicy_flextable(ft)
   expect_s3_class(ko, "knit_asis")
   expect_match(as.character(ko), "spicy-ft-note", fixed = TRUE)
+  # The full note TEXT made it into the payload (em-split rendered form).
+  expect_match(as.character(ko), "<em>Note.</em> knit ft.</div>", fixed = TRUE)
 })
 
 test_that("print.spicy_flextable non-interactive delegates to NextMethod()", {
@@ -214,14 +227,18 @@ test_that("print.spicy_flextable non-interactive delegates to NextMethod()", {
 
   # The captured output is flextable's console summary (NextMethod = flextable's
   # print): it names the col_keys and the header / body row counts, and shows
-  # the underlying data sample including a model coefficient label. These pin
-  # that flextable's print -- not a no-op -- produced the output.
+  # the underlying data sample including a model coefficient label. Pin the
+  # complete lines (verbatim, incl. flextable's trailing spaces) so a wrong
+  # column set or row count cannot slip past a fragment match.
   joined <- paste(out, collapse = "\n")
-  expect_match(joined, "flextable object", fixed = TRUE)
-  expect_match(joined, "col_keys", fixed = TRUE)
-  expect_match(joined, "header has", fixed = TRUE)
-  expect_match(joined, "body has", fixed = TRUE)
-  expect_match(joined, "Intercept", fixed = TRUE)
+  expect_identical(out[1L], "a flextable object.")
+  expect_true(
+    "col_keys: `Variable`, `B`, `SE`, `95% CI: LL`, `95% CI: UL`, `p` " %in% out
+  )
+  expect_true("header has 2 row(s) " %in% out)
+  expect_true("body has 9 row(s) " %in% out)
+  # Complete quoted coefficient label in the data sample (str() output).
+  expect_match(joined, "\"(Intercept)\"", fixed = TRUE)
 })
 
 test_that("print.spicy_flextable interactive branch renders browsable HTML with the note", {
@@ -298,6 +315,9 @@ test_that("tinytable renders with a note div (with-note finalize path)", {
   tt <- table_regression(list(m1, m2), output = "tinytable")  # note present
   html <- tinytable::save_tt(tt, output = "html")
   expect_match(html, "spicy-tt-note", fixed = TRUE)
+  # The note div carries the actual note text (em-split leading "Note."),
+  # not just the marker class.
+  expect_match(html, "<em>Note.</em> Linear regression models.", fixed = TRUE)
   # Bug regression: the U+200B duplicate-spanner disambiguator must be
   # stripped before output (it leaked when the strip token was the ASCII
   # string "200B" instead of the U+200B character).
@@ -379,7 +399,13 @@ test_that("print.spicy_regression_table falls back to bare names without a struc
   attr(tbl, "structured") <- NULL
   out <- capture.output(print(tbl))
   expect_true(length(out) > 0L)
-  expect_true(any(grepl("Variable", out)))
+  # Pin the complete title line and the complete bare-names header row
+  # (U+2502 is the renderer's box-drawing column separator; kept as an
+  # escape so the test source stays ASCII).
+  expect_identical(out[1L], "Linear regression: mpg")
+  expect_true(
+    " Variable    \u2502   B     SE       95% CI        p   " %in% out
+  )
 })
 
 
@@ -422,10 +448,12 @@ test_that("output_excel() aborts on an empty excel_path (!nzchar half of the gua
     spicy:::output_excel(rendered, "", "Regression"),
     class = "spicy_invalid_input"
   )
-  # Message identifies excel_path specifically (not a generic failure).
+  # Complete abort message, pinned verbatim (identifies excel_path).
   expect_error(
     spicy:::output_excel(rendered, "", "Regression"),
-    regexp = "excel_path"
+    regexp = "`excel_path` must be supplied for output = \"excel\".",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -448,9 +476,12 @@ test_that("output_word() aborts on an empty word_path (!nzchar half of the guard
     spicy:::output_word(rendered, ""),
     class = "spicy_invalid_input"
   )
+  # Complete abort message, pinned verbatim (identifies word_path).
   expect_error(
     spicy:::output_word(rendered, ""),
-    regexp = "word_path"
+    regexp = "`word_path` must be supplied for output = \"word\".",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -483,12 +514,13 @@ test_that("clipboard_payload() builds a delimited payload without touching the c
   expect_type(txt, "character")
   expect_length(txt, 1L)
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1L]]
-  # Title row first, a Variable-labelled header, and tab-delimited cells.
-  expect_match(lines[1L], "^Linear regression")
-  expect_true(any(grepl("^Variable\t", lines)))
+  # Complete title row (trailing tabs pad it to the 6-column grid) and the
+  # complete tab-delimited header row.
+  expect_identical(lines[1L], "Linear regression: mpg\t\t\t\t\t")
+  expect_true("Variable\tB\tSE\t95% CI\t95% CI\tp" %in% lines)
   expect_true(any(grepl("\t", lines, fixed = TRUE)))
-  # Custom delimiter is honoured (pipe instead of tab).
+  # Custom delimiter is honoured (pipe instead of tab): same complete header.
   txt_pipe <- spicy:::clipboard_payload(rendered, "|")
-  expect_true(any(grepl("Variable|", strsplit(txt_pipe, "\n", fixed = TRUE)[[1L]],
-                        fixed = TRUE)))
+  expect_true("Variable|B|SE|95% CI|95% CI|p" %in%
+                strsplit(txt_pipe, "\n", fixed = TRUE)[[1L]])
 })

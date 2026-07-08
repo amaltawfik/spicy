@@ -13,8 +13,11 @@ test_that("table_regression – default output: spicy_regression_table class + a
   expect_s3_class(out, "spicy_regression_table")
   expect_s3_class(out, "spicy_table")
   expect_s3_class(out, "data.frame")
-  expect_match(attr(out, "title"), "^Linear regression: mpg")
-  expect_match(attr(out, "note"), "^Note\\. ")
+  expect_identical(attr(out, "title"), "Linear regression: mpg")
+  expect_identical(
+    attr(out, "note"),
+    "Note. Linear regression.\nStd. errors: classical (OLS)."
+  )
 })
 
 test_that("table_regression – single fit and 1-list of fits behave the same", {
@@ -102,8 +105,8 @@ test_that("table_regression – two models: per-model column groups", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
-  expect_true(any(grepl("Model 1: B$", names(out))))
-  expect_true(any(grepl("Model 2: B$", names(out))))
+  expect_true("Model 1: B" %in% names(out))
+  expect_true("Model 2: B" %in% names(out))
 })
 
 test_that("table_regression – names(list) used as model labels", {
@@ -118,7 +121,7 @@ test_that("table_regression – nested = TRUE injects change-stat rows + Hierarc
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
-  expect_match(attr(out, "title"), "^Hierarchical linear regression")
+  expect_identical(attr(out, "title"), "Hierarchical linear regression: mpg")
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("ΔR²" %in% vars)
   expect_true("F-change" %in% vars)
@@ -556,9 +559,9 @@ test_that("labels – coef-style key (cyl6) renames the contrast row", {
   out <- table_regression(fit,
                           labels = c("cyl6" = "6 cylinders",
                                       "cyl8" = "8 cylinders"))
-  # Indented level rows are renamed
-  expect_true(any(grepl("6 cylinders$", out$Variable)))
-  expect_true(any(grepl("8 cylinders$", out$Variable)))
+  # Indented level rows are renamed (two-space level indent pinned)
+  expect_true("  6 cylinders" %in% out$Variable)
+  expect_true("  8 cylinders" %in% out$Variable)
   # Factor header still uses the term name "cyl"
   expect_true("cyl:" %in% out$Variable)
 })
@@ -571,7 +574,7 @@ test_that("labels – mixed term + coef-style keys both honoured", {
                                       "wt" = "Weight"))
   expect_true("Weight" %in% out$Variable)
   expect_true("Cylinders:" %in% out$Variable)
-  expect_true(any(grepl("Six$", out$Variable)))
+  expect_true("  Six" %in% out$Variable)
 })
 
 test_that("align – 'decimal' is default; padding applied to numeric cols", {
@@ -662,7 +665,10 @@ test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
   )
   fit <- lm(y ~ x, data = df)
   out <- table_regression(fit, vcov = "CR2", cluster = df$region)
-  expect_match(attr(out, "note"), "clusters by region")
+  expect_identical(
+    attr(out, "note"),
+    "Note. Linear regression.\nStd. errors: cluster-robust (CR2), clusters by region."
+  )
   expect_no_match(attr(out, "note"), "cluster vector supplied")
 })
 
@@ -676,7 +682,10 @@ test_that("cluster_name – bare symbol extracted as variable name", {
   region_vec <- df$region
   fit <- lm(y ~ x, data = df)
   out <- table_regression(fit, vcov = "CR2", cluster = region_vec)
-  expect_match(attr(out, "note"), "clusters by region_vec")
+  expect_identical(
+    attr(out, "note"),
+    "Note. Linear regression.\nStd. errors: cluster-robust (CR2), clusters by region_vec."
+  )
 })
 
 test_that("cluster_name – list(...) with named elements per model", {
@@ -695,8 +704,12 @@ test_that("cluster_name – list(...) with named elements per model", {
     cluster = list(df$region, df$clinic)
   )
   note <- attr(out, "note")
-  expect_match(note, "clusters by region")
-  expect_match(note, "clusters by clinic")
+  expect_identical(
+    note,
+    paste0("Note. Linear regression models.\nStd. errors:\n",
+           "  Model 1: cluster-robust (CR2), clusters by region\n",
+           "  Model 2: cluster-robust (CR2), clusters by clinic")
+  )
 })
 
 test_that("extract_arg_column_name – handles all recognised forms", {
@@ -747,8 +760,9 @@ test_that("outcome_labels – explicit labels take precedence", {
   out <- table_regression(list(m_mpg, m_hp),
                           outcome_labels = c("Fuel economy", "Horsepower"))
   outcome_row <- out[out$Variable == "Outcome", , drop = FALSE]
-  expect_true(any(grepl("Fuel economy", outcome_row[, "Model 1: B"])))
-  expect_true(any(grepl("Horsepower",   outcome_row[, "Model 2: B"])))
+  # Cells are decimal-align padded; pin the exact trimmed content.
+  expect_identical(trimws(outcome_row[, "Model 1: B"]), "Fuel economy")
+  expect_identical(trimws(outcome_row[, "Model 2: B"]), "Horsepower")
 })
 
 test_that("outcome_labels – FALSE suppresses the row even with differing DVs", {
@@ -938,9 +952,9 @@ test_that("spanner – multi-model print strips 'Label: ' prefix from headers", 
   out <- table_regression(list("A" = m1, "B" = m2))
   txt <- capture.output(print(out))
   joined <- paste(txt, collapse = "\n")
-  # The spanner labels appear above the sub-columns.
-  expect_match(joined, "A")
-  expect_match(joined, "B")
+  # The spanner row is a dedicated line containing ONLY the two
+  # model labels, in order ("A" alone would match e.g. "Adj.R2").
+  expect_true(any(grepl("^\\s+A\\s+B\\s*$", txt)))
   # The bare sub-column tokens are shown twice (one per model);
   # the "A: B" / "B: B" prefixed form must not appear in the header.
   expect_false(grepl("A: B", joined, fixed = TRUE))
@@ -1020,7 +1034,11 @@ test_that("ordered factor – grouped under header, poly-order, auto footer note
   # suffix legend (no "R contr.poly" leak, no "linear trend" prose
   # -- that explanation lives in the once-per-session inform).
   note <- attr(out, "note")
-  expect_match(note, "Ordered factor `edu`: polynomial trends")
+  expect_match(
+    note,
+    "Ordered factor `edu`: polynomial trends (.L = linear, .Q = quadratic, .C = cubic).",
+    fixed = TRUE
+  )
   expect_match(note, ".L = linear", fixed = TRUE)
   expect_match(note, ".Q = quadratic", fixed = TRUE)
 })
@@ -1037,7 +1055,7 @@ test_that("ordered factor – fitting with factor(ordered = FALSE) restores trea
   out <- table_regression(fit)
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("edu_t:" %in% vars)
-  expect_true(any(grepl("Low (ref.)", vars, fixed = TRUE)))
+  expect_true("Low (ref.)" %in% vars)   # vars is trimws()'d above
   # No poly footer for this fit.
   note <- attr(out, "note")
   expect_false(grepl("polynomial trends", note))
@@ -1048,13 +1066,13 @@ test_that("default show_columns context-aware: single keeps CI, multi drops it",
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out1 <- table_regression(m1)
-  expect_true(any(grepl("95% CI", names(out1))))
+  expect_true("95% CI" %in% names(out1))
   out2 <- table_regression(list(m1, m2))
   expect_false(any(grepl("95% CI", names(out2))))
   # Explicit user override restores CI even in multi-model.
   out3 <- table_regression(list(m1, m2),
                             show_columns = c("b", "se", "ci", "p"))
-  expect_true(any(grepl("95% CI", names(out3))))
+  expect_true(all(c("Model 1: 95% CI", "Model 2: 95% CI") %in% names(out3)))
 })
 
 
@@ -1100,13 +1118,13 @@ test_that("reference row always FIRST in its factor group regardless of group_fa
 
   out_t <- table_regression(fit, factor_layout = "grouped")
   vars_t <- as.data.frame(out_t, stringsAsFactors = FALSE)$Variable
-  ref_t  <- which(grepl("Female (ref.)", vars_t, fixed = TRUE))
+  ref_t  <- which(vars_t == "  Female (ref.)")
   male_t <- which(vars_t == "  Male")
   expect_true(ref_t < male_t)
 
   out_f <- table_regression(fit, factor_layout = "flat")
   vars_f <- as.data.frame(out_f, stringsAsFactors = FALSE)$Variable
-  ref_f  <- which(grepl("sexFemale (ref.)", vars_f, fixed = TRUE))
+  ref_f  <- which(vars_f == "sexFemale (ref.)")
   male_f <- which(vars_f == "sexMale")
   expect_true(ref_f < male_f)
 })
@@ -1129,11 +1147,11 @@ test_that("reference_style = \"annotation\" + factor_layout = \"flat\" inlines [
                           factor_layout = "flat")
   vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
   # 2-level factor: the single non-ref dummy carries [vs Female]
-  expect_true(any(grepl("sexMale [vs Female]", vars, fixed = TRUE)))
+  expect_true("sexMale [vs Female]" %in% vars)
   # 3-level factor: FIRST non-ref dummy carries [vs Lower]; second does not
   edu_rows <- grep("^edu", vars, value = TRUE)
   with_marker <- grep("[vs Lower]", edu_rows, fixed = TRUE, value = TRUE)
-  expect_length(with_marker, 1L)              # exactly one
+  expect_identical(with_marker, "eduUpper [vs Lower]")  # exactly one, on 1st dummy
   # Reference rows themselves are NOT in the body in annotation mode
   expect_false(any(grepl("Lower (ref.)", vars, fixed = TRUE)))
 })
@@ -1154,7 +1172,8 @@ test_that("reference_style = \"footer\" adds a single 'Reference categories: ...
   expect_false(any(grepl("[vs ", vars, fixed = TRUE)))
   # Footer line lists both factor references
   note <- attr(out, "note")
-  expect_match(note, "Reference categories:")
+  expect_match(note, "Reference categories: sex = Female; edu = Lower.",
+               fixed = TRUE)
   expect_match(note, "sex = Female")
   expect_match(note, "edu = Lower")
 })
@@ -1198,7 +1217,18 @@ test_that("reference_style = \"none\" + factor_layout = \"flat\" emits spicy_inf
   )
   expect_s3_class(cnd, "spicy_silent_reference")
   expect_s3_class(cnd, "spicy_info")
-  expect_match(conditionMessage(cnd), "reference convention")
+  # Pin both full sentences (the second line's leading info glyph is
+  # non-ASCII, so match starts after it).
+  expect_match(
+    conditionMessage(cnd),
+    "`reference_style = \"none\"` with `factor_layout = \"flat\"`: reference levels are not displayed anywhere.",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "State the reference convention in the surrounding text or table caption.",
+    fixed = TRUE
+  )
 })
 
 test_that("reference_style = \"none\" + factor_layout = \"grouped\" does NOT emit the info", {

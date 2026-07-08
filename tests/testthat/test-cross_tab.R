@@ -88,8 +88,12 @@ test_that("cross_tab respects global options spicy.simulate_p and spicy.rescale"
   options(spicy.simulate_p = TRUE, spicy.rescale = TRUE)
   res <- cross_tab(data, cyl, gear, weights = mpg, styled = FALSE)
 
-  # Verify attributes and global option effect
-  expect_true(grepl("Chi-2\\(", attr(res, "note")))
+  # Verify attributes and global option effect. The simulated p-value
+  # varies run to run, so pin the deterministic parts of the note.
+  note <- attr(res, "note")
+  expect_match(note, "Chi-2(NA) = 17.7, p", fixed = TRUE)
+  expect_match(note, "(simulated)", fixed = TRUE)
+  expect_match(note, "Weight: mpg (rescaled)", fixed = TRUE)
   expect_true(isTRUE(all.equal(round(attr(res, "n_total")), nrow(data))))
 
   # Restore options
@@ -117,7 +121,7 @@ test_that("cross_tab accepts labelled vectors in vector mode", {
 
   expect_s3_class(res, "data.frame")
   expect_true("Values" %in% names(res))
-  expect_match(attr(res, "title"), "x x y")
+  expect_identical(attr(res, "title"), "Crosstable: x x y (Column %)")
 })
 
 test_that("cross_tab keeps column names with $ vector calls", {
@@ -128,7 +132,10 @@ test_that("cross_tab keeps column names with $ vector calls", {
 
   res <- cross_tab(d$pasemploiraison_1, d$hes, percent = "c", styled = FALSE)
 
-  expect_match(attr(res, "title"), "pasemploiraison_1 x hes", fixed = TRUE)
+  expect_identical(
+    attr(res, "title"),
+    "Crosstable: pasemploiraison_1 x hes (Column %)"
+  )
 })
 
 test_that("cross_tab validates weights length in data.frame and vector modes", {
@@ -140,13 +147,15 @@ test_that("cross_tab validates weights length in data.frame and vector modes", {
   expect_error(
     cross_tab(df, x, y, weights = c(1, 2), styled = FALSE),
     "`weights` must have the same length as the number of rows.",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_data"
   )
 
   expect_error(
     cross_tab(df$x, df$y, weights = c(1, 2), styled = FALSE),
     "`weights` must have the same length as `x` and `y` in vector mode.",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_data"
   )
 })
 
@@ -160,7 +169,8 @@ test_that("cross_tab rejects rescale when weight sum is zero", {
   expect_error(
     cross_tab(df, x, y, weights = w, rescale = TRUE, styled = FALSE),
     "`rescale = TRUE` requires a strictly positive sum of weights.",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -168,7 +178,8 @@ test_that("cross_tab fails early when y is explicitly NULL", {
   expect_error(
     cross_tab(mtcars, cyl, y = NULL, styled = FALSE),
     "You must specify a `y` variable",
-    fixed = TRUE
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })
 
@@ -187,11 +198,22 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
   )
   note_b <- attr(out[["B"]], "note")
 
-  expect_true(grepl(
-    "Yates continuity correction applied.",
+  # Pin the complete group-B note (fully deterministic).
+  expect_identical(
     note_b,
-    fixed = TRUE
-  ))
+    paste(
+      "Chi-2(1) = 0.0, p = 1.000",
+      "Cramer's V = 0.00",
+      "Yates continuity correction applied.",
+      "Stats computed on 2x2 sub-table after dropping empty rows / columns.",
+      paste0(
+        "Warning: 4 expected cells < 5 (100%). Minimum expected = 2. ",
+        "Consider `simulate_p = TRUE` or set globally via ",
+        "`options(spicy.simulate_p = TRUE)`."
+      ),
+      sep = "\n"
+    )
+  )
   expect_false(grepl("p = NA", note_b, fixed = TRUE))
 })
 
@@ -229,18 +251,23 @@ test_that("cross_tab auto-detects ordinal variables", {
 
 test_that("cross_tab assoc_ci adds CI to note", {
   res <- cross_tab(mtcars, cyl, gear, assoc_ci = TRUE, styled = FALSE)
-  expect_true(grepl("95% CI", attr(res, "note")))
+  expect_match(
+    attr(res, "note"),
+    "Cramer's V = 0.53, 95% CI [0.22, 0.74]",
+    fixed = TRUE
+  )
 })
 
 test_that("cross_tab assoc_measure = 'none' omits coefficient line", {
   res <- cross_tab(mtcars, cyl, gear, assoc_measure = "none", styled = FALSE)
   expect_false(grepl("Cramer", attr(res, "note")))
-  expect_true(grepl("Chi-2", attr(res, "note")))
+  expect_match(attr(res, "note"), "Chi-2(4) = 18.0, p = .001", fixed = TRUE)
 })
 
 test_that("cross_tab note uses new Chi-2(df) format", {
   res <- cross_tab(mtcars, cyl, gear, styled = FALSE)
   expect_true(grepl("Chi-2\\(\\d+\\) =", attr(res, "note")))
+  expect_match(attr(res, "note"), "Chi-2(4) = 18.0, p = .001", fixed = TRUE)
 })
 
 # ── Percentage modes ─────────────────────────────────────────────────────
@@ -248,12 +275,12 @@ test_that("cross_tab note uses new Chi-2(df) format", {
 test_that("cross_tab row percent shows row percentages", {
   res <- cross_tab(mtcars, cyl, gear, percent = "row", styled = FALSE)
   expect_true("Values" %in% names(res))
-  expect_match(attr(res, "title"), "Row %")
+  expect_identical(attr(res, "title"), "Crosstable: cyl x gear (Row %)")
 })
 
 test_that("cross_tab column percent shows column percentages", {
   res <- cross_tab(mtcars, cyl, gear, percent = "column", styled = FALSE)
-  expect_match(attr(res, "title"), "Column %")
+  expect_identical(attr(res, "title"), "Crosstable: cyl x gear (Column %)")
 })
 
 test_that("cross_tab styled row percent includes Total and N rows", {
@@ -331,7 +358,11 @@ test_that("cross_tab assoc_measure = 'lambda' works", {
 
 test_that("cross_tab adds weight note", {
   res <- cross_tab(mtcars, cyl, gear, weights = mpg, styled = FALSE)
-  expect_match(attr(res, "note"), "Weight: mpg")
+  # Pin the complete note (fully deterministic).
+  expect_identical(
+    attr(res, "note"),
+    "Chi-2(4) = 355.1, p <.001\nCramer's V = 0.53\nWeight: mpg"
+  )
 })
 
 test_that("cross_tab adds rescaled note", {
@@ -343,7 +374,7 @@ test_that("cross_tab adds rescaled note", {
     rescale = TRUE,
     styled = FALSE
   )
-  expect_match(attr(res, "note"), "rescaled")
+  expect_match(attr(res, "note"), "Weight: mpg (rescaled)", fixed = TRUE)
 })
 
 # ── Small expected cells warning ─────────────────────────────────────────
@@ -354,14 +385,26 @@ test_that("cross_tab warns about small expected cells", {
     y = c("X", "X", "Y", "X", "Y", "Y")
   )
   res <- cross_tab(df, x, y, styled = FALSE)
-  expect_match(attr(res, "note"), "expected cell")
+  # Pin the complete warning sentence.
+  expect_match(
+    attr(res, "note"),
+    paste0(
+      "Warning: 6 expected cells < 5 (100%). 2 expected cells < 1. ",
+      "Minimum expected = 0.5. Consider `simulate_p = TRUE` or set ",
+      "globally via `options(spicy.simulate_p = TRUE)`."
+    ),
+    fixed = TRUE
+  )
 })
 
 # ── Simulate p ───────────────────────────────────────────────────────────
 
 test_that("cross_tab simulate_p adds (simulated) to note", {
   res <- cross_tab(mtcars, cyl, gear, simulate_p = TRUE, styled = FALSE)
-  expect_match(attr(res, "note"), "simulated")
+  # The simulated p-value varies run to run; pin the deterministic
+  # prefix (df becomes NA under simulation) and the suffix marker.
+  expect_match(attr(res, "note"), "Chi-2(NA) = 18.0, p", fixed = TRUE)
+  expect_match(attr(res, "note"), "(simulated)", fixed = TRUE)
 })
 
 # ── include_stats = FALSE ────────────────────────────────────────────────
@@ -374,28 +417,45 @@ test_that("cross_tab include_stats = FALSE omits note", {
 # ── Validation ───────────────────────────────────────────────────────────
 
 test_that("cross_tab errors when data is missing", {
-  expect_error(cross_tab(), "must provide a dataset")
+  expect_error(
+    cross_tab(),
+    "must provide a dataset",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("cross_tab errors when x is missing for data.frame", {
-  expect_error(cross_tab(mtcars), "must specify at least one variable")
+  expect_error(
+    cross_tab(mtcars),
+    "must specify at least one variable",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("cross_tab errors with non-numeric weights", {
   expect_error(
     cross_tab(mtcars, cyl, gear, weights = "a"),
-    "`weights` must be numeric"
+    "`weights` must be numeric",
+    class = "spicy_invalid_input"
   )
 })
 
 test_that("cross_tab errors with negative weights", {
   df <- data.frame(x = c("A", "B"), y = c("C", "D"), w = c(-1, 1))
-  expect_error(cross_tab(df, x, y, weights = w), "non-negative")
+  expect_error(
+    cross_tab(df, x, y, weights = w),
+    "non-negative",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("cross_tab errors with infinite weights", {
   df <- data.frame(x = c("A", "B"), y = c("C", "D"), w = c(Inf, 1))
-  expect_error(cross_tab(df, x, y, weights = w), "finite")
+  expect_error(
+    cross_tab(df, x, y, weights = w),
+    "finite",
+    class = "spicy_invalid_input"
+  )
 })
 
 # ── New 0.11.0 audit-fix coverage ────────────────────────────────────────────
@@ -446,10 +506,26 @@ test_that("cross_tab `p_digits` controls p-value precision and threshold", {
 })
 
 test_that("cross_tab validates decimal_mark, p_digits and simulate_B", {
-  expect_error(cross_tab(mtcars, cyl, gear, decimal_mark = ";"), "decimal_mark")
-  expect_error(cross_tab(mtcars, cyl, gear, p_digits = 0L), "p_digits")
-  expect_error(cross_tab(mtcars, cyl, gear, simulate_B = 0), "simulate_B")
-  expect_error(cross_tab(mtcars, cyl, gear, simulate_B = -10), "simulate_B")
+  expect_error(
+    cross_tab(mtcars, cyl, gear, decimal_mark = ";"),
+    "decimal_mark",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    cross_tab(mtcars, cyl, gear, p_digits = 0L),
+    "p_digits",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    cross_tab(mtcars, cyl, gear, simulate_B = 0),
+    "simulate_B",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    cross_tab(mtcars, cyl, gear, simulate_B = -10),
+    "simulate_B",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("cross_tab adds a note when stats are computed on a pruned sub-table", {
@@ -462,8 +538,9 @@ test_that("cross_tab adds a note when stats are computed on a pruned sub-table",
     y = c("X", "Y", "X", "Y", "X", "Y", "X", "Y")
   )
   res <- suppressWarnings(cross_tab(df, x, y, by = g, styled = FALSE))
-  expect_match(attr(res[["g1"]], "note"), "sub-table after dropping empty rows / columns")
-  expect_match(attr(res[["g2"]], "note"), "sub-table after dropping empty rows / columns")
+  pruned_line <- "Stats computed on 2x2 sub-table after dropping empty rows / columns."
+  expect_match(attr(res[["g1"]], "note"), pruned_line, fixed = TRUE)
+  expect_match(attr(res[["g2"]], "note"), pruned_line, fixed = TRUE)
 })
 
 test_that("cross_tab marks N row via attribute (robust to user level 'N')", {
@@ -530,14 +607,16 @@ test_that("cross_tab vector input with by works", {
 test_that("cross_tab vector input by length mismatch errors", {
   expect_error(
     cross_tab(c("A", "B"), c("X", "Y"), by = c("G1"), styled = FALSE),
-    "same length"
+    "same length",
+    class = "spicy_invalid_data"
   )
 })
 
 test_that("cross_tab vector input x/y length mismatch errors", {
   expect_error(
     cross_tab(c("A", "B", "C"), c("X", "Y"), styled = FALSE),
-    "same length"
+    "same length",
+    class = "spicy_invalid_data"
   )
 })
 
@@ -556,7 +635,7 @@ test_that("cross_tab 1x1 table omits chi-2 note", {
 
 test_that("cross_tab percent = 'none' shows N in title", {
   res <- cross_tab(mtcars, cyl, gear, percent = "none", styled = FALSE)
-  expect_match(attr(res, "title"), "(N)", fixed = TRUE)
+  expect_identical(attr(res, "title"), "Crosstable: cyl x gear (N)")
 })
 
 test_that("cross_tab styled percent = 'none' with digits", {
@@ -567,19 +646,27 @@ test_that("cross_tab styled percent = 'none' with digits", {
 test_that("print.spicy_cross_table formats N row in column percent", {
   res <- cross_tab(mtcars, cyl, gear, percent = "column", styled = TRUE)
   out <- capture.output(print(res))
-  expect_true(any(grepl("N", out)))
+  # Pin the full N row (│ is the table's vertical rule); anchored
+  # so a wrong label or wrong counts cannot slip through.
+  n_line <- out[grepl("^ N ", out)]
+  expect_length(n_line, 1L)
+  expect_match(n_line, "^ N +\u2502 +15 +12 +5 \u2502 +32 $")
 })
 
 test_that("print.spicy_cross_table formats N column in row percent", {
   res <- cross_tab(mtcars, cyl, gear, percent = "row", styled = TRUE)
   out <- capture.output(print(res))
-  expect_true(any(grepl("N", out)))
+  # Pin the full header row: the N column must sit after Total.
+  header <- out[grepl("^ Values ", out)]
+  expect_length(header, 1L)
+  expect_match(header, "^ Values +\u2502 +3 +4 +5 \u2502 +Total +N $")
 })
 
 test_that("cross_tab vector mode errors when only one vector given", {
   expect_error(
     cross_tab(c("A", "B")),
-    "must provide both"
+    "must provide both",
+    class = "spicy_invalid_input"
   )
 })
 
@@ -601,13 +688,21 @@ test_that("cross_tab with [[ extraction preserves var name", {
 test_that("cross_tab vector mode rejects non-numeric weights", {
   x <- c("A", "B", "A")
   y <- c("X", "Y", "X")
-  expect_error(cross_tab(x, y, weights = c("a", "b", "c")), "numeric")
+  expect_error(
+    cross_tab(x, y, weights = c("a", "b", "c")),
+    "numeric",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("cross_tab vector mode rejects mismatched by length", {
   x <- c("A", "B", "A")
   y <- c("X", "Y", "X")
-  expect_error(cross_tab(x, y, by = c("G1", "G2")), "same length")
+  expect_error(
+    cross_tab(x, y, by = c("G1", "G2")),
+    "same length",
+    class = "spicy_invalid_data"
+  )
 })
 
 test_that("cross_tab with $ accessor extracts var name", {
@@ -632,20 +727,25 @@ test_that("cross_tab weighted without stats shows weight note alone", {
     w = c(2, 3, 1, 4)
   )
   out <- capture.output(cross_tab(d, x, y, weights = w, include_stats = FALSE))
-  expect_true(any(grepl("Weight:", out)))
+  # Pin the exact weight note line printed below the table.
+  expect_true("Weight: w" %in% out)
 })
 
 test_that("cross_tab percent column styled output", {
   out <- capture.output(cross_tab(mtcars, cyl, gear, percent = "column"))
+  expect_identical(out[1], "Crosstable: cyl x gear (Column %)")
   expect_true(any(grepl("%", out)))
 })
 
 test_that("cross_tab percent row styled output", {
   out <- capture.output(cross_tab(mtcars, cyl, gear, percent = "row"))
+  expect_identical(out[1], "Crosstable: cyl x gear (Row %)")
   expect_true(any(grepl("%", out)))
 })
 
 test_that("cross_tab invalid assoc_measure errors", {
+  # Plain base error from match.arg(); its message is locale-dependent,
+  # so no message or spicy_* class can be pinned here.
   expect_error(cross_tab(mtcars, cyl, gear, assoc_measure = "invalid"))
 })
 

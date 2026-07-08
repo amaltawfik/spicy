@@ -78,8 +78,7 @@ test_that("vcov label says 'cluster vector supplied' when no cluster name", {
   frame <- list(info = list(class = "estimatr", vcov_kind = "CR2",
                             extras = list(cluster_name = NA_character_)))
   out <- spicy:::format_vcov_label_from_frame(frame)
-  expect_match(out, "cluster-robust (CR2)", fixed = TRUE)
-  expect_match(out, "cluster vector supplied", fixed = TRUE)
+  expect_identical(out, "cluster-robust (CR2), cluster vector supplied")
 })
 
 test_that("vcov label falls through to the raw kind for unrecognised types", {
@@ -94,13 +93,18 @@ test_that("vcov label falls through to the raw kind for unrecognised types", {
 test_that("abbreviations footer defines partial f-squared", {
   out <- spicy:::build_abbreviations_footer_block_from_frames(
     c("partial_f2"), list())
-  expect_match(out, "f² = Cohen's partial f²", fixed = TRUE)
+  sup2 <- intToUtf8(0xB2)  # superscript two (ASCII-safe source)
+  expect_identical(out, paste0("f", sup2, " = Cohen's partial f", sup2, "."))
 })
 
 test_that("abbreviations footer defines bias-corrected partial omega-squared", {
   out <- spicy:::build_abbreviations_footer_block_from_frames(
     c("partial_omega2"), list())
-  expect_match(out, "bias-corrected partial omega-squared", fixed = TRUE)
+  omega_sq <- intToUtf8(c(0x3C9, 0xB2))  # omega + superscript two
+  expect_identical(
+    out,
+    paste0(omega_sq, " = bias-corrected partial omega-squared.")
+  )
 })
 
 
@@ -116,7 +120,13 @@ test_that("standardized caveat (refit) detects interaction from attached fit", {
   expect_false(is.null(attr(fr, "fit")))          # but the fit is reachable
   out <- spicy:::build_standardized_caveat_footer_block_from_frames(
     list(fr), "refit")
-  expect_match(out, "after refit on z-scored data", fixed = TRUE)
+  beta <- intToUtf8(0x3B2)  # Greek small beta (ASCII-safe source)
+  expect_identical(
+    out,
+    paste0("Standardised ", beta, ": after refit on z-scored data, an ",
+           "interaction's ", beta, " is the coefficient of the product of ",
+           "the z-scored components.")
+  )
 })
 
 test_that("standardized caveat (std) detects interaction from attached fit", {
@@ -124,11 +134,15 @@ test_that("standardized caveat (std) detects interaction from attached fit", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_standardized_caveat_footer_block_from_frames(
     list(fr), "std")
-  expect_match(out, "SD of the product (or transformed) design column",
-               fixed = TRUE)
+  beta <- intToUtf8(0x3B2)  # Greek small beta (ASCII-safe source)
+  expect_identical(
+    out,
+    paste0("Standardised ", beta, ": interaction / transformed terms are ",
+           "scaled by the SD of the product (or transformed) design column; ",
+           "differs from \"refit\" when components are correlated.")
+  )
   # Method terms only: no literature citations, no other-software names
   # in a publication table note (they live in ?table_regression).
-  expect_match(out, 'differs from "refit"', fixed = TRUE)
   expect_false(grepl("SPSS|Stata|lm[.]beta|Friedrich|Cohen", out))
 })
 
@@ -172,10 +186,15 @@ test_that("survival footer prefixes 'Model k:' for >1 contributing models", {
   fr1 <- as_regression_frame(f1, model_id = "M1")
   fr2 <- as_regression_frame(f2, model_id = "M2")
   out <- spicy:::build_survival_footer_block_from_frames(list(fr1, fr2))
-  expect_match(out, "Model 1:", fixed = TRUE)
-  expect_match(out, "Model 2:", fixed = TRUE)
-  expect_match(out, "Events:", fixed = TRUE)
-  expect_match(out, "Distribution: Weibull", fixed = TRUE)
+  lines <- strsplit(out, "\n", fixed = TRUE)[[1]]
+  expect_identical(
+    lines[[1]],
+    "Model 1: Events: 165 of 228; Concordance C = 0.55 (SE = 0.03)."
+  )
+  expect_identical(
+    lines[[2]],
+    "Model 2: Distribution: Weibull; scale = 0.76."
+  )
 })
 
 
@@ -307,7 +326,11 @@ test_that("RE footer summary returns NULL when nothing informative survives", {
 test_that("p.adjust footer counts 0 for a frame with no coefs", {
   frame <- list(coefs = NULL)
   out <- spicy:::build_p_adjust_footer_block_from_frames(list(frame), "holm")
-  expect_match(out, "m = 0 coefficient(s) per model", fixed = TRUE)
+  expect_identical(
+    out,
+    paste0("P-values adjusted via stats::p.adjust(method = \"holm\"); ",
+           "m = 0 coefficient(s) per model.")
+  )
 })
 
 test_that("p.adjust footer lists per-model m when sizes differ", {
@@ -320,8 +343,11 @@ test_that("p.adjust footer lists per-model m when sizes differ", {
   )
   out <- spicy:::build_p_adjust_footer_block_from_frames(
     list(list(coefs = mk(2)), list(coefs = mk(3))), "holm")
-  expect_match(out, "m = (2, 3) coefficient(s) per model", fixed = TRUE)
-  expect_match(out, "method = \"holm\"", fixed = TRUE)
+  expect_identical(
+    out,
+    paste0("P-values adjusted via stats::p.adjust(method = \"holm\"); ",
+           "m = (2, 3) coefficient(s) per model.")
+  )
 })
 
 
@@ -337,9 +363,11 @@ test_that("polynomial contrasts footer labels higher-degree ^k suffixes", {
   out <- suppressMessages(
     spicy:::build_polynomial_contrasts_footer_block_from_frames(
       list(list(coefs = coefs))))
-  expect_match(out, "^4 = quartic", fixed = TRUE)
-  expect_match(out, "^5 = quintic", fixed = TRUE)
-  expect_match(out, "Ordered factor `g`", fixed = TRUE)
+  expect_identical(
+    out,
+    paste0("Ordered factor `g`: polynomial trends (.L = linear, ",
+           ".Q = quadratic, .C = cubic, ^4 = quartic, ^5 = quintic).")
+  )
 })
 
 test_that("polynomial contrasts footer is NULL when no displayed var survives", {
@@ -385,9 +413,7 @@ test_that("reference categories footer builds the pair sentence", {
   )
   out <- spicy:::build_reference_categories_footer_block_from_frames(
     list(list(coefs = coefs)), "footer")
-  expect_match(out, "Reference categories:", fixed = TRUE)
-  expect_match(out, "cyl = 4", fixed = TRUE)
-  expect_match(out, "gear = 3", fixed = TRUE)
+  expect_identical(out, "Reference categories: cyl = 4; gear = 3.")
 })
 
 test_that("reference categories footer NULL-guards empty / coef-less inputs", {

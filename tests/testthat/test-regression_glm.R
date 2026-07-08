@@ -59,8 +59,8 @@ test_that("glm: family-aware title – logit / probit / poisson / Gamma", {
   expect_match(attr(table_regression(fit_probit), "title"),
                "^Probit regression: am$")
   fit_pois <- glm(I(round(mpg)) ~ wt, data = mt, family = poisson)
-  expect_match(attr(table_regression(fit_pois), "title"),
-               "^Poisson regression:")
+  expect_identical(attr(table_regression(fit_pois), "title"),
+                   "Poisson regression: I(round(mpg))")
   fit_gamma <- glm(mpg ~ wt, data = mt, family = Gamma(link = "log"))
   expect_match(attr(table_regression(fit_gamma), "title"),
                "^Gamma regression: mpg$")
@@ -93,7 +93,8 @@ test_that("glm: classical-vcov footer label says 'Fisher information'", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(fit)
   expect_match(attr(out, "note"),
-               "Std\\. errors: classical \\(Fisher information\\)")
+               "Std. errors: classical (Fisher information).",
+               fixed = TRUE)
 })
 
 
@@ -106,9 +107,9 @@ test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
   out <- table_regression(fit)
   # Default for glm-only models: nobs, McFadden, Nagelkerke, AIC
   expect_true("n" %in% out$Variable)
-  expect_true(any(grepl("McFadden", out$Variable, fixed = TRUE)))
-  expect_true(any(grepl("Nagelkerke", out$Variable, fixed = TRUE)))
-  expect_true(any(grepl("AIC", out$Variable, fixed = TRUE)))
+  expect_true("R² (McFadden)"   %in% out$Variable)
+  expect_true("R² (Nagelkerke)" %in% out$Variable)
+  expect_true("AIC"             %in% out$Variable)
   # And NOT plain R² / Adj.R² (those are lm tokens)
   expect_false(any(out$Variable == "R²"))
   expect_false(any(out$Variable == "Adj.R²"))
@@ -346,24 +347,26 @@ test_that("exponentiate: gaussian glm ⇒ no transform + spicy_ignored_arg warni
 test_that("exponentiate: footer mentions the family-specific label", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(fit, exponentiate = TRUE)
-  expect_match(attr(out, "note"),
-               "Coefficients exponentiated and displayed as OR")
   # G4 disclosure: when the SE column is displayed (default view), the
   # footer states the SE scale (delta method) and warns that the CI is
   # asymmetric -- OR +/- z x SE does NOT reproduce the shown bounds
-  # (Stata [R] logistic convention).
-  expect_match(attr(out, "note"), "SE on the OR scale (delta method)",
+  # (Stata [R] logistic convention). Pin the complete footer line.
+  expect_match(attr(out, "note"),
+               paste0("Coefficients exponentiated and displayed as OR; ",
+                      "SE on the OR scale (delta method); ",
+                      "CI bounds exponentiated (asymmetric)."),
                fixed = TRUE)
-  expect_match(attr(out, "note"), "asymmetric", fixed = TRUE)
-  expect_match(attr(out, "note"), "CI bounds exponentiated")
+  expect_match(attr(out, "note"), "OR = odds ratio.", fixed = TRUE)
 })
 
 test_that("exponentiate: SE-scale clause gated on a visible SE column", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(fit, exponentiate = TRUE,
                           show_columns = c("b", "ci"))
+  # No SE column shown -> the footer line drops the delta-method clause.
   expect_match(attr(out, "note"),
-               "Coefficients exponentiated and displayed as OR")
+               "Coefficients exponentiated and displayed as OR; CI bounds exponentiated.",
+               fixed = TRUE)
   expect_false(grepl("delta method", attr(out, "note"), fixed = TRUE))
 })
 
@@ -372,7 +375,10 @@ test_that("exponentiate: mixed exp/non-exp table scopes the footer per model", {
   f_gl <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(list(f_lm, f_gl), exponentiate = TRUE)
   expect_match(attr(out, "note"),
-               "Model 2: coefficients exponentiated", fixed = TRUE)
+               paste0("Model 2: coefficients exponentiated and displayed as OR; ",
+                      "SE on the OR scale (delta method); ",
+                      "CI bounds exponentiated (asymmetric)."),
+               fixed = TRUE)
 })
 
 test_that("exponentiate: multi-model with mixed families ⇒ per-family qualifier", {
@@ -380,9 +386,14 @@ test_that("exponentiate: multi-model with mixed families ⇒ per-family qualifie
   m_pois  <- glm(I(round(mpg)) ~ wt, data = mt, family = poisson)
   out <- table_regression(list(m_logit, m_pois), exponentiate = TRUE)
   note <- attr(out, "note")
-  expect_match(note, "OR")
-  expect_match(note, "IRR")
-  expect_match(note, "per family")
+  expect_match(note, "OR = odds ratio; IRR = incidence rate ratio.",
+               fixed = TRUE)
+  expect_match(note,
+               paste0("Coefficients exponentiated and displayed as ",
+                      "OR / IRR (per family); ",
+                      "SE on the displayed ratio scale (delta method); ",
+                      "CI bounds exponentiated (asymmetric)."),
+               fixed = TRUE)
 })
 
 test_that("exponentiate: mixed glm + lm ⇒ per-model header (OR + B)", {
@@ -395,8 +406,8 @@ test_that("exponentiate: mixed glm + lm ⇒ per-model header (OR + B)", {
   # DVs differ (am, mpg) -> smart default lifts the bare DV names
   # into the spanner; sub-column names are prefixed by the DV name.
   # Model 1 (glm/am) -> OR; Model 2 (lm/mpg) -> B.
-  expect_true(any(grepl("am: OR", names(out), fixed = TRUE)))
-  expect_true(any(grepl("mpg: B$", names(out))))
+  expect_true("am: OR" %in% names(out))
+  expect_true("mpg: B" %in% names(out))
 })
 
 test_that("exponentiate: validation rejects non-logical scalar", {
@@ -521,7 +532,7 @@ test_that("glm: partial_chi2 column header is chi-squared (UTF-8 safe)", {
   fit <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
   body <- as.data.frame(out, stringsAsFactors = FALSE)
-  expect_true(any(grepl("χ²", names(body))))
+  expect_true("χ²" %in% names(body))
 })
 
 test_that("lm + partial_chi2 - rejected with hint to partial_f2 / eta2 / omega2", {
@@ -811,10 +822,13 @@ test_that("glm AME + CR2: footer mentions glm-specific mechanism (coef_test)", {
   out <- table_regression(fit, vcov = "CR2", cluster = d$clinic,
                            show_columns = c("b", "ame"))
   note <- attr(out, "note")
-  # Phase 7c22 (item e): footer trimmed -- "t-test with Satterthwaite
-  # df (dominant-coefficient approximation)" for the glm path.
-  expect_match(note, "Satterthwaite df", fixed = TRUE)
-  expect_match(note, "dominant-coefficient approximation", fixed = TRUE)
+  # Phase 7c22 (item e): footer trimmed -- pin the complete line for
+  # the glm path.
+  expect_match(
+    note,
+    "AME inference: t-test with Satterthwaite df (dominant-coefficient approximation).",
+    fixed = TRUE
+  )
   expect_false(grepl("clubSandwich::",   note, fixed = TRUE))
   expect_false(grepl("linear_contrast",  note, fixed = TRUE))
 })
@@ -1032,9 +1046,14 @@ test_that("E2E: poisson IRR + nested LRT hierarchy", {
     exponentiate = TRUE,
     nested = TRUE
   )
-  expect_match(attr(out, "title"), "^Hierarchical Poisson regression: ")
+  expect_identical(attr(out, "title"),
+                   "Hierarchical Poisson regression: I(round(mpg))")
   note <- attr(out, "note")
-  expect_match(note, "IRR", fixed = TRUE)
+  expect_match(note,
+               paste0("Coefficients exponentiated and displayed as IRR; ",
+                      "SE on the IRR scale (delta method); ",
+                      "CI bounds exponentiated (asymmetric)."),
+               fixed = TRUE)
   # Change rows in the body (not in the footer)
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("Δχ²" %in% vars)
@@ -1049,8 +1068,8 @@ test_that("E2E: mixed lm + glm side-by-side renders without error", {
   expect_match(attr(out, "title"), "^Regression comparison$")
   # vcov footer per-model: OLS / Fisher information (Phase 7c24)
   note <- attr(out, "note")
-  expect_match(note, "OLS",                fixed = TRUE)
-  expect_match(note, "Fisher information", fixed = TRUE)
+  expect_match(note, "Model 1: classical (OLS)",                fixed = TRUE)
+  expect_match(note, "Model 2: classical (Fisher information)", fixed = TRUE)
 })
 
 test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
@@ -1067,9 +1086,14 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
     nested = TRUE
   )
   note <- attr(out, "note")
-  expect_match(note, "cluster-robust [(]CR2[)]", perl = TRUE)
-  # Phase 7c22 (item e): trimmed wording.
-  expect_match(note, "Satterthwaite df", fixed = TRUE)
+  expect_match(note, "Std. errors: cluster-robust (CR2), clusters by clinic.",
+               fixed = TRUE)
+  # Phase 7c22 (item e): trimmed wording -- pin the full line.
+  expect_match(
+    note,
+    "AME inference: t-test with Satterthwaite df (dominant-coefficient approximation).",
+    fixed = TRUE
+  )
   # Change rows live in the body now
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("Δχ²" %in% vars)
@@ -1222,8 +1246,8 @@ test_that("AUDIT: less common families have correct titles", {
   expect_match(attr(table_regression(fit_qb), "title"),
                "^Quasi-binomial regression: am$")
   fit_qp <- glm(I(round(mpg)) ~ wt, data = mtcars, family = quasipoisson)
-  expect_match(attr(table_regression(fit_qp), "title"),
-               "^Quasi-Poisson regression:")
+  expect_identical(attr(table_regression(fit_qp), "title"),
+                   "Quasi-Poisson regression: I(round(mpg))")
   # inverse.gaussian
   set.seed(5)
   d <- data.frame(y = rgamma(50, 2, 0.5), x = rnorm(50))
@@ -1233,8 +1257,8 @@ test_that("AUDIT: less common families have correct titles", {
     error = function(e) NULL
   )
   skip_if(is.null(fit_ig), "inverse.gaussian fit did not converge")
-  expect_match(attr(table_regression(fit_ig), "title"),
-               "^Inverse-Gaussian regression:")
+  expect_identical(attr(table_regression(fit_ig), "title"),
+                   "Inverse-Gaussian regression: y")
 })
 
 test_that("AUDIT: Gamma(log) exponentiate header is MR (mean ratio)", {
@@ -1509,7 +1533,12 @@ test_that("AUDIT: mixed-family glms -> per-model exp header (OR / IRR)", {
                             exponentiate = TRUE)
   expect_true("Logit: OR"  %in% names(out))
   expect_true("Pois: IRR"  %in% names(out))
-  expect_match(attr(out, "note"), "OR / IRR", fixed = TRUE)
+  expect_match(attr(out, "note"),
+               paste0("Coefficients exponentiated and displayed as ",
+                      "OR / IRR (per family); ",
+                      "SE on the displayed ratio scale (delta method); ",
+                      "CI bounds exponentiated (asymmetric)."),
+               fixed = TRUE)
 })
 
 test_that("AUDIT: all HC* variants work for glm (sandwich S3 method present)", {
@@ -1681,8 +1710,8 @@ test_that("AUDIT B6: partially-named models list auto-fills missing slots", {
   cols <- names(as.data.frame(out, stringsAsFactors = FALSE,
                                 check.names = FALSE))
   # The unnamed slot gets "Model 1" as label, the named slot keeps "B".
-  expect_true(any(grepl("Model 1:", cols, fixed = TRUE)))
-  expect_true(any(grepl("B:", cols, fixed = TRUE)))
+  expect_true("Model 1: B" %in% cols)
+  expect_true("B: B" %in% cols)
 })
 
 test_that("AUDIT B6: existing duplicate-name validator still fires cleanly", {
@@ -1724,12 +1753,13 @@ test_that("AUDIT B7: ordered factor with poly contrasts -- grouped under header"
   l_pos <- which(vars_trimmed == ".L")
   q_pos <- which(vars_trimmed == ".Q")
   expect_true(l_pos < q_pos)
-  # Auto footer mentions the poly contrasts.
+  # Auto footer mentions the poly contrasts (pin the full note line).
   expect_match(attr(out, "note"),
-                "Ordered factor `education`: polynomial trends")
+                "Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).",
+                fixed = TRUE)
   # sex (treatment factor) still groups correctly with ref row
-  expect_true(any(grepl("^sex:", vars)))
-  expect_true(any(grepl("Female.*ref", vars)))
+  expect_true(any(vars == "sex:"))
+  expect_true("Female (ref.)" %in% vars_trimmed)
 })
 
 test_that("AUDIT B7: treatment-coded factor unchanged (regression check)", {
@@ -1741,8 +1771,8 @@ test_that("AUDIT B7: treatment-coded factor unchanged (regression check)", {
   fit <- glm(am ~ mpg + cyl, data = mt, family = binomial)
   out <- table_regression(fit)
   vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
-  expect_true(any(grepl("^cyl:", vars)))     # factor header present
-  expect_true(any(grepl("4.*ref", vars)))    # ref row for cyl=4
+  expect_true(any(vars == "cyl:"))               # factor header present
+  expect_true("4 (ref.)" %in% trimws(vars))      # ref row for cyl=4
 })
 
 
@@ -2343,7 +2373,7 @@ test_that("spicy_glm_title_prefix: generic quasi() family", {
   )
   skip_if(is.null(fit), "quasi() fit did not converge")
   title <- attr(table_regression(fit), "title")
-  expect_match(title, "^Quasi-likelihood regression:")
+  expect_identical(title, "Quasi-likelihood regression: y")
 })
 
 test_that("compute_pseudo_r2_nagelkerke: NA when 1 - exp(2 * LL_null / n) <= 0", {
@@ -2394,11 +2424,14 @@ test_that("AME-Satterthwaite footer: mixed lm + glm uses compound wording", {
     show_columns = c("b", "ame", "ame_p", "p")
   )
   note <- attr(out, "note")
-  # Phase 7c22 (item e): footer trimmed for the lm+glm mixed case.
-  expect_match(note, "Satterthwaite df", fixed = TRUE)
-  expect_match(note, "closed-form for lm", fixed = TRUE)
-  expect_match(note, "dominant-coefficient approximation for glm",
-                fixed = TRUE)
+  # Phase 7c22 (item e): footer trimmed for the lm+glm mixed case --
+  # pin the complete compound line.
+  expect_match(
+    note,
+    paste0("AME inference: t-test with Satterthwaite df ",
+           "(closed-form for lm; dominant-coefficient approximation for glm)."),
+    fixed = TRUE
+  )
   expect_false(grepl("clubSandwich",     note, fixed = TRUE))
   expect_false(grepl("linear_contrast",  note, fixed = TRUE))
 })
@@ -2415,7 +2448,9 @@ test_that("cluster - formula form (~region) resolves against model.frame", {
                   region = rep(letters[1:10], each = 10))
   fit <- lm(y ~ x, data = d)
   out <- table_regression(fit, vcov = "CR2", cluster = ~region)
-  expect_match(attr(out, "note"), "clusters by region", fixed = TRUE)
+  expect_match(attr(out, "note"),
+               "Std. errors: cluster-robust (CR2), clusters by region.",
+               fixed = TRUE)
 })
 
 test_that("cluster - string form ('region') resolves identically", {
@@ -2452,7 +2487,9 @@ test_that("cluster - formula with interaction (~region:year)", {
   )
   fit <- lm(y ~ x, data = d)
   out <- table_regression(fit, vcov = "CR2", cluster = ~region:year)
-  expect_match(attr(out, "note"), "clusters by region:year", fixed = TRUE)
+  expect_match(attr(out, "note"),
+               "Std. errors: cluster-robust (CR2), clusters by region:year.",
+               fixed = TRUE)
 })
 
 test_that("cluster - unknown column raises spicy_invalid_input with hint", {
@@ -2519,5 +2556,7 @@ test_that("cluster - local variable with the same name as a column still works (
   out <- table_regression(fit, vcov = "CR2", cluster = my_cluster)
   expect_s3_class(out, "spicy_regression_table")
   # Footer reflects the local var name
-  expect_match(attr(out, "note"), "clusters by my_cluster", fixed = TRUE)
+  expect_match(attr(out, "note"),
+               "Std. errors: cluster-robust (CR2), clusters by my_cluster.",
+               fixed = TRUE)
 })
