@@ -161,7 +161,12 @@ table_regression(
   (default), `"refit"`, `"posthoc"`, `"basic"`, `"smart"`, `"pseudo"`.
   `"pseudo"` is *glm only* (Menard 2011 fully-standardised); using it
   with [`lm()`](https://rdrr.io/r/stats/lm.html) raises
-  `spicy_invalid_input`. See the *Standardised coefficients* section.
+  `spicy_invalid_input`. Supported classes: `lm`, `glm` (incl.
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)), and the
+  mixed engines (`lmer` / `glmer` / `glmmTMB` /
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)); any other class
+  raises `spicy_unsupported_standardized` rather than rendering an empty
+  beta column. See the *Standardised coefficients* section.
 
 - exponentiate:
 
@@ -1143,7 +1148,8 @@ classed condition for programmatic dispatch via
 [`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html).
 Errors inherit from `spicy_error` (root); warnings from `spicy_warning`.
 Specific leaves used by this function include `spicy_invalid_input`,
-`spicy_invalid_data`, `spicy_unsupported`, `spicy_missing_pkg`,
+`spicy_invalid_data`, `spicy_unsupported`, `spicy_unsupported_vcov`,
+`spicy_unsupported_standardized`, `spicy_missing_pkg`,
 `spicy_missing_column`, `spicy_ignored_arg`, `spicy_caveat`,
 `spicy_fallback`. See
 [`spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)

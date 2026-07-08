@@ -240,7 +240,11 @@ transformation-respecting).</p></dd>
 column. One of <code>"none"</code> (default), <code>"refit"</code>, <code>"posthoc"</code>,
 <code>"basic"</code>, <code>"smart"</code>, <code>"pseudo"</code>. <code>"pseudo"</code> is <em>glm only</em>
 (Menard 2011 fully-standardised); using it with <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> raises
-<code>spicy_invalid_input</code>. See the <em>Standardised coefficients</em>
+<code>spicy_invalid_input</code>. Supported classes: <code>lm</code>, <code>glm</code>
+(incl. <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), and the mixed engines (<code>lmer</code> /
+<code>glmer</code> / <code>glmmTMB</code> / <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>); any other class raises
+<code>spicy_unsupported_standardized</code> rather than rendering an
+empty beta column. See the <em>Standardised coefficients</em>
 section.</p></dd>
 
 
@@ -1168,6 +1172,7 @@ or <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">
 (root); warnings from <code>spicy_warning</code>. Specific leaves used by
 this function include <code>spicy_invalid_input</code>,
 <code>spicy_invalid_data</code>, <code>spicy_unsupported</code>,
+<code>spicy_unsupported_vcov</code>, <code>spicy_unsupported_standardized</code>,
 <code>spicy_missing_pkg</code>, <code>spicy_missing_column</code>,
 <code>spicy_ignored_arg</code>, <code>spicy_caveat</code>, <code>spicy_fallback</code>. See
 <code><a href="spicy-package.html">spicy</a></code> for the full taxonomy.</p>

@@ -27,42 +27,6 @@
 - [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) on a
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   result labels AME rows `estimate_type = "ame"` (was `"AME"`).
-- Mixed-effects random effects now render as a `Random effects` block of
-  table rows (σ, ρ, residual – estimate, SE, CI; `estimate_type = "vc"`
-  in `tidy()`), replacing the footer panel. `N (groups)` and `ICC` move
-  to fit-stat rows; the footer keeps the estimator (`REML` / `ML`) and
-  the chi-bar-squared LR test. Variance-component rows carry no p-value
-  (boundary; Self & Liang 1987). `show_re` / `re_scale` / `re_columns`
-  keep their meaning; `re_columns` is now display-only (`tidy()` always
-  carries SE + CI).
-- Single-model
-  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) tables
-  now render the publication layout: predictors as rows, one column
-  group per non-reference outcome category (spanner = category name),
-  replacing the per-outcome `"<category>: <term>"` rows. The default
-  `show_columns` compacts to B / SE / p (same rule as multi-model
-  tables; atomic tokens restore CIs); `outcome_labels` now relabels the
-  category spanners (one label per non-reference category,
-  e.g. `"Student vs Employed"`) and `model_labels` is refused for a
-  single multinomial model. With per-category AMEs the reference
-  category appears as a last, AME-only group. Every
-  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) table
-  (both layouts) gains a `Reference outcome: <level>.` footer note,
-  qualified per model when a multi-model table mixes classes.
-  Multi-model and `nested = TRUE` multinomial tables keep the rows
-  layout; `tidy()` and `output = "long"` are unchanged (long form),
-  while
-  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  mirrors the displayed table as for every other layout.
-- `mlogit`: `vcov = "HC*"` is now refused (`spicy_unsupported_vcov`) –
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
-  scales the sandwich by the long-format row count while the scores have
-  one row per choice situation, deflating the SEs by about sqrt(J), and
-  HC1-HC5 silently equal HC0 (no hat values). `CR*` (one cluster value
-  per choice situation) is unaffected and matches
-  [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html).
-  The `n` fit-stat row now counts choice situations (Stata `asclogit`’s
-  “Number of cases”), not long-format rows.
 
 ### New supported models
 
@@ -73,9 +37,10 @@ gains first-class support for ~30 model classes beyond `lm` / `glm`:
   / `glmer`,
   [`glmmTMB::glmmTMB`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html),
   [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) – random effects
-  as a block of rows (σ, ρ, residual with SE + CI), ICC + per-group N +
-  Nakagawa R² as fit stats, and a chi-bar-squared LR test vs the
-  no-random model.
+  as a block of rows (σ, ρ, residual with SE + CI;
+  `estimate_type = "vc"` in `tidy()`, no p-value: boundary, Self & Liang
+  1987), ICC + per-group N + Nakagawa R² as fit stats, and a
+  chi-bar-squared LR test vs the no-random model.
 - Bayesian: `rstanarm`, `brms` – posterior median / SD / equal-tailed
   `95% CrI`, no p-value.
 - Survey:
@@ -88,7 +53,18 @@ gains first-class support for ~30 model classes beyond `lm` / `glm`:
   [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
   [`mlogit::mlogit`](https://rdrr.io/pkg/mlogit/man/mlogit.html),
   [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
-  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html).
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html). A single
+  `multinom` model renders the publication layout – predictors as rows,
+  one column group per non-reference outcome category (`outcome_labels`
+  relabels the spanners, e.g. `"Student vs Employed"`), compact B / SE /
+  p by default, and a `Reference outcome: <level>.` footer note;
+  multi-model and `nested = TRUE` tables keep one row per (category,
+  predictor), and `tidy()` / `output = "long"` always return the long
+  form. `mlogit` robust SEs are cluster-robust only (one cluster per
+  choice situation; `HC*` is refused –
+  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+  mis-scales the long-format sandwich), and its `n` counts choice
+  situations (Stata `asclogit`’s “Number of cases”).
 - Robust / IV / panel:
   [`estimatr::lm_robust`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
   / `iv_robust`, [`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html),
@@ -104,6 +80,16 @@ gains first-class support for ~30 model classes beyond `lm` / `glm`:
   [`stats::nls`](https://rdrr.io/r/stats/nls.html),
   [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) / `lrm` / `Glm`,
   [`sampleSelection::selection`](https://rdrr.io/pkg/sampleSelection/man/selection.html).
+
+Arguments whose method is not defined for a class are refused with a
+classed error rather than silently ignored or rendered empty: robust
+`vcov` requests raise `spicy_unsupported_vcov` where the estimator does
+not exist for the class, and `standardized` raises
+`spicy_unsupported_standardized` outside the classes with a real
+standardized-coefficients path (`lm`, `glm`
+incl. [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html), and
+the mixed engines) – the error points at AMEs for cross-predictor
+comparison elsewhere.
 
 See
 [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
