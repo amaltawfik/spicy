@@ -1044,8 +1044,10 @@ at `lrt_change`).
 - `"basic"` – like `"posthoc"` but factor dummies are scaled by their
   column SD.
 
-- `"smart"` – Gelman (2008): divide binary predictors by `2 * SD`
-  instead of `SD`.
+- `"smart"` – Gelman (2008): continuous numeric inputs are scaled by
+  `2 * SD(X)` (a +/-1 SD swing then spans the same range as a binary's 0
+  to 1 step); binary inputs – numeric 0/1 and factor dummies – are left
+  unscaled. (Before 0.13.0 the rule was applied inverted; see NEWS.)
 
 - `"pseudo"` – *glm only*. Menard (2004, 2011) fully-standardised
   \\\beta = B \times SD(X) / SD(Y^\*)\\, with \\Y^\*\\ the latent
@@ -1061,9 +1063,10 @@ the recommended treatment for such models (Cohen et al. 2003 Section
 7.7; Aiken & West 1991; Friedrich 1982). Under `"posthoc"`, `"basic"`,
 and `"smart"`, the product / transformed design column is treated as a
 single numeric column and scaled by its own SD (under `"smart"`, by
-`2 * SD` when the product column is itself binary, e.g. binary-by-binary
-interactions) – the convention of SPSS beta, Stata `regress, beta`, SAS
-PROC REG `STB`, and `lm.beta::lm.beta()`, identical to
+`2 * SD` when the product column is continuous; a binary product column
+– e.g. a binary-by-binary interaction – stays unscaled like any binary
+input) – the convention of SPSS beta, Stata `regress, beta`, SAS PROC
+REG `STB`, and `lm.beta::lm.beta()`, identical to
 `effectsize::standardize_parameters(method = "basic")` on those columns.
 The two conventions differ whenever the components are correlated; a
 `spicy_caveat` warns and the footer names the convention actually used.

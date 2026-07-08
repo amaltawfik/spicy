@@ -78,6 +78,8 @@
 <code>table_regression(list(...), show_columns = "all_b" | "all_ame")</code> auto-compacts (drops CIs) in multi-model layouts; use atomic tokens to keep them.</li>
 <li>
 <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> on a <code><a href="../reference/table_regression.html">table_regression()</a></code> result labels AME rows <code>estimate_type = "ame"</code> (was <code>"AME"</code>).</li>
+<li>
+<code>standardized = "smart"</code> now applies Gelman (2008) as the paper states it: <strong>continuous</strong> numeric inputs are scaled by <code>2 * SD(X)</code> (a +/-1 SD swing spans the same range as a binary’s 0 to 1 step) and <strong>binary</strong> inputs – numeric 0/1 and factor dummies – are left unscaled. Since 0.12.0 the rule was applied inverted (binaries <code>2 * SD</code>, continuous <code>1 * SD</code>) while citing the same paper, so every continuous “smart” beta was half the documented value; caught by the PSPP cross-validation pass. <code>"refit"</code> / <code>"posthoc"</code> / <code>"basic"</code> / <code>"pseudo"</code> are unchanged.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-supported-models-development-version">New supported models<a class="anchor" aria-label="anchor" href="#new-supported-models-development-version"></a></h3>

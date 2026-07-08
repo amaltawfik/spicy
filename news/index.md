@@ -27,6 +27,15 @@
 - [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) on a
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   result labels AME rows `estimate_type = "ame"` (was `"AME"`).
+- `standardized = "smart"` now applies Gelman (2008) as the paper states
+  it: **continuous** numeric inputs are scaled by `2 * SD(X)` (a +/-1 SD
+  swing spans the same range as a binary’s 0 to 1 step) and **binary**
+  inputs – numeric 0/1 and factor dummies – are left unscaled. Since
+  0.12.0 the rule was applied inverted (binaries `2 * SD`, continuous
+  `1 * SD`) while citing the same paper, so every continuous “smart”
+  beta was half the documented value; caught by the PSPP
+  cross-validation pass. `"refit"` / `"posthoc"` / `"basic"` /
+  `"pseudo"` are unchanged.
 
 ### New supported models
 
