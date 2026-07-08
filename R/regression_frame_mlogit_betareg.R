@@ -211,7 +211,7 @@ as_regression_frame.mlogit <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = TRUE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(
@@ -421,7 +421,7 @@ as_regression_frame.betareg <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = !identical(link_name, "identity"),
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   # Precision (phi) and dispersion-component coefs.

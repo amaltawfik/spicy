@@ -242,7 +242,7 @@ as_regression_frame.multinom <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = TRUE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   ref_outcome <- if (!is.null(fit$lev) && length(fit$lev) > 0L) {

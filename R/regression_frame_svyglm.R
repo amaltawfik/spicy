@@ -239,7 +239,7 @@ as_regression_frame.svyglm <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = FALSE,
     exponentiate        = !has_identity_link,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   # Family-aware title prefix names the design-based context.

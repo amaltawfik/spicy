@@ -332,7 +332,7 @@ as_regression_frame.gls <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = FALSE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   corr_label <- .gls_corstruct_label(fit)

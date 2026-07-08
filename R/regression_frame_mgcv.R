@@ -254,7 +254,7 @@ as_regression_frame.gam <- function(fit,
     classical_r2        = is_gaussian_identity,
     nested_lrt          = TRUE,
     exponentiate        = exp_ok,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   # Build the smooth-term summary table for info$extras.

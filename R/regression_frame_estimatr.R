@@ -237,7 +237,7 @@ as_regression_frame.iv_robust <- function(fit,
     classical_r2        = !is_iv,  # IV r2 is non-standard; skip the classical flag
     nested_lrt          = FALSE,   # no logLik
     exponentiate        = FALSE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(

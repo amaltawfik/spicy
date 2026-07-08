@@ -182,7 +182,7 @@ as_regression_frame.rq <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = FALSE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(
@@ -358,7 +358,7 @@ as_regression_frame.ivreg <- function(fit,
     classical_r2        = FALSE,  # IV r^2 is non-standard
     nested_lrt          = FALSE,
     exponentiate        = FALSE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(

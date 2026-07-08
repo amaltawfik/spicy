@@ -242,7 +242,7 @@ as_regression_frame.fixest <- function(fit,
     classical_r2        = !is_glm,
     nested_lrt          = TRUE,
     exponentiate        = exp_ok,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(

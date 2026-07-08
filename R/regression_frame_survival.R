@@ -346,7 +346,7 @@ as_regression_frame.survreg <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = TRUE,  # hazard ratios are the canonical report
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(
@@ -429,7 +429,7 @@ as_regression_frame.survreg <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = exp_ok,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(

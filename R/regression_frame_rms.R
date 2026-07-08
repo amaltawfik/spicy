@@ -428,7 +428,7 @@ as_regression_frame.Glm <- function(fit,
     classical_r2        = classical_r2_ok,
     nested_lrt          = TRUE,
     exponentiate        = exp_ok,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   extras <- list(

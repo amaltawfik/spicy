@@ -257,7 +257,7 @@ as_regression_frame.flexsurvreg <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = TRUE,  # time-ratios or hazard-ratios
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   # Stash auxiliary distribution parameters (shape/scale/rate) in extras.
@@ -492,7 +492,7 @@ as_regression_frame.selection <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = FALSE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   # sigma + rho from summary$estimate (last two rows by convention).

@@ -165,7 +165,10 @@ test_that("svyglm supports flags: ame TRUE, nested_lrt FALSE, classical_r2 FALSE
   expect_false(sp$classical_r2)
   expect_false(sp$nested_lrt)
   expect_false(sp$exponentiate)   # identity link
-  expect_true(sp$standardise_refit)
+  # svyglm has no standardized-coefficients attach path: the flag is
+  # FALSE so table_regression() refuses `standardized` fail-fast
+  # instead of rendering an empty beta column.
+  expect_false(sp$standardise_refit)
 })
 
 test_that("svyglm logit: supports$exponentiate = TRUE (logit link)", {

@@ -264,7 +264,7 @@ as_regression_frame.zeroinfl <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = TRUE,  # IRR (count component is log link)
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   # The zero component ships as a fully-inferenced component block that the

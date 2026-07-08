@@ -458,7 +458,11 @@
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
 #'   `"basic"`, `"smart"`, `"pseudo"`. `"pseudo"` is *glm only*
 #'   (Menard 2011 fully-standardised); using it with `lm()` raises
-#'   `spicy_invalid_input`. See the *Standardised coefficients*
+#'   `spicy_invalid_input`. Supported classes: `lm`, `glm`
+#'   (incl. `MASS::glm.nb`), and the mixed engines (`lmer` /
+#'   `glmer` / `glmmTMB` / `nlme::lme`); any other class raises
+#'   `spicy_unsupported_standardized` rather than rendering an
+#'   empty beta column. See the *Standardised coefficients*
 #'   section.
 #' @param exponentiate Logical. When `TRUE`, `B`, the CI bounds, and
 #'   the SE (delta method: `SE_OR = OR x SE_log-odds`) are
@@ -951,6 +955,7 @@
 #' (root); warnings from `spicy_warning`. Specific leaves used by
 #' this function include `spicy_invalid_input`,
 #' `spicy_invalid_data`, `spicy_unsupported`,
+#' `spicy_unsupported_vcov`, `spicy_unsupported_standardized`,
 #' `spicy_missing_pkg`, `spicy_missing_column`,
 #' `spicy_ignored_arg`, `spicy_caveat`, `spicy_fallback`. See
 #' [`spicy`][spicy::spicy-package] for the full taxonomy.
@@ -1742,6 +1747,35 @@ table_regression <- function(
       cluster_name          = cluster_name_list[i],
       re_ci                 = re_ci_val
     )
+    # Truthfulness gate: `standardized` requires a class with a real
+    # standardized-coefficients path (the beta attach). Classes without
+    # one used to accept the argument and render the auto-injected beta
+    # column entirely EMPTY -- silent wrong output under a requested
+    # label. supports$standardise_refit is declared TRUE only where the
+    # attach exists: lm / glm (incl. glm.nb) and the mixed engines
+    # (lmer / glmer / glmmTMB / lme).
+    if (!identical(standardized, "none") &&
+        !isTRUE(frames[[i]]$info$supports$standardise_refit)) {
+      model_tag <- if (n_models > 1L) {
+        sprintf("model %d (class %s)", i, class(models[[i]])[1L])
+      } else {
+        sprintf("this model class (%s)", class(models[[i]])[1L])
+      }
+      spicy_abort(
+        c(
+          sprintf("`standardized = \"%s\"` is not supported for %s.",
+                  standardized, model_tag),
+          "i" = paste0("Standardized coefficients are available for ",
+                       "`lm`, `glm` (incl. `MASS::glm.nb`), and mixed ",
+                       "models (`lmer` / `glmer` / `glmmTMB` / ",
+                       "`nlme::lme`)."),
+          "i" = paste0("To compare predictor effects in other classes, ",
+                       "use average marginal effects where supported: ",
+                       "`show_columns = c(\"b\", \"ame\")`.")
+        ),
+        class = "spicy_unsupported_standardized"
+      )
+    }
     # Exponentiate centrally so EVERY model class honours `exponentiate = TRUE`
     # (OR / IRR / HR / RR / MR / TR), driven by each frame's own info$family /
     # info$supports rather than a per-class `family()` lookup. Classes that

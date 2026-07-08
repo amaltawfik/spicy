@@ -332,7 +332,7 @@ as_regression_frame.clm <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = TRUE,  # OR for logit link; ratio for others
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   thresholds <- .polr_thresholds(fit)
@@ -595,7 +595,7 @@ as_regression_frame.clm <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = TRUE,
     exponentiate        = TRUE,
-    standardise_refit   = TRUE
+    standardise_refit   = FALSE
   )
 
   thresholds <- .clm_thresholds(fit)

@@ -134,7 +134,11 @@ transformation-respecting).}
 column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 \code{"basic"}, \code{"smart"}, \code{"pseudo"}. \code{"pseudo"} is \emph{glm only}
 (Menard 2011 fully-standardised); using it with \code{lm()} raises
-\code{spicy_invalid_input}. See the \emph{Standardised coefficients}
+\code{spicy_invalid_input}. Supported classes: \code{lm}, \code{glm}
+(incl. \code{MASS::glm.nb}), and the mixed engines (\code{lmer} /
+\code{glmer} / \code{glmmTMB} / \code{nlme::lme}); any other class raises
+\code{spicy_unsupported_standardized} rather than rendering an
+empty beta column. See the \emph{Standardised coefficients}
 section.}
 
 \item{exponentiate}{Logical. When \code{TRUE}, \code{B}, the CI bounds, and
@@ -1056,6 +1060,7 @@ or \code{\link[=withCallingHandlers]{withCallingHandlers()}}. Errors inherit fro
 (root); warnings from \code{spicy_warning}. Specific leaves used by
 this function include \code{spicy_invalid_input},
 \code{spicy_invalid_data}, \code{spicy_unsupported},
+\code{spicy_unsupported_vcov}, \code{spicy_unsupported_standardized},
 \code{spicy_missing_pkg}, \code{spicy_missing_column},
 \code{spicy_ignored_arg}, \code{spicy_caveat}, \code{spicy_fallback}. See
 \code{\link[=spicy-package]{spicy}} for the full taxonomy.
