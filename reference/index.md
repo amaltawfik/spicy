@@ -164,6 +164,9 @@ Documented here for direct invocation with custom arguments (e.g.,
 
   Convert a `spicy_regression_table` to a plain data.frame / tibble
 
+- [`as_flextable.spicy_flextable()`](https://amaltawfik.github.io/spicy/reference/as_flextable.spicy_flextable.md)
+  : Convert a spicy flextable output to a plain flextable
+
 - [`tidy(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
   [`glance(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
   :
