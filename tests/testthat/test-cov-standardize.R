@@ -26,10 +26,43 @@ test_that("standardize_lm refit propagates weights (lm)", {
 
   tbl <- spicy:::standardize_lm(fit, method = "refit")
 
-  # The weighted refit produces finite standardised coefficients for the
-  # non-intercept terms; the intercept is kept (not NA'd) under refit.
-  expect_true(is.finite(tbl$estimate[tbl$term == "wt"]))
-  expect_true(is.finite(tbl$estimate[tbl$term == "cyl"]))
+  # Hand-derived oracle: the refit z-scores with UNWEIGHTED scale()
+  # (see standardize_refit_lm), and WLS is equivariant under an affine
+  # reparameterisation of the columns, so the refitted slope / SE are
+  # EXACTLY beta_j = b_j * sd(x_j) / sd(y) and SE_beta_j = SE_j *
+  # sd(x_j) / sd(y), with b_j / SE_j from the original weighted fit.
+  sd_y  <- stats::sd(mtcars$mpg)
+  sd_wt <- stats::sd(mtcars$wt)
+  sd_cy <- stats::sd(mtcars$cyl)
+  sm <- summary(fit)$coefficients
+  expect_equal(tbl$estimate[tbl$term == "wt"],
+               unname(stats::coef(fit)["wt"]) * sd_wt / sd_y,
+               tolerance = 1e-10)
+  expect_equal(tbl$estimate[tbl$term == "cyl"],
+               unname(stats::coef(fit)["cyl"]) * sd_cy / sd_y,
+               tolerance = 1e-10)
+  expect_equal(tbl$se[tbl$term == "wt"],
+               sm["wt", "Std. Error"] * sd_wt / sd_y, tolerance = 1e-10)
+  expect_equal(tbl$se[tbl$term == "cyl"],
+               sm["cyl", "Std. Error"] * sd_cy / sd_y, tolerance = 1e-10)
+  # Inference is invariant under the linear rescaling: t and p match
+  # the original weighted fit's summary exactly.
+  expect_equal(tbl$statistic[tbl$term == "wt"], sm["wt", "t value"],
+               tolerance = 1e-10)
+  expect_equal(tbl$p_value[tbl$term == "wt"], sm["wt", "Pr(>|t|)"],
+               tolerance = 1e-10)
+  # The intercept is kept (not NA'd) under refit. WLS normal equations:
+  # b0* = weighted.mean(z_y) - sum_j beta_j * weighted.mean(z_xj), with
+  # the z-scores unweighted (scale()) but the means weighted (the refit
+  # keeps the original weights).
+  z_mpg <- as.numeric(scale(mtcars$mpg))
+  z_wt  <- as.numeric(scale(mtcars$wt))
+  z_cyl <- as.numeric(scale(mtcars$cyl))
+  b0_oracle <- stats::weighted.mean(z_mpg, w) -
+    tbl$estimate[tbl$term == "wt"]  * stats::weighted.mean(z_wt, w) -
+    tbl$estimate[tbl$term == "cyl"] * stats::weighted.mean(z_cyl, w)
+  expect_equal(tbl$estimate[tbl$term == "(Intercept)"], b0_oracle,
+               tolerance = 1e-10)
   expect_equal(nrow(tbl), length(stats::coef(fit)))
 })
 
@@ -41,10 +74,18 @@ test_that("as_regression_frame(lm, weights, standardized='refit') yields beta", 
   fr <- as_regression_frame(fit, model_id = "M1",
                             show_columns = c("b", "beta"),
                             standardized = "refit")
-  beta_wt <- fr$coefs$estimate[fr$coefs$estimate_type == "beta" &
-                                 fr$coefs$term == "wt"]
-  expect_length(beta_wt, 1L)
-  expect_true(is.finite(beta_wt))
+  beta_row <- fr$coefs[fr$coefs$estimate_type == "beta" &
+                         fr$coefs$term == "wt", , drop = FALSE]
+  expect_equal(nrow(beta_row), 1L)
+  # Same affine-equivariance oracle as above: beta = b * sd(x) / sd(y)
+  # and SE_beta = SE * sd(x) / sd(y) from the ORIGINAL weighted fit.
+  sd_ratio <- stats::sd(mtcars$wt) / stats::sd(mtcars$mpg)
+  sm <- summary(fit)$coefficients
+  expect_equal(beta_row$estimate,
+               unname(stats::coef(fit)["wt"]) * sd_ratio,
+               tolerance = 1e-10)
+  expect_equal(beta_row$std_error, sm["wt", "Std. Error"] * sd_ratio,
+               tolerance = 1e-10)
 })
 
 
@@ -63,10 +104,21 @@ test_that("refit table emits an all-NA row for an aliased predictor", {
   expect_true(is.na(dup_row$estimate))
   expect_true(is.na(dup_row$se))
   expect_true(is.na(dup_row$ci_low))
+  expect_true(is.na(dup_row$ci_high))
   expect_true(is.na(dup_row$statistic))
+  expect_true(is.na(dup_row$df))
   expect_true(is.na(dup_row$p_value))
-  # The non-singular term still has a finite standardised estimate.
-  expect_true(is.finite(tbl$estimate[tbl$term == "wt"]))
+  # The non-singular term's standardised estimate / SE equal the exact
+  # algebraic rescaling of the original fit (affine equivariance of
+  # OLS; dup stays aliased after z-scoring because scale(2 * wt) is
+  # identical to scale(wt)).
+  sd_ratio <- stats::sd(d$wt) / stats::sd(d$mpg)
+  sm <- summary(fit)$coefficients
+  expect_equal(tbl$estimate[tbl$term == "wt"],
+               unname(stats::coef(fit)["wt"]) * sd_ratio,
+               tolerance = 1e-10)
+  expect_equal(tbl$se[tbl$term == "wt"],
+               sm["wt", "Std. Error"] * sd_ratio, tolerance = 1e-10)
 })
 
 test_that("as_regression_frame propagates the singular beta row as NA", {
@@ -81,6 +133,14 @@ test_that("as_regression_frame propagates the singular beta row as NA", {
                                   fr$coefs$term == "dup"]
   expect_length(beta_dup, 1L)
   expect_true(is.na(beta_dup))
+  # The surviving term's beta row carries the exact algebraic value.
+  beta_wt <- fr$coefs[fr$coefs$estimate_type == "beta" &
+                        fr$coefs$term == "wt", , drop = FALSE]
+  expect_equal(nrow(beta_wt), 1L)
+  expect_equal(beta_wt$estimate,
+               unname(stats::coef(fit)["wt"]) *
+                 stats::sd(d$wt) / stats::sd(d$mpg),
+               tolerance = 1e-10)
 })
 
 
@@ -112,10 +172,19 @@ test_that("coefs_inference_table NAs the intercept when intercept_to_na=TRUE", {
   expect_true(is.na(intercept$ci_high))
   expect_true(is.na(intercept$statistic))
   expect_true(is.na(intercept$p_value))
-  # df is intentionally left untouched (not in the NA'd column set).
-  expect_true(is.finite(intercept$df))
-  # The slope row is unaffected.
-  expect_true(is.finite(out$estimate[out$term == "wt"]))
+  # df is intentionally left untouched (not in the NA'd column set):
+  # residual df of the simple regression is n - 2.
+  expect_equal(intercept$df, nrow(mtcars) - 2)
+  # The slope row is unaffected, and on fully z-scored data the simple
+  # regression slope IS the Pearson correlation, with
+  # SE = sqrt((1 - r^2) / (n - 2)) and t = r * sqrt((n - 2) / (1 - r^2)).
+  r <- stats::cor(mtcars$mpg, mtcars$wt)
+  n <- nrow(mtcars)
+  expect_equal(out$estimate[out$term == "wt"], r, tolerance = 1e-12)
+  expect_equal(out$se[out$term == "wt"], sqrt((1 - r^2) / (n - 2)),
+               tolerance = 1e-12)
+  expect_equal(out$statistic[out$term == "wt"],
+               r * sqrt((n - 2) / (1 - r^2)), tolerance = 1e-10)
 })
 
 test_that("coefs_inference_table keeps the intercept when intercept_to_na=FALSE", {
@@ -132,9 +201,15 @@ test_that("coefs_inference_table keeps the intercept when intercept_to_na=FALSE"
   out <- spicy:::coefs_inference_table(
     fit_std, vc, "classical", NULL, 0.95, intercept_to_na = FALSE
   )
-  # Under z-scored data the intercept estimate is ~0 but NOT set to NA.
+  # Under z-scored data the intercept estimate is EXACTLY 0 (up to
+  # floating point: OLS with intercept on centred data) but NOT set to
+  # NA. Absolute tolerance since the target is zero.
   intercept <- out[out$term == "(Intercept)", , drop = FALSE]
   expect_false(is.na(intercept$estimate))
+  expect_equal(intercept$estimate, 0, tolerance = 1e-12)
+  # And the slope is still the correlation (same fit as above).
+  expect_equal(out$estimate[out$term == "wt"],
+               stats::cor(mtcars$mpg, mtcars$wt), tolerance = 1e-12)
 })
 
 

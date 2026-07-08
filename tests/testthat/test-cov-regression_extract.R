@@ -49,13 +49,69 @@ test_that("profile CI on an intercept-only glm falls back to Wald with a warning
   expect_true(is.finite(rows$ci_low[1L]))
   expect_true(is.finite(rows$ci_high[1L]))
 
-  # The fallback CI equals the Wald CI: estimate +/- z * SE on the link
-  # scale, which is what build_b_rows() recomputes after dropping profile.
+  # Oracle pins: estimate / SE come straight from the classical fit, and
+  # the fallback CI must equal stats::confint.default() (the textbook
+  # Wald CI: coef +/- qnorm(0.975) * sqrt(diag(vcov))) on the link scale.
+  expect_equal(rows$estimate[1L], unname(stats::coef(fit)[1L]),
+               tolerance = 1e-12)
+  expect_equal(rows$se[1L], sqrt(stats::vcov(fit)[1L, 1L]),
+               tolerance = 1e-12)
+  wald_ci <- stats::confint.default(fit, level = 0.95)
+  expect_equal(rows$ci_low[1L],  unname(wald_ci["(Intercept)", 1L]),
+               tolerance = 1e-10)
+  expect_equal(rows$ci_high[1L], unname(wald_ci["(Intercept)", 2L]),
+               tolerance = 1e-10)
+
+  # Internal consistency: the same CI re-derives from the row's own
+  # estimate +/- z * SE, which is what build_b_rows() recomputes after
+  # dropping profile.
   est <- rows$estimate[1L]
   se  <- rows$se[1L]
   z   <- stats::qnorm(0.975)
   expect_equal(rows$ci_low[1L],  est - z * se, tolerance = 1e-8)
   expect_equal(rows$ci_high[1L], est + z * se, tolerance = 1e-8)
+})
+
+test_that("profile CI on a multi-coef glm matches stats::confint exactly", {
+  # The SUCCESS branch of the same code path: confint() returns a k x 2
+  # matrix, so build_b_rows() overrides ci_low / ci_high per coef with the
+  # profile-likelihood bounds while estimate / SE / p stay Wald.
+  skip_if_not_installed("MASS")
+  # This near-separated logistic (n = 32) warns "fitted probabilities
+  # numerically 0 or 1" on the fit and on every profile refit -- a
+  # fixture artefact, not the contract under test (the near-separation
+  # is what makes the profile bounds differ visibly from Wald below).
+  fit <- suppressWarnings(glm(am ~ wt + hp, data = mtcars,
+                              family = binomial))
+  vc <- spicy:::compute_model_vcov(
+    fit, type = "classical", cluster = NULL, weights = NULL, boot_n = 1000L
+  )
+
+  rows <- suppressWarnings(spicy:::build_b_rows(
+    fit = fit, vc = vc, vcov_type = "classical", cluster = NULL,
+    ci_level = 0.95, model_id = "M1", outcome = "am",
+    ci_method = "profile"
+  ))
+
+  # Oracle: MASS::confint.glm via stats::confint -- the identical call
+  # build_b_rows() makes, recomputed here independently.
+  oracle <- suppressWarnings(suppressMessages(
+    stats::confint(fit, level = 0.95)
+  ))
+  expect_identical(rows$term, rownames(oracle))
+  expect_equal(rows$ci_low,  unname(oracle[, 1L]), tolerance = 1e-10)
+  expect_equal(rows$ci_high, unname(oracle[, 2L]), tolerance = 1e-10)
+
+  # Profile is a CI-only refinement: estimate / SE remain the Wald values
+  # from the classical fit.
+  expect_equal(rows$estimate, unname(stats::coef(fit)), tolerance = 1e-12)
+  expect_equal(rows$se, unname(sqrt(diag(stats::vcov(fit)))),
+               tolerance = 1e-12)
+  # And the profile bounds genuinely differ from Wald here (logistic on
+  # n = 32), proving the override actually took effect.
+  wald_ci <- stats::confint.default(fit, level = 0.95)
+  expect_false(isTRUE(all.equal(rows$ci_low, unname(wald_ci[, 1L]),
+                                tolerance = 1e-4)))
 })
 
 
@@ -197,6 +253,9 @@ test_that(".spicy_get_xlevels reconstructs xlevels for an nlme lme fit", {
   xl <- spicy:::.spicy_get_xlevels(fit)
   expect_true("Sex" %in% names(xl))
   expect_setequal(xl$Sex, c("Male", "Female"))
+  # Pin the ORDER too: reconstruction goes through stats::.getXlevels(),
+  # which must preserve the factor's own level order from the data.
+  expect_identical(xl$Sex, levels(d$Sex))
 })
 
 

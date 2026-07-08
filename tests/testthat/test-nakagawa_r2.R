@@ -43,6 +43,11 @@ test_that("lmer fit_stats has r2_marginal and r2_conditional fields", {
   expect_true("r2_conditional" %in% names(fs))
   expect_true(is.finite(fs$r2_marginal))
   expect_true(is.finite(fs$r2_conditional))
+  oracle <- performance::r2_nakagawa(fit)
+  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
+               tolerance = 1e-8)
+  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
+               tolerance = 1e-8)
 })
 
 test_that("glmer fit_stats has r2_marginal and r2_conditional fields", {
@@ -52,6 +57,15 @@ test_that("glmer fit_stats has r2_marginal and r2_conditional fields", {
   fs <- fr$info$fit_stats
   expect_true("r2_marginal" %in% names(fs))
   expect_true("r2_conditional" %in% names(fs))
+  expect_true(is.finite(fs$r2_marginal))
+  expect_true(is.finite(fs$r2_conditional))
+  # cbind() binomial goes through the performance fallback, so the frame
+  # value must agree with the oracle exactly.
+  oracle <- performance::r2_nakagawa(fit)
+  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
+               tolerance = 1e-8)
+  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
+               tolerance = 1e-8)
 })
 
 test_that("glmmTMB fit_stats has r2_marginal and r2_conditional fields", {
@@ -63,6 +77,11 @@ test_that("glmmTMB fit_stats has r2_marginal and r2_conditional fields", {
   expect_true("r2_conditional" %in% names(fs))
   expect_true(is.finite(fs$r2_marginal))
   expect_true(is.finite(fs$r2_conditional))
+  oracle <- performance::r2_nakagawa(fit)
+  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
+               tolerance = 1e-8)
+  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
+               tolerance = 1e-8)
 })
 
 test_that("lme fit_stats has r2_marginal and r2_conditional fields", {
@@ -74,6 +93,11 @@ test_that("lme fit_stats has r2_marginal and r2_conditional fields", {
   expect_true("r2_conditional" %in% names(fs))
   expect_true(is.finite(fs$r2_marginal))
   expect_true(is.finite(fs$r2_conditional))
+  oracle <- performance::r2_nakagawa(fit)
+  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
+               tolerance = 1e-8)
+  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
+               tolerance = 1e-8)
 })
 
 
@@ -250,6 +274,12 @@ test_that("self-impl refuses cbind() binomial -> falls through to performance", 
   out <- spicy:::.nakagawa_r2(fit)
   expect_true(is.finite(out$marginal))
   expect_true(is.finite(out$conditional))
+  # The fallback IS performance::r2_nakagawa(), so equality is exact.
+  oracle <- performance::r2_nakagawa(fit)
+  expect_equal(out$marginal,    as.numeric(oracle$R2_marginal),
+               tolerance = 1e-10)
+  expect_equal(out$conditional, as.numeric(oracle$R2_conditional),
+               tolerance = 1e-10)
 })
 
 test_that("self-impl handles Poisson(log) glmer without falling through", {

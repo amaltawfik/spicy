@@ -55,6 +55,34 @@ test_that("lmer (Days | Subject): rho row has finite Wald SE + CI", {
   expect_true(is.finite(rho_rows$ci_lower))
   expect_true(is.finite(rho_rows$ci_upper))
   expect_identical(rho_rows$ci_method, "wald")
+
+  # Oracle: multivariate Delta method on the 3x3 (var_int, cov, var_slope)
+  # sub-vcov of merDeriv's full vcov on the variance scale (see test 2 for
+  # the gradient derivation); CI = rho +/- z * SE clamped to [-1, 1].
+  g_vc <- as.matrix(lme4::VarCorr(fit)[["Subject"]])
+  var_int   <- g_vc[1L, 1L]
+  var_slope <- g_vc[2L, 2L]
+  rho_est   <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
+  v <- tryCatch(
+    as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var")),
+    error = function(e) NULL
+  )
+  skip_if(is.null(v), "merDeriv::vcov.lmerMod failed on this platform")
+  n_fix <- length(lme4::fixef(fit))
+  sub <- v[(n_fix + 1L):(n_fix + 3L), (n_fix + 1L):(n_fix + 3L)]
+  grad <- c(
+    -rho_est / (2 * var_int),
+    1 / sqrt(var_int * var_slope),
+    -rho_est / (2 * var_slope)
+  )
+  se_oracle <- sqrt(as.numeric(t(grad) %*% sub %*% grad))
+  z <- qnorm(0.975)
+  expect_equal(rho_rows$corr, rho_est, tolerance = 1e-12)
+  expect_equal(rho_rows$std_error, se_oracle, tolerance = 1e-10)
+  expect_equal(rho_rows$ci_lower, max(-1, rho_est - z * se_oracle),
+               tolerance = 1e-10)
+  expect_equal(rho_rows$ci_upper, min(1, rho_est + z * se_oracle),
+               tolerance = 1e-10)
 })
 
 test_that("lmer rho CI is clamped to [-1, 1] (boundary)", {
@@ -134,10 +162,12 @@ test_that("lmer 3-term random block: variance + correlation SE are correct (colu
   # Variance rows: SE must equal sqrt(diag(merDeriv vcov)) at the
   # column-major diagonal positions (1, 4, 6 for n = 3), which are the
   # entries merDeriv names cov_g.(Intercept) / cov_g.x1 / cov_g.x2.
+  # Pure algebraic mapping (sqrt of the same merDeriv diagonal entries,
+  # only the vech position lookup differs) -> tight 1e-10.
   diag_names <- c("cov_g.(Intercept)", "cov_g.x1", "cov_g.x2")
   truth_var_se <- sqrt(diag(re_block))[match(diag_names, colnames(re_block))]
   var_rows <- vc[!(vc$is_correlation %in% TRUE) & vc$group == "g", ]
-  expect_equal(var_rows$std_error, unname(truth_var_se), tolerance = 1e-8)
+  expect_equal(var_rows$std_error, unname(truth_var_se), tolerance = 1e-10)
 
   # Correlation rows: SE must equal a numDeriv gradient of
   # rho = cov / sqrt(var_i var_j) quadratic-formed with the 6x6
@@ -194,6 +224,35 @@ test_that("glmer (binomial logit) (x | g): rho row has finite Wald SE + CI", {
   expect_true(is.finite(rho_rows$ci_lower))
   expect_true(is.finite(rho_rows$ci_upper))
   expect_identical(rho_rows$ci_method, "wald")
+
+  # Oracle: same Delta method as the lmer tests, but on
+  # merDeriv::vcov.glmerMod (no residual variance in the glmer full
+  # vcov; the (x | g) block still sits right after the fixed effects
+  # as var(Int), cov, var(x) -- column-major vech).
+  g_vc <- as.matrix(lme4::VarCorr(fit)[["g"]])
+  var_int   <- g_vc[1L, 1L]
+  var_slope <- g_vc[2L, 2L]
+  rho_est   <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
+  v <- tryCatch(
+    as.matrix(merDeriv::vcov.glmerMod(fit, full = TRUE, ranpar = "var")),
+    error = function(e) NULL
+  )
+  skip_if(is.null(v), "merDeriv::vcov.glmerMod failed on this platform")
+  n_fix <- length(lme4::fixef(fit))
+  sub <- v[(n_fix + 1L):(n_fix + 3L), (n_fix + 1L):(n_fix + 3L)]
+  grad <- c(
+    -rho_est / (2 * var_int),
+    1 / sqrt(var_int * var_slope),
+    -rho_est / (2 * var_slope)
+  )
+  se_oracle <- sqrt(as.numeric(t(grad) %*% sub %*% grad))
+  z <- qnorm(0.975)
+  expect_equal(rho_rows$corr, rho_est, tolerance = 1e-12)
+  expect_equal(rho_rows$std_error, se_oracle, tolerance = 1e-10)
+  expect_equal(rho_rows$ci_lower, max(-1, rho_est - z * se_oracle),
+               tolerance = 1e-10)
+  expect_equal(rho_rows$ci_upper, min(1, rho_est + z * se_oracle),
+               tolerance = 1e-10)
 })
 
 
@@ -204,8 +263,25 @@ test_that("glmmTMB (Days | Subject): rho row has finite SE + CI", {
   fr <- as_regression_frame(fit, model_id = "M1")
   vc <- fr$info$random_effects$variance_components
   rho_rows <- vc[vc$is_correlation %in% TRUE, ]
-  expect_true(nrow(rho_rows) >= 1L)
+  expect_identical(nrow(rho_rows), 1L)
   expect_true(all(is.finite(rho_rows$std_error)))
+
+  # Oracle: glmmTMB's native Wald confint on the natural rho scale;
+  # spicy's CI is the interval verbatim and the SE its half-width / z
+  # (pure algebraic mapping).
+  ci_sd <- as.matrix(stats::confint(fit, method = "Wald", parm = "theta_"))
+  cor_rn <- grep("^Cor\\.", rownames(ci_sd), value = TRUE)
+  expect_identical(length(cor_rn), 1L)
+  z <- qnorm(0.975)
+  expect_equal(rho_rows$corr, unname(ci_sd[cor_rn, "Estimate"]),
+               tolerance = 1e-12)
+  expect_equal(rho_rows$ci_lower, unname(ci_sd[cor_rn, 1L]),
+               tolerance = 1e-12)
+  expect_equal(rho_rows$ci_upper, unname(ci_sd[cor_rn, 2L]),
+               tolerance = 1e-12)
+  expect_equal(rho_rows$std_error,
+               unname((ci_sd[cor_rn, 2L] - ci_sd[cor_rn, 1L]) / (2 * z)),
+               tolerance = 1e-12)
 })
 
 test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
@@ -213,8 +289,25 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
   fr <- as_regression_frame(fit, model_id = "M1")
   vc <- fr$info$random_effects$variance_components
   rho_rows <- vc[vc$is_correlation %in% TRUE, ]
-  expect_true(nrow(rho_rows) >= 1L)
+  expect_identical(nrow(rho_rows), 1L)
   expect_true(all(is.finite(rho_rows$std_error)))
+
+  # Oracle: nlme::intervals() on the natural rho scale; spicy's CI is
+  # the interval verbatim and the SE its half-width / z (pure algebraic
+  # mapping).
+  iv <- nlme::intervals(fit, level = 0.95, which = "var-cov")$reStruct$Subject
+  cor_rn <- grep("^cor\\(", rownames(iv), value = TRUE)
+  expect_identical(length(cor_rn), 1L)
+  z <- qnorm(0.975)
+  expect_equal(rho_rows$corr, unname(iv[cor_rn, "est."]),
+               tolerance = 1e-12)
+  expect_equal(rho_rows$ci_lower, unname(iv[cor_rn, "lower"]),
+               tolerance = 1e-12)
+  expect_equal(rho_rows$ci_upper, unname(iv[cor_rn, "upper"]),
+               tolerance = 1e-12)
+  expect_equal(rho_rows$std_error,
+               unname((iv[cor_rn, "upper"] - iv[cor_rn, "lower"]) / (2 * z)),
+               tolerance = 1e-12)
 })
 
 

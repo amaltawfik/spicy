@@ -28,6 +28,27 @@ test_that("glm: binomial logit fits with z-asymptotic Wald inference", {
   # All test_type = "z", df = Inf – matches summary.glm / Stata
   expect_true(all(td$test_type == "z"))
   expect_true(all(is.infinite(td$df)))
+  # Pin the full inference set to the summary.glm oracle: estimate /
+  # SE / z / p from summary()$coefficients, CI from confint.default()
+  # (Wald: estimate +/- qnorm(.975) x SE -- the same z-asymptotic path
+  # spicy uses for glm).
+  sm <- summary(fit)$coefficients
+  ci <- confint.default(fit)
+  for (term_nm in rownames(sm)) {
+    row <- td[td$estimate_type == "B" & td$term == term_nm, ]
+    expect_equal(row$estimate,  unname(sm[term_nm, "Estimate"]),
+                 tolerance = 1e-10, info = paste("term =", term_nm))
+    expect_equal(row$std.error, unname(sm[term_nm, "Std. Error"]),
+                 tolerance = 1e-10)
+    expect_equal(row$statistic, unname(sm[term_nm, "z value"]),
+                 tolerance = 1e-10)
+    expect_equal(row$p.value,   unname(sm[term_nm, "Pr(>|z|)"]),
+                 tolerance = 1e-10)
+    expect_equal(row$conf.low,  unname(ci[term_nm, 1L]),
+                 tolerance = 1e-10)
+    expect_equal(row$conf.high, unname(ci[term_nm, 2L]),
+                 tolerance = 1e-10)
+  }
 })
 
 test_that("glm: family-aware title – logit / probit / poisson / Gamma", {
@@ -91,6 +112,20 @@ test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
   # And NOT plain R² / Adj.R² (those are lm tokens)
   expect_false(any(out$Variable == "R²"))
   expect_false(any(out$Variable == "Adj.R²"))
+  # Pin the rendered fit-stat cells to runtime oracles (single-model
+  # table: fit-stat values render in the "B" column; pseudo-R2 rows
+  # use 2 decimals, AIC uses 1 decimal per the renderer contract).
+  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  cell <- function(pat) {
+    trimws(body[grep(pat, body$Variable, fixed = TRUE), "B"])
+  }
+  expect_identical(trimws(body[body$Variable == "n", "B"]),
+                   as.character(nobs(fit)))
+  expect_identical(cell("McFadden"),
+                   sprintf("%.2f", spicy:::compute_pseudo_r2_mcfadden(fit)))
+  expect_identical(cell("Nagelkerke"),
+                   sprintf("%.2f", spicy:::compute_pseudo_r2_nagelkerke(fit)))
+  expect_identical(cell("AIC"), sprintf("%.1f", AIC(fit)))
 })
 
 test_that("glm: explicit r2 in show_fit_stats errors with hint to pseudo_r2", {
@@ -190,7 +225,12 @@ test_that("compute_pseudo_r2_nagelkerke – known-value cross-check", {
 
 test_that("compute_pseudo_r2_tjur – only defined for binomial", {
   fit_bin <- glm(am ~ mpg, data = mt, family = binomial)
-  expect_true(is.finite(spicy:::compute_pseudo_r2_tjur(fit_bin)))
+  # Tjur (2009) coefficient of discrimination:
+  #   D = mean(p_hat | y = 1) - mean(p_hat | y = 0)
+  p_hat <- fitted(fit_bin)
+  tjur_oracle <- mean(p_hat[mt$am == 1]) - mean(p_hat[mt$am == 0])
+  expect_equal(spicy:::compute_pseudo_r2_tjur(fit_bin), tjur_oracle,
+               tolerance = 1e-12)
   fit_pois <- glm(I(round(mpg)) ~ wt, data = mt, family = poisson)
   expect_true(is.na(spicy:::compute_pseudo_r2_tjur(fit_pois)))
   fit_lm <- lm(mpg ~ wt, data = mt)
@@ -780,6 +820,7 @@ test_that("glm AME + CR2: footer mentions glm-specific mechanism (coef_test)", {
 })
 
 test_that("glm AME with factor predictor: each level gets its own AME row", {
+  skip_if_not_installed("marginaleffects")
   mt2 <- mt; mt2$cyl <- factor(mt2$cyl)
   fit <- glm(am ~ mpg + cyl, data = mt2, family = binomial)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
@@ -788,6 +829,22 @@ test_that("glm AME with factor predictor: each level gets its own AME row", {
   expect_true("mpg" %in% ame$term)
   expect_true("cyl6" %in% ame$term)
   expect_true("cyl8" %in% ame$term)
+  # Pin every AME row to the avg_slopes oracle: spicy's "cyl6" row is
+  # the "6 - 4" contrast (level vs reference), "cyl8" is "8 - 4".
+  oracle <- marginaleffects::avg_slopes(fit)
+  o_val <- function(tm, ct) {
+    idx <- oracle$term == tm & oracle$contrast == ct
+    list(est = oracle$estimate[idx], se = oracle$std.error[idx])
+  }
+  map <- list(mpg  = o_val("mpg", "dY/dX"),
+              cyl6 = o_val("cyl", "6 - 4"),
+              cyl8 = o_val("cyl", "8 - 4"))
+  for (term_nm in names(map)) {
+    expect_equal(ame$estimate[ame$term == term_nm], map[[term_nm]]$est,
+                 tolerance = 1e-12, info = paste("term =", term_nm))
+    expect_equal(ame$std.error[ame$term == term_nm], map[[term_nm]]$se,
+                 tolerance = 1e-10, info = paste("term =", term_nm))
+  }
 })
 
 test_that("glm AME: response-scale (NOT link-scale) - AME != B for logit", {
@@ -954,9 +1011,17 @@ test_that("E2E: logistic with exponentiate + AME + partial_chi2 + standardized",
   # B exponentiated → row for mpg has positive value (OR scale)
   b_mpg <- td$estimate[td$estimate_type == "B" & td$term == "mpg"]
   expect_true(b_mpg > 0)  # OR is exp(-0.32) ≈ 0.72
+  # Pinned: the displayed OR is exactly exp() of the link-scale coef
+  expect_equal(b_mpg, exp(unname(coef(fit)["mpg"])), tolerance = 1e-12)
   # AME on response scale (probability units) – magnitude < |B|
   ame_mpg <- td$estimate[td$estimate_type == "ame" & td$term == "mpg"]
   expect_true(abs(ame_mpg) < 0.1)
+  # Pinned: AME matches the avg_slopes oracle (untouched by exponentiate)
+  skip_if_not_installed("marginaleffects")
+  ame_oracle <- marginaleffects::avg_slopes(fit)
+  expect_equal(ame_mpg,
+               ame_oracle$estimate[ame_oracle$term == "mpg"],
+               tolerance = 1e-12)
 })
 
 test_that("E2E: poisson IRR + nested LRT hierarchy", {

@@ -21,11 +21,24 @@ test_that("compute_pseudo_r2_nagelkerke: NA when null logLik > 0 (upper <= 0)", 
   fit <- suppressWarnings(glm(y ~ x, data = d, family = Gamma(link = "log")))
   ll_null <- spicy:::compute_intercept_only_loglik_glm(fit)
   n <- stats::nobs(fit)
+  # Oracle for the null log-likelihood: an independent intercept-only
+  # refit of the same response / family (what the helper reconstructs).
+  null_fit <- suppressWarnings(
+    glm(y ~ 1, data = d, family = Gamma(link = "log"))
+  )
+  ll_null_oracle <- as.numeric(stats::logLik(null_fit))
+  expect_equal(ll_null, ll_null_oracle, tolerance = 1e-8)
   # Precondition for the guard: the rescaling upper bound is non-positive.
   expect_true((1 - exp(ll_null * 2 / n)) <= 0)
-  expect_true(is.na(spicy:::compute_pseudo_r2_nagelkerke(fit)))
-  # McFadden is still finite on the same fit (different code path).
-  expect_true(is.finite(spicy:::compute_pseudo_r2_mcfadden(fit)))
+  expect_identical(spicy:::compute_pseudo_r2_nagelkerke(fit), NA_real_)
+  # McFadden is still finite on the same fit (different code path),
+  # pinned to the McFadden (1974) formula 1 - LL_full / LL_null with
+  # both log-likelihoods taken from the stats::logLik oracles.
+  mcfadden <- spicy:::compute_pseudo_r2_mcfadden(fit)
+  expect_true(is.finite(mcfadden))
+  expect_equal(mcfadden,
+               1 - as.numeric(stats::logLik(fit)) / ll_null_oracle,
+               tolerance = 1e-8)
 })
 
 
@@ -41,7 +54,7 @@ test_that("compute_pseudo_r2_tjur: NA for grouped/proportion binomial (y not 0/1
   fit <- suppressWarnings(glm(p ~ x, data = d, family = binomial, weights = w))
   y <- stats::model.response(stats::model.frame(fit))
   expect_false(all(y %in% c(0, 1)))
-  expect_true(is.na(spicy:::compute_pseudo_r2_tjur(fit)))
+  expect_identical(spicy:::compute_pseudo_r2_tjur(fit), NA_real_)
 })
 
 test_that("compute_pseudo_r2_tjur: NA for matrix (cbind) binomial response", {
@@ -51,7 +64,7 @@ test_that("compute_pseudo_r2_tjur: NA for matrix (cbind) binomial response", {
   fit <- suppressWarnings(glm(cbind(s, n - s) ~ x, data = d, family = binomial))
   y <- stats::model.response(stats::model.frame(fit))
   expect_true(is.matrix(y))
-  expect_true(is.na(spicy:::compute_pseudo_r2_tjur(fit)))
+  expect_identical(spicy:::compute_pseudo_r2_tjur(fit), NA_real_)
 })
 
 test_that("compute_pseudo_r2_tjur: NA when one outcome class is empty (m0 = NaN)", {
@@ -62,7 +75,7 @@ test_that("compute_pseudo_r2_tjur: NA when one outcome class is empty (m0 = NaN)
   fit <- suppressWarnings(glm(y ~ x, data = d, family = binomial))
   y <- stats::model.response(stats::model.frame(fit))
   expect_true(all(y %in% c(0, 1)))
-  expect_true(is.na(spicy:::compute_pseudo_r2_tjur(fit)))
+  expect_identical(spicy:::compute_pseudo_r2_tjur(fit), NA_real_)
 })
 
 
@@ -77,6 +90,8 @@ test_that("apply_exponentiate_to_frame_coefs: NULL and 0-row inputs pass through
   )
   out <- spicy:::apply_exponentiate_to_frame_coefs(empty)
   expect_equal(nrow(out), 0L)
+  # The 0-row early exit returns the frame untouched (same object).
+  expect_identical(out, empty)
 })
 
 test_that("apply_exponentiate_to_frame_coefs: no eligible rows -> unchanged", {
@@ -91,12 +106,17 @@ test_that("apply_exponentiate_to_frame_coefs: no eligible rows -> unchanged", {
   out <- spicy:::apply_exponentiate_to_frame_coefs(df_ame)
   expect_identical(out$estimate, df_ame$estimate)
   expect_identical(out$std_error, df_ame$std_error)
+  # Full pass-through: every column of the frame is untouched.
+  expect_identical(out, df_ame)
 })
 
 test_that("apply_exponentiate_to_frame_coefs: B rows exponentiate with delta-method SE", {
   # Positive control: confirms the helper actually transforms eligible
-  # B rows (exp on estimate + CI, delta-method SE = exp(B) * SE_link),
-  # so the L337 "no eligible rows" no-op above is a genuine early exit.
+  # B rows (exp on estimate + CI, delta-method SE), so the L337 "no
+  # eligible rows" no-op above is a genuine early exit.
+  # Delta method: SE(g(B)) ~ |g'(B)| * SE(B); for g = exp,
+  # d/dB exp(B) = exp(B), so SE(exp(B)) = exp(B) * SE(B) where SE(B)
+  # is the link-scale (log-odds) standard error.
   df_b <- data.frame(
     estimate_type = c("B", "B"), is_ref = c(FALSE, FALSE),
     estimate = c(0.5, -0.3), std_error = c(0.1, 0.2),
@@ -119,6 +139,16 @@ test_that("compute_partial_chi2_for_term: NULL for a term not in the model", {
   # em-dash the cell instead of crashing.
   fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
   expect_null(spicy:::compute_partial_chi2_for_term(fit, "not_a_real_term"))
+
+  # Positive control pinned to the drop1(test = "LRT") oracle: a valid
+  # term returns exactly the stats::drop1 chi-square, df, and p-value.
+  d1 <- suppressWarnings(
+    stats::drop1(fit, scope = stats::reformulate("wt"), test = "LRT")
+  )
+  res_wt <- spicy:::compute_partial_chi2_for_term(fit, "wt")
+  expect_equal(res_wt$chi2, d1[["LRT"]][2L], tolerance = 1e-12)
+  expect_identical(res_wt$df, as.integer(d1[["Df"]][2L]))
+  expect_equal(res_wt$p_value, d1[["Pr(>Chi)"]][2L], tolerance = 1e-12)
 })
 
 
@@ -164,6 +194,14 @@ test_that("compute_coef_inference (glm path): CR2 with non-finite Satterthwaite 
   expect_identical(res$test_type, "t")
   # ...and df was carried through as the (non-finite) Satterthwaite df.
   expect_false(is.finite(res$df))
+  expect_identical(res$df, as.double(unname(ct$df_Satt[2L])))
+
+  # Estimate / SE / statistic / p are carried straight through from the
+  # coef(fit) + clubSandwich::coef_test oracles for the 'trt' row.
+  expect_equal(res$estimate, unname(stats::coef(fit)[2L]), tolerance = 1e-12)
+  expect_equal(res$se, unname(ct$SE[2L]), tolerance = 1e-12)
+  expect_equal(res$statistic, unname(ct$tstat[2L]), tolerance = 1e-12)
+  expect_equal(res$p.value, unname(ct$p_Satt[2L]), tolerance = 1e-12)
 
   # The CI bounds are FINITE. This is a strict proof that the qnorm
   # (else) branch executed rather than qt: qt(1 - alpha/2, df = NaN)
@@ -181,4 +219,13 @@ test_that("compute_coef_inference (glm path): CR2 with non-finite Satterthwaite 
   crit_z <- stats::qnorm(0.975)
   expect_equal(res$ci_lower, res$estimate - crit_z * res$se, tolerance = 1e-12)
   expect_equal(res$ci_upper, res$estimate + crit_z * res$se, tolerance = 1e-12)
+  # Same bounds pinned fully externally -- coef(fit) for the log-odds
+  # estimate and the clubSandwich SE oracle -- so the CI is anchored end
+  # to end, not just to res's own components.
+  expect_equal(res$ci_lower,
+               unname(stats::coef(fit)[2L]) - crit_z * unname(ct$SE[2L]),
+               tolerance = 1e-10)
+  expect_equal(res$ci_upper,
+               unname(stats::coef(fit)[2L]) + crit_z * unname(ct$SE[2L]),
+               tolerance = 1e-10)
 })

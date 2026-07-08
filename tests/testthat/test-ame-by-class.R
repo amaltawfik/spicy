@@ -13,6 +13,14 @@ oracle_slopes <- function(fit) {
   as.data.frame(suppressWarnings(suppressMessages(
     marginaleffects::avg_slopes(fit, conf_level = 0.95, df = Inf))))
 }
+# Coef-style term id for each avg_slopes() row: bare variable name for
+# numerics, "<var><level>" rebuilt from the "lvl - ref" contrast label for
+# factors -- the same reconstruction spicy applies to its AME term ids.
+oracle_term_id <- function(orc) {
+  ifelse(!is.na(orc$contrast) & grepl(" - ", orc$contrast, fixed = TRUE),
+         paste0(orc$term, sub(" - .*$", "", orc$contrast)),
+         orc$term)
+}
 
 make_d <- function(seed = 1, n = 240) {
   set.seed(seed)
@@ -39,6 +47,18 @@ xval_single <- function(fr, fit) {
   expect_equal(a$estimate[match("x1", a$term)],
                orc$estimate[match("x1", orc$term)], tolerance = 1e-7)
   expect_true(all(a$test_type == "z"))
+  # EVERY AME row (numeric term + each factor level) pinned to its oracle
+  # row, matched by coef-style term id -- estimate, SE, z, p, and CI.
+  okey <- oracle_term_id(orc)
+  expect_identical(nrow(a), nrow(orc))
+  expect_setequal(a$term, okey)
+  idx <- match(a$term, okey)
+  expect_equal(a$estimate,  orc$estimate[idx],  tolerance = 1e-10)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-10)
+  expect_equal(a$statistic, orc$statistic[idx], tolerance = 1e-10)
+  expect_equal(a$p_value,   orc$p.value[idx],   tolerance = 1e-10)
+  expect_equal(a$ci_lower,  orc$conf.low[idx],  tolerance = 1e-10)
+  expect_equal(a$ci_upper,  orc$conf.high[idx], tolerance = 1e-10)
 }
 
 test_that("betareg AME matches avg_slopes (single-outcome, lean frame)", {
@@ -84,9 +104,7 @@ xval_percat <- function(fr, fit, cats) {
   orc <- oracle_slopes(fit)
   expect_true("group" %in% names(orc))
   # one AME row per avg_slopes row (every category x predictor accounted for),
-  # all populated. Factor-level values come straight from avg_slopes (same
-  # source); the numeric predictor is value-checked strictly per category
-  # (its avg_slopes term is the bare name, so it maps unambiguously).
+  # all populated.
   expect_identical(nrow(a), nrow(orc))
   expect_false(any(is.na(a$estimate)))
   # Ordinal AME rows carry the BARE predictor term + the category in the
@@ -97,6 +115,18 @@ xval_percat <- function(fr, fit, cats) {
     o   <- orc$estimate[as.character(orc$group) == cat & orc$term == "x1"]
     expect_equal(spi, o, tolerance = 1e-7, info = paste(cat, "x1"))
   }
+  # EVERY (term, category) pair -- factor levels included -- pinned to its
+  # oracle row: estimate, SE, z, p, and CI.
+  okey <- paste(oracle_term_id(orc), as.character(orc$group))
+  akey <- paste(a$term, a$outcome_level)
+  expect_setequal(akey, okey)
+  idx <- match(akey, okey)
+  expect_equal(a$estimate,  orc$estimate[idx],  tolerance = 1e-10)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-10)
+  expect_equal(a$statistic, orc$statistic[idx], tolerance = 1e-10)
+  expect_equal(a$p_value,   orc$p.value[idx],   tolerance = 1e-10)
+  expect_equal(a$ci_lower,  orc$conf.low[idx],  tolerance = 1e-10)
+  expect_equal(a$ci_upper,  orc$conf.high[idx], tolerance = 1e-10)
 }
 
 test_that("polr per-category AME matches avg_slopes by (term, category)", {
@@ -192,6 +222,15 @@ test_that("frame AME honours the requested robust vcov (SE), estimate invariant"
     marginaleffects::avg_slopes(fit, df = Inf, vcov = vc))))
   expect_equal(ar$std_error[ar$term == "x1"],
                orc$std.error[orc$term == "x1"], tolerance = 1e-7)
+  # ... for ALL terms (numeric + both factor levels), matched by term id,
+  # and so do the robust CIs / p-values derived from that SE.
+  okey <- oracle_term_id(orc)
+  expect_setequal(ar$term, okey)
+  idx <- match(ar$term, okey)
+  expect_equal(ar$std_error, orc$std.error[idx], tolerance = 1e-10)
+  expect_equal(ar$ci_lower,  orc$conf.low[idx],  tolerance = 1e-10)
+  expect_equal(ar$ci_upper,  orc$conf.high[idx], tolerance = 1e-10)
+  expect_equal(ar$p_value,   orc$p.value[idx],   tolerance = 1e-10)
 })
 
 test_that("mlogit advertises no AME (marginaleffects has no slopes() for it)", {
@@ -223,4 +262,12 @@ test_that("glmmTMB AME falls back to model-based under a robust vcov (no blank)"
   expect_gt(nrow(ar), 0L)
   expect_equal(ar$estimate, am$estimate, tolerance = 1e-9)
   expect_equal(ar$std_error, am$std_error, tolerance = 1e-9)
+  # And the model-based values themselves are pinned to avg_slopes(),
+  # matched by term id (x1 + both factor levels).
+  orc <- oracle_slopes(fit)
+  okey <- oracle_term_id(orc)
+  expect_setequal(am$term, okey)
+  idx <- match(am$term, okey)
+  expect_equal(am$estimate,  orc$estimate[idx],  tolerance = 1e-10)
+  expect_equal(am$std_error, orc$std.error[idx], tolerance = 1e-10)
 })
