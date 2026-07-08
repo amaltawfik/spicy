@@ -219,6 +219,16 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## Bug fixes
 
+* `gt` and `flextable` outputs now render in Quarto / R Markdown
+  **Word** (and PowerPoint / PDF) documents. `knit_print` always
+  emitted raw HTML, which pandoc drops in non-HTML targets -- the
+  table silently disappeared from docx reports (reported from a real
+  Quarto -> Word workflow). The methods are now format-aware: HTML
+  targets keep the styled table note; every other target delegates to
+  the engine's native rendering, with the note carried natively
+  (flextable footer / `gt::tab_source_note()`). A new
+  `as_flextable()` method also returns the clean underlying flextable
+  for manual composition, mirroring `gtsummary::as_flex_table()`.
 * `table_continuous_lm()` now discloses a non-classical SE estimator in
   its table note ("Std. errors: heteroskedasticity-robust (HC3)." /
   "cluster-robust (CR2), clusters by region." / "nonparametric

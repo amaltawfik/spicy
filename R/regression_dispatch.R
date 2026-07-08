@@ -1118,6 +1118,24 @@ print.spicy_gt <- function(x, ...) {
 knit_print.spicy_gt <- function(x, ...) {
   note <- attr(x, "spicy_note")
   class(x) <- setdiff(class(x), "spicy_gt")
+  # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
+  # pandoc DROPS raw HTML, so the as_raw_html path below rendered an
+  # empty document (dev/quarto_word_rendering_spec.md). Unlike the
+  # flextable path, the gt object does NOT carry the note natively
+  # (tab_source_note is skipped at build time for an HTML-only
+  # viewport-width reason -- see output_gt) -- so attach it here,
+  # where that concern does not apply, then delegate to gt's own
+  # format-aware rendering. Outside a knit (pandoc target NULL) keep
+  # the historical HTML path.
+  pandoc_to <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
+    if (!is.null(note) && nzchar(note)) {
+      x <- gt::tab_source_note(
+        x, source_note = gsub("\n", " ", note, fixed = TRUE)
+      )
+    }
+    return(knitr::knit_print(x, ...))
+  }
   h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
   h_str <- .spicy_gt_html_postprocess(h_str, note)
   knitr::asis_output(h_str)
@@ -1580,10 +1598,51 @@ print.spicy_flextable <- function(x, ...) {
   NextMethod()
 }
 
+#' Convert a spicy flextable output to a plain flextable
+#'
+#' `table_regression()` and `table_continuous_lm()` return their
+#' `output = "flextable"` tables with a lightweight `spicy_flextable`
+#' class tag whose only job is HTML note styling. Every flextable
+#' verb already works on the tagged object; this method returns the
+#' clean underlying [flextable::flextable()] -- the note is already
+#' part of its footer -- for workflows that want the untagged object
+#' (e.g. custom knit hooks, `flextable::save_as_docx()` pipelines, or
+#' composition with other flextable tooling), mirroring
+#' `gtsummary::as_flex_table()`.
+#'
+#' Rendering in Quarto / R Markdown does NOT require this conversion:
+#' the `knit_print` method auto-detects the output format and
+#' delegates to flextable's native rendering for non-HTML targets
+#' (Word, PowerPoint, PDF).
+#'
+#' @param x A `spicy_flextable` object.
+#' @param ... Unused; for generic consistency.
+#' @return A `flextable` object.
+#' @exportS3Method flextable::as_flextable spicy_flextable
+as_flextable.spicy_flextable <- function(x, ...) {
+  class(x) <- setdiff(class(x), "spicy_flextable")
+  x
+}
+
 #' @exportS3Method knitr::knit_print spicy_flextable
 knit_print.spicy_flextable <- function(x, ...) {
   note <- attr(x, "spicy_note")
   class(x) <- setdiff(class(x), "spicy_flextable")
+  # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
+  # pandoc DROPS raw HTML, so the htmltools path below rendered an
+  # empty document -- reported from a real Quarto -> Word workflow
+  # (dev/quarto_word_rendering_spec.md). The flextable already
+  # carries the note natively in its footer (<tfoot> added at build
+  # time); the HTML post-processing below merely RELOCATES that
+  # footer outside the table for viewport-width cosmetics, which
+  # only matters in HTML. Delegate to flextable's own format-aware
+  # knit_print for every other KNOWN target -- outside a knit
+  # (pandoc target NULL, e.g. direct calls) keep the historical HTML
+  # path, matching what the engines themselves do.
+  pandoc_to <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
+    return(knitr::knit_print(x, ...))
+  }
   h <- flextable::htmltools_value(x = x)
   h_str <- as.character(h)
   h_str <- .spicy_ft_html_postprocess(h_str, note)
