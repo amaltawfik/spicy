@@ -177,6 +177,7 @@ reference:
       - as.data.frame.spicy_continuous_lm_table
       - as.data.frame.spicy_continuous_table
       - as.data.frame.spicy_regression_table
+      - as_flextable.spicy_flextable
       - tidy.spicy_categorical_table
       - tidy.spicy_continuous_lm_table
       - tidy.spicy_continuous_table
