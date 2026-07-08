@@ -53,6 +53,12 @@
   `Reference outcome: <level>.` footer note; multi-model and
   `nested = TRUE` tables keep one row per (category, predictor), and
   `tidy()` / `output = "long"` always return the long form. `mlogit`
+  tables use the two-segment Stata `asclogit` presentation: an
+  `Alternative-invariant` section for the attribute coefficients, then
+  one section per non-reference alternative (intercept +
+  case-specific covariates, bare row labels) and a
+  `Reference alternative: <base>.` footer note; terms keep mlogit's
+  native `<term>:<alt>` names in `tidy()` / `keep` / `drop`. `mlogit`
   robust SEs are cluster-robust only (one cluster per choice
   situation; `HC*` is refused -- `sandwich::vcovHC()` mis-scales the
   long-format sandwich), and its `n` counts choice situations (Stata

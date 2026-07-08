@@ -62,13 +62,17 @@ test_that("multinom shows DIFFERENT estimates for the two outcomes", {
 })
 
 
-# ---- 3. mlogit body shows alt-prefixed labels --------------------------
+# ---- 3. mlogit body: two-segment layout (sections per alternative) -----
 
-test_that("table_regression() body shows alt-prefixed mlogit intercepts", {
+test_that("table_regression() body shows per-alternative mlogit sections", {
   fit <- .fit_mlogit_fishing_oc()
   combined <- paste(capture.output(print(table_regression(fit))),
                     collapse = "\n")
-  expect_match(combined, "boat: (Intercept)",    fixed = TRUE)
-  expect_match(combined, "charter: (Intercept)", fixed = TRUE)
-  expect_match(combined, "pier: (Intercept)",    fixed = TRUE)
+  # One labelled section per non-reference alternative, bare rows
+  # inside (the Stata asclogit presentation; phase 2 of the
+  # categorical layouts, dev/mlogit_two_segment_spec.md).
+  expect_match(combined, "boat:",    fixed = TRUE)
+  expect_match(combined, "charter:", fixed = TRUE)
+  expect_match(combined, "pier:",    fixed = TRUE)
+  expect_false(grepl("boat: (Intercept)", combined, fixed = TRUE))
 })

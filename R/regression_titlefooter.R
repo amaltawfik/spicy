@@ -109,6 +109,7 @@ build_regression_footer_from_frames <- function(
     build_polynomial_contrasts_footer_block_from_frames(
       frames_display, displayed_parent_vars = displayed_parent_vars),
     build_reference_outcome_footer_block_from_frames(frames),
+    build_reference_alternative_footer_block_from_frames(frames),
     build_reference_categories_footer_block_from_frames(frames_display,
                                                         reference_style),
     build_nested_footer_block(nested)
@@ -1239,6 +1240,29 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
   }
   per <- vapply(affected, function(k) {
     sprintf("Model %d: %s", k, msg(ns[k]))
+  }, character(1))
+  paste(per, collapse = "\n")
+}
+
+
+# Conditional-logit reference (base) alternative, read from
+# extras$reference_alternative -- the discrete-choice sibling of the
+# multinomial reference-outcome note below (Stata asclogit's "base
+# alternative"). Fact-only; deduped across models like its sibling.
+build_reference_alternative_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  refs <- vapply(frames, function(f) {
+    as.character(f$info$extras$reference_alternative %||% NA_character_)
+  }, character(1))
+  if (all(is.na(refs))) return(NULL)
+  affected <- which(!is.na(refs))
+  msg <- function(ref) sprintf("Reference alternative: %s.", ref)
+  if (length(affected) == length(frames) &&
+      length(unique(refs[affected])) == 1L) {
+    return(msg(refs[affected][1L]))
+  }
+  per <- vapply(affected, function(k) {
+    sprintf("Model %d: %s", k, msg(refs[k]))
   }, character(1))
   paste(per, collapse = "\n")
 }

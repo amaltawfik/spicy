@@ -51,7 +51,11 @@ test_that("mlogit: alternative-specific intercepts get outcome_level parsed", {
   fr <- as_regression_frame(fit, model_id = "M1")
   asc_rows <- fr$coefs[grepl(":", fr$coefs$term, fixed = TRUE), ]
   expect_true(all(!is.na(asc_rows$outcome_level)))
-  expect_true(all(asc_rows$parent_var == "(Intercept)"))
+  # Two-segment layout: a row's group is its ALTERNATIVE and the
+  # displayed label is the bare predictor
+  # (dev/mlogit_two_segment_spec.md).
+  expect_true(all(asc_rows$parent_var == asc_rows$outcome_level))
+  expect_true(all(asc_rows$label == "(Intercept)"))
   expect_setequal(asc_rows$outcome_level, c("boat", "charter", "pier"))
 })
 

@@ -316,11 +316,17 @@ table_regression(fit_choice, exponentiate = TRUE,
                  show_columns = c("b", "ci", "p"))
 ```
 
-Reading it: the **alternative-specific** covariates (`price`, `catch`)
-get a single row each — one more dollar of price multiplies a mode's
-odds by 0.98 *whichever mode it is* — while the **case-specific**
-covariate (`income_k`) works like `multinom` and needs one coefficient
-per non-reference alternative. The footer's `n` counts **choice
+The table comes in **two segments**, the presentation Stata's
+`asclogit` prints. The `Alternative-invariant` section holds the
+model's centrepiece: the attribute coefficients (`price`, `catch`),
+one row each, shared across alternatives — one more dollar of price
+multiplies a mode's odds by 0.98 *whichever mode it is*. Then one
+section per non-reference alternative (`boat`, `charter`, `pier`)
+collects that alternative's intercept and its **case-specific**
+coefficients: `income_k` works like `multinom` and needs one
+coefficient per comparison against the reference — the footer's
+`Reference alternative: beach.` names it, so each section reads
+"this alternative versus beach". The footer's `n` counts **choice
 situations** (1182 anglers), not the 4728 rows of the long-format
 data: each angler contributes one choice, and that is the model's
 sample size.

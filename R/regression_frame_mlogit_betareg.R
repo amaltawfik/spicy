@@ -68,6 +68,16 @@ as_regression_frame.mlogit <- function(fit,
                         ci_level   = ci_level,
                         ci_method  = ci_method,
                         model_id   = model_id)
+  # Reference (base) alternative: the one alternative of the choice
+  # set that carries no alternative-specific coefficients (Stata's
+  # "base alternative"). NA when it cannot be identified (e.g. a
+  # generic-only model has no alternative-specific rows at all) --
+  # the footer note is then omitted rather than guessed.
+  alts_present <- unique(coefs$outcome_level[!is.na(coefs$outcome_level)])
+  ref_alt <- setdiff(names(fit$freq), alts_present)
+  info$extras$reference_alternative <-
+    if (length(ref_alt) == 1L) ref_alt else NA_character_
+  info$extras$choice_alternatives <- as.character(names(fit$freq))
   if (!vcov %in% c("model", "classical")) {
     info$vcov_label <- .robust_vcov_label(
       vcov, cluster_name %||% NA_character_,
@@ -118,19 +128,24 @@ as_regression_frame.mlogit <- function(fit,
   ci_upper <- est + z_crit * se
 
   # Parse "<term>:<alternative>" into term + outcome_level. Plain
-  # (alternative-invariant) coefs get outcome_level = NA. Phase 7c4:
-  # for alternative-specific rows, prefix the label with the
-  # alternative so the rendered body shows which alternative each
-  # row is for (e.g. "boat: (Intercept)"). Invariant rows keep the
-  # bare label. mlogit's original coef names already encode the
-  # alternative in the term ("(Intercept):boat"), so term-uniqueness
-  # is preserved without further surgery here.
+  # (alternative-invariant) coefs get outcome_level = NA.
+  #
+  # Two-segment publication layout (Stata asclogit presentation,
+  # user-validated 2026-07-04; dev/mlogit_two_segment_spec.md): a
+  # row's GROUP is its alternative, not its predictor. The generic
+  # (alternative-invariant) coefficients -- the model's centrepiece,
+  # shared across alternatives -- form a leading
+  # "Alternative-invariant" section; each alternative then gets its
+  # own labelled section (ASC + case-specific covariates) with bare
+  # row labels, so the reader scans within an alternative. Terms keep
+  # mlogit's native "<term>:<alt>" names: uniqueness, tidy(), and
+  # keep / drop regexes are untouched (display-only regrouping).
   parsed <- .mlogit_parse_terms(nm)
-  parent_var    <- ifelse(is.na(parsed$alt), nm, parsed$term)
-  label         <- ifelse(is.na(parsed$alt), parsed$term,
-                          paste0(parsed$alt, ": ", parsed$term))
+  parent_var <- ifelse(is.na(parsed$alt), "Alternative-invariant",
+                       parsed$alt)
+  label      <- parsed$term
 
-  data.frame(
+  out <- data.frame(
     term             = nm,
     parent_var       = parent_var,
     label            = label,
@@ -148,6 +163,15 @@ as_regression_frame.mlogit <- function(fit,
     outcome_level    = parsed$alt,
     stringsAsFactors = FALSE
   )
+  # Segment order: generic block first, then one section per
+  # alternative in the model's own alternative order; rows keep their
+  # original relative order within each section (ASCs before
+  # case-specific covariates, as mlogit emits them).
+  alt_order <- unique(parsed$alt[!is.na(parsed$alt)])
+  out <- out[order(!is.na(parsed$alt), match(parsed$alt, alt_order),
+                   seq_along(nm)), , drop = FALSE]
+  rownames(out) <- NULL
+  out
 }
 
 
