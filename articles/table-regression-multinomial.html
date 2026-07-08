@@ -523,16 +523,18 @@ describes the angler:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span>   OR        95% CI       p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept):           <span style="color: #9E9E9E;">│</span>                              </span></span>
-<span><span class="co">#&gt;    boat: (Intercept)    <span style="color: #9E9E9E;">│</span>    1.69  [1.09, 2.62]   .018 </span></span>
-<span><span class="co">#&gt;    charter: (Intercept) <span style="color: #9E9E9E;">│</span>    5.44  [3.51, 8.44]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    pier: (Intercept)    <span style="color: #9E9E9E;">│</span>    2.18  [1.41, 3.35]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  price                  <span style="color: #9E9E9E;">│</span>    0.98  [0.97, 0.98]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  catch                  <span style="color: #9E9E9E;">│</span>    1.43  [1.15, 1.77]   .001 </span></span>
-<span><span class="co">#&gt;  income_k:              <span style="color: #9E9E9E;">│</span>                              </span></span>
-<span><span class="co">#&gt;    boat: income_k       <span style="color: #9E9E9E;">│</span>    1.09  [0.99, 1.21]   .074 </span></span>
-<span><span class="co">#&gt;    charter: income_k    <span style="color: #9E9E9E;">│</span>    0.97  [0.88, 1.07]   .508 </span></span>
-<span><span class="co">#&gt;    pier: income_k       <span style="color: #9E9E9E;">│</span>    0.88  [0.80, 0.97]   .012 </span></span>
+<span><span class="co">#&gt;  Alternative-invariant: <span style="color: #9E9E9E;">│</span>                              </span></span>
+<span><span class="co">#&gt;    price                <span style="color: #9E9E9E;">│</span>    0.98  [0.97, 0.98]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    catch                <span style="color: #9E9E9E;">│</span>    1.43  [1.15, 1.77]   .001 </span></span>
+<span><span class="co">#&gt;  boat:                  <span style="color: #9E9E9E;">│</span>                              </span></span>
+<span><span class="co">#&gt;    (Intercept)          <span style="color: #9E9E9E;">│</span>    1.69  [1.09, 2.62]   .018 </span></span>
+<span><span class="co">#&gt;    income_k             <span style="color: #9E9E9E;">│</span>    1.09  [0.99, 1.21]   .074 </span></span>
+<span><span class="co">#&gt;  charter:               <span style="color: #9E9E9E;">│</span>                              </span></span>
+<span><span class="co">#&gt;    (Intercept)          <span style="color: #9E9E9E;">│</span>    5.44  [3.51, 8.44]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    income_k             <span style="color: #9E9E9E;">│</span>    0.97  [0.88, 1.07]   .508 </span></span>
+<span><span class="co">#&gt;  pier:                  <span style="color: #9E9E9E;">│</span>                              </span></span>
+<span><span class="co">#&gt;    (Intercept)          <span style="color: #9E9E9E;">│</span>    2.18  [1.41, 3.35]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    income_k             <span style="color: #9E9E9E;">│</span>    0.88  [0.80, 0.97]   .012 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span> 1182                         </span></span>
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 2446.3                       </span></span>
@@ -540,16 +542,24 @@ describes the angler:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Discrete-choice multinomial logit (mlogit).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span></span></code></pre></div>
-<p>Reading it: the <strong>alternative-specific</strong> covariates
-(<code>price</code>, <code>catch</code>) get a single row each — one
-more dollar of price multiplies a mode’s odds by 0.98 <em>whichever mode
-it is</em> — while the <strong>case-specific</strong> covariate
-(<code>income_k</code>) works like <code>multinom</code> and needs one
-coefficient per non-reference alternative. The footer’s <code>n</code>
-counts <strong>choice situations</strong> (1182 anglers), not the 4728
-rows of the long-format data: each angler contributes one choice, and
-that is the model’s sample size.</p>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Reference alternative: beach.</span></span></span></code></pre></div>
+<p>The table comes in <strong>two segments</strong>, the presentation
+Stata’s <code>asclogit</code> prints. The
+<code>Alternative-invariant</code> section holds the model’s
+centrepiece: the attribute coefficients (<code>price</code>,
+<code>catch</code>), one row each, shared across alternatives — one more
+dollar of price multiplies a mode’s odds by 0.98 <em>whichever mode it
+is</em>. Then one section per non-reference alternative
+(<code>boat</code>, <code>charter</code>, <code>pier</code>) collects
+that alternative’s intercept and its <strong>case-specific</strong>
+coefficients: <code>income_k</code> works like <code>multinom</code> and
+needs one coefficient per comparison against the reference — the
+footer’s <code>Reference alternative: beach.</code> names it, so each
+section reads “this alternative versus beach”. The footer’s
+<code>n</code> counts <strong>choice situations</strong> (1182 anglers),
+not the 4728 rows of the long-format data: each angler contributes one
+choice, and that is the model’s sample size.</p>
 <p>Three guardrails: average marginal effects are refused for
 <code>mlogit</code> (<code>marginaleffects</code> has no slopes method
 for its one-row-per-choice structure); the robust <code>vcov</code>

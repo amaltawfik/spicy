@@ -433,16 +433,18 @@ table_regression(fit_choice, exponentiate = TRUE,
 #> 
 #>  Variable               │   OR        95% CI       p   
 #> ────────────────────────┼──────────────────────────────
-#>  (Intercept):           │                              
-#>    boat: (Intercept)    │    1.69  [1.09, 2.62]   .018 
-#>    charter: (Intercept) │    5.44  [3.51, 8.44]  <.001 
-#>    pier: (Intercept)    │    2.18  [1.41, 3.35]  <.001 
-#>  price                  │    0.98  [0.97, 0.98]  <.001 
-#>  catch                  │    1.43  [1.15, 1.77]   .001 
-#>  income_k:              │                              
-#>    boat: income_k       │    1.09  [0.99, 1.21]   .074 
-#>    charter: income_k    │    0.97  [0.88, 1.07]   .508 
-#>    pier: income_k       │    0.88  [0.80, 0.97]   .012 
+#>  Alternative-invariant: │                              
+#>    price                │    0.98  [0.97, 0.98]  <.001 
+#>    catch                │    1.43  [1.15, 1.77]   .001 
+#>  boat:                  │                              
+#>    (Intercept)          │    1.69  [1.09, 2.62]   .018 
+#>    income_k             │    1.09  [0.99, 1.21]   .074 
+#>  charter:               │                              
+#>    (Intercept)          │    5.44  [3.51, 8.44]  <.001 
+#>    income_k             │    0.97  [0.88, 1.07]   .508 
+#>  pier:                  │                              
+#>    (Intercept)          │    2.18  [1.41, 3.35]  <.001 
+#>    income_k             │    0.88  [0.80, 0.97]   .012 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                      │ 1182                         
 #>  AIC                    │ 2446.3                       
@@ -451,15 +453,22 @@ table_regression(fit_choice, exponentiate = TRUE,
 #> Std. errors: Wald asymptotic (z).
 #> OR = odds ratio.
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Reference alternative: beach.
 ```
 
-Reading it: the **alternative-specific** covariates (`price`, `catch`)
-get a single row each — one more dollar of price multiplies a mode’s
-odds by 0.98 *whichever mode it is* — while the **case-specific**
-covariate (`income_k`) works like `multinom` and needs one coefficient
-per non-reference alternative. The footer’s `n` counts **choice
-situations** (1182 anglers), not the 4728 rows of the long-format data:
-each angler contributes one choice, and that is the model’s sample size.
+The table comes in **two segments**, the presentation Stata’s `asclogit`
+prints. The `Alternative-invariant` section holds the model’s
+centrepiece: the attribute coefficients (`price`, `catch`), one row
+each, shared across alternatives — one more dollar of price multiplies a
+mode’s odds by 0.98 *whichever mode it is*. Then one section per
+non-reference alternative (`boat`, `charter`, `pier`) collects that
+alternative’s intercept and its **case-specific** coefficients:
+`income_k` works like `multinom` and needs one coefficient per
+comparison against the reference — the footer’s
+`Reference alternative: beach.` names it, so each section reads “this
+alternative versus beach”. The footer’s `n` counts **choice situations**
+(1182 anglers), not the 4728 rows of the long-format data: each angler
+contributes one choice, and that is the model’s sample size.
 
 Three guardrails: average marginal effects are refused for `mlogit`
 (`marginaleffects` has no slopes method for its one-row-per-choice
