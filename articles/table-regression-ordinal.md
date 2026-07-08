@@ -634,8 +634,8 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>    <chr>    <chr>      <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
 #>  1 M1       self_rate… age   ame            3.91e-5 0.000183  -3.20e-4 0.000399 
 #>  2 M1       self_rate… age   ame            1.20e-4 0.000565  -9.86e-4 0.00123  
-#>  3 M1       self_rate… age   ame           -1.20e-5 0.0000571 -1.24e-4 0.0000999
-#>  4 M1       self_rate… age   ame           -1.47e-4 0.000691  -1.50e-3 0.00121  
+#>  3 M1       self_rate… age   ame           -1.20e-5 0.0000570 -1.24e-4 0.0000997
+#>  4 M1       self_rate… age   ame           -1.47e-4 0.000692  -1.50e-3 0.00121  
 #>  5 M1       self_rate… age   B             -7.94e-4 0.00372   -8.09e-3 0.00650  
 #>  6 M1       self_rate… sexM… ame           -8.52e-4 0.00539   -1.14e-2 0.00972  
 #>  7 M1       self_rate… sexM… ame           -2.62e-3 0.0166    -3.52e-2 0.0299   
