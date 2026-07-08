@@ -212,6 +212,25 @@ for the walk-throughs.
 
 ### Minor improvements
 
+- Cross-software validation extended from the contingency-table measures
+  to the regression paths: OLS (B / SE / t / R² / adjusted R² / SPSS
+  Beta) and binary logistic (B / SE / Wald / Exp(B) / CI / -2LL /
+  Nagelkerke) are now pinned to PSPP 2.0 (SPSS clone) oracle values on
+  the bundled `sochealth` data – the first reference for these
+  quantities from outside the R ecosystem. The pinning also documents
+  the Beta convention split: SPSS standardises factor dummies
+  (`standardized = "basic"` reproduces it exactly), while the default
+  `"refit"` keeps dummies at 0/1.
+- The weak-assertion audit’s top-20 test files now pin their numeric
+  outputs to runtime oracles
+  ([`anova()`](https://rdrr.io/r/stats/anova.html), `merDeriv`,
+  [`boot::boot.ci`](https://rdrr.io/pkg/boot/man/boot.ci.html),
+  [`performance::r2_nakagawa`](https://easystats.github.io/performance/reference/r2_nakagawa.html),
+  [`marginaleffects::avg_slopes`](https://rdrr.io/pkg/marginaleffects/man/slopes.html),
+  [`summary()`](https://rdrr.io/r/base/summary.html) /
+  [`confint()`](https://rdrr.io/r/stats/confint.html), hand-derived
+  closed forms) instead of finiteness-only checks; no disagreement
+  surfaced anywhere a value was pinned.
 - Test coverage raised to 100% of reachable lines: every previously
   uncovered line now carries either a behavioral test (10 new
   coverage-closure test files, oracle-pinned where numeric) or a
