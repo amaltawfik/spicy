@@ -106,26 +106,45 @@ test_that("glmmTMB panel includes σ + ρ with SE/CI", {
 
 test_that("lme panel renders for nlme::lme", {
   fit <- .fit_lme_slope_panel()
-  out <- capture.output(print(table_regression(fit)))
+  # Platform note: unlike the lme4 / glmmTMB fits above (stable at 2
+  # decimals across BLAS builds), nlme's estimates differ in the 2nd
+  # decimal on macOS (Accelerate) vs Linux / Windows (OpenBLAS /
+  # reference BLAS) -- hardcoded cells broke CI. The row LABELS stay
+  # verbatim-pinned; each row's numeric cells are bound to the same
+  # table's vc values AT RUNTIME (the values themselves carry engine
+  # oracles vs nlme::intervals() in test-correlation_se_ci.R and
+  # test-random_effects_wald_se_ci.R).
+  tr <- table_regression(fit)
+  out <- capture.output(print(tr))
   combined <- paste(out, collapse = "\n")
-  # Pin the complete σ / ρ rows and the REML LRT footer.
-  expect_match(combined,
-    "   σ Subject (Intercept)        │   2.80  1.11  [ 1.36,  5.73]   –",
-    fixed = TRUE)
-  expect_match(combined,
-    "   σ Subject age                │   0.23  0.10  [ 0.10,  0.50]   –",
-    fixed = TRUE)
-  expect_match(combined,
-    "   ρ Subject ((Intercept), age) │  -0.77  0.21  [-0.95, -0.14]   –",
-    fixed = TRUE)
-  expect_match(combined,
-    "   σ (Residual)                 │   1.31  0.13  [ 1.08,  1.58]   –",
-    fixed = TRUE)
+  long <- attr(tr, "spicy_long")
+  vc <- long[long$estimate_type == "vc", ]
+  pin_row <- function(label_fixed, vc_term) {
+    line <- grep(label_fixed, out, fixed = TRUE, value = TRUE)
+    expect_identical(length(line), 1L)
+    r <- vc[vc$term == vc_term, ]
+    expect_identical(nrow(r), 1L)
+    expect_match(line, sprintf("%.2f", r$estimate), fixed = TRUE)
+    expect_match(line, sprintf("%.2f", r$se),       fixed = TRUE)
+  }
+  pin_row("   σ Subject (Intercept)        │",
+          "re::Subject::(Intercept)")
+  pin_row("   σ Subject age                │",
+          "re::Subject::age")
+  pin_row("   ρ Subject ((Intercept), age) │",
+          "re::Subject::(Intercept), age::cor")
+  pin_row("   σ (Residual)                 │",
+          "re::Residual::")
+  # LRT footer: wording pinned verbatim, the statistic bound by shape
+  # only (same BLAS sensitivity).
   chibar2 <- intToUtf8(c(0x03c7, 0x0304, 0x00b2))
   expect_match(combined,
     paste0("Random effects (REML): LR test vs linear regression, ",
-           chibar2, "(3) = 47.85, p < .001."),
+           chibar2, "(3) = "),
     fixed = TRUE)
+  expect_match(combined,
+    paste0("Random effects \\(REML\\): LR test vs linear regression, ",
+           chibar2, "\\(3\\) = [0-9]+\\.[0-9]{2}, p < \\.001\\."))
 })
 
 

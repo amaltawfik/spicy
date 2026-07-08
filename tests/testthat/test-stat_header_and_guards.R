@@ -81,10 +81,13 @@ test_that("AME request on an incapable class is refused, not an empty column", {
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err_cox, "spicy_invalid_input")
+  # cli renders the token quotes per terminal capability ("ame" on
+  # Windows locally, 'ame' on CI runners, curly quotes in fancy
+  # terminals) -- match the full sentence with a one-character
+  # wildcard per quote.
   expect_match(
     conditionMessage(err_cox),
-    "Token(s) \"ame\" in `show_columns` are not defined for Cox models.",
-    fixed = TRUE
+    "Token\\(s\\) .ame. in `show_columns` are not defined for Cox models\\."
   )
 
   # Classes without a specific refusal hit the universal supports$ame
