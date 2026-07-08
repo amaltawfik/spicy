@@ -12,9 +12,9 @@
 #                 `effectsize::standardize_parameters(method = "posthoc")`.
 #   * "basic"   -- like posthoc but factor-derived design columns are
 #                 scaled by SD(column) (treated as numeric).
-#   * "smart"   -- Gelman (2008): binary numeric inputs scaled by
-#                 2 x SD(X); other numerics by SD(X); factor dummies
-#                 unchanged. X-only.
+#   * "smart"   -- Gelman (2008): continuous numeric inputs scaled by
+#                 2 x SD(X); binary inputs (numeric 0/1 and factor
+#                 dummies) unchanged. X-only.
 #   * "pseudo"  -- Menard (2004, 2011) **fully** standardised:
 #                 \u03B2 = b x SD(X) / SD(Y*)
 #                 where Y* is the latent variable on the link scale and
@@ -53,17 +53,17 @@ standardize_glm <- function(
                                      weights, boot_n),
     posthoc = standardize_algebraic_glm(
                 fit, vcov_type, cluster, ci_level, weights, boot_n,
-                factor_treatment = "unscaled", binary_factor = 1,
+                factor_treatment = "unscaled", input_scaling = "sd",
                 sd_y_div = 1
               ),
     basic   = standardize_algebraic_glm(
                 fit, vcov_type, cluster, ci_level, weights, boot_n,
-                factor_treatment = "scale", binary_factor = 1,
+                factor_treatment = "scale", input_scaling = "sd",
                 sd_y_div = 1
               ),
     smart   = standardize_algebraic_glm(
                 fit, vcov_type, cluster, ci_level, weights, boot_n,
-                factor_treatment = "unscaled", binary_factor = 2,
+                factor_treatment = "unscaled", input_scaling = "gelman",
                 sd_y_div = 1
               ),
     pseudo  = standardize_pseudo_glm(fit, vcov_type, cluster, ci_level,
@@ -131,7 +131,7 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
     )
     out <- standardize_algebraic_glm(
       fit, vcov_type, cluster, ci_level, weights, boot_n,
-      factor_treatment = "unscaled", binary_factor = 1, sd_y_div = 1
+      factor_treatment = "unscaled", input_scaling = "sd", sd_y_div = 1
     )
     attr(out, "used_method") <- "posthoc"
     return(out)
@@ -155,18 +155,24 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
 #   * factor_treatment in {"scale", "unscaled"}
 #       "scale"   : factor dummies scaled by sd(col)         (basic)
 #       "unscaled": factor dummies left unscaled (1)         (posthoc, smart, pseudo)
-#   * binary_factor in {1, 2}
-#       1 : binary NUMERIC columns use sd(X)                 (posthoc, basic, pseudo)
-#       2 : binary NUMERIC columns use 2 x sd(X)             (smart, Gelman 2008)
+#   * input_scaling in {"sd", "gelman"}
+#       "sd"     : every numeric column, binary included, uses sd(X)
+#                  (posthoc, basic, pseudo)
+#       "gelman" : Gelman (2008) -- CONTINUOUS numeric columns use
+#                  2 x sd(X); binary numeric columns and factor
+#                  dummies stay unscaled (smart). The <= 0.12.0
+#                  implementation had the rule inverted; see
+#                  dev/smart_gelman_finding.md.
 #   * sd_y_div : positive scalar divisor applied to every \u03B2
 #       1                       : X-only methods
 #       sd(Y*) (Menard latent)  : pseudo
 standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
                                        weights, boot_n,
                                        factor_treatment = c("scale", "unscaled"),
-                                       binary_factor = 1,
+                                       input_scaling = c("sd", "gelman"),
                                        sd_y_div = 1) {
   factor_treatment <- match.arg(factor_treatment)
+  input_scaling <- match.arg(input_scaling)
 
   b <- stats::coef(fit)
   vc <- compute_model_vcov(
@@ -199,13 +205,17 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
     length(unique(mm[, j])) == 2L
   }, logical(1))
 
-  scale_factor <- sd_x / sd_y_div
-  if (length(factor_cols) > 0L && factor_treatment == "unscaled") {
-    scale_factor[factor_cols] <- 1 / sd_y_div
-  }
-  if (binary_factor != 1) {
-    scale_factor[is_binary_numeric] <- binary_factor *
-      sd_x[is_binary_numeric] / sd_y_div
+  if (input_scaling == "gelman") {
+    # Gelman (2008): continuous inputs x 2sd; binary inputs -- numeric
+    # 0/1 and factor dummies alike -- untouched.
+    scale_factor <- 2 * sd_x / sd_y_div
+    scale_factor[is_binary_numeric] <- 1 / sd_y_div
+    if (length(factor_cols) > 0L) scale_factor[factor_cols] <- 1 / sd_y_div
+  } else {
+    scale_factor <- sd_x / sd_y_div
+    if (length(factor_cols) > 0L && factor_treatment == "unscaled") {
+      scale_factor[factor_cols] <- 1 / sd_y_div
+    }
   }
 
   beta <- b * scale_factor
@@ -314,7 +324,7 @@ standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
   }
   standardize_algebraic_glm(
     fit, vcov_type, cluster, ci_level, weights, boot_n,
-    factor_treatment = "unscaled", binary_factor = 1,
+    factor_treatment = "unscaled", input_scaling = "sd",
     sd_y_div = sd_y_star
   )
 }

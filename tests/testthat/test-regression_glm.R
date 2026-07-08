@@ -2126,7 +2126,7 @@ test_that("lm basic: matches effectsize::standardize_parameters", {
   }
 })
 
-test_that("lm smart: binary numeric uses 2 * SD (Gelman 2008)", {
+test_that("lm smart: continuous uses 2 * SD, binary stays raw (Gelman 2008)", {
   set.seed(1)
   n <- 100L
   d <- data.frame(
@@ -2138,14 +2138,56 @@ test_that("lm smart: binary numeric uses 2 * SD (Gelman 2008)", {
   td <- broom::tidy(table_regression(fit, standardized = "smart"))
   beta_bin <- td$estimate[td$estimate_type == "beta" & td$term == "bin_num"]
   beta_cont <- td$estimate[td$estimate_type == "beta" & td$term == "cont"]
-  # Manual Gelman 2008:
-  #   binary: beta = b * 2 * sd(X) / sd(Y)
-  #   continuous: beta = b * sd(X) / sd(Y)
+  # Gelman (2008), "Scaling regression inputs by dividing by two
+  # standard deviations": CONTINUOUS inputs are divided by 2 sd(X)
+  # (so the coefficient reports a 2-SD swing, comparable to a
+  # binary's 0 -> 1 step); BINARY inputs stay untouched. y is
+  # z-scored by one sd, spicy's shared beta convention. (The
+  # <= 0.12.0 implementation applied the rule inverted.)
   b <- coef(fit)
-  expected_bin <- b["bin_num"] * 2 * sd(d$bin_num) / sd(d$y)
-  expected_cont <- b["cont"] * sd(d$cont) / sd(d$y)
+  expected_bin  <- b["bin_num"] / sd(d$y)
+  expected_cont <- b["cont"] * 2 * sd(d$cont) / sd(d$y)
   expect_equal(beta_bin, unname(expected_bin), tolerance = 1e-10)
   expect_equal(beta_cont, unname(expected_cont), tolerance = 1e-10)
+
+  # Independent refit oracle: transform the DATA per the paper
+  # (continuous / 2sd, binary raw, y z-scored) and refit -- the
+  # coefficients of that refit ARE the smart betas.
+  d2 <- data.frame(
+    y = as.numeric(scale(d$y)),
+    bin_num = d$bin_num,
+    cont = d$cont / (2 * sd(d$cont))
+  )
+  refit <- lm(y ~ bin_num + cont, data = d2)
+  expect_equal(beta_bin, unname(coef(refit)["bin_num"]),
+               tolerance = 1e-10)
+  expect_equal(beta_cont, unname(coef(refit)["cont"]),
+               tolerance = 1e-10)
+})
+
+test_that("glm smart: continuous 2 * SD, binary raw (X-only Gelman)", {
+  set.seed(2)
+  n <- 300L
+  d <- data.frame(
+    bin_num = sample(c(0, 1), n, replace = TRUE),
+    cont = rnorm(n)
+  )
+  d$y <- rbinom(n, 1, plogis(-0.4 + 0.8 * d$bin_num + 0.6 * d$cont))
+  fit <- glm(y ~ bin_num + cont, data = d, family = binomial)
+  res <- spicy:::standardize_glm(fit, method = "smart", weights = NULL)
+  b <- coef(fit)
+  # X-only scaling (sd_y_div = 1): continuous x 2sd(X), binary raw.
+  expect_equal(res$estimate[res$term == "cont"],
+               unname(b["cont"]) * 2 * sd(d$cont), tolerance = 1e-10)
+  expect_equal(res$estimate[res$term == "bin_num"],
+               unname(b["bin_num"]), tolerance = 1e-10)
+  # Independent refit oracle: glm on cont / (2 sd) reproduces the
+  # smart beta for the continuous input exactly (link fixed; the
+  # linear predictor is reparametrised, not changed).
+  d2 <- transform(d, cont = cont / (2 * sd(cont)))
+  refit <- glm(y ~ bin_num + cont, data = d2, family = binomial)
+  expect_equal(res$estimate[res$term == "cont"],
+               unname(coef(refit)["cont"]), tolerance = 1e-8)
 })
 
 test_that("lm standardize: intercept beta absent from tidy for algebraic methods", {

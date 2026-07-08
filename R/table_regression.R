@@ -291,8 +291,11 @@
 #'     (Y is undefined on the link scale).
 #'   \item `"basic"` -- like `"posthoc"` but factor dummies are
 #'     scaled by their column SD.
-#'   \item `"smart"` -- Gelman (2008): divide binary predictors
-#'     by `2 * SD` instead of `SD`.
+#'   \item `"smart"` -- Gelman (2008): continuous numeric inputs
+#'     are scaled by `2 * SD(X)` (a +/-1 SD swing then spans the
+#'     same range as a binary's 0 to 1 step); binary inputs --
+#'     numeric 0/1 and factor dummies -- are left unscaled. (Before
+#'     0.13.0 the rule was applied inverted; see NEWS.)
 #'   \item `"pseudo"` -- *glm only*. Menard (2004, 2011)
 #'     fully-standardised \eqn{\beta = B \times SD(X) / SD(Y^*)}{beta = B * SD(X) / SD(Y*)},
 #'     with \eqn{Y^*}{Y*} the latent variable on the link scale and
@@ -310,8 +313,9 @@
 #' `"posthoc"`, `"basic"`, and `"smart"`, the product / transformed
 #' design column is treated as a single numeric column and scaled by
 #' its own SD (under `"smart"`, by `2 * SD` when the product column is
-#' itself binary, e.g. binary-by-binary interactions) -- the convention
-#' of SPSS beta, Stata `regress, beta`, SAS PROC REG `STB`, and
+#' continuous; a binary product column -- e.g. a binary-by-binary
+#' interaction -- stays unscaled like any binary input) -- the
+#' convention of SPSS beta, Stata `regress, beta`, SAS PROC REG `STB`, and
 #' `lm.beta::lm.beta()`, identical to
 #' `effectsize::standardize_parameters(method = "basic")` on those
 #' columns. The two conventions differ whenever the components are

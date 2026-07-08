@@ -956,8 +956,11 @@ glm: X-only \eqn{\beta = B \times SD(X)}{beta = B * SD(X)}
 (Y is undefined on the link scale).
 \item \code{"basic"} -- like \code{"posthoc"} but factor dummies are
 scaled by their column SD.
-\item \code{"smart"} -- Gelman (2008): divide binary predictors
-by \code{2 * SD} instead of \code{SD}.
+\item \code{"smart"} -- Gelman (2008): continuous numeric inputs
+are scaled by \code{2 * SD(X)} (a +/-1 SD swing then spans the
+same range as a binary's 0 to 1 step); binary inputs --
+numeric 0/1 and factor dummies -- are left unscaled. (Before
+0.13.0 the rule was applied inverted; see NEWS.)
 \item \code{"pseudo"} -- \emph{glm only}. Menard (2004, 2011)
 fully-standardised \eqn{\beta = B \times SD(X) / SD(Y^*)}{beta = B * SD(X) / SD(Y*)},
 with \eqn{Y^*}{Y*} the latent variable on the link scale and
@@ -975,8 +978,9 @@ al. 2003 Section 7.7; Aiken & West 1991; Friedrich 1982). Under
 \code{"posthoc"}, \code{"basic"}, and \code{"smart"}, the product / transformed
 design column is treated as a single numeric column and scaled by
 its own SD (under \code{"smart"}, by \code{2 * SD} when the product column is
-itself binary, e.g. binary-by-binary interactions) -- the convention
-of SPSS beta, Stata \verb{regress, beta}, SAS PROC REG \code{STB}, and
+continuous; a binary product column -- e.g. a binary-by-binary
+interaction -- stays unscaled like any binary input) -- the
+convention of SPSS beta, Stata \verb{regress, beta}, SAS PROC REG \code{STB}, and
 \code{lm.beta::lm.beta()}, identical to
 \code{effectsize::standardize_parameters(method = "basic")} on those
 columns. The two conventions differ whenever the components are

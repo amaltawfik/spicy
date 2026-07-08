@@ -48,18 +48,24 @@ test_that("basic interaction beta matches effectsize basic AND lm.beta (1e-7)", 
   expect_gt(abs(b_spicy - s_refit$estimate[s_refit$term == "x:z"]), 1e-4)
 })
 
-test_that("smart: binary x binary product column gets the 2 x SD rule", {
+test_that("smart: binary x binary product column stays unscaled (Gelman)", {
   set.seed(9)
   n <- 400
   d <- data.frame(b1 = rbinom(n, 1, 0.5), b2 = rbinom(n, 1, 0.4))
   d$y <- 1 + 0.5 * d$b1 + 0.3 * d$b2 + 0.6 * d$b1 * d$b2 + rnorm(n)
   fit <- lm(y ~ b1 * b2, data = d)
   s_smart <- suppressWarnings(spicy:::standardize_lm(fit, method = "smart"))
-  s_ph    <- suppressWarnings(spicy:::standardize_lm(fit, method = "posthoc"))
-  # The b1:b2 design column is itself 0/1 -> smart doubles posthoc.
-  expect_equal(s_smart$estimate[s_smart$term == "b1:b2"],
-               2 * s_ph$estimate[s_ph$term == "b1:b2"],
-               tolerance = 1e-10)
+  # The b1:b2 design column is itself 0/1, i.e. a binary input:
+  # Gelman (2008) leaves binaries untransformed, so its smart beta is
+  # b / sd(y) -- NOT the 2 x sd posthoc-doubling the inverted
+  # <= 0.12.0 rule produced. Every column of this fit is binary, so
+  # each smart beta reduces to b / sd(y).
+  b <- coef(fit)
+  for (trm in c("b1", "b2", "b1:b2")) {
+    expect_equal(s_smart$estimate[s_smart$term == trm],
+                 unname(b[trm]) / sd(d$y),
+                 tolerance = 1e-10)
+  }
 })
 
 test_that("fallback-aware footer: refit failure names the posthoc convention", {

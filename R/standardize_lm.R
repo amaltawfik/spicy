@@ -6,11 +6,14 @@
 #   * "refit"   -- refit the lm on z-scored data (gold standard,
 #                 Cohen et al. 2003)
 #   * "posthoc" -- algebraic scaling beta = b x sd(X) / sd(Y) on the
-#                 columns of model.matrix(fit)
-#   * "basic"   -- like posthoc but factor-derived design columns
-#                 keep their 0/1 coding (beta = NA for those)
-#   * "smart"   -- Gelman (2008): divide binary predictors by
-#                 2 x sd(X) instead of sd(X), continuous by sd(X)
+#                 numeric columns of model.matrix(fit); factor
+#                 dummies stay 0/1 (beta = b / sd(Y))
+#   * "basic"   -- like posthoc but factor-derived design columns are
+#                 ALSO scaled by their column SD (the SPSS Beta
+#                 definition, PSPP-pinned in the oracle tests)
+#   * "smart"   -- Gelman (2008): continuous inputs scaled by
+#                 2 x sd(X); binary inputs (numeric 0/1 and factor
+#                 dummies) left unscaled
 #
 # Implementation rationale (Q3 + Q14b coherence): native rather than
 # delegated to effectsize because the user's `vcov` (HC*, CR*,
@@ -180,7 +183,7 @@ standardize_posthoc_lm <- function(fit, vcov_type, cluster, ci_level,
   scale_and_rebuild(
     fit, vcov_type, cluster, ci_level, weights, boot_n,
     factor_treatment = "unscaled",   # factors: scale by 1/sd_y only
-    binary_factor    = 1             # binary numerics: standard sd(X)
+    input_scaling    = "sd"          # every numeric column: sd(X)
   )
 }
 
@@ -196,40 +199,47 @@ standardize_basic_lm <- function(fit, vcov_type, cluster, ci_level,
   scale_and_rebuild(
     fit, vcov_type, cluster, ci_level, weights, boot_n,
     factor_treatment = "scale",      # factors: scale by sd_col/sd_y
-    binary_factor    = 1             # binary numerics: standard sd(X)
+    input_scaling    = "sd"          # every numeric column: sd(X)
   )
 }
 
 
-# ---- Method 4: smart (Gelman 2008 strict) ---------------------------------
+# ---- Method 4: smart (Gelman 2008) -----------------------------------------
 
 # Implements **Gelman (2008) "Scaling regression inputs by dividing
-# by two standard deviations"** strictly:
-#   * binary numeric inputs (0/1 with exactly 2 unique values) are
-#     scaled by 2 x sd(X) / sd(Y)
-#   * other numeric inputs are scaled by sd(X) / sd(Y) (matches posthoc)
-#   * factor-derived dummies are NOT scaled by their column SD
-#     (treated as already standardised -- same convention as posthoc)
+# by two standard deviations"** (Stat Med 27:2865-2873):
+#   * CONTINUOUS numeric inputs are scaled by 2 x sd(X) / sd(Y) --
+#     the paper's rule: a +/-1 SD swing of a continuous input then
+#     spans the same range as a binary's 0 -> 1 step
+#   * binary inputs -- numeric 0/1 AND factor dummies -- are left
+#     unscaled (1 / sd(Y)), per the paper's "untransformed binary
+#     predictors" convention
+#   * y is z-scored by ONE sd, the house convention shared by every
+#     beta method (the paper scales inputs only; dividing by sd(Y)
+#     makes the result a beta comparable to the other methods)
 #
-# **Note**: this differs slightly from
-# `effectsize::standardize_parameters(method = "smart")` for factor
-# terms (effectsize applies an opaque level-specific adjustment).
-# spicy follows Gelman strictly because the formula is well-defined
-# and replicable. For exact effectsize-style "smart", call effectsize
-# directly. The numeric divergence on factor dummies is typically
-# < 5 % in practice.
+# History: the implementation shipped in <= 0.12.0 had the rule
+# inverted (binaries x 2sd, continuous x 1sd) while citing the same
+# paper; caught by the 2026-07-04 PSPP cross-validation pass, see
+# dev/smart_gelman_finding.md.
+#
+# **Note**: `effectsize::standardize_parameters(two_sd = TRUE)` also
+# rescales Y by 2 sd, so its numbers differ by that Y convention;
+# `arm::standardize(standardize.y = FALSE)` matches on the input side
+# but reports raw-Y coefficients. The tests pin the algebra directly
+# and via an independent Gelman-scaled refit.
 #
 # Interaction / transformed design columns follow the same
 # product-column convention as posthoc (SD of the column itself, not
-# the components) -- and the binary rule applies to the PRODUCT column:
-# a binary x binary interaction column is itself 0/1, so it gets the
-# 2 x sd rule (verified: smart == 2 x posthoc on that row).
+# the components) -- and the binary rule applies to the PRODUCT
+# column: a binary x binary interaction column is itself 0/1, so it
+# is left unscaled like any other binary input.
 standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
                                   weights, boot_n) {
   scale_and_rebuild(
     fit, vcov_type, cluster, ci_level, weights, boot_n,
     factor_treatment = "unscaled",   # factors: scale by 1/sd_y only
-    binary_factor    = 2             # binary numerics: 2 x sd(X)
+    input_scaling    = "gelman"      # continuous x 2sd, binaries raw
   )
 }
 
@@ -241,19 +251,27 @@ standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
 #   * factor_treatment in {"scale", "unscaled"}
 #       "scale"   : factor dummies scaled by sd(col)/sd_y (basic)
 #       "unscaled": factor dummies scaled by 1/sd_y only (posthoc, smart)
-#   * binary_factor in {1, 2}
-#       1 : binary NUMERIC columns use sd(X)/sd_y (posthoc, basic)
-#       2 : binary NUMERIC columns use 2*sd(X)/sd_y (smart, Gelman 2008)
+#   * input_scaling in {"sd", "gelman"}
+#       "sd"     : every numeric column, binary included, uses
+#                  sd(X)/sd_y (posthoc, basic)
+#       "gelman" : Gelman (2008) input scaling -- CONTINUOUS numeric
+#                  columns use 2*sd(X)/sd_y (a +/-1 SD swing then
+#                  spans the same range as a binary's 0 -> 1 step),
+#                  while binary numeric columns AND factor dummies
+#                  are left unscaled (1/sd_y). This is the paper's
+#                  rule; the implementation shipped in <= 0.12.0 had
+#                  it inverted (binaries x 2sd, continuous x 1sd).
 #
 # "Binary" detection here means a numeric column with exactly two
 # distinct values that is NOT factor-derived. Factor-derived dummies
-# (which are also 0/1) are routed via factor_treatment, not via the
-# binary_factor branch.
+# (which are also 0/1) are routed via factor_treatment under "sd"
+# scaling, and are always unscaled under "gelman".
 scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
                                weights, boot_n,
                                factor_treatment = c("scale", "unscaled"),
-                               binary_factor = 1) {
+                               input_scaling = c("sd", "gelman")) {
   factor_treatment <- match.arg(factor_treatment)
+  input_scaling <- match.arg(input_scaling)
 
   b <- stats::coef(fit)
   vc <- compute_model_vcov(
@@ -273,24 +291,28 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
   sd_x <- apply(mm, 2, stats::sd)
 
   # Identify factor-derived columns (so we can route them via
-  # factor_treatment rather than the binary_factor branch).
+  # factor_treatment rather than the binary-numeric rule).
   factor_cols <- detect_factor_design_cols(fit)
 
   # Identify binary NUMERIC columns (exactly 2 unique values AND
-  # NOT factor-derived). Used by smart's binary_factor = 2 rule.
+  # NOT factor-derived). Used by the "gelman" input scaling.
   is_binary_numeric <- vapply(seq_len(ncol(mm)), function(j) {
     if (j %in% factor_cols) return(FALSE)
     length(unique(mm[, j])) == 2L
   }, logical(1))
 
   # Build per-column scale factor
-  scale_factor <- sd_x / sd_y                  # default: numeric continuous
-  if (length(factor_cols) > 0L && factor_treatment == "unscaled") {
-    scale_factor[factor_cols] <- 1 / sd_y
-  }
-  if (binary_factor != 1) {
-    scale_factor[is_binary_numeric] <- binary_factor *
-      sd_x[is_binary_numeric] / sd_y
+  if (input_scaling == "gelman") {
+    # Gelman (2008): continuous inputs x 2sd; binary inputs -- numeric
+    # 0/1 and factor dummies alike -- untouched.
+    scale_factor <- 2 * sd_x / sd_y
+    scale_factor[is_binary_numeric] <- 1 / sd_y
+    if (length(factor_cols) > 0L) scale_factor[factor_cols] <- 1 / sd_y
+  } else {
+    scale_factor <- sd_x / sd_y                # every numeric column
+    if (length(factor_cols) > 0L && factor_treatment == "unscaled") {
+      scale_factor[factor_cols] <- 1 / sd_y
+    }
   }
 
   # beta and SE_beta. Singular coefs (NA in b) propagate naturally.
