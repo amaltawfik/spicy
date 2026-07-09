@@ -2413,6 +2413,15 @@ print.spicy_regression_table <- function(x, ...) {
   if (is.null(dot_args$padding)) {
     dot_args$padding <- padding_attr
   }
+  # First element of the RAW group_sep_rows attr = the fit-stats
+  # boundary (rule drawn before that row). Passing it lets the panel
+  # splitter drop blank n / AIC stub rows from continuation panels
+  # (single-model tables split by width, e.g. the multinomial
+  # columns layout at narrow console widths).
+  fit_stats_start <- {
+    raw_gs <- as.integer(attr(x, "group_sep_rows") %||% integer(0))
+    if (length(raw_gs)) raw_gs[1L] else NULL
+  }
   do.call(
     spicy_print_table,
     c(
@@ -2424,7 +2433,8 @@ print.spicy_regression_table <- function(x, ...) {
         align_center_cols = align_center_cols,
         center_headers = TRUE,
         spanners = spanners,
-        display_labels = display_labels
+        display_labels = display_labels,
+        fit_stats_start = fit_stats_start
       ),
       dot_args
     )

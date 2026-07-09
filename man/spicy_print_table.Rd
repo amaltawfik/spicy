@@ -21,6 +21,7 @@ spicy_print_table(
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   display_labels = NULL,
+  fit_stats_start = NULL,
   ...
 )
 }
@@ -85,6 +86,15 @@ used to override \code{colnames(x)} for the printed header text only.
 Sliced per panel when the table is split across stacked panels.
 Forwarded to \code{\link[=build_ascii_table]{build_ascii_table()}}; see that function for full
 semantics. Defaults to \code{NULL}.}
+
+\item{fit_stats_start}{Optional 1-based index of the first
+model-level statistics row (the block below the dashed rule in
+regression tables). When the table splits into stacked panels,
+continuation panels drop the rows of that block whose every
+visible data cell is blank -- model-level statistics print once,
+under the panel that carries their values, instead of leaving
+empty \code{n} / \code{AIC} stub rows on every continuation panel. \code{NULL}
+(default) keeps all rows on all panels.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }

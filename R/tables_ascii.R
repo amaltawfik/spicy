@@ -386,7 +386,15 @@ build_ascii_table <- function(
       span_width <- span_end - span_start + 1L
       if (span_width <= 0L) next
       lab_disp <- if (nchar(lbl, type = "width") > span_width) {
-        substr(lbl, 1L, span_width)   # truncate over-wide labels
+        # Truncation must be VISIBLE: a silently cut label ("Inactive
+        # vs Employ" for "Inactive vs Employed") reads as a complete
+        # -- and wrong -- label. Trade one more character for an
+        # ellipsis whenever there is room for it.
+        if (span_width >= 2L) {
+          paste0(substr(lbl, 1L, span_width - 1L), "\u2026")
+        } else {
+          substr(lbl, 1L, span_width)
+        }
       } else {
         lbl
       }
@@ -623,6 +631,14 @@ ascii_table_panels <- function(
 #'   Sliced per panel when the table is split across stacked panels.
 #'   Forwarded to [build_ascii_table()]; see that function for full
 #'   semantics. Defaults to `NULL`.
+#' @param fit_stats_start Optional 1-based index of the first
+#'   model-level statistics row (the block below the dashed rule in
+#'   regression tables). When the table splits into stacked panels,
+#'   continuation panels drop the rows of that block whose every
+#'   visible data cell is blank -- model-level statistics print once,
+#'   under the panel that carries their values, instead of leaving
+#'   empty `n` / `AIC` stub rows on every continuation panel. `NULL`
+#'   (default) keeps all rows on all panels.
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return
@@ -665,6 +681,7 @@ spicy_print_table <- function(
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   display_labels = NULL,
+  fit_stats_start = NULL,
   ...
 ) {
   stopifnot(is.data.frame(x))
@@ -708,8 +725,9 @@ spicy_print_table <- function(
   )
 
   txt <- vapply(
-    panel_cols,
-    function(cols) {
+    seq_along(panel_cols),
+    function(panel_i) {
+      cols <- panel_cols[[panel_i]]
       # Remap spanners to per-panel column indices. When a model's
       # columns are split across panels, each panel displays the
       # spanner label over the surviving subset (matches modelsummary
@@ -739,6 +757,38 @@ spicy_print_table <- function(
       # names that the print method handed us.
       sub <- x[, cols, drop = FALSE]
       names(sub) <- names(x)[cols]
+      # Continuation panels: model-level statistics (n / AIC / R2 ...)
+      # live once, under the columns that carry their values -- for a
+      # single-model table split by width, that is panel 1 only. Drop
+      # the fit-stat rows whose every visible data cell is blank here,
+      # so continuation panels do not end with empty stub rows. The
+      # block sits at the TAIL of the table, so dropping keeps every
+      # other row index (group_sep_rows, spanners) stable; the dashed
+      # boundary rule is removed with the block only when the whole
+      # block goes.
+      panel_group_sep <- group_sep_rows
+      if (panel_i > 1L && !is.null(fit_stats_start) &&
+            fit_stats_start >= 1L && fit_stats_start <= nrow(sub)) {
+        fit_rows <- fit_stats_start:nrow(sub)
+        data_cols_local <- which(!(cols %in% align_left_cols))
+        if (length(data_cols_local)) {
+          blank <- vapply(fit_rows, function(r) {
+            all(!nzchar(trimws(as.character(
+              unlist(sub[r, data_cols_local], use.names = FALSE)
+            ))))
+          }, logical(1))
+          if (any(blank)) {
+            sub <- sub[-fit_rows[blank], , drop = FALSE]
+            if (all(blank)) {
+              # group_sep_rows semantics: rule drawn BEFORE the given
+              # row index, so the fit boundary is fit_stats_start
+              # itself.
+              panel_group_sep <-
+                setdiff(panel_group_sep, fit_stats_start)
+            }
+          }
+        }
+      }
       # Slice display_labels to the same panel columns so each panel
       # gets its own header text.
       panel_display_labels <- if (!is.null(display_labels)) {
@@ -758,7 +808,7 @@ spicy_print_table <- function(
         align_center_cols = which(cols %in% align_center_cols),
         center_headers = center_headers,
         spanners = panel_spanners,
-        group_sep_rows = group_sep_rows,
+        group_sep_rows = panel_group_sep,
         total_row_idx = total_row_idx,
         display_labels = panel_display_labels,
         ...

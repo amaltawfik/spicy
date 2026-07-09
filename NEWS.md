@@ -178,6 +178,12 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## Minor improvements
 
+* Console rendering polish for wide tables split into stacked panels:
+  continuation panels no longer end with empty `n` / `AIC` stub rows
+  (model-level statistics print once, under the panel that carries
+  their values), and an over-wide column-group spanner now truncates
+  with a visible ellipsis instead of silently reading as a complete
+  -- wrong -- label ("Unemployed vs Emp…", not "Unemployed vs Empl").
 * Cross-software validation extended from the contingency-table
   measures to the regression paths: OLS (B / SE / t / R² / adjusted
   R² / SPSS Beta) and binary logistic (B / SE / Wald / Exp(B) / CI /

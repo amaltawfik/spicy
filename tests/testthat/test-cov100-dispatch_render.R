@@ -431,8 +431,11 @@ test_that("build_ascii_table truncates a spanner label wider than its span", {
   expect_gt(span_w, 0L)
   expect_lt(span_w, nchar(lbl))
 
-  # The label is cut to exactly the span width; the full label is absent.
-  expect_identical(trimws(lines[1]), substr(lbl, 1, span_w))
+  # The label is cut to the span width with a VISIBLE ellipsis marker
+  # (2026-07-09 polish: a silent cut read as a complete, wrong
+  # label); the full label is absent.
+  expect_identical(trimws(lines[1]),
+                   paste0(substr(lbl, 1, span_w - 1L), "…"))
   expect_false(grepl(lbl, out, fixed = TRUE))
 })
 
