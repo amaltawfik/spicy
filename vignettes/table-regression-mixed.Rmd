@@ -132,7 +132,7 @@ reference**: a 50:50 mixture of chi-squared distributions
 reports such a test for the random part as a whole — across its
 several parameters jointly it follows Stata's conservative halved-p
 convention, while the per-term tests below use the exact mixture. Here
-chi-bar-squared(3) = 148.35, p < .001: the random structure earns its
+chi-bar-squared(3) = 150.04, p < .001: the random structure earns its
 place.
 
 ## From OLS to a multilevel model, step by step
@@ -227,7 +227,7 @@ Reading the gain, column against column:
 * The **ICC row reads 0.11**, not step 1's 0.18: it partitions the
   variance that SES leaves unexplained — not a contradiction, a
   conditional version of the same quantity.
-* The footer's chi-bar-squared test (456.9 on 1 df) says the school
+* The footer's chi-bar-squared test (458.9 on 1 df) says the school
   effect is not optional.
 
 ### Step 3: one variable, two effects — the contextual split

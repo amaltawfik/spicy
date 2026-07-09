@@ -70,12 +70,15 @@ test_that("lme lrt: the `random = ~ terms` shorthand resolves the group and reus
   expect_identical(res$group, "Subject")
   expect_identical(res$term, "(Intercept)")
   expect_identical(res$df, 1)
-  # oracle: whole-block LRT = ML refit vs plain lm, chibar2(0, 1) p
-  full_ml <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                       random = ~ 1 | Subject, method = "ML")
-  null_lm <- stats::lm(distance ~ age, data = nlme::Orthodont)
-  chi2_h <- 2 * (as.numeric(stats::logLik(full_ml)) -
-                   as.numeric(stats::logLik(null_lm)))
+  # oracle: whole-block LRT on the FIT'S estimator (2026-07-09,
+  # dev/re_lrt_ml_reml_finding.md) -- the default lme is REML, so the
+  # comparison is REML logLik vs the null model's REML logLik (gls).
+  full_reml <- nlme::lme(distance ~ age, data = nlme::Orthodont,
+                         random = ~ 1 | Subject, method = "REML")
+  null_gls <- nlme::gls(distance ~ age, data = nlme::Orthodont,
+                        method = "REML")
+  chi2_h <- 2 * (as.numeric(stats::logLik(full_reml)) -
+                   as.numeric(stats::logLik(null_gls)))
   expect_equal(res$statistic, chi2_h, tolerance = 1e-6)
   expect_equal(
     res$p_value,

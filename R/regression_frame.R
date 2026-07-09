@@ -668,9 +668,38 @@ validate_regression_frame <- function(frame) {
 # Returns a list(chi2, df, p_chibar2, family_label) or NULL when
 # computation isn't possible (refit error, lme4 unavailable, etc.).
 #
-# lme4 / glmmTMB / nlme::lme are handled via engine dispatch. lmer
-# REML fits are refit with ML before the LRT (anova-style auto-
-# refit; the message is suppressed).
+# lme4 / glmmTMB / nlme::lme are handled via engine dispatch.
+#
+# LIKELIHOOD CONVENTION (2026-07-09, dev/re_lrt_ml_reml_finding.md):
+# the test follows the FIT'S OWN estimator, matching
+# lmerTest::ranova(), Stata mixed, and RLRsim. A Gaussian REML fit is
+# compared on the REML likelihood to the fixed-effects-only model's
+# REML likelihood (nlme::gls(method = "REML") -- nlme is a
+# recommended package); ML fits (and glmer, always ML) compare on ML
+# vs lm/glm as before. REML-LRT between models with identical fixed
+# effects and nested random structures is valid (Morrell 1998).
+# Previously REML fits were auto-refit with ML, which made the
+# "(REML)" footer label describe the fit but not the statistic, and
+# broke reproduction against ranova.
+#
+# Known limitation (recorded): prior weights on the mixed fit are NOT
+# propagated to the null lm/glm/gls refit -- the whole-block LRT is
+# only exact for unweighted fits (pre-existing on the ML path too).
+# REML log-likelihood of the fixed-effects-only Gaussian null model,
+# via nlme::gls(method = "REML") on the same data. Returns NA_real_
+# when gls is unavailable or fails -- callers then return NULL (no
+# LRT line) rather than printing a number under a wrong label.
+.null_reml_loglik_lm <- function(null_f, data) {
+  if (!requireNamespace("nlme", quietly = TRUE)) return(NA_real_)      # nocov
+  fit0 <- tryCatch(
+    nlme::gls(null_f, data = data, method = "REML"),
+    error = function(e) NULL
+  )
+  if (is.null(fit0)) return(NA_real_)
+  as.numeric(stats::logLik(fit0))
+}
+
+
 .compute_null_model_lrt <- function(fit) {
   res <- tryCatch({
     if (inherits(fit, "glmmTMB"))            .null_lrt_glmmTMB(fit)
@@ -738,15 +767,12 @@ validate_regression_frame <- function(frame) {
   data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(data)) return(NULL)  # nocov -- model.frame succeeds for a fitted merMod
 
-  # Full fit on ML scale (lmer REML must be refit with ML for the
-  # LRT vs lm; glmer / lmer-ML already on ML scale).
-  fit_full_ml <- if (inherits(fit, "lmerMod") &&
-                       isTRUE(lme4::isREML(fit))) {
-    tryCatch(suppressMessages(lme4::refitML(fit)), error = function(e) NULL)
-  } else {
-    fit
-  }
-  if (is.null(fit_full_ml)) return(NULL)  # nocov -- refitML does not fail on a converged lmer
+  # Likelihood follows the fit's estimator (ranova / Stata / RLRsim
+  # convention): a REML lmer keeps its REML logLik and is compared to
+  # the REML logLik of the null lm (via gls) below; ML fits and glmer
+  # (always ML) stay on ML.
+  is_reml <- inherits(fit, "lmerMod") && isTRUE(lme4::isREML(fit))
+  fit_full_ml <- fit
 
   # Refit against the model frame under a SAFE response name: a transformed
   # or matrix response (e.g. `cbind(incidence, size - incidence)`) exists in
@@ -772,7 +798,12 @@ validate_regression_frame <- function(frame) {
   if (is.null(fit_null)) return(NULL)
 
   ll_full <- as.numeric(stats::logLik(fit_full_ml))
-  ll_null <- as.numeric(stats::logLik(fit_null))
+  ll_null <- if (is_reml) {
+    .null_reml_loglik_lm(null_f, data)
+  } else {
+    as.numeric(stats::logLik(fit_null))
+  }
+  if (!is.finite(ll_null)) return(NULL)
   chi2 <- 2 * (ll_full - ll_null)
   df_q <- .merMod_n_re_params(fit)
   if (is.na(df_q)) return(NULL)  # nocov -- .merMod_n_re_params is non-NA for a converged fit
@@ -833,7 +864,18 @@ validate_regression_frame <- function(frame) {
   if (is.null(fit_null)) return(NULL)
 
   ll_full <- as.numeric(stats::logLik(fit))
-  ll_null <- as.numeric(stats::logLik(fit_null))
+  # Likelihood follows the fit's estimator: a Gaussian glmmTMB fitted
+  # with REML = TRUE compares to the REML logLik of the null lm (via
+  # gls). Non-Gaussian REML fits keep the ML null (no simple REML
+  # null exists for a glm) -- a documented approximation.
+  is_reml_gauss <- is_gaussian &&
+    isTRUE(tryCatch(fit$modelInfo$REML, error = function(e) FALSE))
+  ll_null <- if (is_reml_gauss) {
+    .null_reml_loglik_lm(null_f, data)
+  } else {
+    as.numeric(stats::logLik(fit_null))
+  }
+  if (!is.finite(ll_null)) return(NULL)
   chi2 <- 2 * (ll_full - ll_null)
 
   # Count random params in glmmTMB: VarCorr()$cond is a list of
@@ -861,29 +903,23 @@ validate_regression_frame <- function(frame) {
   data <- tryCatch(nlme::getData(fit), error = function(e) NULL)
   if (is.null(data)) return(NULL)  # nocov -- getData succeeds for a fitted lme
 
-  # nlme::lme is Gaussian by spec; refit as lm for the LRT.
-  # An lme REML fit must be refit with method = "ML" for the LRT vs
-  # lm to be valid. stats::update(fit, method = "ML") fails when nlme
-  # isn't attached to the search path (the captured call is `lme(...)`
-  # without namespace qualification); manually requalify to nlme::lme
-  # before eval so the helper works in package-internal contexts.
-  fit_full_ml <- if (identical(fit$method, "REML")) {
-    call_copy <- fit$call
-    call_copy[[1L]] <- quote(nlme::lme)
-    call_copy$method <- "ML"
-    tryCatch(eval(call_copy, envir = parent.frame()),
-              error = function(e) NULL)
-  } else {
-    fit
-  }
-  if (is.null(fit_full_ml)) return(NULL)  # nocov -- ML refit of a converged lme succeeds
-
+  # nlme::lme is Gaussian by spec. Likelihood follows the fit's
+  # estimator (ranova / Stata convention): a REML lme keeps its REML
+  # logLik and compares to the REML logLik of the null lm (gls,
+  # trivially available here since nlme is loaded); an ML lme
+  # compares to the ML logLik of lm.
+  is_reml <- identical(fit$method, "REML")
   fit_null <- tryCatch(stats::lm(no_re_formula, data = data),
                         error = function(e) NULL)
   if (is.null(fit_null)) return(NULL)  # nocov -- null lm fits on the same data
 
-  ll_full <- as.numeric(stats::logLik(fit_full_ml))
-  ll_null <- as.numeric(stats::logLik(fit_null))
+  ll_full <- as.numeric(stats::logLik(fit))
+  ll_null <- if (is_reml) {
+    .null_reml_loglik_lm(no_re_formula, data)
+  } else {
+    as.numeric(stats::logLik(fit_null))
+  }
+  if (!is.finite(ll_null)) return(NULL)
   chi2 <- 2 * (ll_full - ll_null)
 
   # Count random params in lme: reStruct holds per-grouping pdMat.

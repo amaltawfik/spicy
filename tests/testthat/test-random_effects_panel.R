@@ -52,7 +52,7 @@ test_that("lmer random-intercept output has structured 'Random effects' panel", 
   chibar2 <- intToUtf8(c(0x03c7, 0x0304, 0x00b2))
   expect_match(combined,
     paste0("Random effects (REML): LR test vs linear regression, ",
-           chibar2, "(1) = 106.21, p < .001."),
+           chibar2, "(1) = 107.20, p < .001."),
     fixed = TRUE)
 })
 
@@ -192,7 +192,7 @@ test_that("panel header annotates lmer (REML default) with '(REML)'", {
   expect_identical(
     lrt_line,
     paste0("Random effects (REML): LR test vs linear regression, ",
-           chibar2, "(1) = 106.21, p < .001."))
+           chibar2, "(1) = 107.20, p < .001."))
 })
 
 test_that("panel header annotates lmer (REML=FALSE) with '(ML)'", {

@@ -113,11 +113,32 @@ test_that("p_chibar2 = 0.5 * pchisq(chi2, df, lower.tail = FALSE)", {
 
 # ---- 3. lmer chi^2 matches manual 2 * (logLik_full - logLik_null) -----
 
-test_that("lmer (REML) chi^2 matches manual 2*(logLik(refitML) - logLik(lm))", {
+test_that("lmer (REML) chi^2 follows the fit estimator (ranova convention)", {
+  # 2026-07-09 (dev/re_lrt_ml_reml_finding.md): the whole-block LRT is
+  # computed on the FIT'S OWN likelihood -- REML vs the null model's
+  # REML logLik (gls) -- matching lmerTest::ranova / Stata mixed.
+  # (Previously: silent refitML under a "(REML)" label.)
+  skip_if_not_installed("nlme")
   fit <- .fit_lmer_lrt()
-  fit_full_ml <- suppressMessages(lme4::refitML(fit))
+  g0 <- nlme::gls(Reaction ~ Days, data = lme4::sleepstudy,
+                  method = "REML")
+  expected_chi2 <- 2 * (as.numeric(stats::logLik(fit)) -
+                          as.numeric(stats::logLik(g0)))
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_equal(fr$info$random_effects$null_lrt$chi2,
+               expected_chi2, tolerance = 1e-10)
+  # External oracle: lmerTest::ranova reproduces the same statistic.
+  skip_if_not_installed("lmerTest")
+  rv <- lmerTest::ranova(lmerTest::as_lmerModLmerTest(fit))
+  expect_equal(fr$info$random_effects$null_lrt$chi2, rv$LRT[2],
+               tolerance = 1e-8)
+})
+
+test_that("lmer (ML) chi^2 keeps the ML-vs-lm comparison", {
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject),
+                    data = lme4::sleepstudy, REML = FALSE)
   fit_null <- lm(Reaction ~ Days, data = lme4::sleepstudy)
-  expected_chi2 <- 2 * (as.numeric(stats::logLik(fit_full_ml)) -
+  expected_chi2 <- 2 * (as.numeric(stats::logLik(fit)) -
                           as.numeric(stats::logLik(fit_null)))
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_equal(fr$info$random_effects$null_lrt$chi2,
