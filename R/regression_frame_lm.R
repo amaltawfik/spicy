@@ -506,21 +506,25 @@ as_regression_frame.glm <- function(fit, ...) {
 }
 
 
-# Attach per-row outcome event counts to a binomial glm frame
-# (show_columns "n_events"). Factor-level rows -- reference row
-# included -- carry the events and row count OF THAT LEVEL in the
-# fit's own estimation sample (STROBE item 16: the data behind the
-# association, per category); continuous, intercept, and
-# polynomial-contrast rows carry the model totals (gtsummary
-# add_nevent convention). Non-binomial or grouped-response fits are
-# left untouched; the table_regression() gate then errors.
-.attach_event_counts <- function(frame, fit) {
-  fam <- tryCatch(stats::family(fit)$family, error = function(e) "")
-  if (!fam %in% c("binomial", "quasibinomial")) return(frame)
+# Attach per-row outcome event counts to a frame (show_columns
+# "n_events"). Factor-level rows -- reference row included -- carry
+# the events and row count OF THAT LEVEL in the fit's own estimation
+# sample (STROBE item 16: the data behind the association, per
+# category); continuous, intercept, and polynomial-contrast rows
+# carry the model totals (gtsummary add_nevent convention). Default
+# path derives the 0/1 indicator from a binomial glm response; other
+# builders (coxph: the Surv status column) pass `ev` directly. Fits
+# without a per-row indicator are left untouched; the
+# table_regression() gate then errors.
+.attach_event_counts <- function(frame, fit, ev = NULL) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(mf)) return(frame)                                       # nocov
-  ev <- .binary_event_indicator(stats::model.response(mf))
-  if (is.null(ev)) return(frame)
+  if (is.null(ev)) {
+    fam <- tryCatch(stats::family(fit)$family, error = function(e) "")
+    if (!fam %in% c("binomial", "quasibinomial")) return(frame)
+    ev <- .binary_event_indicator(stats::model.response(mf))
+  }
+  if (is.null(ev) || length(ev) != nrow(mf)) return(frame)
   cf <- frame$coefs
   events <- rep(sum(ev), nrow(cf))
   n_vec  <- rep(length(ev), nrow(cf))

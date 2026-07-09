@@ -52,6 +52,8 @@ as_regression_frame.coxph <- function(fit,
                                        ci_method = NULL,
                                        model_id = "M1",
                                        exponentiate = FALSE,
+                                       show_columns = c("b", "se",
+                                                        "ci", "p"),
                                        ...) {
   .check_survival_available()
 
@@ -71,7 +73,22 @@ as_regression_frame.coxph <- function(fit,
   }
 
   ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)
-  new_regression_frame(ex$coefs, ex$info, fit)
+  frame <- new_regression_frame(ex$coefs, ex$info, fit)
+  # Outcome event counts ("n_events" column): the Surv status column
+  # is the per-row event indicator for RIGHT-censored single-record
+  # data (2-column Surv). Counting-process / start-stop responses
+  # (3 columns) have no single per-subject indicator -- left
+  # untouched, the orchestrator gate errors.
+  if ("n_events" %in% show_columns) {
+    y <- tryCatch(
+      stats::model.response(stats::model.frame(fit)),
+      error = function(e) NULL
+    )
+    if (inherits(y, "Surv") && ncol(y) == 2L) {
+      frame <- .attach_event_counts(frame, fit, ev = as.integer(y[, 2L]))
+    }
+  }
+  frame
 }
 
 

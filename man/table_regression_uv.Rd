@@ -8,7 +8,7 @@ table_regression_uv(
   data,
   outcome,
   predictors,
-  method = c("glm", "lm"),
+  method = c("glm", "lm", "coxph"),
   family = stats::binomial(),
   multivariable = TRUE,
   complete_cases = FALSE,
@@ -20,17 +20,20 @@ table_regression_uv(
 \arguments{
 \item{data}{A data frame.}
 
-\item{outcome}{The outcome column (unquoted name, tidyselect).}
+\item{outcome}{The outcome column (unquoted name, tidyselect). For
+\code{method = "coxph"}, a \code{Surv(time, status)} expression evaluated
+in \code{data} (the \code{tbl_uvregression} convention).}
 
 \item{predictors}{Candidate predictor columns (tidyselect, e.g.
-\code{c(age, sex, education)} or \code{where(is.numeric)}). The outcome is
-dropped from the selection automatically.}
+\code{c(age, sex, education)} or \code{where(is.numeric)}). The outcome
+column(s) are dropped from the selection automatically.}
 
-\item{method}{\code{"glm"} (default) or \code{"lm"}. Cox screening is planned
-with the survival estimands work.}
+\item{method}{\code{"glm"} (default), \code{"lm"}, or \code{"coxph"} (requires
+the \code{survival} package; estimates render as HRs with
+\code{exponentiate = TRUE}).}
 
 \item{family}{A \link[stats:family]{stats::family} object for \code{method = "glm"}.
-Default \code{binomial()}.}
+Default \code{binomial()}. Refused for \code{method = "coxph"}.}
 
 \item{multivariable}{Logical, default \code{TRUE}: merge the full model
 (all predictors together) as a second column group.}

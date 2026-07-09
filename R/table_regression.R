@@ -1832,10 +1832,11 @@ table_regression <- function(
           ),
           "i" = paste0("Outcome event counts need a binary (binomial ",
                        "family) outcome with an ungrouped 0/1, logical, ",
-                       "or two-level factor response."),
-          "i" = paste0("Cox models report their event total as a ",
-                       "fit statistic: `show_fit_stats = c(\"nobs\", ",
-                       "\"n_events\")`.")
+                       "or two-level factor response -- or a coxph fit ",
+                       "on right-censored single-record data."),
+          "i" = paste0("The model-total event count is also available ",
+                       "as a fit statistic for survival models: ",
+                       "`show_fit_stats = c(\"nobs\", \"n_events\")`.")
         ),
         class = "spicy_invalid_input"
       )

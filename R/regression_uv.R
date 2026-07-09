@@ -51,14 +51,17 @@
 #' display them.
 #'
 #' @param data A data frame.
-#' @param outcome The outcome column (unquoted name, tidyselect).
+#' @param outcome The outcome column (unquoted name, tidyselect). For
+#'   `method = "coxph"`, a `Surv(time, status)` expression evaluated
+#'   in `data` (the `tbl_uvregression` convention).
 #' @param predictors Candidate predictor columns (tidyselect, e.g.
-#'   `c(age, sex, education)` or `where(is.numeric)`). The outcome is
-#'   dropped from the selection automatically.
-#' @param method `"glm"` (default) or `"lm"`. Cox screening is planned
-#'   with the survival estimands work.
+#'   `c(age, sex, education)` or `where(is.numeric)`). The outcome
+#'   column(s) are dropped from the selection automatically.
+#' @param method `"glm"` (default), `"lm"`, or `"coxph"` (requires
+#'   the `survival` package; estimates render as HRs with
+#'   `exponentiate = TRUE`).
 #' @param family A [stats::family] object for `method = "glm"`.
-#'   Default `binomial()`.
+#'   Default `binomial()`. Refused for `method = "coxph"`.
 #' @param multivariable Logical, default `TRUE`: merge the full model
 #'   (all predictors together) as a second column group.
 #' @param complete_cases Logical, default `FALSE`. `TRUE` restricts
@@ -106,13 +109,14 @@
 table_regression_uv <- function(data,
                                 outcome,
                                 predictors,
-                                method = c("glm", "lm"),
+                                method = c("glm", "lm", "coxph"),
                                 family = stats::binomial(),
                                 multivariable = TRUE,
                                 complete_cases = FALSE,
                                 show_columns = c("n", "b", "ci", "p"),
                                 title = NULL,
                                 ...) {
+  family_supplied <- !missing(family)
   method <- match.arg(method)
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data frame.",
@@ -128,12 +132,46 @@ table_regression_uv <- function(data,
     spicy_abort("`complete_cases` must be TRUE/FALSE.",
                 class = "spicy_invalid_input")
   }
+  if (identical(method, "coxph") && family_supplied) {
+    spicy_abort(
+      c("`family` is not meaningful for `method = \"coxph\"`.",
+        "i" = "The Cox model has no family; drop the argument."),
+      class = "spicy_invalid_input"
+    )
+  }
 
-  outcome_name <- resolve_single_column_selection(
-    rlang::enquo(outcome), data, "outcome"
-  )
+  if (identical(method, "coxph")) {
+    .check_survival_available()
+    # The outcome is a `Surv(time, status)` EXPRESSION evaluated in
+    # `data` (the gtsummary tbl_uvregression convention), not a single
+    # column selection.
+    outcome_expr <- rlang::quo_get_expr(rlang::enquo(outcome))
+    is_surv_call <- is.call(outcome_expr) &&
+      deparse1(outcome_expr[[1L]]) %in% c("Surv", "survival::Surv")
+    if (!is_surv_call) {
+      spicy_abort(
+        c(paste0("`method = \"coxph\"` needs a survival outcome: ",
+                 "`outcome = Surv(time, status)`."),
+          "i" = sprintf("Got `%s`.", deparse1(outcome_expr))),
+        class = "spicy_invalid_input"
+      )
+    }
+    outcome_vars <- intersect(all.vars(outcome_expr), names(data))
+    if (length(outcome_vars) == 0L) {
+      spicy_abort(
+        "The `Surv()` outcome references no column of `data`.",
+        class = "spicy_invalid_input"
+      )
+    }
+    outcome_name <- deparse1(outcome_expr)
+  } else {
+    outcome_name <- resolve_single_column_selection(
+      rlang::enquo(outcome), data, "outcome"
+    )
+    outcome_vars <- outcome_name
+  }
   pred_pos <- tidyselect::eval_select(rlang::enquo(predictors), data)
-  pred_names <- setdiff(names(pred_pos), outcome_name)
+  pred_names <- setdiff(names(pred_pos), outcome_vars)
   if (length(pred_names) == 0L) {
     spicy_abort(
       c("`predictors` selected no columns (besides the outcome).",
@@ -181,20 +219,27 @@ table_regression_uv <- function(data,
   if (is.null(dots$show_intercept)) dots$show_intercept <- FALSE
 
   if (isTRUE(complete_cases)) {
-    cc <- stats::complete.cases(data[, c(outcome_name, pred_names)])
+    cc <- stats::complete.cases(data[, c(outcome_vars, pred_names)])
     data <- data[cc, , drop = FALSE]
     if (!is.null(dots$cluster)) dots$cluster <- dots$cluster[cc]
   }
 
   bt <- function(x) paste0("`", x, "`")
+  # The formula LHS: a backticked column name (lm/glm) or the verbatim
+  # Surv() expression (coxph).
+  response_str <- if (identical(method, "coxph")) {
+    outcome_name
+  } else {
+    bt(outcome_name)
+  }
   fit_one <- function(rhs_names) {
-    f <- stats::reformulate(bt(rhs_names), response = bt(outcome_name))
+    f <- stats::reformulate(bt(rhs_names), response = response_str)
     environment(f) <- environment()
-    if (identical(method, "lm")) {
-      stats::lm(f, data = data)
-    } else {
+    switch(method,
+      lm    = stats::lm(f, data = data),
+      coxph = survival::coxph(f, data = data),
       stats::glm(f, data = data, family = family)
-    }
+    )
   }
   fits <- vector("list", length(pred_names))
   for (k in seq_along(pred_names)) {
@@ -250,6 +295,8 @@ table_regression_uv <- function(data,
   if (is.null(title)) {
     type <- if (identical(method, "lm")) {
       "linear"
+    } else if (identical(method, "coxph")) {
+      "Cox"
     } else {
       switch(paste(family$family, family$link),
         "binomial logit"  = "logistic",
@@ -271,6 +318,18 @@ table_regression_uv <- function(data,
     table_regression,
     c(list(models, show_columns = show_columns, title = title), dots)
   )
+}
+
+
+# Per-fit sample size for the screen's N column. stats::nobs() equals
+# the estimation-sample size for lm/glm, but for coxph it returns the
+# EVENT count under censoring (the same quirk .expected_cluster_length
+# documents); fit$n is the subject count there.
+.uv_fit_n <- function(fit) {
+  if (inherits(fit, "coxph") && !is.null(fit$n)) {
+    return(as.integer(fit$n[length(fit$n)]))
+  }
+  as.integer(stats::nobs(fit))
 }
 
 
@@ -317,7 +376,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     if (!is.null(cluster_k) && is.atomic(cluster_k)) {
       om <- stats::na.action(bundle$fits[[k]])
       if (!is.null(om) &&
-            length(cluster_k) != as.integer(stats::nobs(bundle$fits[[k]]))) {
+            length(cluster_k) != .uv_fit_n(bundle$fits[[k]])) {
         cluster_k <- cluster_k[-om]
       }
     }
@@ -358,7 +417,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
       next
     }
     # nocov end
-    n_k <- as.integer(stats::nobs(bundle$fits[[k]]))
+    n_k <- .uv_fit_n(bundle$fits[[k]])
     block$n_obs <- NA_real_
     block$n_obs[1L] <- as.numeric(n_k)
     ns <- c(ns, n_k)
