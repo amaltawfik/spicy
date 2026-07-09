@@ -289,3 +289,19 @@ test_that("algebraic glm aliasing under classical vcov stays correct", {
     expect_true(is.finite(res$se[res$term == "wt"]), info = m)
   }
 })
+
+
+test_that("smart (Gelman) glm: factor dummies untouched, continuous x 2 SD", {
+  # Gelman (2008) on the logit scale: no outcome scaling; continuous
+  # inputs x 2 SD, binary inputs (factor dummies included) untouched.
+  fit <- glm(am ~ wt + factor(cyl), data = mtcars, family = binomial())
+  res <- spicy:::standardize_glm(fit, method = "smart", weights = NULL)
+  b <- stats::coef(fit)
+  expect_equal(res$estimate[res$term == "factor(cyl)6"],
+               unname(b["factor(cyl)6"]), tolerance = 1e-12)
+  expect_equal(res$estimate[res$term == "factor(cyl)8"],
+               unname(b["factor(cyl)8"]), tolerance = 1e-12)
+  expect_equal(res$estimate[res$term == "wt"],
+               unname(b["wt"]) * 2 * stats::sd(mtcars$wt),
+               tolerance = 1e-12)
+})

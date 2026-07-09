@@ -179,3 +179,27 @@ test_that("show_re = FALSE suppresses both the panel AND the LRT line", {
   combined <- paste(out, collapse = "\n")
   expect_false(grepl("LR test vs", combined, fixed = TRUE))
 })
+
+
+# ---- 6. Degradation guards: gls null failure -> no LRT, no error ------
+
+test_that(".null_reml_loglik_lm returns NA when gls fails", {
+  skip_if_not_installed("nlme")
+  # 0-row data: gls errors; the helper degrades to NA so callers drop
+  # the LRT line instead of printing a number under a wrong label.
+  expect_identical(
+    spicy:::.null_reml_loglik_lm(y ~ 1, data.frame(y = numeric(0))),
+    NA_real_
+  )
+})
+
+test_that("REML fits drop the LRT line (not the table) when the gls null fails", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("nlme")
+  testthat::local_mocked_bindings(
+    .null_reml_loglik_lm = function(...) NA_real_,
+    .package = "spicy"
+  )
+  expect_null(spicy:::.null_lrt_merMod(.fit_lmer_lrt()))
+  expect_null(spicy:::.null_lrt_lme(.fit_lme_lrt()))
+})

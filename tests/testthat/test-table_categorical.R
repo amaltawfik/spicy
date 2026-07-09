@@ -2195,3 +2195,31 @@ test_that("association stats ignore the (Missing) display level", {
   df <- as.data.frame(table_categorical(d, select = smoking, by = sex_na))
   expect_true(any(grepl("(Missing)", names(df), fixed = TRUE)))
 })
+
+
+test_that("drop_na = TRUE disclosure note names the dropped counts", {
+  # The published contract (NEWS 0.13 dev): opting back into silent-drop
+  # is DISCLOSED -- a reader can always see what left the table.
+  df <- data.frame(
+    v1  = factor(c("a", "b", NA, "a", NA)),
+    grp = factor(c("A", "B", "A", NA, "B"))
+  )
+  out <- table_categorical(df, select = v1, drop_na = TRUE,
+                           output = "default")
+  expect_identical(attr(out, "missing_note"),
+                   "Missing values removed: v1 (2).")
+  printed <- paste(capture.output(print(out)), collapse = "\n")
+  expect_match(printed, "Missing values removed: v1 (2).", fixed = TRUE)
+
+  out_by <- table_categorical(df, select = v1, by = grp, drop_na = TRUE,
+                              output = "default")
+  note <- attr(out_by, "missing_note")
+  expect_match(note, "Missing values removed: v1 (2).", fixed = TRUE)
+  expect_match(note, "Rows with missing grp removed: 1.", fixed = TRUE)
+
+  # Nothing dropped -> no note at all (nothing to disclose).
+  df_full <- data.frame(v1 = factor(c("a", "b", "a")))
+  out_full <- table_categorical(df_full, select = v1, drop_na = TRUE,
+                                output = "default")
+  expect_null(attr(out_full, "missing_note"))
+})

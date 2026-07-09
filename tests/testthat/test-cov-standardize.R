@@ -260,3 +260,20 @@ test_that(".attach_beta_to_frame_coefs keeps coefs and DISCLOSES when the refit 
   expect_false("beta" %in% fr$coefs$estimate_type)
   expect_true("B" %in% fr$coefs$estimate_type)
 })
+
+
+test_that("smart (Gelman) leaves factor dummies unscaled: b / sd(y)", {
+  # Gelman (2008): continuous inputs scaled by 2 SD, binary inputs --
+  # factor dummies included -- untouched; lm output is divided by sd(y).
+  fit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
+  res <- spicy:::standardize_lm(fit, method = "smart", weights = NULL)
+  b  <- stats::coef(fit)
+  sy <- stats::sd(mtcars$mpg)
+  expect_equal(res$estimate[res$term == "factor(cyl)6"],
+               unname(b["factor(cyl)6"]) / sy, tolerance = 1e-12)
+  expect_equal(res$estimate[res$term == "factor(cyl)8"],
+               unname(b["factor(cyl)8"]) / sy, tolerance = 1e-12)
+  expect_equal(res$estimate[res$term == "wt"],
+               unname(b["wt"]) * 2 * stats::sd(mtcars$wt) / sy,
+               tolerance = 1e-12)
+})
