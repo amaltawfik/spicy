@@ -965,7 +965,10 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
     # icc / n_groups are mixed-only structure stats: when NO model has a
     # value (e.g. icc on a random-slope fit, or the tokens on a non-mixed
     # table), drop the row entirely instead of rendering an empty one.
-    if (tk %in% c("icc", "n_groups") && all(is.na(fit_stats[[tk]]))) next
+    # (n_events joins them: survival-only -- Cox tables report n AND
+    # number of events per the field convention.)
+    if (tk %in% c("icc", "n_groups", "n_events") &&
+          all(is.na(fit_stats[[tk]]))) next
     lab <- if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
       sprintf("N (%s)", ng_shared_factor)
     } else {
@@ -1008,6 +1011,7 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
 fit_stat_label <- function(token) {
   switch(token,
     nobs                  = "n",
+    n_events              = "N events",
     weighted_nobs         = "Weighted n",
     r2                    = "R\u00B2",
     adj_r2                = "Adj.R\u00B2",
@@ -1071,6 +1075,7 @@ format_fit_stat_value <- function(token, val,
   }
   prec <- switch(token,
     nobs                  = 0L,
+    n_events              = 0L,
     weighted_nobs         = 0L,
     r2                    = fit_digits,
     adj_r2                = fit_digits,

@@ -568,7 +568,10 @@ as_regression_frame.Glm <- function(fit,
                                 error = function(e) NA_real_),
       deviance       = NA_real_,
       sigma          = NA_real_,
-      nobs           = as.integer(st["Obs"] %||% NA_integer_)
+      nobs           = as.integer(st["Obs"] %||% NA_integer_),
+      # Cox convention: n AND number of events as fit-stat rows (the
+      # survival footer keeps concordance only) -- mirrors coxph.
+      n_events       = as.integer(st["Events"] %||% NA_integer_)
     )
   } else {  # Glm
     list(

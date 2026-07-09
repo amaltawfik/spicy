@@ -333,7 +333,10 @@ as_regression_frame.survreg <- function(fit,
     log_lik        = as.numeric(stats::logLik(fit)),
     deviance       = NA_real_,
     sigma          = NA_real_,
-    nobs           = as.integer(fit$n %||% stats::nobs(fit))
+    nobs           = as.integer(fit$n %||% stats::nobs(fit)),
+    # Field convention (EpiRHandbook survival ch.; Stata stcox): a Cox
+    # table reports n AND the number of events.
+    n_events       = as.integer(fit$nevent %||% NA_integer_)
   )
 
   supports <- list(

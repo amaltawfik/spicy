@@ -734,7 +734,9 @@ side-by-side layout; restore it explicitly when needed).
 \subsection{\code{show_fit_stats} -- model-level rows below the coefficients}{
 
 \itemize{
-\item Counts: \code{"nobs"}, \code{"weighted_nobs"}.
+\item Counts: \code{"nobs"}, \code{"weighted_nobs"}, \code{"n_events"} (Cox
+models: number of events, reported alongside \code{n} per the
+field convention; blank for other classes).
 \item Variance explained (\code{lm} only): \code{"r2"}, \code{"adj_r2"},
 \code{"omega2"}.
 \item Pseudo-\eqn{R^2}{R^2} (\code{glm} and ordinal \code{polr} / \code{clm}):
@@ -758,7 +760,8 @@ Default (resolved when \code{NULL}) is class-aware: lm fits get
 \code{c("nobs", "r2", "adj_r2")}; glm and ordinal \code{polr} / \code{clm} fits get
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")};
 mixed lm + glm sets union both groups (the renderer per-row
-em-dashes the inappropriate cell). When \code{nested = TRUE}, the
+em-dashes the inappropriate cell); Cox fits get
+\code{c("nobs", "n_events", "AIC")}. When \code{nested = TRUE}, the
 class-aware default is extended with change tokens
 (\code{c("r2_change", "f_change", "p_change")} for lm,
 \code{c("lrt_change", "p_change")} for glm). The order of tokens in

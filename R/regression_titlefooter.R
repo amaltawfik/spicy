@@ -579,7 +579,8 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
 # distribution + scale (parametric AFT).
 #
 # Single-model output examples:
-#   coxph / cph: "Events: 165 of 228; Concordance C = 0.60 (SE = 0.03)."
+#   coxph / cph: "Concordance C = 0.60 (SE = 0.03)." (n / events are
+#                 fit-stat rows since 2026-07-09)
 #   survreg:    "Distribution: Weibull; scale = 0.75."
 #   flexsurv:   "Distribution: Weibull; shape = 1.33, scale = 531.05."
 build_survival_footer_block_from_frames <- function(frames) {
@@ -619,14 +620,12 @@ build_survival_footer_block_from_frames <- function(frames) {
 
 
 .format_coxph_survival <- function(frame) {
-  ev    <- frame$info$extras$n_events
-  n_obs <- frame$info$n_obs
   conc  <- frame$info$extras$concordance
   parts <- character(0)
-  if (!is.null(ev) && is.finite(ev) && !is.null(n_obs)) {
-    parts <- c(parts, sprintf("Events: %d of %d", as.integer(ev),
-                              as.integer(n_obs)))
-  }
+  # n and the number of events moved from this footer prose into
+  # fit-stat ROWS ("n" / "N events" tokens, 2026-07-09) -- same
+  # migration as the mixed-effects ICC / N (groups). The footer keeps
+  # what has no row: the concordance.
   if (!is.null(conc) && is.list(conc) &&
       !is.null(conc$c) && is.finite(conc$c)) {
     if (!is.null(conc$se) && is.finite(conc$se)) {
@@ -636,7 +635,9 @@ build_survival_footer_block_from_frames <- function(frames) {
       parts <- c(parts, sprintf("Concordance C = %.2f", conc$c))    # nocov
     }
   }
-  if (length(parts) == 0L) return(NULL)                              # nocov
+  # Reachable now that the Events prose moved to fit-stat rows: a
+  # frame without a concordance block contributes nothing here.
+  if (length(parts) == 0L) return(NULL)
   paste0(paste(parts, collapse = "; "), ".")
 }
 

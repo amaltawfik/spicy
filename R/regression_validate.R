@@ -62,6 +62,7 @@
     "r2_marginal", "r2_conditional",
     # Mixed-effects group structure: N per grouping factor + intraclass
     # correlation, as fit-stat rows (sjPlot / modelsummary convention).
+    "n_events",
     "n_groups", "icc",
     "sigma", "rmse",
     "f2",

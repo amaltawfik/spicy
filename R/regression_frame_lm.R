@@ -331,6 +331,7 @@ as_regression_frame.glm <- function(fit, ...) {
     model_id             = model_id,
     outcome              = outcome,
     nobs                 = .scalar_or_na(fs$nobs),
+    n_events             = .scalar_or_na(fs$n_events),
     weighted_nobs        = .scalar_or_na(fs$weighted_nobs),
     r2                   = .scalar_or_na(fs$r2  %||% fs$r_squared),
     adj_r2               = .scalar_or_na(fs$adj_r2 %||% fs$adj_r_squared),

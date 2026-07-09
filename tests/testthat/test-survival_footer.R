@@ -34,31 +34,43 @@
 
 # ---- 1. coxph: events + concordance ---------------------------------------
 
-test_that("survival footer fires for coxph with events + concordance", {
+test_that("survival footer fires for coxph with concordance only", {
+  # n / events moved to fit-stat ROWS (n_events token, 2026-07-09);
+  # the footer keeps what has no row: the concordance.
   fit <- .fit_coxph_sf()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_survival_footer_block_from_frames(list(fr))
-  expect_match(out, "^Events:")  # regex anchor; do not use fixed = TRUE
-  expect_match(out, "165 of 228", fixed = TRUE)
-  expect_match(out, "Concordance C =", fixed = TRUE)
+  expect_match(out, "^Concordance C =")
+  expect_false(grepl("Events:", out, fixed = TRUE))
 })
 
-test_that("table_regression() footer for coxph carries Events + C lines", {
+test_that("table_regression() coxph: events as fit-stat row, C in footer", {
   fit <- .fit_coxph_sf()
-  combined <- paste(capture.output(print(table_regression(fit))),
-                    collapse = "\n")
-  expect_match(combined, "Events: 165 of 228", fixed = TRUE)
+  out <- capture.output(print(table_regression(fit)))
+  combined <- paste(out, collapse = "\n")
+  # Field convention (EpiRHandbook survival ch.; Stata stcox): n AND
+  # number-of-events rows.
+  expect_match(grep("^ n ", out, value = TRUE), "228")
+  expect_match(grep("^ N events ", out, value = TRUE), "165")
   expect_match(combined, "Concordance C", fixed = TRUE)
+  expect_false(grepl("Events: 165 of 228", combined, fixed = TRUE))
 })
 
 
-# ---- 2. cph: events count (no concordance struct exposed yet) ------------
+# ---- 2. cph: events surface as the n_events fit-stat --------------------
 
-test_that("survival footer fires for rms::cph with events count", {
+test_that("rms::cph: events move to the n_events fit-stat row", {
+  # cph exposes no concordance struct, so with the Events prose gone
+  # its survival footer contribution is NULL; the information lives in
+  # the N events fit-stat row (fit$stats["Events"]).
   fit <- .fit_cph_sf()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_survival_footer_block_from_frames(list(fr))
-  expect_match(out, "Events: 165 of 228", fixed = TRUE)
+  expect_null(out)
+  expect_identical(fr$info$fit_stats$n_events, 165L)
+  df <- as.data.frame(table_regression(fit))
+  ev <- df[trimws(df$Variable) == "N events", -1L, drop = FALSE]
+  expect_true(any(grepl("165", unlist(ev))))
 })
 
 
@@ -106,7 +118,7 @@ test_that("survival footer skips non-survival models in mixed lists", {
   # Only the coxph entry contributes; the function returns the cox text
   # without a "Model 1:" prefix (no multi-model context with content).
   out <- spicy:::build_survival_footer_block_from_frames(list(fr_cox, fr_lm))
-  expect_match(out, "^Events:", fixed = FALSE)
+  expect_match(out, "^Concordance C =", fixed = FALSE)
 })
 
 

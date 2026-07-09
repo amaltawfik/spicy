@@ -189,7 +189,7 @@ test_that("survival footer prefixes 'Model k:' for >1 contributing models", {
   lines <- strsplit(out, "\n", fixed = TRUE)[[1]]
   expect_identical(
     lines[[1]],
-    "Model 1: Events: 165 of 228; Concordance C = 0.55 (SE = 0.03)."
+    "Model 1: Concordance C = 0.55 (SE = 0.03)."
   )
   expect_identical(
     lines[[2]],

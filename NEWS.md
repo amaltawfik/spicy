@@ -44,7 +44,11 @@
 * Bayesian: `rstanarm`, `brms` -- posterior median / SD / equal-tailed
   `95% CrI`, no p-value.
 * Survey: `survey::svyglm`.
-* Survival: `survival::coxph` / `survreg`, `rms::cph`, `flexsurv::flexsurvreg`.
+* Survival: `survival::coxph` / `survreg`, `rms::cph`,
+  `flexsurv::flexsurvreg`. Cox tables report `n` and `N events` as
+  fit-stat rows (the field convention -- EpiRHandbook survival
+  chapter, Stata `stcox`; `show_fit_stats` token `"n_events"`), with
+  the concordance kept as a footer note.
 * Categorical: `nnet::multinom`, `mlogit::mlogit`, `MASS::polr`,
   `ordinal::clm`. A single `multinom` model renders the publication
   layout -- predictors as rows, one column group per non-reference

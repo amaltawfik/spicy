@@ -72,7 +72,9 @@
 #' ## `show_fit_stats` -- model-level rows below the coefficients
 #'
 #' \itemize{
-#'   \item Counts: `"nobs"`, `"weighted_nobs"`.
+#'   \item Counts: `"nobs"`, `"weighted_nobs"`, `"n_events"` (Cox
+#'     models: number of events, reported alongside `n` per the
+#'     field convention; blank for other classes).
 #'   \item Variance explained (`lm` only): `"r2"`, `"adj_r2"`,
 #'     `"omega2"`.
 #'   \item Pseudo-\eqn{R^2}{R^2} (`glm` and ordinal `polr` / `clm`):
@@ -96,7 +98,8 @@
 #' `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
 #' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`;
 #' mixed lm + glm sets union both groups (the renderer per-row
-#' em-dashes the inappropriate cell). When `nested = TRUE`, the
+#' em-dashes the inappropriate cell); Cox fits get
+#' `c("nobs", "n_events", "AIC")`. When `nested = TRUE`, the
 #' class-aware default is extended with change tokens
 #' (`c("r2_change", "f_change", "p_change")` for lm,
 #' `c("lrt_change", "p_change")` for glm). The order of tokens in
@@ -1379,6 +1382,20 @@ table_regression <- function(
                             "pseudo_r2_mcfadden",
                             "pseudo_r2_nagelkerke",
                             "AIC")
+    }
+    # Cox proportional hazards (survival::coxph and rms::cph, which
+    # inherits from it): the field convention reports n AND the number
+    # of events (EpiRHandbook survival chapter; Stata stcox header).
+    # n_events is NA outside the coxph frame, and the renderer skips
+    # the row when no model carries a value.
+    any_coxph <- any(vapply(models, function(f) {
+      inherits(f, "coxph")
+    }, logical(1)))
+    if (any_coxph) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only && !any_glm && !any_mixed &&
+                                  !any_ordinal) "nobs",
+                            "n_events", "AIC")
     }
     # Universal safety net: a class matched by none of the branches above
     # (betareg, survreg, coxph, multinom, mlogit, fixest, rms, stan, ...) still
