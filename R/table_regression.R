@@ -40,6 +40,15 @@
 #'     SAS PROC LOGISTIC `TYPE3`; Long & Freese 2014 Section 3.5).
 #'     Rendered as `value (df)` to disambiguate factor terms
 #'     (k-1 df) from numeric terms (1 df).
+#'   \item Sample columns: `"n"` -- per-row N, populated by
+#'     [table_regression_uv()] screens (each predictor block is its
+#'     own fit); models without per-row N data drop the column.
+#'     `"n_events"` -- outcome event counts as `events/N`, per
+#'     factor level (reference row included) and model totals on
+#'     continuous rows, computed on each model's own estimation
+#'     sample (STROBE item 16's "data behind the association";
+#'     NEJM-style `no. of events/total no.`). Binary (binomial)
+#'     outcomes only -- other models raise `spicy_invalid_input`.
 #' }
 #'
 #' **Group tokens** (presets) expand to a fixed atomic vector
@@ -509,7 +518,8 @@
 #' @param show_columns Character vector of tokens selecting the
 #'   per-coefficient columns and their display order. Accepts
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
-#'   `"beta"`, `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`,
+#'   `"beta"`, `"n"`, `"n_events"`, `"ame"`, `"ame_se"`, `"ame_ci"`,
+#'   `"ame_p"`,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
 #'   `"partial_eta2_ci"`, `"partial_omega2"` +
 #'   `"partial_omega2_ci"`, `"partial_chi2"`) and **group tokens**
@@ -1800,6 +1810,34 @@ table_regression <- function(
                        "`show_columns = c(\"b\", \"ame\")`.")
         ),
         class = "spicy_unsupported_standardized"
+      )
+    }
+    # Truthfulness gate: `show_columns = "n_events"` requires per-row
+    # outcome event counts, which only binomial fits with an ungrouped
+    # binary response provide (.attach_event_counts). A frame without
+    # them would render a requested column entirely empty -- error
+    # instead, naming the model.
+    if ("n_events" %in% show_columns &&
+        is.null(frames[[i]]$coefs$events)) {
+      model_tag <- if (n_models > 1L) {
+        sprintf("model %d (class %s)", i, class(models[[i]])[1L])
+      } else {
+        sprintf("this model class (%s)", class(models[[i]])[1L])
+      }
+      spicy_abort(
+        c(
+          sprintf(
+            "`show_columns = \"n_events\"` is not available for %s.",
+            model_tag
+          ),
+          "i" = paste0("Outcome event counts need a binary (binomial ",
+                       "family) outcome with an ungrouped 0/1, logical, ",
+                       "or two-level factor response."),
+          "i" = paste0("Cox models report their event total as a ",
+                       "fit statistic: `show_fit_stats = c(\"nobs\", ",
+                       "\"n_events\")`.")
+        ),
+        class = "spicy_invalid_input"
       )
     }
     # Exponentiate centrally so EVERY model class honours `exponentiate = TRUE`

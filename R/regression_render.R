@@ -497,6 +497,12 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     n      = list(estimate_type = "B",
                   fields = "n_obs",
                   header_short = "N"),
+    # Outcome event counts "events/N" per factor level (reference row
+    # included), model totals on continuous rows. Binomial outcomes
+    # only -- the orchestrator gate errors otherwise.
+    n_events = list(estimate_type = "B",
+                    fields = c("events", "events_n"),
+                    header_short = "Events/N"),
     b      = list(estimate_type = "B",
                   fields = "estimate",
                   header_short = "B"),
@@ -696,8 +702,12 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
     }
     # Per-model reference check. The factor IS in this model and
     # this row is its reference level here -- em-dash conveys
-    # "reference, no estimate by design".
-    if (isTRUE(long_row$is_reference[1L])) {
+    # "reference, no estimate by design". Event counts are exempt:
+    # they are DATA about the level, not an estimate, and the
+    # reference category's events/N is exactly what STROBE item 16
+    # asks readers to see (gtsummary's add_nevent shows it too).
+    if (isTRUE(long_row$is_reference[1L]) &&
+        !identical(cs$token, "n_events")) {
       cells[[cs$col_name]] <- "\u2013"   # em-dash
       next
     }
@@ -751,6 +761,17 @@ format_cell_value <- function(long_row, cs, stars_map,
     val_str <- format_number(est, digits_to_use, decimal_mark)
     df_str <- if (is.na(df_val)) "" else paste0(" (", as.integer(df_val), ")")
     return(paste0(val_str, df_str))
+  }
+
+  # Outcome event counts: "events/N" (STROBE item 16 / NEJM
+  # "no. of events/total no." style). Both integers; blank (not
+  # em-dash) when the frame carries no event data for the row.
+  if (length(cs$fields) == 2L &&
+      identical(cs$fields, c("events", "events_n"))) {
+    ev <- long_row$events[1]
+    nn <- long_row$events_n[1]
+    if (is.na(ev) || is.na(nn)) return("")
+    return(paste0(format(as.integer(ev)), "/", format(as.integer(nn))))
   }
 
   # CI-only rendering: "[lo, hi]" -- shared by `ci`, `ame_ci`,

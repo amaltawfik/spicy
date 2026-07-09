@@ -39,6 +39,9 @@
     # Per-row N (populated by univariable-screening frames, where each
     # predictor block is its own fit; blank for ordinary models)
     "n",
+    # Outcome event counts "events/N" per factor level, model totals
+    # on continuous rows (binomial outcomes only; STROBE item 16)
+    "n_events",
     # Average marginal effects (AME)
     "ame", "ame_se", "ame_ci", "ame_p",
     # Variance-explained partials (lm only) \u2013 split into

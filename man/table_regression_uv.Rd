@@ -44,7 +44,9 @@ table note.}
 \code{c("n", "b", "ci", "p")} -- the \code{tbl_uvregression} column set;
 \code{"n"} is the per-predictor sample size. The multivariable group
 carries no \code{N} column (its single \code{n} is a fit-statistics row,
-as in the reference layouts).}
+as in the reference layouts). For binary outcomes, add
+\code{"n_events"} for outcome event counts as \code{events/N} per factor
+level (each column group counts on its own estimation sample).}
 
 \item{title}{Table title; \code{NULL} (default) builds
 \code{"Univariable and multivariable <type> regression: <outcome>"}.}

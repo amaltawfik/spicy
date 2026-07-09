@@ -181,7 +181,8 @@ adjustment} section for when this is and is not appropriate.}
 \item{show_columns}{Character vector of tokens selecting the
 per-coefficient columns and their display order. Accepts
 \strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"},
-\code{"beta"}, \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"}, \code{"ame_p"},
+\code{"beta"}, \code{"n"}, \code{"n_events"}, \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
+\code{"ame_p"},
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
 \code{"partial_eta2_ci"}, \code{"partial_omega2"} +
 \code{"partial_omega2_ci"}, \code{"partial_chi2"}) and \strong{group tokens}
@@ -706,6 +707,15 @@ p-value; for the AME-specific p-value use \code{"ame_p"}.
 SAS PROC LOGISTIC \code{TYPE3}; Long & Freese 2014 Section 3.5).
 Rendered as \code{value (df)} to disambiguate factor terms
 (k-1 df) from numeric terms (1 df).
+\item Sample columns: \code{"n"} -- per-row N, populated by
+\code{\link[=table_regression_uv]{table_regression_uv()}} screens (each predictor block is its
+own fit); models without per-row N data drop the column.
+\code{"n_events"} -- outcome event counts as \code{events/N}, per
+factor level (reference row included) and model totals on
+continuous rows, computed on each model's own estimation
+sample (STROBE item 16's "data behind the association";
+NEJM-style \verb{no. of events/total no.}). Binary (binomial)
+outcomes only -- other models raise \code{spicy_invalid_input}.
 }
 
 \strong{Group tokens} (presets) expand to a fixed atomic vector

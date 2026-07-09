@@ -69,7 +69,9 @@
 #'   `c("n", "b", "ci", "p")` -- the `tbl_uvregression` column set;
 #'   `"n"` is the per-predictor sample size. The multivariable group
 #'   carries no `N` column (its single `n` is a fit-statistics row,
-#'   as in the reference layouts).
+#'   as in the reference layouts). For binary outcomes, add
+#'   `"n_events"` for outcome event counts as `events/N` per factor
+#'   level (each column group counts on its own estimation sample).
 #' @param title Table title; `NULL` (default) builds
 #'   `"Univariable and multivariable <type> regression: <outcome>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,

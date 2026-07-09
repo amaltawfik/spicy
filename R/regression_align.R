@@ -79,6 +79,19 @@ align_frames <- function(
     } else {
       rep(NA_real_, nrow(cf))
     }
+    # Optional per-row outcome event counts (show_columns "n_events",
+    # binomial fits): events observed in the row's factor level /
+    # model totals for continuous rows. NA elsewhere.
+    events_col <- if (!is.null(cf$events)) {
+      as.numeric(cf$events)
+    } else {
+      rep(NA_real_, nrow(cf))
+    }
+    events_n_col <- if (!is.null(cf$events_n)) {
+      as.numeric(cf$events_n)
+    } else {
+      rep(NA_real_, nrow(cf))
+    }
     data.frame(
       model_id         = rep(model_ids[i], nrow(cf)),
       outcome          = rep(frames[[i]]$info$dv, nrow(cf)),
@@ -93,6 +106,8 @@ align_frames <- function(
       p_value          = cf$p_value,
       test_type        = test_type_col,
       n_obs            = n_obs_col,
+      events           = events_col,
+      events_n         = events_n_col,
       is_singular      = cf$term %in% singular_terms,
       is_intercept     = cf$term == "(Intercept)",
       is_reference     = cf$is_ref,

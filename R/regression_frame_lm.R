@@ -70,11 +70,17 @@ as_regression_frame.lm <- function(fit,
     use_ame_satterthwaite = use_ame_satterthwaite,
     cluster_name          = cluster_name
   )
-  .legacy_to_frame(legacy, fit,
-                   vcov_kind  = vcov,
-                   vcov_label = vcov_label,
-                   ci_level   = ci_level,
-                   ci_method  = ci_method)
+  frame <- .legacy_to_frame(legacy, fit,
+                            vcov_kind  = vcov,
+                            vcov_label = vcov_label,
+                            ci_level   = ci_level,
+                            ci_method  = ci_method)
+  # Outcome event counts (binomial fits; no-op otherwise -- the
+  # orchestrator gate errors on frames left without event data).
+  if ("n_events" %in% show_columns) {
+    frame <- .attach_event_counts(frame, fit)
+  }
+  frame
 }
 
 #' `as_regression_frame()` method for `glm` fits.
@@ -478,4 +484,60 @@ as_regression_frame.glm <- function(fit, ...) {
     exponentiate        = TRUE,
     standardise_refit   = TRUE
   )
+}
+
+
+# ---- Outcome event counts (show_columns "n_events") ------------------------
+
+# 0/1 event indicator from a binary regression response, or NULL when
+# the response is not an ungrouped binary outcome (grouped cbind()
+# matrices and proportion responses are refused by the orchestrator
+# gate with a clear error). glm convention: for a 2-level factor the
+# SECOND level is the event.
+.binary_event_indicator <- function(y) {
+  if (is.logical(y)) return(as.integer(y))
+  if (is.factor(y) && nlevels(y) == 2L) {
+    return(as.integer(y == levels(y)[2L]))
+  }
+  if (is.numeric(y) && is.null(dim(y)) && all(y %in% c(0, 1))) {
+    return(as.integer(y))
+  }
+  NULL
+}
+
+
+# Attach per-row outcome event counts to a binomial glm frame
+# (show_columns "n_events"). Factor-level rows -- reference row
+# included -- carry the events and row count OF THAT LEVEL in the
+# fit's own estimation sample (STROBE item 16: the data behind the
+# association, per category); continuous, intercept, and
+# polynomial-contrast rows carry the model totals (gtsummary
+# add_nevent convention). Non-binomial or grouped-response fits are
+# left untouched; the table_regression() gate then errors.
+.attach_event_counts <- function(frame, fit) {
+  fam <- tryCatch(stats::family(fit)$family, error = function(e) "")
+  if (!fam %in% c("binomial", "quasibinomial")) return(frame)
+  mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  if (is.null(mf)) return(frame)                                       # nocov
+  ev <- .binary_event_indicator(stats::model.response(mf))
+  if (is.null(ev)) return(frame)
+  cf <- frame$coefs
+  events <- rep(sum(ev), nrow(cf))
+  n_vec  <- rep(length(ev), nrow(cf))
+  for (k in seq_len(nrow(cf))) {
+    pv <- cf$parent_var[k]
+    lv <- cf$label[k]
+    if (!identical(pv, cf$term[k]) && pv %in% names(mf) &&
+          (is.factor(mf[[pv]]) || is.character(mf[[pv]]))) {
+      sel <- as.character(mf[[pv]]) == lv
+      if (any(sel)) {
+        events[k] <- sum(ev[sel])
+        n_vec[k]  <- sum(sel)
+      }
+    }
+  }
+  cf$events   <- events
+  cf$events_n <- n_vec
+  frame$coefs <- cf
+  frame
 }
