@@ -98,6 +98,7 @@ wider than the console. Wraps the internal renderer
 <span>  group_sep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  total_row_idx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"total_row_idx"</span><span class="op">)</span>,</span>
 <span>  display_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fit_stats_start <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -191,6 +192,17 @@ used to override <code>colnames(x)</code> for the printed header text only.
 Sliced per panel when the table is split across stacked panels.
 Forwarded to <code><a href="build_ascii_table.html">build_ascii_table()</a></code>; see that function for full
 semantics. Defaults to <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-fit-stats-start">fit_stats_start<a class="anchor" aria-label="anchor" href="#arg-fit-stats-start"></a></dt>
+<dd><p>Optional 1-based index of the first
+model-level statistics row (the block below the dashed rule in
+regression tables). When the table splits into stacked panels,
+continuation panels drop the rows of that block whose every
+visible data cell is blank – model-level statistics print once,
+under the panel that carries their values, instead of leaving
+empty <code>n</code> / <code>AIC</code> stub rows on every continuation panel. <code>NULL</code>
+(default) keeps all rows on all panels.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

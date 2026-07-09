@@ -1325,10 +1325,6 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 #>  smoking:        │                      
 #>    No (ref.)     │       –         –    
 #>    Yes           │ [-3.89, 0.45]   .121 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │                      
-#>  R²              │                      
-#>  Adj.R²          │                      
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -1439,7 +1435,7 @@ table_regression(
 #>  F-change        │     –                  +18.26                  +2.41        
 #>  p (change)      │     –                    <.001                   .121       
 #> 
-#>                    Step  
+#>                    Step… 
 #>                    ───── 
 #>  Variable        │   p   
 #> ─────────────────┼───────
@@ -1451,13 +1447,6 @@ table_regression(
 #>  smoking:        │       
 #>    No (ref.)     │  –    
 #>    Yes           │  .121 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  n               │       
-#>  R²              │       
-#>  Adj.R²          │       
-#>  ΔR²             │       
-#>  F-change        │       
-#>  p (change)      │       
 #> 
 #> Note. Linear regression models.
 #> Std. errors: classical (OLS).
@@ -1501,10 +1490,6 @@ table_regression(
 #>  smoking:        │       
 #>    No (ref.)     │  –    
 #>    Yes           │  .313 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  n               │       
-#>  R²              │       
-#>  Adj.R²          │       
 #> 
 #> Note. Linear regression models.
 #> Std. errors:
@@ -1616,7 +1601,6 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                  
 #>  N (Subject)                     │   18                  
-#>  ICC                             │                       
 #>  R² (marginal)                   │    0.29               
 #>  R² (conditional)                │    0.79               
 #>  AIC                             │ 1763.9                

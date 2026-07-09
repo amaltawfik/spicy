@@ -26,6 +26,7 @@ spicy_print_table(
   group_sep_rows = integer(0),
   total_row_idx = attr(x, "total_row_idx"),
   display_labels = NULL,
+  fit_stats_start = NULL,
   ...
 )
 ```
@@ -123,6 +124,16 @@ spicy_print_table(
   the table is split across stacked panels. Forwarded to
   [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md);
   see that function for full semantics. Defaults to `NULL`.
+
+- fit_stats_start:
+
+  Optional 1-based index of the first model-level statistics row (the
+  block below the dashed rule in regression tables). When the table
+  splits into stacked panels, continuation panels drop the rows of that
+  block whose every visible data cell is blank – model-level statistics
+  print once, under the panel that carries their values, instead of
+  leaving empty `n` / `AIC` stub rows on every continuation panel.
+  `NULL` (default) keeps all rows on all panels.
 
 - ...:
 

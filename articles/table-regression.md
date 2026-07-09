@@ -375,7 +375,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  F-change        │     –                   +2.28                 +28.13        
 #>  p (change)      │     –                     .132                  <.001       
 #> 
-#>                    Model 
+#>                    Mode… 
 #>                    ───── 
 #>  Variable        │   p   
 #> ─────────────────┼───────
@@ -388,13 +388,6 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>    No (ref.)     │  –    
 #>    Yes           │  .119 
 #>  bmi             │ <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  n               │       
-#>  R²              │       
-#>  Adj.R²          │       
-#>  ΔR²             │       
-#>  F-change        │       
-#>  p (change)      │       
 #> 
 #> Note. Linear regression models.
 #> Std. errors: classical (OLS).
@@ -1327,7 +1320,6 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                  
 #>  N (Subject)                     │   18                  
-#>  ICC                             │                       
 #>  R² (marginal)                   │    0.29               
 #>  R² (conditional)                │    0.79               
 #>  AIC                             │ 1763.9                
