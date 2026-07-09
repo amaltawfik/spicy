@@ -103,3 +103,12 @@ table_regression_uv(
 )
 }
 }
+\references{
+Batra, N. et al. (Eds.) (2021). \emph{The Epidemiologist R Handbook},
+Univariate and multivariable regression.
+\url{https://epirhandbook.com/en/new_pages/regression.html}
+
+Sjoberg, D.D., Whiting, K., Curry, M., Lavery, J.A., &
+Larmarange, J. (2021). Reproducible summary tables with the
+gtsummary package. \emph{The R Journal}, 13(1), 570-580.
+}

@@ -80,6 +80,15 @@
 #'
 #' @return See [table_regression()] (same output contract).
 #'
+#' @references
+#' Batra, N. et al. (Eds.) (2021). *The Epidemiologist R Handbook*,
+#' Univariate and multivariable regression.
+#' <https://epirhandbook.com/en/new_pages/regression.html>
+#'
+#' Sjoberg, D.D., Whiting, K., Curry, M., Lavery, J.A., &
+#' Larmarange, J. (2021). Reproducible summary tables with the
+#' gtsummary package. *The R Journal*, 13(1), 570-580.
+#'
 #' @examples
 #' \donttest{
 #' table_regression_uv(
