@@ -15,7 +15,7 @@ table_regression_uv(
   data,
   outcome,
   predictors,
-  method = c("glm", "lm"),
+  method = c("glm", "lm", "coxph"),
   family = stats::binomial(),
   multivariable = TRUE,
   complete_cases = FALSE,
@@ -33,24 +33,27 @@ table_regression_uv(
 
 - outcome:
 
-  The outcome column (unquoted name, tidyselect).
+  The outcome column (unquoted name, tidyselect). For
+  `method = "coxph"`, a `Surv(time, status)` expression evaluated in
+  `data` (the `tbl_uvregression` convention).
 
 - predictors:
 
   Candidate predictor columns (tidyselect, e.g. `c(age, sex, education)`
-  or `where(is.numeric)`). The outcome is dropped from the selection
-  automatically.
+  or `where(is.numeric)`). The outcome column(s) are dropped from the
+  selection automatically.
 
 - method:
 
-  `"glm"` (default) or `"lm"`. Cox screening is planned with the
-  survival estimands work.
+  `"glm"` (default), `"lm"`, or `"coxph"` (requires the `survival`
+  package; estimates render as HRs with `exponentiate = TRUE`).
 
 - family:
 
   A [stats::family](https://rdrr.io/r/stats/family.html) object for
   `method = "glm"`. Default
-  [`binomial()`](https://rdrr.io/r/stats/family.html).
+  [`binomial()`](https://rdrr.io/r/stats/family.html). Refused for
+  `method = "coxph"`.
 
 - multivariable:
 

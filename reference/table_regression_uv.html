@@ -91,7 +91,7 @@ presentation of applied epidemiology (the
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">outcome</span>,</span>
 <span>  <span class="va">predictors</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"glm"</span>, <span class="st">"lm"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"glm"</span>, <span class="st">"lm"</span>, <span class="st">"coxph"</span><span class="op">)</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  multivariable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  complete_cases <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -110,23 +110,26 @@ presentation of applied epidemiology (the
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
-<dd><p>The outcome column (unquoted name, tidyselect).</p></dd>
+<dd><p>The outcome column (unquoted name, tidyselect). For
+<code>method = "coxph"</code>, a <code>Surv(time, status)</code> expression evaluated
+in <code>data</code> (the <code>tbl_uvregression</code> convention).</p></dd>
 
 
 <dt id="arg-predictors">predictors<a class="anchor" aria-label="anchor" href="#arg-predictors"></a></dt>
 <dd><p>Candidate predictor columns (tidyselect, e.g.
-<code>c(age, sex, education)</code> or <code>where(is.numeric)</code>). The outcome is
-dropped from the selection automatically.</p></dd>
+<code>c(age, sex, education)</code> or <code>where(is.numeric)</code>). The outcome
+column(s) are dropped from the selection automatically.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p><code>"glm"</code> (default) or <code>"lm"</code>. Cox screening is planned
-with the survival estimands work.</p></dd>
+<dd><p><code>"glm"</code> (default), <code>"lm"</code>, or <code>"coxph"</code> (requires
+the <code>survival</code> package; estimates render as HRs with
+<code>exponentiate = TRUE</code>).</p></dd>
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
 <dd><p>A <a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family</a> object for <code>method = "glm"</code>.
-Default <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>.</p></dd>
+Default <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>. Refused for <code>method = "coxph"</code>.</p></dd>
 
 
 <dt id="arg-multivariable">multivariable<a class="anchor" aria-label="anchor" href="#arg-multivariable"></a></dt>
