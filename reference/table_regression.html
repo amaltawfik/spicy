@@ -866,7 +866,9 @@ side-by-side layout; restore it explicitly when needed).</p>
 <h3 id="show-fit-stats-model-level-rows-below-the-coefficients"><code>show_fit_stats</code> – model-level rows below the coefficients<a class="anchor" aria-label="anchor" href="#show-fit-stats-model-level-rows-below-the-coefficients"></a></h3>
 
 
-<ul><li><p>Counts: <code>"nobs"</code>, <code>"weighted_nobs"</code>.</p></li>
+<ul><li><p>Counts: <code>"nobs"</code>, <code>"weighted_nobs"</code>, <code>"n_events"</code> (Cox
+models: number of events, reported alongside <code>n</code> per the
+field convention; blank for other classes).</p></li>
 <li><p>Variance explained (<code>lm</code> only): <code>"r2"</code>, <code>"adj_r2"</code>,
 <code>"omega2"</code>.</p></li>
 <li><p>Pseudo-\(R^2\) (<code>glm</code> and ordinal <code>polr</code> / <code>clm</code>):
@@ -888,7 +890,8 @@ comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
 <code>c("nobs", "r2", "adj_r2")</code>; glm and ordinal <code>polr</code> / <code>clm</code> fits get
 <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>;
 mixed lm + glm sets union both groups (the renderer per-row
-em-dashes the inappropriate cell). When <code>nested = TRUE</code>, the
+em-dashes the inappropriate cell); Cox fits get
+<code>c("nobs", "n_events", "AIC")</code>. When <code>nested = TRUE</code>, the
 class-aware default is extended with change tokens
 (<code>c("r2_change", "f_change", "p_change")</code> for lm,
 <code>c("lrt_change", "p_change")</code> for glm). The order of tokens in

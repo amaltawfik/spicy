@@ -76,11 +76,12 @@ table_regression(cx, exponentiate = TRUE)
 #>  ph.ecog       │    1.60  0.18  [1.28, 2.00]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n             │  226                               
+#>  N events      │  163                               
 #>  AIC           │ 1454.2                             
 #> 
 #> Note. Cox proportional hazards regression.
 #> Std. errors: Wald asymptotic (z).
-#> Events: 163 of 226; Concordance C = 0.64 (SE = 0.03).
+#> Concordance C = 0.64 (SE = 0.03).
 #> HR = hazard ratio.
 #> Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).
 ```
@@ -145,11 +146,12 @@ table_regression(cx, vcov = "CR0", cluster = ~inst,
 #>  ph.ecog       │    1.60  0.19  [1.27, 2.01]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n             │  226                               
+#>  N events      │  163                               
 #>  AIC           │ 1454.2                             
 #> 
 #> Note. Cox proportional hazards regression.
 #> Std. errors: cluster-robust (Lin-Wei), clusters by inst.
-#> Events: 163 of 226; Concordance C = 0.64 (SE = 0.03).
+#> Concordance C = 0.64 (SE = 0.03).
 #> HR = hazard ratio.
 #> Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).
 ```
@@ -186,14 +188,15 @@ table_regression(list(cx0, cx), nested = TRUE, exponentiate = TRUE,
 #>  ph.ecog       │                    1.60   <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n             │  226             226            
+#>  N events      │  163             163            
 #>  AIC           │ 1469.0          1454.2          
 #>  Δχ²           │     –            +16.78         
 #>  p (change)    │     –              <.001        
 #> 
 #> Note. Cox proportional hazards regression models.
 #> Std. errors: Wald asymptotic (z).
-#> Model 1: Events: 163 of 226; Concordance C = 0.60 (SE = 0.03).
-#> Model 2: Events: 163 of 226; Concordance C = 0.64 (SE = 0.03).
+#> Model 1: Concordance C = 0.60 (SE = 0.03).
+#> Model 2: Concordance C = 0.64 (SE = 0.03).
 #> HR = hazard ratio.
 #> Coefficients exponentiated and displayed as HR; CI bounds exponentiated.
 ```
@@ -278,11 +281,11 @@ table_regression(cph_fit, vcov = "CR0", cluster = ~inst,
 #>    Female      │    0.60  0.08  [0.47, 0.78]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n             │  226                               
+#>  N events      │  163                               
 #>  AIC           │ 1469.0                             
 #> 
 #> Note. Cox proportional hazards regression (rms).
 #> Std. errors: cluster-robust (Lin-Wei), clusters by inst.
-#> Events: 163 of 226.
 #> HR = hazard ratio.
 #> Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).
 ```
@@ -350,7 +353,8 @@ table_regression(cx, exponentiate = TRUE, output = "data.frame")
 #> 4        Female    0.57 0.10 [0.41, 0.80] <.001
 #> 5       ph.ecog    1.60 0.18 [1.28, 2.00] <.001
 #> 6             n  226                           
-#> 7           AIC 1454.2
+#> 7      N events  163                           
+#> 8           AIC 1454.2
 ```
 
 ``` r
@@ -361,9 +365,9 @@ table_regression(cx, exponentiate = TRUE, output = "gt")
 [TABLE]
 
 *Note.* Cox proportional hazards regression. Std. errors: Wald
-asymptotic (z). Events: 163 of 226; Concordance C = 0.64 (SE = 0.03). HR
-= hazard ratio. Coefficients exponentiated and displayed as HR; SE on
-the HR scale (delta method); CI bounds exponentiated (asymmetric).
+asymptotic (z). Concordance C = 0.64 (SE = 0.03). HR = hazard ratio.
+Coefficients exponentiated and displayed as HR; SE on the HR scale
+(delta method); CI bounds exponentiated (asymmetric).
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame;
 with `exponentiate = TRUE` the estimates and CI bounds are on the ratio

@@ -58,6 +58,10 @@ gains first-class support for ~30 model classes beyond `lm` / `glm`:
   [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) /
   `survreg`, [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html),
   [`flexsurv::flexsurvreg`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md).
+  Cox tables report `n` and `N events` as fit-stat rows (the field
+  convention – EpiRHandbook survival chapter, Stata `stcox`;
+  `show_fit_stats` token `"n_events"`), with the concordance kept as a
+  footer note.
 - Categorical:
   [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
   [`mlogit::mlogit`](https://rdrr.io/pkg/mlogit/man/mlogit.html),

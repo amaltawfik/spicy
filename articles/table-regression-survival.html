@@ -177,11 +177,12 @@ instead: the <strong>number of events</strong> and the
 <span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span>    1.60  0.18  [1.28, 2.00]  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                               </span></span>
+<span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1454.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Events: 163 of 226; Concordance C = 0.64 (SE = 0.03).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Concordance C = 0.64 (SE = 0.03).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 <p>Reading the table:</p>
@@ -245,11 +246,12 @@ variance — the grouped score (dfbeta) sandwich that
 <span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span>    1.60  0.19  [1.27, 2.01]  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                               </span></span>
+<span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1454.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (Lin-Wei), clusters by inst.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Events: 163 of 226; Concordance C = 0.64 (SE = 0.03).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Concordance C = 0.64 (SE = 0.03).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 <p>Two lessons here. First, the mechanics: the cluster variable must
@@ -285,14 +287,15 @@ inflation ritual misreads it.</p>
 <span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span>                    1.60   &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226             226            </span></span>
+<span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163             163            </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1469.0          1454.2          </span></span>
 <span><span class="co">#&gt;  Δχ²           <span style="color: #9E9E9E;">│</span>     –            +16.78         </span></span>
 <span><span class="co">#&gt;  p (change)    <span style="color: #9E9E9E;">│</span>     –              &lt;.001        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Events: 163 of 226; Concordance C = 0.60 (SE = 0.03).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Events: 163 of 226; Concordance C = 0.64 (SE = 0.03).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Concordance C = 0.60 (SE = 0.03).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Concordance C = 0.64 (SE = 0.03).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; CI bounds exponentiated.</span></span></span></code></pre></div>
 <p>Adding <code>ph.ecog</code> buys a chi-squared change of 16.78 on one
@@ -375,11 +378,11 @@ or the robust request errors with that exact instruction:</p>
 <span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span>    0.60  0.08  [0.47, 0.78]  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                               </span></span>
+<span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1469.0                             </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression (rms).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (Lin-Wei), clusters by inst.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Events: 163 of 226.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 </div>
@@ -442,7 +445,8 @@ table:</p>
 <span><span class="co">#&gt; 4        Female    0.57 0.10 [0.41, 0.80] &lt;.001</span></span>
 <span><span class="co">#&gt; 5       ph.ecog    1.60 0.18 [1.28, 2.00] &lt;.001</span></span>
 <span><span class="co">#&gt; 6             n  226                           </span></span>
-<span><span class="co">#&gt; 7           AIC 1454.2</span></span></code></pre></div>
+<span><span class="co">#&gt; 7      N events  163                           </span></span>
+<span><span class="co">#&gt; 8           AIC 1454.2</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -767,6 +771,22 @@ n
 </td>
 </tr>
 <tr>
+<td headers="Variable" class="gt_row gt_left">
+N events
+</td>
+<td headers="HR" class="gt_row gt_center">
+ 163.00
+</td>
+<td headers="SE" class="gt_row gt_center">
+</td>
+<td headers="95% CI: LL" class="gt_row gt_center">
+</td>
+<td headers="95% CI: UL" class="gt_row gt_center">
+</td>
+<td headers="p" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 AIC
 </td>
@@ -786,9 +806,9 @@ AIC
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Cox proportional hazards regression. Std. errors: Wald
-asymptotic (z). Events: 163 of 226; Concordance C = 0.64 (SE = 0.03). HR
-= hazard ratio. Coefficients exponentiated and displayed as HR; SE on
-the HR scale (delta method); CI bounds exponentiated (asymmetric).
+asymptotic (z). Concordance C = 0.64 (SE = 0.03). HR = hazard ratio.
+Coefficients exponentiated and displayed as HR; SE on the HR scale
+(delta method); CI bounds exponentiated (asymmetric).
 </div>
 </div>
 </div>

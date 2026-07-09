@@ -808,7 +808,9 @@ restore it explicitly when needed).
 
 ### `show_fit_stats` – model-level rows below the coefficients
 
-- Counts: `"nobs"`, `"weighted_nobs"`.
+- Counts: `"nobs"`, `"weighted_nobs"`, `"n_events"` (Cox models: number
+  of events, reported alongside `n` per the field convention; blank for
+  other classes).
 
 - Variance explained (`lm` only): `"r2"`, `"adj_r2"`, `"omega2"`.
 
@@ -833,9 +835,10 @@ Default (resolved when `NULL`) is class-aware: lm fits get
 `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
 `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`; mixed
 lm + glm sets union both groups (the renderer per-row em-dashes the
-inappropriate cell). When `nested = TRUE`, the class-aware default is
-extended with change tokens (`c("r2_change", "f_change", "p_change")`
-for lm, `c("lrt_change", "p_change")` for glm). The order of tokens in
+inappropriate cell); Cox fits get `c("nobs", "n_events", "AIC")`. When
+`nested = TRUE`, the class-aware default is extended with change tokens
+(`c("r2_change", "f_change", "p_change")` for lm,
+`c("lrt_change", "p_change")` for glm). The order of tokens in
 `show_fit_stats` controls the order of the rows.
 
 ## Multi-model semantics
