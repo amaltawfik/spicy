@@ -140,6 +140,23 @@ for the walk-throughs.
 
 ### New features
 
+- New `show_columns` token `"n_events"`: outcome event counts as
+  `events/N` next to the estimates – per factor level (reference row
+  included: the reference category’s counts are exactly what a reader
+  needs to assess the OR) and model totals on continuous rows, computed
+  on each model’s own estimation sample. The format follows STROBE item
+  16 (“the number of cases and controls that were exposed or not” –
+  numerator AND denominator per category) and the NEJM “no. of
+  events/total no.” table style; gtsummary’s `add_nevent()` shows the
+  bare count only. Works in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and in
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  screens (where the univariable and multivariable groups each count on
+  their own complete cases). Binary (binomial) outcomes only: other
+  models raise `spicy_invalid_input` naming the offending model; Cox
+  fits keep their `n_events` FIT-STATISTIC row. Opt-in everywhere (the
+  default column sets are unchanged).
 - New
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
   the univariable screening table of applied epidemiology (the

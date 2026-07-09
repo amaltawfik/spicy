@@ -146,7 +146,9 @@ table note.</p></dd>
 <code>c("n", "b", "ci", "p")</code> – the <code>tbl_uvregression</code> column set;
 <code>"n"</code> is the per-predictor sample size. The multivariable group
 carries no <code>N</code> column (its single <code>n</code> is a fit-statistics row,
-as in the reference layouts).</p></dd>
+as in the reference layouts). For binary outcomes, add
+<code>"n_events"</code> for outcome event counts as <code>events/N</code> per factor
+level (each column group counts on its own estimation sample).</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
