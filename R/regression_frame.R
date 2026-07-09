@@ -682,17 +682,24 @@ validate_regression_frame <- function(frame) {
 # "(REML)" footer label describe the fit but not the statistic, and
 # broke reproduction against ranova.
 #
-# Known limitation (recorded): prior weights on the mixed fit are NOT
-# propagated to the null lm/glm/gls refit -- the whole-block LRT is
-# only exact for unweighted fits (pre-existing on the ML path too).
 # REML log-likelihood of the fixed-effects-only Gaussian null model,
-# via nlme::gls(method = "REML") on the same data. Returns NA_real_
-# when gls is unavailable or fails -- callers then return NULL (no
-# LRT line) rather than printing a number under a wrong label.
-.null_reml_loglik_lm <- function(null_f, data) {
+# via nlme::gls(method = "REML") on the same data. Prior weights (when
+# the mixed fit carried any) enter as a fixed variance function --
+# Var(e_i) = sigma^2 / w_i, i.e. varFixed(~ 1/w) -- which reproduces
+# both lmerTest::ranova()'s weighted null and logLik(lm(w), REML=TRUE)
+# exactly (cross-checked 2026-07-09). Returns NA_real_ when gls is
+# unavailable or fails -- callers then return NULL (no LRT line)
+# rather than printing a number under a wrong label.
+.null_reml_loglik_lm <- function(null_f, data, weights = NULL) {
   if (!requireNamespace("nlme", quietly = TRUE)) return(NA_real_)      # nocov
   fit0 <- tryCatch(
-    nlme::gls(null_f, data = data, method = "REML"),
+    if (is.null(weights)) {
+      nlme::gls(null_f, data = data, method = "REML")
+    } else {
+      data[[".spicy_vw."]] <- 1 / weights
+      nlme::gls(null_f, data = data, method = "REML",
+                weights = nlme::varFixed(~.spicy_vw.))
+    },
     error = function(e) NULL
   )
   if (is.null(fit0)) return(NA_real_)
@@ -787,11 +794,16 @@ validate_regression_frame <- function(frame) {
     error = function(e) NULL
   )
   if (is.null(null_f)) return(NULL)                                    # nocov
+  # Prior weights ride the model frame ("(weights)" column); the null
+  # refit must carry them or its likelihood is not comparable -- the
+  # unweighted null inflated chi2 (e.g. 103.91 vs ranova's 102.05 on
+  # weighted sleepstudy). NULL for unweighted fits (lm/glm accept it).
+  w <- stats::model.weights(data)
   fit_null <- tryCatch(
     if (is_gaussian) {
-      stats::lm(null_f, data = data)
+      stats::lm(null_f, data = data, weights = w)
     } else {
-      stats::glm(null_f, data = data, family = fam)
+      stats::glm(null_f, data = data, family = fam, weights = w)
     },
     error = function(e) NULL
   )
@@ -799,7 +811,7 @@ validate_regression_frame <- function(frame) {
 
   ll_full <- as.numeric(stats::logLik(fit_full_ml))
   ll_null <- if (is_reml) {
-    .null_reml_loglik_lm(null_f, data)
+    .null_reml_loglik_lm(null_f, data, weights = w)
   } else {
     as.numeric(stats::logLik(fit_null))
   }
@@ -853,28 +865,33 @@ validate_regression_frame <- function(frame) {
     error = function(e) NULL
   )
   if (is.null(null_f)) return(NULL)                                    # nocov
+  # ENGINE-NATIVE null: refit with glmmTMB itself, dropping only the
+  # conditional random effects (which is what df_q counts below).
+  # Same estimator (TMB), same REML flag, same weight convention --
+  # glmmTMB weights MULTIPLY the log-likelihood (frequency weights),
+  # they are not lm/lmer precision weights, so an lm/gls null is not
+  # likelihood-comparable for weighted fits. The zi / dispersion
+  # components stay in the null untouched. Cross-checked 2026-07-09:
+  # reproduces the gls REML null and the glm ML null exactly for
+  # unweighted fits, and gives nbinom / zero-inflated fits a valid
+  # LRT (the old glm() null could not fit those families at all).
+  w <- stats::model.weights(data)
+  is_reml <- isTRUE(tryCatch(fit$modelInfo$REML, error = function(e) FALSE))
+  args <- list(null_f, data = data, family = fit$modelInfo$family,
+               REML = is_reml)
+  zif <- tryCatch(fit$modelInfo$allForm$ziformula,   error = function(e) NULL)
+  dif <- tryCatch(fit$modelInfo$allForm$dispformula, error = function(e) NULL)
+  if (!is.null(w))   args$weights     <- w
+  if (!is.null(zif)) args$ziformula   <- zif
+  if (!is.null(dif)) args$dispformula <- dif
   fit_null <- tryCatch(
-    if (is_gaussian) {
-      stats::lm(null_f, data = data)
-    } else {
-      stats::glm(null_f, data = data, family = fam)
-    },
+    suppressWarnings(do.call(glmmTMB::glmmTMB, args)),
     error = function(e) NULL
   )
   if (is.null(fit_null)) return(NULL)
 
   ll_full <- as.numeric(stats::logLik(fit))
-  # Likelihood follows the fit's estimator: a Gaussian glmmTMB fitted
-  # with REML = TRUE compares to the REML logLik of the null lm (via
-  # gls). Non-Gaussian REML fits keep the ML null (no simple REML
-  # null exists for a glm) -- a documented approximation.
-  is_reml_gauss <- is_gaussian &&
-    isTRUE(tryCatch(fit$modelInfo$REML, error = function(e) FALSE))
-  ll_null <- if (is_reml_gauss) {
-    .null_reml_loglik_lm(null_f, data)
-  } else {
-    as.numeric(stats::logLik(fit_null))
-  }
+  ll_null <- as.numeric(stats::logLik(fit_null))
   if (!is.finite(ll_null)) return(NULL)
   chi2 <- 2 * (ll_full - ll_null)
 
@@ -909,14 +926,29 @@ validate_regression_frame <- function(frame) {
   # trivially available here since nlme is loaded); an ML lme
   # compares to the ML logLik of lm.
   is_reml <- identical(fit$method, "REML")
-  fit_null <- tryCatch(stats::lm(no_re_formula, data = data),
-                        error = function(e) NULL)
-  if (is.null(fit_null)) return(NULL)  # nocov -- null lm fits on the same data
-
   ll_full <- as.numeric(stats::logLik(fit))
-  ll_null <- if (is_reml) {
+
+  var_struct <- fit$modelStruct$varStruct
+  cor_struct <- fit$modelStruct$corStruct
+  ll_null <- if (!is.null(var_struct) || !is.null(cor_struct)) {
+    # Within-group variance (weights = varFunc) and/or correlation
+    # structures must survive into the null, or their improvement is
+    # mislabelled as the random-effect test (e.g. varPower Orthodont:
+    # 62.23 against the plain-lm null vs the correct 61.25). gls
+    # accepts the FITTED structures as specs and re-estimates their
+    # parameters on the null model, matching anova(gls, lme).
+    fit0 <- tryCatch(
+      nlme::gls(no_re_formula, data = data, method = fit$method,
+                weights = var_struct, correlation = cor_struct),
+      error = function(e) NULL
+    )
+    if (is.null(fit0)) NA_real_ else as.numeric(stats::logLik(fit0))
+  } else if (is_reml) {
     .null_reml_loglik_lm(no_re_formula, data)
   } else {
+    fit_null <- tryCatch(stats::lm(no_re_formula, data = data),
+                         error = function(e) NULL)
+    if (is.null(fit_null)) return(NULL)  # nocov -- null lm fits on the same data
     as.numeric(stats::logLik(fit_null))
   }
   if (!is.finite(ll_null)) return(NULL)

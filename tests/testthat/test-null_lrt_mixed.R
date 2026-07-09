@@ -203,3 +203,131 @@ test_that("REML fits drop the LRT line (not the table) when the gls null fails",
   expect_null(spicy:::.null_lrt_merMod(.fit_lmer_lrt()))
   expect_null(spicy:::.null_lrt_lme(.fit_lme_lrt()))
 })
+
+
+# ---- 7. Weights and within-group structures reach the null refit ------
+
+test_that("weighted lmer LRT matches ranova exactly (REML and ML)", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("nlme")
+  set.seed(7)
+  d <- lme4::sleepstudy
+  d$w <- runif(nrow(d), 0.5, 2)
+  fitw <- lmerTest::lmer(Reaction ~ Days + (1 | Subject), data = d,
+                         weights = w)
+  out <- spicy:::.null_lrt_merMod(fitw)
+  # Oracle 1: lmerTest::ranova() on the weighted fit.
+  rv <- lmerTest::ranova(fitw)
+  expect_equal(out$chi2, rv$LRT[2], tolerance = 1e-6)
+  # Oracle 2 (independent engine): logLik(lm weighted, REML = TRUE).
+  lmw <- stats::lm(Reaction ~ Days, data = d, weights = w)
+  expect_equal(out$chi2,
+               2 * (as.numeric(stats::logLik(fitw)) -
+                    as.numeric(stats::logLik(lmw, REML = TRUE))),
+               tolerance = 1e-9)
+  # ML estimator: identity against the weighted-lm ML null.
+  fit_ml <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = d,
+                       weights = w, REML = FALSE)
+  expect_equal(spicy:::.null_lrt_merMod(fit_ml)$chi2,
+               2 * (as.numeric(stats::logLik(fit_ml)) -
+                    as.numeric(stats::logLik(lmw))),
+               tolerance = 1e-9)
+})
+
+
+test_that("weighted glmer LRT compares against the weighted glm null", {
+  skip_if_not_installed("lme4")
+  set.seed(11)
+  db <- data.frame(g = factor(rep(1:15, each = 12)),
+                   x = rnorm(180), w2 = sample(1:3, 180, TRUE))
+  db$y <- rbinom(180, 1, stats::plogis(0.3 * db$x +
+                                       rep(rnorm(15, 0, 0.8), each = 12)))
+  fg <- suppressMessages(
+    lme4::glmer(y ~ x + (1 | g), data = db, family = binomial(),
+                weights = w2)
+  )
+  g0 <- stats::glm(y ~ x, data = db, family = binomial(), weights = w2)
+  expect_equal(spicy:::.null_lrt_merMod(fg)$chi2,
+               2 * (as.numeric(stats::logLik(fg)) -
+                    as.numeric(stats::logLik(g0))),
+               tolerance = 1e-9)
+})
+
+
+test_that("lme variance/correlation structures survive into the gls null", {
+  skip_if_not_installed("nlme")
+  # varPower, REML: the null must carry the same variance model, or its
+  # improvement is mislabelled as the random-effect test.
+  fl <- nlme::lme(distance ~ age, data = nlme::Orthodont,
+                  random = ~ 1 | Subject,
+                  weights = nlme::varPower(form = ~age), method = "REML")
+  gn <- nlme::gls(distance ~ age, data = nlme::Orthodont, method = "REML",
+                  weights = nlme::varPower(form = ~age))
+  out <- spicy:::.null_lrt_lme(fl)
+  expect_equal(out$chi2,
+               2 * (as.numeric(stats::logLik(fl)) -
+                    as.numeric(stats::logLik(gn))),
+               tolerance = 1e-6)
+  # nlme has its own LRT of the same comparison: anova(gls, lme).
+  a <- stats::anova(gn, fl)
+  expect_equal(out$chi2, a$L.Ratio[2], tolerance = 1e-6)
+
+  # corAR1, ML: same contract for correlation structures.
+  fo <- nlme::lme(follicles ~ sin(2 * pi * Time), data = nlme::Ovary,
+                  random = ~ 1 | Mare, correlation = nlme::corAR1(),
+                  method = "ML")
+  go <- nlme::gls(follicles ~ sin(2 * pi * Time), data = nlme::Ovary,
+                  correlation = nlme::corAR1(form = ~ 1 | Mare),
+                  method = "ML")
+  expect_equal(spicy:::.null_lrt_lme(fo)$chi2,
+               2 * (as.numeric(stats::logLik(fo)) -
+                    as.numeric(stats::logLik(go))),
+               tolerance = 1e-6)
+})
+
+
+test_that("glmmTMB null is engine-native: weighted, nbinom, unweighted pins", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("lme4")
+  set.seed(7)
+  d <- lme4::sleepstudy
+  d$w <- runif(nrow(d), 0.5, 2)
+  # Weighted gaussian REML: glmmTMB weights multiply the log-likelihood
+  # (frequency weights), so the null must be glmmTMB too -- the old
+  # lm/gls null produced a nonsense negative chi2 here.
+  ftw <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), data = d,
+                          weights = w, REML = TRUE)
+  n0 <- glmmTMB::glmmTMB(Reaction ~ Days, data = d, weights = w,
+                         REML = TRUE)
+  out <- spicy:::.null_lrt_glmmTMB(ftw)
+  expect_equal(out$chi2,
+               2 * (as.numeric(stats::logLik(ftw)) -
+                    as.numeric(stats::logLik(n0))),
+               tolerance = 1e-6)
+  expect_gt(out$chi2, 0)
+
+  # nbinom2: previously NO LRT at all (a glm() null cannot fit nbinom).
+  set.seed(5)
+  dn <- data.frame(g = factor(rep(1:12, each = 10)), x = rnorm(120))
+  dn$y <- stats::rnbinom(120,
+                         mu = exp(0.5 + 0.3 * dn$x +
+                                  rep(rnorm(12, 0, 0.6), each = 10)),
+                         size = 1.5)
+  fn <- glmmTMB::glmmTMB(y ~ x + (1 | g), data = dn,
+                         family = glmmTMB::nbinom2())
+  n0n <- glmmTMB::glmmTMB(y ~ x, data = dn, family = glmmTMB::nbinom2())
+  expect_equal(spicy:::.null_lrt_glmmTMB(fn)$chi2,
+               2 * (as.numeric(stats::logLik(fn)) -
+                    as.numeric(stats::logLik(n0n))),
+               tolerance = 1e-6)
+
+  # Unweighted: the engine-native null reproduces the old gls REML null
+  # (equivalence cross-checked against the lmer chi2 on the same model).
+  ft0 <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
+                          data = lme4::sleepstudy, REML = TRUE)
+  fl0 <- lme4::lmer(Reaction ~ Days + (1 | Subject),
+                    data = lme4::sleepstudy)
+  expect_equal(spicy:::.null_lrt_glmmTMB(ft0)$chi2,
+               spicy:::.null_lrt_merMod(fl0)$chi2, tolerance = 1e-4)
+})
