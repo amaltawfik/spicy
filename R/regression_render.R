@@ -476,6 +476,12 @@ build_column_spec <- function(show_columns, model_ids, label_map,
   ci_hdr <- paste0(ci_pct, "% CI")
   base <- list(
     # B-coefficient family \u2013 atomic, one cell = one component.
+    # Per-row N: the fit sample size, shown on the first row of a
+    # predictor block by univariate-screening frames (n_obs is NA
+    # for ordinary models, rendering as empty cells).
+    n      = list(estimate_type = "B",
+                  fields = "n_obs",
+                  header_short = "N"),
     b      = list(estimate_type = "B",
                   fields = "estimate",
                   header_short = "B"),
@@ -746,6 +752,13 @@ format_cell_value <- function(long_row, cs, stars_map,
   # Single-field cells
   field <- cs$fields
   val <- long_row[[field]][1]
+  # Per-row N: integer, and BLANK (not em-dash) when absent -- an NA
+  # here means "same fit as the block first row", not "no value
+  # exists for this cell".
+  if (field == "n_obs") {
+    if (is.na(val)) return("")
+    return(format(as.integer(val)))
+  }
   if (is.na(val)) return("\u2013")
 
   if (field == "p_value") {
@@ -962,13 +975,14 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
   rows <- list()
   for (tk in show_fit_stats) {
     if (!tk %in% names(fit_stats)) next   # token absent from fit_stats schema
-    # icc / n_groups are mixed-only structure stats: when NO model has a
-    # value (e.g. icc on a random-slope fit, or the tokens on a non-mixed
-    # table), drop the row entirely instead of rendering an empty one.
-    # (n_events joins them: survival-only -- Cox tables report n AND
-    # number of events per the field convention.)
-    if (tk %in% c("icc", "n_groups", "n_events") &&
-          all(is.na(fit_stats[[tk]]))) next
+    # A fit-stat row where NO model has a value informs nobody: drop
+    # it instead of rendering an empty row. Historically this skip was
+    # limited to the mixed-only structure stats (icc / n_groups) and
+    # n_events; generalised 2026-07-09 for the univariate-screen
+    # frames, whose model-level stats are all NA by construction --
+    # any class-appropriate token still shows because at least one
+    # model carries a value.
+    if (all(is.na(fit_stats[[tk]]))) next
     lab <- if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
       sprintf("N (%s)", ng_shared_factor)
     } else {

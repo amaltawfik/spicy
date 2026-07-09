@@ -18,7 +18,10 @@ test_that("the registry matches the as_regression_frame dispatch methods", {
   dispatched <- setdiff(dispatched, "default")
   # (registry rows name the user-facing class; a few dispatch classes are
   # umbrella/inherited entries not listed separately)
-  umbrella <- c("lmerModLmerTest")   # inherits the lmerMod row
+  umbrella <- c("lmerModLmerTest",   # inherits the lmerMod row
+                "spicy_uv_screen")   # internal bundle built by
+                                     # table_regression_uv(), not a
+                                     # user-fitted model class
   expect_true(all(reg$class %in% dispatched),
               info = paste("registry classes without a method:",
                            paste(setdiff(reg$class, dispatched),

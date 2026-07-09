@@ -72,6 +72,13 @@ align_frames <- function(
     } else {
       rep(NA_character_, nrow(cf))
     }
+    # Optional per-row N (univariate screening frames: each predictor
+    # block is its own fit, so N varies by row block). NA elsewhere.
+    n_obs_col <- if (!is.null(cf$n_obs)) {
+      as.numeric(cf$n_obs)
+    } else {
+      rep(NA_real_, nrow(cf))
+    }
     data.frame(
       model_id         = rep(model_ids[i], nrow(cf)),
       outcome          = rep(frames[[i]]$info$dv, nrow(cf)),
@@ -85,6 +92,7 @@ align_frames <- function(
       df               = cf$df,
       p_value          = cf$p_value,
       test_type        = test_type_col,
+      n_obs            = n_obs_col,
       is_singular      = cf$term %in% singular_terms,
       is_intercept     = cf$term == "(Intercept)",
       is_reference     = cf$is_ref,

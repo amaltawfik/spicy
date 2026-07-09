@@ -137,6 +137,7 @@ reference:
       - table_continuous
       - table_continuous_lm
       - table_regression
+      - table_regression_uv
       - as_structured
   - title: Supported models
     desc: >

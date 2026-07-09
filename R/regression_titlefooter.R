@@ -110,6 +110,7 @@ build_regression_footer_from_frames <- function(
       frames_display, displayed_parent_vars = displayed_parent_vars),
     build_reference_outcome_footer_block_from_frames(frames),
     build_reference_alternative_footer_block_from_frames(frames),
+    build_uv_disclosure_footer_block_from_frames(frames),
     build_reference_categories_footer_block_from_frames(frames_display,
                                                         reference_style),
     build_nested_footer_block(nested)

@@ -101,6 +101,25 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## New features
 
+* New `table_regression_uv()`: the univariate screening table of
+  applied epidemiology (the `gtsummary::tbl_uvregression()` +
+  `tbl_merge()` layout; Epidemiologist R Handbook, Univariate and
+  multivariable regression). One `glm` / `lm` fit per candidate
+  predictor rendered as one row block each, merged side by side with
+  the full multivariable model under "Univariate" / "Multivariable"
+  column groups. A per-predictor `N` column is shown by default and,
+  whenever the univariate complete-case samples differ, a table note
+  discloses the range ("N varies by predictor (1163-1175)");
+  `complete_cases = TRUE` forces every fit onto the common sample
+  (also disclosed). Intercepts are hidden by default (gtsummary
+  convention), `p_adjust` treats the whole screen as one family, and
+  `exponentiate`, `vcov` / `cluster` (one value per row of `data`,
+  aligned to each fit automatically), `labels`, engines, and `tidy()`
+  all pass through the ordinary `table_regression()` machinery.
+  Estimates and p-values cross-validated against
+  `gtsummary::tbl_uvregression()` (agreement to 12 decimals; CIs are
+  Wald where gtsummary profiles the likelihood) and robust SEs against
+  `sandwich` / `clubSandwich` per fit.
 * `table_regression(re_ci = "profile")`: the random-effect
   variance-component rows of `lmer` / `glmer` fits can now carry
   **profile-likelihood CIs** (`confint(fit, method = "profile")`,
