@@ -128,11 +128,14 @@ test_that("bootstrap SEs are disclosed in the console note", {
     ),
     collapse = "\n"
   )
+  # The disclosure now carries the valid replicate count
+  # ("(200 replicates)" when every replicate converged; seed-fixed).
   expect_match(
     txt,
-    "Note. Std. errors: nonparametric bootstrap.",
+    "Note. Std. errors: nonparametric bootstrap (",
     fixed = TRUE
   )
+  expect_match(txt, "replicates).", fixed = TRUE)
 })
 
 # ---- cluster_name attribute ----
@@ -405,5 +408,46 @@ test_that("excel output writes the note lines below the table", {
     all_txt,
     "Std. errors: heteroskedasticity-robust (HC3).",
     fixed = TRUE
+  )
+})
+
+
+# ---- bootstrap replicate disclosure (boot_n_valid, 2026-07-09) ------------
+
+test_that("bootstrap note reports the valid replicate count", {
+  set.seed(4)
+  out <- table_continuous_lm(
+    sochealth, select = wellbeing_score, by = physical_activity,
+    vcov = "bootstrap", boot_n = 200, output = "long"
+  )
+  expect_true("boot_n_valid" %in% names(out))
+  expect_true(all(out$boot_n_valid <= 200L, na.rm = TRUE))
+  expect_true(any(is.finite(out$boot_n_valid)))
+  set.seed(4)
+  tbl <- table_continuous_lm(
+    sochealth, select = wellbeing_score, by = physical_activity,
+    vcov = "bootstrap", boot_n = 200
+  )
+  note <- spicy:::.tclm_note_text(tbl)
+  expect_match(note, "nonparametric bootstrap (200 replicates).",
+               fixed = TRUE)
+})
+
+test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
+  out <- table_continuous_lm(
+    sochealth, select = wellbeing_score, by = physical_activity,
+    output = "data.frame"
+  )
+  expect_true(all(is.na(out$boot_n_valid)))
+})
+
+test_that(".tclm_vcov_label ranges heterogeneous replicate counts", {
+  expect_identical(
+    spicy:::.tclm_vcov_label("bootstrap", boot_valid = c(198L, 200L)),
+    "nonparametric bootstrap (198-200 replicates)"
+  )
+  expect_identical(
+    spicy:::.tclm_vcov_label("bootstrap", boot_valid = NULL),
+    "nonparametric bootstrap"
   )
 })

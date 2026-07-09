@@ -136,6 +136,15 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   adjustment <- attr(x, "adjustment") %||% NA_character_
   vcov_type <- attr(x, "vcov_type") %||% "classical"
   cluster_name <- attr(x, "cluster_name") %||% NA_character_
+  # Valid bootstrap replicate counts, one lm fit per table variable:
+  # a single shared count when every fit kept the same number, a
+  # range otherwise (failed replicates are dropped per fit).
+  boot_valid <- if ("boot_n_valid" %in% names(x)) {
+    v <- unique(stats::na.omit(as.integer(x[["boot_n_valid"]])))
+    if (length(v)) v else NULL
+  } else {
+    NULL
+  }
 
   lines <- character()
   if (length(covariates) > 0L && !is.na(adjustment)) {
@@ -153,7 +162,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       lines,
       paste0(
         "Std. errors: ",
-        .tclm_vcov_label(vcov_type, cluster_name),
+        .tclm_vcov_label(vcov_type, cluster_name, boot_valid),
         "."
       )
     )
@@ -169,7 +178,10 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # `cluster_name` (the resolved cluster column name, or NA when the
 # cluster vector was supplied without a recoverable name) is only
 # used by the CR* branch.
-.tclm_vcov_label <- function(vcov_type, cluster_name = NA_character_) {
+# `boot_valid`: integer vector of valid bootstrap replicate counts
+# (one lm fit per table variable); NULL outside vcov = "bootstrap".
+.tclm_vcov_label <- function(vcov_type, cluster_name = NA_character_,
+                             boot_valid = NULL) {
   if (startsWith(vcov_type, "HC")) {
     return(sprintf("heteroskedasticity-robust (%s)", vcov_type))
   }
@@ -184,7 +196,14 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     return(label)
   }
   if (identical(vcov_type, "bootstrap")) {
-    return("nonparametric bootstrap")
+    reps <- if (is.null(boot_valid) || !length(boot_valid)) {
+      ""
+    } else if (length(boot_valid) == 1L) {
+      sprintf(" (%d replicates)", boot_valid)
+    } else {
+      sprintf(" (%d-%d replicates)", min(boot_valid), max(boot_valid))
+    }
+    return(paste0("nonparametric bootstrap", reps))
   }
   if (identical(vcov_type, "jackknife")) {
     return("jackknife")

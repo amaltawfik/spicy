@@ -39,7 +39,8 @@ test_that("table_continuous_lm returns expected raw structure", {
       "r2",
       "adj_r2",
       "n",
-      "weighted_n"
+      "weighted_n",
+      "boot_n_valid"
     )
   )
   expect_equal(nrow(out), 6L)
@@ -1466,7 +1467,7 @@ test_that("as.data.frame.spicy_continuous_lm_table strips spicy classes/attrs", 
   )
   expect_equal(attr(df, "by_var"), "sex")
   # Same content: 28 columns + same number of rows.
-  expect_equal(ncol(df), 28L)
+  expect_equal(ncol(df), 29L)  # + boot_n_valid (2026-07-09)
   expect_equal(nrow(df), nrow(out))
   # Original object is unchanged.
   expect_true(inherits(out, "spicy_continuous_lm_table"))
@@ -1482,7 +1483,7 @@ test_that("as_tibble.spicy_continuous_lm_table returns a tbl_df", {
   )
   tib <- tibble::as_tibble(out)
   expect_s3_class(tib, "tbl_df")
-  expect_equal(ncol(tib), 28L)
+  expect_equal(ncol(tib), 29L)  # + boot_n_valid (2026-07-09)
   expect_equal(nrow(tib), nrow(out))
   expect_true(inherits(out, "spicy_continuous_lm_table"))
 })

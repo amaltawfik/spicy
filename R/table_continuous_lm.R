@@ -1574,6 +1574,10 @@ fit_numeric_predictor_lm_rows <- function(
     adj_r2 = model_stats$adj_r2,
     n = length(y),
     weighted_n = if (is.null(weights)) NA_real_ else sum(weights),
+    # Valid bootstrap replicate count (NA outside vcov = "bootstrap"):
+    # surfaces in the table note, mirroring table_regression's
+    # "bootstrap (N replicates)" disclosure.
+    boot_n_valid = as.integer(attr(vc, "boot_n_valid") %||% NA_integer_),
     stringsAsFactors = FALSE
   )
 }
@@ -1745,6 +1749,8 @@ fit_categorical_predictor_lm_rows <- function(
     adj_r2 = c(model_stats$adj_r2, rep(NA_real_, length(levs) - 1L)),
     n = rep(length(y), length(levs)),
     weighted_n = rep(if (is.null(weights)) NA_real_ else sum(weights), length(levs)),
+    boot_n_valid = rep(as.integer(attr(vc, "boot_n_valid") %||% NA_integer_),
+                       length(levs)),
     stringsAsFactors = FALSE
   )
 
@@ -1814,6 +1820,7 @@ make_empty_lm_rows <- function(
     adj_r2 = NA_real_,
     n = NA_integer_,
     weighted_n = NA_real_,
+    boot_n_valid = NA_integer_,
     stringsAsFactors = FALSE
   )
 }
