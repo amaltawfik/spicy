@@ -1937,7 +1937,12 @@ test_that("glance() returns NA test/ES, populated n_total without by", {
   expect_true(is.na(gl$test_type))
   expect_true(is.na(gl$statistic))
   expect_true(is.na(gl$p.value))
-  expect_equal(gl$n_total, 1175L)  # observed n for smoking
+  # Default drop_na = FALSE (0.13.0): the tabulated sample includes the
+  # displayed "(Missing)" level, so n_total is the full 1200; opting
+  # into drop_na = TRUE recovers the observed-only 1175.
+  expect_equal(gl$n_total, 1200L)
+  out_cc <- table_categorical(sochealth, select = smoking, drop_na = TRUE)
+  expect_equal(broom::glance(out_cc)$n_total, 1175L)
 })
 
 test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
@@ -1961,8 +1966,14 @@ test_that("glance() n_total excludes the synthetic 'Total' group", {
   # would give).
   out <- table_categorical(sochealth, select = smoking, by = sex)
   gl <- broom::glance(out)
-  observed_n <- sum(!is.na(sochealth$smoking))
-  expect_equal(gl$n_total, observed_n)
+  # Displayed sample under the drop_na = FALSE default: 1200 (incl. the
+  # "(Missing)" level) -- and NOT 2 * 1200, which is what summing across
+  # Female + Male + Total would give.
+  expect_equal(gl$n_total, nrow(sochealth))
+  out_cc <- table_categorical(sochealth, select = smoking, by = sex,
+                              drop_na = TRUE)
+  expect_equal(broom::glance(out_cc)$n_total,
+               sum(!is.na(sochealth$smoking)))
 
   # Triple group setting with iris: 150 observations, three Species
   # plus a Total marginal -> n_total must remain 150, not 4 * 50.
@@ -1978,7 +1989,13 @@ test_that("glance() n_total stays correct when include_total = FALSE", {
     sochealth, select = smoking, by = sex, include_total = FALSE
   )
   gl <- broom::glance(out)
-  expect_equal(gl$n_total, sum(!is.na(sochealth$smoking)))
+  expect_equal(gl$n_total, nrow(sochealth))
+  out_cc <- table_categorical(
+    sochealth, select = smoking, by = sex, include_total = FALSE,
+    drop_na = TRUE
+  )
+  expect_equal(broom::glance(out_cc)$n_total,
+               sum(!is.na(sochealth$smoking)))
 })
 
 test_that("tidy() drops the synthetic 'Total' group", {
@@ -2120,4 +2137,61 @@ test_that("non-character labels rejected at boundary", {
     table_categorical(sochealth, select = smoking, labels = 123),
     "must be a character vector"
   )
+})
+
+
+# ---- drop_na default flip + disclosure (0.13.0, EpiRHandbook batch) -------
+
+test_that("default drop_na = FALSE shows the (Missing) level", {
+  out <- table_categorical(sochealth, select = income_group)
+  df <- as.data.frame(attr(out, "display_df"))
+  expect_true(any(grepl("(Missing)", df$Variable, fixed = TRUE)))
+  # No disclosure note under the default: nothing was removed.
+  expect_null(attr(out, "missing_note"))
+})
+
+test_that("drop_na = TRUE discloses removals in the missing_note", {
+  out <- table_categorical(sochealth, select = c(income_group, smoking),
+                           drop_na = TRUE)
+  note <- attr(out, "missing_note")
+  expect_identical(
+    note, "Missing values removed: income_group (18), smoking (25)."
+  )
+  printed <- paste(capture.output(print(out)), collapse = "
+")
+  expect_match(printed, "Missing values removed: income_group (18)",
+               fixed = TRUE)
+})
+
+test_that("drop_na = TRUE with by-NAs discloses both removals", {
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+  out <- table_categorical(d, select = smoking, by = sex_na,
+                           drop_na = TRUE)
+  expect_identical(
+    attr(out, "missing_note"),
+    "Missing values removed: smoking (25). Rows with missing sex_na removed: 40."
+  )
+})
+
+test_that("association stats ignore the (Missing) display level", {
+  # Show the missing, test the observed (gtsummary / SPSS convention):
+  # the chi-square / Phi / p must be IDENTICAL whether the missing are
+  # displayed (default) or dropped (drop_na = TRUE).
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+  gl_show <- broom::glance(
+    table_categorical(d, select = smoking, by = sex_na)
+  )
+  gl_drop <- broom::glance(
+    table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
+  )
+  expect_equal(gl_show$statistic,   gl_drop$statistic,   tolerance = 1e-12)
+  expect_equal(gl_show$p.value,     gl_drop$p.value,     tolerance = 1e-12)
+  expect_equal(gl_show$assoc_value, gl_drop$assoc_value, tolerance = 1e-12)
+  # And the displayed table nevertheless carries the (Missing) column.
+  df <- as.data.frame(table_categorical(d, select = smoking, by = sex_na))
+  expect_true(any(grepl("(Missing)", names(df), fixed = TRUE)))
 })

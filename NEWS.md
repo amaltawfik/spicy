@@ -21,6 +21,16 @@
   them.
 * `broom::tidy()` on a `table_regression()` result labels AME rows
   `estimate_type = "ame"` (was `"AME"`).
+* `table_categorical(drop_na = )` now defaults to `FALSE`: missing
+  values display as a dedicated `"(Missing)"` level (and a
+  `"(Missing)"` group column under `by`) instead of being silently
+  removed -- the cross-package field convention (gtsummary's
+  "Unknown" row, janitor's `NA` row; Epidemiologist R Handbook,
+  Descriptive tables). Opting back into `drop_na = TRUE` now
+  DISCLOSES the removal in a table note ("Missing values removed:
+  income_group (18)."; plus the `by` variable's removed rows), so a
+  reader can always see what left the table. Pass `drop_na = TRUE`
+  for the previous display; the silent variant is gone.
 * `standardized = "smart"` now applies Gelman (2008) as the paper
   states it: **continuous** numeric inputs are scaled by `2 * SD(X)`
   (a +/-1 SD swing spans the same range as a binary's 0 to 1 step) and

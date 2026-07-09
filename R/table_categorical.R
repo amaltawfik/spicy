@@ -236,9 +236,15 @@
 #'   modalities. If `NULL`, all observed levels are kept.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
 #'   when available.
-#' @param drop_na Logical. If `TRUE` (the default), removes rows with `NA` in the
-#'   row/group variable before each cross-tabulation. If `FALSE`, missing values
-#'   are displayed as a dedicated `"(Missing)"` level.
+#' @param drop_na Logical. If `FALSE` (the default), missing values are
+#'   displayed as a dedicated `"(Missing)"` level (and, under `by`, a
+#'   `"(Missing)"` group column) -- the field convention for descriptive
+#'   tables (gtsummary's "Unknown" row, janitor's `NA` row; see the
+#'   Epidemiologist R Handbook, Descriptive tables). If `TRUE`, rows with
+#'   `NA` in the tabulated variable (and in `by`, when supplied) are
+#'   removed BEFORE each cross-tabulation, and the removal is disclosed
+#'   in a table note ("Missing values removed: ...") rather than silent.
+#'   Before 0.13.0 the default was `TRUE` with no disclosure.
 #' @param weights Optional weights. Either `NULL` (the default), a numeric vector
 #'   of length `nrow(data)`, or a single column in `data` supplied as an
 #'   unquoted name or a character string.
@@ -567,7 +573,7 @@ table_categorical <- function(
   labels = NULL,
   levels_keep = NULL,
   include_total = TRUE,
-  drop_na = TRUE,
+  drop_na = FALSE,
   weights = NULL,
   rescale = FALSE,
   correct = FALSE,
@@ -688,6 +694,33 @@ table_categorical <- function(
   }
   if (!is.logical(drop_na) || length(drop_na) != 1 || is.na(drop_na)) {
     spicy_abort("`drop_na` must be TRUE/FALSE.", class = "spicy_invalid_input")
+  }
+  # Truthfulness ledger for drop_na = TRUE: per-variable NA counts (and
+  # the by-variable's, in grouped tables) removed before tabulation.
+  # Surfaced as a "Missing values removed: ..." table note -- dropping
+  # is an analyst choice that the READER must be able to see.
+  na_dropped <- integer(0)
+  by_na_dropped <- 0L
+  # Disclosure note for drop_na = TRUE (NULL otherwise / when nothing
+  # was dropped). Read lazily at assembly time, after the tabulation
+  # loops have filled the ledger; print() appends it to the
+  # association note.
+  build_missing_note <- function() {
+    if (!drop_na) return(NULL)
+    parts <- character(0)
+    if (length(na_dropped)) {
+      parts <- c(parts, paste0(
+        "Missing values removed: ",
+        paste(sprintf("%s (%d)", names(na_dropped), na_dropped),
+              collapse = ", "),
+        "."
+      ))
+    }
+    if (by_na_dropped > 0L) {
+      parts <- c(parts, sprintf("Rows with missing %s removed: %d.",
+                                by_name, by_na_dropped))
+    }
+    if (length(parts)) paste(parts, collapse = " ") else NULL
   }
   if (!is.logical(rescale) || length(rescale) != 1 || is.na(rescale)) {
     spicy_abort("`rescale` must be TRUE/FALSE.", class = "spicy_invalid_input")
@@ -979,6 +1012,9 @@ table_categorical <- function(
       }
 
       keep <- if (drop_na) !is.na(x) else rep(TRUE, length(x))
+      if (drop_na && sum(!keep) > 0L) {
+        na_dropped[[select_names[i]]] <- sum(!keep)
+      }
       x <- x[keep]
       if (!is.null(w)) {
         w <- w[keep]
@@ -1184,6 +1220,7 @@ table_categorical <- function(
       out <- wide_raw
       attr(out, "display_df") <- report_wide_char
       attr(out, "group_var") <- NULL
+      attr(out, "missing_note") <- build_missing_note()
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
@@ -1576,6 +1613,9 @@ table_categorical <- function(
     keep <- rep(TRUE, length(x))
     if (drop_na) {
       keep <- !is.na(x) & !is.na(g)
+      nd_x <- sum(is.na(x))
+      if (nd_x > 0L) na_dropped[[select_names[i]]] <- nd_x
+      by_na_dropped <- max(by_na_dropped, sum(is.na(g)))
     }
 
     x <- x[keep]
@@ -1594,6 +1634,14 @@ table_categorical <- function(
     }
 
     this_measure <- assoc_measures_per_row[[select_names[i]]]
+    # Association statistics are computed on the OBSERVED cells only:
+    # the "(Missing)" display level never enters the test (the
+    # gtsummary / SPSS convention -- show the missing, test the
+    # observed). When a "(Missing)" level is present, the displayed
+    # counts / percents keep it while the statistics come from a
+    # separate complete-case pass.
+    has_missing_level <- !drop_na &&
+      (missing_label %in% x || missing_label %in% g)
     ct_pct <- spicy::cross_tab(
       x,
       g,
@@ -1603,7 +1651,7 @@ table_categorical <- function(
       correct = correct,
       simulate_p = simulate_p,
       simulate_B = simulate_B,
-      assoc_measure = this_measure,
+      assoc_measure = if (has_missing_level) "none" else this_measure,
       assoc_ci = assoc_ci
     )
     ct_n <- spicy::cross_tab(
@@ -1616,7 +1664,24 @@ table_categorical <- function(
       simulate_B = simulate_B,
       assoc_measure = "none"
     )
-    st <- parse_stats(ct_pct)
+    st <- if (has_missing_level) {
+      cc <- x != missing_label & g != missing_label
+      ct_stats <- spicy::cross_tab(
+        x[cc],
+        g[cc],
+        percent = "c",
+        weights = if (!is.null(w)) w[cc] else NULL,
+        rescale = rescale,
+        correct = correct,
+        simulate_p = simulate_p,
+        simulate_B = simulate_B,
+        assoc_measure = this_measure,
+        assoc_ci = assoc_ci
+      )
+      parse_stats(ct_stats)
+    } else {
+      parse_stats(ct_pct)
+    }
 
     groups_present <- setdiff(names(ct_n), "Values")
     groups_use <- intersect(group_levels, groups_present)
@@ -1946,6 +2011,7 @@ table_categorical <- function(
   if (output == "default") {
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
+    attr(out, "missing_note") <- build_missing_note()
     attr(out, "group_var") <- by_name
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align

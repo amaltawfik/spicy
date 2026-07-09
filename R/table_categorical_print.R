@@ -20,6 +20,17 @@ print.spicy_categorical_table <- function(x, ...) {
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   assoc_note <- attr(x, "assoc_note")
+  # drop_na = TRUE disclosure ("Missing values removed: ...") prepends
+  # the association note -- the reader sees what left the table before
+  # reading the statistics computed on what remains.
+  missing_note <- attr(x, "missing_note")
+  if (!is.null(missing_note)) {
+    assoc_note <- if (is.null(assoc_note)) {
+      missing_note
+    } else {
+      paste(missing_note, assoc_note, sep = "\n")
+    }
+  }
 
   if (is.null(display_df)) {
     display_df <- x
