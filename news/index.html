@@ -79,6 +79,8 @@
 <li>
 <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> on a <code><a href="../reference/table_regression.html">table_regression()</a></code> result labels AME rows <code>estimate_type = "ame"</code> (was <code>"AME"</code>).</li>
 <li>
+<code>table_categorical(drop_na = )</code> now defaults to <code>FALSE</code>: missing values display as a dedicated <code>"(Missing)"</code> level (and a <code>"(Missing)"</code> group column under <code>by</code>) instead of being silently removed – the cross-package field convention (gtsummary’s “Unknown” row, janitor’s <code>NA</code> row; Epidemiologist R Handbook, Descriptive tables). Opting back into <code>drop_na = TRUE</code> now DISCLOSES the removal in a table note (“Missing values removed: income_group (18).”; plus the <code>by</code> variable’s removed rows), so a reader can always see what left the table. Pass <code>drop_na = TRUE</code> for the previous display; the silent variant is gone.</li>
+<li>
 <code>standardized = "smart"</code> now applies Gelman (2008) as the paper states it: <strong>continuous</strong> numeric inputs are scaled by <code>2 * SD(X)</code> (a +/-1 SD swing spans the same range as a binary’s 0 to 1 step) and <strong>binary</strong> inputs – numeric 0/1 and factor dummies – are left unscaled. Since 0.12.0 the rule was applied inverted (binaries <code>2 * SD</code>, continuous <code>1 * SD</code>) while citing the same paper, so every continuous “smart” beta was half the documented value; caught by the PSPP cross-validation pass. <code>"refit"</code> / <code>"posthoc"</code> / <code>"basic"</code> / <code>"pseudo"</code> are unchanged.</li>
 </ul></div>
 <div class="section level3">
