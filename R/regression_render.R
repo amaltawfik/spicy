@@ -165,12 +165,23 @@ render_regression_table <- function(
     unique(mb$outcome_level[mb$estimate_type == "ame" & !is.na(mb$outcome_level)])
   }), model_ids)
 
+  # Per-model N availability: the "n" column renders only for models
+  # whose frame carries per-row N data (univariable-screen bundles).
+  # The reference layouts (gtsummary tbl_merge, EpiRHandbook) have no
+  # N column on the multivariable side -- its single n is a fit-stat
+  # row -- so an all-empty N column is dropped per model group.
+  models_with_n <- model_ids[vapply(model_ids, function(m) {
+    "n_obs" %in% names(coefs) &&
+      any(!is.na(coefs$n_obs[coefs$model_id == m]))
+  }, logical(1))]
+
   col_spec <- build_column_spec(
     show_columns, model_ids, label_map,
     ci_level = ci_level,
     model_exp_headers = aligned$exp_headers_auto,
     model_stat_headers = aligned$stat_headers_auto,
-    ame_categories = ame_cats_by_model
+    ame_categories = ame_cats_by_model,
+    models_with_n = models_with_n
   )
 
   # One render row per unique term (in canonical order).
@@ -459,7 +470,10 @@ build_column_spec <- function(show_columns, model_ids, label_map,
                               ci_level = 0.95,
                               model_exp_headers = NULL,
                               model_stat_headers = NULL,
-                              ame_categories = NULL) {
+                              ame_categories = NULL,
+                              models_with_n = NULL) {
+  # NULL (direct/legacy callers): keep the "n" column for every model.
+  if (is.null(models_with_n)) models_with_n <- model_ids
   ci_pct <- formatC(ci_level * 100, format = "g")
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
@@ -477,8 +491,9 @@ build_column_spec <- function(show_columns, model_ids, label_map,
   base <- list(
     # B-coefficient family \u2013 atomic, one cell = one component.
     # Per-row N: the fit sample size, shown on the first row of a
-    # predictor block by univariate-screening frames (n_obs is NA
-    # for ordinary models, rendering as empty cells).
+    # predictor block by univariable-screening frames. Models without
+    # per-row N data (n_obs all NA) drop the column for their group
+    # (models_with_n): their single n is a fit-stat row instead.
     n      = list(estimate_type = "B",
                   fields = "n_obs",
                   header_short = "N"),
@@ -559,6 +574,9 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     for (tk in show_columns) {
       desc <- base[[tk]]
       if (is.null(desc)) next
+      # All-empty per-model N column: drop it for this model group
+      # (see the models_with_n comment at the call site).
+      if (identical(tk, "n") && !(m_id %in% models_with_n)) next
       # Per-model B-header rebrand under exponentiate (Step 2 / glm).
       # Per-model statistic header: the "t" token displays the model's
       # actual reference distribution ("z" for z-asymptotic classes).
@@ -978,7 +996,7 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
     # A fit-stat row where NO model has a value informs nobody: drop
     # it instead of rendering an empty row. Historically this skip was
     # limited to the mixed-only structure stats (icc / n_groups) and
-    # n_events; generalised 2026-07-09 for the univariate-screen
+    # n_events; generalised 2026-07-09 for the univariable-screen
     # frames, whose model-level stats are all NA by construction --
     # any class-appropriate token still shows because at least one
     # model carries a value.

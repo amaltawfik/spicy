@@ -690,7 +690,7 @@ detect_factor_term_meta <- function(fit) {
 #     convention.
 .spicy_fixed_coef_names <- function(fit) {
   if (inherits(fit, "spicy_uv_screen")) {
-    # Univariate-screen bundle: the union over the underlying fits.
+    # Univariable-screen bundle: the union over the underlying fits.
     return(unique(unlist(lapply(fit$fits, .spicy_fixed_coef_names))))
   }
   if (inherits(fit, "merMod")) {

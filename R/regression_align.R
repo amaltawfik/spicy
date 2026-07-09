@@ -72,7 +72,7 @@ align_frames <- function(
     } else {
       rep(NA_character_, nrow(cf))
     }
-    # Optional per-row N (univariate screening frames: each predictor
+    # Optional per-row N (univariable screening frames: each predictor
     # block is its own fit, so N varies by row block). NA elsewhere.
     n_obs_col <- if (!is.null(cf$n_obs)) {
       as.numeric(cf$n_obs)

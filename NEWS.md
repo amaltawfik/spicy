@@ -109,15 +109,21 @@ See `vignette("table-regression")` for the walk-throughs.
 
 ## New features
 
-* New `table_regression_uv()`: the univariate screening table of
+* New `table_regression_uv()`: the univariable screening table of
   applied epidemiology (the `gtsummary::tbl_uvregression()` +
   `tbl_merge()` layout; Epidemiologist R Handbook, Univariate and
   multivariable regression). One `glm` / `lm` fit per candidate
   predictor rendered as one row block each, merged side by side with
-  the full multivariable model under "Univariate" / "Multivariable"
-  column groups. A per-predictor `N` column is shown by default and,
-  whenever the univariate complete-case samples differ, a table note
-  discloses the range ("N varies by predictor (1163-1175)");
+  the full multivariable model under "Univariable" / "Multivariable"
+  column groups -- *univariable*/*multivariable* being the
+  terminology of the methodological literature (Hidalgo & Goodman
+  2013, AJPH: "multivariate" means multiple OUTCOMES) and of
+  `gtsummary`'s own documentation. The multivariable group carries no
+  `N` column (its single `n` is a fit-statistics row, as in the
+  reference layouts); a per-predictor `N` column is shown by default
+  on the univariable side and, whenever the univariable complete-case
+  samples differ, a table note discloses the range ("N varies by
+  predictor (1163-1175)");
   `complete_cases = TRUE` forces every fit onto the common sample
   (also disclosed). Intercepts are hidden by default (gtsummary
   convention), `p_adjust` treats the whole screen as one family, and

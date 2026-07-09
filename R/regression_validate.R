@@ -36,7 +36,7 @@
   show_columns_atomic = c(
     # B-coefficient family
     "b", "beta", "se", "ci", "t", "p",
-    # Per-row N (populated by univariate-screening frames, where each
+    # Per-row N (populated by univariable-screening frames, where each
     # predictor block is its own fit; blank for ordinary models)
     "n",
     # Average marginal effects (AME)

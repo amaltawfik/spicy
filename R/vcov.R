@@ -782,7 +782,7 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # whole model. vcovHC's type= machinery fails (no hatvalues) -> no HC*.
     zeroinfl        = cr_only,
     hurdle          = cr_only,
-    # Univariate screen bundle: the request is forwarded to every
+    # Univariable screen bundle: the request is forwarded to every
     # underlying fit, so the capability is theirs (homogeneous lm/glm).
     spicy_uv_screen = .robust_vcov_support(fit$fits[[1L]]),
     # --- classes whose robust path is wired in later C2 increments go here ---

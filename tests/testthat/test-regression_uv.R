@@ -1,4 +1,4 @@
-# table_regression_uv(): the univariate screening table -- the
+# table_regression_uv(): the univariable screening table -- the
 # gtsummary::tbl_uvregression + tbl_merge layout (spec:
 # dev/uvregression_spec.md, validated 2026-07-09).
 #
@@ -19,7 +19,7 @@
 
 # ---- 1. Numeric oracle: per-predictor fits + pinned gtsummary ------------
 
-test_that("univariate rows reproduce the per-predictor glm fits exactly", {
+test_that("univariable rows reproduce the per-predictor glm fits exactly", {
   d <- .uv_soc()
   t_uv <- table_regression_uv(d, outcome = smoking,
                               predictors = c(age, bmi, sex),
@@ -68,7 +68,7 @@ test_that("the multivariable column equals the full fit exactly", {
   t_uv <- table_regression_uv(d, outcome = smoking,
                               predictors = c(age, bmi, sex))
   td <- broom::tidy(t_uv)
-  expect_setequal(unique(td$model_id), c("Univariate", "Multivariable"))
+  expect_setequal(unique(td$model_id), c("Univariable", "Multivariable"))
 
   f <- stats::glm(smoking ~ age + bmi + sex, family = stats::binomial(),
                   data = d)
@@ -116,7 +116,7 @@ test_that("complete_cases = TRUE forces the common sample and says so", {
   out <- paste(capture.output(print(t_cc)), collapse = "\n")
   expect_match(out, "All models fit on the 1163 common complete cases.",
                fixed = TRUE)
-  # Each univariate fit now runs on the common sample, not its own.
+  # Each univariable fit now runs on the common sample, not its own.
   dcc <- d[stats::complete.cases(d[, c("smoking", "age", "bmi")]), ]
   f <- stats::glm(smoking ~ age, family = stats::binomial(), data = dcc)
   td <- broom::tidy(t_cc)
@@ -152,7 +152,7 @@ test_that("intercepts are hidden by default; show_intercept shows only
                                          predictors = c(age, sex),
                                          show_intercept = TRUE))
   ic <- td2[td2$is_intercept, ]
-  # The univariate blocks keep only their own predictor's rows, so the
+  # The univariable blocks keep only their own predictor's rows, so the
   # nuisance intercepts of the screen never enter the table.
   expect_identical(nrow(ic), 1L)
   expect_identical(ic$model_id, "Multivariable")
@@ -192,7 +192,7 @@ test_that("p_adjust adjusts within the screen family and within the
   adj <- broom::tidy(table_regression_uv(d, outcome = smoking,
                                          predictors = c(age, bmi, sex),
                                          p_adjust = "holm"))
-  for (g in c("Univariate", "Multivariable")) {
+  for (g in c("Univariable", "Multivariable")) {
     p_r <- raw$p.value[raw$model_id == g]
     p_a <- adj$p.value[adj$model_id == g]
     expect_equal(p_a, stats::p.adjust(p_r, "holm"), tolerance = 1e-12)
@@ -202,7 +202,7 @@ test_that("p_adjust adjusts within the screen family and within the
 
 # ---- 5. Robust vcov passthrough ------------------------------------------
 
-test_that("HC3 flows through to every univariate fit", {
+test_that("HC3 flows through to every univariable fit", {
   d <- .uv_soc()
   t_hc <- table_regression_uv(d, outcome = smoking,
                               predictors = c(age, bmi),
@@ -224,13 +224,13 @@ test_that("CR2 clusters align to each fit's own sample (differing Ns)", {
                               predictors = c(age, bmi),
                               vcov = "CR2", cluster = d$region)
   td <- broom::tidy(t_cr)
-  # Univariate bmi: its own complete cases (12 bmi values are missing).
+  # Univariable bmi: its own complete cases (12 bmi values are missing).
   cc_bmi <- !is.na(d$bmi) & !is.na(d$smoking)
   f_bmi <- stats::glm(smoking ~ bmi, family = stats::binomial(), data = d)
   se_uv <- sqrt(diag(clubSandwich::vcovCR(
     f_bmi, cluster = d$region[cc_bmi], type = "CR2")))["bmi"]
   expect_equal(
-    td$std.error[td$term == "bmi" & td$model_id == "Univariate"],
+    td$std.error[td$term == "bmi" & td$model_id == "Univariable"],
     unname(se_uv), tolerance = 1e-9
   )
   # Multivariable: the full fit's complete cases.
@@ -279,13 +279,13 @@ test_that("method = 'lm' fits linear screens with the matching title", {
   out <- paste(capture.output(print(t_lm)), collapse = "\n")
   expect_match(
     out,
-    "Univariate and multivariable linear regression: wellbeing_score",
+    "Univariable and multivariable linear regression: wellbeing_score",
     fixed = TRUE
   )
   td <- broom::tidy(t_lm)
   f <- stats::lm(wellbeing_score ~ age, data = d)
   expect_equal(
-    td$estimate[td$term == "age" & td$model_id == "Univariate"],
+    td$estimate[td$term == "age" & td$model_id == "Univariable"],
     unname(stats::coef(f)["age"]), tolerance = 1e-12
   )
 })
@@ -297,14 +297,14 @@ test_that("default titles follow the family; custom title wins", {
     table_regression_uv(d, outcome = smoking, predictors = age,
                         multivariable = FALSE)
   )), collapse = "\n")
-  expect_match(out1, "Univariate logistic regression screen: smoking",
+  expect_match(out1, "Univariable logistic regression screen: smoking",
                fixed = TRUE)
   out2 <- paste(capture.output(print(
     table_regression_uv(d, outcome = smoking, predictors = age,
                         family = stats::binomial("probit"))
   )), collapse = "\n")
   expect_match(out2,
-               "Univariate and multivariable probit regression: smoking",
+               "Univariable and multivariable probit regression: smoking",
                fixed = TRUE)
   out3 <- paste(capture.output(print(
     table_regression_uv(d, outcome = smoking, predictors = age,
@@ -319,7 +319,7 @@ test_that("default titles follow the family; custom title wins", {
                         family = stats::poisson())
   )), collapse = "\n")
   expect_match(out4,
-               "Univariate and multivariable Poisson regression: visits",
+               "Univariable and multivariable Poisson regression: visits",
                fixed = TRUE)
   # The gaussian/identity-glm caveat ("use lm()") still fires through
   # the wrapper -- the right advice here is method = "lm".
@@ -331,7 +331,7 @@ test_that("default titles follow the family; custom title wins", {
   )
   out5 <- paste(capture.output(print(t5)), collapse = "\n")
   expect_match(out5,
-               "Univariate and multivariable gaussian regression: wellbeing_score",
+               "Univariable and multivariable gaussian regression: wellbeing_score",
                fixed = TRUE)
 })
 
@@ -367,7 +367,7 @@ test_that("invalid inputs are refused with clear errors", {
 })
 
 
-test_that("a failing univariate fit is reported with the predictor name", {
+test_that("a failing univariable fit is reported with the predictor name", {
   d <- .uv_soc()
   d$broken <- factor(rep("only-level", nrow(d)))
   expect_error(
@@ -381,7 +381,7 @@ test_that("a failing univariate fit is reported with the predictor name", {
 test_that("a failing multivariable fit is reported as such", {
   d <- .uv_soc()
   n <- nrow(d)
-  # Disjoint missingness: each univariate fit has ~n/2 complete cases,
+  # Disjoint missingness: each univariable fit has ~n/2 complete cases,
   # the joint fit has zero.
   d$x1 <- d$age
   d$x2 <- d$age

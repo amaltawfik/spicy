@@ -2,7 +2,7 @@
 % Please edit documentation in R/regression_uv.R
 \name{table_regression_uv}
 \alias{table_regression_uv}
-\title{Univariate screening table (with optional multivariable merge)}
+\title{Univariable screening table (with optional multivariable merge)}
 \usage{
 table_regression_uv(
   data,
@@ -42,11 +42,12 @@ table note.}
 
 \item{show_columns}{Passed to \code{\link[=table_regression]{table_regression()}}. Default
 \code{c("n", "b", "ci", "p")} -- the \code{tbl_uvregression} column set;
-\code{"n"} is the per-predictor sample size (blank for the
-multivariable group, whose \code{n} sits in the fit-statistics rows).}
+\code{"n"} is the per-predictor sample size. The multivariable group
+carries no \code{N} column (its single \code{n} is a fit-statistics row,
+as in the reference layouts).}
 
 \item{title}{Table title; \code{NULL} (default) builds
-\code{"Univariate and multivariable <type> regression: <outcome>"}.}
+\code{"Univariable and multivariable <type> regression: <outcome>"}.}
 
 \item{...}{Passed to \code{\link[=table_regression]{table_regression()}} (\code{exponentiate}, \code{vcov},
 \code{cluster}, \code{p_adjust}, \code{digits}, \code{labels}, \code{output}, ...).
@@ -59,34 +60,34 @@ each fit's own estimation sample automatically.}
 See \code{\link[=table_regression]{table_regression()}} (same output contract).
 }
 \description{
-Fits one model per candidate predictor (the \emph{univariate screen})
+Fits one model per candidate predictor (the \emph{univariable screen})
 and renders them as a single table with one row block per
 predictor. With \code{multivariable = TRUE} (default), the full model
 containing all predictors is merged side by side under
-\code{"Univariate"} / \code{"Multivariable"} column groups -- the standard
+\code{"Univariable"} / \code{"Multivariable"} column groups -- the standard
 presentation of applied epidemiology (the
 \code{gtsummary::tbl_uvregression()} + \code{tbl_merge()} workflow).
 }
 \section{Sample sizes}{
-By default each univariate model is fit on its \strong{own complete
+By default each univariable model is fit on its \strong{own complete
 cases}, so N varies across predictors -- that is what the \code{N}
 column discloses (shown on the first row of each block), and a
 table note states it whenever the Ns differ. The multivariable
 model is fit on the complete cases of \strong{all} its variables (its
 \code{n} appears in the fit-statistics rows). Pass
-\code{complete_cases = TRUE} to restrict every model -- univariate and
+\code{complete_cases = TRUE} to restrict every model -- univariable and
 multivariable -- to the common complete-case sample.
 }
 
 \section{Multiplicity}{
 \code{p_adjust} (passed through to \code{\link[=table_regression]{table_regression()}}) treats the
-whole univariate screen as ONE family (all screened coefficients
+whole univariable screen as ONE family (all screened coefficients
 together); the multivariable model is its own family, as in any
 multi-model table.
 }
 
 \section{Intercepts}{
-Hidden by default on both sides (each univariate fit has its own
+Hidden by default on both sides (each univariable fit has its own
 nuisance intercept), matching \code{gtsummary::tbl_regression()}'s
 \code{intercept = FALSE} default. Pass \code{show_intercept = TRUE} to
 display them.

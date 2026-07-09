@@ -1,51 +1,51 @@
-# Univariate screening tables -- the gtsummary::tbl_uvregression
+# Univariable screening tables -- the gtsummary::tbl_uvregression
 # equivalent (spec: dev/uvregression_spec.md, fully validated
 # 2026-07-09). One model per candidate predictor, all rendered as one
 # table (one row block per predictor), optionally merged side by side
-# with the full multivariable model under "Univariate" /
+# with the full multivariable model under "Univariable" /
 # "Multivariable" spanners -- the signature layout of applied
 # epidemiology (EpiRHandbook, regression chapter).
 #
 # Architecture: table_regression_uv() is a thin wrapper. It fits the
-# models, wraps the univariate fits in a `spicy_uv_screen` bundle, and
-# hands `list(Univariate = bundle, Multivariable = fit)` to
+# models, wraps the univariable fits in a `spicy_uv_screen` bundle, and
+# hands `list(Univariable = bundle, Multivariable = fit)` to
 # table_regression() -- the bundle's as_regression_frame() method
 # builds ONE composite frame whose coefs are the per-predictor blocks
-# of the individual univariate frames. Everything else (title, footers,
+# of the individual univariable frames. Everything else (title, footers,
 # central exponentiation, p_adjust across the screen as ONE family,
 # robust vcov per underlying fit, every output engine, tidy()) is the
 # ordinary multi-model machinery.
 
 
-#' Univariate screening table (with optional multivariable merge)
+#' Univariable screening table (with optional multivariable merge)
 #'
-#' Fits one model per candidate predictor (the *univariate screen*)
+#' Fits one model per candidate predictor (the *univariable screen*)
 #' and renders them as a single table with one row block per
 #' predictor. With `multivariable = TRUE` (default), the full model
 #' containing all predictors is merged side by side under
-#' `"Univariate"` / `"Multivariable"` column groups -- the standard
+#' `"Univariable"` / `"Multivariable"` column groups -- the standard
 #' presentation of applied epidemiology (the
 #' `gtsummary::tbl_uvregression()` + `tbl_merge()` workflow).
 #'
 #' @details
 #' # Sample sizes
-#' By default each univariate model is fit on its **own complete
+#' By default each univariable model is fit on its **own complete
 #' cases**, so N varies across predictors -- that is what the `N`
 #' column discloses (shown on the first row of each block), and a
 #' table note states it whenever the Ns differ. The multivariable
 #' model is fit on the complete cases of **all** its variables (its
 #' `n` appears in the fit-statistics rows). Pass
-#' `complete_cases = TRUE` to restrict every model -- univariate and
+#' `complete_cases = TRUE` to restrict every model -- univariable and
 #' multivariable -- to the common complete-case sample.
 #'
 #' # Multiplicity
 #' `p_adjust` (passed through to [table_regression()]) treats the
-#' whole univariate screen as ONE family (all screened coefficients
+#' whole univariable screen as ONE family (all screened coefficients
 #' together); the multivariable model is its own family, as in any
 #' multi-model table.
 #'
 #' # Intercepts
-#' Hidden by default on both sides (each univariate fit has its own
+#' Hidden by default on both sides (each univariable fit has its own
 #' nuisance intercept), matching `gtsummary::tbl_regression()`'s
 #' `intercept = FALSE` default. Pass `show_intercept = TRUE` to
 #' display them.
@@ -67,10 +67,11 @@
 #'   table note.
 #' @param show_columns Passed to [table_regression()]. Default
 #'   `c("n", "b", "ci", "p")` -- the `tbl_uvregression` column set;
-#'   `"n"` is the per-predictor sample size (blank for the
-#'   multivariable group, whose `n` sits in the fit-statistics rows).
+#'   `"n"` is the per-predictor sample size. The multivariable group
+#'   carries no `N` column (its single `n` is a fit-statistics row,
+#'   as in the reference layouts).
 #' @param title Table title; `NULL` (default) builds
-#'   `"Univariate and multivariable <type> regression: <outcome>"`.
+#'   `"Univariable and multivariable <type> regression: <outcome>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
 #'   `cluster`, `p_adjust`, `digits`, `labels`, `output`, ...).
 #'   `show_intercept` defaults to `FALSE` here; `nested` is not
@@ -142,13 +143,13 @@ table_regression_uv <- function(data,
   dots <- list(...)
   # Cluster contract for the screen: ONE value per row of `data`. The
   # single-model contract (length = the fit's estimation sample) cannot
-  # be satisfied by one vector when the univariate Ns differ, so the
+  # be satisfied by one vector when the univariable Ns differ, so the
   # screen aligns the vector itself: per fit via na.action inside the
   # bundle's frame method, and below for the multivariable fit.
   if (!is.null(dots$cluster)) {
     if (!is.atomic(dots$cluster)) {
       spicy_abort(
-        c("`cluster` must be a single vector for a univariate screen.",
+        c("`cluster` must be a single vector for a univariable screen.",
           "i" = paste0("Supply one value per row of `data`; per-model ",
                        "cluster lists are not meaningful here.")),
         class = "spicy_invalid_input"
@@ -166,8 +167,8 @@ table_regression_uv <- function(data,
   }
   if (isTRUE(dots$nested)) {
     spicy_abort(
-      c("`nested = TRUE` is not meaningful for a univariate screen.",
-        "i" = paste0("The univariate models are not nested in one ",
+      c("`nested = TRUE` is not meaningful for a univariable screen.",
+        "i" = paste0("The univariable models are not nested in one ",
                      "another; compare the multivariable model to a ",
                      "reduced fit with `table_regression(list(m1, m2), ",
                      "nested = TRUE)` instead.")),
@@ -199,7 +200,7 @@ table_regression_uv <- function(data,
       fit_one(pred_names[k]),
       error = function(e) {
         spicy_abort(
-          c(sprintf("The univariate model for `%s` failed to fit.",
+          c(sprintf("The univariable model for `%s` failed to fit.",
                     pred_names[k]),
             "x" = conditionMessage(e)),
           class = "spicy_invalid_data"
@@ -220,7 +221,7 @@ table_regression_uv <- function(data,
     class = "spicy_uv_screen"
   )
 
-  models <- list(Univariate = bundle)
+  models <- list(Univariable = bundle)
   if (isTRUE(multivariable)) {
     fit_multi <- tryCatch(
       fit_one(pred_names),
@@ -256,10 +257,10 @@ table_regression_uv <- function(data,
       )
     }
     title <- if (isTRUE(multivariable)) {
-      sprintf("Univariate and multivariable %s regression: %s",
+      sprintf("Univariable and multivariable %s regression: %s",
               type, outcome_name)
     } else {
-      sprintf("Univariate %s regression screen: %s",
+      sprintf("Univariable %s regression screen: %s",
               type, outcome_name)
     }
   }
@@ -309,7 +310,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
   for (k in seq_along(bundle$fits)) {
     pred <- bundle$predictors[k]
     # The screen-level cluster vector has one value per row of the data;
-    # each univariate fit wants one per row of its OWN estimation sample.
+    # each univariable fit wants one per row of its OWN estimation sample.
     cluster_k <- cluster
     if (!is.null(cluster_k) && is.atomic(cluster_k)) {
       om <- stats::na.action(bundle$fits[[k]])
@@ -335,7 +336,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     )
     if (is.null(base_info)) base_info <- fr$info
     # Per-fit flags must be pooled, not read off the first fit: any
-    # rank-deficient univariate model keeps its footer disclosure.
+    # rank-deficient univariable model keeps its footer disclosure.
     if (isTRUE(fr$info$extras$has_singular)) {
       any_singular <- TRUE
       singular_terms <- c(singular_terms,
@@ -348,7 +349,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     # known input yields an empty block today; guards future engines.
     if (nrow(block) == 0L) {
       spicy_warn(
-        sprintf(paste0("Univariate screen: predictor `%s` produced no ",
+        sprintf(paste0("Univariable screen: predictor `%s` produced no ",
                        "estimable coefficient and was dropped."), pred),
         class = "spicy_caveat"
       )
@@ -365,7 +366,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     # nocov start -- defensive: reachable only through the empty-block
     # path above, itself unreachable for lm/glm (see comment there).
     spicy_abort(
-      "Univariate screen: no predictor produced an estimable coefficient.",
+      "Univariable screen: no predictor produced an estimable coefficient.",
       class = "spicy_invalid_data"
     )
     # nocov end
@@ -389,7 +390,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
   )
   # Model-level statistics are undefined for a screen (one fit per
   # block): blank them so the fit-stat rows print nothing under the
-  # Univariate group -- the per-predictor N column carries the sample
+  # Univariable group -- the per-predictor N column carries the sample
   # information instead.
   info$fit_stats <- .blank_fit_stats(info$fit_stats)
   # Disclosure line (footer theme below). Silence when nothing needs
@@ -401,7 +402,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     )
   } else if (length(unique(ns)) > 1L) {
     sprintf(
-      paste0("Each univariate model is fit on its own complete ",
+      paste0("Each univariable model is fit on its own complete ",
              "cases; N varies by predictor (%d-%d)."),
       min(ns), max(ns)
     )
@@ -418,7 +419,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
 }
 
 
-# Footer theme: the univariate-screen sample disclosure, read from
+# Footer theme: the univariable-screen sample disclosure, read from
 # extras$uv_disclosure. Same dedupe conventions as its siblings.
 build_uv_disclosure_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
