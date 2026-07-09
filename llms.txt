@@ -668,7 +668,7 @@ details.
   : Regression coefficient summary table
 
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
-  : Univariate screening table (with optional multivariable merge)
+  : Univariable screening table (with optional multivariable merge)
 
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   :
