@@ -1038,7 +1038,7 @@ table_regression(fit)
 #> Note. Linear mixed-effects regression.
 #> Std. errors: Wald (model-based).
 #> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
+#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 Two deliberate conventions:

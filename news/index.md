@@ -59,7 +59,12 @@ gains first-class support for ~30 model classes beyond `lm` / `glm`:
   as a block of rows (σ, ρ, residual with SE + CI;
   `estimate_type = "vc"` in `tidy()`, no p-value: boundary, Self & Liang
   1987), ICC + per-group N + Nakagawa R² as fit stats, and a
-  chi-bar-squared LR test vs the no-random model.
+  chi-bar-squared LR test vs the no-random model. The LR test follows
+  the FIT’S OWN estimator (a REML fit is compared on the REML likelihood
+  to the fixed-effects-only model, matching
+  [`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html),
+  Stata `mixed`, and RLRsim; ML fits compare on ML), so the footer’s
+  `(REML)`/`(ML)` tag describes the statistic, not just the model.
 - Bayesian: `rstanarm`, `brms` – posterior median / SD / equal-tailed
   `95% CrI`, no p-value.
 - Survey:

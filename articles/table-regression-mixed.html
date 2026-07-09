@@ -186,7 +186,7 @@ what <code><a href="../reference/table_regression.html">table_regression()</a></
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span></code></pre></div>
 <p>Reading the table, top to bottom:</p>
 <ul>
 <li>
@@ -237,7 +237,7 @@ distributions (chi-bar-squared; Self &amp; Liang 1987; Stram &amp; Lee
 1994). The footer reports such a test for the random part as a whole —
 across its several parameters jointly it follows Stata’s conservative
 halved-p convention, while the per-term tests below use the exact
-mixture. Here chi-bar-squared(3) = 148.35, p &lt; .001: the random
+mixture. Here chi-bar-squared(3) = 150.04, p &lt; .001: the random
 structure earns its place.</p>
 </div>
 <div class="section level2">
@@ -306,7 +306,7 @@ single number:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 983.92, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>The <strong>ICC of 0.18</strong> is nothing but the two σ rows
 combined: 2.93² / (2.93² + 6.26²) ≈ 0.18. Eighteen percent of the
@@ -363,7 +363,7 @@ suppressed warning) accompanies every HSB table in this sequence.</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 1: classical (OLS)</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Wald (model-based)</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 456.94, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>Reading the gain, column against column:</p>
 <ul>
@@ -379,7 +379,7 @@ two outright.</li>
 <li>The <strong>ICC row reads 0.11</strong>, not step 1’s 0.18: it
 partitions the variance that SES leaves unexplained — not a
 contradiction, a conditional version of the same quantity.</li>
-<li>The footer’s chi-bar-squared test (456.9 on 1 df) says the school
+<li>The footer’s chi-bar-squared test (458.9 on 1 df) says the school
 effect is not optional.</li>
 </ul>
 </div>
@@ -417,7 +417,7 @@ within-school part and the school mean separately (Enders &amp; Tofighi
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 262.40, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>Within a school, one SES point is worth 2.19 points of achievement
 (<code>cses</code>); <em>between</em> schools, a one-point difference in
@@ -462,7 +462,7 @@ answer with the boundary-corrected test of the earlier sections:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 273.03, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>The slope SD is 0.83 achievement points around the average slope of
@@ -513,7 +513,7 @@ school sector:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 217.17, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>In public schools the within-school SES slope is 2.79; in Catholic
 schools it is 2.79 − 1.35 = 1.44 — half as steep, while their intercept
@@ -562,7 +562,7 @@ per level:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(2) = 62.27, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p &lt; .001.</span></span></span></code></pre></div>
 <p>Both levels of nesting get their σ row, <code>N (groups)</code>
 counts each level, and the footer’s chi-bar-squared test covers the
 random part jointly (2 df here); at n = 60, far below the size cap, the
@@ -654,7 +654,7 @@ the boundary, so spicy applies the chi-bar-squared mixture instead:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.</span></span></span></code></pre></div>
 <p>Only the <code>Days</code> slope row gains a p-value: following the
 marginality rule of <code><a href="https://rdrr.io/pkg/lmerTest/man/ranova.html" class="external-link">lmerTest::ranova()</a></code>, an intercept is
@@ -693,7 +693,7 @@ at its weakest:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect p-value: exact restricted LRT (simulated null distribution).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -733,7 +733,7 @@ random-effects footer lines, leaving a fixed-effects-only table (the
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span></code></pre></div>
 <p>Whatever the display, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> always carries the
 full set (estimate, SE, CI) for the variance-component rows — display
 and data are decoupled.</p>
@@ -778,8 +778,8 @@ gets its own footer line.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Random effects (REML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span></code></pre></div>
 <p><strong>What is — and is not — being tested here.</strong> Each
 footer’s chi-bar-squared line answers one question only: <em>does this
 model need its random part at all?</em> — the fit against a plain linear
@@ -978,7 +978,7 @@ native to <code>nlme</code>, and the footer says so:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression (nlme).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: t-test with containment df (nlme).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="cluster-robust-and-other-variance-estimators">Cluster-robust and other variance estimators<a class="anchor" aria-label="anchor" href="#cluster-robust-and-other-variance-estimators"></a>
@@ -1014,7 +1014,7 @@ dependence:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CR2), clusters by Subject.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span></code></pre></div>
 <p>Requests that have no valid backend are refused with a clear error
 rather than silently ignored: <code>HC*</code> (an OLS concept,
 undefined for mixed models), <code>CR*</code> on <code>glmer</code> (no
@@ -1055,7 +1055,7 @@ consistent p per term:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
 <p>The algebraic shortcuts (<code>"posthoc"</code>,
 <code>"basic"</code>, <code>"smart"</code>) are not defined for mixed
@@ -1528,7 +1528,7 @@ BIC
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Linear mixed-effects regression. Std. errors: Wald
 (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects
-(REML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.
+(REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.
 </div>
 </div>
 </div>
