@@ -442,7 +442,7 @@ table_regression(fit_mix, exponentiate = TRUE)
 #> Note. Negative-binomial mixed-effects regression (glmmTMB) (zero-inflated).
 #> Std. errors: Wald asymptotic (z).
 #> p-values: Wald-z asymptotic (glmmTMB).
-#> Random effects (ML).
+#> Random effects (ML): LR test vs nbinom2 regression, χ̄²(1) = 5.37, p = 0.010.
 #> Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.
 #> IRR = incidence rate ratio.
 #> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).

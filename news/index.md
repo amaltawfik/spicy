@@ -64,7 +64,16 @@ gains first-class support for ~30 model classes beyond `lm` / `glm`:
   to the fixed-effects-only model, matching
   [`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html),
   Stata `mixed`, and RLRsim; ML fits compare on ML), so the footer’s
-  `(REML)`/`(ML)` tag describes the statistic, not just the model.
+  `(REML)`/`(ML)` tag describes the statistic, not just the model. The
+  null refit inherits the full fit’s specification: prior weights
+  (weighted `lmer` fits reproduce
+  [`ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html) exactly;
+  the REML null uses `gls` + `varFixed(~1/w)`), `nlme`
+  variance/correlation structures (an `lme` with `varPower`/`corAR1`
+  compares against a `gls` null carrying the same structure, matching
+  `anova(gls, lme)`), and for `glmmTMB` the null is engine-native (same
+  TMB likelihood, same frequency-weight convention, zi/dispersion kept)
+  – which also gives `nbinom` and zero-inflated fits a valid LR test.
 - Bayesian: `rstanarm`, `brms` – posterior median / SD / equal-tailed
   `95% CrI`, no p-value.
 - Survey:
