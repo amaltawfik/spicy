@@ -33,6 +33,25 @@
 #   partial_omega2\u2192 ("partial_omega2", ...)
 
 
+# One outcome (bare response-variable name) per model_id, read from
+# the aligned fit stats with a coefs fallback. Shared by the
+# spanner-lift decision and the Outcome body row below -- the two
+# used to carry near-identical inline copies of this lookup.
+.aligned_model_outcomes <- function(aligned, model_ids) {
+  vapply(model_ids, function(m_id) {
+    fs <- aligned$fit_stats_aligned
+    out <- fs$outcome[fs$model_id == m_id][1]
+    if (length(out) == 0L || is.na(out)) {
+      cf <- aligned$coefs_aligned
+      cf_m <- cf[cf$model_id == m_id, , drop = FALSE]
+      if (nrow(cf_m) > 0L) cf_m$outcome[1] else NA_character_
+    } else {
+      out
+    }
+  }, character(1))
+}
+
+
 # ---- Public-internal entry point -----------------------------------------
 
 render_regression_table <- function(
@@ -104,11 +123,7 @@ render_regression_table <- function(
     # for the spanner -- not `attr("label")`, which can be a long
     # human-readable phrase (e.g. "Wellbeing score (0-100)") that
     # would distort column widths.
-    model_outcomes <- vapply(model_ids, function(m_id) {
-      fs <- aligned$fit_stats_aligned
-      out <- fs$outcome[fs$model_id == m_id][1]
-      if (length(out) == 0L || is.na(out)) NA_character_ else out
-    }, character(1))
+    model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
     if (length(unique(model_outcomes)) == n_models &&
           all(!is.na(model_outcomes)) &&
           all(nzchar(model_outcomes))) {
@@ -269,16 +284,7 @@ render_regression_table <- function(
   #                               haven, SPSS), else the variable name
   #
   # Both come from align_extracts(); fallback if absent.
-  model_outcomes <- vapply(model_ids, function(m_id) {
-    fs <- aligned$fit_stats_aligned
-    out <- fs$outcome[fs$model_id == m_id][1]
-    if (length(out) == 0L || is.na(out)) {
-      coefs_for_model <- coefs[coefs$model_id == m_id, , drop = FALSE]
-      if (nrow(coefs_for_model) > 0L) coefs_for_model$outcome[1] else NA_character_
-    } else {
-      out
-    }
-  }, character(1))
+  model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
   model_outcome_labels <- if (!is.null(aligned$outcome_labels_auto) &&
                                length(aligned$outcome_labels_auto) ==
                                  length(model_ids)) {

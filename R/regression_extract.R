@@ -828,9 +828,20 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
     f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
   }
 
-  # Pseudo-R^2 family (glm only; NA for lm).
-  pseudo_r2_mcfadden <- if (is_glm) compute_pseudo_r2_mcfadden(fit) else NA_real_
-  pseudo_r2_nagelkerke <- if (is_glm) compute_pseudo_r2_nagelkerke(fit) else NA_real_
+  # Pseudo-R^2 family (glm only; NA for lm). McFadden and Nagelkerke
+  # share the intercept-only refit -- compute it once here rather
+  # than once per statistic.
+  ll_null_glm <- if (is_glm) compute_intercept_only_loglik_glm(fit) else NULL
+  pseudo_r2_mcfadden <- if (is_glm) {
+    compute_pseudo_r2_mcfadden(fit, ll_null = ll_null_glm)
+  } else {
+    NA_real_
+  }
+  pseudo_r2_nagelkerke <- if (is_glm) {
+    compute_pseudo_r2_nagelkerke(fit, ll_null = ll_null_glm)
+  } else {
+    NA_real_
+  }
   pseudo_r2_tjur <- if (is_glm) compute_pseudo_r2_tjur(fit) else NA_real_
 
   # Residual scale. For glm, `summary(fit)$sigma` does not exist;

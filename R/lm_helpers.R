@@ -48,6 +48,14 @@ detect_weights_column_name <- function(quo, data) {
 # df) only supports a single cluster vector, while sandwich::vcovCL
 # supports multi-way but only at CR0/CR1. A future release may add a
 # dedicated `multiway` argument that routes to sandwich::vcovCL.
+#
+# NOT a duplicate of resolve_cluster() (R/abort.R), despite the name:
+# that one resolves against a FITTED MODEL's model.frame (formula /
+# string / vector forms, per model in multi-model tables), while this
+# one tidy-evaluates a quosure against the raw DATA of the
+# descriptive-table functions. The contracts (inputs, error surface,
+# lookup scope) differ enough that merging them would couple the two
+# call families for no shared logic beyond "return a vector".
 resolve_cluster_argument <- function(quo, data, arg = "cluster") {
   if (rlang::quo_is_null(quo)) {
     return(NULL)

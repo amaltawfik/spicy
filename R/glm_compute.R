@@ -253,12 +253,16 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # All three return a finite value in [0, 1] (Nagelkerke) or
 # (-Inf, 1] (McFadden and Tjur, both bounded above by 1 in
 # well-specified models) when defined; NA when not applicable.
-compute_pseudo_r2_mcfadden <- function(fit) {
+# `ll_null`: optional precomputed intercept-only log-likelihood.
+# Both pseudo-R2 need the same null refit; a call site that shows
+# McFadden AND Nagelkerke (the class-aware logit default) computes it
+# once and passes it to both instead of refitting the null twice.
+compute_pseudo_r2_mcfadden <- function(fit, ll_null = NULL) {
   if (!inherits(fit, "glm")) return(NA_real_)
   if (grepl("^quasi", stats::family(fit)$family)) return(NA_real_)
   ll_full <- tryCatch(as.numeric(stats::logLik(fit)),
                        error = function(e) NA_real_)
-  ll_null <- compute_intercept_only_loglik_glm(fit)
+  if (is.null(ll_null)) ll_null <- compute_intercept_only_loglik_glm(fit)
   if (!is.finite(ll_full) || !is.finite(ll_null) || ll_null == 0) {
     # nocov start: a converged non-quasi glm always has a finite,
     # non-zero null log-likelihood (the intercept-only model is
@@ -270,12 +274,12 @@ compute_pseudo_r2_mcfadden <- function(fit) {
   1 - (ll_full / ll_null)
 }
 
-compute_pseudo_r2_nagelkerke <- function(fit) {
+compute_pseudo_r2_nagelkerke <- function(fit, ll_null = NULL) {
   if (!inherits(fit, "glm")) return(NA_real_)
   if (grepl("^quasi", stats::family(fit)$family)) return(NA_real_)
   ll_full <- tryCatch(as.numeric(stats::logLik(fit)),
                        error = function(e) NA_real_)
-  ll_null <- compute_intercept_only_loglik_glm(fit)
+  if (is.null(ll_null)) ll_null <- compute_intercept_only_loglik_glm(fit)
   n <- stats::nobs(fit)
   if (!is.finite(ll_full) || !is.finite(ll_null) || !is.finite(n) ||
         n <= 0) {

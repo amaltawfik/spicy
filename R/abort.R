@@ -160,6 +160,12 @@ extract_arg_column_name <- function(arg_expr) {
 #   * NULL                -> returned as-is.
 # Returns a vector, NULL, or raises `spicy_invalid_input` when the
 # requested column is missing from `model.frame(fit)`.
+#
+# Sibling, NOT duplicate: resolve_cluster_argument() (R/lm_helpers.R)
+# serves the descriptive-table functions by tidy-evaluating a quosure
+# against their raw `data`; this one resolves against a fitted
+# model's model.frame. See the twin comment there for why they stay
+# separate.
 resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
   if (is.null(cluster)) return(NULL)
   if (inherits(cluster, "formula")) {
