@@ -508,7 +508,13 @@ table_regression(
   footer is unaffected. Correlation and residual rows are never tested
   (a correlation is tested jointly with its slope; the residual has no
   zero-variance null). Refits happen once per random term: expect a
-  noticeable cost on large models.
+  noticeable cost on large models. For structures outside these two
+  routes (e.g. multiple variance components needing a finite-sample
+  null),
+  [`pbkrtest::PBmodcomp()`](https://rdrr.io/pkg/pbkrtest/man/pb__modcomp.html)
+  offers a parametric-bootstrap LR test on the same nested pair of fits
+  (Halekoh & Hojsgaard 2014) – run it directly and report its p-value
+  alongside the table.
 
 - re_ci:
 

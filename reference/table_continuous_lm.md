@@ -1323,11 +1323,11 @@ table_continuous_lm(
 #> 2         t  4.339426   1 1198 1.548898e-05    <NA>       NA          NA
 #> 3         F  5.635133   1 1186 1.776254e-02    <NA>       NA          NA
 #> 4         t  2.373843   1 1186 1.776254e-02    <NA>       NA          NA
-#>   es_ci_upper          r2      adj_r2    n weighted_n
-#> 1          NA 0.015475137 0.014653330 1200         NA
-#> 2          NA          NA          NA 1200         NA
-#> 3          NA 0.004728908 0.003889725 1188         NA
-#> 4          NA          NA          NA 1188         NA
+#>   es_ci_upper          r2      adj_r2    n weighted_n boot_n_valid
+#> 1          NA 0.015475137 0.014653330 1200         NA           NA
+#> 2          NA          NA          NA 1200         NA           NA
+#> 3          NA 0.004728908 0.003889725 1188         NA           NA
+#> 4          NA          NA          NA 1188         NA           NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a
