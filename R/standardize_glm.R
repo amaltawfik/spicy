@@ -5,7 +5,7 @@
 #   * "refit"   -- refit the glm on z-scored numeric predictors. Y stays
 #                 on its observed scale (the link is fixed by the
 #                 family); inference comes from the refitted glm via
-#                 the user's vcov. Long & Freese (2014, \u00A74.3.4)
+#                 the user's vcov. Long & Freese (2014, \u00A74.7.2)
 #                 "x-standardization".
 #   * "posthoc" -- algebraic X-only scaling: \u03B2 = b x SD(X). Factor
 #                 dummies keep 0/1 (no SD division). Matches
@@ -302,7 +302,7 @@ standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
         ),
         "i" = paste0(
           "For non-binomial glms, use `standardized = \"refit\"` ",
-          "(x-standardization, Long & Freese 2014 \u00A74.3.4) or one of ",
+          "(x-standardization, Long & Freese 2014 \u00A74.7.2) or one of ",
           "`\"posthoc\"` / `\"basic\"` / `\"smart\"` (X-only scaling)."
         )
       ),

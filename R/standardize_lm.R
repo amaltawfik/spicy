@@ -436,7 +436,7 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
                                model_id, outcome) {
   # Dispatch on class: glm has its own 5-method standardise machinery
   # (5th = "pseudo", Menard 2011 fully-standardised), with X-only
-  # algebraic semantics for the other four (Long & Freese 2014 Section 4.3.4).
+  # algebraic semantics for the other four (Long & Freese 2014 Section 4.7.2).
   std_table <- if (inherits(fit, "glm")) {
     standardize_glm(
       fit, method = standardized,

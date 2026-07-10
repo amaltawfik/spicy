@@ -674,8 +674,11 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 #   * `marginaleffects::avg_slopes(fit, conf_level, df = Inf)` --
 #     response-scale AME with Wald-z asymptotic inference. Works for
 #     all four mixed-effects engines. We use df = Inf and the model-
-#     based vcov for parity with the fixed-effect p-values in the
-#     same row of the table.
+#     based vcov. That matches the B-row inference for glmer /
+#     glmmTMB / plain lmerMod (Wald-z themselves) but NOT for
+#     lmerModLmerTest (Satterthwaite t) or nlme::lme (containment-df
+#     t): there the AME p is a large-sample approximation sitting
+#     next to a t-based B-row p.
 #   * For factor terms, we reconstruct a coef-style `term` id
 #     (e.g. `Subjectmale`) so the renderer's factor-grouping logic
 #     finds these rows alongside the B-rows.

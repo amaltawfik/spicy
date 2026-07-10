@@ -994,7 +994,7 @@ least-squares framework -- the renderer points the user at
 \itemize{
 \item \code{"refit"} -- refit on z-scored data. For \code{lm} both X
 and Y are z-scored (Cohen et al. 2003 gold standard); for
-\code{glm} only numeric X (Long & Freese 2014 Section 4.3.4
+\code{glm} only numeric X (Long & Freese 2014 Section 4.7.2
 "x-standardization").
 \item \code{"posthoc"} -- post-hoc scaling. lm:
 \eqn{\beta = B \times SD(X) / SD(Y)}{beta = B * SD(X) / SD(Y)};
