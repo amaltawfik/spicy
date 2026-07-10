@@ -506,6 +506,62 @@ as_regression_frame.clm <- function(fit,
 }
 
 
+# Scale (dispersion) coefficient rows for a heteroskedastic clm fit
+# (`scale = ~`). `fit$zeta` holds one coefficient per scale term; they act on
+# LOG(sigma) of the latent variable, so exp(zeta) is a ratio of latent standard
+# deviations -- NOT an odds ratio. They render as their own "Scale effects"
+# block; the footer states the scale. Returns NULL for location-only clm fits.
+# The class guard is load-bearing, not defensive: MASS::polr stores its
+# THRESHOLDS in `fit$zeta` (a name collision with clm, whose thresholds are
+# `alpha`), so reading `zeta` off a polr fit would fabricate a scale block
+# out of the cut-points. Without this block a `scale = ~` fit rendered as if
+# the scale part did not exist -- an estimated component silently missing
+# from the table.
+.clm_scale_rows <- function(fit, ci_level) {
+  if (!inherits(fit, "clm")) return(NULL)
+  zeta <- fit$zeta
+  if (is.null(zeta) || length(zeta) == 0L) return(NULL)
+  sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)
+  z_crit <- stats::qnorm(0.5 + ci_level / 2)
+  # summary.clm stacks thresholds, location, then scale rows: the scale block
+  # is the LAST length(zeta) rows (its names repeat the location ones).
+  sm_scale <- if (!is.null(sm) && nrow(sm) >= length(zeta)) {
+    sm[seq.int(nrow(sm) - length(zeta) + 1L, nrow(sm)), , drop = FALSE]
+  } else {
+    NULL                                                               # nocov
+  }
+  out <- list()
+  for (i in seq_along(zeta)) {
+    est <- unname(zeta[i])
+    if (!is.null(sm_scale) && "Std. Error" %in% colnames(sm_scale)) {
+      se   <- unname(sm_scale[i, "Std. Error"])
+      stat <- unname(sm_scale[i, "z value"])
+      p    <- unname(sm_scale[i, "Pr(>|z|)"])
+    } else {
+      se <- NA_real_; stat <- NA_real_; p <- NA_real_                  # nocov
+    }
+    out[[length(out) + 1L]] <- data.frame(
+      term             = paste0("scale_", names(zeta)[i]),
+      parent_var       = "Scale effects",
+      label            = names(zeta)[i],
+      factor_level_pos = i,
+      is_ref           = FALSE,
+      estimate_type    = "B",
+      estimate         = est,
+      std_error        = se,
+      df               = Inf,
+      statistic        = stat,
+      p_value          = p,
+      ci_lower         = est - z_crit * se,
+      ci_upper         = est + z_crit * se,
+      test_type        = "z",
+      stringsAsFactors = FALSE
+    )
+  }
+  do.call(rbind, out)
+}
+
+
 # Non-proportional (nominal) coefficient rows for a partial-proportional-odds
 # clm fit (`nominal = ~`). `fit$alpha.mat` is a [term x cut-point] matrix; its
 # "(Intercept)" row is the baseline thresholds (handled by .clm_thresholds), and
@@ -599,6 +655,7 @@ as_regression_frame.clm <- function(fit,
   )
 
   thresholds <- .clm_thresholds(fit)
+  scale_effects <- .clm_scale_rows(fit, ci_level)
 
   extras <- list(
     cluster_name          = NULL,
@@ -614,7 +671,12 @@ as_regression_frame.clm <- function(fit,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     response_levels       = as.character(fit$y.levels %||% character(0)),
-    thresholds            = thresholds
+    thresholds            = thresholds,
+    # Scale (dispersion) coefficients of a `scale = ~` clm. Stashed here --
+    # like the thresholds -- so the orchestrator materialises them AFTER
+    # exponentiation and p_adjust: they act on log(sigma) of the latent
+    # variable, so exp(zeta) is a ratio of latent SDs, never an odds ratio.
+    scale_effects         = scale_effects
   )
 
   list(
@@ -743,23 +805,33 @@ as_regression_frame.clm <- function(fit,
 }
 
 
-# Log-likelihood of the intercept-only ("null") cumulative-link model, in CLOSED
-# FORM. An intercept-only proportional-odds / cumulative model reproduces the
-# marginal category frequencies exactly (its K-1 thresholds fit the K-1 free
-# cumulative probabilities), so its log-likelihood is the multinomial
+# Log-likelihood of the intercept-only ("null") categorical model, in CLOSED
+# FORM. An intercept-only cumulative-link OR baseline-category-logit model
+# reproduces the marginal category frequencies exactly (its K-1 free parameters
+# fit the K-1 free probabilities), so its log-likelihood is the multinomial
 # log-likelihood of those proportions: ll0 = sum_k W_k * log(W_k / W), where W_k
 # is the (possibly weighted) total in category k and W = sum(W_k). This is
-# link-independent and avoids stats::update()'s data-scoping fragility -- update
-# re-evaluates the fit's `data =` expression in the caller's frame, which
-# silently fails (-> NA pseudo-R^2) when table_regression() runs inside another
-# function or the data symbol is out of scope. Cross-validated to
-# logLik(update(fit, . ~ 1)) to ~1e-12 (unweighted and weighted).
+# link-independent -- hence shared by polr / clm (cumulative links) and
+# nnet::multinom (baseline-category logit) -- and avoids stats::update()'s
+# data-scoping fragility: update re-evaluates the fit's `data =` expression in
+# the caller's frame, which silently fails (-> NA pseudo-R^2) when
+# table_regression() runs inside another function or the data symbol is out of
+# scope. Cross-validated to logLik(update(fit, . ~ 1)) to ~1e-12 (unweighted
+# and weighted).
 .ordinal_null_loglik <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(mf)) return(NA_real_)
   y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
   if (is.null(y) || length(y) == 0L) return(NA_real_)
   w <- tryCatch(stats::model.weights(mf), error = function(e) NULL)
+  # nnet::multinom keeps its case weights on the fit object, NOT in the
+  # model frame (polr / clm put them there). Reading only the model frame
+  # would silently return the UNWEIGHTED null log-likelihood -- and hence
+  # a wrong pseudo-R^2 -- for every weighted multinom fit.
+  if (is.null(w) && inherits(fit, "multinom")) {
+    w_fit <- fit$weights
+    if (is.numeric(w_fit) && length(w_fit) == length(y)) w <- w_fit
+  }
   if (is.null(w)) w <- rep(1, length(y))
   Wk <- tapply(w, y, sum)
   Wk <- Wk[is.finite(Wk) & Wk > 0]

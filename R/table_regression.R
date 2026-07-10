@@ -573,9 +573,10 @@
 #'   `exponentiate = TRUE` their rows stay on the log-odds scale).
 #'   Has no effect on non-ordinal models, and the rows are shown only
 #'   when a coefficient column (`"b"`/`"beta"`) is in `show_columns`.
-#' @param show_components For two-part count models, whether to display
-#'   the non-primary model components as labelled subordinate blocks of
-#'   rows below the (count / conditional) coefficients. Default `TRUE`:
+#' @param show_components For models with secondary components,
+#'   whether to display them as labelled subordinate blocks of rows
+#'   below the primary (count / conditional / location) coefficients.
+#'   Default `TRUE`:
 #'   \itemize{
 #'     \item `pscl::zeroinfl` and `glmmTMB(ziformula = )`: a
 #'       `Zero-inflation` block -- the model for the probability of a
@@ -586,6 +587,10 @@
 #'     \item `glmmTMB(dispformula = )`: a `Dispersion` block (only when
 #'       dispersion was actually modelled; log scale, never
 #'       exponentiated).
+#'     \item `ordinal::clm(scale = ~)`: a `Scale effects` block -- the
+#'       covariate effects on the **log standard deviation of the
+#'       latent response**. Never exponentiated: their exponential is a
+#'       ratio of latent standard deviations, not an odds ratio.
 #'   }
 #'   Component rows carry full Wald inference (B / SE / z / p / CI),
 #'   join the `p_adjust` family, and take significance stars. Under
@@ -1422,6 +1427,20 @@ table_regression <- function(
                             "pseudo_r2_nagelkerke",
                             "AIC")
     }
+    # multinom: same pseudo-R2 pair as the other categorical families
+    # (dev/fit_stats_by_class.md). Its null model is intercept-only, whose
+    # log-likelihood has the ordinal path's closed form.
+    any_multinom <- any(vapply(models, function(f) {
+      inherits(f, "multinom")
+    }, logical(1)))
+    if (any_multinom) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only && !any_glm && !any_mixed &&
+                                  !any_ordinal) "nobs",
+                            "pseudo_r2_mcfadden",
+                            "pseudo_r2_nagelkerke",
+                            "AIC")
+    }
     # Cox proportional hazards (survival::coxph and rms::cph, which
     # inherits from it): the field convention reports n AND the number
     # of events (EpiRHandbook survival chapter; Stata stcox header).
@@ -1969,6 +1988,19 @@ table_regression <- function(
         !is.null(thr_i) && is.data.frame(thr_i) && nrow(thr_i) > 0L) {
       frames[[i]]$coefs <- .append_threshold_rows(
         frames[[i]]$coefs, thr_i, ci_level)
+    }
+
+    # Scale (dispersion) coefficients of a `scale = ~` clm: their own
+    # "Scale effects" block, materialised here -- after exp + p_adjust, like
+    # the thresholds -- because they act on log(sigma) of the latent variable
+    # (exp(zeta) is a ratio of latent SDs, never an odds ratio). Gated on a
+    # coefficient column being shown, else the rows would render empty.
+    # Without the block the fit rendered as if its scale part did not exist.
+    sc_i <- frames[[i]]$info$extras$scale_effects
+    if (isTRUE(show_components) &&
+        any(c("b", "beta") %in% show_columns) &&
+        !is.null(sc_i) && is.data.frame(sc_i) && nrow(sc_i) > 0L) {
+      frames[[i]]$coefs <- .rbind_union(frames[[i]]$coefs, sc_i)
     }
 
     # Random effects as a subordinate "Random effects" block of rows (show_re =

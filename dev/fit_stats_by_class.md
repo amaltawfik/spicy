@@ -120,7 +120,7 @@ harmless.
 
 | Class | Proposed default | Optional | New work ⚙ |
 |---|---|---|---|
-| `multinom` | `nobs, pseudo_r2_mcfadden, AIC` | Nagelkerke, BIC, logLik, LR χ² | McFadden (closed-form null LL) |
+| `multinom` | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, AIC` | BIC, logLik, LR χ² | SHIPPED 2026-07-10: closed-form null LL shared with the ordinal path; multinom keeps weights on `fit$weights`, not in the model frame |
 | `coxph` | `nobs, concordance, r2_nagelkerke, AIC` | LR/Wald/score χ², BIC | concordance; Cox R² |
 | `survreg` | `nobs, logLik, AIC, scale` | BIC, LR χ² | scale, logLik tokens |
 | `betareg` | `nobs, pseudo_r2, AIC` | φ, BIC, logLik | betareg pseudo-R² + φ |

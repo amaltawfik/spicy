@@ -171,7 +171,7 @@ align_frames <- function(
   # first-appearance position, which in a multi-model table can fall ahead of a
   # predictor a later model introduces.
   for (blk in c("Zero-inflation", "Zero hurdle", "Dispersion",
-                "Thresholds", "Random effects")) {
+                "Scale effects", "Thresholds", "Random effects")) {
     blk_terms <- unique(coefs_long$term[coefs_long$factor_term %in% blk])
     if (length(blk_terms) > 0L) {
       blk_in_order <- intersect(term_order, blk_terms)
@@ -297,6 +297,7 @@ group_factor_terms <- function(term_order, coefs_long) {
     # a sequence): the refs-first rule below is a per-FACTOR convention and
     # would float every reference row to the top of the whole block.
     is_block <- ft %in% c("Thresholds", "Non-proportional effects",
+                          "Scale effects",
                           "Random effects", "Zero-inflation", "Zero hurdle",
                           "Dispersion")
     group_meta <- if (is_block) {

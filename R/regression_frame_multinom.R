@@ -223,10 +223,21 @@ as_regression_frame.multinom <- function(fit,
   # fit$fitted.values (one row per observation).
   n_obs <- as.integer(nrow(fit$fitted.values))
 
+  # Pseudo-R^2 against the intercept-only baseline-category logit. Its
+  # log-likelihood has the same closed form as the ordinal null model's
+  # (both reproduce the marginal category frequencies exactly), so the
+  # helper is shared -- see .ordinal_null_loglik(). nnet::multinom has
+  # no nobs() method, so n comes from the fitted-values row count.
+  pr2 <- .multinom_pseudo_r2(fit, n_obs)
+
   fit_stats <- list(
-    r_squared      = NA_real_,
-    adj_r_squared  = NA_real_,
-    pseudo_r2      = NULL,
+    r_squared            = NA_real_,
+    adj_r_squared        = NA_real_,
+    pseudo_r2            = list(mcfadden   = pr2$mcfadden,
+                                nagelkerke = pr2$nagelkerke,
+                                tjur       = NA_real_),
+    pseudo_r2_mcfadden   = pr2$mcfadden,
+    pseudo_r2_nagelkerke = pr2$nagelkerke,
     aic            = stats::AIC(fit),
     bic            = stats::BIC(fit),
     log_lik        = as.numeric(stats::logLik(fit)),
@@ -282,4 +293,27 @@ as_regression_frame.multinom <- function(fit,
     supports       = supports,
     extras         = extras
   )
+}
+
+
+# McFadden and Nagelkerke pseudo-R^2 for a baseline-category logit fit.
+# The null model is intercept-only, whose log-likelihood is the closed-form
+# multinomial log-likelihood of the marginal category frequencies (shared
+# with the ordinal path; see .ordinal_null_loglik()). nnet::multinom has no
+# nobs() method, so the caller passes n.
+.multinom_pseudo_r2 <- function(fit, n_obs) {
+  na <- list(mcfadden = NA_real_, nagelkerke = NA_real_)
+  ll_full <- tryCatch(as.numeric(stats::logLik(fit)),
+                      error = function(e) NA_real_)                   # nocov
+  ll_null <- .ordinal_null_loglik(fit)
+  n <- as.numeric(n_obs)
+  if (!is.finite(ll_full) || !is.finite(ll_null) || ll_null == 0 ||
+        !is.finite(n) || n <= 0) {
+    return(na)                                                       # nocov
+  }
+  mcfadden   <- 1 - ll_full / ll_null
+  cox_snell  <- 1 - exp((ll_null - ll_full) * 2 / n)
+  upper      <- 1 - exp(ll_null * 2 / n)
+  nagelkerke <- if (is.finite(upper) && upper > 0) cox_snell / upper else NA_real_
+  list(mcfadden = mcfadden, nagelkerke = nagelkerke)
 }

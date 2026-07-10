@@ -32,13 +32,15 @@
 #' so the table can be consumed by any downstream tidyverse-stats
 #' pipeline.
 #'
-#' `tidy()` returns one row per `(model_id, term, estimate_type)`
-#' triplet, with `estimate_type` in
+#' `tidy()` returns one row per `(model_id, term, estimate_type,
+#' outcome_level)` combination, with `estimate_type` in
 #' `c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2")`.
-#' Reference-row placeholders (factor reference levels) and
-#' singular coefficients (NA estimates) are dropped. Columns:
-#' `model_id, outcome, term, estimate_type, estimate, std.error,
-#' conf.low, conf.high, statistic, df, p.value, test_type,
+#' `outcome_level` names the response category of per-category rows
+#' (ordinal / multinomial average marginal effects) and is `NA` for
+#' single-outcome models. Reference-row placeholders (factor reference
+#' levels) and singular coefficients (NA estimates) are dropped. Columns:
+#' `model_id, outcome, outcome_level, term, estimate_type, estimate,
+#' std.error, conf.low, conf.high, statistic, df, p.value, test_type,
 #' is_intercept, factor_term, factor_level`.
 #'
 #' `glance()` returns one row per `(model_id, outcome)` with
@@ -75,9 +77,20 @@ tidy.spicy_regression_table <- function(x, ...) {
   # rows for intercept-only or singular models).
   long <- long[!is.na(long$estimate), , drop = FALSE]
 
+  # Per-category rows (ordinal / multinomial AME) are otherwise
+  # INDISTINGUISHABLE in the long frame: four `age` AME rows share the same
+  # term and estimate_type, and nothing names the response category they
+  # belong to. Carry `outcome_level` so the frame is self-describing (NA for
+  # single-outcome models).
+  outcome_level <- if (!is.null(long$outcome_level)) {
+    as.character(long$outcome_level)
+  } else {
+    rep(NA_character_, nrow(long))
+  }
   out <- data.frame(
     model_id      = long$model_id,
     outcome       = long$outcome,
+    outcome_level = outcome_level,
     term          = long$term,
     estimate_type = long$estimate_type,
     estimate      = long$estimate,
@@ -200,6 +213,7 @@ empty_tidy_long <- function() {
   data.frame(
     model_id      = character(0),
     outcome       = character(0),
+    outcome_level = character(0),
     term          = character(0),
     estimate_type = character(0),
     estimate      = numeric(0),

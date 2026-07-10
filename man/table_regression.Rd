@@ -236,9 +236,10 @@ the log-odds (B) scale and are \strong{never exponentiated} (under
 Has no effect on non-ordinal models, and the rows are shown only
 when a coefficient column (\code{"b"}/\code{"beta"}) is in \code{show_columns}.}
 
-\item{show_components}{For two-part count models, whether to display
-the non-primary model components as labelled subordinate blocks of
-rows below the (count / conditional) coefficients. Default \code{TRUE}:
+\item{show_components}{For models with secondary components,
+whether to display them as labelled subordinate blocks of rows
+below the primary (count / conditional / location) coefficients.
+Default \code{TRUE}:
 \itemize{
 \item \code{pscl::zeroinfl} and \code{glmmTMB(ziformula = )}: a
 \code{Zero-inflation} block -- the model for the probability of a
@@ -249,6 +250,10 @@ vs zero-inflation; the footer names each block's meaning).
 \item \code{glmmTMB(dispformula = )}: a \code{Dispersion} block (only when
 dispersion was actually modelled; log scale, never
 exponentiated).
+\item \verb{ordinal::clm(scale = ~)}: a \verb{Scale effects} block -- the
+covariate effects on the \strong{log standard deviation of the
+latent response}. Never exponentiated: their exponential is a
+ratio of latent standard deviations, not an odds ratio.
 }
 Component rows carry full Wald inference (B / SE / z / p / CI),
 join the \code{p_adjust} family, and take significance stars. Under

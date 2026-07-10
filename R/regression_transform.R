@@ -79,8 +79,8 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
   # variances). The whole-block switches are `show_thresholds` / `show_re`.
   ca <- aligned$coefs_aligned
   subordinate <- ca$factor_term %in%
-    c("Thresholds", "Non-proportional effects", "Random effects",
-      "Zero-inflation", "Zero hurdle", "Dispersion") |
+    c("Thresholds", "Non-proportional effects", "Scale effects",
+      "Random effects", "Zero-inflation", "Zero hurdle", "Dispersion") |
     (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
   final_mask <- final_mask | subordinate
 

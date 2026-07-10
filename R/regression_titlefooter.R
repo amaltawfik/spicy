@@ -96,6 +96,7 @@ build_regression_footer_from_frames <- function(
     build_survival_footer_block_from_frames(frames),
     build_survival_estimand_footer_block_from_frames(frames),
     build_ordinal_thresholds_footer_block_from_frames(frames),
+    build_scale_effects_footer_block_from_frames(frames),
     build_component_blocks_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
                                                   standardized),
@@ -1576,4 +1577,31 @@ isTRUE_vec <- function(x) {
 # without changing the dispatcher.
 build_nested_footer_block <- function(nested) {
   NULL
+}
+
+
+# Footer gloss for the "Scale effects" block of a heteroskedastic clm
+# (`scale = ~`). The coefficients act on log(sigma) of the latent variable,
+# so exp(zeta) is a ratio of latent standard deviations -- NOT an odds ratio.
+# The rows are materialised after exponentiation, so under exponentiate = TRUE
+# they stay on the log scale and the note says so.
+build_scale_effects_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  has_scale <- any(vapply(frames, function(f) {
+    ft <- f$coefs$parent_var
+    !is.null(ft) && any(ft %in% "Scale effects")
+  }, logical(1)))
+  if (!has_scale) return(NULL)
+  gloss <- paste0(
+    "Scale effects: covariate effects on the log standard deviation of the ",
+    "latent response"
+  )
+  exp_any <- any(vapply(frames, function(f) {
+    isTRUE(f$info$extras$exp_applied)
+  }, logical(1)))
+  if (isTRUE(exp_any)) {
+    gloss <- paste0(gloss, " (log scale, not exponentiated: their exponential ",
+                    "is a ratio of latent SDs, not an odds ratio)")
+  }
+  paste0(gloss, ".")
 }

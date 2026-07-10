@@ -225,7 +225,8 @@ render_regression_table <- function(
       # `Non-proportional effects`) from the rows above, mirroring the
       # coefficients / fit-stats divide.
       if (rt$factor_term %in%
-            c("Thresholds", "Non-proportional effects", "Random effects",
+            c("Thresholds", "Non-proportional effects", "Scale effects",
+              "Random effects",
               "Zero-inflation", "Zero hurdle", "Dispersion")) {
         thr_sep <- c(thr_sep, length(rows) + 1L)
       }
@@ -928,8 +929,8 @@ format_term_label <- function(term_row, reference_label, reference_style,
   # "re::Subject::Days") or a bare cut-point, not a coefficient name.
   if (!is.na(term_row$factor_term) &&
       term_row$factor_term %in%
-        c("Thresholds", "Non-proportional effects", "Random effects",
-          "Zero-inflation", "Zero hurdle", "Dispersion")) {
+        c("Thresholds", "Non-proportional effects", "Scale effects",
+          "Random effects", "Zero-inflation", "Zero hurdle", "Dispersion")) {
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) lvl <- term
     return(paste0(if (isTRUE(group_factor_levels)) "  " else "", lvl))
