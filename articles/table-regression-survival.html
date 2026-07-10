@@ -110,8 +110,9 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></code></pre></div>
 <p>This vignette covers <strong>survival (time-to-event)
-regression</strong> — models for how long until an event occurs, with
-censoring for the subjects who never reach it. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
+regression</strong> — models for the <strong>time until an event
+occurs</strong>, with censoring for the subjects whose event is not
+observed within follow-up. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
 integration); here we focus on what is specific to survival fits: hazard
@@ -137,7 +138,7 @@ patients with advanced lung cancer, with age, sex, and the ECOG
 performance score (0 = fully active, higher is worse) as predictors. One
 row lacks <code>ph.ecog</code> and one lacks the enrolling institution,
 so we declare the analytic sample explicitly — the same 226 rows serve
-every model and, later, the cluster variable:</p>
+every model and, later, supply the cluster variable:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lung2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="va">lung</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"status"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span>,</span>
 <span>                          <span class="st">"ph.ecog"</span>, <span class="st">"inst"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
@@ -149,15 +150,20 @@ every model and, later, the cluster variable:</p>
 <h2 id="the-cox-model-in-one-paragraph">The Cox model in one paragraph<a class="anchor" aria-label="anchor" href="#the-cox-model-in-one-paragraph"></a>
 </h2>
 <p>The Cox model works on the <strong>hazard</strong> — the
-instantaneous event rate among those still at risk. Each coefficient
-multiplies that hazard by a constant factor at every point in time (the
+instantaneous event rate among those still at risk. A one-unit increase
+in a predictor multiplies that hazard by a constant factor — the
+exponentiated coefficient — at every point in time (the
 <strong>proportional-hazards assumption</strong>), and the baseline
 hazard itself is left completely unspecified: that is the semiparametric
-trick that made the model universal (Cox 1972; Therneau &amp; Grambsch
-2000). Two consequences shape the table. There is <strong>no intercept
-row</strong> — the baseline hazard absorbs it — and there is no residual
-variance, so the model-fit block reports what a survival reader expects
-instead: the <strong>number of events</strong> and the
+trick that made the model ubiquitous in applied work (Cox 1972; Therneau
+&amp; Grambsch 2000). Everything below also assumes censoring is
+<strong>uninformative</strong>: given the covariates, subjects censored
+at time <em>t</em> must be representative of those still at risk at
+<em>t</em> — an assumption the observed data cannot verify. Two
+consequences shape the table. There is <strong>no intercept row</strong>
+— the baseline hazard absorbs it — and there is no residual variance, so
+the model-fit block reports what a survival reader expects instead: the
+<strong>number of events</strong> and the
 <strong>concordance</strong>.</p>
 </div>
 <div class="section level2">
@@ -203,22 +209,135 @@ chiefly by its event count, not its n) and the
 comparable patients, the one predicted to fail earlier actually does.
 0.5 is a coin flip; 0.64 is modest discrimination (Harrell 2015).</li>
 </ul>
-<p>The table reports the model, not its assumption: test proportionality
-with <code><a href="https://rdrr.io/pkg/survival/man/cox.zph.html" class="external-link">survival::cox.zph()</a></code> before reporting (here the global
-test gives p = .17 — no evidence against it; Therneau &amp; Grambsch
-2000).</p>
+<p>The table reports the model, not its assumption: check
+proportionality with <code><a href="https://rdrr.io/pkg/survival/man/cox.zph.html" class="external-link">survival::cox.zph()</a></code> before publishing
+(Therneau &amp; Grambsch 2000):</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/cox.zph.html" class="external-link">cox.zph</a></span><span class="op">(</span><span class="va">cx</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         chisq df    p</span></span>
+<span><span class="co">#&gt; age     0.244  1 0.62</span></span>
+<span><span class="co">#&gt; sex     2.475  1 0.12</span></span>
+<span><span class="co">#&gt; ph.ecog 2.353  1 0.13</span></span>
+<span><span class="co">#&gt; GLOBAL  4.975  3 0.17</span></span></code></pre></div>
+<p>Each covariate gets its own test of the proportional-hazards
+assumption, plus a global test. The smallest p here is .12 (sex) and the
+global test gives p = .17 — little evidence against proportionality.
+When the test rejects, the two standard remedies flow through the same
+table without ceremony: stratify the offending categorical factor
+(<code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> terms are absorbed into the baseline hazard, no
+coefficient row) or give the covariate a time-varying effect via
+counting-process data (<code>Surv(tstart, tstop, event)</code>); both
+render like any other fit.</p>
 </div>
 <div class="section level2">
 <h2 id="why-there-is-no-ame-column">Why there is no AME column<a class="anchor" aria-label="anchor" href="#why-there-is-no-ame-column"></a>
 </h2>
-<p>Requesting an <code>"ame"</code> column on a Cox fit is refused with
-an explanation rather than answered: an average marginal effect needs a
-response scale, and a Cox model deliberately does not commit to one — a
-per-coefficient “effect on survival” would be ambiguous (at what time?
-on which scale?) with unreliable standard errors. The hazard ratio
-<em>is</em> the per-coefficient summary of this model. Absolute-scale
-summaries (risk differences at a horizon, restricted mean survival time)
-are a different estimand family, not a per-coefficient column.</p>
+<p>An <code>"ame"</code> request on a Cox fit is refused with an
+explanation rather than silently honoured: an average marginal effect
+needs a response scale, and a Cox model deliberately does not commit to
+one — a per-coefficient “effect on survival” would be ambiguous (at what
+time? on which scale?), and the delta-method standard errors the generic
+AME machinery would attach to it are unreliable for Cox fits. The hazard
+ratio <em>is</em> the per-coefficient summary of this model.
+Absolute-scale summaries exist, but they require the analyst to choose a
+<strong>time horizon</strong> first — which is exactly what the next
+section does, with bootstrap inference in place of the delta method.</p>
+</div>
+<div class="section level2">
+<h2 id="absolute-effects-rmst-and-risk-differences">Absolute effects: RMST and risk differences<a class="anchor" aria-label="anchor" href="#absolute-effects-rmst-and-risk-differences"></a>
+</h2>
+<p>A hazard ratio answers “at what relative rate?”, never “how much
+longer?” or “how many fewer?”. Women’s hazard is 0.57 times men’s — but
+how many extra months of life is that, and how many fewer deaths by the
+end of the first year? Those are the questions patients and policy
+makers actually ask, and the methodological literature increasingly
+calls for these answers to be reported alongside the hazard ratio
+(Royston &amp; Parmar 2013; Uno et al. 2014). They also settle a
+workflow question the assumption check left open: when
+<code><a href="https://rdrr.io/pkg/survival/man/cox.zph.html" class="external-link">cox.zph()</a></code> rejects proportionality, the hazard ratio
+degrades into a follow-up-weighted average of a changing effect, while
+the RMST difference over <code>[0, tau]</code> remains a well-defined
+estimand — in that case the absolute summaries lead the report rather
+than accompany it. Two absolute summaries do the job:</p>
+<ul>
+<li>the <strong>restricted mean survival time (RMST)
+difference</strong>: the difference in mean event-free time over a fixed
+window <code>[0, tau]</code> — the area between the two survival curves
+up to <code>tau</code>;</li>
+<li>the <strong>risk difference</strong>: the difference in the
+probability of having had the event by a landmark time.</li>
+</ul>
+<p><code><a href="../reference/table_regression.html">table_regression()</a></code> computes both from the fitted Cox
+model by <strong>g-computation</strong> (regression standardization):
+every patient’s survival curve is predicted twice, once under each level
+of the predictor, keeping their other covariates as observed; the curves
+are averaged, and the two standardized curves are integrated to
+<code>tau</code> (RMST) or evaluated at <code>at_time</code> and
+complemented (risk = 1 − survival). Standard errors come from a
+nonparametric bootstrap, so expect the chunk to take a few seconds; the
+200 replicates below keep the vignette light, and the default
+<code>boot_n = 1000</code> is the better choice for a publication
+table.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>,</span>
+<span>                 show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"rmst"</span>, <span class="st">"rmst_ci"</span>,</span>
+<span>                                  <span class="st">"risk_diff"</span>, <span class="st">"risk_diff_ci"</span><span class="op">)</span>,</span>
+<span>                 tau <span class="op">=</span> <span class="fl">365</span>, at_time <span class="op">=</span> <span class="fl">365</span>,</span>
+<span>                 exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, boot_n <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Cox proportional hazards regression: Surv(time, status)</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>   HR     dRMST (365)       95% CI       dRisk (365) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span>    1.01        -0.84  [ -2.27,   0.60]         0.00 </span></span>
+<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                                                     </span></span>
+<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>     –                                               </span></span>
+<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span>    0.57        40.50  [ 16.65,  64.35]        -0.19 </span></span>
+<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span>    1.60       -38.21  [-58.73, -17.70]         0.15 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                                                </span></span>
+<span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                                                </span></span>
+<span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1454.2                                              </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>     95% CI     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼────────────────</span></span></span>
+<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span> [-0.00,  0.01] </span></span>
+<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                </span></span>
+<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>                </span></span>
+<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> [-0.30, -0.08] </span></span>
+<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> [ 0.08,  0.22] </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Concordance C = 0.64 (SE = 0.03).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; dRMST = difference in restricted mean survival time over [0, 365]; dRisk = difference in cumulative incidence at 365; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; CI bounds exponentiated.</span></span></span></code></pre></div>
+<p>The absolute columns re-express the same model on interpretable
+scales, each averaged over the sample’s covariate mix. That cuts both
+ways: computed from the fit, they inherit its assumptions — with
+proportionality in doubt, estimate the RMST nonparametrically (per-arm
+Kaplan–Meier, as in <code>survRM2</code>) rather than standardizing a
+misspecified model. Being female adds an average of <strong>40.5
+event-free days</strong> over the first year (95% CI 17 to 64) and
+lowers the one-year risk of death by <strong>19 percentage
+points</strong> (95% CI 8 to 30); each additional ECOG point costs 38
+days and adds 15 percentage points to one-year risk. And the age row
+teaches that the contrast unit matters as much as the scale: per
+<strong>year</strong> of age the effect is invisible (HR 1.01, under a
+day of RMST), but per <strong>decade</strong> — the clinically natural
+unit — the same fit implies HR 1.12 and about nine fewer event-free
+days. Rescale the predictor when the per-unit contrast is not the
+meaningful one.</p>
+<p>Two design decisions shape these columns. First, <strong>the horizon
+is mandatory</strong>: an RMST without its <code>tau</code> is not an
+estimand, so <code><a href="../reference/table_regression.html">table_regression()</a></code> refuses to guess — pass a
+clinically meaningful time, or <code>tau = "minmax"</code> for the
+largest window every compared group can support (the value used is
+disclosed in the table note). Second, the contrast is level against
+reference for factor predictors and a +1-unit shift for continuous
+predictors, mirroring the AME convention for other model families — so
+the columns read the same way across your tables.</p>
 </div>
 <div class="section level2">
 <h2 id="multi-centre-data-cluster-robust-variance">Multi-centre data: cluster-robust variance<a class="anchor" aria-label="anchor" href="#multi-centre-data-cluster-robust-variance"></a>
@@ -229,7 +348,7 @@ request routes to the <strong>Lin &amp; Wei (1989)</strong> robust
 variance — the grouped score (dfbeta) sandwich that
 <code>coxph(..., cluster = )</code> and Stata
 <code>stcox, vce(cluster)</code> use:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, vcov <span class="op">=</span> <span class="st">"CR0"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">inst</span>,</span>
 <span>                 exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Registered S3 method overwritten by 'clubSandwich':</span></span>
@@ -261,16 +380,22 @@ predictors carry missing values. Second, the direction: robust standard
 errors are not always larger — the sex SE <em>shrinks</em> here.
 Clustering corrects the variance in whichever direction the
 within-centre correlation points; treating it as a conservative
-inflation ritual misreads it.</p>
+inflation ritual misreads it. The robust variance corrects the standard
+errors while leaving the estimates marginal (population-averaged); the
+modeling alternative is a shared <strong>frailty</strong> term —
+<code>coxph(Surv(time, status) ~ age + sex + ph.ecog + frailty(inst), data = lung2)</code>
+— whose hazard ratios are instead conditional on the centre effect
+(Therneau &amp; Grambsch 2000, ch. 9). Which estimand the analysis needs
+decides between them.</p>
 </div>
 <div class="section level2">
 <h2 id="hierarchical-cox-models">Hierarchical Cox models<a class="anchor" aria-label="anchor" href="#hierarchical-cox-models"></a>
 </h2>
-<p>Does the performance score improve on age and sex?
+<p>Does adding the performance score improve on the age-and-sex model?
 <code>nested = TRUE</code> compares adjacent models by the
 <strong>partial-likelihood ratio test</strong> (the
 <code>anova.coxph()</code> convention) and appends the change rows:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cx0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">lung2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">cx0</span>, <span class="va">cx</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                 show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
@@ -299,19 +424,92 @@ inflation ritual misreads it.</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; CI bounds exponentiated.</span></span></span></code></pre></div>
 <p>Adding <code>ph.ecog</code> buys a chi-squared change of 16.78 on one
-degree of freedom (p &lt; .001), an AIC drop of 14.8, and lifts the
+degree of freedom (p &lt; .001), an AIC drop of 14.8, and a rise in
 concordance from 0.60 to 0.64 — three readings of the same improvement,
 on the likelihood, information, and discrimination scales
 respectively.</p>
+</div>
+<div class="section level2">
+<h2 id="the-univariable-screen">The univariable screen<a class="anchor" aria-label="anchor" href="#the-univariable-screen"></a>
+</h2>
+<p>Epidemiological analyses often begin one step earlier: before any
+multivariable model, each candidate predictor is examined in its own Cox
+model, and the two stages are reported side by side.
+<code><a href="../reference/table_regression_uv.html">table_regression_uv()</a></code> runs that workflow in one call —
+<code>outcome</code> takes the <code><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv()</a></code> expression, and each
+column group is fitted, and its n and events counted, on its own
+estimation sample:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression_uv.html">table_regression_uv</a></span><span class="op">(</span><span class="va">lung2</span>, outcome <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span>,</span>
+<span>                    predictors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">sex</span>, <span class="va">ph.ecog</span><span class="op">)</span>,</span>
+<span>                    method <span class="op">=</span> <span class="st">"coxph"</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                    show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n"</span>, <span class="st">"n_events"</span>, <span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Univariable and multivariable Cox regression: Surv(time, status)</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                                Univariable                   Multivariable   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                 ────────────────────────────────────────  ───────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>  N   Events/N   HR      95% CI       p     Events/N     HR  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span> 226   163/226  1.02  [1.00, 1.04]   .041      163/226  1.01 </span></span>
+<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                                                             </span></span>
+<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>   –   110/136   –         –         –         110/136   –   </span></span>
+<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> 226     53/90  0.59  [0.43, 0.82]   .002        53/90  0.57 </span></span>
+<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> 226   163/226  1.61  [1.29, 2.02]  &lt;.001      163/226  1.60 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>                                                 226         </span></span>
+<span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>                                                 163         </span></span>
+<span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span>                                                1454.2       </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                     Multivariable    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                 ─────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>    95% CI       p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────────────</span></span></span>
+<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span> [0.99, 1.03]   .225 </span></span>
+<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                     </span></span>
+<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>      –         –    </span></span>
+<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> [0.41, 0.80]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> [1.28, 2.00]  &lt;.001 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Concordance C = 0.64 (SE = 0.03).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; CI bounds exponentiated.</span></span></span></code></pre></div>
+<p>The <code>Events/N</code> column carries the information a survival
+reader checks first — 53 of the 90 women died against 110 of the 136 men
+— and the paired columns support the screen’s real question:
+<strong>does adjustment move an estimate?</strong> Age is the
+instructive row. Alone it looks significant (HR 1.02, p = .041);
+adjusted for sex and performance status it is not (p = .225) — its
+univariable signal was partly carried by the worse performance scores of
+the older patients. Reading the two columns together is what protects
+the final model from both false leads and premature exclusions: a
+predictor should not enter or leave on its univariable p-value
+alone.</p>
+<p>Two cautions complete the reading. The comparison is clean here only
+because the analytic sample was declared up front: every model uses the
+same 226 rows, so movement between the columns is adjustment, not sample
+change (with missing predictor values, each univariable model fits on
+its own larger complete cases — the <code>N</code> column and the table
+note disclose exactly that). And when the estimate is a hazard ratio,
+movement under adjustment is not by itself proof of confounding: hazard
+ratios are <strong>non-collapsible</strong>, so adding a strongly
+prognostic covariate shifts the estimate even when it is unrelated to
+the predictor.</p>
 </div>
 <div class="section level2">
 <h2 id="accelerated-failure-time-survreg">Accelerated failure time: <code>survreg()</code><a class="anchor" aria-label="anchor" href="#accelerated-failure-time-survreg"></a>
 </h2>
 <p>The parametric alternative models <strong>time itself</strong> (Wei
 1992): covariates stretch or compress survival time by a constant
-factor. Under <code>exponentiate = TRUE</code> the coefficients become
-<strong>time ratios</strong> (TR):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+factor. When is it the better tool? When the audience needs the
+time-scale reading, when proportionality is in doubt — the AFT
+assumption of a constant time ratio is a <em>different</em> assumption,
+not a weaker one — or when the analysis needs a parametric baseline, for
+instance to extrapolate beyond the follow-up window. Under
+<code>exponentiate = TRUE</code> the coefficients become <strong>time
+ratios</strong> (TR):</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survreg</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">ph.ecog</span>, data <span class="op">=</span> <span class="va">lung2</span>,</span>
 <span>              dist <span class="op">=</span> <span class="st">"weibull"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">sr</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -342,12 +540,12 @@ contradictory: women have TR 1.50 but HR 0.57. They are the same finding
 on opposite scales — a protective effect <strong>multiplies survival
 time up</strong> (50% longer) and <strong>multiplies the hazard
 down</strong> (43% lower). Neither direction is more correct; the
-Weibull family is the one distribution that is simultaneously AFT and
+Weibull is the one family that is simultaneously AFT and
 proportional-hazards, and the two scales are linked by an exact identity
-within the fit: HR = TR^(−1/scale) = 1.50^(−1/0.73) ≈ 0.57, with the
-scale parameter read from the footer — matching the semiparametric Cox
-estimate to displayed precision (0.575 vs 0.573). The footer names the
-distribution because the interpretation depends on it —
+within the fit: HR = TR^(−1/scale) = 1.50^(−1/0.73) ≈ 0.574, with the
+scale parameter read from the footer — agreeing with the semiparametric
+Cox estimate (0.573 at full precision, 0.57 as the tables display). The
+footer names the distribution because the interpretation depends on it —
 <code>exponentiate</code> produces time ratios only for log-scale
 distributions (Weibull, exponential, lognormal, loglogistic); for an
 identity-scale distribution (<code>dist = "gaussian"</code>) the request
@@ -358,12 +556,15 @@ time scale.</p>
 <h2 id="rmscph">
 <code>rms::cph()</code><a class="anchor" aria-label="anchor" href="#rmscph"></a>
 </h2>
-<p>The <code>rms</code> Cox engine renders through the same layout. One
-requirement carried over from <code>rms</code> itself: cluster-robust
-variance uses <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code>, which needs the design
-matrices stored at fit time — fit with <code>x = TRUE, y = TRUE</code>
-or the robust request errors with that exact instruction:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>Analysts working in the <code>rms</code> ecosystem (Harrell 2015) —
+for its validation, calibration, and nomogram tooling — fit the Cox
+model with <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code>, and <code><a href="../reference/table_regression.html">table_regression()</a></code>
+renders it through the same layout. One requirement carried over from
+<code>rms</code> itself: cluster-robust variance uses
+<code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code>, which needs the model matrix and response
+stored at fit time — fit with <code>x = TRUE, y = TRUE</code> or the
+robust request fails with exactly that instruction:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cph_fit</span> <span class="op">&lt;-</span> <span class="fu">rms</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">cph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">lung2</span>,</span>
 <span>                    x <span class="op">=</span> <span class="cn">TRUE</span>, y <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cph_fit</span>, vcov <span class="op">=</span> <span class="st">"CR0"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">inst</span>,</span>
@@ -391,11 +592,12 @@ or the robust request errors with that exact instruction:</p>
 </h2>
 <p><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code> (Jackson 2016) fits parametric
 survival models over a wide family of distributions (and the
-Royston–Parmar 2002 spline models). The location coefficients
-exponentiate to the generic <code>exp(B)</code> — the substantive
-reading (time ratio, hazard ratio) depends on the distribution, which
-the footer names together with its ancillary parameters:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+Royston–Parmar 2002 spline models). The location coefficients are
+exponentiated under a generic <code>exp(B)</code> header — the
+substantive reading (time ratio, hazard ratio) depends on the
+distribution, which the footer names together with its ancillary
+parameters:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">flexsurv</span><span class="fu">::</span><span class="fu"><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurvreg</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>,</span>
 <span>                            data <span class="op">=</span> <span class="va">lung2</span>, dist <span class="op">=</span> <span class="st">"weibull"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fs</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -420,13 +622,8 @@ the footer names together with its ancillary parameters:</p>
 scale places its coefficients on a probit-like scale whose exponential
 has no meaning, so <code>exponentiate = TRUE</code> is refused there;
 and covariates on ancillary parameters (<code>anc =</code>) act on their
-own scales, so they refuse exponentiation as a whole rather than print
-meaningless ratios.</p>
-<p>Two Cox extensions flow through the same table without ceremony:
-stratified models (<code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> terms are absorbed into the
-baseline, no coefficient row) and counting-process data
-(<code>Surv(tstart, tstop, event)</code> for time-varying covariates)
-render like any other fit.</p>
+own scales, so <code>exponentiate = TRUE</code> is refused for the whole
+fit rather than printing meaningless ratios for the ancillary rows.</p>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -436,7 +633,7 @@ renders as a raw data frame, a long broom-style tibble, or — with the
 corresponding Suggests package — a rich <code>gt</code>,
 <code>flextable</code>, <code>tinytable</code>, Excel, or Word
 table:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Variable      HR   SE       95% CI     p</span></span>
 <span><span class="co">#&gt; 1           age    1.01 0.01 [0.99, 1.03]  .225</span></span>
@@ -447,17 +644,17 @@ table:</p>
 <span><span class="co">#&gt; 6             n  226                           </span></span>
 <span><span class="co">#&gt; 7      N events  163                           </span></span>
 <span><span class="co">#&gt; 8           AIC 1454.2</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
-<div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
+<div id="eyinpoiwpb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<p><style>#eyinpoiwpb table { font-family: system-ui, ‘Segoe UI’,
 Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
 Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
 antialiased; -moz-osx-font-smoothing: grayscale; }</p>
-<p>#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi
-tr, #mwlefoodfi td, #mwlefoodfi th { border-style: none; }</p>
-<p>#mwlefoodfi p { margin: 0; padding: 0; }</p>
-<p>#mwlefoodfi .gt_table { display: table; border-collapse: collapse;
+<p>#eyinpoiwpb thead, #eyinpoiwpb tbody, #eyinpoiwpb tfoot, #eyinpoiwpb
+tr, #eyinpoiwpb td, #eyinpoiwpb th { border-style: none; }</p>
+<p>#eyinpoiwpb p { margin: 0; padding: 0; }</p>
+<p>#eyinpoiwpb .gt_table { display: table; border-collapse: collapse;
 line-height: normal; margin-left: auto; margin-right: auto; color:
 #333333; font-size: 16px; font-weight: normal; font-style: normal;
 background-color: #FFFFFF; width: auto; border-top-style: solid;
@@ -466,49 +663,49 @@ none; border-right-width: 2px; border-right-color: #D3D3D3;
 border-bottom-style: solid; border-bottom-width: 0px;
 border-bottom-color: #A8A8A8; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_caption { padding-top: 4px; padding-bottom: 4px;
+<p>#eyinpoiwpb .gt_caption { padding-top: 4px; padding-bottom: 4px;
 }</p>
-<p>#mwlefoodfi .gt_title { color: #333333; font-size: 100%; font-weight:
+<p>#eyinpoiwpb .gt_title { color: #333333; font-size: 100%; font-weight:
 normal; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
 padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
 0; }</p>
-<p>#mwlefoodfi .gt_subtitle { color: #333333; font-size: 85%;
+<p>#eyinpoiwpb .gt_subtitle { color: #333333; font-size: 85%;
 font-weight: initial; padding-top: 3px; padding-bottom: 5px;
 padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
 border-top-width: 0; }</p>
-<p>#mwlefoodfi .gt_heading { background-color: #FFFFFF; text-align:
+<p>#eyinpoiwpb .gt_heading { background-color: #FFFFFF; text-align:
 center; border-bottom-color: #FFFFFF; border-left-style: none;
 border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_bottom_border { border-bottom-style: solid;
+<p>#eyinpoiwpb .gt_bottom_border { border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_col_headings { border-top-style: solid;
+<p>#eyinpoiwpb .gt_col_headings { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 1px; border-bottom-color: #333333;
 border-left-style: none; border-left-width: 1px; border-left-color:
 rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
 1px; border-right-color: rgba(255, 255, 255, 0); }</p>
-<p>#mwlefoodfi .gt_col_heading { color: #333333; background-color:
+<p>#eyinpoiwpb .gt_col_heading { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
 padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
 hidden; }</p>
-<p>#mwlefoodfi .gt_column_spanner_outer { color: #333333;
+<p>#eyinpoiwpb .gt_column_spanner_outer { color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: normal;
 text-transform: inherit; padding-top: 0; padding-bottom: 0;
 padding-left: 4px; padding-right: 4px; }</p>
-<p>#mwlefoodfi .gt_column_spanner_outer:first-child { padding-left: 0;
+<p>#eyinpoiwpb .gt_column_spanner_outer:first-child { padding-left: 0;
 }</p>
-<p>#mwlefoodfi .gt_column_spanner_outer:last-child { padding-right: 0;
+<p>#eyinpoiwpb .gt_column_spanner_outer:last-child { padding-right: 0;
 }</p>
-<p>#mwlefoodfi .gt_column_spanner { border-bottom-style: solid;
+<p>#eyinpoiwpb .gt_column_spanner { border-bottom-style: solid;
 border-bottom-width: 1px; border-bottom-color: #333333; vertical-align:
 bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
 display: inline-block; width: 100%; }</p>
-<p>#mwlefoodfi .gt_spanner_row { border-bottom-style: hidden; }</p>
-<p>#mwlefoodfi .gt_group_heading { padding-top: 8px; padding-bottom:
+<p>#eyinpoiwpb .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#eyinpoiwpb .gt_group_heading { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 text-transform: inherit; border-top-style: solid; border-top-width: 2px;
@@ -518,90 +715,90 @@ border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
 }</p>
-<p>#mwlefoodfi .gt_empty_group_heading { padding: 0.5px; color: #333333;
+<p>#eyinpoiwpb .gt_empty_group_heading { padding: 0.5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 border-top-style: solid; border-top-width: 2px; border-top-color:
 #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
-<p>#mwlefoodfi .gt_from_md &gt; :first-child { margin-top: 0; }</p>
-<p>#mwlefoodfi .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
-<p>#mwlefoodfi .gt_row { padding-top: 8px; padding-bottom: 8px;
+<p>#eyinpoiwpb .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#eyinpoiwpb .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#eyinpoiwpb .gt_row { padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
 solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
 }</p>
-<p>#mwlefoodfi .gt_stub { color: #333333; background-color: #FFFFFF;
+<p>#eyinpoiwpb .gt_stub { color: #333333; background-color: #FFFFFF;
 font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_stub_row_group { color: #333333; background-color:
+<p>#eyinpoiwpb .gt_stub_row_group { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
 }</p>
-<p>#mwlefoodfi .gt_row_group_first td { border-top-width: 2px; }</p>
-<p>#mwlefoodfi .gt_row_group_first th { border-top-width: 2px; }</p>
-<p>#mwlefoodfi .gt_summary_row { color: #333333; background-color:
+<p>#eyinpoiwpb .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#eyinpoiwpb .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#eyinpoiwpb .gt_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_first_summary_row { border-top-style: solid;
+<p>#eyinpoiwpb .gt_first_summary_row { border-top-style: solid;
 border-top-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_first_summary_row.thick { border-top-width: 2px;
+<p>#eyinpoiwpb .gt_first_summary_row.thick { border-top-width: 2px;
 }</p>
-<p>#mwlefoodfi .gt_last_summary_row { padding-top: 8px; padding-bottom:
+<p>#eyinpoiwpb .gt_last_summary_row { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_grand_summary_row { color: #333333; background-color:
+<p>#eyinpoiwpb .gt_grand_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_first_grand_summary_row { padding-top: 8px;
+<p>#eyinpoiwpb .gt_first_grand_summary_row { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-top-style: double; border-top-width: 6px; border-top-color:
 #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_last_grand_summary_row_top { padding-top: 8px;
+<p>#eyinpoiwpb .gt_last_grand_summary_row_top { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-bottom-style: double; border-bottom-width: 6px;
 border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_striped { background-color: rgba(128, 128, 128,
+<p>#eyinpoiwpb .gt_striped { background-color: rgba(128, 128, 128,
 0.05); }</p>
-<p>#mwlefoodfi .gt_table_body { border-top-style: solid;
+<p>#eyinpoiwpb .gt_table_body { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_footnotes { color: #333333; background-color:
+<p>#eyinpoiwpb .gt_footnotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+<p>#eyinpoiwpb .gt_footnote { margin: 0px; font-size: 90%; padding-top:
 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_sourcenotes { color: #333333; background-color:
+<p>#eyinpoiwpb .gt_sourcenotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_sourcenote { font-size: 90%; padding-top: 4px;
+<p>#eyinpoiwpb .gt_sourcenote { font-size: 90%; padding-top: 4px;
 padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_left { text-align: left; }</p>
-<p>#mwlefoodfi .gt_center { text-align: center; }</p>
-<p>#mwlefoodfi .gt_right { text-align: right; font-variant-numeric:
+<p>#eyinpoiwpb .gt_left { text-align: left; }</p>
+<p>#eyinpoiwpb .gt_center { text-align: center; }</p>
+<p>#eyinpoiwpb .gt_right { text-align: right; font-variant-numeric:
 tabular-nums; }</p>
-<p>#mwlefoodfi .gt_font_normal { font-weight: normal; }</p>
-<p>#mwlefoodfi .gt_font_bold { font-weight: bold; }</p>
-<p>#mwlefoodfi .gt_font_italic { font-style: italic; }</p>
-<p>#mwlefoodfi .gt_super { font-size: 65%; }</p>
-<p>#mwlefoodfi .gt_footnote_marks { font-size: 75%; vertical-align:
+<p>#eyinpoiwpb .gt_font_normal { font-weight: normal; }</p>
+<p>#eyinpoiwpb .gt_font_bold { font-weight: bold; }</p>
+<p>#eyinpoiwpb .gt_font_italic { font-style: italic; }</p>
+<p>#eyinpoiwpb .gt_super { font-size: 65%; }</p>
+<p>#eyinpoiwpb .gt_footnote_marks { font-size: 75%; vertical-align:
 0.4em; position: initial; }</p>
-<p>#mwlefoodfi .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
-<p>#mwlefoodfi .gt_indent_1 { text-indent: 5px; }</p>
-<p>#mwlefoodfi .gt_indent_2 { text-indent: 10px; }</p>
-<p>#mwlefoodfi .gt_indent_3 { text-indent: 15px; }</p>
-<p>#mwlefoodfi .gt_indent_4 { text-indent: 20px; }</p>
-<p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
-<p>#mwlefoodfi .katex-display { display: inline-flex !important;
+<p>#eyinpoiwpb .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#eyinpoiwpb .gt_indent_1 { text-indent: 5px; }</p>
+<p>#eyinpoiwpb .gt_indent_2 { text-indent: 10px; }</p>
+<p>#eyinpoiwpb .gt_indent_3 { text-indent: 15px; }</p>
+<p>#eyinpoiwpb .gt_indent_4 { text-indent: 20px; }</p>
+<p>#eyinpoiwpb .gt_indent_5 { text-indent: 25px; }</p>
+<p>#eyinpoiwpb .katex-display { display: inline-flex !important;
 margin-bottom: 0.75em !important; }</p>
-#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+#eyinpoiwpb div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
 div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
 !important; } </style></p>
 <div class="spicy-gt-outer" style="text-align: center;">
@@ -816,7 +1013,7 @@ Coefficients exponentiated and displayed as HR; SE on the HR scale
 <p><a href="https://broom.tidymodels.org" class="external-link"><code>broom::tidy()</code></a>
 returns the long frame; with <code>exponentiate = TRUE</code> the
 estimates and CI bounds are on the ratio scale, as displayed:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 15</span></span></span>
 <span><span class="co">#&gt;   model_id outcome     term  estimate_type estimate std.error conf.low conf.high</span></span>
@@ -844,6 +1041,13 @@ Association</em>, 84(408), 1074–1078.</li>
 <li>Royston, P., &amp; Parmar, M. K. B. (2002). Flexible parametric
 proportional-hazards and proportional-odds models for censored survival
 data. <em>Statistics in Medicine</em>, 21(15), 2175–2197.</li>
+<li>Royston, P., &amp; Parmar, M. K. B. (2013). Restricted mean survival
+time: an alternative to the hazard ratio for the design and analysis of
+randomized trials with a time-to-event outcome. <em>BMC Medical Research
+Methodology</em>, 13, 152.</li>
+<li>Uno, H., Claggett, B., Tian, L., et al. (2014). Moving beyond the
+hazard ratio in quantifying the between-group difference in survival
+analysis. <em>Journal of Clinical Oncology</em>, 32(22), 2380–2385.</li>
 <li>Therneau, T. M., &amp; Grambsch, P. M. (2000). <em>Modeling Survival
 Data: Extending the Cox Model</em>. Springer.</li>
 <li>Wei, L. J. (1992). The accelerated failure time model: a useful

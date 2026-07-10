@@ -311,7 +311,8 @@ adjustment</em> section for when this is and is not appropriate.</p></dd>
 per-coefficient columns and their display order. Accepts
 <strong>atomic tokens</strong> (<code>"b"</code>, <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>,
 <code>"beta"</code>, <code>"n"</code>, <code>"n_events"</code>, <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
-<code>"ame_p"</code>,
+<code>"ame_p"</code>, <code>"rmst"</code> + <code>"rmst_se"</code> / <code>"rmst_ci"</code> / <code>"rmst_p"</code>,
+<code>"risk_diff"</code> + its <code>_se</code> / <code>_ci</code> / <code>_p</code> companions,
 <code>"partial_f2"</code> + <code>"partial_f2_ci"</code>, <code>"partial_eta2"</code> +
 <code>"partial_eta2_ci"</code>, <code>"partial_omega2"</code> +
 <code>"partial_omega2_ci"</code>, <code>"partial_chi2"</code>) and <strong>group tokens</strong>
@@ -870,7 +871,16 @@ factor level (reference row included) and model totals on
 continuous rows, computed on each model's own estimation
 sample (STROBE item 16's "data behind the association";
 NEJM-style <code>no. of events/total no.</code>). Binary (binomial)
-outcomes only – other models raise <code>spicy_invalid_input</code>.</p></li>
+outcomes and right-censored <code>coxph</code> fits – other models
+raise <code>spicy_invalid_input</code>.</p></li>
+<li><p>Survival estimands – <code>coxph</code> only: <code>"rmst"</code>,
+<code>"rmst_se"</code>, <code>"rmst_ci"</code>, <code>"rmst_p"</code> (restricted-mean-
+survival-time difference over <code>[0, tau]</code>) and
+<code>"risk_diff"</code>, <code>"risk_diff_se"</code>, <code>"risk_diff_ci"</code>,
+<code>"risk_diff_p"</code> (cumulative-incidence difference at
+<code>at_time</code>), by g-computation from the fitted model with
+bootstrap inference. The horizon arguments are required;
+see <code>tau</code> / <code>at_time</code>.</p></li>
 </ul><p><strong>Group tokens</strong> (presets) expand to a fixed atomic vector
 before validation:</p>
 <ul><li><p><code>"all_b"</code>         -&gt; <code>c("b", "se", "ci", "p")</code></p></li>

@@ -231,18 +231,19 @@ table_regression(
   Character vector of tokens selecting the per-coefficient columns and
   their display order. Accepts **atomic tokens** (`"b"`, `"se"`, `"ci"`,
   `"t"`, `"p"`, `"beta"`, `"n"`, `"n_events"`, `"ame"`, `"ame_se"`,
-  `"ame_ci"`, `"ame_p"`, `"partial_f2"` + `"partial_f2_ci"`,
-  `"partial_eta2"` + `"partial_eta2_ci"`, `"partial_omega2"` +
-  `"partial_omega2_ci"`, `"partial_chi2"`) and **group tokens**
-  (`"all_b"`, `"all_b_compact"`, `"all_b_full"`, `"all_beta"`,
-  `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
-  `"all_omega2"`). See *Vocabulary tokens* in the details for the full
-  enumeration. Default `NULL` selects a context-aware layout: `"all_b"`
-  (single model) or `"all_b_compact"` (multi-model, and the
-  single-multinomial outcome-as-columns layout, which has the same width
-  pressure – restore CIs with atomic tokens, e.g.
-  `c("b", "se", "ci", "p")`). The `"p"` token is always the B / beta
-  p-value; for the AME-specific p-value use `"ame_p"`.
+  `"ame_ci"`, `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` /
+  `"rmst_p"`, `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
+  `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
+  `"partial_eta2_ci"`, `"partial_omega2"` + `"partial_omega2_ci"`,
+  `"partial_chi2"`) and **group tokens** (`"all_b"`, `"all_b_compact"`,
+  `"all_b_full"`, `"all_beta"`, `"all_ame"`, `"all_ame_compact"`,
+  `"all_f2"`, `"all_eta2"`, `"all_omega2"`). See *Vocabulary tokens* in
+  the details for the full enumeration. Default `NULL` selects a
+  context-aware layout: `"all_b"` (single model) or `"all_b_compact"`
+  (multi-model, and the single-multinomial outcome-as-columns layout,
+  which has the same width pressure – restore CIs with atomic tokens,
+  e.g. `c("b", "se", "ci", "p")`). The `"p"` token is always the B /
+  beta p-value; for the AME-specific p-value use `"ame_p"`.
 
 - keep:
 
@@ -806,8 +807,16 @@ Each token = one displayed column.
   `events/N`, per factor level (reference row included) and model totals
   on continuous rows, computed on each model's own estimation sample
   (STROBE item 16's "data behind the association"; NEJM-style
-  `no. of events/total no.`). Binary (binomial) outcomes only – other
-  models raise `spicy_invalid_input`.
+  `no. of events/total no.`). Binary (binomial) outcomes and
+  right-censored `coxph` fits – other models raise
+  `spicy_invalid_input`.
+
+- Survival estimands – `coxph` only: `"rmst"`, `"rmst_se"`, `"rmst_ci"`,
+  `"rmst_p"` (restricted-mean- survival-time difference over `[0, tau]`)
+  and `"risk_diff"`, `"risk_diff_se"`, `"risk_diff_ci"`, `"risk_diff_p"`
+  (cumulative-incidence difference at `at_time`), by g-computation from
+  the fitted model with bootstrap inference. The horizon arguments are
+  required; see `tau` / `at_time`.
 
 **Group tokens** (presets) expand to a fixed atomic vector before
 validation:

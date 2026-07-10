@@ -53,7 +53,9 @@ table_regression_uv(
   A [stats::family](https://rdrr.io/r/stats/family.html) object for
   `method = "glm"`. Default
   [`binomial()`](https://rdrr.io/r/stats/family.html). Refused for
-  `method = "coxph"`.
+  `method = "coxph"`, and
+  [`gaussian()`](https://rdrr.io/r/stats/family.html) with the identity
+  link is refused too: use `method = "lm"` for the linear screen.
 
 - multivariable:
 

@@ -129,7 +129,9 @@ the <code>survival</code> package; estimates render as HRs with
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
 <dd><p>A <a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family</a> object for <code>method = "glm"</code>.
-Default <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>. Refused for <code>method = "coxph"</code>.</p></dd>
+Default <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>. Refused for <code>method = "coxph"</code>, and
+<code><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian()</a></code> with the identity link is refused too: use
+<code>method = "lm"</code> for the linear screen.</p></dd>
 
 
 <dt id="arg-multivariable">multivariable<a class="anchor" aria-label="anchor" href="#arg-multivariable"></a></dt>

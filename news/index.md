@@ -90,8 +90,8 @@ rendering an empty column.
   column is shown by default and a note discloses when Ns differ across
   fits; `complete_cases = TRUE` forces the common sample. Intercepts are
   hidden by default and `p_adjust` treats the whole screen as one
-  family. `exponentiate`, `vcov` / `cluster`, `labels`, the output
-  engines, and `tidy()` work as in
+  family. `exponentiate`, `vcov` / `cluster` (the footer names the
+  cluster column), `labels`, the output engines, and `tidy()` work as in
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md):
   the machine-readable registry of supported model classes (family,
@@ -112,8 +112,9 @@ rendering an empty column.
 - New `show_columns` token `"n_events"`: outcome event counts displayed
   as `events/N` next to the estimates – per factor level (reference row
   included) with model totals on continuous rows, computed on each
-  model’s own estimation sample. Available for binomial outcomes and
-  right-censored `coxph` fits; opt-in everywhere.
+  model’s own estimation sample. Available for binomial outcomes –
+  `glm`, `glmer`, and `glmmTMB` fits alike – and right-censored `coxph`
+  fits; opt-in everywhere.
 - `re_ci = "profile"`: profile-likelihood CIs for the variance
   components of `lmer` / `glmer` fits (asymmetric, boundary-respecting;
   no SE column, the footer discloses the method).
