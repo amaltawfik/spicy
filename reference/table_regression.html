@@ -52,6 +52,7 @@ Gamma / inverse.gaussian / quasi families with any link."><meta property="og:ima
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
@@ -924,6 +925,10 @@ field convention; blank for other classes).</p></li>
 <code>"pseudo_r2_tjur"</code> (Tjur 2009; binomial only).</p></li>
 <li><p>Residual scale: <code>"sigma"</code> (lm \(\hat{\sigma}\)
 / glm dispersion), <code>"rmse"</code>.</p></li>
+<li><p>Negative-binomial dispersion (<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> only):
+<code>"theta"</code> (\(V = \mu + \mu^2/	heta\))
+and <code>"alpha"</code> (\(= 1/	heta\), the Stata <code>nbreg</code>
+convention). Refused for other families.</p></li>
 <li><p>Effect size: <code>"f2"</code>.</p></li>
 <li><p>Information criteria: <code>"AIC"</code>, <code>"AICc"</code>, <code>"BIC"</code>,
 <code>"deviance"</code>.</p></li>
@@ -1283,7 +1288,7 @@ broom integration:
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Default APA layout: B / SE / 95% CI / p plus the n / R^2 /</span></span></span>
 <span class="r-in"><span><span class="co"># Adj.R^2 fit-stats footer. Factor reference level is annotated</span></span></span>
-<span class="r-in"><span><span class="co"># with `(ref.)` and shows an em-dash in the statistic columns.</span></span></span>
+<span class="r-in"><span><span class="co"># with `(ref.)` and shows an en dash in the statistic columns.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

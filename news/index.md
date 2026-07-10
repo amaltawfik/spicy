@@ -148,8 +148,12 @@ rendering an empty column.
   instead of a blank block. The `N (groups)` row upgrades to plain
   counts (e.g. `N (Subject)`) when models share a single grouping
   factor.
-- Four new vignettes: *Mixed-effects*, *Multinomial*, *Count and
-  two-part*, and *Survival regression tables*.
+- Six new vignettes: *Mixed-effects*, *Multinomial*, *Count and
+  two-part*, *Survival*, and *Ordinal regression tables*, plus
+  *Categorical predictors* — a cross-cutting guide to dummy coding and
+  reference levels, joint tests of a factor, ordinal predictors (scores
+  vs dummies), successive-difference contrasts, and why continuous
+  predictors should not be categorized.
 
 ### Minor improvements
 
@@ -173,6 +177,10 @@ rendering an empty column.
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   now discloses robust and resampling SEs in its table note, carries its
   notes into every rich output, and accepts `cluster = ~region`.
+- [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fits gain
+  opt-in dispersion fit-stat rows: `show_fit_stats` tokens `"theta"`
+  (the NB2 dispersion) and `"alpha"` (its reciprocal, the Stata
+  convention). Refused with a clear error for other families.
 - [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) fits
   now report McFadden’s and Nagelkerke’s pseudo-R² (as the other
   categorical families do). The tokens were silently dropped from

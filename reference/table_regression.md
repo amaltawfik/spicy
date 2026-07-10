@@ -868,6 +868,11 @@ restore it explicitly when needed).
 - Residual scale: `"sigma"` (lm \\\hat{\sigma}\\ / glm dispersion),
   `"rmse"`.
 
+- Negative-binomial dispersion
+  ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) only):
+  `"theta"` (\\V = \mu + \mu^2/ heta\\) and `"alpha"` (\\= 1/ heta\\,
+  the Stata `nbreg` convention). Refused for other families.
+
 - Effect size: `"f2"`.
 
 - Information criteria: `"AIC"`, `"AICc"`, `"BIC"`, `"deviance"`.
@@ -1270,7 +1275,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 
 # Default APA layout: B / SE / 95% CI / p plus the n / R^2 /
 # Adj.R^2 fit-stats footer. Factor reference level is annotated
-# with `(ref.)` and shows an em-dash in the statistic columns.
+# with `(ref.)` and shows an en dash in the statistic columns.
 table_regression(fit)
 #> Linear regression: wellbeing_score
 #> 

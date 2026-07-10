@@ -68,6 +68,16 @@
   and output to console, gt, tinytable, flextable, Excel, Word, or
   clipboard.
 
+- [Categorical
+  predictors](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md):
+
+  How categorical predictors enter a regression table and how to work
+  with them: dummy coding and the reference level, joint
+  (multiple-degree-of-freedom) tests of a factor, R’s polynomial
+  contrasts for ordered factors, the scores-versus-dummies decision for
+  ordinal predictors, successive-difference coding, and why continuous
+  predictors should not be categorized.
+
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
 

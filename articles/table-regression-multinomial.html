@@ -62,6 +62,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
@@ -524,13 +525,17 @@ inference on the same quantities.</p>
 <h2 id="an-ordinal-predictor-scores-or-dummies">An ordinal predictor: scores or dummies?<a class="anchor" aria-label="anchor" href="#an-ordinal-predictor-scores-or-dummies"></a>
 </h2>
 <p><code>education</code> is ordered — Lower secondary &lt; Upper
-secondary &lt; Tertiary — and the dummy coding above ignores that. The
-alternative is to enter it as <strong>numeric scores</strong> (1, 2, 3):
-one slope per equation instead of two dummies, a model that is both
-simpler and nested in the factor model. Agresti (2007, sec. 4.4.3) gives
-the workflow: fit both codings and let a likelihood-ratio test judge
-whether the category coefficients depart from a linear trend in the
-scores. <code>nested = TRUE</code> runs exactly that comparison:</p>
+secondary &lt; Tertiary — and the dummy coding above ignores that.
+Whether to enter an ordinal predictor as <strong>numeric scores</strong>
+(one slope) or as dummies is a general model-building decision, not a
+multinomial one: the workflow — fit both codings, compare with
+<code>nested = TRUE</code>, and keep the scores only when the
+likelihood-ratio test finds no departure from a linear trend — is
+developed with its caveats in
+<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors")</a></code>. One point <em>is</em>
+multinomial-specific: each freed coding costs one parameter <strong>per
+equation</strong>, so the test’s degrees of freedom multiply by the
+number of non-reference outcomes:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span><span class="op">$</span><span class="va">educ_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">education</span><span class="op">)</span>   <span class="co"># 1 / 2 / 3</span></span>
 <span><span class="va">fit_lin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom</a></span><span class="op">(</span><span class="va">employment_status</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">educ_score</span>,</span>
@@ -583,24 +588,15 @@ scores. <code>nested = TRUE</code> runs exactly that comparison:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Reference outcome: Employed.</span></span></span></code></pre></div>
-<p>The change rows read: freeing education from the linear trend buys a
-chi-squared of 4.52 on 3 degrees of freedom (one per equation), p = .211
-— no evidence the dummies improve on the scores, and AIC agrees (2514.3
-vs 2515.8). On Agresti’s grounds the scores model is preferable when it
-fits: simpler to report, and more powerful against a genuine trend,
-because it concentrates that trend in one parameter per equation instead
-of two — an advantage that reverses if the true pattern is non-monotone
-(Agresti 2007).</p>
-<p>Three caveats keep the decision honest. A non-significant test does
-not <em>prove</em> linearity — in modest samples several codings fit
-adequately (Agresti 2007). Integer scores assume the steps are equally
-spaced, which is a substantive claim about education levels, not a
-statistical default (Agresti 2007, sec. 2.5.4). And testing first, then
-reporting the scores model as if it had been chosen in advance, inflates
-the Type I error of the subsequent test (Grambsch &amp; O’Brien 1991).
-With only three levels the dummies cost one extra parameter per
-equation, so Harrell (2015) recommends simply keeping them. Present the
-LRT as a transparent simplification decision, not a proof.</p>
+<p>Freeing education from the linear trend buys a chi-squared of 4.52 on
+3 degrees of freedom (one per equation), p = .211 — no evidence the
+dummies improve on the scores, and AIC agrees (2514.3 vs 2515.8). On
+Agresti’s (2007, sec. 4.4.3) grounds the scores model is then
+preferable: simpler to report, and more powerful against a genuine trend
+— an advantage that reverses if the true pattern is non-monotone. See
+the categorical-predictors vignette for the caveats that keep this
+decision honest (equal spacing, pre-testing, and when to simply keep the
+dummies).</p>
 </div>
 <div class="section level2">
 <h2 id="independence-of-irrelevant-alternatives-briefly">Independence of irrelevant alternatives, briefly<a class="anchor" aria-label="anchor" href="#independence-of-irrelevant-alternatives-briefly"></a>
@@ -1413,11 +1409,6 @@ mlogit package. <em>Journal of Statistical Software</em>, 95(11),
 Behavior</em>. <em>American Economic Review</em>, 50(1), 186–188.</li>
 <li>Fox, J., &amp; Weisberg, S. (2019). <em>An R Companion to Applied
 Regression</em> (3rd ed.). Sage.</li>
-<li>Grambsch, P. M., &amp; O’Brien, P. C. (1991). The effects of
-transformations and preliminary tests for non-linearity in regression.
-<em>Statistics in Medicine</em>, 10(5), 697–709.</li>
-<li>Harrell, F. E. (2015). <em>Regression Modeling Strategies</em> (2nd
-ed.). Springer.</li>
 <li>Hausman, J. A., &amp; McFadden, D. (1984). Specification tests for
 the multinomial logit model. <em>Econometrica</em>, 52(5),
 1219–1240.</li>

@@ -34,6 +34,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
@@ -112,7 +113,7 @@
 <li>AME columns are available for <code>betareg</code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>, <code>svyglm</code>, <code>survreg</code>, <code>fixest</code>, <code>estimatr</code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg</a></code>, and <code>rms</code> fits, and per outcome category for <code>polr</code> / <code>clm</code> / <code>multinom</code>. AME SEs, CIs, and p-values honour a robust <code>vcov</code>.</li>
 <li>Two-part models show their full model: the zero component of <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code> / <code>hurdle</code> and the <code>ziformula</code> / <code>dispformula</code> components of <code>glmmTMB</code> render as labelled row blocks with full inference (<code>show_components = FALSE</code> to opt out). A component is exponentiated only when its link yields a ratio.</li>
 <li>Class-aware fit-statistics defaults: pseudo-R² for ordinal and multinomial fits; every other class falls back to <code>nobs</code> + <code>AIC</code> instead of a blank block. The <code>N (groups)</code> row upgrades to plain counts (e.g. <code>N (Subject)</code>) when models share a single grouping factor.</li>
-<li>Four new vignettes: <em>Mixed-effects</em>, <em>Multinomial</em>, <em>Count and two-part</em>, and <em>Survival regression tables</em>.</li>
+<li>Six new vignettes: <em>Mixed-effects</em>, <em>Multinomial</em>, <em>Count and two-part</em>, <em>Survival</em>, and <em>Ordinal regression tables</em>, plus <em>Categorical predictors</em> — a cross-cutting guide to dummy coding and reference levels, joint tests of a factor, ordinal predictors (scores vs dummies), successive-difference contrasts, and why continuous predictors should not be categorized.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
@@ -128,6 +129,8 @@
 <code>gt</code> and <code>flextable</code> outputs now render in Quarto / R Markdown <strong>Word</strong>, PowerPoint, and PDF documents (they silently disappeared from non-HTML targets). A new <code>as_flextable()</code> method returns the underlying flextable for manual composition.</li>
 <li>
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now discloses robust and resampling SEs in its table note, carries its notes into every rich output, and accepts <code>cluster = ~region</code>.</li>
+<li>
+<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> fits gain opt-in dispersion fit-stat rows: <code>show_fit_stats</code> tokens <code>"theta"</code> (the NB2 dispersion) and <code>"alpha"</code> (its reciprocal, the Stata convention). Refused with a clear error for other families.</li>
 <li>
 <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code> fits now report McFadden’s and Nagelkerke’s pseudo-R² (as the other categorical families do). The tokens were silently dropped from <code>show_fit_stats</code> before, and a weighted fit’s null log-likelihood ignored the weights.</li>
 <li>

@@ -1,0 +1,568 @@
+# Categorical predictors
+
+``` r
+
+library(spicy)
+```
+
+Every regression vignette in this collection is organised by the type of
+*outcome* — continuous, binary, count, ordinal, multinomial, survival.
+This one is organised by the type of *predictor*. How a categorical
+predictor is coded, tested, simplified, and presented is the same
+decision whether the model is an
+[`lm()`](https://rdrr.io/r/stats/lm.html), a logistic regression, or a
+Cox model, so it has one home rather than a copy in every family
+vignette. The examples use the bundled `sochealth` survey data
+([`?sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md))
+with [`lm()`](https://rdrr.io/r/stats/lm.html) and
+[`glm()`](https://rdrr.io/r/stats/glm.html) fits; everything shown
+carries over to the other supported classes.
+
+The running order follows the analysis itself: how a factor enters the
+model, how to choose what it is compared against, how to test whether it
+matters at all, what changes when its levels are ordered, and — the
+reverse question — why a continuous predictor should not be turned into
+a factor.
+
+## How a factor enters the model
+
+R expands a factor with `k` levels into `k − 1` **indicator (dummy)
+variables**, one per non-reference level; the remaining level becomes
+the **reference** absorbed by the intercept (Gelman, Hill & Vehtari
+2020, §10.4).
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+groups the indicator rows under the parent variable and renders the
+reference level explicitly, with `(ref.)` and an en dash in the
+statistic columns:
+
+``` r
+
+fit <- lm(wellbeing_score ~ age + employment_status, data = sochealth)
+table_regression(fit)
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable           │    B      SE       95% CI        p   
+#> ────────────────────┼──────────────────────────────────────
+#>  (Intercept)        │   67.38  1.62  [64.20, 70.56]  <.001 
+#>  age                │    0.04  0.03  [-0.02,  0.10]   .181 
+#>  employment_status: │                                      
+#>    Employed (ref.)  │     –     –          –          –    
+#>    Student          │    1.10  1.42  [-1.69,  3.88]   .441 
+#>    Unemployed       │   -3.60  1.31  [-6.17, -1.03]   .006 
+#>    Inactive         │    0.28  1.52  [-2.71,  3.27]   .854 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1200                                 
+#>  R²                 │    0.01                              
+#>  Adj.R²             │    0.01                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
+Each coefficient is a comparison **with the reference level, holding the
+other predictors constant** — not an overall effect of the variable.
+Reading the rows against that reference: unemployed respondents score on
+average 3.6 points lower on the 0–100 wellbeing index than *employed*
+respondents of the same age (B = -3.60, 95% CI \[-6.17, -1.03\], p =
+.006); for students and inactive respondents the data show no clear
+difference *from the employed* (p = .441 and .854). Nothing in this
+table compares students with the unemployed — that contrast is the
+difference between the two coefficients, and its standard error is not
+printed here. If one specific non-reference contrast is the research
+question, the cleanest route is to make one of its ends the reference.
+
+## Choosing and changing the reference level
+
+The reference level is a **presentation choice, not a modeling one**:
+refitting with another reference is the same model reparameterized —
+identical fit, likelihood, AIC, and fitted values; only the comparisons
+displayed change (Gelman, Hill & Vehtari 2020, §10.4).
+
+``` r
+
+d2 <- sochealth
+d2$employment_status <- relevel(d2$employment_status, ref = "Unemployed")
+fit_u <- lm(wellbeing_score ~ age + employment_status, data = d2)
+c(AIC(fit), AIC(fit_u))
+#> [1] 10001.8 10001.8
+table_regression(fit_u, keep = "employment_status")
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable            │    B      SE      95% CI       p   
+#> ─────────────────────┼────────────────────────────────────
+#>  employment_status:  │                                    
+#>    Unemployed (ref.) │     –     –         –         –    
+#>    Employed          │    3.60  1.31  [1.03, 6.17]   .006 
+#>    Student           │    4.70  1.76  [1.25, 8.15]   .008 
+#>    Inactive          │    3.88  1.84  [0.27, 7.50]   .035 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                   │ 1200                               
+#>  R²                  │    0.01                            
+#>  Adj.R²              │    0.01                            
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
+Every group now sits 3.6 to 4.7 points *above* the unemployed — the same
+fit read from the other end. Two practical rules:
+
+- **Do not let alphabetical order decide.**
+  [`factor()`](https://rdrr.io/r/base/factor.html) sorts levels
+  alphabetically by default, so the reference is whichever category
+  happens to sort first — rarely the one you would have chosen, and a
+  silent source of confusing signs when data come from text files.
+- **Choose a reference that makes every displayed contrast readable**:
+  the largest category (stable comparisons), an unexposed / control
+  category (epidemiology), or the substantively natural baseline. A rare
+  category makes a poor reference — every contrast inherits its noise.
+
+## Does the factor matter at all? The joint test
+
+The per-level p-values above cannot answer “does employment status
+matter?”: each one tests a single level against the reference, and the
+set of them changes with the reference choice. The question about the
+factor *as a whole* is a **joint test of all `k − 1` coefficients at
+once** — a multiple-degree-of-freedom test, invariant to the reference
+(Harrell 2015, §2.6). Harrell’s rule is to run it *before* interpreting
+any individual contrast: when levels straddle significance, as here, the
+joint test is the honest headline.
+
+The change statistics of a nested comparison give exactly that test —
+adding the factor to a model that lacks it. One prerequisite: change
+statistics are only valid when both models are fit to the same rows, and
+R’s listwise deletion silently drops *different* rows when the added
+variable carries its own missing values — so the code below first
+restricts the data to cases complete on every variable involved.
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+enforces this: models with different `nobs` are refused, with
+instructions to refit on the common subset.
+
+``` r
+
+d_cc <- sochealth[complete.cases(
+  sochealth[, c("wellbeing_score", "age", "employment_status")]
+), ]
+m0 <- lm(wellbeing_score ~ age, data = d_cc)
+m1 <- lm(wellbeing_score ~ age + employment_status, data = d_cc)
+table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>                          Model 1          Model 2     
+#>                       ──────────────  ─────────────── 
+#>  Variable           │    B       p       B        p   
+#> ────────────────────┼─────────────────────────────────
+#>  (Intercept)        │   67.00  <.001    67.38   <.001 
+#>  age                │    0.04   .177     0.04    .181 
+#>  employment_status: │                                 
+#>    Employed (ref.)  │                     –      –    
+#>    Student          │                    1.10    .441 
+#>    Unemployed       │                   -3.60    .006 
+#>    Inactive         │                    0.28    .854 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1200            1200            
+#>  R²                 │    0.00            0.01         
+#>  Adj.R²             │    0.00            0.01         
+#>  ΔR²                │     –             +0.01         
+#>  F-change           │     –             +3.13         
+#>  p (change)         │     –               .025        
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
+```
+
+The `F-change` row is the joint 3-df test: F = 3.13, p = .025 —
+employment status improves the model, driven by the unemployed contrast.
+For `glm` fits, the `partial_chi2` column reports the same joint
+question per term as a likelihood-ratio chi-square with its df, without
+needing a second model (see the main vignette’s *Term-level partial
+chi-square*).
+
+The rule cuts the other way too:
+
+``` r
+
+d_r <- sochealth[complete.cases(
+  sochealth[, c("wellbeing_score", "age", "region")]
+), ]
+anova(lm(wellbeing_score ~ age,          data = d_r),
+      lm(wellbeing_score ~ age + region, data = d_r))
+#> Analysis of Variance Table
+#> 
+#> Model 1: wellbeing_score ~ age
+#> Model 2: wellbeing_score ~ age + region
+#>   Res.Df    RSS Df Sum of Sq      F Pr(>F)
+#> 1   1198 292107                           
+#> 2   1193 291017  5      1090 0.8936 0.4845
+```
+
+For `region`, the joint test gives F(5, 1193) = 0.89, p = .48 — no
+evidence that region matters at all
+([`anova()`](https://rdrr.io/r/stats/anova.html) on two nested fits is
+the same F-change test the table reports). Fitting the factor anyway and
+scanning its five per-level p-values for a “significant” contrast to
+report alone would be a multiplicity artifact — “if the overall test is
+not significant, it can be dangerous to rely on individual pairwise
+comparisons” (Harrell 2015, §2.6).
+
+## Ordered factors: R’s polynomial contrasts
+
+An **ordinal** predictor — levels with a natural order, like
+`self_rated_health` (Poor \< Fair \< Good \< Very good) — raises a
+coding decision that R quietly makes for you. For an `ordered` factor, R
+does *not* use dummy coding: it uses **orthogonal polynomial
+contrasts**, and the table shows trend components instead of level
+comparisons. spicy flags this the first time it happens and the footer
+names the coding:
+
+``` r
+
+fit_srh <- lm(wellbeing_score ~ age + self_rated_health,
+              data = sochealth)
+table_regression(fit_srh, show_columns = c("b", "se", "p"))
+#> Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.
+#> ℹ To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.
+#> This message is displayed once per session.
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable           │    B      SE     p   
+#> ────────────────────┼──────────────────────
+#>  (Intercept)        │   60.57  1.34  <.001 
+#>  age                │    0.05  0.03   .042 
+#>  self_rated_health: │                      
+#>    .L               │   26.48  1.22  <.001 
+#>    .Q               │   -3.93  1.01  <.001 
+#>    .C               │   -0.89  0.75   .235 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1180                 
+#>  R²                 │    0.35              
+#>  Adj.R²             │    0.34              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+#> Ordered factor `self_rated_health`: polynomial trends (.L = linear, .Q = quadratic, .C = cubic).
+```
+
+These rows answer trend questions across the ordered levels: `.L`
+(linear) is the dominant component here — wellbeing rises steeply across
+health ratings — while `.Q` (quadratic, B = -3.93, p \< .001) says the
+rise is **concave**: the steps get smaller toward the top of the scale.
+`.C` (cubic, p = .235) adds nothing. This decomposition is a legitimate
+reading — trend tests are exactly what polynomial contrasts are for —
+but it is *not* the level-versus-reference reading most regression
+tables intend. For that, convert to a plain factor
+(`factor(x, ordered = FALSE)`), as the message suggests and as the other
+vignettes in this collection do.
+
+## Scores or dummies?
+
+An ordinal predictor poses a substantive decision: should it enter as
+**numeric scores** (1, 2, 3, … — one slope, read as “per step up the
+scale”) or as **dummies** (k − 1 coefficients, no order imposed)? The
+scores model is nested in the dummy model, so a likelihood-ratio test
+compares them: fit both codings and let the data say whether the level
+coefficients depart from a linear trend in the scores (Agresti 2007,
+§4.4.3). `nested = TRUE` runs the comparison. The two examples below
+land on opposite sides of the decision.
+
+**Case 1 — the scores suffice.** Education (3 levels) predicting
+smoking:
+
+``` r
+
+sh <- sochealth
+sh$education  <- factor(sh$education, ordered = FALSE)
+sh$educ_score <- as.numeric(sh$education)
+sh <- sh[complete.cases(sh[, c("smoking", "sex", "age", "education")]), ]
+
+g_lin <- glm(smoking ~ sex + age + educ_score, data = sh,
+             family = binomial)
+g_fac <- glm(smoking ~ sex + age + education,  data = sh,
+             family = binomial)
+table_regression(list(g_lin, g_fac), nested = TRUE,
+                 show_columns = c("b", "p"))
+#> Hierarchical logistic regression: smoking
+#> 
+#>                                Model 1          Model 2     
+#>                             ──────────────  ─────────────── 
+#>  Variable                 │    B       p       B        p   
+#> ──────────────────────────┼─────────────────────────────────
+#>  (Intercept)              │   -0.67   .036    -1.11   <.001 
+#>  sex:                     │                                 
+#>    Female (ref.)          │     –     –         –      –    
+#>    Male                   │   -0.04   .805    -0.04    .800 
+#>  age                      │    0.01   .212     0.01    .214 
+#>  educ_score               │   -0.45  <.001                  
+#>  education:               │                                 
+#>    Lower secondary (ref.) │                     –      –    
+#>    Upper secondary        │                   -0.48    .005 
+#>    Tertiary               │                   -0.91   <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175            1175            
+#>  R² (McFadden)            │    0.02            0.02         
+#>  R² (Nagelkerke)          │    0.03            0.03         
+#>  AIC                      │ 1198.9          1200.9          
+#>  Δχ²                      │     –             +0.03         
+#>  p (change)               │     –               .852        
+#> 
+#> Note. Logistic regression models.
+#> Std. errors: classical (Fisher information).
+```
+
+Freeing education from the linear trend buys a chi-square of 0.03 on 1
+df, p = .852 — no evidence the dummies improve on the scores — and AIC
+agrees (1198.9 vs 1200.9). The scores model is simpler to report (one
+coefficient: B = -0.45 per education step, on the log-odds scale) and
+more powerful against a genuine trend, because it spends one parameter
+where the dummies spend two. With 3 levels the test has a familiar
+counterpart: it is the same 1-df question as the Wald test on the `.Q`
+contrast of the ordered coding (z-test p = .852 here; in a GLM the Wald
+and likelihood-ratio answers agree asymptotically, and exactly in a
+linear model) — the quadratic component *is* the departure from
+linearity.
+
+**Case 2 — linearity is rejected.** Self-rated health (4 levels)
+predicting wellbeing:
+
+``` r
+
+d3 <- sochealth[complete.cases(
+  sochealth[, c("wellbeing_score", "age", "self_rated_health")]
+), ]
+d3$srh_score  <- as.numeric(d3$self_rated_health)
+d3$srh_factor <- factor(d3$self_rated_health, ordered = FALSE)
+
+s_lin <- lm(wellbeing_score ~ age + srh_score,  data = d3)
+s_fac <- lm(wellbeing_score ~ age + srh_factor, data = d3)
+table_regression(list(s_lin, s_fac), nested = TRUE,
+                 show_columns = c("b", "p"))
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>                     Model 1          Model 2     
+#>                  ──────────────  ─────────────── 
+#>  Variable      │    B       p       B        p   
+#> ───────────────┼─────────────────────────────────
+#>  (Intercept)   │   34.41  <.001    41.04   <.001 
+#>  age           │    0.05   .043     0.05    .042 
+#>  srh_score     │   10.96  <.001                  
+#>  srh_factor:   │                                 
+#>    Poor (ref.) │                     –      –    
+#>    Fair        │                   14.97   <.001 
+#>    Good        │                   28.01   <.001 
+#>    Very good   │                   35.13   <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n             │ 1180            1180            
+#>  R²            │    0.33            0.35         
+#>  Adj.R²        │    0.33            0.34         
+#>  ΔR²           │     –             +0.01         
+#>  F-change      │     –            +12.96         
+#>  p (change)    │     –              <.001        
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
+```
+
+Here the test rejects the single slope: F-change = 12.96 on 2 df, p \<
+.001. The dummy coefficients show why: the steps from Poor are +14.97
+(Fair), +28.01 (Good), +35.13 (Very good) — increments of about 15, 13,
+then 7 points. The effect flattens at the top of the scale, exactly the
+concavity the `.Q` contrast detected above (the 2-df test here is
+identical to the joint test of `.Q` and `.C`). Forcing one slope of
+10.96 per step would overstate the last step and understate the first.
+Keep the dummies.
+
+Three caveats keep the decision honest (Harrell 2015, §§2.6 and 2.7.3;
+Grambsch & O’Brien 1991):
+
+- **A non-significant test does not prove linearity** — in modest
+  samples several codings fit adequately, and integer scores assume the
+  steps are *equally spaced*, a substantive claim about the scale, not a
+  statistical default.
+- **Test-then-simplify inflates error.** Reporting the scores model as
+  if it had been chosen in advance makes the subsequent test’s
+  distribution wrong. Grambsch and O’Brien showed, for the
+  quadratic-versus-linear case, that the pre-specified 2-df joint test
+  remains close to optimal *even when the truth is linear*; the same
+  logic carries over to the factor’s full-df test — so when the factor
+  is a control variable rather than the focus, the dummies cost little
+  and assume nothing.
+- **The stakes rise with the number of levels.** With a handful of
+  levels — three to five, in Harrell’s account — the variable is usually
+  modeled as a polytomous factor: the dummies spend a parameter or two
+  and assume nothing. The advantage of scores grows when `k` is larger
+  or the model is dense relative to the sample.
+
+## A third coding: successive differences
+
+Dummy coding answers “how far is each level from the reference”; scores
+answer “how much per step, forced equal”. A third question — “how big is
+**each** step?” — has its own coding: MASS’s successive-difference
+contrasts, whose coefficients are the differences between *adjacent*
+levels (Venables & Ripley 2002). Harrell (2015, §2.7.3) reaches the same
+reading with threshold indicators `[X ≥ level]`; the two
+parameterizations give identical fits.
+
+``` r
+
+d3$srh_sdif <- d3$self_rated_health
+contrasts(d3$srh_sdif) <- MASS::contr.sdif(4)
+table_regression(
+  lm(wellbeing_score ~ age + srh_sdif, data = d3),
+  keep = "srh_sdif"
+)
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable    │    B      SE       95% CI        p   
+#> ─────────────┼──────────────────────────────────────
+#>  srh_sdif2-1 │   14.97  1.80  [11.44, 18.51]  <.001 
+#>  srh_sdif3-2 │   13.04  0.95  [11.18, 14.89]  <.001 
+#>  srh_sdif4-3 │    7.12  0.91  [ 5.33,  8.91]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │ 1180                                 
+#>  R²          │    0.35                              
+#>  Adj.R²      │    0.34                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
+Each row is one step of the scale: Fair sits 14.97 points above Poor,
+Good 13.04 above Fair, Very good 7.12 above Good — the flattening
+gradient read directly, with a standard error per step. This is the
+natural display when the steps themselves are the finding. (Two notes:
+with non-treatment contrasts there is no reference level, so the rows
+render flat rather than grouped under the factor with a `(ref.)` row;
+and the joint test of the factor is unchanged — same model, different
+questions asked of it.)
+
+## The reverse temptation: categorizing a continuous predictor
+
+Turning a *categorical* variable into a number is sometimes justified
+(the scores above); turning a **continuous** predictor into categories
+almost never is (Harrell 2015, §2.4.1). `sochealth` ships both `bmi` and
+a conventional `bmi_category` (normal weight / overweight / obesity), so
+the cost can be shown directly:
+
+``` r
+
+d4 <- sochealth[complete.cases(
+  sochealth[, c("wellbeing_score", "bmi", "bmi_category")]
+), ]
+d4$bmi_category <- factor(d4$bmi_category, ordered = FALSE)  # per-level dummies, as above
+b_cont <- lm(wellbeing_score ~ bmi,          data = d4)
+b_cat  <- lm(wellbeing_score ~ bmi_category, data = d4)
+table_regression(list(b_cont, b_cat), show_columns = c("b", "p"),
+                 show_fit_stats = c("nobs", "r2", "AIC"))
+#> Linear regression comparison: wellbeing_score
+#> 
+#>                              Model 1         Model 2     
+#>                           ──────────────  ────────────── 
+#>  Variable               │    B       p       B       p   
+#> ────────────────────────┼────────────────────────────────
+#>  (Intercept)            │   84.48  <.001    70.47  <.001 
+#>  bmi                    │   -0.60  <.001                 
+#>  bmi_category:          │                                
+#>    Normal weight (ref.) │                     –     –    
+#>    Overweight           │                   -1.69   .082 
+#>    Obesity              │                   -5.04  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                      │ 1188            1188           
+#>  R²                     │    0.02            0.01        
+#>  AIC                    │ 9884.2          9898.1         
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
+```
+
+The continuous fit explains twice the variance with half the parameters
+(R² = .020 with 1 df against .010 with 2 df; AIC 9884.2 vs 9898.1). That
+is Harrell’s argument in one table: categorization discards the
+variation *within* intervals — every BMI from 25.0 to 29.9 is treated as
+the same exposure — and assumes wellbeing jumps at the cut-points and is
+flat between them, a far stronger assumption than linearity. The
+estimates also stop being portable: the “Overweight vs Normal weight”
+coefficient (B = -1.69, p = .082) depends on where the sample sits
+inside the 25.0–29.9 interval, where the per-unit slope (B = -0.60
+points per BMI unit, p \< .001) does not. And if a *nonlinear* effect is
+the worry, the remedy is a flexible continuous fit — a polynomial or a
+spline — not bins:
+
+``` r
+
+AIC(b_cont, update(b_cont, . ~ . + I(bmi^2)))
+#>                                  df      AIC
+#> b_cont                            3 9884.236
+#> update(b_cont, . ~ . + I(bmi^2))  4 9885.893
+```
+
+The quadratic term adds nothing (AIC 9885.9 against 9884.2 for the
+linear fit), so the linear fit stands.
+
+Cut-points chosen *after looking at the outcome* do more damage still:
+p-values and CIs for “optimal” cut-points are invalid without special
+corrections, and such cut-points fail to replicate across studies
+(Harrell 2015, §2.4.1). Categories remain fine for *descriptive* tables
+and for presentation-layer grouping — the mistake is putting them in the
+model when the continuous measurement exists.
+
+## Presentation
+
+The presentation layer is independent of the coding decisions above.
+`labels` renames variables and levels; `reference_style = "annotation"`
+lifts the reference into the factor header for compact tables; `keep` /
+`drop` filter rows by regex after all statistics are computed (see the
+main vignette’s *Display options* and *Filtering displayed
+coefficients*):
+
+``` r
+
+table_regression(
+  fit,
+  labels = c(age = "Age (years)",
+             employment_status = "Employment status"),
+  reference_style = "annotation"
+)
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable                           │    B      SE       95% CI        p   
+#> ────────────────────────────────────┼──────────────────────────────────────
+#>  (Intercept)                        │   67.38  1.62  [64.20, 70.56]  <.001 
+#>  Age (years)                        │    0.04  0.03  [-0.02,  0.10]   .181 
+#>  Employment status: [ref: Employed] │                                      
+#>    Student                          │    1.10  1.42  [-1.69,  3.88]   .441 
+#>    Unemployed                       │   -3.60  1.31  [-6.17, -1.03]   .006 
+#>    Inactive                         │    0.28  1.52  [-2.71,  3.27]   .854 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                  │ 1200                                 
+#>  R²                                 │    0.01                              
+#>  Adj.R²                             │    0.01                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
+## See also
+
+- [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+  for the shared table mechanics (variance estimators, nested layouts,
+  filtering, output formats).
+- [`vignette("table-regression-ordinal", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
+  for ordinal *outcomes* — the proportional-odds model, its tests and
+  relaxations.
+- [`vignette("table-regression-multinomial", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
+  for the scores-vs-dummies decision inside a multinomial model, where
+  each freed coding costs one parameter per equation.
+
+## References
+
+- Agresti, A. (2007). *An Introduction to Categorical Data Analysis*
+  (2nd ed.). Wiley.
+- Gelman, A., Hill, J., & Vehtari, A. (2020). *Regression and Other
+  Stories*. Cambridge University Press.
+- Grambsch, P. M., & O’Brien, P. C. (1991). The effects of
+  transformations and preliminary tests for non-linearity in regression.
+  *Statistics in Medicine*, 10(5), 697–709.
+- Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
+  Springer.
+- Venables, W. N., & Ripley, B. D. (2002). *Modern Applied Statistics
+  with S* (4th ed.). Springer.

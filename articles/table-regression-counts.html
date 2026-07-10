@@ -62,6 +62,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
@@ -257,11 +258,13 @@ overdispersion, and the Poisson is the limiting case as <span class="math inline
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 <p>Here <code>summary(fit_nb)</code> reports <span class="math inline">\(\hat\theta\)</span> = 2.26 (SE 0.27); readers
 trained on Stata know its reciprocal, <span class="math inline">\(\alpha
-= 1/\theta\)</span> = 0.44. The likelihood-ratio test of the Poisson
-restriction — a boundary test, so its p-value is halved — rejects
-decisively (LR = 180.3, p &lt; .001). <code><a href="https://rdrr.io/pkg/glmmTMB/man/nbinom2.html" class="external-link">glmmTMB::nbinom2</a></code>,
-used in the mixed-model section below, is the same NB2
-parameterization.</p>
+= 1/\theta\)</span> = 0.44 — both available as opt-in fit-stat rows via
+<code>show_fit_stats = c("nobs", "theta", "alpha", "AIC")</code>, so the
+table can carry the dispersion estimate itself. The likelihood-ratio
+test of the Poisson restriction — a boundary test, so its p-value is
+halved — rejects decisively (LR = 180.3, p &lt; .001).
+<code><a href="https://rdrr.io/pkg/glmmTMB/man/nbinom2.html" class="external-link">glmmTMB::nbinom2</a></code>, used in the mixed-model section below, is
+the same NB2 parameterization.</p>
 <p>The IRRs barely move, but the inference does: the evidence for
 marriage weakens (p = .013 under Poisson, p = .072 here) — the Poisson
 significance was an artifact of ignored overdispersion. AIC falls from

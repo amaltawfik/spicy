@@ -43,7 +43,10 @@ for survival models (`coxph`, `survreg`). The mechanics covered here —
 confidence levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods — apply
 across every supported class; variance-estimator availability varies by
-family, and each family vignette states its own set.
+family, and each family vignette states its own set. One decision cuts
+across all of them — how to code, test, and present categorical
+*predictors* — and has its own vignette:
+[`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
 
 ## Basic usage
 
@@ -80,7 +83,7 @@ Reading the table:
 
 - Each predictor occupies one row; factor predictors are grouped under
   their parent variable name with one row per level. The reference level
-  carries the `(ref.)` annotation and an em-dash across the statistic
+  carries the `(ref.)` annotation and an en dash across the statistic
   columns, so the substantive comparison is visible in a single glance
   (NEJM / BMJ clinical convention).
 - The `95% CI` column reports a symmetric Wald interval at the level set
@@ -1562,6 +1565,11 @@ can hold rows for B, β, AME, and per-coefficient effect-size estimates
 without ambiguity.
 
 ## See also
+
+- [`vignette("categorical-predictors", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
+  for categorical *predictors* across all model families: dummy coding
+  and reference levels, joint tests, ordinal predictors (scores vs
+  dummies), and the categorization trap.
 
 Model-family vignettes build on the mechanics shown here:
 

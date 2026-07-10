@@ -62,6 +62,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
@@ -211,8 +212,8 @@ convention: <code>summary.polr()</code>, SPSS PLUM, SAS, Stata
 <ul>
 <li>Each predictor has <strong>one</strong> coefficient row
 (proportional odds); factor predictors are grouped under their parent
-variable with the reference level carrying <code>(ref.)</code> and an
-em-dash.</li>
+variable with the reference level carrying <code>(ref.)</code> and an en
+dash.</li>
 <li>Inference is <strong>Wald-<span class="math inline">\(z\)</span></strong> (<code>df = Inf</code>):
 ordinal MLE has no residual degrees of freedom, matching
 <code>summary.polr()</code>, Stata <code>ologit</code>, and SPSS
@@ -1444,8 +1445,8 @@ row is labelled by its response category in the
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rated_hea… Poor          age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rated_hea… Fair          age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rated_hea… Good          age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">691</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rated_hea… Good          age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rated_hea… <span style="color: #BB0000;">NA</span>            age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rated_hea… Poor          sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rated_hea… Fair          sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>   </span></span>

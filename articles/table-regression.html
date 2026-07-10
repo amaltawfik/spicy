@@ -62,6 +62,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
@@ -141,7 +142,10 @@ models (<code>multinom</code>, <code>mlogit</code>), and
 confidence levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods — apply
 across every supported class; variance-estimator availability varies by
-family, and each family vignette states its own set.</p>
+family, and each family vignette states its own set. One decision cuts
+across all of them — how to code, test, and present categorical
+<em>predictors</em> — and has its own vignette:
+<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors")</a></code>.</p>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
@@ -175,7 +179,7 @@ footer (<code>n</code>, <code>R²</code>, <code>Adj.R²</code>):</p>
 <ul>
 <li>Each predictor occupies one row; factor predictors are grouped under
 their parent variable name with one row per level. The reference level
-carries the <code>(ref.)</code> annotation and an em-dash across the
+carries the <code>(ref.)</code> annotation and an en dash across the
 statistic columns, so the substantive comparison is visible in a single
 glance (NEJM / BMJ clinical convention).</li>
 <li>The <code>95% CI</code> column reports a symmetric Wald interval at
@@ -2059,6 +2063,13 @@ per-coefficient effect-size estimates without ambiguity.</p>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
+<ul>
+<li>
+<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors", package = "spicy")</a></code>
+for categorical <em>predictors</em> across all model families: dummy
+coding and reference levels, joint tests, ordinal predictors (scores vs
+dummies), and the categorization trap.</li>
+</ul>
 <p>Model-family vignettes build on the mechanics shown here:</p>
 <ul>
 <li>
