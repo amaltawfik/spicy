@@ -27,3 +27,5 @@ dev/*_findings.md
 dev/*_alignment.md
 dev/*_draft.md
 dev/*_retriage.md
+dev/*.pdf
+dev/*.epub
