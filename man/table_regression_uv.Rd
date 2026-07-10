@@ -51,7 +51,14 @@ table note.}
 carries no \code{N} column (its single \code{n} is a fit-statistics row,
 as in the reference layouts). For binary outcomes, add
 \code{"n_events"} for outcome event counts as \code{events/N} per factor
-level (each column group counts on its own estimation sample).}
+level (each column group counts on its own estimation sample).
+For \code{method = "coxph"}, the RMST / risk-difference families
+(\code{"rmst"}, \code{"risk_diff"}, ...) work with an explicit numeric
+\code{tau} / \code{at_time} shared by every column: each univariable fit
+runs its own \code{boot_n}-replicate bootstrap, and the multivariable
+group reports the covariate-adjusted estimand from the full fit.
+\code{tau = "minmax"} is refused (per-fit horizons would make the
+column incomparable across predictors).}
 
 \item{title}{Table title; \code{NULL} (default) builds
 \code{"Univariable and multivariable <type> regression: <outcome>"}.}

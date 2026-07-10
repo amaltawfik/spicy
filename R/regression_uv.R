@@ -77,6 +77,13 @@
 #'   as in the reference layouts). For binary outcomes, add
 #'   `"n_events"` for outcome event counts as `events/N` per factor
 #'   level (each column group counts on its own estimation sample).
+#'   For `method = "coxph"`, the RMST / risk-difference families
+#'   (`"rmst"`, `"risk_diff"`, ...) work with an explicit numeric
+#'   `tau` / `at_time` shared by every column: each univariable fit
+#'   runs its own `boot_n`-replicate bootstrap, and the multivariable
+#'   group reports the covariate-adjusted estimand from the full fit.
+#'   `tau = "minmax"` is refused (per-fit horizons would make the
+#'   column incomparable across predictors).
 #' @param title Table title; `NULL` (default) builds
 #'   `"Univariable and multivariable <type> regression: <outcome>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
@@ -227,15 +234,26 @@ table_regression_uv <- function(data,
       )
     }
   }
-  if (any(c("rmst", "rmst_se", "rmst_ci", "rmst_p", "risk_diff",
-            "risk_diff_se", "risk_diff_ci", "risk_diff_p") %in%
-            show_columns)) {
+  want_estimands <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p",
+                          "risk_diff", "risk_diff_se", "risk_diff_ci",
+                          "risk_diff_p") %in% show_columns)
+  if (want_estimands && !identical(method, "coxph")) {
     spicy_abort(
-      c(paste0("RMST / risk-difference columns are not available in ",
-               "the univariable screen."),
-        "i" = paste0("Compute them on a single model: ",
-                     "`table_regression(fit, show_columns = c(\"b\", ",
-                     "\"rmst\"), tau = ...)`.")),
+      c(paste0("RMST / risk-difference columns need a survival screen: ",
+               "`method = \"coxph\"`."),
+        "i" = paste0("For lm / glm screens, use the AME family ",
+                     "instead.")),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (want_estimands && identical(dots$tau, "minmax")) {
+    spicy_abort(
+      c(paste0("`tau = \"minmax\"` is not available in the univariable ",
+               "screen."),
+        "i" = paste0("Each univariable fit would resolve its own ",
+                     "horizon, making the dRMST column incomparable ",
+                     "across predictors. Give one shared numeric ",
+                     "`tau`.")),
       class = "spicy_invalid_input"
     )
   }
@@ -405,6 +423,8 @@ as_regression_frame.spicy_uv_screen <- function(fit,
                                                 use_ame_satterthwaite = FALSE,
                                                 cluster_name = NULL,
                                                 re_ci = "wald",
+                                                tau = NULL,
+                                                at_time = NULL,
                                                 ...) {
   bundle <- fit
   blocks <- list()
@@ -438,7 +458,9 @@ as_regression_frame.spicy_uv_screen <- function(fit,
       show_columns          = setdiff(show_columns, "n"),
       show_fit_stats        = show_fit_stats,
       use_ame_satterthwaite = FALSE,
-      cluster_name          = cluster_name
+      cluster_name          = cluster_name,
+      tau                   = tau,
+      at_time               = at_time
     )
     if (is.null(base_info)) base_info <- fr$info
     # Per-fit flags must be pooled, not read off the first fit: any
@@ -467,6 +489,16 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     block$n_obs[1L] <- as.numeric(n_k)
     ns <- c(ns, n_k)
     blocks[[length(blocks) + 1L]] <- block
+    # Pool the estimand disclosure across the per-predictor bootstraps:
+    # one shared horizon, the most pessimistic replicate count.
+    es_k <- fr$info$extras$survival_estimands
+    if (!is.null(es_k)) {
+      es_pool <- base_info$extras$survival_estimands %||% es_k
+      es_pool$boot_valid <- min(es_pool$boot_valid, es_k$boot_valid)
+      es_pool$stratified <- isTRUE(es_pool$stratified) ||
+        isTRUE(es_k$stratified)
+      base_info$extras$survival_estimands <- es_pool
+    }
   }
   if (length(blocks) == 0L) {
     # nocov start -- defensive: reachable only through the empty-block
