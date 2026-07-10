@@ -58,7 +58,7 @@ A data frame with one row per supported engine and columns `family`,
 | Counts, two-part | `zeroinfl` | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero-inflation |
 | Counts, two-part | `hurdle` | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero hurdle |
 | Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- |
-| Survival | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes | TR (log-scale distributions) | \- |
+| Survival | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- |
 | Survival | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- |
 | Survival | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters |
 | Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- |
@@ -156,8 +156,10 @@ untouched). AME is refused for Cox fits (no marginal-probability effect
 on the hazard scale); their absolute-effect columns are the `"rmst"` and
 `"risk_diff"` families instead – covariate-adjusted RMST and
 cumulative-incidence differences by g-computation, with the mandatory
-`tau` / `at_time` horizons (right-censored single-record `coxph` fits
-without `strata()` or `tt()`). `CR*` uses the Lin-Wei grouped-dfbeta
+`tau` / `at_time` horizons. For `coxph`: right-censored single-record
+fits, `strata()` supported (within-stratum baselines), `tt()` refused.
+For `survreg`: the closed-form AFT curves are standardized directly
+(stratified `survreg` refused). `CR*` uses the Lin-Wei grouped-dfbeta
 sandwich (`coxph`) or
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (`cph`, needs
 `x = TRUE, y = TRUE`). `nested = TRUE` compares nested Cox fits by
@@ -282,7 +284,7 @@ table_regression_models()
 #> 21 yes (combined response)      IRR (count) + OR (logit zero part)
 #> 22 yes (combined response)      IRR (count) + OR (logit zero part)
 #> 23        RMST / risk diff                                      HR
-#> 24                     yes            TR (log-scale distributions)
+#> 24  yes + RMST / risk diff            TR (log-scale distributions)
 #> 25                      no                                      HR
 #> 26                      no                          TR / HR (dist)
 #> 27      yes (design-based)                                OR / IRR
