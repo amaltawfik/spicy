@@ -65,6 +65,8 @@ navbar:
           href: articles/table-continuous-lm.html
         - text: Publication-ready regression tables
           href: articles/table-regression.html
+        - text: Categorical predictors
+          href: articles/categorical-predictors.html
         - text: Mixed-effects regression tables
           href: articles/table-regression-mixed.html
         - text: Count and two-part regression tables

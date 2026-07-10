@@ -347,13 +347,16 @@ on the same quantities.
 ## An ordinal predictor: scores or dummies?
 
 `education` is ordered — Lower secondary < Upper secondary < Tertiary —
-and the dummy coding above ignores that. The alternative is to enter it
-as **numeric scores** (1, 2, 3): one slope per equation instead of two
-dummies, a model that is both simpler and nested in the factor model.
-Agresti (2007, sec. 4.4.3) gives the workflow: fit both codings and let
-a likelihood-ratio test judge whether the category coefficients depart
-from a linear trend in the scores. `nested = TRUE` runs exactly that
-comparison:
+and the dummy coding above ignores that. Whether to enter an ordinal
+predictor as **numeric scores** (one slope) or as dummies is a
+general model-building decision, not a multinomial one: the workflow
+— fit both codings, compare with `nested = TRUE`, and keep the scores
+only when the likelihood-ratio test finds no departure from a linear
+trend — is developed with its caveats in
+`vignette("categorical-predictors")`. One point *is*
+multinomial-specific: each freed coding costs one parameter **per
+equation**, so the test's degrees of freedom multiply by the number
+of non-reference outcomes:
 
 ```{r scores}
 d$educ_score <- as.numeric(d$education)   # 1 / 2 / 3
@@ -363,25 +366,15 @@ table_regression(list(fit_lin, fit), nested = TRUE,
                  show_columns = c("b", "p"))
 ```
 
-The change rows read: freeing education from the linear trend buys a
-chi-squared of 4.52 on 3 degrees of freedom (one per equation),
-p = .211 — no evidence the dummies improve on the scores, and AIC
-agrees (2514.3 vs 2515.8). On Agresti's grounds the scores model is
-preferable when it fits: simpler to report, and more powerful against
-a genuine trend, because it concentrates that trend in one parameter
-per equation instead of two — an advantage that reverses if the true
-pattern is non-monotone (Agresti 2007).
-
-Three caveats keep the decision honest. A non-significant test does
-not *prove* linearity — in modest samples several codings fit
-adequately (Agresti 2007). Integer scores assume the steps are equally
-spaced, which is a substantive claim about education levels, not a
-statistical default (Agresti 2007, sec. 2.5.4). And testing first,
-then reporting the scores model as if it had been chosen in advance,
-inflates the Type I error of the subsequent test (Grambsch & O'Brien
-1991). With only three levels the dummies cost one extra parameter per
-equation, so Harrell (2015) recommends simply keeping them. Present the LRT as a transparent simplification decision, not a
-proof.
+Freeing education from the linear trend buys a chi-squared of 4.52 on
+3 degrees of freedom (one per equation), p = .211 — no evidence the
+dummies improve on the scores, and AIC agrees (2514.3 vs 2515.8). On
+Agresti's (2007, sec. 4.4.3) grounds the scores model is then
+preferable: simpler to report, and more powerful against a genuine
+trend — an advantage that reverses if the true pattern is
+non-monotone. See the categorical-predictors vignette for the caveats
+that keep this decision honest (equal spacing, pre-testing, and when
+to simply keep the dummies).
 
 ## Independence of irrelevant alternatives, briefly
 
@@ -508,11 +501,6 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   Behavior*. *American Economic Review*, 50(1), 186–188.
 * Fox, J., & Weisberg, S. (2019). *An R Companion to Applied
   Regression* (3rd ed.). Sage.
-* Grambsch, P. M., & O'Brien, P. C. (1991). The effects of
-  transformations and preliminary tests for non-linearity in
-  regression. *Statistics in Medicine*, 10(5), 697–709.
-* Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
-  Springer.
 * Hausman, J. A., & McFadden, D. (1984). Specification tests for the
   multinomial logit model. *Econometrica*, 52(5), 1219–1240.
 * Long, J. S. (1997). *Regression Models for Categorical and Limited

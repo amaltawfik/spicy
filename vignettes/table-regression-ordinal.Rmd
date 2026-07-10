@@ -103,7 +103,7 @@ Reading the table:
 
 * Each predictor has **one** coefficient row (proportional odds);
   factor predictors are grouped under their parent variable with the
-  reference level carrying `(ref.)` and an em-dash.
+  reference level carrying `(ref.)` and an en dash.
 * Inference is **Wald-$z$** (`df = Inf`): ordinal MLE has no residual
   degrees of freedom, matching `summary.polr()`, Stata `ologit`, and
   SPSS PLUM.
