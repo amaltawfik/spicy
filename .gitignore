@@ -18,3 +18,12 @@ Rplots.pdf
 # testthat scratch (auto-regenerated per run)
 tests/testthat/_problems/
 tests/testthat/testthat-problems.rds
+# Session-generated working notes (specs, findings, drafts) stay
+# local; the tracked dev/ scripts and design docs remain versioned.
+dev/*_spec.md
+dev/*_plan.md
+dev/*_finding.md
+dev/*_findings.md
+dev/*_alignment.md
+dev/*_draft.md
+dev/*_retriage.md

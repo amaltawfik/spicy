@@ -32,15 +32,15 @@ Columns:
 | `lm_robust` / `iv_robust` | `estimatr::*` | ✅ | — | — |
 | `rq` | `quantreg::rq` | ✅ | — | — |
 | `feols` / `feglm` | `fixest::*` | ✅ | feglm: OR/IRR | 🔶 fixed-effects summary |
-| `lmerMod` / `glmerMod` | `lme4::lmer` / `glmer` | ✅ | glmer: OR/IRR | **random effects** |
-| `glmmTMB` | `glmmTMB::glmmTMB` | ✅ (robust → model fallback) | link-dep | **random effects** |
-| `lme` | `nlme::lme` | ✅ | — | **random effects** |
+| `lmerMod` / `glmerMod` | `lme4::lmer` / `glmer` | ✅ | glmer: OR/IRR | **Random effects rows** ✅ (+ opt-in `re_test` lrt/rlrt) |
+| `glmmTMB` | `glmmTMB::glmmTMB` | ✅ (robust → model fallback) | link-dep (IRR for nbinom*/truncated_*) | **Random effects rows** ✅ + **Zero-inflation** ✅ + **Dispersion** ✅ |
+| `lme` | `nlme::lme` | ✅ | — | **Random effects rows** ✅ (+ `re_test` for simple single-group random formulas) |
 | `polr` | `MASS::polr` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
 | `clm` | `ordinal::clm` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
 | `multinom` | `nnet::multinom` | ✅ **per-outcome** | RRR | per-outcome coef blocks |
 | `mlogit` | `mlogit::mlogit` | ❌ no `slopes()` | OR | per-alternative rows |
 | `betareg` | `betareg::betareg` | ✅ | OR (mean link) | 🔶 precision φ (now footer) |
-| `hurdle` / `zeroinfl` | `pscl::*` | ✅ | IRR | two-component (count / zero) |
+| `hurdle` / `zeroinfl` | `pscl::*` | ✅ (combined-response) | IRR (count) + OR (logit zero block; link-gated) | **Zero hurdle** / **Zero-inflation** rows ✅ |
 | `survreg` | `survival::survreg` | ✅ | TR (AFT) | 🔶 scale (now footer) |
 | `coxph` | `survival::coxph` | ❌ hazard scale; 🔶 RMST / risk-diff | HR | — |
 | `ols` | `rms::ols` | ✅ | — | — |
@@ -78,8 +78,9 @@ the per-class passes.
 | `lm` | classical, HC*, CR* | wald (profile → error) | refit + posthoc/basic/smart |
 | `glm` | classical, HC*, CR* | wald, **profile** (`confint.glm`) | refit + posthoc/... |
 | `polr` / `clm` | classical, CR0–CR3 (**no HC***) | wald, **profile** (predictors via `confint`; thresholds stay Wald) | refit (posthoc/basic run but dubious on a categorical outcome) |
-| mixed (`lmer`/`glmer`/`glmmTMB`/`lme`) | 🔶 classical, CR* (clubSandwich) | wald (+ Satterthwaite df) | refit |
-| `coxph` / `cph` | 🔶 classical, CR* (Lin–Wei dfbeta) | wald | refit |
+| mixed (`lmer`/`glmer`/`glmmTMB`/`lme`) | ✅ classical, CR* (clubSandwich; glmmTMB CR* covers the conditional part only — footer disclosure) | wald (+ Satterthwaite df) | refit |
+| `coxph` / `cph` | ✅ classical, CR* (Lin–Wei dfbeta) | wald | refit |
+| `zeroinfl` / `hurdle` | ✅ classical, CR* (`sandwich::vcovCL`; covers BOTH components; **no HC***) | wald | refit |
 | others | 🔶 per-class | 🔶 | 🔶 |
 
 Notes:
