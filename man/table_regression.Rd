@@ -137,7 +137,9 @@ restricted-mean-survival-time difference over \verb{[0, tau]}
 (\code{coxph} fits only). A positive time on the outcome's scale, or
 \code{"minmax"} for the smallest per-group maximum follow-up (the
 resolved value is disclosed in the table note). No default: the
-horizon defines the estimand.}
+horizon defines the estimand. Stratified fits (\code{strata()}) are
+supported: standardization keeps each subject's own stratum
+baseline, disclosed in the table note.}
 
 \item{at_time}{Landmark time for the \code{"risk_diff"} column family:
 the difference in cumulative incidence at \code{at_time} (\code{coxph}

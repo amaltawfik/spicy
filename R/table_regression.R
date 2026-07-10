@@ -533,7 +533,9 @@
 #'   (`coxph` fits only). A positive time on the outcome's scale, or
 #'   `"minmax"` for the smallest per-group maximum follow-up (the
 #'   resolved value is disclosed in the table note). No default: the
-#'   horizon defines the estimand.
+#'   horizon defines the estimand. Stratified fits (`strata()`) are
+#'   supported: standardization keeps each subject's own stratum
+#'   baseline, disclosed in the table note.
 #' @param at_time Landmark time for the `"risk_diff"` column family:
 #'   the difference in cumulative incidence at `at_time` (`coxph`
 #'   fits only). A positive time on the outcome's scale; no default.

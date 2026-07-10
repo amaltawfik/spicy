@@ -193,7 +193,10 @@ scales, each averaged over the sample's covariate mix. That cuts
 both ways: computed from the fit, they inherit its assumptions —
 with proportionality in doubt, estimate the RMST nonparametrically
 (per-arm Kaplan–Meier, as in `survRM2`) rather than standardizing a
-misspecified model. Being female adds an average of **40.5
+misspecified model. Stratified fits work too: standardization keeps
+each subject's own stratum baseline — only the exposure is set
+counterfactually — and the note discloses it; the strata variable
+itself gets no contrast row, exactly as it has no hazard ratio. Being female adds an average of **40.5
 event-free days** over the first year (95% CI 17 to 64) and lowers
 the one-year risk of death by **19 percentage points** (95% CI 8 to
 30); each additional ECOG point costs 38 days and adds 15 percentage

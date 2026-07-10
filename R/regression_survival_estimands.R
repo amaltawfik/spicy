@@ -74,14 +74,6 @@
 
 .coxph_estimand_gates <- function(fit, model_id) {
   specials <- attr(fit$terms, "specials")
-  if (!is.null(specials$strata)) {
-    spicy_abort(
-      c(sprintf("RMST / risk-difference columns are not available for a stratified Cox model (%s).",
-                model_id),
-        "i" = "Stratified baselines are planned; refit without `strata()` to standardize."),
-      class = "spicy_invalid_input"
-    )
-  }
   if (!is.null(specials$tt)) {
     spicy_abort(
       sprintf("RMST / risk-difference columns are not available with time-transform `tt()` terms (%s).",
@@ -104,16 +96,68 @@
 
 # ---- Core curves -----------------------------------------------------------
 
+# Baseline cumulative hazard of the fit, on a common time grid, one
+# column per stratum (a single column for unstratified fits). For a
+# stratified Cox model the standardization keeps each subject's OWN
+# stratum baseline -- only the exposure is set counterfactually, the
+# design (strata) is not -- so the helper also returns each subject's
+# stratum column index (`s_idx`, NULL when unstratified). Cross-
+# validated against adjustedCurves::adjusted_rmst (direct method) on
+# a stratified lung fit: exact.
+.coxph_baseline <- function(fit) {
+  bh <- survival::basehaz(fit, centered = FALSE)
+  if (is.null(bh$strata)) {
+    return(list(times = bh$time,
+                H0    = matrix(bh$hazard, ncol = 1L),
+                s_idx = NULL))
+  }
+  grid <- sort(unique(bh$time))
+  lv <- levels(bh$strata)
+  H0 <- vapply(lv, function(sl) {
+    b <- bh[bh$strata == sl, , drop = FALSE]
+    # Right-continuous step interpolation; 0 before the stratum's
+    # first event time.
+    c(0, b$hazard)[findInterval(grid, b$time) + 1L]
+  }, numeric(length(grid)))
+  H0 <- matrix(H0, nrow = length(grid),
+               dimnames = list(NULL, lv))
+  mf <- stats::model.frame(fit)
+  sp <- survival::untangle.specials(stats::terms(fit), "strata")
+  s_subj <- if (length(sp$vars) == 1L) {
+    mf[[sp$vars]]
+  } else {
+    survival::strata(mf[, sp$vars, drop = FALSE], shortlabel = FALSE)
+  }
+  s_chr <- as.character(s_subj)
+  if (!all(s_chr %in% lv)) {
+    spicy_abort(                                                      # nocov start
+      c("Internal mismatch between the fit's strata labels and basehaz().",
+        "i" = paste0("Combine multiple stratification variables into a ",
+                     "single `strata(a, b)` term and refit.")),
+      class = "spicy_invalid_input"
+    )                                                                 # nocov end
+  }
+  list(times = grid, H0 = H0, s_idx = match(s_chr, lv))
+}
+
+
 # Standardized survival probabilities of `newdata` pushed through the
-# fit, evaluated at `times` (sorted event times). Returns a vector
-# S(times).
-.coxph_standardized_survival <- function(fit, newdata, times, H0) {
+# fit, evaluated at the baseline grid. `H0` is the per-stratum matrix
+# from .coxph_baseline(); `s_idx` maps each row of `newdata` to its
+# stratum column (NULL = unstratified). Returns a vector S(times).
+.coxph_standardized_survival <- function(fit, newdata, H0, s_idx = NULL) {
   lp <- stats::predict(fit, newdata = newdata, type = "lp",
                        reference = "zero")
-  # S matrix would be length(times) x n; average over subjects without
-  # materializing it: for each time, mean(exp(-H0 * exp(lp))).
   elp <- exp(lp)
-  vapply(H0, function(h) mean(exp(-h * elp)), numeric(1))
+  if (is.null(s_idx)) {
+    # S matrix would be length(times) x n; average over subjects
+    # without materializing it.
+    return(vapply(H0[, 1L], function(h) mean(exp(-h * elp)),
+                  numeric(1)))
+  }
+  # Stratified: each subject's curve uses their own stratum baseline.
+  M <- H0[, s_idx, drop = FALSE]
+  rowMeans(exp(-sweep(M, 2L, elp, "*")))
 }
 
 
@@ -145,12 +189,11 @@
 # estimand ("rmst" / "risk_diff"), estimate.
 .coxph_estimand_points <- function(fit, data, want_rmst, want_risk,
                                    tau, at_time) {
-  bh <- survival::basehaz(fit, centered = FALSE)
-  times <- bh$time
-  H0 <- bh$hazard
+  bl <- .coxph_baseline(fit)
+  times <- bl$times
 
   curve_stats <- function(newdata) {
-    s <- .coxph_standardized_survival(fit, newdata, times, H0)
+    s <- .coxph_standardized_survival(fit, newdata, bl$H0, bl$s_idx)
     c(rmst = if (want_rmst) .step_rmst(times, s, tau) else NA_real_,
       risk = if (want_risk) 1 - .step_surv_at(times, s, at_time)
              else NA_real_)
@@ -158,6 +201,10 @@
 
   rhs_vars <- setdiff(all.vars(stats::formula(fit)),
                       all.vars(stats::formula(fit)[[2L]]))
+  # Strata variables get no contrast row: they carry no coefficient
+  # (the table has no HR row for them either), and standardization
+  # deliberately holds each subject's stratum fixed.
+  rhs_vars <- setdiff(rhs_vars, .coxph_strata_vars(fit))
   rows <- list()
   for (v in rhs_vars) {
     col <- data[[v]]
@@ -192,6 +239,14 @@
     # model matrix but cannot take +1): skipped -- no estimand row.
   }
   do.call(rbind, rows)
+}
+
+
+# Variables absorbed by strata() terms (empty for unstratified fits).
+.coxph_strata_vars <- function(fit) {
+  sp <- survival::untangle.specials(stats::terms(fit), "strata")
+  if (length(sp$vars) == 0L) return(character(0))
+  all.vars(stats::reformulate(sp$vars))
 }
 
 
@@ -247,6 +302,7 @@
     obs_time <- as.numeric(y[, 1L])
     rhs_vars <- setdiff(all.vars(stats::formula(fit)),
                         all.vars(stats::formula(fit)[[2L]]))
+    rhs_vars <- setdiff(rhs_vars, .coxph_strata_vars(fit))
     level_max <- numeric(0)
     for (v in rhs_vars) {
       col <- data[[v]]
@@ -341,7 +397,8 @@
     tau        = if (want_rmst) tau_resolved else NULL,
     at_time    = if (want_risk) at_time else NULL,
     boot_n     = boot_n,
-    boot_valid = as.integer(boot_valid)
+    boot_valid = as.integer(boot_valid),
+    stratified = !is.null(attr(fit$terms, "specials")$strata)
   )
 }
 
@@ -371,7 +428,12 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
     paste0(
       paste(parts, collapse = "; "),
       sprintf(
-        "; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (%s replicates).",
+        "; adjusted by g-computation from the fitted model%s, SEs by nonparametric bootstrap (%s replicates).",
+        if (isTRUE(es$stratified)) {
+          " (within-stratum baselines)"
+        } else {
+          ""
+        },
         if (es$boot_valid < es$boot_n) {
           sprintf("%d-%d", es$boot_valid, es$boot_n)
         } else {

@@ -92,7 +92,8 @@ as_regression_frame.coxph <- function(fit,
       tau        = estimands$tau,
       at_time    = estimands$at_time,
       boot_n     = estimands$boot_n,
-      boot_valid = estimands$boot_valid
+      boot_valid = estimands$boot_valid,
+      stratified = isTRUE(estimands$stratified)
     )
   }
 

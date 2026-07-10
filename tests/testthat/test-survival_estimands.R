@@ -160,7 +160,7 @@ test_that("horizons are explicit, mandatory, and refused when unused", {
 })
 
 
-test_that("structural gates: class, strata, start-stop, uv screen", {
+test_that("structural gates: class, start-stop, uv screen", {
   skip_if_not_installed("survival")
   d <- .est_lung()
   expect_error(
@@ -168,13 +168,12 @@ test_that("structural gates: class, strata, start-stop, uv screen", {
                      show_columns = c("b", "rmst"), tau = 5),
     class = "spicy_invalid_input"
   )
+  # Stratified fits are SUPPORTED since the strata lot -- the gate must
+  # pass; full coverage lives in test-survival_estimands_strata.R.
   fit_str <- survival::coxph(
     survival::Surv(time, status) ~ age + survival::strata(sex), data = d
   )
-  expect_error(
-    table_regression(fit_str, show_columns = c("b", "rmst"), tau = 365),
-    class = "spicy_invalid_input"
-  )
+  expect_silent(spicy:::.coxph_estimand_gates(fit_str, "M1"))
   d3 <- data.frame(t1 = c(0, 0, 2, 3, 0, 1), t2 = c(2, 3, 5, 8, 4, 6),
                    ev = c(0, 1, 1, 0, 1, 0), x = rnorm(6))
   fit_cp <- suppressWarnings(

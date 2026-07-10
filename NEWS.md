@@ -152,6 +152,11 @@ rendering an empty column.
 * `table_continuous_lm()` now discloses robust and resampling SEs in
   its table note, carries its notes into every rich output, and
   accepts `cluster = ~region`.
+* The RMST and risk-difference columns now support stratified Cox
+  models (`strata()`): g-computation keeps each subject's own stratum
+  baseline, and the table note says so. The strata variable itself
+  gets no contrast row. Cross-validated against
+  `adjustedCurves::adjusted_rmst()` (exact).
 * `MASS::glm.nb` fits gain opt-in dispersion fit-stat rows:
   `show_fit_stats` tokens `"theta"` (the NB2 dispersion) and
   `"alpha"` (its reciprocal, the Stata convention). Refused with a
