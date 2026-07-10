@@ -29,3 +29,4 @@ dev/*_draft.md
 dev/*_retriage.md
 dev/*.pdf
 dev/*.epub
+dev/_source/

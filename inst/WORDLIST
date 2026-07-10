@@ -127,6 +127,7 @@ generalisations
 generalise
 Generalised
 generalised
+GENMOD
 glm
 glmer
 GLMM
@@ -212,8 +213,10 @@ marg
 marginaleffects
 marginality
 Matuschek
+MBESS
 McCaffrey
 McCullagh
+MEM
 Menard
 merDeriv
 Merkle
@@ -293,12 +296,14 @@ releveled
 releveling
 renderer
 renderers
+reparameterisation
 reparameterization
 resamplers
 reweights
 Ridder
 Rinehart
 RLRsim
+RLRT
 rms
 RMST
 roadmap
@@ -359,6 +364,7 @@ Tily
 tinytable
 Tipton
 Tjur
+Tjur's
 TMB
 TMB's
 Tofighi
