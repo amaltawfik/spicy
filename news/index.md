@@ -143,10 +143,11 @@ rendering an empty column.
   render as labelled row blocks with full inference
   (`show_components = FALSE` to opt out). A component is exponentiated
   only when its link yields a ratio.
-- Class-aware fit-statistics defaults: pseudo-R² for ordinal fits; every
-  other class falls back to `nobs` + `AIC` instead of a blank block. The
-  `N (groups)` row upgrades to plain counts (e.g. `N (Subject)`) when
-  models share a single grouping factor.
+- Class-aware fit-statistics defaults: pseudo-R² for ordinal and
+  multinomial fits; every other class falls back to `nobs` + `AIC`
+  instead of a blank block. The `N (groups)` row upgrades to plain
+  counts (e.g. `N (Subject)`) when models share a single grouping
+  factor.
 - Four new vignettes: *Mixed-effects*, *Multinomial*, *Count and
   two-part*, and *Survival regression tables*.
 
@@ -172,6 +173,22 @@ rendering an empty column.
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   now discloses robust and resampling SEs in its table note, carries its
   notes into every rich output, and accepts `cluster = ~region`.
+- [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) fits
+  now report McFadden’s and Nagelkerke’s pseudo-R² (as the other
+  categorical families do). The tokens were silently dropped from
+  `show_fit_stats` before, and a weighted fit’s null log-likelihood
+  ignored the weights.
+- `ordinal::clm(scale = ~)` fits now render their scale (dispersion)
+  coefficients as a `Scale effects` block. They were silently absent
+  from the table: an estimated component of the model went unreported.
+  The rows stay on the log scale under `exponentiate = TRUE` (their
+  exponential is a ratio of latent standard deviations, not an odds
+  ratio) and the footer says so.
+- [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
+  gains an `outcome_level` column naming the response category of
+  per-category rows (ordinal and multinomial average marginal effects).
+  Those rows were previously indistinguishable – four `age` AME rows
+  sharing one term, with nothing to identify the category.
 - The random-effects LR test no longer prints a negative statistic
   (`-0.00`) on singular fits: the statistic is clamped at zero and the
   boundary p-value is now 1 – half the chi-bar-squared null distribution

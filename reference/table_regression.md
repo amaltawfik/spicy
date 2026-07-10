@@ -281,9 +281,9 @@ table_regression(
 
 - show_components:
 
-  For two-part count models, whether to display the non-primary model
-  components as labelled subordinate blocks of rows below the (count /
-  conditional) coefficients. Default `TRUE`:
+  For models with secondary components, whether to display them as
+  labelled subordinate blocks of rows below the primary (count /
+  conditional / location) coefficients. Default `TRUE`:
 
   - [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
     `glmmTMB(ziformula = )`: a `Zero-inflation` block – the model for
@@ -296,6 +296,11 @@ table_regression(
 
   - `glmmTMB(dispformula = )`: a `Dispersion` block (only when
     dispersion was actually modelled; log scale, never exponentiated).
+
+  - `ordinal::clm(scale = ~)`: a `Scale effects` block – the covariate
+    effects on the **log standard deviation of the latent response**.
+    Never exponentiated: their exponential is a ratio of latent standard
+    deviations, not an odds ratio.
 
   Component rows carry full Wald inference (B / SE / z / p / CI), join
   the `p_adjust` family, and take significance stars. Under
@@ -1544,15 +1549,16 @@ table_regression(
 
 # ---- Tidy long format for downstream pipelines -------------------
 broom::tidy(table_regression(fit))
-#> # A tibble: 4 × 15
-#>   model_id outcome     term  estimate_type estimate std.error conf.low conf.high
-#>   <chr>    <chr>       <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
-#> 1 M1       wellbeing_… (Int… B              65.2       1.66    62.0       68.5  
-#> 2 M1       wellbeing_… age   B               0.0465    0.0307  -0.0137     0.107
-#> 3 M1       wellbeing_… sexM… B               3.86      0.905    2.08       5.63 
-#> 4 M1       wellbeing_… smok… B              -1.72      1.11    -3.89       0.454
-#> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
-#> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
+#> # A tibble: 4 × 16
+#>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
+#>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
+#> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
+#> 2 M1       wellbe… NA            age   B               0.0465    0.0307  -0.0137
+#> 3 M1       wellbe… NA            sexM… B               3.86      0.905    2.08  
+#> 4 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
+#> # ℹ 8 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> #   p.value <dbl>, test_type <chr>, is_intercept <lgl>, factor_term <chr>,
+#> #   factor_level <chr>
 
 # ---- Mixed-effects models ----------------------------------------
 # Linear mixed-effects (lme4). The footer adds a random-effects

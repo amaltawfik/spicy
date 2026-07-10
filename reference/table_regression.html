@@ -362,9 +362,10 @@ when a coefficient column (<code>"b"</code>/<code>"beta"</code>) is in <code>sho
 
 
 <dt id="arg-show-components">show_components<a class="anchor" aria-label="anchor" href="#arg-show-components"></a></dt>
-<dd><p>For two-part count models, whether to display
-the non-primary model components as labelled subordinate blocks of
-rows below the (count / conditional) coefficients. Default <code>TRUE</code>:</p><ul><li><p><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code> and <code>glmmTMB(ziformula = )</code>: a
+<dd><p>For models with secondary components,
+whether to display them as labelled subordinate blocks of rows
+below the primary (count / conditional / location) coefficients.
+Default <code>TRUE</code>:</p><ul><li><p><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code> and <code>glmmTMB(ziformula = )</code>: a
 <code>Zero-inflation</code> block – the model for the probability of a
 <strong>structural (excess) zero</strong>.</p></li>
 <li><p><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle</a></code>: a <code>Zero hurdle</code> block – the model for the
@@ -373,6 +374,10 @@ vs zero-inflation; the footer names each block's meaning).</p></li>
 <li><p><code>glmmTMB(dispformula = )</code>: a <code>Dispersion</code> block (only when
 dispersion was actually modelled; log scale, never
 exponentiated).</p></li>
+<li><p><code>ordinal::clm(scale = ~)</code>: a <code>Scale effects</code> block – the
+covariate effects on the <strong>log standard deviation of the
+latent response</strong>. Never exponentiated: their exponential is a
+ratio of latent standard deviations, not an odds ratio.</p></li>
 </ul><p>Component rows carry full Wald inference (B / SE / z / p / CI),
 join the <code>p_adjust</code> family, and take significance stars. Under
 <code>exponentiate = TRUE</code> a component is exponentiated <strong>only when its
@@ -1557,15 +1562,16 @@ broom integration:
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ---- Tidy long format for downstream pipelines -------------------</span></span></span>
 <span class="r-in"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 15</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   model_id outcome     term  estimate_type estimate std.error conf.low conf.high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> M1       wellbeing_… (Int… B              65.2       1.66    62.0       68.5  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> M1       wellbeing_… age   B               0.046<span style="text-decoration: underline;">5</span>    0.030<span style="text-decoration: underline;">7</span>  -<span style="color: #BB0000;">0.013</span><span style="color: #BB0000; text-decoration: underline;">7</span>     0.107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> M1       wellbeing_… sexM… B               3.86      0.905    2.08       5.63 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> M1       wellbeing_… smok… B              -<span style="color: #BB0000;">1.72</span>      1.11    -<span style="color: #BB0000;">3.89</span>       0.454</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: statistic &lt;dbl&gt;, df &lt;dbl&gt;, p.value &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 16</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            (Int… B              65.2       1.66    62.0   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            age   B               0.046<span style="text-decoration: underline;">5</span>    0.030<span style="text-decoration: underline;">7</span>  -<span style="color: #BB0000;">0.013</span><span style="color: #BB0000; text-decoration: underline;">7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            sexM… B               3.86      0.905    2.08  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            smok… B              -<span style="color: #BB0000;">1.72</span>      1.11    -<span style="color: #BB0000;">3.89</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;, df &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   factor_level &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ---- Mixed-effects models ----------------------------------------</span></span></span>
 <span class="r-in"><span><span class="co"># Linear mixed-effects (lme4). The footer adds a random-effects</span></span></span>

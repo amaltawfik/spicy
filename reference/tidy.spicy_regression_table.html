@@ -109,12 +109,13 @@ pipeline.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>tidy()</code> returns one row per <code>(model_id, term, estimate_type)</code>
-triplet, with <code>estimate_type</code> in
+    <p><code>tidy()</code> returns one row per <code>(model_id, term, estimate_type, outcome_level)</code> combination, with <code>estimate_type</code> in
 <code>c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2")</code>.
-Reference-row placeholders (factor reference levels) and
-singular coefficients (NA estimates) are dropped. Columns:
-<code>model_id, outcome, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, p.value, test_type, is_intercept, factor_term, factor_level</code>.</p>
+<code>outcome_level</code> names the response category of per-category rows
+(ordinal / multinomial average marginal effects) and is <code>NA</code> for
+single-outcome models. Reference-row placeholders (factor reference
+levels) and singular coefficients (NA estimates) are dropped. Columns:
+<code>model_id, outcome, outcome_level, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, p.value, test_type, is_intercept, factor_term, factor_level</code>.</p>
 <p><code>glance()</code> returns one row per <code>(model_id, outcome)</code> with
 model-level statistics. Columns: <code>model_id, outcome, nobs, weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse, f2, AIC, AICc, BIC, deviance, df.residual</code> (numeric –
 Satterthwaite-safe).</p>

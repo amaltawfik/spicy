@@ -115,6 +115,8 @@ table_regression(fit)
 #>    Tertiary               │    0.14  0.28   .614  -1.23  0.23  <.001  -0.35  0.26   .186 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                                         
+#>  R² (McFadden)            │    0.02                                                      
+#>  R² (Nagelkerke)          │    0.04                                                      
 #>  AIC                      │ 2515.8                                                       
 #> 
 #> Note. Multinomial logistic regression.
@@ -163,7 +165,7 @@ One scope note: `multinom` fits report **classical Wald-z inference
 only** — a robust or cluster-robust `vcov` request is refused with an
 explanatory error rather than silently ignored.
 
-## Odds ratios — and what Stata calls them
+## Odds ratios: `exponentiate = TRUE`
 
 `exponentiate = TRUE` puts the estimates and CI bounds on the ratio
 scale:
@@ -188,6 +190,8 @@ table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #>    Tertiary               │    1.15  [0.67, 1.98]   .614  0.29  [0.19, 0.46]  <.001  0.71  [0.42, 1.18]   .186 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                                                               
+#>  R² (McFadden)            │    0.02                                                                            
+#>  R² (Nagelkerke)          │    0.04                                                                            
 #>  AIC                      │ 2515.8                                                                             
 #> 
 #> Note. Multinomial logistic regression.
@@ -248,6 +252,8 @@ table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
 #>    Tertiary               │    3.43  <.001  3.94  <.001  2.43   .005 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                     
+#>  R² (McFadden)            │    0.02                                  
+#>  R² (Nagelkerke)          │    0.04                                  
 #>  AIC                      │ 2515.8                                   
 #> 
 #> Note. Multinomial logistic regression.
@@ -369,6 +375,8 @@ table_regression(fit, show_columns = c("b", "ame"))
 #>    Tertiary               │    0.14   0.04  -1.23  -0.16  -0.35  -0.01      0.14 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                                 
+#>  R² (McFadden)            │    0.02                                              
+#>  R² (Nagelkerke)          │    0.04                                              
 #>  AIC                      │ 2515.8                                               
 #> 
 #> Note. Multinomial logistic regression.
@@ -486,6 +494,8 @@ table_regression(list(fit_lin, fit), nested = TRUE,
 #>    Inactive: Tertiary                 │                   -0.35    .186 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                    │ 1200            1200            
+#>  R² (McFadden)                        │    0.01            0.02         
+#>  R² (Nagelkerke)                      │    0.03            0.04         
 #>  AIC                                  │ 2514.3          2515.8          
 #>  Δχ²                                  │     –             +4.52         
 #>  p (change)                           │     –               .211        
@@ -651,6 +661,8 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #>    Inactive: Male                     │                    1.15   .464 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                    │ 1200            1200           
+#>  R² (McFadden)                        │    0.01            0.02        
+#>  R² (Nagelkerke)                      │    0.03            0.04        
 #>  AIC                                  │ 2509.4          2515.8         
 #> 
 #> Note. Multinomial logistic regression models.
@@ -713,21 +725,21 @@ the reference:
 ``` r
 
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-#> # A tibble: 31 × 15
-#>    model_id outcome       term  estimate_type estimate std.error conf.low conf.high statistic    df p.value test_type is_intercept
-#>    <chr>    <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>     <dbl> <dbl>   <dbl> <chr>     <lgl>       
-#>  1 M1       employment_s… Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672       -3.70    Inf 2.13e-4 z         FALSE       
-#>  2 M1       employment_s… Unem… B             -7.23e-1  0.333    -1.38e+0 -0.0716      -2.18    Inf 2.96e-2 z         FALSE       
-#>  3 M1       employment_s… Inac… B             -1.75e+0  0.400    -2.53e+0 -0.965       -4.37    Inf 1.23e-5 z         FALSE       
-#>  4 M1       employment_s… Stud… ame           -1.06e-3  0.000641 -2.32e-3  0.000199    -1.65    Inf 9.89e-2 z         FALSE       
-#>  5 M1       employment_s… Stud… B             -1.04e-2  0.00627  -2.27e-2  0.00188     -1.66    Inf 9.70e-2 z         FALSE       
-#>  6 M1       employment_s… Unem… ame           -2.72e-4  0.000683 -1.61e-3  0.00107     -0.398   Inf 6.91e-1 z         FALSE       
-#>  7 M1       employment_s… Unem… B             -3.38e-3  0.00583  -1.48e-2  0.00804     -0.580   Inf 5.62e-1 z         FALSE       
-#>  8 M1       employment_s… Inac… ame            3.91e-4  0.000591 -7.67e-4  0.00155      0.661   Inf 5.08e-1 z         FALSE       
-#>  9 M1       employment_s… Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155       0.360   Inf 7.19e-1 z         FALSE       
-#> 10 M1       employment_s… Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278      0.998   Inf 3.18e-1 z         FALSE       
+#> # A tibble: 31 × 16
+#>    model_id outcome      outcome_level term  estimate_type estimate std.error conf.low conf.high statistic    df p.value test_type
+#>    <chr>    <chr>        <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>     <dbl> <dbl>   <dbl> <chr>    
+#>  1 M1       employment_… Student       Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672       -3.70    Inf 2.13e-4 z        
+#>  2 M1       employment_… Unemployed    Unem… B             -7.23e-1  0.333    -1.38e+0 -0.0716      -2.18    Inf 2.96e-2 z        
+#>  3 M1       employment_… Inactive      Inac… B             -1.75e+0  0.400    -2.53e+0 -0.965       -4.37    Inf 1.23e-5 z        
+#>  4 M1       employment_… Student       Stud… ame           -1.06e-3  0.000641 -2.32e-3  0.000199    -1.65    Inf 9.89e-2 z        
+#>  5 M1       employment_… Student       Stud… B             -1.04e-2  0.00627  -2.27e-2  0.00188     -1.66    Inf 9.70e-2 z        
+#>  6 M1       employment_… Unemployed    Unem… ame           -2.72e-4  0.000683 -1.61e-3  0.00107     -0.398   Inf 6.91e-1 z        
+#>  7 M1       employment_… Unemployed    Unem… B             -3.38e-3  0.00583  -1.48e-2  0.00804     -0.580   Inf 5.62e-1 z        
+#>  8 M1       employment_… Inactive      Inac… ame            3.91e-4  0.000591 -7.67e-4  0.00155      0.661   Inf 5.08e-1 z        
+#>  9 M1       employment_… Inactive      Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155       0.360   Inf 7.19e-1 z        
+#> 10 M1       employment_… Employed      Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278      0.998   Inf 3.18e-1 z        
 #> # ℹ 21 more rows
-#> # ℹ 2 more variables: factor_term <chr>, factor_level <chr>
+#> # ℹ 3 more variables: is_intercept <lgl>, factor_term <chr>, factor_level <chr>
 ```
 
 ## References

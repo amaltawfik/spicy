@@ -209,6 +209,8 @@ log; unlike <code>polr()</code>, <code><a href="https://rdrr.io/pkg/nnet/man/mul
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>    0.14  0.28   .614  -1.23  0.23  &lt;.001  -0.35  0.26   .186 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                                         </span></span>
+<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                                      </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                                      </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression.</span></span></span>
@@ -260,7 +262,7 @@ Wald-z inference only</strong> — a robust or cluster-robust
 than silently ignored.</p>
 </div>
 <div class="section level2">
-<h2 id="odds-ratios-and-what-stata-calls-them">Odds ratios — and what Stata calls them<a class="anchor" aria-label="anchor" href="#odds-ratios-and-what-stata-calls-them"></a>
+<h2 id="odds-ratios-exponentiate-true">Odds ratios: <code>exponentiate = TRUE</code><a class="anchor" aria-label="anchor" href="#odds-ratios-exponentiate-true"></a>
 </h2>
 <p><code>exponentiate = TRUE</code> puts the estimates and CI bounds on
 the ratio scale:</p>
@@ -283,6 +285,8 @@ the ratio scale:</p>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>    1.15  [0.67, 1.98]   .614  0.29  [0.19, 0.46]  &lt;.001  0.71  [0.42, 1.18]   .186 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                                                               </span></span>
+<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                                                            </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                                                            </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                                                             </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression.</span></span></span>
@@ -340,6 +344,8 @@ comparisons displayed change.</p>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>    3.43  &lt;.001  3.94  &lt;.001  2.43   .005 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                     </span></span>
+<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                  </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                  </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression.</span></span></span>
@@ -453,6 +459,8 @@ next to that category’s coefficients:</p>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>    0.14   0.04  -1.23  -0.16  -0.35  -0.01      0.14 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                              </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression.</span></span></span>
@@ -566,6 +574,8 @@ scores. <code>nested = TRUE</code> runs exactly that comparison:</p>
 <span><span class="co">#&gt;    Inactive: Tertiary                 <span style="color: #9E9E9E;">│</span>                   -0.35    .186 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                                    <span style="color: #9E9E9E;">│</span> 1200            1200            </span></span>
+<span><span class="co">#&gt;  R² (McFadden)                        <span style="color: #9E9E9E;">│</span>    0.01            0.02         </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)                      <span style="color: #9E9E9E;">│</span>    0.03            0.04         </span></span>
 <span><span class="co">#&gt;  AIC                                  <span style="color: #9E9E9E;">│</span> 2514.3          2515.8          </span></span>
 <span><span class="co">#&gt;  Δχ²                                  <span style="color: #9E9E9E;">│</span>     –             +4.52         </span></span>
 <span><span class="co">#&gt;  p (change)                           <span style="color: #9E9E9E;">│</span>     –               .211        </span></span>
@@ -729,6 +739,8 @@ table falls back to the one-row-per-comparison layout
 <span><span class="co">#&gt;    Inactive: Male                     <span style="color: #9E9E9E;">│</span>                    1.15   .464 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                                    <span style="color: #9E9E9E;">│</span> 1200            1200           </span></span>
+<span><span class="co">#&gt;  R² (McFadden)                        <span style="color: #9E9E9E;">│</span>    0.01            0.02        </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)                      <span style="color: #9E9E9E;">│</span>    0.03            0.04        </span></span>
 <span><span class="co">#&gt;  AIC                                  <span style="color: #9E9E9E;">│</span> 2509.4          2515.8         </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression models.</span></span></span>
@@ -1282,6 +1294,50 @@ n
 </td>
 </tr>
 <tr>
+<td headers="Variable" class="gt_row gt_left">
+R² (McFadden)
+</td>
+<td headers="Student: B" class="gt_row gt_center">
+   0.02
+</td>
+<td headers="Student: AME" class="gt_row gt_center">
+</td>
+<td headers="Unemployed: B" class="gt_row gt_center">
+</td>
+<td headers="Unemployed: AME" class="gt_row gt_center">
+</td>
+<td headers="Inactive: B" class="gt_row gt_center">
+</td>
+<td headers="Inactive: AME" class="gt_row gt_center">
+</td>
+<td headers="Employed: B" class="gt_row gt_center">
+</td>
+<td headers="Employed: AME" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left">
+R² (Nagelkerke)
+</td>
+<td headers="Student: B" class="gt_row gt_center">
+   0.04
+</td>
+<td headers="Student: AME" class="gt_row gt_center">
+</td>
+<td headers="Unemployed: B" class="gt_row gt_center">
+</td>
+<td headers="Unemployed: AME" class="gt_row gt_center">
+</td>
+<td headers="Inactive: B" class="gt_row gt_center">
+</td>
+<td headers="Inactive: AME" class="gt_row gt_center">
+</td>
+<td headers="Employed: B" class="gt_row gt_center">
+</td>
+<td headers="Employed: AME" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 AIC
 </td>
@@ -1320,21 +1376,21 @@ per-outcome structure is carried in the term labels
 (<code>"Student: age"</code>), and AME rows cover all <span class="math inline">\(J\)</span> categories including the reference:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 31 × 15</span></span></span>
-<span><span class="co">#&gt;    model_id outcome       term  estimate_type estimate std.error conf.low conf.high statistic    df p.value test_type is_intercept</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       employment_s… Stud… B             -<span style="color: #BB0000;">1.43</span><span style="color: #949494;">e</span>+0  0.386    -<span style="color: #BB0000;">2.18</span><span style="color: #949494;">e</span>+0 -<span style="color: #BB0000;">0.672</span>       -<span style="color: #BB0000;">3.70</span>    <span style="color: #BB0000;">Inf</span> 2.13<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       employment_s… Unem… B             -<span style="color: #BB0000;">7.23</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span>  0.333    -<span style="color: #BB0000;">1.38</span><span style="color: #949494;">e</span>+0 -<span style="color: #BB0000;">0.071</span><span style="color: #BB0000; text-decoration: underline;">6</span>      -<span style="color: #BB0000;">2.18</span>    <span style="color: #BB0000;">Inf</span> 2.96<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       employment_s… Inac… B             -<span style="color: #BB0000;">1.75</span><span style="color: #949494;">e</span>+0  0.400    -<span style="color: #BB0000;">2.53</span><span style="color: #949494;">e</span>+0 -<span style="color: #BB0000;">0.965</span>       -<span style="color: #BB0000;">4.37</span>    <span style="color: #BB0000;">Inf</span> 1.23<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       employment_s… Stud… ame           -<span style="color: #BB0000;">1.06</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.000<span style="text-decoration: underline;">641</span> -<span style="color: #BB0000;">2.32</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.000<span style="text-decoration: underline;">199</span>    -<span style="color: #BB0000;">1.65</span>    <span style="color: #BB0000;">Inf</span> 9.89<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       employment_s… Stud… B             -<span style="color: #BB0000;">1.04</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.006<span style="text-decoration: underline;">27</span>  -<span style="color: #BB0000;">2.27</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.001<span style="text-decoration: underline;">88</span>     -<span style="color: #BB0000;">1.66</span>    <span style="color: #BB0000;">Inf</span> 9.70<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       employment_s… Unem… ame           -<span style="color: #BB0000;">2.72</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.000<span style="text-decoration: underline;">683</span> -<span style="color: #BB0000;">1.61</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.001<span style="text-decoration: underline;">07</span>     -<span style="color: #BB0000;">0.398</span>   <span style="color: #BB0000;">Inf</span> 6.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       employment_s… Unem… B             -<span style="color: #BB0000;">3.38</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.005<span style="text-decoration: underline;">83</span>  -<span style="color: #BB0000;">1.48</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.008<span style="text-decoration: underline;">04</span>     -<span style="color: #BB0000;">0.580</span>   <span style="color: #BB0000;">Inf</span> 5.62<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> M1       employment_s… Inac… ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.000<span style="text-decoration: underline;">591</span> -<span style="color: #BB0000;">7.67</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.001<span style="text-decoration: underline;">55</span>      0.661   <span style="color: #BB0000;">Inf</span> 5.08<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> M1       employment_s… Inac… B              2.40<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.006<span style="text-decoration: underline;">67</span>  -<span style="color: #BB0000;">1.07</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.015<span style="text-decoration: underline;">5</span>       0.360   <span style="color: #BB0000;">Inf</span> 7.19<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z         FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> M1       employment_s… Empl… ame            9.39<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.000<span style="text-decoration: underline;">941</span> -<span style="color: #BB0000;">9.06</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.002<span style="text-decoration: underline;">78</span>      0.998   <span style="color: #BB0000;">Inf</span> 3.18<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z         FALSE       </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 31 × 16</span></span></span>
+<span><span class="co">#&gt;    model_id outcome      outcome_level term  estimate_type estimate std.error conf.low conf.high statistic    df p.value test_type</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       employment_… Student       Stud… B             -<span style="color: #BB0000;">1.43</span><span style="color: #949494;">e</span>+0  0.386    -<span style="color: #BB0000;">2.18</span><span style="color: #949494;">e</span>+0 -<span style="color: #BB0000;">0.672</span>       -<span style="color: #BB0000;">3.70</span>    <span style="color: #BB0000;">Inf</span> 2.13<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       employment_… Unemployed    Unem… B             -<span style="color: #BB0000;">7.23</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span>  0.333    -<span style="color: #BB0000;">1.38</span><span style="color: #949494;">e</span>+0 -<span style="color: #BB0000;">0.071</span><span style="color: #BB0000; text-decoration: underline;">6</span>      -<span style="color: #BB0000;">2.18</span>    <span style="color: #BB0000;">Inf</span> 2.96<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       employment_… Inactive      Inac… B             -<span style="color: #BB0000;">1.75</span><span style="color: #949494;">e</span>+0  0.400    -<span style="color: #BB0000;">2.53</span><span style="color: #949494;">e</span>+0 -<span style="color: #BB0000;">0.965</span>       -<span style="color: #BB0000;">4.37</span>    <span style="color: #BB0000;">Inf</span> 1.23<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       employment_… Student       Stud… ame           -<span style="color: #BB0000;">1.06</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.000<span style="text-decoration: underline;">641</span> -<span style="color: #BB0000;">2.32</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.000<span style="text-decoration: underline;">199</span>    -<span style="color: #BB0000;">1.65</span>    <span style="color: #BB0000;">Inf</span> 9.89<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       employment_… Student       Stud… B             -<span style="color: #BB0000;">1.04</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.006<span style="text-decoration: underline;">27</span>  -<span style="color: #BB0000;">2.27</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.001<span style="text-decoration: underline;">88</span>     -<span style="color: #BB0000;">1.66</span>    <span style="color: #BB0000;">Inf</span> 9.70<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       employment_… Unemployed    Unem… ame           -<span style="color: #BB0000;">2.72</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.000<span style="text-decoration: underline;">683</span> -<span style="color: #BB0000;">1.61</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.001<span style="text-decoration: underline;">07</span>     -<span style="color: #BB0000;">0.398</span>   <span style="color: #BB0000;">Inf</span> 6.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       employment_… Unemployed    Unem… B             -<span style="color: #BB0000;">3.38</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.005<span style="text-decoration: underline;">83</span>  -<span style="color: #BB0000;">1.48</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.008<span style="text-decoration: underline;">04</span>     -<span style="color: #BB0000;">0.580</span>   <span style="color: #BB0000;">Inf</span> 5.62<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> M1       employment_… Inactive      Inac… ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.000<span style="text-decoration: underline;">591</span> -<span style="color: #BB0000;">7.67</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.001<span style="text-decoration: underline;">55</span>      0.661   <span style="color: #BB0000;">Inf</span> 5.08<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> M1       employment_… Inactive      Inac… B              2.40<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span>  0.006<span style="text-decoration: underline;">67</span>  -<span style="color: #BB0000;">1.07</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span>  0.015<span style="text-decoration: underline;">5</span>       0.360   <span style="color: #BB0000;">Inf</span> 7.19<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> M1       employment_… Employed      Empl… ame            9.39<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.000<span style="text-decoration: underline;">941</span> -<span style="color: #BB0000;">9.06</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>  0.002<span style="text-decoration: underline;">78</span>      0.998   <span style="color: #BB0000;">Inf</span> 3.18<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> z        </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 21 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

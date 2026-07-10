@@ -1015,14 +1015,15 @@ returns the long frame; with <code>exponentiate = TRUE</code> the
 estimates and CI bounds are on the ratio scale, as displayed:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 15</span></span></span>
-<span><span class="co">#&gt;   model_id outcome     term  estimate_type estimate std.error conf.low conf.high</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> M1       Surv(time,… age   B                1.01    0.009<span style="text-decoration: underline;">37</span>    0.993     1.03 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> M1       Surv(time,… sexF… B                0.573   0.096<span style="text-decoration: underline;">3</span>     0.412     0.797</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> M1       Surv(time,… ph.e… B                1.60    0.183      1.28      2.00 </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: statistic &lt;dbl&gt;, df &lt;dbl&gt;, p.value &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 16</span></span></span>
+<span><span class="co">#&gt;   model_id outcome outcome_level term  estimate_type estimate std.error conf.low</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> M1       Surv(t… <span style="color: #BB0000;">NA</span>            age   B                1.01    0.009<span style="text-decoration: underline;">37</span>    0.993</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> M1       Surv(t… <span style="color: #BB0000;">NA</span>            sexF… B                0.573   0.096<span style="text-decoration: underline;">3</span>     0.412</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> M1       Surv(t… <span style="color: #BB0000;">NA</span>            ph.e… B                1.60    0.183      1.28 </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;, df &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   factor_level &lt;chr&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

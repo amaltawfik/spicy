@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Ordinal regression tables">
-<meta name="description" content="Publication-ready tables for ordinal (proportional-odds / cumulative logit) regression in R with `table_regression()`: shared slope coefficients and ordered thresholds, odds ratios, per-outcome-category average marginal effects laid out as a probability matrix, cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines, and the partial-proportional-odds caveat.
+<meta name="description" content="Publication-ready tables for ordinal (proportional-odds / cumulative logit) regression in R with `table_regression()`: shared slope coefficients and ordered thresholds, odds ratios, per-outcome-category average marginal effects laid out as a probability matrix, cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines, testing the proportional-odds assumption, and the partial proportional odds and scale relaxations.
 ">
-<meta property="og:description" content="Publication-ready tables for ordinal (proportional-odds / cumulative logit) regression in R with `table_regression()`: shared slope coefficients and ordered thresholds, odds ratios, per-outcome-category average marginal effects laid out as a probability matrix, cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines, and the partial-proportional-odds caveat.
+<meta property="og:description" content="Publication-ready tables for ordinal (proportional-odds / cumulative logit) regression in R with `table_regression()`: shared slope coefficients and ordered thresholds, odds ratios, per-outcome-category average marginal effects laid out as a probability matrix, cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines, testing the proportional-odds assumption, and the partial proportional odds and scale relaxations.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -135,20 +135,33 @@ age, sex, smoking, and physical activity, using the bundled
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">self_rated_health</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Poor"      "Fair"      "Good"      "Very good"</span></span></code></pre></div>
+<p>Check this before fitting anything. <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">polr()</a></code> and
+<code>clm()</code> estimate on the factor’s level order <em>as
+given</em> — they do not warn when the outcome is a plain (unordered)
+factor, or when the levels sit in the wrong order. Data read from text
+files is particularly exposed: <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code> defaults to
+alphabetical levels (here <code>Fair, Good, Poor, Very good</code>),
+which would silently fit a nonsensical scale. And reversing the order
+negates every coefficient and marginal effect. Every interpretation
+below hinges on knowing the direction of the scale — here worst to best
+(Long &amp; Freese 2014).</p>
 <div class="section level2">
-<h2 id="the-proportional-odds-model-in-one-paragraph">The proportional-odds model in one paragraph<a class="anchor" aria-label="anchor" href="#the-proportional-odds-model-in-one-paragraph"></a>
+<h2 id="the-proportional-odds-model">The proportional-odds model<a class="anchor" aria-label="anchor" href="#the-proportional-odds-model"></a>
 </h2>
 <p>A cumulative logit model with <span class="math inline">\(K\)</span>
 ordered response categories estimates <strong>one slope per
 predictor</strong> (shared across all <span class="math inline">\(K-1\)</span> cumulative splits — the
 <em>proportional-odds assumption</em>) plus <span class="math inline">\(K-1\)</span> ordered <strong>thresholds</strong>
-(cut-points). A positive slope means that higher values of the predictor
-push the response toward <em>higher</em> categories. There is
-deliberately <strong>no per-category coefficient</strong>: that is the
-whole point of the proportional-odds restriction. The per-category
-structure reappears only in the <em>marginal effects</em> (below), where
-a one-unit change has a different effect on the probability of each
-category.</p>
+(cut-points). A positive location (proportional-odds) slope means that
+higher values of the predictor push the response toward <em>higher</em>
+categories. There is deliberately <strong>no per-category
+coefficient</strong>: the proportional-odds restriction collapses the
+effect into a single slope per predictor, trading per-category detail
+for one interpretable number. The per-category structure reappears in
+the <em>marginal effects</em> (below), where a one-unit change has a
+different effect on the probability of each category — and in the
+relaxations of the shared-slope restriction that
+<code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code> offers (tested and demonstrated below).</p>
 </div>
 <div class="section level2">
 <h2 id="basic-table">Basic table<a class="anchor" aria-label="anchor" href="#basic-table"></a>
@@ -210,16 +223,23 @@ the cut-points (<code>Poor | Fair</code>, <code>Fair | Good</code>,
 rows. They locate the category boundaries on the latent logit scale and
 replace the single intercept of a binary logit. They are reported on the
 log-odds scale and are <strong>never exponentiated</strong>. The <span class="math inline">\(z\)</span>-test against zero is rarely of interest
-(it only asks whether the baseline cumulative split sits at 50/50), so
-do not over-read a “significant” threshold – the substantive headline is
-the odds ratios and marginal effects below. Hide the block with
-<code>show_thresholds = FALSE</code> to fall back to a compact footer
-line.</li>
+— it only asks whether the cumulative split sits at 50/50 at the profile
+where <em>every</em> predictor equals zero, here a respondent aged 0,
+not a meaningful case — so do not over-read a “significant” threshold;
+the substance lies in the odds ratios and marginal effects below. Hide
+the block with <code>show_thresholds = FALSE</code> to fall back to a
+compact footer line.</li>
 <li>Below the fit-stats rule, the model-fit block reports
 <strong>N</strong>, two pseudo-<span class="math inline">\(R^2\)</span>
 (<strong>McFadden</strong>, the Stata <code>ologit</code> default, and
 <strong>Nagelkerke</strong>, the SPSS PLUM default), and
-<strong>AIC</strong>. Override with <code>show_fit_stats</code>
+<strong>AIC</strong>. Both compare the fitted log-likelihood to the
+intercept-only model’s, and both round to 0.00 here: these four
+predictors explain almost none of the variation in self-rated health.
+This survey model therefore illustrates table mechanics and
+interpretation <em>wording</em>; read the exemplary sentences below as
+templates, not as substantive findings. Override the block with
+<code>show_fit_stats</code>
 (e.g. <code>show_fit_stats = c("nobs", "AIC", "BIC")</code>).</li>
 </ul>
 </div>
@@ -228,8 +248,13 @@ line.</li>
 </h2>
 <p>On the logit scale a coefficient is a log cumulative-odds ratio.
 <code>exponentiate = TRUE</code> reports <strong>odds ratios</strong>
-instead, exponentiating the estimate and its CI bounds and rebranding
-the column header:</p>
+instead, exponentiating the estimate and its CI bounds and relabelling
+the column header accordingly. This is link-specific: under
+<code>method = "cloglog"</code> the exponentiated coefficient is a
+<strong>hazard ratio</strong> (the grouped-time proportional-hazards
+reading) and the header and footer relabel to HR; under probit or
+cauchit the exponential has no ratio interpretation, and
+<code>exponentiate = TRUE</code> is refused with a clear error.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
@@ -262,25 +287,39 @@ the column header:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
-<p>An OR above 1 raises the odds of being in a <em>higher</em> health
-category; below 1 lowers them. Smoking’s OR here is interpretable as
-“smokers have lower odds of better self-rated health.” The
-<code>Thresholds</code> rows stay on the <strong>log-odds scale</strong>
-(a cut-point is not an odds ratio, so it is never exponentiated); only
-the predictor coefficients become ORs, and the footer flags this.</p>
+<p>The OR here is a <em>cumulative</em> odds ratio: it multiplies the
+odds of scoring <strong>above</strong> any given cut-point rather than
+at or below it, and — because the model is proportional-odds — the same
+ratio applies at every cut-point (<code>Poor | Fair</code>,
+<code>Fair | Good</code>, <code>Good | Very good</code>). It is
+<em>not</em> the odds of landing in one specific category; that
+per-category detail is what the AME matrix below provides. For a
+location (proportional) coefficient, an OR above 1 raises the cumulative
+odds of being in a <em>higher</em> health category and an OR below 1
+lowers them — the non-proportional block later in this vignette follows
+the opposite convention. Exact reading for the one borderline effect
+here: smoking’s OR of 0.76 means that, at every cut-point, smokers have
+about 24% lower odds of being in a higher health category rather than a
+lower one, adjusting for age, sex, and physical activity. The CI upper
+bound prints as 1.00 but is 0.997 before rounding; with p = .047 this is
+a borderline association, so treat the sentence as a wording template.
+The <code>Thresholds</code> rows stay on the <strong>log-odds
+scale</strong> (a cut-point is not an odds ratio, so it is never
+exponentiated); only the predictor coefficients become ORs, and the
+footer flags this.</p>
 </div>
 <div class="section level2">
 <h2 id="average-marginal-effects-a-probability-matrix">Average marginal effects: a probability matrix<a class="anchor" aria-label="anchor" href="#average-marginal-effects-a-probability-matrix"></a>
 </h2>
-<p>Odds ratios are multiplicative and live on the latent scale. For a
-reader-friendly, <strong>probability-scale</strong> summary, request
-average marginal effects (AME). Because an ordinal model predicts a
-probability for <em>every</em> response category, each predictor has
-<strong>one AME per category</strong> — the effect of the predictor on
-the probability of that category. <code><a href="../reference/table_regression.html">table_regression()</a></code> lays
-these out as the field-standard <strong>matrix</strong>: predictors in
-rows, response categories in columns (Long &amp; Freese 2014; Williams
-2012).</p>
+<p>Odds ratios are multiplicative and describe the (cumulative) odds,
+not probabilities directly. For a reader-friendly,
+<strong>probability-scale</strong> summary, request average marginal
+effects (AME). Because an ordinal model predicts a probability for
+<em>every</em> response category, each predictor has <strong>one AME per
+category</strong> — the effect of the predictor on the probability of
+that category. <code><a href="../reference/table_regression.html">table_regression()</a></code> lays these out as the
+field-standard <strong>matrix</strong>: predictors in rows, response
+categories in columns (Long &amp; Freese 2014; Williams 2012).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
@@ -319,8 +358,9 @@ probability of each health category for a smoker versus a non-smoker,
 holding the other predictors at their observed values.</li>
 <li>The effects <strong>sum to ≈ 0 across the row</strong>: a predictor
 <em>redistributes</em> probability mass between categories (the total
-probability is always 1). Here smoking moves mass <em>out of</em> the
-better categories and <em>into</em> the worse ones.</li>
+probability is always 1). Here smoking moves mass out of the better
+categories and into the worse ones — about 4.8 points out of
+<code>Very good</code>, 4.2 into <code>Fair</code>.</li>
 <li>Cells are <strong>probabilities</strong> (the 0–1 scale, matching
 <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code> and the
 binary-<code>glm</code> AME). An AME of <code>0.04</code> is a change of
@@ -328,11 +368,37 @@ binary-<code>glm</code> AME). An AME of <code>0.04</code> is a change of
 footer note states this; reserve “percent” for multiplicative quantities
 such as odds ratios.</li>
 </ul>
+<p>An AME is the single-number summary of a fuller object: the predicted
+probability of each category as the predictor varies. When the story
+deserves more than one number per category — or to check that an average
+is not masking a non-monotone pattern — tabulate those probabilities
+directly:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">marginaleffects</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/marginaleffects/man/predictions.html" class="external-link">avg_predictions</a></span><span class="op">(</span><span class="va">fit</span>, by <span class="op">=</span> <span class="st">"smoking"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;      Group smoking Estimate Std. Error     z Pr(&gt;|z|)     S  2.5 % 97.5 %</span></span>
+<span><span class="co">#&gt;  Poor          No    0.0490    0.00635  7.71   &lt;0.001  46.2 0.0365 0.0614</span></span>
+<span><span class="co">#&gt;  Poor          Yes   0.0632    0.00995  6.35   &lt;0.001  32.1 0.0437 0.0827</span></span>
+<span><span class="co">#&gt;  Fair          No    0.2189    0.01276 17.15   &lt;0.001 216.7 0.1939 0.2440</span></span>
+<span><span class="co">#&gt;  Fair          Yes   0.2608    0.02172 12.01   &lt;0.001 107.9 0.2182 0.3033</span></span>
+<span><span class="co">#&gt;  Good          No    0.4746    0.01473 32.22   &lt;0.001 754.4 0.4457 0.5034</span></span>
+<span><span class="co">#&gt;  Good          Yes   0.4666    0.01562 29.87   &lt;0.001 648.7 0.4360 0.4972</span></span>
+<span><span class="co">#&gt;  Very good     No    0.2575    0.01397 18.44   &lt;0.001 249.8 0.2301 0.2849</span></span>
+<span><span class="co">#&gt;  Very good     Yes   0.2094    0.02128  9.84   &lt;0.001  73.5 0.1677 0.2511</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type: probs</span></span></code></pre></div>
+<p>Smokers’ expected distribution sits lower on the scale than
+non-smokers’ — <code>Very good</code> 20.9% versus 25.8%,
+<code>Fair</code> 26.1% versus 21.9% — and the smoking AME row above is
+exactly the difference between these two profiles. For
+predicted-probability curves along a continuous predictor,
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/plot_predictions.html" class="external-link">marginaleffects::plot_predictions()</a></code> plots the same
+quantities.</p>
 <p>Request only the AME matrix (drop the coefficient column) with
 <code>show_columns = "ame"</code>, or add the AME standard errors / CIs
 / p-values with <code>"ame_se"</code>, <code>"ame_ci"</code>,
 <code>"ame_p"</code> (or the <code>"all_ame"</code> bundle):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="st">"ame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -358,11 +424,10 @@ such as odds ratios.</li>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
-<p>Marginal effects are computed with <a href="https://marginaleffects.com" class="external-link"><code>marginaleffects::avg_slopes()</code></a>
-on the response (probability) scale, then cross-validated to it to
-machine precision. For a single-outcome model (binary <code>glm</code>,
-<code>lm</code>, mixed) the AME stays a single column — the per-category
-matrix appears only when the response has more than two categories.</p>
+<p>Marginal effects are the response-scale (probability) output of <a href="https://marginaleffects.com" class="external-link"><code>marginaleffects::avg_slopes()</code></a>.
+For a single-outcome model (binary <code>glm</code>, <code>lm</code>,
+mixed) the AME stays a single column — the per-category matrix appears
+only when the response has more than two categories.</p>
 </div>
 <div class="section level2">
 <h2 id="cluster-robust-standard-errors">Cluster-robust standard errors<a class="anchor" aria-label="anchor" href="#cluster-robust-standard-errors"></a>
@@ -372,7 +437,7 @@ matrix appears only when the response has more than two categories.</p>
 <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. Pass the cluster as a formula, a column
 name, or a vector (see the main vignette, <em>How to specify
 <code>cluster</code></em>):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span></span>
@@ -410,8 +475,8 @@ name, or a vector (see the main vignette, <em>How to specify
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <p>The footer switches to name the estimator and the clustering
-variable. Heteroskedasticity-consistent (<code>HC*</code>) and the
-<code>bootstrap</code> / <code>jackknife</code> resamplers are
+variable. Heteroskedasticity-consistent (<code>HC*</code>) estimators
+and the <code>bootstrap</code> / <code>jackknife</code> resamplers are
 <em>not</em> defined for ordinal fits and are refused with a clear
 <code>spicy_unsupported_vcov</code> error rather than a silent
 fallback.</p>
@@ -448,7 +513,7 @@ requesting both uses the robust Wald CIs.</li>
 (<code>95% CIs: profile likelihood.</code>) alongside the SE method —
 following APA 7 / SAMPL / STROBE and matching
 <code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -487,7 +552,7 @@ following APA 7 / SAMPL / STROBE and matching
 and supports the same columns. It is the engine to reach for when you
 need flexible link functions, scale effects, or a relaxation of
 proportional odds.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clm_fit</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
 <span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
@@ -523,52 +588,63 @@ proportional odds.</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <div class="section level3">
-<h3 id="scale-effects-and-partial-proportional-odds">Scale effects and partial proportional odds<a class="anchor" aria-label="anchor" href="#scale-effects-and-partial-proportional-odds"></a>
+<h3 id="testing-proportional-odds">Testing proportional odds<a class="anchor" aria-label="anchor" href="#testing-proportional-odds"></a>
 </h3>
-<p><code>clm</code> offers two relaxations of the basic model.</p>
-<p>A <strong>scale</strong> component (<code>scale = ~</code>) lets the
-latent dispersion depend on covariates. The location coefficients remain
-a single shared block, so the table renders normally. Cluster-robust SEs
-are not available for scale fits (<code>sandwich</code> has no
-estimating-functions method for them), so <code>CR*</code> is refused up
-front with a clear <code>spicy_unsupported_vcov</code> error:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">clm_scale</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
-<span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">smoking</span>, scale <span class="op">=</span> <span class="op">~</span> <span class="va">smoking</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span><span class="op">)</span>             <span class="co"># classical: renders normally</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00  0.00  [-0.01,  0.01]   .884 </span></span>
-<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27  0.14  [-0.55,  0.01]   .060 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -3.06  0.24  [-3.53, -2.60]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.05  0.20  [-1.44, -0.66]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.05  0.20  [ 0.66,  1.45]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
-<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
-<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2757.8                               </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
+<p>The shared-slope restriction is a testable hypothesis, and the
+workflow is: fit, <strong>test</strong>, then relax only what fails
+(Long &amp; Freese 2014). <code>ordinal</code> provides a
+likelihood-ratio test per predictor: <code>nominal_test()</code> refits
+the model freeing each predictor across the cut-points and compares, and
+<code>scale_test()</code> does the same for a scale (dispersion) effect.
+For <code>polr</code> there is no built-in equivalent — the classic
+logit-specific check is Brant’s (1990) test (package
+<code>brant</code>); <code>clm</code>’s tests are the likelihood-based
+generalisation.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `validate_vcov_cluster_lists()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for `clm` models.</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> This class supports: classical. Robust standard errors for more model classes are being added; see ?table_regression.</span></span></code></pre></div>
-<p>A <strong>nominal</strong> component (<code>nominal = ~</code>,
-<em>partial</em> proportional odds) lets a predictor’s effect vary
-across the cut-points: it estimates a separate coefficient <strong>per
-cut-point</strong> for the nominal terms. These render as a labelled
+<code class="sourceCode R"><span><span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/nominal.test.html" class="external-link">nominal_test</a></span><span class="op">(</span><span class="va">clm_fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Tests of nominal effects</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; formula: self_rated_health ~ age + sex + smoking + physical_activity</span></span>
+<span><span class="co">#&gt;                   Df  logLik    AIC    LRT Pr(&gt;Chi)  </span></span>
+<span><span class="co">#&gt; &lt;none&gt;               -1373.6 2761.2                  </span></span>
+<span><span class="co">#&gt; age                2 -1373.6 2765.1 0.0526  0.97407  </span></span>
+<span><span class="co">#&gt; sex                2 -1373.2 2764.4 0.7847  0.67547  </span></span>
+<span><span class="co">#&gt; smoking            2 -1371.0 2760.0 5.1474  0.07625 .</span></span>
+<span><span class="co">#&gt; physical_activity  2 -1373.2 2764.4 0.8015  0.66980  </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/nominal.test.html" class="external-link">scale_test</a></span><span class="op">(</span><span class="va">clm_fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Tests of scale effects</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; formula: self_rated_health ~ age + sex + smoking + physical_activity</span></span>
+<span><span class="co">#&gt;                   Df  logLik    AIC     LRT Pr(&gt;Chi)</span></span>
+<span><span class="co">#&gt; &lt;none&gt;               -1373.6 2761.2                 </span></span>
+<span><span class="co">#&gt; age                1 -1373.6 2763.2 0.02185   0.8825</span></span>
+<span><span class="co">#&gt; sex                1 -1373.5 2763.1 0.13106   0.7173</span></span>
+<span><span class="co">#&gt; smoking            1 -1372.8 2761.6 1.55287   0.2127</span></span>
+<span><span class="co">#&gt; physical_activity  1 -1373.5 2762.9 0.28934   0.5906</span></span></code></pre></div>
+<p>Each <code>nominal_test</code> row asks: does freeing this predictor
+across the <span class="math inline">\(K-1\)</span> cut-points (here 2
+extra parameters) improve the fit? No term clearly fails. Smoking is the
+one borderline case (LRT = 5.15, df = 2, p = .076); age, sex and
+physical activity are firmly consistent with proportional odds (p &gt;
+.66), and no term shows a scale effect (p &gt; .21). The decision rule
+is to relax <em>only</em> the terms that fail — here none clearly does,
+so the proportional-odds table above is adequate as the primary
+analysis. Two caveats temper the rule: at moderate sample sizes these
+per-term tests have limited power, and one test per predictor invites
+multiplicity — so a borderline result argues for reporting the relaxed
+fit as a <em>sensitivity analysis</em>, not for switching automatically.
+The next two sections demonstrate the two relaxations, using smoking
+precisely because it is the borderline term.</p>
+</div>
+<div class="section level3">
+<h3 id="partial-proportional-odds-nominal">Partial proportional odds: <code>nominal = ~</code><a class="anchor" aria-label="anchor" href="#partial-proportional-odds-nominal"></a>
+</h3>
+<p>A <strong>nominal</strong> component frees a predictor’s effect
+across the cut-points: a separate coefficient <em>per cut-point</em>
+instead of one shared slope — Peterson &amp; Harrell’s (1990)
+<em>partial</em> proportional odds. These render as a labelled
 <strong><code>Non-proportional effects</code></strong> block — one row
 per cut-point — between the proportional coefficients and the
 thresholds:</p>
@@ -602,14 +678,128 @@ thresholds:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (partial proportional odds).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
+<p>The freed structure is read <em>within</em> the block: the smoking
+effect is concentrated at the lowest split (<code>Poor | Fair</code>: B
+= 0.82, p = .003) and near-null at the two higher splits (B = 0.22 and
+0.24, p &gt; .16). That heterogeneity is what the shared slope averaged
+away, and what relaxing proportional odds buys.</p>
+<p>One trap, and it matters: <strong>nominal coefficients carry the
+opposite sign to location coefficients.</strong> <code>clm</code> folds
+nominal terms into the threshold side of the model — they shift the
+cut-points <span class="math inline">\(\theta_j\)</span> rather than
+enter the slope — so a <em>positive</em> nominal coefficient raises the
+cumulative odds of being <strong>at or below</strong> that cut-point,
+pushing toward the <em>lower</em> categories there. Under
+<code>exponentiate = TRUE</code> the smoking row at
+<code>Poor | Fair</code> becomes OR = 2.28: a smoker’s odds of rating
+health <em>Poor</em> (rather than Fair or better) are 2.28 times a
+non-smoker’s. That is the same worsening of health the proportional fit
+expressed as OR = 0.76 (&lt; 1) on the higher-category side — reverse
+polarity, because the nominal term enters the threshold, not the slope.
+Do not apply the earlier location-coefficient sign rules to this
+block.</p>
 <p>Two caveats for the non-proportional terms, both surfaced by the
 table: robust / cluster SEs are <strong>not available</strong>
 (<code>sandwich</code> has no estimating-functions method, so a robust
 <code>vcov</code> is refused), and <code>ci_method = "profile"</code>
 covers the proportional coefficients only (the non-proportional and
-threshold rows stay Wald). Under <code>exponentiate = TRUE</code> each
-non-proportional coefficient becomes an odds ratio for its
-cut-point.</p>
+threshold rows stay Wald).</p>
+</div>
+<div class="section level3">
+<h3 id="scale-effects-scale">Scale effects: <code>scale = ~</code><a class="anchor" aria-label="anchor" href="#scale-effects-scale"></a>
+</h3>
+<p>A <strong>scale</strong> component lets the <em>dispersion</em> of
+the latent response depend on covariates, relaxing the constant-variance
+assumption of the basic model. The motivating question is about spread,
+not location: is latent health more <em>variable</em> among smokers than
+non-smokers? Test it like any nested pair:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">clm_loc</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
+<span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">smoking</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">clm_scale</span> <span class="op">&lt;-</span> <span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">clm</a></span><span class="op">(</span></span>
+<span>  <span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">smoking</span>, scale <span class="op">=</span> <span class="op">~</span> <span class="va">smoking</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">sochealth</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova</a></span><span class="op">(</span><span class="va">clm_loc</span>, <span class="va">clm_scale</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Likelihood ratio tests of cumulative link models:</span></span>
+<span><span class="co">#&gt;  </span></span>
+<span><span class="co">#&gt;           formula:                          scale:   link: threshold:</span></span>
+<span><span class="co">#&gt; clm_loc   self_rated_health ~ age + smoking ~1       logit flexible  </span></span>
+<span><span class="co">#&gt; clm_scale self_rated_health ~ age + smoking ~smoking logit flexible  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;           no.par    AIC  logLik LR.stat df Pr(&gt;Chisq)</span></span>
+<span><span class="co">#&gt; clm_loc        5 2757.3 -1373.6                      </span></span>
+<span><span class="co">#&gt; clm_scale      6 2757.8 -1372.9   1.506  1     0.2197</span></span></code></pre></div>
+<p>No evidence here (LR = 1.51, df = 1, p = .220). The scale coefficient
+lives on the <strong>log standard-deviation</strong> metric: the
+estimate of 0.09 says smokers’ latent SD is exp(0.09) ≈ 1.10 — about 10%
+larger — but the CI includes 0 on the log scale, so the data cannot
+distinguish it from equal spread. The table renders the location
+coefficients, a subordinate <strong><code>Scale effects</code></strong>
+block for the scale coefficients, and the thresholds; the footer states
+the log-SD scale. Scale rows are never exponentiated — their exponential
+is a ratio of latent standard deviations, not an odds ratio:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>   -0.00  0.00  [-0.01,  0.01]   .884 </span></span>
+<span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>   -0.27  0.14  [-0.55,  0.01]   .060 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Scale effects:     <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    smokingYes       <span style="color: #9E9E9E;">│</span>    0.09  0.08  [-0.06,  0.24]   .224 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Thresholds:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Poor | Fair      <span style="color: #9E9E9E;">│</span>   -3.06  0.24  [-3.53, -2.60]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>   -1.05  0.20  [-1.44, -0.66]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>    1.05  0.20  [ 0.66,  1.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2757.8                               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Scale effects: covariate effects on the log standard deviation of the latent response.</span></span></span></code></pre></div>
+<p>Cluster-robust SEs are not available for scale fits
+(<code>sandwich</code> has no estimating-functions method for them), so
+<code>CR*</code> is refused up front with a clear
+<code>spicy_unsupported_vcov</code> error:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `validate_vcov_cluster_lists()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for `clm` models.</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> This class supports: classical. Robust standard errors for more model classes are being added; see ?table_regression.</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="choosing-an-ordinal-specification">Choosing an ordinal specification<a class="anchor" aria-label="anchor" href="#choosing-an-ordinal-specification"></a>
+</h3>
+<p>The driving question is what to do when proportional odds fails — or
+was never plausible.</p>
+<ul>
+<li>When the tests pass, the shared-slope cumulative model is the most
+parsimonious choice: one slope per predictor, one table row each.</li>
+<li>When a <em>few</em> predictors fail, free just those with
+<code>nominal = ~</code> and report the freed fit, at least as a
+sensitivity analysis.</li>
+<li>When the assumption fails <em>broadly</em>, or the ordering of the
+response is itself doubtful, abandon ordinality for <strong>multinomial
+logit</strong> — the standard unconstrained alternative (Long &amp;
+Freese 2014), compared to the ordinal fit by AIC — covered in the <a href="table-regression-multinomial.html">multinomial vignette</a>.</li>
+<li>For asymmetric responses and grouped survival times, the
+<strong>cloglog</strong> link (<code>method = "cloglog"</code> in
+<code>polr</code>, <code>link = "cloglog"</code> in <code>clm</code>)
+replaces the odds-ratio reading with a hazard-ratio one, connecting the
+link menu above to a modelling rationale.</li>
+</ul>
 </div>
 </div>
 <div class="section level2">
@@ -619,7 +809,7 @@ cut-point.</p>
 different fits can be compared, with
 <code>table_regression(list(...))</code>. Per-model <code>vcov</code> is
 supplied as a list:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_min</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">polr</a></span><span class="op">(</span><span class="va">self_rated_health</span> <span class="op">~</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span>, Hess <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Unadjusted <span class="op">=</span> <span class="va">fit_min</span>, Adjusted <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span>
@@ -686,7 +876,7 @@ broom-style tibble, and — with the corresponding Suggests package — rich
 <code>gt</code>, <code>flextable</code>, <code>tinytable</code>, Excel,
 or Word tables. The structure (the per-category AME matrix included)
 carries through to every format.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          Variable       B AME Poor AME Fair AME Good AME Very good</span></span>
 <span><span class="co">#&gt; 1             age   -0.00     0.00     0.00    -0.00         -0.00</span></span>
@@ -695,7 +885,7 @@ carries through to every format.</p>
 <span><span class="co">#&gt; 4            Male    0.02    -0.00    -0.00     0.00          0.00</span></span>
 <span><span class="co">#&gt; 5        smoking:                                                 </span></span>
 <span><span class="co">#&gt; 6       No (ref.)     –</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
@@ -1234,27 +1424,29 @@ probability.
 </div>
 </div>
 <p><a href="https://broom.tidymodels.org" class="external-link"><code>broom::tidy()</code></a>
-returns the long frame, one row per <code>(term, estimate_type)</code>;
-per-category AME rows carry the response category in the
-<code>outcome_level</code>-derived structure:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+returns the long frame, one row per
+<code>(term, estimate_type, outcome_level)</code>; each per-category AME
+row is labelled by its response category in the
+<code>outcome_level</code> column:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 23 × 15</span></span></span>
-<span><span class="co">#&gt;    model_id outcome    term  estimate_type estimate std.error conf.low conf.high</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rate… age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span>  -<span style="color: #BB0000;">3.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">399</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rate… age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span>  -<span style="color: #BB0000;">9.86</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.001<span style="text-decoration: underline;">23</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rate… age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>0 -<span style="color: #BB0000;">1.24</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">099</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rate… age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span>  -<span style="color: #BB0000;">1.50</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.001<span style="text-decoration: underline;">21</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rate… age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>   -<span style="color: #BB0000;">8.09</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.006<span style="text-decoration: underline;">50</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rate… sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>   -<span style="color: #BB0000;">1.14</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.009<span style="text-decoration: underline;">72</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rate… sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>    -<span style="color: #BB0000;">3.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.029<span style="text-decoration: underline;">9</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> M1       self_rate… sexM… ame            2.62<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.001<span style="text-decoration: underline;">66</span>   -<span style="color: #BB0000;">3.00</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.003<span style="text-decoration: underline;">52</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> M1       self_rate… sexM… ame            3.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.020<span style="text-decoration: underline;">4</span>    -<span style="color: #BB0000;">3.67</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.043<span style="text-decoration: underline;">1</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> M1       self_rate… sexM… B              1.73<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.110     -<span style="color: #BB0000;">1.97</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.232    </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 23 × 16</span></span></span>
+<span><span class="co">#&gt;    model_id outcome         outcome_level term  estimate_type estimate std.error</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rated_hea… Poor          age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rated_hea… Fair          age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rated_hea… Good          age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rated_hea… <span style="color: #BB0000;">NA</span>            age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rated_hea… Poor          sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rated_hea… Fair          sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> M1       self_rated_hea… Good          sexM… ame            2.62<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.001<span style="text-decoration: underline;">66</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> M1       self_rated_hea… Very good     sexM… ame            3.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.020<span style="text-decoration: underline;">4</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> M1       self_rated_hea… <span style="color: #BB0000;">NA</span>            sexM… B              1.73<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.110    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 13 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: statistic &lt;dbl&gt;, df &lt;dbl&gt;, p.value &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   df &lt;dbl&gt;, p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -1262,9 +1454,16 @@ per-category AME rows carry the response category in the
 <ul>
 <li>Agresti, A. (2010). <em>Analysis of Ordinal Categorical Data</em>
 (2nd ed.). Wiley.</li>
+<li>Brant, R. (1990). Assessing proportionality in the proportional odds
+model for ordinal logistic regression. <em>Biometrics</em>, 46(4),
+1171–1178.</li>
 <li>Long, J. S., &amp; Freese, J. (2014). <em>Regression Models for
 Categorical Dependent Variables Using Stata</em> (3rd ed.). Stata
 Press.</li>
+<li>Peterson, B., &amp; Harrell, F. E. (1990). Partial proportional odds
+models for ordinal response variables. <em>Journal of the Royal
+Statistical Society: Series C (Applied Statistics)</em>, 39(2),
+205–217.</li>
 <li>Williams, R. (2012). Using the margins command to estimate and
 interpret adjusted predictions and marginal effects. <em>The Stata
 Journal</em>, 12(2), 308–331.</li>

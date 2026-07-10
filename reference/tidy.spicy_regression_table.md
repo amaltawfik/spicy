@@ -39,12 +39,15 @@ A `tbl_df` (when `tibble` is installed) or a plain `data.frame`.
 
 ## Details
 
-`tidy()` returns one row per `(model_id, term, estimate_type)` triplet,
-with `estimate_type` in
+`tidy()` returns one row per
+`(model_id, term, estimate_type, outcome_level)` combination, with
+`estimate_type` in
 `c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2")`.
-Reference-row placeholders (factor reference levels) and singular
-coefficients (NA estimates) are dropped. Columns:
-`model_id, outcome, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, p.value, test_type, is_intercept, factor_term, factor_level`.
+`outcome_level` names the response category of per-category rows
+(ordinal / multinomial average marginal effects) and is `NA` for
+single-outcome models. Reference-row placeholders (factor reference
+levels) and singular coefficients (NA estimates) are dropped. Columns:
+`model_id, outcome, outcome_level, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, p.value, test_type, is_intercept, factor_term, factor_level`.
 
 `glance()` returns one row per `(model_id, outcome)` with model-level
 statistics. Columns:

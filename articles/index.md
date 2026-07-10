@@ -113,7 +113,8 @@
   probability matrix, cluster-robust variance, the
   [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) and
   [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) engines,
-  and the partial-proportional-odds caveat.
+  testing the proportional-odds assumption, and the partial proportional
+  odds and scale relaxations.
 
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md):

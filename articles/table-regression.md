@@ -1756,19 +1756,20 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 out <- table_regression(fit, standardized = "refit")
 
 broom::tidy(out)
-#> # A tibble: 8 × 15
-#>   model_id outcome     term  estimate_type estimate std.error conf.low conf.high
-#>   <chr>    <chr>       <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
-#> 1 M1       wellbeing_… (Int… B              65.2       1.66    62.0      68.5   
-#> 2 M1       wellbeing_… (Int… beta           -0.0961    0.0431  -0.181    -0.0116
-#> 3 M1       wellbeing_… age   B               0.0465    0.0307  -0.0137    0.107 
-#> 4 M1       wellbeing_… age   beta            0.0439    0.0290  -0.0130    0.101 
-#> 5 M1       wellbeing_… sexM… B               3.86      0.905    2.08      5.63  
-#> 6 M1       wellbeing_… sexM… beta            0.247     0.0579   0.133     0.360 
-#> 7 M1       wellbeing_… smok… B              -1.72      1.11    -3.89      0.454 
-#> 8 M1       wellbeing_… smok… beta           -0.110     0.0708  -0.249     0.0290
-#> # ℹ 7 more variables: statistic <dbl>, df <dbl>, p.value <dbl>,
-#> #   test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
+#> # A tibble: 8 × 16
+#>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
+#>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
+#> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
+#> 2 M1       wellbe… NA            (Int… beta           -0.0961    0.0431  -0.181 
+#> 3 M1       wellbe… NA            age   B               0.0465    0.0307  -0.0137
+#> 4 M1       wellbe… NA            age   beta            0.0439    0.0290  -0.0130
+#> 5 M1       wellbe… NA            sexM… B               3.86      0.905    2.08  
+#> 6 M1       wellbe… NA            sexM… beta            0.247     0.0579   0.133 
+#> 7 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
+#> 8 M1       wellbe… NA            smok… beta           -0.110     0.0708  -0.249 
+#> # ℹ 8 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> #   p.value <dbl>, test_type <chr>, is_intercept <lgl>, factor_term <chr>,
+#> #   factor_level <chr>
 broom::glance(out)
 #> # A tibble: 1 × 15
 #>   model_id outcome       nobs weighted_nobs r.squared adj.r.squared omega2 sigma
