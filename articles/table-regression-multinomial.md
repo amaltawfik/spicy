@@ -14,13 +14,20 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
 multi-model layouts, broom integration), and [*Ordinal regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
-covers the case where the categories *are* ordered. Here we focus on
-what is specific to nominal outcomes: one column of effects per outcome
-category, the choice of reference category, and the distance between a
-coefficient’s sign and its effect on a probability.
+covers the case where the categories *are* ordered. Order alone does not
+decide the model: the ordinal model buys parsimony — one slope per
+predictor instead of \\J-1\\ — at the price of the parallel-regressions
+constraint, and when that constraint is implausible, the multinomial
+model is the standard unconstrained alternative (Long & Freese 2014), at
+the cost of extra coefficients and category-by-category interpretation.
+An approximate check compares the two fits directly by likelihood ratio
+or AIC. Here we focus on what is specific to nominal outcomes: one
+column of effects per outcome category, the choice of reference
+category, and why a coefficient’s sign need not be the direction of its
+effect on a probability.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-supports both engines:
+supports two engines:
 
 - **[`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html)** —
   the baseline-category logit model on characteristics of the *person*
@@ -48,7 +55,7 @@ gives ordered factors polynomial contrasts by default — the model would
 estimate `.L` (linear) and `.Q` (quadratic) components that fit
 identically but are awkward to report. Applied tables conventionally
 show treatment dummies against a reference level (Fox & Weisberg 2019),
-so we drop the ordering and keep the level order:
+so we convert to an unordered factor, preserving the level sequence:
 
 ``` r
 
@@ -69,14 +76,22 @@ its effect on each comparison — and the \\J-1\\ fitted equations
 determine the logit for *every* pair of categories, so nothing is lost
 by picking one baseline. Fitting separate binary logits instead of the
 simultaneous model is consistent but less efficient; the loss is minor
-when the baseline is the most frequent category (Begg & Gray 1984) — and
-Stata’s `mlogit` defaults to the most frequent outcome.
+when the baseline is the most frequent category (Begg & Gray 1984). In
+the simultaneous fit the baseline changes nothing about the model, but
+it does set which contrasts the table displays — and contrasts against a
+well-populated category are precisely estimated, which is why Stata’s
+`mlogit` defaults to the most frequent outcome.
 [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) uses the
-factor’s first level — here `Employed`, which happens to be both first
-and most frequent: large and substantively meaningful, exactly what a
-reference should be.
+factor’s first level — here `Employed`, which is also the most frequent,
+so R’s positional default coincides with the frequency-based choice:
+large, so the displayed contrasts are precise, and substantively
+meaningful.
 
 ## Basic table
+
+`trace = FALSE` only silences the optimizer’s iteration log; unlike
+`polr()`, [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html)
+needs no `Hess = TRUE`.
 
 ``` r
 
@@ -110,8 +125,9 @@ table_regression(fit)
 This is the layout multinomial results are published in: predictors as
 rows, **one column group per non-reference outcome category**, so a
 predictor’s effects on the \\J-1\\ comparisons sit side by side on its
-row (Long & Freese 2014; the same arrangement SPSS’s NOMREG and most
-journals print). Reading it:
+row (Long & Freese 2014) — the arrangement most journals print. Raw
+`mlogit` and NOMREG output instead stack the same \\J-1\\ equations as
+row blocks; side by side is the publication convention. Reading it:
 
 - Each column group is one **equation against the reference**: the
   `Tertiary` cell under `Unemployed` is the tertiary-education
@@ -120,9 +136,9 @@ journals print). Reading it:
   “base outcome” line; every cell in the table answers “compared to
   `Employed`”.
 - The table is wide by construction, so the default trims each group to
-  **B, SE, p** — the same compaction multi-model tables apply. Atomic
-  tokens restore anything, e.g. `show_columns = c("b", "ci", "p")` for
-  CIs.
+  **B, SE, p** — the same compaction applied to multi-model tables.
+  Atomic tokens restore anything, e.g.
+  `show_columns = c("b", "ci", "p")` for CIs.
 - To label the comparisons explicitly — the style some journals ask for
   — relabel the spanners:
   `outcome_labels = c("Student vs Employed", "Unemployed vs Employed", "Inactive vs Employed")`.
@@ -134,8 +150,14 @@ journals print). Reading it:
   ML fits and Stata `mlogit`; `nnet` itself prints no p-values.
 - The model-fit block reports **n** and **AIC**, once, under the first
   group — they belong to the model, not to an equation.
-- In the call, `trace = FALSE` just silences the optimizer’s iteration
-  log; unlike `polr()`, no `Hess = TRUE` is needed.
+
+Before reading any cell, the whole model earns its keep: against the
+intercept-only fit, the likelihood-ratio chi-squared is 41.9 on 12
+degrees of freedom (p \< .001) — the test Stata prints in its `mlogit`
+header and the first number Long & Freese read. McFadden’s pseudo-R² is
+1 − (−1242.9)/(−1263.8) = 0.017: a comparative index, not a share of
+explained variance (Long & Freese 2014) — the contrast between the tiny
+value and the decisive test is exactly why it should not be read as one.
 
 One scope note: `multinom` fits report **classical Wald-z inference
 only** — a robust or cluster-robust `vcov` request is refused with an
@@ -175,12 +197,15 @@ table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #> Reference outcome: Employed.
 ```
 
-Each value is an **odds ratio against the reference outcome**: compared
-with lower-secondary graduates of the same age and sex, tertiary
-graduates have 0.29 times the odds of being unemployed rather than
-employed — a 71% reduction, the education gradient the table is really
-about. Formally it is the odds ratio of the *conditional* distribution
-restricted to the two categories in the comparison (Agresti 2013).
+Each predictor cell is an **odds ratio against the reference outcome**
+(the exponentiated intercepts are baseline *odds* — each category’s odds
+versus `Employed` at the reference levels and age 0 — not ratios):
+compared with lower-secondary graduates of the same age and sex,
+tertiary graduates’ odds of being unemployed rather than employed are
+0.29 times as large — a 71% reduction in those odds, the education
+gradient the table is really about. Formally it is the odds ratio of the
+*conditional* distribution restricted to the two categories in the
+comparison (Agresti 2013).
 
 One terminology note, because readers will meet it: Stata’s
 `mlogit, rrr` labels these same numbers **relative-risk ratios** —
@@ -235,23 +260,90 @@ table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
 Against `Employed`, education looked irrelevant for the `Student`
 contrast; against `Unemployed`, the whole `Tertiary` row is strong (OR
 3.94, p \< .001 in the `Student` group; even the `Inactive` group
-reaches p = .005; only `Upper secondary` × `Inactive` stays
+reaches p = .005; only `Upper secondary` in the `Inactive` group stays
 inconclusive). The p-values moved because the *questions* changed, not
 the model — a multinomial table only ever shows \\J-1\\ of the
 \\J(J-1)/2\\ pairwise comparisons, and any of the others can be
 recovered by releveling (Agresti 2013; Long 1997). Report the baseline
 that makes your substantive comparisons direct.
 
+## Does a predictor matter at all?
+
+The per-cell p-values just moved with the baseline, so none of them
+answers the question a reviewer asks first. The baseline-invariant
+answer is the **joint likelihood-ratio test** that all \\J-1\\
+coefficients of a predictor are zero — the first testing step of Long &
+Freese (2014):
+
+``` r
+
+fit_noeduc <- multinom(employment_status ~ age + sex, data = d,
+                       trace = FALSE)
+anova(fit_noeduc, fit)
+#>                   Model Resid. df Resid. Dev   Test    Df LR stat.     Pr(Chi)
+#> 1             age + sex      3591   2522.079           NA       NA          NA
+#> 2 age + sex + education      3585   2485.786 1 vs 2     6 36.29259 2.41817e-06
+```
+
+Education matters decisively — chi-squared 36.29 on 6 degrees of freedom
+(2 parameters in each of 3 equations), p \< .001 — even though its
+`Student`-equation cells looked unconvincing one table ago. The trap
+runs in both directions: sex shows one tempting cell (`Unemployed`, p =
+.172) but is jointly null (chi-squared 2.26 on 3 df, p = .520).
+Individually weak cells can be jointly overwhelming, and one suggestive
+cell among \\J-1\\ can be noise. `car::Anova(fit)` runs this test for
+every predictor in one call — the equivalent of Stata’s `mlogtest, lr`.
+
+## Can two categories be combined?
+
+Before deciding how to report \\J\\ categories, the textbook workflow
+asks whether all \\J\\ are distinguishable at all (Long & Freese 2014):
+if no covariate separates outcomes \\m\\ and \\n\\, the data cannot tell
+them apart, and the model may be estimating noise between them. The
+likelihood-ratio version restricts the sample to the two categories and
+tests a binary logit against the intercept-only model (Cramer & Ridder
+1991):
+
+``` r
+
+sub <- droplevels(subset(d, employment_status %in% c("Student", "Inactive")))
+y <- as.integer(sub$employment_status == "Student")
+anova(glm(y ~ 1, binomial(), sub),
+      glm(y ~ age + sex + education, binomial(), sub), test = "LRT")
+#> Analysis of Deviance Table
+#> 
+#> Model 1: y ~ 1
+#> Model 2: y ~ age + sex + education
+#>   Resid. Df Resid. Dev Df Deviance Pr(>Chi)
+#> 1       263     364.15                     
+#> 2       259     357.20  4   6.9505   0.1385
+```
+
+`Student` and `Inactive` are not separated — chi-squared 6.95 on 4
+degrees of freedom, p = .139. Running all six pairs tells the honest
+story of these data: only `Unemployed` is sharply distinguished from the
+rest (versus `Employed`, chi-squared 33.6; versus `Student`, 22.6; both
+p \< .001), while `Employed`, `Student`, and `Inactive` are not mutually
+separated by age, sex, and education. Two cautions close the step:
+failing to reject does not prove interchangeability — the smaller cells
+give the test little power — and combining is ultimately a substantive
+decision: employment states remain distinct constructs even when these
+covariates do not separate them.
+
 ## The sign trap, and marginal effects
 
 The most common misreading of a multinomial table is to treat a
 coefficient’s sign as the direction of the effect on that category’s
-*probability*. It is not: the marginal effect of \\x_k\\ on \\P(Y=m)\\
-is \\P_m(\beta\_{k,m} - \sum_j \beta\_{k,j} P_j)\\ — the coefficient
-*minus a probability-weighted average of all categories’ coefficients* —
-so its sign can differ from the coefficient’s, and can even change
-across the range of \\x_k\\ (Long & Freese 2014; Wulff 2015). The
-categories compete for probability mass.
+*probability*. The two need not agree: for a continuous \\x_k\\, the
+marginal effect on \\P(Y=m)\\ is \\P_m(\beta\_{k,m} - \sum\_{j=1}^{J}
+\beta\_{k,j} P_j)\\, with \\\beta\_{k,J} = 0\\ for the baseline so the
+sum runs over all \\J\\ categories — the coefficient *minus a
+probability-weighted average of every category’s coefficient* — so its
+sign can differ from the coefficient’s, and can even change across the
+range of \\x_k\\ (Long & Freese 2014; Wulff 2015). For a factor, the AME
+below is instead the average difference in predicted probabilities
+between levels; the same competition logic applies. The categories
+compete for probability mass.
 
 The probability-scale summary is the per-category **average marginal
 effect** (AME): one AME column per outcome category, next to that
@@ -293,8 +385,11 @@ Three things to read off, using the `Tertiary` row:
   probability effect in the table (+0.14 for `Tertiary`, second in
   magnitude only to `Unemployed`’s −0.16). The log-odds side never shows
   this; the probability side must, because the effects on all \\J\\
-  categories **sum to ≈ 0** across each row — the mass that tertiary
-  education moves out of `Unemployed` lands mainly in `Employed`.
+  categories **sum to exactly zero** across each row (the \\J\\
+  probabilities sum to 1, so whatever probability a predictor moves out
+  of one category must land in the others; displayed values can miss 0
+  only by rounding) — the mass that tertiary education moves out of
+  `Unemployed` lands mainly in `Employed`.
 - Cells are **on the probability scale**: −0.16 is a drop of 16
   **percentage points** in the probability of unemployment for tertiary
   relative to lower-secondary education, averaged over the observed
@@ -307,6 +402,34 @@ Three things to read off, using the `Tertiary` row:
   probability-weighted average of all the coefficients, the probability
   effect can flip sign — the reason Wulff (2015) recommends never
   interpreting a multinomial model from its coefficient signs alone.
+
+An AME is an average of *changes*; the concrete interpretation device of
+Long & Freese (2014) is the **predicted probabilities** those changes
+move between, evaluated at named profiles:
+
+``` r
+
+profiles <- data.frame(
+  education = levels(d$education),
+  sex       = "Female",
+  age       = mean(d$age[!is.na(d$employment_status)])
+)
+round(predict(fit, newdata = profiles, type = "probs"), 3)
+#>   Employed Student Unemployed Inactive
+#> 1    0.571   0.082      0.235    0.112
+#> 2    0.659   0.130      0.121    0.089
+#> 3    0.703   0.116      0.084    0.097
+```
+
+Read the `Unemployed` column down the education gradient: 0.235, 0.121,
+0.084. For this profile — a woman of average age — the −0.16 AME is a
+fall from roughly one in four to under one in ten; the baseline matters
+as much as the change. (The profile’s own gap, −0.151, sits close to the
+sample-averaged −0.160 — they answer slightly different questions.) Base
+[`predict()`](https://rdrr.io/r/stats/predict.html) returns no standard
+errors for these predictions;
+[`marginaleffects::avg_predictions()`](https://rdrr.io/pkg/marginaleffects/man/predictions.html)
+supplies delta-method inference on the same quantities.
 
 ## An ordinal predictor: scores or dummies?
 
@@ -376,8 +499,10 @@ The change rows read: freeing education from the linear trend buys a
 chi-squared of 4.52 on 3 degrees of freedom (one per equation), p = .211
 — no evidence the dummies improve on the scores, and AIC agrees (2514.3
 vs 2515.8). On Agresti’s grounds the scores model is preferable when it
-fits: simpler to report, and more powerful because it concentrates the
-trend in one parameter per equation instead of two.
+fits: simpler to report, and more powerful against a genuine trend,
+because it concentrates that trend in one parameter per equation instead
+of two — an advantage that reverses if the true pattern is non-monotone
+(Agresti 2007).
 
 Three caveats keep the decision honest. A non-significant test does not
 *prove* linearity — in modest samples several codings fit adequately
@@ -385,10 +510,10 @@ Three caveats keep the decision honest. A non-significant test does not
 which is a substantive claim about education levels, not a statistical
 default (Agresti 2007, sec. 2.5.4). And testing first, then reporting
 the scores model as if it had been chosen in advance, inflates the Type
-I error of the subsequent test (Grambsch & O’Brien 1991) — with only
-three levels the dummies cost one extra parameter per equation, and
-Harrell (2015) reasonably recommends just keeping them. Present the LRT
-as a transparent simplification decision, not a proof.
+I error of the subsequent test (Grambsch & O’Brien 1991). With only
+three levels the dummies cost one extra parameter per equation, so
+Harrell (2015) recommends simply keeping them. Present the LRT as a
+transparent simplification decision, not a proof.
 
 ## Independence of irrelevant alternatives, briefly
 
@@ -416,8 +541,8 @@ the catch rate of each fishing mode — the coefficient is one per
 *attribute*, shared across alternatives (McFadden 1974; Croissant 2020).
 The `mlogit` engine renders both kinds of covariate in one table. The
 classic `Fishing` data: 1182 anglers choose among four modes; `price`
-and `catch` vary by alternative, `income_k` (income in thousands of
-dollars) describes the angler:
+and `catch` vary by alternative, while `income_k` (income in thousands
+of dollars) describes the angler:
 
 ``` r
 
@@ -458,13 +583,15 @@ table_regression(fit_choice, exponentiate = TRUE,
 
 The table comes in **two segments**, the presentation Stata’s `asclogit`
 prints. The `Alternative-invariant` section holds the model’s
-centrepiece: the attribute coefficients (`price`, `catch`), one row
-each, shared across alternatives — one more dollar of price multiplies a
-mode’s odds by 0.98 *whichever mode it is*. Then one section per
-non-reference alternative (`boat`, `charter`, `pier`) collects that
-alternative’s intercept and its **case-specific** coefficients:
-`income_k` works like `multinom` and needs one coefficient per
-comparison against the reference — the footer’s
+centerpiece: the attribute coefficients (`price`, `catch`), one row
+each, shared across alternatives — one more dollar on a mode’s own price
+multiplies the odds of choosing that mode over any other alternative by
+0.98, other modes’ prices held fixed, *whichever mode it is*. Then one
+section per non-reference alternative (`boat`, `charter`, `pier`)
+collects that alternative’s intercept and its **case-specific**
+coefficients: `income_k` enters as it would under
+[`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html), one
+coefficient per comparison against the reference — the footer’s
 `Reference alternative: beach.` names it, so each section reads “this
 alternative versus beach”. The footer’s `n` counts **choice situations**
 (1182 anglers), not the 4728 rows of the long-format data: each angler
@@ -480,11 +607,11 @@ mis-scales the sandwich for mlogit’s per-choice-situation scores.
 
 ## Several models side by side
 
-Multinomial fits compare like any other class — here the education
-gradient before and after adjustment. With several models the column
-groups are needed for the *models*, so the table falls back to the
-one-row-per-comparison layout (`Student: Tertiary` rows), as does
-`nested = TRUE` above:
+Multinomial fits can be compared like fits of any other model class —
+here the education gradient before and after adjustment. With several
+models the column groups are needed for the *models*, so the table falls
+back to the one-row-per-comparison layout (`Student: Tertiary` rows), as
+does `nested = TRUE` above:
 
 ``` r
 
@@ -532,6 +659,13 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
 #> Reference outcome: Employed.
 ```
+
+Adjustment changes nothing here: the education block is identical to two
+decimals across the columns — `Tertiary` is OR 0.29 in the
+`Unemployed`-versus-`Employed` equation both times — because age and
+sex, at best weakly related to employment status in this sample (their
+smallest p is .097), have nothing to confound the education gradient
+with.
 
 ## Output formats
 
