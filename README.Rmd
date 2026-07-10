@@ -70,7 +70,14 @@ extraction, and row-wise summaries.
   report their random effects as table rows with an optional
   boundary-correct per-term test; ordinal models report their
   thresholds; zero-inflated and hurdle models report every model
-  component.
+  component. Survival models go beyond hazard ratios: adjusted
+  restricted-mean-survival-time and risk differences by
+  g-computation (`tau` / `at_time`), for Cox fits (stratified
+  included) and parametric AFT fits, in single tables and in the
+  univariable screen.
+- **Univariable screening** with `table_regression_uv()`:
+  one-predictor-at-a-time models merged with the multivariable fit,
+  per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
 - **Variable inspection** with `varlist()` and `vl()`: names,
   labels, values, classes, and missing data.
 - **Codebooks** with `code_book()`: interactive and exportable, for

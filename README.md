@@ -25,11 +25,11 @@ survey data workflows.
 
 ## Features
 
-Every spicy table prints as readable text in the console and exports
-to gt, tinytable, flextable, Excel, Word, or the clipboard, following
-APA conventions. Around the tables, spicy provides the survey-data
-tools that feed them: variable inspection, codebooks, label
-extraction, and row-wise summaries.
+Every spicy table prints as readable text in the console and exports to
+gt, tinytable, flextable, Excel, Word, or the clipboard, following APA
+conventions. Around the tables, spicy provides the survey-data tools
+that feed them: variable inspection, codebooks, label extraction, and
+row-wise summaries.
 
 - **Frequency tables** with `freq()`.
 - **Cross-tabulations** with `cross_tab()`: percentages, weights,
@@ -50,16 +50,22 @@ extraction, and row-wise summaries.
   below): classical / heteroskedasticity-robust / cluster-robust /
   bootstrap / jackknife variance with each class’s field-standard
   backend, standardised coefficients, family-aware `exponentiate` (OR /
-  IRR / HR / RR / MR, link-gated), Wald or
-  profile-likelihood CIs, average marginal effects (per-category for
-  ordinal and multinomial models), partial *f²* / *η²* / *ω²* / *χ²*
-  effect sizes, class-aware fit statistics (pseudo-*R²*, Nakagawa
-  marginal / conditional *R²*, ICC), hierarchical model comparisons with
-  the correct nested test per class, and multiple-comparison adjustment.
-  Mixed models report their random effects as table rows with an
-  optional boundary-correct per-term test; ordinal models report their
-  thresholds; zero-inflated and hurdle models report every model
-  component.
+  IRR / HR / RR / MR, link-gated), Wald or profile-likelihood CIs,
+  average marginal effects (per-category for ordinal and multinomial
+  models), partial *f²* / *η²* / *ω²* / *χ²* effect sizes, class-aware
+  fit statistics (pseudo-*R²*, Nakagawa marginal / conditional *R²*,
+  ICC), hierarchical model comparisons with the correct nested test per
+  class, and multiple-comparison adjustment. Mixed models report their
+  random effects as table rows with an optional boundary-correct
+  per-term test; ordinal models report their thresholds; zero-inflated
+  and hurdle models report every model component. Survival models go
+  beyond hazard ratios: adjusted restricted-mean-survival-time and risk
+  differences by g-computation (`tau` / `at_time`), for Cox fits
+  (stratified included) and parametric AFT fits, in single tables and in
+  the univariable screen.
+- **Univariable screening** with `table_regression_uv()`:
+  one-predictor-at-a-time models merged with the multivariable fit,
+  per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
 - **Variable inspection** with `varlist()` and `vl()`: names, labels,
   values, classes, and missing data.
 - **Codebooks** with `code_book()`: interactive and exportable, for
@@ -247,8 +253,9 @@ table_categorical(
 #>  Variable            │   n      %    
 #> ─────────────────────┼───────────────
 #>  Current smoker      │               
-#>    No                │  926    78.8  
-#>    Yes               │  249    21.2  
+#>    No                │  926    77.2  
+#>    Yes               │  249    20.8  
+#>    (Missing)         │   25     2.1  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity   │               
 #>    No                │  650    54.2  
@@ -270,8 +277,9 @@ table_categorical(
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
 #>  Current smoker    │                                                         
-#>    No              │        179               69.6                415        
-#>    Yes             │         78               30.4                112        
+#>    No              │        179               68.6                415        
+#>    Yes             │         78               29.9                112        
+#>    (Missing)       │          4                1.5                 12        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │                                                         
 #>    No              │        177               67.8                310        
@@ -280,8 +288,9 @@ table_categorical(
 #>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
 #> ───────────────────┼────────────────────────────────────────────────────
 #>  Current smoker    │                                                    
-#>    No              │       78.7            332         84.9       926   
-#>    Yes             │       21.3             59         15.1       249   
+#>    No              │       77.0            332         83.0       926   
+#>    Yes             │       20.8             59         14.8       249   
+#>    (Missing)       │        2.2              9          2.2        25   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │                                                    
 #>    No              │       57.5            163         40.8       650   
@@ -290,8 +299,9 @@ table_categorical(
 #>  Variable          │ Total %    p    Cramer's V 
 #> ───────────────────┼────────────────────────────
 #>  Current smoker    │          <.001     .14     
-#>    No              │  78.8                      
-#>    Yes             │  21.2                      
+#>    No              │  77.2                      
+#>    Yes             │  20.8                      
+#>    (Missing)       │   2.1                      
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │          <.001     .21     
 #>    No              │  54.2                      
@@ -431,7 +441,7 @@ table_regression(fit_mixed)
 #> Note. Linear mixed-effects regression.
 #> Std. errors: Wald (model-based).
 #> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
+#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 See [Categorical summary
