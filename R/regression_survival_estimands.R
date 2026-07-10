@@ -205,6 +205,14 @@
   # (the table has no HR row for them either), and standardization
   # deliberately holds each subject's stratum fixed.
   rhs_vars <- setdiff(rhs_vars, .coxph_strata_vars(fit))
+  .estimand_contrast_rows(data, rhs_vars, curve_stats)
+}
+
+
+# The counterfactual contrast loop shared by the coxph and survreg
+# engines: factor levels contrast against the reference, numeric
+# predictors take the +1-unit contrast (the AME convention).
+.estimand_contrast_rows <- function(data, rhs_vars, curve_stats) {
   rows <- list()
   for (v in rhs_vars) {
     col <- data[[v]]
@@ -239,6 +247,95 @@
     # model matrix but cannot take +1): skipped -- no estimand row.
   }
   do.call(rbind, rows)
+}
+
+
+# ---- survreg engine --------------------------------------------------------
+
+# Parametric (AFT) g-computation: survreg curves are closed-form, so
+# the standardized survival is smooth -- S(t) = mean_i(1 - psurvreg(t;
+# lp_i, scale)) -- integrated numerically to tau. Cross-validated
+# against flexsurv::standsurv (type = "rmst", contrast = "difference")
+# on the same Weibull fit: exact; and against the closed-form
+# exponential RMST: machine precision.
+.survreg_estimand_gates <- function(fit, model_id) {
+  if (length(fit$scale) > 1L ||
+        !is.null(attr(fit$terms, "specials")$strata)) {
+    spicy_abort(
+      c(sprintf("RMST / risk-difference columns are not available for a stratified survreg fit (%s).",
+                model_id),
+        "i" = "Per-stratum scale parameters are not standardized; refit without `strata()`."),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (!is.character(fit$dist)) {
+    spicy_abort(                                                      # nocov start
+      sprintf("RMST / risk-difference columns need a named survreg distribution (%s).",
+              model_id),
+      class = "spicy_invalid_input"
+    )                                                                 # nocov end
+  }
+  invisible(NULL)
+}
+
+
+.survreg_estimand_data <- function(fit) {
+  data <- tryCatch(
+    eval(fit$call$data, environment(stats::formula(fit))),
+    error = function(e) NULL
+  )
+  if (!is.data.frame(data)) {
+    spicy_abort(
+      c(paste0("RMST / risk-difference columns need the fit's original ",
+               "data, and it could not be recovered from the model call."),
+        "i" = paste0("Fit the model with a `data` argument that is ",
+                     "still available (a data frame in scope).")),
+      class = "spicy_invalid_input"
+    )
+  }
+  fvars <- all.vars(stats::formula(fit))
+  data <- data[stats::complete.cases(data[, intersect(fvars, names(data)),
+                                          drop = FALSE]), , drop = FALSE]
+  if (nrow(data) != length(fit$linear.predictors)) {
+    spicy_abort(
+      c("The recovered data does not match the fitted sample.",
+        "i" = sprintf("Recovered %d complete rows; the fit used %d.",
+                      nrow(data), length(fit$linear.predictors))),
+      class = "spicy_invalid_input"
+    )
+  }
+  data
+}
+
+
+.survreg_estimand_points <- function(fit, data, want_rmst, want_risk,
+                                     tau, at_time) {
+  std_surv <- function(newdata) {
+    lp <- stats::predict(fit, newdata = newdata, type = "lp")
+    function(tt) {
+      vapply(tt, function(t1) {
+        mean(1 - survival::psurvreg(t1, mean = lp, scale = fit$scale,
+                                    distribution = fit$dist,
+                                    parms = fit$parms))
+      }, numeric(1))
+    }
+  }
+  curve_stats <- function(newdata) {
+    S <- std_surv(newdata)
+    c(rmst = if (want_rmst) {
+        stats::integrate(S, 0, tau, rel.tol = 1e-8,
+                         subdivisions = 400L)$value
+      } else NA_real_,
+      risk = if (want_risk) 1 - S(at_time) else NA_real_)
+  }
+  rhs_vars <- setdiff(all.vars(stats::formula(fit)),
+                      all.vars(stats::formula(fit)[[2L]]))
+  .estimand_contrast_rows(data, rhs_vars, curve_stats)
+}
+
+
+.survreg_refit_on <- function(fit, dboot) {
+  survival::survreg(stats::formula(fit), data = dboot, dist = fit$dist)
 }
 
 
@@ -284,13 +381,45 @@
 .coxph_estimand_rows <- function(fit, model_id, outcome, show_columns,
                                  tau = NULL, at_time = NULL,
                                  ci_level = 0.95, boot_n = 1000L) {
+  .survival_estimand_rows(
+    fit, model_id, show_columns, tau, at_time, ci_level, boot_n,
+    gates_fn  = .coxph_estimand_gates,
+    data_fn   = .coxph_estimand_data,
+    points_fn = .coxph_estimand_points,
+    refit_fn  = function(fit, dboot) .coxph_refit_on(stats::formula(fit), dboot)
+  )
+}
+
+
+.survreg_estimand_rows <- function(fit, model_id, outcome, show_columns,
+                                   tau = NULL, at_time = NULL,
+                                   ci_level = 0.95, boot_n = 1000L) {
+  .survival_estimand_rows(
+    fit, model_id, show_columns, tau, at_time, ci_level, boot_n,
+    gates_fn  = .survreg_estimand_gates,
+    data_fn   = .survreg_estimand_data,
+    points_fn = .survreg_estimand_points,
+    refit_fn  = .survreg_refit_on
+  )
+}
+
+
+# Engine-agnostic bootstrap harness shared by the coxph and survreg
+# estimand paths: gates, data recovery, point estimates, and the
+# resample-refit-recompute loop are identical; only the four hooks
+# differ per class.
+.survival_estimand_rows <- function(fit, model_id, show_columns,
+                                    tau = NULL, at_time = NULL,
+                                    ci_level = 0.95, boot_n = 1000L,
+                                    gates_fn, data_fn, points_fn,
+                                    refit_fn) {
   want_rmst <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p") %in%
                      show_columns)
   want_risk <- any(c("risk_diff", "risk_diff_se", "risk_diff_ci",
                      "risk_diff_p") %in% show_columns)
   if (!want_rmst && !want_risk) return(NULL)
-  .coxph_estimand_gates(fit, model_id)
-  data <- .coxph_estimand_data(fit)
+  gates_fn(fit, model_id)
+  data <- data_fn(fit)
 
   # tau = "minmax": the smallest, across the levels of every factor
   # predictor, of that level's largest observed time -- so the RMST
@@ -315,12 +444,11 @@
       max(obs_time)
   }
 
-  pts <- .coxph_estimand_points(fit, data, want_rmst, want_risk,
-                                tau_resolved, at_time)
+  pts <- points_fn(fit, data, want_rmst, want_risk,
+                   tau_resolved, at_time)
   if (is.null(pts) || nrow(pts) == 0L) return(NULL)
 
   # Bootstrap: resample subjects, refit, recompute every contrast.
-  f <- stats::formula(fit)
   n <- nrow(data)
   boot_est <- array(
     NA_real_, dim = c(boot_n, nrow(pts), 2L),
@@ -330,7 +458,7 @@
     idx <- sample.int(n, n, replace = TRUE)
     rep_fit <- tryCatch(
       suppressWarnings(
-        .coxph_refit_on(f, data[idx, , drop = FALSE])
+        refit_fn(fit, data[idx, , drop = FALSE])
       ),
       error = function(e) NULL
     )
@@ -339,9 +467,8 @@
     # zero -- a phantom null contrast. Count it as failed instead.
     if (is.null(rep_fit) || anyNA(stats::coef(rep_fit))) next
     rep_pts <- tryCatch(
-      .coxph_estimand_points(rep_fit, data[idx, , drop = FALSE],
-                             want_rmst, want_risk, tau_resolved,
-                             at_time),
+      points_fn(rep_fit, data[idx, , drop = FALSE],
+                want_rmst, want_risk, tau_resolved, at_time),
       error = function(e) NULL
     )
     if (is.null(rep_pts)) next

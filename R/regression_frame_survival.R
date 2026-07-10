@@ -132,6 +132,9 @@ as_regression_frame.survreg <- function(fit,
                                          show_columns = character(0),
                                          model_id = "M1",
                                          exponentiate = FALSE,
+                                         tau = NULL,
+                                         at_time = NULL,
+                                         boot_n = 1000L,
                                          ...) {
   .check_survival_available()
 
@@ -142,6 +145,18 @@ as_regression_frame.survreg <- function(fit,
   # Response-scale (predicted survival time) AME via marginaleffects.
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
                                       vcov_type = vcov, cluster = cluster)
+  # RMST / risk-difference estimand rows (parametric g-computation +
+  # bootstrap; R/regression_survival_estimands.R). NULL when no
+  # estimand token is requested.
+  estimands <- .survreg_estimand_rows(
+    fit, model_id = model_id, outcome = NA_character_,
+    show_columns = show_columns,
+    tau = tau, at_time = at_time,
+    ci_level = ci_level, boot_n = boot_n
+  )
+  if (!is.null(estimands)) {
+    coefs <- rbind(coefs, estimands$rows)
+  }
   info  <- .survreg_info(fit,
                          vcov_kind  = vcov,
                          vcov_label = vcov_label,
@@ -151,6 +166,16 @@ as_regression_frame.survreg <- function(fit,
   if (!vcov %in% c("model", "classical")) {
     info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
                                           estimator = "CL")
+  }
+
+  if (!is.null(estimands)) {
+    info$extras$survival_estimands <- list(
+      tau        = estimands$tau,
+      at_time    = estimands$at_time,
+      boot_n     = estimands$boot_n,
+      boot_valid = estimands$boot_valid,
+      stratified = FALSE
+    )
   }
 
   ex <- .apply_exp_to_survival_frame(coefs, info, exponentiate)

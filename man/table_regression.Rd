@@ -134,7 +134,7 @@ transformation-respecting).}
 
 \item{tau}{RMST horizon: the \code{"rmst"} column family reports the
 restricted-mean-survival-time difference over \verb{[0, tau]}
-(\code{coxph} fits only). A positive time on the outcome's scale, or
+(\code{coxph} and \code{survreg} fits). A positive time on the outcome's scale, or
 \code{"minmax"} for the smallest per-group maximum follow-up (the
 resolved value is disclosed in the table note). No default: the
 horizon defines the estimand. Stratified fits (\code{strata()}) are
@@ -143,7 +143,7 @@ baseline, disclosed in the table note.}
 
 \item{at_time}{Landmark time for the \code{"risk_diff"} column family:
 the difference in cumulative incidence at \code{at_time} (\code{coxph}
-fits only). A positive time on the outcome's scale; no default.}
+and \code{survreg} fits). A positive time on the outcome's scale; no default.}
 
 \item{standardized}{Standardisation method for the \code{"beta"}
 column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},

@@ -530,7 +530,7 @@
 #'   adjustment* section for when this is and is not appropriate.
 #' @param tau RMST horizon: the `"rmst"` column family reports the
 #'   restricted-mean-survival-time difference over `[0, tau]`
-#'   (`coxph` fits only). A positive time on the outcome's scale, or
+#'   (`coxph` and `survreg` fits). A positive time on the outcome's scale, or
 #'   `"minmax"` for the smallest per-group maximum follow-up (the
 #'   resolved value is disclosed in the table note). No default: the
 #'   horizon defines the estimand. Stratified fits (`strata()`) are
@@ -538,7 +538,7 @@
 #'   baseline, disclosed in the table note.
 #' @param at_time Landmark time for the `"risk_diff"` column family:
 #'   the difference in cumulative incidence at `at_time` (`coxph`
-#'   fits only). A positive time on the outcome's scale; no default.
+#'   and `survreg` fits). A positive time on the outcome's scale; no default.
 #' @param show_columns Character vector of tokens selecting the
 #'   per-coefficient columns and their display order. Accepts
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
@@ -1901,7 +1901,8 @@ table_regression <- function(
           ),
           "i" = paste0("They are computed by g-computation from a ",
                        "`survival::coxph` fit on right-censored ",
-                       "single-record data.")
+                       "single-record data, or a `survival::survreg` ",
+                       "fit.")
         ),
         class = "spicy_invalid_input"
       )
