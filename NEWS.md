@@ -147,6 +147,12 @@ rendering an empty column.
 * `table_continuous_lm()` now discloses robust and resampling SEs in
   its table note, carries its notes into every rich output, and
   accepts `cluster = ~region`.
+* The random-effects LR test no longer prints a negative statistic
+  (`-0.00`) on singular fits: the statistic is clamped at zero and the
+  boundary p-value is now 1 -- half the chi-bar-squared null
+  distribution is a point mass at zero, so a zero statistic carries no
+  evidence (it printed 0.500, the ceiling of the halved-chi-squared
+  formula).
 * `ci_level` now reaches the random-effect variance-component CIs; all
   three mixed engines hardcoded 95% for those rows.
 * Large mixed fits no longer spend minutes on variance-component SEs:

@@ -331,3 +331,23 @@ test_that("glmmTMB null is engine-native: weighted, nbinom, unweighted pins", {
   expect_equal(spicy:::.null_lrt_glmmTMB(ft0)$chi2,
                spicy:::.null_lrt_merMod(fl0)$chi2, tolerance = 1e-4)
 })
+
+
+# ---- 8. Boundary: a zero (or negative-epsilon) statistic --------------
+
+test_that("the LR statistic clamps at 0 and the boundary p is 1", {
+  skip_if_not_installed("lme4")
+  # A singular fit's REML difference can be numerically infinitesimally
+  # negative; the footer must never print "-0.00", and at a zero
+  # statistic the point mass at the boundary makes P(chibar2 >= 0) = 1.
+  testthat::local_mocked_bindings(
+    .null_lrt_merMod = function(fit) {
+      list(chi2 = -1e-12, df = 1L, family_label = "linear regression")
+    },
+    .package = "spicy"
+  )
+  fit <- .fit_lmer_lrt()
+  nl <- spicy:::.compute_null_model_lrt(fit)
+  expect_identical(nl$chi2, 0)
+  expect_identical(nl$p_chibar2, 1)
+})

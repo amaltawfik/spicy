@@ -654,16 +654,22 @@ validate_regression_frame <- function(frame) {
 #
 # where fit_null is an `lm` / `glm` / `gls` fit on the same data
 # without any random effects. The p-value uses the chi-bar-squared
-# correction (Self & Liang 1987; Stata's mixed convention):
+# correction (Self & Liang 1987):
 #
-#   p_chibar2 = 0.5 * P( chi^2_q > LRT )
+#   p_chibar2 = 0.5 * P( chi^2_q > LRT ),   LRT > 0
+#   p_chibar2 = 1                           LRT = 0 (point mass)
 #
 # where q = number of free parameters in the random structure
 # (variances + covariances per grouping factor). The factor 0.5
-# accounts for the point mass at the boundary 0; the simpler
-# convention covers the common case "single test of all random
-# effects together" without invoking the multi-component Stram-Lee
-# (1994) mixture.
+# accounts for the point mass at the boundary 0; this pragmatic
+# halved-chi2(q) covers the joint several-parameter case without
+# invoking the multi-component Stram-Lee (1994) mixture. (Stata's
+# `mixed` halves only the single-parameter chibar2(01) case and
+# prints the UN-halved chi2 with a "conservative" caveat for joint
+# tests -- the halving here is spicy's own extension, not Stata's
+# joint convention.) At a zero statistic the p-value is 1: half the
+# null distribution is the point mass AT zero, so P(chibar2 >= 0)
+# = 1 -- matching Stata's boundary output "Prob >= chibar2 = 1.0000".
 #
 # Returns a list(chi2, df, p_chibar2, family_label) or NULL when
 # computation isn't possible (refit error, lme4 unavailable, etc.).
@@ -721,8 +727,16 @@ validate_regression_frame <- function(frame) {
     return(NULL)
   }
   # nocov end
-  res$p_chibar2 <- 0.5 * stats::pchisq(res$chi2, df = res$df,
-                                          lower.tail = FALSE)
+  # A REML difference can be numerically infinitesimally negative when
+  # the random structure explains nothing (singular fits): clamp the
+  # statistic so the footer never prints "-0.00", and give the exact
+  # boundary p (the point mass at zero makes P(chibar2 >= 0) = 1).
+  res$chi2 <- max(0, res$chi2)
+  res$p_chibar2 <- if (res$chi2 == 0) {
+    1
+  } else {
+    0.5 * stats::pchisq(res$chi2, df = res$df, lower.tail = FALSE)
+  }
   res
 }
 
