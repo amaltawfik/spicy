@@ -44,6 +44,10 @@
     "n_events",
     # Average marginal effects (AME)
     "ame", "ame_se", "ame_ci", "ame_p",
+    # Survival estimands (coxph): RMST difference over [0, tau] and
+    # cumulative-incidence difference at `at_time`, by g-computation
+    "rmst", "rmst_se", "rmst_ci", "rmst_p",
+    "risk_diff", "risk_diff_se", "risk_diff_ci", "risk_diff_p",
     # Variance-explained partials (lm only) \u2013 split into
     # estimate-only + CI-only, matching the b / ci asymmetry-free
     # convention.
@@ -1590,5 +1594,55 @@ validate_output_resources <- function(output, excel_path, word_path) {
     # nocov end
   }
 
+  invisible(NULL)
+}
+
+
+# Survival estimand horizons (tau for RMST, at_time for the risk
+# difference). The horizon DEFINES the estimand, so it is explicit and
+# mandatory when its column family is requested -- and refused when
+# passed without a use. tau additionally accepts "minmax" (resolved
+# per fit and disclosed in the footer).
+validate_estimand_horizons <- function(show_columns, tau, at_time) {
+  wants_rmst <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p") %in%
+                      show_columns)
+  wants_risk <- any(c("risk_diff", "risk_diff_se", "risk_diff_ci",
+                      "risk_diff_p") %in% show_columns)
+  ok_scalar <- function(x) {
+    is.numeric(x) && length(x) == 1L && is.finite(x) && x > 0
+  }
+  if (wants_rmst) {
+    if (!(ok_scalar(tau) || identical(tau, "minmax"))) {
+      spicy_abort(
+        c("RMST columns need an explicit horizon: pass `tau`.",
+          "i" = paste0("A positive time on the outcome's scale (e.g. ",
+                       "`tau = 365`), or `tau = \"minmax\"` for the ",
+                       "smallest per-group maximum follow-up."),
+          "i" = "The horizon defines the estimand; there is no default."),
+        class = "spicy_invalid_input"
+      )
+    }
+  } else if (!is.null(tau)) {
+    spicy_abort(
+      "`tau` was supplied but no RMST column is requested.",
+      class = "spicy_invalid_input"
+    )
+  }
+  if (wants_risk) {
+    if (!ok_scalar(at_time)) {
+      spicy_abort(
+        c("Risk-difference columns need an explicit landmark: pass `at_time`.",
+          "i" = paste0("A positive time on the outcome's scale (e.g. ",
+                       "`at_time = 365`)."),
+          "i" = "The landmark defines the estimand; there is no default."),
+        class = "spicy_invalid_input"
+      )
+    }
+  } else if (!is.null(at_time)) {
+    spicy_abort(
+      "`at_time` was supplied but no risk-difference column is requested.",
+      class = "spicy_invalid_input"
+    )
+  }
   invisible(NULL)
 }

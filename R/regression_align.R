@@ -234,6 +234,17 @@ align_frames <- function(
     lapply(frames, function(f) f$info$n_groups), model_ids
   )
 
+  # Survival estimand horizons (resolved values, e.g. a numeric tau
+  # even when the user passed "minmax") for the column headers.
+  estimand_horizons <- NULL
+  for (f in frames) {
+    es <- f$info$extras$survival_estimands
+    if (!is.null(es)) {
+      estimand_horizons <- list(tau = es$tau, at_time = es$at_time)
+      break
+    }
+  }
+
   list(
     coefs_aligned = coefs_long,
     fit_stats_aligned = fit_stats,
@@ -244,7 +255,8 @@ align_frames <- function(
     stat_headers_auto = stat_headers_auto,
     model_ids = model_ids,
     n_models = length(frames),
-    n_groups_by_model = n_groups_by_model
+    n_groups_by_model = n_groups_by_model,
+    estimand_horizons = estimand_horizons
   )
 }
 

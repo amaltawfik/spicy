@@ -205,6 +205,18 @@ table_regression_uv <- function(data,
       )
     }
   }
+  if (any(c("rmst", "rmst_se", "rmst_ci", "rmst_p", "risk_diff",
+            "risk_diff_se", "risk_diff_ci", "risk_diff_p") %in%
+            show_columns)) {
+    spicy_abort(
+      c(paste0("RMST / risk-difference columns are not available in ",
+               "the univariable screen."),
+        "i" = paste0("Compute them on a single model: ",
+                     "`table_regression(fit, show_columns = c(\"b\", ",
+                     "\"rmst\"), tau = ...)`.")),
+      class = "spicy_invalid_input"
+    )
+  }
   if (isTRUE(dots$nested)) {
     spicy_abort(
       c("`nested = TRUE` is not meaningful for a univariable screen.",

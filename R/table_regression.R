@@ -515,6 +515,15 @@
 #'   own families). Active adjustments are documented in the
 #'   footer (method + family size). See the *Multiple-comparison
 #'   adjustment* section for when this is and is not appropriate.
+#' @param tau RMST horizon: the `"rmst"` column family reports the
+#'   restricted-mean-survival-time difference over `[0, tau]`
+#'   (`coxph` fits only). A positive time on the outcome's scale, or
+#'   `"minmax"` for the smallest per-group maximum follow-up (the
+#'   resolved value is disclosed in the table note). No default: the
+#'   horizon defines the estimand.
+#' @param at_time Landmark time for the `"risk_diff"` column family:
+#'   the difference in cumulative incidence at `at_time` (`coxph`
+#'   fits only). A positive time on the outcome's scale; no default.
 #' @param show_columns Character vector of tokens selecting the
 #'   per-coefficient columns and their display order. Accepts
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
@@ -1150,6 +1159,8 @@ table_regression <- function(
   ci_level = 0.95,
   ci_method = c("wald", "profile", "boot_percentile"),
   boot_n = 1000L,
+  tau = NULL,
+  at_time = NULL,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   p_adjust = "none",
@@ -1320,6 +1331,9 @@ table_regression <- function(
   # also rejects "beta" combined with `standardized = "none"` (Q3).
   validate_show_columns(show_columns, standardized)
   validate_show_fit_stats(show_fit_stats)
+  # Survival estimand horizons: the horizon defines the estimand, so
+  # it is explicit and mandatory -- and refused when unused.
+  validate_estimand_horizons(show_columns, tau, at_time)
   # Phase 7c23 (item a): coerce `FALSE` to `character(0)` so the
   # downstream class-aware default branch (line ~ 996) treats the
   # explicit "suppress" as "no tokens to inject", instead of leaving
@@ -1781,7 +1795,9 @@ table_regression <- function(
       show_fit_stats        = show_fit_stats,
       use_ame_satterthwaite = use_ame_satt,
       cluster_name          = cluster_name_list[i],
-      re_ci                 = re_ci_val
+      re_ci                 = re_ci_val,
+      tau                   = tau,
+      at_time               = at_time
     )
     # Truthfulness gate: `standardized` requires a class with a real
     # standardized-coefficients path (the beta attach). Classes without
@@ -1810,6 +1826,34 @@ table_regression <- function(
                        "`show_columns = c(\"b\", \"ame\")`.")
         ),
         class = "spicy_unsupported_standardized"
+      )
+    }
+    # Truthfulness gate: RMST / risk-difference columns exist only for
+    # coxph fits (the g-computation engine); any other class would
+    # render the requested columns empty.
+    wants_estimand <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p",
+                            "risk_diff", "risk_diff_se",
+                            "risk_diff_ci", "risk_diff_p") %in%
+                            show_columns)
+    if (wants_estimand &&
+        !any(frames[[i]]$coefs$estimate_type %in%
+               c("rmst", "risk_diff"))) {
+      model_tag <- if (n_models > 1L) {
+        sprintf("model %d (class %s)", i, class(models[[i]])[1L])
+      } else {
+        sprintf("this model class (%s)", class(models[[i]])[1L])
+      }
+      spicy_abort(
+        c(
+          sprintf(
+            "RMST / risk-difference columns are not available for %s.",
+            model_tag
+          ),
+          "i" = paste0("They are computed by g-computation from a ",
+                       "`survival::coxph` fit on right-censored ",
+                       "single-record data.")
+        ),
+        class = "spicy_invalid_input"
       )
     }
     # Truthfulness gate: `show_columns = "n_events"` requires per-row

@@ -181,7 +181,8 @@ render_regression_table <- function(
     model_exp_headers = aligned$exp_headers_auto,
     model_stat_headers = aligned$stat_headers_auto,
     ame_categories = ame_cats_by_model,
-    models_with_n = models_with_n
+    models_with_n = models_with_n,
+    estimand_horizons = aligned$estimand_horizons
   )
 
   # One render row per unique term (in canonical order).
@@ -471,9 +472,11 @@ build_column_spec <- function(show_columns, model_ids, label_map,
                               model_exp_headers = NULL,
                               model_stat_headers = NULL,
                               ame_categories = NULL,
-                              models_with_n = NULL) {
+                              models_with_n = NULL,
+                              estimand_horizons = NULL) {
   # NULL (direct/legacy callers): keep the "n" column for every model.
   if (is.null(models_with_n)) models_with_n <- model_ids
+  if (is.null(estimand_horizons)) estimand_horizons <- list()
   ci_pct <- formatC(ci_level * 100, format = "g")
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
@@ -534,6 +537,43 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     # guarantees canonical intra-block order
     # (estimate -> SE -> 95% CI -> p) for the standard column groups
     # (`all_b`, `all_ame`).
+    # Survival estimands: the anchor headers carry the horizon
+    # (`estimand_horizons`), the sub-columns stay naked like AME's.
+    rmst    = list(estimate_type = "rmst",
+                   fields = "estimate",
+                   header_short = if (!is.null(estimand_horizons$tau)) {
+                     sprintf("dRMST (%s)",
+                             format(estimand_horizons$tau))
+                   } else {
+                     "dRMST"                                          # nocov
+                   }),
+    rmst_se = list(estimate_type = "rmst",
+                   fields = "se",
+                   header_short = "SE"),
+    rmst_ci = list(estimate_type = "rmst",
+                   fields = c("ci_low", "ci_high"),
+                   header_short = ci_hdr),
+    rmst_p  = list(estimate_type = "rmst",
+                   fields = "p_value",
+                   header_short = "p"),
+    risk_diff    = list(estimate_type = "risk_diff",
+                        fields = "estimate",
+                        header_short =
+                          if (!is.null(estimand_horizons$at_time)) {
+                            sprintf("dRisk (%s)",
+                                    format(estimand_horizons$at_time))
+                          } else {
+                            "dRisk"                                   # nocov
+                          }),
+    risk_diff_se = list(estimate_type = "risk_diff",
+                        fields = "se",
+                        header_short = "SE"),
+    risk_diff_ci = list(estimate_type = "risk_diff",
+                        fields = c("ci_low", "ci_high"),
+                        header_short = ci_hdr),
+    risk_diff_p  = list(estimate_type = "risk_diff",
+                        fields = "p_value",
+                        header_short = "p"),
     ame    = list(estimate_type = "ame",
                   fields = "estimate",
                   header_short = "AME"),

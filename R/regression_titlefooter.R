@@ -94,6 +94,7 @@ build_regression_footer_from_frames <- function(
                                                    re_columns = re_columns,
                                                    re_test = re_test),
     build_survival_footer_block_from_frames(frames),
+    build_survival_estimand_footer_block_from_frames(frames),
     build_ordinal_thresholds_footer_block_from_frames(frames),
     build_component_blocks_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(show_columns, frames,
