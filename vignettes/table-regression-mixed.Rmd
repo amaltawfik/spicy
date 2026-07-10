@@ -181,10 +181,11 @@ hsb$cses    <- hsb$SES - hsb$meanses      # SES centered within school
 
 ```{r hsb-ols, eval = have_nlme}
 ols <- lm(MathAch ~ SES, data = hsb)
+table_regression(ols, show_columns = c("b", "se", "p"))
 ```
 
 A one-point difference in SES is associated with 3.18 more achievement
-points (SE 0.10; its column appears in the step-2 table). The price is
+points (SE 0.10; the same column returns in the step-2 comparison). The price is
 one silent assumption: that 7,185 pupils are 7,185 independent
 observations. They are not; pupils share
 schools, teachers, and neighbourhoods. The next steps make the
