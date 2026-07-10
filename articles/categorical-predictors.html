@@ -496,15 +496,16 @@ fits.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  srh_sdif2-1 <span style="color: #9E9E9E;">│</span>   14.97  1.80  [11.44, 18.51]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  srh_sdif3-2 <span style="color: #9E9E9E;">│</span>   13.04  0.95  [11.18, 14.89]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  srh_sdif4-3 <span style="color: #9E9E9E;">│</span>    7.12  0.91  [ 5.33,  8.91]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n           <span style="color: #9E9E9E;">│</span> 1180                                 </span></span>
-<span><span class="co">#&gt;  R²          <span style="color: #9E9E9E;">│</span>    0.35                              </span></span>
-<span><span class="co">#&gt;  Adj.R²      <span style="color: #9E9E9E;">│</span>    0.34                              </span></span>
+<span><span class="co">#&gt;  Variable  <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  srh_sdif: <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    2-1     <span style="color: #9E9E9E;">│</span>   14.97  1.80  [11.44, 18.51]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    3-2     <span style="color: #9E9E9E;">│</span>   13.04  0.95  [11.18, 14.89]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    4-3     <span style="color: #9E9E9E;">│</span>    7.12  0.91  [ 5.33,  8.91]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n         <span style="color: #9E9E9E;">│</span> 1180                                 </span></span>
+<span><span class="co">#&gt;  R²        <span style="color: #9E9E9E;">│</span>    0.35                              </span></span>
+<span><span class="co">#&gt;  Adj.R²    <span style="color: #9E9E9E;">│</span>    0.34                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
@@ -512,10 +513,9 @@ fits.</p>
 Good 13.04 above Fair, Very good 7.12 above Good — the flattening
 gradient read directly, with a standard error per step. This is the
 natural display when the steps themselves are the finding. (Two notes:
-with non-treatment contrasts there is no reference level, so the rows
-render flat rather than grouped under the factor with a
-<code>(ref.)</code> row; and the joint test of the factor is unchanged —
-same model, different questions asked of it.)</p>
+the rows group under the factor but carry no <code>(ref.)</code> row —
+no reference level exists under this coding; and the joint test of the
+factor is unchanged — same model, different questions asked of it.)</p>
 </div>
 <div class="section level2">
 <h2 id="the-reverse-temptation-categorizing-a-continuous-predictor">The reverse temptation: categorizing a continuous predictor<a class="anchor" aria-label="anchor" href="#the-reverse-temptation-categorizing-a-continuous-predictor"></a>

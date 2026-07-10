@@ -204,6 +204,11 @@ rendering an empty column.
   categorical families do). The tokens were silently dropped from
   `show_fit_stats` before, and a weighted fit’s null log-likelihood
   ignored the weights.
+- Factors under non-default contrast codings (successive differences,
+  sum-to-zero, Helmert, custom matrices) now group under their parent
+  variable like treatment and polynomial codings, labelled by the
+  contrast-matrix column names. No reference row is shown – none exists
+  under those codings.
 - `ordinal::clm(scale = ~)` fits now render their scale (dispersion)
   coefficients as a `Scale effects` block. They were silently absent
   from the table: an estimated component of the model went unreported.

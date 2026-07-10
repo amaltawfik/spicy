@@ -412,15 +412,16 @@ table_regression(
 )
 #> Linear regression: wellbeing_score
 #> 
-#>  Variable    │    B      SE       95% CI        p   
-#> ─────────────┼──────────────────────────────────────
-#>  srh_sdif2-1 │   14.97  1.80  [11.44, 18.51]  <.001 
-#>  srh_sdif3-2 │   13.04  0.95  [11.18, 14.89]  <.001 
-#>  srh_sdif4-3 │    7.12  0.91  [ 5.33,  8.91]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n           │ 1180                                 
-#>  R²          │    0.35                              
-#>  Adj.R²      │    0.34                              
+#>  Variable  │    B      SE       95% CI        p   
+#> ───────────┼──────────────────────────────────────
+#>  srh_sdif: │                                      
+#>    2-1     │   14.97  1.80  [11.44, 18.51]  <.001 
+#>    3-2     │   13.04  0.95  [11.18, 14.89]  <.001 
+#>    4-3     │    7.12  0.91  [ 5.33,  8.91]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n         │ 1180                                 
+#>  R²        │    0.35                              
+#>  Adj.R²    │    0.34                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -430,10 +431,9 @@ Each row is one step of the scale: Fair sits 14.97 points above Poor,
 Good 13.04 above Fair, Very good 7.12 above Good — the flattening
 gradient read directly, with a standard error per step. This is the
 natural display when the steps themselves are the finding. (Two notes:
-with non-treatment contrasts there is no reference level, so the rows
-render flat rather than grouped under the factor with a `(ref.)` row;
-and the joint test of the factor is unchanged — same model, different
-questions asked of it.)
+the rows group under the factor but carry no `(ref.)` row — no reference
+level exists under this coding; and the joint test of the factor is
+unchanged — same model, different questions asked of it.)
 
 ## The reverse temptation: categorizing a continuous predictor
 
