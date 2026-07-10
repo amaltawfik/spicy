@@ -177,6 +177,14 @@ rendering an empty column.
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   now discloses robust and resampling SEs in its table note, carries its
   notes into every rich output, and accepts `cluster = ~region`.
+- The RMST and risk-difference columns extend to parametric survival
+  models
+  ([`survival::survreg`](https://rdrr.io/pkg/survival/man/survreg.html)):
+  the AFT curves are closed-form, so the standardized survival is exact
+  up to numerical integration. Cross-validated against
+  [`flexsurv::standsurv()`](http://chjackson.github.io/flexsurv-dev/reference/standsurv.md)
+  (exact) and the closed-form exponential RMST (machine precision).
+  Stratified `survreg` fits (per-stratum scale) are refused.
 - The univariable screen (`table_regression_uv(method = "coxph")`)
   accepts the RMST and risk-difference columns: unadjusted per-predictor
   estimands next to the covariate-adjusted ones of the multivariable

@@ -160,18 +160,19 @@ table_regression(
 - tau:
 
   RMST horizon: the `"rmst"` column family reports the
-  restricted-mean-survival-time difference over `[0, tau]` (`coxph` fits
-  only). A positive time on the outcome's scale, or `"minmax"` for the
-  smallest per-group maximum follow-up (the resolved value is disclosed
-  in the table note). No default: the horizon defines the estimand.
-  Stratified fits (`strata()`) are supported: standardization keeps each
-  subject's own stratum baseline, disclosed in the table note.
+  restricted-mean-survival-time difference over `[0, tau]` (`coxph` and
+  `survreg` fits). A positive time on the outcome's scale, or `"minmax"`
+  for the smallest per-group maximum follow-up (the resolved value is
+  disclosed in the table note). No default: the horizon defines the
+  estimand. Stratified fits (`strata()`) are supported: standardization
+  keeps each subject's own stratum baseline, disclosed in the table
+  note.
 
 - at_time:
 
   Landmark time for the `"risk_diff"` column family: the difference in
-  cumulative incidence at `at_time` (`coxph` fits only). A positive time
-  on the outcome's scale; no default.
+  cumulative incidence at `at_time` (`coxph` and `survreg` fits). A
+  positive time on the outcome's scale; no default.
 
 - standardized:
 

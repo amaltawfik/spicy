@@ -559,6 +559,12 @@ distributions (Weibull, exponential, lognormal, loglogistic); for an
 identity-scale distribution (<code>dist = "gaussian"</code>) the request
 is skipped with a warning, since the coefficients already act on the
 time scale.</p>
+<p>The RMST and risk-difference columns work here exactly as for the Cox
+model — same tokens, same <code>tau</code> / <code>at_time</code>, same
+bootstrap — with one advantage: the AFT curves are closed-form, so the
+standardized survival is smooth rather than a step function. The
+estimates answer the same absolute-scale question, computed under the
+parametric assumptions the footer names.</p>
 </div>
 <div class="section level2">
 <h2 id="rmscph">

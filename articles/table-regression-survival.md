@@ -474,6 +474,13 @@ loglogistic); for an identity-scale distribution (`dist = "gaussian"`)
 the request is skipped with a warning, since the coefficients already
 act on the time scale.
 
+The RMST and risk-difference columns work here exactly as for the Cox
+model — same tokens, same `tau` / `at_time`, same bootstrap — with one
+advantage: the AFT curves are closed-form, so the standardized survival
+is smooth rather than a step function. The estimates answer the same
+absolute-scale question, computed under the parametric assumptions the
+footer names.
+
 ## `rms::cph()`
 
 Analysts working in the `rms` ecosystem (Harrell 2015) — for its

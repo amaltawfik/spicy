@@ -178,11 +178,25 @@ hsb$cses    <- hsb$SES - hsb$meanses      # SES centered within school
 ``` r
 
 ols <- lm(MathAch ~ SES, data = hsb)
+table_regression(ols, show_columns = c("b", "se", "p"))
+#> Linear regression: MathAch
+#> 
+#>  Variable    │    B      SE     p   
+#> ─────────────┼──────────────────────
+#>  (Intercept) │   12.75  0.08  <.001 
+#>  SES         │    3.18  0.10  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │ 7185                 
+#>  R²          │    0.13              
+#>  Adj.R²      │    0.13              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
 ```
 
 A one-point difference in SES is associated with 3.18 more achievement
-points (SE 0.10; its column appears in the step-2 table). The price is
-one silent assumption: that 7,185 pupils are 7,185 independent
+points (SE 0.10; the same column returns in the step-2 comparison). The
+price is one silent assumption: that 7,185 pupils are 7,185 independent
 observations. They are not; pupils share schools, teachers, and
 neighbourhoods. The next steps make the grouping structure part of the
 model.
