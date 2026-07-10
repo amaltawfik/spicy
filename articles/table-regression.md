@@ -1126,6 +1126,13 @@ table_regression(fit, ci_method = "profile")
 #> 95% CIs: profile likelihood.
 ```
 
+One consequence worth naming when combining with `exponentiate = TRUE`:
+the CI bounds are the exponentiated profile bounds (asymmetric), while
+the `SE` column is the delta-method SE on the ratio scale — the interval
+can no longer be reconstructed as `estimate ± z × SE`. Both choices are
+disclosed in the footer, which is why the table names them rather than
+leaving the mismatch for a careful reader to discover.
+
 ### Hierarchical glm (LRT)
 
 `nested = TRUE` on a list of nested glm fits appends `Δχ²` and

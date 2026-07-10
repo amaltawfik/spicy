@@ -1216,6 +1216,13 @@ Wald; <code>"profile"</code> only refines the CI bounds:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; 95% CIs: profile likelihood.</span></span></span></code></pre></div>
+<p>One consequence worth naming when combining with
+<code>exponentiate = TRUE</code>: the CI bounds are the exponentiated
+profile bounds (asymmetric), while the <code>SE</code> column is the
+delta-method SE on the ratio scale — the interval can no longer be
+reconstructed as <code>estimate ± z × SE</code>. Both choices are
+disclosed in the footer, which is why the table names them rather than
+leaving the mismatch for a careful reader to discover.</p>
 </div>
 <div class="section level3">
 <h3 id="hierarchical-glm-lrt">Hierarchical glm (LRT)<a class="anchor" aria-label="anchor" href="#hierarchical-glm-lrt"></a>
