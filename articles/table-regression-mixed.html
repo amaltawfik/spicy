@@ -129,7 +129,7 @@ to a large-sample Wald-z (the footer says which you got).</li>
 mixed models (Wald-z).</li>
 <li>
 <strong><code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code></strong> — a wider family
-space, plus zero-inflation and dispersion submodels.</li>
+space, plus zero-inflation and dispersion components.</li>
 <li>
 <strong><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></strong> — the classical engine
 (containment-df t-tests).</li>
@@ -140,7 +140,7 @@ on 10 consecutive days of a sleep-restriction study, the canonical case
 for a random intercept and slope. The model-<em>building</em> sequence —
 from a naive OLS to cross-level interactions — then runs on the High
 School &amp; Beyond data of the multilevel textbooks (7,185 pupils in
-160 schools; the data ship with <code>nlme</code>, the models are
+160 schools; the data ship with <code>nlme</code>, but the models are
 <code><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer()</a></code> fits).</p>
 <div class="section level2">
 <h2 id="the-mixed-model-in-one-paragraph">The mixed model in one paragraph<a class="anchor" aria-label="anchor" href="#the-mixed-model-in-one-paragraph"></a>
@@ -199,10 +199,12 @@ default (Kuznetsova et al. 2017), offered by SAS PROC MIXED as
 variance components as rows, each with its own SE and CI: the
 between-subject SD of the intercept and of the <code>Days</code> slope
 (<code>σ</code>), their correlation (<code>ρ</code>), and the residual
-SD. The SD scale is the default because it is in the units of the
-outcome (Gelman &amp; Hill 2007) — sleep deprivation adds about 10.5 ms
-per day on average (fixed <code>Days</code>), while individual slopes
-spread around that mean with an SD of about 5.9 ms.</li>
+SD. The SD scale is the default because each SD is on the same scale as
+the coefficient it modifies (Gelman &amp; Hill 2007) — ms for the
+intercept, ms per day for the <code>Days</code> slope: sleep deprivation
+adds about 10.5 ms per day on average (fixed <code>Days</code>), while
+individual slopes spread around that mean with an SD of about 5.9 ms per
+day.</li>
 <li>The p column of the random-effect rows shows a <strong>dash, by
 design</strong> — see the next section.</li>
 <li>Below the rule: <code>n</code> (observations),
@@ -223,22 +225,30 @@ distribution.</li>
 </h2>
 <p>A variance cannot be negative, so the null hypothesis “this variance
 component is zero” sits <strong>on the boundary</strong> of the
-parameter space. There, the usual Wald z-test is invalid — its reference
-distribution is wrong, and the resulting p-value is conservative in an
-unknown degree (Self &amp; Liang 1987). Printing a Wald p next to each
-<code>σ</code> would look rigorous and be meaningless. None of the
-dedicated mixed-model engines prints one by default — <code>lme4</code>,
+parameter space. There, the sampling distribution of a variance estimate
+is skewed and truncated at zero, so the Wald z has no valid normal
+reference and its p-value is unreliable. The likelihood-ratio test
+misbehaves too: referred to a plain chi-squared, it is conservative at
+the boundary (Self &amp; Liang 1987) — which is what motivates the
+corrected reference below. Printing a Wald p next to each <code>σ</code>
+would look rigorous and be meaningless. None of the dedicated
+mixed-model engines prints one by default — <code>lme4</code>,
 <code>nlme</code>, Stata <code>mixed</code>, and MLwiN all decline; SAS
 PROC MIXED offers a Wald Z only behind its <code>COVTEST</code> option,
 with documented cautions.</p>
 <p>What <em>is</em> valid is a <strong>likelihood-ratio test with a
-boundary-corrected reference</strong>: a 50:50 mixture of chi-squared
+boundary-corrected reference</strong>: a mixture of chi-squared
 distributions (chi-bar-squared; Self &amp; Liang 1987; Stram &amp; Lee
-1994). The footer reports such a test for the random part as a whole —
-across its several parameters jointly it follows Stata’s conservative
-halved-p convention, while the per-term tests below use the exact
-mixture. Here chi-bar-squared(3) = 150.04, p &lt; .001: the random
-structure earns its place.</p>
+1994) — for a single tested component, a 50:50 mixture of adjacent
+degrees of freedom. The footer reports such a test for the random part
+as a whole. Across several parameters jointly the mixture weights depend
+on the model’s geometry, so the footer falls back on a pragmatic halved
+chi-squared; Stata’s <code>mixed</code> approaches the same case from
+the opposite side, printing the chi-squared without halving, noting that
+the test “is conservative and provided only for reference”. The per-term
+tests below each constrain a single component and refer the statistic to
+the 50:50 mixture itself. Here chi-bar-squared(3) = 150.04, p &lt; .001:
+the random structure earns its place.</p>
 </div>
 <div class="section level2">
 <h2 id="from-ols-to-a-multilevel-model-step-by-step">From OLS to a multilevel model, step by step<a class="anchor" aria-label="anchor" href="#from-ols-to-a-multilevel-model-step-by-step"></a>
@@ -250,8 +260,10 @@ multilevel literature (Hox et al. 2018; Snijders &amp; Bosker 2012;
 Bressoux 2010) — on the data those books made canonical: the High School
 &amp; Beyond sample of 7,185 pupils in 160 U.S. schools, modelling
 mathematics achievement from pupil socio-economic status (SES) and
-school sector. Each step adds one ingredient, and one table shows what
-it changes.</p>
+school sector. SES is a standardized composite of parental education,
+occupation, and income (sample SD 0.78, so a one-point difference is a
+large, roughly 1.3-SD contrast). Each step adds one ingredient, and one
+table shows what it changes.</p>
 <p>Two derived predictors do a lot of work below: the school mean of
 SES, and the pupil’s SES <em>centered within the school</em>. Keeping
 the two apart is what lets a multilevel model estimate separate within-
@@ -269,11 +281,12 @@ and between-school effects (step 3):</p>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="va">SES</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span></code></pre></div>
-<p>One more SES point buys 3.18 achievement points (SE 0.10; its column
-appears in the step-2 table) — and one silent assumption: that 7,185
-pupils are 7,185 independent observations. They are not; pupils share
-schools, teachers, and neighbourhoods. The next steps make the grouping
-structure part of the model.</p>
+<p>A one-point difference in SES is associated with 3.18 more
+achievement points (SE 0.10; its column appears in the step-2 table).
+The price is one silent assumption: that 7,185 pupils are 7,185
+independent observations. They are not; pupils share schools, teachers,
+and neighbourhoods. The next steps make the grouping structure part of
+the model.</p>
 </div>
 <div class="section level3">
 <h3 id="step-1-the-empty-model-how-much-do-schools-matter">Step 1: the empty model — how much do schools matter?<a class="anchor" aria-label="anchor" href="#step-1-the-empty-model-how-much-do-schools-matter"></a>
@@ -313,16 +326,17 @@ combined: 2.93² / (2.93² + 6.26²) ≈ 0.18. Eighteen percent of the
 achievement variance lies <em>between</em> schools — the variance
 partition that justifies everything that follows (and matches the number
 Raudenbush &amp; Bryk report for these data). With 160 schools, the
-design sits comfortably above the ~50 groups below which the standard
-errors and interval coverage of the variance components degrade (Maas
-&amp; Hox 2005) — the point estimates themselves hold up with fewer.</p>
+design sits comfortably above the roughly 50 groups Maas &amp; Hox
+(2005) find necessary for reliable standard errors and interval coverage
+of the variance components — the point estimates themselves hold up with
+fewer.</p>
 <p>One display note, visible here for the first time: at this sample
 size <code><a href="../reference/table_regression.html">table_regression()</a></code> skips the Wald SE and CI of the
-variance components — the table note states it, and the build-time
-warning names the override (<code>options(spicy.re_se_max_n = )</code>)
-— because their computation grows superlinearly with n. Estimates, ICC,
-R², and the LR test are unaffected; the random-part inference below runs
-through <code>re_test</code>, and <code>re_ci = "profile"</code>
+variance components because their computation grows superlinearly with
+n. The table note states the omission, and the build-time warning names
+the override (<code>options(spicy.re_se_max_n = )</code>). Estimates,
+ICC, R², and the LR test are unaffected; the random-part inference below
+runs through <code>re_test</code>, and <code>re_ci = "profile"</code>
 restores boundary-respecting profile-likelihood CIs at any sample size
 (a couple of seconds per variance parameter — the route
 <code>lme4</code> itself recommends over SEs). The same note (and
@@ -365,7 +379,7 @@ suppressed warning) accompanies every HSB table in this sequence.</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
-<p>Reading the gain, column against column:</p>
+<p>Reading the two columns against each other, five things change:</p>
 <ul>
 <li>The <strong>intercept SE more than doubles</strong> (0.08 → 0.19).
 OLS treats 7,185 pupils as independent evidence about school-shared
@@ -381,6 +395,17 @@ partitions the variance that SES leaves unexplained — not a
 contradiction, a conditional version of the same quantity.</li>
 <li>The footer’s chi-bar-squared test (458.9 on 1 df) says the school
 effect is not optional.</li>
+<li>
+<strong>One pair of rows not to read across:</strong> the OLS AIC
+rests on the full ML likelihood, the mixed model’s on the REML
+likelihood — different objectives, not a common scale. The valid
+whole-model comparison is the chi-bar-squared test above; ML-refit
+information criteria are <code>nested = TRUE</code>’s job.</li>
+<li>And the <strong>marginal R² (0.08) sits below the OLS R²
+(0.13)</strong> not because the model fits worse, but because the fixed
+part now carries a smaller, within-school-weighted slope while the
+between-school variance moves to the random part, where the Nakagawa
+denominator still counts it.</li>
 </ul>
 </div>
 <div class="section level3">
@@ -419,22 +444,31 @@ within-school part and the school mean separately (Enders &amp; Tofighi
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
-<p>Within a school, one SES point is worth 2.19 points of achievement
-(<code>cses</code>); <em>between</em> schools, a one-point difference in
-composition is worth 5.87 (<code>meanses</code>) — more than twice the
-individual effect. The <strong>contextual effect</strong> proper — what
-better-off schoolmates add for the <em>same</em> pupil, over and above
-their own SES — is the difference, 5.87 − 2.19 = 3.68 (Raudenbush &amp;
-Bryk 2002). The OLS slope of 3.18 in step 0 was a weighted blend of the
-within and between effects, answering neither question.</p>
+<p>Within a school, a one-point difference in SES is associated with
+2.19 more points of achievement (<code>cses</code>); <em>between</em>
+schools, a one-point difference in composition is associated with 5.87
+(<code>meanses</code>) — more than twice the individual effect. The
+<strong>contextual effect</strong> proper — what better-off schoolmates
+add for the <em>same</em> pupil, over and above their own SES — is the
+difference, 5.87 − 2.19 = 3.68 (Raudenbush &amp; Bryk 2002). To give it
+its own inference, refit with raw <code>SES</code> in place of
+<code>cses</code> — an equivalent reparameterization of the same model —
+and the <code>meanses</code> coefficient <em>is</em> the contextual
+effect: 3.68 (SE 0.38, p &lt; .001). The OLS slope of 3.18 in step 0 was
+a weighted blend of the within and between effects, answering neither
+question.</p>
 </div>
 <div class="section level3">
 <h3 id="step-4-does-the-ses-slope-vary-across-schools">Step 4: does the SES slope vary across schools?<a class="anchor" aria-label="anchor" href="#step-4-does-the-ses-slope-vary-across-schools"></a>
 </h3>
 <p>So far every school shares one SES slope. Freeing it —
 <code>(cses | School)</code> — asks whether SES matters <em>more in some
-schools than others</em>, and <code>re_test = "lrt"</code> prices the
-answer with the boundary-corrected test of the earlier sections:</p>
+schools than others</em>, and <code>re_test = "lrt"</code> attaches a
+p-value to the answer with a boundary-corrected likelihood-ratio test:
+the model is refit without the varying slope, and the REML deviance
+difference is referred to the chi-bar-squared mixture (the mechanics —
+and which components are testable at all — are dissected in <em>Testing
+individual components</em> below):</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m_rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="va">cses</span> <span class="op">+</span> <span class="va">meanses</span> <span class="op">+</span> <span class="op">(</span><span class="va">cses</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">m_rs</span>, re_test <span class="op">=</span> <span class="st">"lrt"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
@@ -467,17 +501,21 @@ answer with the boundary-corrected test of the earlier sections:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>The slope SD is 0.83 achievement points around the average slope of
 2.19, and its test reads p = .003 — solid evidence that the slope
-genuinely varies across schools — so the random slope stays. (The full
-anatomy of this decision — what the side-by-side comparison does and
-does not test, how the R² pair moves, what happens to the fixed SE — is
-dissected on <code>sleepstudy</code> in <em>Random intercept or random
-slope?</em> below.)</p>
+genuinely varies across schools — so the random slope stays. Taking the
+school slopes as roughly normal, 95% of them lie within 2.19 ± 1.96 ×
+0.83 — about 0.6 to 3.8, the plausible value range of Raudenbush &amp;
+Bryk (2002): SES pays off in virtually every school, but six to seven
+times more in the steepest than in the flattest. (The full anatomy of
+this decision — what the side-by-side comparison does and does not test,
+how the R² pair moves, what happens to the fixed SE — is dissected on
+<code>sleepstudy</code> in <em>Random intercept or random slope?</em>
+below.)</p>
 </div>
 <div class="section level3">
 <h3 id="step-5-why-do-slopes-differ-a-cross-level-interaction">Step 5: why do slopes differ? A cross-level interaction<a class="anchor" aria-label="anchor" href="#step-5-why-do-slopes-differ-a-cross-level-interaction"></a>
 </h3>
-<p>A varying slope is a question, not an answer: <em>what about a
-school</em> flattens or steepens its SES gradient? Interacting the
+<p>A varying slope is a question, not an answer: what is it <em>about a
+school</em> that flattens or steepens its SES gradient? Interacting the
 pupil-level slope with a school-level predictor — a <strong>cross-level
 interaction</strong> — is the multilevel move that answers it, here with
 school sector:</p>
@@ -520,15 +558,36 @@ schools it is 2.79 − 1.35 = 1.44 — half as steep, while their intercept
 sits 1.25 points higher (both conditional on school composition, since
 <code>meanses</code> stays in the model). This is the classic finding of
 Raudenbush &amp; Bryk’s own analysis of these data: Catholic schooling
-weakens the link between a pupil’s background and achievement. Note
-where the answer lives: the interaction is a <em>fixed</em> effect,
-carried by its own row and Satterthwaite p; the slope variance it
-accounts for shows in the σ <code>cses</code> row shrinking from 0.83 to
-0.52. (One comparison the table deliberately does not make: the
-REML-based AIC is comparable between steps 3 and 4 — same fixed part,
-46,578.6 → 46,571.7 — but not across step 5’s fixed-effects change;
-growing the fixed part is <code>nested = TRUE</code>’s job, with its ML
-refit.)</p>
+weakens the link between a pupil’s background and achievement. The
+interaction row’s p tests the <em>difference</em> between the two
+slopes, not the Catholic slope itself; 1.44 as printed carries no
+standard error — refit with <code>Sector</code> releveled
+(<code>relevel(hsb$Sector, "Catholic")</code>) and it becomes a
+first-row coefficient with its own inference (1.44, SE 0.18). Note where
+the answer lives: the interaction is a <em>fixed</em> effect, carried by
+its own row and Satterthwaite p; the slope heterogeneity it accounts for
+shows in the σ <code>cses</code> row shrinking from 0.83 to 0.52.</p>
+<p><strong>The likelihood rule this sequence obeyed.</strong>
+<code><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer()</a></code> estimates by REML by default, and a REML likelihood
+is only comparable between models with the <em>same fixed part</em> —
+which is why the random-structure decisions above could read REML
+deviances and AICs directly (steps 3 and 4: 46,578.6 → 46,571.7).
+Comparing fixed parts requires ML: <code>nested = TRUE</code> performs
+that refit for you, silently, as <code>lme4::anova()</code> does. The
+footer’s <code>(REML)</code>/<code>(ML)</code> tag on the random-effects
+test line always states which likelihood the fitted model — and hence
+that test — used.</p>
+<p><strong>Before reporting any of these tables.</strong> The sequence
+above runs estimation, testing, and interpretation; every textbook it
+follows puts three checks before the reporting step. Confirm that the
+fit converged without warnings and was not singular (see <em>When the
+fit is singular</em> below); inspect the level-1 residuals for pattern
+(<code>plot(fit)</code>); and check that the estimated random effects
+look roughly normal, with no lone school driving the variance
+(<code><a href="https://rdrr.io/r/stats/qqnorm.html" class="external-link">qqnorm()</a></code> on <code>ranef(fit)</code>). The table reports
+what the model claims, not whether the model is adequate (Snijders &amp;
+Bosker 2012, ch. 10); <code><a href="https://easystats.github.io/performance/reference/check_model.html" class="external-link">performance::check_model()</a></code> runs the
+battery in one call.</p>
 </div>
 </div>
 <div class="section level2">
@@ -566,7 +625,8 @@ per level:</p>
 <p>Both levels of nesting get their σ row, <code>N (groups)</code>
 counts each level, and the footer’s chi-bar-squared test covers the
 random part jointly (2 df here); at n = 60, far below the size cap, the
-SE and CI of the variance components are back. Random slopes can sit at
+Wald SE of the variance components is back — and the CI with it, trimmed
+from this display by <code>show_columns</code>. Random slopes can sit at
 any level — <code>(x | school) + (1 | class)</code> renders each block
 under its grouping factor — and <strong>crossed</strong> (non-nested)
 structures such as <code>(1 | plate) + (1 | sample)</code> flow through
@@ -609,14 +669,19 @@ and says why in the footer:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 0.500.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.</span></span></span></code></pre></div>
-<p>The chi-bar-squared test reads p = 0.500 — the boundary value when
-the data show no group variance at all. The note states the fact for the
-table’s reader; the actionable advice arrives as a console warning when
-the table is built: simplify the random structure, or test the component
-with <code>re_test = "lrt"</code>, rather than report a zero variance
-with invented uncertainty.</p>
+<p>The chi-bar-squared test reads p = 1.000 — the boundary case. The
+likelihood-ratio statistic is exactly zero, and half of the
+chi-bar-squared null distribution is a point mass <em>at</em> zero, so
+the observed value carries no evidence whatever against the
+no-group-effect null (Stata prints
+<code>Prob &gt;= chibar2 = 1.0000</code> in the same situation). The
+note states the fact for the table’s reader; the actionable advice
+arrives as a console warning when the table is built: simplify the
+random structure, or test the component with
+<code>re_test = "lrt"</code>, rather than report a zero variance with
+invented uncertainty.</p>
 </div>
 <div class="section level2">
 <h2 id="testing-individual-components-re_test">Testing individual components: <code>re_test</code><a class="anchor" aria-label="anchor" href="#testing-individual-components-re_test"></a>
@@ -658,15 +723,16 @@ the boundary, so spicy applies the chi-bar-squared mixture instead:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.</span></span></span></code></pre></div>
 <p>Only the <code>Days</code> slope row gains a p-value: following the
 marginality rule of <code><a href="https://rdrr.io/pkg/lmerTest/man/ranova.html" class="external-link">lmerTest::ranova()</a></code>, an intercept is
-tested only when it is the bar’s sole term, and a correlation is not
-removable on its own. The footer names the test.</p>
+tested only when it stands alone on the left of the <code>|</code> — as
+in <code>(1 | g)</code> — and a correlation is not removable on its own.
+The footer names the test.</p>
 <p>For a model with a <strong>single</strong> variance component — here
 the random-intercept-only baseline, which returns in the comparison
-below — <code>re_test = "rlrt"</code> uses the exact restricted
-likelihood-ratio test of Crainiceanu &amp; Ruppert (2004) instead, with
-a simulated null distribution (via <code><a href="https://rdrr.io/pkg/RLRsim/man/exactRLRT.html" class="external-link">RLRsim::exactRLRT()</a></code>) —
-preferable in small samples where the chi-bar-squared approximation is
-at its weakest:</p>
+below — <code>re_test = "rlrt"</code> instead uses the exact restricted
+likelihood-ratio test of Crainiceanu &amp; Ruppert (2004), with the null
+distribution simulated by <code><a href="https://rdrr.io/pkg/RLRsim/man/exactRLRT.html" class="external-link">RLRsim::exactRLRT()</a></code>. This exact
+test is preferable in small samples, where the chi-bar-squared
+approximation is at its weakest:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_ri</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -743,10 +809,10 @@ and data are decoupled.</p>
 </h2>
 <p>The HSB sequence above made this decision on real school data with
 one <code>re_test</code> call; this section dissects its full anatomy on
-<code>sleepstudy</code>, where every quantity is small enough to check
-by hand. Model comparison is where the row layout pays off: the variance
-components align across columns like any coefficient, and each model
-gets its own footer line.</p>
+<code>sleepstudy</code>, an example small enough that every quantity can
+be checked by hand. Model comparison is where the row layout pays off:
+the variance components align across columns like any coefficient, and
+each model gets its own footer line.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Intercept only"</span> <span class="op">=</span> <span class="va">fit_ri</span>, <span class="st">"+ random slope"</span> <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span>
@@ -799,17 +865,20 @@ slope decision belongs to <code>re_test</code>.</p>
 <p><strong>Reading the two R² rows — without over-reading them.</strong>
 The Nakagawa pair is descriptive, and each member answers a different
 question. <em>Marginal</em> R² is the share of variance explained by the
-fixed effects alone: it is 0.28 in both columns because both models have
-the same fixed part — the average trajectory explains what it explains,
-whatever the random structure around it. <em>Conditional</em> R² adds
-the random effects: it rises (0.70 → 0.80) because individual slopes let
-each subject’s own trajectory absorb variance the first model left in
-the residual. The trap: a conditional R² can hardly go <em>down</em>
-when the random structure grows, so its increase is <strong>not</strong>
-evidence that the slope is needed — it measures how much the grouping
-structure explains, never whether a component earns its place. Selection
-belongs to the boundary-corrected test and the information criteria; the
-R² pair then describes the model you selected.</p>
+fixed effects alone: it reads 0.28 in both columns — 0.280 versus 0.279
+before rounding — because the two models share a fixed part and the
+balanced design leaves the numerator identical. The near-equality is a
+property of this fit, not a theorem: the random-effect variances enter
+the denominator of the marginal R², so it can shift when the random
+structure changes. <em>Conditional</em> R² adds the random effects: it
+rises (0.70 → 0.80) because individual slopes let each subject’s own
+trajectory absorb variance the first model left in the residual. The
+trap: a conditional R² can hardly go <em>down</em> when the random
+structure grows, so its increase is <strong>not</strong> evidence that
+the slope is needed — it measures how much the grouping structure
+explains, never whether a component earns its place. Selection belongs
+to the boundary-corrected test and the information criteria; the R² pair
+then describes the model you selected.</p>
 <p><strong>The ICC row is an interpretation, not a test.</strong> For
 the intercept-only model it comes straight from the two σ rows above it:
 ICC = σ²(Subject) / (σ²(Subject) + σ²(Residual)) = 37.12² / (37.12² +
@@ -824,17 +893,19 @@ intercept-only model: with a random slope, the correlation between two
 observations from the same subject depends on <em>when</em> they were
 taken, so a single ICC no longer exists — none is printed.</p>
 <p>One further detail repays attention: the fixed <code>Days</code> SE
-<strong>doubles</strong> (0.80 → 1.55). A model without the random slope
-overstates the precision of the average slope by ignoring
+<strong>nearly doubles</strong> (0.80 → 1.55). A model without the
+random slope overstates the precision of the average slope by ignoring
 between-subject slope variation (Schielzeth &amp; Forstmeier 2009) — the
 inferential stake of the decision, visible in the table itself.</p>
 <p>Whether to <em>test</em> the slope at all is its own debate. The
 design-driven position includes every slope the design permits (Barr et
 al. 2013); parsimony advocates prune components the data cannot support
 (Matuschek et al. 2017); Gelman &amp; Hill (2007) would rather estimate
-and let partial pooling shrink a near-zero variance. The table serves
-all three positions: the components are always displayed with their
-uncertainty, and the test stays opt-in.</p>
+every component and let partial pooling do the pruning: when a variance
+is near zero, the group-level coefficients shrink almost entirely toward
+the common one, and the model collapses to the simpler fit on its own.
+The table serves all three positions: the components are always
+displayed with their uncertainty, and the test stays opt-in.</p>
 </div>
 <div class="section level2">
 <h2 id="generalized-linear-mixed-models">Generalized linear mixed models<a class="anchor" aria-label="anchor" href="#generalized-linear-mixed-models"></a>
@@ -880,25 +951,39 @@ disease across four periods:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 <p>The random-effect row is now on the <strong>log-odds scale</strong>
-(the linear predictor’s scale), not the outcome scale; σ = 0.64 means
-herds differ substantially in baseline incidence. The footer’s
-chi-bar-squared test (14.01 on 1 df, p &lt; .001) confirms the herd
-effect, and the Nakagawa R² pair carries over unchanged. No ICC row
-appears — for a trial-weighted <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> binomial response
-the single-trial latent-scale ICC is not defined, so none is printed; a
-Bernoulli 0/1 <code>glmer</code> shows one, computed on the latent logit
-scale (the residual variance is fixed at π²/3 there).</p>
+(the linear predictor’s scale), not the outcome scale: σ = 0.64 means a
+herd one SD above the average carries about e^0.64 ≈ 1.9 times the
+baseline <em>odds</em> of infection, so between-herd variation in
+susceptibility is far from negligible. Incidence falls across the trial
+— relative to period 1, the odds of new infection are 0.37 (period 2),
+0.32 (period 3), and 0.21 (period 4). The footer’s chi-bar-squared test
+(14.01 on 1 df, p &lt; .001) confirms the herd effect, and the Nakagawa
+R² pair carries over unchanged.</p>
+<p>No ICC row appears. The latent-scale formula σ² / (σ² + π²/3)
+describes a <em>single</em> Bernoulli trial, and it would still return a
+number here (0.11). But an aggregated <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> count is not
+a single trial: with denominators of varying size, the correlation
+between two rows no longer matches that single-trial quantity, so one
+printed ICC would be ambiguous and none is shown. A Bernoulli 0/1
+<code>glmer</code>, where every observation <em>is</em> one trial, shows
+it — computed on the latent logit scale, whose residual variance is
+fixed at π²/3.</p>
 </div>
 <div class="section level2">
 <h2 id="glmmtmb-beyond-lme4">
 <code>glmmTMB</code>: beyond <code>lme4</code><a class="anchor" aria-label="anchor" href="#glmmtmb-beyond-lme4"></a>
 </h2>
 <p><code>glmmTMB</code> fits reach the same table through the same code
-path, and bring two extra submodels. A zero-inflation
+path, and bring two extra components. A zero-inflation
 (<code>ziformula =</code>) or dispersion (<code>dispformula =</code>)
 component renders as its own labelled block of rows, with a footer line
 stating what the component models and on which scale — here with the
-<code>Salamanders</code> count data:</p>
+<code>Salamanders</code> count data. Sixty percent of these stream
+surveys count no salamanders, and the zeros cluster in mined sites (84%
+zero, against 38% elsewhere): some are ordinary sampling zeros, others
+sites that mining has rendered uninhabitable. The <code>ziformula</code>
+models the probability of that structural absence separately from
+abundance where salamanders can occur:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Salamanders"</span>, package <span class="op">=</span> <span class="st">"glmmTMB"</span><span class="op">)</span></span>
 <span><span class="va">zfit</span> <span class="op">&lt;-</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB</a></span><span class="op">(</span></span>
@@ -940,7 +1025,10 @@ stating what the component models and on which scale — here with the
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 <p>Note the per-block exponentiation: the count coefficients become
 <strong>IRR</strong>, while the logit zero-inflation coefficients become
-<strong>odds ratios of a structural zero</strong>. Component blocks are
+<strong>odds ratios of a structural zero</strong>. Read one number from
+each: relative to mined streams, unmined ones carry about three times
+the abundance (IRR 3.13) where salamanders occur at all, and about a
+fifth of the odds of structural absence (OR 0.18). Component blocks are
 covered in depth in the counts documentation
 (<code><a href="../reference/table_regression_models.html">?table_regression_counts</a></code>); opt out with
 <code>show_components = FALSE</code>.</p>
@@ -949,9 +1037,14 @@ covered in depth in the counts documentation
 <h2 id="nlmelme">
 <code>nlme::lme</code><a class="anchor" aria-label="anchor" href="#nlmelme"></a>
 </h2>
-<p>The classical engine renders through the same layout; its
-fixed-effect inference is the <strong>containment-df t-test</strong>
-native to <code>nlme</code>, and the footer says so:</p>
+<p>Beyond legacy code, <code>lme()</code> remains the engine of choice
+when the residuals need structure <code>lme4</code> cannot fit —
+heteroscedasticity across groups (<code>weights = varIdent()</code>) or
+serial correlation within them (<code>correlation = corAR1()</code>).
+Such fits flow through the same layout, and the footer’s
+boundary-corrected test refits the null carrying the same residual
+structure. Its fixed-effect inference is the <strong>containment-df
+t-test</strong> native to <code>nlme</code>, and the footer says so:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lfit</span> <span class="op">&lt;-</span> <span class="fu">nlme</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span>, random <span class="op">=</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span>,</span>
 <span>                  data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span>
@@ -1016,20 +1109,23 @@ dependence:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span></code></pre></div>
 <p>Requests that have no valid backend are refused with a clear error
-rather than silently ignored: <code>HC*</code> (an OLS concept,
-undefined for mixed models), <code>CR*</code> on <code>glmer</code> (no
-<code>clubSandwich</code> method), and the resampling estimators. For
-<code>glmmTMB</code>, <code>CR*</code> covers the conditional component
-only, and the footer discloses it.</p>
+rather than silently ignored: <code>HC*</code> (a single-level estimator
+whose sandwich assumes independent observations — the very dependence
+the random effects exist to model; use <code>CR*</code> instead),
+<code>CR*</code> on <code>glmer</code> (no <code>clubSandwich</code>
+method), and the resampling estimators. For <code>glmmTMB</code>,
+<code>CR*</code> covers the conditional component only, and the footer
+discloses it.</p>
 </div>
 <div class="section level2">
 <h2 id="standardized-coefficients">Standardized coefficients<a class="anchor" aria-label="anchor" href="#standardized-coefficients"></a>
 </h2>
 <p>Mixed fits support <code>standardized = "refit"</code> — the model is
-refit on z-scored data, the gold standard under correlated predictors
-(Cohen et al. 2003). The β rows inherit the same Satterthwaite reference
-distribution as their unstandardized counterparts, so B and β carry one
-consistent p per term:</p>
+refit on z-scored data (Cohen et al. 2003), for mixed models the only
+well-posed approach, since the marginal SD(y) has no unique
+decomposition across levels. The β rows inherit the same Satterthwaite
+reference distribution as their unstandardized counterparts, so B and β
+carry one consistent p per term:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"beta"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
@@ -1058,12 +1154,12 @@ consistent p per term:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
 <p>The algebraic shortcuts (<code>"posthoc"</code>,
-<code>"basic"</code>, <code>"smart"</code>) are not defined for mixed
-models — the marginal SD(y) has no unique decomposition across levels —
-and fall back to <code>"refit"</code> with a warning. Formulas with
-inline transforms (<code>log(x)</code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>) decline the
-refit and omit the β rows, with a warning; pre-compute the transformed
-column in <code>data</code> for an exact refit.</p>
+<code>"basic"</code>, <code>"smart"</code>) are therefore not defined
+for mixed models and fall back to <code>"refit"</code> with a warning.
+Formulas with inline transforms (<code>log(x)</code>,
+<code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>) decline the refit and omit the β rows, with a
+warning; pre-compute the transformed column in <code>data</code> for an
+exact refit.</p>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>

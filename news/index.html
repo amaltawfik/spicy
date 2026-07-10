@@ -128,6 +128,7 @@
 <code>gt</code> and <code>flextable</code> outputs now render in Quarto / R Markdown <strong>Word</strong>, PowerPoint, and PDF documents (they silently disappeared from non-HTML targets). A new <code>as_flextable()</code> method returns the underlying flextable for manual composition.</li>
 <li>
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now discloses robust and resampling SEs in its table note, carries its notes into every rich output, and accepts <code>cluster = ~region</code>.</li>
+<li>The random-effects LR test no longer prints a negative statistic (<code>-0.00</code>) on singular fits: the statistic is clamped at zero and the boundary p-value is now 1 – half the chi-bar-squared null distribution is a point mass at zero, so a zero statistic carries no evidence (it printed 0.500, the ceiling of the halved-chi-squared formula).</li>
 <li>
 <code>ci_level</code> now reaches the random-effect variance-component CIs; all three mixed engines hardcoded 95% for those rows.</li>
 <li>Large mixed fits no longer spend minutes on variance-component SEs: above <code>options("spicy.re_se_max_n")</code> (default 1000) those cells are omitted, with a note and a warning giving the override.</li>
