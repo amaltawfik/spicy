@@ -96,6 +96,7 @@ articles:
       - table-continuous
       - table-continuous-lm
       - table-regression
+      - categorical-predictors
       - table-regression-mixed
       - table-regression-counts
       - table-regression-survival
