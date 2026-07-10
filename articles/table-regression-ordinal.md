@@ -545,8 +545,16 @@ the primary analysis. Two caveats temper the rule: at moderate sample
 sizes these per-term tests have limited power, and one test per
 predictor invites multiplicity — so a borderline result argues for
 reporting the relaxed fit as a *sensitivity analysis*, not for switching
-automatically. The next two sections demonstrate the two relaxations,
-using smoking precisely because it is the borderline term.
+automatically. In large samples the opposite failure dominates: the
+tests reject routinely — Long & Freese (2014) report rejection in the
+majority of real applications — while also being sensitive to other
+kinds of misspecification, and the freed model’s *predictions* often
+barely differ from the proportional fit’s. When a test rejects, compare
+predicted probabilities across the two fits before restructuring the
+model. And a violated assumption is never a rationale for linear
+regression on the ordinal outcome, whose assumptions are stronger still
+(Long & Freese 2014). The next two sections demonstrate the two
+relaxations, using smoking precisely because it is the borderline term.
 
 ### Partial proportional odds: `nominal = ~`
 
