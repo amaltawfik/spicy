@@ -1914,14 +1914,19 @@ test_that("AUDIT round 6: family x link matrix -- 14 combos all run cleanly", {
 })
 
 test_that("AUDIT: Helmert and sum contrasts render without bogus ref row", {
+  # Since the non-default-contrasts lot, these rows GROUP under the
+  # parent variable (labelled by contrast-matrix column index) instead
+  # of rendering flat -- still with no reference row, since none
+  # exists under these codings.
   d <- mtcars
   d$cyl_h <- factor(d$cyl)
   contrasts(d$cyl_h) <- contr.helmert(3)
   fit_h <- glm(am ~ cyl_h, data = d, family = binomial)
   vars_h <- as.data.frame(table_regression(fit_h),
                             stringsAsFactors = FALSE)$Variable
-  expect_false(any(grepl("ref", vars_h)))    # no ref row for poly-style
-  expect_true("cyl_h1" %in% vars_h)
+  expect_false(any(grepl("ref", vars_h)))    # no ref row, ever
+  expect_true("cyl_h:" %in% vars_h)          # grouped header row
+  expect_true(any(trimws(vars_h) == "1"))    # contrast-column label
 
   d$cyl_s <- factor(d$cyl)
   contrasts(d$cyl_s) <- contr.sum(3)
@@ -1929,7 +1934,8 @@ test_that("AUDIT: Helmert and sum contrasts render without bogus ref row", {
   vars_s <- as.data.frame(table_regression(fit_s),
                             stringsAsFactors = FALSE)$Variable
   expect_false(any(grepl("ref", vars_s)))
-  expect_true("cyl_s1" %in% vars_s)
+  expect_true("cyl_s:" %in% vars_s)
+  expect_true(any(trimws(vars_s) == "2"))
 })
 
 test_that("AUDIT: long predictor names render correctly", {
