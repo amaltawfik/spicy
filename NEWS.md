@@ -123,8 +123,12 @@ rendering an empty column.
   every other class falls back to `nobs` + `AIC` instead of a blank
   block. The `N (groups)` row upgrades to plain counts (e.g.
   `N (Subject)`) when models share a single grouping factor.
-* Four new vignettes: *Mixed-effects*, *Multinomial*, *Count and
-  two-part*, and *Survival regression tables*.
+* Six new vignettes: *Mixed-effects*, *Multinomial*, *Count and
+  two-part*, *Survival*, and *Ordinal regression tables*, plus
+  *Categorical predictors* — a cross-cutting guide to dummy coding
+  and reference levels, joint tests of a factor, ordinal predictors
+  (scores vs dummies), successive-difference contrasts, and why
+  continuous predictors should not be categorized.
 
 ## Minor improvements
 
