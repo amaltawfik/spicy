@@ -6,7 +6,8 @@ description: >
   coefficients and ordered thresholds, odds ratios, per-outcome-category
   average marginal effects laid out as a probability matrix,
   cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines,
-  and the partial-proportional-odds caveat.
+  testing the proportional-odds assumption, and the partial
+  proportional odds and scale relaxations.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -56,17 +57,31 @@ survey data (`?sochealth`). `self_rated_health` is an ordered factor:
 levels(sochealth$self_rated_health)
 ```
 
-## The proportional-odds model in one paragraph
+Check this before fitting anything. `polr()` and `clm()` estimate on
+the factor's level order *as given* — they do not warn when the outcome
+is a plain (unordered) factor, or when the levels sit in the wrong
+order. Data read from text files is particularly exposed: `factor()`
+defaults to alphabetical levels (here `Fair, Good, Poor, Very good`),
+which would silently fit a nonsensical scale. And reversing the order
+negates every coefficient and marginal effect. Every interpretation
+below hinges on knowing the direction of the scale — here worst to
+best (Long &amp; Freese 2014).
+
+## The proportional-odds model
 
 A cumulative logit model with $K$ ordered response categories estimates
 **one slope per predictor** (shared across all $K-1$ cumulative
 splits — the *proportional-odds assumption*) plus $K-1$ ordered
-**thresholds** (cut-points). A positive slope means that higher values
-of the predictor push the response toward *higher* categories. There is
-deliberately **no per-category coefficient**: that is the whole point of
-the proportional-odds restriction. The per-category structure reappears
-only in the *marginal effects* (below), where a one-unit change has a
-different effect on the probability of each category.
+**thresholds** (cut-points). A positive location (proportional-odds)
+slope means that higher values of the predictor push the response
+toward *higher* categories. There is deliberately **no per-category
+coefficient**: the proportional-odds restriction collapses the effect
+into a single slope per predictor, trading per-category detail for one
+interpretable number. The per-category structure reappears in the
+*marginal effects* (below), where a one-unit change has a different
+effect on the probability of each category — and in the relaxations of
+the shared-slope restriction that `ordinal::clm()` offers (tested and
+demonstrated below).
 
 ## Basic table
 
@@ -97,43 +112,68 @@ Reading the table:
   p, like the predictor rows. They locate the category boundaries on the
   latent logit scale and replace the single intercept of a binary logit.
   They are reported on the log-odds scale and are **never
-  exponentiated**. The $z$-test against zero is rarely of interest (it
-  only asks whether the baseline cumulative split sits at 50/50), so do
-  not over-read a "significant" threshold -- the substantive headline is
-  the odds ratios and marginal effects below. Hide the block with
-  `show_thresholds = FALSE` to fall back to a compact footer line.
+  exponentiated**. The $z$-test against zero is rarely of interest — it
+  only asks whether the cumulative split sits at 50/50 at the profile
+  where *every* predictor equals zero, here a respondent aged 0, not a
+  meaningful case — so do not over-read a "significant" threshold; the
+  substance lies in the odds ratios and marginal effects below. Hide
+  the block with `show_thresholds = FALSE` to fall back to a compact
+  footer line.
 * Below the fit-stats rule, the model-fit block reports **N**, two
   pseudo-$R^2$ (**McFadden**, the Stata `ologit` default, and
-  **Nagelkerke**, the SPSS PLUM default), and **AIC**. Override with
-  `show_fit_stats` (e.g. `show_fit_stats = c("nobs", "AIC", "BIC")`).
+  **Nagelkerke**, the SPSS PLUM default), and **AIC**. Both compare the
+  fitted log-likelihood to the intercept-only model's, and both round
+  to 0.00 here: these four predictors explain almost none of the
+  variation in self-rated health. This survey model therefore
+  illustrates table mechanics and interpretation *wording*; read the
+  exemplary sentences below as templates, not as substantive findings.
+  Override the block with `show_fit_stats`
+  (e.g. `show_fit_stats = c("nobs", "AIC", "BIC")`).
 
 ## Odds ratios: `exponentiate = TRUE`
 
 On the logit scale a coefficient is a log cumulative-odds ratio.
 `exponentiate = TRUE` reports **odds ratios** instead, exponentiating
-the estimate and its CI bounds and rebranding the column header:
+the estimate and its CI bounds and relabelling the column header
+accordingly. This is link-specific: under `method = "cloglog"` the
+exponentiated coefficient is a **hazard ratio** (the grouped-time
+proportional-hazards reading) and the header and footer relabel to HR;
+under probit or cauchit the exponential has no ratio interpretation,
+and `exponentiate = TRUE` is refused with a clear error.
 
 ```{r or}
 table_regression(fit, exponentiate = TRUE)
 ```
 
-An OR above 1 raises the odds of being in a *higher* health category;
-below 1 lowers them. Smoking's OR here is interpretable as
-"smokers have lower odds of better self-rated health." The `Thresholds`
-rows stay on the **log-odds scale** (a cut-point is not an odds ratio,
-so it is never exponentiated); only the predictor coefficients become
-ORs, and the footer flags this.
+The OR here is a *cumulative* odds ratio: it multiplies the odds of
+scoring **above** any given cut-point rather than at or below it, and —
+because the model is proportional-odds — the same ratio applies at
+every cut-point (`Poor | Fair`, `Fair | Good`, `Good | Very good`). It
+is *not* the odds of landing in one specific category; that
+per-category detail is what the AME matrix below provides. For a
+location (proportional) coefficient, an OR above 1 raises the
+cumulative odds of being in a *higher* health category and an OR below
+1 lowers them — the non-proportional block later in this vignette
+follows the opposite convention. Exact reading for the one borderline
+effect here: smoking's OR of 0.76 means that, at every cut-point,
+smokers have about 24% lower odds of being in a higher health category
+rather than a lower one, adjusting for age, sex, and physical activity.
+The CI upper bound prints as 1.00 but is 0.997 before rounding; with
+p = .047 this is a borderline association, so treat the sentence as a
+wording template. The `Thresholds` rows stay on the **log-odds scale**
+(a cut-point is not an odds ratio, so it is never exponentiated); only
+the predictor coefficients become ORs, and the footer flags this.
 
 ## Average marginal effects: a probability matrix
 
-Odds ratios are multiplicative and live on the latent scale. For a
-reader-friendly, **probability-scale** summary, request average marginal
-effects (AME). Because an ordinal model predicts a probability for
-*every* response category, each predictor has **one AME per category** —
-the effect of the predictor on the probability of that category.
-`table_regression()` lays these out as the field-standard **matrix**:
-predictors in rows, response categories in columns (Long &amp; Freese
-2014; Williams 2012).
+Odds ratios are multiplicative and describe the (cumulative) odds, not
+probabilities directly. For a reader-friendly, **probability-scale**
+summary, request average marginal effects (AME). Because an ordinal
+model predicts a probability for *every* response category, each
+predictor has **one AME per category** — the effect of the predictor on
+the probability of that category. `table_regression()` lays these out
+as the field-standard **matrix**: predictors in rows, response
+categories in columns (Long &amp; Freese 2014; Williams 2012).
 
 ```{r ame}
 table_regression(fit, show_columns = c("b", "ame"))
@@ -146,13 +186,30 @@ How to read it, with the `smoking = Yes` row:
   other predictors at their observed values.
 * The effects **sum to ≈ 0 across the row**: a predictor *redistributes*
   probability mass between categories (the total probability is always
-  1). Here smoking moves mass *out of* the better categories and *into*
-  the worse ones.
+  1). Here smoking moves mass out of the better categories and into the
+  worse ones — about 4.8 points out of `Very good`, 4.2 into `Fair`.
 * Cells are **probabilities** (the 0–1 scale, matching
   `marginaleffects::avg_slopes()` and the binary-`glm` AME). An AME of
   `0.04` is a change of **4 percentage points** — *not* 4 percent. The
   footer note states this; reserve "percent" for multiplicative
   quantities such as odds ratios.
+
+An AME is the single-number summary of a fuller object: the predicted
+probability of each category as the predictor varies. When the story
+deserves more than one number per category — or to check that an
+average is not masking a non-monotone pattern — tabulate those
+probabilities directly:
+
+```{r avg-predictions}
+marginaleffects::avg_predictions(fit, by = "smoking")
+```
+
+Smokers' expected distribution sits lower on the scale than
+non-smokers' — `Very good` 20.9% versus 25.8%, `Fair` 26.1% versus
+21.9% — and the smoking AME row above is exactly the difference between
+these two profiles. For predicted-probability curves along a continuous
+predictor, `marginaleffects::plot_predictions()` plots the same
+quantities.
 
 Request only the AME matrix (drop the coefficient column) with
 `show_columns = "ame"`, or add the AME standard errors / CIs / p-values
@@ -162,12 +219,11 @@ with `"ame_se"`, `"ame_ci"`, `"ame_p"` (or the `"all_ame"` bundle):
 table_regression(fit, show_columns = "ame")
 ```
 
-Marginal effects are computed with
-[`marginaleffects::avg_slopes()`](https://marginaleffects.com) on the
-response (probability) scale, then cross-validated to it to machine
-precision. For a single-outcome model (binary `glm`, `lm`, mixed) the
-AME stays a single column — the per-category matrix appears only when
-the response has more than two categories.
+Marginal effects are the response-scale (probability) output of
+[`marginaleffects::avg_slopes()`](https://marginaleffects.com). For a
+single-outcome model (binary `glm`, `lm`, mixed) the AME stays a single
+column — the per-category matrix appears only when the response has
+more than two categories.
 
 ## Cluster-robust standard errors
 
@@ -184,9 +240,10 @@ table_regression(
 ```
 
 The footer switches to name the estimator and the clustering variable.
-Heteroskedasticity-consistent (`HC*`) and the `bootstrap` / `jackknife`
-resamplers are *not* defined for ordinal fits and are refused with a
-clear `spicy_unsupported_vcov` error rather than a silent fallback.
+Heteroskedasticity-consistent (`HC*`) estimators and the `bootstrap` /
+`jackknife` resamplers are *not* defined for ordinal fits and are
+refused with a clear `spicy_unsupported_vcov` error rather than a
+silent fallback.
 
 ## Standard errors and confidence intervals
 
@@ -230,33 +287,44 @@ clm_fit <- ordinal::clm(
 table_regression(clm_fit, show_columns = c("b", "ame"))
 ```
 
-### Scale effects and partial proportional odds
+### Testing proportional odds
 
-`clm` offers two relaxations of the basic model.
+The shared-slope restriction is a testable hypothesis, and the workflow
+is: fit, **test**, then relax only what fails (Long &amp; Freese 2014).
+`ordinal` provides a likelihood-ratio test per predictor:
+`nominal_test()` refits the model freeing each predictor across the
+cut-points and compares, and `scale_test()` does the same for a scale
+(dispersion) effect. For `polr` there is no built-in equivalent — the
+classic logit-specific check is Brant's (1990) test (package `brant`);
+`clm`'s tests are the likelihood-based generalisation.
 
-A **scale** component (`scale = ~`) lets the latent dispersion depend on
-covariates. The location coefficients remain a single shared block, so
-the table renders normally. Cluster-robust SEs are not available for
-scale fits (`sandwich` has no estimating-functions method for them), so
-`CR*` is refused up front with a clear `spicy_unsupported_vcov` error:
-
-```{r clm-scale, eval = have_ordinal}
-clm_scale <- ordinal::clm(
-  self_rated_health ~ age + smoking, scale = ~ smoking,
-  data = sochealth
-)
-table_regression(clm_scale)             # classical: renders normally
+```{r po-test, eval = have_ordinal}
+ordinal::nominal_test(clm_fit)
+ordinal::scale_test(clm_fit)
 ```
 
-```{r clm-scale-refuse, eval = have_ordinal, error = TRUE}
-table_regression(clm_scale, vcov = "CR2", cluster = ~region)
-```
+Each `nominal_test` row asks: does freeing this predictor across the
+$K-1$ cut-points (here 2 extra parameters) improve the fit? No term
+clearly fails. Smoking is the one borderline case (LRT = 5.15, df = 2,
+p = .076); age, sex and physical activity are firmly consistent with
+proportional odds (p &gt; .66), and no term shows a scale effect
+(p &gt; .21). The decision rule is to relax *only* the terms that
+fail — here none clearly does, so the proportional-odds table above is
+adequate as the primary analysis. Two caveats temper the rule: at
+moderate sample sizes these per-term tests have limited power, and one
+test per predictor invites multiplicity — so a borderline result argues
+for reporting the relaxed fit as a *sensitivity analysis*, not for
+switching automatically. The next two sections demonstrate the two
+relaxations, using smoking precisely because it is the borderline term.
 
-A **nominal** component (`nominal = ~`, *partial* proportional odds)
-lets a predictor's effect vary across the cut-points: it estimates a
-separate coefficient **per cut-point** for the nominal terms. These
-render as a labelled **`Non-proportional effects`** block — one row per
-cut-point — between the proportional coefficients and the thresholds:
+### Partial proportional odds: `nominal = ~`
+
+A **nominal** component frees a predictor's effect across the
+cut-points: a separate coefficient *per cut-point* instead of one
+shared slope — Peterson &amp; Harrell's (1990) *partial* proportional
+odds. These render as a labelled **`Non-proportional effects`** block —
+one row per cut-point — between the proportional coefficients and the
+thresholds:
 
 ```{r clm-nominal, eval = have_ordinal}
 clm_npo <- ordinal::clm(
@@ -266,13 +334,92 @@ clm_npo <- ordinal::clm(
 table_regression(clm_npo)
 ```
 
+The freed structure is read *within* the block: the smoking effect is
+concentrated at the lowest split (`Poor | Fair`: B = 0.82, p = .003)
+and near-null at the two higher splits (B = 0.22 and 0.24, p &gt; .16).
+That heterogeneity is what the shared slope averaged away, and what
+relaxing proportional odds buys.
+
+One trap, and it matters: **nominal coefficients carry the opposite
+sign to location coefficients.** `clm` folds nominal terms into the
+threshold side of the model — they shift the cut-points $\theta_j$
+rather than enter the slope — so a *positive* nominal coefficient
+raises the cumulative odds of being **at or below** that cut-point,
+pushing toward the *lower* categories there. Under
+`exponentiate = TRUE` the smoking row at `Poor | Fair` becomes
+OR = 2.28: a smoker's odds of rating health *Poor* (rather than Fair or
+better) are 2.28 times a non-smoker's. That is the same worsening of
+health the proportional fit expressed as OR = 0.76 (&lt; 1) on the
+higher-category side — reverse polarity, because the nominal term
+enters the threshold, not the slope. Do not apply the earlier
+location-coefficient sign rules to this block.
+
 Two caveats for the non-proportional terms, both surfaced by the table:
 robust / cluster SEs are **not available** (`sandwich` has no
 estimating-functions method, so a robust `vcov` is refused), and
 `ci_method = "profile"` covers the proportional coefficients only (the
-non-proportional and threshold rows stay Wald). Under
-`exponentiate = TRUE` each non-proportional coefficient becomes an odds
-ratio for its cut-point.
+non-proportional and threshold rows stay Wald).
+
+### Scale effects: `scale = ~`
+
+A **scale** component lets the *dispersion* of the latent response
+depend on covariates, relaxing the constant-variance assumption of the
+basic model. The motivating question is about spread, not location: is
+latent health more *variable* among smokers than non-smokers? Test it
+like any nested pair:
+
+```{r clm-scale-test, eval = have_ordinal}
+clm_loc <- ordinal::clm(
+  self_rated_health ~ age + smoking,
+  data = sochealth
+)
+clm_scale <- ordinal::clm(
+  self_rated_health ~ age + smoking, scale = ~ smoking,
+  data = sochealth
+)
+anova(clm_loc, clm_scale)
+```
+
+No evidence here (LR = 1.51, df = 1, p = .220). The scale coefficient
+lives on the **log standard-deviation** metric: the estimate of 0.09
+says smokers' latent SD is exp(0.09) ≈ 1.10 — about 10% larger — but
+the CI includes 0 on the log scale, so the data cannot distinguish it
+from equal spread. The table renders the location coefficients, a
+subordinate **`Scale effects`** block for the scale coefficients, and
+the thresholds; the footer states the log-SD scale. Scale rows are
+never exponentiated — their exponential is a ratio of latent standard
+deviations, not an odds ratio:
+
+```{r clm-scale, eval = have_ordinal}
+table_regression(clm_scale)
+```
+
+Cluster-robust SEs are not available for scale fits (`sandwich` has no
+estimating-functions method for them), so `CR*` is refused up front
+with a clear `spicy_unsupported_vcov` error:
+
+```{r clm-scale-refuse, eval = have_ordinal, error = TRUE}
+table_regression(clm_scale, vcov = "CR2", cluster = ~region)
+```
+
+### Choosing an ordinal specification
+
+The driving question is what to do when proportional odds fails — or
+was never plausible.
+
+* When the tests pass, the shared-slope cumulative model is the most
+  parsimonious choice: one slope per predictor, one table row each.
+* When a *few* predictors fail, free just those with `nominal = ~` and
+  report the freed fit, at least as a sensitivity analysis.
+* When the assumption fails *broadly*, or the ordering of the response
+  is itself doubtful, abandon ordinality for **multinomial logit** —
+  the standard unconstrained alternative (Long &amp; Freese 2014),
+  compared to the ordinal fit by AIC — covered in the
+  [multinomial vignette](table-regression-multinomial.html).
+* For asymmetric responses and grouped survival times, the **cloglog**
+  link (`method = "cloglog"` in `polr`, `link = "cloglog"` in `clm`)
+  replaces the odds-ratio reading with a hazard-ratio one, connecting
+  the link menu above to a modelling rationale.
 
 ## Several models side by side
 
@@ -305,8 +452,9 @@ table_regression(fit, show_columns = c("b", "ame"), output = "gt")
 ```
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,
-one row per `(term, estimate_type)`; per-category AME rows carry the
-response category in the `outcome_level`-derived structure:
+one row per `(term, estimate_type, outcome_level)`; each per-category
+AME row is labelled by its response category in the `outcome_level`
+column:
 
 ```{r broom}
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
@@ -316,8 +464,14 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 
 * Agresti, A. (2010). *Analysis of Ordinal Categorical Data* (2nd ed.).
   Wiley.
+* Brant, R. (1990). Assessing proportionality in the proportional odds
+  model for ordinal logistic regression. *Biometrics*, 46(4),
+  1171–1178.
 * Long, J. S., &amp; Freese, J. (2014). *Regression Models for
   Categorical Dependent Variables Using Stata* (3rd ed.). Stata Press.
+* Peterson, B., &amp; Harrell, F. E. (1990). Partial proportional odds
+  models for ordinal response variables. *Journal of the Royal
+  Statistical Society: Series C (Applied Statistics)*, 39(2), 205–217.
 * Williams, R. (2012). Using the margins command to estimate and
   interpret adjusted predictions and marginal effects. *The Stata
   Journal*, 12(2), 308–331.

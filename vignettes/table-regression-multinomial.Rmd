@@ -166,7 +166,7 @@ One scope note: `multinom` fits report **classical Wald-z inference
 only** — a robust or cluster-robust `vcov` request is refused with an
 explanatory error rather than silently ignored.
 
-## Odds ratios — and what Stata calls them
+## Odds ratios: `exponentiate = TRUE`
 
 `exponentiate = TRUE` puts the estimates and CI bounds on the ratio
 scale:
