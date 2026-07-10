@@ -244,7 +244,9 @@ restricted-mean-survival-time difference over <code>[0, tau]</code>
 (<code>coxph</code> fits only). A positive time on the outcome's scale, or
 <code>"minmax"</code> for the smallest per-group maximum follow-up (the
 resolved value is disclosed in the table note). No default: the
-horizon defines the estimand.</p></dd>
+horizon defines the estimand. Stratified fits (<code>strata()</code>) are
+supported: standardization keeps each subject's own stratum
+baseline, disclosed in the table note.</p></dd>
 
 
 <dt id="arg-at-time">at_time<a class="anchor" aria-label="anchor" href="#arg-at-time"></a></dt>

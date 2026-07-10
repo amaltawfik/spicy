@@ -319,17 +319,20 @@ scales, each averaged over the sample’s covariate mix. That cuts both
 ways: computed from the fit, they inherit its assumptions — with
 proportionality in doubt, estimate the RMST nonparametrically (per-arm
 Kaplan–Meier, as in <code>survRM2</code>) rather than standardizing a
-misspecified model. Being female adds an average of <strong>40.5
-event-free days</strong> over the first year (95% CI 17 to 64) and
-lowers the one-year risk of death by <strong>19 percentage
-points</strong> (95% CI 8 to 30); each additional ECOG point costs 38
-days and adds 15 percentage points to one-year risk. And the age row
-teaches that the contrast unit matters as much as the scale: per
-<strong>year</strong> of age the effect is invisible (HR 1.01, under a
-day of RMST), but per <strong>decade</strong> — the clinically natural
-unit — the same fit implies HR 1.12 and about nine fewer event-free
-days. Rescale the predictor when the per-unit contrast is not the
-meaningful one.</p>
+misspecified model. Stratified fits work too: standardization keeps each
+subject’s own stratum baseline — only the exposure is set
+counterfactually — and the note discloses it; the strata variable itself
+gets no contrast row, exactly as it has no hazard ratio. Being female
+adds an average of <strong>40.5 event-free days</strong> over the first
+year (95% CI 17 to 64) and lowers the one-year risk of death by
+<strong>19 percentage points</strong> (95% CI 8 to 30); each additional
+ECOG point costs 38 days and adds 15 percentage points to one-year risk.
+And the age row teaches that the contrast unit matters as much as the
+scale: per <strong>year</strong> of age the effect is invisible (HR
+1.01, under a day of RMST), but per <strong>decade</strong> — the
+clinically natural unit — the same fit implies HR 1.12 and about nine
+fewer event-free days. Rescale the predictor when the per-unit contrast
+is not the meaningful one.</p>
 <p>Two design decisions shape these columns. First, <strong>the horizon
 is mandatory</strong>: an RMST without its <code>tau</code> is not an
 estimand, so <code><a href="../reference/table_regression.html">table_regression()</a></code> refuses to guess — pass a

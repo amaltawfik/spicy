@@ -129,6 +129,7 @@
 <code>gt</code> and <code>flextable</code> outputs now render in Quarto / R Markdown <strong>Word</strong>, PowerPoint, and PDF documents (they silently disappeared from non-HTML targets). A new <code>as_flextable()</code> method returns the underlying flextable for manual composition.</li>
 <li>
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> now discloses robust and resampling SEs in its table note, carries its notes into every rich output, and accepts <code>cluster = ~region</code>.</li>
+<li>The RMST and risk-difference columns now support stratified Cox models (<code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code>): g-computation keeps each subject’s own stratum baseline, and the table note says so. The strata variable itself gets no contrast row. Cross-validated against <code>adjustedCurves::adjusted_rmst()</code> (exact).</li>
 <li>
 <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> fits gain opt-in dispersion fit-stat rows: <code>show_fit_stats</code> tokens <code>"theta"</code> (the NB2 dispersion) and <code>"alpha"</code> (its reciprocal, the Stata convention). Refused with a clear error for other families.</li>
 <li>

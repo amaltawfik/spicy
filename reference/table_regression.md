@@ -164,6 +164,8 @@ table_regression(
   only). A positive time on the outcome's scale, or `"minmax"` for the
   smallest per-group maximum follow-up (the resolved value is disclosed
   in the table note). No default: the horizon defines the estimand.
+  Stratified fits (`strata()`) are supported: standardization keeps each
+  subject's own stratum baseline, disclosed in the table note.
 
 - at_time:
 
