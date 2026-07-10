@@ -139,7 +139,10 @@ with random effects.</li>
 the number of articles published by 915 biochemistry PhD students in the
 last three years of their doctorate, with gender, marital status,
 children under six, and the mentor’s article count as predictors. Thirty
-percent of the students published nothing:</p>
+percent of the students published nothing — a striking share that on its
+own proves nothing: whether those zeros are <em>excess</em> is a
+question about a fitted count model, not about the raw percentage (Long
+1997). The model-comparison section below answers it.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"bioChemists"</span>, package <span class="op">=</span> <span class="st">"pscl"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">bioChemists</span><span class="op">$</span><span class="va">art</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span></span>
@@ -151,13 +154,15 @@ percent of the students published nothing:</p>
 link, so <code>exponentiate = TRUE</code> turns each coefficient into an
 <strong>incidence rate ratio</strong> (IRR) — a multiplicative effect on
 the expected count. Real count data usually violate the Poisson
-assumption in one or both of two ways: the variance exceeds the mean
-(<strong>overdispersion</strong> — the negative binomial’s job), and
-there are more zeros than the count process predicts (<strong>excess
-zeros</strong> — the job of the zero-inflated and hurdle models, which
-add a second, binary submodel for the zeros). Each extension changes
-what the table must show, and the sections below follow that
-escalation.</p>
+assumption in one or both of two ways: the conditional variance exceeds
+the conditional mean (<strong>overdispersion</strong> — the negative
+binomial’s job), and there are more zeros than the count process
+predicts (<strong>excess zeros</strong> — the job of the zero-inflated
+and hurdle models, which add a second, binary submodel for the zeros).
+The two are entangled: unmodelled dispersion surfaces as apparent excess
+zeros, so the model comparison at the end of this vignette, not the raw
+zero count, arbitrates. Each extension changes what the table must show,
+and the sections below follow that escalation.</p>
 </div>
 <div class="section level2">
 <h2 id="poisson-baseline">Poisson baseline<a class="anchor" aria-label="anchor" href="#poisson-baseline"></a>
@@ -189,24 +194,43 @@ escalation.</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
-<p>Each IRR multiplies the expected article count: women publish about
-20% less than men (IRR 0.80), and each additional mentor publication
-raises a student’s rate by 3% (IRR 1.03). Inference is Wald-z on the
-link scale; the footer records the SE and CI conventions.</p>
+<p>Each IRR multiplies the expected article count, holding the other
+predictors constant: the expected count for women is about 20% lower
+than for otherwise-similar men (IRR 0.80), and each additional mentor
+publication raises a student’s expected count by 2.6% (IRR 1.03 as
+displayed; exp(0.0256) = 1.026). Inference is Wald-z on the link scale;
+the footer records the SE and CI conventions.</p>
 <p>One remark for rate data: the observation window here is a fixed
 three years for everyone, so no exposure adjustment is needed. With
 unequal exposure — person-years, plot area, time at risk — add
 <code>offset(log(exposure))</code> to the formula as usual; the offset
-is absorbed silently (no spurious coefficient row) and the IRRs read as
-rate ratios per unit of exposure.</p>
+is absorbed silently (no spurious coefficient row). The model then
+targets the rate per unit of exposure — articles per person-year, counts
+per hectare — and the exponentiated coefficients are still rate ratios,
+read exactly as before.</p>
 </div>
 <div class="section level2">
 <h2 id="overdispersion-the-negative-binomial">Overdispersion: the negative binomial<a class="anchor" aria-label="anchor" href="#overdispersion-the-negative-binomial"></a>
 </h2>
-<p>The articles’ variance is far above their mean, and a Poisson model
-reacts by <strong>understating the standard errors</strong>.
-<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> adds a dispersion parameter:</p>
+<p>Poisson regression assumes the <strong>conditional</strong> variance
+equals the conditional mean. A raw comparison of the marginal moments
+does not by itself establish otherwise — covariates alone push the
+marginal variance above the marginal mean — so the check belongs to the
+fitted model: the Pearson dispersion statistic of the Poisson fit is
+1.82, where equidispersion would give roughly 1.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">bioChemists</span><span class="op">$</span><span class="va">art</span><span class="op">)</span>, var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span><span class="op">(</span><span class="va">bioChemists</span><span class="op">$</span><span class="va">art</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     mean      var </span></span>
+<span><span class="co">#&gt; 1.692896 3.709742</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">residuals</a></span><span class="op">(</span><span class="va">fit_pois</span>, <span class="st">"pearson"</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/stats/df.residual.html" class="external-link">df.residual</a></span><span class="op">(</span><span class="va">fit_pois</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1.824161</span></span></code></pre></div>
+<p>A Poisson model answers such overdispersion by <strong>understating
+the standard errors</strong>. <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> fits the NB2
+model, adding a dispersion parameter <span class="math inline">\(\theta\)</span> with <span class="math inline">\(\mathrm{Var}(Y \mid x) = \mu +
+\mu^2/\theta\)</span> — smaller <span class="math inline">\(\theta\)</span> means stronger overdispersion, and
+the Poisson is the limiting case <span class="math inline">\(\theta \to
+\infty\)</span>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_nb</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">glm.nb</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span>, data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_nb</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Negative-binomial regression: art</span></span></span>
@@ -232,10 +256,17 @@ reacts by <strong>understating the standard errors</strong>.
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Model-based (asymptotic).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
-<p>The IRRs barely move, but the inference does: marriage drops from p =
-.013 under Poisson to p = .072 here — the Poisson significance was an
-artifact of ignored overdispersion. AIC falls from 3312 to 3134, and
-that comparison returns below.</p>
+<p>Here <code>summary(fit_nb)</code> reports <span class="math inline">\(\hat\theta\)</span> = 2.26 (SE 0.27); readers
+trained on Stata know its reciprocal, <span class="math inline">\(\alpha
+= 1/\theta\)</span> = 0.44. The likelihood-ratio test of the Poisson
+restriction — a boundary test, so its p-value is halved — rejects
+decisively (LR = 180.3, p &lt; .001). <code><a href="https://rdrr.io/pkg/glmmTMB/man/nbinom2.html" class="external-link">glmmTMB::nbinom2</a></code>,
+used in the mixed-model section below, is the same NB2
+parameterization.</p>
+<p>The IRRs barely move, but the inference does: the evidence for
+marriage weakens (p = .013 under Poisson, p = .072 here) — the Poisson
+significance was an artifact of ignored overdispersion. AIC falls from
+3312.3 to 3134.1, and that comparison returns below.</p>
 </div>
 <div class="section level2">
 <h2 id="excess-zeros-zero-inflation-and-hurdle">Excess zeros: zero-inflation and hurdle<a class="anchor" aria-label="anchor" href="#excess-zeros-zero-inflation-and-hurdle"></a>
@@ -244,22 +275,33 @@ that comparison returns below.</p>
 difference matters for interpretation:</p>
 <ul>
 <li>A <strong>zero-inflated</strong> model (<code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">zeroinfl()</a></code>;
-Lambert 1992) says some zeros are <em>structural</em>: a latent group
-that would never publish regardless of the count process. Its zero
-component models the probability of being such a <strong>structural
-zero</strong>.</li>
+Lambert 1992) says some zeros are <em>structural</em>: they come from a
+latent group that would never publish, regardless of the count process.
+Its zero component models the probability of being such a
+<strong>structural zero</strong>.</li>
 <li>A <strong>hurdle</strong> model (<code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">hurdle()</a></code>; Mullahy
-1986) says all zeros come from one hurdle: first you publish at all or
-you do not, then a truncated count process decides how much. Its zero
-component models the probability of a <strong>nonzero count</strong> —
-the <em>opposite direction</em>.</li>
+1986) says all zeros have a single source, the hurdle: first you publish
+at all or you do not; a truncated count process then decides how many.
+Its zero component models the probability of a <strong>nonzero
+count</strong> — the <em>opposite direction</em>.</li>
 </ul>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> renders the count coefficients first
 and the zero component as a labelled block, with a footer line stating
 exactly what the block models. Under <code>exponentiate = TRUE</code>
 the exponentiation is <strong>per block</strong>: count coefficients
-become IRR, and the logit zero component becomes odds ratios:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+become IRRs for the underlying count process — for
+<code>zeroinfl</code>, the rate among units not in the structural-zero
+class; for <code>hurdle</code>, the latent untruncated rate — not
+multiplicative effects on the overall expected count E(Y); the zero
+component’s logit coefficients become odds ratios. (For a single number
+on the E(Y) scale, see the combined AME below.)</p>
+<p>In the two-part formula the segment after <code>|</code> specifies
+the zero model. Here all four covariates drive how much publishers
+publish, while only the mentor’s productivity governs membership in the
+never-publishing class — a deliberate restriction of the full inflation
+equation (Zeileis et al. 2008). The inflation equation is a substantive
+hypothesis to specify, not a default to accept.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_zip</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">zeroinfl</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span> <span class="op">|</span> <span class="va">ment</span>,</span>
 <span>                    data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -289,7 +331,7 @@ become IRR, and the logit zero component becomes odds ratios:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_hur</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">hurdle</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span> <span class="op">|</span> <span class="va">ment</span>,</span>
 <span>                  data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_hur</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -328,74 +370,103 @@ odds ratios:</p>
 <li>Zero hurdle block: OR 1.08 — each mentor publication <strong>raises
 the odds of publishing at all</strong>.</li>
 </ul>
-<p>Both say productive mentors get students over the zero. Reading
-either number without its block label invites a sign error; the block
-labels and their footer lines exist to prevent it. As for choosing
-between the two: fit rarely decides — here the AICs are nearly tied
-(3225.5 vs 3233.8) — so let the substantive story choose. Zero-inflation
-fits when some units plausibly <em>can never</em> experience the event
-(a latent never-publisher class); a hurdle fits when everyone faces the
-same all-or-nothing first stage. Zero-component coefficients are
-substantive hypotheses: they take significance stars and join the
-<code>p_adjust</code> family like any other coefficient. To display only
-the count part, set <code>show_components = FALSE</code> (the model is
-still estimated in full).</p>
+<p>Both blocks say the same thing: a productive mentor makes an observed
+zero less likely. Reading either number without its block label invites
+a sign error; the block labels and their footer lines exist to prevent
+it.</p>
+<p>As for choosing between the two: AIC leans toward the zero-inflated
+variant here (3225.5 vs 3233.8; the two models have the same number of
+parameters, so this is a pure likelihood comparison) — though both
+Poisson two-part models still trail the plain negative binomial of the
+previous section, a comparison the next section takes up. The real
+choice is substantive, not statistical: no information criterion can
+tell you whether the zeros are structural or sampling zeros.
+Zero-inflation fits when some units plausibly <em>can never</em>
+experience the event (a latent never-publisher class); a hurdle fits
+when no one is immune — all zeros arise from a single all-or-nothing
+first stage, one process, with its own covariates, deciding whether
+anything is published at all. One mechanical difference also separates
+them: zero inflation can only <em>add</em> zeros to the count process,
+whereas the hurdle frees the zero probability in either direction — it
+alone can accommodate <em>fewer</em> zeros than the count process
+implies (Cameron &amp; Trivedi 2013).</p>
+<p>Zero-component coefficients test substantive hypotheses: they take
+significance stars, and <code>p_adjust</code> corrections treat them as
+part of the same family as the count-component coefficients. To display
+only the count part, set <code>show_components = FALSE</code> (the model
+is still estimated in full).</p>
 </div>
 <div class="section level2">
 <h2 id="which-count-model-side-by-side">Which count model? Side by side<a class="anchor" aria-label="anchor" href="#which-count-model-side-by-side"></a>
 </h2>
-<p>The escalation is a model-comparison question, and the table lays it
-out. Per Long (1997) and Cameron &amp; Trivedi (2013), much of what
-looks like zero-inflation <em>is</em> overdispersion — the AIC row makes
-the point. (The once-standard Vuong test is not used here: it is no
-longer recommended for testing zero-inflation — Wilson 2015 — so
-information criteria and substantive reasoning carry the
-comparison.)</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>Before comparing likelihoods, run the diagnostic the zero question
+actually asks: are there more zeros than a fitted count model implies?
+Compare the observed zero share with the share each model predicts:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>observed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">bioChemists</span><span class="op">$</span><span class="va">art</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  poisson  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">dpois</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit_pois</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  negbin   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/NegBinomial.html" class="external-link">dnbinom</a></span><span class="op">(</span><span class="fl">0</span>, mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit_nb</span><span class="op">)</span>, size <span class="op">=</span> <span class="va">fit_nb</span><span class="op">$</span><span class="va">theta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  observed   poisson    negbin </span></span>
+<span><span class="co">#&gt; 0.3005464 0.2090480 0.3035314</span></span></code></pre></div>
+<p>The Poisson underpredicts the zeros badly (0.21 against 0.30
+observed), but the negative binomial reproduces them almost exactly
+(0.30) — <em>without any zero component at all</em>. The apparent excess
+of zeros was overdispersion. This is the point Long (1997) and Cameron
+&amp; Trivedi (2013) make, and the AIC row now confirms it. (The
+once-standard Vuong test is not used here: it is no longer recommended
+for testing zero-inflation — Wilson 2015 — so information criteria and
+substantive reasoning carry the comparison.)</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_zinb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">zeroinfl</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span> <span class="op">|</span> <span class="va">ment</span>,</span>
 <span>                     data <span class="op">=</span> <span class="va">bioChemists</span>, dist <span class="op">=</span> <span class="st">"negbin"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Poisson <span class="op">=</span> <span class="va">fit_pois</span>, <span class="st">"Neg. binomial"</span> <span class="op">=</span> <span class="va">fit_nb</span>, ZINB <span class="op">=</span> <span class="va">fit_zinb</span><span class="op">)</span>,</span>
-<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Poisson <span class="op">=</span> <span class="va">fit_pois</span>, ZIP <span class="op">=</span> <span class="va">fit_zip</span>, NB <span class="op">=</span> <span class="va">fit_nb</span>, ZINB <span class="op">=</span> <span class="va">fit_zinb</span><span class="op">)</span>,</span>
+<span>  show_columns <span class="op">=</span> <span class="st">"b"</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression comparison: art</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                       Poisson      Neg. binomial        ZINB      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ──────────────  ──────────────  ────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   IRR      p      IRR      p      IRR      p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>    1.41  &lt;.001     1.35  &lt;.001     1.51  &lt;.001 </span></span>
-<span><span class="co">#&gt;  fem:            <span style="color: #9E9E9E;">│</span>                                                </span></span>
-<span><span class="co">#&gt;    Men (ref.)    <span style="color: #9E9E9E;">│</span>     –     –         –     –         –     –    </span></span>
-<span><span class="co">#&gt;    Women         <span style="color: #9E9E9E;">│</span>    0.80  &lt;.001     0.81   .003     0.81   .003 </span></span>
-<span><span class="co">#&gt;  mar:            <span style="color: #9E9E9E;">│</span>                                                </span></span>
-<span><span class="co">#&gt;    Single (ref.) <span style="color: #9E9E9E;">│</span>     –     –         –     –         –     –    </span></span>
-<span><span class="co">#&gt;    Married       <span style="color: #9E9E9E;">│</span>    1.16   .013     1.16   .072     1.15   .085 </span></span>
-<span><span class="co">#&gt;  kid5            <span style="color: #9E9E9E;">│</span>    0.83  &lt;.001     0.84  &lt;.001     0.85   .001 </span></span>
-<span><span class="co">#&gt;  ment            <span style="color: #9E9E9E;">│</span>    1.03  &lt;.001     1.03  &lt;.001     1.02  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Zero-inflation: <span style="color: #9E9E9E;">│</span>                                                </span></span>
-<span><span class="co">#&gt;    (Intercept)   <span style="color: #9E9E9E;">│</span>                                    0.45   .022 </span></span>
-<span><span class="co">#&gt;    ment          <span style="color: #9E9E9E;">│</span>                                    0.54   .013 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915             915             915           </span></span>
-<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>    0.05            0.03                        </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.19            0.11                        </span></span>
-<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3312.3          3134.1          3122.5         </span></span>
+<span><span class="co">#&gt;                    Poisson    ZIP      NB      ZINB   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ───────  ───────  ───────  ─────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   IRR      IRR      IRR      IRR   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>    1.41     1.84     1.35     1.51 </span></span>
+<span><span class="co">#&gt;  fem:            <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Men (ref.)    <span style="color: #9E9E9E;">│</span>     –        –        –        –   </span></span>
+<span><span class="co">#&gt;    Women         <span style="color: #9E9E9E;">│</span>    0.80     0.80     0.81     0.81 </span></span>
+<span><span class="co">#&gt;  mar:            <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Single (ref.) <span style="color: #9E9E9E;">│</span>     –        –        –        –   </span></span>
+<span><span class="co">#&gt;    Married       <span style="color: #9E9E9E;">│</span>    1.16     1.14     1.16     1.15 </span></span>
+<span><span class="co">#&gt;  kid5            <span style="color: #9E9E9E;">│</span>    0.83     0.85     0.84     0.85 </span></span>
+<span><span class="co">#&gt;  ment            <span style="color: #9E9E9E;">│</span>    1.03     1.02     1.03     1.02 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Zero-inflation: <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    (Intercept)   <span style="color: #9E9E9E;">│</span>             0.50              0.45 </span></span>
+<span><span class="co">#&gt;    ment          <span style="color: #9E9E9E;">│</span>             0.88              0.54 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915      915      915      915    </span></span>
+<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>    0.05              0.03          </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.19              0.11          </span></span>
+<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3312.3   3225.5   3134.1   3122.5  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: Poisson regression; Model 2: negative-binomial regression; Model 3: negative-binomial zero-inflated regression.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: Poisson regression; Model 2: Poisson zero-inflated regression; Model 3: negative-binomial regression; Model 4: negative-binomial zero-inflated regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 1: classical (Fisher information)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Model-based (asymptotic)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 3: Wald asymptotic (z)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Wald asymptotic (z)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 3: Model-based (asymptotic)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 4: Wald asymptotic (z)</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; CI bounds exponentiated.</span></span></span></code></pre></div>
-<p>The negative binomial alone recovers most of the fit (AIC 3312 →
-3134); adding the inflation part on top buys a further, modest
-improvement (3122). The zero block simply stays empty in the columns of
-models that have none. Substantively the IRRs agree across all three —
-what changes is the inference and the account of the zeros.</p>
+<p>Read the AIC row across. The ZIP’s entire inflation component buys
+less than the negative binomial’s single dispersion parameter (3225.5
+against 3134.1): modelling the zeros directly is the <em>worse</em>
+answer to overdispersion here. On top of the negative binomial, the
+inflation part adds only a modest further gain (3134.1 → 3122.5). The
+hurdle (AIC 3233.8) sits with the ZIP, and the previous section argued
+that choosing between those two is substantive, not fit-based. The zero
+block simply stays empty in the columns of models that have none, and
+substantively the IRRs agree across all four — what changes is the
+inference and the account of the zeros.</p>
 </div>
 <div class="section level2">
 <h2 id="one-number-per-predictor-the-combined-ame">One number per predictor: the combined AME<a class="anchor" aria-label="anchor" href="#one-number-per-predictor-the-combined-ame"></a>
@@ -406,7 +477,7 @@ effects: the AME of a two-part model is the effect on the
 <strong>overall expected count</strong> E(Y), combining the count and
 zero processes (computed by <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>
 on the full model):</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson zero-inflated regression: art</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -433,20 +504,28 @@ on the full model):</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span></code></pre></div>
-<p>Being a woman costs about a third of an article (AME −0.36) once both
-channels are combined; the zero-component rows carry no AME of their own
-because the combined effect already includes them.</p>
+<p>Averaged over the sample’s covariate values, women are expected to
+publish 0.36 fewer articles over the three years than comparable men
+(AME −0.36) — one number combining both components; the zero-component
+rows carry no AME of their own because the combined effect already
+includes them.</p>
+<p>For the remaining standard interpretive devices — predicted counts,
+or the probability of specific counts such as Pr(Y = 0), at
+substantively chosen covariate values — go back to the fitted model:
+<code>predict(fit_zip, newdata = ..., type = "prob")</code>, or
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/predictions.html" class="external-link">marginaleffects::predictions()</a></code> with
+<code>datagrid()</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="cluster-robust-variance">Cluster-robust variance<a class="anchor" aria-label="anchor" href="#cluster-robust-variance"></a>
 </h2>
-<p>Students cluster in labs, journals, cohorts. The <code>CR*</code>
-family covers <strong>both components with one estimator</strong> —
-<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> on the full score matrix, so the count
-and zero rows shift together. For two-part models every <code>CR*</code>
-variant maps to that same estimator, and the footer records it as
-<code>CL</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>Students cluster in labs, cohorts, mentor groups. The
+<code>CR*</code> family covers <strong>both components with one
+estimator</strong> — <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> on the full score
+matrix, so the count and zero rows shift together. For two-part models
+every <code>CR*</code> variant maps to that same estimator, and the
+footer records it as <code>CL</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">bioChemists</span><span class="op">$</span><span class="va">lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">60</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">bioChemists</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, vcov <span class="op">=</span> <span class="st">"CR0"</span>, cluster <span class="op">=</span> <span class="va">bioChemists</span><span class="op">$</span><span class="va">lab</span>,</span>
@@ -475,11 +554,17 @@ variant maps to that same estimator, and the footer records it as
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CL), clusters by lab.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero.</span></span></span></code></pre></div>
-<p>With clustering acknowledged (here a synthetic 60-lab assignment for
-illustration), marriage loses its significance (p = .041 → .147) — the
-usual fate of borderline effects under a proper dependence structure.
-<code>HC*</code> and the resampling estimators have no two-part backend
-and are refused with a clear error.</p>
+<p>Do not read the shift here as the effect of clustering. The labs are
+assigned at random, so they carry no real dependence: most of the
+movement in marriage (p = .041 → .147) comes from the sandwich estimator
+no longer trusting the ZIP’s model-based variance — unclustered robust
+SEs give p ≈ .11 — and the rest is noise in the synthetic labels. What
+the example demonstrates is mechanical: both components shift together
+under one <code>CL</code> estimator. With genuinely clustered data,
+positive within-cluster dependence widens the intervals further, and
+borderline effects are typically the first casualties. <code>HC*</code>
+and the resampling estimators have no two-part backend and are refused
+with a clear error.</p>
 </div>
 <div class="section level2">
 <h2 id="mixed-counts-glmmtmb">Mixed counts: <code>glmmTMB</code><a class="anchor" aria-label="anchor" href="#mixed-counts-glmmtmb"></a>
@@ -489,7 +574,7 @@ al. 2017) combines everything above with random effects: the
 zero-inflation block, the random-effects block, and per-block
 exponentiation appear in one table — here salamander counts in mined and
 unmined streams (Price et al. 2016):</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Salamanders"</span>, package <span class="op">=</span> <span class="st">"glmmTMB"</span><span class="op">)</span></span>
 <span><span class="va">fit_mix</span> <span class="op">&lt;-</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB</a></span><span class="op">(</span></span>
 <span>  <span class="va">count</span> <span class="op">~</span> <span class="va">mined</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">site</span><span class="op">)</span>,</span>
@@ -528,10 +613,14 @@ unmined streams (Price et al. 2016):</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
-<p>Unmined streams host over four times the salamander rate (IRR 4.34)
-<em>and</em> have far lower odds of a structural zero (OR 0.10) — the
-two channels tell one coherent ecological story. The random-effects
-block and its conventions are covered in the companion vignette <a href="table-regression-mixed.html"><em>Mixed-effects regression
+<p>Among streams not in the structural-zero state, unmined ones host
+salamanders at over four times the rate of mined ones (IRR 4.34); they
+are also far less likely to be structural zeros in the first place (OR
+0.10). Because the two components compound, the overall abundance gap is
+larger than either alone — the model-implied expected count is about 8.7
+times higher in unmined streams — one coherent ecological story told in
+two parts. The random-effects block and its conventions are covered in
+the companion vignette <a href="table-regression-mixed.html"><em>Mixed-effects regression
 tables</em></a>.</p>
 </div>
 <div class="section level2">
@@ -542,7 +631,7 @@ tables</em></a>.</p>
 frame, a long broom-style tibble, and the rich <code>gt</code>,
 <code>flextable</code>, <code>tinytable</code>, Excel, or Word
 targets:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           Variable       B   SE         95% CI     p</span></span>
 <span><span class="co">#&gt; 1      (Intercept)    0.61 0.07 [ 0.48,  0.74] &lt;.001</span></span>
@@ -559,7 +648,7 @@ targets:</p>
 <span><span class="co">#&gt; 12            ment   -0.13 0.04 [-0.21, -0.05]  .001</span></span>
 <span><span class="co">#&gt; 13               n  915                             </span></span>
 <span><span class="co">#&gt; 14             AIC 3225.5</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="pnuyfvhuxc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#pnuyfvhuxc table { font-family: system-ui, ‘Segoe UI’,
@@ -1044,7 +1133,7 @@ IRR; SE on the IRR scale (delta method); CI bounds exponentiated
 <p>In <a href="https://broom.tidymodels.org" class="external-link"><code>broom::tidy()</code></a> the
 zero-component terms carry a <code>zero_</code> prefix, so the two parts
 separate cleanly:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate_type"</span>, <span class="st">"estimate"</span>, <span class="st">"p.value"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 4</span></span></span>
