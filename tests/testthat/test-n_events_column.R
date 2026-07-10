@@ -161,3 +161,43 @@ test_that("n_events is opt-in: default layouts show no Events/N", {
   )), collapse = "\n")
   expect_false(grepl("Events/N", out_uv, fixed = TRUE))
 })
+
+
+test_that("binomial mixed fits count events; gaussian mixed fits refuse", {
+  skip_if_not_installed("lme4")
+  set.seed(11)
+  db <- data.frame(g = factor(rep(1:15, each = 12)),
+                   x = rnorm(180),
+                   f = factor(sample(c("Lo", "Hi"), 180, TRUE)))
+  db$y <- rbinom(180, 1, stats::plogis(0.3 * db$x +
+                                       0.5 * (db$f == "Hi") +
+                                       rep(rnorm(15, 0, 0.6), each = 12)))
+  fg <- suppressMessages(
+    lme4::glmer(y ~ x + f + (1 | g), data = db, family = binomial())
+  )
+  out <- paste(capture.output(print(
+    table_regression(fg, show_columns = c("b", "n_events", "p"))
+  )), collapse = "\n")
+  for (lv in levels(db$f)) {
+    sel <- db$f == lv
+    expect_match(out, paste0(sum(db$y[sel]), "/", sum(sel)),
+                 fixed = TRUE)
+  }
+  expect_match(out, paste0(sum(db$y), "/", nrow(db)), fixed = TRUE)
+
+  fl <- lme4::lmer(x ~ y + (1 | g), data = db)
+  expect_error(
+    table_regression(fl, show_columns = c("b", "n_events")),
+    class = "spicy_invalid_input"
+  )
+
+  skip_if_not_installed("glmmTMB")
+  ft <- glmmTMB::glmmTMB(y ~ x + f + (1 | g), data = db,
+                         family = stats::binomial())
+  out2 <- paste(capture.output(print(
+    table_regression(ft, show_columns = c("b", "n_events", "p"))
+  )), collapse = "\n")
+  sel_hi <- db$f == "Hi"
+  expect_match(out2, paste0(sum(db$y[sel_hi]), "/", sum(sel_hi)),
+               fixed = TRUE)
+})

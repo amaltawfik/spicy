@@ -144,7 +144,14 @@ as_regression_frame.glmerMod <- function(fit,
   # SE; CI bounds exponentiated. AME rows pass through unchanged.
   out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  new_regression_frame(out$coefs, out$info, fit)
+  frame <- new_regression_frame(out$coefs, out$info, fit)
+  # Outcome event counts ("n_events" column): binomial glmer fits
+  # carry a per-row indicator like any binomial glm; the helper
+  # self-gates on the family, so lmer frames pass through untouched.
+  if ("n_events" %in% show_columns) {
+    frame <- .attach_event_counts(frame, fit)
+  }
+  frame
 }
 
 

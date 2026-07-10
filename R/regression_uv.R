@@ -61,7 +61,9 @@
 #'   the `survival` package; estimates render as HRs with
 #'   `exponentiate = TRUE`).
 #' @param family A [stats::family] object for `method = "glm"`.
-#'   Default `binomial()`. Refused for `method = "coxph"`.
+#'   Default `binomial()`. Refused for `method = "coxph"`, and
+#'   `gaussian()` with the identity link is refused too: use
+#'   `method = "lm"` for the linear screen.
 #' @param multivariable Logical, default `TRUE`: merge the full model
 #'   (all predictors together) as a second column group.
 #' @param complete_cases Logical, default `FALSE`. `TRUE` restricts
@@ -139,6 +141,19 @@ table_regression_uv <- function(data,
       class = "spicy_invalid_input"
     )
   }
+  # A gaussian/identity glm is lm by another name; in the screen the
+  # right spelling exists as an argument, so point straight at it
+  # (the generic "refit with lm()" caveat would be off-target here).
+  if (identical(method, "glm") &&
+        identical(family$family, "gaussian") &&
+        identical(family$link, "identity")) {
+    spicy_abort(
+      c(paste0("`family = gaussian()` with the identity link is ",
+               "`lm` by another name."),
+        "i" = "Use `method = \"lm\"` for the linear screen."),
+      class = "spicy_invalid_input"
+    )
+  }
 
   if (identical(method, "coxph")) {
     .check_survival_available()
@@ -186,6 +201,13 @@ table_regression_uv <- function(data,
   # be satisfied by one vector when the univariable Ns differ, so the
   # screen aligns the vector itself: per fit via na.action inside the
   # bundle's frame method, and below for the multivariable fit.
+  # The user-facing column name is captured HERE (the expression is
+  # evaluated before table_regression() sees it) and stamped as an
+  # attribute after every subset, so the footer can say "clusters by
+  # region" instead of "cluster vector supplied".
+  cluster_name <- extract_arg_column_name(
+    match.call(expand.dots = TRUE)$cluster
+  )
   if (!is.null(dots$cluster)) {
     if (!is.atomic(dots$cluster)) {
       spicy_abort(
@@ -301,6 +323,17 @@ table_regression_uv <- function(data,
       om <- stats::na.action(fit_multi)
       if (!is.null(om)) cl_multi <- cl_multi[-om]
       dots$cluster <- list(dots$cluster, cl_multi)
+    }
+  }
+  # Stamp the captured column name (subsetting stripped attributes).
+  if (!is.null(dots$cluster) && !is.na(cluster_name)) {
+    if (is.list(dots$cluster)) {
+      dots$cluster <- lapply(dots$cluster, function(x) {
+        attr(x, "spicy_cluster_name") <- cluster_name
+        x
+      })
+    } else {
+      attr(dots$cluster, "spicy_cluster_name") <- cluster_name
     }
   }
 

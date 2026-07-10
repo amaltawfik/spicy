@@ -791,6 +791,11 @@ validate_class_appropriate_tokens <- function(models,
             "Average marginal effects on a Cox proportional-hazards fit are ",
             "on an ambiguous survival / hazard scale with unreliable standard ",
             "errors. Report hazard ratios instead with `exponentiate = TRUE`."
+          ),
+          "i" = paste0(
+            "For absolute effects, use the survival estimand columns: ",
+            "`show_columns = c(\"b\", \"rmst\")` with `tau = `, or ",
+            "`\"risk_diff\"` with `at_time = ` (coxph)."
           )
         ),
         class = "spicy_invalid_input"

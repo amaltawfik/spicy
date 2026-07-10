@@ -195,7 +195,8 @@ adjustment} section for when this is and is not appropriate.}
 per-coefficient columns and their display order. Accepts
 \strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"},
 \code{"beta"}, \code{"n"}, \code{"n_events"}, \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
-\code{"ame_p"},
+\code{"ame_p"}, \code{"rmst"} + \code{"rmst_se"} / \code{"rmst_ci"} / \code{"rmst_p"},
+\code{"risk_diff"} + its \verb{_se} / \verb{_ci} / \verb{_p} companions,
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
 \code{"partial_eta2_ci"}, \code{"partial_omega2"} +
 \code{"partial_omega2_ci"}, \code{"partial_chi2"}) and \strong{group tokens}
@@ -728,7 +729,16 @@ factor level (reference row included) and model totals on
 continuous rows, computed on each model's own estimation
 sample (STROBE item 16's "data behind the association";
 NEJM-style \verb{no. of events/total no.}). Binary (binomial)
-outcomes only -- other models raise \code{spicy_invalid_input}.
+outcomes and right-censored \code{coxph} fits -- other models
+raise \code{spicy_invalid_input}.
+\item Survival estimands -- \code{coxph} only: \code{"rmst"},
+\code{"rmst_se"}, \code{"rmst_ci"}, \code{"rmst_p"} (restricted-mean-
+survival-time difference over \verb{[0, tau]}) and
+\code{"risk_diff"}, \code{"risk_diff_se"}, \code{"risk_diff_ci"},
+\code{"risk_diff_p"} (cumulative-incidence difference at
+\code{at_time}), by g-computation from the fitted model with
+bootstrap inference. The horizon arguments are required;
+see \code{tau} / \code{at_time}.
 }
 
 \strong{Group tokens} (presets) expand to a fixed atomic vector

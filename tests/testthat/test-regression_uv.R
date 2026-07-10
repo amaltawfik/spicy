@@ -321,17 +321,21 @@ test_that("default titles follow the family; custom title wins", {
   expect_match(out4,
                "Univariable and multivariable Poisson regression: visits",
                fixed = TRUE)
-  # The gaussian/identity-glm caveat ("use lm()") still fires through
-  # the wrapper -- the right advice here is method = "lm".
-  expect_warning(
-    t5 <- table_regression_uv(d, outcome = wellbeing_score,
-                              predictors = age,
-                              family = stats::gaussian()),
-    class = "spicy_caveat"
+  # gaussian/identity glm is lm by another name: the screen points at
+  # its own argument instead of the generic "refit with lm()" caveat.
+  expect_error(
+    table_regression_uv(d, outcome = wellbeing_score, predictors = age,
+                        family = stats::gaussian()),
+    class = "spicy_invalid_input"
   )
-  out5 <- paste(capture.output(print(t5)), collapse = "\n")
+  # Families off the title switch fall back to the family name.
+  d$wb1 <- d$wellbeing_score + 1
+  out5 <- paste(capture.output(print(
+    table_regression_uv(d, outcome = wb1, predictors = age,
+                        family = stats::Gamma(link = "log"))
+  )), collapse = "\n")
   expect_match(out5,
-               "Univariable and multivariable gaussian regression: wellbeing_score",
+               "Univariable and multivariable Gamma regression: wb1",
                fixed = TRUE)
 })
 
@@ -417,4 +421,15 @@ test_that("console snapshot: screen + multivariable merge", {
                         predictors = c(age, bmi, sex),
                         exponentiate = TRUE)
   ))
+})
+
+
+test_that("the footer names the cluster column through the wrapper", {
+  skip_if_not_installed("clubSandwich")
+  d <- .uv_soc()
+  out <- paste(capture.output(print(
+    table_regression_uv(d, outcome = smoking, predictors = c(age, bmi),
+                        vcov = "CR2", cluster = d$region)
+  )), collapse = "\n")
+  expect_match(out, "clusters by region", fixed = TRUE)
 })

@@ -48,7 +48,16 @@
 #'     continuous rows, computed on each model's own estimation
 #'     sample (STROBE item 16's "data behind the association";
 #'     NEJM-style `no. of events/total no.`). Binary (binomial)
-#'     outcomes only -- other models raise `spicy_invalid_input`.
+#'     outcomes and right-censored `coxph` fits -- other models
+#'     raise `spicy_invalid_input`.
+#'   \item Survival estimands -- `coxph` only: `"rmst"`,
+#'     `"rmst_se"`, `"rmst_ci"`, `"rmst_p"` (restricted-mean-
+#'     survival-time difference over `[0, tau]`) and
+#'     `"risk_diff"`, `"risk_diff_se"`, `"risk_diff_ci"`,
+#'     `"risk_diff_p"` (cumulative-incidence difference at
+#'     `at_time`), by g-computation from the fitted model with
+#'     bootstrap inference. The horizon arguments are required;
+#'     see `tau` / `at_time`.
 #' }
 #'
 #' **Group tokens** (presets) expand to a fixed atomic vector
@@ -528,7 +537,8 @@
 #'   per-coefficient columns and their display order. Accepts
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
 #'   `"beta"`, `"n"`, `"n_events"`, `"ame"`, `"ame_se"`, `"ame_ci"`,
-#'   `"ame_p"`,
+#'   `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
+#'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
 #'   `"partial_eta2_ci"`, `"partial_omega2"` +
 #'   `"partial_omega2_ci"`, `"partial_chi2"`) and **group tokens**
@@ -1760,6 +1770,21 @@ table_regression <- function(
   } else {
     rep(extract_arg_column_name(cluster_expr), n_models)
   }
+  # Wrappers (table_regression_uv) pass an already-evaluated cluster
+  # through do.call, so the expression walk above yields NA. They stamp
+  # the user-facing column name as an attribute instead; it wins.
+  attr_names <- if (is.list(cluster) && !is.atomic(cluster)) {
+    vapply(cluster, function(x) {
+      attr(x, "spicy_cluster_name", exact = TRUE) %||% NA_character_
+    }, character(1))
+  } else {
+    rep(attr(cluster, "spicy_cluster_name", exact = TRUE) %||%
+          NA_character_, n_models)
+  }
+  if (length(attr_names) == n_models) {
+    cluster_name_list <- ifelse(is.na(attr_names), cluster_name_list,
+                                attr_names)
+  }
 
   # Detect AME-Satterthwaite path activation (Q14b)
   any_cr <- any(vapply(vcov_list,
@@ -2051,16 +2076,27 @@ table_regression <- function(
       classes <- unique(vapply(frames, function(fr) {
         fr$info$class %||% "?"
       }, character(1)))
+      # Cox models have the ABSOLUTE estimand family instead: point
+      # there rather than leaving the reader without a next step.
+      hint_main <- if (any(classes == "coxph")) {
+        paste0(
+          "For a Cox model, the absolute-effect columns are the RMST ",
+          "and risk differences: `show_columns = c(\"b\", \"rmst\")` ",
+          "with `tau = `, or `\"risk_diff\"` with `at_time = `."
+        )
+      } else {
+        paste0(
+          "No average-marginal-effects backend exists for this class ",
+          "(see ?table_regression_models, column AME)."
+        )
+      }
       spicy_abort(
         c(
           sprintf(
             "AME columns are not available for %s.",
             paste0("`", classes, "`", collapse = " / ")
           ),
-          "i" = paste0(
-            "No average-marginal-effects backend exists for this class ",
-            "(see ?table_regression_models, column AME)."
-          ),
+          "i" = hint_main,
           "i" = "Drop the AME token(s) from `show_columns`."
         ),
         class = "spicy_invalid_input"

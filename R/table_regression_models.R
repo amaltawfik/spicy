@@ -43,7 +43,7 @@
     c("Categorical",                   "mlogit",   "mlogit::mlogit()",         "no",  "OR",                  "per-alternative rows"),
     c("Counts, two-part",              "zeroinfl", "pscl::zeroinfl()",         "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero-inflation"),
     c("Counts, two-part",              "hurdle",   "pscl::hurdle()",           "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero hurdle"),
-    c("Survival",                      "coxph",    "survival::coxph()",        "no",  "HR",                  "-"),
+    c("Survival",                      "coxph",    "survival::coxph()",        "RMST / risk diff", "HR",   "-"),
     c("Survival",                      "survreg",  "survival::survreg()",      "yes", "TR (log-scale distributions)","-"),
     c("Survival",                      "cph",      "rms::cph()",               "no",  "HR",                  "-"),
     c("Survival",                      "flexsurvreg", "flexsurv::flexsurvreg()", "no",  "TR / HR (dist)",    "distribution parameters"),
@@ -184,7 +184,12 @@
 #' Cox models exponentiate to hazard ratios; `survreg` log-scale
 #' distributions to time ratios (identity-scale distributions are left
 #' untouched). AME is refused for Cox fits (no marginal-probability effect
-#' on the hazard scale). `CR*` uses the Lin-Wei grouped-dfbeta sandwich
+#' on the hazard scale); their absolute-effect columns are the
+#' `"rmst"` and `"risk_diff"` families instead -- covariate-adjusted
+#' RMST and cumulative-incidence differences by g-computation, with
+#' the mandatory `tau` / `at_time` horizons (right-censored
+#' single-record `coxph` fits without `strata()` or `tt()`).
+#' `CR*` uses the Lin-Wei grouped-dfbeta sandwich
 #' (`coxph`) or `rms::robcov()` (`cph`, needs `x = TRUE, y = TRUE`).
 #' `nested = TRUE` compares nested Cox fits by likelihood-ratio test.
 #'

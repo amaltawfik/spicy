@@ -33,7 +33,9 @@ the \code{survival} package; estimates render as HRs with
 \code{exponentiate = TRUE}).}
 
 \item{family}{A \link[stats:family]{stats::family} object for \code{method = "glm"}.
-Default \code{binomial()}. Refused for \code{method = "coxph"}.}
+Default \code{binomial()}. Refused for \code{method = "coxph"}, and
+\code{gaussian()} with the identity link is refused too: use
+\code{method = "lm"} for the linear screen.}
 
 \item{multivariable}{Logical, default \code{TRUE}: merge the full model
 (all predictors together) as a second column group.}

@@ -60,7 +60,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Categorical \tab \code{mlogit} \tab \code{mlogit::mlogit()} \tab no \tab OR \tab per-alternative rows \cr
    Counts, two-part \tab \code{zeroinfl} \tab \code{pscl::zeroinfl()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero-inflation \cr
    Counts, two-part \tab \code{hurdle} \tab \code{pscl::hurdle()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero hurdle \cr
-   Survival \tab \code{coxph} \tab \code{survival::coxph()} \tab no \tab HR \tab - \cr
+   Survival \tab \code{coxph} \tab \code{survival::coxph()} \tab RMST / risk diff \tab HR \tab - \cr
    Survival \tab \code{survreg} \tab \code{survival::survreg()} \tab yes \tab TR (log-scale distributions) \tab - \cr
    Survival \tab \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \cr
    Survival \tab \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg()} \tab no \tab TR / HR (dist) \tab distribution parameters \cr
@@ -159,7 +159,12 @@ score structure).
 Cox models exponentiate to hazard ratios; \code{survreg} log-scale
 distributions to time ratios (identity-scale distributions are left
 untouched). AME is refused for Cox fits (no marginal-probability effect
-on the hazard scale). \verb{CR*} uses the Lin-Wei grouped-dfbeta sandwich
+on the hazard scale); their absolute-effect columns are the
+\code{"rmst"} and \code{"risk_diff"} families instead -- covariate-adjusted
+RMST and cumulative-incidence differences by g-computation, with
+the mandatory \code{tau} / \code{at_time} horizons (right-censored
+single-record \code{coxph} fits without \code{strata()} or \code{tt()}).
+\verb{CR*} uses the Lin-Wei grouped-dfbeta sandwich
 (\code{coxph}) or \code{rms::robcov()} (\code{cph}, needs \verb{x = TRUE, y = TRUE}).
 \code{nested = TRUE} compares nested Cox fits by likelihood-ratio test.
 }

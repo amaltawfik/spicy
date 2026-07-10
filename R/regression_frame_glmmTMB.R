@@ -76,7 +76,13 @@ as_regression_frame.glmmTMB <- function(fit,
   # Phase 7c16: exp() on the B / beta rows for non-identity links.
   out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
 
-  new_regression_frame(out$coefs, out$info, fit)
+  frame <- new_regression_frame(out$coefs, out$info, fit)
+  # Outcome event counts ("n_events" column): binomial glmmTMB fits
+  # only; the helper self-gates on the family.
+  if ("n_events" %in% show_columns) {
+    frame <- .attach_event_counts(frame, fit)
+  }
+  frame
 }
 
 
