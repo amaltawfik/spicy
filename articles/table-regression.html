@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Publication-ready regression tables">
-<meta name="description" content="Coefficient tables for `lm` and `glm` fits in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, four standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta name="description" content="Coefficient tables for fitted regression models in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, four standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
-<meta property="og:description" content="Coefficient tables for `lm` and `glm` fits in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, four standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta property="og:description" content="Coefficient tables for fitted regression models in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, four standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -109,24 +109,39 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> produces a coefficient summary table
-from one or several fitted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> or <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>
-models. The output is publication-ready by default and follows APA
-Manual 7 (American Psychological Association 2020, Tables 7.13–7.15)
-formatting conventions: paired estimate-and-CI columns, APA p-values
-without leading zero, factor levels grouped under their parent variable,
-fit statistics at the foot of the table, and a self-documenting note
-line that names the variance estimator and any methodological choice
-that affected the rendered values.</p>
+from one or several fitted regression models. The output is
+publication-ready by default and follows APA Manual 7 (American
+Psychological Association 2020, Tables 7.13–7.15) formatting
+conventions: paired estimate-and-CI columns, APA p-values without
+leading zero, factor levels grouped under their parent variable, fit
+statistics at the foot of the table, and a self-documenting note line
+that names the variance estimator and any methodological choice that
+affected the rendered values.</p>
 <p>The function is <strong>fit-first</strong>: you pass already-fitted
 models, not raw data and a formula. The same object exports cleanly to a
 long broom-canonical frame (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>) and to a
 one-row-per-model glance summary (<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>).</p>
-<p><code>lm</code> and <code>glm</code> are both supported. The
-<em>Generalised linear models</em> section covers the glm-specific
-argument semantics; the <em>Mixed-effects models</em> section covers the
-Random effects rows that mixed-effects fits add below the fixed effects
-(<code>lmer</code>, <code>glmer</code>, <code>glmmTMB</code>,
-<code>lme</code>). Everything else applies to all four families.</p>
+<p>This vignette teaches the shared mechanics on <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fits. The <em>Generalised linear models</em> section
+covers the glm-specific argument semantics; the <em>Mixed-effects
+models</em> section introduces the Random effects rows that
+mixed-effects fits add below the fixed effects (<code>lmer</code>,
+<code>glmer</code>, <code>glmmTMB</code>, <code>lme</code>). Each
+further model family has a dedicated vignette that applies these
+mechanics to its own estimands:
+<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> for mixed-effects
+models, <code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code> for Poisson,
+negative-binomial, and two-part models,
+<code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal")</a></code> for ordinal models
+(<code>polr</code>, <code>clm</code>),
+<code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial")</a></code> for multinomial
+models (<code>multinom</code>, <code>mlogit</code>), and
+<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code> for survival models
+(<code>coxph</code>, <code>survreg</code>). The mechanics covered here —
+confidence levels, multi-model and nested layouts, p-value adjustment,
+coefficient filtering, output formats, and the broom methods — apply
+across every supported class; variance-estimator availability varies by
+family, and each family vignette states its own set.</p>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
@@ -171,6 +186,13 @@ re-labels the column accordingly.</li>
 reader can find the inferential regime without leaving the table. The
 estimator switches with <code>vcov</code> (covered in <em>Robust
 variance</em> below).</li>
+<li>Read substantively, one sentence per coefficient, from the exact
+numbers shown: <code>Male</code> — B = 3.86, 95% CI [2.08, 5.63], p &lt;
+.001 — holding age and smoking constant, men score on average 3.9 points
+higher than women on the 0–100 WHO-5 wellbeing index. <code>age</code> —
+B = 0.05, 95% CI [-0.01, 0.11], p = .130 — the interval spans effects
+from slightly negative to about a tenth of a point per year, so the data
+do not establish an adjusted age gradient.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -206,12 +228,15 @@ scale rather than being z-scored. Useful when factor levels carry
 meaningful base rates that scale-free standardisation would
 obscure.</li>
 <li>
-<code>"smart"</code> — Gelman’s (2008) recommendation: numeric
-predictors divided by <code>2 × SD(X)</code>; binary predictors centred
-only. The resulting <code>β</code> is the predicted change in
-<code>Y</code> for one within- sample standard deviation of
-<code>X</code>, on the original <code>Y</code> scale, which keeps factor
-and numeric coefficients on roughly comparable footing.</li>
+<code>"smart"</code> — Gelman’s (2008) input scaling: numeric
+predictors divided by <code>2 × SD(X)</code>; binary predictors and
+factor dummies kept on their 0/1 scale. The resulting <code>β</code> is
+the change in <code>Y</code>, in <code>SD(Y)</code> units, for a
+two-standard-deviation change in <code>X</code> (from mean − SD to mean
++ SD), which puts a continuous predictor’s ±1 SD swing on the same
+footing as a binary’s 0 → 1 step. Where the paper leaves <code>Y</code>
+raw, spicy divides by <code>SD(Y)</code> so <code>β</code> stays
+comparable across the four methods.</li>
 </ul>
 <p>When <code>standardized != "none"</code>, the <code>"beta"</code>
 token is auto-injected into <code>show_columns</code> immediately after
@@ -239,13 +264,19 @@ token is auto-injected into <code>show_columns</code> immediately after
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
+<p>On the standardised scale the predictors become directly comparable:
+being male predicts a 0.25-SD higher wellbeing score, the largest
+standardised effect in the model, while a one-SD increase in age
+predicts a change of only 0.04 SD. The raw <code>B</code> column could
+not support that ranking — 3.86 versus 0.05 compares a factor contrast
+with a per-year slope, two different units.</p>
 <p><strong>Caveat: standardised coefficients with interactions or
 transformed terms.</strong> When the model contains a product term, an
 <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>, or
 <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code> wrapper, the standardised coefficient of the
 non-additive term has no closed-form “one-SD change in X” reading (Aiken
 and West 1991; Cohen et al. 2003 §7.7). The function emits a classed
-<code>spicy_caveat</code> warning at runtime AND prints a
+<code>spicy_caveat</code> warning at runtime <em>and</em> prints a
 method-specific caveat line in the table footer, so the limitation is
 exposed at the point of use without blocking the table.</p>
 </div>
@@ -260,43 +291,64 @@ partial <code>ω²</code> (<code>partial_omega2</code>). Each carries a
 confidence interval derived from noncentral-<code>F</code> inversion
 (Smithson 2003; Steiger 2004), exposed as a separate
 <code>&lt;token&gt;_ci</code> column. The shortcuts
-<code>"all_f2"</code>, <code>"all_eta2"</code>,
-<code>"all_omega2"</code> expand to the point estimate and its CI pair
-in one go:</p>
+<code>"all_f2"</code>, <code>"all_eta2"</code>, and
+<code>"all_omega2"</code> each expand to the point estimate together
+with its CI column.</p>
+<p><code>sochealth$education</code> is stored as an ordered factor,
+which R codes with polynomial contrasts (<code>.L</code> = linear,
+<code>.Q</code> = quadratic) — trend components across the ordered
+levels, not per-level effects against a reference. For a coefficient
+table read level-against-reference, convert it to a plain factor; we
+reuse this copy throughout the vignette:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>,</span>
-<span>          data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="va">sochealth</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>education <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">education</span>, ordered <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>,</span>
+<span>          data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"all_eta2"</span>, <span class="st">"all_omega2"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This message is displayed once per session.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B       p     η²    η² 95% CI     ω²    ω² 95% CI   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.49  &lt;.001                                         </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.03   .344  0.00  [0.00, 0.01]  0.00  [0.00, 0.01] </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                        </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –                                            </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.57  &lt;.001  0.02  [0.01, 0.03]  0.02  [0.01, 0.03] </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                        </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –                                            </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>    0.68   .496  0.00  [0.00, 0.01]  0.00  [0.00, 0.01] </span></span>
-<span><span class="co">#&gt;  education:      <span style="color: #9E9E9E;">│</span>                                                        </span></span>
-<span><span class="co">#&gt;    .L            <span style="color: #9E9E9E;">│</span>   13.94  &lt;.001  0.21  [0.17, 0.25]  0.21  [0.17, 0.25] </span></span>
-<span><span class="co">#&gt;    .Q            <span style="color: #9E9E9E;">│</span>   -1.66   .013  0.21  [0.17, 0.25]  0.21  [0.17, 0.25] </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                                   </span></span>
-<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.22                                                </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                                                </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B       p     η²    η² 95% CI     ω²  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   53.96  &lt;.001                           </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.03   .344  0.00  [0.00, 0.01]  0.00 </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –                              </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    3.57  &lt;.001  0.02  [0.01, 0.03]  0.02 </span></span>
+<span><span class="co">#&gt;  smoking:                 <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    No (ref.)              <span style="color: #9E9E9E;">│</span>     –     –                              </span></span>
+<span><span class="co">#&gt;    Yes                    <span style="color: #9E9E9E;">│</span>    0.68   .496  0.00  [0.00, 0.01]  0.00 </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –                              </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   11.89  &lt;.001  0.21  [0.17, 0.25]  0.21 </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   19.71  &lt;.001  0.21  [0.17, 0.25]  0.21 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                                     </span></span>
+<span><span class="co">#&gt;  R²                       <span style="color: #9E9E9E;">│</span>    0.22                                  </span></span>
+<span><span class="co">#&gt;  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                                  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>  ω² 95% CI   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span> [0.00, 0.01] </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span> [0.01, 0.03] </span></span>
+<span><span class="co">#&gt;  smoking:                 <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    No (ref.)              <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    Yes                    <span style="color: #9E9E9E;">│</span> [0.00, 0.01] </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> [0.17, 0.25] </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span> [0.17, 0.25] </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; η² = partial eta-squared; ω² = bias-corrected partial omega-squared.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; η² = partial eta-squared; ω² = bias-corrected partial omega-squared.</span></span></span></code></pre></div>
 <p>Methodology notes:</p>
 <ul>
 <li>The partial F-test is computed on a Type-II ANOVA reference
@@ -308,13 +360,18 @@ and Algina (2003) formula
 less-biased small-sample estimator than partial <code>η²</code>.</li>
 <li>The CI bounds come from inverting the noncentrality parameter of the
 F-distribution at the lower and upper confidence levels (Steiger 2004
-§4). The Steiger inversion always brackets the bias-corrected point
-estimate, even when the lower bound clips at zero (common for near-null
-terms).</li>
+§4). Population partial <code>η²</code> and partial <code>ω²</code> are
+the same quantity — <code>ω²</code> is simply the less-biased
+small-sample estimator — so both columns share the single Steiger
+interval, following the MBESS convention (the <code>effectsize</code>
+package instead re-inverts an implied <code>F</code> for
+<code>ω²</code>, so its <code>ω²</code> bounds differ slightly). The
+interval brackets the bias-corrected point estimate, even when the lower
+bound clips at zero (common for near-null terms).</li>
 <li>For factor predictors with <code>k</code> levels, the partial F-test
 is the joint <code>(k − 1)</code> df Wald test, so the same effect-size
 value is broadcast across all non-reference dummy rows; the reference
-row shows an em-dash.</li>
+row leaves the effect-size cells blank.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -324,12 +381,21 @@ row shows an em-dash.</li>
 effect — the change in the linear predictor <code>Xβ</code> for a
 one-unit change in <code>x</code>, holding the other predictors
 constant. The <strong>average marginal effect (AME)</strong> is the
-<em>observable</em> effect on the response: the average partial
-derivative <code>dE[Y|X] / dx</code> over the sample. For a purely
-linear-additive <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> the two coincide. For models with
+<em>observable</em> effect on the response. For a numeric predictor it
+is the average partial derivative <code>dE[Y|X] / dx</code> over the
+sample; for a factor level it is the average <strong>discrete
+change</strong> — the difference in predicted response between that
+level and the reference, averaged over the sample (Long and Freese 2014
+§6.2 distinguish the two). For a purely linear-additive
+<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> both coincide with <code>B</code>. For models with
 interactions or transformed terms, and for any <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> with a
 non-identity link, the AME is the quantity the substantive reader
-actually needs.</p>
+actually needs. The <em>average</em> in the name is load-bearing: the
+effect is computed for every observation and then averaged over the
+sample, not evaluated once at the covariate means — the marginal effect
+at the mean (MEM), a point at which no actual observation may sit. The
+two generally differ in nonlinear models; Long and Freese (2014, §6.2.3)
+discuss the choice in detail.</p>
 <p>Add <code>"ame"</code> to <code>show_columns</code> for the point
 estimate. Companion tokens display the SE, CI, and p-value:
 <code>"ame_se"</code>, <code>"ame_ci"</code>, <code>"ame_p"</code>. The
@@ -338,24 +404,24 @@ shortcut <code>"all_ame"</code> expands to the full set.</p>
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
-<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span>
+<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      AME      95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20                              </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05   0.05  [-0.01, 0.11]   .130 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –      –          –         –    </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.86   3.86  [ 2.08, 5.63]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –      –          –         –    </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  -1.72  [-3.89, 0.45]   .121 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
-<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p     AME      95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  &lt;.001                              </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .130   0.05  [-0.01, 0.11]   .130 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                   </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –     –       –          –         –    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  &lt;.001   3.86  [ 2.08, 5.63]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                   </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –     –       –          –         –    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11   .121  -1.72  [-3.89, 0.45]   .121 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                              </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
+<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
@@ -366,8 +432,8 @@ shortcut <code>"all_ame"</code> expands to the full set.</p>
 <code>"p"</code> always refers to the <code>B</code> (or
 <code>β</code>) coefficient, never to the AME. Use <code>"ame_p"</code>
 for the AME-specific p-value.</li>
-<li>Placing <code>"ame"</code> after <code>"p"</code> keeps the “which p
-belongs to what” reading unambiguous — the B-block
+<li>Placing <code>"ame"</code> after <code>"p"</code> keeps the
+attribution of each p-value unambiguous — the B-block
 (<code>B / SE / p</code>) is closed before the AME-block opens.</li>
 <li>For non-linear models the AME is reported on the <strong>response
 scale</strong>, not the link scale. The <em>Generalised linear
@@ -380,7 +446,9 @@ variance (covered in <em>Robust variance</em>), the AME inference shares
 the coefficient’s t-distribution and Satterthwaite-corrected degrees of
 freedom via <code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so
 <code>B</code> and AME are reported on the same inferential footing in
-the same table.</p>
+the same table. <code>marginaleffects</code> is a Suggests dependency;
+when unavailable, the AME columns appear in the header but render as NA
+without erroring (the rest of the table is unaffected).</p>
 </div>
 <div class="section level2">
 <h2 id="multiple-models-side-by-side">Multiple models side by side<a class="anchor" aria-label="anchor" href="#multiple-models-side-by-side"></a>
@@ -431,10 +499,10 @@ to override the names from the list.</p>
 change-statistic rows</strong> (APA Table 7.13 / Stata
 <code>esttab</code> / SPSS Model Summary convention). Each adjacent pair
 (M2 vs M1, M3 vs M2, …) contributes one column of change stats below
-<code>R² / Adj.R²</code>; the FIRST model column gets em-dashes (no
+<code>R² / Adj.R²</code>; the first model column gets em-dashes (no
 previous model to compare to).</p>
 <p>Hierarchical regression requires every model in the sequence to share
-the same analytic sample: identical <code>nobs</code> AND identical
+the same analytic sample: identical <code>nobs</code> and an identical
 response variable. R’s listwise deletion otherwise produces different
 <code>n</code> per model as soon as a predictor introduced by M2 or M3
 has missing values that M1 did not see — a silent bias on the change
@@ -488,6 +556,14 @@ front:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<p>Reading the change rows: adding <code>smoking</code> in Model 2 does
+not improve fit over the age + sex baseline (ΔR² = +0.00, F-change =
+2.28, p = .132) — with a single added term, this test is equivalent to
+the test on the <code>smoking</code> coefficient itself (p = .132 in the
+Model 2 column). Adding <code>bmi</code> in Model 3 does (ΔR² = +0.02,
+F-change = 28.13, p &lt; .001). The hierarchical sequence therefore
+supports retaining <code>bmi</code> and provides no incremental evidence
+for <code>smoking</code>.</p>
 <p>Default change tokens auto-injected:
 <code>c("r2_change", "f_change", "p_change")</code> for <code>lm</code>
 (APA hierarchical-regression standard),
@@ -503,7 +579,7 @@ available: <code>"adj_r2_change"</code>, <code>"f2_change"</code>,
 <code>"aicc_change"</code> / <code>"bic_change"</code>.
 Variance-explained change tokens (Δr², Δf²) are NA for mixed-effects
 pairs — the F-test framework that grounds them doesn’t apply.</p>
-<p>Validation is strict: identical <code>nobs</code> AND identical
+<p>Validation is strict: identical <code>nobs</code> and identical
 response across all models, otherwise a <code>spicy_invalid_input</code>
 error explains the listwise-deletion trap and suggests refitting on the
 common subset.</p>
@@ -641,32 +717,32 @@ within the same call. Available methods are the same as in
 <code>"BY"</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>,</span>
-<span>          data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<span>          data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, p_adjust <span class="op">=</span> <span class="st">"bonferroni"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.49  1.48  [61.58, 67.40]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.03,  0.08]  1.000 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.57  0.81  [ 1.99,  5.15]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>    0.68  0.99  [-1.27,  2.63]  1.000 </span></span>
-<span><span class="co">#&gt;  education:      <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    .L            <span style="color: #9E9E9E;">│</span>   13.94  0.79  [12.38, 15.49]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    .Q            <span style="color: #9E9E9E;">│</span>   -1.66  0.67  [-2.97, -0.35]   .065 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
-<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   53.96  1.66  [50.70, 57.22]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.03  0.03  [-0.03,  0.08]  1.000 </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    3.57  0.81  [ 1.99,  5.15]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:                 <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)              <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes                    <span style="color: #9E9E9E;">│</span>    0.68  0.99  [-1.27,  2.63]  1.000 </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   11.89  1.05  [ 9.82, 13.96]  &lt;.001 </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   19.71  1.12  [17.51, 21.91]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
+<span><span class="co">#&gt;  R²                       <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
+<span><span class="co">#&gt;  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; P-values adjusted via stats::p.adjust(method = "bonferroni"); m = 5 coefficient(s) per model.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; P-values adjusted via stats::p.adjust(method = "bonferroni"); m = 5 coefficient(s) per model.</span></span></span></code></pre></div>
 <p>The footer documents the chosen method and the family size; the SE
 column is unchanged. <code>p_adjust</code> is orthogonal to
 <code>vcov</code>: combining a robust SE with a family-wise correction
@@ -698,22 +774,22 @@ error rate control).</li>
 explicitly requests it</strong> — apply the requested method and
 document it in the footer.</li>
 </ol>
-<p>The argument is exposed under the same <em>transparency</em> rule
-used for <code>standardized</code>: the tool is here, the methodological
-choice is yours, and the footer makes the choice visible to the
-reader.</p>
+<p>The argument follows the same <em>transparency over rejection</em>
+rule as <code>standardized</code>: the method is available, the choice
+among methods is the analyst’s, and the footer makes that choice visible
+to the reader.</p>
 </div>
 <div class="section level2">
 <h2 id="filtering-displayed-coefficients">Filtering displayed coefficients<a class="anchor" aria-label="anchor" href="#filtering-displayed-coefficients"></a>
 </h2>
 <p><code>keep</code> and <code>drop</code> accept regular expressions
 matched against coefficient names (as returned by [stats::coef()]). They
-are mutually exclusive — pick <code>keep</code> to whitelist focal
+are mutually exclusive — use <code>keep</code> to retain only the focal
 predictors, or <code>drop</code> to hide a few control variables.
 Multiple patterns combine with logical OR.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">bmi</span> <span class="op">+</span> <span class="va">education</span>,</span>
-<span>          data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<span>          data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"^smoking"</span>, <span class="st">"^bmi$"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -736,7 +812,7 @@ Multiple patterns combine with logical OR.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   62.12  3.23  [55.78, 68.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   51.41  3.52  [44.50, 58.32]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.02  0.03  [-0.03,  0.08]   .407 </span></span>
 <span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
 <span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
@@ -758,32 +834,117 @@ cares about —
 <code>table_regression(fit, p_adjust = "BH", keep = "^treatment")</code>.</p>
 </div>
 <div class="section level2">
+<h2 id="significance-stars">Significance stars<a class="anchor" aria-label="anchor" href="#significance-stars"></a>
+</h2>
+<p>Stars are off by default. APA 7 §6.46 explicitly discourages
+asterisks-only reporting in favour of exact p-values, and ASA’s
+post-2019 guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the
+same point. Set <code>stars = TRUE</code> for the APA preset
+(<code>*** p &lt; .001, ** p &lt; .01, * p &lt; .05</code>) or pass a
+named numeric vector for custom thresholds:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, stars <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>     B        SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20***  1.66  [61.95, 68.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05     0.03  [-0.01,  0.11]   .130 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                         </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –        –          –          –    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.86***  0.91  [ 2.08,  5.63]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                         </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –        –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.72     1.11  [-3.89,  0.45]   .121 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                    </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
+<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; *** p &lt; .001, ** p &lt; .01, * p &lt; .05.</span></span></span></code></pre></div>
+<p>Stars suffix the <code>B</code> column (or <code>β</code> when
+standardisation is requested); the threshold mapping is auto-documented
+in the footer. The <code>p</code> column itself remains unstarred so the
+numeric value stays readable.</p>
+</div>
+<div class="section level2">
+<h2 id="display-options">Display options<a class="anchor" aria-label="anchor" href="#display-options"></a>
+</h2>
+<p><code>labels</code> accepts a named character vector keyed by either
+formula term labels (<code>"sex"</code>) or coefficient names
+(<code>"sexMale"</code>), so individual contrast rows can be relabelled.
+<code>intercept_position</code> switches the intercept to the bottom
+(Stata convention). <code>reference_style = "annotation"</code> lifts
+the reference level into the factor header
+(<code>"sex: [ref: Female]"</code>) and drops the explicit reference
+row, for compact tables. <code>decimal_mark = ","</code> switches to
+European decimal notation and automatically changes the CI separator to
+<code>";"</code> to avoid ambiguity:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    age            <span class="op">=</span> <span class="st">"Age (years)"</span>,</span>
+<span>    sex            <span class="op">=</span> <span class="st">"Sex"</span>,</span>
+<span>    education      <span class="op">=</span> <span class="st">"Education"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  reference_style <span class="op">=</span> <span class="st">"annotation"</span>,</span>
+<span>  intercept_position <span class="op">=</span> <span class="st">"last"</span>,</span>
+<span>  decimal_mark <span class="op">=</span> <span class="st">","</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                          <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Age (years)                       <span style="color: #9E9E9E;">│</span>    0,03  0,03  [-0,03;  0,08]   ,343 </span></span>
+<span><span class="co">#&gt;  Sex: [ref: Female]                <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Male                            <span style="color: #9E9E9E;">│</span>    3,65  0,80  [ 2,09;  5,22]  &lt;,001 </span></span>
+<span><span class="co">#&gt;  Education: [ref: Lower secondary] <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Upper secondary                 <span style="color: #9E9E9E;">│</span>   11,85  1,04  [ 9,81; 13,89]  &lt;,001 </span></span>
+<span><span class="co">#&gt;    Tertiary                        <span style="color: #9E9E9E;">│</span>   19,52  1,10  [17,36; 21,67]  &lt;,001 </span></span>
+<span><span class="co">#&gt;  (Intercept)                       <span style="color: #9E9E9E;">│</span>   54,18  1,63  [50,99; 57,37]  &lt;,001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                                 <span style="color: #9E9E9E;">│</span> 1200                                 </span></span>
+<span><span class="co">#&gt;  R²                                <span style="color: #9E9E9E;">│</span>    0,22                              </span></span>
+<span><span class="co">#&gt;  Adj.R²                            <span style="color: #9E9E9E;">│</span>    0,22                              </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="generalised-linear-models-glm">Generalised linear models (glm)<a class="anchor" aria-label="anchor" href="#generalised-linear-models-glm"></a>
 </h2>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> accepts any <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fit.
 Inference defaults to the <code>z</code>-asymptotic Wald regime — the
-convention used by <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code>, Stata’s
-<code>logit, or</code>, and SPSS <code>LOGISTIC REGRESSION</code>. The
-table title becomes family-aware (“Logistic regression”, “Poisson
+convention <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code> applies to fixed-dispersion
+families (binomial, Poisson), shared by Stata’s <code>logit, or</code>
+and SPSS <code>LOGISTIC REGRESSION</code>. One caveat for
+cross-checking: for families with an estimated dispersion (gaussian,
+Gamma, inverse.gaussian, and the quasi- families),
+<code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code> switches to <code>t</code> statistics on the
+residual degrees of freedom, so its p-values run larger than the table’s
+<code>z</code>-based ones in small samples — there the table follows
+Stata’s <code>glm</code> default rather than <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code>.
+The table title becomes family-aware (“Logistic regression”, “Poisson
 regression”, “Probit regression”, …) and the default fit-statistics
 block swaps in <code>nobs</code>, <code>pseudo_r2_mcfadden</code>,
 <code>pseudo_r2_nagelkerke</code>, and <code>AIC</code> instead of
 <code>R²</code> and <code>Adj.R²</code>.</p>
 <p>We illustrate with a logistic regression of <code>smoking</code> on
 <code>sex</code>, <code>age</code>, and <code>education</code> from
-<code>sochealth</code>. The <code>education</code> variable is an
-ordered factor in the source data; we convert it to a plain factor so
-contrasts are dummy-coded (one row per level) rather than the polynomial
-trends (<code>.L</code>, <code>.Q</code>, …) R applies by default to
-ordered factors. The model mixes a binary factor (<code>sex</code>), a
-numeric predictor (<code>age</code>), and a 3-level factor
-(<code>education</code>) — enough to exercise every glm-specific feature
-below.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="va">sochealth</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>education <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">education</span>, ordered <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>,</span>
+<code>sochealth</code>, reusing <code>sh</code> — the copy of
+<code>sochealth</code> with <code>education</code> as a plain
+(unordered) factor, introduced in <em>Per-coefficient effect sizes</em>
+— so contrasts are dummy-coded, one row per level. The model mixes a
+binary factor (<code>sex</code>), a numeric predictor
+(<code>age</code>), and a 3-level factor (<code>education</code>) —
+enough to exercise every glm-specific feature below.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>,</span>
 <span>           family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -807,26 +968,43 @@ below.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span></code></pre></div>
+<p>Read the fit block with care. McFadden and Nagelkerke R² are
+likelihood-based analogues of R², not proportions of explained variance
+— their values are not comparable to an OLS R², and different measures
+disagree by construction on the same fit (here 0.02 for McFadden versus
+0.03 for Nagelkerke). Long and Freese (2014, §3.3) find these scalar
+measures of limited utility except as a rough index for comparing
+competing models on the same data, and prefer the information criteria —
+hence AIC in the default block. When reporting one, name the specific
+measure, as the row labels here do; a generic “pseudo-R²” is ambiguous
+across software. Tjur’s (2009) coefficient of discrimination, an
+alternative on the probability scale for binary outcomes, is available
+as the opt-in token <code>pseudo_r2_tjur</code> via
+<code>show_fit_stats</code>.</p>
 <div class="section level3">
 <h3 id="response-scale-display-exponentiate-true">Response-scale display: <code>exponentiate = TRUE</code><a class="anchor" aria-label="anchor" href="#response-scale-display-exponentiate-true"></a>
 </h3>
 <p>Set <code>exponentiate = TRUE</code> to switch the <code>B</code>
-column to the ratio scale and rebrand its header per family and link:
-<code>OR</code> for <code>binomial(logit)</code>, <code>IRR</code> for
-<code>poisson(log)</code>, <code>HR</code> for
+column to the ratio scale and relabel its header according to the family
+and link: <code>OR</code> for <code>binomial(logit)</code>,
+<code>IRR</code> for <code>poisson(log)</code>, <code>HR</code> for
 <code>binomial(cloglog)</code>, <code>RR</code> for
 <code>binomial(log)</code>, <code>MR</code> for <code>Gamma(log)</code>,
 and the generic <code>exp(B)</code> for other log-link families (a
 genuine ratio of means). Links whose exponential is <em>not</em> a ratio
-– probit, cauchit, inverse (the <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">Gamma()</a></code> default), and
-friends – are refused with a clear error rather than silently
+— probit, cauchit, inverse (the <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">Gamma()</a></code> default), among
+others — are refused with a clear error rather than silently
 mislabelled; report response-scale effects for those models via the AME
 column instead. The standard error follows the delta-method
 approximation <code>SE_OR = OR × SE_log-odds</code> (the Stata
 <code>logit, or</code> convention). The test statistic and the p-value
-are invariant under any monotone transformation, so they remain on the
-link scale and match the unexponentiated table verbatim:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+stay on the link scale, where <code>B = 0</code> and <code>OR = 1</code>
+are the same hypothesis and the Wald approximation is most accurate, so
+they match the unexponentiated table verbatim. (Wald tests are not
+invariant to reparameterisation — a z rebuilt from <code>SE_OR</code>
+would give a different statistic and p-value, which is why the
+link-scale test is kept; Long &amp; Freese 2014 §3.2.2.):</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -851,6 +1029,17 @@ link scale and match the unexponentiated table verbatim:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<p>Read exponentiated rows with the factor-change template (Long and
+Freese 2014 §6.1.1): for <code>Tertiary</code>, OR = 0.40, 95% CI [0.27,
+0.59] — holding sex and age constant, the odds of smoking for a
+tertiary-educated respondent are 0.40 times the odds for one with lower
+secondary education, a 60% decrease in the odds (percentage change = 100
+× (OR − 1)). An odds ratio is a ratio of <em>odds</em>, not of
+probabilities: with a smoking prevalence around 21% it sits farther from
+1 than the corresponding risk ratio, so reading it as “a 60% lower
+probability of smoking” overstates the effect. The <em>Average marginal
+effects</em> section below reports the probability-scale counterpart for
+the same contrast (−0.15, that is, 15 percentage points).</p>
 </div>
 <div class="section level3">
 <h3 id="term-level-partial-chi-square">Term-level partial chi-square<a class="anchor" aria-label="anchor" href="#term-level-partial-chi-square"></a>
@@ -858,10 +1047,11 @@ link scale and match the unexponentiated table verbatim:</p>
 <p><code>partial_chi2</code> is the glm analog of
 <code>partial_f2</code>: for each model term, the partial
 likelihood-ratio chi-square via <code>drop1(test = "LRT")</code> (SAS
-PROC LOGISTIC <code>TYPE3</code>; Long &amp; Freese 2014 §3.5). Rendered
-as <code>value (df)</code> so factor terms (<code>k − 1</code> df) and
-numeric terms (1 df) read at a glance:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+PROC GENMOD <code>TYPE3</code> likelihood-ratio analysis; Long &amp;
+Freese 2014 §3.2.2, §3.2.4). Rendered as <code>value (df)</code> so
+factor terms (<code>k − 1</code> df) and numeric terms (1 df) read at a
+glance:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit2</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"partial_chi2"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -883,15 +1073,26 @@ numeric terms (1 df) read at a glance:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; χ² = partial likelihood-ratio chi-squared.</span></span></span></code></pre></div>
+<p>The <code>p</code> column and the <code>χ²</code> column answer
+different questions. Each per-level p-value compares one education level
+with the reference, so it changes when the reference level changes; the
+joint test — 21.70 on 2 df, p &lt; .001 — asks whether
+<code>education</code> as a whole improves the model, and is invariant
+to the reference choice. When a factor’s levels straddle significance,
+the joint test is the one to report. Wald and likelihood-ratio tests of
+the same joint hypothesis are asymptotically equivalent but differ in
+finite samples; many statisticians prefer the likelihood-ratio form when
+both are available (Long &amp; Freese 2014 §3.2.2), which is what
+<code>partial_chi2</code> computes.</p>
 </div>
 <div class="section level3">
-<h3 id="standardised-coefficients-refit-and-the-new-pseudo">Standardised coefficients: <code>refit</code> and the new
-<code>pseudo</code><a class="anchor" aria-label="anchor" href="#standardised-coefficients-refit-and-the-new-pseudo"></a>
+<h3 id="standardised-coefficients-refit-and-pseudo">Standardised coefficients: <code>refit</code> and
+<code>pseudo</code><a class="anchor" aria-label="anchor" href="#standardised-coefficients-refit-and-pseudo"></a>
 </h3>
 <p>For <code>glm</code>, <code>standardized = "refit"</code> z-scores
 numeric <em>predictors</em> only and refits the model — the response
 stays on its observed scale because the link function is fixed. This is
-the “x-standardization” convention (Long and Freese 2014 §4.3.4). The
+the “x-standardization” convention (Long and Freese 2014 §4.7.2). The
 other algebraic methods (<code>"posthoc"</code>, <code>"basic"</code>,
 <code>"smart"</code>) apply X-only scaling using the same algebra as in
 the <code>lm</code> case.</p>
@@ -903,7 +1104,7 @@ on the link scale and
 <code>var_link</code> = π²/3 for logit, 1 for probit, π²/6 for cloglog.
 Defined for binomial families; non-binomial returns NA with a
 <code>spicy_caveat</code>:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"pseudo"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -931,19 +1132,20 @@ Defined for binomial families; non-binomial returns NA with a
 <div class="section level3">
 <h3 id="average-marginal-effects-probability-units-not-log-odds">Average marginal effects: probability units, not log-odds<a class="anchor" aria-label="anchor" href="#average-marginal-effects-probability-units-not-log-odds"></a>
 </h3>
-<p>For <code>glm</code>, AME is computed as the average of
-<code>dE[Y|X] / dx</code> over the observed sample — <strong>on the
-response scale, not the link scale</strong>. For logistic regression
-this means the displayed AME is in <strong>probability units, not
-log-odds</strong>: an AME of <code>-0.15</code> for
-<code>education = Tertiary</code> reads “on average, holding sex and age
-constant, a respondent with tertiary education is 15 percentage points
-less likely to be a current smoker than one with lower secondary
-education”. This is almost always the quantity a substantive reader
-wants from a logistic regression, and it is the reason AME is
-increasingly recommended over odds ratios for communicating logistic
-effects (Mood 2010; Long and Freese 2014 §5.3).</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<p>For <code>glm</code>, AME is averaged over the observed sample — the
+partial derivative for numeric predictors, the discrete change for
+factor levels — <strong>on the response scale, not the link
+scale</strong>. For logistic regression this means the displayed AME is
+in <strong>probability units, not log-odds</strong>: an AME of
+<code>-0.15</code> for <code>education = Tertiary</code> reads “on
+average, holding sex and age constant, a respondent with tertiary
+education is 15 percentage points less likely to be a current smoker
+than one with lower secondary education”. This is almost always the
+quantity a substantive reader wants from a logistic regression, and it
+is the reason AME is increasingly recommended over odds ratios for
+communicating logistic effects (Mood 2010; Long and Freese 2014
+§6.2.3).</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -981,11 +1183,12 @@ as well.</p>
 <code>glm</code> you can also request
 <code>ci_method = "profile"</code>, which calls
 <code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code> to compute the profile-likelihood CI —
-asymmetric, exact for likelihood-based inference, and the gold standard
-under sparse data or near-boundary estimates (Venables &amp; Ripley
+asymmetric, obtained by inverting the likelihood-ratio statistic rather
+than the quadratic Wald approximation, and the preferred choice under
+sparse data or near-boundary estimates (Venables &amp; Ripley
 <em>MASS</em> §7.2). The estimate, SE, statistic, and p-value all remain
 Wald; <code>"profile"</code> only refines the CI bounds:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1013,14 +1216,19 @@ Wald; <code>"profile"</code> only refines the CI bounds:</p>
 <div class="section level3">
 <h3 id="hierarchical-glm-lrt">Hierarchical glm (LRT)<a class="anchor" aria-label="anchor" href="#hierarchical-glm-lrt"></a>
 </h3>
-<p><code>nested = TRUE</code> on a list of nested glm fits adds a “Model
-comparison” block whose default tokens are <code>c("LRT", "p")</code> —
-the APA-conventional layout for hierarchical logistic regression (Hosmer
-&amp; Lemeshow §3.5; Long &amp; Freese 2014 §3.6). The chi-square
-statistic comes from <code>anova(test = "LRT")</code>.
-<code>r2_change</code> and <code>F</code> are not defined for glm and
-return em-dashes if explicitly requested:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<p><code>nested = TRUE</code> on a list of nested glm fits appends
+<code>Δχ²</code> and <code>p (change)</code> rows to the fit-statistics
+block — default change tokens <code>c("lrt_change", "p_change")</code>,
+as in <em>Hierarchical / nested regression</em> above — the
+APA-conventional layout for hierarchical logistic regression (Hosmer
+&amp; Lemeshow §3.5; Long &amp; Freese 2014 §3.2.4). The chi-square
+statistic comes from <code>anova(test = "LRT")</code>. The
+variance-explained change tokens (<code>r2_change</code>,
+<code>f_change</code>) are not defined for glm — requesting them in
+<code>show_fit_stats</code> raises a <code>spicy_invalid_input</code>
+error that points to the pseudo-R² family and to <code>lrt_change</code>
++ <code>p_change</code> instead:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span>,                   data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span>,             data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
@@ -1087,25 +1295,20 @@ with <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()<
 <div class="section level2">
 <h2 id="mixed-effects-models">Mixed-effects models<a class="anchor" aria-label="anchor" href="#mixed-effects-models"></a>
 </h2>
-<p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports four mixed-effects
-classes:</p>
-<ul>
-<li>
-<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code> and <code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code>
-</li>
-<li><code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code></li>
-<li><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></li>
-</ul>
-<p>The fixed-effects section of the table follows the same conventions
-as <code>lm</code> / <code>glm</code>. Below the fixed effects, a
-subordinate <strong>Random effects</strong> block of rows reports the
-variance components — one row per random standard deviation (σ),
-correlation (ρ), and the residual — each with its estimate, SE, and CI
-in the shared coefficient columns. The group sizes
-(<code>N (groups)</code>) and the intra-class correlation
-(<code>ICC</code>, when defined) appear among the fit-statistic rows, so
-they align per model in a comparison table:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports four mixed-effects engines:
+<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code> and <code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code>,
+<code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code>, and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code>. The
+fixed-effects section of the table follows the same conventions as
+<code>lm</code> / <code>glm</code>. Below it, a subordinate
+<strong>Random effects</strong> block reports the variance components as
+rows — one per random standard deviation (σ), correlation (ρ), and the
+residual — each with its estimate, SE, and CI in the shared coefficient
+columns. The number of groups — one
+<code>N (&lt;grouping factor&gt;)</code> row per grouping factor, here
+<code>N (Subject)</code> — and the Nakagawa marginal / conditional R²
+(Nakagawa &amp; Schielzeth 2013) join the fit-statistic rows, so they
+align per model in a comparison table:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: Matrix</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span>
@@ -1134,6 +1337,9 @@ they align per model in a comparison table:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span></code></pre></div>
+<p>No <code>ICC</code> row appears here: a random-slope fit has no
+single intra-class correlation, so the row is dropped automatically (the
+intercept-only case shows it).</p>
 <p>Two deliberate conventions:</p>
 <ul>
 <li>The variance-component rows carry <strong>no p-value</strong>. The
@@ -1143,14 +1349,16 @@ requests a per-component p, and the R ecosystem (<code>lme4</code>,
 <code>nlme</code>, <code>parameters</code>, <code>broom.mixed</code>),
 Stata, and MLwiN all omit it. The correct significance signal for the
 random part is the footer’s <strong>likelihood-ratio test</strong>
-against the no-random-effects model, whose p-value uses the
-boundary-corrected chi-bar-squared mixture
-(<code>p = 0.5 * P(χ²_q &gt; LR)</code>; Self &amp; Liang 1987; Stram
-&amp; Lee
-<ol start="1994" style="list-style-type: decimal">
-<li>— the same line Stata’s <code>mixed</code> prints.</li>
-</ol>
-</li>
+against the no-random-effects model, whose p-value applies a boundary
+correction. With a single variance component the halving
+<code>p = 0.5 × P(χ²₁ &gt; LR)</code> is the exact Self &amp; Liang
+(1987) 50:50 mixture — the <code>chibar2(01)</code> line Stata’s
+<code>mixed</code> prints. With more random parameters, as here (two
+variances and a correlation), the exact reference is a multi-component
+mixture (Stram &amp; Lee 1994); spicy reports the pragmatic halved
+<code>χ²_q</code>, less conservative than the plain <code>χ²_q</code>
+that Stata prints for joint tests with a caveat that it is
+conservative.</li>
 <li>The footer also carries the estimator label — <code>(REML)</code>
 for restricted maximum likelihood (the <code>lmer</code> /
 <code>lme</code> default) or <code>(ML)</code> for full ML
@@ -1160,512 +1368,33 @@ tells the reader which likelihood the variance estimates are anchored
 to, without implying that REML and ML estimates are interchangeable for
 inference.</li>
 </ul>
-<div class="section level3">
-<h3 id="fit-statistics-nakagawa-marginal-and-conditional-r²">Fit statistics: Nakagawa marginal and conditional R²<a class="anchor" aria-label="anchor" href="#fit-statistics-nakagawa-marginal-and-conditional-r%C2%B2"></a>
-</h3>
-<p>Classical R² is not defined for mixed-effects models: the
-within-group correlation breaks the variance-decomposition identity that
-lm’s R² relies on. The publication-standard substitute is the
-<strong>Nakagawa &amp; Schielzeth</strong> family of R² (Nakagawa &amp;
-Schielzeth 2013; Nakagawa, Johnson &amp; Schielzeth 2017), which
-decomposes the response variance into</p>
-<ul>
-<li>
-<code>R² (marginal)</code> — variance explained by the <strong>fixed
-effects alone</strong>;</li>
-<li>
-<code>R² (conditional)</code> — variance explained by <strong>fixed
-plus random effects</strong>.</li>
-</ul>
-<p>For Gaussian fits the formula is closed-form:</p>
-<p><span class="math display">\[ R^2_{\text{marg}} =
-\frac{\sigma^2_f}{\sigma^2_f + \sum_g \sigma^2_g + \sigma^2_\epsilon},
-\quad R^2_{\text{cond}} = \frac{\sigma^2_f + \sum_g
-\sigma^2_g}{\sigma^2_f + \sum_g \sigma^2_g + \sigma^2_\epsilon}
-\]</span></p>
-<p>For non-Gaussian families (binomial logit / probit / cloglog, Poisson
-log, etc.) the residual term σ²_ε is replaced by the <strong>link-scale
-distribution-specific variance</strong> σ²_d (π²/3 for logit, 1 for
-probit, π²/6 for cloglog, a lognormal approximation for Poisson log;
-Nakagawa et al. 2017 §3).</p>
-<p>spicy ships its own native implementation for the three combinations
-covered by the closed-form formula in Nakagawa &amp; Schielzeth (2013) +
-Nakagawa et al. (2017) sec. 3:</p>
-<ul>
-<li>Gaussian (identity link) — all four engines;</li>
-<li>Bernoulli binomial with logit / probit / cloglog link (single trial
-per observation);</li>
-<li>Poisson with log link (lognormal approximation, Nakagawa et al. 2017
-sec. 3.6).</li>
-</ul>
-<p>These values are cross-validated against
-<code><a href="https://easystats.github.io/performance/reference/r2_nakagawa.html" class="external-link">performance::r2_nakagawa()</a></code> to 1 × 10⁻¹⁰ on every supported
-combination.</p>
-<p>For families with more involved link-scale variance formulas —
-binomial with multiple trials (<code>cbind(succ, fail)</code> /
-<code>weights</code>), negative binomial, beta, Tweedie, dispersion
-models, zero-inflated GLMM — spicy delegates to
-<code><a href="https://easystats.github.io/performance/reference/r2_nakagawa.html" class="external-link">performance::r2_nakagawa()</a></code>. <code>performance</code> is a
-Suggests dependency: when absent the fit-stat rows render as NA without
-erroring (the table still prints; only the R² rows go blank). The
-default <code>show_fit_stats</code> for mixed fits is
-<code>c("nobs", "n_groups", "icc", "r2_marginal", "r2_conditional", "AIC", "BIC")</code>
-— set <code>show_fit_stats</code> explicitly to override. The
-<code>icc</code> row is dropped automatically when the ICC is not
-defined for the fit (random slopes, several grouping factors, families
-without a link-scale variance formula).</p>
-</div>
-<div class="section level3">
-<h3 id="display-scale-σ-vs-σ²">Display scale: σ vs σ²<a class="anchor" aria-label="anchor" href="#display-scale-%CF%83-vs-%CF%83%C2%B2"></a>
-</h3>
-<p>By default the Random effects rows report the random-effect
-<strong>standard deviation</strong> σ rather than the variance σ².
-Following Gelman (2005, p. 5), the SD scale is “<em>directly
-interpretable as the size of the variation across groups</em>” and lives
-on the same scale as the response variable, which is what readers
-usually want to compare to fixed-effect coefficients. Set
-<code>re_scale = "variance"</code> to switch back to σ²:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, re_scale <span class="op">=</span> <span class="st">"variance"</span><span class="op">)</span></span></code></pre></div>
-<p>The conversion is internally consistent: SE and CI are transported
-between scales by the Delta method (<code>SE(σ) = SE(σ²) / (2σ)</code>,
-<code>CI(σ) = √CI(σ²)</code>), so the displayed values agree with
-<code>arm::sigma.hat()</code> (SD) and with <code>VarCorr(fit)</code>
-(variance) up to rounding. On the variance scale the row labels switch
-from σ to σ².</p>
-</div>
-<div class="section level3">
-<h3 id="standard-errors-and-confidence-intervals">Standard errors and confidence intervals<a class="anchor" aria-label="anchor" href="#standard-errors-and-confidence-intervals"></a>
-</h3>
-<p>Each variance row of the block carries a Wald SE and 95 % CI
-(<code>est ± z · SE</code>, clamped at 0 for variances). The source
-depends on the class:</p>
-<ul>
-<li>
-<code>lmer</code> / <code>glmer</code>: Hessian-based SE via
-<code>merDeriv</code> (Wang and Merkle 2018). Requires the optional
-<code>merDeriv</code> package (declared in <code>Suggests</code>); the
-column reads NA gracefully when the package is missing or when the fit
-is singular (<code>lme4::isSingular(fit) == TRUE</code>).</li>
-<li>
-<code>glmmTMB</code>: native Wald CI from
-<code>confint(fit, method = "Wald")</code>, with SE backed out by Delta
-method on σ.</li>
-<li>
-<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>: native Wald CI from
-<code>nlme::intervals(fit)</code>.</li>
-</ul>
-<p><strong>Correlations</strong> between random terms (ρ rows) carry SE
-and CI too: for <code>lmer</code> via a multivariate Delta method on the
-<code>merDeriv</code> covariance of the variance parameters, for
-<code>glmmTMB</code> and <code>lme</code> from their native
-<code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> / <code>intervals()</code> output. Identical
-random structures fitted with different engines align on the same ρ row
-in a multi-model table.</p>
-<p>A methodological note. Wald CIs on variance components are known to
-be optimistic near the boundary σ = 0 (Self and Liang 1987
-chi-bar-squared mixture; Bolker FAQ 2024). When robustness is critical,
-the recommended fallback is the profile-likelihood CI directly on the
-fit:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit</span>, method <span class="op">=</span> <span class="st">"profile"</span>, parm <span class="op">=</span> <span class="st">"theta_"</span><span class="op">)</span>  <span class="co"># lmer</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit</span>, method <span class="op">=</span> <span class="st">"profile"</span><span class="op">)</span>                   <span class="co"># glmmTMB</span></span>
-<span><span class="fu">nlme</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/intervals.html" class="external-link">intervals</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>                                <span class="co"># lme (Wald-equivalent)</span></span></code></pre></div>
-<p>Profile CIs are not exposed as a <code><a href="../reference/table_regression.html">table_regression()</a></code>
-option because they are 10–100× slower than Wald on random-slope models
-(≈ 45 s on <code>sleepstudy</code> random slope vs ≈ 100 ms for Wald),
-which is incompatible with the function’s “fast enough for a knit” goal.
-The rows report the SE so the reader can form their own boundary-safe
-judgment; the <code>re_columns</code> argument (below) lets you drop SE
-and CI from the rendered output entirely if your reporting standard
-prefers <strong>estimation without inference</strong> on variance
-components (Gelman 2005; Bates et al. 2015).</p>
-<p>p-values are not reported for variance components. The null σ² = 0
-sits on the boundary of the parameter space, so the standard Wald χ²₁
-statistic has a chi-bar-squared limiting distribution (Self and Liang
-1987; Stram and Lee 1994). The table’s built-in significance signal for
-the random part is the footer’s <strong>LR test vs the no-random-effects
-model</strong>, whose p-value already applies the chi-bar-squared
-correction. For a per-term question (“do we need this random slope?”),
-LRT-based model comparison (<code><a href="https://rdrr.io/pkg/lmerTest/man/ranova.html" class="external-link">lmerTest::ranova()</a></code>,
-<code><a href="https://rdrr.io/pkg/RLRsim/man/exactRLRT.html" class="external-link">RLRsim::exactRLRT()</a></code>) remains the recommended path. Note
-that <code>lmerTest</code>’s Satterthwaite p-values apply to the
-<strong>fixed effects</strong> of an <code>lmer</code> fit (and
-<code><a href="../reference/table_regression.html">table_regression()</a></code> will pick them up automatically when the
-fit object inherits from <code>lmerModLmerTest</code>); they do not
-apply to variance components.</p>
-</div>
-<div class="section level3">
-<h3 id="fixed-effect-p-values-and-cis-across-classes">Fixed-effect p-values and CIs across classes<a class="anchor" aria-label="anchor" href="#fixed-effect-p-values-and-cis-across-classes"></a>
-</h3>
-<p>The footer carries a one-line annotation naming the inference method
-used for the fixed-effect p-value and CI columns. The mapping is:</p>
-<ul>
-<li>
-<code>lmerModLmerTest</code> (= <code><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmerTest::lmer()</a></code>, or
-<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code> after <code><a href="https://github.com/runehaubo/lmerTestR" class="external-link">library(lmerTest)</a></code>):
-Satterthwaite t-test. p and CI use
-<code>summary(fit)$coefficients[, c("df", "Pr(&gt;|t|)")]</code> from
-lmerTest. This is the recommended default whenever the number of groups
-is below ~30 (Luke 2017).</li>
-<li>
-<code>lmerMod</code> without lmerTest loaded: Wald-z, large-sample
-approximation. df is reported as ∞ in the broom-canonical frame;
-p-values come from <code>pnorm</code>. This matches
-<code>parameters::model_parameters(ci_method = "wald")</code>, SAS PROC
-MIXED with <code>ddfm = z</code>, and Stata <code>xtmixed</code>’s
-default. The footer suggests loading lmerTest for small samples.</li>
-<li>
-<code>glmerMod</code>: Wald-z asymptotic from
-<code>summary(fit)$coefficients[, "Pr(&gt;|z|)"]</code>. No
-t-distribution applies to GLMMs in general (the link-scale residual
-variance is fixed for binomial / Poisson families).</li>
-<li>
-<code>glmmTMB</code>: Wald-z asymptotic from
-<code>summary(fit)$coefficients[, "Pr(&gt;|z|)"]</code>. Same logic as
-<code>glmerMod</code>.</li>
-<li>
-<code>lme</code> (nlme): t-test with <strong>containment degrees of
-freedom</strong>. p and df come from <code>summary(fit)$tTable</code>.
-Pinheiro &amp; Bates
-<ol start="2000" style="list-style-type: decimal">
-<li>§2.4.2 — between-group covariates get df = n_groups − rank,
-within-group covariates get the residual df.</li>
-</ol>
-</li>
-</ul>
-<p>The footer line lets the reader see at a glance what’s being
-reported. The behavioural choice is stable across classes: spicy uses
-each engine’s own inference path, falling back to Wald-z only when no
-better df strategy is available.</p>
-</div>
-<div class="section level3">
-<h3 id="glmer-logistic-poisson-and-the-adjusted-icc">glmer (logistic / Poisson) and the adjusted ICC<a class="anchor" aria-label="anchor" href="#glmer-logistic-poisson-and-the-adjusted-icc"></a>
-</h3>
-<p><code>glmer</code> fits render the same Random effects rows as
-<code>lmer</code> — σ rows with Wald SE and 95 % CI from
-<code>merDeriv</code> — plus the ICC and N (groups) fit-stat rows. Two
-things differ from the lmer case:</p>
-<ul>
-<li><p>No “σ (Residual)” row. <code><a href="https://rdrr.io/pkg/lme4/man/sigma.html" class="external-link">lme4::sigma()</a></code> returns the
-fixed dispersion parameter (1 for <code>binomial</code> and
-<code>poisson</code>) by convention, but this is not an estimated
-parameter with its own SE — reporting it as a residual variance is
-misleading. spicy suppresses the row for non-Gaussian fits.</p></li>
-<li>
-<p>The ICC uses the <strong>link-scale distribution
-variance</strong> in the denominator (Nakagawa, Johnson &amp; Schielzeth
-2017 — adjusted ICC):</p>
-<table class="table">
-<thead><tr class="header">
-<th>Family · link</th>
-<th>distribution variance σ²_d</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>binomial logit</td>
-<td>π²/3 ≈ 3.29</td>
-</tr>
-<tr class="even">
-<td>binomial probit</td>
-<td>1</td>
-</tr>
-<tr class="odd">
-<td>binomial cloglog</td>
-<td>π²/6 ≈ 1.64</td>
-</tr>
-<tr class="even">
-<td>poisson log</td>
-<td>log(1 + 1/λ), λ = exp(β₀_null + 0.5 σ²_g_null)</td>
-</tr>
-</tbody>
-</table>
-<p>with <code>ICC = σ²_g / (σ²_g + σ²_d)</code>. The value matches
-<code>performance::icc(fit)$ICC_adjusted</code> to 1 × 10⁻⁶.</p>
-</li>
-</ul>
-<p>For binomial fits with the <code>cbind(succ, fail)</code>
-(multi-trial) form, the closed-form σ²_d formula above does not apply
-directly — spicy returns <code>NA</code> for the ICC row rather than
-emit a misleading value. The Nakagawa marginal / conditional R² rows
-still render via the <code>performance</code> fallback.</p>
-</div>
-<div class="section level3">
-<h3 id="hierarchical-nested-mixed-effects">Hierarchical / nested mixed-effects<a class="anchor" aria-label="anchor" href="#hierarchical-nested-mixed-effects"></a>
-</h3>
-<p><code>table_regression(list(m1, m2, m3), nested = TRUE)</code> also
-works on mixed-effects fits. The change rows are populated from
-<code>anova(m1, m2)</code> (likelihood-ratio test):</p>
-<ul>
-<li>
-<code>ΔAIC</code> — <code>AIC(m2) − AIC(m1)</code>, negative when m2
-fits better</li>
-<li>
-<code>ΔBIC</code> — <code>BIC(m2) − BIC(m1)</code>
-</li>
-<li>
-<code>Δχ²</code> — likelihood-ratio statistic</li>
-<li>
-<code>p (change)</code> — LRT p-value</li>
-</ul>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="fl">1</span>     <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>, REML <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span>  <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>, REML <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span>  <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>, REML <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical linear mixed-effects regression: Reaction</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                          Model 1                Model 2        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                   ────────────────────  ───────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼─────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>  298.51  8.79  &lt;.001   251.41   9.51  &lt;.001 </span></span>
-<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>                         10.47   0.80  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>   34.59  6.72   –       36.01   6.45   –    </span></span>
-<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>   44.26  2.46   –       30.90   1.72   –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>  180                   180                  </span></span>
-<span><span class="co">#&gt;  N (Subject)                     <span style="color: #9E9E9E;">│</span>   18                    18                  </span></span>
-<span><span class="co">#&gt;  ICC                             <span style="color: #9E9E9E;">│</span>    0.38                  0.58               </span></span>
-<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>    0.00                  0.29               </span></span>
-<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>    0.38                  0.70               </span></span>
-<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1916.5                1802.1                </span></span>
-<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1926.1                1814.9                </span></span>
-<span><span class="co">#&gt;  ΔAIC                            <span style="color: #9E9E9E;">│</span>     –                 -114.5                </span></span>
-<span><span class="co">#&gt;  ΔBIC                            <span style="color: #9E9E9E;">│</span>     –                 -111.3                </span></span>
-<span><span class="co">#&gt;  Δχ²                             <span style="color: #9E9E9E;">│</span>     –                 +116.46               </span></span>
-<span><span class="co">#&gt;  p (change)                      <span style="color: #9E9E9E;">│</span>     –                    &lt;.001              </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                           Model 3        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                   ───────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>    B       SE     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼───────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                     <span style="color: #9E9E9E;">│</span>  251.41   6.63  &lt;.001 </span></span>
-<span><span class="co">#&gt;  Days                            <span style="color: #9E9E9E;">│</span>   10.47   1.50  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                       </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>   23.78   5.58   –    </span></span>
-<span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>    5.72   1.19   –    </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>    0.08   0.32   –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>   25.59   1.51   –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>  180                  </span></span>
-<span><span class="co">#&gt;  N (Subject)                     <span style="color: #9E9E9E;">│</span>   18                  </span></span>
-<span><span class="co">#&gt;  R² (marginal)                   <span style="color: #9E9E9E;">│</span>    0.29               </span></span>
-<span><span class="co">#&gt;  R² (conditional)                <span style="color: #9E9E9E;">│</span>    0.79               </span></span>
-<span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1763.9                </span></span>
-<span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1783.1                </span></span>
-<span><span class="co">#&gt;  ΔAIC                            <span style="color: #9E9E9E;">│</span>  -38.1                </span></span>
-<span><span class="co">#&gt;  ΔBIC                            <span style="color: #9E9E9E;">│</span>  -31.8                </span></span>
-<span><span class="co">#&gt;  Δχ²                             <span style="color: #9E9E9E;">│</span>  +42.14               </span></span>
-<span><span class="co">#&gt;  p (change)                      <span style="color: #9E9E9E;">│</span>    &lt;.001              </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p &lt; .001.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span></span></code></pre></div>
-<p>Variance-explained change tokens (<code>Δr²</code>, <code>Δf²</code>)
-are NA — the F-test framework that grounds them doesn’t apply to mixed
-models. <code>ΔR² (marginal)</code> and <code>ΔR² (conditional)</code>
-are not reported either: the row-by-row difference would be conceptually
-mixing two quantities (a marginal and a conditional gain), so the reader
-can compute it from the absolute R² rows directly if needed.</p>
-<p>Methodological caveat. <code>lme4::anova()</code> auto-refits REML
-fits with ML before the LRT (spicy suppresses the message). The LRT is a
-<strong>fixed-effect-only</strong> comparison: testing additional random
-terms with naive χ² is conservative — the formally correct test is the
-chi-bar-squared mixture (Self &amp; Liang 1987), best run directly via
-<code><a href="https://rdrr.io/pkg/lmerTest/man/ranova.html" class="external-link">lmerTest::ranova()</a></code>. spicy surfaces fixed-effect nesting
-comparisons; random-structure model selection lives outside the table
-footer.</p>
-</div>
-<div class="section level3">
-<h3 id="average-marginal-effects-ame-1">Average marginal effects (AME)<a class="anchor" aria-label="anchor" href="#average-marginal-effects-ame-1"></a>
-</h3>
-<p>The <code>"ame"</code> / <code>"ame_se"</code> /
-<code>"ame_ci"</code> / <code>"ame_p"</code> tokens of
-<code>show_columns</code> are wired for mixed-effects fits, delegated to
-<code>marginaleffects::avg_slopes(fit, df = Inf)</code>. The AME column
-is the publication-substantive quantity when the link is non-linear:</p>
-<ul>
-<li>
-<code>glmer</code> binomial logit: AME is on the <strong>probability
-scale</strong> (percentage points), not the log-odds scale. For the
-typical “what does a one-unit change in <code>x</code> do to the
-predicted probability?” reading, the AME column is what you want.</li>
-<li>
-<code>glmer</code> Poisson log: AME is on the <strong>count
-scale</strong> (units of the outcome), not log-rate.</li>
-<li>
-<code>lmer</code> / <code>lme</code> / <code>glmmTMB</code>
-Gaussian: AME = B coefficient (identity link); the column is filled but
-redundant.</li>
-</ul>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">25</span>, length.out <span class="op">=</span> <span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
-<span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.8</span> <span class="op">*</span> <span class="va">x</span> <span class="op">+</span> <span class="op">(</span><span class="va">cat</span> <span class="op">==</span> <span class="st">"B"</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.3</span> <span class="op">+</span></span>
-<span>                           <span class="op">(</span><span class="va">cat</span> <span class="op">==</span> <span class="st">"C"</span><span class="op">)</span> <span class="op">*</span> <span class="op">-</span><span class="fl">0.5</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">25</span><span class="op">)</span><span class="op">[</span><span class="va">g</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">glmer</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">cat</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">g</span><span class="op">)</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_p"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic mixed-effects regression: y</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   B      SE     p     AME     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)       <span style="color: #9E9E9E;">│</span>   0.25  0.34   .470               </span></span>
-<span><span class="co">#&gt;  x                 <span style="color: #9E9E9E;">│</span>   0.85  0.12  &lt;.001   0.15  &lt;.001 </span></span>
-<span><span class="co">#&gt;  cat:              <span style="color: #9E9E9E;">│</span>                                   </span></span>
-<span><span class="co">#&gt;    A (ref.)        <span style="color: #9E9E9E;">│</span>    –     –     –                  </span></span>
-<span><span class="co">#&gt;    B               <span style="color: #9E9E9E;">│</span>   0.46  0.28   .107   0.08   .106 </span></span>
-<span><span class="co">#&gt;    C               <span style="color: #9E9E9E;">│</span>  -0.30  0.27   .264  -0.05   .262 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:   <span style="color: #9E9E9E;">│</span>                                   </span></span>
-<span><span class="co">#&gt;    σ g (Intercept) <span style="color: #9E9E9E;">│</span>   1.40  0.23   –                  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                 <span style="color: #9E9E9E;">│</span> 500                               </span></span>
-<span><span class="co">#&gt;  N (g)             <span style="color: #9E9E9E;">│</span>  25                               </span></span>
-<span><span class="co">#&gt;  ICC               <span style="color: #9E9E9E;">│</span>   0.37                            </span></span>
-<span><span class="co">#&gt;  R² (marginal)     <span style="color: #9E9E9E;">│</span>   0.14                            </span></span>
-<span><span class="co">#&gt;  R² (conditional)  <span style="color: #9E9E9E;">│</span>   0.46                            </span></span>
-<span><span class="co">#&gt;  AIC               <span style="color: #9E9E9E;">│</span> 562.4                             </span></span>
-<span><span class="co">#&gt;  BIC               <span style="color: #9E9E9E;">│</span> 583.5                             </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic mixed-effects regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Wald-z asymptotic (lme4).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p &lt; .001.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span></code></pre></div>
-<p>Factor predictors are handled level-by-level: AME rows align under
-the same factor header (<code>cat: A (ref.) / B / C</code>), each level
-sharing a row with its B coefficient. Inline <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code> calls
-and ordered factors are reconstructed from the model-frame column when
-the coef-name lookup misses (same fallback logic used for
-<code>lm</code> / <code>glm</code>).</p>
-<p>Inference is Wald-z asymptotic (<code>df = Inf</code>) with the
-model-based vcov – matching the inference path of the B-row p-values in
-the same table. <code>marginaleffects</code> is a Suggests dependency;
-when unavailable, the AME columns appear in the header but render as NA
-without erroring (the rest of the table is unaffected).</p>
-</div>
-<div class="section level3">
-<h3 id="hiding-parts-of-the-random-effects-block">Hiding parts of the Random effects block<a class="anchor" aria-label="anchor" href="#hiding-parts-of-the-random-effects-block"></a>
-</h3>
-<p>Three arguments control the block’s rendering:</p>
-<ul>
-<li>
-<code>show_re = FALSE</code> suppresses the block entirely. Useful
-when the random structure is documented in the manuscript text and the
-table only needs the fixed-effects block.</li>
-<li>
-<code>re_scale = "variance"</code> switches to σ² (see <em>Display
-scale</em> above).</li>
-<li>
-<code>re_columns</code> is a character subset of
-<code>c("est", "se", "ci")</code>. <code>"est"</code> is mandatory. Drop
-SE and CI when reporting a minimal table
-(<code>re_columns = "est"</code>) or drop only CI when following a
-journal style that reports SE alone
-(<code>re_columns = c("est", "se")</code>). Display-only: the underlying
-data (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, <code><a href="../reference/as_structured.html">as_structured()</a></code>) always
-carries the full SE and CI.</li>
-</ul>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, re_columns <span class="op">=</span> <span class="st">"est"</span><span class="op">)</span>               <span class="co"># σ only</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, re_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"est"</span>, <span class="st">"se"</span><span class="op">)</span><span class="op">)</span>      <span class="co"># σ (SE)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_re <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>                  <span class="co"># fixed effects only</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="significance-stars">Significance stars<a class="anchor" aria-label="anchor" href="#significance-stars"></a>
-</h2>
-<p>Stars are off by default. APA 7 §6.46 explicitly discourages
-asterisks-only reporting in favour of exact p-values, and ASA’s
-post-2019 guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the
-same point. Set <code>stars = TRUE</code> for the APA preset
-(<code>*** p &lt; .001, ** p &lt; .01, * p &lt; .05</code>) or pass a
-named numeric vector for custom thresholds:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, stars <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>     B        SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20***  1.66  [61.95, 68.45]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05     0.03  [-0.01,  0.11]   .130 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                         </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –        –          –          –    </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.86***  0.91  [ 2.08,  5.63]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                         </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –        –          –          –    </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.72     1.11  [-3.89,  0.45]   .121 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                    </span></span>
-<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; *** p &lt; .001, ** p &lt; .01, * p &lt; .05.</span></span></span></code></pre></div>
-<p>Stars suffix the <code>B</code> column (or <code>β</code> when
-standardisation is requested); the threshold mapping is auto-documented
-in the footer. The <code>p</code> column itself remains unstarred so the
-numeric value stays readable.</p>
-</div>
-<div class="section level2">
-<h2 id="display-knobs">Display knobs<a class="anchor" aria-label="anchor" href="#display-knobs"></a>
-</h2>
-<p><code>labels</code> accepts a named character vector keyed by either
-formula term labels (<code>"sex"</code>) or coefficient names
-(<code>"sexMale"</code>), so individual contrast rows can be relabelled.
-<code>intercept_position</code> switches the intercept to the bottom
-(Stata convention). <code>reference_style = "annotation"</code> lifts
-the reference level into the factor header
-(<code>"sex: [ref: Female]"</code>) and drops the explicit reference
-row, for compact tables. <code>decimal_mark = ","</code> switches to
-European decimal notation and automatically changes the CI separator to
-<code>";"</code> to avoid ambiguity:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    age            <span class="op">=</span> <span class="st">"Age (years)"</span>,</span>
-<span>    sex            <span class="op">=</span> <span class="st">"Sex"</span>,</span>
-<span>    education      <span class="op">=</span> <span class="st">"Education"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  reference_style <span class="op">=</span> <span class="st">"annotation"</span>,</span>
-<span>  intercept_position <span class="op">=</span> <span class="st">"last"</span>,</span>
-<span>  decimal_mark <span class="op">=</span> <span class="st">","</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Age (years)        <span style="color: #9E9E9E;">│</span>    0,03  0,03  [-0,03;  0,08]   ,343 </span></span>
-<span><span class="co">#&gt;  Sex: [ref: Female] <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    3,65  0,80  [ 2,09;  5,22]  &lt;,001 </span></span>
-<span><span class="co">#&gt;  Education:         <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    .L               <span style="color: #9E9E9E;">│</span>   13,80  0,78  [12,28; 15,32]  &lt;,001 </span></span>
-<span><span class="co">#&gt;    .Q               <span style="color: #9E9E9E;">│</span>   -1,71  0,66  [-3,00; -0,41]   ,010 </span></span>
-<span><span class="co">#&gt;  (Intercept)        <span style="color: #9E9E9E;">│</span>   64,63  1,46  [61,78; 67,49]  &lt;,001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1200                                 </span></span>
-<span><span class="co">#&gt;  R²                 <span style="color: #9E9E9E;">│</span>    0,22                              </span></span>
-<span><span class="co">#&gt;  Adj.R²             <span style="color: #9E9E9E;">│</span>    0,22                              </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span></span></code></pre></div>
+<p>The display and inference controls are arguments, not conventions:
+<code>show_re = FALSE</code> hides the block,
+<code>re_scale = "variance"</code> switches the rows from σ to σ²,
+<code>re_columns</code> restricts which quantities the variance rows
+show, <code>re_ci = "profile"</code> replaces the Wald CIs on variance
+components with boundary-respecting profile-likelihood CIs (Wald is the
+default because profiling is far slower), and
+<code>re_test = "lrt"</code> or <code>"rlrt"</code> adds an opt-in
+per-component test (“do we need this random slope?”) with the boundary
+correction applied. The footer names the fixed-effect inference method
+per engine — Satterthwaite t when <code>lmerTest</code> is loaded,
+Wald-z for <code>glmer</code> / <code>glmmTMB</code> and plain
+<code>lmer</code>, containment-df t for <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>. The AME
+tokens of <code>show_columns</code> (see <em>Average marginal
+effects</em> above) work identically for mixed-effects fits — always on
+the response scale, with Wald-z inference.</p>
+<p><code>nested = TRUE</code> works on mixed-effects fits with the
+change tokens listed in <em>Hierarchical / nested regression</em>; note
+that its plain-χ² reference is appropriate for steps that add fixed
+effects, while random-structure steps belong to <code>re_test</code>,
+whose reference respects the boundary.</p>
+<p>For the model-building sequence, the REML/ML estimator choice, the
+Nakagawa R² and ICC mechanics, per-class inference paths, singular fits,
+testing random components, and the <code>glmmTMB</code> /
+<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> specifics — including a worked <code>glmer</code>
+AME example — see
+<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed", package = "spicy")</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -1676,7 +1405,7 @@ same content is available as a plain <code>data.frame</code>
 (<code>output = "long"</code>), or as a rich-format table for
 <code>gt</code>, <code>tinytable</code>, <code>flextable</code>,
 <code>excel</code>, <code>word</code>, or <code>clipboard</code>:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
@@ -1841,7 +1570,7 @@ same content is available as a plain <code>data.frame</code>
 <span><span class="co">#&gt;   .. ..$ ci_level          : num 0.95</span></span>
 <span><span class="co">#&gt;  - attr(*, "padding")= int 0</span></span>
 <span><span class="co">#&gt;  - attr(*, "fit_stats_layout")= chr "first_col"</span></span></code></pre></div>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"long"</span></span>
@@ -1855,22 +1584,22 @@ same content is available as a plain <code>data.frame</code>
 <span><span class="co">#&gt; 4       M1     sexMale             B  3.85579323 0.90528970  2.216170e-05</span></span>
 <span><span class="co">#&gt; 5       M1   smokingNo             B          NA         NA            NA</span></span>
 <span><span class="co">#&gt; 6       M1  smokingYes             B -1.71871310 1.10751281  1.209641e-01</span></span></code></pre></div>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="ijvoequvti" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<p><style>#ijvoequvti table { font-family: system-ui, ‘Segoe UI’,
+<div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
 Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
 Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
 antialiased; -moz-osx-font-smoothing: grayscale; }</p>
-<p>#ijvoequvti thead, #ijvoequvti tbody, #ijvoequvti tfoot, #ijvoequvti
-tr, #ijvoequvti td, #ijvoequvti th { border-style: none; }</p>
-<p>#ijvoequvti p { margin: 0; padding: 0; }</p>
-<p>#ijvoequvti .gt_table { display: table; border-collapse: collapse;
+<p>#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi
+tr, #mwlefoodfi td, #mwlefoodfi th { border-style: none; }</p>
+<p>#mwlefoodfi p { margin: 0; padding: 0; }</p>
+<p>#mwlefoodfi .gt_table { display: table; border-collapse: collapse;
 line-height: normal; margin-left: auto; margin-right: auto; color:
 #333333; font-size: 16px; font-weight: normal; font-style: normal;
 background-color: #FFFFFF; width: auto; border-top-style: solid;
@@ -1879,49 +1608,49 @@ none; border-right-width: 2px; border-right-color: #D3D3D3;
 border-bottom-style: solid; border-bottom-width: 0px;
 border-bottom-color: #A8A8A8; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_caption { padding-top: 4px; padding-bottom: 4px;
+<p>#mwlefoodfi .gt_caption { padding-top: 4px; padding-bottom: 4px;
 }</p>
-<p>#ijvoequvti .gt_title { color: #333333; font-size: 100%; font-weight:
+<p>#mwlefoodfi .gt_title { color: #333333; font-size: 100%; font-weight:
 normal; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
 padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
 0; }</p>
-<p>#ijvoequvti .gt_subtitle { color: #333333; font-size: 85%;
+<p>#mwlefoodfi .gt_subtitle { color: #333333; font-size: 85%;
 font-weight: initial; padding-top: 3px; padding-bottom: 5px;
 padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
 border-top-width: 0; }</p>
-<p>#ijvoequvti .gt_heading { background-color: #FFFFFF; text-align:
+<p>#mwlefoodfi .gt_heading { background-color: #FFFFFF; text-align:
 center; border-bottom-color: #FFFFFF; border-left-style: none;
 border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_bottom_border { border-bottom-style: solid;
+<p>#mwlefoodfi .gt_bottom_border { border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_col_headings { border-top-style: solid;
+<p>#mwlefoodfi .gt_col_headings { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 1px; border-bottom-color: #333333;
 border-left-style: none; border-left-width: 1px; border-left-color:
 rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
 1px; border-right-color: rgba(255, 255, 255, 0); }</p>
-<p>#ijvoequvti .gt_col_heading { color: #333333; background-color:
+<p>#mwlefoodfi .gt_col_heading { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
 padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
 hidden; }</p>
-<p>#ijvoequvti .gt_column_spanner_outer { color: #333333;
+<p>#mwlefoodfi .gt_column_spanner_outer { color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: normal;
 text-transform: inherit; padding-top: 0; padding-bottom: 0;
 padding-left: 4px; padding-right: 4px; }</p>
-<p>#ijvoequvti .gt_column_spanner_outer:first-child { padding-left: 0;
+<p>#mwlefoodfi .gt_column_spanner_outer:first-child { padding-left: 0;
 }</p>
-<p>#ijvoequvti .gt_column_spanner_outer:last-child { padding-right: 0;
+<p>#mwlefoodfi .gt_column_spanner_outer:last-child { padding-right: 0;
 }</p>
-<p>#ijvoequvti .gt_column_spanner { border-bottom-style: solid;
+<p>#mwlefoodfi .gt_column_spanner { border-bottom-style: solid;
 border-bottom-width: 1px; border-bottom-color: #333333; vertical-align:
 bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
 display: inline-block; width: 100%; }</p>
-<p>#ijvoequvti .gt_spanner_row { border-bottom-style: hidden; }</p>
-<p>#ijvoequvti .gt_group_heading { padding-top: 8px; padding-bottom:
+<p>#mwlefoodfi .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#mwlefoodfi .gt_group_heading { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 text-transform: inherit; border-top-style: solid; border-top-width: 2px;
@@ -1931,90 +1660,90 @@ border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
 }</p>
-<p>#ijvoequvti .gt_empty_group_heading { padding: 0.5px; color: #333333;
+<p>#mwlefoodfi .gt_empty_group_heading { padding: 0.5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 border-top-style: solid; border-top-width: 2px; border-top-color:
 #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
-<p>#ijvoequvti .gt_from_md &gt; :first-child { margin-top: 0; }</p>
-<p>#ijvoequvti .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
-<p>#ijvoequvti .gt_row { padding-top: 8px; padding-bottom: 8px;
+<p>#mwlefoodfi .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#mwlefoodfi .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#mwlefoodfi .gt_row { padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
 solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
 }</p>
-<p>#ijvoequvti .gt_stub { color: #333333; background-color: #FFFFFF;
+<p>#mwlefoodfi .gt_stub { color: #333333; background-color: #FFFFFF;
 font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
-<p>#ijvoequvti .gt_stub_row_group { color: #333333; background-color:
+<p>#mwlefoodfi .gt_stub_row_group { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
 }</p>
-<p>#ijvoequvti .gt_row_group_first td { border-top-width: 2px; }</p>
-<p>#ijvoequvti .gt_row_group_first th { border-top-width: 2px; }</p>
-<p>#ijvoequvti .gt_summary_row { color: #333333; background-color:
+<p>#mwlefoodfi .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#ijvoequvti .gt_first_summary_row { border-top-style: solid;
+<p>#mwlefoodfi .gt_first_summary_row { border-top-style: solid;
 border-top-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_first_summary_row.thick { border-top-width: 2px;
+<p>#mwlefoodfi .gt_first_summary_row.thick { border-top-width: 2px;
 }</p>
-<p>#ijvoequvti .gt_last_summary_row { padding-top: 8px; padding-bottom:
+<p>#mwlefoodfi .gt_last_summary_row { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_grand_summary_row { color: #333333; background-color:
+<p>#mwlefoodfi .gt_grand_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#ijvoequvti .gt_first_grand_summary_row { padding-top: 8px;
+<p>#mwlefoodfi .gt_first_grand_summary_row { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-top-style: double; border-top-width: 6px; border-top-color:
 #D3D3D3; }</p>
-<p>#ijvoequvti .gt_last_grand_summary_row_top { padding-top: 8px;
+<p>#mwlefoodfi .gt_last_grand_summary_row_top { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-bottom-style: double; border-bottom-width: 6px;
 border-bottom-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_striped { background-color: rgba(128, 128, 128,
+<p>#mwlefoodfi .gt_striped { background-color: rgba(128, 128, 128,
 0.05); }</p>
-<p>#ijvoequvti .gt_table_body { border-top-style: solid;
+<p>#mwlefoodfi .gt_table_body { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_footnotes { color: #333333; background-color:
+<p>#mwlefoodfi .gt_footnotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+<p>#mwlefoodfi .gt_footnote { margin: 0px; font-size: 90%; padding-top:
 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#ijvoequvti .gt_sourcenotes { color: #333333; background-color:
+<p>#mwlefoodfi .gt_sourcenotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#ijvoequvti .gt_sourcenote { font-size: 90%; padding-top: 4px;
+<p>#mwlefoodfi .gt_sourcenote { font-size: 90%; padding-top: 4px;
 padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#ijvoequvti .gt_left { text-align: left; }</p>
-<p>#ijvoequvti .gt_center { text-align: center; }</p>
-<p>#ijvoequvti .gt_right { text-align: right; font-variant-numeric:
+<p>#mwlefoodfi .gt_left { text-align: left; }</p>
+<p>#mwlefoodfi .gt_center { text-align: center; }</p>
+<p>#mwlefoodfi .gt_right { text-align: right; font-variant-numeric:
 tabular-nums; }</p>
-<p>#ijvoequvti .gt_font_normal { font-weight: normal; }</p>
-<p>#ijvoequvti .gt_font_bold { font-weight: bold; }</p>
-<p>#ijvoequvti .gt_font_italic { font-style: italic; }</p>
-<p>#ijvoequvti .gt_super { font-size: 65%; }</p>
-<p>#ijvoequvti .gt_footnote_marks { font-size: 75%; vertical-align:
+<p>#mwlefoodfi .gt_font_normal { font-weight: normal; }</p>
+<p>#mwlefoodfi .gt_font_bold { font-weight: bold; }</p>
+<p>#mwlefoodfi .gt_font_italic { font-style: italic; }</p>
+<p>#mwlefoodfi .gt_super { font-size: 65%; }</p>
+<p>#mwlefoodfi .gt_footnote_marks { font-size: 75%; vertical-align:
 0.4em; position: initial; }</p>
-<p>#ijvoequvti .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
-<p>#ijvoequvti .gt_indent_1 { text-indent: 5px; }</p>
-<p>#ijvoequvti .gt_indent_2 { text-indent: 10px; }</p>
-<p>#ijvoequvti .gt_indent_3 { text-indent: 15px; }</p>
-<p>#ijvoequvti .gt_indent_4 { text-indent: 20px; }</p>
-<p>#ijvoequvti .gt_indent_5 { text-indent: 25px; }</p>
-<p>#ijvoequvti .katex-display { display: inline-flex !important;
+<p>#mwlefoodfi .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#mwlefoodfi .gt_indent_1 { text-indent: 5px; }</p>
+<p>#mwlefoodfi .gt_indent_2 { text-indent: 10px; }</p>
+<p>#mwlefoodfi .gt_indent_3 { text-indent: 15px; }</p>
+<p>#mwlefoodfi .gt_indent_4 { text-indent: 20px; }</p>
+<p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
+<p>#mwlefoodfi .katex-display { display: inline-flex !important;
 margin-bottom: 0.75em !important; }</p>
-<p>#ijvoequvti div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+<p>#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
 div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
 !important; }</p>
 .gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
@@ -2294,7 +2023,7 @@ names (<code>estimate</code>, <code>std.error</code>,
 <code>(model_id, outcome)</code> with model-level statistics;
 <code>df.residual</code> is preserved as a numeric so cluster-robust
 Satterthwaite df flows through verbatim:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span>
 <span></span>
@@ -2330,6 +2059,32 @@ per-coefficient effect-size estimates without ambiguity.</p>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
+<p>Model-family vignettes build on the mechanics shown here:</p>
+<ul>
+<li>
+<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed", package = "spicy")</a></code>
+for mixed-effects (multilevel) models: random effects as table rows,
+ICC, the boundary-corrected chi-bar-squared test, and opt-in per-term
+LRT / RLRT.</li>
+<li>
+<code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts", package = "spicy")</a></code>
+for count and two-part models: Poisson and negative-binomial rate
+ratios, offsets, and zero-inflated / hurdle components as labelled
+blocks.</li>
+<li>
+<code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal", package = "spicy")</a></code>
+for ordinal (proportional-odds) models: shared slopes, ordered
+thresholds as rows, and per-category marginal effects.</li>
+<li>
+<code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial", package = "spicy")</a></code>
+for multinomial logistic models: outcome categories as columns and
+changing the reference category.</li>
+<li>
+<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival", package = "spicy")</a></code>
+for survival models: Cox hazard ratios with events and concordance,
+accelerated failure time models, and survival estimands.</li>
+</ul>
+<p>Descriptive and reporting companions:</p>
 <ul>
 <li>
 <code><a href="../articles/table-categorical.html">vignette("table-categorical", package = "spicy")</a></code> for
@@ -2357,16 +2112,9 @@ summary-table helpers along the APA Table 1 / 2 / 3 sequence.</li>
 Testing and Interpreting Interactions</em>. Sage.</p>
 <p>American Psychological Association (2020). <em>Publication Manual of
 the American Psychological Association</em> (7th ed.). Section 6.46.</p>
-<p>Bates, D., Mächler, M., Bolker, B., and Walker, S. (2015). Fitting
-linear mixed-effects models using lme4. <em>Journal of Statistical
-Software</em>, 67(1), 1–48.</p>
-<p>Bolker, B. (2024). GLMM FAQ. <a href="https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html" class="external-link uri">https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html</a>.
-Random-effects p-values and CI section.</p>
 <p>Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003).
 <em>Applied Multiple Regression / Correlation Analysis for the
 Behavioral Sciences</em> (3rd ed.). Lawrence Erlbaum.</p>
-<p>Gelman, A. (2005). Analysis of variance — why it is more important
-than ever. <em>The Annals of Statistics</em>, 33(1), 1–53.</p>
 <p>Gelman, A. (2008). Scaling regression inputs by dividing by two
 standard deviations. <em>Statistics in Medicine</em>, 27(15),
 2865–2873.</p>
@@ -2389,11 +2137,6 @@ American Statistician</em>, 54(3), 217–224.</p>
 <p>Long, J. S., and Freese, J. (2014). <em>Regression Models for
 Categorical Dependent Variables Using Stata</em> (3rd ed.). Stata
 Press.</p>
-<p>Luke, S. G. (2017). Evaluating significance in linear mixed- effects
-models in R. <em>Behavior Research Methods</em>, 49(4), 1494– 1502.
-(Empirical comparison of Wald-z, Wald-t, Kenward-Roger, and
-Satterthwaite; recommends Satterthwaite or KR for samples with few
-groups.)</p>
 <p>McFadden, D. (1974). Conditional logit analysis of qualitative choice
 behavior. In P. Zarembka (Ed.), <em>Frontiers in Econometrics</em>
 (pp. 105–142). Academic Press.</p>
@@ -2402,24 +2145,19 @@ logistic regression coefficients. <em>The American Statistician</em>,
 58(3), 218–223.</p>
 <p>Menard, S. (2011). Standards for standardized logistic regression
 coefficients. <em>Social Forces</em>, 89(4), 1409–1428.</p>
-<p>Nakagawa, S., Johnson, P. C. D., and Schielzeth, H. (2017). The
-coefficient of determination R² and intra-class correlation coefficient
-from generalized linear mixed-effects models revisited and expanded.
-<em>Journal of the Royal Society Interface</em>, 14(134), 20170213.</p>
-<p>Nakagawa, S., and Schielzeth, H. (2013). A general and simple method
-for obtaining R² from generalized linear mixed-effects models.
-<em>Methods in Ecology and Evolution</em>, 4(2), 133–142.</p>
 <p>Mood, C. (2010). Logistic regression: Why we cannot do what we think
 we can do, and what we can do about it. <em>European Sociological
 Review</em>, 26(1), 67–82.</p>
 <p>Nagelkerke, N. J. D. (1991). A note on a general definition of the
 coefficient of determination. <em>Biometrika</em>, 78(3), 691–692.</p>
+<p>Nakagawa, S., and Schielzeth, H. (2013). A general and simple method
+for obtaining R² from generalized linear mixed-effects models.
+<em>Methods in Ecology and Evolution</em>, 4(2), 133–142.</p>
 <p>Olejnik, S., and Algina, J. (2003). Generalized eta and omega squared
 statistics: Measures of effect size for some common research designs.
 <em>Psychological Methods</em>, 8(4), 434–447.</p>
 <p>Pinheiro, J. C., and Bates, D. M. (2000). <em>Mixed-Effects Models in
-S and S-PLUS</em>. Springer. §2.4.2 on containment degrees of freedom
-for the nlme implementation.</p>
+S and S-PLUS</em>. Springer.</p>
 <p>Pustejovsky, J. E., and Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in fixed
 effects models. <em>Journal of Business &amp; Economic Statistics</em>,
@@ -2443,10 +2181,6 @@ American Statistician</em>, 63(4), 366–372.</p>
 <p>Venables, W. N., and Ripley, B. D. (2002). <em>Modern Applied
 Statistics with S</em> (4th ed.). Springer. Section 7.2 on profile
 likelihood.</p>
-<p>Wang, T., and Merkle, E. C. (2018). merDeriv: Derivative computations
-for linear mixed effects models with application to robust standard
-errors. <em>Journal of Statistical Software</em>, 87(Code Snippet 1),
-1–16.</p>
 <p>Wasserstein, R. L., Schirm, A. L., and Lazar, N. A. (2019). Moving to
 a world beyond “p &lt; 0.05”. <em>The American Statistician</em>,
 73(sup1), 1–19.</p>

@@ -1085,7 +1085,7 @@ at `lrt_change`).
 
 - `"refit"` – refit on z-scored data. For `lm` both X and Y are z-scored
   (Cohen et al. 2003 gold standard); for `glm` only numeric X (Long &
-  Freese 2014 Section 4.3.4 "x-standardization").
+  Freese 2014 Section 4.7.2 "x-standardization").
 
 - `"posthoc"` – post-hoc scaling. lm: \\\beta = B \times SD(X) /
   SD(Y)\\; glm: X-only \\\beta = B \times SD(X)\\ (Y is undefined on the

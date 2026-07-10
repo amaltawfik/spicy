@@ -92,7 +92,9 @@ Reading the table, top to bottom:
 - **Fixed effects** first, as in any regression table. With `lmerTest`
   loaded, inference is a **t-test with Satterthwaite degrees of
   freedom** — the `lmerTest` default (Kuznetsova et al. 2017), offered
-  by SAS PROC MIXED as `DDFM=SATTERTHWAITE` — and the footer says so.
+  by SAS PROC MIXED as `DDFM=SATTERTHWAITE`, and the method the
+  small-sample comparison of Luke (2017) recommends when groups are few
+  — and the footer says so.
 - The **`Random effects:`** block reports the variance components as
   rows, each with its own SE and CI: the between-subject SD of the
   intercept and of the `Days` slope (`σ`), their correlation (`ρ`), and
@@ -723,6 +725,18 @@ table_regression(fit, re_scale = "variance", re_columns = "est")
 #> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
+Where those SEs come from depends on the engine: `lmer` / `glmer` rows
+use the `merDeriv` Hessian (Wang & Merkle 2018; the cells fall back to
+NA when the package is absent or the fit is singular), `glmmTMB` its
+native Wald [`confint()`](https://rdrr.io/r/stats/confint.html), and
+[`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) its `intervals()`.
+Correlation (`ρ`) rows carry a multivariate delta-method SE for `lmer`,
+native intervals elsewhere. Switching `re_scale` transports SE and CI
+between the SD and variance scales by the delta method
+(`SE(σ) = SE(σ²) / 2σ`), so the displayed values agree with
+[`VarCorr()`](https://rdrr.io/pkg/nlme/man/VarCorr.html) on either scale
+up to rounding.
+
 Whatever the display,
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) always
 carries the full set (estimate, SE, CI) for the variance-component rows
@@ -805,7 +819,15 @@ grows, so its increase is **not** evidence that the slope is needed — it
 measures how much the grouping structure explains, never whether a
 component earns its place. Selection belongs to the boundary-corrected
 test and the information criteria; the R² pair then describes the model
-you selected.
+you selected. (Where the numbers come from: spicy computes the pair
+natively from the closed-form decomposition for Gaussian, single-trial
+binomial — logit, probit, cloglog — and Poisson log fits,
+cross-validated against
+[`performance::r2_nakagawa()`](https://easystats.github.io/performance/reference/r2_nakagawa.html)
+to 10⁻¹⁰, and delegates the remaining families — multi-trial binomial,
+negative binomial, beta, zero-inflation — to `performance`, a Suggests
+dependency: absent, the R² rows render as NA and the rest of the table
+is unaffected.)
 
 **The ICC row is an interpretation, not a test.** For the intercept-only
 model it comes straight from the two σ rows above it: ICC = σ²(Subject)
@@ -901,7 +923,84 @@ correlation between two rows no longer matches that single-trial
 quantity, so one printed ICC would be ambiguous and none is shown. A
 Bernoulli 0/1 `glmer`, where every observation *is* one trial, shows it
 — computed on the latent logit scale, whose residual variance is fixed
-at π²/3.
+at π²/3. The same adjusted-ICC rule covers the other single-trial links
+— σ²_d = 1 under probit, π²/6 under cloglog — and Poisson log fits,
+where σ²_d = log(1 + 1/λ) with λ taken from the null model (Nakagawa,
+Johnson & Schielzeth 2017); the printed value matches
+[`performance::icc()`](https://easystats.github.io/performance/reference/icc.html)’s
+adjusted ICC to 10⁻⁶.
+
+## Average marginal effects
+
+An odds ratio answers “by what factor do the odds change”; the question
+a substantive reader more often asks is “by how many percentage points
+does the probability change”. The `"ame"` / `"ame_se"` / `"ame_ci"` /
+`"ame_p"` tokens of `show_columns` work for mixed-effects fits exactly
+as for `glm`, delegated to
+[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html),
+always on the **response scale**:
+
+- `glmer` binomial: **probability scale** (percentage points), not
+  log-odds;
+- `glmer` / `glmmTMB` Poisson: **count scale** (units of the outcome),
+  not log-rate;
+- Gaussian fits (identity link): the AME equals the `B` coefficient —
+  the column is filled but redundant.
+
+``` r
+
+set.seed(1)
+n <- 500
+g <- factor(rep(1:25, length.out = n))
+x <- rnorm(n)
+cat <- factor(sample(c("A", "B", "C"), n, replace = TRUE))
+y <- rbinom(n, 1, plogis(0.5 + 0.8 * x + (cat == "B") * 0.3 +
+                           (cat == "C") * -0.5 + rnorm(25)[g]))
+afit <- lme4::glmer(y ~ x + cat + (1 | g), family = binomial)
+table_regression(afit, show_columns = c("b", "se", "p", "ame", "ame_p"))
+#> Logistic mixed-effects regression: y
+#> 
+#>  Variable          │   B      SE     p     AME     p   
+#> ───────────────────┼───────────────────────────────────
+#>  (Intercept)       │   0.25  0.34   .470               
+#>  x                 │   0.85  0.12  <.001   0.15  <.001 
+#>  cat:              │                                   
+#>    A (ref.)        │    –     –     –                  
+#>    B               │   0.46  0.28   .107   0.08   .106 
+#>    C               │  -0.30  0.27   .264  -0.05   .262 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:   │                                   
+#>    σ g (Intercept) │   1.40  0.23   –                  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                 │ 500                               
+#>  N (g)             │  25                               
+#>  ICC               │   0.37                            
+#>  R² (marginal)     │   0.14                            
+#>  R² (conditional)  │   0.46                            
+#>  AIC               │ 562.4                             
+#>  BIC               │ 583.5                             
+#> 
+#> Note. Logistic mixed-effects regression.
+#> Std. errors: Wald asymptotic (z).
+#> p-values: Wald-z asymptotic (lme4).
+#> Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001.
+#> AME = average marginal effect.
+```
+
+Factor predictors are handled level-by-level: AME rows align under the
+same factor header (`cat: A (ref.) / B / C`), each level sharing a row
+with its `B` coefficient — for a factor level the AME is the average
+*discrete* change against the reference, not a derivative.
+
+Inference on the AME rows is Wald-z asymptotic (`df = Inf`) with the
+model-based vcov. That matches the B-row inference for `glmer` and
+`glmmTMB`, which are Wald-z themselves; it does *not* match the t-based
+B rows of `lmerTest` fits (Satterthwaite df) or
+[`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) (containment df) —
+there the AME row keeps its large-sample z while the B row keeps its t,
+so under an identity link the same estimate can carry two different
+p-values in the same row. Treat the AME p as a large-sample
+approximation for those classes.
 
 ## `glmmTMB`: beyond `lme4`
 
@@ -1172,6 +1271,8 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
   Multilevel/Hierarchical Models*. Cambridge University Press.
 - Hox, J. J., Moerbeek, M., & van de Schoot, R. (2018). *Multilevel
   Analysis: Techniques and Applications* (3rd ed.). Routledge.
+- Luke, S. G. (2017). Evaluating significance in linear mixed-effects
+  models in R. *Behavior Research Methods*, 49(4), 1494-1502.
 - Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017).
   lmerTest package: Tests in linear mixed effects models. *Journal of
   Statistical Software*, 82(13).
@@ -1196,3 +1297,6 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
   Sage.
 - Stram, D. O., & Lee, J. W. (1994). Variance components testing in the
   longitudinal mixed effects model. *Biometrics*, 50(4), 1171–1177.
+- Wang, T., & Merkle, E. C. (2018). merDeriv: Derivative computations
+  for linear mixed effects models with application to robust standard
+  errors. *Journal of Statistical Software*, 87(Code Snippet 1), 1-16.

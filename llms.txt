@@ -855,7 +855,7 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [Publication-ready regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.md):
 
-  Coefficient tables for `lm` and `glm` fits in R with APA-aligned
+  Coefficient tables for fitted regression models in R with APA-aligned
   formatting: classical, heteroskedasticity-consistent and
   cluster-robust variance, four standardisation methods, partial effect
   sizes with noncentral-F CIs, average marginal effects,
