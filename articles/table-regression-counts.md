@@ -130,10 +130,9 @@ sum(residuals(fit_pois, "pearson")^2) / df.residual(fit_pois)
 A Poisson model answers such overdispersion by **understating the
 standard errors**.
 [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fits the
-NB2 model, adding a dispersion parameter \\\theta\\ with
-\\\mathrm{Var}(Y \mid x) = \mu + \mu^2/\theta\\ — smaller \\\theta\\
-means stronger overdispersion, and the Poisson is the limiting case
-\\\theta \to \infty\\:
+NB2 model, adding a dispersion parameter \\\theta\\ with \\V(Y \mid x) =
+\mu + \mu^2/\theta\\ — smaller \\\theta\\ means stronger overdispersion,
+and the Poisson is the limiting case as \\\theta\\ grows without bound:
 
 ``` r
 

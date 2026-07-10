@@ -226,10 +226,9 @@ fitted model: the Pearson dispersion statistic of the Poisson fit is
 <span><span class="co">#&gt; [1] 1.824161</span></span></code></pre></div>
 <p>A Poisson model answers such overdispersion by <strong>understating
 the standard errors</strong>. <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> fits the NB2
-model, adding a dispersion parameter <span class="math inline">\(\theta\)</span> with <span class="math inline">\(\mathrm{Var}(Y \mid x) = \mu +
-\mu^2/\theta\)</span> — smaller <span class="math inline">\(\theta\)</span> means stronger overdispersion, and
-the Poisson is the limiting case <span class="math inline">\(\theta \to
-\infty\)</span>:</p>
+model, adding a dispersion parameter <span class="math inline">\(\theta\)</span> with <span class="math inline">\(V(Y \mid x) = \mu + \mu^2/\theta\)</span> —
+smaller <span class="math inline">\(\theta\)</span> means stronger
+overdispersion, and the Poisson is the limiting case as <span class="math inline">\(\theta\)</span> grows without bound:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_nb</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">glm.nb</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span>, data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_nb</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
