@@ -400,7 +400,11 @@ it is not (p = .225) — its univariable signal was partly carried by the
 worse performance scores of the older patients. Reading the two columns
 together is what protects the final model from both false leads and
 premature exclusions: a predictor should not enter or leave on its
-univariable p-value alone.
+univariable p-value alone. The screen also takes the estimand columns:
+with `show_columns = c("b", "rmst")` and one shared numeric `tau`, each
+predictor’s unadjusted RMST difference sits next to the
+covariate-adjusted one from the multivariable fit — the same
+univariable-versus-adjusted reading, on the absolute scale.
 
 Two cautions complete the reading. The comparison is clean here only
 because the analytic sample was declared up front: every model uses the

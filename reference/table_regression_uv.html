@@ -154,7 +154,14 @@ table note.</p></dd>
 carries no <code>N</code> column (its single <code>n</code> is a fit-statistics row,
 as in the reference layouts). For binary outcomes, add
 <code>"n_events"</code> for outcome event counts as <code>events/N</code> per factor
-level (each column group counts on its own estimation sample).</p></dd>
+level (each column group counts on its own estimation sample).
+For <code>method = "coxph"</code>, the RMST / risk-difference families
+(<code>"rmst"</code>, <code>"risk_diff"</code>, ...) work with an explicit numeric
+<code>tau</code> / <code>at_time</code> shared by every column: each univariable fit
+runs its own <code>boot_n</code>-replicate bootstrap, and the multivariable
+group reports the covariate-adjusted estimand from the full fit.
+<code>tau = "minmax"</code> is refused (per-fit horizons would make the
+column incomparable across predictors).</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>

@@ -77,7 +77,13 @@ table_regression_uv(
   carries no `N` column (its single `n` is a fit-statistics row, as in
   the reference layouts). For binary outcomes, add `"n_events"` for
   outcome event counts as `events/N` per factor level (each column group
-  counts on its own estimation sample).
+  counts on its own estimation sample). For `method = "coxph"`, the RMST
+  / risk-difference families (`"rmst"`, `"risk_diff"`, ...) work with an
+  explicit numeric `tau` / `at_time` shared by every column: each
+  univariable fit runs its own `boot_n`-replicate bootstrap, and the
+  multivariable group reports the covariate-adjusted estimand from the
+  full fit. `tau = "minmax"` is refused (per-fit horizons would make the
+  column incomparable across predictors).
 
 - title:
 

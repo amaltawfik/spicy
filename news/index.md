@@ -177,6 +177,11 @@ rendering an empty column.
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   now discloses robust and resampling SEs in its table note, carries its
   notes into every rich output, and accepts `cluster = ~region`.
+- The univariable screen (`table_regression_uv(method = "coxph")`)
+  accepts the RMST and risk-difference columns: unadjusted per-predictor
+  estimands next to the covariate-adjusted ones of the multivariable
+  column, all at one shared horizon (`tau = "minmax"` is refused there –
+  per-fit horizons would not be comparable).
 - The RMST and risk-difference columns now support stratified Cox models
   ([`strata()`](https://rdrr.io/pkg/survival/man/strata.html)):
   g-computation keeps each subject’s own stratum baseline, and the table
