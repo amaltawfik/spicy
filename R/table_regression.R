@@ -101,6 +101,10 @@
 #'     `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 #'   \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
 #'     / glm dispersion), `"rmse"`.
+#'   \item Negative-binomial dispersion (`MASS::glm.nb` only):
+#'     `"theta"` (\eqn{V = \mu + \mu^2/	heta}{V = mu + mu^2/theta})
+#'     and `"alpha"` (\eqn{= 1/	heta}{= 1/theta}, the Stata `nbreg`
+#'     convention). Refused for other families.
 #'   \item Effect size: `"f2"`.
 #'   \item Information criteria: `"AIC"`, `"AICc"`, `"BIC"`,
 #'     `"deviance"`.

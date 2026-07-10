@@ -343,6 +343,8 @@ as_regression_frame.glm <- function(fit, ...) {
     adj_r2               = .scalar_or_na(fs$adj_r2 %||% fs$adj_r_squared),
     omega2               = .scalar_or_na(fs$omega2),
     pseudo_r2_mcfadden   = .scalar_or_na(fs$pseudo_r2_mcfadden),
+    theta                = .scalar_or_na(fs$theta),
+    alpha                = .scalar_or_na(fs$alpha),
     pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
     pseudo_r2_tjur       = .scalar_or_na(fs$pseudo_r2_tjur),
     r2_marginal          = .scalar_or_na(fs$r2_marginal),

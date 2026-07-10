@@ -46,6 +46,18 @@ as_regression_frame.negbin <- function(fit,
   frame$info$extras$title_prefix      <- "Negative-binomial regression"
   frame$info$extras$theta             <- as.numeric(fit$theta %||% NA_real_)
   frame$info$extras$se_theta          <- as.numeric(fit$SE.theta %||% NA_real_)
+  # Dispersion as opt-in fit-stat rows: theta (MASS/R convention,
+  # V = mu + mu^2/theta) and its reciprocal alpha (the Stata
+  # `nbreg` convention). Smaller theta / larger alpha = stronger
+  # overdispersion; Poisson is the theta -> Inf limit.
+  frame$info$fit_stats$theta          <- as.numeric(fit$theta %||% NA_real_)
+  frame$info$fit_stats$alpha          <- if (is.numeric(fit$theta) &&
+                                               is.finite(fit$theta) &&
+                                               fit$theta > 0) {
+    1 / as.numeric(fit$theta)
+  } else {
+    NA_real_                                                          # nocov
+  }
 
   attr(frame, "fit") <- fit
   frame

@@ -65,6 +65,9 @@
     "r2", "adj_r2", "omega2",
     # Pseudo-R\u00B2 family (glm only)
     "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur",
+    # Negative-binomial dispersion (MASS::glm.nb only): theta
+    # (V = mu + mu^2/theta) and alpha = 1/theta (Stata nbreg).
+    "theta", "alpha",
     # Mixed-effects R\u00B2 (Nakagawa & Schielzeth 2013; Nakagawa,
     # Johnson & Schielzeth 2017). marginal = variance explained by
     # fixed effects alone; conditional = variance explained by
@@ -711,6 +714,30 @@ validate_class_appropriate_tokens <- function(models,
             paste(shQuote(bad_fit), collapse = ", ")
           ),
           "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # Negative-binomial dispersion tokens: defined only for MASS::glm.nb
+  # fits (fit$theta). Hard error elsewhere -- silently dropping the row
+  # (or rendering a blank) would hide the request (pre-1.0 policy).
+  disp_tokens <- intersect(show_fit_stats, c("theta", "alpha"))
+  if (length(disp_tokens) > 0L) {
+    all_negbin <- length(models) > 0L &&
+      all(vapply(models, inherits, logical(1), "negbin"))
+    if (!all_negbin) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are defined only for negative-binomial fits (`MASS::glm.nb`).",
+            paste(shQuote(disp_tokens), collapse = ", ")
+          ),
+          "i" = paste0(
+            "theta is the NB2 dispersion (V = mu + mu\u00B2/theta) and ",
+            "alpha its reciprocal; other families have no such parameter."
+          )
         ),
         class = "spicy_invalid_input"
       )

@@ -788,6 +788,10 @@ field convention; blank for other classes).
 \code{"pseudo_r2_tjur"} (Tjur 2009; binomial only).
 \item Residual scale: \code{"sigma"} (lm \eqn{\hat{\sigma}}{sigma-hat}
 / glm dispersion), \code{"rmse"}.
+\item Negative-binomial dispersion (\code{MASS::glm.nb} only):
+\code{"theta"} (\eqn{V = \mu + \mu^2/	heta}{V = mu + mu^2/theta})
+and \code{"alpha"} (\eqn{= 1/	heta}{= 1/theta}, the Stata \code{nbreg}
+convention). Refused for other families.
 \item Effect size: \code{"f2"}.
 \item Information criteria: \code{"AIC"}, \code{"AICc"}, \code{"BIC"},
 \code{"deviance"}.

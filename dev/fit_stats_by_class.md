@@ -160,3 +160,11 @@ renderable), `lr_chisq` (+ df / p).
 - Cross-validate every new stat / AME estimand to an external oracle
   (`performance`, `marginaleffects`, the model's own `summary()`, Stata / SPSS)
   to machine precision (pro-grade validation rule).
+
+
+## Addendum 2026-07-10: negbin dispersion tokens
+
+`MASS::glm.nb`: opt-in `show_fit_stats` tokens `theta` (NB2 dispersion,
+V = mu + mu^2/theta) and `alpha` (= 1/theta, Stata nbreg convention).
+Hard error for every other class. SHIPPED with the counts-vignette
+backlog clearance; values sourced from fit$theta (oracle-exact).

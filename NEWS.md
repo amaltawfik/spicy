@@ -152,6 +152,10 @@ rendering an empty column.
 * `table_continuous_lm()` now discloses robust and resampling SEs in
   its table note, carries its notes into every rich output, and
   accepts `cluster = ~region`.
+* `MASS::glm.nb` fits gain opt-in dispersion fit-stat rows:
+  `show_fit_stats` tokens `"theta"` (the NB2 dispersion) and
+  `"alpha"` (its reciprocal, the Stata convention). Refused with a
+  clear error for other families.
 * `nnet::multinom` fits now report McFadden's and Nagelkerke's
   pseudo-R² (as the other categorical families do). The tokens were
   silently dropped from `show_fit_stats` before, and a weighted fit's
