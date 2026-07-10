@@ -130,12 +130,15 @@
   }
   s_chr <- as.character(s_subj)
   if (!all(s_chr %in% lv)) {
-    spicy_abort(                                                      # nocov start
-      c("Internal mismatch between the fit's strata labels and basehaz().",
+    # Reachable with several separate strata() terms: survfit's basehaz
+    # labels ("sex=male, agegrp=old") differ from the labels
+    # survival::strata() builds from the model-frame special columns.
+    spicy_abort(
+      c("The fit's strata labels do not match basehaz().",
         "i" = paste0("Combine multiple stratification variables into a ",
                      "single `strata(a, b)` term and refit.")),
       class = "spicy_invalid_input"
-    )                                                                 # nocov end
+    )
   }
   list(times = grid, H0 = H0, s_idx = match(s_chr, lv))
 }

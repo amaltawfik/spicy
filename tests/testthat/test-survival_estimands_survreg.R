@@ -101,3 +101,27 @@ test_that("stratified survreg fits are refused", {
     class = "spicy_invalid_input"
   )
 })
+
+
+test_that("survreg data recovery fails loudly when the data is gone or stale", {
+  skip_if_not_installed("survival")
+  d <- .aft_lung()
+  fit <- survival::survreg(
+    survival::Surv(time, status) ~ age + ecog, data = d,
+    dist = "weibull"
+  )
+  fit_gone <- fit
+  fit_gone$call$data <- quote(.spicy_no_such_object.)
+  expect_error(
+    spicy:::.survreg_estimand_data(fit_gone),
+    class = "spicy_invalid_input"
+  )
+  d_half <<- d[seq_len(100), ]
+  fit_stale <- fit
+  fit_stale$call$data <- quote(d_half)
+  environment(fit_stale$terms) <- environment()
+  expect_error(
+    spicy:::.survreg_estimand_data(fit_stale),
+    class = "spicy_invalid_input"
+  )
+})

@@ -119,3 +119,31 @@ test_that("tt() and counting-process responses stay refused", {
     class = "spicy_invalid_input"
   )
 })
+
+
+test_that("several strata() terms are refused with the combine hint", {
+  skip_if_not_installed("survival")
+  d <- .strata_fit()$data
+  d$agegrp <- factor(ifelse(d$age >= 63, "old", "young"))
+  f2 <- survival::coxph(
+    survival::Surv(time, status) ~ group + strata(sex) + strata(agegrp),
+    data = d
+  )
+  expect_error(
+    spicy:::.coxph_baseline(f2),
+    class = "spicy_invalid_input"
+  )
+  # The combined form works: one strata(a, b) term, labels align.
+  f3 <- survival::coxph(
+    survival::Surv(time, status) ~ group + strata(sex, agegrp),
+    data = d
+  )
+  bl <- spicy:::.coxph_baseline(f3)
+  expect_identical(ncol(bl$H0), 4L)
+  expect_false(anyNA(bl$s_idx))
+  pts <- spicy:::.coxph_estimand_points(
+    f3, spicy:::.coxph_estimand_data(f3),
+    want_rmst = TRUE, want_risk = FALSE, tau = 500, at_time = NULL
+  )
+  expect_true(is.finite(pts$rmst[pts$term == "groupecog1plus"]))
+})
