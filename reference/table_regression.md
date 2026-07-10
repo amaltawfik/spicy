@@ -19,6 +19,8 @@ table_regression(
   ci_level = 0.95,
   ci_method = c("wald", "profile", "boot_percentile"),
   boot_n = 1000L,
+  tau = NULL,
+  at_time = NULL,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   p_adjust = "none",
@@ -154,6 +156,20 @@ table_regression(
 
   Number of bootstrap replicates when `vcov = "bootstrap"`. Single
   positive integer. Default `1000L`.
+
+- tau:
+
+  RMST horizon: the `"rmst"` column family reports the
+  restricted-mean-survival-time difference over `[0, tau]` (`coxph` fits
+  only). A positive time on the outcome's scale, or `"minmax"` for the
+  smallest per-group maximum follow-up (the resolved value is disclosed
+  in the table note). No default: the horizon defines the estimand.
+
+- at_time:
+
+  Landmark time for the `"risk_diff"` column family: the difference in
+  cumulative incidence at `at_time` (`coxph` fits only). A positive time
+  on the outcome's scale; no default.
 
 - standardized:
 

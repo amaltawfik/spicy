@@ -100,6 +100,15 @@ rendering an empty column.
 
 ### New features
 
+- New `show_columns` token families `"rmst"` and `"risk_diff"` for
+  `coxph` fits: covariate-adjusted differences in restricted mean
+  survival time over `[0, tau]` and in cumulative incidence at
+  `at_time`, computed by g-computation from the fitted model, with
+  bootstrap SEs, CIs, and p-values. Factor predictors get one row per
+  level (vs the reference); continuous predictors report the +1-unit
+  contrast. The horizon is explicit and required – `tau = "minmax"`
+  picks the smallest per-group maximum follow-up – and the table note
+  states the estimand and the replicate count.
 - New `show_columns` token `"n_events"`: outcome event counts displayed
   as `events/N` next to the estimates – per factor level (reference row
   included) with model totals on continuous rows, computed on each

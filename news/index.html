@@ -100,7 +100,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>New <code>show_columns</code> token <code>"n_events"</code>: outcome event counts displayed as <code>events/N</code> next to the estimates – per factor level (reference row included) with model totals on continuous rows, computed on each model’s own estimation sample. Available for binomial outcomes and right-censored <code>coxph</code> fits; opt-in everywhere.</li>
+<ul><li>New <code>show_columns</code> token families <code>"rmst"</code> and <code>"risk_diff"</code> for <code>coxph</code> fits: covariate-adjusted differences in restricted mean survival time over <code>[0, tau]</code> and in cumulative incidence at <code>at_time</code>, computed by g-computation from the fitted model, with bootstrap SEs, CIs, and p-values. Factor predictors get one row per level (vs the reference); continuous predictors report the +1-unit contrast. The horizon is explicit and required – <code>tau = "minmax"</code> picks the smallest per-group maximum follow-up – and the table note states the estimand and the replicate count.</li>
+<li>New <code>show_columns</code> token <code>"n_events"</code>: outcome event counts displayed as <code>events/N</code> next to the estimates – per factor level (reference row included) with model totals on continuous rows, computed on each model’s own estimation sample. Available for binomial outcomes and right-censored <code>coxph</code> fits; opt-in everywhere.</li>
 <li>
 <code>re_ci = "profile"</code>: profile-likelihood CIs for the variance components of <code>lmer</code> / <code>glmer</code> fits (asymmetric, boundary-respecting; no SE column, the footer discloses the method).</li>
 <li>

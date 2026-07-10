@@ -518,7 +518,7 @@ table_regression(sfit)
 #> Note. Linear mixed-effects regression.
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 0.500.
+#> Random effects (REML): LR test vs linear regression, χ̄²(1) = -0.00, p = 0.500.
 #> Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.
 ```
 
