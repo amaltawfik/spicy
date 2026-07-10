@@ -292,10 +292,10 @@ Each row is one step of the scale: Fair sits 14.97 points above
 Poor, Good 13.04 above Fair, Very good 7.12 above Good — the
 flattening gradient read directly, with a standard error per step.
 This is the natural display when the steps themselves are the
-finding. (Two notes: with non-treatment contrasts there is no
-reference level, so the rows render flat rather than grouped under
-the factor with a `(ref.)` row; and the joint test of the factor is
-unchanged — same model, different questions asked of it.)
+finding. (Two notes: the rows group under the factor but carry no
+`(ref.)` row — no reference level exists under this coding; and the
+joint test of the factor is unchanged — same model, different
+questions asked of it.)
 
 ## The reverse temptation: categorizing a continuous predictor
 

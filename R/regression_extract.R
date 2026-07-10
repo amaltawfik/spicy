@@ -546,10 +546,50 @@ detect_factor_term_meta <- function(fit) {
     return(setNames(replicate(length(cf_names), NULL), cf_names))
   }
 
+  contrast_suffixes <- .spicy_contrast_suffixes(fit, xlevels)
   out <- vector("list", length(cf_names))
   names(out) <- cf_names
   for (cn in cf_names) {
-    out[[cn]] <- match_coef_to_factor(cn, xlevels)
+    out[[cn]] <- match_coef_to_factor(cn, xlevels, contrast_suffixes)
+  }
+  out
+}
+
+
+# Contrast-column suffixes for factors under NON-default codings
+# (successive differences, sum-to-zero, Helmert, custom matrices).
+# R names such coefficients `paste0(var, colnames(contrast_matrix))`,
+# falling back to the column index when the matrix has no colnames --
+# so the suffix vector below reproduces exactly the names
+# model.matrix() emits, and the matcher can group the rows under
+# their parent variable the way it already does for treatment and
+# polynomial codings. Returns a named list (possibly empty); every
+# step is guarded, and an unmatched suffix simply never fires.
+.spicy_contrast_suffixes <- function(fit, xlevels) {
+  specs <- tryCatch(fit$contrasts, error = function(e) NULL)
+  if (is.null(specs)) {
+    specs <- tryCatch(attr(stats::model.matrix(fit), "contrasts"),
+                      error = function(e) NULL)
+  }
+  if (is.null(specs) || length(specs) == 0L) return(list())
+  out <- list()
+  for (var in intersect(names(specs), names(xlevels))) {
+    spec <- specs[[var]]
+    lvls <- xlevels[[var]]
+    m <- NULL
+    if (is.matrix(spec)) {
+      m <- spec
+    } else if (is.character(spec) && length(spec) == 1L &&
+                 !spec %in% c("contr.treatment", "contr.poly")) {
+      fn <- tryCatch(match.fun(spec), error = function(e) NULL)
+      if (!is.null(fn)) {
+        m <- tryCatch(fn(lvls), error = function(e) {
+          tryCatch(fn(length(lvls)), error = function(e2) NULL)
+        })
+      }
+    }
+    if (is.null(m) || !is.matrix(m) || ncol(m) == 0L) next
+    out[[var]] <- colnames(m) %||% as.character(seq_len(ncol(m)))
   }
   out
 }
@@ -748,7 +788,8 @@ detect_factor_term_meta <- function(fit) {
 # For poly contrasts `factor_level` holds the suffix (e.g. ".L") --
 # the renderer treats it as the sub-row label under the factor group
 # header.
-match_coef_to_factor <- function(coef_name, xlevels) {
+match_coef_to_factor <- function(coef_name, xlevels,
+                                 contrast_suffixes = NULL) {
   if (coef_name == "(Intercept)") return(NULL)
   # Skip interaction terms -- they involve multiple factors / numerics
   if (grepl(":", coef_name, fixed = TRUE)) return(NULL)
@@ -782,6 +823,17 @@ match_coef_to_factor <- function(coef_name, xlevels) {
       return(list(factor_term = var,
                   factor_level = suffix,
                   factor_level_pos = poly_suffix_degree(suffix)))
+    }
+    # Custom-coding match (successive differences, sum-to-zero,
+    # Helmert, user matrices): the suffix is one of the contrast
+    # matrix's column names -- see .spicy_contrast_suffixes(). No
+    # reference row exists under these codings; the rows group under
+    # the parent variable in contrast-column order.
+    cs <- contrast_suffixes[[var]]
+    if (!is.null(cs) && suffix %in% cs) {
+      return(list(factor_term = var,
+                  factor_level = suffix,
+                  factor_level_pos = match(suffix, cs)))
     }
   }
   NULL
