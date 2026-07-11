@@ -26,7 +26,11 @@ knitr::opts_chunk$set(
 )
 
 build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
-run_brms <- build_rich_tables && requireNamespace("brms", quietly = TRUE)
+# The brms chunk compiles C++ (minutes, and a working toolchain) --
+# too fragile for CI site builds. Opt in locally with
+# Sys.setenv(SPICY_BUILD_BRMS = "true") before knitting.
+run_brms <- identical(Sys.getenv("SPICY_BUILD_BRMS"), "true") &&
+  requireNamespace("brms", quietly = TRUE)
 source("_pkgdown-helpers.R")
 ```
 
@@ -271,8 +275,10 @@ summary is the block's SD.
 
 `brms` reaches the same table through the same code path; the only
 practical difference is that each model compiles before sampling
-(minutes, and a C++ toolchain), which is why these chunks render on
-the package website but are not evaluated on CRAN:
+(minutes, and a C++ toolchain), which is why this chunk is shown
+without being evaluated. Run it locally to see the table — it matches
+the `rstanarm` one above row for row, as the package's shared frame
+tests verify:
 
 ```{r brms, eval = run_brms}
 bfit <- brms::brm(Reaction ~ Days + (Days | Subject),
