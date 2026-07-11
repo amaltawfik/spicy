@@ -155,20 +155,21 @@ scarcest (Vehtari et al. 2021).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE      95% CrI     </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11  0.28  [-1.66, -0.55] </span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11  0.29  [-1.66, -0.55] </span></span>
 <span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                               </span></span>
 <span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –          –        </span></span>
 <span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04  0.15  [-0.34,  0.25] </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01  0.00  [-0.00,  0.02] </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01  0.01  [-0.00,  0.02] </span></span>
 <span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                               </span></span>
 <span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –        </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49  0.17  [-0.81, -0.16] </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  0.19  [-1.31, -0.56] </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49  0.16  [-0.81, -0.16] </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  0.20  [-1.31, -0.56] </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                          </span></span>
+<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Posterior covariance.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span></code></pre></div>
 <p>Reading the columns against their frequentist counterparts:</p>
 <ul>
 <li>
@@ -178,9 +179,16 @@ each coefficient’s draws, robust to skewed posteriors (the
 estimate, although under the default weakly informative priors and this
 sample size the two are nearly identical.</li>
 <li>
-<strong>SE is the posterior standard deviation</strong>, and the
-footer says so (<code>Std. errors: Posterior covariance.</code>) rather
-than borrowing the frequentist term.</li>
+<strong>SE is the posterior MAD SD</strong> — the median absolute
+deviation of the draws, rescaled so it equals the standard deviation for
+a normal posterior — and the footer says so
+(<code>Std. errors: posterior MAD SD (scaled median absolute deviation).</code>)
+rather than borrowing the frequentist term. Median + MAD SD is the
+robust pairing of <em>Regression and Other Stories</em> (§5.3) and of
+<code>rstanarm</code>’s own print: both members resist skewed
+posteriors, where a mean + SD pair can be dominated by one heavy tail.
+As Gelman, Hill &amp; Vehtari put it, “for convenience we sometimes call
+the posterior mad sd the ‘standard error’”.</li>
 <li>
 <strong>The interval is a credible interval</strong>, and the header
 says so: <code>95% CrI</code>, the equal-tailed 2.5% and 97.5% posterior
@@ -188,7 +196,15 @@ quantiles. Its reading is the direct probability statement that
 confidence intervals are so often misread as making: <em>given model,
 priors, and data, the coefficient lies in [-1.31, -0.56] with 95%
 probability</em> (the <code>Tertiary</code> row). No appeal to repeated
-sampling is required.</li>
+sampling is required. The equal-tailed interval is the default because
+it is transformation-invariant (which is what makes the exact odds-ratio
+bounds below possible) and matches <code>rstanarm</code>; the Kruschke
+tradition’s <strong>highest-density interval</strong> is one argument
+away — <code>ci_method = "hdi"</code> computes the shortest interval
+containing 95% of the draws (Kruschke 2015) and relabels the header
+<code>95% HDI</code>. For these near-symmetric posteriors the two differ
+only in the second decimal; they part ways on skewed posteriors, where
+the HDI shifts toward the mode.</li>
 <li>
 <strong>There is no p column, by design.</strong> A posterior has no
 p-value, and the Bayesian Analysis Reporting Guidelines (Kruschke 2021)
@@ -218,9 +234,11 @@ Makowski et al. 2019) — is opt-in:</li>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  [-1.31, -0.56]  1.00 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                          </span></span>
+<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Posterior covariance.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019).</span></span></span></code></pre></div>
 <p>Read against the table: <code>Male</code>, at 0.62, is barely better
 than a coin flip on sign; <code>age</code>, at 0.89, leans positive
 without settling the direction; the education contrasts display 1.00 —
@@ -235,6 +253,19 @@ pd), so <code>age</code>’s 0.89 corresponds to p ≈ 0.23; Makowski et
 al. 2019). <code>pd</code> is not a route around the p-value’s
 pathologies; it is the same directional information stated as a
 posterior probability.</p>
+<p>For a claim of practical size, the Kruschke tradition asks how much
+of the posterior falls inside a <strong>region of practical
+equivalence</strong> (ROPE) around zero. spicy deliberately renders no
+ROPE column: the reporting guidelines require the equivalence limits to
+be <em>justified</em> (BARG step 4.C), and limits are substantive,
+per-coefficient claims — ±0.05 log-odds may be negligible for one
+predictor and consequential for another — that a package cannot default
+on the analyst’s behalf. When you can defend limits, compute the shares
+outside the table with
+<code>bayestestR::rope(fit, range = c(-0.18, 0.18))</code> (or
+<code><a href="https://easystats.github.io/bayestestR/reference/describe_posterior.html" class="external-link">bayestestR::describe_posterior()</a></code>), state the limits and
+their justification in the text, and keep the table’s posterior
+summaries as they are.</p>
 </div>
 <div class="section level2">
 <h2 id="check-convergence-before-reading-anything">Check convergence before reading anything<a class="anchor" aria-label="anchor" href="#check-convergence-before-reading-anything"></a>
@@ -242,13 +273,49 @@ posterior probability.</p>
 <p>A frequentist table is wrong only if the model is wrong; a Bayesian
 table can additionally be wrong because the <em>sampler</em> has not
 converged — the draws then misrepresent the very posterior the columns
-summarize. The check comes first, and it is three numbers per parameter
-(Vehtari et al. 2021): R-hat, which compares chains (at convergence,
-1.00; worry above roughly 1.01), and two effective sample sizes that
-discount autocorrelation — bulk ESS, which governs point estimates such
-as the posterior median, and tail ESS, which governs the
-credible-interval bounds:</p>
+summarize. spicy therefore checks every Bayesian fit before rendering:
+when any sampled parameter misses its target — R-hat at or above 1.01,
+effective sample size below 100 per chain (never less than 400, so fewer
+chains do not weaken the bar), any divergent transition, E-BFMI below
+0.2 (Vehtari et al. 2021) — the table gains a
+<code>Sampler diagnostics:</code> footer line naming the failure and a
+warning fires (classed <code>spicy_bayes_diagnostics</code>, so scripts
+can catch or mute this guard selectively with
+<code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers()</a></code>). A clean fit prints nothing: the
+publication table stays lean, and silence means the checks passed. The
+guard reads <em>all</em> sampled parameters — including the group-level
+ones a multilevel table summarizes — not just the displayed
+coefficients.</p>
+<p>For parameter-level triage the same three diagnostics are available
+as opt-in columns in all-Bayesian tables:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"rhat"</span>, <span class="st">"ess_bulk"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian logistic regression (stanreg): smoking</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B        95% CrI      R-hat  ESS (bulk) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11  [-1.66, -0.55]  1.007        1301 </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                            </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –          –          –              – </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04  [-0.34,  0.25]  1.000        1292 </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01  [-0.00,  0.02]  1.002        1270 </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                            </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –          –          –              – </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49  [-0.81, -0.16]  1.002        1064 </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  [-1.31, -0.56]  1.002        1133 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                                       </span></span>
+<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                                    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span></code></pre></div>
+<p>Under the hood these are three numbers per parameter (Vehtari et al.
+2021): R-hat, which compares chains (at convergence, 1.00; worry above
+roughly 1.01), and two effective sample sizes that discount
+autocorrelation — bulk ESS, which governs point estimates such as the
+posterior median, and tail ESS, which governs the credible-interval
+bounds:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/draws_summary.html" class="external-link">summarise_draws</a></span><span class="op">(</span></span>
 <span>  <span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/subset_draws.html" class="external-link">subset_draws</a></span><span class="op">(</span><span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/draws_array.html" class="external-link">as_draws_array</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>,</span>
 <span>                          variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">coefficients</span><span class="op">)</span><span class="op">)</span></span>
@@ -282,7 +349,7 @@ is incompletely specified until the priors are stated.
 zero, scaled to the data), which is why the table above sits so close to
 its frequentist twin — but that is a property to <em>verify and
 report</em>, not assume:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html" class="external-link">prior_summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Priors for model 'fit' </span></span>
 <span><span class="co">#&gt; ------</span></span>
@@ -311,13 +378,16 @@ belongs in the appendix when the priors could plausibly matter.</p>
 <h2 id="odds-ratios-exponentiate-true">Odds ratios: <code>exponentiate = TRUE</code><a class="anchor" aria-label="anchor" href="#odds-ratios-exponentiate-true"></a>
 </h2>
 <p>The ratio scale works exactly as for <code>glm</code>, with one
-pleasant difference: the credible bounds are the exponentiated
-<em>quantiles</em>, so they are exact posterior statements about the
-odds ratio itself — not a delta-method approximation. The SE column is
-the exception: as the footer discloses, it crosses to the ratio scale by
-the delta method (SE_OR = OR × SE_log-odds) — one more reason to read
-the interval and never to reconstruct one as B ± 2 SE:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+pleasant difference: every displayed quantity is computed from the
+exponentiated draws themselves, so all of them are exact posterior
+statements about the odds ratio — the credible bounds are the
+exponentiated quantiles, and the SE is the posterior MAD SD of
+<code>exp(draws)</code> rather than the delta-method approximation
+(SE_OR = OR × SE_log-odds), which understates the ratio-scale spread
+severalfold when the posterior is wide. Ratio-scale posteriors are
+right-tail-heavy, so the interval remains the primary uncertainty
+summary — never reconstruct one as B ± 2 SE:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian logistic regression (stanreg): smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -326,19 +396,20 @@ the interval and never to reconstruct one as B ± 2 SE:</p>
 <span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>    0.33  0.09  [0.19, 0.57] </span></span>
 <span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                             </span></span>
 <span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –         –       </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    0.96  0.14  [0.71, 1.28] </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    1.01  0.00  [1.00, 1.02] </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    0.96  0.15  [0.71, 1.28] </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    1.01  0.01  [1.00, 1.02] </span></span>
 <span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                             </span></span>
 <span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –         –       </span></span>
 <span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>    0.61  0.10  [0.44, 0.85] </span></span>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>    0.40  0.08  [0.27, 0.57] </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                        </span></span>
+<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Posterior covariance.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
 <p>Reading the <code>Tertiary</code> row with the factor-change
 template: holding sex and age constant, the odds of smoking for a
 tertiary-educated respondent are 0.40 times the odds for one with lower
@@ -352,7 +423,7 @@ lies between 0.27 and 0.57 with 95% probability.</p>
 <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> away — and with weak priors and n = 1,175 it mostly
 documents agreement, which is itself worth showing to a skeptical
 reader:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>,</span>
 <span>          family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"ML (glm)"</span> <span class="op">=</span> <span class="va">gf</span>, <span class="st">"Bayes (stan_glm)"</span> <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span>
@@ -377,18 +448,22 @@ reader:</p>
 <span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                          </span></span>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                                          </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                                           </span></span>
+<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>                             0.02                 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: logistic regression; Model 2: Bayesian logistic regression (stanreg).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 1: classical (Fisher information)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Posterior covariance</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: posterior MAD SD (scaled median absolute deviation)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: 95% CI is an equal-tailed posterior credible interval.</span></span></span></code></pre></div>
 <p>The intervals differ in <em>reading</em>, not much in width: the
 frequentist column’s CI is a coverage statement about the procedure, the
-Bayesian column’s CrI a probability statement about the parameter (the
-shared header stays <code>95% CI</code> here — the honest common label;
-the all-Bayesian table above shows <code>95% CrI</code>). In the
-fit-statistics block, <code>n</code> fills both columns, but the
-likelihood-based rows — the two pseudo-R² and AIC — fill only the
+Bayesian column’s CrI a probability statement about the parameter. The
+shared header stays <code>95% CI</code> here — the honest common label —
+and the footer discloses per model that the Bayesian column is an
+equal-tailed posterior credible interval (the all-Bayesian table above
+relabels the header itself, <code>95% CrI</code>). In the fit-statistics
+block, <code>n</code> and <code>R² (Bayes)</code> fill per model, but
+the likelihood-based rows — the two pseudo-R² and AIC — fill only the
 frequentist one, because a posterior has none of them. Which brings us
 to what the table refuses.</p>
 </div>
@@ -401,23 +476,49 @@ silently wrong:</p>
 <ul>
 <li>
 <code>p_adjust</code> — there are no p-values to adjust;</li>
-<li>likelihood-based fit statistics (<code>"AIC"</code>,
-<code>"BIC"</code>, pseudo-R²) — compare Bayesian models with
-<code><a href="https://mc-stan.org/loo/reference/loo.html" class="external-link">loo::loo()</a></code> and <code><a href="https://mc-stan.org/loo/reference/loo_compare.html" class="external-link">loo::loo_compare()</a></code> outside the
-table (Vehtari, Gelman &amp; Gabry 2017); explained variance has a
-draws-based analog, <code><a href="https://mc-stan.org/rstantools/reference/bayes_R2.html" class="external-link">rstanarm::bayes_R2()</a></code> (Gelman et
-al. 2019), reported in the text;</li>
+<li>likelihood-based fit statistics (<code>"aic"</code>,
+<code>"bic"</code>, pseudo-R²) — the Bayesian table has its own instead:
+the default block reports <code>R² (Bayes)</code>, the posterior median
+of the draws-based R² (Gelman et al. 2019), and
+<code>show_fit_stats = c("nobs", "r2_bayes", "elpd_loo", "looic")</code>
+adds the PSIS-LOO expected log predictive density and its deviance-scale
+twin, with the elpd standard error disclosed in the footer (Vehtari,
+Gelman &amp; Gabry 2017; a few seconds per model; a <code>"waic"</code>
+token exists too — its SE is disclosed the same way — though PSIS-LOO is
+generally preferred). These estimates come with their own reliability
+diagnostics, and spicy never mutes them: when PSIS-LOO flags
+observations with Pareto k above 0.7 (or WAIC flags p_waic above 0.4)
+the footer says the estimate is unreliable and a
+<code>spicy_bayes_diagnostics</code> warning fires, with
+<code><a href="https://mc-stan.org/loo/reference/loo_moment_match.html" class="external-link">loo::loo_moment_match()</a></code> as the standard remedy. Model
+<em>comparison</em> belongs to <code><a href="https://mc-stan.org/loo/reference/loo_compare.html" class="external-link">loo::loo_compare()</a></code> outside
+the table, and the canonical fit <em>check</em> is the graphical
+posterior predictive check (<code>pp_check(fit)</code>; Gelman et
+al. 2013, ch. 6) — Bayes factors stay out by design (Gelman et al. 2013,
+§7.4);</li>
 <li>robust / cluster-robust <code>vcov</code> — a sandwich estimator
 corrects a misspecified likelihood’s standard errors; nothing standard
-plays that role for a posterior covariance (misspecification-robust
-Bayesian procedures exist but remain research-grade), so model the
-clustering instead (next section);</li>
+plays that role for a posterior (misspecification-robust Bayesian
+procedures exist but remain research-grade), so model the clustering
+instead (next section);</li>
 <li>
-<code>ci_method = "profile"</code> and the AME family — profile
-likelihood is a frequentist construction, and a draws-based AME needs
-its own design (planned).</li>
+<code>ci_method = "profile"</code> / <code>"boot_percentile"</code>
+and the AME family — profile likelihood and bootstrap replicates are
+frequentist constructions with no posterior analogue (the credible
+interval is computed from the draws; <code>"hdi"</code> is the one
+alternative flavor), and a draws-based AME needs its own design
+(planned);</li>
+<li>variational and optimizing fits
+(<code>stan_glm(..., algorithm = "meanfield")</code>,
+<code>"optimizing"</code>) — they carry an <em>approximate</em>
+posterior on which the MCMC diagnostics above would be vacuous; refit
+with <code>algorithm = "sampling"</code>;</li>
+<li>a ROPE column — deliberately absent, as discussed in the
+<code>pd</code> section: equivalence limits are substantive claims the
+analyst must justify per coefficient (<code><a href="https://easystats.github.io/bayestestR/reference/rope.html" class="external-link">bayestestR::rope()</a></code>
+renders them once justified).</li>
 </ul>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, p_adjust <span class="op">=</span> <span class="st">"holm"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `table_regression()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `p_adjust` is not available for Bayesian fits: there are no p-values to adjust.</span></span>
@@ -436,29 +537,40 @@ and there is no boundary-corrected test because nothing is being tested
 — the chi-bar-squared machinery exists only because the frequentist null
 σ = 0 sits on the edge of the parameter space, a situation a posterior
 quantile never encounters:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span>
 <span>                  data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>,</span>
 <span>                  iter <span class="op">=</span> <span class="fl">1000</span>, chains <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">7</span>, refresh <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">mfit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Bayesian fit (outcome: Reaction) shows sampler problems -- Sampler</span></span>
+<span><span class="co">#&gt; diagnostics: max R-hat = 1.010 (target &lt; 1.01); min ESS = 253 (target &gt; 400).</span></span>
+<span><span class="co">#&gt; Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian linear regression (stanreg): Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                         <span style="color: #9E9E9E;">│</span>   B      SE       95% CrI      </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────────────┼────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                      <span style="color: #9E9E9E;">│</span> 251.23  6.88  [237.54, 264.18] </span></span>
-<span><span class="co">#&gt;  Days                             <span style="color: #9E9E9E;">│</span>  10.38  1.90  [  6.58,  13.95] </span></span>
+<span><span class="co">#&gt;  (Intercept)                      <span style="color: #9E9E9E;">│</span> 251.23  6.53  [237.54, 264.18] </span></span>
+<span><span class="co">#&gt;  Days                             <span style="color: #9E9E9E;">│</span>  10.38  1.82  [  6.58,  13.95] </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:                  <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)          <span style="color: #9E9E9E;">│</span>  21.99  6.00  [ 12.68,  35.63] </span></span>
-<span><span class="co">#&gt;    σ Subject Days                 <span style="color: #9E9E9E;">│</span>   6.53  1.47  [  4.37,  10.18] </span></span>
-<span><span class="co">#&gt;    ρ Subject (Days × (Intercept)) <span style="color: #9E9E9E;">│</span>   0.11  0.29  [ -0.42,   0.70] </span></span>
-<span><span class="co">#&gt;    σ (Residual)                   <span style="color: #9E9E9E;">│</span>  25.99  1.57  [ 23.14,  29.28] </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)          <span style="color: #9E9E9E;">│</span>  21.99  5.52  [ 12.68,  35.63] </span></span>
+<span><span class="co">#&gt;    σ Subject Days                 <span style="color: #9E9E9E;">│</span>   6.53  1.33  [  4.37,  10.18] </span></span>
+<span><span class="co">#&gt;    ρ Subject (Days × (Intercept)) <span style="color: #9E9E9E;">│</span>   0.11  0.30  [ -0.42,   0.70] </span></span>
+<span><span class="co">#&gt;    σ (Residual)                   <span style="color: #9E9E9E;">│</span>  25.99  1.63  [ 23.14,  29.28] </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                                <span style="color: #9E9E9E;">│</span> 180                            </span></span>
+<span><span class="co">#&gt;  R² (Bayes)                       <span style="color: #9E9E9E;">│</span>   0.79                         </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian linear regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Posterior covariance.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (MCMC).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (MCMC).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Sampler diagnostics: max R-hat = 1.010 (target &lt; 1.01); min ESS = 253 (target &gt; 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).</span></span></span></code></pre></div>
+<p>Note the guard from the convergence section doing its job: this
+deliberately trimmed run (two short chains, a correlated random slope)
+misses the R-hat and ESS targets, so the table says so in its footer and
+a <code>spicy_bayes_diagnostics</code> warning fires — a manuscript fit
+with rstanarm’s default sampler settings renders this same table
+clean.</p>
 <p>Compare this block with the <code>lmer</code> table of the <a href="table-regression-mixed.html">mixed-effects vignette</a>: same
 layout, but the credible interval on the <code>Days</code> slope SD —
 the <code>σ Subject Days</code> row — is a genuine posterior statement —
@@ -478,7 +590,7 @@ sampling (minutes, and a C++ toolchain), which is why this chunk is
 shown without being evaluated. Run it locally to see the table — it
 matches the <code>rstanarm</code> one above row for row, as the
 package’s shared frame tests verify:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bfit</span> <span class="op">&lt;-</span> <span class="fu">brms</span><span class="fu">::</span><span class="fu"><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brm</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span>
 <span>                  data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>,</span>
 <span>                  chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">7</span>, refresh <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -501,24 +613,25 @@ broom-style tibble, and — with the corresponding Suggests package — rich
 or Word tables. The Bayesian structure carries through: the p column
 stays a dash, and the posterior summaries keep full precision in the
 tidy frame. In <a href="https://broom.tidymodels.org" class="external-link"><code>broom::tidy()</code></a> the
-<code>estimate</code> column is the posterior median and
-<code>conf.low</code> / <code>conf.high</code> the credible bounds;
-<code>p.value</code>, <code>statistic</code>, and <code>df</code> are
-<code>NA</code> — pipelines that filter on <code>p.value</code> must
-switch to the interval (or <code>pd</code>):</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code>estimate</code> column is the posterior median,
+<code>std.error</code> the posterior MAD SD, and <code>conf.low</code> /
+<code>conf.high</code> the credible bounds; <code>p.value</code>,
+<code>statistic</code>, and <code>df</code> are <code>NA</code> —
+pipelines that filter on <code>p.value</code> must switch to the
+interval (or <code>pd</code>):</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"std.error"</span>, <span class="st">"conf.low"</span>, <span class="st">"conf.high"</span>,</span>
 <span>       <span class="st">"p.value"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 6</span></span></span>
 <span><span class="co">#&gt;   term                     estimate std.error conf.low conf.high p.value</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> (Intercept)              -<span style="color: #BB0000;">1.11</span>      0.284   -<span style="color: #BB0000;">1.66</span>      -<span style="color: #BB0000;">0.554</span>       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> sexMale                  -<span style="color: #BB0000;">0.038</span><span style="color: #BB0000; text-decoration: underline;">0</span>    0.148   -<span style="color: #BB0000;">0.337</span>      0.249       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> age                       0.006<span style="text-decoration: underline;">14</span>   0.004<span style="text-decoration: underline;">85</span> -<span style="color: #BB0000;">0.003</span><span style="color: #BB0000; text-decoration: underline;">26</span>    0.015<span style="text-decoration: underline;">2</span>      <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> educationUpper secondary -<span style="color: #BB0000;">0.487</span>     0.169   -<span style="color: #BB0000;">0.811</span>     -<span style="color: #BB0000;">0.164</span>       <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> educationTertiary        -<span style="color: #BB0000;">0.909</span>     0.194   -<span style="color: #BB0000;">1.31</span>      -<span style="color: #BB0000;">0.559</span>       <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> (Intercept)              -<span style="color: #BB0000;">1.11</span>      0.287   -<span style="color: #BB0000;">1.66</span>      -<span style="color: #BB0000;">0.554</span>       <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> sexMale                  -<span style="color: #BB0000;">0.038</span><span style="color: #BB0000; text-decoration: underline;">0</span>    0.153   -<span style="color: #BB0000;">0.337</span>      0.249       <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> age                       0.006<span style="text-decoration: underline;">14</span>   0.005<span style="text-decoration: underline;">04</span> -<span style="color: #BB0000;">0.003</span><span style="color: #BB0000; text-decoration: underline;">26</span>    0.015<span style="text-decoration: underline;">2</span>      <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> educationUpper secondary -<span style="color: #BB0000;">0.487</span>     0.165   -<span style="color: #BB0000;">0.811</span>     -<span style="color: #BB0000;">0.164</span>       <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> educationTertiary        -<span style="color: #BB0000;">0.909</span>     0.197   -<span style="color: #BB0000;">1.31</span>      -<span style="color: #BB0000;">0.559</span>       <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="vptjzzwjub" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#vptjzzwjub table { font-family: system-ui, ‘Segoe UI’,
@@ -703,7 +816,7 @@ SE
 </th>
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; text-align: center; font-weight: normal; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;" scope="colgroup" id="ci_span_4_5">
 <div class="gt_column_spanner">
-95% CI
+95% CrI
 </div>
 </th>
 </tr>
@@ -778,7 +891,7 @@ Male
    0.96
 </td>
 <td headers="SE" class="gt_row gt_center">
-0.14
+0.15
 </td>
 <td headers="95% CrI: LL" class="gt_row gt_center">
 0.71
@@ -795,7 +908,7 @@ age
    1.01
 </td>
 <td headers="SE" class="gt_row gt_center">
-0.00
+0.01
 </td>
 <td headers="95% CrI: LL" class="gt_row gt_center">
 1.00
@@ -869,11 +982,25 @@ Tertiary
 </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+<td headers="Variable" class="gt_row gt_left">
 n
 </td>
-<td headers="OR" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+<td headers="OR" class="gt_row gt_center">
 1175   
+</td>
+<td headers="SE" class="gt_row gt_center">
+</td>
+<td headers="95% CrI: LL" class="gt_row gt_center">
+</td>
+<td headers="95% CrI: UL" class="gt_row gt_center">
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+R² (Bayes)
+</td>
+<td headers="OR" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+   0.02
 </td>
 <td headers="SE" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 </td>
@@ -886,9 +1013,10 @@ n
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Bayesian logistic regression (stanreg). Std. errors:
-Posterior covariance. OR = odds ratio. Coefficients exponentiated and
-displayed as OR; SE on the OR scale (delta method); CI bounds
-exponentiated (asymmetric).
+posterior MAD SD (scaled median absolute deviation). OR = odds ratio.
+Coefficients exponentiated and displayed as OR; SE on the OR scale
+(posterior MAD SD of the exponentiated draws); CI bounds exponentiated
+(asymmetric).
 </div>
 </div>
 </div>
@@ -913,9 +1041,14 @@ block.</li>
 <ul>
 <li>Gelman, A., Hill, J., &amp; Vehtari, A. (2020). <em>Regression and
 Other Stories</em>. Cambridge University Press.</li>
+<li>Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A.,
+&amp; Rubin, D. B. (2013). <em>Bayesian Data Analysis</em> (3rd ed.).
+CRC Press.</li>
 <li>Gelman, A., Goodrich, B., Gabry, J., &amp; Vehtari, A. (2019).
 R-squared for Bayesian regression models. <em>The American
 Statistician</em>, 73(3), 307–309.</li>
+<li>Kruschke, J. K. (2015). <em>Doing Bayesian Data Analysis</em> (2nd
+ed.). Academic Press.</li>
 <li>Kruschke, J. K. (2021). Bayesian analysis reporting guidelines.
 <em>Nature Human Behaviour</em>, 5(10), 1282–1291.</li>
 <li>Makowski, D., Ben-Shachar, M. S., Chen, S. H. A., &amp; Lüdecke, D.

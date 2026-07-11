@@ -17,7 +17,7 @@ table_regression(
   vcov = "classical",
   cluster = NULL,
   ci_level = 0.95,
-  ci_method = c("wald", "profile", "boot_percentile"),
+  ci_method = c("wald", "profile", "boot_percentile", "hdi"),
   boot_n = 1000L,
   tau = NULL,
   at_time = NULL,
@@ -150,7 +150,15 @@ table_regression(
   percentile on request via `estat bootstrap`). AME and
   standardized-beta CIs are not covered. With `exponentiate = TRUE` the
   percentile bounds are exponentiated (percentile intervals are
-  transformation-respecting).
+  transformation-respecting). `"hdi"` (Bayesian `stanreg` / `brmsfit`
+  fits only) replaces the default equal-tailed credible interval with
+  the highest-density interval – the shortest interval containing
+  `ci_level` of the posterior draws (Kruschke 2015), relabelling the
+  column header `95% HDI`. Unlike the equal-tailed interval the HDI is
+  not transformation-invariant, so under `exponentiate = TRUE` it is
+  recomputed on the exponentiated draws rather than transformed.
+  Requesting `"hdi"` for a frequentist fit, or `"profile"` /
+  `"boot_percentile"` for a Bayesian fit, raises `spicy_invalid_input`.
 
 - boot_n:
 
@@ -234,20 +242,21 @@ table_regression(
   Character vector of tokens selecting the per-coefficient columns and
   their display order. Accepts **atomic tokens** (`"b"`, `"se"`, `"ci"`,
   `"t"`, `"p"`, `"beta"`, `"n"`, `"n_events"`, `"pd"` (probability of
-  direction, Bayesian fits only), `"ame"`, `"ame_se"`, `"ame_ci"`,
-  `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
-  `"risk_diff"` + its `_se` / `_ci` / `_p` companions, `"partial_f2"` +
-  `"partial_f2_ci"`, `"partial_eta2"` + `"partial_eta2_ci"`,
-  `"partial_omega2"` + `"partial_omega2_ci"`, `"partial_chi2"`) and
-  **group tokens** (`"all_b"`, `"all_b_compact"`, `"all_b_full"`,
-  `"all_beta"`, `"all_ame"`, `"all_ame_compact"`, `"all_f2"`,
-  `"all_eta2"`, `"all_omega2"`). See *Vocabulary tokens* in the details
-  for the full enumeration. Default `NULL` selects a context-aware
-  layout: `"all_b"` (single model) or `"all_b_compact"` (multi-model,
-  and the single-multinomial outcome-as-columns layout, which has the
-  same width pressure – restore CIs with atomic tokens, e.g.
-  `c("b", "se", "ci", "p")`). The `"p"` token is always the B / beta
-  p-value; for the AME-specific p-value use `"ame_p"`.
+  direction, Bayesian fits only), `"rhat"` / `"ess_bulk"` / `"ess_tail"`
+  (per-coefficient sampler diagnostics, all-Bayesian tables only),
+  `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`, `"rmst"` + `"rmst_se"` /
+  `"rmst_ci"` / `"rmst_p"`, `"risk_diff"` + its `_se` / `_ci` / `_p`
+  companions, `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
+  `"partial_eta2_ci"`, `"partial_omega2"` + `"partial_omega2_ci"`,
+  `"partial_chi2"`) and **group tokens** (`"all_b"`, `"all_b_compact"`,
+  `"all_b_full"`, `"all_beta"`, `"all_ame"`, `"all_ame_compact"`,
+  `"all_f2"`, `"all_eta2"`, `"all_omega2"`). See *Vocabulary tokens* in
+  the details for the full enumeration. Default `NULL` selects a
+  context-aware layout: `"all_b"` (single model) or `"all_b_compact"`
+  (multi-model, and the single-multinomial outcome-as-columns layout,
+  which has the same width pressure – restore CIs with atomic tokens,
+  e.g. `c("b", "se", "ci", "p")`). The `"p"` token is always the B /
+  beta p-value; for the AME-specific p-value use `"ame_p"`.
 
 - keep:
 
@@ -389,7 +398,7 @@ table_regression(
   - `lm`: `c("nobs", "r2", "adj_r2")`.
 
   - `glm`, ordinal `polr` / `clm`:
-    `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`
+    `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`
     (McFadden = Stata `ologit` default, Nagelkerke = SPSS PLUM).
 
   - mixed `lm` + `glm`: the union of the two (the renderer em-dashes per
@@ -872,6 +881,13 @@ restore it explicitly when needed).
 - Residual scale: `"sigma"` (lm \\\hat{\sigma}\\ / glm dispersion),
   `"rmse"`.
 
+- Bayesian fits only: `"r2_bayes"` (posterior-median Bayesian \\R^2\\,
+  Gelman et al. 2019 – in the all-Bayesian default), `"elpd_loo"` and
+  `"looic"` (PSIS-LOO expected log predictive density and its
+  deviance-scale twin, Vehtari et al. 2017; opt-in, a few seconds per
+  model; the footer discloses the elpd standard error), and `"waic"`
+  (Watanabe-Akaike; PSIS-LOO is generally preferred).
+
 - Negative-binomial dispersion
   ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) only):
   `"theta"` (\\V = \mu + \mu^2/ heta\\) and `"alpha"` (\\= 1/ heta\\,
@@ -879,7 +895,9 @@ restore it explicitly when needed).
 
 - Effect size: `"f2"`.
 
-- Information criteria: `"AIC"`, `"AICc"`, `"BIC"`, `"deviance"`.
+- Information criteria: `"aic"`, `"aicc"`, `"bic"`, `"deviance"`
+  (lowercase like every other token; the rendered row labels stay `AIC`
+  / `AICc` / `BIC`).
 
 - Change-stats for hierarchical comparison (active under
   `nested = TRUE`; see *Hierarchical comparison* below): `"r2_change"`,
@@ -889,9 +907,9 @@ restore it explicitly when needed).
 
 Default (resolved when `NULL`) is class-aware: lm fits get
 `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
-`c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`; mixed
+`c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`; mixed
 lm + glm sets union both groups (the renderer per-row em-dashes the
-inappropriate cell); Cox fits get `c("nobs", "n_events", "AIC")`. When
+inappropriate cell); Cox fits get `c("nobs", "n_events", "aic")`. When
 `nested = TRUE`, the class-aware default is extended with change tokens
 (`c("r2_change", "f_change", "p_change")` for lm,
 `c("lrt_change", "p_change")` for glm). The order of tokens in
@@ -1064,6 +1082,42 @@ programmatic use (function wrapping, dynamic column choice, loops). Use
 
 For multi-model use, mix forms freely:
 `cluster = list(~region, "region", df$region)`.
+
+## Bayesian fits (rstanarm / brms)
+
+`stanreg` and `brmsfit` models are summarized from their posterior
+draws: `B` is the posterior median, `SE` the posterior MAD SD (the
+scaled median absolute deviation – the pairing of *Regression and Other
+Stories* and rstanarm's own print; equal to the posterior SD for a
+normal posterior), and the interval an equal-tailed credible interval
+(header `95% CrI`; `ci_method = "hdi"` opts into the highest-density
+interval, header `95% HDI`). There is no p-value or t-statistic; group
+presets (`"all_b"`, ...) expand without them, and the opt-in `"pd"`
+column reports the probability of direction with a footer definition
+(Makowski et al. 2019). Under `exponentiate = TRUE` all quantities are
+computed from the exponentiated draws directly (the SE is the posterior
+MAD SD on the ratio scale, not a delta-method approximation).
+
+Fit statistics: `"r2_bayes"` (in the Bayesian default) plus the opt-in
+`"elpd_loo"` / `"looic"` / `"waic"`, whose standard errors are disclosed
+in the footer; unreliable estimates (PSIS-LOO Pareto k \> 0.7, WAIC
+p_waic \> 0.4) add a footer caveat instead of being silenced. Every
+table is backed by an automatic sampler-diagnostics guard (R-hat \>=
+1.01, ESS below 100 per chain, divergent transitions, E-BFMI \< 0.2, per
+Vehtari et al. 2021): problems add a footer line and raise a warning
+classed `spicy_bayes_diagnostics` (nested under `spicy_caveat`, so
+`withCallingHandlers(spicy_bayes_diagnostics = ...)` mutes the guard
+selectively); clean fits print nothing. Per-coefficient `"rhat"` /
+`"ess_bulk"` / `"ess_tail"` columns are available in all-Bayesian
+tables.
+
+Refused on principle (classed error, never a silent fallback):
+likelihood-based fit statistics (`"aic"`, pseudo-R², ...), `p_adjust`,
+robust / cluster `vcov` (model the clustering with group-level terms
+instead), `ci_method = "profile"` / `"boot_percentile"`, and non-MCMC
+fits (`algorithm = "meanfield"` / `"optimizing"` – refit with
+`algorithm = "sampling"`). See
+[`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md).
 
 ## Hierarchical (nested) model comparison
 

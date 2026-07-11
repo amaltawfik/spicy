@@ -234,14 +234,22 @@ closed-form AFT curves are standardized directly (stratified
     <h2 id="bayesian-models">Bayesian models<a class="anchor" aria-label="anchor" href="#bayesian-models"></a></h2>
 
 
-<p>Posterior median, posterior SD, and equal-tailed credible intervals;
-deliberately no p-value column and no stars. Multilevel fits
+<p>Posterior median, posterior MAD SD, and equal-tailed credible
+intervals (<code>ci_method = "hdi"</code> opts into the highest-density
+interval); deliberately no p-value column and no stars – the
+probability of direction (<code>"pd"</code>) is the opt-in posterior summary.
+A sampler-diagnostics guard checks every fit (R-hat, ESS,
+divergences, E-BFMI) and per-coefficient <code>"rhat"</code> / <code>"ess_bulk"</code> /
+<code>"ess_tail"</code> columns are available. Multilevel fits
 (<code>stan_glmer</code>, <code>brm</code> with grouping terms) report their random
 effects as a block – posterior median SD and credible interval per
 component, from the draws – with no likelihood-ratio line.
 <code>p_adjust</code> and likelihood-based fit-statistic tokens are refused
 (no p-values, no likelihood-based information criteria in a
-posterior); compare models with <code><a href="https://mc-stan.org/loo/reference/loo.html" class="external-link">loo::loo()</a></code> outside the table.</p>
+posterior); <code>"r2_bayes"</code> is in the default fit statistics and
+<code>"elpd_loo"</code> / <code>"looic"</code> / <code>"waic"</code> are opt-in, with standard
+errors and reliability caveats in the footer; compare models with
+<code><a href="https://mc-stan.org/loo/reference/loo_compare.html" class="external-link">loo::loo_compare()</a></code> outside the table.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

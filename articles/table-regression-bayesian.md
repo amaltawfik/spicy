@@ -56,20 +56,21 @@ table_regression(fit)
 #> 
 #>  Variable                 │    B      SE      95% CrI     
 #> ──────────────────────────┼───────────────────────────────
-#>  (Intercept)              │   -1.11  0.28  [-1.66, -0.55] 
+#>  (Intercept)              │   -1.11  0.29  [-1.66, -0.55] 
 #>  sex:                     │                               
 #>    Female (ref.)          │     –     –          –        
 #>    Male                   │   -0.04  0.15  [-0.34,  0.25] 
-#>  age                      │    0.01  0.00  [-0.00,  0.02] 
+#>  age                      │    0.01  0.01  [-0.00,  0.02] 
 #>  education:               │                               
 #>    Lower secondary (ref.) │     –     –          –        
-#>    Upper secondary        │   -0.49  0.17  [-0.81, -0.16] 
-#>    Tertiary               │   -0.91  0.19  [-1.31, -0.56] 
+#>    Upper secondary        │   -0.49  0.16  [-0.81, -0.16] 
+#>    Tertiary               │   -0.91  0.20  [-1.31, -0.56] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                          
+#>  R² (Bayes)               │    0.02                       
 #> 
 #> Note. Bayesian logistic regression (stanreg).
-#> Std. errors: Posterior covariance.
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
 ```
 
 Reading the columns against their frequentist counterparts:
@@ -79,15 +80,31 @@ Reading the columns against their frequentist counterparts:
   not a maximum-likelihood point estimate, although under the default
   weakly informative priors and this sample size the two are nearly
   identical.
-- **SE is the posterior standard deviation**, and the footer says so
-  (`Std. errors: Posterior covariance.`) rather than borrowing the
-  frequentist term.
+- **SE is the posterior MAD SD** — the median absolute deviation of the
+  draws, rescaled so it equals the standard deviation for a normal
+  posterior — and the footer says so
+  (`Std. errors: posterior MAD SD (scaled median absolute deviation).`)
+  rather than borrowing the frequentist term. Median + MAD SD is the
+  robust pairing of *Regression and Other Stories* (§5.3) and of
+  `rstanarm`’s own print: both members resist skewed posteriors, where a
+  mean + SD pair can be dominated by one heavy tail. As Gelman, Hill &
+  Vehtari put it, “for convenience we sometimes call the posterior mad
+  sd the ‘standard error’”.
 - **The interval is a credible interval**, and the header says so:
   `95% CrI`, the equal-tailed 2.5% and 97.5% posterior quantiles. Its
   reading is the direct probability statement that confidence intervals
   are so often misread as making: *given model, priors, and data, the
   coefficient lies in \[-1.31, -0.56\] with 95% probability* (the
-  `Tertiary` row). No appeal to repeated sampling is required.
+  `Tertiary` row). No appeal to repeated sampling is required. The
+  equal-tailed interval is the default because it is
+  transformation-invariant (which is what makes the exact odds-ratio
+  bounds below possible) and matches `rstanarm`; the Kruschke
+  tradition’s **highest-density interval** is one argument away —
+  `ci_method = "hdi"` computes the shortest interval containing 95% of
+  the draws (Kruschke 2015) and relabels the header `95% HDI`. For these
+  near-symmetric posteriors the two differ only in the second decimal;
+  they part ways on skewed posteriors, where the HDI shifts toward the
+  mode.
 - **There is no p column, by design.** A posterior has no p-value, and
   the Bayesian Analysis Reporting Guidelines (Kruschke 2021) ask that
   any decision rule be stated explicitly and kept separate from the
@@ -116,9 +133,11 @@ table_regression(fit, show_columns = c("b", "ci", "pd"))
 #>    Tertiary               │   -0.91  [-1.31, -0.56]  1.00 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                          
+#>  R² (Bayes)               │    0.02                       
 #> 
 #> Note. Bayesian logistic regression (stanreg).
-#> Std. errors: Posterior covariance.
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
+#> pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019).
 ```
 
 Read against the table: `Male`, at 0.62, is barely better than a coin
@@ -134,14 +153,68 @@ corresponds to p ≈ 0.23; Makowski et al. 2019). `pd` is not a route
 around the p-value’s pathologies; it is the same directional information
 stated as a posterior probability.
 
+For a claim of practical size, the Kruschke tradition asks how much of
+the posterior falls inside a **region of practical equivalence** (ROPE)
+around zero. spicy deliberately renders no ROPE column: the reporting
+guidelines require the equivalence limits to be *justified* (BARG step
+4.C), and limits are substantive, per-coefficient claims — ±0.05
+log-odds may be negligible for one predictor and consequential for
+another — that a package cannot default on the analyst’s behalf. When
+you can defend limits, compute the shares outside the table with
+`bayestestR::rope(fit, range = c(-0.18, 0.18))` (or
+[`bayestestR::describe_posterior()`](https://easystats.github.io/bayestestR/reference/describe_posterior.html)),
+state the limits and their justification in the text, and keep the
+table’s posterior summaries as they are.
+
 ## Check convergence before reading anything
 
 A frequentist table is wrong only if the model is wrong; a Bayesian
 table can additionally be wrong because the *sampler* has not converged
 — the draws then misrepresent the very posterior the columns summarize.
-The check comes first, and it is three numbers per parameter (Vehtari et
-al. 2021): R-hat, which compares chains (at convergence, 1.00; worry
-above roughly 1.01), and two effective sample sizes that discount
+spicy therefore checks every Bayesian fit before rendering: when any
+sampled parameter misses its target — R-hat at or above 1.01, effective
+sample size below 100 per chain (never less than 400, so fewer chains do
+not weaken the bar), any divergent transition, E-BFMI below 0.2 (Vehtari
+et al. 2021) — the table gains a `Sampler diagnostics:` footer line
+naming the failure and a warning fires (classed
+`spicy_bayes_diagnostics`, so scripts can catch or mute this guard
+selectively with
+[`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html)). A
+clean fit prints nothing: the publication table stays lean, and silence
+means the checks passed. The guard reads *all* sampled parameters —
+including the group-level ones a multilevel table summarizes — not just
+the displayed coefficients.
+
+For parameter-level triage the same three diagnostics are available as
+opt-in columns in all-Bayesian tables:
+
+``` r
+
+table_regression(fit, show_columns = c("b", "ci", "rhat", "ess_bulk"))
+#> Bayesian logistic regression (stanreg): smoking
+#> 
+#>  Variable                 │    B        95% CrI      R-hat  ESS (bulk) 
+#> ──────────────────────────┼────────────────────────────────────────────
+#>  (Intercept)              │   -1.11  [-1.66, -0.55]  1.007        1301 
+#>  sex:                     │                                            
+#>    Female (ref.)          │     –          –          –              – 
+#>    Male                   │   -0.04  [-0.34,  0.25]  1.000        1292 
+#>  age                      │    0.01  [-0.00,  0.02]  1.002        1270 
+#>  education:               │                                            
+#>    Lower secondary (ref.) │     –          –          –              – 
+#>    Upper secondary        │   -0.49  [-0.81, -0.16]  1.002        1064 
+#>    Tertiary               │   -0.91  [-1.31, -0.56]  1.002        1133 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                                       
+#>  R² (Bayes)               │    0.02                                    
+#> 
+#> Note. Bayesian logistic regression (stanreg).
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
+```
+
+Under the hood these are three numbers per parameter (Vehtari et al.
+2021): R-hat, which compares chains (at convergence, 1.00; worry above
+roughly 1.01), and two effective sample sizes that discount
 autocorrelation — bulk ESS, which governs point estimates such as the
 posterior median, and tail ESS, which governs the credible-interval
 bounds:
@@ -212,12 +285,14 @@ plausibly matter.
 ## Odds ratios: `exponentiate = TRUE`
 
 The ratio scale works exactly as for `glm`, with one pleasant
-difference: the credible bounds are the exponentiated *quantiles*, so
-they are exact posterior statements about the odds ratio itself — not a
-delta-method approximation. The SE column is the exception: as the
-footer discloses, it crosses to the ratio scale by the delta method
-(SE_OR = OR × SE_log-odds) — one more reason to read the interval and
-never to reconstruct one as B ± 2 SE:
+difference: every displayed quantity is computed from the exponentiated
+draws themselves, so all of them are exact posterior statements about
+the odds ratio — the credible bounds are the exponentiated quantiles,
+and the SE is the posterior MAD SD of `exp(draws)` rather than the
+delta-method approximation (SE_OR = OR × SE_log-odds), which understates
+the ratio-scale spread severalfold when the posterior is wide.
+Ratio-scale posteriors are right-tail-heavy, so the interval remains the
+primary uncertainty summary — never reconstruct one as B ± 2 SE:
 
 ``` r
 
@@ -229,19 +304,20 @@ table_regression(fit, exponentiate = TRUE)
 #>  (Intercept)              │    0.33  0.09  [0.19, 0.57] 
 #>  sex:                     │                             
 #>    Female (ref.)          │     –     –         –       
-#>    Male                   │    0.96  0.14  [0.71, 1.28] 
-#>  age                      │    1.01  0.00  [1.00, 1.02] 
+#>    Male                   │    0.96  0.15  [0.71, 1.28] 
+#>  age                      │    1.01  0.01  [1.00, 1.02] 
 #>  education:               │                             
 #>    Lower secondary (ref.) │     –     –         –       
 #>    Upper secondary        │    0.61  0.10  [0.44, 0.85] 
 #>    Tertiary               │    0.40  0.08  [0.27, 0.57] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                        
+#>  R² (Bayes)               │    0.02                     
 #> 
 #> Note. Bayesian logistic regression (stanreg).
-#> Std. errors: Posterior covariance.
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
 #> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric).
 ```
 
 Reading the `Tertiary` row with the factor-change template: holding sex
@@ -283,21 +359,25 @@ table_regression(list("ML (glm)" = gf, "Bayes (stan_glm)" = fit),
 #>  R² (McFadden)            │    0.02                                          
 #>  R² (Nagelkerke)          │    0.03                                          
 #>  AIC                      │ 1200.9                                           
+#>  R² (Bayes)               │                             0.02                 
 #> 
 #> Note. Model 1: logistic regression; Model 2: Bayesian logistic regression (stanreg).
 #> Std. errors:
 #>   Model 1: classical (Fisher information)
-#>   Model 2: Posterior covariance
+#>   Model 2: posterior MAD SD (scaled median absolute deviation)
+#> Model 2: 95% CI is an equal-tailed posterior credible interval.
 ```
 
 The intervals differ in *reading*, not much in width: the frequentist
 column’s CI is a coverage statement about the procedure, the Bayesian
-column’s CrI a probability statement about the parameter (the shared
-header stays `95% CI` here — the honest common label; the all-Bayesian
-table above shows `95% CrI`). In the fit-statistics block, `n` fills
-both columns, but the likelihood-based rows — the two pseudo-R² and AIC
-— fill only the frequentist one, because a posterior has none of them.
-Which brings us to what the table refuses.
+column’s CrI a probability statement about the parameter. The shared
+header stays `95% CI` here — the honest common label — and the footer
+discloses per model that the Bayesian column is an equal-tailed
+posterior credible interval (the all-Bayesian table above relabels the
+header itself, `95% CrI`). In the fit-statistics block, `n` and
+`R² (Bayes)` fill per model, but the likelihood-based rows — the two
+pseudo-R² and AIC — fill only the frequentist one, because a posterior
+has none of them. Which brings us to what the table refuses.
 
 ## What is refused, and why
 
@@ -306,22 +386,45 @@ refuses them with an explanatory error rather than rendering something
 silently wrong:
 
 - `p_adjust` — there are no p-values to adjust;
-- likelihood-based fit statistics (`"AIC"`, `"BIC"`, pseudo-R²) —
-  compare Bayesian models with
-  [`loo::loo()`](https://mc-stan.org/loo/reference/loo.html) and
+- likelihood-based fit statistics (`"aic"`, `"bic"`, pseudo-R²) — the
+  Bayesian table has its own instead: the default block reports
+  `R² (Bayes)`, the posterior median of the draws-based R² (Gelman et
+  al. 2019), and
+  `show_fit_stats = c("nobs", "r2_bayes", "elpd_loo", "looic")` adds the
+  PSIS-LOO expected log predictive density and its deviance-scale twin,
+  with the elpd standard error disclosed in the footer (Vehtari, Gelman
+  & Gabry 2017; a few seconds per model; a `"waic"` token exists too —
+  its SE is disclosed the same way — though PSIS-LOO is generally
+  preferred). These estimates come with their own reliability
+  diagnostics, and spicy never mutes them: when PSIS-LOO flags
+  observations with Pareto k above 0.7 (or WAIC flags p_waic above 0.4)
+  the footer says the estimate is unreliable and a
+  `spicy_bayes_diagnostics` warning fires, with
+  [`loo::loo_moment_match()`](https://mc-stan.org/loo/reference/loo_moment_match.html)
+  as the standard remedy. Model *comparison* belongs to
   [`loo::loo_compare()`](https://mc-stan.org/loo/reference/loo_compare.html)
-  outside the table (Vehtari, Gelman & Gabry 2017); explained variance
-  has a draws-based analog,
-  [`rstanarm::bayes_R2()`](https://mc-stan.org/rstantools/reference/bayes_R2.html)
-  (Gelman et al. 2019), reported in the text;
+  outside the table, and the canonical fit *check* is the graphical
+  posterior predictive check (`pp_check(fit)`; Gelman et al. 2013,
+  ch. 6) — Bayes factors stay out by design (Gelman et al. 2013, §7.4);
 - robust / cluster-robust `vcov` — a sandwich estimator corrects a
   misspecified likelihood’s standard errors; nothing standard plays that
-  role for a posterior covariance (misspecification-robust Bayesian
-  procedures exist but remain research-grade), so model the clustering
-  instead (next section);
-- `ci_method = "profile"` and the AME family — profile likelihood is a
-  frequentist construction, and a draws-based AME needs its own design
-  (planned).
+  role for a posterior (misspecification-robust Bayesian procedures
+  exist but remain research-grade), so model the clustering instead
+  (next section);
+- `ci_method = "profile"` / `"boot_percentile"` and the AME family —
+  profile likelihood and bootstrap replicates are frequentist
+  constructions with no posterior analogue (the credible interval is
+  computed from the draws; `"hdi"` is the one alternative flavor), and a
+  draws-based AME needs its own design (planned);
+- variational and optimizing fits
+  (`stan_glm(..., algorithm = "meanfield")`, `"optimizing"`) — they
+  carry an *approximate* posterior on which the MCMC diagnostics above
+  would be vacuous; refit with `algorithm = "sampling"`;
+- a ROPE column — deliberately absent, as discussed in the `pd` section:
+  equivalence limits are substantive claims the analyst must justify per
+  coefficient
+  ([`bayestestR::rope()`](https://easystats.github.io/bayestestR/reference/rope.html)
+  renders them once justified).
 
 ``` r
 
@@ -350,25 +453,36 @@ mfit <- stan_lmer(Reaction ~ Days + (Days | Subject),
                   data = lme4::sleepstudy,
                   iter = 1000, chains = 2, seed = 7, refresh = 0)
 table_regression(mfit)
+#> Warning: Bayesian fit (outcome: Reaction) shows sampler problems -- Sampler
+#> diagnostics: max R-hat = 1.010 (target < 1.01); min ESS = 253 (target > 400).
+#> Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).
 #> Bayesian linear regression (stanreg): Reaction
 #> 
 #>  Variable                         │   B      SE       95% CrI      
 #> ──────────────────────────────────┼────────────────────────────────
-#>  (Intercept)                      │ 251.23  6.88  [237.54, 264.18] 
-#>  Days                             │  10.38  1.90  [  6.58,  13.95] 
+#>  (Intercept)                      │ 251.23  6.53  [237.54, 264.18] 
+#>  Days                             │  10.38  1.82  [  6.58,  13.95] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:                  │                                
-#>    σ Subject (Intercept)          │  21.99  6.00  [ 12.68,  35.63] 
-#>    σ Subject Days                 │   6.53  1.47  [  4.37,  10.18] 
-#>    ρ Subject (Days × (Intercept)) │   0.11  0.29  [ -0.42,   0.70] 
-#>    σ (Residual)                   │  25.99  1.57  [ 23.14,  29.28] 
+#>    σ Subject (Intercept)          │  21.99  5.52  [ 12.68,  35.63] 
+#>    σ Subject Days                 │   6.53  1.33  [  4.37,  10.18] 
+#>    ρ Subject (Days × (Intercept)) │   0.11  0.30  [ -0.42,   0.70] 
+#>    σ (Residual)                   │  25.99  1.63  [ 23.14,  29.28] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                │ 180                            
+#>  R² (Bayes)                       │   0.79                         
 #> 
 #> Note. Bayesian linear regression (stanreg).
-#> Std. errors: Posterior covariance.
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
 #> Random effects (MCMC).
+#> Sampler diagnostics: max R-hat = 1.010 (target < 1.01); min ESS = 253 (target > 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).
 ```
+
+Note the guard from the convergence section doing its job: this
+deliberately trimmed run (two short chains, a correlated random slope)
+misses the R-hat and ESS targets, so the table says so in its footer and
+a `spicy_bayes_diagnostics` warning fires — a manuscript fit with
+rstanarm’s default sampler settings renders this same table clean.
 
 Compare this block with the `lmer` table of the [mixed-effects
 vignette](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
@@ -412,9 +526,10 @@ argument also produces a raw data frame, a long broom-style tibble, and
 through: the p column stays a dash, and the posterior summaries keep
 full precision in the tidy frame. In
 [`broom::tidy()`](https://broom.tidymodels.org) the `estimate` column is
-the posterior median and `conf.low` / `conf.high` the credible bounds;
-`p.value`, `statistic`, and `df` are `NA` — pipelines that filter on
-`p.value` must switch to the interval (or `pd`):
+the posterior median, `std.error` the posterior MAD SD, and `conf.low` /
+`conf.high` the credible bounds; `p.value`, `statistic`, and `df` are
+`NA` — pipelines that filter on `p.value` must switch to the interval
+(or `pd`):
 
 ``` r
 
@@ -424,11 +539,11 @@ td[, c("term", "estimate", "std.error", "conf.low", "conf.high",
 #> # A tibble: 5 × 6
 #>   term                     estimate std.error conf.low conf.high p.value
 #>   <chr>                       <dbl>     <dbl>    <dbl>     <dbl>   <dbl>
-#> 1 (Intercept)              -1.11      0.284   -1.66      -0.554       NA
-#> 2 sexMale                  -0.0380    0.148   -0.337      0.249       NA
-#> 3 age                       0.00614   0.00485 -0.00326    0.0152      NA
-#> 4 educationUpper secondary -0.487     0.169   -0.811     -0.164       NA
-#> 5 educationTertiary        -0.909     0.194   -1.31      -0.559       NA
+#> 1 (Intercept)              -1.11      0.287   -1.66      -0.554       NA
+#> 2 sexMale                  -0.0380    0.153   -0.337      0.249       NA
+#> 3 age                       0.00614   0.00504 -0.00326    0.0152      NA
+#> 4 educationUpper secondary -0.487     0.165   -0.811     -0.164       NA
+#> 5 educationTertiary        -0.909     0.197   -1.31      -0.559       NA
 ```
 
 ``` r
@@ -438,10 +553,10 @@ table_regression(fit, exponentiate = TRUE, output = "gt")
 
 [TABLE]
 
-*Note.* Bayesian logistic regression (stanreg). Std. errors: Posterior
-covariance. OR = odds ratio. Coefficients exponentiated and displayed as
-OR; SE on the OR scale (delta method); CI bounds exponentiated
-(asymmetric).
+*Note.* Bayesian logistic regression (stanreg). Std. errors: posterior
+MAD SD (scaled median absolute deviation). OR = odds ratio. Coefficients
+exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD
+of the exponentiated draws); CI bounds exponentiated (asymmetric).
 
 ## See also
 
@@ -455,9 +570,13 @@ OR; SE on the OR scale (delta method); CI bounds exponentiated
 
 - Gelman, A., Hill, J., & Vehtari, A. (2020). *Regression and Other
   Stories*. Cambridge University Press.
+- Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., &
+  Rubin, D. B. (2013). *Bayesian Data Analysis* (3rd ed.). CRC Press.
 - Gelman, A., Goodrich, B., Gabry, J., & Vehtari, A. (2019). R-squared
   for Bayesian regression models. *The American Statistician*, 73(3),
   307–309.
+- Kruschke, J. K. (2015). *Doing Bayesian Data Analysis* (2nd ed.).
+  Academic Press.
 - Kruschke, J. K. (2021). Bayesian analysis reporting guidelines.
   *Nature Human Behaviour*, 5(10), 1282–1291.
 - Makowski, D., Ben-Shachar, M. S., Chen, S. H. A., & Lüdecke, D.

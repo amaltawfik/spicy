@@ -452,7 +452,7 @@ d4$bmi_category <- factor(d4$bmi_category, ordered = FALSE)  # per-level dummies
 b_cont <- lm(wellbeing_score ~ bmi,          data = d4)
 b_cat  <- lm(wellbeing_score ~ bmi_category, data = d4)
 table_regression(list(b_cont, b_cat), show_columns = c("b", "p"),
-                 show_fit_stats = c("nobs", "r2", "AIC"))
+                 show_fit_stats = c("nobs", "r2", "aic"))
 #> Linear regression comparison: wellbeing_score
 #> 
 #>                              Model 1         Model 2     

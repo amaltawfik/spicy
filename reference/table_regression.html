@@ -103,7 +103,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  vcov <span class="op">=</span> <span class="st">"classical"</span>,</span>
 <span>  cluster <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  ci_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"profile"</span>, <span class="st">"boot_percentile"</span><span class="op">)</span>,</span>
+<span>  ci_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"profile"</span>, <span class="st">"boot_percentile"</span>, <span class="st">"hdi"</span><span class="op">)</span>,</span>
 <span>  boot_n <span class="op">=</span> <span class="fl">1000L</span>,</span>
 <span>  tau <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  at_time <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -230,7 +230,17 @@ remain Wald from the bootstrap covariance – the Stata convention
 <code>estat bootstrap</code>). AME and standardized-beta CIs are not
 covered. With <code>exponentiate = TRUE</code> the percentile bounds are
 exponentiated (percentile intervals are
-transformation-respecting).</p></dd>
+transformation-respecting).
+<code>"hdi"</code> (Bayesian <code>stanreg</code> / <code>brmsfit</code> fits only) replaces the
+default equal-tailed credible interval with the highest-density
+interval – the shortest interval containing <code>ci_level</code> of the
+posterior draws (Kruschke 2015), relabelling the column header
+<code>95% HDI</code>. Unlike the equal-tailed interval the HDI is not
+transformation-invariant, so under <code>exponentiate = TRUE</code> it is
+recomputed on the exponentiated draws rather than transformed.
+Requesting <code>"hdi"</code> for a frequentist fit, or <code>"profile"</code> /
+<code>"boot_percentile"</code> for a Bayesian fit, raises
+<code>spicy_invalid_input</code>.</p></dd>
 
 
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
@@ -315,7 +325,9 @@ adjustment</em> section for when this is and is not appropriate.</p></dd>
 per-coefficient columns and their display order. Accepts
 <strong>atomic tokens</strong> (<code>"b"</code>, <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>,
 <code>"beta"</code>, <code>"n"</code>, <code>"n_events"</code>, <code>"pd"</code> (probability of
-direction, Bayesian fits only), <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
+direction, Bayesian fits only), <code>"rhat"</code> / <code>"ess_bulk"</code> /
+<code>"ess_tail"</code> (per-coefficient sampler diagnostics, all-Bayesian
+tables only), <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
 <code>"ame_p"</code>, <code>"rmst"</code> + <code>"rmst_se"</code> / <code>"rmst_ci"</code> / <code>"rmst_p"</code>,
 <code>"risk_diff"</code> + its <code>_se</code> / <code>_ci</code> / <code>_p</code> companions,
 <code>"partial_f2"</code> + <code>"partial_f2_ci"</code>, <code>"partial_eta2"</code> +
@@ -460,7 +472,7 @@ wording – "ref:", "vs", "Reference categories:").</p></dd>
 model-level rows below the coefficients; row order follows
 token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><code>lm</code>: <code>c("nobs", "r2", "adj_r2")</code>.</p></li>
 <li><p><code>glm</code>, ordinal <code>polr</code> / <code>clm</code>:
-<code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code> (McFadden = Stata <code>ologit</code> default,
+<code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")</code> (McFadden = Stata <code>ologit</code> default,
 Nagelkerke = SPSS PLUM).</p></li>
 <li><p>mixed <code>lm</code> + <code>glm</code>: the union of the two (the
 renderer em-dashes per cell the stat not defined for a
@@ -929,13 +941,21 @@ field convention; blank for other classes).</p></li>
 <code>"pseudo_r2_tjur"</code> (Tjur 2009; binomial only).</p></li>
 <li><p>Residual scale: <code>"sigma"</code> (lm \(\hat{\sigma}\)
 / glm dispersion), <code>"rmse"</code>.</p></li>
+<li><p>Bayesian fits only: <code>"r2_bayes"</code> (posterior-median
+Bayesian \(R^2\), Gelman et al. 2019 – in the
+all-Bayesian default), <code>"elpd_loo"</code> and <code>"looic"</code> (PSIS-LOO
+expected log predictive density and its deviance-scale twin,
+Vehtari et al. 2017; opt-in, a few seconds per model; the
+footer discloses the elpd standard error), and <code>"waic"</code>
+(Watanabe-Akaike; PSIS-LOO is generally preferred).</p></li>
 <li><p>Negative-binomial dispersion (<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> only):
 <code>"theta"</code> (\(V = \mu + \mu^2/	heta\))
 and <code>"alpha"</code> (\(= 1/	heta\), the Stata <code>nbreg</code>
 convention). Refused for other families.</p></li>
 <li><p>Effect size: <code>"f2"</code>.</p></li>
-<li><p>Information criteria: <code>"AIC"</code>, <code>"AICc"</code>, <code>"BIC"</code>,
-<code>"deviance"</code>.</p></li>
+<li><p>Information criteria: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code>,
+<code>"deviance"</code> (lowercase like every other token; the rendered
+row labels stay <code>AIC</code> / <code>AICc</code> / <code>BIC</code>).</p></li>
 <li><p>Change-stats for hierarchical comparison
 (active under <code>nested = TRUE</code>; see <em>Hierarchical
 comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
@@ -944,10 +964,10 @@ comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
 <code>"deviance_change"</code>, <code>"p_change"</code>.</p></li>
 </ul><p>Default (resolved when <code>NULL</code>) is class-aware: lm fits get
 <code>c("nobs", "r2", "adj_r2")</code>; glm and ordinal <code>polr</code> / <code>clm</code> fits get
-<code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")</code>;
+<code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")</code>;
 mixed lm + glm sets union both groups (the renderer per-row
 em-dashes the inappropriate cell); Cox fits get
-<code>c("nobs", "n_events", "AIC")</code>. When <code>nested = TRUE</code>, the
+<code>c("nobs", "n_events", "aic")</code>. When <code>nested = TRUE</code>, the
 class-aware default is extended with change tokens
 (<code>c("r2_change", "f_change", "p_change")</code> for lm,
 <code>c("lrt_change", "p_change")</code> for glm). The order of tokens in
@@ -1099,6 +1119,43 @@ choice, loops). Use <code>~region</code> or <code>"region"</code> instead.</p>
 <code>cluster = list(~region, "region", df$region)</code>.</p>
 </div>
 
+    </div>
+    <div class="section level2">
+    <h2 id="bayesian-fits-rstanarm-brms-">Bayesian fits (rstanarm / brms)<a class="anchor" aria-label="anchor" href="#bayesian-fits-rstanarm-brms-"></a></h2>
+    <p><code>stanreg</code> and <code>brmsfit</code> models are summarized from their posterior
+draws: <code>B</code> is the posterior median, <code>SE</code> the posterior MAD SD (the
+scaled median absolute deviation – the pairing of <em>Regression and
+Other Stories</em> and rstanarm's own print; equal to the posterior SD
+for a normal posterior), and the interval an equal-tailed credible
+interval (header <code>95% CrI</code>; <code>ci_method = "hdi"</code> opts into the
+highest-density interval, header <code>95% HDI</code>). There is no p-value
+or t-statistic; group presets (<code>"all_b"</code>, ...) expand without
+them, and the opt-in <code>"pd"</code> column reports the probability of
+direction with a footer definition (Makowski et al. 2019). Under
+<code>exponentiate = TRUE</code> all quantities are computed from the
+exponentiated draws directly (the SE is the posterior MAD SD on
+the ratio scale, not a delta-method approximation).</p>
+<p>Fit statistics: <code>"r2_bayes"</code> (in the Bayesian default) plus the
+opt-in <code>"elpd_loo"</code> / <code>"looic"</code> / <code>"waic"</code>, whose standard errors
+are disclosed in the footer; unreliable estimates (PSIS-LOO Pareto
+k &gt; 0.7, WAIC p_waic &gt; 0.4) add a footer caveat instead of being
+silenced. Every table is backed by an automatic sampler-diagnostics
+guard (R-hat &gt;= 1.01, ESS below 100 per chain, divergent
+transitions, E-BFMI &lt; 0.2, per Vehtari et al. 2021): problems add
+a footer line and raise a warning classed
+<code>spicy_bayes_diagnostics</code> (nested under <code>spicy_caveat</code>, so
+<code>withCallingHandlers(spicy_bayes_diagnostics = ...)</code> mutes the
+guard selectively); clean fits print nothing. Per-coefficient
+<code>"rhat"</code> / <code>"ess_bulk"</code> / <code>"ess_tail"</code> columns are available in
+all-Bayesian tables.</p>
+<p>Refused on principle (classed error, never a silent fallback):
+likelihood-based fit statistics (<code>"aic"</code>, pseudo-R², ...),
+<code>p_adjust</code>, robust / cluster <code>vcov</code> (model the clustering with
+group-level terms instead), <code>ci_method = "profile"</code> /
+<code>"boot_percentile"</code>, and non-MCMC fits
+(<code>algorithm = "meanfield"</code> / <code>"optimizing"</code> – refit with
+<code>algorithm = "sampling"</code>). See
+<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="hierarchical-nested-model-comparison">Hierarchical (nested) model comparison<a class="anchor" aria-label="anchor" href="#hierarchical-nested-model-comparison"></a></h2>

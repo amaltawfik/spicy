@@ -166,7 +166,7 @@ table_regression(fit_nb, exponentiate = TRUE)
 Here `summary(fit_nb)` reports \\\hat\theta\\ = 2.26 (SE 0.27); readers
 trained on Stata know its reciprocal, \\\alpha = 1/\theta\\ = 0.44 —
 both available as opt-in fit-stat rows via
-`show_fit_stats = c("nobs", "theta", "alpha", "AIC")`, so the table can
+`show_fit_stats = c("nobs", "theta", "alpha", "aic")`, so the table can
 carry the dispersion estimate itself. The likelihood-ratio test of the
 Poisson restriction — a boundary test, so its p-value is halved —
 rejects decisively (LR = 180.3, p \< .001).
