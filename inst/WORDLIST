@@ -6,12 +6,14 @@ al
 Algina
 alphanumerics
 AME
+anticorrelated
 APA
 appliquée
 apVar
 Arel
 ASA's
 AStA
+autoscaled
 aux
 Baayen
 batchs
@@ -35,6 +37,7 @@ Brockhoff
 Bryk
 Bryk's
 Bundock
+Bürkner
 Calibri
 cauchit
 centre
@@ -64,6 +67,7 @@ Crainiceanu
 Cramer
 Cramer's
 Cramer’s
+CrI
 Cribari
 crosstable
 customise
@@ -120,6 +124,7 @@ Fouladi
 frac
 Freese
 Friedrich
+Gabry
 Gelbach
 Gelman
 Gelman's
@@ -184,6 +189,7 @@ Kleiber
 Kliegl
 Kolesár
 Kristensen
+Kruschke
 Kruskal's
 Kuznetsova
 Labelled
@@ -207,10 +213,12 @@ lmerTest
 loglog
 loglogistic
 LSMEANS
+Lüdecke
 Maas
 MacKinnon
 Magnusson
 Mahwah
+Makowski
 marg
 marginaleffects
 marginality
@@ -273,6 +281,7 @@ pandoc
 panelling
 parenthesised
 Parmar
+pathologies
 Pelletier
 penalising
 Pinheiro
@@ -284,6 +293,7 @@ POSIXct
 Pre
 pre
 PRE
+precompiled
 PROC
 PSPP
 Pustejovsky
@@ -304,6 +314,7 @@ reparameterisation
 reparameterization
 resamplers
 reweights
+rhat
 Ridder
 Rinehart
 RLRsim
@@ -316,6 +327,8 @@ Rothman
 Routledge
 Royston
 RRR
+rstanarm
+rstanarm's
 RStudio
 Ruppert
 SAMPL
@@ -324,8 +337,10 @@ Scheepers
 Schielzeth
 Schirm
 Schoot
+sd
 sdreport
 SEs
+Shachar
 Signorell
 Sjoberg
 Skaug
@@ -372,6 +387,7 @@ Tjur's
 TMB
 TMB's
 Tofighi
+toolchain
 Trivedi
 TSV
 Tweedie
@@ -401,6 +417,7 @@ VCV
 Vehtari
 Venables
 Vuong
+WAIC
 Wasserstein
 Weisberg
 Welch
