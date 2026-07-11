@@ -54,19 +54,19 @@ scarcest (Vehtari et al. 2021).
 table_regression(fit)
 #> Bayesian logistic regression (stanreg): smoking
 #> 
-#>  Variable                 │    B      SE       95% CI      p 
-#> ──────────────────────────┼──────────────────────────────────
-#>  (Intercept)              │   -1.11  0.28  [-1.66, -0.55]  – 
-#>  sex:                     │                                  
-#>    Female (ref.)          │     –     –          –         – 
-#>    Male                   │   -0.04  0.15  [-0.34,  0.25]  – 
-#>  age                      │    0.01  0.00  [-0.00,  0.02]  – 
-#>  education:               │                                  
-#>    Lower secondary (ref.) │     –     –          –         – 
-#>    Upper secondary        │   -0.49  0.17  [-0.81, -0.16]  – 
-#>    Tertiary               │   -0.91  0.19  [-1.31, -0.56]  – 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175                             
+#>  Variable                 │    B      SE      95% CrI     
+#> ──────────────────────────┼───────────────────────────────
+#>  (Intercept)              │   -1.11  0.28  [-1.66, -0.55] 
+#>  sex:                     │                               
+#>    Female (ref.)          │     –     –          –        
+#>    Male                   │   -0.04  0.15  [-0.34,  0.25] 
+#>  age                      │    0.01  0.00  [-0.00,  0.02] 
+#>  education:               │                               
+#>    Lower secondary (ref.) │     –     –          –        
+#>    Upper secondary        │   -0.49  0.17  [-0.81, -0.16] 
+#>    Tertiary               │   -0.91  0.19  [-1.31, -0.56] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                          
 #> 
 #> Note. Bayesian logistic regression (stanreg).
 #> Std. errors: Posterior covariance.
@@ -82,17 +82,19 @@ Reading the columns against their frequentist counterparts:
 - **SE is the posterior standard deviation**, and the footer says so
   (`Std. errors: Posterior covariance.`) rather than borrowing the
   frequentist term.
-- **The interval is a credible interval** (CrI): the equal-tailed 2.5%
-  and 97.5% posterior quantiles. Its reading is the direct probability
-  statement that confidence intervals are so often misread as making:
-  *given model, priors, and data, the coefficient lies in \[-1.31,
-  -0.56\] with 95% probability* (the `Tertiary` row). No appeal to
-  repeated sampling is required.
-- **The p column is a dash, by design.** A posterior has no p-value, and
+- **The interval is a credible interval**, and the header says so:
+  `95% CrI`, the equal-tailed 2.5% and 97.5% posterior quantiles. Its
+  reading is the direct probability statement that confidence intervals
+  are so often misread as making: *given model, priors, and data, the
+  coefficient lies in \[-1.31, -0.56\] with 95% probability* (the
+  `Tertiary` row). No appeal to repeated sampling is required.
+- **There is no p column, by design.** A posterior has no p-value, and
   the Bayesian Analysis Reporting Guidelines (Kruschke 2021) ask that
   any decision rule be stated explicitly and kept separate from the
-  posterior summary itself — so the table reports the posterior and
-  leaves decisions to the reader. The closest posterior summary — the
+  posterior summary itself — so the default table reports the posterior
+  and leaves decisions to the reader (requesting `"p"` explicitly is
+  refused; in a mixed frequentist–Bayesian table the shared p column
+  simply dashes the Bayesian rows). The closest posterior summary — the
   **probability of direction** (`pd`, the share of draws on the dominant
   side of zero; Makowski et al. 2019) — is opt-in:
 
@@ -101,7 +103,7 @@ Reading the columns against their frequentist counterparts:
 table_regression(fit, show_columns = c("b", "ci", "pd"))
 #> Bayesian logistic regression (stanreg): smoking
 #> 
-#>  Variable                 │    B         95% CI       pd  
+#>  Variable                 │    B        95% CrI       pd  
 #> ──────────────────────────┼───────────────────────────────
 #>  (Intercept)              │   -1.11  [-1.66, -0.55]  1.00 
 #>  sex:                     │                               
@@ -222,19 +224,19 @@ never to reconstruct one as B ± 2 SE:
 table_regression(fit, exponentiate = TRUE)
 #> Bayesian logistic regression (stanreg): smoking
 #> 
-#>  Variable                 │   OR      SE      95% CI     p 
-#> ──────────────────────────┼────────────────────────────────
-#>  (Intercept)              │    0.33  0.09  [0.19, 0.57]  – 
-#>  sex:                     │                                
-#>    Female (ref.)          │     –     –         –        – 
-#>    Male                   │    0.96  0.14  [0.71, 1.28]  – 
-#>  age                      │    1.01  0.00  [1.00, 1.02]  – 
-#>  education:               │                                
-#>    Lower secondary (ref.) │     –     –         –        – 
-#>    Upper secondary        │    0.61  0.10  [0.44, 0.85]  – 
-#>    Tertiary               │    0.40  0.08  [0.27, 0.57]  – 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175                           
+#>  Variable                 │   OR      SE     95% CrI    
+#> ──────────────────────────┼─────────────────────────────
+#>  (Intercept)              │    0.33  0.09  [0.19, 0.57] 
+#>  sex:                     │                             
+#>    Female (ref.)          │     –     –         –       
+#>    Male                   │    0.96  0.14  [0.71, 1.28] 
+#>  age                      │    1.01  0.00  [1.00, 1.02] 
+#>  education:               │                             
+#>    Lower secondary (ref.) │     –     –         –       
+#>    Upper secondary        │    0.61  0.10  [0.44, 0.85] 
+#>    Tertiary               │    0.40  0.08  [0.27, 0.57] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                        
 #> 
 #> Note. Bayesian logistic regression (stanreg).
 #> Std. errors: Posterior covariance.
@@ -290,11 +292,12 @@ table_regression(list("ML (glm)" = gf, "Bayes (stan_glm)" = fit),
 
 The intervals differ in *reading*, not much in width: the frequentist
 column’s CI is a coverage statement about the procedure, the Bayesian
-column’s CrI a probability statement about the parameter. In the
-fit-statistics block, `n` fills both columns, but the likelihood-based
-rows — the two pseudo-R² and AIC — fill only the frequentist one,
-because a posterior has none of them. Which brings us to what the table
-refuses.
+column’s CrI a probability statement about the parameter (the shared
+header stays `95% CI` here — the honest common label; the all-Bayesian
+table above shows `95% CrI`). In the fit-statistics block, `n` fills
+both columns, but the likelihood-based rows — the two pseudo-R² and AIC
+— fill only the frequentist one, because a posterior has none of them.
+Which brings us to what the table refuses.
 
 ## What is refused, and why
 
@@ -349,18 +352,18 @@ mfit <- stan_lmer(Reaction ~ Days + (Days | Subject),
 table_regression(mfit)
 #> Bayesian linear regression (stanreg): Reaction
 #> 
-#>  Variable                         │   B      SE        95% CI       p 
-#> ──────────────────────────────────┼───────────────────────────────────
-#>  (Intercept)                      │ 251.23  6.88  [237.54, 264.18]  – 
-#>  Days                             │  10.38  1.90  [  6.58,  13.95]  – 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                  │                                   
-#>    σ Subject (Intercept)          │  21.99  6.00  [ 12.68,  35.63]  – 
-#>    σ Subject Days                 │   6.53  1.47  [  4.37,  10.18]  – 
-#>    ρ Subject (Days × (Intercept)) │   0.11  0.29  [ -0.42,   0.70]  – 
-#>    σ (Residual)                   │  25.99  1.57  [ 23.14,  29.28]  – 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                                │ 180                               
+#>  Variable                         │   B      SE       95% CrI      
+#> ──────────────────────────────────┼────────────────────────────────
+#>  (Intercept)                      │ 251.23  6.88  [237.54, 264.18] 
+#>  Days                             │  10.38  1.90  [  6.58,  13.95] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                  │                                
+#>    σ Subject (Intercept)          │  21.99  6.00  [ 12.68,  35.63] 
+#>    σ Subject Days                 │   6.53  1.47  [  4.37,  10.18] 
+#>    ρ Subject (Days × (Intercept)) │   0.11  0.29  [ -0.42,   0.70] 
+#>    σ (Residual)                   │  25.99  1.57  [ 23.14,  29.28] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                │ 180                            
 #> 
 #> Note. Bayesian linear regression (stanreg).
 #> Std. errors: Posterior covariance.

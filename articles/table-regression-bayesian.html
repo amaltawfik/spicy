@@ -153,19 +153,19 @@ scarcest (Vehtari et al. 2021).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian logistic regression (stanreg): smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE       95% CI      p </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11  0.28  [-1.66, -0.55]  – </span></span>
-<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                  </span></span>
-<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –          –         – </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04  0.15  [-0.34,  0.25]  – </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01  0.00  [-0.00,  0.02]  – </span></span>
-<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                  </span></span>
-<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –         – </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49  0.17  [-0.81, -0.16]  – </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  0.19  [-1.31, -0.56]  – </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                             </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE      95% CrI     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11  0.28  [-1.66, -0.55] </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                               </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –          –        </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04  0.15  [-0.34,  0.25] </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01  0.00  [-0.00,  0.02] </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                               </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –        </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49  0.17  [-0.81, -0.16] </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  0.19  [-1.31, -0.56] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                          </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Posterior covariance.</span></span></span></code></pre></div>
@@ -182,28 +182,30 @@ sample size the two are nearly identical.</li>
 footer says so (<code>Std. errors: Posterior covariance.</code>) rather
 than borrowing the frequentist term.</li>
 <li>
-<strong>The interval is a credible interval</strong> (CrI): the
-equal-tailed 2.5% and 97.5% posterior quantiles. Its reading is the
-direct probability statement that confidence intervals are so often
-misread as making: <em>given model, priors, and data, the coefficient
-lies in [-1.31, -0.56] with 95% probability</em> (the
-<code>Tertiary</code> row). No appeal to repeated sampling is
-required.</li>
+<strong>The interval is a credible interval</strong>, and the header
+says so: <code>95% CrI</code>, the equal-tailed 2.5% and 97.5% posterior
+quantiles. Its reading is the direct probability statement that
+confidence intervals are so often misread as making: <em>given model,
+priors, and data, the coefficient lies in [-1.31, -0.56] with 95%
+probability</em> (the <code>Tertiary</code> row). No appeal to repeated
+sampling is required.</li>
 <li>
-<strong>The p column is a dash, by design.</strong> A posterior has
-no p-value, and the Bayesian Analysis Reporting Guidelines (Kruschke
-2021) ask that any decision rule be stated explicitly and kept separate
-from the posterior summary itself — so the table reports the posterior
-and leaves decisions to the reader. The closest posterior summary — the
-<strong>probability of direction</strong> (<code>pd</code>, the share of
-draws on the dominant side of zero; Makowski et al. 2019) — is
-opt-in:</li>
+<strong>There is no p column, by design.</strong> A posterior has no
+p-value, and the Bayesian Analysis Reporting Guidelines (Kruschke 2021)
+ask that any decision rule be stated explicitly and kept separate from
+the posterior summary itself — so the default table reports the
+posterior and leaves decisions to the reader (requesting
+<code>"p"</code> explicitly is refused; in a mixed frequentist–Bayesian
+table the shared p column simply dashes the Bayesian rows). The closest
+posterior summary — the <strong>probability of direction</strong>
+(<code>pd</code>, the share of draws on the dominant side of zero;
+Makowski et al. 2019) — is opt-in:</li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"pd"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian logistic regression (stanreg): smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B         95% CI       pd  </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B        95% CrI       pd  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11  [-1.66, -0.55]  1.00 </span></span>
 <span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                               </span></span>
@@ -319,19 +321,19 @@ the interval and never to reconstruct one as B ± 2 SE:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian logistic regression (stanreg): smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>   OR      SE      95% CI     p </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>    0.33  0.09  [0.19, 0.57]  – </span></span>
-<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –         –        – </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    0.96  0.14  [0.71, 1.28]  – </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    1.01  0.00  [1.00, 1.02]  – </span></span>
-<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –         –        – </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>    0.61  0.10  [0.44, 0.85]  – </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>    0.40  0.08  [0.27, 0.57]  – </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                           </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>   OR      SE     95% CrI    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼─────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>    0.33  0.09  [0.19, 0.57] </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                             </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –         –       </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    0.96  0.14  [0.71, 1.28] </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    1.01  0.00  [1.00, 1.02] </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                             </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –         –       </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>    0.61  0.10  [0.44, 0.85] </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>    0.40  0.08  [0.27, 0.57] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Posterior covariance.</span></span></span>
@@ -382,8 +384,10 @@ reader:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Posterior covariance</span></span></span></code></pre></div>
 <p>The intervals differ in <em>reading</em>, not much in width: the
 frequentist column’s CI is a coverage statement about the procedure, the
-Bayesian column’s CrI a probability statement about the parameter. In
-the fit-statistics block, <code>n</code> fills both columns, but the
+Bayesian column’s CrI a probability statement about the parameter (the
+shared header stays <code>95% CI</code> here — the honest common label;
+the all-Bayesian table above shows <code>95% CrI</code>). In the
+fit-statistics block, <code>n</code> fills both columns, but the
 likelihood-based rows — the two pseudo-R² and AIC — fill only the
 frequentist one, because a posterior has none of them. Which brings us
 to what the table refuses.</p>
@@ -439,18 +443,18 @@ quantile never encounters:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">mfit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian linear regression (stanreg): Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                         <span style="color: #9E9E9E;">│</span>   B      SE        95% CI       p </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────────────┼───────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                      <span style="color: #9E9E9E;">│</span> 251.23  6.88  [237.54, 264.18]  – </span></span>
-<span><span class="co">#&gt;  Days                             <span style="color: #9E9E9E;">│</span>  10.38  1.90  [  6.58,  13.95]  – </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:                  <span style="color: #9E9E9E;">│</span>                                   </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)          <span style="color: #9E9E9E;">│</span>  21.99  6.00  [ 12.68,  35.63]  – </span></span>
-<span><span class="co">#&gt;    σ Subject Days                 <span style="color: #9E9E9E;">│</span>   6.53  1.47  [  4.37,  10.18]  – </span></span>
-<span><span class="co">#&gt;    ρ Subject (Days × (Intercept)) <span style="color: #9E9E9E;">│</span>   0.11  0.29  [ -0.42,   0.70]  – </span></span>
-<span><span class="co">#&gt;    σ (Residual)                   <span style="color: #9E9E9E;">│</span>  25.99  1.57  [ 23.14,  29.28]  – </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                                <span style="color: #9E9E9E;">│</span> 180                               </span></span>
+<span><span class="co">#&gt;  Variable                         <span style="color: #9E9E9E;">│</span>   B      SE       95% CrI      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────────────┼────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                      <span style="color: #9E9E9E;">│</span> 251.23  6.88  [237.54, 264.18] </span></span>
+<span><span class="co">#&gt;  Days                             <span style="color: #9E9E9E;">│</span>  10.38  1.90  [  6.58,  13.95] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:                  <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)          <span style="color: #9E9E9E;">│</span>  21.99  6.00  [ 12.68,  35.63] </span></span>
+<span><span class="co">#&gt;    σ Subject Days                 <span style="color: #9E9E9E;">│</span>   6.53  1.47  [  4.37,  10.18] </span></span>
+<span><span class="co">#&gt;    ρ Subject (Days × (Intercept)) <span style="color: #9E9E9E;">│</span>   0.11  0.29  [ -0.42,   0.70] </span></span>
+<span><span class="co">#&gt;    σ (Residual)                   <span style="color: #9E9E9E;">│</span>  25.99  1.57  [ 23.14,  29.28] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                                <span style="color: #9E9E9E;">│</span> 180                            </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian linear regression (stanreg).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Posterior covariance.</span></span></span>
@@ -677,7 +681,7 @@ div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
-<td colspan="6" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">
+<td colspan="5" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">
 Bayesian logistic regression (stanreg): smoking
 </td>
 </tr>
@@ -702,11 +706,6 @@ SE
 95% CI
 </div>
 </th>
-<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; text-align: center; font-weight: normal;" scope="col" id="col_span_6_p">
-<div class="gt_column_spanner">
-p
-</div>
-</th>
 </tr>
 <tr class="gt_col_headings">
 <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: left; font-weight: normal;" scope="col" id="Variable">
@@ -715,13 +714,11 @@ p
 </th>
 <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="SE">
 </th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="a95%-CI:-LL">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="a95%-CrI:-LL">
 LL
 </th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="a95%-CI:-UL">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: #333333; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="a95%-CrI:-UL">
 UL
-</th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333; text-align: center; font-weight: normal;" scope="col" id="p">
 </th>
 </tr>
 </thead>
@@ -736,13 +733,11 @@ UL
 <td headers="SE" class="gt_row gt_center">
 0.09
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 0.19
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 0.57
-</td>
-<td headers="p" class="gt_row gt_center">
 </td>
 </tr>
 <tr>
@@ -753,11 +748,9 @@ sex:
 </td>
 <td headers="SE" class="gt_row gt_center">
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
-</td>
-<td headers="p" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 </td>
 </tr>
 <tr>
@@ -770,14 +763,11 @@ Female (ref.)
 <td headers="SE" class="gt_row gt_center">
 –   
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 –   
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 –   
-</td>
-<td headers="p" class="gt_row gt_center">
-–
 </td>
 </tr>
 <tr>
@@ -790,13 +780,11 @@ Male
 <td headers="SE" class="gt_row gt_center">
 0.14
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 0.71
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 1.28
-</td>
-<td headers="p" class="gt_row gt_center">
 </td>
 </tr>
 <tr>
@@ -809,13 +797,11 @@ age
 <td headers="SE" class="gt_row gt_center">
 0.00
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 1.00
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 1.02
-</td>
-<td headers="p" class="gt_row gt_center">
 </td>
 </tr>
 <tr>
@@ -826,11 +812,9 @@ education:
 </td>
 <td headers="SE" class="gt_row gt_center">
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
-</td>
-<td headers="p" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 </td>
 </tr>
 <tr>
@@ -843,14 +827,11 @@ Lower secondary (ref.)
 <td headers="SE" class="gt_row gt_center">
 –   
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 –   
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 –   
-</td>
-<td headers="p" class="gt_row gt_center">
-–
 </td>
 </tr>
 <tr>
@@ -863,13 +844,11 @@ Upper secondary
 <td headers="SE" class="gt_row gt_center">
 0.10
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center">
+<td headers="95% CrI: LL" class="gt_row gt_center">
 0.44
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center">
+<td headers="95% CrI: UL" class="gt_row gt_center">
 0.85
-</td>
-<td headers="p" class="gt_row gt_center">
 </td>
 </tr>
 <tr>
@@ -882,13 +861,11 @@ Tertiary
 <td headers="SE" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
 0.08
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+<td headers="95% CrI: LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
 0.27
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+<td headers="95% CrI: UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
 0.57
-</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc;">
 </td>
 </tr>
 <tr>
@@ -900,11 +877,9 @@ n
 </td>
 <td headers="SE" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 </td>
-<td headers="95% CI: LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+<td headers="95% CrI: LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 </td>
-<td headers="95% CI: UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
-</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
+<td headers="95% CrI: UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 </td>
 </tr>
 </tbody>
