@@ -176,6 +176,11 @@ rendering an empty column.
   pseudo-R² (as the other categorical families do). The tokens were
   silently dropped from `show_fit_stats` before, and a weighted fit's
   null log-likelihood ignored the weights.
+* All-Bayesian tables drop the p column from the defaults (a dash
+  column carries no information), refuse an explicit `"p"` / `"t"`
+  request, expand the `"all_b*"` presets without them, and label the
+  interval header `95% CrI`. Mixed frequentist + Bayesian tables
+  keep the shared `95% CI` label and dash the Bayesian p cells.
 * Bayesian tables gain the `"pd"` column (`show_columns`): the
   posterior probability of direction, the reporting-guideline-aligned
   reading of "is there an effect" -- computed at extraction since

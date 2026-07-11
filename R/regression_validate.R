@@ -722,6 +722,25 @@ validate_class_appropriate_tokens <- function(models,
     }
   }
 
+  # p / t on an all-Bayesian table: there is nothing to fill the
+  # column with (a dash column carries no information). Group tokens
+  # ("all_b", ...) expand WITHOUT p for Bayesian fits, so reaching
+  # here means the user typed the atomic token.
+  all_bayes_cols <- length(models) > 0L &&
+    all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+  if (all_bayes_cols && any(c("p", "t") %in% show_columns)) {
+    spicy_abort(
+      c(paste0("Token(s) ",
+               paste(shQuote(intersect(c("p", "t"), show_columns)),
+                     collapse = ", "),
+               " in `show_columns` are not defined for Bayesian fits."),
+        "i" = paste0("A posterior has no p-value or t-statistic. The ",
+                     "probability of direction (`\"pd\"`) is the ",
+                     "closest posterior summary.")),
+      class = "spicy_invalid_input"
+    )
+  }
+
   # Probability of direction: defined only for Bayesian fits (the
   # frames of every other class carry no draws to compute it from).
   if ("pd" %in% show_columns) {
@@ -939,7 +958,7 @@ validate_show_fit_stats <- function(show_fit_stats) {
 # before validation so the rest of the pipeline sees only atomic
 # tokens. Emits a migration error for legacy uppercase tokens from
 # spicy <= 0.11 (`"B"`, `"AME"`, ...) pointing at the new name.
-expand_show_columns <- function(tokens) {
+expand_show_columns <- function(tokens, bayesian = FALSE) {
   if (is.null(tokens) || length(tokens) == 0L) return(tokens)
   tokens <- as.character(tokens)
   # Migration error: uppercase legacy tokens.
@@ -970,7 +989,13 @@ expand_show_columns <- function(tokens) {
     for (i in seq_along(tokens)) {
       tok <- tokens[i]
       if (tok %in% names(.show_columns_groups)) {
-        expanded[[i]] <- .show_columns_groups[[tok]]
+        grp <- .show_columns_groups[[tok]]
+        # All-Bayesian tables have no p-values or t-statistics: the
+        # group presets expand WITHOUT them (BARG default: estimate +
+        # credible interval). An explicitly typed atomic "p" still
+        # hard-errors downstream.
+        if (isTRUE(bayesian)) grp <- setdiff(grp, c("p", "t"))
+        expanded[[i]] <- grp
       } else {
         expanded[[i]] <- tok
       }

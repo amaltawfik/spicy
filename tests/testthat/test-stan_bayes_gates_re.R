@@ -99,3 +99,34 @@ test_that("the pd token renders the probability of direction (finding d)", {
     class = "spicy_invalid_input"
   )
 })
+
+
+test_that("all-Bayesian defaults drop p and label the interval CrI", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    am ~ wt, data = mtcars, family = binomial(),
+    iter = 400, chains = 1, refresh = 0, seed = 1
+  ))
+  out <- paste(capture.output(print(table_regression(fit))),
+               collapse = "\n")
+  expect_match(out, "95% CrI", fixed = TRUE)
+  # No p column in the header (the footer's "p" in "Posterior" aside).
+  header <- capture.output(print(table_regression(fit)))[3]
+  expect_false(grepl("\bp\b", header))
+  # Explicit atomic p refused; the all_b preset expands without it.
+  expect_error(
+    table_regression(fit, show_columns = c("b", "ci", "p")),
+    class = "spicy_invalid_input"
+  )
+  h2 <- capture.output(print(table_regression(fit,
+                                              show_columns = "all_b")))[3]
+  expect_false(grepl("\bp\b", h2))
+  # Mixed-class tables keep the shared CI label and the p column.
+  gf <- glm(am ~ wt, data = mtcars, family = binomial)
+  outm <- paste(capture.output(print(table_regression(
+    list(G = gf, B = fit), show_columns = c("b", "ci", "p")
+  ))), collapse = "\n")
+  expect_match(outm, "95% CI", fixed = TRUE)
+  expect_false(grepl("95% CrI", outm, fixed = TRUE))
+})

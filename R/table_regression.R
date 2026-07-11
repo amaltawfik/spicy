@@ -1347,7 +1347,10 @@ table_regression <- function(
   # tokens before validation; also raises an actionable migration
   # error if a legacy uppercase token (`"B"`, `"AME"`, ...) slips
   # through from < 0.12 code.
-  show_columns <- expand_show_columns(show_columns)
+  all_bayes_models <- length(models) > 0L &&
+    all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+  show_columns <- expand_show_columns(show_columns,
+                                      bayesian = all_bayes_models)
 
   # Phase C -- vocabulary tokens (steps 9-12). validate_show_columns
   # also rejects "beta" combined with `standardized = "none"` (Q3).
@@ -2404,6 +2407,13 @@ table_regression <- function(
   } else {
     NULL  # render_regression_table generates "Model 1", ... as fallback
   }
+  # "95% CrI" header when EVERY frame is a posterior-quantile interval
+  # (the design promise in regression_frame_stan.R): mixed
+  # frequentist + Bayesian tables keep the shared "CI" label.
+  ci_label_val <- if (length(frames) > 0L &&
+                        all(vapply(frames, function(f) {
+                          identical(f$info$ci_method, "posterior_quantile")
+                        }, logical(1)))) "CrI" else "CI"
   rendered <- render_regression_table(
     aligned,
     show_columns = show_columns,
@@ -2414,6 +2424,7 @@ table_regression <- function(
     factor_layout = factor_layout,
     stars = stars,
     ci_level = ci_level,
+    ci_label = ci_label_val,
     digits = digits,
     p_digits = p_digits,
     effect_size_digits = effect_size_digits,

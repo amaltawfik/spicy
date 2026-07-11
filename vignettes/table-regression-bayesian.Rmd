@@ -89,17 +89,19 @@ Reading the columns against their frequentist counterparts:
 * **SE is the posterior standard deviation**, and the footer says so
   (`Std. errors: Posterior covariance.`) rather than borrowing the
   frequentist term.
-* **The interval is a credible interval** (CrI): the equal-tailed
-  2.5% and 97.5% posterior quantiles. Its reading is the direct
+* **The interval is a credible interval**, and the header says so:
+  `95% CrI`, the equal-tailed 2.5% and 97.5% posterior quantiles. Its reading is the direct
   probability statement that confidence intervals are so often
   misread as making: *given model, priors, and data, the coefficient
   lies in [-1.31, -0.56] with 95% probability* (the `Tertiary` row).
   No appeal to repeated sampling is required.
-* **The p column is a dash, by design.** A posterior has no p-value,
+* **There is no p column, by design.** A posterior has no p-value,
   and the Bayesian Analysis Reporting Guidelines (Kruschke 2021) ask
   that any decision rule be stated explicitly and kept separate from
-  the posterior summary itself — so the table reports the posterior
-  and leaves decisions to the reader. The closest posterior summary —
+  the posterior summary itself — so the default table reports the
+  posterior and leaves decisions to the reader (requesting `"p"`
+  explicitly is refused; in a mixed frequentist–Bayesian table the
+  shared p column simply dashes the Bayesian rows). The closest posterior summary —
   the **probability of direction** (`pd`, the share of draws on the
   dominant side of zero; Makowski et al. 2019) — is opt-in:
 
@@ -210,7 +212,9 @@ table_regression(list("ML (glm)" = gf, "Bayes (stan_glm)" = fit),
 
 The intervals differ in *reading*, not much in width: the frequentist
 column's CI is a coverage statement about the procedure, the Bayesian
-column's CrI a probability statement about the parameter. In the
+column's CrI a probability statement about the parameter (the
+shared header stays `95% CI` here — the honest common label; the
+all-Bayesian table above shows `95% CrI`). In the
 fit-statistics block, `n` fills both columns, but the
 likelihood-based rows — the two pseudo-R² and AIC — fill only the
 frequentist one, because a posterior has none of them. Which brings

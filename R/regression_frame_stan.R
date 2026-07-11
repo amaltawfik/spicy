@@ -357,7 +357,11 @@ as_regression_frame.brmsfit <- function(fit,
   dv  <- .stan_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
-  if (is.null(ci_method)) ci_method <- "posterior_quantile"
+  # The Bayesian interval IS the equal-tailed posterior quantile pair,
+  # whatever ci_method the orchestrator's frequentist default carried:
+  # say so unconditionally, truthfully -- this also drives the
+  # "95% CrI" column header.
+  ci_method <- "posterior_quantile"
 
   fit_stats <- list(
     r_squared     = NA_real_,

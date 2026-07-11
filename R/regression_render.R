@@ -64,6 +64,7 @@ render_regression_table <- function(
     factor_layout = c("grouped", "flat"),
     stars = FALSE,
     ci_level = 0.95,
+    ci_label = "CI",
     digits = 2L,
     p_digits = 3L,
     effect_size_digits = 2L,
@@ -178,6 +179,7 @@ render_regression_table <- function(
   col_spec <- build_column_spec(
     show_columns, model_ids, label_map,
     ci_level = ci_level,
+    ci_label = ci_label,
     model_exp_headers = aligned$exp_headers_auto,
     model_stat_headers = aligned$stat_headers_auto,
     ame_categories = ame_cats_by_model,
@@ -470,6 +472,7 @@ build_model_spanners <- function(body, col_spec, label_map) {
 # `label_map`     : named character vector mapping model_id \u2192 label
 build_column_spec <- function(show_columns, model_ids, label_map,
                               ci_level = 0.95,
+                              ci_label = "CI",
                               model_exp_headers = NULL,
                               model_stat_headers = NULL,
                               ame_categories = NULL,
@@ -491,7 +494,7 @@ build_column_spec <- function(show_columns, model_ids, label_map,
       model_ids
     )
   }
-  ci_hdr <- paste0(ci_pct, "% CI")
+  ci_hdr <- paste0(ci_pct, "% ", ci_label)
   base <- list(
     # B-coefficient family \u2013 atomic, one cell = one component.
     # Per-row N: the fit sample size, shown on the first row of a
