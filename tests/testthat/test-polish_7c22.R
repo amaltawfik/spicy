@@ -93,7 +93,7 @@ test_that("Deviance fit-stat uses ic_digits (1 decimal by default)", {
 test_that("Deviance precision matches AIC / BIC precision (ic_digits)", {
   fit <- glm(am ~ mpg + cyl, data = mtcars, family = binomial)
   out <- capture.output(print(
-    table_regression(fit, show_fit_stats = c("AIC", "deviance"),
+    table_regression(fit, show_fit_stats = c("aic", "deviance"),
                       ic_digits = 3L)
   ))
   combined <- paste(out, collapse = "\n")

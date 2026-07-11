@@ -86,7 +86,7 @@ build_regression_footer_from_frames <- function(
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
-    build_ci_method_footer_block_from_frames(frames),
+    build_ci_method_footer_block_from_frames(frames, show_columns),
     build_mixed_inference_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(frames,
                                                    show_re = show_re,
@@ -113,6 +113,8 @@ build_regression_footer_from_frames <- function(
     build_reference_outcome_footer_block_from_frames(frames),
     build_reference_alternative_footer_block_from_frames(frames),
     build_uv_disclosure_footer_block_from_frames(frames),
+    build_loo_footer_block_from_frames(frames),
+    build_stan_convergence_footer_block_from_frames(frames),
     build_reference_categories_footer_block_from_frames(frames_display,
                                                         reference_style),
     build_nested_footer_block(nested)
@@ -277,18 +279,22 @@ build_vcov_footer_block_from_frames <- function(frames) {
 # ACTUALLY profile: ci_method == "profile" under a model-based vcov -- a robust
 # vcov takes precedence (its Wald-robust CIs are used, no note). The validator
 # guarantees ci_method == "profile" reaches only glm / polr / clm.
-build_ci_method_footer_block_from_frames <- function(frames) {
+build_ci_method_footer_block_from_frames <- function(frames,
+                                                     show_columns = character(0)) {
   if (!is.list(frames) || length(frames) == 0L) return(NULL)
   .pct <- function(idx) {
     lvl <- frames[[idx]]$info$ci_level %||% 0.95
     sub("\\.0$", "", format(round(100 * lvl, 1), nsmall = 0))
   }
+  lines <- character(0)
   is_profile <- vapply(frames, function(f) {
     identical(f$info$ci_method, "profile") &&
       (f$info$vcov_kind %||% "model") %in% c("model", "classical")
   }, logical(1))
   if (any(is_profile)) {
-    return(paste0(.pct(which(is_profile)[1]), "% CIs: profile likelihood."))
+    lines <- c(lines,
+               paste0(.pct(which(is_profile)[1]),
+                      "% CIs: profile likelihood."))
   }
   # Percentile bootstrap CIs (G5): a CI-only refinement of the bootstrap
   # replicates; the replicate count already sits on the Std. errors line.
@@ -297,9 +303,31 @@ build_ci_method_footer_block_from_frames <- function(frames) {
       identical(f$info$vcov_kind, "bootstrap")
   }, logical(1))
   if (any(is_bperc)) {
-    return(paste0(.pct(which(is_bperc)[1]), "% CIs: bootstrap percentile."))
+    lines <- c(lines,
+               paste0(.pct(which(is_bperc)[1]),
+                      "% CIs: bootstrap percentile."))
   }
-  NULL
+  # Bayesian credible intervals in a MIXED table: the shared column
+  # header stays "95% CI" (only all-posterior tables relabel to
+  # "CrI" / "HDI"), so the Bayesian models' intervals are disclosed
+  # per model here -- composing with, not suppressing, the profile /
+  # bootstrap lines of the frequentist models above. Gated on the ci
+  # column actually being displayed (the compact multi-model default
+  # shows none): the publication table stays lean. (posterior_hdi
+  # cannot appear in a mixed table: the hdi gate is all-Bayesian.)
+  is_post <- vapply(frames, function(f) {
+    (f$info$ci_method %||% "") %in%
+      c("posterior_quantile", "posterior_hdi")
+  }, logical(1))
+  if (any(c("ci", "ame_ci") %in% show_columns) &&
+      any(is_post) && !all(is_post)) {
+    lines <- c(lines, vapply(which(is_post), function(k) {
+      sprintf(paste0("Model %d: %s%% CI is an equal-tailed posterior ",
+                     "credible interval."), k, .pct(k))
+    }, character(1)))
+  }
+  if (length(lines) == 0L) return(NULL)
+  paste(lines, collapse = "\n")
 }
 
 
@@ -368,6 +396,15 @@ build_abbreviations_footer_block_from_frames <- function(show_columns,
   }
   if ("partial_chi2" %in% show_columns) {
     defs <- c(defs, "\u03C7\u00B2 = partial likelihood-ratio chi-squared")
+  }
+  if ("pd" %in% show_columns) {
+    # The definition travels WITH the table (BARG: a rendered artifact
+    # must be self-describing); the p-value-correspondence caveat is
+    # reader pedagogy and stays in the vignette.
+    defs <- c(defs,
+              paste0("pd = probability of direction (share of the ",
+                     "posterior on the dominant side of zero; Makowski ",
+                     "et al. 2019)"))
   }
 
   if (length(defs) == 0L) return(NULL)
@@ -1334,31 +1371,56 @@ build_exponentiate_footer_block_from_frames <- function(
             paste(sprintf("Model %d", which(applied)), collapse = ", "))
   }
 
+  # Bayesian frames exponentiate the DRAWS (SE = posterior MAD SD of
+  # exp(draws), exact) rather than crossing scales by the delta
+  # method, and under ci_method = "hdi" the interval is recomputed on
+  # the exponentiated draws rather than transformed -- the gloss must
+  # say which mechanism produced the displayed numbers.
+  is_bayes_f <- vapply(frames, function(f) {
+    !is.null(f$info$extras$posterior_engine)
+  }, logical(1))
+  bayes_applied <- is_bayes_f & applied
+  se_gloss <- if (all(is_bayes_f[applied])) {
+    "posterior MAD SD of the exponentiated draws"
+  } else if (any(bayes_applied)) {
+    paste0("delta method; posterior MAD SD of the exponentiated ",
+           "draws for the Bayesian model(s)")
+  } else {
+    "delta method"
+  }
+  any_hdi <- any(vapply(frames[applied], function(f) {
+    identical(f$info$ci_method, "posterior_hdi")
+  }, logical(1)))
+  ci_gloss <- if (any_hdi) {
+    "CI: highest-density interval of the exponentiated draws"
+  } else {
+    "CI bounds exponentiated"
+  }
+
   if ("se" %in% show_columns) {
     if (length(hdrs) == 1L) {
       return(sprintf(
         paste0("%s exponentiated and displayed as %s; SE on the %s scale ",
-               "(delta method); CI bounds exponentiated (asymmetric)."),
-        scope, hdrs[1L], hdrs[1L]
+               "(%s); %s (asymmetric)."),
+        scope, hdrs[1L], hdrs[1L], se_gloss, ci_gloss
       ))
     }
     return(sprintf(
       paste0("%s exponentiated and displayed as %s (per family); SE on ",
-             "the displayed ratio scale (delta method); CI bounds ",
-             "exponentiated (asymmetric)."),
-      scope, paste(hdrs, collapse = " / ")
+             "the displayed ratio scale (%s); %s (asymmetric)."),
+      scope, paste(hdrs, collapse = " / "), se_gloss, ci_gloss
     ))
   }
 
   if (length(hdrs) == 1L) {
     return(sprintf(
-      "%s exponentiated and displayed as %s; CI bounds exponentiated.",
-      scope, hdrs[1L]
+      "%s exponentiated and displayed as %s; %s.",
+      scope, hdrs[1L], ci_gloss
     ))
   }
   sprintf(
-    "%s exponentiated and displayed as %s (per family); CI bounds exponentiated.",
-    scope, paste(hdrs, collapse = " / ")
+    "%s exponentiated and displayed as %s (per family); %s.",
+    scope, paste(hdrs, collapse = " / "), ci_gloss
   )
 }
 
@@ -1604,4 +1666,48 @@ build_scale_effects_footer_block_from_frames <- function(frames) {
                     "is a ratio of latent SDs, not an odds ratio)")
   }
   paste0(gloss, ".")
+}
+
+
+# Footer note for the PSIS-LOO fit-stat rows: the elpd SE, without
+# which the ELPD / LOOIC rows cannot support a comparison judgment.
+# Same dedupe convention as the sibling builders.
+build_loo_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  notes <- vapply(frames, function(f) {
+    as.character(f$info$extras$loo_note %||% NA_character_)
+  }, character(1))
+  if (all(is.na(notes))) return(NULL)
+  affected <- which(!is.na(notes))
+  # The bare (unattributed) note is only honest when EVERY model in
+  # the table carries the same note: in a mixed frequentist+Bayesian
+  # table the SE(ELPD) and its reliability caveats are per-model
+  # facts and keep their "Model k:" prefix (same convention as the
+  # convergence and reference-outcome builders).
+  if (length(unique(notes[affected])) == 1L &&
+      length(affected) == length(notes)) {
+    return(notes[affected][1L])
+  }
+  paste(vapply(affected, function(k) {
+    sprintf("Model %d: %s", k, notes[k])
+  }, character(1)), collapse = "\n")
+}
+
+
+# Footer warning from the Bayesian convergence guard (max R-hat / min
+# ESS / divergent transitions past their Vehtari-et-al. targets). NULL
+# -- and therefore silent -- for clean posteriors.
+build_stan_convergence_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) return(NULL)
+  notes <- vapply(frames, function(f) {
+    as.character(f$info$extras$convergence_note %||% NA_character_)
+  }, character(1))
+  if (all(is.na(notes))) return(NULL)
+  affected <- which(!is.na(notes))
+  if (length(unique(notes[affected])) == 1L && length(affected) == length(notes)) {
+    return(notes[affected][1L])
+  }
+  paste(vapply(affected, function(k) {
+    sprintf("Model %d: %s", k, notes[k])
+  }, character(1)), collapse = "\n")
 }

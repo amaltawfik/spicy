@@ -202,14 +202,22 @@
 #' `fixest` fits report their fixed-effects structure in the footer.
 #'
 #' @section Bayesian models:
-#' Posterior median, posterior SD, and equal-tailed credible intervals;
-#' deliberately no p-value column and no stars. Multilevel fits
+#' Posterior median, posterior MAD SD, and equal-tailed credible
+#' intervals (`ci_method = "hdi"` opts into the highest-density
+#' interval); deliberately no p-value column and no stars -- the
+#' probability of direction (`"pd"`) is the opt-in posterior summary.
+#' A sampler-diagnostics guard checks every fit (R-hat, ESS,
+#' divergences, E-BFMI) and per-coefficient `"rhat"` / `"ess_bulk"` /
+#' `"ess_tail"` columns are available. Multilevel fits
 #' (`stan_glmer`, `brm` with grouping terms) report their random
 #' effects as a block -- posterior median SD and credible interval per
 #' component, from the draws -- with no likelihood-ratio line.
 #' `p_adjust` and likelihood-based fit-statistic tokens are refused
 #' (no p-values, no likelihood-based information criteria in a
-#' posterior); compare models with `loo::loo()` outside the table.
+#' posterior); `"r2_bayes"` is in the default fit statistics and
+#' `"elpd_loo"` / `"looic"` / `"waic"` are opt-in, with standard
+#' errors and reliability caveats in the footer; compare models with
+#' `loo::loo_compare()` outside the table.
 #'
 #' @return A data frame with one row per supported engine and columns
 #'   `family`, `class`, `engine`, `ame`, `exponentiate`, `blocks`.

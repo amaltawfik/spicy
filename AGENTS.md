@@ -104,6 +104,7 @@ air format .
 * For tabulation and printing code, prefer testing returned objects, columns, and attributes with `styled = FALSE`; only assert printed output when the formatting itself is the feature under test.
 * Cover optional dependency paths with either guarded tests or explicit expectations for the error message when the dependency is unavailable.
 * When fixing a bug, add a regression test that would have failed before the fix.
+* The Stan/brms tests (`test-regression_frame_stan.R`, `test-stan_bayes_gates_re.R`) never run on CI. Any change to the Bayesian coefs schema or the stan frame internals requires running them locally before pushing — a schema drift there ships silently otherwise.
 
 ## Documentation
 

@@ -20,6 +20,10 @@
 * Multi-model `show_columns = "all_b"` / `"all_ame"` auto-compact
   (CIs dropped); request atomic tokens to keep them.
 * `tidy()` labels AME rows `estimate_type = "ame"` (was `"AME"`).
+* The `show_fit_stats` information criteria are lowercase tokens like
+  everything else: `"aic"`, `"aicc"`, `"bic"` (was `"AIC"` / `"AICc"` /
+  `"BIC"`). Uppercase errors with the replacement; rendered row labels
+  are unchanged.
 * The SE footer reads `"classical (Fisher information)"` (was
   `"classical (MLE inverse Hessian)"`).
 
@@ -36,8 +40,20 @@ per-family behaviour, and the new vignettes for walk-throughs.
   without random effects. The test follows the fit's own estimator
   (REML or ML) and its full specification (prior weights, variance and
   correlation structures, zero-inflation).
-* Bayesian (`rstanarm`, `brms`): posterior median, SD, and equal-tailed
-  credible intervals; no p-values.
+* Bayesian (`rstanarm`, `brms`): posterior median, MAD SD, and
+  equal-tailed credible intervals (header `95% CrI`;
+  `ci_method = "hdi"` opts into the highest-density interval); no
+  p-values — the probability of direction is opt-in
+  (`show_columns = "pd"`). `R² (Bayes)` in the default fit statistics;
+  `"elpd_loo"` / `"looic"` / `"waic"` opt-in with their standard
+  errors in the footer and reliability caveats when the diagnostics
+  flag them. Every table runs a sampler-diagnostics guard (R-hat, ESS,
+  divergences, E-BFMI): problems add a footer line and a
+  `spicy_bayes_diagnostics` warning, and per-coefficient `"rhat"` /
+  `"ess_bulk"` / `"ess_tail"` columns are available. Under
+  `exponentiate = TRUE` all quantities come from the exponentiated
+  draws (no delta method). Variational / optimizing fits are refused
+  with a refit hint.
 * Survival (`survival::coxph` / `survreg`, `rms::cph`,
   `flexsurv::flexsurvreg`): Cox tables report `n` and `N events` as fit
   statistics and the concordance as a footer note.
@@ -176,6 +192,12 @@ rendering an empty column.
   pseudo-R² (as the other categorical families do). The tokens were
   silently dropped from `show_fit_stats` before, and a weighted fit's
   null log-likelihood ignored the weights.
+* Bayesian tables get their fit statistics: `"r2_bayes"` (the
+  posterior-median Bayesian R², now in the all-Bayesian default
+  block) and the opt-in `"elpd_loo"` / `"looic"` / `"waic"` tokens
+  (PSIS-LOO / Watanabe-Akaike; the footer discloses the elpd
+  standard error). Refused for frequentist fits; Bayes factors stay
+  out by design.
 * All-Bayesian tables drop the p column from the defaults (a dash
   column carries no information), refuse an explicit `"p"` / `"t"`
   request, expand the `"all_b*"` presets without them, and label the

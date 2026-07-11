@@ -60,6 +60,15 @@ spicy_abort <- function(
 #                               equivalent to lm, Menard pseudo-
 #                               standardisation requested on a non-
 #                               binomial family)
+#      |- spicy_bayes_diagnostics (a Bayesian fit's sampler or
+#                               predictive-accuracy diagnostics missed
+#                               their targets: R-hat / ESS / divergences /
+#                               E-BFMI guard, PSIS-LOO Pareto k, WAIC
+#                               p_waic. Nested under spicy_caveat so
+#                               generic caveat handlers still catch it,
+#                               while withCallingHandlers(
+#                               spicy_bayes_diagnostics = ...) can mute
+#                               this guard selectively)
 #   |- spicy_summary_failed    (varlist() could not summarize one
 #                               column; the rest of the table is fine)
 #   |- spicy_renamed_column    (a user data column or factor level

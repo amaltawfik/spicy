@@ -9,7 +9,7 @@ table_regression(
   vcov = "classical",
   cluster = NULL,
   ci_level = 0.95,
-  ci_method = c("wald", "profile", "boot_percentile"),
+  ci_method = c("wald", "profile", "boot_percentile", "hdi"),
   boot_n = 1000L,
   tau = NULL,
   at_time = NULL,
@@ -126,7 +126,17 @@ remain Wald from the bootstrap covariance -- the Stata convention
 \verb{estat bootstrap}). AME and standardized-beta CIs are not
 covered. With \code{exponentiate = TRUE} the percentile bounds are
 exponentiated (percentile intervals are
-transformation-respecting).}
+transformation-respecting).
+\code{"hdi"} (Bayesian \code{stanreg} / \code{brmsfit} fits only) replaces the
+default equal-tailed credible interval with the highest-density
+interval -- the shortest interval containing \code{ci_level} of the
+posterior draws (Kruschke 2015), relabelling the column header
+\verb{95\% HDI}. Unlike the equal-tailed interval the HDI is not
+transformation-invariant, so under \code{exponentiate = TRUE} it is
+recomputed on the exponentiated draws rather than transformed.
+Requesting \code{"hdi"} for a frequentist fit, or \code{"profile"} /
+\code{"boot_percentile"} for a Bayesian fit, raises
+\code{spicy_invalid_input}.}
 
 \item{boot_n}{Number of bootstrap replicates when
 \code{vcov = "bootstrap"}. Single positive integer. Default
@@ -197,7 +207,9 @@ adjustment} section for when this is and is not appropriate.}
 per-coefficient columns and their display order. Accepts
 \strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"},
 \code{"beta"}, \code{"n"}, \code{"n_events"}, \code{"pd"} (probability of
-direction, Bayesian fits only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
+direction, Bayesian fits only), \code{"rhat"} / \code{"ess_bulk"} /
+\code{"ess_tail"} (per-coefficient sampler diagnostics, all-Bayesian
+tables only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
 \code{"ame_p"}, \code{"rmst"} + \code{"rmst_se"} / \code{"rmst_ci"} / \code{"rmst_p"},
 \code{"risk_diff"} + its \verb{_se} / \verb{_ci} / \verb{_p} companions,
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
@@ -332,7 +344,7 @@ token order. \code{NULL} (default) resolves class-aware:
 \itemize{
 \item \code{lm}: \code{c("nobs", "r2", "adj_r2")}.
 \item \code{glm}, ordinal \code{polr} / \code{clm}:
-\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")} (McFadden = Stata \code{ologit} default,
+\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")} (McFadden = Stata \code{ologit} default,
 Nagelkerke = SPSS PLUM).
 \item mixed \code{lm} + \code{glm}: the union of the two (the
 renderer em-dashes per cell the stat not defined for a
@@ -791,13 +803,21 @@ field convention; blank for other classes).
 \code{"pseudo_r2_tjur"} (Tjur 2009; binomial only).
 \item Residual scale: \code{"sigma"} (lm \eqn{\hat{\sigma}}{sigma-hat}
 / glm dispersion), \code{"rmse"}.
+\item Bayesian fits only: \code{"r2_bayes"} (posterior-median
+Bayesian \eqn{R^2}{R^2}, Gelman et al. 2019 -- in the
+all-Bayesian default), \code{"elpd_loo"} and \code{"looic"} (PSIS-LOO
+expected log predictive density and its deviance-scale twin,
+Vehtari et al. 2017; opt-in, a few seconds per model; the
+footer discloses the elpd standard error), and \code{"waic"}
+(Watanabe-Akaike; PSIS-LOO is generally preferred).
 \item Negative-binomial dispersion (\code{MASS::glm.nb} only):
 \code{"theta"} (\eqn{V = \mu + \mu^2/	heta}{V = mu + mu^2/theta})
 and \code{"alpha"} (\eqn{= 1/	heta}{= 1/theta}, the Stata \code{nbreg}
 convention). Refused for other families.
 \item Effect size: \code{"f2"}.
-\item Information criteria: \code{"AIC"}, \code{"AICc"}, \code{"BIC"},
-\code{"deviance"}.
+\item Information criteria: \code{"aic"}, \code{"aicc"}, \code{"bic"},
+\code{"deviance"} (lowercase like every other token; the rendered
+row labels stay \code{AIC} / \code{AICc} / \code{BIC}).
 \item Change-stats for hierarchical comparison
 (active under \code{nested = TRUE}; see \emph{Hierarchical
 comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
@@ -808,10 +828,10 @@ comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
 
 Default (resolved when \code{NULL}) is class-aware: lm fits get
 \code{c("nobs", "r2", "adj_r2")}; glm and ordinal \code{polr} / \code{clm} fits get
-\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")};
+\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")};
 mixed lm + glm sets union both groups (the renderer per-row
 em-dashes the inappropriate cell); Cox fits get
-\code{c("nobs", "n_events", "AIC")}. When \code{nested = TRUE}, the
+\code{c("nobs", "n_events", "aic")}. When \code{nested = TRUE}, the
 class-aware default is extended with change tokens
 (\code{c("r2_change", "f_change", "p_change")} for lm,
 \code{c("lrt_change", "p_change")} for glm). The order of tokens in
@@ -968,6 +988,45 @@ choice, loops). Use \code{~region} or \code{"region"} instead.
 For multi-model use, mix forms freely:
 \code{cluster = list(~region, "region", df$region)}.
 }
+}
+
+\section{Bayesian fits (rstanarm / brms)}{
+\code{stanreg} and \code{brmsfit} models are summarized from their posterior
+draws: \code{B} is the posterior median, \code{SE} the posterior MAD SD (the
+scaled median absolute deviation -- the pairing of \emph{Regression and
+Other Stories} and rstanarm's own print; equal to the posterior SD
+for a normal posterior), and the interval an equal-tailed credible
+interval (header \verb{95\% CrI}; \code{ci_method = "hdi"} opts into the
+highest-density interval, header \verb{95\% HDI}). There is no p-value
+or t-statistic; group presets (\code{"all_b"}, ...) expand without
+them, and the opt-in \code{"pd"} column reports the probability of
+direction with a footer definition (Makowski et al. 2019). Under
+\code{exponentiate = TRUE} all quantities are computed from the
+exponentiated draws directly (the SE is the posterior MAD SD on
+the ratio scale, not a delta-method approximation).
+
+Fit statistics: \code{"r2_bayes"} (in the Bayesian default) plus the
+opt-in \code{"elpd_loo"} / \code{"looic"} / \code{"waic"}, whose standard errors
+are disclosed in the footer; unreliable estimates (PSIS-LOO Pareto
+k > 0.7, WAIC p_waic > 0.4) add a footer caveat instead of being
+silenced. Every table is backed by an automatic sampler-diagnostics
+guard (R-hat >= 1.01, ESS below 100 per chain, divergent
+transitions, E-BFMI < 0.2, per Vehtari et al. 2021): problems add
+a footer line and raise a warning classed
+\code{spicy_bayes_diagnostics} (nested under \code{spicy_caveat}, so
+\code{withCallingHandlers(spicy_bayes_diagnostics = ...)} mutes the
+guard selectively); clean fits print nothing. Per-coefficient
+\code{"rhat"} / \code{"ess_bulk"} / \code{"ess_tail"} columns are available in
+all-Bayesian tables.
+
+Refused on principle (classed error, never a silent fallback):
+likelihood-based fit statistics (\code{"aic"}, pseudo-R², ...),
+\code{p_adjust}, robust / cluster \code{vcov} (model the clustering with
+group-level terms instead), \code{ci_method = "profile"} /
+\code{"boot_percentile"}, and non-MCMC fits
+(\code{algorithm = "meanfield"} / \code{"optimizing"} -- refit with
+\code{algorithm = "sampling"}). See
+\code{vignette("table-regression-bayesian")}.
 }
 
 \section{Hierarchical (nested) model comparison}{

@@ -345,6 +345,10 @@ as_regression_frame.glm <- function(fit, ...) {
     pseudo_r2_mcfadden   = .scalar_or_na(fs$pseudo_r2_mcfadden),
     theta                = .scalar_or_na(fs$theta),
     alpha                = .scalar_or_na(fs$alpha),
+    r2_bayes             = .scalar_or_na(fs$r2_bayes),
+    elpd_loo             = .scalar_or_na(fs$elpd_loo),
+    looic                = .scalar_or_na(fs$looic),
+    waic                 = .scalar_or_na(fs$waic),
     pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
     pseudo_r2_tjur       = .scalar_or_na(fs$pseudo_r2_tjur),
     r2_marginal          = .scalar_or_na(fs$r2_marginal),
@@ -367,9 +371,9 @@ as_regression_frame.glm <- function(fit, ...) {
     sigma                = .scalar_or_na(fs$sigma),
     rmse                 = .scalar_or_na(fs$rmse),
     f2                   = .scalar_or_na(fs$f2),
-    AIC                  = .scalar_or_na(fs$AIC %||% fs$aic),
-    AICc                 = .scalar_or_na(fs$AICc),
-    BIC                  = .scalar_or_na(fs$BIC %||% fs$bic),
+    aic                  = .scalar_or_na(fs$AIC %||% fs$aic),
+    aicc                 = .scalar_or_na(fs$AICc %||% fs$aicc),
+    bic                  = .scalar_or_na(fs$BIC %||% fs$bic),
     deviance             = .scalar_or_na(fs$deviance),
     df_residual          = .scalar_or_na(fs$df_residual)
   )

@@ -128,9 +128,11 @@ glance.spicy_regression_table <- function(x, ...) {
     sigma          = fs$sigma,
     rmse           = fs$rmse,
     f2             = fs$f2,
-    AIC            = fs$AIC,
-    AICc           = fs$AICc,
-    BIC            = fs$BIC,
+    # broom's glance() convention keeps the UPPERCASE column names;
+    # the source columns follow the lowercase 0.13 token schema.
+    AIC            = fs$aic,
+    AICc           = fs$aicc,
+    BIC            = fs$bic,
     deviance       = fs$deviance,
     # df.residual kept numeric -- see file header.
     df.residual    = as.numeric(fs$df_residual),

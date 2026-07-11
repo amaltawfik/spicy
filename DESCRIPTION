@@ -74,6 +74,8 @@ Suggests:
     posterior (>= 1.5.0),
     rstanarm (>= 2.21),
     brms (>= 2.20),
+    loo (>= 2.6),
+    rstan,
     survey (>= 4.4),
     survival (>= 3.5),
     officer,

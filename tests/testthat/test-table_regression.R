@@ -517,7 +517,7 @@ test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit,
                           show_fit_stats = c("nobs", "omega2",
-                                              "sigma", "AIC"))
+                                              "sigma", "aic"))
   expect_true("ω²" %in% out$Variable)
   expect_true("σ̂" %in% out$Variable)
   expect_true("AIC" %in% out$Variable)

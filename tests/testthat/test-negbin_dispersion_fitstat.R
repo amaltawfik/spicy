@@ -13,7 +13,7 @@ test_that("theta and alpha render with the fit's own values", {
   skip_if_not_installed("pscl")
   fit <- .nb_fit()
   out <- paste(capture.output(print(table_regression(
-    fit, show_fit_stats = c("nobs", "theta", "alpha", "AIC")
+    fit, show_fit_stats = c("nobs", "theta", "alpha", "aic")
   ))), collapse = "\n")
   expect_match(out, "θ (dispersion)", fixed = TRUE)
   expect_match(out, "α (= 1/θ)", fixed = TRUE)

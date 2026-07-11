@@ -38,10 +38,25 @@ as_regression_frame.stanreg <- function(fit,
                                          vcov_label = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
+                                         exponentiate = FALSE,
                                          model_id = "M1",
+                                         show_fit_stats = NULL,
                                          ...) {
   .check_posterior_available()
   .check_rstanarm_available()
+  .check_stan_sampling_algorithm(fit, "stanreg")
+
+  fam <- .stan_family(fit)
+  use_hdi <- identical(ci_method, "hdi")
+  # Draws-native exponentiation (self-applied, like the merMod /
+  # survival frames): the central delta-method path understates the
+  # ratio-scale spread severalfold when the draws are at hand. Same
+  # link gate as .apply_exp_to_frame(), which then no-ops on
+  # exp_applied = TRUE.
+  exp_self <- isTRUE(exponentiate) && !identical(fam$link, "identity")
+  if (exp_self) {
+    .assert_exp_link_ok(fam$family, fam$link, model_id = model_id)
+  }
 
   # rstanarm uses raw coefficient names (no `b_` prefix). `fit$coefficients`
   # is the fixed-effect coefficient summary; its names define the
@@ -55,7 +70,8 @@ as_regression_frame.stanreg <- function(fit,
   coef_names <- coef_names[!grepl("^b\\[", coef_names)]
 
   coefs <- .stan_coefs(fit, coef_names, ci_level = ci_level,
-                        brms_b_prefix = FALSE)
+                        brms_b_prefix = FALSE,
+                        hdi = use_hdi, exponentiate = exp_self)
   info  <- .stan_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
@@ -65,8 +81,11 @@ as_regression_frame.stanreg <- function(fit,
                       class_name = "stanreg",
                       title_class = .stanreg_title_prefix(fit),
                       random_effects = .stan_random_effects(fit, "stanreg",
-                                                            ci_level),
-                      n_groups = .stan_n_groups(fit, "stanreg"))
+                                                            ci_level,
+                                                            hdi = use_hdi),
+                      n_groups = .stan_n_groups(fit, "stanreg"),
+                      show_fit_stats = show_fit_stats,
+                      hdi = use_hdi, exp_applied = exp_self)
 
   new_regression_frame(coefs, info, fit)
 }
@@ -82,10 +101,20 @@ as_regression_frame.brmsfit <- function(fit,
                                          vcov_label = NULL,
                                          ci_level = 0.95,
                                          ci_method = NULL,
+                                         exponentiate = FALSE,
                                          model_id = "M1",
+                                         show_fit_stats = NULL,
                                          ...) {
   .check_posterior_available()
   .check_brms_available()
+  .check_stan_sampling_algorithm(fit, "brmsfit")
+
+  fam <- .stan_family(fit)
+  use_hdi <- identical(ci_method, "hdi")
+  exp_self <- isTRUE(exponentiate) && !identical(fam$link, "identity")
+  if (exp_self) {
+    .assert_exp_link_ok(fam$family, fam$link, model_id = model_id)
+  }
 
   # brms prefixes fixed-effect parameters with `b_`. Extract the
   # `b_*` names from the draws variable list (excluding random effects
@@ -106,7 +135,8 @@ as_regression_frame.brmsfit <- function(fit,
 
   coefs <- .stan_coefs(fit, coef_names, ci_level = ci_level,
                         brms_b_prefix = TRUE,
-                        draws_var_map = setNames(b_names, coef_names))
+                        draws_var_map = setNames(b_names, coef_names),
+                        hdi = use_hdi, exponentiate = exp_self)
   info  <- .stan_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
@@ -116,8 +146,11 @@ as_regression_frame.brmsfit <- function(fit,
                       class_name = "brmsfit",
                       title_class = .brmsfit_title_prefix(fit),
                       random_effects = .stan_random_effects(fit, "brmsfit",
-                                                            ci_level),
-                      n_groups = .stan_n_groups(fit, "brmsfit"))
+                                                            ci_level,
+                                                            hdi = use_hdi),
+                      n_groups = .stan_n_groups(fit, "brmsfit"),
+                      show_fit_stats = show_fit_stats,
+                      hdi = use_hdi, exp_applied = exp_self)
 
   new_regression_frame(coefs, info, fit)
 }
@@ -161,6 +194,58 @@ as_regression_frame.brmsfit <- function(fit,
   }
 }
 
+# Variational / optimizing fits (algorithm = "meanfield", "fullrank",
+# "optimizing", "laplace", ...) are legitimate stanreg / brmsfit
+# objects but carry an APPROXIMATE posterior: the draws extractor
+# errors deep inside rstanarm with an internal message, and the
+# MCMC convergence guard would vacuously pass on VB draws. Refuse
+# upfront with an actionable hint; genuine VB support (approximate-
+# posterior disclosure, k-hat diagnostics) is deliberate future work.
+.check_stan_sampling_algorithm <- function(fit, class_name) {
+  algo <- tryCatch(fit$algorithm, error = function(e) NULL)
+  if (is.null(algo) || identical(algo, "sampling")) return(invisible(NULL))
+  spicy_abort(
+    c(
+      sprintf(
+        paste0("table_regression() summarizes MCMC posteriors; this ",
+               "%s fit used `algorithm = \"%s\"`."),
+        class_name, algo
+      ),
+      "i" = paste0("Refit with `algorithm = \"sampling\"` (MCMC) to ",
+                   "tabulate it.")
+    ),
+    class = "spicy_unsupported"
+  )
+}
+
+# Column schema for the Bayesian coefs table, defined ONCE. The main
+# builder (.stan_coefs), the reference-row synthesizer
+# (.stan_reference_rows) and the empty-frame fallback must all emit
+# exactly these columns in exactly this order or the rbind() that
+# joins them stops the whole table (the factor-predictor crash the
+# 2026-07 expert audit caught).
+.stan_coefs_schema <- c(
+  "term", "parent_var", "label", "factor_level_pos",
+  "is_ref", "estimate_type", "estimate", "std_error",
+  "df", "statistic", "p_value", "pd",
+  "rhat", "ess_bulk", "ess_tail",
+  "ci_lower", "ci_upper", "test_type"
+)
+
+# Shortest interval containing `level` of the draws -- the highest-
+# density interval of a unimodal posterior. Kruschke (2015, DBDA2e)
+# HDIofMCMC: among all windows of ceiling(level * n) consecutive
+# sorted draws, take the narrowest (same algorithm as bayestestR).
+.hdi_interval <- function(x, level) {
+  x <- sort.int(as.numeric(x))
+  n <- length(x)
+  k <- ceiling(level * n)
+  if (k >= n) return(c(x[1L], x[n]))                                  # nocov
+  widths <- x[(k + 1L):n] - x[seq_len(n - k)]
+  i <- which.min(widths)
+  c(x[i], x[i + k])
+}
+
 
 # Build the coefs tibble for a Bayesian fit.
 #
@@ -182,10 +267,17 @@ as_regression_frame.brmsfit <- function(fit,
 #
 # Per Q1: p_value stays NA_real_; pd is populated; ci_method
 # is "posterior_quantile" (ETI) so the renderer relabels "95% CI"
-# -> "95% CrI" in the column header.
+# -> "95% CrI" in the column header ("95% HDI" under hdi = TRUE).
+#
+# Summary conventions (ROS ch. 5; rstanarm print): B = posterior
+# median, SE = posterior MAD SD -- the scaled median absolute
+# deviation (stats::mad, default constant 1.4826), equal to the
+# posterior SD for a normal posterior and robust to skew otherwise.
 .stan_coefs <- function(fit, coef_names, ci_level,
                          brms_b_prefix = FALSE,
-                         draws_var_map = NULL) {
+                         draws_var_map = NULL,
+                         hdi = FALSE,
+                         exponentiate = FALSE) {
   draws <- posterior::as_draws_array(fit)
 
   # Map human-readable name -> draws-side variable name.
@@ -204,27 +296,20 @@ as_regression_frame.brmsfit <- function(fit,
   # Subset draws to the fixed-effect parameters in the canonical order.
   b_draws <- posterior::subset_draws(draws, variable = draws_names)
 
-  # Per-parameter summary via posterior::summarise_draws. Custom
-  # quantile probs implement the chosen ci_level as equal-tailed
-  # quantiles (ETI). pd is computed from the raw draws afterwards.
-  lo_pr <- (1 - ci_level) / 2
-  hi_pr <- 1 - lo_pr
-  sm <- posterior::summarise_draws(
-    b_draws,
-    "median", "sd",
-    ~ stats::quantile(.x, probs = c(lo_pr, hi_pr), names = FALSE)
+  # Rank-based sampler diagnostics (Vehtari et al. 2021). R-hat and
+  # the bulk / tail ESS are rank-normalized, so they are invariant
+  # under the strictly monotone exp() transform applied further down:
+  # computing them once on the link scale is exact for both scales.
+  diag_sm <- posterior::summarise_draws(
+    b_draws, "rhat", "ess_bulk", "ess_tail"
   )
-  # summarise_draws() returns a tibble with columns "variable",
-  # "median", "sd", and the two quantile columns named like
-  # "lo_pr%" / "hi_pr%". Rename for stable access.
-  q_cols <- setdiff(names(sm), c("variable", "median", "sd"))
-  if (length(q_cols) == 2L) {
-    names(sm)[match(q_cols, names(sm))] <- c("ci_lower", "ci_upper")
-  }
 
-  # pd = max(P(theta > 0), P(theta < 0)). Computed from the raw draws
-  # matrix (collapse chains by treating all draws as one sample).
+  # All point / dispersion / interval summaries come from the pooled
+  # draws matrix (chains collapsed, in draws_names column order).
   drm <- posterior::as_draws_matrix(b_draws)
+
+  # pd = max(P(theta > 0), P(theta < 0)), from the LINK-scale draws
+  # (after exp() every draw is positive and pd would degenerate to 1).
   pd_vec <- vapply(seq_along(draws_names), function(i) {
     d <- drm[, i]
     if (length(d) == 0L) return(NA_real_)                           # nocov
@@ -233,10 +318,40 @@ as_regression_frame.brmsfit <- function(fit,
     max(p_pos, p_neg)
   }, numeric(1))
 
-  est <- sm$median
-  se  <- sm$sd  # posterior SD = Bayesian Wald-equivalent "SE"
-  ci_lower <- sm$ci_lower
-  ci_upper <- sm$ci_upper
+  lo_pr <- (1 - ci_level) / 2
+  hi_pr <- 1 - lo_pr
+  est <- apply(drm, 2, stats::median)
+  se  <- apply(drm, 2, stats::mad)
+  ci_mat <- apply(drm, 2, function(x) {
+    if (isTRUE(hdi)) {
+      .hdi_interval(x, ci_level)
+    } else {
+      unname(stats::quantile(x, probs = c(lo_pr, hi_pr), names = FALSE))
+    }
+  })
+  ci_lower <- ci_mat[1L, ]
+  ci_upper <- ci_mat[2L, ]
+
+  if (isTRUE(exponentiate)) {
+    # Draws-native exponentiation. exp() commutes with the median and
+    # the equal-tailed quantile bounds (strictly monotone), so those
+    # are transformed directly; the HDI is NOT transformation-
+    # invariant and is recomputed on the exponentiated draws; the
+    # MAD SD is computed on the exponentiated draws -- the delta-
+    # method ratio (exp(B) x SE) understates the posterior spread
+    # severalfold for wide posteriors.
+    drm_exp <- exp(drm)
+    est <- exp(est)
+    se  <- apply(drm_exp, 2, stats::mad)
+    if (isTRUE(hdi)) {
+      ci_mat <- apply(drm_exp, 2, .hdi_interval, level = ci_level)
+      ci_lower <- ci_mat[1L, ]
+      ci_upper <- ci_mat[2L, ]
+    } else {
+      ci_lower <- exp(ci_lower)
+      ci_upper <- exp(ci_upper)
+    }
+  }
 
   # Factor metadata: only meaningful when the fit has a model frame
   # (stanreg always; brmsfit via brms::standata or formula parsing).
@@ -275,11 +390,15 @@ as_regression_frame.brmsfit <- function(fit,
     statistic        = rep(NA_real_, length(coef_names)),
     p_value          = rep(NA_real_, length(coef_names)),
     pd               = pd_vec,
+    rhat             = as.numeric(diag_sm$rhat),
+    ess_bulk         = as.numeric(diag_sm$ess_bulk),
+    ess_tail         = as.numeric(diag_sm$ess_tail),
     ci_lower         = ci_lower,
     ci_upper         = ci_upper,
     test_type        = rep(NA_character_, length(coef_names)),
     stringsAsFactors = FALSE
   )
+  coefs <- coefs[, .stan_coefs_schema]
 
   # Reference-level rows mirror the lm / glm / merMod / svyglm pattern.
   ref_rows <- .stan_reference_rows(fit, has_pd = TRUE)
@@ -322,12 +441,17 @@ as_regression_frame.brmsfit <- function(fit,
       test_type        = NA_character_,
       stringsAsFactors = FALSE
     )
-    if (has_pd) row$pd <- NA_real_
-    # Reorder columns to match the main coefs table.
-    row <- row[, c("term", "parent_var", "label", "factor_level_pos",
-                   "is_ref", "estimate_type", "estimate", "std_error",
-                   "df", "statistic", "p_value", "pd",
-                   "ci_lower", "ci_upper", "test_type")]
+    if (has_pd) {
+      # A reference level has no sampled parameter: pd and the
+      # sampler diagnostics are structurally NA, not zero.
+      row$pd       <- NA_real_
+      row$rhat     <- NA_real_
+      row$ess_bulk <- NA_real_
+      row$ess_tail <- NA_real_
+    }
+    # Reorder to the shared schema so the rbind() with the main
+    # coefs table cannot drift (the factor-predictor crash).
+    row <- row[, .stan_coefs_schema]
     rows[[length(rows) + 1L]] <- row
   }
   if (length(rows) == 0L) {
@@ -339,11 +463,11 @@ as_regression_frame.brmsfit <- function(fit,
 .empty_coefs_frame_with_pd <- function(has_pd) {
   base <- .empty_coefs_frame()
   if (isTRUE(has_pd)) {
-    base$pd <- numeric(0)
-    base <- base[, c("term", "parent_var", "label", "factor_level_pos",
-                     "is_ref", "estimate_type", "estimate", "std_error",
-                     "df", "statistic", "p_value", "pd",
-                     "ci_lower", "ci_upper", "test_type")]
+    base$pd       <- numeric(0)
+    base$rhat     <- numeric(0)
+    base$ess_bulk <- numeric(0)
+    base$ess_tail <- numeric(0)
+    base <- base[, .stan_coefs_schema]
   }
   base
 }
@@ -352,21 +476,99 @@ as_regression_frame.brmsfit <- function(fit,
 # Build the info list for a Bayesian fit.
 .stan_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
                        model_id, class_name, title_class,
-                       random_effects = NULL, n_groups = NULL) {
+                       random_effects = NULL, n_groups = NULL,
+                       show_fit_stats = NULL, hdi = FALSE,
+                       exp_applied = FALSE) {
   fam <- .stan_family(fit)
   dv  <- .stan_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
-  # The Bayesian interval IS the equal-tailed posterior quantile pair,
-  # whatever ci_method the orchestrator's frequentist default carried:
-  # say so unconditionally, truthfully -- this also drives the
-  # "95% CrI" column header.
-  ci_method <- "posterior_quantile"
+  # The Bayesian interval IS a posterior summary, whatever ci_method
+  # the orchestrator's frequentist default carried: say so
+  # unconditionally, truthfully -- this also drives the "95% CrI"
+  # (equal-tailed, the default) or "95% HDI" column header.
+  ci_method <- if (isTRUE(hdi)) "posterior_hdi" else "posterior_quantile"
+
+  # Bayesian fit statistics, per the field consensus (BDA3 ch. 7:
+  # elpd is THE generic predictive-accuracy measure; Gelman et al.
+  # 2019: the Bayesian R^2 as the descriptive analogue; Bayes factors
+  # deliberately absent -- BDA3 sec. 7.4 recommends against them for
+  # this use). r2_bayes is cheap (~0.4 s) and part of the Bayesian
+  # DEFAULT; the loo pair (~2 s, PSIS-LOO) computes only on request.
+  want <- function(tok) !is.null(show_fit_stats) && tok %in% show_fit_stats
+  r2_bayes <- if (is.null(show_fit_stats) || want("r2_bayes")) {
+    tryCatch({
+      dr <- if (identical(class_name, "stanreg")) {
+        rstanarm::bayes_R2(fit)
+      } else {
+        as.numeric(brms::bayes_R2(fit, summary = FALSE))
+      }
+      stats::median(dr)
+    }, error = function(e) NA_real_)
+  } else {
+    NA_real_
+  }
+  loo_pair <- if (want("elpd_loo") || want("looic")) {
+    tryCatch({
+      # The loo warning is suppressed because spicy owns the
+      # messaging -- but the Pareto-k diagnostics that decide whether
+      # PSIS-LOO is even reliable are HARVESTED, not silenced: high-k
+      # fits get a footer caveat + classed warning below.
+      l <- suppressWarnings(loo::loo(fit))
+      k <- l$diagnostics$pareto_k
+      list(elpd = unname(l$estimates["elpd_loo", "Estimate"]),
+           looic = unname(l$estimates["looic", "Estimate"]),
+           elpd_se = unname(l$estimates["elpd_loo", "SE"]),
+           n_bad_k = length(loo::pareto_k_ids(l, threshold = 0.7)),
+           n_k = length(k))
+    }, error = function(e) {
+      # A failed computation must never degrade to a silently absent
+      # row (pre-1.0 policy): say what failed and what is missing.
+      spicy_warn(
+        sprintf(paste0("PSIS-LOO failed for outcome %s (%s); the ",
+                       "requested ELPD / LOOIC rows are omitted."),
+                dv, conditionMessage(e)),
+        class = c("spicy_bayes_diagnostics", "spicy_caveat")
+      )
+      list(elpd = NA_real_, looic = NA_real_, elpd_se = NA_real_,
+           n_bad_k = NA_integer_, n_k = NA_integer_)
+    })
+  } else {
+    list(elpd = NA_real_, looic = NA_real_, elpd_se = NA_real_,
+         n_bad_k = NA_integer_, n_k = NA_integer_)
+  }
+  waic_pair <- if (want("waic")) {
+    tryCatch({
+      # Same policy for WAIC: loo::waic()'s p_waic > 0.4 warning is
+      # muted but its substance is surfaced (footer + classed
+      # warning), and the SE travels with the estimate -- an
+      # information criterion without its SE cannot support a
+      # comparison judgment (Vehtari et al. 2017).
+      w <- suppressWarnings(loo::waic(fit))
+      list(waic = unname(w$estimates["waic", "Estimate"]),
+           waic_se = unname(w$estimates["waic", "SE"]),
+           n_bad_p = sum(w$pointwise[, "p_waic"] > 0.4, na.rm = TRUE))
+    }, error = function(e) {
+      spicy_warn(
+        sprintf(paste0("WAIC failed for outcome %s (%s); the requested ",
+                       "WAIC row is omitted."),
+                dv, conditionMessage(e)),
+        class = c("spicy_bayes_diagnostics", "spicy_caveat")
+      )
+      list(waic = NA_real_, waic_se = NA_real_, n_bad_p = NA_integer_)
+    })
+  } else {
+    list(waic = NA_real_, waic_se = NA_real_, n_bad_p = NA_integer_)
+  }
 
   fit_stats <- list(
     r_squared     = NA_real_,
     adj_r_squared = NA_real_,
     pseudo_r2     = NULL,
+    r2_bayes      = r2_bayes,
+    elpd_loo      = loo_pair$elpd,
+    looic         = loo_pair$looic,
+    waic          = waic_pair$waic,
     aic           = NA_real_,
     bic           = NA_real_,
     log_lik       = tryCatch(as.numeric(stats::logLik(fit)),
@@ -399,6 +601,72 @@ as_regression_frame.brmsfit <- function(fit,
            " regression (", title_class, ")")
   }
 
+  # Reference-table guard: a posterior whose sampler misbehaved must
+  # not print silently. Thresholds per Vehtari et al. (2021): R-hat
+  # below 1.01 and bulk / tail ESS above 400; any divergent
+  # transition is flagged (Stan guidance). Checked over EVERY sampled
+  # parameter, not only the displayed coefficients. Clean fits add no
+  # footer line -- the publication table stays lean.
+  conv_note <- .stan_convergence_note(fit, class_name)
+
+  # Footer note for the predictive-accuracy rows: the estimate's SE
+  # always travels with it (Vehtari et al. 2017), and reliability
+  # caveats (Pareto k for PSIS-LOO, p_waic for WAIC) are appended --
+  # never silenced -- with a classed warning scripts can catch.
+  loo_bits <- character(0)
+  acc_parts <- character(0)
+  if (is.finite(loo_pair$elpd)) {
+    acc_parts <- c(acc_parts,
+                   sprintf("SE(ELPD) = %.1f", loo_pair$elpd_se))
+  }
+  if (is.finite(waic_pair$waic)) {
+    acc_parts <- c(acc_parts,
+                   sprintf("SE(WAIC) = %.1f", waic_pair$waic_se))
+  }
+  if (length(acc_parts) > 0L) {
+    method_lbl <- if (is.finite(loo_pair$elpd) &&
+                        is.finite(waic_pair$waic)) {
+      "PSIS-LOO / WAIC"
+    } else if (is.finite(loo_pair$elpd)) {
+      "PSIS-LOO"
+    } else {
+      "WAIC"
+    }
+    loo_bits <- c(loo_bits, sprintf("Predictive accuracy by %s; %s.",
+                                    method_lbl,
+                                    paste(acc_parts, collapse = "; ")))
+  }
+  if (isTRUE(loo_pair$n_bad_k > 0L)) {
+    loo_bits <- c(loo_bits, sprintf(
+      paste0("PSIS-LOO unreliable for %d of %d observations (Pareto ",
+             "k > 0.7); consider loo::loo_moment_match() or refitting ",
+             "with k_threshold = 0.7."),
+      loo_pair$n_bad_k, loo_pair$n_k))
+    spicy_warn(
+      sprintf(
+        paste0("PSIS-LOO diagnostics (outcome: %s): %d of %d ",
+               "observations with Pareto k > 0.7 -- the requested ",
+               "ELPD / LOOIC values and SE(ELPD) are unreliable."),
+        dv, loo_pair$n_bad_k, loo_pair$n_k),
+      class = c("spicy_bayes_diagnostics", "spicy_caveat")
+    )
+  }
+  if (isTRUE(waic_pair$n_bad_p > 0L)) {
+    loo_bits <- c(loo_bits, sprintf(
+      paste0("WAIC approximation unreliable for %d observation(s) ",
+             "(p_waic > 0.4); prefer PSIS-LOO (`show_fit_stats = ",
+             "\"elpd_loo\"`)."),
+      waic_pair$n_bad_p))
+    spicy_warn(
+      sprintf(
+        paste0("WAIC diagnostics (outcome: %s): p_waic > 0.4 for %d ",
+               "observation(s) -- the requested WAIC value is ",
+               "unreliable; prefer PSIS-LOO."),
+        dv, waic_pair$n_bad_p),
+      class = c("spicy_bayes_diagnostics", "spicy_caveat")
+    )
+  }
+
   extras <- list(
     cluster_name          = NULL,
     use_ame_satterthwaite = FALSE,
@@ -407,9 +675,19 @@ as_regression_frame.brmsfit <- function(fit,
     has_weights           = FALSE,
     weighted_n            = NA_real_,
     title_prefix          = title_prefix,
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    posterior_engine      = class_name
+    exp_applied           = isTRUE(exp_applied),
+    exp_header            = if (isTRUE(exp_applied)) {
+      spicy_glm_exp_header(fam$family, fam$link)
+    } else {
+      NA_character_
+    },
+    posterior_engine      = class_name,
+    loo_note              = if (length(loo_bits) > 0L) {
+      paste(loo_bits, collapse = " ")
+    } else {
+      NULL
+    },
+    convergence_note      = conv_note
   )
 
   list(
@@ -423,7 +701,10 @@ as_regression_frame.brmsfit <- function(fit,
     random_effects = random_effects %||% empty_random_effects(),
     fit_stats      = fit_stats,
     vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Posterior covariance",
+    # The SE column is the posterior MAD SD (ROS ch. 5; rstanarm's
+    # print), not a covariance-matrix quantity: say exactly that.
+    vcov_label     = vcov_label %||%
+      "posterior MAD SD (scaled median absolute deviation)",
     ci_level       = as.numeric(ci_level),
     ci_method      = ci_method,
     supports       = supports,
@@ -458,12 +739,22 @@ as_regression_frame.brmsfit <- function(fit,
 # Family-title helper: lowercase variants for the title (e.g.
 # "Bayesian logistic regression (brmsfit)").
 .stan_family_title <- function(fam) {
+  # Binomial titles are LINK-aware: a probit fit is NOT a logistic
+  # regression -- mirrors spicy_glm_title_prefix and the merMod /
+  # glmmTMB / svyglm frames.
+  if (fam$family %in% c("binomial", "bernoulli")) {
+    return(switch(fam$link,
+      logit   = "logistic",
+      probit  = "probit",
+      cloglog = "complementary log-log",
+      log     = "log-binomial",
+      "binomial"
+    ))
+  }
   switch(fam$family,
-    binomial      = "logistic",
     poisson       = "Poisson",
     Gamma         = "Gamma",
     inverse.gaussian = "inverse-Gaussian",
-    bernoulli     = "logistic",
     gaussian      = "linear",
     paste0(tolower(substr(fam$family, 1L, 1L)),
            substring(fam$family, 2L))
@@ -488,7 +779,8 @@ as_regression_frame.brmsfit <- function(fit,
 # method = "MCMC" feeds the footer's estimator label; null_lrt stays
 # NULL (there is no likelihood-ratio test for a posterior), so no
 # chi-bar-squared line is printed.
-.stan_random_effects <- function(fit, class_name, ci_level = 0.95) {
+.stan_random_effects <- function(fit, class_name, ci_level = 0.95,
+                                 hdi = FALSE) {
   draws <- tryCatch(posterior::as_draws_matrix(fit),
                     error = function(e) NULL)
   if (is.null(draws)) return(empty_random_effects())                  # nocov
@@ -497,8 +789,24 @@ as_regression_frame.brmsfit <- function(fit,
   hi <- 1 - lo
 
   summ <- function(x) {
-    q <- unname(stats::quantile(x, c(0.5, lo, hi)))
-    list(est = q[1], se = stats::sd(x), lo = q[2], hi = q[3])
+    # Same summary pair as the coefficient rows: posterior median +
+    # posterior MAD SD (ROS ch. 5), so the "Std. errors:" footer
+    # describes every displayed SE. The interval follows ci_method
+    # like the coefficient rows -- variance-component posteriors are
+    # right-skewed, exactly where the HDI and the equal-tailed
+    # interval diverge most, so rendering ETI bounds under a
+    # "95% HDI" header would mislabel them. Computed on the SD /
+    # correlation scale: exact for the default re_scale = "sd" (the
+    # variance-scale storage squares and the display sqrt-transforms
+    # back); under re_scale = "variance" the displayed bounds are the
+    # squared SD-scale HDI (the HDI is not transformation-invariant).
+    est <- unname(stats::quantile(x, 0.5))
+    ci <- if (isTRUE(hdi)) {
+      .hdi_interval(x, ci_level)
+    } else {
+      unname(stats::quantile(x, c(lo, hi)))
+    }
+    list(est = est, se = stats::mad(x), lo = ci[1], hi = ci[2])
   }
   rows <- list()
   add_row <- function(group, term, sd_draws = NULL, corr_draws = NULL) {
@@ -537,8 +845,28 @@ as_regression_frame.brmsfit <- function(fit,
     sig <- grep("^Sigma\\[", vars, value = TRUE)
     if (length(sig) == 0L) return(empty_random_effects())
     inside <- sub("^Sigma\\[(.*)\\]$", "\\1", sig)
-    grp <- sub(":.*$", "", inside)
-    pair <- sub("^[^:]*:", "", inside)
+    # The group name itself can contain colons (nested / interaction
+    # factors: (1 | g1/g2) names the factor "g1:g2"), so splitting on
+    # the FIRST colon would mis-parse the entry and silently drop the
+    # variance row. Strip the group prefix by LONGEST match against
+    # the model's known grouping factors ("g1:g2" beats its parent
+    # "g1"), falling back to the first-colon split if the lookup
+    # fails.
+    grp_names <- names(tryCatch(fit$glmod$reTrms$flist,
+                                error = function(e) NULL))
+    grp_names <- unique(grp_names[order(nchar(grp_names),
+                                        decreasing = TRUE)])
+    grp  <- character(length(inside))
+    pair <- character(length(inside))
+    for (j in seq_along(inside)) {
+      hit <- grp_names[startsWith(inside[j],
+                                  paste0(grp_names, ":"))][1L]
+      if (length(hit) == 0L || is.na(hit)) {
+        hit <- sub(":.*$", "", inside[j])                             # nocov
+      }
+      grp[j]  <- hit
+      pair[j] <- substring(inside[j], nchar(hit) + 2L)
+    }
     t1 <- sub(",.*$", "", pair)
     t2 <- sub("^.*,", "", pair)
     # Diagonals first (variances -> SD rows), then correlations.
@@ -595,15 +923,125 @@ as_regression_frame.brmsfit <- function(fit,
 
 # Named group-size vector (design-doc shape: NULL | named int).
 .stan_n_groups <- function(fit, class_name) {
-  ng <- if (identical(class_name, "stanreg")) {
-    tryCatch(fit$glmod$reTrms$flist, error = function(e) NULL)
-  } else {
-    tryCatch(stats::model.frame(fit)[
-      , names(brms::ngrps(fit)), drop = FALSE],
-      error = function(e) NULL)
+  if (identical(class_name, "brmsfit")) {
+    # brms::ngrps() returns the named level counts directly and
+    # handles interaction groupings like "g1:g2" -- model.frame(fit)
+    # has no such column, so indexing it by the ngrps names would
+    # error and silently drop the N-groups row for EVERY factor.
+    ng <- tryCatch(brms::ngrps(fit), error = function(e) NULL)
+    if (is.null(ng) || length(ng) == 0L) return(NULL)
+    return(lapply(ng, as.integer))
   }
+  ng <- tryCatch(fit$glmod$reTrms$flist, error = function(e) NULL)
   if (is.null(ng) || length(ng) == 0L) return(NULL)
   out <- vapply(ng, function(f) length(unique(as.character(f))),
                 integer(1))
   as.list(out)
+}
+
+
+# Global sampler-diagnostics check for the convergence guard. Returns
+# a footer string when any diagnostic misses its target (and raises a
+# classed warning -- spicy_bayes_diagnostics, nested under
+# spicy_caveat -- so scripts can mute this guard selectively while
+# generic spicy_caveat handlers keep catching it), or NULL for a
+# clean posterior. When the divergence count cannot be extracted the
+# table is NOT presented as diagnostics-clean: the note discloses the
+# gap instead (without the warning).
+.stan_convergence_note <- function(fit, class_name) {
+  draws <- tryCatch(posterior::as_draws_array(fit),
+                    error = function(e) NULL)
+  if (is.null(draws)) return(NULL)                                    # nocov
+  # suppressWarnings: on very short chains summarise_draws emits raw
+  # base "ESS capped" warnings that duplicate what the guard itself
+  # reports and would leak through spicy's classed-warning handlers.
+  sm <- tryCatch(
+    suppressWarnings(
+      posterior::summarise_draws(draws, "rhat", "ess_bulk", "ess_tail")
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(sm)) return(NULL)                                       # nocov
+  max_rhat <- suppressWarnings(max(sm$rhat, na.rm = TRUE))
+  min_ess  <- suppressWarnings(min(c(sm$ess_bulk, sm$ess_tail),
+                                   na.rm = TRUE))
+  # ESS bar: 100 per chain (Vehtari et al. 2021 recommend rank-plot
+  # diagnostics with ESS > 100 x n_chains), floored at the 4-chain
+  # default of 400 so fewer chains never weaken the guard.
+  n_chains <- tryCatch(posterior::nchains(draws),
+                       error = function(e) 4L)                        # nocov
+  ess_bar <- max(400L, 100L * as.integer(n_chains))
+
+  # Divergent transitions: rstan's extractor for both engines (a
+  # brmsfit's $fit is a stanfit under the rstan backend), with
+  # brms::nuts_params as the cmdstanr-backend fallback. rstan is in
+  # Suggests; an unguarded call would be a CRAN WARNING.
+  sf <- if (identical(class_name, "stanreg")) fit$stanfit else fit$fit
+  n_div <- NA_integer_
+  if (spicy_pkg_available("rstan")) {
+    n_div <- tryCatch(as.integer(rstan::get_num_divergent(sf)),
+                      error = function(e) NA_integer_)
+  }
+  if (is.na(n_div) && identical(class_name, "brmsfit") &&
+      spicy_pkg_available("brms")) {                                  # nocov start
+    n_div <- tryCatch({
+      np <- brms::nuts_params(fit, pars = "divergent__")
+      as.integer(sum(np$Value, na.rm = TRUE))
+    }, error = function(e) NA_integer_)
+  }                                                                   # nocov end
+
+  # E-BFMI < 0.2: the energy diagnostic for incomplete posterior
+  # exploration (Betancourt 2017; Stan reference). Unavailable (NULL)
+  # is distinct from clean -- it simply cannot flag.
+  bfmi <- if (spicy_pkg_available("rstan")) {
+    tryCatch(rstan::get_bfmi(sf), error = function(e) NULL)
+  } else {
+    NULL                                                              # nocov
+  }
+
+  problems <- character(0)
+  if (is.finite(max_rhat) && max_rhat >= 1.01) {
+    problems <- c(problems,
+                  sprintf("max R-hat = %.3f (target < 1.01)", max_rhat))
+  }
+  if (is.finite(min_ess) && min_ess < ess_bar) {
+    problems <- c(problems,
+                  sprintf("min ESS = %d (target > %d)",
+                          as.integer(round(min_ess)), ess_bar))
+  }
+  if (!is.na(n_div) && n_div > 0L) {
+    problems <- c(problems,
+                  sprintf("%d divergent transition%s", n_div,
+                          if (n_div > 1L) "s" else ""))
+  }
+  if (!is.null(bfmi) && length(bfmi) > 0L &&
+      any(bfmi < 0.2, na.rm = TRUE)) {
+    problems <- c(problems,
+                  sprintf("min E-BFMI = %.2f (target > 0.2)",
+                          min(bfmi, na.rm = TRUE)))
+  }
+
+  unavailable <- if (is.na(n_div)) {
+    "divergent-transition count unavailable for this fit"             # nocov
+  } else {
+    character(0)
+  }
+
+  if (length(problems) == 0L) {
+    if (length(unavailable) == 0L) return(NULL)
+    # Partial diagnostics are disclosed, not warned about: R-hat /
+    # ESS pass, but the reader must know the check was incomplete.
+    return(paste0("Sampler diagnostics: R-hat and ESS within ",      # nocov start
+                  "targets; ", unavailable, "."))                    # nocov end
+  }
+  note <- paste0("Sampler diagnostics: ",
+                 paste(c(problems, unavailable), collapse = "; "),
+                 ". Do not report as-is; run longer or reparameterize ",
+                 "(Vehtari et al. 2021).")
+  spicy_warn(
+    paste0("Bayesian fit (outcome: ", .stan_dv(fit),
+           ") shows sampler problems -- ", note),
+    class = c("spicy_bayes_diagnostics", "spicy_caveat")
+  )
+  note
 }

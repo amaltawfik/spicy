@@ -181,14 +181,22 @@ closed-form AFT curves are standardized directly (stratified
 
 \section{Bayesian models}{
 
-Posterior median, posterior SD, and equal-tailed credible intervals;
-deliberately no p-value column and no stars. Multilevel fits
+Posterior median, posterior MAD SD, and equal-tailed credible
+intervals (\code{ci_method = "hdi"} opts into the highest-density
+interval); deliberately no p-value column and no stars -- the
+probability of direction (\code{"pd"}) is the opt-in posterior summary.
+A sampler-diagnostics guard checks every fit (R-hat, ESS,
+divergences, E-BFMI) and per-coefficient \code{"rhat"} / \code{"ess_bulk"} /
+\code{"ess_tail"} columns are available. Multilevel fits
 (\code{stan_glmer}, \code{brm} with grouping terms) report their random
 effects as a block -- posterior median SD and credible interval per
 component, from the draws -- with no likelihood-ratio line.
 \code{p_adjust} and likelihood-based fit-statistic tokens are refused
 (no p-values, no likelihood-based information criteria in a
-posterior); compare models with \code{loo::loo()} outside the table.
+posterior); \code{"r2_bayes"} is in the default fit statistics and
+\code{"elpd_loo"} / \code{"looic"} / \code{"waic"} are opt-in, with standard
+errors and reliability caveats in the footer; compare models with
+\code{loo::loo_compare()} outside the table.
 }
 
 \examples{

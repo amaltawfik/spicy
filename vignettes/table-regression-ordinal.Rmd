@@ -128,7 +128,7 @@ Reading the table:
   illustrates table mechanics and interpretation *wording*; read the
   exemplary sentences below as templates, not as substantive findings.
   Override the block with `show_fit_stats`
-  (e.g. `show_fit_stats = c("nobs", "AIC", "BIC")`).
+  (e.g. `show_fit_stats = c("nobs", "aic", "bic")`).
 
 ## Odds ratios: `exponentiate = TRUE`
 

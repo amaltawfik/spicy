@@ -130,6 +130,22 @@ align_frames <- function(
       } else {
         NA_real_
       },
+      # Per-parameter sampler diagnostics (Bayesian frames only).
+      rhat             = if (!is.null(cf$rhat)) {
+        as.numeric(cf$rhat)
+      } else {
+        NA_real_
+      },
+      ess_bulk         = if (!is.null(cf$ess_bulk)) {
+        as.numeric(cf$ess_bulk)
+      } else {
+        NA_real_
+      },
+      ess_tail         = if (!is.null(cf$ess_tail)) {
+        as.numeric(cf$ess_tail)
+      } else {
+        NA_real_
+      },
       stringsAsFactors = FALSE
     )
   }))

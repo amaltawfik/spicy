@@ -301,7 +301,7 @@ test_that("fit_stat_label – maps the remaining tokens to APA labels", {
   expect_identical(spicy:::fit_stat_label("weighted_nobs"),   "Weighted n")
   expect_identical(spicy:::fit_stat_label("rmse"),            "RMSE")
   expect_identical(spicy:::fit_stat_label("f2"),              "f²")
-  expect_identical(spicy:::fit_stat_label("AICc"),            "AICc")
+  expect_identical(spicy:::fit_stat_label("aicc"),            "AICc")
   expect_identical(spicy:::fit_stat_label("adj_r2_change"),   "ΔAdj.R²")
   expect_identical(spicy:::fit_stat_label("f2_change"),       "Δf²")
   expect_identical(spicy:::fit_stat_label("lrt_change"),      "Δχ²")

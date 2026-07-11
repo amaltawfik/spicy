@@ -361,7 +361,7 @@ test_that("user-supplied show_fit_stats wins over the mixed-default", {
   skip_if_not_installed("lme4")
   fit <- .fit_lmer_ns()
   out <- capture.output(print(
-    table_regression(fit, show_fit_stats = c("nobs", "AIC"))
+    table_regression(fit, show_fit_stats = c("nobs", "aic"))
   ))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "n",   fixed = TRUE)

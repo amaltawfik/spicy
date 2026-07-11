@@ -59,7 +59,9 @@
     # statistical-reporting convention (e.g. "chi2(2) = 5.34").
     "partial_chi2",
     # Probability of direction (Bayesian fits only).
-    "pd"
+    "pd",
+    # Per-parameter sampler diagnostics (Bayesian fits only).
+    "rhat", "ess_bulk", "ess_tail"
   ),
   show_fit_stats = c(
     "nobs", "weighted_nobs",
@@ -70,6 +72,9 @@
     # Negative-binomial dispersion (MASS::glm.nb only): theta
     # (V = mu + mu^2/theta) and alpha = 1/theta (Stata nbreg).
     "theta", "alpha",
+    # Bayesian fits only: posterior-median Bayesian R^2 (Gelman et
+    # al. 2019), and PSIS-LOO elpd / LOOIC (Vehtari et al. 2017).
+    "r2_bayes", "elpd_loo", "looic", "waic",
     # Mixed-effects R\u00B2 (Nakagawa & Schielzeth 2013; Nakagawa,
     # Johnson & Schielzeth 2017). marginal = variance explained by
     # fixed effects alone; conditional = variance explained by
@@ -81,7 +86,10 @@
     "n_groups", "icc",
     "sigma", "rmse",
     "f2",
-    "AIC", "AICc", "BIC", "deviance",
+    # Lowercase like every other token (the 0.13 rename; renders as
+    # "AIC" / "AICc" / "BIC" row labels unchanged) -- coherent with
+    # the aic_change / aicc_change / bic_change tokens below.
+    "aic", "aicc", "bic", "deviance",
     # Nested-comparison change stats (APA Table 7.13 in-table rows).
     # `nested = TRUE` auto-injects a class-aware subset; the user
     # can request any of these explicitly in `show_fit_stats`.
@@ -477,6 +485,24 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     vt        <- vcov_per_model[[i]]
     supported <- .robust_vcov_support(models[[i]])
     if (!vt %in% supported) {
+      # Bayesian fits are refused on principle, not because support is
+      # pending: a posterior has no sandwich analogue. The generic
+      # "being added" wording below would misdescribe the design.
+      if (inherits(models[[i]], c("stanreg", "brmsfit"))) {
+        spicy_abort(
+          c(
+            sprintf("`vcov = \"%s\"` is not defined for Bayesian fits (`%s`).",
+                    vt, class(models[[i]])[1L]),
+            "i" = paste0("A posterior has no sandwich analogue: the ",
+                         "displayed uncertainty comes from the posterior ",
+                         "draws, not from an estimating equation."),
+            "i" = paste0("Model the clustering or heteroskedasticity ",
+                         "instead (rstanarm::stan_glmer(), brms ",
+                         "group-level or distributional terms).")
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
       spicy_abort(
         c(
           sprintf("`vcov = \"%s\"` is not available for `%s` models.",
@@ -722,6 +748,42 @@ validate_class_appropriate_tokens <- function(models,
     }
   }
 
+  # Bayesian fit statistics need at least one Bayesian model to
+  # compute from; in a MIXED table the frequentist models render a
+  # blank cell, mirroring how "r2" renders blank for the Bayesian
+  # side (the shipped p-dash policy, applied in both directions).
+  bayes_fit_req <- intersect(show_fit_stats,
+                             c("r2_bayes", "elpd_loo", "looic", "waic"))
+  if (length(bayes_fit_req) > 0L) {
+    none_bayes <- length(models) == 0L ||
+      !any(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+    if (none_bayes) {
+      spicy_abort(
+        c(sprintf(
+            "Token(s) %s in `show_fit_stats` are defined only for Bayesian fits.",
+            paste(shQuote(bayes_fit_req), collapse = ", ")
+          ),
+          "i" = paste0("They are computed from the posterior draws ",
+                       "(Bayesian R\u00B2; PSIS-LOO).")),
+        class = "spicy_invalid_input"
+      )
+    }
+    # The predictive-accuracy trio computes through the loo package
+    # (Suggests). Refuse upfront rather than letting the frame's
+    # tryCatch degrade the request to a silently absent row.
+    loo_req <- intersect(bayes_fit_req, c("elpd_loo", "looic", "waic"))
+    if (length(loo_req) > 0L && !spicy_pkg_available("loo")) {
+      spicy_abort(
+        c(sprintf(
+            "Token(s) %s in `show_fit_stats` need the loo package.",
+            paste(shQuote(loo_req), collapse = ", ")
+          ),
+          "i" = "Install loo: `install.packages(\"loo\")`."),
+        class = "spicy_missing_pkg"
+      )
+    }
+  }
+
   # p / t on an all-Bayesian table: there is nothing to fill the
   # column with (a dash column carries no information). Group tokens
   # ("all_b", ...) expand WITHOUT p for Bayesian fits, so reaching
@@ -741,17 +803,42 @@ validate_class_appropriate_tokens <- function(models,
     )
   }
 
-  # Probability of direction: defined only for Bayesian fits (the
-  # frames of every other class carry no draws to compute it from).
+  # Probability of direction: needs at least one Bayesian model; in a
+  # mixed table the frequentist cells dash, exactly mirroring how the
+  # p column dashes for the Bayesian model (D2/D3 policy).
   if ("pd" %in% show_columns) {
-    all_bayes_pd <- length(models) > 0L &&
-      all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
-    if (!all_bayes_pd) {
+    any_bayes_pd <- length(models) > 0L &&
+      any(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+    if (!any_bayes_pd) {
       spicy_abort(
         c('Token "pd" in `show_columns` is defined only for Bayesian fits.',
-          "i" = paste0("The probability of direction is a posterior ",
-                       "summary (share of draws on the dominant side ",
-                       "of zero); frequentist fits report p-values.")),
+          "i" = paste0("The probability of direction is a posterior-draw ",
+                       "summary (share of draws on the dominant side of ",
+                       "zero); frequentist fits have none.")),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # Per-parameter sampler diagnostics: all-Bayesian tables only. In a
+  # mixed table the columns would dash for most rows while the
+  # automatic convergence guard ALREADY reports per-model sampler
+  # problems in the footer, so the strict gate points there.
+  diag_cols <- intersect(show_columns, c("rhat", "ess_bulk", "ess_tail"))
+  if (length(diag_cols) > 0L) {
+    all_bayes_diag <- length(models) > 0L &&
+      all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+    if (!all_bayes_diag) {
+      spicy_abort(
+        c(sprintf(
+            "Token(s) %s in `show_columns` are shown only when every model is Bayesian.",
+            paste(shQuote(diag_cols), collapse = ", ")
+          ),
+          "i" = paste0("R-hat and ESS are sampler diagnostics of the ",
+                       "posterior draws; frequentist fits have none."),
+          "i" = paste0("In a mixed table the automatic convergence guard ",
+                       "already reports sampler problems per model in ",
+                       "the footer.")),
         class = "spicy_invalid_input"
       )
     }
@@ -764,7 +851,7 @@ validate_class_appropriate_tokens <- function(models,
     all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
   if (all_bayes) {
     bad_fit <- intersect(show_fit_stats,
-                         c("AIC", "AICc", "BIC", "deviance",
+                         c("aic", "aicc", "bic", "deviance",
                            "r2", "adj_r2", "omega2", "f2",
                            "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
                            "pseudo_r2_tjur", "sigma", "rmse"))
@@ -944,6 +1031,27 @@ validate_show_fit_stats <- function(show_fit_stats) {
   # pre-1.0 stage per the "hard errors over silent changes" policy).
   if (is.null(show_fit_stats) || isFALSE(show_fit_stats)) {
     return(invisible(NULL))
+  }
+  # Migration error for the 0.12 uppercase information-criterion
+  # tokens (renamed in 0.13 for coherence with the lowercase
+  # aic_change / aicc_change / bic_change tokens). Hard error, not a
+  # silent alias, per the pre-1.0 policy; rendered row labels are
+  # unchanged ("AIC" / "AICc" / "BIC").
+  legacy_ic <- intersect(as.character(show_fit_stats),
+                         c("AIC", "AICc", "BIC"))
+  if (length(legacy_ic) > 0L) {
+    spicy_abort(
+      c(
+        paste0("Uppercase `show_fit_stats` token(s) used; spicy 0.13 ",
+               "switched the information criteria to lowercase."),
+        "i" = paste0("Replacement(s): ",
+                     paste(sprintf("`\"%s\"` -> `\"%s\"`",
+                                   legacy_ic, tolower(legacy_ic)),
+                           collapse = ", "), "."),
+        "i" = "Rendered row labels are unchanged (AIC / AICc / BIC)."
+      ),
+      class = "spicy_invalid_input"
+    )
   }
   validate_token_vector(
     show_fit_stats,

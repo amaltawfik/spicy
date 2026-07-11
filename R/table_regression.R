@@ -101,13 +101,21 @@
 #'     `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 #'   \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
 #'     / glm dispersion), `"rmse"`.
+#'   \item Bayesian fits only: `"r2_bayes"` (posterior-median
+#'     Bayesian \eqn{R^2}{R^2}, Gelman et al. 2019 -- in the
+#'     all-Bayesian default), `"elpd_loo"` and `"looic"` (PSIS-LOO
+#'     expected log predictive density and its deviance-scale twin,
+#'     Vehtari et al. 2017; opt-in, a few seconds per model; the
+#'     footer discloses the elpd standard error), and `"waic"`
+#'     (Watanabe-Akaike; PSIS-LOO is generally preferred).
 #'   \item Negative-binomial dispersion (`MASS::glm.nb` only):
 #'     `"theta"` (\eqn{V = \mu + \mu^2/	heta}{V = mu + mu^2/theta})
 #'     and `"alpha"` (\eqn{= 1/	heta}{= 1/theta}, the Stata `nbreg`
 #'     convention). Refused for other families.
 #'   \item Effect size: `"f2"`.
-#'   \item Information criteria: `"AIC"`, `"AICc"`, `"BIC"`,
-#'     `"deviance"`.
+#'   \item Information criteria: `"aic"`, `"aicc"`, `"bic"`,
+#'     `"deviance"` (lowercase like every other token; the rendered
+#'     row labels stay `AIC` / `AICc` / `BIC`).
 #'   \item Change-stats for hierarchical comparison
 #'     (active under `nested = TRUE`; see *Hierarchical
 #'     comparison* below): `"r2_change"`, `"adj_r2_change"`,
@@ -118,10 +126,10 @@
 #'
 #' Default (resolved when `NULL`) is class-aware: lm fits get
 #' `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
-#' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "AIC")`;
+#' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`;
 #' mixed lm + glm sets union both groups (the renderer per-row
 #' em-dashes the inappropriate cell); Cox fits get
-#' `c("nobs", "n_events", "AIC")`. When `nested = TRUE`, the
+#' `c("nobs", "n_events", "aic")`. When `nested = TRUE`, the
 #' class-aware default is extended with change tokens
 #' (`c("r2_change", "f_change", "p_change")` for lm,
 #' `c("lrt_change", "p_change")` for glm). The order of tokens in
@@ -275,6 +283,46 @@
 #'
 #' For multi-model use, mix forms freely:
 #' `cluster = list(~region, "region", df$region)`.
+#'
+#' # Bayesian fits (rstanarm / brms)
+#'
+#' `stanreg` and `brmsfit` models are summarized from their posterior
+#' draws: `B` is the posterior median, `SE` the posterior MAD SD (the
+#' scaled median absolute deviation -- the pairing of *Regression and
+#' Other Stories* and rstanarm's own print; equal to the posterior SD
+#' for a normal posterior), and the interval an equal-tailed credible
+#' interval (header `95% CrI`; `ci_method = "hdi"` opts into the
+#' highest-density interval, header `95% HDI`). There is no p-value
+#' or t-statistic; group presets (`"all_b"`, ...) expand without
+#' them, and the opt-in `"pd"` column reports the probability of
+#' direction with a footer definition (Makowski et al. 2019). Under
+#' `exponentiate = TRUE` all quantities are computed from the
+#' exponentiated draws directly (the SE is the posterior MAD SD on
+#' the ratio scale, not a delta-method approximation).
+#'
+#' Fit statistics: `"r2_bayes"` (in the Bayesian default) plus the
+#' opt-in `"elpd_loo"` / `"looic"` / `"waic"`, whose standard errors
+#' are disclosed in the footer; unreliable estimates (PSIS-LOO Pareto
+#' k > 0.7, WAIC p_waic > 0.4) add a footer caveat instead of being
+#' silenced. Every table is backed by an automatic sampler-diagnostics
+#' guard (R-hat >= 1.01, ESS below 100 per chain -- floored at 400 so
+#' fewer chains never weaken the bar --, divergent
+#' transitions, E-BFMI < 0.2, per Vehtari et al. 2021): problems add
+#' a footer line and raise a warning classed
+#' `spicy_bayes_diagnostics` (nested under `spicy_caveat`, so
+#' `withCallingHandlers(spicy_bayes_diagnostics = ...)` mutes the
+#' guard selectively); clean fits print nothing. Per-coefficient
+#' `"rhat"` / `"ess_bulk"` / `"ess_tail"` columns are available in
+#' all-Bayesian tables.
+#'
+#' Refused on principle (classed error, never a silent fallback):
+#' likelihood-based fit statistics (`"aic"`, pseudo-R², ...),
+#' `p_adjust`, robust / cluster `vcov` (model the clustering with
+#' group-level terms instead), `ci_method = "profile"` /
+#' `"boot_percentile"`, and non-MCMC fits
+#' (`algorithm = "meanfield"` / `"optimizing"` -- refit with
+#' `algorithm = "sampling"`). See
+#' `vignette("table-regression-bayesian")`.
 #'
 #' # Hierarchical (nested) model comparison
 #'
@@ -483,6 +531,16 @@
 #'   covered. With `exponentiate = TRUE` the percentile bounds are
 #'   exponentiated (percentile intervals are
 #'   transformation-respecting).
+#'   `"hdi"` (Bayesian `stanreg` / `brmsfit` fits only) replaces the
+#'   default equal-tailed credible interval with the highest-density
+#'   interval -- the shortest interval containing `ci_level` of the
+#'   posterior draws (Kruschke 2015), relabelling the column header
+#'   `95% HDI`. Unlike the equal-tailed interval the HDI is not
+#'   transformation-invariant, so under `exponentiate = TRUE` it is
+#'   recomputed on the exponentiated draws rather than transformed.
+#'   Requesting `"hdi"` for a frequentist fit, or `"profile"` /
+#'   `"boot_percentile"` for a Bayesian fit, raises
+#'   `spicy_invalid_input`.
 #' @param standardized Standardisation method for the `"beta"`
 #'   column. One of `"none"` (default), `"refit"`, `"posthoc"`,
 #'   `"basic"`, `"smart"`, `"pseudo"`. `"pseudo"` is *glm only*
@@ -543,7 +601,9 @@
 #'   per-coefficient columns and their display order. Accepts
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
 #'   `"beta"`, `"n"`, `"n_events"`, `"pd"` (probability of
-#'   direction, Bayesian fits only), `"ame"`, `"ame_se"`, `"ame_ci"`,
+#'   direction, Bayesian fits only), `"rhat"` / `"ess_bulk"` /
+#'   `"ess_tail"` (per-coefficient sampler diagnostics, all-Bayesian
+#'   tables only), `"ame"`, `"ame_se"`, `"ame_ci"`,
 #'   `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
 #'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
@@ -669,7 +729,7 @@
 #'     \item `lm`: `c("nobs", "r2", "adj_r2")`.
 #'     \item `glm`, ordinal `polr` / `clm`:
 #'       `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
-#'       "AIC")` (McFadden = Stata `ologit` default,
+#'       "aic")` (McFadden = Stata `ologit` default,
 #'       Nagelkerke = SPSS PLUM).
 #'     \item mixed `lm` + `glm`: the union of the two (the
 #'       renderer em-dashes per cell the stat not defined for a
@@ -1179,7 +1239,7 @@ table_regression <- function(
   vcov = "classical",
   cluster = NULL,
   ci_level = 0.95,
-  ci_method = c("wald", "profile", "boot_percentile"),
+  ci_method = c("wald", "profile", "boot_percentile", "hdi"),
   boot_n = 1000L,
   tau = NULL,
   at_time = NULL,
@@ -1423,7 +1483,7 @@ table_regression <- function(
                             if (!any_lm_only) "nobs",
                             "pseudo_r2_mcfadden",
                             "pseudo_r2_nagelkerke",
-                            "AIC")
+                            "aic")
     }
     if (any_mixed) {
       # n_groups + icc render as fit-stat ROWS (aligned per model), like
@@ -1435,18 +1495,27 @@ table_regression <- function(
                             "n_groups", "icc",
                             "r2_marginal",
                             "r2_conditional",
-                            "AIC", "BIC")
+                            "aic", "bic")
     }
     if (any_ordinal) {
       show_fit_stats <- c(show_fit_stats,
                             if (!any_lm_only && !any_glm && !any_mixed) "nobs",
                             "pseudo_r2_mcfadden",
                             "pseudo_r2_nagelkerke",
-                            "AIC")
+                            "aic")
     }
     if (any(is_bayes)) {
+      # Bayesian default: n + the posterior-median Bayesian R^2 --
+      # the R^2 every other family's default carries, in its
+      # draws-based form (Gelman et al. 2019). elpd_loo / looic stay
+      # opt-in (~2 s of PSIS-LOO per model). In a MIXED table the
+      # frequentist models simply render a blank r2_bayes cell,
+      # mirroring how "r2" is blank for the Bayesian side -- silently
+      # dropping the Bayesian model's default R^2 would contradict
+      # the never-silently-wrong policy.
       show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only && !any_glm) "nobs")
+                            if (!any_lm_only && !any_glm) "nobs",
+                            "r2_bayes")
     }
     # multinom: same pseudo-R2 pair as the other categorical families
     # (dev/fit_stats_by_class.md). Its null model is intercept-only, whose
@@ -1460,7 +1529,7 @@ table_regression <- function(
                                   !any_ordinal) "nobs",
                             "pseudo_r2_mcfadden",
                             "pseudo_r2_nagelkerke",
-                            "AIC")
+                            "aic")
     }
     # Cox proportional hazards (survival::coxph and rms::cph, which
     # inherits from it): the field convention reports n AND the number
@@ -1474,7 +1543,7 @@ table_regression <- function(
       show_fit_stats <- c(show_fit_stats,
                             if (!any_lm_only && !any_glm && !any_mixed &&
                                   !any_ordinal) "nobs",
-                            "n_events", "AIC")
+                            "n_events", "aic")
     }
     # Universal safety net: a class matched by none of the branches above
     # (betareg, survreg, coxph, multinom, mlogit, fixest, rms, stan, ...) still
@@ -1483,7 +1552,7 @@ table_regression <- function(
     # concordance for coxph, deviance-explained for gam). nobs / AIC are defined
     # for essentially every likelihood fit; an absent token is skipped per row.
     if (length(show_fit_stats) == 0L) {
-      show_fit_stats <- c("nobs", "AIC")
+      show_fit_stats <- c("nobs", "aic")
     }
     show_fit_stats <- unique(show_fit_stats)
     if (isTRUE(nested) && length(models) >= 2L) {
@@ -1496,6 +1565,45 @@ table_regression <- function(
   # substitutes; pseudo_r2_* is rejected on lm. The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
+
+  # Bayesian fits and ci_method. The posterior interval is the only
+  # interval a posterior has: `"hdi"` is the Bayesian-only opt-in
+  # (highest-density interval, the Kruschke-school convention; the
+  # equal-tailed interval stays the default), while `"profile"` and
+  # `"boot_percentile"` are likelihood / resampling constructions with
+  # no posterior analogue -- both are refused HERE with the Bayesian
+  # alternative, not routed into a downstream generic error.
+  is_bayes_ci <- vapply(models, inherits, logical(1),
+                        c("stanreg", "brmsfit"))
+  if (identical(ci_method, "hdi") && !all(is_bayes_ci)) {
+    offending <- class(models[[which(!is_bayes_ci)[1]]])[1]
+    spicy_abort(
+      c(
+        paste0("`ci_method = \"hdi\"` is defined only for Bayesian ",
+               "fits (`stanreg` / `brmsfit`)."),
+        "x" = sprintf(paste0("`%s` has no posterior draws to take a ",
+                             "highest-density interval of."), offending),
+        "i" = paste0("Frequentist fits use `ci_method = \"wald\"` ",
+                     "(default), `\"profile\"`, or `\"boot_percentile\"`.")
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (ci_method %in% c("profile", "boot_percentile") && any(is_bayes_ci)) {
+    spicy_abort(
+      c(
+        sprintf("`ci_method = \"%s\"` is not defined for Bayesian fits.",
+                ci_method),
+        "i" = paste0("A posterior has no profile likelihood or bootstrap ",
+                     "replicates; the credible interval is computed from ",
+                     "the posterior draws."),
+        "i" = paste0("Use the default equal-tailed credible interval, ",
+                     "or `ci_method = \"hdi\"` for the highest-density ",
+                     "interval.")
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
 
   # `ci_method = "profile"` is available for glm and ordinal (polr / clm),
   # which have a genuine profile-likelihood CI (confint.glm / confint.polr /
@@ -2407,13 +2515,23 @@ table_regression <- function(
   } else {
     NULL  # render_regression_table generates "Model 1", ... as fallback
   }
-  # "95% CrI" header when EVERY frame is a posterior-quantile interval
-  # (the design promise in regression_frame_stan.R): mixed
-  # frequentist + Bayesian tables keep the shared "CI" label.
+  # "95% CrI" (equal-tailed) or "95% HDI" header when EVERY frame is a
+  # posterior interval (the design promise in regression_frame_stan.R;
+  # the hdi gate guarantees posterior_hdi is all-Bayesian): mixed
+  # frequentist + Bayesian tables keep the shared "CI" label, with a
+  # per-model footer disclosure from the CI-method block.
+  frame_ci_methods <- vapply(frames, function(f) {
+    f$info$ci_method %||% ""
+  }, character(1))
   ci_label_val <- if (length(frames) > 0L &&
-                        all(vapply(frames, function(f) {
-                          identical(f$info$ci_method, "posterior_quantile")
-                        }, logical(1)))) "CrI" else "CI"
+                        all(frame_ci_methods == "posterior_quantile")) {
+    "CrI"
+  } else if (length(frames) > 0L &&
+               all(frame_ci_methods == "posterior_hdi")) {
+    "HDI"
+  } else {
+    "CI"
+  }
   rendered <- render_regression_table(
     aligned,
     show_columns = show_columns,

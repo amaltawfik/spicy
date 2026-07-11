@@ -146,16 +146,17 @@ test_that("brmsfit: df / statistic / test_type are NA for fixed-effect rows", {
   expect_true(all(is.na(b_rows$test_type)))
 })
 
-test_that("brmsfit: estimate matches posterior median; std_error matches posterior SD", {
+test_that("brmsfit: estimate matches posterior median; std_error matches posterior MAD SD", {
   fit <- .fit_brms_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   # Use posterior::summarise_draws directly on b_* to construct the
-  # expected medians / SDs, then compare row-by-row.
+  # expected medians / MAD SDs (ROS ch. 5 pairing), then compare
+  # row-by-row.
   draws <- posterior::as_draws_array(fit)
   b_vars <- grep("^b_", posterior::variables(draws), value = TRUE)
   sm <- posterior::summarise_draws(
     posterior::subset_draws(draws, variable = b_vars),
-    "median", "sd"
+    "median", "mad"
   )
   # Match by stripping the b_ prefix on summary side.
   human <- ifelse(sm$variable == "b_Intercept", "(Intercept)",
@@ -165,7 +166,7 @@ test_that("brmsfit: estimate matches posterior median; std_error matches posteri
     row <- fr$coefs[fr$coefs$term == nm & !fr$coefs$is_ref, ]
     expect_equal(row$estimate,  sm$median[i], tolerance = 1e-10,
                  info = paste("term:", nm))
-    expect_equal(row$std_error, sm$sd[i],     tolerance = 1e-10,
+    expect_equal(row$std_error, sm$mad[i],    tolerance = 1e-10,
                  info = paste("term:", nm))
   }
 })

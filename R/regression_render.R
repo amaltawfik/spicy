@@ -414,6 +414,7 @@ render_regression_table <- function(
     label_map = label_map,
     col_spec = col_spec,
     labels = labels,
+    ci_label = ci_label,
     model_outcomes = model_outcomes,
     model_outcome_labels = model_outcome_labels
   )
@@ -530,6 +531,17 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     pd     = list(estimate_type = "B",
                   fields = "pd",
                   header_short = "pd"),
+    # Per-parameter sampler diagnostics (BARG steps 2.B / 2.C:
+    # convergence and resolution for every parameter).
+    rhat     = list(estimate_type = "B",
+                    fields = "rhat",
+                    header_short = "R-hat"),
+    ess_bulk = list(estimate_type = "B",
+                    fields = "ess_bulk",
+                    header_short = "ESS (bulk)"),
+    ess_tail = list(estimate_type = "B",
+                    fields = "ess_tail",
+                    header_short = "ESS (tail)"),
     beta   = list(estimate_type = "beta",
                   fields = "estimate",
                   header_short = "\u03B2"),
@@ -843,6 +855,19 @@ format_cell_value <- function(long_row, cs, stars_map,
   # Per-row N: integer, and BLANK (not em-dash) when absent -- an NA
   # here means "same fit as the block first row", not "no value
   # exists for this cell".
+  # Sampler-diagnostic fields: ESS renders as an integer (a sample
+  # size), R-hat with 3 decimals (the 1.01 target needs them).
+  if (field %in% c("ess_bulk", "ess_tail")) {
+    val <- long_row[[field]][1]
+    if (!is.finite(val)) return("")
+    return(format(as.integer(round(val))))
+  }
+  if (field == "rhat") {
+    val <- long_row[[field]][1]
+    if (!is.finite(val)) return("")
+    return(formatC(val, format = "f", digits = 3,
+                   decimal.mark = decimal_mark))
+  }
   if (field == "n_obs") {
     if (is.na(val)) return("")
     return(format(as.integer(val)))
@@ -1123,6 +1148,10 @@ fit_stat_label <- function(token) {
     pseudo_r2_tjur        = "R\u00B2 (Tjur)",
     theta                 = "\u03B8 (dispersion)",
     alpha                 = "\u03B1 (= 1/\u03B8)",
+    r2_bayes              = "R\u00B2 (Bayes)",
+    elpd_loo              = "ELPD (LOO)",
+    looic                 = "LOOIC",
+    waic                  = "WAIC",
     r2_marginal           = "R\u00B2 (marginal)",
     r2_conditional        = "R\u00B2 (conditional)",
     icc                   = "ICC",
@@ -1130,9 +1159,9 @@ fit_stat_label <- function(token) {
     sigma                 = "\u03C3\u0302",
     rmse                  = "RMSE",
     f2                    = "f\u00B2",
-    AIC                   = "AIC",
-    AICc                  = "AICc",
-    BIC                   = "BIC",
+    aic                   = "AIC",
+    aicc                  = "AICc",
+    bic                   = "BIC",
     deviance              = "Deviance",
     # Nested-comparison change tokens (APA Table 7.13)
     r2_change             = "\u0394R\u00B2",
@@ -1187,6 +1216,10 @@ format_fit_stat_value <- function(token, val,
     pseudo_r2_mcfadden    = fit_digits,
     theta                 = fit_digits,
     alpha                 = fit_digits,
+    r2_bayes              = fit_digits,
+    elpd_loo              = ic_digits,
+    looic                 = ic_digits,
+    waic                  = ic_digits,
     pseudo_r2_nagelkerke  = fit_digits,
     pseudo_r2_tjur        = fit_digits,
     r2_marginal           = fit_digits,
@@ -1195,9 +1228,9 @@ format_fit_stat_value <- function(token, val,
     sigma                 = fit_digits,
     rmse                  = fit_digits,
     f2                    = fit_digits,
-    AIC                   = ic_digits,
-    AICc                  = ic_digits,
-    BIC                   = ic_digits,
+    aic                   = ic_digits,
+    aicc                  = ic_digits,
+    bic                   = ic_digits,
     # Phase 7c22 (item b): deviance is on the same likelihood scale as
     # AIC / BIC / AICc (large values, IC family). The default
     # `ic_digits = 1L` matches Stata `estat ic` and SAS PROC LOGISTIC

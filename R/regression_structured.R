@@ -94,7 +94,8 @@ build_structured_body <- function(aligned,
                                    col_spec,
                                    labels = NULL,
                                    model_outcomes = NULL,
-                                   model_outcome_labels = NULL) {
+                                   model_outcome_labels = NULL,
+                                   ci_label = "CI") {
   group_factor_levels <- identical(factor_layout, "grouped")
   coefs <- aligned$coefs_aligned
 
@@ -108,8 +109,13 @@ build_structured_body <- function(aligned,
   #       to keep multi-model disambiguation)
   #   * partial_chi2 (fields = c("estimate","df")):
   #       2 cols, names = "<col_name>" (est) and "<col_name>: df"
+  # ci_label mirrors the console header: "CI" for frequentist tables,
+  # "CrI" / "HDI" for all-Bayesian ones -- the rich engines (gt /
+  # flextable / tinytable / Excel) display this string as the interval
+  # spanner, so hardcoding "CI" here would contradict the console and
+  # the documented relabel.
   ci_pct <- formatC(ci_level * 100, format = "g")
-  ci_label_str <- paste0(ci_pct, "% CI")
+  ci_label_str <- paste0(ci_pct, "% ", ci_label)
 
   expanded <- list()  # list of (struct_col_name, source_field, meta)
   for (cs in col_spec) {
@@ -651,12 +657,13 @@ build_structured_body <- function(aligned,
   is_int <- token %in% c("nobs", "weighted_nobs", "n_groups")
   is_fit <- token %in% c("r2", "adj_r2", "omega2", "f2", "sigma", "rmse",
                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
-                          "pseudo_r2_tjur",
+                          "pseudo_r2_tjur", "theta", "alpha", "r2_bayes",
                           "r2_marginal", "r2_conditional", "icc",
                           "r2_change", "adj_r2_change", "f2_change",
                           "f_change")
-  is_ic <- token %in% c("AIC", "AICc", "BIC", "aic_change", "aicc_change",
-                         "bic_change")
+  is_ic <- token %in% c("aic", "aicc", "bic",
+                         "elpd_loo", "looic", "waic",
+                         "aic_change", "aicc_change", "bic_change")
   is_p <- identical(token, "p_change")
   if (is_int) return(0L)
   if (is_p) return(as.integer(p_digits))

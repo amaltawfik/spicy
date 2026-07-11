@@ -438,7 +438,7 @@ test_that("apply_exponentiate_to_coefs – only B / beta rows transformed", {
   ex <- spicy:::extract_lm_phase1(
     fit, model_id = "M1",
     show_columns = c("b", "ame"),
-    show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "AIC")
+    show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "aic")
   )
   raw <- ex$coefs
   exp_cf <- spicy:::apply_exponentiate_to_coefs(raw)
@@ -1161,7 +1161,7 @@ test_that("E2E: full feature surface in a single call (acceptance)", {
       p_adjust = "holm",
       show_columns = c("b", "beta", "ci", "p", "ame", "ame_p", "partial_chi2"),
       show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_tjur",
-                          "AIC", "BIC"),
+                          "aic", "bic"),
       labels = c(mpg = "Miles per gallon", wt = "Weight (1000 lbs)"),
       stars = TRUE,
       digits = 3L

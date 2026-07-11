@@ -57,6 +57,11 @@ spicy_glm_title_prefix <- function(family_name, link_name) {
 }
 
 spicy_glm_exp_header <- function(family_name, link_name) {
+  # brms spells the single-trial binomial "bernoulli": same family,
+  # same estimands (OR / RR / HR per link). Normalising here keeps
+  # info$family$family truthful ("bernoulli") while the header map
+  # stays engine-consistent with glm / rstanarm.
+  if (identical(family_name, "bernoulli")) family_name <- "binomial"
   if (identical(family_name, "binomial") && identical(link_name, "logit")) {
     return("OR")
   }
@@ -89,6 +94,13 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   }
   if (identical(family_name, "negbin") && identical(link_name, "log")) {
     return("IRR")    # negative-binomial rate ratio (fixest / pscl)
+  }
+  if (family_name %in% c("negbinomial", "geometric", "neg_binomial_2") &&
+      identical(link_name, "log")) {
+    return("IRR")    # brms / rstanarm count-family spellings (log link)
+  }
+  if (identical(family_name, "gamma") && identical(link_name, "log")) {
+    return("MR")     # brms lowercase gamma family (log link)
   }
   if (family_name %in% c("nbinom1", "nbinom2", "truncated_poisson",
                          "truncated_nbinom1", "truncated_nbinom2",
@@ -130,8 +142,11 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # request is satisfied vacuously, a probit request cannot be).
 .exp_gate_allowed <- function(family_name, link_name) {
   if (link_name %in% c("log", "logit")) return(TRUE)
+  # bernoulli = brms's spelling of the single-trial binomial; the
+  # grouped-time proportional-hazards reading applies identically.
   identical(link_name, "cloglog") &&
-    family_name %in% c("binomial", "quasibinomial", "cumulative")
+    family_name %in% c("binomial", "bernoulli", "quasibinomial",
+                       "cumulative")
 }
 
 .assert_exp_link_ok <- function(family_name, link_name, model_id = NULL) {
