@@ -66,6 +66,7 @@ supported set. Feature requests are welcome on the issue tracker."><meta propert
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -234,7 +235,13 @@ closed-form AFT curves are standardized directly (stratified
 
 
 <p>Posterior median, posterior SD, and equal-tailed credible intervals;
-deliberately no p-value column and no stars.</p>
+deliberately no p-value column and no stars. Multilevel fits
+(<code>stan_glmer</code>, <code>brm</code> with grouping terms) report their random
+effects as a block – posterior median SD and credible interval per
+component, from the draws – with no likelihood-ratio line.
+<code>p_adjust</code> and likelihood-based fit-statistic tokens are refused
+(no p-values, no likelihood-based information criteria in a
+posterior); compare models with <code><a href="https://mc-stan.org/loo/reference/loo.html" class="external-link">loo::loo()</a></code> outside the table.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -137,6 +137,16 @@
   and the [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html)
   engine plus the `mlogit` discrete-choice engine.
 
+- [Bayesian regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md):
+
+  Publication-ready tables for Bayesian regression in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  posterior medians and credible intervals, the deliberate absence of
+  p-values, convergence checks before reading, prior disclosure, random
+  effects from the posterior draws, and the `rstanarm` and `brms`
+  engines.
+
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 

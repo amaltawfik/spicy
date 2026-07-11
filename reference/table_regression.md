@@ -233,20 +233,21 @@ table_regression(
 
   Character vector of tokens selecting the per-coefficient columns and
   their display order. Accepts **atomic tokens** (`"b"`, `"se"`, `"ci"`,
-  `"t"`, `"p"`, `"beta"`, `"n"`, `"n_events"`, `"ame"`, `"ame_se"`,
-  `"ame_ci"`, `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` /
-  `"rmst_p"`, `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
-  `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
-  `"partial_eta2_ci"`, `"partial_omega2"` + `"partial_omega2_ci"`,
-  `"partial_chi2"`) and **group tokens** (`"all_b"`, `"all_b_compact"`,
-  `"all_b_full"`, `"all_beta"`, `"all_ame"`, `"all_ame_compact"`,
-  `"all_f2"`, `"all_eta2"`, `"all_omega2"`). See *Vocabulary tokens* in
-  the details for the full enumeration. Default `NULL` selects a
-  context-aware layout: `"all_b"` (single model) or `"all_b_compact"`
-  (multi-model, and the single-multinomial outcome-as-columns layout,
-  which has the same width pressure – restore CIs with atomic tokens,
-  e.g. `c("b", "se", "ci", "p")`). The `"p"` token is always the B /
-  beta p-value; for the AME-specific p-value use `"ame_p"`.
+  `"t"`, `"p"`, `"beta"`, `"n"`, `"n_events"`, `"pd"` (probability of
+  direction, Bayesian fits only), `"ame"`, `"ame_se"`, `"ame_ci"`,
+  `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
+  `"risk_diff"` + its `_se` / `_ci` / `_p` companions, `"partial_f2"` +
+  `"partial_f2_ci"`, `"partial_eta2"` + `"partial_eta2_ci"`,
+  `"partial_omega2"` + `"partial_omega2_ci"`, `"partial_chi2"`) and
+  **group tokens** (`"all_b"`, `"all_b_compact"`, `"all_b_full"`,
+  `"all_beta"`, `"all_ame"`, `"all_ame_compact"`, `"all_f2"`,
+  `"all_eta2"`, `"all_omega2"`). See *Vocabulary tokens* in the details
+  for the full enumeration. Default `NULL` selects a context-aware
+  layout: `"all_b"` (single model) or `"all_b_compact"` (multi-model,
+  and the single-multinomial outcome-as-columns layout, which has the
+  same width pressure – restore CIs with atomic tokens, e.g.
+  `c("b", "se", "ci", "p")`). The `"p"` token is always the B / beta
+  p-value; for the AME-specific p-value use `"ame_p"`.
 
 - keep:
 

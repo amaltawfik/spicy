@@ -40,6 +40,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -136,6 +137,8 @@
 <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> fits gain opt-in dispersion fit-stat rows: <code>show_fit_stats</code> tokens <code>"theta"</code> (the NB2 dispersion) and <code>"alpha"</code> (its reciprocal, the Stata convention). Refused with a clear error for other families.</li>
 <li>
 <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code> fits now report McFadden’s and Nagelkerke’s pseudo-R² (as the other categorical families do). The tokens were silently dropped from <code>show_fit_stats</code> before, and a weighted fit’s null log-likelihood ignored the weights.</li>
+<li>Bayesian tables gain the <code>"pd"</code> column (<code>show_columns</code>): the posterior probability of direction, the reporting-guideline-aligned reading of “is there an effect” – computed at extraction since 0.12 but never exposed. Refused for frequentist fits.</li>
+<li>Bayesian tables tighten up. <code>stan_glmer</code> / multilevel <code>brm</code> fits report their random effects as a proper block (posterior median SD, credible interval from the draws) instead of one flat row per group deviation; the footer reads <code>Random effects (MCMC)</code> and no likelihood-ratio line is printed. <code>p_adjust</code> and likelihood-based fit-statistic tokens (<code>AIC</code>, pseudo-R², …) are refused with clear errors for all-Bayesian tables – both were silent no-ops – and the class-aware defaults report <code>n</code> only. Mixed frequentist + Bayesian tables keep the frequentist columns filled.</li>
 <li>Factors under non-default contrast codings (successive differences, sum-to-zero, Helmert, custom matrices) now group under their parent variable like treatment and polynomial codings, labelled by the contrast-matrix column names. No reference row is shown – none exists under those codings.</li>
 <li>
 <code>ordinal::clm(scale = ~)</code> fits now render their scale (dispersion) coefficients as a <code>Scale effects</code> block. They were silently absent from the table: an estimated component of the model went unreported. The rows stay on the log scale under <code>exponentiate = TRUE</code> (their exponential is a ratio of latent standard deviations, not an odds ratio) and the footer says so.</li>

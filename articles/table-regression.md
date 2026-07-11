@@ -39,7 +39,9 @@ for ordinal models (`polr`, `clm`),
 [`vignette("table-regression-multinomial")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
 for multinomial models (`multinom`, `mlogit`), and
 [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
-for survival models (`coxph`, `survreg`). The mechanics covered here —
+for survival models (`coxph`, `survreg`), and
+[`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
+for Bayesian fits (`rstanarm`, `brms`). The mechanics covered here —
 confidence levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods — apply
 across every supported class; variance-estimator availability varies by
@@ -1597,6 +1599,9 @@ Model-family vignettes build on the mechanics shown here:
 - [`vignette("table-regression-survival", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
   for survival models: Cox hazard ratios with events and concordance,
   accelerated failure time models, and survival estimands.
+- [`vignette("table-regression-bayesian", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
+  for Bayesian fits: posterior medians and credible intervals, the
+  probability of direction, and random effects from the draws.
 
 Descriptive and reporting companions:
 

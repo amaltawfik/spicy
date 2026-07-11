@@ -204,6 +204,19 @@ rendering an empty column.
   categorical families do). The tokens were silently dropped from
   `show_fit_stats` before, and a weighted fit’s null log-likelihood
   ignored the weights.
+- Bayesian tables gain the `"pd"` column (`show_columns`): the posterior
+  probability of direction, the reporting-guideline-aligned reading of
+  “is there an effect” – computed at extraction since 0.12 but never
+  exposed. Refused for frequentist fits.
+- Bayesian tables tighten up. `stan_glmer` / multilevel `brm` fits
+  report their random effects as a proper block (posterior median SD,
+  credible interval from the draws) instead of one flat row per group
+  deviation; the footer reads `Random effects (MCMC)` and no
+  likelihood-ratio line is printed. `p_adjust` and likelihood-based
+  fit-statistic tokens (`AIC`, pseudo-R², …) are refused with clear
+  errors for all-Bayesian tables – both were silent no-ops – and the
+  class-aware defaults report `n` only. Mixed frequentist + Bayesian
+  tables keep the frequentist columns filled.
 - Factors under non-default contrast codings (successive differences,
   sum-to-zero, Helmert, custom matrices) now group under their parent
   variable like treatment and polynomial codings, labelled by the

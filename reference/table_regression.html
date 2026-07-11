@@ -58,6 +58,7 @@ Gamma / inverse.gaussian / quasi families with any link."><meta property="og:ima
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -313,7 +314,8 @@ adjustment</em> section for when this is and is not appropriate.</p></dd>
 <dd><p>Character vector of tokens selecting the
 per-coefficient columns and their display order. Accepts
 <strong>atomic tokens</strong> (<code>"b"</code>, <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>,
-<code>"beta"</code>, <code>"n"</code>, <code>"n_events"</code>, <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
+<code>"beta"</code>, <code>"n"</code>, <code>"n_events"</code>, <code>"pd"</code> (probability of
+direction, Bayesian fits only), <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
 <code>"ame_p"</code>, <code>"rmst"</code> + <code>"rmst_se"</code> / <code>"rmst_ci"</code> / <code>"rmst_p"</code>,
 <code>"risk_diff"</code> + its <code>_se</code> / <code>_ci</code> / <code>_p</code> companions,
 <code>"partial_f2"</code> + <code>"partial_f2_ci"</code>, <code>"partial_eta2"</code> +

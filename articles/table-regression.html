@@ -68,6 +68,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -138,7 +139,9 @@ negative-binomial, and two-part models,
 <code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial")</a></code> for multinomial
 models (<code>multinom</code>, <code>mlogit</code>), and
 <code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code> for survival models
-(<code>coxph</code>, <code>survreg</code>). The mechanics covered here —
+(<code>coxph</code>, <code>survreg</code>), and
+<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code> for Bayesian fits
+(<code>rstanarm</code>, <code>brms</code>). The mechanics covered here —
 confidence levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods — apply
 across every supported class; variance-estimator availability varies by
@@ -2101,6 +2104,10 @@ changing the reference category.</li>
 <code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival", package = "spicy")</a></code>
 for survival models: Cox hazard ratios with events and concordance,
 accelerated failure time models, and survival estimands.</li>
+<li>
+<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian", package = "spicy")</a></code>
+for Bayesian fits: posterior medians and credible intervals, the
+probability of direction, and random effects from the draws.</li>
 </ul>
 <p>Descriptive and reporting companions:</p>
 <ul>
