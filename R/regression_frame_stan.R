@@ -46,7 +46,13 @@ as_regression_frame.stanreg <- function(fit,
   # rstanarm uses raw coefficient names (no `b_` prefix). `fit$coefficients`
   # is the fixed-effect coefficient summary; its names define the
   # population-level fixed effects that go into the coefs table.
+  # For stan_glmer / stan_lmer fits it ALSO contains one `b[...]` entry
+  # per group-level deviation (one per school, per region, ...): those
+  # are not population-level coefficients and rendered as a flood of
+  # flat rows -- they are excluded here, and the random structure is
+  # summarised by the Random effects block below (finding c).
   coef_names <- names(fit$coefficients)
+  coef_names <- coef_names[!grepl("^b\\[", coef_names)]
 
   coefs <- .stan_coefs(fit, coef_names, ci_level = ci_level,
                         brms_b_prefix = FALSE)
@@ -57,7 +63,10 @@ as_regression_frame.stanreg <- function(fit,
                       ci_method  = ci_method,
                       model_id   = model_id,
                       class_name = "stanreg",
-                      title_class = .stanreg_title_prefix(fit))
+                      title_class = .stanreg_title_prefix(fit),
+                      random_effects = .stan_random_effects(fit, "stanreg",
+                                                            ci_level),
+                      n_groups = .stan_n_groups(fit, "stanreg"))
 
   new_regression_frame(coefs, info, fit)
 }
@@ -105,7 +114,10 @@ as_regression_frame.brmsfit <- function(fit,
                       ci_method  = ci_method,
                       model_id   = model_id,
                       class_name = "brmsfit",
-                      title_class = .brmsfit_title_prefix(fit))
+                      title_class = .brmsfit_title_prefix(fit),
+                      random_effects = .stan_random_effects(fit, "brmsfit",
+                                                            ci_level),
+                      n_groups = .stan_n_groups(fit, "brmsfit"))
 
   new_regression_frame(coefs, info, fit)
 }
@@ -339,7 +351,8 @@ as_regression_frame.brmsfit <- function(fit,
 
 # Build the info list for a Bayesian fit.
 .stan_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                       model_id, class_name, title_class) {
+                       model_id, class_name, title_class,
+                       random_effects = NULL, n_groups = NULL) {
   fam <- .stan_family(fit)
   dv  <- .stan_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
@@ -401,9 +414,9 @@ as_regression_frame.brmsfit <- function(fit,
     dv             = dv,
     dv_label       = dv_label,
     n_obs          = fit_stats$nobs,
-    n_groups       = NULL,
+    n_groups       = n_groups,
     weights_kind   = "none",
-    random_effects = empty_random_effects(),
+    random_effects = random_effects %||% empty_random_effects(),
     fit_stats      = fit_stats,
     vcov_kind      = vcov_kind,
     vcov_label     = vcov_label %||% "Posterior covariance",
@@ -459,3 +472,134 @@ as_regression_frame.brmsfit <- function(fit,
 # produced the fit when scanning multi-model tables.
 .stanreg_title_prefix <- function(fit) "stanreg"
 .brmsfit_title_prefix <- function(fit) "brmsfit"
+
+
+# ---- Random effects for Bayesian multilevel fits ---------------------------
+
+# Posterior summary of the group-level (co)variance parameters, shaped
+# like .merMod_random_effects()'s value so the shared Random-effects
+# block renderer applies unchanged. All quantities are computed from
+# the posterior draws on the SD / correlation scale directly (median,
+# posterior SD, equal-tailed CrI) -- no delta method, no merDeriv.
+# method = "MCMC" feeds the footer's estimator label; null_lrt stays
+# NULL (there is no likelihood-ratio test for a posterior), so no
+# chi-bar-squared line is printed.
+.stan_random_effects <- function(fit, class_name, ci_level = 0.95) {
+  draws <- tryCatch(posterior::as_draws_matrix(fit),
+                    error = function(e) NULL)
+  if (is.null(draws)) return(empty_random_effects())                  # nocov
+  vars <- colnames(draws)
+  lo <- (1 - ci_level) / 2
+  hi <- 1 - lo
+
+  summ <- function(x) {
+    q <- unname(stats::quantile(x, c(0.5, lo, hi)))
+    list(est = q[1], se = stats::sd(x), lo = q[2], hi = q[3])
+  }
+  rows <- list()
+  add_row <- function(group, term, sd_draws = NULL, corr_draws = NULL) {
+    if (!is.null(sd_draws)) {
+      # CONTRACT: the display layer stores uncertainty on the VARIANCE
+      # scale and sqrt-transforms for the SD display
+      # (.re_components_on_scale). Summaries are computed on the SD
+      # scale FIRST and then squared for storage, so the displayed SD
+      # estimate and CrI are exactly the posterior median and
+      # quantiles of sigma (with an even draw count, median(x^2) and
+      # median(x)^2 differ by the interpolation step); the SE crosses
+      # back by the delta method like the merMod path.
+      s <- summ(sd_draws)
+      rows[[length(rows) + 1L]] <<- data.frame(
+        group = group, term = term,
+        variance = s$est^2, sd = s$est,
+        corr = NA_real_, is_correlation = FALSE,
+        std_error = 2 * s$est * s$se, ci_lower = s$lo^2,
+        ci_upper = s$hi^2,
+        stringsAsFactors = FALSE
+      )
+    } else {
+      s <- summ(corr_draws)
+      rows[[length(rows) + 1L]] <<- data.frame(
+        group = group, term = term,
+        variance = NA_real_, sd = NA_real_,
+        corr = s$est, is_correlation = TRUE,
+        std_error = s$se, ci_lower = s$lo, ci_upper = s$hi,
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+
+  if (identical(class_name, "stanreg")) {
+    # rstanarm: "Sigma[group:term1,term2]" on the (co)variance scale.
+    sig <- grep("^Sigma\\[", vars, value = TRUE)
+    if (length(sig) == 0L) return(empty_random_effects())
+    inside <- sub("^Sigma\\[(.*)\\]$", "\\1", sig)
+    grp <- sub(":.*$", "", inside)
+    pair <- sub("^[^:]*:", "", inside)
+    t1 <- sub(",.*$", "", pair)
+    t2 <- sub("^.*,", "", pair)
+    # Diagonals first (variances -> SD rows), then correlations.
+    for (i in which(t1 == t2)) {
+      v <- pmax(draws[, sig[i]], 0)
+      add_row(grp[i], t1[i], sd_draws = sqrt(v))
+    }
+    for (i in which(t1 != t2)) {
+      v1 <- paste0("Sigma[", grp[i], ":", t1[i], ",", t1[i], "]")
+      v2 <- paste0("Sigma[", grp[i], ":", t2[i], ",", t2[i], "]")
+      if (!v1 %in% vars || !v2 %in% vars) next                        # nocov
+      denom <- sqrt(pmax(draws[, v1], 0) * pmax(draws[, v2], 0))
+      ok <- denom > 0
+      if (!any(ok)) next                                              # nocov
+      add_row(grp[i], paste0(t1[i], " \u00d7 ", t2[i]),
+              corr_draws = (draws[, sig[i]] / denom)[ok])
+    }
+  } else {
+    # brms: "sd_<group>__<term>" (SD scale), "cor_<group>__<t1>__<t2>".
+    sds <- grep("^sd_", vars, value = TRUE)
+    if (length(sds) == 0L) return(empty_random_effects())
+    for (v in sds) {
+      inside <- sub("^sd_", "", v)
+      grp <- sub("__.*$", "", inside)
+      term <- sub("^[^_]*(_[^_]*)*?__", "", inside)
+      term <- sub(paste0("^", grp, "__"), "", inside)
+      if (identical(term, "Intercept")) term <- "(Intercept)"
+      add_row(grp, term, sd_draws = draws[, v])
+    }
+    for (v in grep("^cor_", vars, value = TRUE)) {
+      inside <- sub("^cor_", "", v)
+      grp <- sub("__.*$", "", inside)
+      rest <- sub(paste0("^", grp, "__"), "", inside)
+      t1 <- sub("__.*$", "", rest)
+      t2 <- sub("^[^_]*(_[^_]*)*?__", "", rest)
+      t2 <- sub(paste0("^", t1, "__"), "", rest)
+      lab <- function(x) if (identical(x, "Intercept")) "(Intercept)" else x
+      add_row(grp, paste0(lab(t1), " \u00d7 ", lab(t2)), corr_draws = draws[, v])
+    }
+  }
+
+  # Residual SD for gaussian fits: the "sigma" draws.
+  fam <- .stan_family(fit)
+  if (identical(fam$family, "gaussian") && "sigma" %in% vars) {
+    add_row("Residual", "", sd_draws = draws[, "sigma"])
+  }
+
+  if (length(rows) == 0L) return(empty_random_effects())              # nocov
+  vc_df <- do.call(rbind, rows)
+  list(variance_components = vc_df, icc = NA_real_, method = "MCMC",
+       null_lrt = NULL)
+}
+
+
+# Named group-size vector (design-doc shape: NULL | named int).
+.stan_n_groups <- function(fit, class_name) {
+  ng <- if (identical(class_name, "stanreg")) {
+    tryCatch(fit$glmod$reTrms$flist, error = function(e) NULL)
+  } else {
+    tryCatch(stats::model.frame(fit)[
+      , names(brms::ngrps(fit)), drop = FALSE],
+      error = function(e) NULL)
+  }
+  if (is.null(ng) || length(ng) == 0L) return(NULL)
+  out <- vapply(ng, function(f) length(unique(as.character(f))),
+                integer(1))
+  as.list(out)
+}

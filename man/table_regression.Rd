@@ -196,7 +196,8 @@ adjustment} section for when this is and is not appropriate.}
 \item{show_columns}{Character vector of tokens selecting the
 per-coefficient columns and their display order. Accepts
 \strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"},
-\code{"beta"}, \code{"n"}, \code{"n_events"}, \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
+\code{"beta"}, \code{"n"}, \code{"n_events"}, \code{"pd"} (probability of
+direction, Bayesian fits only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
 \code{"ame_p"}, \code{"rmst"} + \code{"rmst_se"} / \code{"rmst_ci"} / \code{"rmst_p"},
 \code{"risk_diff"} + its \verb{_se} / \verb{_ci} / \verb{_p} companions,
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +

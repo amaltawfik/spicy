@@ -522,6 +522,11 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     p      = list(estimate_type = "B",
                   fields = "p_value",
                   header_short = "p"),
+    # Probability of direction (Bayesian fits): share of posterior
+    # draws on the dominant side of zero, range [0.5, 1].
+    pd     = list(estimate_type = "B",
+                  fields = "pd",
+                  header_short = "pd"),
     beta   = list(estimate_type = "beta",
                   fields = "estimate",
                   header_short = "\u03B2"),

@@ -124,6 +124,12 @@ align_frames <- function(
       } else {
         NA_character_
       },
+      # Probability of direction (Bayesian frames only; NA elsewhere).
+      pd               = if (!is.null(cf$pd)) {
+        as.numeric(cf$pd)
+      } else {
+        NA_real_
+      },
       stringsAsFactors = FALSE
     )
   }))

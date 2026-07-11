@@ -542,7 +542,8 @@
 #' @param show_columns Character vector of tokens selecting the
 #'   per-coefficient columns and their display order. Accepts
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
-#'   `"beta"`, `"n"`, `"n_events"`, `"ame"`, `"ame_se"`, `"ame_ci"`,
+#'   `"beta"`, `"n"`, `"n_events"`, `"pd"` (probability of
+#'   direction, Bayesian fits only), `"ame"`, `"ame_se"`, `"ame_ci"`,
 #'   `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
 #'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
@@ -1384,10 +1385,17 @@ table_regression <- function(
   # "n / R^2 / Adj.R^2 / DeltaR^2 / F-change / p" as in APA Table 7.13.
   user_set_fit_stats <- !is.null(show_fit_stats)
   if (!user_set_fit_stats) {
-    any_glm <- any(vapply(models, inherits, logical(1), "glm"))
+    # Bayesian fits inherit from lm / glm (stanreg subclasses both), but
+    # their defaults are their own: no likelihood-based information
+    # criteria, no classical or pseudo R^2 -- nobs only. Exclude them
+    # from the frequentist class buckets so the glm branch does not
+    # inject AIC / pseudo-R^2 tokens the Bayesian gate would refuse.
+    is_bayes <- vapply(models, inherits, logical(1),
+                       c("stanreg", "brmsfit"))
+    any_glm <- any(vapply(models, inherits, logical(1), "glm") & !is_bayes)
     any_lm_only <- any(vapply(models, function(f) {
       inherits(f, "lm") && !inherits(f, "glm")
-    }, logical(1)))
+    }, logical(1)) & !is_bayes)
     # Phase 7c9a: mixed-effects class-aware default. lmer / glmer /
     # glmmTMB / lme get nobs + Nakagawa marginal/conditional R^2 + AIC
     # + BIC. classical R^2 is not defined, and the two R^2 of Nakagawa
@@ -1432,6 +1440,10 @@ table_regression <- function(
                             "pseudo_r2_mcfadden",
                             "pseudo_r2_nagelkerke",
                             "AIC")
+    }
+    if (any(is_bayes)) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only && !any_glm) "nobs")
     }
     # multinom: same pseudo-R2 pair as the other categorical families
     # (dev/fit_stats_by_class.md). Its null model is intercept-only, whose
@@ -1669,6 +1681,22 @@ table_regression <- function(
   validate_reference_label(reference_label)
   validate_stars(stars)
   validate_p_adjust(p_adjust)
+  # Finding (a) of the Bayesian recon: a posterior has no p-values, so a
+  # p_adjust request was a silent no-op. Refuse it when every model is
+  # Bayesian (mixed-class tables keep it: the frequentist columns adjust).
+  if (!identical(p_adjust, "none") &&
+      length(models) > 0L &&
+      all(vapply(models, inherits, logical(1),
+                 c("stanreg", "brmsfit")))) {
+    spicy_abort(
+      c("`p_adjust` is not available for Bayesian fits: there are no p-values to adjust.",
+        "i" = paste0("Bayesian tables report posterior medians and ",
+                     "credible intervals; the probability-of-direction ",
+                     "column (`show_columns = \"pd\"`) is the closest ",
+                     "posterior summary.")),
+      class = "spicy_invalid_input"
+    )
+  }
   validate_keep_drop(keep, drop)
   validate_logical_scalar(exponentiate, "exponentiate")
   validate_model_labels(model_labels, models)

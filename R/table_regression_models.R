@@ -203,7 +203,13 @@
 #'
 #' @section Bayesian models:
 #' Posterior median, posterior SD, and equal-tailed credible intervals;
-#' deliberately no p-value column and no stars.
+#' deliberately no p-value column and no stars. Multilevel fits
+#' (`stan_glmer`, `brm` with grouping terms) report their random
+#' effects as a block -- posterior median SD and credible interval per
+#' component, from the draws -- with no likelihood-ratio line.
+#' `p_adjust` and likelihood-based fit-statistic tokens are refused
+#' (no p-values, no likelihood-based information criteria in a
+#' posterior); compare models with `loo::loo()` outside the table.
 #'
 #' @return A data frame with one row per supported engine and columns
 #'   `family`, `class`, `engine`, `ame`, `exponentiate`, `blocks`.

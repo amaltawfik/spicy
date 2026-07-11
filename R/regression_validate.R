@@ -57,7 +57,9 @@
     # LRT-based partial chi-square (glm; analog of partial F) \u2013
     # kept BUNDLED as "value (df)" because that is the standard
     # statistical-reporting convention (e.g. "chi2(2) = 5.34").
-    "partial_chi2"
+    "partial_chi2",
+    # Probability of direction (Bayesian fits only).
+    "pd"
   ),
   show_fit_stats = c(
     "nobs", "weighted_nobs",
@@ -714,6 +716,51 @@ validate_class_appropriate_tokens <- function(models,
             paste(shQuote(bad_fit), collapse = ", ")
           ),
           "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # Probability of direction: defined only for Bayesian fits (the
+  # frames of every other class carry no draws to compute it from).
+  if ("pd" %in% show_columns) {
+    all_bayes_pd <- length(models) > 0L &&
+      all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+    if (!all_bayes_pd) {
+      spicy_abort(
+        c('Token "pd" in `show_columns` is defined only for Bayesian fits.',
+          "i" = paste0("The probability of direction is a posterior ",
+                       "summary (share of draws on the dominant side ",
+                       "of zero); frequentist fits report p-values.")),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # Bayesian fits (finding a + b of the Bayesian-vignette recon):
+  # a posterior has no p-values to adjust and no likelihood-based
+  # information criteria; both requests were silently ignored before.
+  all_bayes <- length(models) > 0L &&
+    all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+  if (all_bayes) {
+    bad_fit <- intersect(show_fit_stats,
+                         c("AIC", "AICc", "BIC", "deviance",
+                           "r2", "adj_r2", "omega2", "f2",
+                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
+                           "pseudo_r2_tjur", "sigma", "rmse"))
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not defined for Bayesian fits.",
+            paste(shQuote(bad_fit), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Posterior fits have no likelihood-based information ",
+            "criteria or classical R\u00B2; compare models with ",
+            "`loo::loo()` / `loo::loo_compare()` outside the table."
+          )
         ),
         class = "spicy_invalid_input"
       )
