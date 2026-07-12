@@ -287,18 +287,25 @@ silently wrong:
   "elpd_loo", "looic")` adds the PSIS-LOO expected log predictive
   density and its deviance-scale twin, with the elpd standard error
   disclosed in the footer (Vehtari, Gelman & Gabry 2017; a few
-  seconds per model; a `"waic"` token exists too — its SE is
-  disclosed the same way — though PSIS-LOO is generally preferred).
+  seconds per model). Prefer the log scale: the −2 of LOOIC persists
+  for historical reasons only (Gelman, Vehtari, McElreath et al.
+  2026, App. B). A `"waic"` token exists too — its SE is
+  disclosed the same way — though PSIS-LOO is generally preferred.
   These estimates come with their own reliability diagnostics, and
   spicy never mutes them: when PSIS-LOO flags observations with
-  Pareto k above 0.7 (or WAIC flags p_waic above 0.4) the footer
+  Pareto k above the sample-size-specific threshold — min(1 −
+  1/log10(S), 0.7), the same bound `loo::loo()` itself prints
+  (Vehtari et al. 2024) — or WAIC flags p_waic above 0.4, the footer
   says the estimate is unreliable and a `spicy_bayes_diagnostics`
   warning fires, with `loo::loo_moment_match()` as the standard
   remedy. Model *comparison* belongs to
-  `loo::loo_compare()` outside the table, and the canonical fit
-  *check* is the graphical posterior predictive check
-  (`pp_check(fit)`; Gelman et al. 2013, ch. 6) — Bayes factors stay out by design
-  (Gelman et al. 2013, §7.4);
+  `loo::loo_compare()` outside the table: the comparison uncertainty
+  is the standard error of the elpd *difference* (not the per-model
+  SEs shown here), and differences smaller than about 4 carry no
+  practical meaning (Gelman, Vehtari, McElreath et al. 2026, ch. 9).
+  The canonical fit *check* is the graphical posterior predictive
+  check (`pp_check(fit)`; Gelman et al. 2013, ch. 6) — Bayes factors
+  stay out by design (Gelman et al. 2013, §7.4);
 * robust / cluster-robust `vcov` — a sandwich estimator corrects a
   misspecified likelihood's standard errors; nothing standard plays
   that role for a posterior (misspecification-robust
@@ -424,6 +431,8 @@ table_regression(fit, exponentiate = TRUE, output = "gt")
 * Gelman, A., Goodrich, B., Gabry, J., &amp; Vehtari, A. (2019).
   R-squared for Bayesian regression models. *The American
   Statistician*, 73(3), 307–309.
+* Gelman, A., Vehtari, A., McElreath, R., et al. (2026). *Bayesian
+  Workflow*. Chapman &amp; Hall / CRC Press.
 * Kruschke, J. K. (2015). *Doing Bayesian Data Analysis* (2nd ed.).
   Academic Press.
 * Kruschke, J. K. (2021). Bayesian analysis reporting guidelines.
@@ -434,6 +443,9 @@ table_regression(fit, exponentiate = TRUE, output = "gt")
 * Vehtari, A., Gelman, A., &amp; Gabry, J. (2017). Practical Bayesian
   model evaluation using leave-one-out cross-validation and WAIC.
   *Statistics and Computing*, 27(5), 1413–1432.
+* Vehtari, A., Simpson, D., Gelman, A., Yao, Y., &amp; Gabry, J.
+  (2024). Pareto smoothed importance sampling. *Journal of Machine
+  Learning Research*, 25(72), 1–58.
 * Vehtari, A., Gelman, A., Simpson, D., Carpenter, B., &amp;
   Bürkner, P.-C. (2021). Rank-normalization, folding, and
   localization: An improved R-hat for assessing convergence of MCMC.

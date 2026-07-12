@@ -513,14 +513,27 @@ as_regression_frame.brmsfit <- function(fit,
       # The loo warning is suppressed because spicy owns the
       # messaging -- but the Pareto-k diagnostics that decide whether
       # PSIS-LOO is even reliable are HARVESTED, not silenced: high-k
-      # fits get a footer caveat + classed warning below.
+      # fits get a footer caveat + classed warning below. The
+      # reliability threshold is the sample-size-specific
+      # min(1 - 1/log10(S), 0.7) of Vehtari et al. (2024) -- the same
+      # bound loo's own print uses, so the table never contradicts a
+      # user's loo(fit) output (equals 0.7 for S >= ~2200 draws,
+      # stricter for shorter chains).
       l <- suppressWarnings(loo::loo(fit))
       k <- l$diagnostics$pareto_k
+      s_draws <- tryCatch(as.integer(attr(l, "dims")[1L]),
+                          error = function(e) NA_integer_)
+      k_thr <- if (is.finite(s_draws) && s_draws > 10L) {
+        min(1 - 1 / log10(s_draws), 0.7)
+      } else {
+        0.7                                                           # nocov
+      }
       list(elpd = unname(l$estimates["elpd_loo", "Estimate"]),
            looic = unname(l$estimates["looic", "Estimate"]),
            elpd_se = unname(l$estimates["elpd_loo", "SE"]),
-           n_bad_k = length(loo::pareto_k_ids(l, threshold = 0.7)),
-           n_k = length(k))
+           n_bad_k = sum(k > k_thr, na.rm = TRUE),
+           n_k = length(k),
+           k_thr = k_thr)
     }, error = function(e) {
       # A failed computation must never degrade to a silently absent
       # row (pre-1.0 policy): say what failed and what is missing.
@@ -531,11 +544,11 @@ as_regression_frame.brmsfit <- function(fit,
         class = c("spicy_bayes_diagnostics", "spicy_caveat")
       )
       list(elpd = NA_real_, looic = NA_real_, elpd_se = NA_real_,
-           n_bad_k = NA_integer_, n_k = NA_integer_)
+           n_bad_k = NA_integer_, n_k = NA_integer_, k_thr = NA_real_)
     })
   } else {
     list(elpd = NA_real_, looic = NA_real_, elpd_se = NA_real_,
-         n_bad_k = NA_integer_, n_k = NA_integer_)
+         n_bad_k = NA_integer_, n_k = NA_integer_, k_thr = NA_real_)
   }
   waic_pair <- if (want("waic")) {
     tryCatch({
@@ -639,15 +652,15 @@ as_regression_frame.brmsfit <- function(fit,
   if (isTRUE(loo_pair$n_bad_k > 0L)) {
     loo_bits <- c(loo_bits, sprintf(
       paste0("PSIS-LOO unreliable for %d of %d observations (Pareto ",
-             "k > 0.7); consider loo::loo_moment_match() or refitting ",
-             "with k_threshold = 0.7."),
-      loo_pair$n_bad_k, loo_pair$n_k))
+             "k > %.2f); consider loo::loo_moment_match() or ",
+             "refitting with k_threshold = 0.7."),
+      loo_pair$n_bad_k, loo_pair$n_k, loo_pair$k_thr))
     spicy_warn(
       sprintf(
         paste0("PSIS-LOO diagnostics (outcome: %s): %d of %d ",
-               "observations with Pareto k > 0.7 -- the requested ",
+               "observations with Pareto k > %.2f -- the requested ",
                "ELPD / LOOIC values and SE(ELPD) are unreliable."),
-        dv, loo_pair$n_bad_k, loo_pair$n_k),
+        dv, loo_pair$n_bad_k, loo_pair$n_k, loo_pair$k_thr),
       class = c("spicy_bayes_diagnostics", "spicy_caveat")
     )
   }
