@@ -1100,12 +1100,16 @@ MAD SD on the ratio scale, not a delta-method approximation).
 
 Fit statistics: `"r2_bayes"` (in the Bayesian default) plus the opt-in
 `"elpd_loo"` / `"looic"` / `"waic"`, whose standard errors are disclosed
-in the footer; unreliable estimates (PSIS-LOO Pareto k \> 0.7, WAIC
-p_waic \> 0.4) add a footer caveat instead of being silenced. Every
+in the footer; unreliable estimates (PSIS-LOO Pareto k above the
+sample-size-specific threshold \\\min(1 - 1/\log\_{10} S, 0.7)\\ of
+Vehtari et al. 2024 – the same bound
+[`loo::loo()`](https://mc-stan.org/loo/reference/loo.html) prints – and
+WAIC p_waic \> 0.4) add a footer caveat instead of being silenced. Every
 table is backed by an automatic sampler-diagnostics guard (R-hat \>=
-1.01, ESS below 100 per chain, divergent transitions, E-BFMI \< 0.2, per
-Vehtari et al. 2021): problems add a footer line and raise a warning
-classed `spicy_bayes_diagnostics` (nested under `spicy_caveat`, so
+1.01, ESS below 100 per chain – floored at 400 so fewer chains never
+weaken the bar –, divergent transitions, E-BFMI \< 0.2, per Vehtari et
+al. 2021): problems add a footer line and raise a warning classed
+`spicy_bayes_diagnostics` (nested under `spicy_caveat`, so
 `withCallingHandlers(spicy_bayes_diagnostics = ...)` mutes the guard
 selectively); clean fits print nothing. Per-coefficient `"rhat"` /
 `"ess_bulk"` / `"ess_tail"` columns are available in all-Bayesian

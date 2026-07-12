@@ -1138,9 +1138,13 @@ the ratio scale, not a delta-method approximation).</p>
 <p>Fit statistics: <code>"r2_bayes"</code> (in the Bayesian default) plus the
 opt-in <code>"elpd_loo"</code> / <code>"looic"</code> / <code>"waic"</code>, whose standard errors
 are disclosed in the footer; unreliable estimates (PSIS-LOO Pareto
-k &gt; 0.7, WAIC p_waic &gt; 0.4) add a footer caveat instead of being
+k above the sample-size-specific threshold
+\(\min(1 - 1/\log_{10} S, 0.7)\) of
+Vehtari et al. 2024 – the same bound <code><a href="https://mc-stan.org/loo/reference/loo.html" class="external-link">loo::loo()</a></code> prints – and
+WAIC p_waic &gt; 0.4) add a footer caveat instead of being
 silenced. Every table is backed by an automatic sampler-diagnostics
-guard (R-hat &gt;= 1.01, ESS below 100 per chain, divergent
+guard (R-hat &gt;= 1.01, ESS below 100 per chain – floored at 400 so
+fewer chains never weaken the bar –, divergent
 transitions, E-BFMI &lt; 0.2, per Vehtari et al. 2021): problems add
 a footer line and raise a warning classed
 <code>spicy_bayes_diagnostics</code> (nested under <code>spicy_caveat</code>, so
