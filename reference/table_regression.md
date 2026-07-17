@@ -1019,21 +1019,25 @@ silent model-based result under a robust label:
 
 - `mlogit`:
 
-  `classical`, `HC*`, `CR*` (cluster at the choice-situation level).
+  `classical` + `CR*` only (cluster at the choice-situation level) –
+  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+  mis-scales the sandwich for mlogit's per-choice-situation scores, so
+  `HC*` is refused.
 
 - `lmer`, `lme`, `glmmTMB`, `coxph`, `survreg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`, `polr`,
   `clm`, `betareg`,
-  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), `rms`
+  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html),
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html), `rms`
   (`ols`/`lrm`/`cph`/`Glm`):
 
   `classical` + `CR*` only – `HC*` and the resamplers (which refit
   `lm`/`glm`) are not defined for these. `clm` with a scale / nominal
-  (partial-PO) component is `classical` only.
+  (partial-PO) component is `classical` only. `multinom` needs sandwich
+  \>= 3.1-2 (which added its `estfun()` method); its `cluster` is one
+  entry per observation.
 
-- Other classes (`glmer`,
-  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
-  `rstanarm`/`brms`, ...):
+- Other classes (`glmer`, `rstanarm`/`brms`, ...):
 
   `classical` (model-based) only.
 
@@ -1042,7 +1046,7 @@ the field-standard oracle: `lm`/`glm`/`lmer`/`lme`/`glmmTMB` use
 clubSandwich (CR2 = Bell-McCaffrey, with Satterthwaite df for
 `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 sandwich (identical to `coxph(..., cluster=)`);
-`survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit` use
+`survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` use
 [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html);
 `svyglm` uses the design-aware clubSandwich estimator; `rms` fits use
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (which needs

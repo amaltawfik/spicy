@@ -145,6 +145,11 @@ rendering an empty column.
   classes. Resampling footers report the valid replicate count, and a
   bootstrap / jackknife whose replicates nearly all fail raises
   `spicy_resampling_failed` instead of silently reporting classical SEs.
+- Cluster-robust `vcov` (`"CR0"`-`"CR3"`) for
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
+  including its AME columns (needs sandwich \>= 3.1-2, which added the
+  `estfun()` method). `HC*` stays refused: a multi-equation model has no
+  working residuals.
 - AME columns are available for `betareg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html), `svyglm`,
   `survreg`, `fixest`, `estimatr`,

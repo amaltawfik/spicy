@@ -161,9 +161,14 @@ header and the first number Long & Freese read. McFadden’s pseudo-R² is
 explained variance (Long & Freese 2014) — the contrast between the tiny
 value and the decisive test is exactly why it should not be read as one.
 
-One scope note: `multinom` fits report **classical Wald-z inference
-only** — a robust or cluster-robust `vcov` request is refused with an
-explanatory error rather than silently ignored.
+One scope note on inference: alongside the classical Wald-z default,
+`multinom` fits support **cluster-robust standard errors**
+(`vcov = "CR0"`–`"CR3"` with `cluster = ~id`, one cluster value per
+observation; requires sandwich ≥ 3.1-2, whose new `estfun()` method
+unlocked the cluster sandwich) — and the AME columns honour the same
+estimator. Heteroskedasticity-robust `HC*` remains refused with an
+explanatory error: a multi-equation model has no working residuals, so
+no HC sandwich exists to compute.
 
 ## Odds ratios: `exponentiate = TRUE`
 

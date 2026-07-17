@@ -258,10 +258,15 @@ McFadden’s pseudo-R² is 1 − (−1242.9)/(−1263.8) = 0.017: a comparative
 index, not a share of explained variance (Long &amp; Freese 2014) — the
 contrast between the tiny value and the decisive test is exactly why it
 should not be read as one.</p>
-<p>One scope note: <code>multinom</code> fits report <strong>classical
-Wald-z inference only</strong> — a robust or cluster-robust
-<code>vcov</code> request is refused with an explanatory error rather
-than silently ignored.</p>
+<p>One scope note on inference: alongside the classical Wald-z default,
+<code>multinom</code> fits support <strong>cluster-robust standard
+errors</strong> (<code>vcov = "CR0"</code>–<code>"CR3"</code> with
+<code>cluster = ~id</code>, one cluster value per observation; requires
+sandwich ≥ 3.1-2, whose new <code>estfun()</code> method unlocked the
+cluster sandwich) — and the AME columns honour the same estimator.
+Heteroskedasticity-robust <code>HC*</code> remains refused with an
+explanatory error: a multi-equation model has no working residuals, so
+no HC sandwich exists to compute.</p>
 </div>
 <div class="section level2">
 <h2 id="odds-ratios-exponentiate-true">Odds ratios: <code>exponentiate = TRUE</code><a class="anchor" aria-label="anchor" href="#odds-ratios-exponentiate-true"></a>

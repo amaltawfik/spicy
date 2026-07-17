@@ -1058,18 +1058,24 @@ the class cannot honour fails fast with <code>spicy_unsupported_vcov</code>
 <code>CR*</code>, <code>bootstrap</code>, <code>jackknife</code>.</p></dd>
 
 <dt><code>mlogit</code></dt>
-<dd><p><code>classical</code>, <code>HC*</code>, <code>CR*</code> (cluster at the
-choice-situation level).</p></dd>
+<dd><p><code>classical</code> + <code>CR*</code> only (cluster at the
+choice-situation level) – <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
+sandwich for mlogit's per-choice-situation scores, so <code>HC*</code> is
+refused.</p></dd>
 
 <dt><code>lmer</code>, <code>lme</code>, <code>glmmTMB</code>, <code>coxph</code>, <code>survreg</code>,
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>,
-<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code>rms</code> (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>)</dt>
+<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>,
+<code>rms</code> (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>)</dt>
 <dd><p><code>classical</code>
 + <code>CR*</code> only – <code>HC*</code> and the resamplers (which refit
 <code>lm</code>/<code>glm</code>) are not defined for these. <code>clm</code> with a scale /
-nominal (partial-PO) component is <code>classical</code> only.</p></dd>
+nominal (partial-PO) component is <code>classical</code> only.
+<code>multinom</code> needs <span class="pkg">sandwich</span> &gt;= 3.1-2 (which added its
+<code>estfun()</code> method); its <code>cluster</code> is one entry per
+observation.</p></dd>
 
-<dt>Other classes (<code>glmer</code>, <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>,
+<dt>Other classes (<code>glmer</code>,
 <code>rstanarm</code>/<code>brms</code>, ...)</dt>
 <dd><p><code>classical</code> (model-based) only.</p></dd>
 
@@ -1079,7 +1085,7 @@ to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>
 <span class="pkg">clubSandwich</span> (CR2 = Bell-McCaffrey, with Satterthwaite df for
 <code>lm</code>/<code>lme</code>/<code>lmer</code>); <code>coxph</code>/<code>cph</code> use the Lin-Wei grouped-dfbeta
 sandwich (identical to <code>coxph(..., cluster=)</code>);
-<code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code> use
+<code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code>/<code>multinom</code> use
 <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>svyglm</code> uses the design-aware
 <span class="pkg">clubSandwich</span> estimator; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
 needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
