@@ -542,6 +542,11 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     ess_tail = list(estimate_type = "B",
                     fields = "ess_tail",
                     header_short = "ESS (tail)"),
+    # MCSE of the displayed posterior median (Bayesian Workflow
+    # sec. 11.6: the criterion for how many digits are honest).
+    mcse     = list(estimate_type = "B",
+                    fields = "mcse",
+                    header_short = "MCSE"),
     beta   = list(estimate_type = "beta",
                   fields = "estimate",
                   header_short = "\u03B2"),
@@ -867,6 +872,23 @@ format_cell_value <- function(long_row, cs, stars_map,
     if (!is.finite(val)) return("")
     return(formatC(val, format = "f", digits = 3,
                    decimal.mark = decimal_mark))
+  }
+  # MCSE spans orders of magnitude across coefficient scales (a
+  # log-odds MCSE ~0.01, a reaction-time one ~1.5), so a fixed
+  # decimal count misleads: render 2 significant digits, plain
+  # notation.
+  if (field == "mcse") {
+    val <- long_row[[field]][1]
+    if (!is.finite(val)) return("")
+    # Two significant digits with trailing zeros kept ("0.10", not
+    # "0.1"), plain notation; strip the bare trailing point that
+    # flag = "#" leaves on integer-valued output.
+    out <- sub("\\.$", "", formatC(val, digits = 2, format = "g",
+                                   flag = "#"))
+    if (!identical(decimal_mark, ".")) {
+      out <- sub(".", decimal_mark, out, fixed = TRUE)                # nocov
+    }
+    return(out)
   }
   if (field == "n_obs") {
     if (is.na(val)) return("")

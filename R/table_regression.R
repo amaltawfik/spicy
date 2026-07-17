@@ -322,7 +322,13 @@
 #' `withCallingHandlers(spicy_bayes_diagnostics = ...)` mutes the
 #' guard selectively); clean fits print nothing. Per-coefficient
 #' `"rhat"` / `"ess_bulk"` / `"ess_tail"` columns are available in
-#' all-Bayesian tables.
+#' all-Bayesian tables, as is `"mcse"` -- the Monte Carlo standard
+#' error of the displayed posterior median, the criterion for how
+#' many digits a table can honestly show (a displayed digit is
+#' Monte-Carlo stable when twice the MCSE stays below it; Gelman,
+#' Vehtari, McElreath et al. 2026, sec. 11.6). Under
+#' `exponentiate = TRUE` the MCSE is recomputed on the exponentiated
+#' draws.
 #'
 #' Refused on principle (classed error, never a silent fallback):
 #' likelihood-based fit statistics (`"aic"`, pseudo-R², ...),
@@ -611,8 +617,9 @@
 #'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
 #'   `"beta"`, `"n"`, `"n_events"`, `"pd"` (probability of
 #'   direction, Bayesian fits only), `"rhat"` / `"ess_bulk"` /
-#'   `"ess_tail"` (per-coefficient sampler diagnostics, all-Bayesian
-#'   tables only), `"ame"`, `"ame_se"`, `"ame_ci"`,
+#'   `"ess_tail"` / `"mcse"` (per-coefficient sampler diagnostics and
+#'   the Monte Carlo standard error of the displayed posterior
+#'   median, all-Bayesian tables only), `"ame"`, `"ame_se"`, `"ame_ci"`,
 #'   `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
 #'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +

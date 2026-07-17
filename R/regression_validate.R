@@ -60,8 +60,9 @@
     "partial_chi2",
     # Probability of direction (Bayesian fits only).
     "pd",
-    # Per-parameter sampler diagnostics (Bayesian fits only).
-    "rhat", "ess_bulk", "ess_tail"
+    # Per-parameter sampler diagnostics (Bayesian fits only), and the
+    # Monte Carlo standard error of the displayed posterior median.
+    "rhat", "ess_bulk", "ess_tail", "mcse"
   ),
   show_fit_stats = c(
     "nobs", "weighted_nobs",
@@ -824,7 +825,8 @@ validate_class_appropriate_tokens <- function(models,
   # mixed table the columns would dash for most rows while the
   # automatic convergence guard ALREADY reports per-model sampler
   # problems in the footer, so the strict gate points there.
-  diag_cols <- intersect(show_columns, c("rhat", "ess_bulk", "ess_tail"))
+  diag_cols <- intersect(show_columns,
+                         c("rhat", "ess_bulk", "ess_tail", "mcse"))
   if (length(diag_cols) > 0L) {
     all_bayes_diag <- length(models) > 0L &&
       all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
@@ -834,8 +836,8 @@ validate_class_appropriate_tokens <- function(models,
             "Token(s) %s in `show_columns` are shown only when every model is Bayesian.",
             paste(shQuote(diag_cols), collapse = ", ")
           ),
-          "i" = paste0("R-hat and ESS are sampler diagnostics of the ",
-                       "posterior draws; frequentist fits have none."),
+          "i" = paste0("R-hat, ESS and MCSE are sampler diagnostics of ",
+                       "the posterior draws; frequentist fits have none."),
           "i" = paste0("In a mixed table the automatic convergence guard ",
                        "already reports sampler problems per model in ",
                        "the footer.")),

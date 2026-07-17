@@ -228,7 +228,7 @@ as_regression_frame.brmsfit <- function(fit,
   "term", "parent_var", "label", "factor_level_pos",
   "is_ref", "estimate_type", "estimate", "std_error",
   "df", "statistic", "p_value", "pd",
-  "rhat", "ess_bulk", "ess_tail",
+  "rhat", "ess_bulk", "ess_tail", "mcse",
   "ci_lower", "ci_upper", "test_type"
 )
 
@@ -332,6 +332,20 @@ as_regression_frame.brmsfit <- function(fit,
   ci_lower <- ci_mat[1L, ]
   ci_upper <- ci_mat[2L, ]
 
+  # MCSE of the DISPLAYED point estimate -- the Monte Carlo standard
+  # error of the posterior median (Vehtari et al. 2021; Bayesian
+  # Workflow sec. 11.6 makes it the criterion for how many digits a
+  # table may honestly show). Computed per chain-aware draws; under
+  # exponentiate it is recomputed on the exponentiated draws below
+  # (the median MCSE is not transformation-invariant).
+  mcse_vec <- tryCatch(
+    vapply(seq_along(draws_names), function(i) {
+      posterior::mcse_median(posterior::subset_draws(
+        b_draws, variable = draws_names[i]))
+    }, numeric(1)),
+    error = function(e) rep(NA_real_, length(draws_names))            # nocov
+  )
+
   if (isTRUE(exponentiate)) {
     # Draws-native exponentiation. exp() commutes with the median and
     # the equal-tailed quantile bounds (strictly monotone), so those
@@ -351,6 +365,13 @@ as_regression_frame.brmsfit <- function(fit,
       ci_lower <- exp(ci_lower)
       ci_upper <- exp(ci_upper)
     }
+    mcse_vec <- tryCatch(
+      vapply(seq_along(draws_names), function(i) {
+        posterior::mcse_median(exp(posterior::subset_draws(
+          b_draws, variable = draws_names[i])))
+      }, numeric(1)),
+      error = function(e) rep(NA_real_, length(draws_names))          # nocov
+    )
   }
 
   # Factor metadata: only meaningful when the fit has a model frame
@@ -393,6 +414,7 @@ as_regression_frame.brmsfit <- function(fit,
     rhat             = as.numeric(diag_sm$rhat),
     ess_bulk         = as.numeric(diag_sm$ess_bulk),
     ess_tail         = as.numeric(diag_sm$ess_tail),
+    mcse             = as.numeric(mcse_vec),
     ci_lower         = ci_lower,
     ci_upper         = ci_upper,
     test_type        = rep(NA_character_, length(coef_names)),
@@ -448,6 +470,7 @@ as_regression_frame.brmsfit <- function(fit,
       row$rhat     <- NA_real_
       row$ess_bulk <- NA_real_
       row$ess_tail <- NA_real_
+      row$mcse     <- NA_real_
     }
     # Reorder to the shared schema so the rbind() with the main
     # coefs table cannot drift (the factor-predictor crash).
@@ -467,6 +490,7 @@ as_regression_frame.brmsfit <- function(fit,
     base$rhat     <- numeric(0)
     base$ess_bulk <- numeric(0)
     base$ess_tail <- numeric(0)
+    base$mcse     <- numeric(0)
     base <- base[, .stan_coefs_schema]
   }
   base
@@ -650,10 +674,12 @@ as_regression_frame.brmsfit <- function(fit,
                                     paste(acc_parts, collapse = "; ")))
   }
   if (isTRUE(loo_pair$n_bad_k > 0L)) {
+    # Remediation ladder per Bayesian Workflow ch. 24: moment matching
+    # first, then refitting the flagged folds, then K-fold CV.
     loo_bits <- c(loo_bits, sprintf(
       paste0("PSIS-LOO unreliable for %d of %d observations (Pareto ",
-             "k > %.2f); consider loo::loo_moment_match() or ",
-             "refitting with k_threshold = 0.7."),
+             "k > %.2f); consider loo::loo_moment_match(), refitting ",
+             "the flagged folds (k_threshold = 0.7), or K-fold CV."),
       loo_pair$n_bad_k, loo_pair$n_k, loo_pair$k_thr))
     spicy_warn(
       sprintf(

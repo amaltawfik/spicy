@@ -604,3 +604,43 @@ test_that("structured outputs carry the CrI / HDI interval label", {
   labs_h <- vapply(st_h$ci_pairs, function(p) p$label, character(1))
   expect_true(all(labs_h == "95% HDI"))
 })
+
+
+# ---- MCSE column (Bayesian Workflow sec. 11.6) ------------------------------
+
+test_that("the mcse column matches posterior::mcse_median, exp included", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    am ~ wt, data = mtcars, family = binomial(),
+    iter = 500, chains = 1, refresh = 0, seed = 1
+  ))
+  dr <- posterior::as_draws_array(fit)
+  fr <- as_regression_frame(fit)
+  i <- fr$coefs$term == "wt"
+  oracle <- posterior::mcse_median(
+    posterior::subset_draws(dr, variable = "wt"))
+  expect_equal(fr$coefs$mcse[i], unname(oracle), tolerance = 1e-10)
+  # Under exponentiate the MCSE is recomputed on the exp draws (the
+  # median MCSE is not transformation-invariant).
+  fr_exp <- suppressWarnings(as_regression_frame(fit,
+                                                 exponentiate = TRUE))
+  oracle_exp <- posterior::mcse_median(
+    exp(posterior::subset_draws(dr, variable = "wt")))
+  expect_equal(fr_exp$coefs$mcse[i], unname(oracle_exp),
+               tolerance = 1e-10)
+  expect_false(isTRUE(all.equal(fr$coefs$mcse[i], fr_exp$coefs$mcse[i])))
+  # Rendering: MCSE header + the footer abbreviation key.
+  out <- paste(capture.output(print(suppressWarnings(table_regression(
+    fit, show_columns = c("b", "ci", "mcse")
+  )))), collapse = "\n")
+  expect_match(out, "MCSE", fixed = TRUE)
+  expect_match(out, "MCSE = Monte Carlo standard error of the posterior median",
+               fixed = TRUE)
+  # All-Bayesian only, same gate as rhat/ess.
+  expect_error(
+    table_regression(stats::lm(mpg ~ wt, mtcars),
+                     show_columns = c("b", "mcse")),
+    class = "spicy_invalid_input"
+  )
+})

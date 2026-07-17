@@ -146,6 +146,11 @@ align_frames <- function(
       } else {
         NA_real_
       },
+      mcse             = if (!is.null(cf$mcse)) {
+        as.numeric(cf$mcse)
+      } else {
+        NA_real_
+      },
       stringsAsFactors = FALSE
     )
   }))

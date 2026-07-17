@@ -406,6 +406,14 @@ build_abbreviations_footer_block_from_frames <- function(show_columns,
                      "posterior on the dominant side of zero; Makowski ",
                      "et al. 2019)"))
   }
+  if ("mcse" %in% show_columns) {
+    # The reading rule (a displayed digit is Monte-Carlo stable when
+    # 2 x MCSE stays below it) is vignette pedagogy; the footer keys
+    # the abbreviation.
+    defs <- c(defs,
+              paste0("MCSE = Monte Carlo standard error of the ",
+                     "posterior median (Vehtari et al. 2021)"))
+  }
 
   if (length(defs) == 0L) return(NULL)
   paste0(paste(defs, collapse = "; "), ".")

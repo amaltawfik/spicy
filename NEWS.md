@@ -50,7 +50,9 @@ per-family behaviour, and the new vignettes for walk-throughs.
   flag them. Every table runs a sampler-diagnostics guard (R-hat, ESS,
   divergences, E-BFMI): problems add a footer line and a
   `spicy_bayes_diagnostics` warning, and per-coefficient `"rhat"` /
-  `"ess_bulk"` / `"ess_tail"` columns are available. Under
+  `"ess_bulk"` / `"ess_tail"` columns are available -- plus `"mcse"`,
+  the Monte Carlo standard error of the displayed posterior median
+  (the criterion for how many digits the table can honestly show). Under
   `exponentiate = TRUE` all quantities come from the exponentiated
   draws (no delta method). Variational / optimizing fits are refused
   with a refit hint.

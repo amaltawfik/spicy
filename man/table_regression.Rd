@@ -208,8 +208,9 @@ per-coefficient columns and their display order. Accepts
 \strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"},
 \code{"beta"}, \code{"n"}, \code{"n_events"}, \code{"pd"} (probability of
 direction, Bayesian fits only), \code{"rhat"} / \code{"ess_bulk"} /
-\code{"ess_tail"} (per-coefficient sampler diagnostics, all-Bayesian
-tables only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
+\code{"ess_tail"} / \code{"mcse"} (per-coefficient sampler diagnostics and
+the Monte Carlo standard error of the displayed posterior
+median, all-Bayesian tables only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
 \code{"ame_p"}, \code{"rmst"} + \code{"rmst_se"} / \code{"rmst_ci"} / \code{"rmst_p"},
 \code{"risk_diff"} + its \verb{_se} / \verb{_ci} / \verb{_p} companions,
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
@@ -1027,7 +1028,13 @@ a footer line and raise a warning classed
 \code{withCallingHandlers(spicy_bayes_diagnostics = ...)} mutes the
 guard selectively); clean fits print nothing. Per-coefficient
 \code{"rhat"} / \code{"ess_bulk"} / \code{"ess_tail"} columns are available in
-all-Bayesian tables.
+all-Bayesian tables, as is \code{"mcse"} -- the Monte Carlo standard
+error of the displayed posterior median, the criterion for how
+many digits a table can honestly show (a displayed digit is
+Monte-Carlo stable when twice the MCSE stays below it; Gelman,
+Vehtari, McElreath et al. 2026, sec. 11.6). Under
+\code{exponentiate = TRUE} the MCSE is recomputed on the exponentiated
+draws.
 
 Refused on principle (classed error, never a silent fallback):
 likelihood-based fit statistics (\code{"aic"}, pseudo-R², ...),
