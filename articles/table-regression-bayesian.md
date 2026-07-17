@@ -186,31 +186,48 @@ including the group-level ones a multilevel table summarizes — not just
 the displayed coefficients.
 
 For parameter-level triage the same three diagnostics are available as
-opt-in columns in all-Bayesian tables:
+opt-in columns in all-Bayesian tables, together with a fourth, `mcse` —
+the Monte Carlo standard error of the displayed posterior median:
 
 ``` r
 
-table_regression(fit, show_columns = c("b", "ci", "rhat", "ess_bulk"))
+table_regression(fit, show_columns = c("b", "ci", "rhat", "mcse"))
 #> Bayesian logistic regression (stanreg): smoking
 #> 
-#>  Variable                 │    B        95% CrI      R-hat  ESS (bulk) 
-#> ──────────────────────────┼────────────────────────────────────────────
-#>  (Intercept)              │   -1.11  [-1.66, -0.55]  1.007        1301 
-#>  sex:                     │                                            
-#>    Female (ref.)          │     –          –          –              – 
-#>    Male                   │   -0.04  [-0.34,  0.25]  1.000        1292 
-#>  age                      │    0.01  [-0.00,  0.02]  1.002        1270 
-#>  education:               │                                            
-#>    Lower secondary (ref.) │     –          –          –              – 
-#>    Upper secondary        │   -0.49  [-0.81, -0.16]  1.002        1064 
-#>    Tertiary               │   -0.91  [-1.31, -0.56]  1.002        1133 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175                                       
-#>  R² (Bayes)               │    0.02                                    
+#>  Variable                 │    B        95% CrI      R-hat   MCSE   
+#> ──────────────────────────┼─────────────────────────────────────────
+#>  (Intercept)              │   -1.11  [-1.66, -0.55]  1.007  0.014   
+#>  sex:                     │                                         
+#>    Female (ref.)          │     –          –          –      –      
+#>    Male                   │   -0.04  [-0.34,  0.25]  1.000  0.0050  
+#>  age                      │    0.01  [-0.00,  0.02]  1.002  0.00015 
+#>  education:               │                                         
+#>    Lower secondary (ref.) │     –          –          –      –      
+#>    Upper secondary        │   -0.49  [-0.81, -0.16]  1.002  0.0071  
+#>    Tertiary               │   -0.91  [-1.31, -0.56]  1.002  0.0097  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                                    
+#>  R² (Bayes)               │    0.02                                 
 #> 
 #> Note. Bayesian logistic regression (stanreg).
 #> Std. errors: posterior MAD SD (scaled median absolute deviation).
+#> MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021).
 ```
+
+The `mcse` column answers a question the other diagnostics do not: *how
+many of the printed digits are real?* MCMC output is stochastic — rerun
+the sampler with another seed and the third significant digit of most
+estimates will move. The working rule (Gelman, Vehtari, McElreath et
+al. 2026, §11.6): a displayed digit is Monte-Carlo stable when **twice
+the MCSE stays below one unit of that digit**. Here twice the MCSE of
+the coefficients is on the order of their second decimal: that digit
+sits near the stability edge — honest to report, and a reminder that a
+two-decimal table is close to the resolution limit of this deliberately
+short chain. Most of the time two *significant* digits are all a
+posterior summary can support, halving the MCSE costs four times the
+iterations, and tail quantities (the CrI bounds) are noisier than the
+median. When the displayed digits matter — a boundary against a clinical
+threshold, say — check `mcse` before trusting the last one.
 
 Under the hood these are three numbers per parameter (Vehtari et al.
 2021): R-hat, which compares chains (at convergence, 1.00; worry above
@@ -403,9 +420,12 @@ silently wrong:
   same bound [`loo::loo()`](https://mc-stan.org/loo/reference/loo.html)
   itself prints (Vehtari et al. 2024) — or WAIC flags p_waic above 0.4,
   the footer says the estimate is unreliable and a
-  `spicy_bayes_diagnostics` warning fires, with
+  `spicy_bayes_diagnostics` warning fires. The remediation ladder
+  (Gelman, Vehtari, McElreath et al. 2026, ch. 24):
   [`loo::loo_moment_match()`](https://mc-stan.org/loo/reference/loo_moment_match.html)
-  as the standard remedy. Model *comparison* belongs to
+  first, then refitting the flagged folds (`k_threshold = 0.7`, brms
+  `reloo = TRUE`), then K-fold cross-validation. Model *comparison*
+  belongs to
   [`loo::loo_compare()`](https://mc-stan.org/loo/reference/loo_compare.html)
   outside the table: the comparison uncertainty is the standard error of
   the elpd *difference* (not the per-model SEs shown here), and

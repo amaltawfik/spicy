@@ -326,8 +326,9 @@ per-coefficient columns and their display order. Accepts
 <strong>atomic tokens</strong> (<code>"b"</code>, <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>,
 <code>"beta"</code>, <code>"n"</code>, <code>"n_events"</code>, <code>"pd"</code> (probability of
 direction, Bayesian fits only), <code>"rhat"</code> / <code>"ess_bulk"</code> /
-<code>"ess_tail"</code> (per-coefficient sampler diagnostics, all-Bayesian
-tables only), <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
+<code>"ess_tail"</code> / <code>"mcse"</code> (per-coefficient sampler diagnostics and
+the Monte Carlo standard error of the displayed posterior
+median, all-Bayesian tables only), <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
 <code>"ame_p"</code>, <code>"rmst"</code> + <code>"rmst_se"</code> / <code>"rmst_ci"</code> / <code>"rmst_p"</code>,
 <code>"risk_diff"</code> + its <code>_se</code> / <code>_ci</code> / <code>_p</code> companions,
 <code>"partial_f2"</code> + <code>"partial_f2_ci"</code>, <code>"partial_eta2"</code> +
@@ -1157,7 +1158,13 @@ a footer line and raise a warning classed
 <code>withCallingHandlers(spicy_bayes_diagnostics = ...)</code> mutes the
 guard selectively); clean fits print nothing. Per-coefficient
 <code>"rhat"</code> / <code>"ess_bulk"</code> / <code>"ess_tail"</code> columns are available in
-all-Bayesian tables.</p>
+all-Bayesian tables, as is <code>"mcse"</code> – the Monte Carlo standard
+error of the displayed posterior median, the criterion for how
+many digits a table can honestly show (a displayed digit is
+Monte-Carlo stable when twice the MCSE stays below it; Gelman,
+Vehtari, McElreath et al. 2026, sec. 11.6). Under
+<code>exponentiate = TRUE</code> the MCSE is recomputed on the exponentiated
+draws.</p>
 <p>Refused on principle (classed error, never a silent fallback):
 likelihood-based fit statistics (<code>"aic"</code>, pseudo-R², ...),
 <code>p_adjust</code>, robust / cluster <code>vcov</code> (model the clustering with

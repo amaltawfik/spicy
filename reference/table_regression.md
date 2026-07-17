@@ -243,20 +243,22 @@ table_regression(
   their display order. Accepts **atomic tokens** (`"b"`, `"se"`, `"ci"`,
   `"t"`, `"p"`, `"beta"`, `"n"`, `"n_events"`, `"pd"` (probability of
   direction, Bayesian fits only), `"rhat"` / `"ess_bulk"` / `"ess_tail"`
-  (per-coefficient sampler diagnostics, all-Bayesian tables only),
-  `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`, `"rmst"` + `"rmst_se"` /
-  `"rmst_ci"` / `"rmst_p"`, `"risk_diff"` + its `_se` / `_ci` / `_p`
-  companions, `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
-  `"partial_eta2_ci"`, `"partial_omega2"` + `"partial_omega2_ci"`,
-  `"partial_chi2"`) and **group tokens** (`"all_b"`, `"all_b_compact"`,
-  `"all_b_full"`, `"all_beta"`, `"all_ame"`, `"all_ame_compact"`,
-  `"all_f2"`, `"all_eta2"`, `"all_omega2"`). See *Vocabulary tokens* in
-  the details for the full enumeration. Default `NULL` selects a
-  context-aware layout: `"all_b"` (single model) or `"all_b_compact"`
-  (multi-model, and the single-multinomial outcome-as-columns layout,
-  which has the same width pressure – restore CIs with atomic tokens,
-  e.g. `c("b", "se", "ci", "p")`). The `"p"` token is always the B /
-  beta p-value; for the AME-specific p-value use `"ame_p"`.
+  / `"mcse"` (per-coefficient sampler diagnostics and the Monte Carlo
+  standard error of the displayed posterior median, all-Bayesian tables
+  only), `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`, `"rmst"` +
+  `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`, `"risk_diff"` + its `_se` /
+  `_ci` / `_p` companions, `"partial_f2"` + `"partial_f2_ci"`,
+  `"partial_eta2"` + `"partial_eta2_ci"`, `"partial_omega2"` +
+  `"partial_omega2_ci"`, `"partial_chi2"`) and **group tokens**
+  (`"all_b"`, `"all_b_compact"`, `"all_b_full"`, `"all_beta"`,
+  `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
+  `"all_omega2"`). See *Vocabulary tokens* in the details for the full
+  enumeration. Default `NULL` selects a context-aware layout: `"all_b"`
+  (single model) or `"all_b_compact"` (multi-model, and the
+  single-multinomial outcome-as-columns layout, which has the same width
+  pressure – restore CIs with atomic tokens, e.g.
+  `c("b", "se", "ci", "p")`). The `"p"` token is always the B / beta
+  p-value; for the AME-specific p-value use `"ame_p"`.
 
 - keep:
 
@@ -1117,7 +1119,11 @@ al. 2021): problems add a footer line and raise a warning classed
 `withCallingHandlers(spicy_bayes_diagnostics = ...)` mutes the guard
 selectively); clean fits print nothing. Per-coefficient `"rhat"` /
 `"ess_bulk"` / `"ess_tail"` columns are available in all-Bayesian
-tables.
+tables, as is `"mcse"` – the Monte Carlo standard error of the displayed
+posterior median, the criterion for how many digits a table can honestly
+show (a displayed digit is Monte-Carlo stable when twice the MCSE stays
+below it; Gelman, Vehtari, McElreath et al. 2026, sec. 11.6). Under
+`exponentiate = TRUE` the MCSE is recomputed on the exponentiated draws.
 
 Refused on principle (classed error, never a silent fallback):
 likelihood-based fit statistics (`"aic"`, pseudo-R², ...), `p_adjust`,
