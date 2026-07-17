@@ -929,15 +929,21 @@ the class cannot honour fails fast with \code{spicy_unsupported_vcov}
 \describe{
 \item{\code{lm}, \code{glm}, \code{MASS::glm.nb}}{all of \code{classical}, \verb{HC*},
 \verb{CR*}, \code{bootstrap}, \code{jackknife}.}
-\item{\code{mlogit}}{\code{classical}, \verb{HC*}, \verb{CR*} (cluster at the
-choice-situation level).}
+\item{\code{mlogit}}{\code{classical} + \verb{CR*} only (cluster at the
+choice-situation level) -- \code{sandwich::vcovHC()} mis-scales the
+sandwich for mlogit's per-choice-situation scores, so \verb{HC*} is
+refused.}
 \item{\code{lmer}, \code{lme}, \code{glmmTMB}, \code{coxph}, \code{survreg},
 \code{mgcv::gam}/\code{bam}, \code{polr}, \code{clm}, \code{betareg},
-\code{survey::svyglm}, \code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical}
+\code{survey::svyglm}, \code{nnet::multinom},
+\code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical}
 + \verb{CR*} only -- \verb{HC*} and the resamplers (which refit
 \code{lm}/\code{glm}) are not defined for these. \code{clm} with a scale /
-nominal (partial-PO) component is \code{classical} only.}
-\item{Other classes (\code{glmer}, \code{nnet::multinom},
+nominal (partial-PO) component is \code{classical} only.
+\code{multinom} needs \pkg{sandwich} >= 3.1-2 (which added its
+\code{estfun()} method); its \code{cluster} is one entry per
+observation.}
+\item{Other classes (\code{glmer},
 \code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only.}
 }
 
@@ -946,7 +952,7 @@ to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme}/\code{
 \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
 \code{lm}/\code{lme}/\code{lmer}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
 sandwich (identical to \code{coxph(..., cluster=)});
-\code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit} use
+\code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} use
 \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}; \code{svyglm} uses the design-aware
 \pkg{clubSandwich} estimator; \code{rms} fits use \code{\link[rms:robcov]{rms::robcov()}} (which
 needs the fit's \verb{x = TRUE, y = TRUE}). These single cluster

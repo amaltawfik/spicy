@@ -145,7 +145,10 @@ baseline-category logits are log-odds (Agresti; SAS prints
 "Odds Ratio Estimates" under its generalized-logit link; Stata's \verb{mlogit, rrr} labels
 the same quantity a relative-risk ratio). AME is per-outcome.
 \code{nested = TRUE} compares nested \code{multinom} fits by likelihood-ratio test
-(the \code{anova.multinom()} convention).
+(the \code{anova.multinom()} convention). Cluster-robust \verb{CR*} is
+available (one cluster value per observation; sandwich >= 3.1-2)
+and the AME columns honour it; \verb{HC*} is refused -- a multi-equation
+model has no working residuals.
 \code{mlogit} renders
 per-alternative rows; AME is refused (no \code{slopes()} method exists for
 its data format). \verb{CR*} is available with one cluster value per choice

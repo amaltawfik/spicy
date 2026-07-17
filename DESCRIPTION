@@ -29,7 +29,7 @@ Imports:
     dplyr,
     labelled,
     rlang (>= 1.1.0),
-    sandwich,
+    sandwich (>= 3.1-2),
     stats,
     stringr,
     tibble,

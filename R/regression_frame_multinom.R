@@ -39,6 +39,8 @@
 as_regression_frame.multinom <- function(fit,
                                           vcov = "model",
                                           vcov_label = NULL,
+                                          cluster = NULL,
+                                          cluster_name = NULL,
                                           ci_level = 0.95,
                                           ci_method = NULL,
                                           show_columns = character(0),
@@ -46,19 +48,72 @@ as_regression_frame.multinom <- function(fit,
                                           ...) {
   .check_nnet_available()
 
+  # HC* is undefined for multinom: a multi-equation model has no
+  # working residuals or hatvalues, so sandwich::meatHC() errors
+  # ("cannot match dimension of model.matrix and estfun"). The
+  # orchestrator gate already refuses HC*; guard here too so a direct
+  # frame call gets the same classed refusal instead of the raw
+  # sandwich error.
+  if (startsWith(vcov %||% "model", "HC")) {
+    spicy_abort(
+      c(
+        sprintf("`vcov = \"%s\"` is not available for `multinom` models.",
+                vcov),
+        "i" = paste0("A multi-equation model has no working residuals ",
+                     "or hat values, so `sandwich::vcovHC()` is not ",
+                     "defined for it. Use a cluster-robust `vcov` ",
+                     "(\"CR0\"-\"CR3\") with `cluster`, or the ",
+                     "model-based default.")
+      ),
+      class = "spicy_unsupported_vcov"
+    )
+  }
+
   coefs <- .multinom_coefs(fit, ci_level = ci_level)
+  # CR* -> sandwich::vcovCL cluster sandwich (Wald z), unlocked by
+  # sandwich 3.1-2's estfun.multinom(); a no-op for the default.
+  # The robust matrix is keyed "<outcome>:<term>" for a >= 3-category
+  # response, but PLAIN "<term>" for a binary one (nnet collapses
+  # coef() to a vector; the estimate order still matches the vcov
+  # order, so compute_coef_inference()'s positional fallback aligns
+  # them). coefs$term carries the DISPLAY prefix "<outcome>: <term>"
+  # (with a space), hence the explicit term_keys mapping.
+  cfm <- stats::coef(fit)
+  b_sel <- coefs$estimate_type == "B" & !(coefs$is_ref %in% TRUE)
+  bare_term <- substring(coefs$term,
+                         nchar(coefs$outcome_level %||% "") + 3L)
+  if (is.matrix(cfm)) {
+    flat_est <- as.vector(t(cfm))
+    names(flat_est) <- paste0(rep(rownames(cfm), each = ncol(cfm)),
+                              ":", colnames(cfm))
+    keys <- ifelse(b_sel,
+                   paste0(coefs$outcome_level, ":", bare_term),
+                   NA_character_)
+  } else {
+    flat_est <- cfm
+    keys <- ifelse(b_sel, bare_term, NA_character_)
+  }
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
+                                       test = "z", estimates = flat_est,
+                                       term_keys = keys)
   # Per-outcome AME on P(Y = k): avg_slopes() returns one row per
-  # (predictor, outcome), aligned with the per-outcome B blocks.
-  # multinom has no cluster-robust backend (no estfun), so vcov is always
-  # model-based here; pass it through for uniformity (a no-op for AME).
+  # (predictor, outcome), aligned with the per-outcome B blocks. The
+  # AME layer recomputes the same CR* matrix and hands it to
+  # avg_slopes(), so AME uncertainty honours the requested estimator.
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov)
+                                      vcov_type = vcov, cluster = cluster)
   info  <- .multinom_info(fit,
                           vcov_kind  = vcov,
                           vcov_label = vcov_label,
                           ci_level   = ci_level,
                           ci_method  = ci_method,
                           model_id   = model_id)
+  if (!vcov %in% c("model", "classical")) {
+    info$vcov_label <- .robust_vcov_label(
+      vcov, cluster_name %||% NA_character_,
+      estimator = if (startsWith(vcov, "CR")) "CL" else NULL
+    )
+  }
 
   new_regression_frame(coefs, info, fit)
 }

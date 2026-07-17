@@ -4,7 +4,8 @@
 #   * polr (MASS) / clm       -> sandwich::vcovCL (slopes only; thresholds in
 #                                 info$extras)
 #   * betareg                 -> sandwich::vcovCL (mean component; phi in extras)
-#   * mlogit                  -> sandwich::vcovCL (CR*) AND sandwich::vcovHC (HC*)
+#   * mlogit                  -> sandwich::vcovCL (CR*); HC* refused (vcovHC
+#                                 mis-scales the per-choice-situation meat)
 #   * svyglm (survey)         -> clubSandwich design-aware vcovCR
 # Each is cross-validated against its oracle to ~machine precision; HC* / the
 # lm/glm resamplers are refused for the cr_only classes.
@@ -242,26 +243,29 @@ test_that("svyglm default (survey-Taylor) is the design-based SE, untouched", {
   expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-9)
 })
 
-## ---- multinom (classical-only) ---------------------------------------------
+## ---- multinom (CR* via sandwich >= 3.1-2) ----------------------------------
 
-test_that("multinom CR* with a formula cluster refuses cleanly, like HC*", {
+test_that("multinom CR* computes identically for all three cluster forms", {
   skip_if_not_installed("nnet")
-  # nnet registers no nobs.multinom: the cluster-resolution fallback used to
-  # hit if(NA) ("missing value where TRUE/FALSE needed") for a formula or
-  # string cluster naming a variable outside the model formula, instead of
-  # reaching the capability gate. All three cluster forms must produce the
-  # same clean refusal as a plain HC* request.
+  skip_if_not_installed("sandwich")
+  # sandwich 3.1-2 added estfun.multinom(), so CR* now COMPUTES where it
+  # used to refuse. The three cluster forms still exercise the
+  # resolution paths that once crashed on if(NA) for a variable outside
+  # the model formula (nnet registers no nobs.multinom); all three must
+  # agree with the sandwich::vcovCL oracle on real data.
   fit <- nnet::multinom(employment_status ~ age + sex + education,
                         data = sochealth, trace = FALSE)
+  orc <- sqrt(diag(sandwich::vcovCL(fit, cluster = sochealth$region)))
   for (cl in list(~region, "region", sochealth$region)) {
-    err <- tryCatch(
-      table_regression(fit, vcov = "CR2", cluster = cl),
-      error = function(e) e
-    )
-    expect_s3_class(err, "spicy_unsupported_vcov")
-    expect_match(conditionMessage(err), "multinom", fixed = TRUE)
-    expect_match(conditionMessage(err), "classical", fixed = TRUE)
+    td <- broom::tidy(table_regression(fit, vcov = "CR2", cluster = cl))
+    # tidy() already drops the NA-estimate reference rows.
+    bb <- td[td$estimate_type == "B" & !is.na(td$std.error), ]
+    vc_key <- sub(": ", ":", bb$term, fixed = TRUE)
+    expect_true(all(vc_key %in% names(orc)))
+    expect_equal(unname(bb$std.error), unname(orc[vc_key]),
+                 tolerance = 1e-8)
   }
+  # HC* stays refused (no working residuals for a multi-equation model).
   expect_error(table_regression(fit, vcov = "HC3"),
                class = "spicy_unsupported_vcov")
 })

@@ -110,7 +110,8 @@ compute_model_vcov <- function(
       return(.coxph_cluster_robust_vcov(fit, cluster))
     }
     if (inherits(fit, c("survreg", "gam", "bam", "polr", "clm",
-                        "betareg", "mlogit", "zeroinfl", "hurdle"))) {
+                        "betareg", "mlogit", "multinom",
+                        "zeroinfl", "hurdle"))) {
       return(sandwich::vcovCL(fit, cluster = cluster))
     }
     if (!requireNamespace("clubSandwich", quietly = TRUE)) {
@@ -771,6 +772,14 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # off the estfun rows and matches sandwich::sandwich(), so the cluster
     # path is correct (verified against the Fishing data, 2026-07-03).
     mlogit          = cr_only,
+    # nnet::multinom: CR* via sandwich::vcovCL, unlocked by sandwich
+    # 3.1-2's estfun.multinom(). HC* stays impossible -- no working
+    # residuals or hatvalues for a multi-equation model (meatHC errors
+    # with "cannot match dimension of model.matrix and estfun").
+    # Cluster SEs cross-validated against mlogit::mlogit on identical
+    # data: coefficients and vcovCL SEs agree to 4 decimals
+    # (dev/multinom_robust_vcov_spec.md, 2026-07-14).
+    multinom        = cr_only,
     # Inc 4b: rms fits via rms::robcov() native cluster sandwich (needs the
     # fit's x = TRUE, y = TRUE). ols / lrm / cph / Glm.
     ols             = cr_only,
@@ -810,7 +819,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # method so the robust path is wired in exactly one place.
 .apply_robust_vcov_to_coefs <- function(coefs, fit, vcov_type, cluster,
                                         ci_level, test = "t",
-                                        estimates = NULL) {
+                                        estimates = NULL,
+                                        term_keys = NULL) {
   # No-op for the model-based defaults: "classical" / "model" (every class) and
   # "survey-Taylor" (the svyglm design-based default, whose SE .svyglm_coefs()
   # already computed and which compute_model_vcov() does not know).
@@ -820,9 +830,14 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   }
   vc <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
   cf <- if (!is.null(estimates)) estimates else stats::coef(fit)
+  # term_keys: per-row lookup keys into names(cf) when coefs$term is a
+  # DISPLAY name that differs from the estimate/vcov naming -- multinom
+  # prefixes term with "<outcome>: " while its vcov is keyed
+  # "<outcome>:<term>". Defaults to coefs$term (every other class).
+  keys <- term_keys %||% coefs$term
   b_rows <- which(coefs$estimate_type == "B" & !(coefs$is_ref %in% TRUE))
   for (r in b_rows) {
-    idx <- match(coefs$term[r], names(cf))
+    idx <- match(keys[r], names(cf))
     if (is.na(idx)) next
     inf <- compute_coef_inference(
       fit, idx, vc, vcov_type, cluster, ci_level,
@@ -882,6 +897,12 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   if (inherits(fit, "mlogit")) {
     n <- tryCatch(NROW(sandwich::estfun(fit)), error = function(e) NA_integer_)
     if (is.finite(n)) return(as.integer(n))
+  }
+  # nnet::multinom: stats::nobs() has no method (returns NA); estfun()
+  # has one row per OBSERVATION, matching fit$fitted.values.
+  if (inherits(fit, "multinom")) {
+    n <- NROW(fit$fitted.values)
+    if (is.finite(n) && n > 0L) return(as.integer(n))
   }
   # rms fits: robcov() clusters over the design-matrix rows (= observations).
   # stats::nobs() has no method for some rms classes (e.g. Glm -> NA), so read

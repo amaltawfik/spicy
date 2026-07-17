@@ -226,15 +226,21 @@
 #' \describe{
 #'   \item{`lm`, `glm`, `MASS::glm.nb`}{all of `classical`, `HC*`,
 #'     `CR*`, `bootstrap`, `jackknife`.}
-#'   \item{`mlogit`}{`classical`, `HC*`, `CR*` (cluster at the
-#'     choice-situation level).}
+#'   \item{`mlogit`}{`classical` + `CR*` only (cluster at the
+#'     choice-situation level) -- `sandwich::vcovHC()` mis-scales the
+#'     sandwich for mlogit's per-choice-situation scores, so `HC*` is
+#'     refused.}
 #'   \item{`lmer`, `lme`, `glmmTMB`, `coxph`, `survreg`,
 #'     `mgcv::gam`/`bam`, `polr`, `clm`, `betareg`,
-#'     `survey::svyglm`, `rms` (`ols`/`lrm`/`cph`/`Glm`)}{`classical`
+#'     `survey::svyglm`, `nnet::multinom`,
+#'     `rms` (`ols`/`lrm`/`cph`/`Glm`)}{`classical`
 #'     + `CR*` only -- `HC*` and the resamplers (which refit
 #'     `lm`/`glm`) are not defined for these. `clm` with a scale /
-#'     nominal (partial-PO) component is `classical` only.}
-#'   \item{Other classes (`glmer`, `nnet::multinom`,
+#'     nominal (partial-PO) component is `classical` only.
+#'     `multinom` needs \pkg{sandwich} >= 3.1-2 (which added its
+#'     `estfun()` method); its `cluster` is one entry per
+#'     observation.}
+#'   \item{Other classes (`glmer`,
 #'     `rstanarm`/`brms`, ...)}{`classical` (model-based) only.}
 #' }
 #'
@@ -243,7 +249,7 @@
 #' \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
 #' `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 #' sandwich (identical to `coxph(..., cluster=)`);
-#' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit` use
+#' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` use
 #' [sandwich::vcovCL()]; `svyglm` uses the design-aware
 #' \pkg{clubSandwich} estimator; `rms` fits use [rms::robcov()] (which
 #' needs the fit's `x = TRUE, y = TRUE`). These single cluster

@@ -125,6 +125,10 @@ rendering an empty column.
   bootstrap / jackknife whose replicates nearly all fail raises
   `spicy_resampling_failed` instead of silently reporting classical
   SEs.
+* Cluster-robust `vcov` (`"CR0"`-`"CR3"`) for `nnet::multinom`,
+  including its AME columns (needs sandwich >= 3.1-2, which added the
+  `estfun()` method). `HC*` stays refused: a multi-equation model has
+  no working residuals.
 * AME columns are available for `betareg`, `mgcv::gam`, `svyglm`,
   `survreg`, `fixest`, `estimatr`, `quantreg::rq`, `AER::ivreg`, and
   `rms` fits, and per outcome category for `polr` / `clm` / `multinom`.
