@@ -496,3 +496,46 @@ test_that("re_ci default (wald) is unchanged and differs from profile", {
   expect_true(is.na(vp$std.error))           # profile: no SE
   expect_false(isTRUE(all.equal(vw$conf.low, vp$conf.low)))
 })
+
+
+test_that("3-term random block SEs align slot-by-slot (merDeriv >= 0.2-6)", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("glmmTMB")
+  # merDeriv < 0.2-6 returned the RE (co)variance results in an order
+  # that did not match their labels for 3x3+ blocks (merDeriv GH #2:
+  # index matrix built from Lambda instead of Lambdat), so positional
+  # extraction silently mislabelled the variance SEs -- and 2x2
+  # fixtures cannot catch it (both orders coincide). Pin the slot
+  # alignment with an INDEPENDENT engine: glmmTMB's sdreport SEs for
+  # the same ML fit must match term by term. The parametrizations
+  # differ, so a few percent of drift is expected; a slot permutation
+  # shows up as 50%+ discrepancies.
+  set.seed(42)
+  ng <- 40; per <- 12; n <- ng * per
+  g <- factor(rep(seq_len(ng), each = per))
+  x1 <- rnorm(n); x2 <- rnorm(n)
+  b0 <- rnorm(ng, 0, 1.2); b1 <- rnorm(ng, 0, 0.8); b2 <- rnorm(ng, 0, 0.5)
+  y <- 2 + 0.5 * x1 - 0.3 * x2 + b0[g] + b1[g] * x1 + b2[g] * x2 +
+    rnorm(n, 0, 1)
+  d <- data.frame(y, x1, x2, g)
+  m_lmer <- lme4::lmer(y ~ x1 + x2 + (x1 + x2 | g), data = d,
+                       REML = FALSE)
+  m_tmb  <- glmmTMB::glmmTMB(y ~ x1 + x2 + (x1 + x2 | g), data = d,
+                             REML = FALSE)
+  vc_l <- as_regression_frame(m_lmer)$info$random_effects$variance_components
+  vc_t <- as_regression_frame(m_tmb)$info$random_effects$variance_components
+  keep <- function(vc) {
+    vc[!(vc$is_correlation %in% TRUE) & vc$group != "Residual",
+       c("group", "term", "variance", "std_error")]
+  }
+  cmp <- merge(keep(vc_l), keep(vc_t), by = c("group", "term"),
+               suffixes = c("_lmer", "_tmb"))
+  expect_identical(nrow(cmp), 3L)
+  expect_true(all(is.finite(cmp$std_error_lmer)))
+  # Same ML optimum: variances agree tightly.
+  expect_equal(cmp$variance_lmer, cmp$variance_tmb, tolerance = 1e-3)
+  # SEs agree per SLOT (expected vs observed information: small drift
+  # only; a permuted slot would blow far past this tolerance).
+  expect_equal(cmp$std_error_lmer, cmp$std_error_tmb, tolerance = 0.05)
+})
