@@ -1,8 +1,9 @@
 # C2 increment 4: cluster-/heteroskedasticity-robust SEs for the ML-estimated
 # "GLM-family" classes that route through sandwich::vcovCL (Wald z):
 #   * gam / bam (mgcv)        -> sandwich::vcovCL
-#   * polr (MASS) / clm       -> sandwich::vcovCL (slopes only; thresholds in
-#                                 info$extras)
+#   * polr (MASS) / clm       -> sandwich::vcovCL (slopes AND the
+#                                 Thresholds block, from the same
+#                                 full-model matrix)
 #   * betareg                 -> sandwich::vcovCL (mean component; phi in extras)
 #   * mlogit                  -> sandwich::vcovCL (CR*); HC* refused (vcovHC
 #                                 mis-scales the per-choice-situation meat)
@@ -54,10 +55,19 @@ test_that("polr CR* matches sandwich::vcovCL on the slope block", {
   m  <- MASS::polr(y ~ x1 + x2, data = d, Hess = TRUE)
   fr <- as_regression_frame(m, vcov = "CR2", cluster = d$g, cluster_name = "g")
   b  <- b_rows(fr)
-  orc <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))[b$term]
-  expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-7)
+  orc_full <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))
+  expect_equal(unname(b$std_error), unname(orc_full[b$term]),
+               tolerance = 1e-7)
   expect_true(all(b$test_type == "z"))
   expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")
+  # The Thresholds block follows the same cluster sandwich (mislabel
+  # fix): its SEs come from the zeta rows of the SAME full vcovCL
+  # matrix, not the classical vcov the footer would then misdescribe.
+  thr <- fr$info$extras$thresholds
+  expect_equal(unname(thr$std_error), unname(orc_full[thr$term]),
+               tolerance = 1e-7)
+  thr0 <- as_regression_frame(m)$info$extras$thresholds
+  expect_false(isTRUE(all.equal(thr$std_error, thr0$std_error)))
 })
 
 ## ---- clm ------------------------------------------------------------------
@@ -72,9 +82,17 @@ test_that("clm CR* matches sandwich::vcovCL (thresholds before slopes)", {
   m  <- ordinal::clm(y ~ x1 + x2, data = d)
   fr <- as_regression_frame(m, vcov = "CR2", cluster = d$g, cluster_name = "g")
   b  <- b_rows(fr)
-  orc <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))[b$term]
-  expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-7)
+  orc_full <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))
+  expect_equal(unname(b$std_error), unname(orc_full[b$term]),
+               tolerance = 1e-7)
   expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")
+  # Thresholds (alpha, BEFORE the slopes in coef(clm)) follow the same
+  # cluster sandwich -- mislabel fix, mirroring the polr assertion.
+  thr <- fr$info$extras$thresholds
+  expect_equal(unname(thr$std_error), unname(orc_full[thr$term]),
+               tolerance = 1e-7)
+  thr0 <- as_regression_frame(m)$info$extras$thresholds
+  expect_false(isTRUE(all.equal(thr$std_error, thr0$std_error)))
 })
 
 # C2 audit finding #3 (minor): clm with a scale (scale = ~) or nominal

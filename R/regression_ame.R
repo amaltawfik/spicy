@@ -1027,7 +1027,12 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # reference row render BLANK (value absent) instead of the semantic
   # em-dash every legacy-path table shows. Per-category AME (ordinal:
   # shared B rows, one AME per outcome) gets one placeholder per
-  # outcome category so every pivoted column dashes.
+  # outcome category so every pivoted column dashes. Known corner: in
+  # the multinom outcome-as-columns layout the REFERENCE OUTCOME's
+  # group shows AME without B rows; its reference cell has no B
+  # anchor here and stays blank -- synthesizing one would mean
+  # rewriting per-outcome term prefixes against the explode layout
+  # for a single cell of an already-special column.
   ref_i <- which(coefs$estimate_type == "B" & (coefs$is_ref %in% TRUE))
   if (length(ref_i) > 0L && nrow(ame_rows) > 0L) {
     ame_parents <- unique(ame_rows$parent_var)

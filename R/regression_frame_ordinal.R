@@ -57,8 +57,6 @@ as_regression_frame.polr <- function(fit,
   }
   coefs <- .polr_coefs(fit, ci_level = ci_level, ci_method = eff_ci_method)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
-  # The (k - 1) thresholds live in info$extras, not in coefs, so only the
-  # proportional-odds slope rows are reweighted -- which is what we want.
   coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
                                        test = "z")
   # Per-category AME on P(Y = k): avg_slopes() returns one row per
@@ -74,6 +72,11 @@ as_regression_frame.polr <- function(fit,
   if (!vcov %in% c("model", "classical")) {
     info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
                                           estimator = "CL")
+    # The Thresholds block follows the same estimator: its SE / z / p /
+    # CI come from the same full vcovCL matrix as the slopes, so the
+    # footer's "cluster-robust" claim covers every rendered row.
+    info$extras$thresholds <- .reweight_thresholds_robust(
+      info$extras$thresholds, fit, vcov, cluster)
   }
 
   new_regression_frame(coefs, info, fit)
@@ -145,6 +148,11 @@ as_regression_frame.clm <- function(fit,
   if (!vcov %in% c("model", "classical")) {
     info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
                                           estimator = "CL")
+    # Thresholds follow the same estimator (see the polr method): PPO
+    # fits never reach here (scale / nominal components are gated to
+    # classical), so thr$term always matches the vcovCL rownames.
+    info$extras$thresholds <- .reweight_thresholds_robust(
+      info$extras$thresholds, fit, vcov, cluster)
   }
 
   new_regression_frame(coefs, info, fit)
@@ -375,6 +383,33 @@ as_regression_frame.clm <- function(fit,
 # Extract the (k - 1) ordered thresholds from a polr fit as a data.frame
 # with Wald-z inference. The threshold variances live in vcov(fit)
 # under names matching fit$zeta.
+# Under a cluster-robust vcov the slope rows are reweighted from the
+# sandwich::vcovCL matrix; the (k - 1) cut-point rows must follow --
+# the SAME full-model matrix carries their rows/columns (polr: zeta
+# after the slopes; clm: alpha before them), and leaving them on the
+# classical vcov would print model-based SEs under a footer declaring
+# the whole table cluster-robust (a partial mislabel). The z / p / CI
+# of the rendered Thresholds block all flow from this df's std_error,
+# so reweighting here propagates everywhere.
+.reweight_thresholds_robust <- function(thr, fit, vcov_type, cluster) {
+  if (is.null(thr) || !is.data.frame(thr) || nrow(thr) == 0L) {
+    return(thr)                                                       # nocov
+  }
+  vc <- tryCatch(
+    compute_model_vcov(fit, type = vcov_type, cluster = cluster),
+    error = function(e) NULL                                          # nocov
+  )
+  if (is.null(vc)) return(thr)                                        # nocov
+  vc <- as.matrix(vc)
+  idx <- match(thr$term, rownames(vc))
+  if (anyNA(idx)) return(thr)                                         # nocov
+  thr$std_error <- unname(sqrt(diag(vc)[idx]))
+  thr$statistic <- thr$estimate / thr$std_error
+  thr$p_value   <- 2 * stats::pnorm(-abs(thr$statistic))
+  thr
+}
+
+
 .polr_thresholds <- function(fit) {
   zeta <- fit$zeta %||% numeric(0)
   # nocov: polr requires >= 3 response levels, so zeta always has >= 2
