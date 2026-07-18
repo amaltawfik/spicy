@@ -652,6 +652,9 @@ test_that("Bayesian AME summarizes the avg_slopes draws exactly", {
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("marginaleffects")
+  # marginaleffects' stanreg prediction path needs collapse (absent
+  # from bare CI libraries, hence Suggests).
+  skip_if_not_installed("collapse")
   d <- mtcars
   d$cyl_f <- factor(d$cyl)
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -693,6 +696,7 @@ test_that("Bayesian AME summarizes the avg_slopes draws exactly", {
 test_that("Bayesian AME gates: ame_p refused all-Bayes, dashes mixed", {
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("collapse")
   fit <- suppressWarnings(rstanarm::stan_glm(
     am ~ wt, data = mtcars, family = binomial(),
     iter = 400, chains = 1, refresh = 0, seed = 1

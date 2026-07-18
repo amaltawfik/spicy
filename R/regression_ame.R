@@ -865,11 +865,20 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       marginaleffects::avg_slopes(fit, conf_level = ci_level)
     )),
     error = function(e) {
+      # marginaleffects' Bayesian prediction path needs the collapse
+      # package; a bare library fails deep inside insight with an
+      # unactionable message -- name the actual fix when that is the
+      # cause.
+      hint <- if (!spicy_pkg_available("collapse")) {
+        "Install collapse: `install.packages(\"collapse\")`."
+      } else {
+        "AME column will be em-dashed in the displayed table."
+      }
       spicy_warn(
         c(
           "AME computation via `marginaleffects::avg_slopes()` failed.",
           "x" = paste0("Reason: ", conditionMessage(e)),
-          "i" = "AME column will be em-dashed in the displayed table."
+          "i" = hint
         ),
         class = "spicy_fallback"
       )
