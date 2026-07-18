@@ -155,6 +155,10 @@ rendering an empty column.
   including its AME columns (needs sandwich \>= 3.1-2, which added the
   `estfun()` method). `HC*` stays refused: a multi-equation model has no
   working residuals.
+- Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
+  `clm`) now takes its SEs, z, p and CIs from the same cluster sandwich
+  as the slopes – previously the cut-point rows kept model-based SEs
+  under a footer describing the table as cluster-robust.
 - AME columns are available for `betareg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html), `svyglm`,
   `survreg`, `fixest`, `estimatr`,

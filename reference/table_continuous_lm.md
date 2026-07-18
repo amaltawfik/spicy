@@ -158,7 +158,7 @@ table_continuous_lm(
     `by = lvl`".
 
   - `"balanced"` (matches
-    [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
+    [`emmeans::emmeans()`](https://rdrr.io/pkg/emmeans/man/emmeans.html)
     default and the SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions):
     synthetic grid of factor-covariate level combinations x numeric
     covariates fixed at their sample mean, with each grid cell weighted
