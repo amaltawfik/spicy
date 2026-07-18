@@ -362,11 +362,11 @@ table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
 #> ──────────────────────────┼────────────────────────────────
 #>  (Intercept)              │   -1.11                        
 #>  sex:                     │                                
-#>    Female (ref.)          │     –                          
+#>    Female (ref.)          │     –      –          –        
 #>    Male                   │   -0.04  -0.01  [-0.06,  0.04] 
 #>  age                      │    0.01   0.00  [-0.00,  0.00] 
 #>  education:               │                                
-#>    Lower secondary (ref.) │     –                          
+#>    Lower secondary (ref.) │     –      –          –        
 #>    Upper secondary        │   -0.49  -0.09  [-0.16, -0.03] 
 #>    Tertiary               │   -0.91  -0.15  [-0.22, -0.09] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌

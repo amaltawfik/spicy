@@ -412,10 +412,10 @@ table_regression(fit_zip, show_columns = c("b", "ame", "p"))
 #> ─────────────────┼───────────────────────
 #>  (Intercept)     │    0.61         <.001 
 #>  fem:            │                       
-#>    Men (ref.)    │     –            –    
+#>    Men (ref.)    │     –      –     –    
 #>    Women         │   -0.22  -0.36  <.001 
 #>  mar:            │                       
-#>    Single (ref.) │     –            –    
+#>    Single (ref.) │     –      –     –    
 #>    Married       │    0.13   0.22   .041 
 #>  kid5            │   -0.16  -0.28  <.001 
 #>  ment            │    0.02   0.06  <.001 

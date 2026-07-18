@@ -230,13 +230,13 @@ table_regression(fit, show_columns = c("b", "ame"))
 #> ────────────────────┼──────────────────────────────────────────────────────
 #>  age                │   -0.00      0.00      0.00     -0.00          -0.00 
 #>  sex:               │                                                      
-#>    Female (ref.)    │     –                                                
+#>    Female (ref.)    │     –         –         –         –              –   
 #>    Male             │    0.02     -0.00     -0.00      0.00           0.00 
 #>  smoking:           │                                                      
-#>    No (ref.)        │     –                                                
+#>    No (ref.)        │     –         –         –         –              –   
 #>    Yes              │   -0.27      0.01      0.04     -0.01          -0.05 
 #>  physical_activity: │                                                      
-#>    No (ref.)        │     –                                                
+#>    No (ref.)        │     –         –         –         –              –   
 #>    Yes              │    0.03     -0.00     -0.00      0.00           0.01 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Thresholds:        │                                                      
@@ -313,13 +313,13 @@ table_regression(fit, show_columns = "ame")
 #> ────────────────────┼─────────────────────────────────────────────
 #>  age                │     0.00      0.00     -0.00          -0.00 
 #>  sex:               │                                             
-#>    Female (ref.)    │                                             
+#>    Female (ref.)    │      –         –         –              –   
 #>    Male             │    -0.00     -0.00      0.00           0.00 
 #>  smoking:           │                                             
-#>    No (ref.)        │                                             
+#>    No (ref.)        │      –         –         –              –   
 #>    Yes              │     0.01      0.04     -0.01          -0.05 
 #>  physical_activity: │                                             
-#>    No (ref.)        │                                             
+#>    No (ref.)        │      –         –         –              –   
 #>    Yes              │    -0.00     -0.00      0.00           0.01 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │  1156                                       
@@ -362,13 +362,13 @@ table_regression(
 #> ────────────────────┼──────────────────────────────────────────────────────
 #>  age                │   -0.00      0.00      0.00     -0.00          -0.00 
 #>  sex:               │                                                      
-#>    Female (ref.)    │     –                                                
+#>    Female (ref.)    │     –         –         –         –              –   
 #>    Male             │    0.02     -0.00     -0.00      0.00           0.00 
 #>  smoking:           │                                                      
-#>    No (ref.)        │     –                                                
+#>    No (ref.)        │     –         –         –         –              –   
 #>    Yes              │   -0.27      0.01      0.04     -0.01          -0.05 
 #>  physical_activity: │                                                      
-#>    No (ref.)        │     –                                                
+#>    No (ref.)        │     –         –         –         –              –   
 #>    Yes              │    0.03     -0.00     -0.00      0.00           0.01 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Thresholds:        │                                                      
@@ -472,13 +472,13 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 #> ────────────────────┼──────────────────────────────────────────────────────
 #>  age                │   -0.00      0.00      0.00     -0.00          -0.00 
 #>  sex:               │                                                      
-#>    Female (ref.)    │     –                                                
+#>    Female (ref.)    │     –         –         –         –              –   
 #>    Male             │    0.02     -0.00     -0.00      0.00           0.00 
 #>  smoking:           │                                                      
-#>    No (ref.)        │     –                                                
+#>    No (ref.)        │     –         –         –         –              –   
 #>    Yes              │   -0.27      0.01      0.04     -0.01          -0.05 
 #>  physical_activity: │                                                      
-#>    No (ref.)        │     –                                                
+#>    No (ref.)        │     –         –         –         –              –   
 #>    Yes              │    0.03     -0.00     -0.00      0.00           0.01 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Thresholds:        │                                                      
@@ -744,7 +744,7 @@ table_regression(
 #>  Variable           │    B     p Poor  p Fair  p Good  p Very good     B    
 #> ────────────────────┼───────────────────────────────────────────────────────
 #>  smoking:           │                                                       
-#>    No (ref.)        │     –                                             –   
+#>    No (ref.)        │     –      –       –       –            –         –   
 #>    Yes              │   -0.27    .067    .050    .218         .037    -0.27 
 #>  age                │                                                 -0.00 
 #>  sex:               │                                                       
@@ -769,14 +769,14 @@ table_regression(
 #>  Variable           │ p Poor  p Fair  p Good  p Very good 
 #> ────────────────────┼─────────────────────────────────────
 #>  smoking:           │                                     
-#>    No (ref.)        │                                     
+#>    No (ref.)        │   –       –       –            –    
 #>    Yes              │   .069    .052    .221         .038 
 #>  age                │   .831    .831    .833         .831 
 #>  sex:               │                                     
-#>    Female (ref.)    │                                     
+#>    Female (ref.)    │   –       –       –            –    
 #>    Male             │   .874    .874    .875         .875 
 #>  physical_activity: │                                     
-#>    No (ref.)        │                                     
+#>    No (ref.)        │   –       –       –            –    
 #>    Yes              │   .794    .794    .794         .794 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Thresholds:        │                                     
@@ -804,10 +804,10 @@ head(table_regression(fit, show_columns = c("b", "ame"), output = "data.frame"))
 #>          Variable       B AME Poor AME Fair AME Good AME Very good
 #> 1             age   -0.00     0.00     0.00    -0.00         -0.00
 #> 2            sex:                                                 
-#> 3   Female (ref.)     –                                           
+#> 3   Female (ref.)     –        –        –        –             –  
 #> 4            Male    0.02    -0.00    -0.00     0.00          0.00
 #> 5        smoking:                                                 
-#> 6       No (ref.)     –
+#> 6       No (ref.)     –        –        –        –             –
 ```
 
 ``` r
@@ -834,8 +834,8 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>    <chr>    <chr>           <chr>         <chr> <chr>            <dbl>     <dbl>
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
 #>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
-#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000570
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
+#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
+#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000691 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
 #>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
 #>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   
