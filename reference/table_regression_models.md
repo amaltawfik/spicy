@@ -68,8 +68,8 @@ A data frame with one row per supported engine and columns `family`,
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- |
 | rms | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes | OR | \- |
 | rms | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- |
-| Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | no | link-dependent | Random effects (if multilevel) |
-| Bayesian | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | no | link-dependent | Random effects (if multilevel) |
+| Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
+| Bayesian | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
 
 ## Shared semantics (all classes)
 
@@ -182,8 +182,10 @@ Posterior median, posterior MAD SD, and equal-tailed credible intervals
 deliberately no p-value column and no stars – the probability of
 direction (`"pd"`) is the opt-in posterior summary. A
 sampler-diagnostics guard checks every fit (R-hat, ESS, divergences,
-E-BFMI) and per-coefficient `"rhat"` / `"ess_bulk"` / `"ess_tail"`
-columns are available. Multilevel fits (`stan_glmer`, `brm` with
+E-BFMI) and per-coefficient `"rhat"` / `"ess_bulk"` / `"ess_tail"` /
+`"mcse"` columns are available. The AME columns are draws-native
+(posterior median, MAD SD and credible interval of the per-draw
+`avg_slopes()`; no `"ame_p"`). Multilevel fits (`stan_glmer`, `brm` with
 grouping terms) report their random effects as a block – posterior
 median SD and credible interval per component, from the draws – with no
 likelihood-ratio line. `p_adjust` and likelihood-based fit-statistic
@@ -311,8 +313,8 @@ table_regression_models()
 #> 31                     yes                                       -
 #> 32                     yes                                      OR
 #> 33                     yes                          link-dependent
-#> 34                      no                          link-dependent
-#> 35                      no                          link-dependent
+#> 34             yes (draws)                          link-dependent
+#> 35             yes (draws)                          link-dependent
 #>                                        blocks
 #> 1                                           -
 #> 2                                           -

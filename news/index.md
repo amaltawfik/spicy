@@ -60,8 +60,11 @@ for walk-throughs.
   the Monte Carlo standard error of the displayed posterior median (the
   criterion for how many digits the table can honestly show). Under
   `exponentiate = TRUE` all quantities come from the exponentiated draws
-  (no delta method). Variational / optimizing fits are refused with a
-  refit hint.
+  (no delta method). The AME columns are draws-native too:
+  `avg_slopes()` runs per posterior draw and the table reports the
+  posterior median, MAD SD and credible interval of those draws (no
+  `"ame_p"` – same policy as the p column). Variational / optimizing
+  fits are refused with a refit hint.
 - Survival
   ([`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) /
   `survreg`, [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html),

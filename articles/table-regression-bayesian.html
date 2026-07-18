@@ -435,13 +435,62 @@ secondary education — and given model, priors, and data, that odds ratio
 lies between 0.27 and 0.57 with 95% probability.</p>
 </div>
 <div class="section level2">
+<h2 id="marginal-effects-from-the-draws">Marginal effects, from the draws<a class="anchor" aria-label="anchor" href="#marginal-effects-from-the-draws"></a>
+</h2>
+<p>Odds ratios answer on the odds scale; the <strong>average marginal
+effect</strong> answers on the probability scale — here, percentage
+points of P(smoking). For a posterior, the AME is computed <em>per
+draw</em> (<code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>), and the table
+summarizes those draws under the same conventions as every other column:
+posterior median, MAD SD, and a credible interval that follows
+<code>ci_method</code> (equal-tailed by default, HDI on request):</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: AME computation via `marginaleffects::avg_slopes()` failed.</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Reason: Unable to compute predicted values with this model. This error can arise when `insight::get_data()` is unable to extract the dataset from the model object, or when the original data frame (usually in the global environment) was modified since fitting the model. Make sure the original data object is unchanged and/or try to supply a different dataset to the `newdata` argument.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; In addition, this error message was raised:</span></span>
+<span><span class="co">#&gt; there is no package called 'collapse'</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Bug Tracker: https://github.com/vincentarelbundock/marginaleffects/issues</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> AME column will be em-dashed in the displayed table.</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian logistic regression (stanreg): smoking</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B     AME  95% CrI </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11               </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –                 </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04               </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01               </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –                 </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49               </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                  </span></span>
+<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span></code></pre></div>
+<p>Reading the <code>Tertiary</code> row: averaged over the sample,
+tertiary education shifts the probability of smoking by the displayed
+amount — given model, priors, and data, that shift lies in its credible
+interval with 95% probability, a statement no delta-method AME can make
+exactly. There is no <code>ame_p</code>, for the same reason there is no
+p column: the preset <code>"all_ame"</code> expands without it, the
+atomic token is refused, and in a mixed frequentist–Bayesian table the
+shared <code>ame_p</code> column dashes the Bayesian rows.</p>
+</div>
+<div class="section level2">
 <h2 id="the-frequentist-twin-side-by-side">The frequentist twin, side by side<a class="anchor" aria-label="anchor" href="#the-frequentist-twin-side-by-side"></a>
 </h2>
 <p>Because the layout machinery is shared, the comparison table is one
 <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> away — and with weak priors and n = 1,175 it mostly
 documents agreement, which is itself worth showing to a skeptical
 reader:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>,</span>
 <span>          family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"ML (glm)"</span> <span class="op">=</span> <span class="va">gf</span>, <span class="st">"Bayes (stan_glm)"</span> <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span>
@@ -529,11 +578,16 @@ procedures exist but remain research-grade), so model the clustering
 instead (next section);</li>
 <li>
 <code>ci_method = "profile"</code> / <code>"boot_percentile"</code>
-and the AME family — profile likelihood and bootstrap replicates are
-frequentist constructions with no posterior analogue (the credible
-interval is computed from the draws; <code>"hdi"</code> is the one
-alternative flavor), and a draws-based AME needs its own design
-(planned);</li>
+— profile likelihood and bootstrap replicates are frequentist
+constructions with no posterior analogue (the credible interval is
+computed from the draws; <code>"hdi"</code> is the one alternative
+flavor);</li>
+<li>
+<code>standardized</code> — the refit flavors would re-run MCMC on
+z-scored data inside a table call (minutes per model), and the post-hoc
+flavors rescale a Wald machinery the posterior does not have;
+standardize predictors before fitting (Gelman, Hill &amp; Vehtari 2020,
+ch. 12) if standardized coefficients are the goal;</li>
 <li>variational and optimizing fits
 (<code>stan_glm(..., algorithm = "meanfield")</code>,
 <code>"optimizing"</code>) — they carry an <em>approximate</em>
@@ -544,7 +598,7 @@ with <code>algorithm = "sampling"</code>;</li>
 analyst must justify per coefficient (<code><a href="https://easystats.github.io/bayestestR/reference/rope.html" class="external-link">bayestestR::rope()</a></code>
 renders them once justified).</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, p_adjust <span class="op">=</span> <span class="st">"holm"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `table_regression()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `p_adjust` is not available for Bayesian fits: there are no p-values to adjust.</span></span>
@@ -563,7 +617,7 @@ and there is no boundary-corrected test because nothing is being tested
 — the chi-bar-squared machinery exists only because the frequentist null
 σ = 0 sits on the edge of the parameter space, a situation a posterior
 quantile never encounters:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span>
 <span>                  data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>,</span>
 <span>                  iter <span class="op">=</span> <span class="fl">1000</span>, chains <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">7</span>, refresh <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
@@ -616,7 +670,7 @@ sampling (minutes, and a C++ toolchain), which is why this chunk is
 shown without being evaluated. Run it locally to see the table — it
 matches the <code>rstanarm</code> one above row for row, as the
 package’s shared frame tests verify:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bfit</span> <span class="op">&lt;-</span> <span class="fu">brms</span><span class="fu">::</span><span class="fu"><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brm</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>,</span>
 <span>                  data <span class="op">=</span> <span class="fu">lme4</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">sleepstudy</a></span>,</span>
 <span>                  chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">7</span>, refresh <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -645,7 +699,7 @@ tidy frame. In <a href="https://broom.tidymodels.org" class="external-link"><cod
 <code>statistic</code>, and <code>df</code> are <code>NA</code> —
 pipelines that filter on <code>p.value</code> must switch to the
 interval (or <code>pd</code>):</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"std.error"</span>, <span class="st">"conf.low"</span>, <span class="st">"conf.high"</span>,</span>
 <span>       <span class="st">"p.value"</span><span class="op">)</span><span class="op">]</span></span>
@@ -657,7 +711,7 @@ interval (or <code>pd</code>):</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> age                       0.006<span style="text-decoration: underline;">14</span>   0.005<span style="text-decoration: underline;">04</span> -<span style="color: #BB0000;">0.003</span><span style="color: #BB0000; text-decoration: underline;">26</span>    0.015<span style="text-decoration: underline;">2</span>      <span style="color: #BB0000;">NA</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> educationUpper secondary -<span style="color: #BB0000;">0.487</span>     0.165   -<span style="color: #BB0000;">0.811</span>     -<span style="color: #BB0000;">0.164</span>       <span style="color: #BB0000;">NA</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> educationTertiary        -<span style="color: #BB0000;">0.909</span>     0.197   -<span style="color: #BB0000;">1.31</span>      -<span style="color: #BB0000;">0.559</span>       <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="vptjzzwjub" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#vptjzzwjub table { font-family: system-ui, ‘Segoe UI’,

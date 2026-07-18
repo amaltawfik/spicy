@@ -343,6 +343,58 @@ are 0.40 times the odds for one with lower secondary education — and
 given model, priors, and data, that odds ratio lies between 0.27 and
 0.57 with 95% probability.
 
+## Marginal effects, from the draws
+
+Odds ratios answer on the odds scale; the **average marginal effect**
+answers on the probability scale — here, percentage points of
+P(smoking). For a posterior, the AME is computed *per draw*
+([`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)),
+and the table summarizes those draws under the same conventions as every
+other column: posterior median, MAD SD, and a credible interval that
+follows `ci_method` (equal-tailed by default, HDI on request):
+
+``` r
+
+table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
+#> Warning: AME computation via `marginaleffects::avg_slopes()` failed.
+#> ✖ Reason: Unable to compute predicted values with this model. This error can arise when `insight::get_data()` is unable to extract the dataset from the model object, or when the original data frame (usually in the global environment) was modified since fitting the model. Make sure the original data object is unchanged and/or try to supply a different dataset to the `newdata` argument.
+#> 
+#> In addition, this error message was raised:
+#> there is no package called 'collapse'
+#> 
+#> Bug Tracker: https://github.com/vincentarelbundock/marginaleffects/issues
+#> ℹ AME column will be em-dashed in the displayed table.
+#> Bayesian logistic regression (stanreg): smoking
+#> 
+#>  Variable                 │    B     AME  95% CrI 
+#> ──────────────────────────┼───────────────────────
+#>  (Intercept)              │   -1.11               
+#>  sex:                     │                       
+#>    Female (ref.)          │     –                 
+#>    Male                   │   -0.04               
+#>  age                      │    0.01               
+#>  education:               │                       
+#>    Lower secondary (ref.) │     –                 
+#>    Upper secondary        │   -0.49               
+#>    Tertiary               │   -0.91               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                  
+#>  R² (Bayes)               │    0.02               
+#> 
+#> Note. Bayesian logistic regression (stanreg).
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
+#> AME = average marginal effect.
+```
+
+Reading the `Tertiary` row: averaged over the sample, tertiary education
+shifts the probability of smoking by the displayed amount — given model,
+priors, and data, that shift lies in its credible interval with 95%
+probability, a statement no delta-method AME can make exactly. There is
+no `ame_p`, for the same reason there is no p column: the preset
+`"all_ame"` expands without it, the atomic token is refused, and in a
+mixed frequentist–Bayesian table the shared `ame_p` column dashes the
+Bayesian rows.
+
 ## The frequentist twin, side by side
 
 Because the layout machinery is shared, the comparison table is one
@@ -439,11 +491,15 @@ silently wrong:
   role for a posterior (misspecification-robust Bayesian procedures
   exist but remain research-grade), so model the clustering instead
   (next section);
-- `ci_method = "profile"` / `"boot_percentile"` and the AME family —
-  profile likelihood and bootstrap replicates are frequentist
-  constructions with no posterior analogue (the credible interval is
-  computed from the draws; `"hdi"` is the one alternative flavor), and a
-  draws-based AME needs its own design (planned);
+- `ci_method = "profile"` / `"boot_percentile"` — profile likelihood and
+  bootstrap replicates are frequentist constructions with no posterior
+  analogue (the credible interval is computed from the draws; `"hdi"` is
+  the one alternative flavor);
+- `standardized` — the refit flavors would re-run MCMC on z-scored data
+  inside a table call (minutes per model), and the post-hoc flavors
+  rescale a Wald machinery the posterior does not have; standardize
+  predictors before fitting (Gelman, Hill & Vehtari 2020, ch. 12) if
+  standardized coefficients are the goal;
 - variational and optimizing fits
   (`stan_glm(..., algorithm = "meanfield")`, `"optimizing"`) — they
   carry an *approximate* posterior on which the MCMC diagnostics above
