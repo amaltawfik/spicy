@@ -40,6 +40,7 @@ as_regression_frame.stanreg <- function(fit,
                                          ci_method = NULL,
                                          exponentiate = FALSE,
                                          model_id = "M1",
+                                         show_columns = character(0),
                                          show_fit_stats = NULL,
                                          ...) {
   .check_posterior_available()
@@ -72,6 +73,8 @@ as_regression_frame.stanreg <- function(fit,
   coefs <- .stan_coefs(fit, coef_names, ci_level = ci_level,
                         brms_b_prefix = FALSE,
                         hdi = use_hdi, exponentiate = exp_self)
+  coefs <- .stan_attach_ame(coefs, fit, ci_level, show_columns,
+                            hdi = use_hdi)
   info  <- .stan_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
@@ -103,6 +106,7 @@ as_regression_frame.brmsfit <- function(fit,
                                          ci_method = NULL,
                                          exponentiate = FALSE,
                                          model_id = "M1",
+                                         show_columns = character(0),
                                          show_fit_stats = NULL,
                                          ...) {
   .check_posterior_available()
@@ -137,6 +141,8 @@ as_regression_frame.brmsfit <- function(fit,
                         brms_b_prefix = TRUE,
                         draws_var_map = setNames(b_names, coef_names),
                         hdi = use_hdi, exponentiate = exp_self)
+  coefs <- .stan_attach_ame(coefs, fit, ci_level, show_columns,
+                            hdi = use_hdi)
   info  <- .stan_info(fit,
                       vcov_kind  = vcov,
                       vcov_label = vcov_label,
@@ -193,6 +199,26 @@ as_regression_frame.brmsfit <- function(fit,
     )
   }
 }
+
+# Attach draws-native AME rows (finding M2 resolved): posterior
+# median / MAD SD / ETI-or-HDI of the avg_slopes() draws, computed by
+# .compute_bayes_ame_table() through the shared attach path. The
+# shared row-builder stamps test_type = "z" and df = Inf (the
+# frequentist Wald convention); a posterior has neither, so those are
+# blanked here -- statistic and p_value are already NA and the
+# renderer dashes their cells.
+.stan_attach_ame <- function(coefs, fit, ci_level, show_columns, hdi) {
+  n_before <- nrow(coefs)
+  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
+                                      vcov_type = "model", hdi = hdi)
+  if (nrow(coefs) > n_before) {
+    ame_i <- coefs$estimate_type == "ame"
+    coefs$test_type[ame_i] <- NA_character_
+    coefs$df[ame_i]        <- NA_real_
+  }
+  coefs
+}
+
 
 # Variational / optimizing fits (algorithm = "meanfield", "fullrank",
 # "optimizing", "laplace", ...) are legitimate stanreg / brmsfit
@@ -617,10 +643,10 @@ as_regression_frame.brmsfit <- function(fit,
   )
 
   supports <- list(
-    # Bayesian AME needs a draws-based design (posterior median + CrI of
-    # avg_slopes draws, no z / p) -- declaring TRUE without attaching
-    # rendered an EMPTY column (finding M2). Refused until designed.
-    ame                 = FALSE,
+    # Draws-native AME (finding M2 resolved): posterior median +
+    # MAD SD + ETI-or-HDI of the avg_slopes() draws; no z / p (the
+    # ame_p cells dash, mirroring the B-row p policy).
+    ame                 = TRUE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
     nested_lrt          = FALSE,

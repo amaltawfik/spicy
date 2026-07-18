@@ -71,8 +71,8 @@ supported set. Feature requests are welcome on the issue tracker.
    rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \cr
    rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes \tab OR \tab - \cr
    rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \cr
-   Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab no \tab link-dependent \tab Random effects (if multilevel) \cr
-   Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab no \tab link-dependent \tab Random effects (if multilevel) \cr
+   Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \cr
+   Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \cr
 }
 }
 
@@ -190,7 +190,9 @@ interval); deliberately no p-value column and no stars -- the
 probability of direction (\code{"pd"}) is the opt-in posterior summary.
 A sampler-diagnostics guard checks every fit (R-hat, ESS,
 divergences, E-BFMI) and per-coefficient \code{"rhat"} / \code{"ess_bulk"} /
-\code{"ess_tail"} columns are available. Multilevel fits
+\code{"ess_tail"} / \code{"mcse"} columns are available. The AME columns are
+draws-native (posterior median, MAD SD and credible interval of
+the per-draw \code{avg_slopes()}; no \code{"ame_p"}). Multilevel fits
 (\code{stan_glmer}, \code{brm} with grouping terms) report their random
 effects as a block -- posterior median SD and credible interval per
 component, from the draws -- with no likelihood-ratio line.

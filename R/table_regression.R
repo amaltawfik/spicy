@@ -304,7 +304,13 @@
 #' direction with a footer definition (Makowski et al. 2019). Under
 #' `exponentiate = TRUE` all quantities are computed from the
 #' exponentiated draws directly (the SE is the posterior MAD SD on
-#' the ratio scale, not a delta-method approximation).
+#' the ratio scale, not a delta-method approximation). The AME
+#' columns are equally draws-native: `avg_slopes()` computes the
+#' marginal effects per posterior draw, and the table reports their
+#' posterior median, MAD SD and credible interval (equal-tailed or
+#' HDI per `ci_method`); `"ame_p"` has nothing to fill and follows
+#' the p-column policy (dropped from presets, refused as an atomic
+#' token, dashed in mixed tables).
 #'
 #' Fit statistics: `"r2_bayes"` (in the Bayesian default) plus the
 #' opt-in `"elpd_loo"` / `"looic"` / `"waic"`, whose standard errors

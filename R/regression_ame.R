@@ -689,8 +689,15 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 #
 # Returns a zero-row frame coefs subset on failure (missing
 # marginaleffects, `avg_slopes()` errors, fit class out of scope).
-.compute_ame_rows_for_frame <- function(fit, ci_level, vc = NULL) {
+.compute_ame_rows_for_frame <- function(fit, ci_level, vc = NULL,
+                                        hdi = FALSE) {
   if (!spicy_pkg_available("marginaleffects")) return(NULL)
+  if (inherits(fit, c("stanreg", "brmsfit"))) {
+    # Bayesian fits: draws-native summaries under the table's own
+    # conventions (median / MAD SD / ETI-or-HDI; no statistic, no p).
+    # The shared row-mapping below consumes the same column shape.
+    ame_table <- .compute_bayes_ame_table(fit, ci_level, hdi = hdi)
+  } else {
   # `vc` is the robust coefficient vcov requested for this fit (HC* / CR*).
   # Passing it to avg_slopes() makes the AME standard errors / CIs / p-values
   # honour that estimator (via the delta method) -- the AME point estimates are
@@ -738,6 +745,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       }
     }
   )
+  }
   if (is.null(ame_table) || nrow(ame_table) == 0L) return(NULL)
 
   factor_meta <- tryCatch(detect_factor_term_meta(fit),
@@ -841,6 +849,91 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 }
 
 
+# Draws-native AME table for stanreg / brmsfit, in the marginaleffects
+# column shape the shared row-builder consumes. avg_slopes() computes
+# the slopes per posterior draw; the summaries then follow the table's
+# Bayesian conventions exactly: estimate = posterior median of the AME
+# draws (identical to marginaleffects' own point estimate),
+# std.error = posterior MAD SD, interval = equal-tailed quantiles or
+# the HDI under ci_method = "hdi" (recomputed on the AME draws -- the
+# HDI is not transformation-invariant). statistic / p.value stay NA:
+# a posterior has neither, and the renderer dashes those cells like
+# the B-row p column.
+.compute_bayes_ame_table <- function(fit, ci_level, hdi = FALSE) {
+  s <- tryCatch(
+    suppressWarnings(suppressMessages(
+      marginaleffects::avg_slopes(fit, conf_level = ci_level)
+    )),
+    error = function(e) {
+      spicy_warn(
+        c(
+          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          "x" = paste0("Reason: ", conditionMessage(e)),
+          "i" = "AME column will be em-dashed in the displayed table."
+        ),
+        class = "spicy_fallback"
+      )
+      NULL
+    }
+  )
+  if (is.null(s) || nrow(s) == 0L) return(NULL)
+  base <- as.data.frame(s)
+  has_contrast <- "contrast" %in% names(base)
+  has_group    <- "group" %in% names(base)
+
+  out <- data.frame(
+    term      = as.character(base$term),
+    contrast  = if (has_contrast) as.character(base$contrast)
+                else NA_character_,
+    estimate  = as.numeric(base$estimate),
+    std.error = NA_real_,
+    statistic = NA_real_,
+    p.value   = NA_real_,
+    conf.low  = as.numeric(base$conf.low),
+    conf.high = as.numeric(base$conf.high),
+    stringsAsFactors = FALSE
+  )
+  if (has_group) out$group <- as.character(base$group)
+
+  dr <- tryCatch(marginaleffects::posterior_draws(s),
+                 error = function(e) NULL)
+  if (!is.null(dr) && all(c("draw", "term") %in% names(dr))) {
+    lo_pr <- (1 - ci_level) / 2
+    hi_pr <- 1 - lo_pr
+    key_out <- paste(out$term,
+                     if (has_contrast) out$contrast else "",
+                     if (has_group) out$group else "")
+    key_dr <- paste(as.character(dr$term),
+                    if (has_contrast) as.character(dr$contrast) else "",
+                    if (has_group) as.character(dr$group) else "")
+    for (k in seq_len(nrow(out))) {
+      d <- dr$draw[key_dr == key_out[k]]
+      if (length(d) < 2L) next                                        # nocov
+      out$estimate[k]  <- stats::median(d)
+      out$std.error[k] <- stats::mad(d)
+      ci <- if (isTRUE(hdi)) {
+        .hdi_interval(d, ci_level)
+      } else {
+        unname(stats::quantile(d, c(lo_pr, hi_pr)))
+      }
+      out$conf.low[k]  <- ci[1L]
+      out$conf.high[k] <- ci[2L]
+    }
+  } else {                                                            # nocov start
+    # posterior_draws unavailable: keep avg_slopes' own draws-based
+    # median + equal-tailed interval; the SE cell dashes.
+    spicy_warn(
+      paste0("AME draws could not be extracted via ",
+             "marginaleffects::posterior_draws(); the AME SE column ",
+             "is em-dashed and the interval is marginaleffects' ",
+             "equal-tailed default."),
+      class = "spicy_fallback"
+    )
+  }                                                                   # nocov end
+  out
+}
+
+
 # Terms whose coefficient is perfectly collinear (aliased): the fit returns an
 # NA estimate and the frame carries an em-dashed, NON-reference B row for them.
 # Their AME (and standardized) estimate is equally undefined. Works on both the
@@ -868,7 +961,8 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 # marginaleffects package is unavailable, (c) `avg_slopes()` errors.
 # The returned coefs always has the same schema as the input.
 .attach_ame_to_frame_coefs <- function(coefs, fit, ci_level, show_columns,
-                                       vcov_type = "model", cluster = NULL) {
+                                       vcov_type = "model", cluster = NULL,
+                                       hdi = FALSE) {
   ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
   if (!any(ame_tokens %in% show_columns)) return(coefs)
   # Robust AME uncertainty: when a robust vcov was requested for the
@@ -883,7 +977,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     vc <- tryCatch(compute_model_vcov(fit, type = vcov_type, cluster = cluster),
                    error = function(e) NULL)
   }
-  ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc)
+  ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc, hdi = hdi)
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
   # A perfectly-collinear (aliased) predictor has an NA coefficient and an
   # em-dashed B row; its AME is equally undefined, but marginaleffects returns a

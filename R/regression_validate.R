@@ -791,15 +791,17 @@ validate_class_appropriate_tokens <- function(models,
   # here means the user typed the atomic token.
   all_bayes_cols <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
-  if (all_bayes_cols && any(c("p", "t") %in% show_columns)) {
+  if (all_bayes_cols && any(c("p", "t", "ame_p") %in% show_columns)) {
     spicy_abort(
       c(paste0("Token(s) ",
-               paste(shQuote(intersect(c("p", "t"), show_columns)),
+               paste(shQuote(intersect(c("p", "t", "ame_p"),
+                                       show_columns)),
                      collapse = ", "),
                " in `show_columns` are not defined for Bayesian fits."),
-        "i" = paste0("A posterior has no p-value or t-statistic. The ",
-                     "probability of direction (`\"pd\"`) is the ",
-                     "closest posterior summary.")),
+        "i" = paste0("A posterior has no p-value or t-statistic (for ",
+                     "coefficients or AMEs). The probability of ",
+                     "direction (`\"pd\"`) is the closest posterior ",
+                     "summary.")),
       class = "spicy_invalid_input"
     )
   }
@@ -1100,11 +1102,12 @@ expand_show_columns <- function(tokens, bayesian = FALSE) {
       tok <- tokens[i]
       if (tok %in% names(.show_columns_groups)) {
         grp <- .show_columns_groups[[tok]]
-        # All-Bayesian tables have no p-values or t-statistics: the
-        # group presets expand WITHOUT them (BARG default: estimate +
-        # credible interval). An explicitly typed atomic "p" still
-        # hard-errors downstream.
-        if (isTRUE(bayesian)) grp <- setdiff(grp, c("p", "t"))
+        # All-Bayesian tables have no p-values or t-statistics -- for
+        # coefficients or for AMEs: the group presets expand WITHOUT
+        # them (BARG default: estimate + credible interval). An
+        # explicitly typed atomic "p" / "ame_p" still hard-errors
+        # downstream.
+        if (isTRUE(bayesian)) grp <- setdiff(grp, c("p", "t", "ame_p"))
         expanded[[i]] <- grp
       } else {
         expanded[[i]] <- tok

@@ -266,6 +266,29 @@ respondent are 0.40 times the odds for one with lower secondary
 education — and given model, priors, and data, that odds ratio lies
 between 0.27 and 0.57 with 95% probability.
 
+## Marginal effects, from the draws
+
+Odds ratios answer on the odds scale; the **average marginal effect**
+answers on the probability scale — here, percentage points of
+P(smoking). For a posterior, the AME is computed *per draw*
+(`marginaleffects::avg_slopes()`), and the table summarizes those
+draws under the same conventions as every other column: posterior
+median, MAD SD, and a credible interval that follows `ci_method`
+(equal-tailed by default, HDI on request):
+
+```{r ame}
+table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
+```
+
+Reading the `Tertiary` row: averaged over the sample, tertiary
+education shifts the probability of smoking by the displayed amount
+— given model, priors, and data, that shift lies in its credible
+interval with 95% probability, a statement no delta-method AME can
+make exactly. There is no `ame_p`, for the same reason there is no
+p column: the preset `"all_ame"` expands without it, the atomic
+token is refused, and in a mixed frequentist–Bayesian table the
+shared `ame_p` column dashes the Bayesian rows.
+
 ## The frequentist twin, side by side
 
 Because the layout machinery is shared, the comparison table is one
@@ -331,11 +354,15 @@ silently wrong:
   that role for a posterior (misspecification-robust
   Bayesian procedures exist but remain research-grade), so model the
   clustering instead (next section);
-* `ci_method = "profile"` / `"boot_percentile"` and the AME family —
-  profile likelihood and bootstrap replicates are frequentist
-  constructions with no posterior analogue (the credible interval is
-  computed from the draws; `"hdi"` is the one alternative flavor),
-  and a draws-based AME needs its own design (planned);
+* `ci_method = "profile"` / `"boot_percentile"` — profile likelihood
+  and bootstrap replicates are frequentist constructions with no
+  posterior analogue (the credible interval is computed from the
+  draws; `"hdi"` is the one alternative flavor);
+* `standardized` — the refit flavors would re-run MCMC on z-scored
+  data inside a table call (minutes per model), and the post-hoc
+  flavors rescale a Wald machinery the posterior does not have;
+  standardize predictors before fitting (Gelman, Hill &amp; Vehtari
+  2020, ch. 12) if standardized coefficients are the goal;
 * variational and optimizing fits (`stan_glm(..., algorithm =
   "meanfield")`, `"optimizing"`) — they carry an *approximate*
   posterior on which the MCMC diagnostics above would be vacuous;

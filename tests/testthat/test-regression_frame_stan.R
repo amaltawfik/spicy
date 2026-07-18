@@ -193,9 +193,11 @@ test_that("brmsfit: supports flags reflect Bayesian conventions", {
   fit <- .fit_brms_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   sp <- fr$info$supports
-  # AME refused until a draws-based Bayesian design exists (finding M2:
-  # TRUE here rendered an entirely empty column).
-  expect_false(sp$ame)
+  # Draws-native AME (finding M2 resolved): posterior median / MAD SD /
+  # credible interval of the per-draw avg_slopes(); the empty-column
+  # bug that motivated the old refusal is covered by the oracle tests
+  # in test-stan_bayes_gates_re.R.
+  expect_true(sp$ame)
   expect_false(sp$partial_effect_size)
   expect_false(sp$classical_r2)
   expect_false(sp$nested_lrt)

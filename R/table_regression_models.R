@@ -54,8 +54,8 @@
     c("rms",                           "ols",      "rms::ols()",               "yes", "-",                    "-"),
     c("rms",                           "lrm",      "rms::lrm()",               "yes", "OR",                   "-"),
     c("rms",                           "Glm",      "rms::Glm()",               "yes", "link-dependent",       "-"),
-    c("Bayesian",                      "stanreg",  "rstanarm::stan_glm(), rstanarm::stan_glmer()", "no",  "link-dependent", "Random effects (if multilevel)"),
-    c("Bayesian",                      "brmsfit",  "brms::brm()",              "no",  "link-dependent",       "Random effects (if multilevel)")
+    c("Bayesian",                      "stanreg",  "rstanarm::stan_glm(), rstanarm::stan_glmer()", "yes (draws)",  "link-dependent", "Random effects (if multilevel)"),
+    c("Bayesian",                      "brmsfit",  "brms::brm()",              "yes (draws)",  "link-dependent",       "Random effects (if multilevel)")
   )
   out <- as.data.frame(df, stringsAsFactors = FALSE)
   names(out) <- c("family", "class", "engine", "ame", "exponentiate",
@@ -211,7 +211,9 @@
 #' probability of direction (`"pd"`) is the opt-in posterior summary.
 #' A sampler-diagnostics guard checks every fit (R-hat, ESS,
 #' divergences, E-BFMI) and per-coefficient `"rhat"` / `"ess_bulk"` /
-#' `"ess_tail"` columns are available. Multilevel fits
+#' `"ess_tail"` / `"mcse"` columns are available. The AME columns are
+#' draws-native (posterior median, MAD SD and credible interval of
+#' the per-draw `avg_slopes()`; no `"ame_p"`). Multilevel fits
 #' (`stan_glmer`, `brm` with grouping terms) report their random
 #' effects as a block -- posterior median SD and credible interval per
 #' component, from the draws -- with no likelihood-ratio line.

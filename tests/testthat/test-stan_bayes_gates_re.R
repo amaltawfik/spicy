@@ -644,3 +644,72 @@ test_that("the mcse column matches posterior::mcse_median, exp included", {
     class = "spicy_invalid_input"
   )
 })
+
+
+# ---- Draws-native Bayesian AME (finding M2 resolved) ------------------------
+
+test_that("Bayesian AME summarizes the avg_slopes draws exactly", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  skip_if_not_installed("marginaleffects")
+  d <- mtcars
+  d$cyl_f <- factor(d$cyl)
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    am ~ wt + cyl_f, data = d, family = binomial(),
+    iter = 500, chains = 1, refresh = 0, seed = 1
+  ))
+  s <- suppressWarnings(marginaleffects::avg_slopes(fit,
+                                                    conf_level = 0.95))
+  pdr <- marginaleffects::posterior_draws(s)
+  dw <- pdr$draw[pdr$term == "wt"]
+  fr <- suppressWarnings(as_regression_frame(
+    fit, show_columns = c("b", "ame", "ame_se", "ame_ci")))
+  a <- fr$coefs[fr$coefs$estimate_type == "ame" & fr$coefs$term == "wt", ]
+  expect_equal(a$estimate, stats::median(dw), tolerance = 1e-10)
+  expect_equal(a$std_error, stats::mad(dw), tolerance = 1e-10)
+  expect_equal(a$ci_lower, unname(stats::quantile(dw, 0.025)),
+               tolerance = 1e-10)
+  expect_equal(a$ci_upper, unname(stats::quantile(dw, 0.975)),
+               tolerance = 1e-10)
+  # No test, no p, no df: the cells dash like the p column.
+  expect_true(is.na(a$statistic) && is.na(a$p_value))
+  expect_true(is.na(a$test_type) && is.na(a$df))
+  # Factor contrasts ride through (one AME row per non-reference level).
+  a6 <- fr$coefs[fr$coefs$estimate_type == "ame" &
+                   fr$coefs$term == "cyl_f6", ]
+  d6 <- pdr$draw[pdr$contrast == "6 - 4"]
+  expect_equal(a6$estimate, stats::median(d6), tolerance = 1e-10)
+  # HDI flavor: recomputed on the AME draws, distinct from the ETI.
+  fr_h <- suppressWarnings(as_regression_frame(
+    fit, ci_method = "hdi", show_columns = c("b", "ame", "ame_ci")))
+  ah <- fr_h$coefs[fr_h$coefs$estimate_type == "ame" &
+                     fr_h$coefs$term == "wt", ]
+  hh <- spicy:::.hdi_interval(dw, 0.95)
+  expect_equal(c(ah$ci_lower, ah$ci_upper), hh, tolerance = 1e-10)
+  expect_false(isTRUE(all.equal(ah$ci_lower, a$ci_lower)))
+})
+
+
+test_that("Bayesian AME gates: ame_p refused all-Bayes, dashes mixed", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("marginaleffects")
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    am ~ wt, data = mtcars, family = binomial(),
+    iter = 400, chains = 1, refresh = 0, seed = 1
+  ))
+  expect_error(
+    table_regression(fit, show_columns = c("b", "ame", "ame_p")),
+    class = "spicy_invalid_input"
+  )
+  # all_ame expands without ame_p for an all-Bayesian table.
+  out <- paste(capture.output(print(suppressWarnings(
+    table_regression(fit, show_columns = "all_ame")))), collapse = "\n")
+  expect_match(out, "AME", fixed = TRUE)
+  expect_match(out, "AME = average marginal effect", fixed = TRUE)
+  # Mixed table: shared ame_p column, dash on the Bayesian side.
+  gf <- glm(am ~ wt, data = mtcars, family = binomial)
+  outm <- paste(capture.output(print(suppressWarnings(table_regression(
+    list(G = gf, B = fit), show_columns = c("b", "ame", "ame_p")
+  )))), collapse = "\n")
+  expect_match(outm, "AME", fixed = TRUE)
+})
