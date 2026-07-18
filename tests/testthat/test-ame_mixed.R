@@ -136,8 +136,12 @@ test_that("lme factor predictor: AME term == B term (no duplicate row)", {
   b_terms <- fr$coefs$term[fr$coefs$estimate_type == "B" &
                               fr$coefs$parent_var == "Sex" &
                               !is.na(fr$coefs$estimate)]
+  # Non-reference AME rows only: the frame also synthesizes an NA
+  # reference placeholder (its term matches the B REFERENCE row, so
+  # the rendered reference line em-dashes under the AME columns).
   ame_terms <- fr$coefs$term[fr$coefs$estimate_type == "ame" &
-                               fr$coefs$parent_var == "Sex"]
+                               fr$coefs$parent_var == "Sex" &
+                               !(fr$coefs$is_ref %in% TRUE)]
   expect_true(all(ame_terms %in% b_terms))
 })
 
@@ -146,10 +150,17 @@ test_that("glmer factor predictor: AME term id matches level coef", {
   fit <- .fit_glmer_factor_ame()
   fr <- as_regression_frame(fit, model_id = "M1",
                              show_columns = c("b", "ame"))
-  # cat has levels A (ref), B, C -- AME rows must use catB / catC term ids.
+  # cat has levels A (ref), B, C -- computed AME rows must use catB /
+  # catC term ids; the catA reference placeholder (NA values, is_ref)
+  # is what em-dashes the reference line under the AME columns.
   ame_cat <- fr$coefs[fr$coefs$estimate_type == "ame" &
-                        fr$coefs$parent_var == "cat", ]
+                        fr$coefs$parent_var == "cat" &
+                        !(fr$coefs$is_ref %in% TRUE), ]
   expect_true(all(ame_cat$term %in% c("catB", "catC")))
+  ref_cat <- fr$coefs[fr$coefs$estimate_type == "ame" &
+                        (fr$coefs$is_ref %in% TRUE), ]
+  expect_identical(nrow(ref_cat), 1L)
+  expect_true(is.na(ref_cat$estimate))
 })
 
 

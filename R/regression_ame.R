@@ -1019,6 +1019,53 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     ame_rows$label[has_cat] <- paste0(ame_rows$outcome_level[has_cat], ": ",
                                       ame_rows$label[has_cat])
   }
+  # Reference-level placeholder AME rows: the legacy lm/glm extractor
+  # emits one reference row PER estimate_type (build_reference_rows:
+  # "the same level is the reference for B ... AND for AME"), so the
+  # factor reference line em-dashes under the AME columns. The frame
+  # path synthesizes the same here -- without them the AME cells of a
+  # reference row render BLANK (value absent) instead of the semantic
+  # em-dash every legacy-path table shows. Per-category AME (ordinal:
+  # shared B rows, one AME per outcome) gets one placeholder per
+  # outcome category so every pivoted column dashes.
+  ref_i <- which(coefs$estimate_type == "B" & (coefs$is_ref %in% TRUE))
+  if (length(ref_i) > 0L && nrow(ame_rows) > 0L) {
+    ame_parents <- unique(ame_rows$parent_var)
+    ame_outs <- if ("outcome_level" %in% names(ame_rows)) {
+      unique(ame_rows$outcome_level[!is.na(ame_rows$outcome_level)])
+    } else {
+      character(0)
+    }
+    add <- lapply(ref_i, function(r) {
+      if (!(coefs$parent_var[r] %in% ame_parents)) return(NULL)      # nocov
+      ref_out <- if ("outcome_level" %in% names(coefs)) {
+        coefs$outcome_level[r]
+      } else {
+        NA_character_
+      }
+      outs <- if (length(ame_outs) > 0L) {
+        if (!is.na(ref_out)) ref_out else ame_outs
+      } else {
+        NA_character_
+      }
+      do.call(rbind, lapply(outs, function(o) {
+        row <- ame_rows[1L, , drop = FALSE]
+        row[1L, ] <- NA
+        row$term             <- coefs$term[r]
+        row$parent_var       <- coefs$parent_var[r]
+        row$label            <- coefs$label[r]
+        row$factor_level_pos <- coefs$factor_level_pos[r]
+        row$is_ref           <- TRUE
+        row$estimate_type    <- "ame"
+        if ("outcome_level" %in% names(row)) row$outcome_level <- o
+        row
+      }))
+    })
+    add <- do.call(rbind, Filter(Negate(is.null), add))
+    if (!is.null(add) && nrow(add) > 0L) {
+      ame_rows <- rbind(ame_rows, add)
+    }
+  }
   # Defensive no-op: a structurally-incompatible AME frame (no shared columns)
   # is never produced by .compute_ame_rows_for_frame, but guard so a future /
   # mocked caller cannot inject garbage rows into the coefs frame.

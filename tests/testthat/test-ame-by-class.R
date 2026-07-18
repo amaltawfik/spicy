@@ -7,7 +7,13 @@
 # Each is cross-validated to marginaleffects::avg_slopes() to machine precision.
 
 ame_rows <- function(fr) {
-  fr$coefs[fr$coefs$estimate_type == "ame", , drop = FALSE]
+  # Non-reference AME rows only: the frame also synthesizes NA
+  # reference placeholders (one per factor reference level, so the
+  # rendered reference line em-dashes under the AME columns like the
+  # legacy lm/glm path); the oracle cross-validation targets the
+  # computed rows.
+  fr$coefs[fr$coefs$estimate_type == "ame" &
+             !(fr$coefs$is_ref %in% TRUE), , drop = FALSE]
 }
 oracle_slopes <- function(fit) {
   as.data.frame(suppressWarnings(suppressMessages(
@@ -270,4 +276,31 @@ test_that("glmmTMB AME falls back to model-based under a robust vcov (no blank)"
   idx <- match(am$term, okey)
   expect_equal(am$estimate,  orc$estimate[idx],  tolerance = 1e-10)
   expect_equal(am$std_error, orc$std.error[idx], tolerance = 1e-10)
+})
+
+
+test_that("frame-path AME emits reference placeholders (em-dash cells)", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("marginaleffects")
+  d <- make_d()
+  fit <- mgcv::gam(y ~ x1 + f, data = d)
+  fr <- as_regression_frame(fit, show_columns = c("b", "ame"))
+  ref_ame <- fr$coefs[fr$coefs$estimate_type == "ame" &
+                        (fr$coefs$is_ref %in% TRUE), , drop = FALSE]
+  # One placeholder per factor reference level, all-NA values: the
+  # renderer em-dashes the reference line under the AME columns
+  # (parity with the legacy lm/glm extractor's build_reference_rows).
+  expect_identical(nrow(ref_ame), 1L)
+  expect_true(all(is.na(ref_ame$estimate)))
+  expect_identical(ref_ame$parent_var, "f")
+  # Per-category AME: one placeholder per outcome category, so every
+  # pivoted AME column dashes on the reference line.
+  skip_if_not_installed("MASS")
+  fit_o <- MASS::polr(yc ~ x1 + f, data = d, Hess = TRUE)
+  fr_o <- suppressWarnings(as_regression_frame(
+    fit_o, show_columns = c("b", "ame")))
+  ref_o <- fr_o$coefs[fr_o$coefs$estimate_type == "ame" &
+                        (fr_o$coefs$is_ref %in% TRUE), , drop = FALSE]
+  expect_identical(nrow(ref_o), 3L)
+  expect_setequal(ref_o$outcome_level, c("lo", "mid", "hi"))
 })
