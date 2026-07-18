@@ -446,30 +446,22 @@ posterior median, MAD SD, and a credible interval that follows
 <code>ci_method</code> (equal-tailed by default, HDI on request):</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: AME computation via `marginaleffects::avg_slopes()` failed.</span></span>
-<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Reason: Unable to compute predicted values with this model. This error can arise when `insight::get_data()` is unable to extract the dataset from the model object, or when the original data frame (usually in the global environment) was modified since fitting the model. Make sure the original data object is unchanged and/or try to supply a different dataset to the `newdata` argument.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; In addition, this error message was raised:</span></span>
-<span><span class="co">#&gt; there is no package called 'collapse'</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Bug Tracker: https://github.com/vincentarelbundock/marginaleffects/issues</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> AME column will be em-dashed in the displayed table.</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian logistic regression (stanreg): smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B     AME  95% CrI </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11               </span></span>
-<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                       </span></span>
-<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –                 </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04               </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01               </span></span>
-<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                       </span></span>
-<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –                 </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49               </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91               </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                  </span></span>
-<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02               </span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B      AME      95% CrI     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11                        </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –                          </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04  -0.01  [-0.06,  0.04] </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01   0.00  [-0.00,  0.00] </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –                          </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.49  -0.09  [-0.16, -0.03] </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  -0.15  [-0.22, -0.09] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                           </span></span>
+<span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>

@@ -356,30 +356,22 @@ follows `ci_method` (equal-tailed by default, HDI on request):
 ``` r
 
 table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
-#> Warning: AME computation via `marginaleffects::avg_slopes()` failed.
-#> ✖ Reason: Unable to compute predicted values with this model. This error can arise when `insight::get_data()` is unable to extract the dataset from the model object, or when the original data frame (usually in the global environment) was modified since fitting the model. Make sure the original data object is unchanged and/or try to supply a different dataset to the `newdata` argument.
-#> 
-#> In addition, this error message was raised:
-#> there is no package called 'collapse'
-#> 
-#> Bug Tracker: https://github.com/vincentarelbundock/marginaleffects/issues
-#> ℹ AME column will be em-dashed in the displayed table.
 #> Bayesian logistic regression (stanreg): smoking
 #> 
-#>  Variable                 │    B     AME  95% CrI 
-#> ──────────────────────────┼───────────────────────
-#>  (Intercept)              │   -1.11               
-#>  sex:                     │                       
-#>    Female (ref.)          │     –                 
-#>    Male                   │   -0.04               
-#>  age                      │    0.01               
-#>  education:               │                       
-#>    Lower secondary (ref.) │     –                 
-#>    Upper secondary        │   -0.49               
-#>    Tertiary               │   -0.91               
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175                  
-#>  R² (Bayes)               │    0.02               
+#>  Variable                 │    B      AME      95% CrI     
+#> ──────────────────────────┼────────────────────────────────
+#>  (Intercept)              │   -1.11                        
+#>  sex:                     │                                
+#>    Female (ref.)          │     –                          
+#>    Male                   │   -0.04  -0.01  [-0.06,  0.04] 
+#>  age                      │    0.01   0.00  [-0.00,  0.00] 
+#>  education:               │                                
+#>    Lower secondary (ref.) │     –                          
+#>    Upper secondary        │   -0.49  -0.09  [-0.16, -0.03] 
+#>    Tertiary               │   -0.91  -0.15  [-0.22, -0.09] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                           
+#>  R² (Bayes)               │    0.02                        
 #> 
 #> Note. Bayesian logistic regression (stanreg).
 #> Std. errors: posterior MAD SD (scaled median absolute deviation).
