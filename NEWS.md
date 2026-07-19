@@ -57,8 +57,14 @@ per-family behaviour, and the new vignettes for walk-throughs.
   draws (no delta method). The AME columns are draws-native too:
   `avg_slopes()` runs per posterior draw and the table reports the
   posterior median, MAD SD and credible interval of those draws (no
-  `"ame_p"` -- same policy as the p column). Variational / optimizing
-  fits are refused with a refit hint.
+  `"ame_p"` -- same policy as the p column). Standardized betas work
+  for the algebraic flavors (`"posthoc"` / `"basic"` / `"smart"`,
+  exact affine rescales of the draws) on fixed-effects
+  `stan_glm`-style fits; multilevel (`stan_glmer`) and non-GLM
+  (`stan_polr`, `stan_betareg`) fits and `brmsfit` models (no
+  design-matrix metadata) are refused with a pre-standardization
+  hint, as are `"refit"` and `"pseudo"`.
+  Variational / optimizing fits are refused with a refit hint.
 * Survival (`survival::coxph` / `survreg`, `rms::cph`,
   `flexsurv::flexsurvreg`): Cox tables report `n` and `N events` as fit
   statistics and the concordance as a footer note.

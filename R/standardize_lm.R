@@ -244,6 +244,41 @@ standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
 }
 
 
+# Per-design-column algebraic scale factors -- the single source of
+# truth shared by the lm engine (scale_and_rebuild), the glm engine
+# (standardize_algebraic_glm) and the Bayesian draws path
+# (.stan_beta_scale_factors): beta = b x factor. Pure function of the
+# design.
+#   * input_scaling "sd"    : every numeric column sd(col)/sd_y_div
+#   * input_scaling "gelman": continuous columns 2*sd(col)/sd_y_div;
+#     binary numeric columns AND factor dummies 1/sd_y_div
+#   * factor_treatment routes dummies under "sd" scaling only
+#     ("unscaled" -> 1/sd_y_div for posthoc/smart, "scale" -> like any
+#     column for basic).
+.algebraic_scale_factors <- function(mm, factor_cols,
+                                     factor_treatment, input_scaling,
+                                     sd_y_div = 1) {
+  sd_x <- apply(mm, 2, stats::sd)
+  is_binary_numeric <- vapply(seq_len(ncol(mm)), function(j) {
+    if (j %in% factor_cols) return(FALSE)
+    length(unique(mm[, j])) == 2L
+  }, logical(1))
+  if (input_scaling == "gelman") {
+    # Gelman (2008): continuous inputs x 2sd; binary inputs -- numeric
+    # 0/1 and factor dummies alike -- untouched.
+    scale_factor <- 2 * sd_x / sd_y_div
+    scale_factor[is_binary_numeric] <- 1 / sd_y_div
+    if (length(factor_cols) > 0L) scale_factor[factor_cols] <- 1 / sd_y_div
+  } else {
+    scale_factor <- sd_x / sd_y_div
+    if (length(factor_cols) > 0L && factor_treatment == "unscaled") {
+      scale_factor[factor_cols] <- 1 / sd_y_div
+    }
+  }
+  scale_factor
+}
+
+
 # ---- Internal: shared algebraic-scaling implementation --------------------
 
 # Engine for posthoc, basic, smart. Two parameters control method
@@ -288,32 +323,16 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
   # Unweighted sd (matches effectsize default convention)
   sd_y <- stats::sd(y)
   mm <- stats::model.matrix(fit)
-  sd_x <- apply(mm, 2, stats::sd)
 
-  # Identify factor-derived columns (so we can route them via
-  # factor_treatment rather than the binary-numeric rule).
-  factor_cols <- detect_factor_design_cols(fit)
-
-  # Identify binary NUMERIC columns (exactly 2 unique values AND
-  # NOT factor-derived). Used by the "gelman" input scaling.
-  is_binary_numeric <- vapply(seq_len(ncol(mm)), function(j) {
-    if (j %in% factor_cols) return(FALSE)
-    length(unique(mm[, j])) == 2L
-  }, logical(1))
-
-  # Build per-column scale factor
-  if (input_scaling == "gelman") {
-    # Gelman (2008): continuous inputs x 2sd; binary inputs -- numeric
-    # 0/1 and factor dummies alike -- untouched.
-    scale_factor <- 2 * sd_x / sd_y
-    scale_factor[is_binary_numeric] <- 1 / sd_y
-    if (length(factor_cols) > 0L) scale_factor[factor_cols] <- 1 / sd_y
-  } else {
-    scale_factor <- sd_x / sd_y                # every numeric column
-    if (length(factor_cols) > 0L && factor_treatment == "unscaled") {
-      scale_factor[factor_cols] <- 1 / sd_y
-    }
-  }
+  # Per-column scale factors from the shared single-source helper
+  # (factor-derived columns routed via factor_treatment, binary
+  # numerics via the gelman rule).
+  scale_factor <- .algebraic_scale_factors(
+    mm, detect_factor_design_cols(fit),
+    factor_treatment = factor_treatment,
+    input_scaling    = input_scaling,
+    sd_y_div         = sd_y
+  )
 
   # beta and SE_beta. Singular coefs (NA in b) propagate naturally.
   beta <- b * scale_factor
@@ -404,6 +423,17 @@ coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
 # `standardize_basic_lm()` to NA the corresponding beta rows.
 detect_factor_design_cols <- function(fit) {
   xlevels <- fit$xlevels
+  if (is.null(xlevels) || length(xlevels) == 0L) {
+    # stanreg objects carry no $xlevels slot (rstanarm's constructor
+    # omits it), which would silently route factor dummies through the
+    # continuous scaling under posthoc / smart. Rebuild it the way
+    # stats does for lm -- keyed by term label, so inline factor()
+    # terms are caught too. lm / glm never reach this branch (their
+    # $xlevels fast path hits first).
+    xlevels <- tryCatch(
+      stats::.getXlevels(stats::terms(fit), stats::model.frame(fit)),
+      error = function(e) NULL)
+  }
   if (is.null(xlevels) || length(xlevels) == 0L) return(integer(0))
 
   mm <- stats::model.matrix(fit)

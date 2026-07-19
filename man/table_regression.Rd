@@ -160,8 +160,23 @@ column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 \code{"basic"}, \code{"smart"}, \code{"pseudo"}. \code{"pseudo"} is \emph{glm only}
 (Menard 2011 fully-standardised); using it with \code{lm()} raises
 \code{spicy_invalid_input}. Supported classes: \code{lm}, \code{glm}
-(incl. \code{MASS::glm.nb}), and the mixed engines (\code{lmer} /
-\code{glmer} / \code{glmmTMB} / \code{nlme::lme}); any other class raises
+(incl. \code{MASS::glm.nb}), the mixed engines (\code{lmer} /
+\code{glmer} / \code{glmmTMB} / \code{nlme::lme}), and fixed-effects
+\code{stan_glm}-style \code{stanreg} fits for the algebraic flavors
+\code{"posthoc"} / \code{"basic"} / \code{"smart"} -- exact affine rescales of
+the posterior draws (median, MAD SD and credible bounds all
+scale by the same positive SD ratio; the beta stays on the link
+scale under \code{exponentiate = TRUE}). Bayesian \code{"refit"} (would
+re-run the sampler) and \code{"pseudo"} (per-draw latent variance;
+planned) are refused. Also refused: multilevel \code{stanreg} fits
+(\code{stan_glmer} / \code{stan_lmer}; a Bayesian beta would need an
+explicit sd(Y) decomposition that the frequentist mixed engines
+resolve by refitting on z-scored data), non-GLM \code{stanreg}
+subclasses (\code{stan_polr}, \code{stan_betareg}), and \code{brmsfit} fits
+altogether: brms exposes neither \code{model.matrix()} nor the factor
+metadata the rescale needs. In all refused Bayesian cases,
+standardize predictors before fitting instead. Any other class
+raises
 \code{spicy_unsupported_standardized} rather than rendering an
 empty beta column. See the \emph{Standardised coefficients}
 section.}
@@ -1016,7 +1031,11 @@ marginal effects per posterior draw, and the table reports their
 posterior median, MAD SD and credible interval (equal-tailed or
 HDI per \code{ci_method}); \code{"ame_p"} has nothing to fill and follows
 the p-column policy (dropped from presets, refused as an atomic
-token, dashed in mixed tables).
+token, dashed in mixed tables). Standardized betas follow the same
+draws logic: \code{"posthoc"} / \code{"basic"} / \code{"smart"} are exact affine
+rescales of the link-scale summaries (the Gaussian family divides
+by SD(y); every other family standardizes predictors only, the
+frequentist glm convention); \code{"refit"} and \code{"pseudo"} are refused.
 
 Fit statistics: \code{"r2_bayes"} (in the Bayesian default) plus the
 opt-in \code{"elpd_loo"} / \code{"looic"} / \code{"waic"}, whose standard errors

@@ -717,3 +717,209 @@ test_that("Bayesian AME gates: ame_p refused all-Bayes, dashes mixed", {
   )))), collapse = "\n")
   expect_match(outm, "AME", fixed = TRUE)
 })
+
+
+# ---- Draws-native standardized betas (posthoc / basic / smart) --------------
+
+test_that("Bayesian beta is an exact affine rescale (effectsize oracle)", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  skip_if_not_installed("effectsize")
+  d <- mtcars
+  d$cyl_f <- factor(d$cyl)
+  d$am_b <- d$am
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    mpg ~ wt + am_b + cyl_f, data = d,
+    iter = 600, chains = 1, refresh = 0, seed = 1
+  ))
+  fr <- suppressWarnings(as_regression_frame(
+    fit, standardized = "posthoc", show_columns = c("b", "beta")))
+  bt <- fr$coefs[fr$coefs$estimate_type == "beta" & !fr$coefs$is_ref, ]
+  es <- as.data.frame(suppressWarnings(
+    effectsize::standardize_parameters(fit, method = "posthoc")))
+  es_col <- if ("Std_Median" %in% names(es)) "Std_Median"
+            else "Std_Coefficient"
+  for (tm in c("wt", "am_b", "cyl_f6", "cyl_f8")) {
+    expect_equal(bt$estimate[bt$term == tm],
+                 es[[es_col]][es$Parameter == tm],
+                 tolerance = 1e-6, info = tm)
+  }
+  # Same affine map on the same draws: MAD SD and CrI scale by the
+  # identical ratio (pinned against the frame's own B rows).
+  bB <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  r_wt <- stats::sd(d$wt) / stats::sd(d$mpg)
+  i <- bt$term == "wt"; j <- bB$term == "wt"
+  expect_equal(bt$estimate[i],  bB$estimate[j] * r_wt,  tolerance = 1e-10)
+  expect_equal(bt$std_error[i], bB$std_error[j] * r_wt, tolerance = 1e-10)
+  expect_equal(bt$ci_lower[i],  bB$ci_lower[j] * r_wt,  tolerance = 1e-10)
+  # Factor dummies stay UNSCALED under posthoc (1/sd(y)) -- the one
+  # flavor where the factor routing differs from the column-SD rule.
+  # Regression guard: stanreg carries no $xlevels, so factor detection
+  # must go through the .getXlevels rebuild (2026-07 review finding).
+  expect_equal(bt$estimate[bt$term == "cyl_f6"],
+               bB$estimate[bB$term == "cyl_f6"] / stats::sd(d$mpg),
+               tolerance = 1e-10)
+  # Intercept beta is NA; diagnostics stay B-only; no test/p on beta.
+  expect_true(is.na(fr$coefs$estimate[fr$coefs$estimate_type == "beta" &
+                                        fr$coefs$term == "(Intercept)"]))
+  expect_true(all(is.na(bt$p_value)) && all(is.na(bt$statistic)))
+  expect_true(all(is.na(bt$mcse)) && all(is.na(bt$rhat)))
+  # Beta reference placeholder mirrors the B one (em-dash parity).
+  ref_beta <- fr$coefs[fr$coefs$estimate_type == "beta" &
+                         (fr$coefs$is_ref %in% TRUE), ]
+  expect_identical(nrow(ref_beta), 1L)
+  # basic: factor dummies scaled by their column SD too.
+  fr_b <- suppressWarnings(as_regression_frame(
+    fit, standardized = "basic", show_columns = c("b", "beta")))
+  bt_b <- fr_b$coefs[fr_b$coefs$estimate_type == "beta" &
+                       !fr_b$coefs$is_ref, ]
+  es_b <- as.data.frame(suppressWarnings(
+    effectsize::standardize_parameters(fit, method = "basic")))
+  expect_equal(bt_b$estimate[bt_b$term == "cyl_f6"],
+               es_b[[es_col]][es_b$Parameter == "cyl_f6"],
+               tolerance = 1e-6)
+  # smart: continuous x 2sd, binary numerics and dummies raw (all
+  # over sd(y)) -- pinned algebraically (effectsize's two_sd variant
+  # 2-SD-scales binary NUMERIC predictors, where Gelman leaves them
+  # raw; it agrees on continuous predictors and factor dummies).
+  fr_s <- suppressWarnings(as_regression_frame(
+    fit, standardized = "smart", show_columns = c("b", "beta")))
+  bt_s <- fr_s$coefs[fr_s$coefs$estimate_type == "beta" &
+                       !fr_s$coefs$is_ref, ]
+  bB_s <- fr_s$coefs[fr_s$coefs$estimate_type == "B" &
+                       !fr_s$coefs$is_ref, ]
+  sdy <- stats::sd(d$mpg)
+  expect_equal(bt_s$estimate[bt_s$term == "wt"],
+               bB_s$estimate[bB_s$term == "wt"] * 2 * stats::sd(d$wt) / sdy,
+               tolerance = 1e-10)
+  expect_equal(bt_s$estimate[bt_s$term == "am_b"],
+               bB_s$estimate[bB_s$term == "am_b"] / sdy, tolerance = 1e-10)
+  expect_equal(bt_s$estimate[bt_s$term == "cyl_f6"],
+               bB_s$estimate[bB_s$term == "cyl_f6"] / sdy, tolerance = 1e-10)
+  # Inline factor() terms are detected too: the xlevels rebuild is
+  # keyed by term label (stats::.getXlevels), not by data column.
+  fit_i <- suppressWarnings(rstanarm::stan_glm(
+    mpg ~ factor(cyl), data = d,
+    iter = 400, chains = 1, refresh = 0, seed = 4
+  ))
+  fr_i <- suppressWarnings(as_regression_frame(
+    fit_i, standardized = "posthoc", show_columns = c("b", "beta")))
+  bt_i <- fr_i$coefs[fr_i$coefs$estimate_type == "beta" &
+                       !fr_i$coefs$is_ref, ]
+  bB_i <- fr_i$coefs[fr_i$coefs$estimate_type == "B" &
+                       !fr_i$coefs$is_ref, ]
+  expect_equal(bt_i$estimate[bt_i$term == "factor(cyl)6"],
+               bB_i$estimate[bB_i$term == "factor(cyl)6"] / sdy,
+               tolerance = 1e-10)
+})
+
+
+test_that("Bayesian beta: glm convention, exp/HDI interplay, refusals", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  d <- mtcars
+  d$cyl_f <- factor(d$cyl)
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    am ~ wt + cyl_f, data = d, family = binomial(),
+    iter = 500, chains = 1, refresh = 0, seed = 2
+  ))
+  # Non-Gaussian: x-only standardization on the link scale (the
+  # frequentist glm convention, sd_y_div = 1).
+  fr <- suppressWarnings(as_regression_frame(
+    fit, standardized = "posthoc", show_columns = c("b", "beta")))
+  bt <- fr$coefs[fr$coefs$estimate_type == "beta" & !fr$coefs$is_ref, ]
+  bB <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  expect_equal(bt$estimate[bt$term == "wt"],
+               bB$estimate[bB$term == "wt"] * stats::sd(d$wt),
+               tolerance = 1e-10)
+  # Beta stays on the LINK scale under exponentiate.
+  fr_e <- suppressWarnings(as_regression_frame(
+    fit, standardized = "posthoc", exponentiate = TRUE,
+    show_columns = c("b", "beta")))
+  bt_e <- fr_e$coefs[fr_e$coefs$estimate_type == "beta" &
+                       !fr_e$coefs$is_ref, ]
+  expect_equal(bt_e$estimate[bt_e$term == "wt"],
+               bt$estimate[bt$term == "wt"], tolerance = 1e-10)
+  # HDI bounds scale by the same ratio (affine maps preserve the HDI).
+  fr_h <- suppressWarnings(as_regression_frame(
+    fit, standardized = "posthoc", ci_method = "hdi",
+    show_columns = c("b", "beta")))
+  bt_h <- fr_h$coefs[fr_h$coefs$estimate_type == "beta" &
+                       !fr_h$coefs$is_ref, ]
+  bB_h <- fr_h$coefs[fr_h$coefs$estimate_type == "B" &
+                       !fr_h$coefs$is_ref, ]
+  expect_equal(bt_h$ci_lower[bt_h$term == "wt"],
+               bB_h$ci_lower[bB_h$term == "wt"] * stats::sd(d$wt),
+               tolerance = 1e-10)
+  # refit / pseudo refused with the Bayesian rationale.
+  expect_error(
+    table_regression(fit, standardized = "refit"),
+    "re-run the MCMC sampler",
+    class = "spicy_unsupported_standardized"
+  )
+  expect_error(
+    table_regression(fit, standardized = "pseudo"),
+    "varies per posterior draw",
+    class = "spicy_unsupported_standardized"
+  )
+  # Mixed lm + stan: shared beta column renders for both engines.
+  lm1 <- lm(mpg ~ wt + cyl_f, data = d)
+  fg <- suppressWarnings(rstanarm::stan_glm(
+    mpg ~ wt + cyl_f, data = d,
+    iter = 500, chains = 1, refresh = 0, seed = 3
+  ))
+  out <- paste(capture.output(print(suppressWarnings(table_regression(
+    list(F = lm1, B = fg), standardized = "posthoc",
+    show_columns = c("b", "beta")
+  )))), collapse = "\n")
+  expect_match(out, "standardised coefficient", fixed = TRUE)
+})
+
+
+test_that("brmsfit refuses standardized upfront (no design metadata)", {
+  skip_if_not_installed("brms")
+  # The gate fires before any draws work, so a class-only mock keeps
+  # this on CI (no local Stan fixture needed). It also fires BEFORE
+  # the shared refit / pseudo gate, whose hint would otherwise
+  # recommend the algebraic flavors this class refuses.
+  mock <- structure(list(algorithm = "sampling"), class = "brmsfit")
+  for (std in c("posthoc", "basic", "smart", "refit", "pseudo")) {
+    expect_error(
+      as_regression_frame(mock, standardized = std),
+      "not available for `brmsfit`",
+      class = "spicy_unsupported_standardized"
+    )
+  }
+})
+
+
+test_that("multilevel and non-GLM stanreg fits refuse standardized", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  fit_m <- suppressWarnings(rstanarm::stan_glmer(
+    mpg ~ wt + (1 | gear), data = mtcars,
+    iter = 300, chains = 1, refresh = 0, seed = 5
+  ))
+  for (std in c("posthoc", "refit")) {
+    # refit included on purpose: the scope gate must fire before the
+    # shared refit hint, which recommends flavors this fit refuses.
+    expect_error(
+      as_regression_frame(fit_m, standardized = std),
+      "multilevel",
+      class = "spicy_unsupported_standardized"
+    )
+  }
+  # standardized = "none" still renders (scope gate is beta-only).
+  fr <- suppressWarnings(as_regression_frame(fit_m))
+  expect_false(isTRUE(fr$info$supports$standardise_algebraic))
+  fit_p <- suppressWarnings(rstanarm::stan_polr(
+    factor(cyl) ~ wt, data = mtcars,
+    prior = rstanarm::R2(0.3, what = "mean"),
+    iter = 300, chains = 1, refresh = 0, seed = 6
+  ))
+  expect_error(
+    as_regression_frame(fit_p, standardized = "posthoc"),
+    "subclass `polr`",
+    class = "spicy_unsupported_standardized"
+  )
+})

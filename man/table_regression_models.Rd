@@ -192,7 +192,13 @@ A sampler-diagnostics guard checks every fit (R-hat, ESS,
 divergences, E-BFMI) and per-coefficient \code{"rhat"} / \code{"ess_bulk"} /
 \code{"ess_tail"} / \code{"mcse"} columns are available. The AME columns are
 draws-native (posterior median, MAD SD and credible interval of
-the per-draw \code{avg_slopes()}; no \code{"ame_p"}). Multilevel fits
+the per-draw \code{avg_slopes()}; no \code{"ame_p"}), and so are the
+standardized betas (\code{"posthoc"} / \code{"basic"} / \code{"smart"}, exact
+affine rescales of the draws; fixed-effects \code{stan_glm}-style fits
+only -- multilevel and \code{stan_polr} / \code{stan_betareg} fits are
+refused, \code{brmsfit} carries no recoverable design matrix;
+\code{"refit"} / \code{"pseudo"} refused).
+Multilevel fits
 (\code{stan_glmer}, \code{brm} with grouping terms) report their random
 effects as a block -- posterior median SD and credible interval per
 component, from the draws -- with no likelihood-ratio line.

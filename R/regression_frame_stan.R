@@ -39,6 +39,7 @@ as_regression_frame.stanreg <- function(fit,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          exponentiate = FALSE,
+                                         standardized = "none",
                                          model_id = "M1",
                                          show_columns = character(0),
                                          show_fit_stats = NULL,
@@ -46,6 +47,13 @@ as_regression_frame.stanreg <- function(fit,
   .check_posterior_available()
   .check_rstanarm_available()
   .check_stan_sampling_algorithm(fit, "stanreg")
+  # Scope refusal must run BEFORE the shared refit / pseudo gate:
+  # that gate's hint recommends the algebraic flavors, which an
+  # out-of-scope fit would then refuse -- a two-step dead end.
+  if (!identical(standardized, "none")) {
+    .stan_refuse_out_of_scope_beta(fit)
+  }
+  .stan_check_standardized(standardized)
 
   fam <- .stan_family(fit)
   use_hdi <- identical(ci_method, "hdi")
@@ -72,7 +80,8 @@ as_regression_frame.stanreg <- function(fit,
 
   coefs <- .stan_coefs(fit, coef_names, ci_level = ci_level,
                         brms_b_prefix = FALSE,
-                        hdi = use_hdi, exponentiate = exp_self)
+                        hdi = use_hdi, exponentiate = exp_self,
+                        standardized = standardized)
   coefs <- .stan_attach_ame(coefs, fit, ci_level, show_columns,
                             hdi = use_hdi)
   info  <- .stan_info(fit,
@@ -105,6 +114,7 @@ as_regression_frame.brmsfit <- function(fit,
                                          ci_level = 0.95,
                                          ci_method = NULL,
                                          exponentiate = FALSE,
+                                         standardized = "none",
                                          model_id = "M1",
                                          show_columns = character(0),
                                          show_fit_stats = NULL,
@@ -112,6 +122,26 @@ as_regression_frame.brmsfit <- function(fit,
   .check_posterior_available()
   .check_brms_available()
   .check_stan_sampling_algorithm(fit, "brmsfit")
+  # brms exposes neither a model.matrix() method nor $xlevels, so the
+  # design-column SDs and factor metadata behind the algebraic rescale
+  # cannot be recovered. Refuse upfront with the actionable hint --
+  # and BEFORE the shared refit / pseudo gate, whose hint recommends
+  # the algebraic flavors this class then refuses (a two-step dead
+  # end for brms users).
+  if (!identical(standardized, "none")) {
+    spicy_abort(
+      c("`standardized` is not available for `brmsfit` fits.",
+        "i" = paste0("brms exposes neither `model.matrix()` nor the ",
+                     "factor metadata (`xlevels`) the algebraic ",
+                     "rescale needs."),
+        "i" = paste0("Standardize predictors before fitting (Gelman, ",
+                     "Hill & Vehtari 2020, ch. 12), or fit with ",
+                     "rstanarm (`stanreg` fits support \"posthoc\" / ",
+                     "\"basic\" / \"smart\").")),
+      class = "spicy_unsupported_standardized"
+    )
+  }
+  .stan_check_standardized(standardized)
 
   fam <- .stan_family(fit)
   use_hdi <- identical(ci_method, "hdi")
@@ -140,7 +170,8 @@ as_regression_frame.brmsfit <- function(fit,
   coefs <- .stan_coefs(fit, coef_names, ci_level = ci_level,
                         brms_b_prefix = TRUE,
                         draws_var_map = setNames(b_names, coef_names),
-                        hdi = use_hdi, exponentiate = exp_self)
+                        hdi = use_hdi, exponentiate = exp_self,
+                        standardized = standardized)
   coefs <- .stan_attach_ame(coefs, fit, ci_level, show_columns,
                             hdi = use_hdi)
   info  <- .stan_info(fit,
@@ -199,6 +230,135 @@ as_regression_frame.brmsfit <- function(fit,
     )
   }
 }
+
+# Standardized-coefficient gate for Bayesian fits. The algebraic
+# flavors are EXACT on draws (an affine map commutes with the median,
+# the MAD SD, the equal-tailed quantiles and the HDI), so posthoc /
+# basic / smart pass through; "refit" would re-run the MCMC sampler
+# inside a table call and "pseudo" needs Var(eta-hat), which varies
+# per draw (deferred) -- both refuse with the actionable alternative.
+.stan_check_standardized <- function(standardized) {
+  std <- standardized %||% "none"
+  if (std %in% c("none", "posthoc", "basic", "smart")) {
+    return(invisible(NULL))
+  }
+  msg <- if (identical(std, "refit")) {
+    paste0("\"refit\" would re-run the MCMC sampler on z-scored data ",
+           "inside a table call (minutes per model).")
+  } else {
+    paste0("\"pseudo\" needs the latent variance Var(eta-hat), which ",
+           "varies per posterior draw; its draws-native version is ",
+           "planned.")
+  }
+  spicy_abort(
+    c(sprintf("`standardized = \"%s\"` is not available for Bayesian fits.",
+              std),
+      "i" = msg,
+      "i" = paste0("Use \"posthoc\", \"basic\" or \"smart\" (exact ",
+                   "affine rescales of the posterior draws), or ",
+                   "standardize predictors before fitting (Gelman, ",
+                   "Hill & Vehtari 2020, ch. 12).")),
+    class = "spicy_unsupported_standardized"
+  )
+}
+
+
+# Scope of the validated algebraic-beta surface: fixed-effects
+# lm / glm - style stanreg fits only.
+#   * Multilevel fits (stan_glmer / stan_lmer / stan_nlmer /
+#     stan_gamm4) are OUT: a standardized beta needs an explicit
+#     sd(Y) decomposition choice (within / between / marginal) that
+#     the frequentist mixed engines resolve by refitting on z-scored
+#     data -- impossible here without re-running the sampler. NOTE:
+#     stan_glmer subclasses glm AND lm, so mixedness must be tested
+#     via lmerMod / $glmod / $jam, never via the glm class alone.
+#   * Non-GLM subclasses (stan_polr, stan_betareg, stan_clogit) are
+#     OUT: no validated standardized-beta convention exists for these
+#     families and their frequentist analogues are refused too. NOTE:
+#     stan_betareg carries a genuine family() object, so family shape
+#     alone cannot exclude it either.
+.stan_beta_scope <- function(fit) {
+  if (inherits(fit, "lmerMod") || !is.null(fit$glmod) ||
+      !is.null(fit$jam)) {
+    return("mixed")
+  }
+  if (!(inherits(fit, "glm") || inherits(fit, "lm"))) return("other")
+  "ok"
+}
+
+
+.stan_refuse_out_of_scope_beta <- function(fit) {
+  scope <- .stan_beta_scope(fit)
+  if (identical(scope, "ok")) return(invisible(NULL))
+  hint <- paste0("Standardize predictors before fitting (Gelman, ",
+                 "Hill & Vehtari 2020, ch. 12) to report betas.")
+  if (identical(scope, "mixed")) {
+    spicy_abort(
+      c("`standardized` is not available for multilevel stanreg fits.",
+        "i" = paste0("A standardized beta needs an explicit sd(Y) ",
+                     "decomposition (within / between / marginal); ",
+                     "the frequentist mixed engines make that choice ",
+                     "by refitting on z-scored data, which would ",
+                     "re-run the MCMC sampler here."),
+        "i" = hint),
+      class = "spicy_unsupported_standardized"
+    )
+  }
+  spicy_abort(
+    c(sprintf(paste0("`standardized` is not available for this ",
+                     "stanreg fit (subclass `%s`)."),
+              if (length(class(fit)) > 1L) class(fit)[2L] else "unknown"),
+      "i" = paste0("The algebraic rescale is validated for ",
+                   "`stan_glm` / `stan_lm`-style fits; this model ",
+                   "family has no standardized-beta convention and ",
+                   "its frequentist analogue is refused too."),
+      "i" = hint),
+    class = "spicy_unsupported_standardized"
+  )
+}
+
+
+# Per-coefficient algebraic scale factors for the Bayesian beta rows,
+# via the same single-source helper as the lm / glm engines
+# (.algebraic_scale_factors), mapped onto the frame's coefficient
+# order by design-column name. Gaussian fits divide by sd(y) (the lm
+# convention); every other family standardizes predictors only on the
+# link scale (the glm convention, sd_y_div = 1).
+.stan_beta_scale_factors <- function(fit, coef_names, method) {
+  mm <- tryCatch(stats::model.matrix(fit), error = function(e) NULL)
+  factor_cols <- tryCatch(detect_factor_design_cols(fit),
+                          error = function(e) NULL)
+  if (is.null(mm) || is.null(colnames(mm)) || is.null(factor_cols)) {
+    spicy_abort(                                                      # nocov start
+      c(paste0("Standardized coefficients need the fit's design ",
+               "matrix and factor metadata, which could not be ",
+               "recovered from this Bayesian fit."),
+        "i" = paste0("Standardize predictors before fitting (Gelman, ",
+                     "Hill & Vehtari 2020, ch. 12) to report betas.")),
+      class = "spicy_unsupported_standardized"
+    )                                                                 # nocov end
+  }
+  fam <- .stan_family(fit)
+  sd_y_div <- if (identical(fam$family, "gaussian")) {
+    y <- tryCatch(stats::model.response(stats::model.frame(fit)),
+                  error = function(e) NULL)
+    if (is.numeric(y)) stats::sd(y) else 1                            # nocov
+  } else {
+    1
+  }
+  sf_all <- .algebraic_scale_factors(
+    mm, factor_cols,
+    factor_treatment = if (identical(method, "basic")) "scale"
+                       else "unscaled",
+    input_scaling    = if (identical(method, "smart")) "gelman"
+                       else "sd",
+    sd_y_div         = sd_y_div
+  )
+  # NA for any frame coefficient without a matching design column
+  # (renders as an em-dash, mirroring aliased terms).
+  unname(sf_all[coef_names])
+}
+
 
 # Attach draws-native AME rows (finding M2 resolved): posterior
 # median / MAD SD / ETI-or-HDI of the avg_slopes() draws, computed by
@@ -303,7 +463,8 @@ as_regression_frame.brmsfit <- function(fit,
                          brms_b_prefix = FALSE,
                          draws_var_map = NULL,
                          hdi = FALSE,
-                         exponentiate = FALSE) {
+                         exponentiate = FALSE,
+                         standardized = "none") {
   draws <- posterior::as_draws_array(fit)
 
   # Map human-readable name -> draws-side variable name.
@@ -371,6 +532,15 @@ as_regression_frame.brmsfit <- function(fit,
     }, numeric(1)),
     error = function(e) rep(NA_real_, length(draws_names))            # nocov
   )
+
+  # Link-scale copies for the beta rows: standardization is an affine
+  # map of the LINK-scale draws, so it must scale these values even
+  # when the B rows are exponentiated below (beta is never
+  # exponentiated -- the shared column contract).
+  link_est <- est
+  link_se  <- se
+  link_lo  <- ci_lower
+  link_hi  <- ci_upper
 
   if (isTRUE(exponentiate)) {
     # Draws-native exponentiation. exp() commutes with the median and
@@ -452,6 +622,56 @@ as_regression_frame.brmsfit <- function(fit,
   ref_rows <- .stan_reference_rows(fit, has_pd = TRUE)
   if (nrow(ref_rows) > 0L) {
     coefs <- rbind(coefs, ref_rows)
+  }
+
+  # Standardized beta rows: an EXACT affine rescale of the link-scale
+  # draws summaries -- median, MAD SD, and both interval flavors all
+  # commute with beta = b x factor (factors are positive SD ratios),
+  # so no draws are re-summarized. The intercept's beta is mechanical
+  # and set NA (house convention); diagnostics stay on the B rows.
+  std <- standardized %||% "none"
+  if (std %in% c("posthoc", "basic", "smart")) {
+    sf <- .stan_beta_scale_factors(fit, coef_names, std)
+    beta_est <- link_est * sf
+    beta_se  <- link_se * sf
+    beta_lo  <- link_lo * sf
+    beta_hi  <- link_hi * sf
+    if (identical(coef_names[1L], "(Intercept)")) {
+      beta_est[1L] <- NA_real_
+      beta_se[1L]  <- NA_real_
+      beta_lo[1L]  <- NA_real_
+      beta_hi[1L]  <- NA_real_
+    }
+    beta_rows <- data.frame(
+      term             = coef_names,
+      parent_var       = parent_var,
+      label            = label,
+      factor_level_pos = as.integer(pos),
+      is_ref           = rep(FALSE, length(coef_names)),
+      estimate_type    = rep("beta", length(coef_names)),
+      estimate         = beta_est,
+      std_error        = beta_se,
+      df               = rep(NA_real_, length(coef_names)),
+      statistic        = rep(NA_real_, length(coef_names)),
+      p_value          = rep(NA_real_, length(coef_names)),
+      pd               = rep(NA_real_, length(coef_names)),
+      rhat             = rep(NA_real_, length(coef_names)),
+      ess_bulk         = rep(NA_real_, length(coef_names)),
+      ess_tail         = rep(NA_real_, length(coef_names)),
+      mcse             = rep(NA_real_, length(coef_names)),
+      ci_lower         = beta_lo,
+      ci_upper         = beta_hi,
+      test_type        = rep(NA_character_, length(coef_names)),
+      stringsAsFactors = FALSE
+    )[, .stan_coefs_schema]
+    # Beta reference placeholders mirror the B ones (em-dash parity
+    # on the reference line under the beta columns).
+    if (nrow(ref_rows) > 0L) {
+      beta_ref <- ref_rows
+      beta_ref$estimate_type <- "beta"
+      beta_rows <- rbind(beta_rows, beta_ref)
+    }
+    coefs <- rbind(coefs, beta_rows)
   }
 
   coefs
@@ -651,9 +871,16 @@ as_regression_frame.brmsfit <- function(fit,
     classical_r2        = FALSE,
     nested_lrt          = FALSE,
     exponentiate        = !identical(fam$link, "identity"),
-    standardise_refit   = FALSE   # refit on z-scored data is much more
-                                   # involved for Bayesian fits; deferred
-                                   # to a dedicated phase.
+    standardise_refit   = FALSE,  # refit would re-run the sampler.
+    # The algebraic flavors (posthoc / basic / smart) are exact affine
+    # rescales of the draws (.stan_beta_scale_factors) -- fixed-effects
+    # lm / glm-style stanreg fits only (.stan_beta_scope): multilevel
+    # and non-GLM stanreg subclasses are refused by the method gate,
+    # and brmsfit exposes neither model.matrix() nor xlevels, so the
+    # design-column SDs cannot be recovered (its method refuses
+    # standardized upfront too).
+    standardise_algebraic = identical(class_name, "stanreg") &&
+      identical(.stan_beta_scope(fit), "ok")
   )
 
   has_identity_link <- identical(fam$link, "identity")

@@ -197,26 +197,13 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
   names(se_b) <- names(b)
 
   mm <- stats::model.matrix(fit)
-  sd_x <- apply(mm, 2, stats::sd)
-
-  factor_cols <- detect_factor_design_cols(fit)
-  is_binary_numeric <- vapply(seq_len(ncol(mm)), function(j) {
-    if (j %in% factor_cols) return(FALSE)
-    length(unique(mm[, j])) == 2L
-  }, logical(1))
-
-  if (input_scaling == "gelman") {
-    # Gelman (2008): continuous inputs x 2sd; binary inputs -- numeric
-    # 0/1 and factor dummies alike -- untouched.
-    scale_factor <- 2 * sd_x / sd_y_div
-    scale_factor[is_binary_numeric] <- 1 / sd_y_div
-    if (length(factor_cols) > 0L) scale_factor[factor_cols] <- 1 / sd_y_div
-  } else {
-    scale_factor <- sd_x / sd_y_div
-    if (length(factor_cols) > 0L && factor_treatment == "unscaled") {
-      scale_factor[factor_cols] <- 1 / sd_y_div
-    }
-  }
+  # Per-column scale factors from the shared single-source helper.
+  scale_factor <- .algebraic_scale_factors(
+    mm, detect_factor_design_cols(fit),
+    factor_treatment = factor_treatment,
+    input_scaling    = input_scaling,
+    sd_y_div         = sd_y_div
+  )
 
   beta <- b * scale_factor
   se_beta <- se_b * scale_factor

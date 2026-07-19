@@ -310,7 +310,11 @@
 #' posterior median, MAD SD and credible interval (equal-tailed or
 #' HDI per `ci_method`); `"ame_p"` has nothing to fill and follows
 #' the p-column policy (dropped from presets, refused as an atomic
-#' token, dashed in mixed tables).
+#' token, dashed in mixed tables). Standardized betas follow the same
+#' draws logic: `"posthoc"` / `"basic"` / `"smart"` are exact affine
+#' rescales of the link-scale summaries (the Gaussian family divides
+#' by SD(y); every other family standardizes predictors only, the
+#' frequentist glm convention); `"refit"` and `"pseudo"` are refused.
 #'
 #' Fit statistics: `"r2_bayes"` (in the Bayesian default) plus the
 #' opt-in `"elpd_loo"` / `"looic"` / `"waic"`, whose standard errors
@@ -567,8 +571,23 @@
 #'   `"basic"`, `"smart"`, `"pseudo"`. `"pseudo"` is *glm only*
 #'   (Menard 2011 fully-standardised); using it with `lm()` raises
 #'   `spicy_invalid_input`. Supported classes: `lm`, `glm`
-#'   (incl. `MASS::glm.nb`), and the mixed engines (`lmer` /
-#'   `glmer` / `glmmTMB` / `nlme::lme`); any other class raises
+#'   (incl. `MASS::glm.nb`), the mixed engines (`lmer` /
+#'   `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects
+#'   `stan_glm`-style `stanreg` fits for the algebraic flavors
+#'   `"posthoc"` / `"basic"` / `"smart"` -- exact affine rescales of
+#'   the posterior draws (median, MAD SD and credible bounds all
+#'   scale by the same positive SD ratio; the beta stays on the link
+#'   scale under `exponentiate = TRUE`). Bayesian `"refit"` (would
+#'   re-run the sampler) and `"pseudo"` (per-draw latent variance;
+#'   planned) are refused. Also refused: multilevel `stanreg` fits
+#'   (`stan_glmer` / `stan_lmer`; a Bayesian beta would need an
+#'   explicit sd(Y) decomposition that the frequentist mixed engines
+#'   resolve by refitting on z-scored data), non-GLM `stanreg`
+#'   subclasses (`stan_polr`, `stan_betareg`), and `brmsfit` fits
+#'   altogether: brms exposes neither `model.matrix()` nor the factor
+#'   metadata the rescale needs. In all refused Bayesian cases,
+#'   standardize predictors before fitting instead. Any other class
+#'   raises
 #'   `spicy_unsupported_standardized` rather than rendering an
 #'   empty beta column. See the *Standardised coefficients*
 #'   section.
@@ -2016,9 +2035,14 @@ table_regression <- function(
     # column entirely EMPTY -- silent wrong output under a requested
     # label. supports$standardise_refit is declared TRUE only where the
     # attach exists: lm / glm (incl. glm.nb) and the mixed engines
-    # (lmer / glmer / glmmTMB / lme).
-    if (!identical(standardized, "none") &&
-        !isTRUE(frames[[i]]$info$supports$standardise_refit)) {
+    # (lmer / glmer / glmmTMB / lme). Bayesian frames instead declare
+    # standardise_algebraic (posthoc / basic / smart, exact affine
+    # rescales of the draws); their refit / pseudo refusals fire
+    # earlier, inside the frame method, with the Bayesian rationale.
+    std_ok <- isTRUE(frames[[i]]$info$supports$standardise_refit) ||
+      (isTRUE(frames[[i]]$info$supports$standardise_algebraic) &&
+         standardized %in% c("posthoc", "basic", "smart"))
+    if (!identical(standardized, "none") && !std_ok) {
       model_tag <- if (n_models > 1L) {
         sprintf("model %d (class %s)", i, class(models[[i]])[1L])
       } else {
@@ -2029,9 +2053,11 @@ table_regression <- function(
           sprintf("`standardized = \"%s\"` is not supported for %s.",
                   standardized, model_tag),
           "i" = paste0("Standardized coefficients are available for ",
-                       "`lm`, `glm` (incl. `MASS::glm.nb`), and mixed ",
+                       "`lm`, `glm` (incl. `MASS::glm.nb`), mixed ",
                        "models (`lmer` / `glmer` / `glmmTMB` / ",
-                       "`nlme::lme`)."),
+                       "`nlme::lme`), and fixed-effects `stan_glm`",
+                       "-style fits (\"posthoc\" / \"basic\" / ",
+                       "\"smart\")."),
           "i" = paste0("To compare predictor effects in other classes, ",
                        "use average marginal effects where supported: ",
                        "`show_columns = c(\"b\", \"ame\")`.")
