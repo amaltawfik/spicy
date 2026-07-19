@@ -497,7 +497,7 @@
 #'   `mgcv::gam`/`bam`, `betareg`, `mlogit`, `survey::svyglm`, `rms`
 #'   (`ols`/`lrm`/`cph`/`Glm`), and Bayesian (`rstanarm`/`brms`),
 #'   among others. An unsupported class raises
-#'   `spicy_unsupported_class`. Raw data + formula is not accepted
+#'   `spicy_unsupported`. Raw data + formula is not accepted
 #'   -- fit-only API.
 #' @param vcov Variance-covariance estimator: `"classical"`,
 #'   `"HC0"`-`"HC5"`, `"CR0"`-`"CR3"`, `"bootstrap"`, or

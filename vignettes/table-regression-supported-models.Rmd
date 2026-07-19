@@ -1,0 +1,232 @@
+---
+title: "Supported models"
+description: >
+  The model classes `table_regression()` supports, in one table:
+  linear and generalized linear models, robust and IV estimators,
+  mixed effects, ordinal and multinomial outcomes, two-part count
+  models, survival models, survey-weighted and Bayesian fits -- with
+  each family's marginal-effects estimand, exponentiate semantics,
+  robust-variance backends, and standardized-coefficient support.
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Supported models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(width = 110)
+```
+
+```{r setup, message = FALSE}
+library(spicy)
+```
+
+`table_regression()` takes fitted model objects -- never raw data plus
+a formula -- and renders them as publication-ready coefficient tables.
+"Supported" is a commitment, not a list of classes that happen to run:
+every number a supported class produces is validated against a field
+reference (the model's own `summary()`, `sandwich`, `clubSandwich`,
+`marginaleffects`, `effectsize`, `performance`, Stata or SPSS
+conventions), and every request a class cannot honour is **refused
+with a classed error** that names what is available -- never rendered
+as a silently empty or approximate column.
+
+This article is the map. Each family below links to a dedicated
+article that walks through its behaviour in depth.
+
+## The registry
+
+The table is generated from the same internal registry that the
+package itself uses, so it cannot drift from the code. Call
+`table_regression_models()` to get it as a data frame.
+
+```{r registry, echo = FALSE}
+reg <- table_regression_models()
+reg$family[duplicated(reg$family)] <- ""
+reg$class <- paste0("`", reg$class, "`")
+reg$engine <- vapply(
+  strsplit(reg$engine, ", ", fixed = TRUE),
+  function(fns) paste0("`", fns, "`", collapse = ", "),
+  character(1)
+)
+knitr::kable(
+  reg,
+  col.names = c("Family", "Class", "Engine", "AME", "Exponentiate",
+                "Blocks")
+)
+```
+
+How to read the columns:
+
+* **AME** -- what `show_columns = c("b", "ame")` adds. `yes` is an
+  average marginal effect on the response scale (a probability or
+  rate effect for GLM families, the slope itself under identity).
+  `per category` (ordinal) is the effect on each P(Y = k);
+  `per outcome` (multinomial) is one effect per non-reference
+  outcome. `survival::coxph` refuses AME -- the hazard scale has no
+  marginal-probability effect -- and provides covariate-adjusted
+  `rmst` and `risk_diff` columns instead (also available for
+  `survreg`; `rms::cph` and `flexsurvreg` support neither AME nor
+  the estimand columns). `yes (draws)` means the
+  effect is computed per posterior draw and summarized as a
+  posterior median with MAD SD and credible interval.
+* **Exponentiate** -- the labelled ratio `exponentiate = TRUE`
+  produces. The label follows the link: OR under logit, IRR for
+  count log-links, HR for proportional hazards, TR (time ratio) for
+  accelerated-failure-time models. Identity-link fits warn and stay
+  untouched; links whose exponential is not a ratio (probit,
+  cauchit, inverse) are refused.
+* **Blocks** -- labelled subordinate row blocks rendered inside the
+  same table (random effects, thresholds, zero components,
+  per-outcome segments), each explained by a footer line.
+
+## Cross-cutting arguments
+
+The same arguments work across families, each through the family's
+field-standard backend -- or a clear refusal.
+
+**Robust and cluster-robust standard errors** (`vcov`, `cluster`).
+`lm` and `glm` take `HC0`--`HC5` (`sandwich`) and cluster-robust
+`CR0`--`CR3` (`clubSandwich`, bias-reduced with Satterthwaite df),
+plus `"bootstrap"` / `"jackknife"` resampling estimators. Among the
+mixed engines, `lmer`, `nlme::lme` and `glmmTMB` take `CR*` via
+`clubSandwich` (for `glmmTMB` the sandwich covers the conditional
+part only, and the footer says so); `glmer` and `gls` are
+model-based only -- `clubSandwich` has no working backend for them.
+Ordinal models take `CR0`--`CR3` but no `HC*`, and the cut-point
+thresholds are reweighted from the same clustered vcov (a `clm`
+with a scale or nominal partial-proportional-odds component is
+model-based only). `multinom` takes `CR*` (one cluster value per
+observation) and `mlogit` takes `CR*` (one per choice situation) --
+both refuse `HC*`, which has no valid working-residual form for
+multi-equation models. Cox models use the Lin-Wei grouped-dfbeta
+sandwich, and the `rms` fits take `CR*` via `rms::robcov()` (refit
+with `x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and `betareg`
+take `CR*` via `sandwich::vcovCL()`; `pscl` two-part fits cluster
+both components. `estimatr` fits keep their own robust SEs;
+`svyglm` is design-based by default and additionally accepts
+design-aware `CR0`--`CR3`. Bayesian fits refuse `vcov` -- nothing
+standard plays the sandwich role for a posterior. Whatever the
+backend, the footer names the estimator actually applied, and a
+robust vcov also flows into the AME uncertainty.
+
+**Standardized coefficients** (`standardized`). Available for `lm`,
+`glm` (including `MASS::glm.nb`), the mixed engines (`lmer` /
+`glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects
+`stan_glm`-style Bayesian fits, where `"posthoc"`, `"basic"` and
+`"smart"` are exact affine rescales of the posterior draws. Other
+classes -- including multilevel Bayesian fits and `brmsfit` --
+refuse with a hint to standardize predictors before fitting.
+
+**Confidence intervals** (`ci_method`). Wald everywhere by default;
+`"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
+`"boot_percentile"` (with `vcov = "bootstrap"`) replaces the bounds
+with equal-tailed percentile intervals of the bootstrap replicates;
+`"hdi"` (highest-density interval) for Bayesian fits, which
+otherwise report equal-tailed credible intervals.
+
+**Model comparison and multiplicity.** `nested = TRUE` compares
+nested fits by the family's change-test convention: Delta R-squared
+with the partial F test for `lm`, the likelihood-ratio test for
+`glm`, mixed, `multinom` and Cox models. `p_adjust` applies a
+multiplicity correction across the displayed p-values -- and is
+refused for Bayesian tables, which carry no p-values at all.
+
+## The families in brief
+
+**Linear and generalized linear.** The core engines: `lm`, `glm`
+(with profile CIs on request), `MASS::glm.nb` (with opt-in `theta` /
+`alpha` dispersion statistics), `MASS::rlm`, `stats::nls`. Start
+with `vignette("table-regression")` and
+`vignette("categorical-predictors")`.
+
+**Robust, IV, quantile, panel.** `estimatr::lm_robust()` /
+`iv_robust()`, `AER::ivreg()` and `AER::tobit()`, `quantreg::rq()`
+(reported with quantreg's iid asymptotic SEs, named in the footer),
+and the `fixest` estimators, whose absorbed fixed effects are
+flagged in the table title and available as the opt-in `n_groups`
+fit statistic.
+
+**Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
+`glmmTMB` (with zero-inflation and dispersion blocks), `nlme::lme`
+and `nlme::gls`. Random effects render as rows -- SD, correlations,
+residual -- deliberately without per-row p-values; the footer
+carries the boundary-correct chi-bar-squared test, and
+`re_test = "lrt"` / `"rlrt"` adds per-term tests. See
+`vignette("table-regression-mixed")`.
+
+**Ordinal.** `MASS::polr` and `ordinal::clm`: proportional odds
+ratios, a `Thresholds` block for the cut-points (log-odds scale,
+never exponentiated), partial-proportional-odds terms as a
+`Non-proportional effects` block, and per-category AME. See
+`vignette("table-regression-ordinal")`.
+
+**Categorical.** `nnet::multinom` renders outcome categories as
+columns with per-outcome AME; `mlogit::mlogit` renders
+per-alternative rows for discrete-choice designs. See
+`vignette("table-regression-multinomial")`.
+
+**Counts and two-part.** Poisson and negative binomial through
+`glm` / `glm.nb` / `glmmTMB`, plus `pscl::zeroinfl()` and
+`pscl::hurdle()` with their zero components as labelled blocks and a
+combined-response AME. See `vignette("table-regression-counts")`.
+
+**Survival.** `survival::coxph` and `rms::cph` (hazard ratios,
+`strata()` supported), `survival::survreg` (time ratios) and
+`flexsurv::flexsurvreg`. Absolute effects come as covariate-adjusted
+RMST and risk differences by g-computation for `coxph` and
+`survreg` fits. See `vignette("table-regression-survival")`.
+
+**Survey-weighted.** `survey::svyglm()`: design-based inference,
+weighted and unweighted n.
+
+**Additive, proportions, selection.** `mgcv::gam()` / `bam()`,
+`betareg::betareg()` (odds ratios on the logit mean link under
+`exponentiate`), and `sampleSelection::selection()` with its
+selection component as a block.
+
+**rms.** `ols`, `lrm`, `Glm` and `cph` are first-class citizens, so
+Harrell-style workflows drop in directly.
+
+**Bayesian.** `rstanarm` and `brms` fits are summarized from their
+posterior draws: posterior median, MAD SD, credible intervals,
+draws-native exponentiation and AME, sampler diagnostics checked on
+every fit. No p-values, by design. See
+`vignette("table-regression-bayesian")`.
+
+## When a class is not supported
+
+An unsupported class fails fast with a classed error
+(`spicy_unsupported`):
+
+```{r refusal, error = TRUE}
+fit <- loess(dist ~ speed, data = cars)
+table_regression(fit)
+```
+
+The same contract applies inside a family: a request a class cannot
+honour -- `HC*` for `multinom`, AME for `mlogit`, `exponentiate` on
+a probit link, `p_adjust` on a Bayesian table -- is refused with the
+reason and the supported alternative, never silently degraded.
+
+## Programmatic access
+
+`table_regression_models()` returns the registry as a plain data
+frame -- convenient to filter, join, or cite:
+
+```{r accessor}
+subset(table_regression_models(), family == "Survival")
+```
+
+The per-family reference sections live on its help page:
+`?table_regression_models` (also reachable as
+`?table_regression_mixed`, `?table_regression_ordinal`,
+`?table_regression_survival`, and the other family aliases).

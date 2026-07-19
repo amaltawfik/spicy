@@ -67,7 +67,7 @@ survival (\code{coxph}, \code{survreg}), ordinal (\code{polr}, \code{clm}),
 \code{mgcv::gam}/\code{bam}, \code{betareg}, \code{mlogit}, \code{survey::svyglm}, \code{rms}
 (\code{ols}/\code{lrm}/\code{cph}/\code{Glm}), and Bayesian (\code{rstanarm}/\code{brms}),
 among others. An unsupported class raises
-\code{spicy_unsupported_class}. Raw data + formula is not accepted
+\code{spicy_unsupported}. Raw data + formula is not accepted
 -- fit-only API.}
 
 \item{vcov}{Variance-covariance estimator: \code{"classical"},
