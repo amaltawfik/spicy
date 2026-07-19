@@ -189,11 +189,25 @@ table_regression(
   `"pseudo"` is *glm only* (Menard 2011 fully-standardised); using it
   with [`lm()`](https://rdrr.io/r/stats/lm.html) raises
   `spicy_invalid_input`. Supported classes: `lm`, `glm` (incl.
-  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)), and the
-  mixed engines (`lmer` / `glmer` / `glmmTMB` /
-  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)); any other class
-  raises `spicy_unsupported_standardized` rather than rendering an empty
-  beta column. See the *Standardised coefficients* section.
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)), the mixed
+  engines (`lmer` / `glmer` / `glmmTMB` /
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)), and
+  fixed-effects `stan_glm`-style `stanreg` fits for the algebraic
+  flavors `"posthoc"` / `"basic"` / `"smart"` – exact affine rescales of
+  the posterior draws (median, MAD SD and credible bounds all scale by
+  the same positive SD ratio; the beta stays on the link scale under
+  `exponentiate = TRUE`). Bayesian `"refit"` (would re-run the sampler)
+  and `"pseudo"` (per-draw latent variance; planned) are refused. Also
+  refused: multilevel `stanreg` fits (`stan_glmer` / `stan_lmer`; a
+  Bayesian beta would need an explicit sd(Y) decomposition that the
+  frequentist mixed engines resolve by refitting on z-scored data),
+  non-GLM `stanreg` subclasses (`stan_polr`, `stan_betareg`), and
+  `brmsfit` fits altogether: brms exposes neither
+  [`model.matrix()`](https://rdrr.io/r/stats/model.matrix.html) nor the
+  factor metadata the rescale needs. In all refused Bayesian cases,
+  standardize predictors before fitting instead. Any other class raises
+  `spicy_unsupported_standardized` rather than rendering an empty beta
+  column. See the *Standardised coefficients* section.
 
 - exponentiate:
 
@@ -1108,7 +1122,11 @@ effects per posterior draw, and the table reports their posterior
 median, MAD SD and credible interval (equal-tailed or HDI per
 `ci_method`); `"ame_p"` has nothing to fill and follows the p-column
 policy (dropped from presets, refused as an atomic token, dashed in
-mixed tables).
+mixed tables). Standardized betas follow the same draws logic:
+`"posthoc"` / `"basic"` / `"smart"` are exact affine rescales of the
+link-scale summaries (the Gaussian family divides by SD(y); every other
+family standardizes predictors only, the frequentist glm convention);
+`"refit"` and `"pseudo"` are refused.
 
 Fit statistics: `"r2_bayes"` (in the Bayesian default) plus the opt-in
 `"elpd_loo"` / `"looic"` / `"waic"`, whose standard errors are disclosed

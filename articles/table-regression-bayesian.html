@@ -575,11 +575,32 @@ constructions with no posterior analogue (the credible interval is
 computed from the draws; <code>"hdi"</code> is the one alternative
 flavor);</li>
 <li>
-<code>standardized</code> — the refit flavors would re-run MCMC on
-z-scored data inside a table call (minutes per model), and the post-hoc
-flavors rescale a Wald machinery the posterior does not have;
-standardize predictors before fitting (Gelman, Hill &amp; Vehtari 2020,
-ch. 12) if standardized coefficients are the goal;</li>
+<code>standardized = "refit"</code> and <code>"pseudo"</code> —
+refit would re-run the MCMC sampler on z-scored data inside a table call
+(minutes per model), and pseudo’s latent variance varies per draw (its
+draws-native version is planned). The <strong>algebraic flavors are
+supported on fixed-effects <code>stan_glm</code>-style fits</strong>:
+<code>"posthoc"</code>, <code>"basic"</code> and <code>"smart"</code>
+are <em>exact</em> affine rescales of the posterior draws — the median,
+MAD SD and credible bounds (equal-tailed or HDI) all scale by the same
+positive SD ratio, so β needs no re-summarization;
+<code>"posthoc"</code> and <code>"basic"</code> match
+<code><a href="https://easystats.github.io/parameters/reference/standardize_parameters.html" class="external-link">effectsize::standardize_parameters()</a></code> to numerical
+precision, while <code>"smart"</code> follows Gelman’s (2008) convention
+of leaving binary inputs and factor dummies raw
+(<code>effectsize</code>’s <code>two_sd = TRUE</code> variant matches it
+for continuous predictors and factor dummies, but 2-SD-scales binary
+numeric ones). Multilevel fits (<code>stan_glmer</code>) are refused — a
+standardized β would need an explicit sd(Y) decomposition, the choice
+the frequentist mixed engines make by refitting on z-scored data — and
+so are <code>stan_polr</code> / <code>stan_betareg</code> (no validated
+convention for those families) and <code>brmsfit</code> for every flavor
+— brms exposes neither <code><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix()</a></code> nor the factor
+metadata the rescale needs. Pre-standardizing predictors before fitting
+(Gelman, Hill &amp; Vehtari 2020, ch. 12) remains the cleanest route
+when the whole analysis should live on the standardized scale (and the
+only in-package route for <code>brms</code> and multilevel Bayesian
+fits);</li>
 <li>variational and optimizing fits
 (<code>stan_glm(..., algorithm = "meanfield")</code>,
 <code>"optimizing"</code>) — they carry an <em>approximate</em>

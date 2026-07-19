@@ -263,7 +263,7 @@ non-uniform observed proportions.
   grid. Factor-covariate level combinations are crossed and weighted
   uniformly (`1 / k`); numeric covariates are fixed at their sample
   mean. This is the convention of
-  [`emmeans::emmeans()`](https://rdrr.io/pkg/emmeans/man/emmeans.html)
+  [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
   (default), SPSS UNIANOVA EMMEANS, and SAS LSMEANS. Interpretation:
   *“What is the predicted mean assuming a balanced covariate design?”*.
   Best for descriptive / ANOVA-style APA reporting.

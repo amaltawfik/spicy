@@ -272,8 +272,23 @@ column. One of <code>"none"</code> (default), <code>"refit"</code>, <code>"posth
 <code>"basic"</code>, <code>"smart"</code>, <code>"pseudo"</code>. <code>"pseudo"</code> is <em>glm only</em>
 (Menard 2011 fully-standardised); using it with <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> raises
 <code>spicy_invalid_input</code>. Supported classes: <code>lm</code>, <code>glm</code>
-(incl. <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), and the mixed engines (<code>lmer</code> /
-<code>glmer</code> / <code>glmmTMB</code> / <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>); any other class raises
+(incl. <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), the mixed engines (<code>lmer</code> /
+<code>glmer</code> / <code>glmmTMB</code> / <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>), and fixed-effects
+<code>stan_glm</code>-style <code>stanreg</code> fits for the algebraic flavors
+<code>"posthoc"</code> / <code>"basic"</code> / <code>"smart"</code> – exact affine rescales of
+the posterior draws (median, MAD SD and credible bounds all
+scale by the same positive SD ratio; the beta stays on the link
+scale under <code>exponentiate = TRUE</code>). Bayesian <code>"refit"</code> (would
+re-run the sampler) and <code>"pseudo"</code> (per-draw latent variance;
+planned) are refused. Also refused: multilevel <code>stanreg</code> fits
+(<code>stan_glmer</code> / <code>stan_lmer</code>; a Bayesian beta would need an
+explicit sd(Y) decomposition that the frequentist mixed engines
+resolve by refitting on z-scored data), non-GLM <code>stanreg</code>
+subclasses (<code>stan_polr</code>, <code>stan_betareg</code>), and <code>brmsfit</code> fits
+altogether: brms exposes neither <code><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix()</a></code> nor the factor
+metadata the rescale needs. In all refused Bayesian cases,
+standardize predictors before fitting instead. Any other class
+raises
 <code>spicy_unsupported_standardized</code> rather than rendering an
 empty beta column. See the <em>Standardised coefficients</em>
 section.</p></dd>
@@ -1147,7 +1162,11 @@ marginal effects per posterior draw, and the table reports their
 posterior median, MAD SD and credible interval (equal-tailed or
 HDI per <code>ci_method</code>); <code>"ame_p"</code> has nothing to fill and follows
 the p-column policy (dropped from presets, refused as an atomic
-token, dashed in mixed tables).</p>
+token, dashed in mixed tables). Standardized betas follow the same
+draws logic: <code>"posthoc"</code> / <code>"basic"</code> / <code>"smart"</code> are exact affine
+rescales of the link-scale summaries (the Gaussian family divides
+by SD(y); every other family standardizes predictors only, the
+frequentist glm convention); <code>"refit"</code> and <code>"pseudo"</code> are refused.</p>
 <p>Fit statistics: <code>"r2_bayes"</code> (in the Bayesian default) plus the
 opt-in <code>"elpd_loo"</code> / <code>"looic"</code> / <code>"waic"</code>, whose standard errors
 are disclosed in the footer; unreliable estimates (PSIS-LOO Pareto

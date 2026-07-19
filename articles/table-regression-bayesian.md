@@ -487,11 +487,31 @@ silently wrong:
   bootstrap replicates are frequentist constructions with no posterior
   analogue (the credible interval is computed from the draws; `"hdi"` is
   the one alternative flavor);
-- `standardized` — the refit flavors would re-run MCMC on z-scored data
-  inside a table call (minutes per model), and the post-hoc flavors
-  rescale a Wald machinery the posterior does not have; standardize
-  predictors before fitting (Gelman, Hill & Vehtari 2020, ch. 12) if
-  standardized coefficients are the goal;
+- `standardized = "refit"` and `"pseudo"` — refit would re-run the MCMC
+  sampler on z-scored data inside a table call (minutes per model), and
+  pseudo’s latent variance varies per draw (its draws-native version is
+  planned). The **algebraic flavors are supported on fixed-effects
+  `stan_glm`-style fits**: `"posthoc"`, `"basic"` and `"smart"` are
+  *exact* affine rescales of the posterior draws — the median, MAD SD
+  and credible bounds (equal-tailed or HDI) all scale by the same
+  positive SD ratio, so β needs no re-summarization; `"posthoc"` and
+  `"basic"` match
+  [`effectsize::standardize_parameters()`](https://easystats.github.io/parameters/reference/standardize_parameters.html)
+  to numerical precision, while `"smart"` follows Gelman’s (2008)
+  convention of leaving binary inputs and factor dummies raw
+  (`effectsize`’s `two_sd = TRUE` variant matches it for continuous
+  predictors and factor dummies, but 2-SD-scales binary numeric ones).
+  Multilevel fits (`stan_glmer`) are refused — a standardized β would
+  need an explicit sd(Y) decomposition, the choice the frequentist mixed
+  engines make by refitting on z-scored data — and so are `stan_polr` /
+  `stan_betareg` (no validated convention for those families) and
+  `brmsfit` for every flavor — brms exposes neither
+  [`model.matrix()`](https://rdrr.io/r/stats/model.matrix.html) nor the
+  factor metadata the rescale needs. Pre-standardizing predictors before
+  fitting (Gelman, Hill & Vehtari 2020, ch. 12) remains the cleanest
+  route when the whole analysis should live on the standardized scale
+  (and the only in-package route for `brms` and multilevel Bayesian
+  fits);
 - variational and optimizing fits
   (`stan_glm(..., algorithm = "meanfield")`, `"optimizing"`) — they
   carry an *approximate* posterior on which the MCMC diagnostics above
