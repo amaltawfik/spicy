@@ -62,6 +62,7 @@
     <li><a class="dropdown-item" href="articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="articles/table-regression-supported-models.html">Supported models</a></li>
     <li><a class="dropdown-item" href="articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="articles/table-regression-counts.html">Count and two-part regression tables</a></li>
@@ -207,6 +208,7 @@
 </tbody>
 </table>
 <p>Class-specific structure renders as labelled blocks in the same table: random effects (with SE and CI on each variance component, and an optional boundary-correct per-term likelihood-ratio test), ordinal thresholds, non-proportional effects, zero-inflation and dispersion components. Robust variance requests use each class’s field-standard backend and are refused with a clear message when no valid backend exists.</p>
+<p>The full capability map – each family’s marginal-effects estimand, <code>exponentiate</code> semantics, robust-variance backends and standardized-coefficient support – is the <a href="https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html">Supported models</a> article; <code><a href="reference/table_regression_models.html">table_regression_models()</a></code> returns the same registry as a data frame.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>

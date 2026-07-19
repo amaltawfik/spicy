@@ -110,6 +110,14 @@ components. Robust variance requests use each class’s field-standard
 backend and are refused with a clear message when no valid backend
 exists.
 
+The full capability map – each family’s marginal-effects estimand,
+`exponentiate` semantics, robust-variance backends and
+standardized-coefficient support – is the [Supported
+models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
+article;
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
+returns the same registry as a data frame.
+
 ## Installation
 
 Install the current CRAN release, recommended for most users:

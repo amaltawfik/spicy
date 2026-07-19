@@ -171,9 +171,11 @@ likelihood-ratio test.
 ## Robust, IV, quantile and panel models
 
 `estimatr` fits keep their own robust SEs (never overwritten);
-[`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) honours its
-`se =` method, including rank-inversion CIs; `fixest` fits report their
-fixed-effects structure in the footer.
+[`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html)
+coefficients are reported with quantreg's iid asymptotic SEs (the footer
+names the estimator); `fixest` fits flag their absorbed fixed effects in
+the table title, with per-factor group counts as the opt-in `n_groups`
+fit statistic.
 
 ## Bayesian models
 

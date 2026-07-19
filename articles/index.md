@@ -68,6 +68,18 @@
   and output to console, gt, tinytable, flextable, Excel, Word, or
   clipboard.
 
+- [Supported
+  models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md):
+
+  The model classes
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  supports, in one table: linear and generalized linear models, robust
+  and IV estimators, mixed effects, ordinal and multinomial outcomes,
+  two-part count models, survival models, survey-weighted and Bayesian
+  fits – with each family’s marginal-effects estimand, exponentiate
+  semantics, robust-variance backends, and standardized-coefficient
+  support.
+
 - [Categorical
   predictors](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md):
 

@@ -60,6 +60,7 @@ supported set. Feature requests are welcome on the issue tracker."><meta propert
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
     <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
@@ -230,8 +231,11 @@ closed-form AFT curves are standardized directly (stratified
 
 
 <p><code>estimatr</code> fits keep their own robust SEs (never overwritten);
-<code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code> honours its <code>se =</code> method, including rank-inversion CIs;
-<code>fixest</code> fits report their fixed-effects structure in the footer.</p>
+<code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code> coefficients are reported with quantreg's iid
+asymptotic SEs (the footer names the estimator);
+<code>fixest</code> fits flag their absorbed fixed effects in the table title,
+with per-factor group counts as the opt-in <code>n_groups</code> fit
+statistic.</p>
     </div>
     <div class="section level2">
     <h2 id="bayesian-models">Bayesian models<a class="anchor" aria-label="anchor" href="#bayesian-models"></a></h2>

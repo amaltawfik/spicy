@@ -81,8 +81,8 @@ table_regression(
   `mlogit`,
   [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), `rms`
   (`ols`/`lrm`/`cph`/`Glm`), and Bayesian (`rstanarm`/`brms`), among
-  others. An unsupported class raises `spicy_unsupported_class`. Raw
-  data + formula is not accepted – fit-only API.
+  others. An unsupported class raises `spicy_unsupported`. Raw data +
+  formula is not accepted – fit-only API.
 
 - vcov:
 
