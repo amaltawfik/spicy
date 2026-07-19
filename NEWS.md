@@ -208,6 +208,11 @@ rendering an empty column.
   `show_fit_stats` tokens `"theta"` (the NB2 dispersion) and
   `"alpha"` (its reciprocal, the Stata convention). Refused with a
   clear error for other families.
+* `betareg` fits gain the matching opt-in precision row: the
+  `show_fit_stats` token `"phi"`, back-transformed from the
+  precision link (`y ~ x | 1` reports the same phi as `y ~ x`).
+  Refused for other families and when the precision has covariates
+  (`y ~ x | z`), so phi is not a single number.
 * `nnet::multinom` fits now report McFadden's and Nagelkerke's
   pseudo-R² (as the other categorical families do). The tokens were
   silently dropped from `show_fit_stats` before, and a weighted fit's

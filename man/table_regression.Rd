@@ -827,9 +827,17 @@ Vehtari et al. 2017; opt-in, a few seconds per model; the
 footer discloses the elpd standard error), and \code{"waic"}
 (Watanabe-Akaike; PSIS-LOO is generally preferred).
 \item Negative-binomial dispersion (\code{MASS::glm.nb} only):
-\code{"theta"} (\eqn{V = \mu + \mu^2/	heta}{V = mu + mu^2/theta})
-and \code{"alpha"} (\eqn{= 1/	heta}{= 1/theta}, the Stata \code{nbreg}
+\code{"theta"} (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta})
+and \code{"alpha"} (\eqn{= 1/\theta}{= 1/theta}, the Stata \code{nbreg}
 convention). Refused for other families.
+\item Beta-regression precision (\code{betareg::betareg} only):
+\code{"phi"} (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
+    mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
+\eqn{\phi}{phi} = less dispersion). A constant precision is
+back-transformed from its link, so \code{y ~ x | 1} reports the
+same \eqn{\phi}{phi} as \code{y ~ x}. Refused for other families
+and when the precision has covariates (\code{y ~ x | z}), so it is
+not a single number.
 \item Effect size: \code{"f2"}.
 \item Information criteria: \code{"aic"}, \code{"aicc"}, \code{"bic"},
 \code{"deviance"} (lowercase like every other token; the rendered

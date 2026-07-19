@@ -657,7 +657,8 @@ build_structured_body <- function(aligned,
   is_int <- token %in% c("nobs", "weighted_nobs", "n_groups")
   is_fit <- token %in% c("r2", "adj_r2", "omega2", "f2", "sigma", "rmse",
                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
-                          "pseudo_r2_tjur", "theta", "alpha", "r2_bayes",
+                          "pseudo_r2_tjur", "theta", "alpha", "phi",
+                          "r2_bayes",
                           "r2_marginal", "r2_conditional", "icc",
                           "r2_change", "adj_r2_change", "f2_change",
                           "f_change")

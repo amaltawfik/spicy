@@ -73,6 +73,9 @@
     # Negative-binomial dispersion (MASS::glm.nb only): theta
     # (V = mu + mu^2/theta) and alpha = 1/theta (Stata nbreg).
     "theta", "alpha",
+    # Beta-regression precision (betareg only): phi (Ferrari &
+    # Cribari-Neto 2004; Var(y) = mu(1-mu)/(1+phi)).
+    "phi",
     # Bayesian fits only: posterior-median Bayesian R^2 (Gelman et
     # al. 2019), and PSIS-LOO elpd / LOOIC (Vehtari et al. 2017).
     "r2_bayes", "elpd_loo", "looic", "waic",
@@ -894,6 +897,47 @@ validate_class_appropriate_tokens <- function(models,
           "i" = paste0(
             "theta is the NB2 dispersion (V = mu + mu\u00B2/theta) and ",
             "alpha its reciprocal; other families have no such parameter."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # Beta-regression precision token: defined only for betareg fits
+  # with a constant precision. Hard error elsewhere, mirroring the
+  # negbin theta / alpha policy above.
+  if ("phi" %in% show_fit_stats) {
+    all_betareg <- length(models) > 0L &&
+      all(vapply(models, inherits, logical(1), "betareg"))
+    if (!all_betareg) {
+      spicy_abort(
+        c(
+          paste0("Token 'phi' in `show_fit_stats` is defined only ",
+                 "for beta-regression fits (`betareg::betareg`)."),
+          "i" = paste0(
+            "phi is the beta-distribution precision ",
+            "(Var(y) = mu(1-mu)/(1+phi); higher phi = less ",
+            "dispersion); other families have no such parameter."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    variable_prec <- vapply(models, function(m) {
+      length(tryCatch(stats::coef(m, model = "precision"),
+                      error = function(e) numeric(0))) != 1L
+    }, logical(1))
+    if (any(variable_prec)) {
+      spicy_abort(
+        c(
+          paste0("Token 'phi' needs a constant precision, but a ",
+                 "model has covariates on the precision ",
+                 "(`y ~ x | z`)."),
+          "i" = paste0(
+            "With precision covariates, phi is not a single number; ",
+            "inspect the precision coefficients with ",
+            "`summary(fit)` instead."
           )
         ),
         class = "spicy_invalid_input"

@@ -190,8 +190,9 @@ weighted and unweighted n.
 
 **Additive, proportions, selection.** `mgcv::gam()` / `bam()`,
 `betareg::betareg()` (odds ratios on the logit mean link under
-`exponentiate`), and `sampleSelection::selection()` with its
-selection component as a block.
+`exponentiate`; the precision is the opt-in `phi` fit statistic),
+and `sampleSelection::selection()` with its selection component as
+a block.
 
 **rms.** `ols`, `lrm`, `Glm` and `cph` are first-class citizens, so
 Harrell-style workflows drop in directly.

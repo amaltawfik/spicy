@@ -109,9 +109,17 @@
 #'     footer discloses the elpd standard error), and `"waic"`
 #'     (Watanabe-Akaike; PSIS-LOO is generally preferred).
 #'   \item Negative-binomial dispersion (`MASS::glm.nb` only):
-#'     `"theta"` (\eqn{V = \mu + \mu^2/	heta}{V = mu + mu^2/theta})
-#'     and `"alpha"` (\eqn{= 1/	heta}{= 1/theta}, the Stata `nbreg`
+#'     `"theta"` (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta})
+#'     and `"alpha"` (\eqn{= 1/\theta}{= 1/theta}, the Stata `nbreg`
 #'     convention). Refused for other families.
+#'   \item Beta-regression precision (`betareg::betareg` only):
+#'     `"phi"` (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
+#'     mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
+#'     \eqn{\phi}{phi} = less dispersion). A constant precision is
+#'     back-transformed from its link, so `y ~ x | 1` reports the
+#'     same \eqn{\phi}{phi} as `y ~ x`. Refused for other families
+#'     and when the precision has covariates (`y ~ x | z`), so it is
+#'     not a single number.
 #'   \item Effect size: `"f2"`.
 #'   \item Information criteria: `"aic"`, `"aicc"`, `"bic"`,
 #'     `"deviance"` (lowercase like every other token; the rendered

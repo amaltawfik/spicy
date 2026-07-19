@@ -424,6 +424,33 @@ as_regression_frame.betareg <- function(fit,
 
   if (is.null(ci_method)) ci_method <- "wald"
 
+  # Precision (phi) and dispersion-component coefs. The single
+  # dispersion phi only exists for constant precision (y ~ x); with a
+  # precision sub-model (y ~ x | z) there is no scalar phi --
+  # precision_coefs carries the full breakdown. Keep precision_phi a
+  # true scalar (NA when precision varies) to match its documented
+  # contract.
+  sm <- summary(fit)
+  precision_coefs <- if (!is.null(sm$coefficients$precision)) {
+    sm$coefficients$precision[, "Estimate", drop = TRUE]
+  } else NULL
+  precision_phi <- if (length(precision_coefs) == 1L) {
+    # The constant-precision coefficient is reported on the precision
+    # LINK scale: identity for a one-part formula, but log for ANY
+    # two-part formula (including the intercept-only `y ~ x | 1`), or
+    # whatever link.phi the user set. Back-transform with the fit's
+    # own inverse link -- exact, since the constant-phi ML estimate
+    # is invariant under reparameterization.
+    inv <- fit$link$precision$linkinv
+    if (is.function(inv)) {
+      as.numeric(inv(as.numeric(precision_coefs)))
+    } else {
+      as.numeric(precision_coefs)                                     # nocov
+    }
+  } else {
+    NA_real_
+  }
+
   fit_stats <- list(
     r_squared      = NA_real_,
     adj_r_squared  = NA_real_,
@@ -436,7 +463,10 @@ as_regression_frame.betareg <- function(fit,
                               error = function(e) NA_real_),
     deviance       = NA_real_,
     sigma          = NA_real_,
-    nobs           = as.integer(stats::nobs(fit))
+    nobs           = as.integer(stats::nobs(fit)),
+    # Opt-in show_fit_stats token; the validator refuses "phi" for
+    # variable-precision fits, so a rendered phi is always the scalar.
+    phi            = precision_phi
   )
 
   supports <- list(
@@ -448,12 +478,6 @@ as_regression_frame.betareg <- function(fit,
     standardise_refit   = FALSE
   )
 
-  # Precision (phi) and dispersion-component coefs.
-  sm <- summary(fit)
-  precision_coefs <- if (!is.null(sm$coefficients$precision)) {
-    sm$coefficients$precision[, "Estimate", drop = TRUE]
-  } else NULL
-
   extras <- list(
     cluster_name          = NULL,
     use_ame_satterthwaite = FALSE,
@@ -464,15 +488,7 @@ as_regression_frame.betareg <- function(fit,
     title_prefix          = "Beta regression",
     exp_applied           = FALSE,
     exp_header            = NA_character_,
-    # The single dispersion phi only exists for constant precision
-    # (y ~ x); with a precision sub-model (y ~ x | z) there is no scalar phi
-    # -- precision_coefs carries the full breakdown. Keep precision_phi a
-    # true scalar (NA when precision varies) to match its documented contract.
-    precision_phi         = if (length(precision_coefs) == 1L) {
-      as.numeric(precision_coefs)
-    } else {
-      NA_real_
-    },
+    precision_phi         = precision_phi,
     precision_coefs       = precision_coefs
   )
 

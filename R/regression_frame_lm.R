@@ -345,6 +345,7 @@ as_regression_frame.glm <- function(fit, ...) {
     pseudo_r2_mcfadden   = .scalar_or_na(fs$pseudo_r2_mcfadden),
     theta                = .scalar_or_na(fs$theta),
     alpha                = .scalar_or_na(fs$alpha),
+    phi                  = .scalar_or_na(fs$phi),
     r2_bayes             = .scalar_or_na(fs$r2_bayes),
     elpd_loo             = .scalar_or_na(fs$elpd_loo),
     looic                = .scalar_or_na(fs$looic),
