@@ -906,8 +906,16 @@ restore it explicitly when needed).
 
 - Negative-binomial dispersion
   ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) only):
-  `"theta"` (\\V = \mu + \mu^2/ heta\\) and `"alpha"` (\\= 1/ heta\\,
+  `"theta"` (\\V = \mu + \mu^2/\theta\\) and `"alpha"` (\\= 1/\theta\\,
   the Stata `nbreg` convention). Refused for other families.
+
+- Beta-regression precision
+  ([`betareg::betareg`](https://rdrr.io/pkg/betareg/man/betareg.html)
+  only): `"phi"` (\\Var(y) = \mu(1-\mu)/(1+\phi)\\, Ferrari &
+  Cribari-Neto 2004; higher \\\phi\\ = less dispersion). A constant
+  precision is back-transformed from its link, so `y ~ x | 1` reports
+  the same \\\phi\\ as `y ~ x`. Refused for other families and when the
+  precision has covariates (`y ~ x | z`), so it is not a single number.
 
 - Effect size: `"f2"`.
 

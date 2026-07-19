@@ -215,7 +215,8 @@ design-based inference, weighted and unweighted n.
 **Additive, proportions, selection.**
 [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()`,
 [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html)
-(odds ratios on the logit mean link under `exponentiate`), and
+(odds ratios on the logit mean link under `exponentiate`; the precision
+is the opt-in `phi` fit statistic), and
 [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
 with its selection component as a block.
 

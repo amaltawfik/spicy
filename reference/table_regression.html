@@ -966,9 +966,16 @@ Vehtari et al. 2017; opt-in, a few seconds per model; the
 footer discloses the elpd standard error), and <code>"waic"</code>
 (Watanabe-Akaike; PSIS-LOO is generally preferred).</p></li>
 <li><p>Negative-binomial dispersion (<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> only):
-<code>"theta"</code> (\(V = \mu + \mu^2/	heta\))
-and <code>"alpha"</code> (\(= 1/	heta\), the Stata <code>nbreg</code>
+<code>"theta"</code> (\(V = \mu + \mu^2/\theta\))
+and <code>"alpha"</code> (\(= 1/\theta\), the Stata <code>nbreg</code>
 convention). Refused for other families.</p></li>
+<li><p>Beta-regression precision (<code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg</a></code> only):
+<code>"phi"</code> (\(Var(y) = \mu(1-\mu)/(1+\phi)\), Ferrari &amp; Cribari-Neto 2004; higher
+\(\phi\) = less dispersion). A constant precision is
+back-transformed from its link, so <code>y ~ x | 1</code> reports the
+same \(\phi\) as <code>y ~ x</code>. Refused for other families
+and when the precision has covariates (<code>y ~ x | z</code>), so it is
+not a single number.</p></li>
 <li><p>Effect size: <code>"f2"</code>.</p></li>
 <li><p>Information criteria: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code>,
 <code>"deviance"</code> (lowercase like every other token; the rendered
