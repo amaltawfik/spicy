@@ -295,6 +295,17 @@ rendering an empty column.
 - `nested = TRUE` now works for `multinom` (LR chi-square rows) and
   defaults to LRT rows for Cox comparisons (`lm`’s R² / F-change rows
   are undefined for a partial likelihood).
+- Quantile regression
+  ([`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html)) gets its
+  own `vcov` estimator family: the default is now the
+  heteroskedasticity-robust `"nid"` sandwich (quantreg’s own
+  large-sample default; the previous iid default understated SEs under
+  heteroskedasticity and disagreed with the AME columns, which already
+  used `"nid"`), with `"iid"`, `"ker"`, `"rank"` (rank-inversion CIs, no
+  SE / t / p) and a native `"bootstrap"` as opt-ins. `cluster` works
+  through the wild gradient cluster bootstrap (`vcov = "bootstrap"`);
+  `HC*`, `CR*` and `"jackknife"` are refused with the reason. The footer
+  names the estimator; AME columns share the coefficient rows’ matrix.
 - AME columns that silently rendered empty are now populated (`fixest`,
   `estimatr`, `quantreg`,
   [`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html), `rms`, `pscl`)
@@ -603,7 +614,7 @@ CRAN release: 2026-05-04
 - [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
   rejects `row.names.as.col` vectors of length ≠ 1 and empty strings;
   accumulates all messages from
-  [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md)
+  [`clipr::write_clip()`](https://rdrr.io/pkg/clipr/man/write_clip.html)
   instead of overwriting.
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md) /
   [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)

@@ -183,8 +183,21 @@ parameter theta is held at its full-sample estimate (Stata's
 <code>nbreg, vce(bootstrap)</code> re-estimates it per replicate – the two
 conventions differ slightly). Resampling that fails on nearly
 every replicate raises <code>spicy_resampling_failed</code> rather than
-silently reporting a different estimator. See <em>Inference and
-standard errors</em>.</p></dd>
+silently reporting a different estimator.
+Quantile regression (<code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code>) uses its own estimator
+family instead: <code>"classical"</code> resolves to the
+heteroskedasticity-robust <code>"nid"</code> sandwich (Hendricks-Koenker,
+Hall-Sheather bandwidth – quantreg's own large-sample default
+and the Stata <code>vce(robust)</code> analogue), with <code>"iid"</code>
+(Koenker-Bassett homoskedastic, Stata <code>vce(iid)</code> parity),
+<code>"ker"</code> (Powell kernel) and <code>"rank"</code> (rank-score inversion:
+genuine CIs, no SE / t / p – those cells render as dashes) as
+opt-ins, and <code>"bootstrap"</code> running quantreg's native <code>boot.rq</code>
+(<code>bsmethod = "xy"</code>; with <code>cluster =</code>, the Hagemann 2017 wild
+gradient cluster bootstrap – the one cluster-robust route for
+<code>rq</code>; <code>CR*</code> and <code>HC*</code> are refused for <code>rq</code>, as is
+<code>"jackknife"</code>, whose leave-one-out form is inconsistent for
+quantiles). See <em>Inference and standard errors</em>.</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
@@ -1309,7 +1322,7 @@ Suggests package).</p></li>
 <li><p><code>"word"</code> – writes to <code>word_path</code> via
 <code><a href="https://davidgohel.github.io/flextable/reference/save_as_docx.html" class="external-link">flextable::save_as_docx()</a></code>.</p></li>
 <li><p><code>"clipboard"</code> – copies to the system clipboard via
-<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>.</p></li>
+<code><a href="https://rdrr.io/pkg/clipr/man/write_clip.html" class="external-link">clipr::write_clip()</a></code>.</p></li>
 </ul><p><code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns a long tibble with one row per
 <code>(model_id, term, estimate_type)</code> and broom-canonical column
 names (<code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>,

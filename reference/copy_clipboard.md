@@ -3,7 +3,7 @@
 Copies a `data.frame`, matrix, 2D or higher array, table, or atomic
 vector to the system clipboard, ready to paste into a text editor,
 spreadsheet, or word processor. Wraps
-[`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md)
+[`clipr::write_clip()`](https://rdrr.io/pkg/clipr/man/write_clip.html)
 (a Suggests dependency); requires `clipr` to be installed and a
 clipboard backend to be available on the platform.
 
@@ -60,7 +60,7 @@ copy_clipboard(
 - ...:
 
   Additional arguments passed to
-  [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).
+  [`clipr::write_clip()`](https://rdrr.io/pkg/clipr/man/write_clip.html).
 
 ## Value
 
@@ -72,7 +72,7 @@ effect.
 Objects that are not `data.frame`s or 2D matrices (atomic vectors,
 arrays, tables) are automatically coerced to character on the way to the
 clipboard, as required by
-[`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).
+[`clipr::write_clip()`](https://rdrr.io/pkg/clipr/man/write_clip.html).
 The R-side object passed to `x` is never mutated.
 
 Multidimensional arrays (3D and higher) are flattened to a 1D character

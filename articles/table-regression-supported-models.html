@@ -494,8 +494,14 @@ component is model-based only). <code>multinom</code> takes
 <code>CR*</code> (one cluster value per observation) and
 <code>mlogit</code> takes <code>CR*</code> (one per choice situation) –
 both refuse <code>HC*</code>, which has no valid working-residual form
-for multi-equation models. Cox models use the Lin-Wei grouped-dfbeta
-sandwich, and the <code>rms</code> fits take <code>CR*</code> via
+for multi-equation models. Quantile regression (<code>rq</code>) uses
+its own estimator family – <code>"classical"</code> resolves to the
+robust <code>nid</code> sandwich, <code>iid</code> / <code>ker</code> /
+<code>rank</code> are opt-ins, and clustering goes through its native
+wild gradient bootstrap (<code>vcov = "bootstrap"</code> +
+<code>cluster</code>; <code>HC*</code> / <code>CR*</code> are refused).
+Cox models use the Lin-Wei grouped-dfbeta sandwich, and the
+<code>rms</code> fits take <code>CR*</code> via
 <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (refit with <code>x = TRUE, y = TRUE</code>);
 <code>survreg</code>, <code>gam</code> / <code>bam</code> and
 <code>betareg</code> take <code>CR*</code> via
@@ -545,10 +551,13 @@ for Bayesian tables, which carry no p-values at all.</p>
 <p><strong>Robust, IV, quantile, panel.</strong>
 <code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code> / <code>iv_robust()</code>,
 <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code> and <code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code>,
-<code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code> (reported with quantreg’s iid asymptotic
-SEs, named in the footer), and the <code>fixest</code> estimators, whose
-absorbed fixed effects are flagged in the table title and available as
-the opt-in <code>n_groups</code> fit statistic.</p>
+<code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code> (defaulting to the heteroskedasticity-robust
+<code>nid</code> sandwich – quantreg’s own large-sample default – with
+<code>iid</code>, <code>ker</code>, <code>rank</code> CIs and a native
+clustered bootstrap as <code>vcov</code> options), and the
+<code>fixest</code> estimators, whose absorbed fixed effects are flagged
+in the table title and available as the opt-in <code>n_groups</code> fit
+statistic.</p>
 <p><strong>Mixed effects.</strong> <code>lmer</code> (Satterthwaite t
 via <code>lmerTest</code>), <code>glmer</code>, <code>glmmTMB</code>
 (with zero-inflation and dispersion blocks), <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> and

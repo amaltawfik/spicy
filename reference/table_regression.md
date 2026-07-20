@@ -96,8 +96,21 @@ table_regression(
   estimate (Stata's `nbreg, vce(bootstrap)` re-estimates it per
   replicate – the two conventions differ slightly). Resampling that
   fails on nearly every replicate raises `spicy_resampling_failed`
-  rather than silently reporting a different estimator. See *Inference
-  and standard errors*.
+  rather than silently reporting a different estimator. Quantile
+  regression
+  ([`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html)) uses its
+  own estimator family instead: `"classical"` resolves to the
+  heteroskedasticity-robust `"nid"` sandwich (Hendricks-Koenker,
+  Hall-Sheather bandwidth – quantreg's own large-sample default and the
+  Stata `vce(robust)` analogue), with `"iid"` (Koenker-Bassett
+  homoskedastic, Stata `vce(iid)` parity), `"ker"` (Powell kernel) and
+  `"rank"` (rank-score inversion: genuine CIs, no SE / t / p – those
+  cells render as dashes) as opt-ins, and `"bootstrap"` running
+  quantreg's native `boot.rq` (`bsmethod = "xy"`; with `cluster =`, the
+  Hagemann 2017 wild gradient cluster bootstrap – the one cluster-robust
+  route for `rq`; `CR*` and `HC*` are refused for `rq`, as is
+  `"jackknife"`, whose leave-one-out form is inconsistent for
+  quantiles). See *Inference and standard errors*.
 
 - cluster:
 
@@ -1277,7 +1290,7 @@ must not change the inferential family.
   [`flextable::save_as_docx()`](https://davidgohel.github.io/flextable/reference/save_as_docx.html).
 
 - `"clipboard"` – copies to the system clipboard via
-  [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).
+  [`clipr::write_clip()`](https://rdrr.io/pkg/clipr/man/write_clip.html).
 
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
 returns a long tibble with one row per `(model_id, term, estimate_type)`

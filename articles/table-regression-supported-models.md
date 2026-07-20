@@ -107,7 +107,11 @@ thresholds are reweighted from the same clustered vcov (a `clm` with a
 scale or nominal partial-proportional-odds component is model-based
 only). `multinom` takes `CR*` (one cluster value per observation) and
 `mlogit` takes `CR*` (one per choice situation) – both refuse `HC*`,
-which has no valid working-residual form for multi-equation models. Cox
+which has no valid working-residual form for multi-equation models.
+Quantile regression (`rq`) uses its own estimator family – `"classical"`
+resolves to the robust `nid` sandwich, `iid` / `ker` / `rank` are
+opt-ins, and clustering goes through its native wild gradient bootstrap
+(`vcov = "bootstrap"` + `cluster`; `HC*` / `CR*` are refused). Cox
 models use the Lin-Wei grouped-dfbeta sandwich, and the `rms` fits take
 `CR*` via [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html)
 (refit with `x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and
@@ -161,10 +165,12 @@ and
 / `iv_robust()`,
 [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) and
 [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html),
-[`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) (reported
-with quantreg’s iid asymptotic SEs, named in the footer), and the
-`fixest` estimators, whose absorbed fixed effects are flagged in the
-table title and available as the opt-in `n_groups` fit statistic.
+[`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) (defaulting
+to the heteroskedasticity-robust `nid` sandwich – quantreg’s own
+large-sample default – with `iid`, `ker`, `rank` CIs and a native
+clustered bootstrap as `vcov` options), and the `fixest` estimators,
+whose absorbed fixed effects are flagged in the table title and
+available as the opt-in `n_groups` fit statistic.
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
 `glmmTMB` (with zero-inflation and dispersion blocks),
