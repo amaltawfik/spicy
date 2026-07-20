@@ -201,8 +201,11 @@
 #'
 #' @section Robust, IV, quantile and panel models:
 #' `estimatr` fits keep their own robust SEs (never overwritten);
-#' `quantreg::rq()` coefficients are reported with quantreg's iid
-#' asymptotic SEs (the footer names the estimator);
+#' `quantreg::rq()` defaults to the heteroskedasticity-robust `"nid"`
+#' sandwich (quantreg's own large-sample default), with `"iid"`,
+#' `"ker"`, `"rank"` (CIs only) and a native `"bootstrap"` --
+#' clustered via the wild gradient bootstrap -- as `vcov` options
+#' (the footer names the estimator);
 #' `fixest` fits flag their absorbed fixed effects in the table title,
 #' with per-factor group counts as the opt-in `n_groups` fit
 #' statistic.

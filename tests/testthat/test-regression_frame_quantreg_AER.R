@@ -75,14 +75,26 @@ test_that("rq: coefs estimates match stats::coef(fit)", {
   }
 })
 
-test_that("rq: p-values byte-match summary(fit, se='iid')$coefficients", {
+test_that("rq: p-values byte-match summary(fit, se='nid') (the default)", {
   fit <- .fit_rq_median()
   fr <- as_regression_frame(fit, model_id = "M1")
-  sm <- summary(fit, se = "iid")$coefficients
+  # The default estimator is the heteroskedasticity-robust nid sandwich
+  # (quantreg's own large-sample default); iid remains an explicit
+  # opt-in via vcov = "iid".
+  sm <- summary(fit, se = "nid", hs = TRUE)$coefficients
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
     expect_equal(b_rows$p_value[b_rows$term == nm],
                  unname(sm[nm, "Pr(>|t|)"]),
+                 tolerance = 1e-10)
+  }
+  sm_iid <- summary(fit, se = "iid")$coefficients
+  fr_iid <- as_regression_frame(fit, model_id = "M1", vcov = "iid")
+  b_iid <- fr_iid$coefs[fr_iid$coefs$estimate_type == "B" &
+                          !fr_iid$coefs$is_ref, ]
+  for (nm in rownames(sm_iid)) {
+    expect_equal(b_iid$p_value[b_iid$term == nm],
+                 unname(sm_iid[nm, "Pr(>|t|)"]),
                  tolerance = 1e-10)
   }
 })

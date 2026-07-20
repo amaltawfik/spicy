@@ -271,6 +271,16 @@ rendering an empty column.
 * `nested = TRUE` now works for `multinom` (LR chi-square rows) and
   defaults to LRT rows for Cox comparisons (`lm`'s R² / F-change rows
   are undefined for a partial likelihood).
+* Quantile regression (`quantreg::rq`) gets its own `vcov` estimator
+  family: the default is now the heteroskedasticity-robust `"nid"`
+  sandwich (quantreg's own large-sample default; the previous iid
+  default understated SEs under heteroskedasticity and disagreed with
+  the AME columns, which already used `"nid"`), with `"iid"`, `"ker"`,
+  `"rank"` (rank-inversion CIs, no SE / t / p) and a native
+  `"bootstrap"` as opt-ins. `cluster` works through the wild gradient
+  cluster bootstrap (`vcov = "bootstrap"`); `HC*`, `CR*` and
+  `"jackknife"` are refused with the reason. The footer names the
+  estimator; AME columns share the coefficient rows' matrix.
 * AME columns that silently rendered empty are now populated (`fixest`,
   `estimatr`, `quantreg`, `AER::ivreg`, `rms`, `pscl`) or refused with
   a pointer to `?table_regression_models` (classes with no AME

@@ -252,7 +252,12 @@ cluster_lookup_data <- function(fit, vars) {
     else eval(cl$data, environment(stats::formula(fit)))
   }, error = function(e) NULL)
   if (!is.null(orig) && is.data.frame(orig)) {
-    n_fit <- tryCatch(stats::nobs(fit), error = function(e) NA_integer_)
+    # .spicy_nobs, not stats::nobs: classes without a registered nobs
+    # method (rq, multinom) would return NA here and silently skip the
+    # na.action subsetting below -- the cluster vector then keeps the
+    # original row count and the length gate rejects the model's own
+    # blessed cluster route (caught for rq by the 2026-07 review).
+    n_fit <- tryCatch(.spicy_nobs(fit), error = function(e) NA_integer_)
     # Many fits drop rows via NA-handling; sandwich / clubSandwich
     # require the cluster vector to have length nobs(fit). When the
     # original data has more rows, subset using the model frame's

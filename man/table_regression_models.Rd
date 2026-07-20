@@ -178,8 +178,11 @@ closed-form AFT curves are standardized directly (stratified
 \section{Robust, IV, quantile and panel models}{
 
 \code{estimatr} fits keep their own robust SEs (never overwritten);
-\code{quantreg::rq()} coefficients are reported with quantreg's iid
-asymptotic SEs (the footer names the estimator);
+\code{quantreg::rq()} defaults to the heteroskedasticity-robust \code{"nid"}
+sandwich (quantreg's own large-sample default), with \code{"iid"},
+\code{"ker"}, \code{"rank"} (CIs only) and a native \code{"bootstrap"} --
+clustered via the wild gradient bootstrap -- as \code{vcov} options
+(the footer names the estimator);
 \code{fixest} fits flag their absorbed fixed effects in the table title,
 with per-factor group counts as the opt-in \code{n_groups} fit
 statistic.

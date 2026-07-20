@@ -518,8 +518,21 @@
 #'   `nbreg, vce(bootstrap)` re-estimates it per replicate -- the two
 #'   conventions differ slightly). Resampling that fails on nearly
 #'   every replicate raises `spicy_resampling_failed` rather than
-#'   silently reporting a different estimator. See *Inference and
-#'   standard errors*.
+#'   silently reporting a different estimator.
+#'   Quantile regression (`quantreg::rq`) uses its own estimator
+#'   family instead: `"classical"` resolves to the
+#'   heteroskedasticity-robust `"nid"` sandwich (Hendricks-Koenker,
+#'   Hall-Sheather bandwidth -- quantreg's own large-sample default
+#'   and the Stata `vce(robust)` analogue), with `"iid"`
+#'   (Koenker-Bassett homoskedastic, Stata `vce(iid)` parity),
+#'   `"ker"` (Powell kernel) and `"rank"` (rank-score inversion:
+#'   genuine CIs, no SE / t / p -- those cells render as dashes) as
+#'   opt-ins, and `"bootstrap"` running quantreg's native `boot.rq`
+#'   (`bsmethod = "xy"`; with `cluster =`, the Hagemann 2017 wild
+#'   gradient cluster bootstrap -- the one cluster-robust route for
+#'   `rq`; `CR*` and `HC*` are refused for `rq`, as is
+#'   `"jackknife"`, whose leave-one-out form is inconsistent for
+#'   quantiles). See *Inference and standard errors*.
 #' @param cluster Cluster identifier for cluster-robust variance
 #'   (used when `vcov` is `"CR0"`-`"CR3"` or a cluster-bootstrap /
 #'   cluster-jackknife). Three accepted forms (see *How to specify

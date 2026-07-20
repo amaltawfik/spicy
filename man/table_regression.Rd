@@ -81,8 +81,21 @@ parameter theta is held at its full-sample estimate (Stata's
 \verb{nbreg, vce(bootstrap)} re-estimates it per replicate -- the two
 conventions differ slightly). Resampling that fails on nearly
 every replicate raises \code{spicy_resampling_failed} rather than
-silently reporting a different estimator. See \emph{Inference and
-standard errors}.}
+silently reporting a different estimator.
+Quantile regression (\code{quantreg::rq}) uses its own estimator
+family instead: \code{"classical"} resolves to the
+heteroskedasticity-robust \code{"nid"} sandwich (Hendricks-Koenker,
+Hall-Sheather bandwidth -- quantreg's own large-sample default
+and the Stata \code{vce(robust)} analogue), with \code{"iid"}
+(Koenker-Bassett homoskedastic, Stata \code{vce(iid)} parity),
+\code{"ker"} (Powell kernel) and \code{"rank"} (rank-score inversion:
+genuine CIs, no SE / t / p -- those cells render as dashes) as
+opt-ins, and \code{"bootstrap"} running quantreg's native \code{boot.rq}
+(\code{bsmethod = "xy"}; with \verb{cluster =}, the Hagemann 2017 wild
+gradient cluster bootstrap -- the one cluster-robust route for
+\code{rq}; \verb{CR*} and \verb{HC*} are refused for \code{rq}, as is
+\code{"jackknife"}, whose leave-one-out form is inconsistent for
+quantiles). See \emph{Inference and standard errors}.}
 
 \item{cluster}{Cluster identifier for cluster-robust variance
 (used when \code{vcov} is \code{"CR0"}-\code{"CR3"} or a cluster-bootstrap /

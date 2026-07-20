@@ -398,6 +398,11 @@ default_nested_tokens <- function(models) {
   if (inherits(fit, "multinom")) {
     return(as.numeric(nrow(fit$fitted.values)))
   }
+  # quantreg registers no nobs.rq either; the residual vector has one
+  # entry per observation actually used.
+  if (inherits(fit, "rq")) {
+    return(as.numeric(length(fit$residuals)))
+  }
   as.numeric(stats::nobs(fit))
 }
 

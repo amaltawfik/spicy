@@ -321,6 +321,20 @@ validate_nested_alignment <- function(models, nested) {
     return(invisible(NULL))
   }
 
+  # Quantile regression has no wired pair-comparison path (the lm / glm
+  # change statistics read R-squared / logLik, both undefined or
+  # unwired for rq); anova.rq's rank-based tests are a future lot.
+  # Refuse upfront -- without this gate the pair computation crashes
+  # with a raw NA-in-if error (2026-07 review).
+  if (any(vapply(models, inherits, logical(1), "rq"))) {
+    spicy_abort(
+      c("`nested = TRUE` is not available for quantile regression fits.",
+        "i" = paste0("Compare nested rq fits with `anova()` ",
+                     "(rank-based tests) outside the table.")),
+      class = "spicy_unsupported"
+    )
+  }
+
   # Step 4: nobs identical. numeric(1), not integer(1): nobs() returns a
   # double for some supported classes (e.g. coxph), which would make an
   # integer(1) vapply throw under `nested = TRUE`. .spicy_nobs() covers
@@ -417,7 +431,10 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   valid_vcov <- c("classical",
                    paste0("HC", 0:5),
                    paste0("CR", 0:3),
-                   "bootstrap", "jackknife")
+                   "bootstrap", "jackknife",
+                   # quantreg::rq estimator family (refused for every
+                   # other class by the Step-6c capability gate).
+                   "nid", "iid", "ker", "rank")
 
   # Step 6: vcov list length + element type
   if (is.list(vcov)) {
@@ -453,7 +470,9 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           "`vcov` must be a single string or a list of strings.",
           "i" = paste0(
             "Valid scalars: \"classical\", \"HC0\"\u2013\"HC5\", ",
-            "\"CR0\"\u2013\"CR3\", \"bootstrap\", \"jackknife\"."
+            "\"CR0\"\u2013\"CR3\", \"bootstrap\", \"jackknife\", plus ",
+            "class-specific estimators (quantile regression: ",
+            "\"nid\" / \"iid\" / \"ker\" / \"rank\")."
           )
         ),
         class = "spicy_invalid_input"
@@ -551,6 +570,40 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   for (i in seq_len(n_models)) {
     v_i <- vcov_per[[i]]
     c_i <- cluster_per[[i]]
+
+    # quantreg::rq has no analytic cluster-robust estimator; its one
+    # defensible cluster route is the wild gradient cluster bootstrap
+    # (Hagemann 2017, JASA; quantreg's boot.rq cluster method). So for
+    # rq, cluster + "bootstrap" is the BLESSED pair (no CR* warning),
+    # and cluster with any other estimator is a hard error -- the
+    # generic "set vcov to CR0-CR3" hint below would be wrong guidance.
+    if (inherits(models[[i]], "rq")) {
+      if (!is.null(c_i) && !identical(v_i, "bootstrap")) {
+        spicy_abort(
+          c(
+            sprintf(
+              paste0("Model %d: `cluster` with `vcov = \"%s\"` is not ",
+                     "available for quantile regression."),
+              i, v_i
+            ),
+            "i" = paste0(
+              "rq has no analytic cluster-robust estimator; use ",
+              "`vcov = \"bootstrap\"` with `cluster =` (wild gradient ",
+              "cluster bootstrap, Hagemann 2017)."
+            )
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
+      if (!is.null(c_i) && is.atomic(c_i)) {
+        .check_cluster_length(
+          models[[i]], c_i,
+          label = sprintf("`cluster%s`",
+                          if (n_models > 1L) sprintf("[[%d]]", i) else "")
+        )
+      }
+      next
+    }
 
     is_cr <- startsWith(v_i, "CR")
     if (is_cr && is.null(c_i)) {

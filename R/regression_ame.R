@@ -971,7 +971,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 # The returned coefs always has the same schema as the input.
 .attach_ame_to_frame_coefs <- function(coefs, fit, ci_level, show_columns,
                                        vcov_type = "model", cluster = NULL,
-                                       hdi = FALSE) {
+                                       hdi = FALSE, vcov_matrix = NULL) {
   ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
   if (!any(ame_tokens %in% show_columns)) return(coefs)
   # Robust AME uncertainty: when a robust vcov was requested for the
@@ -979,9 +979,11 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # SE / CI / p honour the requested estimator. A no-op for the model-based
   # defaults ("model" / "classical" / "survey-Taylor"), where avg_slopes uses
   # the fit's own vcov (design-based for svyglm). The AME point estimates are
-  # vcov-independent either way.
-  vc <- NULL
-  if (!is.null(vcov_type) &&
+  # vcov-independent either way. A frame that already computed the matrix
+  # passes it via `vcov_matrix` (rq: the coefficient rows and the AME must
+  # share ONE computation -- for bootstrap, one replicate draw).
+  vc <- vcov_matrix
+  if (is.null(vc) && !is.null(vcov_type) &&
         !vcov_type %in% c("model", "classical", "survey-Taylor")) {
     vc <- tryCatch(compute_model_vcov(fit, type = vcov_type, cluster = cluster),
                    error = function(e) NULL)

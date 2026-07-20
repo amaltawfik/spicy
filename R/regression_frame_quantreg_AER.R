@@ -30,24 +30,79 @@ as_regression_frame.rq <- function(fit,
                                     ci_method = NULL,
                                     show_columns = character(0),
                                     model_id = "M1",
-                                    se = "iid",
+                                    se = NULL,
+                                    boot_n = 1000L,
                                     ...) {
   .check_quantreg_available()
+  .check_rq_method_supported(fit)
 
-  coefs <- .rq_coefs(fit, ci_level = ci_level, se = se)
-  # AME rows when requested (finding M2): response-scale avg_slopes(); a
-  # robust vcov is recomputed inside and honoured.
+  # `se` is the internal method-level override (tests, direct callers);
+  # user-facing requests arrive as `vcov` tokens and resolve through
+  # .rq_se_method(): "classical" -> nid (the class-native default; the
+  # iid default was dropped -- it is anti-conservative exactly where
+  # quantile regression is used, and the AME rows already used the nid
+  # matrix via marginaleffects, so the old table disagreed with itself).
+  se_method <- se %||% .rq_se_method(vcov)
+
+  wants_ame <- any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)
+  if (identical(se_method, "rank") && wants_ame) {
+    spicy_abort(
+      c(paste0("AME columns are not available with `vcov = \"rank\"`: ",
+               "rank inversion yields confidence intervals only, no ",
+               "variance-covariance matrix for the delta method."),
+        "i" = "Use `vcov = \"nid\"` or `\"bootstrap\"` with AME columns."),
+      class = "spicy_invalid_input"
+    )
+  }
+
+  # One computation feeds the coefficient rows AND the AME vcov (for
+  # bootstrap that means one single replicate draw).
+  rq_sum <- if (!identical(se_method, "rank")) {
+    .rq_summary(fit, se_method, cluster = cluster, boot_n = boot_n)
+  } else {
+    NULL
+  }
+
+  coefs <- .rq_coefs(fit, ci_level = ci_level, se_method = se_method,
+                     rq_sum = rq_sum, ci_method = ci_method)
+  # AME rows when requested (finding M2): response-scale avg_slopes();
+  # the SAME matrix as the coefficient rows is passed through, so B and
+  # AME never disagree on the estimator.
   coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
+                                      vcov_type = vcov, cluster = cluster,
+                                      vcov_matrix = rq_sum$cov)
   info  <- .rq_info(fit,
                     vcov_kind  = vcov,
                     vcov_label = vcov_label,
                     ci_level   = ci_level,
                     ci_method  = ci_method,
                     model_id   = model_id,
-                    se         = se)
+                    se_method  = se_method,
+                    boot_n     = boot_n,
+                    clustered  = !is.null(cluster))
 
   new_regression_frame(coefs, info, fit)
+}
+
+
+# Penalized / externally-estimated rq variants have no valid classical
+# inference path through summary.rq: lasso-penalized fits invalidate
+# the sparsity-based SEs, and method = "conquer" makes summary.rq
+# switch to conquer's own multiplier bootstrap with a different output
+# contract. Refuse upfront rather than rendering numbers whose
+# estimator the footer cannot honestly name.
+.check_rq_method_supported <- function(fit) {
+  m <- fit$method %||% "br"
+  if (m %in% c("lasso", "scad", "conquer")) {
+    spicy_abort(
+      c(sprintf("`rq` fits with `method = \"%s\"` are not supported.", m),
+        "i" = paste0("Refit with `method = \"br\"` (default) or ",
+                     "\"fn\" to tabulate classical quantile-regression ",
+                     "inference.")),
+      class = "spicy_unsupported"
+    )
+  }
+  invisible(NULL)
 }
 
 
@@ -67,51 +122,72 @@ as_regression_frame.rq <- function(fit,
 }
 
 
-.rq_coefs <- function(fit, ci_level, se) {
+.rq_coefs <- function(fit, ci_level, se_method, rq_sum = NULL,
+                      ci_method = NULL) {
   cf <- stats::coef(fit)
   est <- unname(cf)
   nm  <- names(cf)
 
-  # Pass alpha = 1 - ci_level so the rank-inversion CIs (when se = "rank",
-  # or quantreg's small-sample default) are computed at the requested
-  # confidence level rather than summary.rq's hard-coded default
-  # (alpha = 0.1, i.e. a 90% CI). alpha is silently ignored by the
-  # parametric SE methods ("iid"/"nid"/"ker"/"boot"), so this is safe.
-  sm <- summary(fit, se = se, alpha = 1 - ci_level)$coefficients
-  # summary.rq returns a matrix with columns "Value Std. Error t value Pr(>|t|)"
-  # for parametric SE methods; the rank-inversion path (se = "rank") returns
-  # columns "coefficients", "lower bd", "upper bd" instead -- genuine
-  # confidence bounds with no SE / t / p available.
-  is_rank_ci <- !is.null(sm) && all(c("lower bd", "upper bd") %in% colnames(sm)) &&
-    !all(c("Std. Error", "t value", "Pr(>|t|)") %in% colnames(sm))
+  is_rank <- identical(se_method, "rank")
+  is_boot <- identical(se_method, "boot")
+
+  # quantreg's df.residual(rq) returns numeric(0); n - p is the sensible
+  # asymptotic-t df for the parametric sandwich methods. Bootstrap rows
+  # follow the house resampler rule instead: asymptotic z (summary.rq
+  # prints t(n - p) even for its boot path -- our SEs match it exactly,
+  # the p / CI differ microscopically; test_type and the footer
+  # disclose).
+  n_obs <- as.integer(length(fit$residuals) %||% NA_integer_)
+  df_val <- as.numeric(n_obs - length(cf))
+
   rank_ci_lower <- NULL
   rank_ci_upper <- NULL
-  if (!is.null(sm) && all(c("Std. Error", "t value", "Pr(>|t|)") %in% colnames(sm))) {
-    se_vec  <- unname(sm[nm, "Std. Error"])
-    stat    <- unname(sm[nm, "t value"])
-    p_value <- unname(sm[nm, "Pr(>|t|)"])
-  } else {
-    # Rank-inversion path: SE / t / p are undefined for this method, but the
-    # genuine confidence bounds ARE returned -- carry them through instead of
-    # discarding them.
+  if (is_rank) {
+    # Pass alpha = 1 - ci_level so the rank-inversion CIs are computed
+    # at the requested confidence level rather than summary.rq's
+    # hard-coded default (alpha = 0.1, i.e. a 90% CI). The rank path
+    # returns "coefficients" / "lower bd" / "upper bd": genuine
+    # confidence bounds with no SE / t / p available.
+    sm <- summary(fit, se = "rank", alpha = 1 - ci_level)$coefficients
     se_vec  <- rep(NA_real_, length(est))
     stat    <- rep(NA_real_, length(est))
     p_value <- rep(NA_real_, length(est))
-    if (isTRUE(is_rank_ci)) {
+    if (!is.null(sm) && all(c("lower bd", "upper bd") %in% colnames(sm))) {
       rank_ci_lower <- unname(sm[nm, "lower bd"])
       rank_ci_upper <- unname(sm[nm, "upper bd"])
     }
+  } else {
+    sm <- rq_sum$sm$coefficients
+    se_vec <- unname(sm[nm, "Std. Error"])
+    if (is_boot) {
+      stat    <- est / se_vec
+      p_value <- 2 * stats::pnorm(-abs(stat))
+    } else {
+      stat    <- unname(sm[nm, "t value"])
+      p_value <- unname(sm[nm, "Pr(>|t|)"])
+    }
   }
 
-  # quantreg's df.residual(rq) returns numeric(0); n - p is the sensible
-  # asymptotic-t df.
-  n_obs <- as.integer(length(fit$residuals) %||% NA_integer_)
-  df_val <- as.numeric(n_obs - length(cf))
-  df <- rep(df_val, length(est))
-  if (isTRUE(is_rank_ci)) {
+  df <- rep(if (is_boot) Inf else df_val, length(est))
+  if (is_rank) {
     # Use quantreg's rank-inversion bounds directly (no SE to invert).
     ci_lower <- rank_ci_lower
     ci_upper <- rank_ci_upper
+  } else if (is_boot && identical(ci_method, "boot_percentile")) {
+    # Percentile bounds from the SAME replicate draw as the SEs
+    # (summary.rq stores the boot.rq matrix as $B, one row per
+    # replicate, columns in coefficient order) -- through the house
+    # .boot_percentile_ci() so every class shares the boot::boot.ci
+    # type = "perc" convention the docs promise (a type-7 quantile
+    # here would contradict the lm / glm bootstrap path).
+    B <- rq_sum$sm$B
+    bounds <- apply(B, 2L, .boot_percentile_ci, ci_level = ci_level)
+    ci_lower <- unname(bounds[1L, ])
+    ci_upper <- unname(bounds[2L, ])
+  } else if (is_boot) {
+    z_crit <- stats::qnorm(0.5 + ci_level / 2)
+    ci_lower <- est - z_crit * se_vec
+    ci_upper <- est + z_crit * se_vec
   } else {
     t_crit <- stats::qt(0.5 + ci_level / 2, df = df_val)
     ci_lower <- est - t_crit * se_vec
@@ -143,7 +219,7 @@ as_regression_frame.rq <- function(fit,
     p_value          = p_value,
     ci_lower         = ci_lower,
     ci_upper         = ci_upper,
-    test_type        = rep("t", length(nm)),
+    test_type        = rep(if (is_boot) "z" else "t", length(nm)),
     stringsAsFactors = FALSE
   )
 
@@ -153,8 +229,26 @@ as_regression_frame.rq <- function(fit,
 }
 
 
+# Footer label per estimator (bare noun phrase: the footer builder
+# prepends "Std. errors: " itself).
+.rq_vcov_footer_label <- function(se_method, boot_n, clustered) {
+  switch(se_method,
+         nid  = "Quantile sandwich (nid, Hall-Sheather)",
+         iid  = "Quantile (iid)",
+         ker  = "Quantile kernel (ker)",
+         rank = "Rank inversion (CIs only)",
+         boot = if (clustered) {
+           sprintf("Quantile wild gradient cluster bootstrap (R = %d)",
+                   boot_n)
+         } else {
+           sprintf("Quantile bootstrap (xy pairs, R = %d)", boot_n)
+         })
+}
+
+
 .rq_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                      model_id, se) {
+                      model_id, se_method, boot_n = 1000L,
+                      clustered = FALSE) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
@@ -180,23 +274,26 @@ as_regression_frame.rq <- function(fit,
     ame                 = TRUE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
-    nested_lrt          = TRUE,
+    # No wired pair path (R-squared / logLik change stats undefined);
+    # the nested validator refuses rq upfront. anova.rq = future lot.
+    nested_lrt          = FALSE,
     exponentiate        = FALSE,
     standardise_refit   = FALSE
   )
 
+  wk <- .weights_kind_from_fit(fit)
   extras <- list(
     cluster_name          = NULL,
     use_ame_satterthwaite = FALSE,
     has_singular          = FALSE,
     singular_terms        = character(0),
-    has_weights           = FALSE,
+    has_weights           = !identical(wk, "none"),
     weighted_n            = NA_real_,
     title_prefix          = sprintf("Quantile regression (\u03C4 = %.2f)", tau),
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     tau                   = tau,
-    se_method             = se
+    se_method             = se_method
   )
 
   list(
@@ -206,11 +303,12 @@ as_regression_frame.rq <- function(fit,
     dv_label       = dv_label,
     n_obs          = n_obs,
     n_groups       = NULL,
-    weights_kind   = "none",
+    weights_kind   = wk,
     random_effects = empty_random_effects(),
     fit_stats      = fit_stats,
     vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% paste0("Quantile (", se, ")"),
+    vcov_label     = vcov_label %||%
+      .rq_vcov_footer_label(se_method, boot_n, clustered),
     ci_level       = as.numeric(ci_level),
     ci_method      = ci_method,
     supports       = supports,

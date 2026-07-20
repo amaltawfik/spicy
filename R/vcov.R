@@ -17,6 +17,15 @@ compute_model_vcov <- function(
   weights = NULL,
   boot_n = 1000L
 ) {
+  # quantreg::rq routes to its own summary-based backends BEFORE the
+  # generic branches: "classical" must resolve to the nid sandwich (not
+  # stats::vcov(), which has no rq method), and "bootstrap" must reach
+  # quantreg's native boot.rq (the generic lm/glm-refit resampler guard
+  # below would refuse it).
+  if (inherits(fit, "rq")) {
+    return(.rq_vcov(fit, type = type, cluster = cluster,
+                    boot_n = boot_n)$cov)
+  }
   # D2(a) guard: the resamplers refit the model with stats::lm() / stats::glm(),
   # so for any other class they would silently fit a WRONG model on the
   # resamples (an lm on survival times, etc.). The orchestrator's per-class
@@ -791,12 +800,127 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # whole model. vcovHC's type= machinery fails (no hatvalues) -> no HC*.
     zeroinfl        = cr_only,
     hurdle          = cr_only,
+    # quantreg::rq: its own summary.rq() estimator family, not the
+    # sandwich vocabulary. "classical" resolves to the nid sandwich
+    # (Hendricks-Koenker; quantreg's own large-sample default and what
+    # Stata's vce(robust) / parameters / modelsummary report); "iid" is
+    # the Koenker-Bassett / Stata vce(iid) parity opt-in; "ker" the
+    # Powell kernel sandwich; "rank" the rank-score inversion (genuine
+    # CIs, no SE/t/p); "bootstrap" quantreg's native boot.rq (with
+    # cluster= -> Hagemann 2017 wild gradient). HC* refused (nid is not
+    # an HC label; rq has no estfun/hatvalues), CR* refused (no
+    # clubSandwich backend; the cluster route is bootstrap), jackknife
+    # refused (deterministic leave-one-out is inconsistent for
+    # non-smooth estimators; Efron 1982, Shao & Wu 1989).
+    rq = c("classical", "nid", "iid", "ker", "rank", "bootstrap"),
     # Univariable screen bundle: the request is forwarded to every
     # underlying fit, so the capability is theirs (homogeneous lm/glm).
     spicy_uv_screen = .robust_vcov_support(fit$fits[[1L]]),
     # --- classes whose robust path is wired in later C2 increments go here ---
     "classical"
   )
+}
+
+
+# ---- quantreg::rq vcov backends -------------------------------------------
+
+# Map spicy's vcov token onto summary.rq's se= method. "classical" (and
+# the frame-level "model" alias) resolve to nid -- the class-native
+# model-based default, per the svyglm survey-Taylor precedent: default
+# calls never error, the footer names the estimator.
+.rq_se_method <- function(type) {
+  switch(type,
+         "model"     = ,
+         "classical" = ,
+         "nid"       = "nid",
+         "iid"       = "iid",
+         "ker"       = "ker",
+         "rank"      = "rank",
+         "bootstrap" = "boot",
+         # The public validator gate already refuses these, but a
+         # direct compute_model_vcov() caller must NOT silently get
+         # the nid matrix under an HC* / CR* / jackknife label.
+         spicy_abort(
+           c(sprintf("`vcov = \"%s\"` is not available for `rq` models.",
+                     type),
+             "i" = paste0("Quantile regression supports: classical ",
+                          "(= nid), nid, iid, ker, rank, bootstrap.")),
+           class = "spicy_unsupported_vcov"
+         ))
+}
+
+
+# One summary.rq() computation serving both the coefficient rows and the
+# AME vcov: returns list(sm = the summary object, cov = named k x k
+# matrix, se_method). For "boot", sm$B carries the replicate draws (one
+# single draw feeds SE, percentile CI and the AME matrix alike --
+# summary.rq(se = "boot") is seed-for-seed identical to boot.rq()).
+# quantreg's sparsity warnings ("<k> non-positive fis") propagate.
+.rq_vcov <- function(fit, type, cluster = NULL, boot_n = 1000L) {
+  se_method <- .rq_se_method(type)
+  if (identical(se_method, "rank")) {
+    spicy_abort(
+      c(paste0("`vcov = \"rank\"` provides rank-inversion confidence ",
+               "intervals only; no variance-covariance matrix exists."),
+        "i" = paste0("Use `vcov = \"nid\"` (or \"bootstrap\") for ",
+                     "requests that need a vcov matrix (AME columns).")),
+      class = "spicy_unsupported_vcov"
+    )
+  }
+  .rq_summary(fit, se_method, cluster = cluster, boot_n = boot_n)
+}
+
+
+# Method-level worker (se_method is one of "nid" / "iid" / "ker" /
+# "boot"): the frame builder calls this directly with its resolved
+# method so coefficient rows and AME share one computation (and, for
+# boot, ONE replicate draw).
+.rq_summary <- function(fit, se_method, cluster = NULL, boot_n = 1000L) {
+  if (identical(se_method, "boot")) {
+    if (!is.null(fit$weights) && length(fit$weights) > 0L) {
+      spicy_abort(
+        c("`vcov = \"bootstrap\"` is not available for weighted rq fits.",
+          "i" = paste0("The xy-pair / wild gradient resamplers do not ",
+                       "propagate observation weights; use ",
+                       "`vcov = \"nid\"` (weighted sandwich) instead.")),
+        class = "spicy_unsupported_vcov"
+      )
+    }
+    # boot.rq directly, NOT summary.rq: the summary.rq boot-cluster
+    # branch subsets the incoming cluster vector by object$na.action
+    # itself (it expects ORIGINAL-data length), but spicy's resolution
+    # pipeline has already aligned the vector to the fitted rows like
+    # every other class -- a second subset would mis-align it and
+    # boot.rq stops with "cluster is wrong length". Building x / y
+    # ourselves keeps everything on the fitted rows, and the xy draw
+    # is seed-for-seed identical to summary.rq's own boot path.
+    mf <- stats::model.frame(fit)
+    x  <- stats::model.matrix(stats::terms(fit), mf)
+    y  <- stats::model.response(mf)
+    Bo <- if (is.null(cluster)) {
+      quantreg::boot.rq(x, y, tau = fit$tau, R = boot_n,
+                        bsmethod = "xy")
+    } else {
+      quantreg::boot.rq(x, y, tau = fit$tau, R = boot_n,
+                        cluster = cluster)
+    }
+    est <- stats::coef(fit)
+    V0  <- stats::cov(Bo$B)
+    sm <- list(
+      coefficients = matrix(
+        c(unname(est), sqrt(diag(V0))), ncol = 2L,
+        dimnames = list(names(est), c("Value", "Std. Error"))
+      ),
+      B   = Bo$B,
+      cov = V0
+    )
+  } else {
+    sm <- summary(fit, se = se_method, hs = TRUE, covariance = TRUE)
+  }
+  V <- as.matrix(sm$cov)
+  nm <- names(stats::coef(fit))
+  dimnames(V) <- list(nm, nm)
+  list(sm = sm, cov = V, se_method = se_method)
 }
 
 
@@ -913,6 +1037,12 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   # pscl two-part models: stats::nobs() has no method; fit$n is the count.
   if (inherits(fit, c("zeroinfl", "hurdle"))) {
     return(as.integer(fit$n %||% NA_integer_))
+  }
+  # quantreg::rq: stats::nobs() has no method (returns NA); the wild
+  # gradient cluster bootstrap wants one cluster value per observation.
+  if (inherits(fit, "rq")) {
+    n <- length(fit$residuals)
+    if (is.finite(n) && n > 0L) return(as.integer(n))
   }
   n <- suppressWarnings(tryCatch(stats::nobs(fit), error = function(e) NA_integer_))
   if (is.null(n) || !is.finite(n)) return(NA_integer_)
