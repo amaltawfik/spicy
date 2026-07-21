@@ -144,9 +144,10 @@ equal-tailed credible intervals.
 **Model comparison and multiplicity.** `nested = TRUE` compares nested
 fits by the family’s change-test convention: Delta R-squared with the
 partial F test for `lm`, the likelihood-ratio test for `glm`, mixed,
-`multinom` and Cox models. `p_adjust` applies a multiplicity correction
-across the displayed p-values – and is refused for Bayesian tables,
-which carry no p-values at all.
+`multinom` and Cox models, and `anova.rq`’s Wald-type F for quantile
+regressions (all fits at one tau). `p_adjust` applies a multiplicity
+correction across the displayed p-values – and is refused for Bayesian
+tables, which carry no p-values at all.
 
 ## The families in brief
 

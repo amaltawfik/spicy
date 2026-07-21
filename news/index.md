@@ -316,6 +316,9 @@ rendering an empty column.
   through the wild gradient cluster bootstrap (`vcov = "bootstrap"`);
   `HC*`, `CR*` and `"jackknife"` are refused with the reason. The footer
   names the estimator; AME columns share the coefficient rows’ matrix.
+  `nested = TRUE` compares nested `rq` fits through `anova.rq`’s
+  Wald-type F (all fits at one tau; mixing taus or model classes is
+  refused with the reason).
 - AME columns that silently rendered empty are now populated (`fixest`,
   `estimatr`, `quantreg`,
   [`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html), `rms`, `pscl`)

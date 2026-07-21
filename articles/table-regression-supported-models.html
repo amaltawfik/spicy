@@ -534,9 +534,11 @@ intervals.</p>
 <code>nested = TRUE</code> compares nested fits by the family’s
 change-test convention: Delta R-squared with the partial F test for
 <code>lm</code>, the likelihood-ratio test for <code>glm</code>, mixed,
-<code>multinom</code> and Cox models. <code>p_adjust</code> applies a
-multiplicity correction across the displayed p-values – and is refused
-for Bayesian tables, which carry no p-values at all.</p>
+<code>multinom</code> and Cox models, and <code>anova.rq</code>’s
+Wald-type F for quantile regressions (all fits at one tau).
+<code>p_adjust</code> applies a multiplicity correction across the
+displayed p-values – and is refused for Bayesian tables, which carry no
+p-values at all.</p>
 </div>
 <div class="section level2">
 <h2 id="the-families-in-brief">The families in brief<a class="anchor" aria-label="anchor" href="#the-families-in-brief"></a>
