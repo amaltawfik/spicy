@@ -168,3 +168,37 @@ renderable), `lr_chisq` (+ df / p).
 V = mu + mu^2/theta) and `alpha` (= 1/theta, Stata nbreg convention).
 Hard error for every other class. SHIPPED with the counts-vignette
 backlog clearance; values sourced from fit$theta (oracle-exact).
+
+## Addendum 2026-07-21: shipped since the last refresh (supersedes rows above)
+
+**Section 1b (vcov / ci_method / standardized) updates:**
+
+| Class | `vcov` backends | `standardized` |
+|---|---|---|
+| `rq` | ✅ own family: classical→**nid** (default), `iid`, `ker`, `rank` (CI-only), native `bootstrap` (cluster = Hagemann wild gradient ONLY route); HC*/CR*/jackknife refused | refused |
+| `multinom` | ✅ classical, CR* (sandwich >= 3.1-2); HC* refused | refused |
+| `polr`/`clm` | (as above) + thresholds reweighted from the clustered vcov; partial-PO/scale `clm` = classical only | refit only |
+| Bayesian | vcov refused (no sandwich analogue) | ✅ posthoc/basic/smart on fixed-effects stan_glm-style ONLY (draws-native affine rescale; multilevel / stan_polr / stan_betareg / brmsfit refused) |
+
+**Section 2 (defaults now decided/shipped):**
+
+| Class(es) | Default | Notes |
+|---|---|---|
+| `fixest` feols | `fixed_effects, nobs, r2, within_r2, aic` | ✅ FE block = Yes/No rows keyed on INTERCEPT absorption (fixef_terms, NOT fixef_sizes — slope-only trap); rich engines display Yes/No, as_structured keeps 1/0/NA |
+| `fixest` feglm/fepois | `fixed_effects, nobs, pseudo_r2_mcfadden, aic` | ✅ fixest's own `pr2` |
+| `multinom` | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic` | ✅ shipped 2026-07-10 |
+| `coxph` | `nobs, n_events, aic` | ✅ (concordance = footer note; r2/LR tokens still 🔶) |
+| Bayesian | `nobs, r2_bayes` | ✅ elpd_loo/looic/waic opt-in |
+| `betareg` | (universal fallback) + opt-in `phi` | ✅ phi back-transformed from link.phi (y ~ x \| 1 trap); refused with precision covariates |
+
+**Section 4 (token vocabulary shipped):** `phi`, `fixed_effects`,
+`within_r2`, `theta`/`alpha`, `n_events`, `r2_bayes`, `elpd_loo`,
+`looic`, `waic`, `mcse`/`pd`/`rhat`/`ess_*` (Bayesian columns, not
+fit-stats). `n_groups` now renders ONE `N (<factor>)` row per grouping
+factor in BOTH renderers (crammed cell retired; legacy compaction
+column = NA placeholder).
+
+**Section 1 capability updates:** coxph AME→`rmst`/`risk_diff`
+estimands SHIPPED (coxph + survreg only; cph/flexsurvreg get neither);
+Bayesian AME draws-native SHIPPED; ordinal Thresholds block SHIPPED
+(+ clm Non-proportional effects); polr/clm profile CIs shipped.

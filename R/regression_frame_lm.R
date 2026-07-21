@@ -359,19 +359,13 @@ as_regression_frame.glm <- function(fit, ...) {
     r2_marginal          = .scalar_or_na(fs$r2_marginal),
     r2_conditional       = .scalar_or_na(fs$r2_conditional),
     # Mixed-effects group structure. icc is a numeric scalar rendered
-    # as a fit-stat row. n_groups keeps the descriptive
-    # "30 (cask:batch), 10 (batch)" string for MACHINE consumers of
-    # the legacy fit_stats shape only -- the renderers no longer read
-    # it (both build one "N (<factor>)" row per grouping factor from
-    # the raw per-model counts in aligned$n_groups_by_model).
+    # as a fit-stat row. n_groups stays in the legacy schema as a
+    # placeholder column only: both fit-stat builders render one
+    # "N (<factor>)" row per grouping factor from the RAW per-model
+    # counts in aligned$n_groups_by_model (frame field
+    # info$n_groups), never from this compacted shape.
     icc                  = .scalar_or_na(icc),
-    n_groups             = if (!is.null(n_groups) && length(n_groups) > 0L) {
-      paste(vapply(seq_along(n_groups), function(k) {
-        sprintf("%d (%s)", as.integer(n_groups[[k]]), names(n_groups)[k])
-      }, character(1)), collapse = ", ")
-    } else {
-      NA_character_
-    },
+    n_groups             = NA_character_,
     sigma                = .scalar_or_na(fs$sigma),
     rmse                 = .scalar_or_na(fs$rmse),
     f2                   = .scalar_or_na(fs$f2),

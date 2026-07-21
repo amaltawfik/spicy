@@ -105,7 +105,8 @@ air format .
 * Cover optional dependency paths with either guarded tests or explicit expectations for the error message when the dependency is unavailable.
 * When fixing a bug, add a regression test that would have failed before the fix.
 * The rstanarm tests DO run on CI (precompiled models, no toolchain needed); only the brms fixtures (`.fit_brms_*` in `test-regression_frame_stan.R`, `skip_on_ci`) are local-only. Any change to the Bayesian coefs schema or the stan frame internals still requires running both Stan test files locally before pushing — the brms half of the schema is otherwise untested until a local run. Watch transitive test dependencies too: marginaleffects' stanreg path needs `collapse` (Suggests), which a bare CI library lacked (2026-07-18 incident).
-* The full local suite's warning baseline is ~70: the deliberately short Bayesian fixtures trip the convergence guard by design. Treat a JUMP in the WARN count as a signal to investigate; do not blanket-suppress warnings in test files — that would hide real regressions exactly where the guard machinery lives.
+* Any `pkg::fun()` reference in tests or vignettes needs `pkg` in DESCRIPTION Suggests: `skip_if_not_installed()` guards runtime only, NOT R CMD check's static dependency scan (`'::' import not declared` is a WARNING and the as-cran workflow errors on warnings). Caught twice: collapse (2026-07-18), modelsummary (2026-07-21).
+* The full local suite's warning baseline is ~73: the deliberately short Bayesian fixtures trip the convergence guard by design (~70), plus quantreg's sparsity warnings (`<k> non-positive fis`) propagated on purpose by the rq vcov tests (never swallowed). Treat a JUMP in the WARN count as a signal to investigate; do not blanket-suppress warnings in test files — that would hide real regressions exactly where the guard machinery lives.
 
 ## Documentation
 

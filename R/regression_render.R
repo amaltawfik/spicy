@@ -1237,7 +1237,9 @@ fit_stat_label <- function(token) {
     r2_marginal           = "R\u00B2 (marginal)",
     r2_conditional        = "R\u00B2 (conditional)",
     icc                   = "ICC",
-    n_groups              = "N (groups)",
+    # (no n_groups entry: the token expands to per-factor
+    # "N (<factor>)" rows inside both fit-stat builders and never
+    # reaches this label map)
     sigma                 = "\u03C3\u0302",
     rmse                  = "RMSE",
     f2                    = "f\u00B2",
@@ -1281,8 +1283,6 @@ format_fit_stat_value <- function(token, val,
   if (is.null(val) || is.na(val)) {
     return(if (is_change) "\u2013" else "")
   }
-  # n_groups is a pre-formatted character cell ("18 Subjects"): pass through.
-  if (identical(token, "n_groups")) return(as.character(val))
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {
     return(format_p_value(val, decimal_mark = decimal_mark,
