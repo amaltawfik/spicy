@@ -273,7 +273,7 @@ test_that("n_groups: dynamic label + numeric cell when one shared factor", {
   expect_equal(as.numeric(b[[2]][b$Variable == "N (Subject)"]), 18)
 })
 
-test_that("n_groups: crossed factors fall back to the generic label + strings", {
+test_that("n_groups: crossed factors render one N (<factor>) row each", {
   skip_if_not_installed("lme4")
   set.seed(1)
   d <- data.frame(y = stats::rnorm(300), x = stats::rnorm(300),
@@ -283,24 +283,23 @@ test_that("n_groups: crossed factors fall back to the generic label + strings", 
     lme4::lmer(y ~ x + (1 | g1) + (1 | g2), data = d)))
   df <- table_regression(m, output = "data.frame")
   v <- trimws(df$Variable)
-  expect_true(any(v == "N (groups)"))
-  cell <- trimws(df[[2]][v == "N (groups)"])
-  expect_match(cell, "g1", fixed = TRUE)
-  expect_match(cell, "g2", fixed = TRUE)
+  # One row per grouping factor (was one crammed "N (groups)" cell).
+  expect_false(any(v == "N (groups)"))
+  expect_identical(trimws(df[[2]][v == "N (g1)"]), "10")
+  expect_identical(trimws(df[[2]][v == "N (g2)"]), "15")
 })
 
-test_that("n_groups: multi-factor counts never pluralize variable names", {
+test_that("n_groups: nested factor names pass verbatim, one row each", {
   skip_if_not_installed("lme4")
   fit <- suppressMessages(
     lme4::lmer(strength ~ 1 + (1 | batch/cask), data = lme4::Pastes))
   df <- table_regression(fit, output = "data.frame")
   v <- trimws(df$Variable)
-  cell <- trimws(df[[2]][v == "N (groups)"])
-  # "30 (cask:batch), 10 (batch)" -- naive "+s" used to mangle the names
-  # into "cask:batchs" / "batchs".
-  expect_match(cell, "30 (cask:batch)", fixed = TRUE)
-  expect_match(cell, "10 (batch)", fixed = TRUE)
-  expect_false(grepl("batchs", cell, fixed = TRUE))
+  # Verbatim names in the per-factor labels (a naive "+s" used to
+  # mangle batch -> "batchs" in the old crammed cell).
+  expect_identical(trimws(df[[2]][v == "N (cask:batch)"]), "30")
+  expect_identical(trimws(df[[2]][v == "N (batch)"]), "10")
+  expect_false(any(grepl("batchs", v, fixed = TRUE)))
 })
 
 ## ---- 11. Variance-component SE size cap (spicy.re_se_max_n) ---------------

@@ -319,7 +319,8 @@ build_structured_body <- function(aligned,
       empty_row = empty_row,
       digits = digits, fit_digits = fit_digits,
       ic_digits = ic_digits, p_digits = p_digits,
-      n_groups_by_model = aligned$n_groups_by_model
+      n_groups_by_model = aligned$n_groups_by_model,
+      fixef_by_model = aligned$fixef_by_model
     )
     for (fr in fit_rows) {
       rows[[length(rows) + 1L]] <- fr$row
@@ -559,17 +560,8 @@ build_structured_body <- function(aligned,
                                               empty_row,
                                               digits, fit_digits,
                                               ic_digits, p_digits,
-                                              n_groups_by_model = NULL) {
-  # Shared-single-grouping-factor detection: mirrors build_fit_stats_rows().
-  ngl <- Filter(function(x) !is.null(x) && length(x) > 0L,
-                n_groups_by_model %||% list())
-  ng_shared_factor <- if (length(ngl) > 0L &&
-                          all(vapply(ngl, length, integer(1)) == 1L) &&
-                          length(unique(unlist(lapply(ngl, names)))) == 1L) {
-    names(ngl[[1L]])[1L]
-  } else {
-    NA_character_
-  }
+                                              n_groups_by_model = NULL,
+                                              fixef_by_model = NULL) {
   # Each fit-stat row puts the value in the FIRST structured sub-column
   # of each model (i.e., the col_name of the first col_spec entry per
   # model, which in the structured expansion is the FIRST expanded
@@ -592,16 +584,74 @@ build_structured_body <- function(aligned,
 
   rows <- list()
   for (tk in show_fit_stats) {
-    if (!tk %in% names(fit_stats)) next
-    # icc / n_groups: drop the row when no model carries a value (mirrors
-    # build_fit_stats_rows).
-    if (tk %in% c("icc", "n_groups") && all(is.na(fit_stats[[tk]]))) next
-    row <- empty_row
-    row$Variable <- if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
-      sprintf("N (%s)", ng_shared_factor)
-    } else {
-      fit_stat_label(tk)
+    # Fixed-effects disclosure block, numeric-typed for the structured
+    # body: one row per absorbed factor labelled "FE: <factor>"
+    # (modelsummary's get_gof convention), cells 1 (absorbed) / 0
+    # (fixest model without this factor) / NA (non-fixest model). The
+    # char console body carries the grouped Yes/No block instead.
+    if (identical(tk, "fixed_effects")) {
+      fe <- .fixed_effects_cells(fixef_by_model, model_ids)
+      if (is.null(fe)) next
+      for (fct in fe$factors) {
+        row <- empty_row
+        row$Variable <- sprintf("FE: %s", fct)
+        col_overrides <- list()
+        for (m_id in model_ids) {
+          target_col <- first_struct_col_per_model[[m_id]]
+          if (is.na(target_col)) next
+          cell <- fe$cells[fct, m_id]
+          row[[target_col]] <- switch(cell, Yes = 1, No = 0, NA_real_)
+          col_overrides[[target_col]] <- list(
+            fit_stat = tk, precision = 0L,
+            p_style = NULL, threshold = NULL
+          )
+        }
+        rows[[length(rows) + 1L]] <- list(row = row,
+                                          col_overrides = col_overrides)
+      }
+      next
     }
+    # n_groups: one numeric "N (<factor>)" row per grouping factor
+    # (union across models), mirroring the console renderer.
+    if (identical(tk, "n_groups")) {
+      ngl_all <- n_groups_by_model %||% list()
+      fct_union <- character(0)
+      for (m_id in model_ids) {
+        ng <- ngl_all[[m_id]]
+        if (!is.null(ng) && length(ng) > 0L) {
+          fct_union <- union(fct_union, names(ng))
+        }
+      }
+      if (length(fct_union) == 0L) next
+      for (fct in fct_union) {
+        row <- empty_row
+        row$Variable <- sprintf("N (%s)", fct)
+        col_overrides <- list()
+        for (m_id in model_ids) {
+          target_col <- first_struct_col_per_model[[m_id]]
+          if (is.na(target_col)) next
+          ng <- ngl_all[[m_id]]
+          row[[target_col]] <- if (!is.null(ng) && fct %in% names(ng)) {
+            as.numeric(ng[[fct]])
+          } else {
+            NA_real_
+          }
+          col_overrides[[target_col]] <- list(
+            fit_stat = tk, precision = 0L,
+            p_style = NULL, threshold = NULL
+          )
+        }
+        rows[[length(rows) + 1L]] <- list(row = row,
+                                          col_overrides = col_overrides)
+      }
+      next
+    }
+    if (!tk %in% names(fit_stats)) next
+    # icc: drop the row when no model carries a value (mirrors
+    # build_fit_stats_rows).
+    if (identical(tk, "icc") && all(is.na(fit_stats[[tk]]))) next
+    row <- empty_row
+    row$Variable <- fit_stat_label(tk)
     col_overrides <- list()
 
     # Per-token precision: same logic as format_fit_stat_value()
@@ -621,21 +671,7 @@ build_structured_body <- function(aligned,
       # sub[[tk]][1L] is always a scalar (NA at worst), never NULL.
       if (is.null(val)) val <- NA_real_
       # nocov end
-      # n_groups: the structured body is numeric-typed. Carry the group COUNT
-      # from the raw per-model data when the model has a single grouping
-      # factor; crossed factors have no single count and fall to NA (blank)
-      # in the structured/rich engines -- the char body keeps the full
-      # descriptive string.
-      row[[target_col]] <- if (identical(tk, "n_groups")) {
-        ng <- (n_groups_by_model %||% list())[[m_id]]
-        if (!is.null(ng) && length(ng) == 1L) {
-          as.numeric(ng[[1L]])
-        } else {
-          NA_real_
-        }
-      } else {
-        as.numeric(val)
-      }
+      row[[target_col]] <- as.numeric(val)
 
       col_overrides[[target_col]] <- list(
         fit_stat = tk,
@@ -658,7 +694,7 @@ build_structured_body <- function(aligned,
   is_fit <- token %in% c("r2", "adj_r2", "omega2", "f2", "sigma", "rmse",
                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
                           "pseudo_r2_tjur", "theta", "alpha", "phi",
-                          "r2_bayes",
+                          "within_r2", "r2_bayes",
                           "r2_marginal", "r2_conditional", "icc",
                           "r2_change", "adj_r2_change", "f2_change",
                           "f_change")
@@ -789,6 +825,14 @@ build_structured_body <- function(aligned,
   }
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
   if (is.na(val)) return("")
+  # Fixed-effects disclosure cells are numeric-encoded in the
+  # structured body (1 = absorbed, 0 = not, NA = non-fixest model) but
+  # every string-driven engine (tinytable, flextable / Word, Excel,
+  # console-from-structured) must DISPLAY the etable / esttab text
+  # standard -- a raw "1" would read like a coefficient.
+  if (identical(cfmt$fit_stat, "fixed_effects")) {
+    return(if (val >= 0.5) "Yes" else "No")
+  }
   if (!is.null(cfmt$threshold) && is.finite(val) &&
         val < cfmt$threshold) {
     return(.below_threshold_text(cfmt$threshold, decimal_mark))
@@ -939,17 +983,20 @@ build_structured_body <- function(aligned,
   prec <- col_meta_entry$precision
   p_style <- col_meta_entry$p_style
   threshold <- col_meta_entry$threshold
+  fit_stat <- NULL
   if (!is.null(col_meta_entry$fit_stat_overrides)) {
     for (ov in col_meta_entry$fit_stat_overrides) {
       if (identical(ov$row, row_idx)) {
         prec <- ov$precision %||% prec
         p_style <- ov$p_style %||% p_style
         threshold <- ov$threshold %||% threshold
+        fit_stat <- ov$fit_stat %||% NULL
         break
       }
     }
   }
-  list(precision = prec, p_style = p_style, threshold = threshold)
+  list(precision = prec, p_style = p_style, threshold = threshold,
+       fit_stat = fit_stat)
 }
 
 .build_structured_spanners <- function(struct_col_names, expanded, label_map) {

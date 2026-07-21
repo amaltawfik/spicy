@@ -851,6 +851,17 @@ back-transformed from its link, so \code{y ~ x | 1} reports the
 same \eqn{\phi}{phi} as \code{y ~ x}. Refused for other families
 and when the precision has covariates (\code{y ~ x | z}), so it is
 not a single number.
+\item fixest absorbed fixed effects (\code{fixest} only, both on by
+default for fixest tables): \code{"fixed_effects"} renders a
+\verb{Fixed effects:} block at the top of the fit statistics --
+one Yes / No row per absorbed factor (the \code{etable} / \code{esttab}
+convention), blank cells for non-fixest models in mixed
+tables. Varying-slope-only factors (\code{Origin[[x]]}) absorb no
+intercept: they read No when another model absorbs that
+factor, and contribute no row otherwise. \code{"within_r2"} is the
+FE-partialled within R-squared (\code{feols}; GLM-family fixest
+fits report fixest's McFadden \code{pr2} instead). Both tokens are
+refused when no model in the table is a fixest fit.
 \item Effect size: \code{"f2"}.
 \item Information criteria: \code{"aic"}, \code{"aicc"}, \code{"bic"},
 \code{"deviance"} (lowercase like every other token; the rendered

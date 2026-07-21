@@ -261,6 +261,15 @@ align_frames <- function(
     lapply(frames, function(f) f$info$n_groups), model_ids
   )
 
+  # Per-model absorbed-intercept factors (character vectors; NULL for
+  # non-fixest models). Drives the "Fixed effects" Yes/No block. The
+  # DISTINCTION matters: n_groups counts every grouping factor (a
+  # sample statistic, slope-only included), fixef_by_model lists only
+  # genuinely absorbed intercepts (a design disclosure).
+  fixef_by_model <- stats::setNames(
+    lapply(frames, function(f) f$info$extras$fixef_intercept), model_ids
+  )
+
   # Survival estimand horizons (resolved values, e.g. a numeric tau
   # even when the user passed "minmax") for the column headers.
   estimand_horizons <- NULL
@@ -283,6 +292,7 @@ align_frames <- function(
     model_ids = model_ids,
     n_models = length(frames),
     n_groups_by_model = n_groups_by_model,
+    fixef_by_model = fixef_by_model,
     estimand_horizons = estimand_horizons
   )
 }

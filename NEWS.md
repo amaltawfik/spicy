@@ -149,6 +149,16 @@ rendering an empty column.
   `survreg`, `fixest`, `estimatr`, `quantreg::rq`, `AER::ivreg`, and
   `rms` fits, and per outcome category for `polr` / `clm` / `multinom`.
   AME SEs, CIs, and p-values honour a robust `vcov`.
+* `fixest` tables disclose their absorbed fixed effects by default: a
+  `Fixed effects:` block at the top of the fit statistics with one
+  Yes / No row per factor (blank for non-fixest models in mixed
+  tables; varying-slope-only factors absorb no intercept and read
+  No where another model absorbs that factor), plus the within
+  R-squared (`"within_r2"`) for `feols` and McFadden's pseudo-R² for
+  `feglm` / `fepois` in the default statistics. The `"n_groups"`
+  token now renders one `N (<factor>)` row per grouping factor --
+  for absorbed fixed effects and crossed or nested random effects
+  alike -- instead of cramming every factor into one cell.
 * Two-part models show their full model: the zero component of
   `pscl::zeroinfl` / `hurdle` and the `ziformula` / `dispformula`
   components of `glmmTMB` render as labelled row blocks with full

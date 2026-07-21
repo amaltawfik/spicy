@@ -352,15 +352,18 @@ as_regression_frame.glm <- function(fit, ...) {
     waic                 = .scalar_or_na(fs$waic),
     pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
     pseudo_r2_tjur       = .scalar_or_na(fs$pseudo_r2_tjur),
+    # fixest within (FE-partialled) R-squared, stashed in the
+    # pseudo_r2 nested list by .fixest_fit_stats().
+    within_r2            = .scalar_or_na(fs$within_r2 %||%
+                                           fs$pseudo_r2$within_r2),
     r2_marginal          = .scalar_or_na(fs$r2_marginal),
     r2_conditional       = .scalar_or_na(fs$r2_conditional),
-    # Mixed-effects group structure (fit-stat rows). n_groups is a
-    # pre-formatted character cell, NA_character_ for non-mixed fits;
-    # icc a numeric scalar. Grouping-factor NAMES are never pluralized
-    # (a naive "+s" mangles names like batch -> "batchs", class ->
-    # "classs"), so multi-factor cells read "30 (cask:batch), 10 (batch)".
-    # The dominant single-factor case renders "N (Subject) | 18" via the
-    # dynamic label in build_fit_stats_rows() and never shows this string.
+    # Mixed-effects group structure. icc is a numeric scalar rendered
+    # as a fit-stat row. n_groups keeps the descriptive
+    # "30 (cask:batch), 10 (batch)" string for MACHINE consumers of
+    # the legacy fit_stats shape only -- the renderers no longer read
+    # it (both build one "N (<factor>)" row per grouping factor from
+    # the raw per-model counts in aligned$n_groups_by_model).
     icc                  = .scalar_or_na(icc),
     n_groups             = if (!is.null(n_groups) && length(n_groups) > 0L) {
       paste(vapply(seq_along(n_groups), function(k) {

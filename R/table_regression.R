@@ -120,6 +120,17 @@
 #'     same \eqn{\phi}{phi} as `y ~ x`. Refused for other families
 #'     and when the precision has covariates (`y ~ x | z`), so it is
 #'     not a single number.
+#'   \item fixest absorbed fixed effects (`fixest` only, both on by
+#'     default for fixest tables): `"fixed_effects"` renders a
+#'     `Fixed effects:` block at the top of the fit statistics --
+#'     one Yes / No row per absorbed factor (the `etable` / `esttab`
+#'     convention), blank cells for non-fixest models in mixed
+#'     tables. Varying-slope-only factors (`Origin[[x]]`) absorb no
+#'     intercept: they read No when another model absorbs that
+#'     factor, and contribute no row otherwise. `"within_r2"` is the
+#'     FE-partialled within R-squared (`feols`; GLM-family fixest
+#'     fits report fixest's McFadden `pr2` instead). Both tokens are
+#'     refused when no model in the table is a fixest fit.
 #'   \item Effect size: `"f2"`.
 #'   \item Information criteria: `"aic"`, `"aicc"`, `"bic"`,
 #'     `"deviance"` (lowercase like every other token; the rendered
@@ -1607,8 +1618,25 @@ table_regression <- function(
                                   !any_ordinal) "nobs",
                             "n_events", "aic")
     }
+    # fixest: the field convention leads with the absorbed-FE
+    # disclosure (etable, modelsummary and esttab all default it on),
+    # then n, R2 and the FE-partialled within R2 (feols; both rows
+    # auto-drop as all-NA for feglm / fepois, which carry fixest's
+    # McFadden "pr2" instead) and AIC.
+    any_fixest <- any(vapply(models, inherits, logical(1), "fixest"))
+    any_fixest_glm <- any(vapply(models, function(m) {
+      inherits(m, "fixest") && !is.null(m$family)
+    }, logical(1)))
+    if (any_fixest) {
+      show_fit_stats <- c(show_fit_stats,
+                            if (!any_lm_only && !any_glm && !any_mixed &&
+                                  !any_ordinal) "nobs",
+                            "r2", "within_r2",
+                            if (any_fixest_glm) "pseudo_r2_mcfadden",
+                            "aic")
+    }
     # Universal safety net: a class matched by none of the branches above
-    # (betareg, survreg, coxph, multinom, mlogit, fixest, rms, stan, ...) still
+    # (betareg, survreg, coxph, multinom, mlogit, rms, stan, ...) still
     # gets N + AIC, so no fit ever renders a blank model-fit block. The
     # per-class passes refine this to each family's field-standard set (e.g.
     # concordance for coxph, deviance-explained for gam). nobs / AIC are defined
@@ -1617,6 +1645,12 @@ table_regression <- function(
       show_fit_stats <- c("nobs", "aic")
     }
     show_fit_stats <- unique(show_fit_stats)
+    # The Fixed effects block renders at the TOP of the fit block
+    # (etable / journal placement), so the token must lead the vector
+    # even when an lm arm contributed first in a mixed table.
+    if (any_fixest) {
+      show_fit_stats <- unique(c("fixed_effects", show_fit_stats))
+    }
     if (isTRUE(nested) && length(models) >= 2L) {
       show_fit_stats <- c(show_fit_stats, default_nested_tokens(models))
     }

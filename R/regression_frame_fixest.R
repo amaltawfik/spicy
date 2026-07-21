@@ -210,6 +210,22 @@ as_regression_frame.fixest <- function(fit,
 }
 
 
+# Grouping factors whose INTERCEPT is genuinely absorbed. fixef_sizes /
+# fixef_vars include slope-only factors too (probed fixest 0.14.2:
+# y ~ x | Origin[[Year]] + Product lists Origin although no Origin
+# intercept is absorbed), so a Yes/No disclosure keyed on them would
+# lie. fixef_terms disambiguates: NULL means no varying slopes (every
+# fixef_vars entry is an intercept); otherwise its BARE entries are the
+# absorbed intercepts and the `var[[slope]]` entries are slopes.
+.fixest_intercept_fixefs <- function(fit) {
+  fv <- fit$fixef_vars
+  if (is.null(fv) || length(fv) == 0L) return(character(0))
+  ft <- fit$fixef_terms
+  if (is.null(ft)) return(fv)
+  intersect(fv, ft[!grepl("[[", ft, fixed = TRUE)])
+}
+
+
 # Build the info list for a fixest fit.
 .fixest_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
                           model_id, is_glm) {
@@ -256,6 +272,9 @@ as_regression_frame.fixest <- function(fit,
     exp_applied           = FALSE,
     exp_header            = NA_character_,
     fixef_sizes           = fixef_sizes,
+    # Factors with a genuinely absorbed intercept (slope-only factors
+    # excluded) -- drives the "Fixed effects" Yes/No disclosure block.
+    fixef_intercept       = .fixest_intercept_fixefs(fit),
     vcov_type             = vt,
     # fenegbin dispersion: theta is stored as a length-1 (named ".theta")
     # numeric on the fit; NA for non-negbin families. Mirrors the
@@ -288,9 +307,9 @@ as_regression_frame.fixest <- function(fit,
 
 
 # Fit-stats for fixest. OLS gets classical R^2 + within R^2 (the FE-
-# partialled variant) via fitstat(); GLM-like gets pseudo R^2 = NULL
-# (fixest's pseudo-R^2 is family-dependent and we defer to performance::r2
-# for cross-engine consistency).
+# partialled variant) via fitstat(); GLM-like gets the McFadden
+# pseudo-R^2 (fixest's own "pr2": 1 - ll/ll0), matching the glm /
+# ordinal / multinom default family.
 .fixest_fit_stats <- function(fit, is_glm) {
   r2 <- if (!is_glm) {
     tryCatch(fixest::fitstat(fit, type = c("r2", "ar2", "wr2"),
@@ -299,12 +318,21 @@ as_regression_frame.fixest <- function(fit,
   } else {
     NULL
   }
+  pr2 <- if (is_glm) {
+    tryCatch(as.numeric(fixest::fitstat(fit, "pr2", simplify = TRUE)),
+             error = function(e) NA_real_)
+  } else {
+    NA_real_
+  }
   sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
   list(
     r_squared      = as.numeric(r2$r2 %||% NA_real_),
     adj_r_squared  = as.numeric(r2$ar2 %||% NA_real_),
+    pseudo_r2_mcfadden = pr2,
     pseudo_r2      = if (!is_glm && !is.null(r2$wr2)) {
       list(within_r2 = as.numeric(r2$wr2))
+    } else if (is_glm && is.finite(pr2)) {
+      list(mcfadden = pr2)
     } else NULL,
     aic            = tryCatch(stats::AIC(fit),     error = function(e) NA_real_),
     bic            = tryCatch(stats::BIC(fit),     error = function(e) NA_real_),

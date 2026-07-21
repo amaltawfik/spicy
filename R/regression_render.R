@@ -339,7 +339,8 @@ render_regression_table <- function(
       digits = digits, fit_digits = fit_digits,
       ic_digits = ic_digits, p_digits = p_digits,
       decimal_mark = decimal_mark,
-      n_groups_by_model = aligned$n_groups_by_model
+      n_groups_by_model = aligned$n_groups_by_model,
+      fixef_by_model = aligned$fixef_by_model
     )
     if (length(fit_rows) > 0L) {
       group_sep <- nrow(body) + 1L
@@ -1077,24 +1078,10 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
                                   label_map, col_spec,
                                   digits, fit_digits, ic_digits,
                                   decimal_mark, p_digits = 3L,
-                                  n_groups_by_model = NULL) {
+                                  n_groups_by_model = NULL,
+                                  fixef_by_model = NULL) {
   if (length(show_fit_stats) == 0L || length(col_spec) == 0L) {
     return(list())
-  }
-
-  # `n_groups` gets a DYNAMIC label + numeric cells when every mixed model
-  # shares the same single grouping factor (the dominant case): the row reads
-  # "N (Subject) | 18" (sjPlot / HLM style) instead of
-  # "N (groups) | 18 Subjects". Heterogeneous or crossed structures keep the
-  # generic label with the per-model descriptive strings.
-  ngl <- Filter(function(x) !is.null(x) && length(x) > 0L,
-                n_groups_by_model %||% list())
-  ng_shared_factor <- if (length(ngl) > 0L &&
-                          all(vapply(ngl, length, integer(1)) == 1L) &&
-                          length(unique(unlist(lapply(ngl, names)))) == 1L) {
-    names(ngl[[1L]])[1L]
-  } else {
-    NA_character_
   }
 
   # First sub-column per model (where the fit-stat value will land)
@@ -1107,8 +1094,70 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
   names(first_col_per_model) <- model_ids
   all_data_cols <- vapply(col_spec, `[[`, character(1), "col_name")
 
+  blank_cells <- function(lab) {
+    cells <- list(Variable = lab)
+    for (col in all_data_cols) cells[[col]] <- ""
+    cells
+  }
+  push_row <- function(rows, cells) {
+    rows[[length(rows) + 1L]] <- as.data.frame(
+      cells, stringsAsFactors = FALSE, check.names = FALSE
+    )
+    rows
+  }
+
   rows <- list()
   for (tk in show_fit_stats) {
+    # "fixed_effects" is a one-token-to-many-rows disclosure BLOCK,
+    # not a fit_stats column: grouped header + one Yes/No row per
+    # absorbed factor (etable / esttab text standard; blank cell =
+    # non-fixest model, where the concept is undefined). Handled
+    # BEFORE the schema guard below. Dropped entirely when no model
+    # absorbs anything (etable prints no section either).
+    if (identical(tk, "fixed_effects")) {
+      fe <- .fixed_effects_cells(fixef_by_model, model_ids)
+      if (is.null(fe)) next
+      rows <- push_row(rows, blank_cells("Fixed effects:"))
+      for (fct in fe$factors) {
+        cells <- blank_cells(paste0("  ", fct))
+        for (m_id in model_ids) {
+          target_col <- first_col_per_model[[m_id]]
+          if (is.na(target_col)) next
+          cells[[target_col]] <- fe$cells[fct, m_id]
+        }
+        rows <- push_row(rows, cells)
+      }
+      next
+    }
+    # `n_groups` renders one "N (<factor>)" row PER grouping factor
+    # (union across models, first-appearance order) -- fixest absorbed
+    # factors and crossed / nested random effects alike. The single
+    # shared-factor table keeps its historical "N (Subject) | 18"
+    # look as the union-of-one special case.
+    if (identical(tk, "n_groups")) {
+      ngl_all <- n_groups_by_model %||% list()
+      fct_union <- character(0)
+      for (m_id in model_ids) {
+        ng <- ngl_all[[m_id]]
+        if (!is.null(ng) && length(ng) > 0L) {
+          fct_union <- union(fct_union, names(ng))
+        }
+      }
+      if (length(fct_union) == 0L) next
+      for (fct in fct_union) {
+        cells <- blank_cells(sprintf("N (%s)", fct))
+        for (m_id in model_ids) {
+          target_col <- first_col_per_model[[m_id]]
+          if (is.na(target_col)) next
+          ng <- ngl_all[[m_id]]
+          if (!is.null(ng) && fct %in% names(ng)) {
+            cells[[target_col]] <- sprintf("%d", as.integer(ng[[fct]]))
+          }
+        }
+        rows <- push_row(rows, cells)
+      }
+      next
+    }
     if (!tk %in% names(fit_stats)) next   # token absent from fit_stats schema
     # A fit-stat row where NO model has a value informs nobody: drop
     # it instead of rendering an empty row. Historically this skip was
@@ -1118,29 +1167,13 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
     # any class-appropriate token still shows because at least one
     # model carries a value.
     if (all(is.na(fit_stats[[tk]]))) next
-    lab <- if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
-      sprintf("N (%s)", ng_shared_factor)
-    } else {
-      fit_stat_label(tk)
-    }
-    cells <- list(Variable = lab)
-    for (col in all_data_cols) cells[[col]] <- ""
+    cells <- blank_cells(fit_stat_label(tk))
     for (m_id in model_ids) {
       target_col <- first_col_per_model[[m_id]]
       if (is.na(target_col)) next
       sub <- fit_stats[fit_stats$model_id == m_id, , drop = FALSE]
       if (nrow(sub) == 0L) next
       val <- sub[[tk]][1]
-      # Dynamic n_groups: numeric count from the per-model raw data.
-      if (identical(tk, "n_groups") && !is.na(ng_shared_factor)) {
-        ng <- (n_groups_by_model %||% list())[[m_id]]
-        cells[[target_col]] <- if (is.null(ng) || length(ng) == 0L) {
-          ""
-        } else {
-          sprintf("%d", as.integer(ng[[1L]]))
-        }
-        next
-      }
       cells[[target_col]] <- format_fit_stat_value(
         tk, val,
         digits = digits, fit_digits = fit_digits,
@@ -1148,11 +1181,36 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
         decimal_mark = decimal_mark
       )
     }
-    rows[[length(rows) + 1L]] <- as.data.frame(
-      cells, stringsAsFactors = FALSE, check.names = FALSE
-    )
+    rows <- push_row(rows, cells)
   }
   rows
+}
+
+
+# Union of absorbed-intercept factors across models (first-appearance
+# order over the model order) and the per-model presence cells:
+# "Yes" (absorbed), "No" (fixest model without this factor -- incl. a
+# no-FE feols in a mixed-FE table), "" (non-fixest model: concept
+# undefined, like a blank R-squared cell for a glm column). NULL when
+# the union is empty. fixef_by_model carries character(0) for a no-FE
+# fixest fit and NULL for non-fixest models -- that distinction drives
+# No vs blank.
+.fixed_effects_cells <- function(fixef_by_model, model_ids) {
+  fl <- fixef_by_model %||% list()
+  fe_union <- character(0)
+  for (m_id in model_ids) {
+    fv <- fl[[m_id]]
+    if (!is.null(fv) && length(fv) > 0L) fe_union <- union(fe_union, fv)
+  }
+  if (length(fe_union) == 0L) return(NULL)
+  cells <- matrix("", nrow = length(fe_union), ncol = length(model_ids),
+                  dimnames = list(fe_union, model_ids))
+  for (m_id in model_ids) {
+    fv <- fl[[m_id]]
+    if (is.null(fv)) next
+    cells[, m_id] <- ifelse(fe_union %in% fv, "Yes", "No")
+  }
+  list(factors = fe_union, cells = cells)
 }
 
 # Display label for each show_fit_stats token. Greek symbols and
@@ -1170,6 +1228,7 @@ fit_stat_label <- function(token) {
     pseudo_r2_tjur        = "R\u00B2 (Tjur)",
     theta                 = "\u03B8 (dispersion)",
     alpha                 = "\u03B1 (= 1/\u03B8)",
+    within_r2             = "R\u00B2 (within)",
     phi                   = "\u03C6 (precision)",
     r2_bayes              = "R\u00B2 (Bayes)",
     elpd_loo              = "ELPD (LOO)",
@@ -1239,6 +1298,7 @@ format_fit_stat_value <- function(token, val,
     pseudo_r2_mcfadden    = fit_digits,
     theta                 = fit_digits,
     alpha                 = fit_digits,
+    within_r2             = fit_digits,
     phi                   = fit_digits,
     r2_bayes              = fit_digits,
     elpd_loo              = ic_digits,

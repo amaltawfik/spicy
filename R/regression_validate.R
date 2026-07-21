@@ -76,6 +76,9 @@
     # Beta-regression precision (betareg only): phi (Ferrari &
     # Cribari-Neto 2004; Var(y) = mu(1-mu)/(1+phi)).
     "phi",
+    # fixest only: the absorbed-fixed-effects Yes/No disclosure block
+    # (one row per factor) and the within (FE-partialled) R-squared.
+    "fixed_effects", "within_r2",
     # Bayesian fits only: posterior-median Bayesian R^2 (Gelman et
     # al. 2019), and PSIS-LOO elpd / LOOIC (Vehtari et al. 2017).
     "r2_bayes", "elpd_loo", "looic", "waic",
@@ -714,12 +717,19 @@ validate_show_columns <- function(show_columns, standardized) {
 validate_class_appropriate_tokens <- function(models,
                                                 show_columns,
                                                 show_fit_stats) {
-  any_glm <- any(vapply(models, inherits, logical(1), "glm"))
-  any_lm_only <- any(vapply(models, function(f) {
+  # TRUE "all" over the model set, not the historical any/any proxy:
+  # the proxy classified a {glm, fixest} set as "all glm" (fixest
+  # inherits neither lm nor glm) and rejected the package's OWN
+  # class-aware default vector ("r2" from the fixest arm) -- the
+  # 2026-07 FE-lot review caught the default glm + fixest table
+  # hard-erroring. Mixed sets render class-inappropriate cells blank,
+  # which is the intended behaviour; only homogeneous sets refuse.
+  glm_flags <- vapply(models, inherits, logical(1), "glm")
+  lm_only_flags <- vapply(models, function(f) {
     inherits(f, "lm") && !inherits(f, "glm")
-  }, logical(1)))
-  all_glm <- any_glm && !any_lm_only
-  all_lm  <- any_lm_only && !any_glm
+  }, logical(1))
+  all_glm <- length(models) > 0L && all(glm_flags)
+  all_lm  <- length(models) > 0L && all(lm_only_flags)
 
   # Variance-explained partial tokens. Reject only when ALL models
   # are glm \u2013 in mixed sets, the renderer em-dashes glm rows and
@@ -991,6 +1001,34 @@ validate_class_appropriate_tokens <- function(models,
             "With precision covariates, phi is not a single number; ",
             "inspect the precision coefficients with ",
             "`summary(fit)` instead."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # fixest disclosure tokens. Deliberately an ANY-gate (a third
+  # variant next to the theta / phi ALL-gate and the ungated
+  # n_groups): the Fixed effects block is a cross-model design
+  # disclosure, so a mixed lm + fixest table is exactly where it is
+  # most useful -- non-fixest columns simply render blank cells.
+  fixest_tokens <- intersect(show_fit_stats,
+                             c("fixed_effects", "within_r2"))
+  if (length(fixest_tokens) > 0L) {
+    any_fixest <- length(models) > 0L &&
+      any(vapply(models, inherits, logical(1), "fixest"))
+    if (!any_fixest) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are defined only for fixest fits.",
+            paste(shQuote(fixest_tokens), collapse = ", ")
+          ),
+          "i" = paste0(
+            "'fixed_effects' discloses the absorbed fixed effects ",
+            "(one Yes/No row per factor) and 'within_r2' is the ",
+            "FE-partialled R-squared; other classes have neither."
           )
         ),
         class = "spicy_invalid_input"
