@@ -160,14 +160,43 @@ test_that("rq cluster formula survives NA-dropped rows; nested refused", {
                                           cluster = ~cl, boot_n = 50))
   out <- paste(capture.output(print(tb)), collapse = "\n")
   expect_match(out, "wild gradient cluster bootstrap", fixed = TRUE)
-  # nested = TRUE: no wired pair path -- classed refusal, not a raw
-  # NA-in-if crash.
+})
+
+
+test_that("nested rq pairs ride anova.rq's Wald-type F", {
+  skip_if_not_installed("quantreg")
+  data("engel", package = "quantreg")
+  f0 <- quantreg::rq(foodexp ~ 1, data = engel, tau = 0.5)
+  f1 <- .rq_engel()
+  o <- suppressWarnings(stats::anova(f0, f1))$table
+  tb <- suppressWarnings(table_regression(list(M1 = f0, M2 = f1),
+                                          nested = TRUE))
+  out <- paste(capture.output(print(tb)), collapse = "\n")
+  # The comparison rows carry the exact anova.rq statistic and p.
+  expect_match(out, sprintf("%.2f", o$Tn[1L]), fixed = TRUE)
+  cmp <- attr(tb, "nested_comparisons") %||%
+    spicy:::compute_nested_comparisons(list(f0, f1))
+  expect_equal(cmp$f_change[1L], as.numeric(o$Tn[1L]), tolerance = 1e-12)
+  expect_equal(cmp$p_change[1L], as.numeric(o$pvalue[1L]),
+               tolerance = 1e-12)
+  # R-squared / likelihood families stay NA (undefined for check loss).
+  expect_true(is.na(cmp$r2_change[1L]) && is.na(cmp$lrt_change[1L]))
+  # AIC delta from quantreg's own pseudo-likelihood methods.
+  expect_equal(cmp$aic_change[1L],
+               as.numeric(stats::AIC(f1)) - as.numeric(stats::AIC(f0)),
+               tolerance = 1e-12)
+  # Guards: mixed classes and mixed taus are refused with the reason.
   expect_error(
-    table_regression(list(M1 = quantreg::rq(foodexp ~ 1, data = engel),
-                          M2 = .rq_engel()),
-                     nested = TRUE),
-    "anova",
-    class = "spicy_unsupported"
+    table_regression(list(L = stats::lm(foodexp ~ income, data = engel),
+                          Q = f1), nested = TRUE),
+    "mix quantile regression",
+    class = "spicy_invalid_input"
+  )
+  f75 <- quantreg::rq(foodexp ~ income, data = engel, tau = 0.75)
+  expect_error(
+    table_regression(list(M1 = f0, M2 = f75), nested = TRUE),
+    "SAME tau",
+    class = "spicy_invalid_input"
   )
 })
 

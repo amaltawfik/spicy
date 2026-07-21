@@ -274,9 +274,9 @@ as_regression_frame.rq <- function(fit,
     ame                 = TRUE,
     partial_effect_size = FALSE,
     classical_r2        = FALSE,
-    # No wired pair path (R-squared / logLik change stats undefined);
-    # the nested validator refuses rq upfront. anova.rq = future lot.
-    nested_lrt          = FALSE,
+    # Pairwise comparison exists (anova.rq Wald-type F, one tau) --
+    # the flag names the pair capability, not literally an LRT.
+    nested_lrt          = TRUE,
     exponentiate        = FALSE,
     standardise_refit   = FALSE
   )

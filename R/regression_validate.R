@@ -324,18 +324,36 @@ validate_nested_alignment <- function(models, nested) {
     return(invisible(NULL))
   }
 
-  # Quantile regression has no wired pair-comparison path (the lm / glm
-  # change statistics read R-squared / logLik, both undefined or
-  # unwired for rq); anova.rq's rank-based tests are a future lot.
-  # Refuse upfront -- without this gate the pair computation crashes
-  # with a raw NA-in-if error (2026-07 review).
-  if (any(vapply(models, inherits, logical(1), "rq"))) {
-    spicy_abort(
-      c("`nested = TRUE` is not available for quantile regression fits.",
-        "i" = paste0("Compare nested rq fits with `anova()` ",
-                     "(rank-based tests) outside the table.")),
-      class = "spicy_unsupported"
-    )
+  # Quantile regression pairs compare through anova.rq()'s Wald-type F
+  # (compute_one_pair_rq). Two guards keep the comparison meaningful:
+  # rq cannot mix with other classes (different loss functions -- the
+  # lm / glm pair paths would read R-squared / logLik that rq does not
+  # define), and all fits must share ONE tau (anova.rq across taus is
+  # a joint equality-of-slopes analysis, not a nested comparison).
+  is_rq <- vapply(models, inherits, logical(1), "rq")
+  if (any(is_rq)) {
+    if (!all(is_rq)) {
+      spicy_abort(
+        c(paste0("`nested = TRUE` cannot mix quantile regression with ",
+                 "other model classes."),
+          "i" = paste0("The check-loss objective has no R-squared or ",
+                       "likelihood shared with the other fits; compare ",
+                       "rq models with rq models.")),
+        class = "spicy_invalid_input"
+      )
+    }
+    taus <- vapply(models, function(m) as.numeric(m$tau %||% 0.5),
+                   numeric(1))
+    if (length(unique(taus)) > 1L) {
+      spicy_abort(
+        c("`nested = TRUE` needs all rq fits at the SAME tau.",
+          "i" = paste0("Comparing quantiles is a different analysis ",
+                       "(joint equality of slopes across taus); see ",
+                       "`quantreg::anova.rq()` on an rq fit with ",
+                       "multiple taus.")),
+        class = "spicy_invalid_input"
+      )
+    }
   }
 
   # Step 4: nobs identical. numeric(1), not integer(1): nobs() returns a

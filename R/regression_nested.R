@@ -56,8 +56,11 @@ compute_nested_comparisons <- function(fits) {
     # reads summary()$r.squared and crashes on those fits).
     pair_lrt   <- (inherits(fit_prev, "coxph") && inherits(fit_curr, "coxph")) ||
       (inherits(fit_prev, "multinom") && inherits(fit_curr, "multinom"))
+    pair_rq    <- inherits(fit_prev, "rq") && inherits(fit_curr, "rq")
     stats <- if (pair_mixed) {
       compute_one_pair_mixed(fit_prev, fit_curr)
+    } else if (pair_rq) {
+      compute_one_pair_rq(fit_prev, fit_curr)
     } else if (pair_glm || pair_lrt) {
       compute_one_pair_glm(fit_prev, fit_curr)
     } else {
@@ -354,6 +357,45 @@ attach_nested_stats_to_frames <- function(frames, fits) {
 }
 
 
+# ---- Per-pair rq computation ---------------------------------------------
+
+# Nested quantile regressions compare through anova.rq()'s Wald-type
+# test (Koenker's default): Tn is a genuine F statistic on
+# (ndf, ddf) -- quantreg's own print labels it "F value" -- so it
+# rides the f_change / p_change tokens. The rank-score variant stays
+# available via anova(..., test = "rank") outside the table. The
+# likelihood family (lrt / deviance) and the R-squared family are
+# undefined for the check-loss objective and stay NA; AIC / BIC come
+# from quantreg's own logLik.rq pseudo-likelihood methods.
+compute_one_pair_rq <- function(fit_prev, fit_curr) {
+  na <- list(
+    r2_change = NA_real_, adj_r2_change = NA_real_,
+    f_change = NA_real_, f2_change = NA_real_,
+    lrt_change = NA_real_,
+    aic_change = NA_real_, aicc_change = NA_real_, bic_change = NA_real_,
+    deviance_change = NA_real_, p_change = NA_real_
+  )
+  av <- tryCatch(
+    suppressWarnings(stats::anova(fit_prev, fit_curr)),
+    error = function(e) NULL
+  )
+  tb <- av$table
+  if (is.null(tb) || !all(c("Tn", "pvalue") %in% names(tb))) {
+    return(na)                                                        # nocov
+  }
+  aic_p <- tryCatch(stats::AIC(fit_prev), error = function(e) NA_real_)
+  aic_c <- tryCatch(stats::AIC(fit_curr), error = function(e) NA_real_)
+  bic_p <- tryCatch(stats::BIC(fit_prev), error = function(e) NA_real_)
+  bic_c <- tryCatch(stats::BIC(fit_curr), error = function(e) NA_real_)
+  utils::modifyList(na, list(
+    f_change   = as.numeric(tb$Tn[1L]),
+    p_change   = as.numeric(tb$pvalue[1L]),
+    aic_change = aic_c - aic_p,
+    bic_change = bic_c - bic_p
+  ))
+}
+
+
 # ---- Default tokens injected when nested = TRUE -------------------------
 
 # Class-aware default change-token vector. Plugged into `show_fit_stats`
@@ -377,6 +419,10 @@ default_nested_tokens <- function(models) {
     # tokens (r2_change / f_change) have no definition here and
     # previously rendered as all-dash rows in a Cox comparison table.
     c("lrt_change", "p_change")
+  } else if (all(vapply(models, inherits, logical(1), "rq"))) {
+    # Quantile regression: anova.rq's Wald-type F + p. No R-squared
+    # or likelihood family for the check-loss objective.
+    c("f_change", "p_change")
   } else {
     c("r2_change", "f_change", "p_change")
   }
