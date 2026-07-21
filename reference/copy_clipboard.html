@@ -80,7 +80,7 @@ platform."><meta property="og:image" content="https://amaltawfik.github.io/spicy
     <p>Copies a <code>data.frame</code>, matrix, 2D or higher array, table, or
 atomic vector to the system clipboard, ready to paste into a
 text editor, spreadsheet, or word processor. Wraps
-<code><a href="https://rdrr.io/pkg/clipr/man/write_clip.html" class="external-link">clipr::write_clip()</a></code> (a Suggests dependency); requires <code>clipr</code>
+<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code> (a Suggests dependency); requires <code>clipr</code>
 to be installed and a clipboard backend to be available on the
 platform.</p>
     </div>
@@ -138,7 +138,7 @@ success message, coercion notices, and warnings.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to <code><a href="https://rdrr.io/pkg/clipr/man/write_clip.html" class="external-link">clipr::write_clip()</a></code>.</p></dd>
+<dd><p>Additional arguments passed to <code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -151,7 +151,7 @@ clipboard side effect.</p>
     <p>Objects that are not <code>data.frame</code>s or 2D matrices (atomic
 vectors, arrays, tables) are automatically coerced to character
 on the way to the clipboard, as required by
-<code><a href="https://rdrr.io/pkg/clipr/man/write_clip.html" class="external-link">clipr::write_clip()</a></code>. The R-side object passed to <code>x</code> is never
+<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>. The R-side object passed to <code>x</code> is never
 mutated.</p>
 <p>Multidimensional arrays (3D and higher) are flattened to a 1D
 character vector with one element per line. To preserve a
@@ -162,7 +162,7 @@ tabular layout, extract a 2D slice first, e.g.
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu">clipr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/clipr/man/clipr_available.html" class="external-link">clipr_available</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu">clipr</span><span class="fu">::</span><span class="fu"><a href="http://matthewlincoln.net/clipr/reference/clipr_available.html" class="external-link">clipr_available</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="co"># Data frame</span></span></span>
 <span class="r-in"><span>  <span class="fu">copy_clipboard</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

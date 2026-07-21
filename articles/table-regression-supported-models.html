@@ -555,9 +555,10 @@ for Bayesian tables, which carry no p-values at all.</p>
 <code>nid</code> sandwich – quantreg’s own large-sample default – with
 <code>iid</code>, <code>ker</code>, <code>rank</code> CIs and a native
 clustered bootstrap as <code>vcov</code> options), and the
-<code>fixest</code> estimators, whose absorbed fixed effects are flagged
-in the table title and available as the opt-in <code>n_groups</code> fit
-statistic.</p>
+<code>fixest</code> estimators, whose absorbed fixed effects render as a
+default-on <code>Fixed effects:</code> block – one Yes / No row per
+factor, blank for non-fixest models in a mixed table – with the within
+R-squared among the default fit statistics.</p>
 <p><strong>Mixed effects.</strong> <code>lmer</code> (Satterthwaite t
 via <code>lmerTest</code>), <code>glmer</code>, <code>glmmTMB</code>
 (with zero-inflation and dispersion blocks), <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> and

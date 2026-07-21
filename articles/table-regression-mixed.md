@@ -523,21 +523,22 @@ p3 <- lmer(strength ~ 1 + (1 | batch/cask), data = Pastes)
 table_regression(p3, show_columns = c("b", "se"))
 #> Linear mixed-effects regression: strength
 #> 
-#>  Variable                   │                     B                       SE  
-#> ────────────────────────────┼─────────────────────────────────────────────────
-#>  (Intercept)                │                                     60.05  0.68 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:            │                                                 
-#>    σ cask:batch (Intercept) │                                      2.90  0.48 
-#>    σ batch (Intercept)      │                                      1.29  0.91 
-#>    σ (Residual)             │                                      0.82  0.11 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                          │                                     60          
-#>  N (groups)                 │               30 (cask:batch), 10 (batch)       
-#>  R² (marginal)              │                                      0.00       
-#>  R² (conditional)           │                                      0.94       
-#>  AIC                        │                                    255.0        
-#>  BIC                        │                                    263.4        
+#>  Variable                   │   B      SE  
+#> ────────────────────────────┼──────────────
+#>  (Intercept)                │  60.05  0.68 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:            │              
+#>    σ cask:batch (Intercept) │   2.90  0.48 
+#>    σ batch (Intercept)      │   1.29  0.91 
+#>    σ (Residual)             │   0.82  0.11 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                          │  60          
+#>  N (cask:batch)             │  30          
+#>  N (batch)                  │  10          
+#>  R² (marginal)              │   0.00       
+#>  R² (conditional)           │   0.94       
+#>  AIC                        │ 255.0        
+#>  BIC                        │ 263.4        
 #> 
 #> Note. Linear mixed-effects regression.
 #> Std. errors: Wald (model-based).

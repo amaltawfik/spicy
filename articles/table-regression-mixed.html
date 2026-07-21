@@ -621,21 +621,22 @@ per level:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">p3</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: strength</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                   <span style="color: #9E9E9E;">│</span>                     B                       SE  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────┼─────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                <span style="color: #9E9E9E;">│</span>                                     60.05  0.68 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:            <span style="color: #9E9E9E;">│</span>                                                 </span></span>
-<span><span class="co">#&gt;    σ cask:batch (Intercept) <span style="color: #9E9E9E;">│</span>                                      2.90  0.48 </span></span>
-<span><span class="co">#&gt;    σ batch (Intercept)      <span style="color: #9E9E9E;">│</span>                                      1.29  0.91 </span></span>
-<span><span class="co">#&gt;    σ (Residual)             <span style="color: #9E9E9E;">│</span>                                      0.82  0.11 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                          <span style="color: #9E9E9E;">│</span>                                     60          </span></span>
-<span><span class="co">#&gt;  N (groups)                 <span style="color: #9E9E9E;">│</span>               30 (cask:batch), 10 (batch)       </span></span>
-<span><span class="co">#&gt;  R² (marginal)              <span style="color: #9E9E9E;">│</span>                                      0.00       </span></span>
-<span><span class="co">#&gt;  R² (conditional)           <span style="color: #9E9E9E;">│</span>                                      0.94       </span></span>
-<span><span class="co">#&gt;  AIC                        <span style="color: #9E9E9E;">│</span>                                    255.0        </span></span>
-<span><span class="co">#&gt;  BIC                        <span style="color: #9E9E9E;">│</span>                                    263.4        </span></span>
+<span><span class="co">#&gt;  Variable                   <span style="color: #9E9E9E;">│</span>   B      SE  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────┼──────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)                <span style="color: #9E9E9E;">│</span>  60.05  0.68 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:            <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    σ cask:batch (Intercept) <span style="color: #9E9E9E;">│</span>   2.90  0.48 </span></span>
+<span><span class="co">#&gt;    σ batch (Intercept)      <span style="color: #9E9E9E;">│</span>   1.29  0.91 </span></span>
+<span><span class="co">#&gt;    σ (Residual)             <span style="color: #9E9E9E;">│</span>   0.82  0.11 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                          <span style="color: #9E9E9E;">│</span>  60          </span></span>
+<span><span class="co">#&gt;  N (cask:batch)             <span style="color: #9E9E9E;">│</span>  30          </span></span>
+<span><span class="co">#&gt;  N (batch)                  <span style="color: #9E9E9E;">│</span>  10          </span></span>
+<span><span class="co">#&gt;  R² (marginal)              <span style="color: #9E9E9E;">│</span>   0.00       </span></span>
+<span><span class="co">#&gt;  R² (conditional)           <span style="color: #9E9E9E;">│</span>   0.94       </span></span>
+<span><span class="co">#&gt;  AIC                        <span style="color: #9E9E9E;">│</span> 255.0        </span></span>
+<span><span class="co">#&gt;  BIC                        <span style="color: #9E9E9E;">│</span> 263.4        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>

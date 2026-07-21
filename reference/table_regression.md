@@ -930,6 +930,17 @@ restore it explicitly when needed).
   the same \\\phi\\ as `y ~ x`. Refused for other families and when the
   precision has covariates (`y ~ x | z`), so it is not a single number.
 
+- fixest absorbed fixed effects (`fixest` only, both on by default for
+  fixest tables): `"fixed_effects"` renders a `Fixed effects:` block at
+  the top of the fit statistics – one Yes / No row per absorbed factor
+  (the `etable` / `esttab` convention), blank cells for non-fixest
+  models in mixed tables. Varying-slope-only factors (`Origin[[x]]`)
+  absorb no intercept: they read No when another model absorbs that
+  factor, and contribute no row otherwise. `"within_r2"` is the
+  FE-partialled within R-squared (`feols`; GLM-family fixest fits report
+  fixest's McFadden `pr2` instead). Both tokens are refused when no
+  model in the table is a fixest fit.
+
 - Effect size: `"f2"`.
 
 - Information criteria: `"aic"`, `"aicc"`, `"bic"`, `"deviance"`
@@ -1290,7 +1301,7 @@ must not change the inferential family.
   [`flextable::save_as_docx()`](https://davidgohel.github.io/flextable/reference/save_as_docx.html).
 
 - `"clipboard"` – copies to the system clipboard via
-  [`clipr::write_clip()`](https://rdrr.io/pkg/clipr/man/write_clip.html).
+  [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).
 
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
 returns a long tibble with one row per `(model_id, term, estimate_type)`

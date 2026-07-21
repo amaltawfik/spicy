@@ -989,6 +989,17 @@ back-transformed from its link, so <code>y ~ x | 1</code> reports the
 same \(\phi\) as <code>y ~ x</code>. Refused for other families
 and when the precision has covariates (<code>y ~ x | z</code>), so it is
 not a single number.</p></li>
+<li><p>fixest absorbed fixed effects (<code>fixest</code> only, both on by
+default for fixest tables): <code>"fixed_effects"</code> renders a
+<code>Fixed effects:</code> block at the top of the fit statistics –
+one Yes / No row per absorbed factor (the <code>etable</code> / <code>esttab</code>
+convention), blank cells for non-fixest models in mixed
+tables. Varying-slope-only factors (<code>Origin[[x]]</code>) absorb no
+intercept: they read No when another model absorbs that
+factor, and contribute no row otherwise. <code>"within_r2"</code> is the
+FE-partialled within R-squared (<code>feols</code>; GLM-family fixest
+fits report fixest's McFadden <code>pr2</code> instead). Both tokens are
+refused when no model in the table is a fixest fit.</p></li>
 <li><p>Effect size: <code>"f2"</code>.</p></li>
 <li><p>Information criteria: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code>,
 <code>"deviance"</code> (lowercase like every other token; the rendered
@@ -1322,7 +1333,7 @@ Suggests package).</p></li>
 <li><p><code>"word"</code> – writes to <code>word_path</code> via
 <code><a href="https://davidgohel.github.io/flextable/reference/save_as_docx.html" class="external-link">flextable::save_as_docx()</a></code>.</p></li>
 <li><p><code>"clipboard"</code> – copies to the system clipboard via
-<code><a href="https://rdrr.io/pkg/clipr/man/write_clip.html" class="external-link">clipr::write_clip()</a></code>.</p></li>
+<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>.</p></li>
 </ul><p><code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns a long tibble with one row per
 <code>(model_id, term, estimate_type)</code> and broom-canonical column
 names (<code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>,

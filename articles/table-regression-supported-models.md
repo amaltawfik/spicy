@@ -169,8 +169,10 @@ and
 to the heteroskedasticity-robust `nid` sandwich – quantreg’s own
 large-sample default – with `iid`, `ker`, `rank` CIs and a native
 clustered bootstrap as `vcov` options), and the `fixest` estimators,
-whose absorbed fixed effects are flagged in the table title and
-available as the opt-in `n_groups` fit statistic.
+whose absorbed fixed effects render as a default-on `Fixed effects:`
+block – one Yes / No row per factor, blank for non-fixest models in a
+mixed table – with the within R-squared among the default fit
+statistics.
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
 `glmmTMB` (with zero-inflation and dispersion blocks),
