@@ -373,7 +373,8 @@ p3 <- lmer(strength ~ 1 + (1 | batch/cask), data = Pastes)
 table_regression(p3, show_columns = c("b", "se"))
 ```
 
-Both levels of nesting get their σ row, `N (groups)` counts each
+Both levels of nesting get their σ row, one `N (cask:batch)` /
+`N (batch)` row counts each
 level, and the footer's chi-bar-squared test covers the random part
 jointly (2 df here); at n = 60, far below the size cap, the Wald SE of
 the variance components is back — and the CI with it, trimmed from this
@@ -455,7 +456,7 @@ rows display (the SE and CI on a variance component come from
 `merDeriv` and are themselves boundary-fragile — dropping them is a
 defensible editorial choice); `show_re = FALSE` removes the block and
 all random-effects footer lines, leaving a fixed-effects-only table
-(the `N (groups)` and R² fit-stat rows remain):
+(the per-factor `N (<factor>)` and R² fit-stat rows remain):
 
 ```{r re-scale}
 table_regression(fit, re_scale = "variance", re_columns = "est")
