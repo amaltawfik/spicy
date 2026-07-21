@@ -642,15 +642,16 @@ per level:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p &lt; .001.</span></span></span></code></pre></div>
-<p>Both levels of nesting get their σ row, <code>N (groups)</code>
-counts each level, and the footer’s chi-bar-squared test covers the
-random part jointly (2 df here); at n = 60, far below the size cap, the
-Wald SE of the variance components is back — and the CI with it, trimmed
-from this display by <code>show_columns</code>. Random slopes can sit at
-any level — <code>(x | school) + (1 | class)</code> renders each block
-under its grouping factor — and <strong>crossed</strong> (non-nested)
-structures such as <code>(1 | plate) + (1 | sample)</code> flow through
-the same machinery: one block per factor, no extra syntax.</p>
+<p>Both levels of nesting get their σ row, one
+<code>N (cask:batch)</code> / <code>N (batch)</code> row counts each
+level, and the footer’s chi-bar-squared test covers the random part
+jointly (2 df here); at n = 60, far below the size cap, the Wald SE of
+the variance components is back — and the CI with it, trimmed from this
+display by <code>show_columns</code>. Random slopes can sit at any level
+— <code>(x | school) + (1 | class)</code> renders each block under its
+grouping factor — and <strong>crossed</strong> (non-nested) structures
+such as <code>(1 | plate) + (1 | sample)</code> flow through the same
+machinery: one block per factor, no extra syntax.</p>
 </div>
 <div class="section level2">
 <h2 id="when-the-fit-is-singular">When the fit is singular<a class="anchor" aria-label="anchor" href="#when-the-fit-is-singular"></a>
@@ -793,7 +794,8 @@ and CI on a variance component come from <code>merDeriv</code> and are
 themselves boundary-fragile — dropping them is a defensible editorial
 choice); <code>show_re = FALSE</code> removes the block and all
 random-effects footer lines, leaving a fixed-effects-only table (the
-<code>N (groups)</code> and R² fit-stat rows remain):</p>
+per-factor <code>N (&lt;factor&gt;)</code> and R² fit-stat rows
+remain):</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, re_scale <span class="op">=</span> <span class="st">"variance"</span>, re_columns <span class="op">=</span> <span class="st">"est"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>

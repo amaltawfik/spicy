@@ -546,13 +546,13 @@ table_regression(p3, show_columns = c("b", "se"))
 #> Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p < .001.
 ```
 
-Both levels of nesting get their σ row, `N (groups)` counts each level,
-and the footer’s chi-bar-squared test covers the random part jointly (2
-df here); at n = 60, far below the size cap, the Wald SE of the variance
-components is back — and the CI with it, trimmed from this display by
-`show_columns`. Random slopes can sit at any level —
-`(x | school) + (1 | class)` renders each block under its grouping
-factor — and **crossed** (non-nested) structures such as
+Both levels of nesting get their σ row, one `N (cask:batch)` /
+`N (batch)` row counts each level, and the footer’s chi-bar-squared test
+covers the random part jointly (2 df here); at n = 60, far below the
+size cap, the Wald SE of the variance components is back — and the CI
+with it, trimmed from this display by `show_columns`. Random slopes can
+sit at any level — `(x | school) + (1 | class)` renders each block under
+its grouping factor — and **crossed** (non-nested) structures such as
 `(1 | plate) + (1 | sample)` flow through the same machinery: one block
 per factor, no extra syntax.
 
@@ -709,7 +709,7 @@ rows display (the SE and CI on a variance component come from `merDeriv`
 and are themselves boundary-fragile — dropping them is a defensible
 editorial choice); `show_re = FALSE` removes the block and all
 random-effects footer lines, leaving a fixed-effects-only table (the
-`N (groups)` and R² fit-stat rows remain):
+per-factor `N (<factor>)` and R² fit-stat rows remain):
 
 ``` r
 
