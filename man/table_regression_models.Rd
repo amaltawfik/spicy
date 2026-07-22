@@ -202,10 +202,12 @@ divergences, E-BFMI) and per-coefficient \code{"rhat"} / \code{"ess_bulk"} /
 draws-native (posterior median, MAD SD and credible interval of
 the per-draw \code{avg_slopes()}; no \code{"ame_p"}), and so are the
 standardized betas (\code{"posthoc"} / \code{"basic"} / \code{"smart"}, exact
-affine rescales of the draws; fixed-effects \code{stan_glm}-style fits
-only -- multilevel and \code{stan_polr} / \code{stan_betareg} fits are
-refused, \code{brmsfit} carries no recoverable design matrix;
-\code{"refit"} / \code{"pseudo"} refused).
+affine rescales of the draws) on fixed-effects fits:
+\code{stan_glm}-style models and standard-formula \code{brm()} models,
+whose design matrix is recovered through \pkg{insight}.
+Multilevel fits, \code{stan_polr} / \code{stan_betareg}, brms formulas with
+distributional or special terms, and \code{"refit"} / \code{"pseudo"} are
+refused with a pre-standardization hint.
 Multilevel fits
 (\code{stan_glmer}, \code{brm} with grouping terms) report their random
 effects as a block -- posterior median SD and credible interval per

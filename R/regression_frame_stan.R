@@ -122,24 +122,13 @@ as_regression_frame.brmsfit <- function(fit,
   .check_posterior_available()
   .check_brms_available()
   .check_stan_sampling_algorithm(fit, "brmsfit")
-  # brms exposes neither a model.matrix() method nor $xlevels, so the
-  # design-column SDs and factor metadata behind the algebraic rescale
-  # cannot be recovered. Refuse upfront with the actionable hint --
-  # and BEFORE the shared refit / pseudo gate, whose hint recommends
-  # the algebraic flavors this class then refuses (a two-step dead
-  # end for brms users).
+  # Scope refusal BEFORE the shared refit / pseudo gate, whose hint
+  # recommends the algebraic flavors an out-of-scope fit then refuses
+  # (a two-step dead end). In-scope brmsfit fits (fixed-effects,
+  # standard formula) get the same draws-native affine rescale as
+  # stanreg, with the design matrix recovered through insight.
   if (!identical(standardized, "none")) {
-    spicy_abort(
-      c("`standardized` is not available for `brmsfit` fits.",
-        "i" = paste0("brms exposes neither `model.matrix()` nor the ",
-                     "factor metadata (`xlevels`) the algebraic ",
-                     "rescale needs."),
-        "i" = paste0("Standardize predictors before fitting (Gelman, ",
-                     "Hill & Vehtari 2020, ch. 12), or fit with ",
-                     "rstanarm (`stanreg` fits support \"posthoc\" / ",
-                     "\"basic\" / \"smart\").")),
-      class = "spicy_unsupported_standardized"
-    )
+    .brms_refuse_out_of_scope_beta(fit)
   }
   .stan_check_standardized(standardized)
 
@@ -318,6 +307,84 @@ as_regression_frame.brmsfit <- function(fit,
 }
 
 
+# Scope of the brmsfit algebraic-beta surface: fixed-effects fits with
+# a standard single formula, whose design matrix insight can rebuild.
+# Everything is tryCatch / NULL-safe: the CI tests probe the refusal
+# path with a bare class-only mock, which must reach "unrecoverable",
+# never an internal error. Returns "ok" or a reason string.
+.brms_beta_scope <- function(fit) {
+  f <- tryCatch(stats::formula(fit), error = function(e) NULL)
+  if (is.null(f)) return("unrecoverable")
+  if (inherits(f, "mvbrmsformula")) return("multivariate")
+  # Distributional parameters beyond the default mean part.
+  if (length(f$pforms %||% list()) > 0L ||
+        length(f$pfix %||% list()) > 0L) {
+    return("distributional")
+  }
+  ff <- f$formula
+  if (!inherits(ff, "formula")) return("unrecoverable")             # nocov
+  # Group-level terms (bars). reformulas is the lme4-family parser
+  # spicy already Suggests.
+  bars <- tryCatch(reformulas::findbars(ff), error = function(e) NULL)
+  if (length(bars) > 0L) return("multilevel")
+  # Special terms whose design columns are not fixed-effect columns.
+  rhs <- paste(deparse(ff[[3L]]), collapse = " ")
+  if (grepl("\\b(mo|me|mi|s|t2|gp)\\(", rhs)) return("special")
+  if (is.null(fit$data)) return("unrecoverable")
+  "ok"
+}
+
+
+.brms_refuse_out_of_scope_beta <- function(fit) {
+  scope <- .brms_beta_scope(fit)
+  if (identical(scope, "ok")) return(invisible(NULL))
+  why <- switch(scope,
+    multilevel    = paste0("a multilevel fit needs an explicit sd(Y) ",
+                           "decomposition (within / between / ",
+                           "marginal) that no field convention ",
+                           "settles"),
+    distributional = paste0("distributional parameter formulas have ",
+                            "no single design matrix to rescale ",
+                            "against"),
+    multivariate  = "multivariate formulas have one design per response",
+    special       = paste0("special terms (mo() / me() / mi() / s() / ",
+                           "t2() / gp()) do not reduce to rescalable ",
+                           "fixed-effect columns"),
+    paste0("the fixed-effect design matrix could not be recovered ",
+           "from this fit")
+  )
+  spicy_abort(
+    c(sprintf("`standardized` is not available for `brmsfit` fits like this one (%s).",
+              scope),
+      "i" = paste0("Reason: ", why, "."),
+      "i" = paste0("Standardize predictors before fitting (Gelman, ",
+                   "Hill & Vehtari 2020, ch. 12) to report betas.")),
+    class = "spicy_unsupported_standardized"
+  )
+}
+
+
+# Factor-derived design columns for a brmsfit: the
+# detect_factor_design_cols() rule (pure factor main effects), sourced
+# from the brms formula / data pair -- model.frame(tt, data) also
+# materialises inline factor() columns, so those are caught too.
+.brms_factor_design_cols <- function(fit, mm) {
+  tt <- stats::delete.response(stats::terms(stats::formula(fit)$formula))
+  mf <- stats::model.frame(tt, data = fit$data)
+  xlev <- stats::.getXlevels(tt, mf)
+  if (length(xlev) == 0L) return(integer(0))
+  assign_vec <- attr(mm, "assign")
+  term_labels <- attr(tt, "term.labels")
+  out <- integer(0)
+  for (i in seq_along(assign_vec)) {
+    ti <- assign_vec[i]
+    if (ti == 0L) next
+    if (term_labels[ti] %in% names(xlev)) out <- c(out, i)
+  }
+  out
+}
+
+
 # Per-coefficient algebraic scale factors for the Bayesian beta rows,
 # via the same single-source helper as the lm / glm engines
 # (.algebraic_scale_factors), mapped onto the frame's coefficient
@@ -325,9 +392,29 @@ as_regression_frame.brmsfit <- function(fit,
 # convention); every other family standardizes predictors only on the
 # link scale (the glm convention, sd_y_div = 1).
 .stan_beta_scale_factors <- function(fit, coef_names, method) {
-  mm <- tryCatch(stats::model.matrix(fit), error = function(e) NULL)
-  factor_cols <- tryCatch(detect_factor_design_cols(fit),
-                          error = function(e) NULL)
+  is_brms <- inherits(fit, "brmsfit")
+  if (is_brms) {
+    # brms exposes neither model.matrix() nor $xlevels; insight
+    # rebuilds the fixed-effects design WITH the "assign" attribute
+    # (probed 2026-07-21, dev/brmsfit_beta_spec.md). Factor metadata
+    # comes from the formula / data pair.
+    if (!spicy_pkg_available("insight")) {
+      spicy_abort(                                                    # nocov start
+        c(paste0("Standardized coefficients for brmsfit need ",
+                 "`insight` to recover the design matrix."),
+          "i" = "Install insight: `install.packages(\"insight\")`."),
+        class = "spicy_missing_pkg"
+      )                                                               # nocov end
+    }
+    mm <- tryCatch(insight::get_modelmatrix(fit),
+                   error = function(e) NULL)
+    factor_cols <- tryCatch(.brms_factor_design_cols(fit, mm),
+                            error = function(e) NULL)
+  } else {
+    mm <- tryCatch(stats::model.matrix(fit), error = function(e) NULL)
+    factor_cols <- tryCatch(detect_factor_design_cols(fit),
+                            error = function(e) NULL)
+  }
   if (is.null(mm) || is.null(colnames(mm)) || is.null(factor_cols)) {
     spicy_abort(                                                      # nocov start
       c(paste0("Standardized coefficients need the fit's design ",
@@ -338,11 +425,55 @@ as_regression_frame.brmsfit <- function(fit,
       class = "spicy_unsupported_standardized"
     )                                                                 # nocov end
   }
+  # brmsfit only: every non-intercept coefficient must map onto a
+  # design column by name -- an unmatched name would silently em-dash
+  # the whole beta column (the stanreg NA policy exists for aliased
+  # terms, a different situation).
+  if (is_brms) {
+    unmatched <- setdiff(setdiff(coef_names, "(Intercept)"),
+                         colnames(mm))
+    if (length(unmatched) > 0L) {
+      spicy_abort(
+        c(paste0("Standardized coefficients: the recovered brms ",
+                 "design matrix does not carry column(s) ",
+                 paste(shQuote(unmatched), collapse = ", "), "."),
+          "i" = paste0("Standardize predictors before fitting ",
+                       "(Gelman, Hill & Vehtari 2020, ch. 12) to ",
+                       "report betas.")),
+        class = "spicy_unsupported_standardized"
+      )
+    }
+  }
   fam <- .stan_family(fit)
   sd_y_div <- if (identical(fam$family, "gaussian")) {
-    y <- tryCatch(stats::model.response(stats::model.frame(fit)),
-                  error = function(e) NULL)
-    if (is.numeric(y)) stats::sd(y) else 1                            # nocov
+    y <- if (is_brms) {
+      # model.frame(brmsfit) is the raw data frame with no terms
+      # attribute, so model.response() cannot work; read the response
+      # by name. A silent sd_y_div = 1 here would inflate every
+      # gaussian beta by sd(y) (2026-07-19 review finding) -- refuse
+      # instead when the response cannot be recovered.
+      dv <- tryCatch(insight::find_response(fit), error = function(e) NULL)
+      if (is.character(dv) && length(dv) == 1L && dv %in% names(fit$data)) {
+        fit$data[[dv]]
+      } else {
+        NULL                                                          # nocov
+      }
+    } else {
+      tryCatch(stats::model.response(stats::model.frame(fit)),
+               error = function(e) NULL)
+    }
+    if (!is.numeric(y)) {
+      spicy_abort(
+        c(paste0("Standardized coefficients for a Gaussian Bayesian ",
+                 "fit need the numeric response to compute sd(y), ",
+                 "which could not be recovered."),
+          "i" = paste0("Standardize predictors before fitting ",
+                       "(Gelman, Hill & Vehtari 2020, ch. 12) to ",
+                       "report betas.")),
+        class = "spicy_unsupported_standardized"
+      )
+    }
+    stats::sd(y)
   } else {
     1
   }
@@ -873,14 +1004,17 @@ as_regression_frame.brmsfit <- function(fit,
     exponentiate        = !identical(fam$link, "identity"),
     standardise_refit   = FALSE,  # refit would re-run the sampler.
     # The algebraic flavors (posthoc / basic / smart) are exact affine
-    # rescales of the draws (.stan_beta_scale_factors) -- fixed-effects
-    # lm / glm-style stanreg fits only (.stan_beta_scope): multilevel
-    # and non-GLM stanreg subclasses are refused by the method gate,
-    # and brmsfit exposes neither model.matrix() nor xlevels, so the
-    # design-column SDs cannot be recovered (its method refuses
-    # standardized upfront too).
-    standardise_algebraic = identical(class_name, "stanreg") &&
+    # rescales of the draws (.stan_beta_scale_factors), scoped per
+    # class: fixed-effects lm / glm-style stanreg fits
+    # (.stan_beta_scope), and fixed-effects standard-formula brmsfit
+    # fits whose design insight can rebuild (.brms_beta_scope).
+    # Out-of-scope fits are refused by the method gates upfront.
+    standardise_algebraic = if (identical(class_name, "stanreg")) {
       identical(.stan_beta_scope(fit), "ok")
+    } else {
+      identical(tryCatch(.brms_beta_scope(fit),
+                         error = function(e) "unrecoverable"), "ok")
+    }
   )
 
   has_identity_link <- identical(fam$link, "identity")

@@ -876,6 +876,36 @@ test_that("Bayesian beta: glm convention, exp/HDI interplay, refusals", {
 })
 
 
+test_that("diagnostic columns keep their conventions in every engine", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  set.seed(1)
+  f <- suppressWarnings(rstanarm::stan_glm(
+    mpg ~ wt, data = mtcars, chains = 2, iter = 1000, refresh = 0
+  ))
+  cols <- c("b", "pd", "rhat", "mcse", "ess_bulk")
+  out_c <- capture.output(print(suppressWarnings(
+    table_regression(f, show_columns = cols))))
+  wt_c <- grep("^ wt", out_c, value = TRUE)
+  # pd: p-column style (3 decimals, APA leading-zero drop) -- its
+  # information lives between .95 and 1, where 2 decimals are blind.
+  expect_match(wt_c, "(^|\\s)(1\\.000|\\.[0-9]{3})(\\s|$)")
+  # R-hat: 3 decimals (the 1.01 convergence target needs them).
+  expect_match(wt_c, "1\\.[0-9]{3}")
+  # Rich engines must render the SAME strings: no 2-decimal R-hat,
+  # no "959.60" ESS, no fixed-decimal MCSE (2026-07 review of the
+  # structured precision map). Every diagnostic token of the console
+  # row must appear verbatim in the tinytable output.
+  skip_if_not_installed("tinytable")
+  tt <- suppressWarnings(table_regression(f, show_columns = cols,
+                                          output = "tinytable"))
+  out_t <- paste(capture.output(print(tt)), collapse = "\n")
+  toks <- strsplit(sub(".*│", "", wt_c), "\\s+")[[1]]
+  toks <- toks[nzchar(toks)]
+  for (tk in toks) expect_match(out_t, tk, fixed = TRUE)
+})
+
+
 test_that("brmsfit refuses standardized upfront (no design metadata)", {
   skip_if_not_installed("brms")
   # The gate fires before any draws work, so a class-only mock keeps
@@ -890,6 +920,122 @@ test_that("brmsfit refuses standardized upfront (no design metadata)", {
       class = "spicy_unsupported_standardized"
     )
   }
+})
+
+
+test_that("the brms beta scope predicate reads formulas, not draws", {
+  skip_if_not_installed("brms")
+  # Formula-level scoping is CI-runnable: no sampling involved.
+  mk <- function(f) structure(list(algorithm = "sampling",
+                                   formula = brms::bf(f),
+                                   data = data.frame(y = 1, x = 1, g = 1)),
+                              class = "brmsfit")
+  expect_identical(spicy:::.brms_beta_scope(mk(y ~ x)), "ok")
+  expect_identical(spicy:::.brms_beta_scope(mk(y ~ x + (1 | g))),
+                   "multilevel")
+  expect_identical(spicy:::.brms_beta_scope(mk(y ~ mo(x))), "special")
+  expect_identical(spicy:::.brms_beta_scope(mk(y ~ s(x))), "special")
+  m2 <- structure(list(algorithm = "sampling",
+                       formula = brms::bf(y ~ x, sigma ~ x)),
+                  class = "brmsfit")
+  expect_identical(spicy:::.brms_beta_scope(m2), "distributional")
+  # A bare class-only mock reaches "unrecoverable" cleanly -- the CI
+  # refusal tests depend on this never erroring internally.
+  expect_identical(spicy:::.brms_beta_scope(
+    structure(list(algorithm = "sampling"), class = "brmsfit")),
+    "unrecoverable")
+})
+
+
+test_that("brmsfit algebraic betas: engine-invariant, oracle-exact", {
+  skip_on_ci()
+  skip_if_not_installed("brms")
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  skip_if_not_installed("insight")
+  skip_if_not_installed("effectsize")
+  d <- lme4::sleepstudy
+  d$grp <- factor(rep(c("a", "b", "c"), 60))
+  set.seed(1)
+  bf_fit <- suppressWarnings(brms::brm(
+    Reaction ~ Days + grp, data = d, chains = 1, iter = 600,
+    refresh = 0, silent = 2, backend = "rstan"
+  ))
+  fr <- suppressWarnings(as_regression_frame(
+    bf_fit, standardized = "posthoc", show_columns = c("b", "beta")))
+  bt <- fr$coefs[fr$coefs$estimate_type == "beta" & !fr$coefs$is_ref, ]
+  bB <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  sdy <- stats::sd(d$Reaction)
+  # Algebra pins: continuous sd-scaled, factor dummy unscaled.
+  expect_equal(bt$estimate[bt$term == "Days"],
+               bB$estimate[bB$term == "Days"] * stats::sd(d$Days) / sdy,
+               tolerance = 1e-10)
+  expect_equal(bt$estimate[bt$term == "grpb"],
+               bB$estimate[bB$term == "grpb"] / sdy, tolerance = 1e-10)
+  expect_true(fr$info$supports$standardise_algebraic)
+  # effectsize is the oracle for "basic" (its brms "posthoc" leaves
+  # continuous draws unscaled -- inconsistent with its own stanreg
+  # posthoc on the identical model; upstream report drafted in
+  # dev/effectsize_upstream_issue_draft.md).
+  fr_b <- suppressWarnings(as_regression_frame(
+    bf_fit, standardized = "basic", show_columns = c("b", "beta")))
+  bt_b <- fr_b$coefs[fr_b$coefs$estimate_type == "beta" &
+                       !fr_b$coefs$is_ref, ]
+  es <- as.data.frame(suppressWarnings(
+    effectsize::standardize_parameters(bf_fit, method = "basic")))
+  es <- es[es$Component == "conditional", ]
+  esc <- if ("Std_Median" %in% names(es)) "Std_Median"
+         else "Std_Coefficient"
+  for (tm in c("Days", "grpb", "grpc")) {
+    expect_equal(bt_b$estimate[bt_b$term == tm],
+                 es[[esc]][es$Parameter == paste0("b_", tm)],
+                 tolerance = 1e-6, info = tm)
+  }
+  # Engine invariance: the same model through rstanarm carries the
+  # SAME scale factor (beta / B ratio), sampling noise aside.
+  set.seed(1)
+  sf_fit <- suppressWarnings(rstanarm::stan_glm(
+    Reaction ~ Days + grp, data = d, chains = 1, iter = 600,
+    refresh = 0
+  ))
+  fr_s <- suppressWarnings(as_regression_frame(
+    sf_fit, standardized = "posthoc", show_columns = c("b", "beta")))
+  bts <- fr_s$coefs[fr_s$coefs$estimate_type == "beta" &
+                      !fr_s$coefs$is_ref, ]
+  bBs <- fr_s$coefs[fr_s$coefs$estimate_type == "B" &
+                      !fr_s$coefs$is_ref, ]
+  expect_equal(bt$estimate[bt$term == "Days"] /
+                 bB$estimate[bB$term == "Days"],
+               bts$estimate[bts$term == "Days"] /
+                 bBs$estimate[bBs$term == "Days"],
+               tolerance = 1e-10)
+})
+
+
+test_that("brmsfit out-of-scope fits refuse standardized with the reason", {
+  skip_on_ci()
+  skip_if_not_installed("brms")
+  skip_if_not_installed("posterior")
+  d <- lme4::sleepstudy
+  set.seed(2)
+  fm <- suppressWarnings(brms::brm(
+    Reaction ~ Days + (1 | Subject), data = d, chains = 1, iter = 400,
+    refresh = 0, silent = 2, backend = "rstan"
+  ))
+  expect_error(
+    as_regression_frame(fm, standardized = "posthoc"),
+    "multilevel",
+    class = "spicy_unsupported_standardized"
+  )
+  # refit hits the scope gate FIRST (no two-step dead end via the
+  # shared hint recommending flavors this fit refuses).
+  expect_error(
+    as_regression_frame(fm, standardized = "refit"),
+    "multilevel",
+    class = "spicy_unsupported_standardized"
+  )
+  fr <- suppressWarnings(as_regression_frame(fm))
+  expect_false(isTRUE(fr$info$supports$standardise_algebraic))
 })
 
 
