@@ -863,6 +863,16 @@ format_cell_value <- function(long_row, cs, stars_map,
   # exists for this cell".
   # Sampler-diagnostic fields: ESS renders as an integer (a sample
   # size), R-hat with 3 decimals (the 1.01 target needs them).
+  # pd is a posterior probability: p-column style (p_digits decimals,
+  # APA leading-zero drop) -- its information lives between .95 and 1,
+  # where the generic 2-decimal cell is blind (".998" vs "1.00").
+  if (field == "pd") {
+    val <- long_row[[field]][1]
+    if (!is.finite(val)) return("")
+    out <- formatC(val, format = "f", digits = p_digits,
+                   decimal.mark = decimal_mark)
+    return(sub("^0(?=[.,])", "", out, perl = TRUE))
+  }
   if (field %in% c("ess_bulk", "ess_tail")) {
     val <- long_row[[field]][1]
     if (!is.finite(val)) return("")

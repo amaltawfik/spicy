@@ -173,13 +173,22 @@ build_structured_body <- function(aligned,
       effect_size_digits
     } else if (identical(token, "p") || identical(token, "ame_p")) {
       p_digits
+    } else if (identical(token, "pd")) {
+      # Posterior probability: p-column style (see the console
+      # renderer) -- the generic 2-decimal cell is blind exactly
+      # where pd lives (.95 to 1).
+      p_digits
+    } else if (token %in% c("ess_bulk", "ess_tail")) {
+      0L    # effective SAMPLE SIZES: integers, never "959.60"
+    } else if (identical(token, "rhat")) {
+      3L    # the 1.01 convergence target needs them
     } else {
       digits
     }
     # df column inside partial_chi2 is integer-valued.
     if (isTRUE(e$is_df)) prec <- 0L
 
-    p_style <- if (token %in% c("p", "ame_p")) "apa" else NULL
+    p_style <- if (token %in% c("p", "ame_p", "pd")) "apa" else NULL
     threshold <- if (token %in% c("p", "ame_p")) 10^(-p_digits) else NULL
 
     col_meta[[e$name]] <- list(
@@ -189,6 +198,10 @@ build_structured_body <- function(aligned,
       precision = as.integer(prec),
       p_style = p_style,
       threshold = threshold,
+      # MCSE spans orders of magnitude across coefficient scales: the
+      # string-driven engines render 2 SIGNIFICANT digits (the console
+      # convention), not a fixed decimal count.
+      signif = if (identical(token, "mcse")) 2L else NULL,
       ci_role = e$ci_role,
       ci_pair = e$ci_pair,
       ci_label = e$ci_label,
@@ -833,6 +846,17 @@ build_structured_body <- function(aligned,
   if (identical(cfmt$fit_stat, "fixed_effects")) {
     return(if (val >= 0.5) "Yes" else "No")
   }
+  # Significant-digits columns (MCSE): mirror the console renderer's
+  # formatC g-style -- a fixed decimal count misleads across
+  # coefficient scales.
+  if (!is.null(cfmt$signif)) {
+    out <- sub("\\.$", "", formatC(val, digits = as.integer(cfmt$signif),
+                                   format = "g", flag = "#"))
+    if (!identical(decimal_mark, ".")) {
+      out <- sub(".", decimal_mark, out, fixed = TRUE)                # nocov
+    }
+    return(out)
+  }
   if (!is.null(cfmt$threshold) && is.finite(val) &&
         val < cfmt$threshold) {
     return(.below_threshold_text(cfmt$threshold, decimal_mark))
@@ -996,7 +1020,7 @@ build_structured_body <- function(aligned,
     }
   }
   list(precision = prec, p_style = p_style, threshold = threshold,
-       fit_stat = fit_stat)
+       fit_stat = fit_stat, signif = col_meta_entry$signif)
 }
 
 .build_structured_spanners <- function(struct_col_names, expanded, label_map) {
