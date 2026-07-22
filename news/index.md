@@ -358,7 +358,7 @@ rendering an empty column.
   parent variable with a reference row.
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   and the rich output engines match the console body exactly (blank vs
-  em-dash reference cells, the multi-outcome `Outcome` row); the
+  en-dash reference cells, the multi-outcome `Outcome` row); the
   structured schema gains `reference_models_by_row` and
   `outcome_labels_by_col`.
 - `table_regression(m1, m2)` without
@@ -473,7 +473,7 @@ CRAN release: 2026-05-19
 
 ### Minor improvements
 
-- Console em-dash alignment: non-numeric placeholders (em-dash, “NA”)
+- Console en-dash alignment: non-numeric placeholders (en-dash, “NA”)
   sit at the decimal-mark column instead of the integer- part column
   (APA Manual 7 §7.13). Integer cells in mixed- precision columns (`n`
   row alongside `R²`) keep their right- aligned placement.

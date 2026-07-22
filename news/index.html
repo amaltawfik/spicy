@@ -171,7 +171,7 @@
 <li>
 <code>flexsurv</code>: probit-scale splines and ancillary-parameter covariates refuse <code>exponentiate = TRUE</code>; factor predictors group under their parent variable with a reference row.</li>
 <li>
-<code><a href="../reference/as_structured.html">as_structured()</a></code> and the rich output engines match the console body exactly (blank vs em-dash reference cells, the multi-outcome <code>Outcome</code> row); the structured schema gains <code>reference_models_by_row</code> and <code>outcome_labels_by_col</code>.</li>
+<code><a href="../reference/as_structured.html">as_structured()</a></code> and the rich output engines match the console body exactly (blank vs en-dash reference cells, the multi-outcome <code>Outcome</code> row); the structured schema gains <code>reference_models_by_row</code> and <code>outcome_labels_by_col</code>.</li>
 <li>
 <code>table_regression(m1, m2)</code> without <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> errors with a helpful message; colliding model labels no longer break <code>output = "gt"</code>; the <code>p_adjust</code> footer’s family size matches the adjustment performed; <code>ci_method = "profile"</code> with a robust <code>vcov</code> defers to the <code>vcov</code> and warns; the singular-fit note states the fact and leaves the advice to a build-time warning.</li>
 </ul></div>
@@ -216,7 +216,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-0-12-0">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-0-12-0"></a></h3>
-<ul><li>Console em-dash alignment: non-numeric placeholders (em-dash, “NA”) sit at the decimal-mark column instead of the integer- part column (APA Manual 7 §7.13). Integer cells in mixed- precision columns (<code>n</code> row alongside <code>R²</code>) keep their right- aligned placement.</li>
+<ul><li>Console en-dash alignment: non-numeric placeholders (en-dash, “NA”) sit at the decimal-mark column instead of the integer- part column (APA Manual 7 §7.13). Integer cells in mixed- precision columns (<code>n</code> row alongside <code>R²</code>) keep their right- aligned placement.</li>
 <li>
 <code>R/</code> source is byte-pure ASCII (<code><a href="https://rdrr.io/r/tools/showNonASCII.html" class="external-link">tools::showNonASCIIfile()</a></code> reports zero hits package-wide).</li>
 <li>

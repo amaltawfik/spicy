@@ -2,7 +2,7 @@
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 returns a *display* representation by default – a character `data.frame`
-with stars suffixes, em-dash for reference rows, bracketed `"[L, U]"`
+with stars suffixes, en-dash for reference rows, bracketed `"[L, U]"`
 confidence intervals, and APA padding on p-values. This accessor returns
 the *typed* view that the output engines (Excel, gt, tinytable,
 flextable, clipboard) consume internally: a fully numeric body with CI

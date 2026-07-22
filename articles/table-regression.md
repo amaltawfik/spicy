@@ -478,7 +478,7 @@ same call takes `method = "coxph"` with a
 Set `nested = TRUE` to add **in-table change-statistic rows** (APA Table
 7.13 / Stata `esttab` / SPSS Model Summary convention). Each adjacent
 pair (M2 vs M1, M3 vs M2, …) contributes one column of change stats
-below `R² / Adj.R²`; the first model column gets em-dashes (no previous
+below `R² / Adj.R²`; the first model column gets en-dashes (no previous
 model to compare to).
 
 Hierarchical regression requires every model in the sequence to share
