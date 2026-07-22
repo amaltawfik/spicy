@@ -448,7 +448,7 @@
 #' \itemize{
 #'   \item `"d"`, `"g"`: noncentral *t* inversion (Steiger and Fouladi 1997;
 #'     Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
-#'     across sample sizes (Cousineau and Goulet-Pelletier 2021), unlike the
+#'     across sample sizes (Fitts 2021), unlike the
 #'     older Hedges-Olkin normal approximation which is biased for small
 #'     samples. For Hedges' *g* the bounds inherit the *J* small-sample
 #'     correction.
@@ -594,12 +594,6 @@
 #'   *Statistical Power Analysis for the Behavioral Sciences*
 #'   (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum.
 #'
-#' Cousineau, D., & Goulet-Pelletier, J.-C. (2021).
-#'   Expected and empirical coverages of different methods for generating
-#'   noncentral *t* confidence intervals for a standardized mean
-#'   difference. *Behavior Research Methods*, **53**, 2376--2394.
-#'   \doi{10.3758/s13428-021-01550-4}
-#'
 #' Cribari-Neto, F. (2004).
 #'   Asymptotic inference under heteroskedasticity of unknown form.
 #'   *Computational Statistics & Data Analysis*, **45**(2), 215--233.
@@ -627,6 +621,12 @@
 #'   stratified samples. *Journal of the American Statistical
 #'   Association*, **78**(383), 535--543.
 #'   \doi{10.1080/01621459.1983.10478006}
+#'
+#' Fitts, D. A. (2021).
+#'   Expected and empirical coverages of different methods for generating
+#'   noncentral *t* confidence intervals for a standardized mean
+#'   difference. *Behavior Research Methods*, **53**(6), 2412--2429.
+#'   \doi{10.3758/s13428-021-01550-4}
 #'
 #' Goulet-Pelletier, J.-C., & Cousineau, D. (2018).
 #'   A review of effect sizes and their confidence intervals, Part I:

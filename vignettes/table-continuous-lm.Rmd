@@ -341,8 +341,8 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 `MOTE`, `TOSTER`, `effsize`):
 
 - Noncentral *t* inversion for `"d"` and `"g"` (Steiger and Fouladi
-  1997; Goulet-Pelletier and Cousineau 2018; Cousineau and
-  Goulet-Pelletier 2021), which has nominal coverage across sample
+  1997; Goulet-Pelletier and Cousineau 2018; Fitts 2021), which has
+  nominal coverage across sample
   sizes — unlike the older Hedges-Olkin normal approximation that is
   biased for small samples.
 - Noncentral *F* inversion for `"omega2"` and `"f2"`
