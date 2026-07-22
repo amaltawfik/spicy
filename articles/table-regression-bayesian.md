@@ -120,20 +120,20 @@ Reading the columns against their frequentist counterparts:
 table_regression(fit, show_columns = c("b", "ci", "pd"))
 #> Bayesian logistic regression (stanreg): smoking
 #> 
-#>  Variable                 │    B        95% CrI       pd  
-#> ──────────────────────────┼───────────────────────────────
-#>  (Intercept)              │   -1.11  [-1.66, -0.55]  1.00 
-#>  sex:                     │                               
-#>    Female (ref.)          │     –          –          –   
-#>    Male                   │   -0.04  [-0.34,  0.25]  0.62 
-#>  age                      │    0.01  [-0.00,  0.02]  0.89 
-#>  education:               │                               
-#>    Lower secondary (ref.) │     –          –          –   
-#>    Upper secondary        │   -0.49  [-0.81, -0.16]  1.00 
-#>    Tertiary               │   -0.91  [-1.31, -0.56]  1.00 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175                          
-#>  R² (Bayes)               │    0.02                       
+#>  Variable                 │    B        95% CrI       pd   
+#> ──────────────────────────┼────────────────────────────────
+#>  (Intercept)              │   -1.11  [-1.66, -0.55]  1.000 
+#>  sex:                     │                                
+#>    Female (ref.)          │     –          –          –    
+#>    Male                   │   -0.04  [-0.34,  0.25]   .617 
+#>  age                      │    0.01  [-0.00,  0.02]   .886 
+#>  education:               │                                
+#>    Lower secondary (ref.) │     –          –          –    
+#>    Upper secondary        │   -0.49  [-0.81, -0.16]   .999 
+#>    Tertiary               │   -0.91  [-1.31, -0.56]  1.000 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                           
+#>  R² (Bayes)               │    0.02                        
 #> 
 #> Note. Bayesian logistic regression (stanreg).
 #> Std. errors: posterior MAD SD (scaled median absolute deviation).

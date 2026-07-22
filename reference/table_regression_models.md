@@ -194,13 +194,15 @@ E-BFMI) and per-coefficient `"rhat"` / `"ess_bulk"` / `"ess_tail"` /
 (posterior median, MAD SD and credible interval of the per-draw
 `avg_slopes()`; no `"ame_p"`), and so are the standardized betas
 (`"posthoc"` / `"basic"` / `"smart"`, exact affine rescales of the
-draws; fixed-effects `stan_glm`-style fits only – multilevel and
-`stan_polr` / `stan_betareg` fits are refused, `brmsfit` carries no
-recoverable design matrix; `"refit"` / `"pseudo"` refused). Multilevel
-fits (`stan_glmer`, `brm` with grouping terms) report their random
-effects as a block – posterior median SD and credible interval per
-component, from the draws – with no likelihood-ratio line. `p_adjust`
-and likelihood-based fit-statistic tokens are refused (no p-values, no
+draws) on fixed-effects fits: `stan_glm`-style models and
+standard-formula `brm()` models, whose design matrix is recovered
+through insight. Multilevel fits, `stan_polr` / `stan_betareg`, brms
+formulas with distributional or special terms, and `"refit"` /
+`"pseudo"` are refused with a pre-standardization hint. Multilevel fits
+(`stan_glmer`, `brm` with grouping terms) report their random effects as
+a block – posterior median SD and credible interval per component, from
+the draws – with no likelihood-ratio line. `p_adjust` and
+likelihood-based fit-statistic tokens are refused (no p-values, no
 likelihood-based information criteria in a posterior); `"r2_bayes"` is
 in the default fit statistics and `"elpd_loo"` / `"looic"` / `"waic"`
 are opt-in, with standard errors and reliability caveats in the footer;

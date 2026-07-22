@@ -65,11 +65,14 @@ for walk-throughs.
   posterior median, MAD SD and credible interval of those draws (no
   `"ame_p"` – same policy as the p column). Standardized betas work for
   the algebraic flavors (`"posthoc"` / `"basic"` / `"smart"`, exact
-  affine rescales of the draws) on fixed-effects `stan_glm`-style fits;
-  multilevel (`stan_glmer`) and non-GLM (`stan_polr`, `stan_betareg`)
-  fits and `brmsfit` models (no design-matrix metadata) are refused with
-  a pre-standardization hint, as are `"refit"` and `"pseudo"`.
-  Variational / optimizing fits are refused with a refit hint.
+  affine rescales of the draws) on fixed-effects Bayesian fits:
+  `stan_glm`-style models and standard-formula `brm()` models (design
+  matrix recovered through insight; the scale factors are
+  engine-invariant). Multilevel fits, non-GLM `stanreg` subclasses
+  (`stan_polr`, `stan_betareg`), brms formulas with distributional or
+  special terms, and `"refit"` / `"pseudo"` are refused with a
+  pre-standardization hint. Variational / optimizing fits are refused
+  with a refit hint.
 - Survival
   ([`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) /
   `survreg`, [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html),

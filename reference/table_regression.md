@@ -209,16 +209,19 @@ table_regression(
   flavors `"posthoc"` / `"basic"` / `"smart"` – exact affine rescales of
   the posterior draws (median, MAD SD and credible bounds all scale by
   the same positive SD ratio; the beta stays on the link scale under
-  `exponentiate = TRUE`). Bayesian `"refit"` (would re-run the sampler)
-  and `"pseudo"` (per-draw latent variance; planned) are refused. Also
-  refused: multilevel `stanreg` fits (`stan_glmer` / `stan_lmer`; a
+  `exponentiate = TRUE`). Standard-formula fixed-effects `brmsfit`
+  models are supported too (their design matrix is recovered through
+  insight); the scale factors are engine-invariant, so the same model
+  fit with rstanarm or brms gets identical betas up to sampling noise.
+  Bayesian `"refit"` (would re-run the sampler) and `"pseudo"` (per-draw
+  latent variance; planned) are refused. Also refused: multilevel fits
+  (`stan_glmer` / `stan_lmer` and `brm()` with group-level terms; a
   Bayesian beta would need an explicit sd(Y) decomposition that the
   frequentist mixed engines resolve by refitting on z-scored data),
-  non-GLM `stanreg` subclasses (`stan_polr`, `stan_betareg`), and
-  `brmsfit` fits altogether: brms exposes neither
-  [`model.matrix()`](https://rdrr.io/r/stats/model.matrix.html) nor the
-  factor metadata the rescale needs. In all refused Bayesian cases,
-  standardize predictors before fitting instead. Any other class raises
+  non-GLM `stanreg` subclasses (`stan_polr`, `stan_betareg`), and brms
+  formulas with distributional, multivariate or special terms (`mo()`,
+  `s()`, ...). In all refused Bayesian cases, standardize predictors
+  before fitting instead. Any other class raises
   `spicy_unsupported_standardized` rather than rendering an empty beta
   column. See the *Standardised coefficients* section.
 

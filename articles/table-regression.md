@@ -1397,13 +1397,14 @@ str(out)
 #>   ..$ level_rows             : int [1:4] 4 5 7 8
 #>   ..$ outcome_row            : int(0) 
 #>   ..$ col_meta               :List of 5
-#>   .. ..$ B         :List of 12
+#>   .. ..$ B         :List of 13
 #>   .. .. ..$ token             : chr "b"
 #>   .. .. ..$ model_id          : chr "M1"
 #>   .. .. ..$ source_field      : chr "estimate"
 #>   .. .. ..$ precision         : int 2
 #>   .. .. ..$ p_style           : NULL
 #>   .. .. ..$ threshold         : NULL
+#>   .. .. ..$ signif            : NULL
 #>   .. .. ..$ ci_role           : NULL
 #>   .. .. ..$ ci_pair           : NULL
 #>   .. .. ..$ ci_label          : NULL
@@ -1428,49 +1429,53 @@ str(out)
 #>   .. .. .. .. ..$ p_style  : NULL
 #>   .. .. .. .. ..$ threshold: NULL
 #>   .. .. .. .. ..$ row      : int 11
-#>   .. ..$ SE        :List of 11
+#>   .. ..$ SE        :List of 12
 #>   .. .. ..$ token        : chr "se"
 #>   .. .. ..$ model_id     : chr "M1"
 #>   .. .. ..$ source_field : chr "se"
 #>   .. .. ..$ precision    : int 2
 #>   .. .. ..$ p_style      : NULL
 #>   .. .. ..$ threshold    : NULL
+#>   .. .. ..$ signif       : NULL
 #>   .. .. ..$ ci_role      : NULL
 #>   .. .. ..$ ci_pair      : NULL
 #>   .. .. ..$ ci_label     : NULL
 #>   .. .. ..$ is_df        : logi FALSE
 #>   .. .. ..$ display_label: chr "SE"
-#>   .. ..$ 95% CI: LL:List of 11
+#>   .. ..$ 95% CI: LL:List of 12
 #>   .. .. ..$ token        : chr "ci"
 #>   .. .. ..$ model_id     : chr "M1"
 #>   .. .. ..$ source_field : chr "ci_low"
 #>   .. .. ..$ precision    : int 2
 #>   .. .. ..$ p_style      : NULL
 #>   .. .. ..$ threshold    : NULL
+#>   .. .. ..$ signif       : NULL
 #>   .. .. ..$ ci_role      : chr "LL"
 #>   .. .. ..$ ci_pair      : chr "95% CI: UL"
 #>   .. .. ..$ ci_label     : chr "95% CI"
 #>   .. .. ..$ is_df        : logi FALSE
 #>   .. .. ..$ display_label: chr "95% CI"
-#>   .. ..$ 95% CI: UL:List of 11
+#>   .. ..$ 95% CI: UL:List of 12
 #>   .. .. ..$ token        : chr "ci"
 #>   .. .. ..$ model_id     : chr "M1"
 #>   .. .. ..$ source_field : chr "ci_high"
 #>   .. .. ..$ precision    : int 2
 #>   .. .. ..$ p_style      : NULL
 #>   .. .. ..$ threshold    : NULL
+#>   .. .. ..$ signif       : NULL
 #>   .. .. ..$ ci_role      : chr "UL"
 #>   .. .. ..$ ci_pair      : chr "95% CI: LL"
 #>   .. .. ..$ ci_label     : chr "95% CI"
 #>   .. .. ..$ is_df        : logi FALSE
 #>   .. .. ..$ display_label: chr "95% CI"
-#>   .. ..$ p         :List of 11
+#>   .. ..$ p         :List of 12
 #>   .. .. ..$ token        : chr "p"
 #>   .. .. ..$ model_id     : chr "M1"
 #>   .. .. ..$ source_field : chr "p_value"
 #>   .. .. ..$ precision    : int 3
 #>   .. .. ..$ p_style      : chr "apa"
 #>   .. .. ..$ threshold    : num 0.001
+#>   .. .. ..$ signif       : NULL
 #>   .. .. ..$ ci_role      : NULL
 #>   .. .. ..$ ci_pair      : NULL
 #>   .. .. ..$ ci_label     : NULL

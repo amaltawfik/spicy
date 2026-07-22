@@ -125,6 +125,9 @@ s$col_meta$B                         # column metadata for B
 #> $threshold
 #> NULL
 #> 
+#> $signif
+#> NULL
+#> 
 #> $ci_role
 #> NULL
 #> 
