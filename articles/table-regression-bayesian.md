@@ -741,6 +741,8 @@ of the exponentiated draws); CI bounds exponentiated (asymmetric).
 
 ## References
 
+- Gelman, A. (2008). Scaling regression inputs by dividing by two
+  standard deviations. *Statistics in Medicine*, 27(15), 2865–2873.
 - Gelman, A., Hill, J., & Vehtari, A. (2020). *Regression and Other
   Stories*. Cambridge University Press.
 - Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., &
