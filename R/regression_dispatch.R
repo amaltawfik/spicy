@@ -132,7 +132,7 @@ output_long <- function(aligned) {
 #
 # Robust against:
 #   * empty / whitespace-only cells  -> returns (\"\", \"\")
-#   * em-dash or other non-bracket scalar  -> duplicates value to both
+#   * en-dash or other non-bracket scalar  -> duplicates value to both
 #     so reference-level rows and unavailable cells render uniformly
 #     across the new LL / UL columns;
 #   * pre-padding inserted by align_ci_strings() (leading / inner /
@@ -281,7 +281,7 @@ output_tinytable <- function(rendered) {
   # falls back to `text-align: center` with a uniform per-column
   # precision. To get true decimal alignment we mirror the flextable /
   # table_continuous_lm convention: pre-format each cell to its final
-  # display string (em-dash for reference rows, "<.001" for
+  # display string (en-dash for reference rows, "<.001" for
   # below-threshold p-cells, decimal-formatted numerics elsewhere) via
   # `.format_structured_to_string_body()`, then pad with figure-spaces
   # (U+2007, digit-width) via `.pad_for_decimal_align()` so every cell
@@ -642,7 +642,7 @@ output_gt <- function(rendered) {
   #
   # Solution: mirror the flextable / tinytable path -- pre-format every
   # body cell to its final display string via
-  # `.format_structured_to_string_body()` (em-dash for reference rows,
+  # `.format_structured_to_string_body()` (en-dash for reference rows,
   # "<.001" for below-threshold p-values, decimal-formatted numerics
   # elsewhere), then pad with figure-spaces via
   # `.pad_for_decimal_align()` so every cell in a column has the same
@@ -1156,7 +1156,7 @@ output_flextable <- function(rendered) {
   # ---- Read structured (typed) body, derive display strings ------------
   # Flextable's native formatters (colformat_double, set_formatter)
   # don't compose cleanly with per-cell precision + APA p-style +
-  # below-threshold overrides + reference-row em-dash. We pre-format
+  # below-threshold overrides + reference-row en-dash. We pre-format
   # the structured body to a CHAR body via .format_structured_to_string_body()
   # then apply figure-space decimal-alignment padding via
   # `.pad_for_decimal_align()` (flextable has no native decimal-align
@@ -2274,7 +2274,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' Extract the typed (structured) view of a `spicy_regression_table`
 #'
 #' `table_regression()` returns a *display* representation by default
-#' -- a character `data.frame` with stars suffixes, em-dash for
+#' -- a character `data.frame` with stars suffixes, en-dash for
 #' reference rows, bracketed `"[L, U]"` confidence intervals, and APA
 #' padding on p-values. This accessor returns the *typed* view that
 #' the output engines (Excel, gt, tinytable, flextable, clipboard)

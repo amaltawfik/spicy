@@ -1,14 +1,14 @@
 # Correctness/crash sweep from the 2026-07-01 findings re-triage
 # (dev/findings_retriage.md, group A). Three independent fixes:
-#   m1 -- AME of an aliased (perfectly collinear) predictor em-dashes
+#   m1 -- AME of an aliased (perfectly collinear) predictor en-dashes
 #         instead of a misleading "0.00".
 #   M4 -- nested = TRUE tolerates a class whose nobs() returns double (coxph).
 #   m5 -- a wide random-effect bar does not break the native Nakagawa null
 #         refit (deparse1(), not deparse()).
 
-## ---- m1: aliased predictor -> AME em-dash ---------------------------------
+## ---- m1: aliased predictor -> AME en-dash ---------------------------------
 
-test_that("m1: an aliased predictor's AME is NA (em-dash), not 0.00", {
+test_that("m1: an aliased predictor's AME is NA (en-dash), not 0.00", {
   d <- mtcars
   d$dup <- 2 * d$wt                       # perfectly collinear with wt
   m <- lm(mpg ~ wt + dup, data = d)       # `dup` coefficient is aliased (NA)
@@ -20,7 +20,7 @@ test_that("m1: an aliased predictor's AME is NA (em-dash), not 0.00", {
   ame_dup <- fr$coefs[fr$coefs$estimate_type == "ame" &
                         fr$coefs$term == "dup", , drop = FALSE]
   expect_equal(nrow(ame_dup), 1L)
-  # the em-dash invariant: no misleading finite estimate for an undefined AME
+  # the en-dash invariant: no misleading finite estimate for an undefined AME
   expect_true(is.na(ame_dup$estimate))
   expect_true(is.na(ame_dup$std_error))
   expect_true(is.na(ame_dup$ci_lower) && is.na(ame_dup$ci_upper))
@@ -30,7 +30,7 @@ test_that("m1: an aliased predictor's AME is NA (em-dash), not 0.00", {
                        fr$coefs$term == "wt", , drop = FALSE]
   expect_true(is.finite(ame_wt$estimate))
 
-  # rendered table: the AME cell for `dup` is an em-dash, not "0.00"
+  # rendered table: the AME cell for `dup` is an en-dash, not "0.00"
   df <- table_regression(m, show_columns = c("b", "ame"),
                          output = "data.frame")
   ame_col <- grep("AME", names(df), value = TRUE)[1]

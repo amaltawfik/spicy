@@ -136,7 +136,7 @@ test_that("apply_exponentiate_to_frame_coefs: B rows exponentiate with delta-met
 test_that("compute_partial_chi2_for_term: NULL for a term not in the model", {
   # An invalid scope makes drop1() error; the tryCatch yields d1 = NULL
   # and the is.null(d1) guard returns NULL (L380) so the caller can
-  # em-dash the cell instead of crashing.
+  # en-dash the cell instead of crashing.
   fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
   expect_null(spicy:::compute_partial_chi2_for_term(fit, "not_a_real_term"))
 

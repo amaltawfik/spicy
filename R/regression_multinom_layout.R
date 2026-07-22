@@ -50,7 +50,7 @@
 # response-level order, then the reference category LAST -- and only
 # when it carries rows at all (per-category AME covers the reference
 # outcome, which has no B rows by construction; its column group
-# renders em-dashed coefficient cells next to its real AME values,
+# renders en-dashed coefficient cells next to its real AME values,
 # which is exactly the message: the reference has no equation).
 #
 # `term` and `label` drop the "<category>: " prefix built by

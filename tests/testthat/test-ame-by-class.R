@@ -9,7 +9,7 @@
 ame_rows <- function(fr) {
   # Non-reference AME rows only: the frame also synthesizes NA
   # reference placeholders (one per factor reference level, so the
-  # rendered reference line em-dashes under the AME columns like the
+  # rendered reference line en-dashes under the AME columns like the
   # legacy lm/glm path); the oracle cross-validation targets the
   # computed rows.
   fr$coefs[fr$coefs$estimate_type == "ame" &
@@ -279,7 +279,7 @@ test_that("glmmTMB AME falls back to model-based under a robust vcov (no blank)"
 })
 
 
-test_that("frame-path AME emits reference placeholders (em-dash cells)", {
+test_that("frame-path AME emits reference placeholders (en-dash cells)", {
   skip_if_not_installed("mgcv")
   skip_if_not_installed("marginaleffects")
   d <- make_d()
@@ -288,7 +288,7 @@ test_that("frame-path AME emits reference placeholders (em-dash cells)", {
   ref_ame <- fr$coefs[fr$coefs$estimate_type == "ame" &
                         (fr$coefs$is_ref %in% TRUE), , drop = FALSE]
   # One placeholder per factor reference level, all-NA values: the
-  # renderer em-dashes the reference line under the AME columns
+  # renderer en-dashes the reference line under the AME columns
   # (parity with the legacy lm/glm extractor's build_reference_rows).
   expect_identical(nrow(ref_ame), 1L)
   expect_true(all(is.na(ref_ame$estimate)))

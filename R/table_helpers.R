@@ -131,9 +131,9 @@ safe_glyph_width <- function(x) {
 # so it is robust to formats like "<.001", "f^2 = 0.18 [0.07, 0.30]",
 # and any decimal_mark.
 #
-# Non-decimal cells (em-dash, "NA", "N/A", etc.) are positioned so
+# Non-decimal cells (en-dash, "NA", "N/A", etc.) are positioned so
 # the glyph centres on the decimal-mark column. For a single-char
-# glyph this lines the em-dash up exactly with the `.` of the other
+# glyph this lines the en-dash up exactly with the `.` of the other
 # rows -- the convention recommended by APA Manual 7 Section 7.13
 # ("use a dash in the cell position where a number would otherwise
 # appear"), Stata `esttab`, `modelsummary`, and Hochuli typography
@@ -205,7 +205,7 @@ decimal_align_strings <- function(values, decimal_mark = ".",
       #       for a negative count) -- right-align with the
       #       integer parts of the decimal rows so its rightmost
       #       digit lines up with their last integer digit.
-      #   (b) Non-numeric placeholder (em-dash, "NA", "N/A") --
+      #   (b) Non-numeric placeholder (en-dash, "NA", "N/A") --
       #       centre the glyph on the decimal-mark column
       #       position so it visually replaces the `.` of the
       #       absent value. APA Manual 7 Section 7.13 / Stata
@@ -245,7 +245,7 @@ ci_bracket_separator <- function(decimal_mark) {
 # decimal point, and the right bracket all sit in fixed columns.
 #
 # Inputs are the formatted cell strings (already a vector of
-# `"[LL, UL]"` or blank / em-dash strings). NA / blank / em-dash
+# `"[LL, UL]"` or blank / en-dash strings). NA / blank / en-dash
 # cells pass through and are padded to the same total width as
 # the aligned CI cells so the column stays rectangular.
 align_ci_strings <- function(values, decimal_mark = ".",
@@ -281,7 +281,7 @@ align_ci_strings <- function(values, decimal_mark = ".",
   ci_width <- if (length(ci_cells)) max(nchar(ci_cells)) else 0L
 
   # `pad_char` is the same character passed to decimal_align_strings()
-  # for the LL / UL slots, so blank / em-dash placeholder cells share
+  # for the LL / UL slots, so blank / en-dash placeholder cells share
   # the same padding character and the column stays rectangular under
   # the HTML / markdown / ASCII contracts of the chosen engine.
   out <- character(length(values))
@@ -293,7 +293,7 @@ align_ci_strings <- function(values, decimal_mark = ".",
       if (!nzchar(raw)) {
         out[i] <- strrep(pad_char, ci_width)
       } else {
-        # Center single-glyph fallback (e.g., em-dash "--") within
+        # Center single-glyph fallback (e.g., en-dash "--") within
         # the CI column width so reference / blank rows stay
         # rectangular and visually anchored. `safe_glyph_width()`
         # falls back to byte length when the locale cannot resolve

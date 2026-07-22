@@ -473,7 +473,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     cf <- fr$coefs
     block <- cf[cf$parent_var == pred, , drop = FALSE]
     # nocov start -- defensive: lm/glm keep rank-deficient terms as
-    # em-dash rows (dropped coefficients stay in the frame), so no
+    # en-dash rows (dropped coefficients stay in the frame), so no
     # known input yields an empty block today; guards future engines.
     if (nrow(block) == 0L) {
       spicy_warn(

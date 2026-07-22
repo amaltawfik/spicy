@@ -28,7 +28,7 @@ test_that("table_regression – single fit and 1-list of fits behave the same", 
   expect_equal(unname(unlist(o1$Variable)), unname(unlist(o2$Variable)))
 })
 
-test_that("table_regression – factor with reference: ref row em-dashed", {
+test_that("table_regression – factor with reference: ref row en-dashed", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   ref_idx <- grep("\\(ref\\.\\)", out$Variable)

@@ -439,14 +439,14 @@ validate_regression_frame <- function(frame) {
     )
   }
 
-  # is_ref rows must have NA estimate (em-dash placeholder). Catching this
+  # is_ref rows must have NA estimate (en-dash placeholder). Catching this
   # here prevents downstream rendering anomalies where a non-NA estimate
   # in a reference row would be silently dropped.
   if (any(coefs$is_ref & !is.na(coefs$estimate))) {
     spicy_abort(
       c(
         "Invalid regression frame: `coefs` has reference row(s) with non-NA estimate.",
-        "i" = "Reference rows must have estimate = NA_real_ (em-dash placeholder)."
+        "i" = "Reference rows must have estimate = NA_real_ (en-dash placeholder)."
       ),
       class = "spicy_invalid_frame"
     )

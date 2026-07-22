@@ -79,7 +79,7 @@ extract_lm_phase1 <- function(
     ci_method = ci_method
   )
 
-  # ---- Reference-level placeholder rows (Q5 em-dash) ----------------------
+  # ---- Reference-level placeholder rows (Q5 en-dash) ----------------------
   # `ame_requested` controls whether ordered (polynomial-coded) factors
   # also get a synthetic reference row. The poly contrasts (`.L`, `.Q`)
   # have no concept of a reference level on their own, but the AME
@@ -226,7 +226,7 @@ extract_lm_phase1 <- function(
 
 # Builds one row per fitted coefficient with estimate_type = "B".
 # Singular coefs (NA in coef(fit)) get NA-shaped rows with
-# is_singular = TRUE; the renderer turns these into em-dashes (Q22).
+# is_singular = TRUE; the renderer turns these into en-dashes (Q22).
 build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
                          model_id, outcome, ci_method = "wald") {
   cf <- stats::coef(fit)
@@ -366,7 +366,7 @@ build_one_b_row <- function(nm, model_id, outcome,
 # For each factor predictor whose reference level was actually
 # dropped (i.e., the standard contr.treatment encoding), emit one
 # placeholder row with is_reference = TRUE and NA stat values. The
-# renderer turns these into em-dashed cells under
+# renderer turns these into en-dashed cells under
 # `reference_style = "row"`.
 #
 # In a no-intercept formula like `y ~ 0 + cyl`, R fits ALL k levels
@@ -408,7 +408,7 @@ build_reference_rows <- function(fit, model_id, outcome,
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
 
     # Determine which estimate_types this factor has a reference for.
-    # The em-dash on the rendered cell is a semantic signal -- it
+    # The en-dash on the rendered cell is a semantic signal -- it
     # appears under columns where the row IS the reference. For a
     # treatment-coded factor, the same level is the reference for B,
     # for `beta` (standardised refit), AND for AME (since

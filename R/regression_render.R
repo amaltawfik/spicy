@@ -10,7 +10,7 @@
 # displayed line in the final table:
 #   * factor header rows (when group_factor_levels = TRUE)
 #   * coefficient rows (one per term, indented under their factor)
-#   * reference rows (em-dashed when reference_style = "row")
+#   * reference rows (en-dashed when reference_style = "row")
 #
 # The column structure is:
 #   Variable | <Model 1 token1> | <Model 1 token2> | ... | <Model k token_n>
@@ -391,7 +391,7 @@ render_regression_table <- function(
   # Engines (Excel, gt, tinytable, flextable, clipboard) consume this
   # directly instead of re-parsing the character body. The character
   # body above is the primary return value (display representation:
-  # stars suffixes, em-dash for reference rows, "[L, U]" bracketed CI,
+  # stars suffixes, en-dash for reference rows, "[L, U]" bracketed CI,
   # APA-padded p-values). Programmatic access to raw numerics + per-cell
   # markers is via `attr(body, "structured")` (or the user-facing
   # accessor `as_structured()`, exported separately).
@@ -755,10 +755,10 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
     }
     # When the row's term does NOT exist in this model's coefs,
     # leave the cell BLANK -- regardless of whether the term is a
-    # reference level for some other model. Previously the em-dash
+    # reference level for some other model. Previously the en-dash
     # was applied globally on `term_row$is_reference`, which produced
     # an inconsistent multi-model display: a factor missing from a
-    # given model showed em-dashes on its reference row but blanks
+    # given model showed en-dashes on its reference row but blanks
     # on its non-reference rows. The convention now matches
     # modelsummary / gtsummary / parameters / Stata `esttab`: when
     # the factor is absent from a model, ALL its rows (ref + non-ref)
@@ -768,20 +768,20 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
       next
     }
     # Per-model reference check. The factor IS in this model and
-    # this row is its reference level here -- em-dash conveys
+    # this row is its reference level here -- en-dash conveys
     # "reference, no estimate by design". Event counts are exempt:
     # they are DATA about the level, not an estimate, and the
     # reference category's events/N is exactly what STROBE item 16
     # asks readers to see (gtsummary's add_nevent shows it too).
     if (isTRUE(long_row$is_reference[1L]) &&
         !identical(cs$token, "n_events")) {
-      cells[[cs$col_name]] <- "\u2013"   # em-dash
+      cells[[cs$col_name]] <- "\u2013"   # en-dash
       next
     }
-    # `re_columns` (display-only): on a variance-component row, em-dash the
+    # `re_columns` (display-only): on a variance-component row, en-dash the
     # SE / CI cells the user deselected. The underlying data stays complete
     # (broom::tidy / as_structured always carry full SE + CI). The t/z cell is
-    # always em-dashed on vc rows: the optional re_test statistic is a
+    # always en-dashed on vc rows: the optional re_test statistic is a
     # chi-bar-squared LR statistic, which would be mislabelled under a t/z
     # header (it stays available via broom::tidy()).
     if (identical(long_row$estimate_type[1L], "vc") &&
@@ -832,7 +832,7 @@ format_cell_value <- function(long_row, cs, stars_map,
 
   # Outcome event counts: "events/N" (STROBE item 16 / NEJM
   # "no. of events/total no." style). Both integers; blank (not
-  # em-dash) when the frame carries no event data for the row.
+  # en-dash) when the frame carries no event data for the row.
   if (length(cs$fields) == 2L &&
       identical(cs$fields, c("events", "events_n"))) {
     ev <- long_row$events[1]
@@ -858,7 +858,7 @@ format_cell_value <- function(long_row, cs, stars_map,
   # Single-field cells
   field <- cs$fields
   val <- long_row[[field]][1]
-  # Per-row N: integer, and BLANK (not em-dash) when absent -- an NA
+  # Per-row N: integer, and BLANK (not en-dash) when absent -- an NA
   # here means "same fit as the block first row", not "no value
   # exists for this cell".
   # Sampler-diagnostic fields: ESS renders as an integer (a sample
@@ -1282,7 +1282,7 @@ format_fit_stat_value <- function(token, val,
                                     digits, fit_digits, ic_digits,
                                     p_digits = 3L,
                                     decimal_mark = ".") {
-  # Change tokens render an em-dash on NA -- typically the first
+  # Change tokens render an en-dash on NA -- typically the first
   # model's column (no previous to compare to). Absolute fit stats
   # render an empty string (e.g. R\u00b2 is NA for a glm row in a mixed
   # table, which the user reads as "not applicable").

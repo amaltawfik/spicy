@@ -4,7 +4,7 @@
 # DeltaAIC/AICc/BIC, Deltadeviance, Deltaf^2) are exposed as IN-TABLE fit-stat
 # rows -- not as a "-- Model comparison --" footer block. Each
 # adjacent pair (M2 vs M1, M3 vs M2, ...) contributes one column
-# of change stats; the FIRST model column gets em-dashes (no
+# of change stats; the FIRST model column gets en-dashes (no
 # previous model to compare to). APA Table 7.13 / Stata `esttab` /
 # SPSS Model Summary convention.
 #
@@ -28,7 +28,7 @@
 #                                                    Section 3.5 / Long &
 #                                                    Freese 2014 Section 3.6
 # Mixed-class hierarchies route through the lm path; the glm side
-# em-dashes the variance-explained tokens.
+# en-dashes the variance-explained tokens.
 
 
 # ---- Public-internal entry point -----------------------------------------
@@ -221,7 +221,7 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
   aicc_c <- aicc(fit_curr, aic_c)
 
   # deviance() is a finite scalar for glm but NULL for coxph (no residual
-  # deviance defined); guard to NA so the change is em-dashed, not a 0-length
+  # deviance defined); guard to NA so the change is en-dashed, not a 0-length
   # value that would break the comparison data.frame.
   dev1 <- function(fit) {
     d <- tryCatch(stats::deviance(fit), error = function(e) NULL)

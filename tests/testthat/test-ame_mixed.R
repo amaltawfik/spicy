@@ -138,7 +138,7 @@ test_that("lme factor predictor: AME term == B term (no duplicate row)", {
                               !is.na(fr$coefs$estimate)]
   # Non-reference AME rows only: the frame also synthesizes an NA
   # reference placeholder (its term matches the B REFERENCE row, so
-  # the rendered reference line em-dashes under the AME columns).
+  # the rendered reference line en-dashes under the AME columns).
   ame_terms <- fr$coefs$term[fr$coefs$estimate_type == "ame" &
                                fr$coefs$parent_var == "Sex" &
                                !(fr$coefs$is_ref %in% TRUE)]
@@ -152,7 +152,7 @@ test_that("glmer factor predictor: AME term id matches level coef", {
                              show_columns = c("b", "ame"))
   # cat has levels A (ref), B, C -- computed AME rows must use catB /
   # catC term ids; the catA reference placeholder (NA values, is_ref)
-  # is what em-dashes the reference line under the AME columns.
+  # is what en-dashes the reference line under the AME columns.
   ame_cat <- fr$coefs[fr$coefs$estimate_type == "ame" &
                         fr$coefs$parent_var == "cat" &
                         !(fr$coefs$is_ref %in% TRUE), ]

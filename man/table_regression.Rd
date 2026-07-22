@@ -336,7 +336,7 @@ Four modes, distinguishing WHERE the reference information is
 exposed (in a row, inline, in the footer, or nowhere):
 \itemize{
 \item \code{"row"} (default): explicit row \code{Female (ref.)} with
-em-dashes in all stat columns (NEJM / BMJ clinical
+en-dashes in all stat columns (NEJM / BMJ clinical
 convention). \code{reference_label} controls the suffix.
 \item \code{"annotation"}: the row is dropped and the reference
 is shown inline. Under \code{factor_layout = "grouped"} the
@@ -381,7 +381,7 @@ token order. \code{NULL} (default) resolves class-aware:
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")} (McFadden = Stata \code{ologit} default,
 Nagelkerke = SPSS PLUM).
 \item mixed \code{lm} + \code{glm}: the union of the two (the
-renderer em-dashes per cell the stat not defined for a
+renderer en-dashes per cell the stat not defined for a
 given model class).
 }
 Under \code{nested = TRUE} the default is extended with the
@@ -465,7 +465,7 @@ either way.}
 \item{re_columns}{Character vector. Subset of
 \code{c("est", "se", "ci")} controlling which cells of the
 random-effects rows are \strong{displayed} (\code{"est"} is mandatory);
-deselected SE / CI cells render as an em-dash on those rows
+deselected SE / CI cells render as an en-dash on those rows
 only. Useful for slimming output (\code{re_columns = "est"}) or
 for journals that want only standard errors
 (\code{re_columns = c("est", "se")}). Display-only: the underlying
@@ -484,7 +484,7 @@ For \code{lmer} / \code{glmer} fits these SEs come from \code{merDeriv}, whose
 cost grows superlinearly with the number of observations (about a
 minute at n ≈ 2,700). Above \code{options("spicy.re_se_max_n")}
 (default \code{1000}) they are skipped: the rows keep their estimates,
-the SE / CI cells render as em-dashes, a table note states the
+the SE / CI cells render as en-dashes, a table note states the
 omission, and a \code{spicy_caveat} warning points here. Raise the cap
 (e.g. \code{options(spicy.re_se_max_n = Inf)}) to force the
 computation, or test the random terms with \code{re_test = "lrt"}.}
@@ -883,7 +883,7 @@ Default (resolved when \code{NULL}) is class-aware: lm fits get
 \code{c("nobs", "r2", "adj_r2")}; glm and ordinal \code{polr} / \code{clm} fits get
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")};
 mixed lm + glm sets union both groups (the renderer per-row
-em-dashes the inappropriate cell); Cox fits get
+en-dashes the inappropriate cell); Cox fits get
 \code{c("nobs", "n_events", "aic")}. When \code{nested = TRUE}, the
 class-aware default is extended with change tokens
 (\code{c("r2_change", "f_change", "p_change")} for lm,
@@ -1113,7 +1113,7 @@ group-level terms instead), \code{ci_method = "profile"} /
 rows} (APA Table 7.13 / Stata \code{esttab} / SPSS Model Summary
 convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...)
 contributes one column of change stats; the FIRST model column
-gets em-dashes (no previous model to compare to). Validation
+gets en-dashes (no previous model to compare to). Validation
 requires identical \code{nobs} and identical response variable
 across all models.
 

@@ -187,8 +187,8 @@ as_regression_frame.glm <- function(fit, ...) {
     stringsAsFactors = FALSE
   )
   # m1: an aliased (perfectly collinear) predictor has an NA coefficient and an
-  # em-dashed B row, but its AME comes back as a finite 0 -- a misleading
-  # "0.00". Mirror the B-row NA so the AME cell em-dashes identically (the
+  # en-dashed B row, but its AME comes back as a finite 0 -- a misleading
+  # "0.00". Mirror the B-row NA so the AME cell en-dashes identically (the
   # frame path does the same in .attach_ame_to_frame_coefs()).
   aliased <- .aliased_coef_terms(out)
   if (length(aliased)) {

@@ -17,7 +17,7 @@
 #   structured = list(
 #     body = data.frame(...),       # numeric body, CI pre-split (LL/UL)
 #     reference_rows = integer(),   # body row indices where ALL numeric
-#                                   #   cells should display em-dash
+#                                   #   cells should display en-dash
 #                                   #   (reference-level rows)
 #     factor_header_rows = integer(),# body row indices for factor-name
 #                                   #   header rows (all numeric NA;
@@ -230,7 +230,7 @@ build_structured_body <- function(aligned,
   reference_rows <- integer(0)
   # Per reference row: the model_ids that actually carry the term. In a
   # multi-model table a factor absent from a model must render BLANK in that
-  # model's columns (matching the char body), not em-dash -- the em-dash
+  # model's columns (matching the char body), not en-dash -- the en-dash
   # means "reference by design", which only holds where the factor exists.
   reference_models_by_row <- list()
   factor_header_rows <- integer(0)
@@ -544,7 +544,7 @@ build_structured_body <- function(aligned,
     cs <- e$cs
     if (isTRUE(rt$is_reference)) {
       # Reference row: all numeric cells stay NA (engines render as
-      # em-dash via reference_rows tag).
+      # en-dash via reference_rows tag).
       next
     }
     # Random-effect variance rows (estimate_type = "vc") display on the B
@@ -822,14 +822,14 @@ build_structured_body <- function(aligned,
 }
 
 # Render a single cell of the structured body to its display string,
-# applying precision, APA p-style (drop leading zero), reference em-dash,
+# applying precision, APA p-style (drop leading zero), reference en-dash,
 # and below-threshold "<.001" overrides. Used by engines that drive
 # their formatters via pre-formatted strings (flextable, console).
 .cell_to_string <- function(val, row_idx, col_meta_entry,
                               reference_rows, decimal_mark = ".",
                               ref_models = NULL) {
   if (row_idx %in% reference_rows) {
-    # Em-dash only in the columns of models that HAVE the factor; a model
+    # En-dash only in the columns of models that HAVE the factor; a model
     # the factor is absent from gets a blank cell (char-body parity, M3).
     in_model <- is.null(ref_models) ||
       is.null(col_meta_entry$model_id) ||
@@ -883,7 +883,7 @@ build_structured_body <- function(aligned,
 #   * cells WITHOUT a decimal mark (e.g. integer "32"): pad LHS, then
 #     insert a regular space at the decimal column position, then pad
 #     trailing figure-spaces to mimic the missing RHS digits' width.
-#   * em-dash, blank, and other non-numeric tokens: left as-is (they
+#   * en-dash, blank, and other non-numeric tokens: left as-is (they
 #     will center-align in the column without a decimal anchor).
 #
 # `decimal_mark` is read from the structured format spec ("." or ",").

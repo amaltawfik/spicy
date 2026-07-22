@@ -381,7 +381,7 @@ compute_pseudo_r2_tjur <- function(fit) {
 # the link scale (matches Stata `logit, or` / SPSS exp(B) / SAS
 # OR convention).
 #
-# Reference rows (em-dash) and singular coefs (NA) pass through
+# Reference rows (en-dash) and singular coefs (NA) pass through
 # untouched. The "(Intercept)" row IS exponentiated because exp()
 # of the intercept is the baseline odds / rate / ... -- meaningful
 # in its own right (Stata reports it; SPSS reports it; APA Manual 7
@@ -501,7 +501,7 @@ apply_exponentiate_to_frame_coefs <- function(coefs) {
 # (matching how `car::Anova(type = 3)` reports it for glm).
 #
 # Returns NULL on any failure (drop1 error, non-finite chi-square, etc.)
-# so the caller can skip the term and the renderer em-dashes the cells.
+# so the caller can skip the term and the renderer en-dashes the cells.
 # Quasi families (quasibinomial / quasipoisson / quasi) have no proper
 # log-likelihood, so the LRT is undefined; we return NULL -- consistent
 # with how the pseudo-R^2 family handles them.

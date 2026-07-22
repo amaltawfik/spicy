@@ -97,7 +97,7 @@ test_that("non-finite profile bounds leave the vc CI cells NA", {
   )
   # A CI level far beyond the profiled range: confint() succeeds but
   # returns NA bounds, which must be skipped silently (no spicy warning;
-  # the cells render as em-dashes).
+  # the cells render as en-dashes).
   expect_no_warning(
     res <- .merMod_attach_profile_ci(vc_df, fit, ci_level = 0.9999999)
   )

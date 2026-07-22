@@ -157,7 +157,7 @@ test_that("pseudo standardisation on an unsupported binomial link returns all-NA
   fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial(link = "cauchit"))
 
   # The unsupported link makes SD(Y*) NA, so standardize_pseudo_glm() emits a
-  # spicy_caveat and returns the em-dash (all-NA) beta table.
+  # spicy_caveat and returns the en-dash (all-NA) beta table.
   expect_warning(
     res <- spicy:::standardize_glm(fit, method = "pseudo", weights = NULL),
     class = "spicy_caveat"

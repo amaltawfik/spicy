@@ -295,7 +295,7 @@ standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
       ),
       class = "spicy_caveat"
     )
-    # Return an all-NA \u03B2 table so the renderer em-dashes the column.
+    # Return an all-NA \u03B2 table so the renderer en-dashes the column.
     cf <- stats::coef(fit)
     return(data.frame(
       term = names(cf),

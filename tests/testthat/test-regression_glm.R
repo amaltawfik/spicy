@@ -164,11 +164,11 @@ test_that("lm-only: partial_chi2 errors with hint to variance-explained partials
   )
 })
 
-test_that("Mixed lm + glm: variance-explained tokens DO NOT error (per-row em-dash)", {
+test_that("Mixed lm + glm: variance-explained tokens DO NOT error (per-row en-dash)", {
   m_lm <- lm(mpg ~ wt, data = mt)
   m_glm <- glm(am ~ mpg, data = mt, family = binomial)
   # show_fit_stats with r2 + pseudo_r2_mcfadden should accept under
-  # mixed; renderer em-dashes the inappropriate cell per-model.
+  # mixed; renderer en-dashes the inappropriate cell per-model.
   expect_no_error(
     out <- table_regression(
       list(m_lm, m_glm),
@@ -549,7 +549,7 @@ test_that("lm + partial_chi2 - rejected with hint to partial_f2 / eta2 / omega2"
   expect_match(conditionMessage(err), "partial_f2", fixed = TRUE)
 })
 
-test_that("mixed lm + glm with partial_chi2 - validator passes; lm em-dashed", {
+test_that("mixed lm + glm with partial_chi2 - validator passes; lm en-dashed", {
   fit_lm  <- lm(mpg ~ wt, data = mt)
   fit_glm <- glm(am ~ mpg + wt, data = mt, family = binomial)
   expect_no_error(
@@ -558,7 +558,7 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm em-dashed", {
   )
   body <- as.data.frame(out, stringsAsFactors = FALSE)
   chi_cols <- grep("χ", names(body), value = TRUE)
-  # Two models -> two chi-squared columns; lm column is all em-dash
+  # Two models -> two chi-squared columns; lm column is all en-dash
   expect_length(chi_cols, 2L)
   lm_chi_col <- chi_cols[1]
   glm_chi_col <- chi_cols[2]
@@ -576,7 +576,7 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm em-dashed", {
   expect_true(any(nzchar(glm_vals)))         # glm side has values
 })
 
-test_that("glm + partial_chi2 - quasi family returns NA (drop1 path), em-dashed", {
+test_that("glm + partial_chi2 - quasi family returns NA (drop1 path), en-dashed", {
   set.seed(123)
   d <- data.frame(y = rpois(50, 3), x = rnorm(50))
   fit <- glm(y ~ x, data = d, family = quasipoisson)
@@ -2032,7 +2032,7 @@ test_that("AME caveat: NO caveat when ame + p + ame_p all present", {
   expect_null(cnd)
 })
 
-test_that("align_ci_strings: em-dash and blank cells centered in column", {
+test_that("align_ci_strings: en-dash and blank cells centered in column", {
   values <- c("[61.78, 67.49]", "[-0.03, 0.08]", "[2.09, 5.22]",
               "–", "", NA_character_)
   out <- spicy:::align_ci_strings(values)
@@ -2048,7 +2048,7 @@ test_that("align_ci_strings: em-dash and blank cells centered in column", {
                               function(s) regexpr("\\]", s)[[1]],
                               integer(1))
   expect_equal(length(unique(close_positions)), 1L)
-  # em-dash cell: contains the em-dash glyph, surrounded by spaces
+  # en-dash cell: contains the en-dash glyph, surrounded by spaces
   em_cell <- out[4L]
   expect_true(grepl("–", em_cell))
   expect_match(em_cell, "^\\s+–\\s+$", perl = TRUE)
@@ -2068,7 +2068,7 @@ test_that("align_ci_strings: works with European decimal mark (semicolon sep)", 
   expect_match(out[1L], "; ", fixed = TRUE)
 })
 
-test_that("partial_chi2 cell renders em-dash when estimate is NA (direct)", {
+test_that("partial_chi2 cell renders en-dash when estimate is NA (direct)", {
   # Exercises the is.na(est) branch of the 'value (df)' formatter.
   long_row <- data.frame(estimate = NA_real_, df = NA_real_,
                           stringsAsFactors = FALSE)
@@ -2081,9 +2081,9 @@ test_that("partial_chi2 cell renders em-dash when estimate is NA (direct)", {
   expect_equal(out, "–")
 })
 
-test_that("AME cell renders em-dash when estimate is NA (estimate-only token)", {
+test_that("AME cell renders en-dash when estimate is NA (estimate-only token)", {
   # Post-split (0.12): the `ame` token is estimate-only. The is.na(val)
-  # branch of the single-field path returns the em-dash.
+  # branch of the single-field path returns the en-dash.
   format_cell <- spicy:::format_cell_value
   long_row <- data.frame(
     estimate = NA_real_,

@@ -147,7 +147,7 @@
 #' `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
 #' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`;
 #' mixed lm + glm sets union both groups (the renderer per-row
-#' em-dashes the inappropriate cell); Cox fits get
+#' en-dashes the inappropriate cell); Cox fits get
 #' `c("nobs", "n_events", "aic")`. When `nested = TRUE`, the
 #' class-aware default is extended with change tokens
 #' (`c("r2_change", "f_change", "p_change")` for lm,
@@ -374,7 +374,7 @@
 #' rows** (APA Table 7.13 / Stata `esttab` / SPSS Model Summary
 #' convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...)
 #' contributes one column of change stats; the FIRST model column
-#' gets em-dashes (no previous model to compare to). Validation
+#' gets en-dashes (no previous model to compare to). Validation
 #' requires identical `nobs` and identical response variable
 #' across all models.
 #'
@@ -766,7 +766,7 @@
 #'   exposed (in a row, inline, in the footer, or nowhere):
 #'   \itemize{
 #'     \item `"row"` (default): explicit row `Female (ref.)` with
-#'       em-dashes in all stat columns (NEJM / BMJ clinical
+#'       en-dashes in all stat columns (NEJM / BMJ clinical
 #'       convention). `reference_label` controls the suffix.
 #'     \item `"annotation"`: the row is dropped and the reference
 #'       is shown inline. Under `factor_layout = "grouped"` the
@@ -810,7 +810,7 @@
 #'       "aic")` (McFadden = Stata `ologit` default,
 #'       Nagelkerke = SPSS PLUM).
 #'     \item mixed `lm` + `glm`: the union of the two (the
-#'       renderer em-dashes per cell the stat not defined for a
+#'       renderer en-dashes per cell the stat not defined for a
 #'       given model class).
 #'   }
 #'   Under `nested = TRUE` the default is extended with the
@@ -890,7 +890,7 @@
 #' @param re_columns Character vector. Subset of
 #'   `c("est", "se", "ci")` controlling which cells of the
 #'   random-effects rows are **displayed** (`"est"` is mandatory);
-#'   deselected SE / CI cells render as an em-dash on those rows
+#'   deselected SE / CI cells render as an en-dash on those rows
 #'   only. Useful for slimming output (`re_columns = "est"`) or
 #'   for journals that want only standard errors
 #'   (`re_columns = c("est", "se")`). Display-only: the underlying
@@ -909,7 +909,7 @@
 #'   cost grows superlinearly with the number of observations (about a
 #'   minute at n ≈ 2,700). Above `options("spicy.re_se_max_n")`
 #'   (default `1000`) they are skipped: the rows keep their estimates,
-#'   the SE / CI cells render as em-dashes, a table note states the
+#'   the SE / CI cells render as en-dashes, a table note states the
 #'   omission, and a `spicy_caveat` warning points here. Raise the cap
 #'   (e.g. `options(spicy.re_se_max_n = Inf)`) to force the
 #'   computation, or test the random terms with `re_test = "lrt"`.
@@ -2352,7 +2352,7 @@ table_regression <- function(
   # flexsurv, selection, nls, Bayesian) must REFUSE the request rather
   # than render an entirely empty column. In mixed tables where at least
   # one model can produce AME, the capable models populate their columns
-  # and the incapable ones em-dash -- so only the all-incapable case
+  # and the incapable ones en-dash -- so only the all-incapable case
   # errors.
   if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
     ame_ok <- vapply(frames, function(fr) {

@@ -325,7 +325,7 @@ rendering an empty column.
   refuse `exponentiate = TRUE`; factor predictors group under their
   parent variable with a reference row.
 * `as_structured()` and the rich output engines match the console body
-  exactly (blank vs em-dash reference cells, the multi-outcome
+  exactly (blank vs en-dash reference cells, the multi-outcome
   `Outcome` row); the structured schema gains
   `reference_models_by_row` and `outcome_labels_by_col`.
 * `table_regression(m1, m2)` without `list()` errors with a helpful
@@ -415,7 +415,7 @@ rendering an empty column.
 
 ## Minor improvements
 
-* Console em-dash alignment: non-numeric placeholders (em-dash,
+* Console en-dash alignment: non-numeric placeholders (en-dash,
   "NA") sit at the decimal-mark column instead of the integer-
   part column (APA Manual 7 §7.13). Integer cells in mixed-
   precision columns (`n` row alongside `R²`) keep their right-

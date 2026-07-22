@@ -89,7 +89,7 @@ test_that("glm(poisson) AME: ordered-factor rows in levels() order (family-agnos
 # against `levels()[1]`, and the reader needs to see which level is the
 # baseline. `build_reference_rows()` emits a synthetic ref row anchored
 # on `levels()[1]` only when AME is in show_columns -- the row is
-# em-dashed in both B and AME columns (consistent with how plain
+# en-dashed in both B and AME columns (consistent with how plain
 # factors already display their reference row).
 
 test_that("ordered factor + AME: synthetic reference row is emitted", {
@@ -149,13 +149,13 @@ test_that("AME extraction triggered by ame_ci / ame_p / ame_se (not only 'ame')"
 })
 
 
-test_that("ref-row em-dashes follow estimate_type semantics (plain factor: B + AME both em-dashed)", {
+test_that("ref-row en-dashes follow estimate_type semantics (plain factor: B + AME both en-dashed)", {
   skip_if_no_marginaleffects()
   # Plain treatment-coded factor with AME requested: the reference
   # level is the baseline for BOTH the B-coefficient block AND the
-  # AME contrast block, so em-dashes must appear under both column
+  # AME contrast block, so en-dashes must appear under both column
   # families. Test column ordering is mixed (ame tokens before b)
-  # to confirm the em-dash follows the estimate_type semantics, not
+  # to confirm the en-dash follows the estimate_type semantics, not
   # the position in show_columns.
   fit <- glm(smoking ~ sex + age, data = sochealth, family = binomial)
   out <- table_regression(fit,
@@ -165,7 +165,7 @@ test_that("ref-row em-dashes follow estimate_type semantics (plain factor: B + A
   ref_row <- body[trimws(body$Variable) == "Female (ref.)", ,
                    drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
-  # Every data column of the ref-row contains an em-dash, because
+  # Every data column of the ref-row contains an en-dash, because
   # `Female` is the reference for both B and AME blocks.
   data_cells <- as.character(ref_row[, -1L])
   expect_true(all(grepl("–", data_cells)))
@@ -209,13 +209,13 @@ test_that("stars = TRUE suffixes stars to AME cells (independent of ame_p column
 })
 
 
-test_that("ref-row em-dashes follow estimate_type semantics (ordered factor: AME only)", {
+test_that("ref-row en-dashes follow estimate_type semantics (ordered factor: AME only)", {
   skip_if_no_marginaleffects()
   # Ordered factor with poly contrasts + AME requested: the .L /
   # .Q B coefficients are orthogonal polynomial TRENDS, they have
-  # no per-level reference. The synthetic ref-row should em-dash
+  # no per-level reference. The synthetic ref-row should en-dash
   # ONLY the AME columns and BLANK the B columns. This is the
-  # pedagogical signal -- the em-dash placement tells the reader
+  # pedagogical signal -- the en-dash placement tells the reader
   # WHICH estimate type the reference applies to.
   fit <- glm(smoking ~ sex + education, data = sochealth,
              family = binomial)
@@ -227,22 +227,22 @@ test_that("ref-row em-dashes follow estimate_type semantics (ordered factor: AME
                    , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
   # Columns 1 = Variable label; cols 2-3 = B / p of B; cols 4-5 =
-  # AME / p of AME. B columns BLANK, AME columns em-dashed.
+  # AME / p of AME. B columns BLANK, AME columns en-dashed.
   cells <- as.character(ref_row[, -1L])
   expect_equal(length(cells), 4L)
   expect_true(trimws(cells[1]) == "")   # B blank
   expect_true(trimws(cells[2]) == "")   # p of B blank
-  expect_match(cells[3], "–")            # AME em-dash
-  expect_match(cells[4], "–")            # p of AME em-dash
+  expect_match(cells[3], "–")            # AME en-dash
+  expect_match(cells[4], "–")            # p of AME en-dash
 })
 
 
 test_that("multi-model: ref-row of a factor missing from a model is BLANK in that model's columns", {
-  # Pre-fix, an `is_reference = TRUE` row was em-dashed across ALL
+  # Pre-fix, an `is_reference = TRUE` row was en-dashed across ALL
   # model columns regardless of whether the factor was in each
   # model. The non-reference rows were correctly blanked when the
   # factor was absent -- producing an asymmetric multi-model
-  # display (ref-row em-dashes everywhere, non-ref rows blank when
+  # display (ref-row en-dashes everywhere, non-ref rows blank when
   # absent). The fix aligns spicy with modelsummary / gtsummary /
   # Stata `esttab`: when a factor is absent from a model, ALL its
   # rows (ref + non-ref) are blank in that model's columns.
@@ -255,7 +255,7 @@ test_that("multi-model: ref-row of a factor missing from a model is BLANK in tha
                          check.names = FALSE)
   ref_row <- body[trimws(body$Variable) == "No (ref.)", , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
-  # M1 columns: em-dash (factor present, reference level).
+  # M1 columns: en-dash (factor present, reference level).
   m1_cells <- as.character(ref_row[grepl("^M1", names(ref_row))])
   expect_true(all(grepl("–", m1_cells)))
   # M2 columns: blank (factor absent from M2). The cells contain

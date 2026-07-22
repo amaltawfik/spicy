@@ -85,12 +85,12 @@ test_that("render – factor_layout = 'grouped' inserts factor header + indents 
   expect_true(any(grepl("^  8$", level_rows)))
 })
 
-test_that("render – reference rows em-dashed in stat columns", {
+test_that("render – reference rows en-dashed in stat columns", {
   aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"))
   rt <- spicy:::render_regression_table(aligned)
   ref_row <- rt[grepl("\\(ref\\.\\)", rt$Variable), , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
-  # All stat cols em-dashed (trim decimal-alignment padding before
+  # All stat cols en-dashed (trim decimal-alignment padding before
   # comparison – render output pre-pads numeric cells for vertical
   # decimal-mark alignment by default).
   stat_cols <- setdiff(names(ref_row), "Variable")

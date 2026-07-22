@@ -750,7 +750,7 @@ validate_class_appropriate_tokens <- function(models,
   all_lm  <- length(models) > 0L && all(lm_only_flags)
 
   # Variance-explained partial tokens. Reject only when ALL models
-  # are glm \u2013 in mixed sets, the renderer em-dashes glm rows and
+  # are glm \u2013 in mixed sets, the renderer en-dashes glm rows and
   # populates lm rows, which is the right behaviour.
   if (all_glm) {
     bad <- intersect(show_columns,
@@ -1058,7 +1058,7 @@ validate_class_appropriate_tokens <- function(models,
   # otherwise slip through and render an empty row (finding m4). Classical /
   # pseudo R^2 and the least-squares partial-variance tokens are undefined for
   # mixed models; point the user at the Nakagawa marginal / conditional R^2.
-  # Reject only when ALL models are mixed (a mixed set em-dashes the RE rows).
+  # Reject only when ALL models are mixed (a mixed set en-dashes the RE rows).
   all_mixed <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1),
                c("merMod", "lmerModLmerTest", "glmmTMB", "lme")))
@@ -1112,7 +1112,7 @@ validate_class_appropriate_tokens <- function(models,
   # marginaleffects itself warns its delta-method standard errors are
   # unreliable for Cox. The canonical Cox report is the hazard ratio
   # (exponentiate = TRUE). Reject only when ALL models are Cox; a mixed set
-  # em-dashes the Cox AME rows (the AME extraction skips Cox fits).
+  # en-dashes the Cox AME rows (the AME extraction skips Cox fits).
   all_cox <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1), c("coxph", "cph")))
   if (all_cox) {
@@ -1171,7 +1171,7 @@ validate_class_appropriate_tokens <- function(models,
 # tokens (r2_change, adj_r2_change, F, f2_change) require an OLS
 # residual-sum-of-squares partition and are NA for glm. Reject
 # explicitly when ALL nested models are glm; for mixed lm + glm
-# hierarchies the renderer em-dashes the glm side, which is the
+# hierarchies the renderer en-dashes the glm side, which is the
 # right behaviour. NULL or empty `nested_stats` is a no-op (the
 # class-aware default in compute_nested_comparisons_lm() picks the
 # right tokens automatically).

@@ -1,7 +1,7 @@
 # Structured/rich-engine parity fixes from the findings re-triage, group C
 # (dev/findings_retriage.md):
 #   M3 -- in a multi-model table, a factor's reference row must be BLANK (not
-#         em-dash) in the columns of models that lack the factor, matching
+#         en-dash) in the columns of models that lack the factor, matching
 #         the char body / console.
 #   m2 -- gt spanner ids must not collide when two model labels differ only
 #         in characters make.names() folds together ("Step 1" vs "Step.1").
@@ -15,19 +15,19 @@
 }
 .sp_m_plain <- function() lm(mpg ~ wt, data = mtcars)
 
-test_that("M3: reference row is blank (not em-dash) for models lacking the factor", {
+test_that("M3: reference row is blank (not en-dash) for models lacking the factor", {
   x <- table_regression(list(.sp_m_factor(), .sp_m_plain()))
   s <- as_structured(x)
   sb <- spicy:::.format_structured_to_string_body(s)
   i_ref <- s$reference_rows[1]
   m1_cols <- grep("Model 1", names(sb), value = TRUE)
   m2_cols <- grep("Model 2", names(sb), value = TRUE)
-  # model WITH the factor: em-dash; model WITHOUT: blank
+  # model WITH the factor: en-dash; model WITHOUT: blank
   expect_true(all(sb[i_ref, m1_cols] == "–"))
   expect_true(all(sb[i_ref, m2_cols] == ""))
 })
 
-test_that("M3: single-model reference rows still em-dash everywhere", {
+test_that("M3: single-model reference rows still en-dash everywhere", {
   s <- as_structured(table_regression(.sp_m_factor()))
   sb <- spicy:::.format_structured_to_string_body(s)
   i_ref <- s$reference_rows[1]

@@ -346,7 +346,7 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
         c(
           "AME computation via `marginaleffects::avg_slopes()` failed.",
           "x" = paste0("Reason: ", conditionMessage(e)),
-          "i" = "AME column will be em-dashed in the displayed table."
+          "i" = "AME column will be en-dashed in the displayed table."
         ),
         class = "spicy_fallback"
       )
@@ -518,7 +518,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
         c(
           "AME computation via `marginaleffects::avg_slopes()` failed.",
           "x" = paste0("Reason: ", conditionMessage(e)),
-          "i" = "AME column will be em-dashed in the displayed table."
+          "i" = "AME column will be en-dashed in the displayed table."
         ),
         class = "spicy_fallback"
       )
@@ -716,7 +716,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       c(
         "AME computation via `marginaleffects::avg_slopes()` failed.",
         "x" = paste0("Reason: ", conditionMessage(e)),
-        "i" = "AME column will be em-dashed in the displayed table."
+        "i" = "AME column will be en-dashed in the displayed table."
       ),
       class = "spicy_fallback"
     )
@@ -872,7 +872,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       hint <- if (!spicy_pkg_available("collapse")) {
         "Install collapse: `install.packages(\"collapse\")`."
       } else {
-        "AME column will be em-dashed in the displayed table."
+        "AME column will be en-dashed in the displayed table."
       }
       spicy_warn(
         c(
@@ -934,7 +934,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     spicy_warn(
       paste0("AME draws could not be extracted via ",
              "marginaleffects::posterior_draws(); the AME SE column ",
-             "is em-dashed and the interval is marginaleffects' ",
+             "is en-dashed and the interval is marginaleffects' ",
              "equal-tailed default."),
       class = "spicy_fallback"
     )
@@ -944,7 +944,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 
 
 # Terms whose coefficient is perfectly collinear (aliased): the fit returns an
-# NA estimate and the frame carries an em-dashed, NON-reference B row for them.
+# NA estimate and the frame carries an en-dashed, NON-reference B row for them.
 # Their AME (and standardized) estimate is equally undefined. Works on both the
 # frame schema (`is_ref`) and the legacy long-format (`is_reference`).
 .aliased_coef_terms <- function(coefs) {
@@ -991,10 +991,10 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc, hdi = hdi)
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
   # A perfectly-collinear (aliased) predictor has an NA coefficient and an
-  # em-dashed B row; its AME is equally undefined, but marginaleffects returns a
+  # en-dashed B row; its AME is equally undefined, but marginaleffects returns a
   # finite 0 (not NA), which would render a misleading "0.00". Mirror the B-row
-  # NA on the matching AME rows so the cell em-dashes identically (the renderer
-  # em-dashes on is.na()). Match on the BARE term, before any per-outcome prefix.
+  # NA on the matching AME rows so the cell en-dashes identically (the renderer
+  # en-dashes on is.na()). Match on the BARE term, before any per-outcome prefix.
   aliased <- .aliased_coef_terms(coefs)
   if (length(aliased)) {
     hit <- ame_rows$term %in% aliased
@@ -1024,10 +1024,10 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # Reference-level placeholder AME rows: the legacy lm/glm extractor
   # emits one reference row PER estimate_type (build_reference_rows:
   # "the same level is the reference for B ... AND for AME"), so the
-  # factor reference line em-dashes under the AME columns. The frame
+  # factor reference line en-dashes under the AME columns. The frame
   # path synthesizes the same here -- without them the AME cells of a
   # reference row render BLANK (value absent) instead of the semantic
-  # em-dash every legacy-path table shows. Per-category AME (ordinal:
+  # en-dash every legacy-path table shows. Per-category AME (ordinal:
   # shared B rows, one AME per outcome) gets one placeholder per
   # outcome category so every pivoted column dashes. Known corner: in
   # the multinom outcome-as-columns layout the REFERENCE OUTCOME's

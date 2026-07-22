@@ -16,7 +16,7 @@ schema).
 }
 \description{
 \code{table_regression()} returns a \emph{display} representation by default
--- a character \code{data.frame} with stars suffixes, em-dash for
+-- a character \code{data.frame} with stars suffixes, en-dash for
 reference rows, bracketed \code{"[L, U]"} confidence intervals, and APA
 padding on p-values. This accessor returns the \emph{typed} view that
 the output engines (Excel, gt, tinytable, flextable, clipboard)

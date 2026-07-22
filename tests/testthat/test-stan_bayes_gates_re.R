@@ -764,7 +764,7 @@ test_that("Bayesian beta is an exact affine rescale (effectsize oracle)", {
                                         fr$coefs$term == "(Intercept)"]))
   expect_true(all(is.na(bt$p_value)) && all(is.na(bt$statistic)))
   expect_true(all(is.na(bt$mcse)) && all(is.na(bt$rhat)))
-  # Beta reference placeholder mirrors the B one (em-dash parity).
+  # Beta reference placeholder mirrors the B one (en-dash parity).
   ref_beta <- fr$coefs[fr$coefs$estimate_type == "beta" &
                          (fr$coefs$is_ref %in% TRUE), ]
   expect_identical(nrow(ref_beta), 1L)

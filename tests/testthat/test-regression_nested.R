@@ -193,7 +193,7 @@ test_that("table_regression - nested = TRUE injects ΔR² / F-change / p (change
   expect_true("p (change)" %in% vars)
 })
 
-test_that("table_regression - nested = TRUE first model has em-dash in change cols", {
+test_that("table_regression - nested = TRUE first model has en-dash in change cols", {
   fits <- list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt))
   out <- table_regression(fits, nested = TRUE)
   body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)

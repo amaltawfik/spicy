@@ -109,7 +109,7 @@ test_that("AME request on an incapable class is refused, not an empty column", {
     fixed = TRUE
   )
 
-  # Mixed table with one capable model still renders (incapable em-dashes).
+  # Mixed table with one capable model still renders (incapable en-dashes).
   l <- lm(mpg ~ wt, data = mtcars)
   expect_s3_class(
     table_regression(list(l, cx), show_columns = c("b", "ame", "p")),

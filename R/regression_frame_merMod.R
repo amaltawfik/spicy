@@ -309,7 +309,7 @@ as_regression_frame.glmerMod <- function(fit,
   )
 
   # Append reference-level rows for treatment-coded factor predictors
-  # so the renderer can emit em-dashed reference rows (consistent with
+  # so the renderer can emit en-dashed reference rows (consistent with
   # lm / glm behaviour).
   ref_rows <- .merMod_reference_rows(fit, est_template = est)
   if (nrow(ref_rows) > 0L) {
@@ -629,7 +629,7 @@ as_regression_frame.glmerMod <- function(fit,
   #     CI on the variance scale. Falls back to NA when (a) merDeriv is
   #     not installed, (b) the fit is singular (merDeriv crashes on
   #     var ~= 0), (c) n exceeds the size cap (.re_se_skipped_by_size),
-  #     or (d) merDeriv errors. The body renderer treats NAs as em-dash.
+  #     or (d) merDeriv errors. The body renderer treats NAs as en-dash.
   vc_df <- if (identical(re_ci, "profile")) {
     .merMod_attach_profile_ci(vc_df, fit, ci_level = ci_level)
   } else {
@@ -691,7 +691,7 @@ as_regression_frame.glmerMod <- function(fit,
 # ~1.4 s at n ~ 900, ~60 s at n ~ 2700, intractable at n ~ 7000;
 # information = "expected" is no cheaper). A default table must not
 # cost minutes, so above the cap the SE / CI columns are omitted
-# (em-dash), the footer states the fact, and the orchestrator surfaces
+# (en-dash), the footer states the fact, and the orchestrator surfaces
 # the advice (raise the option, or use re_test) as a spicy_caveat
 # warning. Override with options(spicy.re_se_max_n = ).
 .re_se_size_cap <- function() {
@@ -760,7 +760,7 @@ as_regression_frame.glmerMod <- function(fit,
         "Profile-likelihood CIs for the random-effect variance components could not be computed.",
         "i" = paste0(
           "`confint(fit, method = \"profile\")` failed for this fit; ",
-          "the CI cells render as em-dashes. `re_ci = \"wald\"` (the ",
+          "the CI cells render as en-dashes. `re_ci = \"wald\"` (the ",
           "default) may still provide Wald intervals."
         )
       ),
@@ -1064,7 +1064,7 @@ as_regression_frame.glmerMod <- function(fit,
 #                   lambda = exp(intercept_null + 0.5 * var_random)
 # Returns NA when the structure is more complex (multiple grouping
 # factors, random slopes, unsupported family/link) so downstream
-# renderers can em-dash.
+# renderers can en-dash.
 .merMod_icc <- function(vc_df, fit = NULL) {
   if (nrow(vc_df) == 0L) return(NA_real_)
   # Phase 7c10: ignore correlation rows when counting variance rows.

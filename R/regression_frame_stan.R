@@ -426,7 +426,7 @@ as_regression_frame.brmsfit <- function(fit,
     )                                                                 # nocov end
   }
   # brmsfit only: every non-intercept coefficient must map onto a
-  # design column by name -- an unmatched name would silently em-dash
+  # design column by name -- an unmatched name would silently en-dash
   # the whole beta column (the stanreg NA policy exists for aliased
   # terms, a different situation).
   if (is_brms) {
@@ -486,7 +486,7 @@ as_regression_frame.brmsfit <- function(fit,
     sd_y_div         = sd_y_div
   )
   # NA for any frame coefficient without a matching design column
-  # (renders as an em-dash, mirroring aliased terms).
+  # (renders as an en-dash, mirroring aliased terms).
   unname(sf_all[coef_names])
 }
 
@@ -795,7 +795,7 @@ as_regression_frame.brmsfit <- function(fit,
       test_type        = rep(NA_character_, length(coef_names)),
       stringsAsFactors = FALSE
     )[, .stan_coefs_schema]
-    # Beta reference placeholders mirror the B ones (em-dash parity
+    # Beta reference placeholders mirror the B ones (en-dash parity
     # on the reference line under the beta columns).
     if (nrow(ref_rows) > 0L) {
       beta_ref <- ref_rows

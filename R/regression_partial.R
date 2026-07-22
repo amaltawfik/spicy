@@ -89,9 +89,9 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
   for (i in seq_along(cf_names)) {
     term_idx <- assign_idx[i]
     if (term_idx == 0L) next       # intercept -- no partial effect
-    if (is.na(cf[i])) next         # singular coef -- em-dashed by renderer
+    if (is.na(cf[i])) next         # singular coef -- en-dashed by renderer
     eff <- cache[[as.character(term_idx)]]
-    if (is.null(eff)) next         # drop1 failed -- renderer em-dashes
+    if (is.null(eff)) next         # drop1 failed -- renderer en-dashes
 
     nm <- cf_names[i]
     fmeta <- factor_meta[[nm]]
@@ -131,7 +131,7 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
 # Compute the partial F + the three effect-size estimands and their
 # CIs for one model term. Returns NULL on any failure (drop1 failure,
 # non-finite F, etc.) -- the caller skips the term and the renderer
-# em-dashes the corresponding cells.
+# en-dashes the corresponding cells.
 compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
   fs <- extract_lm_focal_f_stat(fit, term_label)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs < 0) {

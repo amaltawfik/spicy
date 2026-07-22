@@ -323,7 +323,7 @@ test_that("table_regression(lmer slope) renders the rho row with SE + CI", {
   expect_equal(nrow(rho), 1L)
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
-  expect_true(grepl("[0-9]", rho[[se_col]][1]))    # SE populated, no em-dash
+  expect_true(grepl("[0-9]", rho[[se_col]][1]))    # SE populated, no en-dash
   expect_true(grepl("[0-9]", rho[[ci_col]][1]))    # CI populated
 })
 

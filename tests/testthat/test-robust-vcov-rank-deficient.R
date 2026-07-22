@@ -28,7 +28,7 @@ test_that("rank-deficient lm HC3: each non-dropped coef SE == vcovHC, dropped is
   expect_true(any(is.na(stats::coef(o$fit))))      # x1copy dropped
   b <- b_rows(as_regression_frame(o$fit, vcov = "HC3"))
 
-  # The dropped coefficient is a singular NA row (em-dash), as for the classical
+  # The dropped coefficient is a singular NA row (en-dash), as for the classical
   # path -- never a borrowed neighbour variance.
   dropped <- b[b$term == "x1copy", ]
   expect_identical(nrow(dropped), 1L)

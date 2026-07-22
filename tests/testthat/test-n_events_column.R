@@ -41,7 +41,7 @@ test_that("events/N cells match direct counts on the estimation sample", {
 })
 
 
-test_that("the reference row shows its counts, not an em-dash", {
+test_that("the reference row shows its counts, not an en-dash", {
   d <- .nev_soc()
   fit <- stats::glm(smoking ~ sex, family = stats::binomial(), data = d)
   df <- as.data.frame(
@@ -51,7 +51,7 @@ test_that("the reference row shows its counts, not an em-dash", {
   ev_col <- names(df)[grepl("Events/N", names(df), fixed = TRUE)]
   expect_identical(length(ev_col), 1L)
   expect_match(ref_row[[ev_col]], "^\\s*131/606\\s*$")
-  # The estimate cell keeps the reference em-dash.
+  # The estimate cell keeps the reference en-dash.
   b_col <- names(df)[grepl("^\\s*B\\s*$|OR", names(df))][1]
   expect_match(ref_row[[b_col]], "–")
 })

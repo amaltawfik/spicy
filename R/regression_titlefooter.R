@@ -1083,7 +1083,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
   cil <- if ("ci_lower" %in% names(vc)) vc$ci_lower else rep(NA_real_, nrow(vc))
   ciu <- if ("ci_upper" %in% names(vc)) vc$ci_upper else rep(NA_real_, nrow(vc))
   # NOTE: `re_columns` is a DISPLAY concern -- it is honoured at render time
-  # (build_body_row em-dashes the deselected cells on vc rows). The data stays
+  # (build_body_row en-dashes the deselected cells on vc rows). The data stays
   # complete here so broom::tidy() / as_structured() always carry full SE + CI.
 
   label <- vapply(seq_len(nrow(vc)), function(i) {
@@ -1220,7 +1220,7 @@ build_singular_footer_block_from_frames <- function(frames) {
 
 # Phase 7c21: distinguish the two singular regimes:
 #   * lm / glm: rank-deficient fixed-effect design -- dropped coefs
-#     render as -. ASCII em-dash in the renderer.
+#     render as -. ASCII en-dash in the renderer.
 #   * lmer / glmer / glmmTMB / lme: variance components on the
 #     boundary 0 (lme4::isSingular). Random-effect SE / CI are
 #     suppressed in `.merMod_attach_wald_se_ci()` to avoid

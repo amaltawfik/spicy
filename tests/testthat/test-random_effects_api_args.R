@@ -88,8 +88,8 @@ test_that("invalid re_scale value triggers match.arg error", {
 
 # ---- 3. re_columns subsets the RE-row columns (rows layout) -------------
 # In the rows layout the SE / CI columns are shared with the fixed effects;
-# re_columns em-dashes them on the RE rows only. A cell "has a number" when it
-# shows a value, and is em-dashed / blank otherwise -- tested on the body.
+# re_columns en-dashes them on the RE rows only. A cell "has a number" when it
+# shows a value, and is en-dashed / blank otherwise -- tested on the body.
 
 .re_cell_has_num <- function(df, col) {
   r <- df[grepl("Subject (Intercept)", df$Variable, fixed = TRUE), ,
@@ -97,7 +97,7 @@ test_that("invalid re_scale value triggers match.arg error", {
   grepl("[0-9]", r[[col]][1])
 }
 
-test_that("re_columns = 'est' em-dashes SE and CI on the RE rows", {
+test_that("re_columns = 'est' en-dashes SE and CI on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
   df <- table_regression(fit, show_columns = c("b", "se", "ci"),
@@ -110,7 +110,7 @@ test_that("re_columns = 'est' em-dashes SE and CI on the RE rows", {
   expect_true(grepl("[0-9]", trimws(df[df$Variable == "Days", se_col])))
 })
 
-test_that("re_columns = c('est', 'se') keeps SE, em-dashes CI on the RE rows", {
+test_that("re_columns = c('est', 'se') keeps SE, en-dashes CI on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
   df <- table_regression(fit, show_columns = c("b", "se", "ci"),
@@ -121,7 +121,7 @@ test_that("re_columns = c('est', 'se') keeps SE, em-dashes CI on the RE rows", {
   expect_false(.re_cell_has_num(df, ci_col))
 })
 
-test_that("re_columns = c('est', 'ci') keeps CI, em-dashes SE on the RE rows", {
+test_that("re_columns = c('est', 'ci') keeps CI, en-dashes SE on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
   df <- table_regression(fit, show_columns = c("b", "se", "ci"),
