@@ -67,8 +67,12 @@ for Bayesian fits (`rstanarm`, `brms`). The mechanics covered here — confidenc
 levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods —
 apply across every supported class; variance-estimator
-availability varies by family, and each family vignette states
-its own set. One decision cuts across all of them — how to code,
+availability varies by family, and the complete map — every
+supported class with its estimands, variance estimators and fit
+statistics, including the families without a dedicated article
+(quantile regression, `fixest`, `betareg`, ...) — is
+`vignette("table-regression-supported-models")`. One decision cuts
+across all of them — how to code,
 test, and present categorical *predictors* — and has its own
 vignette: `vignette("categorical-predictors")`.
 
@@ -272,9 +276,12 @@ variance (covered in *Robust variance*), the AME inference shares
 the coefficient's t-distribution and Satterthwaite-corrected
 degrees of freedom via `clubSandwich::linear_contrast()`, so `B`
 and AME are reported on the same inferential footing in the same
-table. `marginaleffects` is a Suggests dependency; when
-unavailable, the AME columns appear in the header but render as
-NA without erroring (the rest of the table is unaffected).
+table. `marginaleffects` is a Suggests dependency with two distinct
+failure modes: requesting AME columns *without the package
+installed* is a hard, classed error (`spicy_missing_pkg`, with the
+install hint), while a *computation* failure inside `avg_slopes()`
+on an installed system warns (`spicy_fallback`) and dashes the AME
+cells, leaving the rest of the table intact.
 
 ## Multiple models side by side
 
@@ -297,6 +304,39 @@ When all models share the same DV, the DV appears in the title.
 Use a named list — e.g. `list(Crude = m1, Adjusted = m2)` — to
 set the spanner labels explicitly; pass `model_labels = c(...)`
 to override the names from the list.
+
+## Univariable screening
+
+Epidemiological reporting often starts one step *before* the
+side-by-side table: a **univariable screen** — one simple regression
+per candidate predictor — set against the multivariable model, the
+classic "Table 2" of clinical and epidemiological journals (the
+layout of
+`gtsummary::tbl_uvregression()` and the EpiRHandbook workflow).
+`table_regression_uv()` builds that entire layout in one call: pass
+the data, the outcome, and the candidate predictors — reusing `sh`,
+the unordered-`education` copy of `sochealth` introduced in
+*Per-coefficient effect sizes*:
+
+```{r uv-screen}
+table_regression_uv(sh, outcome = smoking,
+                    predictors = c(sex, age, education),
+                    family = binomial(), exponentiate = TRUE)
+```
+
+Reading it: each *Univariable* row is its own simple logistic
+regression — the `N` column is per predictor, because listwise
+deletion can differ across candidates — while the *Multivariable*
+column group is the single joint model on the same candidates
+(`multivariable = FALSE` drops it, `complete_cases = TRUE` aligns
+every fit on the common complete cases). Comparing the two columns
+per row is the point of the layout: an association that survives
+adjustment reads differently from one that collapses. The
+multivariable `n` appears once, as a fit statistic — it belongs to
+the joint model, not to any predictor. A `p_adjust` argument treats
+the screen as one family of tests. For a time-to-event screen the
+same call takes `method = "coxph"` with a `Surv()` outcome — see
+`vignette("table-regression-survival")`.
 
 ## Hierarchical / nested regression
 
@@ -631,6 +671,26 @@ effect. The *Average marginal effects* section below reports the
 probability-scale counterpart for the same contrast (−0.15, that
 is, 15 percentage points).
 
+### Event counts per level
+
+Clinical and epidemiological tables conventionally carry the raw
+**events / N** next to each odds ratio (STROBE checklist item 15;
+the NEJM house style). The opt-in `"n_events"` column token renders
+exactly that — per factor level, with the full-sample count on
+numeric predictors and the intercept row:
+
+```{r glm-counts}
+table_regression(fit, show_columns = c("n_events", "b", "ci", "p"))
+```
+
+The token is off by default and *deliberately narrow*: it is
+defined for binomial models with an ungrouped 0/1 response and for
+right-censored Cox models (events per factor level; Cox tables
+also carry `N events` as a default fit statistic — see
+`vignette("table-regression-survival")`). Requesting it anywhere
+else is a hard, classed error rather than a silently empty
+column.
+
 ### Term-level partial chi-square
 
 `partial_chi2` is the glm analog of `partial_f2`: for each model
@@ -900,6 +960,10 @@ ambiguity.
 
 ## See also
 
+- `vignette("table-regression-supported-models", package = "spicy")`
+  — the map of every supported class: estimands, variance
+  estimators, standardized-coefficient scope, and fit statistics
+  per family.
 - `vignette("categorical-predictors", package = "spicy")` for
   categorical *predictors* across all model families: dummy coding
   and reference levels, joint tests, ordinal predictors

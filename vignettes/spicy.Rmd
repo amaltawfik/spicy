@@ -87,7 +87,7 @@ cross_tab(sochealth, smoking, education)
 Add percentages with `percent`:
 
 ```{r crosstab-pct}
-cross_tab(sochealth, smoking, education, percent = "col")
+cross_tab(sochealth, smoking, education, percent = "column")
 ```
 
 Group by a third variable with `by`:
@@ -126,12 +126,11 @@ cramer_v(tbl, detail = TRUE)
 `table_categorical()` covers grouped or one-way summary tables for
 categorical variables:
 
-```{r table-categorical-tt, eval = build_rich_tables}
+```{r table-categorical-tt}
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  output = "tinytable"
+  by = education
 )
 ```
 
@@ -162,10 +161,12 @@ table_continuous_lm(
 ```
 
 `table_regression()` reports the full coefficient table for one or
-several fitted `lm()` or `glm()` models, with APA-aligned formatting,
-factor grouping with reference rows, robust variance, standardised
-coefficients, average marginal effects, hierarchical comparisons, and
-side-by-side multi-model layouts:
+several fitted models — some thirty classes, from `lm()` / `glm()`
+to mixed-effects, ordinal, survival and Bayesian engines (the full
+map is `vignette("table-regression-supported-models")`) — with
+APA-aligned formatting, factor grouping with reference rows, robust
+variance, standardised coefficients, average marginal effects,
+hierarchical comparisons, and side-by-side multi-model layouts:
 
 ```{r table-regression}
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
@@ -196,26 +197,35 @@ sochealth |>
 
 ## Learn more
 
-- See `?varlist` to inspect variables, labels, values, and missing
-  data.
-- See `?freq` for one-way frequency tables (weights, sorting, custom
-  missing values, labelled-data display modes).
-- See `?cross_tab` for the full list of arguments (weights, simulation,
-  association measures).
-- See `?assoc_measures` for the complete list of association
-  statistics; `?cramer_v` for the canonical entry point.
-- See `?table_categorical` for grouped or one-way categorical tables.
-- See `?table_continuous` for continuous summaries and group
-  comparisons.
-- See `?table_continuous_lm` for model-based mean-comparison tables
-  with robust / cluster-robust / bootstrap / jackknife SE, case
-  weights, or additive covariate adjustment.
-- See `?table_regression` for `lm` / `glm` coefficient tables with
-  APA-aligned formatting, robust variance, standardised coefficients,
-  average marginal effects, hierarchical comparisons, and
-  side-by-side multi-model layouts.
-- See `?mean_n`, `?sum_n`, `?count_n` for row-wise summaries with
-  optional minimum-valid-values rules.
-- See `?code_book` to generate an interactive HTML codebook;
-  `?label_from_names` to derive variable labels from
-  `"code. label"`-style column names (e.g., LimeSurvey exports).
+**Explore and tabulate**
+
+- `vignette("variable-exploration")` — inspect variables, labels and
+  missingness (`varlist()`, `code_book()`, `label_from_names()`).
+- `vignette("frequency-tables")` — `freq()` and `cross_tab()` in
+  depth (weights, simulation, labelled data).
+- `vignette("association-measures")` — choosing the right effect
+  size for a contingency table.
+
+**Summary tables**
+
+- `vignette("table-categorical")` and `vignette("table-continuous")`
+  — the APA Table 1 / 2 builders.
+- `vignette("table-continuous-lm")` — model-based group comparisons
+  (robust SE, weights, covariate adjustment).
+
+**Regression tables**
+
+- `vignette("table-regression")` — the core guide, including the
+  univariable screen (`table_regression_uv()`).
+- `vignette("table-regression-supported-models")` — the
+  class-by-class capability map (some thirty model classes).
+- Family articles: mixed, counts, survival, ordinal, multinomial,
+  Bayesian — then `vignette("categorical-predictors")` across all of
+  them.
+
+**Putting it together**
+
+- `vignette("summary-tables-reporting")` — the end-to-end APA
+  reporting sequence tying the four `table_*` helpers together.
+- `?mean_n`, `?sum_n`, `?count_n` — row-wise summaries with
+  minimum-valid-values rules.

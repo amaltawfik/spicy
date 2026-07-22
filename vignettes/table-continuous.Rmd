@@ -262,8 +262,7 @@ formatting vocabulary as `table_continuous_lm()` and
 
 - `align = "decimal"` (default) aligns numeric columns on the
   decimal mark, matching SPSS / SAS / LaTeX `siunitx` conventions.
-  `"center"`, `"right"`, and the legacy `"auto"` are the
-  alternatives.
+  `"center"` and `"right"` are the alternatives.
 - `p_digits = 3` (default, the APA standard) drives both the
   displayed precision of the `p` column and the small-*p* threshold
   (`p_digits = 4` -> `.0451` and `<.0001`).

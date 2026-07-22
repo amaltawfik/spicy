@@ -42,7 +42,9 @@ library(rstanarm)
 This vignette covers **Bayesian regression tables** — the same
 `table_regression()` call on a posterior instead of a maximum-likelihood
 fit. The companion vignette [*Publication-ready regression
-tables*](table-regression.html) covers the shared mechanics; here we
+tables*](table-regression.html) covers the shared mechanics (the
+class-by-class map is
+[*Supported models*](table-regression-supported-models.html)); here we
 focus on what genuinely changes when the estimates are draws from a
 posterior distribution: what the columns mean, which familiar columns
 are *deliberately absent*, and what to check before reading anything.
@@ -124,11 +126,12 @@ Reading the columns against their frequentist counterparts:
 table_regression(fit, show_columns = c("b", "ci", "pd"))
 ```
 
-Read against the table: `Male`, at 0.62, is barely better than a coin
-flip on sign; `age`, at 0.89, leans positive without settling the
-direction; the education contrasts display 1.00 — essentially every
-retained draw is negative (all 1,000 for `Tertiary`; 999 of 1,000 for
-`Upper secondary`, which rounds up). A `pd` of 0.50 would say the
+Read against the table: `Male`, at .617, is barely better than a coin
+flip on sign; `age`, at .886, leans positive without settling the
+direction; the education contrasts show 1.000 and .999 — essentially
+every retained draw is negative (all 1,000 for `Tertiary`; 999 of
+1,000 for `Upper secondary` — the three-decimal display keeps the
+two cases distinguishable). A `pd` of .500 would say the
 draws split evenly, with zero at the posterior median. It reads as
 evidence of *direction*, never of practical size — and one disclosure
 keeps this section honest: under weak priors `pd` maps almost
@@ -314,6 +317,48 @@ pseudo-R² and AIC — fill only the frequentist one, because a
 posterior has none of them. Which brings us to what the table
 refuses.
 
+## Fit statistics for a posterior
+
+The default fit block reports `R² (Bayes)` — the posterior median of
+the draws-based R² (Gelman et al. 2019), the one R² a posterior
+genuinely has. Predictive accuracy is opt-in, because it costs a few
+seconds of PSIS-LOO per model:
+
+```{r bayes-fit-stats}
+table_regression(fit, show_fit_stats = c("nobs", "r2_bayes",
+                                         "elpd_loo"))
+```
+
+The `ELPD (LOO)` row is the expected log predictive density
+(Vehtari, Gelman & Gabry 2017), with its standard error disclosed in
+the footer — compare models with `loo::loo_compare()` outside the
+table, and read differences against the SE of the *difference*.
+Prefer the log scale: `"looic"` (its −2 twin) persists for
+historical reasons only (Gelman, Vehtari, McElreath et al. 2026,
+App. B), and `"waic"` exists with the same disclosures though
+PSIS-LOO is generally preferred.
+
+## Standardized coefficients from the draws
+
+The algebraic flavors run natively on the draws — an exact affine
+rescale, so the median, MAD SD and credible bounds all move by the
+same SD ratio and nothing is re-summarized:
+
+```{r bayes-beta}
+table_regression(fit, standardized = "posthoc",
+                 show_columns = c("b", "beta"))
+```
+
+On this logistic model the betas are x-standardized on the link
+scale (the glm convention): `age`, the only continuous predictor,
+moves from a per-year log-odds of 0.01 to 0.09 per SD of age —
+the dummies are left unscaled under `"posthoc"`, so their rows
+match `B`. The same call works on standard-formula `brm()` fits
+(the design matrix is recovered through `insight`), and the scale
+factors are engine-invariant across rstanarm and brms. The
+refusals — multilevel and special-term formulas, `"refit"`,
+`"pseudo"` — are itemized in the next section.
+
 ## What is refused, and why
 
 Several familiar requests are meaningless for a posterior, and spicy
@@ -322,17 +367,10 @@ silently wrong:
 
 * `p_adjust` — there are no p-values to adjust;
 * likelihood-based fit statistics (`"aic"`, `"bic"`, pseudo-R²) —
-  the Bayesian table has its own instead: the default block reports
-  `R² (Bayes)`, the posterior median of the draws-based R² (Gelman
-  et al. 2019), and `show_fit_stats = c("nobs", "r2_bayes",
-  "elpd_loo", "looic")` adds the PSIS-LOO expected log predictive
-  density and its deviance-scale twin, with the elpd standard error
-  disclosed in the footer (Vehtari, Gelman & Gabry 2017; a few
-  seconds per model). Prefer the log scale: the −2 of LOOIC persists
-  for historical reasons only (Gelman, Vehtari, McElreath et al.
-  2026, App. B). A `"waic"` token exists too — its SE is
-  disclosed the same way — though PSIS-LOO is generally preferred.
-  These estimates come with their own reliability diagnostics, and
+  a posterior has no likelihood-based information criteria; the
+  Bayesian block of the *Fit statistics* section above replaces
+  them. The predictive estimates come with their own reliability
+  diagnostics, and
   spicy never mutes them: when PSIS-LOO flags observations with
   Pareto k above the sample-size-specific threshold — min(1 −
   1/log10(S), 0.7), the same bound `loo::loo()` itself prints
@@ -361,28 +399,23 @@ silently wrong:
 * `standardized = "refit"` and `"pseudo"` — refit would re-run the
   MCMC sampler on z-scored data inside a table call (minutes per
   model), and pseudo's latent variance varies per draw (its
-  draws-native version is planned). The **algebraic flavors are
-  supported on fixed-effects `stan_glm`-style fits**: `"posthoc"`,
-  `"basic"` and `"smart"` are *exact* affine rescales of the
-  posterior draws — the median, MAD SD and credible bounds
-  (equal-tailed or HDI) all scale by the same positive SD ratio, so
-  β needs no re-summarization; `"posthoc"` and `"basic"` match
-  `effectsize::standardize_parameters()` to numerical precision,
-  while `"smart"` follows Gelman's (2008) convention of leaving
-  binary inputs and factor dummies raw (`effectsize`'s
-  `two_sd = TRUE` variant matches it for continuous predictors and
-  factor dummies, but 2-SD-scales binary numeric ones). Multilevel
-  fits (`stan_glmer`) are refused — a standardized β would need an
+  draws-native version is planned). The algebraic flavors are
+  demonstrated in *Standardized coefficients from the draws* above;
+  their conventions in brief: `"posthoc"` / `"basic"` match
+  `effectsize::standardize_parameters()` to numerical precision on
+  `stanreg` fits (`"basic"` on `brmsfit` too), and `"smart"` follows
+  Gelman's (2008) convention of leaving binary inputs and factor
+  dummies raw (`effectsize`'s `two_sd = TRUE` variant 2-SD-scales
+  binary numerics). Multilevel fits (`stan_glmer`, `brm()` with
+  group-level terms) are refused — a standardized β would need an
   explicit sd(Y) decomposition, the choice the frequentist mixed
   engines make by refitting on z-scored data — and so are
-  `stan_polr` / `stan_betareg` (no validated convention for those
-  families) and `brmsfit` for every flavor — brms exposes neither
-  `model.matrix()` nor the factor metadata the rescale needs.
-  Pre-standardizing predictors before fitting
+  `stan_polr` / `stan_betareg` (no validated convention) and brms
+  formulas with distributional, multivariate or special terms
+  (`mo()`, `s()`, ...). Pre-standardizing predictors before fitting
   (Gelman, Hill &amp; Vehtari 2020, ch. 12) remains the cleanest
   route when the whole analysis should live on the standardized
-  scale (and the only in-package route for `brms` and multilevel
-  Bayesian fits);
+  scale (and the route for every refused case);
 * variational and optimizing fits (`stan_glm(..., algorithm =
   "meanfield")`, `"optimizing"`) — they carry an *approximate*
   posterior on which the MCMC diagnostics above would be vacuous;
@@ -463,8 +496,10 @@ The default console table is one of several targets. The `output`
 argument also produces a raw data frame, a long broom-style tibble,
 and — with the corresponding Suggests package — rich `gt`,
 `flextable`, `tinytable`, Excel, or Word tables. The Bayesian
-structure carries through: the p column stays a dash, and the
-posterior summaries keep full precision in the tidy frame. In
+structure carries through: an all-Bayesian table carries no p
+column at all (in a mixed frequentist–Bayesian table the shared p
+column dashes on the Bayesian side), and the posterior summaries
+keep full precision in the tidy frame. In
 [`broom::tidy()`](https://broom.tidymodels.org) the `estimate` column
 is the posterior median, `std.error` the posterior MAD SD, and
 `conf.low` / `conf.high` the credible

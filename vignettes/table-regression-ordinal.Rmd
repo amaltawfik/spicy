@@ -39,7 +39,7 @@ categorical response such as a Poor &lt; Fair &lt; Good &lt; Very good
 health rating or a Likert agreement scale. The companion vignette
 [*Publication-ready regression tables*](table-regression.html) covers
 the shared mechanics (`vcov`, `ci_level`, output formats, multi-model
-layouts, broom integration); here we focus on what is *specific* to
+layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html)); here we focus on what is *specific* to
 ordinal fits.
 
 `table_regression()` supports both ordinal engines:
@@ -240,6 +240,10 @@ table_regression(
 ```
 
 The footer switches to name the estimator and the clustering variable.
+The clustering is applied *consistently*: the `Thresholds` rows and
+the AME columns are reweighted from the same `vcovCL` matrix as the
+slopes, so no row of the table quietly keeps model-based standard
+errors under a cluster-robust footer.
 Heteroskedasticity-consistent (`HC*`) estimators and the `bootstrap` /
 `jackknife` resamplers are *not* defined for ordinal fits and are
 refused with a clear `spicy_unsupported_vcov` error rather than a

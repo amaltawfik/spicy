@@ -67,8 +67,6 @@ navbar:
           href: articles/table-regression.html
         - text: Supported models
           href: articles/table-regression-supported-models.html
-        - text: Categorical predictors
-          href: articles/categorical-predictors.html
         - text: Mixed-effects regression tables
           href: articles/table-regression-mixed.html
         - text: Count and two-part regression tables
@@ -81,6 +79,8 @@ navbar:
           href: articles/table-regression-multinomial.html
         - text: Bayesian regression tables
           href: articles/table-regression-bayesian.html
+        - text: Categorical predictors
+          href: articles/categorical-predictors.html
         - text: Summary tables for APA-style reporting
           href: articles/summary-tables-reporting.html
     github:
@@ -101,13 +101,13 @@ articles:
       - table-continuous-lm
       - table-regression
       - table-regression-supported-models
-      - categorical-predictors
       - table-regression-mixed
       - table-regression-counts
       - table-regression-survival
       - table-regression-ordinal
       - table-regression-multinomial
       - table-regression-bayesian
+      - categorical-predictors
       - summary-tables-reporting
 
 reference:

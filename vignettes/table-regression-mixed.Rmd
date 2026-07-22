@@ -48,7 +48,7 @@ for data with a grouping structure, such as repeated measurements
 nested in subjects or respondents nested in regions. The companion
 vignette [*Publication-ready regression
 tables*](table-regression.html) covers the shared mechanics (`vcov`,
-`ci_level`, output formats, multi-model layouts, broom integration);
+`ci_level`, output formats, multi-model layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html));
 here we focus on what is *specific* to mixed fits — above all, how the
 **random effects** are reported.
 
@@ -61,6 +61,10 @@ here we focus on what is *specific* to mixed fits — above all, how the
 * **`glmmTMB::glmmTMB()`** — a wider family space, plus zero-inflation
   and dispersion components.
 * **`nlme::lme()`** — the classical engine (containment-df t-tests).
+
+The Bayesian mixed engines (`stan_lmer()` / `stan_glmer()`, `brm()`
+with grouping terms) render the same *Random effects* block from
+their posterior draws — see `vignette("table-regression-bayesian")`.
 
 Two datasets carry the main narrative. The table anatomy is shown on
 `lme4::sleepstudy` — reaction times of 18 subjects measured on 10
@@ -677,7 +681,7 @@ ratios of a structural zero**. Read one number from each: relative to
 mined streams, unmined ones carry about three times the abundance
 (IRR 3.13) where salamanders occur at all, and about a fifth of the
 odds of structural absence (OR 0.18). Component blocks are covered in
-depth in the counts documentation (`?table_regression_counts`); opt out
+depth in `vignette("table-regression-counts")`; opt out
 with `show_components = FALSE`.
 
 ## `nlme::lme`
@@ -759,6 +763,17 @@ they filter cleanly:
 td <- broom::tidy(table_regression(fit))
 td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "conf.high")]
 ```
+
+## Where next
+
+- `vignette("table-regression")` — the shared mechanics: output
+  formats, multi-model layouts, `p_adjust`, broom methods.
+- `vignette("table-regression-counts")` — zero-inflation and
+  dispersion component blocks in depth.
+- `vignette("table-regression-bayesian")` — the same *Random
+  effects* block from posterior draws (`stan_glmer`, `brm`).
+- `vignette("table-regression-supported-models")` — the
+  class-by-class capability map.
 
 ## References
 

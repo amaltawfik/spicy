@@ -43,7 +43,7 @@ This vignette covers **count regression** — models for a non-negative
 integer outcome such as number of publications, doctor visits, or
 species counts. The companion vignette [*Publication-ready regression
 tables*](table-regression.html) covers the shared mechanics (`vcov`,
-`ci_level`, output formats, multi-model layouts, broom integration);
+`ci_level`, output formats, multi-model layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html));
 here we focus on what is specific to counts: rate ratios,
 overdispersion, and above all the **two-part models** whose zero
 component `table_regression()` renders as its own labelled block.
@@ -133,14 +133,14 @@ as $\theta$ grows without bound:
 
 ```{r negbin}
 fit_nb <- MASS::glm.nb(art ~ fem + mar + kid5 + ment, data = bioChemists)
-table_regression(fit_nb, exponentiate = TRUE)
+table_regression(fit_nb, exponentiate = TRUE,
+                 show_fit_stats = c("nobs", "theta", "alpha", "aic"))
 ```
 
-Here `summary(fit_nb)` reports $\hat\theta$ = 2.26 (SE 0.27); readers
-trained on Stata know its reciprocal, $\alpha = 1/\theta$ = 0.44 — both
-available as opt-in fit-stat rows via
-`show_fit_stats = c("nobs", "theta", "alpha", "aic")`, so the table
-can carry the dispersion estimate itself. The
+The dispersion estimate sits in the table itself: the opt-in
+`θ (dispersion)` row shows $\hat\theta$ = 2.26, and `α (= 1/θ)` its
+reciprocal 0.44 — the parameterization Stata's `nbreg` reports, so
+readers of either tradition find their number. The
 likelihood-ratio test of the Poisson restriction — a boundary test, so
 its p-value is halved — rejects decisively (LR = 180.3, p < .001).
 `glmmTMB::nbinom2`, used in the mixed-model section below, is the same
@@ -272,6 +272,13 @@ block simply stays empty in the columns of models that have none, and
 substantively the IRRs agree across all four — what changes is the
 inference and the account of the zeros.
 
+A last comparison shape worth knowing: a *univariable screen* of
+candidate predictors — one Poisson IRR per candidate, set against
+the multivariable model — is one call away with
+`table_regression_uv(..., family = poisson())`; the layout is
+introduced in the *Univariable screening* section of
+`vignette("table-regression")`.
+
 ## One number per predictor: the combined AME
 
 Rate ratios live inside one component. For a single response-scale
@@ -328,7 +335,11 @@ backend and are refused with a clear error.
 When counts are also grouped, `glmmTMB` (Brooks et al. 2017) combines
 everything above with random effects: the zero-inflation block, the random-effects block,
 and per-block exponentiation appear in one table — here salamander
-counts in mined and unmined streams (Price et al. 2016):
+counts in mined and unmined streams (Price et al. 2016). One scope
+note: under cluster-robust variance (`vcov = "CR0"`–`"CR3"`) the
+sandwich covers the *conditional* (count) component only — the
+zero-inflation and dispersion rows keep their model-based standard
+errors, and the footer discloses it:
 
 ```{r glmmtmb, eval = have_glmmTMB}
 data("Salamanders", package = "glmmTMB")
@@ -349,6 +360,37 @@ about 8.7 times higher in unmined streams — one coherent ecological
 story told in two parts. The random-effects block
 and its conventions are covered in the companion vignette
 [*Mixed-effects regression tables*](table-regression-mixed.html).
+
+## Counts with high-dimensional fixed effects: `fixest`
+
+Econometric count models often absorb thousands of group intercepts
+rather than model them as random effects — the Poisson
+pseudo-maximum-likelihood (PPML) gravity model of trade economics is
+the canonical case (Santos Silva & Tenreyro 2006). `fixest::fepois()`
+fits it, and the table discloses the absorbed structure as a
+default-on **Fixed effects:** block — one Yes/No row per factor —
+with fixest's McFadden pseudo-R² among the fit statistics:
+
+```{r fepois, eval = requireNamespace("fixest", quietly = TRUE)}
+data("trade", package = "fixest")
+tr <- trade[trade$Year %in% 2015:2016, ]
+fp <- fixest::fepois(Euros ~ log(dist_km) | Origin + Destination,
+                     data = tr)
+table_regression(fp, exponentiate = TRUE)
+```
+
+Distance cuts trade hard: the IRR of 0.22 says a one-log-unit
+increase in distance multiplies expected flows by 0.22, origin and
+destination effects absorbed. Two reading notes. PPML deliberately
+applies the Poisson *estimator* to a continuous outcome (here Euros)
+— the coefficients are consistent under the gravity model's
+assumptions even though the outcome is no count, which is also why
+the likelihood-based AIC is astronomically large and best ignored in
+favor of the pseudo-R². And `fixest`'s absorbed factors are *fixed*
+effects in the econometric sense — compare the `glmmTMB` section
+above, where the grouping structure is modelled as random effects
+with variance components instead; `fenegbin()` runs the same layout
+for the negative binomial.
 
 ## Output formats
 
@@ -395,6 +437,8 @@ td[, c("term", "estimate_type", "estimate", "p.value")]
   C. D. (2016). Effects of mountaintop removal mining and valley
   filling on the occupancy and abundance of stream salamanders.
   *Journal of Applied Ecology*, 53(2), 459–468.
+* Santos Silva, J. M. C., & Tenreyro, S. (2006). The log of gravity.
+  *The Review of Economics and Statistics*, 88(4), 641–658.
 * Wilson, P. (2015). The misuse of the Vuong test for non-nested
   models to test for zero-inflation. *Economics Letters*, 127, 51–53.
 * Zeileis, A., Kleiber, C., & Jackman, S. (2008). Regression models

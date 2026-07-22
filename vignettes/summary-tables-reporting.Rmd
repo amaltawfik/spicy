@@ -56,9 +56,9 @@ Use the function that matches the unit you want to report:
 | Function | Reports | Selection grammar | Typical additions |
 |:--|:--|:--|:--|
 | `table_categorical()` | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared test, association measure (`phi`, `cramer_v`, `tau_b`, ...), confidence interval |
-| `table_continuous()` | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (`d`, `g`, `r`, `eta²`, `omega²`) |
+| `table_continuous()` | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges' *g*, η², rank-biserial *r*, ε²) |
 | `table_continuous_lm()` | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size families with noncentral CIs |
-| `table_regression()` | One or several fitted `lm()` / `glm()` models | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
+| `table_regression()` | One or several fitted models — some thirty classes, from `lm()` / `glm()` to mixed, ordinal, survival and Bayesian engines (see `vignette("table-regression-supported-models")`) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
 In practice, follow the APA sequence:
 
@@ -89,8 +89,7 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity"),
-  output = "tinytable"
+  labels = c("Smoking status", "Regular physical activity")
 )
 ```
 
@@ -103,8 +102,7 @@ table_continuous(
     bmi = "Body mass index",
     wellbeing_score = "Well-being score",
     life_sat_health = "Satisfaction with health"
-  ),
-  output = "tinytable"
+  )
 )
 ```
 
@@ -144,8 +142,7 @@ table_regression(
     sex               = "Sex",
     smoking           = "Smoking status",
     physical_activity = "Regular physical activity"
-  ),
-  output = "tinytable"
+  )
 )
 ```
 
@@ -165,39 +162,33 @@ behaviors, then summarize continuous well-being indicators.
 
 ### Categorical variables
 
-```{r report-categorical, eval = build_rich_tables}
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = c(smoking, physical_activity, dentist_12m),
-    by = education,
-    labels = c(
-      "Smoking status",
-      "Regular physical activity",
-      "Visited a dentist in the last 12 months"
-    ),
-    output = "gt"
+```{r report-categorical}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity",
+    dentist_12m       = "Visited a dentist in the last 12 months"
   )
 )
 ```
 
 ### Continuous variables
 
-```{r report-continuous, eval = build_rich_tables}
-pkgdown_dark_gt(
-  table_continuous(
-    sochealth,
-    select = c(bmi, wellbeing_score, life_sat_health),
-    by = education,
-    labels = c(
-      bmi = "Body mass index",
-      wellbeing_score = "Well-being score",
-      life_sat_health = "Satisfaction with health"
-    ),
-    p_value = TRUE,
-    effect_size = TRUE,
-    output = "gt"
-  )
+```{r report-continuous}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  labels = c(
+    bmi = "Body mass index",
+    wellbeing_score = "Well-being score",
+    life_sat_health = "Satisfaction with health"
+  ),
+  p_value = TRUE,
+  effect_size = TRUE
 )
 ```
 
@@ -206,16 +197,13 @@ function that fits each variable type.
 
 ### Model-based continuous variables
 
-```{r report-continuous-lm, eval = build_rich_tables}
-pkgdown_dark_gt(
-  table_continuous_lm(
-    sochealth,
-    select = c(bmi, wellbeing_score, life_sat_health),
-    by = sex,
-    vcov = "HC3",
-    statistic = TRUE,
-    output = "gt"
-  )
+```{r report-continuous-lm}
+table_continuous_lm(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = sex,
+  vcov = "HC3",
+  statistic = TRUE
 )
 ```
 
@@ -230,19 +218,16 @@ the APA Table 3 coefficient summary. The same `output` argument
 controls rendering, so the regression table sits in the same
 reporting pipeline as the descriptive ones above:
 
-```{r report-regression, eval = build_rich_tables}
+```{r report-regression}
 fit <- lm(
   wellbeing_score ~ age + sex + smoking + physical_activity,
   data = sochealth
 )
-pkgdown_dark_gt(
-  table_regression(
-    fit,
-    standardized = "refit",
-    show_columns = c("b", "beta", "ci", "p"),
-    vcov = "HC3",
-    output = "gt"
-  )
+table_regression(
+  fit,
+  standardized = "refit",
+  show_columns = c("b", "beta", "ci", "p"),
+  vcov = "HC3"
 )
 ```
 
@@ -255,43 +240,43 @@ Side-by-side reporting of competing specifications (e.g., unadjusted
 vs. covariate-adjusted, or `lm` vs. `glm`) is supported by passing a
 list of fits:
 
-```{r report-regression-multi, eval = build_rich_tables}
+```{r report-regression-multi}
 fit_unadj <- lm(wellbeing_score ~ smoking, data = sochealth)
 fit_adj   <- lm(
   wellbeing_score ~ smoking + age + sex + physical_activity,
   data = sochealth
 )
-pkgdown_dark_gt(
-  table_regression(
-    list("Unadjusted" = fit_unadj, "Adjusted" = fit_adj),
-    show_columns = c("b", "ci", "p"),
-    output = "gt"
-  )
+table_regression(
+  list("Unadjusted" = fit_unadj, "Adjusted" = fit_adj),
+  show_columns = c("b", "ci", "p")
 )
 ```
 
 For binary or count outcomes, swap `lm()` for `glm()` and request
 response-scale reporting (odds ratios, incidence rate ratios, etc.):
 
-```{r report-regression-glm, eval = build_rich_tables}
+```{r report-regression-glm}
 fit_glm <- glm(
   smoking ~ age + sex + physical_activity,
   data = sochealth,
   family = binomial()
 )
-pkgdown_dark_gt(
-  table_regression(
-    fit_glm,
-    exponentiate = TRUE,
-    show_columns = c("b", "ci", "p", "ame", "ame_ci"),
-    output = "gt"
-  )
+table_regression(
+  fit_glm,
+  exponentiate = TRUE,
+  show_columns = c("b", "ci", "p", "ame", "ame_ci")
 )
 ```
 
 Average marginal effects (`ame`) are useful next to the odds ratio
 because they report a probability-scale change for each predictor —
 the quantity most reviewers want to interpret directly.
+
+For the epidemiological variant of Table 2 — a univariable screen of
+every candidate predictor set against the multivariable model —
+`table_regression_uv()` builds the whole two-part layout in one
+call; see the *Univariable screening* section of
+`vignette("table-regression")`.
 
 ## Choose the output format
 
@@ -361,8 +346,7 @@ tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity"),
-  output = "tinytable"
+  labels = c("Smoking status", "Regular physical activity")
 )
 
 tab |>
@@ -410,10 +394,12 @@ The dedicated articles go deeper into each function:
   (G-computation or equal-weight), and four effect-size families
   with noncentral CIs.
 - `table_regression()` covers single- and multi-model coefficient
-  tables for `lm` / `glm`, four standardisation methods, partial
-  effect sizes with noncentral-F CIs, average marginal effects,
-  hierarchical (`nested = TRUE`) comparisons, multiplicity
-  correction, and response-scale reporting for GLMs.
+  tables across some thirty model classes (the map is
+  `vignette("table-regression-supported-models")`), four
+  standardisation methods, partial effect sizes with noncentral-F
+  CIs, average marginal effects, hierarchical (`nested = TRUE`)
+  comparisons, multiplicity correction, and response-scale reporting
+  for GLMs.
 
 Use this vignette as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.
