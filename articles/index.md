@@ -80,16 +80,6 @@
   semantics, robust-variance backends, and standardized-coefficient
   support.
 
-- [Categorical
-  predictors](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md):
-
-  How categorical predictors enter a regression table and how to work
-  with them: dummy coding and the reference level, joint
-  (multiple-degree-of-freedom) tests of a factor, R’s polynomial
-  contrasts for ordered factors, the scores-versus-dummies decision for
-  ordinal predictors, successive-difference coding, and why continuous
-  predictors should not be categorized.
-
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
 
@@ -158,6 +148,16 @@
   p-values, convergence checks before reading, prior disclosure, random
   effects from the posterior draws, and the `rstanarm` and `brms`
   engines.
+
+- [Categorical
+  predictors](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md):
+
+  How categorical predictors enter a regression table and how to work
+  with them: dummy coding and the reference level, joint
+  (multiple-degree-of-freedom) tests of a factor, R’s polynomial
+  contrasts for ordered factors, the scores-versus-dummies decision for
+  ordinal predictors, successive-difference coding, and why continuous
+  predictors should not be categorized.
 
 - [Summary tables for APA-style
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):

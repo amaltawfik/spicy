@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -117,10 +117,11 @@ non-negative integer outcome such as number of publications, doctor
 visits, or species counts. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
-integration); here we focus on what is specific to counts: rate ratios,
-overdispersion, and above all the <strong>two-part models</strong> whose
-zero component <code><a href="../reference/table_regression.html">table_regression()</a></code> renders as its own
-labelled block.</p>
+integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
+models</em></a>); here we focus on what is specific to counts: rate
+ratios, overdispersion, and above all the <strong>two-part
+models</strong> whose zero component <code><a href="../reference/table_regression.html">table_regression()</a></code>
+renders as its own labelled block.</p>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports the full count-model
 escalation:</p>
 <ul>
@@ -234,7 +235,8 @@ smaller <span class="math inline">\(\theta\)</span> means stronger
 overdispersion, and the Poisson is the limiting case as <span class="math inline">\(\theta\)</span> grows without bound:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_nb</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">glm.nb</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span>, data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_nb</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_nb</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                 show_fit_stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nobs"</span>, <span class="st">"theta"</span>, <span class="st">"alpha"</span>, <span class="st">"aic"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Negative-binomial regression: art</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   IRR     SE      95% CI       p   </span></span>
@@ -250,23 +252,22 @@ overdispersion, and the Poisson is the limiting case as <span class="math inline
 <span><span class="co">#&gt;  ment            <span style="color: #9E9E9E;">│</span>    1.03  0.00  [1.02, 1.04]  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                               </span></span>
-<span><span class="co">#&gt;  R² (McFadden)   <span style="color: #9E9E9E;">│</span>    0.03                            </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.11                            </span></span>
+<span><span class="co">#&gt;  θ (dispersion)  <span style="color: #9E9E9E;">│</span>    2.26                            </span></span>
+<span><span class="co">#&gt;  α (= 1/θ)       <span style="color: #9E9E9E;">│</span>    0.44                            </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3134.1                             </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Model-based (asymptotic).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
-<p>Here <code>summary(fit_nb)</code> reports <span class="math inline">\(\hat\theta\)</span> = 2.26 (SE 0.27); readers
-trained on Stata know its reciprocal, <span class="math inline">\(\alpha
-= 1/\theta\)</span> = 0.44 — both available as opt-in fit-stat rows via
-<code>show_fit_stats = c("nobs", "theta", "alpha", "aic")</code>, so the
-table can carry the dispersion estimate itself. The likelihood-ratio
-test of the Poisson restriction — a boundary test, so its p-value is
-halved — rejects decisively (LR = 180.3, p &lt; .001).
-<code><a href="https://rdrr.io/pkg/glmmTMB/man/nbinom2.html" class="external-link">glmmTMB::nbinom2</a></code>, used in the mixed-model section below, is
-the same NB2 parameterization.</p>
+<p>The dispersion estimate sits in the table itself: the opt-in
+<code>θ (dispersion)</code> row shows <span class="math inline">\(\hat\theta\)</span> = 2.26, and
+<code>α (= 1/θ)</code> its reciprocal 0.44 — the parameterization
+Stata’s <code>nbreg</code> reports, so readers of either tradition find
+their number. The likelihood-ratio test of the Poisson restriction — a
+boundary test, so its p-value is halved — rejects decisively (LR =
+180.3, p &lt; .001). <code><a href="https://rdrr.io/pkg/glmmTMB/man/nbinom2.html" class="external-link">glmmTMB::nbinom2</a></code>, used in the
+mixed-model section below, is the same NB2 parameterization.</p>
 <p>The IRRs barely move, but the inference does: the evidence for
 marriage weakens (p = .013 under Poisson, p = .072 here) — the Poisson
 significance was an artifact of ignored overdispersion. AIC falls from
@@ -471,6 +472,12 @@ that choosing between those two is substantive, not fit-based. The zero
 block simply stays empty in the columns of models that have none, and
 substantively the IRRs agree across all four — what changes is the
 inference and the account of the zeros.</p>
+<p>A last comparison shape worth knowing: a <em>univariable screen</em>
+of candidate predictors — one Poisson IRR per candidate, set against the
+multivariable model — is one call away with
+<code>table_regression_uv(..., family = poisson())</code>; the layout is
+introduced in the <em>Univariable screening</em> section of
+<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="one-number-per-predictor-the-combined-ame">One number per predictor: the combined AME<a class="anchor" aria-label="anchor" href="#one-number-per-predictor-the-combined-ame"></a>
@@ -577,7 +584,11 @@ with a clear error.</p>
 al. 2017) combines everything above with random effects: the
 zero-inflation block, the random-effects block, and per-block
 exponentiation appear in one table — here salamander counts in mined and
-unmined streams (Price et al. 2016):</p>
+unmined streams (Price et al. 2016). One scope note: under
+cluster-robust variance (<code>vcov = "CR0"</code>–<code>"CR3"</code>)
+the sandwich covers the <em>conditional</em> (count) component only —
+the zero-inflation and dispersion rows keep their model-based standard
+errors, and the footer discloses it:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Salamanders"</span>, package <span class="op">=</span> <span class="st">"glmmTMB"</span><span class="op">)</span></span>
 <span><span class="va">fit_mix</span> <span class="op">&lt;-</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB</a></span><span class="op">(</span></span>
@@ -628,6 +639,54 @@ the companion vignette <a href="table-regression-mixed.html"><em>Mixed-effects r
 tables</em></a>.</p>
 </div>
 <div class="section level2">
+<h2 id="counts-with-high-dimensional-fixed-effects-fixest">Counts with high-dimensional fixed effects: <code>fixest</code><a class="anchor" aria-label="anchor" href="#counts-with-high-dimensional-fixed-effects-fixest"></a>
+</h2>
+<p>Econometric count models often absorb thousands of group intercepts
+rather than model them as random effects — the Poisson
+pseudo-maximum-likelihood (PPML) gravity model of trade economics is the
+canonical case (Santos Silva &amp; Tenreyro 2006).
+<code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code> fits it, and the table discloses the
+absorbed structure as a default-on <strong>Fixed effects:</strong> block
+— one Yes/No row per factor — with fixest’s McFadden pseudo-R² among the
+fit statistics:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"trade"</span>, package <span class="op">=</span> <span class="st">"fixest"</span><span class="op">)</span></span>
+<span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va">trade</span><span class="op">[</span><span class="va">trade</span><span class="op">$</span><span class="va">Year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fl">2015</span><span class="op">:</span><span class="fl">2016</span>, <span class="op">]</span></span>
+<span><span class="va">fp</span> <span class="op">&lt;-</span> <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fepois</a></span><span class="op">(</span><span class="va">Euros</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">dist_km</span><span class="op">)</span> <span class="op">|</span> <span class="va">Origin</span> <span class="op">+</span> <span class="va">Destination</span>,</span>
+<span>                     data <span class="op">=</span> <span class="va">tr</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fp</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson regression (fixed effects): Euros</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>    IRR       SE      95% CI       p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼───────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  log(dist_km)   <span style="color: #9E9E9E;">│</span>    0.22     0.00  [0.22, 0.22]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Fixed effects: <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    Origin       <span style="color: #9E9E9E;">│</span>    Yes                                </span></span>
+<span><span class="co">#&gt;    Destination  <span style="color: #9E9E9E;">│</span>    Yes                                </span></span>
+<span><span class="co">#&gt;  n              <span style="color: #9E9E9E;">│</span> 7763                                  </span></span>
+<span><span class="co">#&gt;  R² (McFadden)  <span style="color: #9E9E9E;">│</span>    0.60                               </span></span>
+<span><span class="co">#&gt;  AIC            <span style="color: #9E9E9E;">│</span>    5.4e+11                            </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression (fixed effects).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Classical.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<p>Distance cuts trade hard: the IRR of 0.22 says a one-log-unit
+increase in distance multiplies expected flows by 0.22, origin and
+destination effects absorbed. Two reading notes. PPML deliberately
+applies the Poisson <em>estimator</em> to a continuous outcome (here
+Euros) — the coefficients are consistent under the gravity model’s
+assumptions even though the outcome is no count, which is also why the
+likelihood-based AIC is astronomically large and best ignored in favor
+of the pseudo-R². And <code>fixest</code>’s absorbed factors are
+<em>fixed</em> effects in the econometric sense — compare the
+<code>glmmTMB</code> section above, where the grouping structure is
+modelled as random effects with variance components instead;
+<code>fenegbin()</code> runs the same layout for the negative
+binomial.</p>
+</div>
+<div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
 </h2>
 <p>Everything above used the default console output. The same structure
@@ -635,7 +694,7 @@ tables</em></a>.</p>
 frame, a long broom-style tibble, and the rich <code>gt</code>,
 <code>flextable</code>, <code>tinytable</code>, Excel, or Word
 targets:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           Variable       B   SE         95% CI     p</span></span>
 <span><span class="co">#&gt; 1      (Intercept)    0.61 0.07 [ 0.48,  0.74] &lt;.001</span></span>
@@ -652,7 +711,7 @@ targets:</p>
 <span><span class="co">#&gt; 12            ment   -0.13 0.04 [-0.21, -0.05]  .001</span></span>
 <span><span class="co">#&gt; 13               n  915                             </span></span>
 <span><span class="co">#&gt; 14             AIC 3225.5</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="pnuyfvhuxc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#pnuyfvhuxc table { font-family: system-ui, ‘Segoe UI’,
@@ -1137,7 +1196,7 @@ IRR; SE on the IRR scale (delta method); CI bounds exponentiated
 <p>In <a href="https://broom.tidymodels.org" class="external-link"><code>broom::tidy()</code></a> the
 zero-component terms carry a <code>zero_</code> prefix, so the two parts
 separate cleanly:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate_type"</span>, <span class="st">"estimate"</span>, <span class="st">"p.value"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 4</span></span></span>
@@ -1175,6 +1234,9 @@ data models. <em>Journal of Econometrics</em>, 33(3), 341–365.</li>
 Barton, C. D. (2016). Effects of mountaintop removal mining and valley
 filling on the occupancy and abundance of stream salamanders.
 <em>Journal of Applied Ecology</em>, 53(2), 459–468.</li>
+<li>Santos Silva, J. M. C., &amp; Tenreyro, S. (2006). The log of
+gravity. <em>The Review of Economics and Statistics</em>, 88(4),
+641–658.</li>
 <li>Wilson, P. (2015). The misuse of the Vuong test for non-nested
 models to test for zero-inflation. <em>Economics Letters</em>, 127,
 51–53.</li>

@@ -36,9 +36,9 @@ Use the function that matches the unit you want to report:
 | Function | Reports | Selection grammar | Typical additions |
 |:---|:---|:---|:---|
 | [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared test, association measure (`phi`, `cramer_v`, `tau_b`, …), confidence interval |
-| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (`d`, `g`, `r`, `eta²`, `omega²`) |
+| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges’ *g*, η², rank-biserial *r*, ε²) |
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size families with noncentral CIs |
-| [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) models | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
+| [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted models — some thirty classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed, ordinal, survival and Bayesian engines (see [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
 In practice, follow the APA sequence:
 
@@ -81,21 +81,43 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity"),
-  output = "tinytable"
+  labels = c("Smoking status", "Regular physical activity")
 )
+#> Categorical table by education
+#> 
+#>  Variable                  │ Lower secondary n  Lower secondary % 
+#> ───────────────────────────┼──────────────────────────────────────
+#>  Smoking status            │                                      
+#>    No                      │        179               68.6        
+#>    Yes                     │         78               29.9        
+#>    (Missing)               │          4                1.5        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                      
+#>    No                      │        177               67.8        
+#>    Yes                     │         84               32.2        
+#> 
+#>  Variable                  │ Upper secondary n  Upper secondary %  Tertiary n 
+#> ───────────────────────────┼──────────────────────────────────────────────────
+#>  Smoking status            │                                                  
+#>    No                      │        415               77.0            332     
+#>    Yes                     │        112               20.8             59     
+#>    (Missing)               │         12                2.2              9     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                                  
+#>    No                      │        310               57.5            163     
+#>    Yes                     │        229               42.5            237     
+#> 
+#>  Variable                  │ Tertiary %  Total n  Total %    p    Cramer's V 
+#> ───────────────────────────┼─────────────────────────────────────────────────
+#>  Smoking status            │                               <.001     .14     
+#>    No                      │    83.0       926     77.2                      
+#>    Yes                     │    14.8       249     20.8                      
+#>    (Missing)               │     2.2        25      2.1                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                               <.001     .21     
+#>    No                      │    40.8       650     54.2                      
+#>    Yes                     │    59.2       550     45.8
 ```
-
-| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Cramer's V |
-|----|----|----|----|----|----|----|----|----|----|----|
-|  | n | % | n | % | n | % | n | % |  |  |
-| Smoking status |     |      |     |      |     |      |     |      | \<.001 | .14 |
-|     No | 179 | 68.6 | 415 | 77.0 | 332 | 83.0 | 926 | 77.2 |       |     |
-|     Yes |  78 | 29.9 | 112 | 20.8 |  59 | 14.8 | 249 | 20.8 |       |     |
-|     (Missing) |   4 |  1.5 |  12 |  2.2 |   9 |  2.2 |  25 |  2.1 |       |     |
-| Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
-|     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
-|     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
 ``` r
 
@@ -107,23 +129,38 @@ table_continuous(
     bmi = "Body mass index",
     wellbeing_score = "Well-being score",
     life_sat_health = "Satisfaction with health"
-  ),
-  output = "tinytable"
+  )
 )
+#> Descriptive statistics
+#> 
+#>  Variable                 │ Group              M     SD     Min    Max   
+#> ──────────────────────────┼──────────────────────────────────────────────
+#>  Body mass index          │ Lower secondary  28.09   3.47  18.20   38.90 
+#>                           │ Upper secondary  26.02   3.43  16.00   37.10 
+#>                           │ Tertiary         24.39   3.52  16.00   33.00 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Well-being score         │ Lower secondary  57.22  15.44  18.70   97.90 
+#>                           │ Upper secondary  68.97  13.62  26.70  100.00 
+#>                           │ Tertiary         76.85  13.23  40.40  100.00 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health │ Lower secondary   2.71   1.20   1.00    5.00 
+#>                           │ Upper secondary   3.53   1.19   1.00    5.00 
+#>                           │ Tertiary          4.11   1.04   1.00    5.00 
+#> 
+#>  Variable                 │ Group            95% CI LL  95% CI UL   n     p   
+#> ──────────────────────────┼───────────────────────────────────────────────────
+#>  Body mass index          │ Lower secondary    27.66      28.51    260  <.001 
+#>                           │ Upper secondary    25.73      26.31    534        
+#>                           │ Tertiary           24.04      24.74    394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Well-being score         │ Lower secondary    55.33      59.10    261  <.001 
+#>                           │ Upper secondary    67.82      70.12    539        
+#>                           │ Tertiary           75.55      78.15    400        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health │ Lower secondary     2.57       2.86    259  <.001 
+#>                           │ Upper secondary     3.43       3.63    534        
+#>                           │ Tertiary            4.01       4.21    399
 ```
-
-| Variable | Group | M | SD | Min | Max | 95% CI |  | n | p |
-|----|----|----|----|----|----|----|----|----|----|
-|  |  |  |  |  |  | LL | UL |  |  |
-| Body mass index | Lower secondary | 28.09 |  3.47 | 18.20 |  38.90 | 27.66 | 28.51 | 260 | \<.001 |
-|  | Upper secondary | 26.02 |  3.43 | 16.00 |  37.10 | 25.73 | 26.31 | 534 |       |
-|  | Tertiary | 24.39 |  3.52 | 16.00 |  33.00 | 24.04 | 24.74 | 394 |       |
-| Well-being score | Lower secondary | 57.22 | 15.44 | 18.70 |  97.90 | 55.33 | 59.10 | 261 | \<.001 |
-|  | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82 | 70.12 | 539 |       |
-|  | Tertiary | 76.85 | 13.23 | 40.40 | 100.00 | 75.55 | 78.15 | 400 |       |
-| Satisfaction with health | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
-|  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
-|  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 
 ``` r
 
@@ -178,35 +215,31 @@ table_regression(
     sex               = "Sex",
     smoking           = "Smoking status",
     physical_activity = "Regular physical activity"
-  ),
-  output = "tinytable"
+  )
 )
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable                   │    B      SE       95% CI        p   
+#> ────────────────────────────┼──────────────────────────────────────
+#>  (Intercept)                │   64.18  1.69  [60.87, 67.49]  <.001 
+#>  Age (years)                │    0.04  0.03  [-0.02,  0.10]   .171 
+#>  Sex:                       │                                      
+#>    Female (ref.)            │     –     –          –          –    
+#>    Male                     │    3.88  0.90  [ 2.11,  5.65]  <.001 
+#>  Smoking status:            │                                      
+#>    No (ref.)                │     –     –          –          –    
+#>    Yes                      │   -1.73  1.10  [-3.90,  0.43]   .117 
+#>  Regular physical activity: │                                      
+#>    No (ref.)                │     –     –          –          –    
+#>    Yes                      │    2.70  0.91  [ 0.93,  4.48]   .003 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                          │ 1175                                 
+#>  R²                         │    0.03                              
+#>  Adj.R²                     │    0.02                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
 ```
-
-| Variable                   | B       | SE   | 95% CI |       | p      |
-|----------------------------|---------|------|--------|-------|--------|
-|                            |         |      | LL     | UL    |        |
-| (Intercept)                |   64.18 | 1.69 | 60.87  | 67.49 | \<.001 |
-| Age (years)                |    0.04 | 0.03 | -0.02  |  0.10 |  .171  |
-| Sex:                       |         |      |        |       |        |
-| Female (ref.)              |    –    | –    |  –     |  –    | –      |
-| Male                       |    3.88 | 0.90 |  2.11  |  5.65 | \<.001 |
-| Smoking status:            |         |      |        |       |        |
-| No (ref.)                  |    –    | –    |  –     |  –    | –      |
-| Yes                        |   -1.73 | 1.10 | -3.90  |  0.43 |  .117  |
-| Regular physical activity: |         |      |        |       |        |
-| No (ref.)                  |    –    | –    |  –     |  –    | –      |
-| Yes                        |    2.70 | 0.91 |  0.93  |  4.48 |  .003  |
-| n                          | 1175    |      |        |       |        |
-| R²                         |    0.03 |      |        |       |        |
-| Adj.R²                     |    0.02 |      |        |       |        |
-
-Linear regression: wellbeing_score {#tinytable_89eecxpavj13sbxk9hgi
-.table .tinytable
-style="width: auto; margin-left: auto; margin-right: auto;"
-quarto-disable-processing="true"}
-
-*Note.* Linear regression. Std. errors: classical (OLS).
 
 This split is intentional. The descriptive trio (categorical,
 continuous, continuous_lm) reports the *data* — `select` and `by`
@@ -228,45 +261,139 @@ behaviors, then summarize continuous well-being indicators.
 
 ``` r
 
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = c(smoking, physical_activity, dentist_12m),
-    by = education,
-    labels = c(
-      "Smoking status",
-      "Regular physical activity",
-      "Visited a dentist in the last 12 months"
-    ),
-    output = "gt"
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity, dentist_12m),
+  by = education,
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity",
+    dentist_12m       = "Visited a dentist in the last 12 months"
   )
 )
+#> Categorical table by education
+#> 
+#>  Variable                                │ Lower secondary n  Lower secondary % 
+#> ─────────────────────────────────────────┼──────────────────────────────────────
+#>  Smoking status                          │                                      
+#>    No                                    │        179               68.6        
+#>    Yes                                   │         78               29.9        
+#>    (Missing)                             │          4                1.5        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity               │                                      
+#>    No                                    │        177               67.8        
+#>    Yes                                   │         84               32.2        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Visited a dentist in the last 12 months │                                      
+#>    No                                    │        113               43.3        
+#>    Yes                                   │        148               56.7        
+#> 
+#>  Variable                                │ Upper secondary n  Upper secondary % 
+#> ─────────────────────────────────────────┼──────────────────────────────────────
+#>  Smoking status                          │                                      
+#>    No                                    │        415               77.0        
+#>    Yes                                   │        112               20.8        
+#>    (Missing)                             │         12                2.2        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity               │                                      
+#>    No                                    │        310               57.5        
+#>    Yes                                   │        229               42.5        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Visited a dentist in the last 12 months │                                      
+#>    No                                    │        174               32.3        
+#>    Yes                                   │        365               67.7        
+#> 
+#>  Variable                                │ Tertiary n  Tertiary %  Total n 
+#> ─────────────────────────────────────────┼─────────────────────────────────
+#>  Smoking status                          │                                 
+#>    No                                    │    332         83.0       926   
+#>    Yes                                   │     59         14.8       249   
+#>    (Missing)                             │      9          2.2        25   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity               │                                 
+#>    No                                    │    163         40.8       650   
+#>    Yes                                   │    237         59.2       550   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Visited a dentist in the last 12 months │                                 
+#>    No                                    │     67         16.8       354   
+#>    Yes                                   │    333         83.2       846   
+#> 
+#>  Variable                                │ Total %    p    Cramer's V 
+#> ─────────────────────────────────────────┼────────────────────────────
+#>  Smoking status                          │          <.001     .14     
+#>    No                                    │  77.2                      
+#>    Yes                                   │  20.8                      
+#>    (Missing)                             │   2.1                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity               │          <.001     .21     
+#>    No                                    │  54.2                      
+#>    Yes                                   │  45.8                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Visited a dentist in the last 12 months │          <.001     .22     
+#>    No                                    │  29.5                      
+#>    Yes                                   │  70.5
 ```
-
-[TABLE]
 
 ### Continuous variables
 
 ``` r
 
-pkgdown_dark_gt(
-  table_continuous(
-    sochealth,
-    select = c(bmi, wellbeing_score, life_sat_health),
-    by = education,
-    labels = c(
-      bmi = "Body mass index",
-      wellbeing_score = "Well-being score",
-      life_sat_health = "Satisfaction with health"
-    ),
-    p_value = TRUE,
-    effect_size = TRUE,
-    output = "gt"
-  )
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  labels = c(
+    bmi = "Body mass index",
+    wellbeing_score = "Well-being score",
+    life_sat_health = "Satisfaction with health"
+  ),
+  p_value = TRUE,
+  effect_size = TRUE
 )
+#> Descriptive statistics
+#> 
+#>  Variable                 │ Group              M     SD     Min    Max   
+#> ──────────────────────────┼──────────────────────────────────────────────
+#>  Body mass index          │ Lower secondary  28.09   3.47  18.20   38.90 
+#>                           │ Upper secondary  26.02   3.43  16.00   37.10 
+#>                           │ Tertiary         24.39   3.52  16.00   33.00 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Well-being score         │ Lower secondary  57.22  15.44  18.70   97.90 
+#>                           │ Upper secondary  68.97  13.62  26.70  100.00 
+#>                           │ Tertiary         76.85  13.23  40.40  100.00 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health │ Lower secondary   2.71   1.20   1.00    5.00 
+#>                           │ Upper secondary   3.53   1.19   1.00    5.00 
+#>                           │ Tertiary          4.11   1.04   1.00    5.00 
+#> 
+#>  Variable                 │ Group            95% CI LL  95% CI UL   n     p   
+#> ──────────────────────────┼───────────────────────────────────────────────────
+#>  Body mass index          │ Lower secondary    27.66      28.51    260  <.001 
+#>                           │ Upper secondary    25.73      26.31    534        
+#>                           │ Tertiary           24.04      24.74    394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Well-being score         │ Lower secondary    55.33      59.10    261  <.001 
+#>                           │ Upper secondary    67.82      70.12    539        
+#>                           │ Tertiary           75.55      78.15    400        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health │ Lower secondary     2.57       2.86    259  <.001 
+#>                           │ Upper secondary     3.43       3.63    534        
+#>                           │ Tertiary            4.01       4.21    399        
+#> 
+#>  Variable                 │ Group               ES     
+#> ──────────────────────────┼────────────────────────────
+#>  Body mass index          │ Lower secondary  η² = 0.13 
+#>                           │ Upper secondary            
+#>                           │ Tertiary                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Well-being score         │ Lower secondary  η² = 0.21 
+#>                           │ Upper secondary            
+#>                           │ Tertiary                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health │ Lower secondary  η² = 0.16 
+#>                           │ Upper secondary            
+#>                           │ Tertiary
 ```
-
-[TABLE]
 
 This keeps the reporting structure consistent while still using the
 function that fits each variable type.
@@ -275,21 +402,29 @@ function that fits each variable type.
 
 ``` r
 
-pkgdown_dark_gt(
-  table_continuous_lm(
-    sochealth,
-    select = c(bmi, wellbeing_score, life_sat_health),
-    by = sex,
-    vcov = "HC3",
-    statistic = TRUE,
-    output = "gt"
-  )
+table_continuous_lm(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = sex,
+  vcov = "HC3",
+  statistic = TRUE
 )
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                       │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ────────────────────────────────┼─────────────────────────────────────────
+#>  Body mass index                │   25.69      26.20          0.51        
+#>  WHO-5 wellbeing index (0-100)  │   67.16      71.05          3.89        
+#>  Satisfaction with health (1-5) │    3.51       3.59          0.08        
+#> 
+#>  Variable                       │ 95% CI LL  95% CI UL   t      p     R²    n   
+#> ────────────────────────────────┼───────────────────────────────────────────────
+#>  Body mass index                │    0.09      0.93     2.38   .018  0.00  1188 
+#>  WHO-5 wellbeing index (0-100)  │    2.12      5.65     4.32  <.001  0.02  1200 
+#>  Satisfaction with health (1-5) │   -0.06      0.22     1.11   .267  0.00  1192 
+#> 
+#> Note. Std. errors: heteroskedasticity-robust (HC3).
 ```
-
-[TABLE]
-
-*Note.* Std. errors: heteroskedasticity-robust (HC3).
 
 This is the better summary-table path when the article is already
 organized around simple linear models, weighted analyses, or robust
@@ -309,21 +444,36 @@ fit <- lm(
   wellbeing_score ~ age + sex + smoking + physical_activity,
   data = sochealth
 )
-pkgdown_dark_gt(
-  table_regression(
-    fit,
-    standardized = "refit",
-    show_columns = c("b", "beta", "ci", "p"),
-    vcov = "HC3",
-    output = "gt"
-  )
+table_regression(
+  fit,
+  standardized = "refit",
+  show_columns = c("b", "beta", "ci", "p"),
+  vcov = "HC3"
 )
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable           │    B       β        95% CI        p   
+#> ────────────────────┼───────────────────────────────────────
+#>  (Intercept)        │   64.18  -0.18  [60.95, 67.42]  <.001 
+#>  age                │    0.04   0.04  [-0.02,  0.10]   .169 
+#>  sex:               │                                       
+#>    Female (ref.)    │     –      –          –          –    
+#>    Male             │    3.88   0.25  [ 2.10,  5.66]  <.001 
+#>  smoking:           │                                       
+#>    No (ref.)        │     –      –          –          –    
+#>    Yes              │   -1.73  -0.11  [-3.92,  0.45]   .120 
+#>  physical_activity: │                                       
+#>    No (ref.)        │     –      –          –          –    
+#>    Yes              │    2.70   0.17  [ 0.93,  4.48]   .003 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1175                                  
+#>  R²                 │    0.03                               
+#>  Adj.R²             │    0.02                               
+#> 
+#> Note. Linear regression.
+#> Std. errors: heteroskedasticity-robust (HC3).
+#> β = standardised coefficient.
 ```
-
-[TABLE]
-
-*Note.* Linear regression. Std. errors: heteroskedasticity-robust (HC3).
-β = standardised coefficient.
 
 The default footer documents the variance estimator and any
 methodological choice that affected the rendered values (robust SE,
@@ -341,18 +491,51 @@ fit_adj   <- lm(
   wellbeing_score ~ smoking + age + sex + physical_activity,
   data = sochealth
 )
-pkgdown_dark_gt(
-  table_regression(
-    list("Unadjusted" = fit_unadj, "Adjusted" = fit_adj),
-    show_columns = c("b", "ci", "p"),
-    output = "gt"
-  )
+table_regression(
+  list("Unadjusted" = fit_unadj, "Adjusted" = fit_adj),
+  show_columns = c("b", "ci", "p")
 )
+#> Linear regression comparison: wellbeing_score
+#> 
+#>                                 Unadjusted                   Adjusted         
+#>                       ──────────────────────────────  ─────────────────────── 
+#>  Variable           │    B         95% CI        p       B         95% CI     
+#> ────────────────────┼─────────────────────────────────────────────────────────
+#>  (Intercept)        │   69.36  [68.36, 70.37]  <.001    64.18  [60.87, 67.49] 
+#>  smoking:           │                                                         
+#>    No (ref.)        │     –          –          –         –          –        
+#>    Yes              │   -1.72  [-3.91,  0.47]   .124    -1.73  [-3.90,  0.43] 
+#>  age                │                                    0.04  [-0.02,  0.10] 
+#>  sex:               │                                                         
+#>    Female (ref.)    │                                     –          –        
+#>    Male             │                                    3.88  [ 2.11,  5.65] 
+#>  physical_activity: │                                                         
+#>    No (ref.)        │                                     –          –        
+#>    Yes              │                                    2.70  [ 0.93,  4.48] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1175                            1175                    
+#>  R²                 │    0.00                            0.03                 
+#>  Adj.R²             │    0.00                            0.02                 
+#> 
+#>                       Adju… 
+#>                       ───── 
+#>  Variable           │   p   
+#> ────────────────────┼───────
+#>  (Intercept)        │ <.001 
+#>  smoking:           │       
+#>    No (ref.)        │  –    
+#>    Yes              │  .117 
+#>  age                │  .171 
+#>  sex:               │       
+#>    Female (ref.)    │  –    
+#>    Male             │ <.001 
+#>  physical_activity: │       
+#>    No (ref.)        │  –    
+#>    Yes              │  .003 
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
 ```
-
-[TABLE]
-
-*Note.* Linear regression models. Std. errors: classical (OLS).
 
 For binary or count outcomes, swap
 [`lm()`](https://rdrr.io/r/stats/lm.html) for
@@ -366,27 +549,47 @@ fit_glm <- glm(
   data = sochealth,
   family = binomial()
 )
-pkgdown_dark_gt(
-  table_regression(
-    fit_glm,
-    exponentiate = TRUE,
-    show_columns = c("b", "ci", "p", "ame", "ame_ci"),
-    output = "gt"
-  )
+table_regression(
+  fit_glm,
+  exponentiate = TRUE,
+  show_columns = c("b", "ci", "p", "ame", "ame_ci")
 )
 #> Warning: `"ame"` and `"p"` shown without `"ame_p"`: the `p` column is for B (or beta), not the AME. They can differ under non-linear links or interactions.
 #> ℹ Add `"ame_p"` to display the AME-specific p-value.
+#> Logistic regression: smoking
+#> 
+#>  Variable           │   OR        95% CI       p     AME      95% CI     
+#> ────────────────────┼────────────────────────────────────────────────────
+#>  (Intercept)        │    0.21  [0.13, 0.36]  <.001                       
+#>  age                │    1.01  [1.00, 1.01]   .298   0.00  [-0.00, 0.00] 
+#>  sex:               │                                                    
+#>    Female (ref.)    │     –         –         –       –          –       
+#>    Male             │    0.95  [0.72, 1.26]   .723  -0.01  [-0.06, 0.04] 
+#>  physical_activity: │                                                    
+#>    No (ref.)        │     –         –         –       –          –       
+#>    Yes              │    1.02  [0.77, 1.35]   .883   0.00  [-0.04, 0.05] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1175                                               
+#>  R² (McFadden)      │    0.00                                            
+#>  R² (Nagelkerke)    │    0.00                                            
+#>  AIC                │ 1220.5                                             
+#> 
+#> Note. Logistic regression.
+#> Std. errors: classical (Fisher information).
+#> AME = average marginal effect; OR = odds ratio.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
 ```
-
-[TABLE]
-
-*Note.* Logistic regression. Std. errors: classical (Fisher
-information). AME = average marginal effect; OR = odds ratio.
-Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
 
 Average marginal effects (`ame`) are useful next to the odds ratio
 because they report a probability-scale change for each predictor — the
 quantity most reviewers want to interpret directly.
+
+For the epidemiological variant of Table 2 — a univariable screen of
+every candidate predictor set against the multivariable model —
+[`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+builds the whole two-part layout in one call; see the *Univariable
+screening* section of
+[`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md).
 
 ## Choose the output format
 
@@ -526,7 +729,9 @@ The dedicated articles go deeper into each function:
   additive covariate adjustment (G-computation or equal-weight), and
   four effect-size families with noncentral CIs.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  covers single- and multi-model coefficient tables for `lm` / `glm`,
+  covers single- and multi-model coefficient tables across some thirty
+  model classes (the map is
+  [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)),
   four standardisation methods, partial effect sizes with noncentral-F
   CIs, average marginal effects, hierarchical (`nested = TRUE`)
   comparisons, multiplicity correction, and response-scale reporting for

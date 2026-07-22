@@ -176,7 +176,13 @@ kendall_tau_c(tbl_ord, detail = TRUE)
 
 Somers’ D is an asymmetric measure: it distinguishes between a dependent
 and an independent variable. By default, the row variable is treated as
-dependent (D(R\|C)). The p-value tests H0: D = 0 (Wald z-test).
+dependent (D(R\|C)). The p-value tests H0: D = 0 (Wald z-test). One
+disclosure worth knowing: the association column of
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+reports the *symmetric* variant of Somers’ D, while the standalone
+[`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
+defaults to the row-dependent D(R\|C) — the two values differ by
+construction.
 
 ``` r
 

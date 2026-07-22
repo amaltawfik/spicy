@@ -11,10 +11,12 @@ This vignette covers **Bayesian regression tables** — the same
 call on a posterior instead of a maximum-likelihood fit. The companion
 vignette [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
-covers the shared mechanics; here we focus on what genuinely changes
-when the estimates are draws from a posterior distribution: what the
-columns mean, which familiar columns are *deliberately absent*, and what
-to check before reading anything.
+covers the shared mechanics (the class-by-class map is [*Supported
+models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md));
+here we focus on what genuinely changes when the estimates are draws
+from a posterior distribution: what the columns mean, which familiar
+columns are *deliberately absent*, and what to check before reading
+anything.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 supports two engines:
@@ -140,18 +142,19 @@ table_regression(fit, show_columns = c("b", "ci", "pd"))
 #> pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019).
 ```
 
-Read against the table: `Male`, at 0.62, is barely better than a coin
-flip on sign; `age`, at 0.89, leans positive without settling the
-direction; the education contrasts display 1.00 — essentially every
-retained draw is negative (all 1,000 for `Tertiary`; 999 of 1,000 for
-`Upper secondary`, which rounds up). A `pd` of 0.50 would say the draws
-split evenly, with zero at the posterior median. It reads as evidence of
-*direction*, never of practical size — and one disclosure keeps this
-section honest: under weak priors `pd` maps almost one-to-one onto the
-frequentist one-sided p-value (two-sided p ≈ 2(1 − pd), so `age`’s 0.89
-corresponds to p ≈ 0.23; Makowski et al. 2019). `pd` is not a route
-around the p-value’s pathologies; it is the same directional information
-stated as a posterior probability.
+Read against the table: `Male`, at .617, is barely better than a coin
+flip on sign; `age`, at .886, leans positive without settling the
+direction; the education contrasts show 1.000 and .999 — essentially
+every retained draw is negative (all 1,000 for `Tertiary`; 999 of 1,000
+for `Upper secondary` — the three-decimal display keeps the two cases
+distinguishable). A `pd` of .500 would say the draws split evenly, with
+zero at the posterior median. It reads as evidence of *direction*, never
+of practical size — and one disclosure keeps this section honest: under
+weak priors `pd` maps almost one-to-one onto the frequentist one-sided
+p-value (two-sided p ≈ 2(1 − pd), so `age`’s 0.89 corresponds to p ≈
+0.23; Makowski et al. 2019). `pd` is not a route around the p-value’s
+pathologies; it is the same directional information stated as a
+posterior probability.
 
 For a claim of practical size, the Kruschke tradition asks how much of
 the posterior falls inside a **region of practical equivalence** (ROPE)
@@ -440,6 +443,91 @@ header itself, `95% CrI`). In the fit-statistics block, `n` and
 pseudo-R² and AIC — fill only the frequentist one, because a posterior
 has none of them. Which brings us to what the table refuses.
 
+## Fit statistics for a posterior
+
+The default fit block reports `R² (Bayes)` — the posterior median of the
+draws-based R² (Gelman et al. 2019), the one R² a posterior genuinely
+has. Predictive accuracy is opt-in, because it costs a few seconds of
+PSIS-LOO per model:
+
+``` r
+
+table_regression(fit, show_fit_stats = c("nobs", "r2_bayes",
+                                         "elpd_loo"))
+#> Bayesian logistic regression (stanreg): smoking
+#> 
+#>  Variable                 │    B      SE      95% CrI     
+#> ──────────────────────────┼───────────────────────────────
+#>  (Intercept)              │   -1.11  0.29  [-1.66, -0.55] 
+#>  sex:                     │                               
+#>    Female (ref.)          │     –     –          –        
+#>    Male                   │   -0.04  0.15  [-0.34,  0.25] 
+#>  age                      │    0.01  0.01  [-0.00,  0.02] 
+#>  education:               │                               
+#>    Lower secondary (ref.) │     –     –          –        
+#>    Upper secondary        │   -0.49  0.16  [-0.81, -0.16] 
+#>    Tertiary               │   -0.91  0.20  [-1.31, -0.56] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                          
+#>  R² (Bayes)               │    0.02                       
+#>  ELPD (LOO)               │ -600.6                        
+#> 
+#> Note. Bayesian logistic regression (stanreg).
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
+#> Predictive accuracy by PSIS-LOO; SE(ELPD) = 18.7.
+```
+
+The `ELPD (LOO)` row is the expected log predictive density (Vehtari,
+Gelman & Gabry 2017), with its standard error disclosed in the footer —
+compare models with
+[`loo::loo_compare()`](https://mc-stan.org/loo/reference/loo_compare.html)
+outside the table, and read differences against the SE of the
+*difference*. Prefer the log scale: `"looic"` (its −2 twin) persists for
+historical reasons only (Gelman, Vehtari, McElreath et al. 2026, App.
+B), and `"waic"` exists with the same disclosures though PSIS-LOO is
+generally preferred.
+
+## Standardized coefficients from the draws
+
+The algebraic flavors run natively on the draws — an exact affine
+rescale, so the median, MAD SD and credible bounds all move by the same
+SD ratio and nothing is re-summarized:
+
+``` r
+
+table_regression(fit, standardized = "posthoc",
+                 show_columns = c("b", "beta"))
+#> Bayesian logistic regression (stanreg): smoking
+#> 
+#>  Variable                 │    B       β   
+#> ──────────────────────────┼────────────────
+#>  (Intercept)              │   -1.11    –   
+#>  sex:                     │                
+#>    Female (ref.)          │     –      –   
+#>    Male                   │   -0.04  -0.04 
+#>  age                      │    0.01   0.09 
+#>  education:               │                
+#>    Lower secondary (ref.) │     –      –   
+#>    Upper secondary        │   -0.49  -0.49 
+#>    Tertiary               │   -0.91  -0.91 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175           
+#>  R² (Bayes)               │    0.02        
+#> 
+#> Note. Bayesian logistic regression (stanreg).
+#> Std. errors: posterior MAD SD (scaled median absolute deviation).
+#> β = standardised coefficient.
+```
+
+On this logistic model the betas are x-standardized on the link scale
+(the glm convention): `age`, the only continuous predictor, moves from a
+per-year log-odds of 0.01 to 0.09 per SD of age — the dummies are left
+unscaled under `"posthoc"`, so their rows match `B`. The same call works
+on standard-formula `brm()` fits (the design matrix is recovered through
+`insight`), and the scale factors are engine-invariant across rstanarm
+and brms. The refusals — multilevel and special-term formulas,
+`"refit"`, `"pseudo"` — are itemized in the next section.
+
 ## What is refused, and why
 
 Several familiar requests are meaningless for a posterior, and spicy
@@ -447,25 +535,18 @@ refuses them with an explanatory error rather than rendering something
 silently wrong:
 
 - `p_adjust` — there are no p-values to adjust;
-- likelihood-based fit statistics (`"aic"`, `"bic"`, pseudo-R²) — the
-  Bayesian table has its own instead: the default block reports
-  `R² (Bayes)`, the posterior median of the draws-based R² (Gelman et
-  al. 2019), and
-  `show_fit_stats = c("nobs", "r2_bayes", "elpd_loo", "looic")` adds the
-  PSIS-LOO expected log predictive density and its deviance-scale twin,
-  with the elpd standard error disclosed in the footer (Vehtari, Gelman
-  & Gabry 2017; a few seconds per model). Prefer the log scale: the −2
-  of LOOIC persists for historical reasons only (Gelman, Vehtari,
-  McElreath et al. 2026, App. B). A `"waic"` token exists too — its SE
-  is disclosed the same way — though PSIS-LOO is generally preferred.
-  These estimates come with their own reliability diagnostics, and spicy
-  never mutes them: when PSIS-LOO flags observations with Pareto k above
-  the sample-size-specific threshold — min(1 − 1/log10(S), 0.7), the
-  same bound [`loo::loo()`](https://mc-stan.org/loo/reference/loo.html)
-  itself prints (Vehtari et al. 2024) — or WAIC flags p_waic above 0.4,
-  the footer says the estimate is unreliable and a
-  `spicy_bayes_diagnostics` warning fires. The remediation ladder
-  (Gelman, Vehtari, McElreath et al. 2026, ch. 24):
+- likelihood-based fit statistics (`"aic"`, `"bic"`, pseudo-R²) — a
+  posterior has no likelihood-based information criteria; the Bayesian
+  block of the *Fit statistics* section above replaces them. The
+  predictive estimates come with their own reliability diagnostics, and
+  spicy never mutes them: when PSIS-LOO flags observations with Pareto k
+  above the sample-size-specific threshold — min(1 − 1/log10(S), 0.7),
+  the same bound
+  [`loo::loo()`](https://mc-stan.org/loo/reference/loo.html) itself
+  prints (Vehtari et al. 2024) — or WAIC flags p_waic above 0.4, the
+  footer says the estimate is unreliable and a `spicy_bayes_diagnostics`
+  warning fires. The remediation ladder (Gelman, Vehtari, McElreath et
+  al. 2026, ch. 24):
   [`loo::loo_moment_match()`](https://mc-stan.org/loo/reference/loo_moment_match.html)
   first, then refitting the flagged folds (`k_threshold = 0.7`, brms
   `reloo = TRUE`), then K-fold cross-validation. Model *comparison*
@@ -490,28 +571,23 @@ silently wrong:
 - `standardized = "refit"` and `"pseudo"` — refit would re-run the MCMC
   sampler on z-scored data inside a table call (minutes per model), and
   pseudo’s latent variance varies per draw (its draws-native version is
-  planned). The **algebraic flavors are supported on fixed-effects
-  `stan_glm`-style fits**: `"posthoc"`, `"basic"` and `"smart"` are
-  *exact* affine rescales of the posterior draws — the median, MAD SD
-  and credible bounds (equal-tailed or HDI) all scale by the same
-  positive SD ratio, so β needs no re-summarization; `"posthoc"` and
-  `"basic"` match
+  planned). The algebraic flavors are demonstrated in *Standardized
+  coefficients from the draws* above; their conventions in brief:
+  `"posthoc"` / `"basic"` match
   [`effectsize::standardize_parameters()`](https://easystats.github.io/parameters/reference/standardize_parameters.html)
-  to numerical precision, while `"smart"` follows Gelman’s (2008)
-  convention of leaving binary inputs and factor dummies raw
-  (`effectsize`’s `two_sd = TRUE` variant matches it for continuous
-  predictors and factor dummies, but 2-SD-scales binary numeric ones).
-  Multilevel fits (`stan_glmer`) are refused — a standardized β would
-  need an explicit sd(Y) decomposition, the choice the frequentist mixed
-  engines make by refitting on z-scored data — and so are `stan_polr` /
-  `stan_betareg` (no validated convention for those families) and
-  `brmsfit` for every flavor — brms exposes neither
-  [`model.matrix()`](https://rdrr.io/r/stats/model.matrix.html) nor the
-  factor metadata the rescale needs. Pre-standardizing predictors before
-  fitting (Gelman, Hill & Vehtari 2020, ch. 12) remains the cleanest
-  route when the whole analysis should live on the standardized scale
-  (and the only in-package route for `brms` and multilevel Bayesian
-  fits);
+  to numerical precision on `stanreg` fits (`"basic"` on `brmsfit` too),
+  and `"smart"` follows Gelman’s (2008) convention of leaving binary
+  inputs and factor dummies raw (`effectsize`’s `two_sd = TRUE` variant
+  2-SD-scales binary numerics). Multilevel fits (`stan_glmer`, `brm()`
+  with group-level terms) are refused — a standardized β would need an
+  explicit sd(Y) decomposition, the choice the frequentist mixed engines
+  make by refitting on z-scored data — and so are `stan_polr` /
+  `stan_betareg` (no validated convention) and brms formulas with
+  distributional, multivariate or special terms (`mo()`, `s()`, …).
+  Pre-standardizing predictors before fitting (Gelman, Hill & Vehtari
+  2020, ch. 12) remains the cleanest route when the whole analysis
+  should live on the standardized scale (and the route for every refused
+  case);
 - variational and optimizing fits
   (`stan_glm(..., algorithm = "meanfield")`, `"optimizing"`) — they
   carry an *approximate* posterior on which the MCMC diagnostics above
@@ -619,13 +695,14 @@ The default console table is one of several targets. The `output`
 argument also produces a raw data frame, a long broom-style tibble, and
 — with the corresponding Suggests package — rich `gt`, `flextable`,
 `tinytable`, Excel, or Word tables. The Bayesian structure carries
-through: the p column stays a dash, and the posterior summaries keep
-full precision in the tidy frame. In
-[`broom::tidy()`](https://broom.tidymodels.org) the `estimate` column is
-the posterior median, `std.error` the posterior MAD SD, and `conf.low` /
-`conf.high` the credible bounds; `p.value`, `statistic`, and `df` are
-`NA` — pipelines that filter on `p.value` must switch to the interval
-(or `pd`):
+through: an all-Bayesian table carries no p column at all (in a mixed
+frequentist–Bayesian table the shared p column dashes on the Bayesian
+side), and the posterior summaries keep full precision in the tidy
+frame. In [`broom::tidy()`](https://broom.tidymodels.org) the `estimate`
+column is the posterior median, `std.error` the posterior MAD SD, and
+`conf.low` / `conf.high` the credible bounds; `p.value`, `statistic`,
+and `df` are `NA` — pipelines that filter on `p.value` must switch to
+the interval (or `pd`):
 
 ``` r
 

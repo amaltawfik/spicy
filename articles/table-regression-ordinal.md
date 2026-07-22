@@ -12,8 +12,10 @@ rating or a Likert agreement scale. The companion vignette
 [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
-multi-model layouts, broom integration); here we focus on what is
-*specific* to ordinal fits.
+multi-model layouts, broom integration; the class-by-class map is
+[*Supported
+models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md));
+here we focus on what is *specific* to ordinal fits.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 supports both ordinal engines:
@@ -388,10 +390,13 @@ table_regression(
 ```
 
 The footer switches to name the estimator and the clustering variable.
-Heteroskedasticity-consistent (`HC*`) estimators and the `bootstrap` /
-`jackknife` resamplers are *not* defined for ordinal fits and are
-refused with a clear `spicy_unsupported_vcov` error rather than a silent
-fallback.
+The clustering is applied *consistently*: the `Thresholds` rows and the
+AME columns are reweighted from the same `vcovCL` matrix as the slopes,
+so no row of the table quietly keeps model-based standard errors under a
+cluster-robust footer. Heteroskedasticity-consistent (`HC*`) estimators
+and the `bootstrap` / `jackknife` resamplers are *not* defined for
+ordinal fits and are refused with a clear `spicy_unsupported_vcov` error
+rather than a silent fallback.
 
 ## Standard errors and confidence intervals
 
@@ -834,8 +839,8 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>    <chr>    <chr>           <chr>         <chr> <chr>            <dbl>     <dbl>
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
 #>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
-#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000691 
+#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000570
+#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
 #>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
 #>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   

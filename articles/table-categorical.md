@@ -208,21 +208,50 @@ and
 
 ``` r
 
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = c(smoking, physical_activity),
-    by = education,
-    labels = c(
-      smoking           = "Smoking status",
-      physical_activity = "Regular physical activity"
-    ),
-    output = "gt"
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = education,
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
   )
 )
+#> Categorical table by education
+#> 
+#>  Variable                  │ Lower secondary n  Lower secondary % 
+#> ───────────────────────────┼──────────────────────────────────────
+#>  Smoking status            │                                      
+#>    No                      │        179               68.6        
+#>    Yes                     │         78               29.9        
+#>    (Missing)               │          4                1.5        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                      
+#>    No                      │        177               67.8        
+#>    Yes                     │         84               32.2        
+#> 
+#>  Variable                  │ Upper secondary n  Upper secondary %  Tertiary n 
+#> ───────────────────────────┼──────────────────────────────────────────────────
+#>  Smoking status            │                                                  
+#>    No                      │        415               77.0            332     
+#>    Yes                     │        112               20.8             59     
+#>    (Missing)               │         12                2.2              9     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                                  
+#>    No                      │        310               57.5            163     
+#>    Yes                     │        229               42.5            237     
+#> 
+#>  Variable                  │ Tertiary %  Total n  Total %    p    Cramer's V 
+#> ───────────────────────────┼─────────────────────────────────────────────────
+#>  Smoking status            │                               <.001     .14     
+#>    No                      │    83.0       926     77.2                      
+#>    Yes                     │    14.8       249     20.8                      
+#>    (Missing)               │     2.2        25      2.1                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                               <.001     .21     
+#>    No                      │    40.8       650     54.2                      
+#>    Yes                     │    59.2       550     45.8
 ```
-
-[TABLE]
 
 ## Association measures and confidence intervals
 
@@ -248,18 +277,31 @@ table_categorical(
   sochealth,
   select = smoking,
   by = education,
-  assoc_measure = "lambda",
-  output = "tinytable"
+  assoc_measure = "lambda"
 )
+#> Categorical table by education
+#> 
+#>  Variable    │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ─────────────┼─────────────────────────────────────────────────────────
+#>  smoking     │                                                         
+#>    No        │        179               68.6                415        
+#>    Yes       │         78               29.9                112        
+#>    (Missing) │          4                1.5                 12        
+#> 
+#>  Variable    │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
+#> ─────────────┼─────────────────────────────────────────────────────────────
+#>  smoking     │                                                             
+#>    No        │       77.0            332         83.0       926     77.2   
+#>    Yes       │       20.8             59         14.8       249     20.8   
+#>    (Missing) │        2.2              9          2.2        25      2.1   
+#> 
+#>  Variable    │   p    Lambda 
+#> ─────────────┼───────────────
+#>  smoking     │ <.001   .00   
+#>    No        │               
+#>    Yes       │               
+#>    (Missing) │
 ```
-
-| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Lambda |
-|----|----|----|----|----|----|----|----|----|----|----|
-|  | n | % | n | % | n | % | n | % |  |  |
-| smoking |     |      |     |      |     |      |     |      | \<.001 | .00 |
-|     No | 179 | 68.6 | 415 | 77.0 | 332 | 83.0 | 926 | 77.2 |       |     |
-|     Yes |  78 | 29.9 | 112 | 20.8 |  59 | 14.8 | 249 | 20.8 |       |     |
-|     (Missing) |   4 |  1.5 |  12 |  2.2 |   9 |  2.2 |  25 |  2.1 |       |     |
 
 ``` r
 
@@ -275,24 +317,54 @@ table_categorical(
   assoc_measure = c(
     smoking           = "cramer_v",
     self_rated_health = "tau_b"
-  ),
-  output = "tinytable"
+  )
 )
+#> Categorical table by education
+#> 
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  smoking           │                                                         
+#>    No              │        179               68.6                415        
+#>    Yes             │         78               29.9                112        
+#>    (Missing)       │          4                1.5                 12        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  self_rated_health │                                                         
+#>    (Missing)       │          1                0.4                 12        
+#>    Poor            │         28               10.7                 28        
+#>    Fair            │         86               33.0                118        
+#>    Good            │        102               39.1                263        
+#>    Very good       │         44               16.9                118        
+#> 
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  smoking           │                                                    
+#>    No              │       77.0            332         83.0       926   
+#>    Yes             │       20.8             59         14.8       249   
+#>    (Missing)       │        2.2              9          2.2        25   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  self_rated_health │                                                    
+#>    (Missing)       │        2.2              7          1.8        20   
+#>    Poor            │        5.2              5          1.2        61   
+#>    Fair            │       21.9             62         15.5       266   
+#>    Good            │       48.8            193         48.2       558   
+#>    Very good       │       21.9            133         33.2       295   
+#> 
+#>  Variable          │ Total %    p    Effect size 
+#> ───────────────────┼─────────────────────────────
+#>  smoking           │          <.001      .14     
+#>    No              │  77.2                       
+#>    Yes             │  20.8                       
+#>    (Missing)       │   2.1                       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  self_rated_health │          <.001      .02     
+#>    (Missing)       │   1.7                       
+#>    Poor            │   5.1                       
+#>    Fair            │  22.2                       
+#>    Good            │  46.5                       
+#>    Very good       │  24.6                       
+#> 
+#> Note. Cramer's V: smoking; Kendall's Tau-b: self_rated_health.
 ```
-
-| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Effect size |
-|----|----|----|----|----|----|----|----|----|----|----|
-|  | n | % | n | % | n | % | n | % |  |  |
-| smoking |     |      |     |      |     |      |     |      | \<.001 | .14 |
-|     No | 179 | 68.6 | 415 | 77.0 | 332 | 83.0 | 926 | 77.2 |       |     |
-|     Yes |  78 | 29.9 | 112 | 20.8 |  59 | 14.8 | 249 | 20.8 |       |     |
-|     (Missing) |   4 |  1.5 |  12 |  2.2 |   9 |  2.2 |  25 |  2.1 |       |     |
-| self_rated_health |     |      |     |      |     |      |     |      | \<.001 | .02 |
-|     (Missing) |   1 |  0.4 |  12 |  2.2 |   7 |  1.8 |  20 |  1.7 |       |     |
-|     Poor |  28 | 10.7 |  28 |  5.2 |   5 |  1.2 |  61 |  5.1 |       |     |
-|     Fair |  86 | 33.0 | 118 | 21.9 |  62 | 15.5 | 266 | 22.2 |       |     |
-|     Good | 102 | 39.1 | 263 | 48.8 | 193 | 48.2 | 558 | 46.5 |       |     |
-|     Very good |  44 | 16.9 | 118 | 21.9 | 133 | 33.2 | 295 | 24.6 |       |     |
 
 Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
 (`gt`, `tinytable`, `flextable`, `word`), the CI is shown inline:
@@ -345,39 +417,92 @@ the total weighted N matches the unweighted N:
 
 ``` r
 
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = c(smoking, physical_activity),
-    by = education,
-    weights = "weight",
-    rescale = TRUE,
-    output = "gt"
-  )
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = education,
+  weights = "weight",
+  rescale = TRUE
 )
+#> Categorical table by education
+#> 
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  smoking           │                                                         
+#>    No              │        176               68.1                419        
+#>    Yes             │         79               30.6                114        
+#>    (Missing)       │          4                1.4                 13        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                         
+#>    No              │        174               67.2                315        
+#>    Yes             │         85               32.8                231        
+#> 
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  smoking           │                                                    
+#>    No              │       76.6            325         82.2      919.3  
+#>    Yes             │       21.0             60         15.2      253.7  
+#>    (Missing)       │        2.4             10          2.6       27.0  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                    
+#>    No              │       57.7            166         41.9      654.8  
+#>    Yes             │       42.3            229         58.1      545.2  
+#> 
+#>  Variable          │ Total %    p    Cramer's V 
+#> ───────────────────┼────────────────────────────
+#>  smoking           │          <.001     .13     
+#>    No              │  76.6                      
+#>    Yes             │  21.1                      
+#>    (Missing)       │   2.2                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001     .19     
+#>    No              │  54.6                      
+#>    Yes             │  45.4
 ```
-
-[TABLE]
 
 ## Handling missing values
 
-By default, rows with missing values are dropped (`drop_na = TRUE`). Set
-`drop_na = FALSE` to display them as a “(Missing)” category:
+By default, missing values are displayed as a “(Missing)” category
+(`drop_na = FALSE`), so the percentages sum over every observation. Set
+`drop_na = TRUE` to remove them — the table then discloses the listwise
+deletion in a note:
 
 ``` r
 
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = income_group,
-    by = education,
-    drop_na = FALSE,
-    output = "gt"
-  )
+table_categorical(
+  sochealth,
+  select = income_group,
+  by = education,
+  drop_na = TRUE
 )
+#> Categorical table by education
+#> 
+#>  Variable       │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ────────────────┼─────────────────────────────────────────────────────────
+#>  income_group   │                                                         
+#>    Low          │        87                33.7                115        
+#>    Lower middle │        92                35.7                186        
+#>    Upper middle │        58                22.5                135        
+#>    High         │        21                 8.1                 94        
+#> 
+#>  Variable       │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
+#> ────────────────┼─────────────────────────────────────────────────────────────
+#>  income_group   │                                                             
+#>    Low          │       21.7             45         11.4       247     20.9   
+#>    Lower middle │       35.1            110         27.9       388     32.8   
+#>    Upper middle │       25.5            135         34.3       328     27.7   
+#>    High         │       17.7            104         26.4       219     18.5   
+#> 
+#>  Variable       │   p    Kendall's Tau-b 
+#> ────────────────┼────────────────────────
+#>  income_group   │ <.001        .22       
+#>    Low          │                        
+#>    Lower middle │                        
+#>    Upper middle │                        
+#>    High         │                        
+#> 
+#> Missing values removed: income_group (18).
 ```
-
-[TABLE]
 
 ## Filtering and reordering levels
 
@@ -387,19 +512,36 @@ specify controls the display order, which is useful for placing
 
 ``` r
 
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = income_group,
-    by = education,
-    drop_na = FALSE,
-    levels_keep = c("(Missing)", "Low", "High"),
-    output = "gt"
-  )
+table_categorical(
+  sochealth,
+  select = income_group,
+  by = education,
+  drop_na = FALSE,
+  levels_keep = c("(Missing)", "Low", "High")
 )
+#> Categorical table by education
+#> 
+#>  Variable     │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ──────────────┼─────────────────────────────────────────────────────────
+#>  income_group │                                                         
+#>    (Missing)  │         3                 1.1                  9        
+#>    Low        │        87                33.3                115        
+#>    High       │        21                 8.0                 94        
+#> 
+#>  Variable     │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
+#> ──────────────┼─────────────────────────────────────────────────────────────
+#>  income_group │                                                             
+#>    (Missing)  │        1.7              6          1.5        18      1.5   
+#>    Low        │       21.3             45         11.2       247     20.6   
+#>    High       │       17.4            104         26.0       219     18.2   
+#> 
+#>  Variable     │   p    Kendall's Tau-b 
+#> ──────────────┼────────────────────────
+#>  income_group │ <.001       -0.01      
+#>    (Missing)  │                        
+#>    Low        │                        
+#>    High       │
 ```
-
-[TABLE]
 
 ## Formatting options
 
@@ -408,20 +550,37 @@ association measure:
 
 ``` r
 
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = smoking,
-    by = education,
-    percent_digits = 2,
-    p_digits = 4,
-    v_digits = 3,
-    output = "gt"
-  )
+table_categorical(
+  sochealth,
+  select = smoking,
+  by = education,
+  percent_digits = 2,
+  p_digits = 4,
+  v_digits = 3
 )
+#> Categorical table by education
+#> 
+#>  Variable    │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ─────────────┼─────────────────────────────────────────────────────────
+#>  smoking     │                                                         
+#>    No        │        179               68.60               415        
+#>    Yes       │         78               29.90               112        
+#>    (Missing) │          4                1.50                12        
+#> 
+#>  Variable    │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
+#> ─────────────┼─────────────────────────────────────────────────────────────
+#>  smoking     │                                                             
+#>    No        │       77.00           332        83.00       926     77.20  
+#>    Yes       │       20.80            59        14.80       249     20.80  
+#>    (Missing) │        2.20             9         2.20        25      2.10  
+#> 
+#>  Variable    │   p     Cramer's V 
+#> ─────────────┼────────────────────
+#>  smoking     │ <.0001     .136    
+#>    No        │                    
+#>    Yes       │                    
+#>    (Missing) │
 ```
-
-[TABLE]
 
 `p_digits` drives both the displayed precision of the `p` column and the
 small-*p* threshold (`p_digits = 3` -\> `<.001`, `p_digits = 4` -\>

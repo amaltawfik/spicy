@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -217,7 +217,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span></code></pre></div>
 <p>Add percentages with <code>percent</code>:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (Column %)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values   <span style="color: #9E9E9E;">│</span>   Lower secondary    Upper secondary    Tertiary <span style="color: #9E9E9E;">│</span>   Total </span></span>
@@ -317,214 +317,54 @@ tables for categorical variables:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<!-- preamble start -->
-
-    <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
-      // Create table-specific functions using external factory
-      const tableFns_6v58l9vxglu05x0o7wvi = TinyTable.createTableFunctions("tinytable_6v58l9vxglu05x0o7wvi");
-      // tinytable span after
-      window.addEventListener('load', function () {
-          var cellsToStyle = [
-            // tinytable style arrays after
-          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '7', j: 10 }, { i: '8', j: 10 }, { i: '9', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 }, { i: '7', j: 11 }, { i: '8', j: 11 }, { i: '9', j: 11 } ], css_id: 'tinytable_css_gwhmvmap65knyb99qx6c',}, 
-          { positions: [ { i: '0', j: 10 }, { i: '10', j: 10 }, { i: '0', j: 11 }, { i: '10', j: 11 } ], css_id: 'tinytable_css_7avfax9a7hlg4e4rbosr',}, 
-          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_bmj3iklkidrjok56654b',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '8', j: 2 }, { i: '9', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '8', j: 3 }, { i: '9', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 }, { i: '8', j: 4 }, { i: '9', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '7', j: 5 }, { i: '8', j: 5 }, { i: '9', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '7', j: 6 }, { i: '8', j: 6 }, { i: '9', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '7', j: 7 }, { i: '8', j: 7 }, { i: '9', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '7', j: 8 }, { i: '8', j: 8 }, { i: '9', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 }, { i: '9', j: 9 } ], css_id: 'tinytable_css_fzwsoxmcup2gwkhqnxj4',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '10', j: 2 }, { i: '0', j: 3 }, { i: '10', j: 3 }, { i: '0', j: 4 }, { i: '10', j: 4 }, { i: '0', j: 5 }, { i: '10', j: 5 }, { i: '0', j: 6 }, { i: '10', j: 6 }, { i: '0', j: 7 }, { i: '10', j: 7 }, { i: '0', j: 8 }, { i: '10', j: 8 }, { i: '0', j: 9 }, { i: '10', j: 9 } ], css_id: 'tinytable_css_ijtdx5ntl7d2hervnp7p',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_16hpwp18wfmevjq0o9ux',}, 
-          { positions: [ { i: '10', j: 1 } ], css_id: 'tinytable_css_9n8o98iosemua6rb2f7b',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 }, { i: '9', j: 1 } ], css_id: 'tinytable_css_qbaehks92zd14h3igmus',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 }, { i: '8', j: 1 } ], css_id: 'tinytable_css_8oyhm3xhtibg9ckz0265',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_pd4bgcwwchv4awz6mnx7',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_rrapy1m2305li10rw6b1',}, 
-          ];
-
-          // Loop over the arrays to style the cells
-          cellsToStyle.forEach(function (group) {
-              group.positions.forEach(function (cell) {
-                  tableFns_6v58l9vxglu05x0o7wvi.styleCell(cell.i, cell.j, group.css_id);
-              });
-          });
-      });
-    </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
-<style>
-    /* tinytable css entries after */
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_gwhmvmap65knyb99qx6c, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_gwhmvmap65knyb99qx6c { text-align: center; white-space: nowrap; }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_7avfax9a7hlg4e4rbosr, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_7avfax9a7hlg4e4rbosr {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_bmj3iklkidrjok56654b, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_bmj3iklkidrjok56654b {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_fzwsoxmcup2gwkhqnxj4, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_fzwsoxmcup2gwkhqnxj4 { text-align: center }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_ijtdx5ntl7d2hervnp7p, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_ijtdx5ntl7d2hervnp7p {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_16hpwp18wfmevjq0o9ux, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_16hpwp18wfmevjq0o9ux {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_9n8o98iosemua6rb2f7b, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_9n8o98iosemua6rb2f7b {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_qbaehks92zd14h3igmus, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_qbaehks92zd14h3igmus { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_8oyhm3xhtibg9ckz0265, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_8oyhm3xhtibg9ckz0265 { text-align: left }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_pd4bgcwwchv4awz6mnx7, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_pd4bgcwwchv4awz6mnx7 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_6v58l9vxglu05x0o7wvi td.tinytable_css_rrapy1m2305li10rw6b1, #tinytable_6v58l9vxglu05x0o7wvi th.tinytable_css_rrapy1m2305li10rw6b1 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    </style>
-<div class="container">
-      <table class="table tinytable" id="tinytable_6v58l9vxglu05x0o7wvi" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<thead>
-<tr>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Lower secondary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Upper secondary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Tertiary</th>
-<th scope="col" align="center" colspan="2" data-row="-1" data-col="8">Total</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="10">p</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="11">Cramer's V</th>
-</tr>
-<tr>
-<th scope="col" data-row="0" data-col="1"></th>
-                <th scope="col" data-row="0" data-col="2">n</th>
-                <th scope="col" data-row="0" data-col="3">%</th>
-                <th scope="col" data-row="0" data-col="4">n</th>
-                <th scope="col" data-row="0" data-col="5">%</th>
-                <th scope="col" data-row="0" data-col="6">n</th>
-                <th scope="col" data-row="0" data-col="7">%</th>
-                <th scope="col" data-row="0" data-col="8">n</th>
-                <th scope="col" data-row="0" data-col="9">%</th>
-                <th scope="col" data-row="0" data-col="10"></th>
-                <th scope="col" data-row="0" data-col="11"></th>
-              </tr>
-</thead>
-<tbody>
-<tr>
-<td data-row="1" data-col="1">smoking</td>
-                  <td data-row="1" data-col="2">   </td>
-                  <td data-row="1" data-col="3">    </td>
-                  <td data-row="1" data-col="4">   </td>
-                  <td data-row="1" data-col="5">    </td>
-                  <td data-row="1" data-col="6">   </td>
-                  <td data-row="1" data-col="7">    </td>
-                  <td data-row="1" data-col="8">   </td>
-                  <td data-row="1" data-col="9">    </td>
-                  <td data-row="1" data-col="10">&lt;.001</td>
-                  <td data-row="1" data-col="11">.14</td>
-                </tr>
-<tr>
-<td data-row="2" data-col="1">    No</td>
-                  <td data-row="2" data-col="2">179</td>
-                  <td data-row="2" data-col="3">68.6</td>
-                  <td data-row="2" data-col="4">415</td>
-                  <td data-row="2" data-col="5">77.0</td>
-                  <td data-row="2" data-col="6">332</td>
-                  <td data-row="2" data-col="7">83.0</td>
-                  <td data-row="2" data-col="8">926</td>
-                  <td data-row="2" data-col="9">77.2</td>
-                  <td data-row="2" data-col="10">     </td>
-                  <td data-row="2" data-col="11">   </td>
-                </tr>
-<tr>
-<td data-row="3" data-col="1">    Yes</td>
-                  <td data-row="3" data-col="2"> 78</td>
-                  <td data-row="3" data-col="3">29.9</td>
-                  <td data-row="3" data-col="4">112</td>
-                  <td data-row="3" data-col="5">20.8</td>
-                  <td data-row="3" data-col="6"> 59</td>
-                  <td data-row="3" data-col="7">14.8</td>
-                  <td data-row="3" data-col="8">249</td>
-                  <td data-row="3" data-col="9">20.8</td>
-                  <td data-row="3" data-col="10">     </td>
-                  <td data-row="3" data-col="11">   </td>
-                </tr>
-<tr>
-<td data-row="4" data-col="1">    (Missing)</td>
-                  <td data-row="4" data-col="2">  4</td>
-                  <td data-row="4" data-col="3"> 1.5</td>
-                  <td data-row="4" data-col="4"> 12</td>
-                  <td data-row="4" data-col="5"> 2.2</td>
-                  <td data-row="4" data-col="6">  9</td>
-                  <td data-row="4" data-col="7"> 2.2</td>
-                  <td data-row="4" data-col="8"> 25</td>
-                  <td data-row="4" data-col="9"> 2.1</td>
-                  <td data-row="4" data-col="10">     </td>
-                  <td data-row="4" data-col="11">   </td>
-                </tr>
-<tr>
-<td data-row="5" data-col="1">physical_activity</td>
-                  <td data-row="5" data-col="2">   </td>
-                  <td data-row="5" data-col="3">    </td>
-                  <td data-row="5" data-col="4">   </td>
-                  <td data-row="5" data-col="5">    </td>
-                  <td data-row="5" data-col="6">   </td>
-                  <td data-row="5" data-col="7">    </td>
-                  <td data-row="5" data-col="8">   </td>
-                  <td data-row="5" data-col="9">    </td>
-                  <td data-row="5" data-col="10">&lt;.001</td>
-                  <td data-row="5" data-col="11">.21</td>
-                </tr>
-<tr>
-<td data-row="6" data-col="1">    No</td>
-                  <td data-row="6" data-col="2">177</td>
-                  <td data-row="6" data-col="3">67.8</td>
-                  <td data-row="6" data-col="4">310</td>
-                  <td data-row="6" data-col="5">57.5</td>
-                  <td data-row="6" data-col="6">163</td>
-                  <td data-row="6" data-col="7">40.8</td>
-                  <td data-row="6" data-col="8">650</td>
-                  <td data-row="6" data-col="9">54.2</td>
-                  <td data-row="6" data-col="10">     </td>
-                  <td data-row="6" data-col="11">   </td>
-                </tr>
-<tr>
-<td data-row="7" data-col="1">    Yes</td>
-                  <td data-row="7" data-col="2"> 84</td>
-                  <td data-row="7" data-col="3">32.2</td>
-                  <td data-row="7" data-col="4">229</td>
-                  <td data-row="7" data-col="5">42.5</td>
-                  <td data-row="7" data-col="6">237</td>
-                  <td data-row="7" data-col="7">59.2</td>
-                  <td data-row="7" data-col="8">550</td>
-                  <td data-row="7" data-col="9">45.8</td>
-                  <td data-row="7" data-col="10">     </td>
-                  <td data-row="7" data-col="11">   </td>
-                </tr>
-<tr>
-<td data-row="8" data-col="1">dentist_12m</td>
-                  <td data-row="8" data-col="2">   </td>
-                  <td data-row="8" data-col="3">    </td>
-                  <td data-row="8" data-col="4">   </td>
-                  <td data-row="8" data-col="5">    </td>
-                  <td data-row="8" data-col="6">   </td>
-                  <td data-row="8" data-col="7">    </td>
-                  <td data-row="8" data-col="8">   </td>
-                  <td data-row="8" data-col="9">    </td>
-                  <td data-row="8" data-col="10">&lt;.001</td>
-                  <td data-row="8" data-col="11">.22</td>
-                </tr>
-<tr>
-<td data-row="9" data-col="1">    No</td>
-                  <td data-row="9" data-col="2">113</td>
-                  <td data-row="9" data-col="3">43.3</td>
-                  <td data-row="9" data-col="4">174</td>
-                  <td data-row="9" data-col="5">32.3</td>
-                  <td data-row="9" data-col="6"> 67</td>
-                  <td data-row="9" data-col="7">16.8</td>
-                  <td data-row="9" data-col="8">354</td>
-                  <td data-row="9" data-col="9">29.5</td>
-                  <td data-row="9" data-col="10">     </td>
-                  <td data-row="9" data-col="11">   </td>
-                </tr>
-<tr>
-<td data-row="10" data-col="1">    Yes</td>
-                  <td data-row="10" data-col="2">148</td>
-                  <td data-row="10" data-col="3">56.7</td>
-                  <td data-row="10" data-col="4">365</td>
-                  <td data-row="10" data-col="5">67.7</td>
-                  <td data-row="10" data-col="6">333</td>
-                  <td data-row="10" data-col="7">83.2</td>
-                  <td data-row="10" data-col="8">846</td>
-                  <td data-row="10" data-col="9">70.5</td>
-                  <td data-row="10" data-col="10">     </td>
-                  <td data-row="10" data-col="11">   </td>
-                </tr>
-</tbody>
-</table>
-</div>
-<!-- hack to avoid NA insertion in last line -->
+<span>  by <span class="op">=</span> <span class="va">education</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        179               68.6                415        </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          4                1.5                 12        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        177               67.8                310        </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         84               32.2                229        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        113               43.3                174        </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>        148               56.7                365        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       77.0            332         83.0       926   </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249   </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       57.5            163         40.8       650   </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       42.5            237         59.2       550   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       32.3             67         16.8       354   </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       67.7            333         83.2       846   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001     .14     </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  77.2                      </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  20.8                      </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1                      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001     .21     </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.2                      </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.8                      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001     .22     </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5</span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
 either overall or by a categorical <code>by</code> variable, and can
 also add group-comparison tests:</p>
@@ -590,11 +430,13 @@ covariate adjustment:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> reports the full coefficient table
-for one or several fitted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> or <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>
-models, with APA-aligned formatting, factor grouping with reference
-rows, robust variance, standardised coefficients, average marginal
-effects, hierarchical comparisons, and side-by-side multi-model
-layouts:</p>
+for one or several fitted models — some thirty classes, from
+<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> / <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> to mixed-effects, ordinal,
+survival and Bayesian engines (the full map is
+<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>) — with
+APA-aligned formatting, factor grouping with reference rows, robust
+variance, standardised coefficients, average marginal effects,
+hierarchical comparisons, and side-by-side multi-model layouts:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -656,33 +498,52 @@ columns, with automatic handling of missing values.</p>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
 </h2>
+<p><strong>Explore and tabulate</strong></p>
 <ul>
-<li>See <code><a href="../reference/varlist.html">?varlist</a></code> to inspect variables, labels, values, and
-missing data.</li>
-<li>See <code><a href="../reference/freq.html">?freq</a></code> for one-way frequency tables (weights,
-sorting, custom missing values, labelled-data display modes).</li>
-<li>See <code><a href="../reference/cross_tab.html">?cross_tab</a></code> for the full list of arguments (weights,
-simulation, association measures).</li>
-<li>See <code><a href="../reference/assoc_measures.html">?assoc_measures</a></code> for the complete list of
-association statistics; <code><a href="../reference/cramer_v.html">?cramer_v</a></code> for the canonical entry
-point.</li>
-<li>See <code><a href="../reference/table_categorical.html">?table_categorical</a></code> for grouped or one-way
-categorical tables.</li>
-<li>See <code><a href="../reference/table_continuous.html">?table_continuous</a></code> for continuous summaries and
-group comparisons.</li>
-<li>See <code><a href="../reference/table_continuous_lm.html">?table_continuous_lm</a></code> for model-based
-mean-comparison tables with robust / cluster-robust / bootstrap /
-jackknife SE, case weights, or additive covariate adjustment.</li>
-<li>See <code><a href="../reference/table_regression.html">?table_regression</a></code> for <code>lm</code> /
-<code>glm</code> coefficient tables with APA-aligned formatting, robust
-variance, standardised coefficients, average marginal effects,
-hierarchical comparisons, and side-by-side multi-model layouts.</li>
-<li>See <code><a href="../reference/mean_n.html">?mean_n</a></code>, <code><a href="../reference/sum_n.html">?sum_n</a></code>, <code><a href="../reference/count_n.html">?count_n</a></code>
-for row-wise summaries with optional minimum-valid-values rules.</li>
-<li>See <code><a href="../reference/code_book.html">?code_book</a></code> to generate an interactive HTML
-codebook; <code><a href="../reference/label_from_names.html">?label_from_names</a></code> to derive variable labels from
-<code>"code. label"</code>-style column names (e.g., LimeSurvey
-exports).</li>
+<li>
+<code><a href="../articles/variable-exploration.html">vignette("variable-exploration")</a></code> — inspect variables,
+labels and missingness (<code><a href="../reference/varlist.html">varlist()</a></code>,
+<code><a href="../reference/code_book.html">code_book()</a></code>, <code><a href="../reference/label_from_names.html">label_from_names()</a></code>).</li>
+<li>
+<code><a href="../articles/frequency-tables.html">vignette("frequency-tables")</a></code> — <code><a href="../reference/freq.html">freq()</a></code> and
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> in depth (weights, simulation, labelled
+data).</li>
+<li>
+<code><a href="../articles/association-measures.html">vignette("association-measures")</a></code> — choosing the right
+effect size for a contingency table.</li>
+</ul>
+<p><strong>Summary tables</strong></p>
+<ul>
+<li>
+<code><a href="../articles/table-categorical.html">vignette("table-categorical")</a></code> and
+<code><a href="../articles/table-continuous.html">vignette("table-continuous")</a></code> — the APA Table 1 / 2
+builders.</li>
+<li>
+<code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm")</a></code> — model-based group
+comparisons (robust SE, weights, covariate adjustment).</li>
+</ul>
+<p><strong>Regression tables</strong></p>
+<ul>
+<li>
+<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code> — the core guide,
+including the univariable screen
+(<code><a href="../reference/table_regression_uv.html">table_regression_uv()</a></code>).</li>
+<li>
+<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code> — the
+class-by-class capability map (some thirty model classes).</li>
+<li>Family articles: mixed, counts, survival, ordinal, multinomial,
+Bayesian — then <code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors")</a></code> across
+all of them.</li>
+</ul>
+<p><strong>Putting it together</strong></p>
+<ul>
+<li>
+<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting")</a></code> — the end-to-end
+APA reporting sequence tying the four <code>table_*</code> helpers
+together.</li>
+<li>
+<code><a href="../reference/mean_n.html">?mean_n</a></code>, <code><a href="../reference/sum_n.html">?sum_n</a></code>, <code><a href="../reference/count_n.html">?count_n</a></code> —
+row-wise summaries with minimum-valid-values rules.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

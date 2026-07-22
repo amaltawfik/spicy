@@ -35,13 +35,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -86,8 +86,6 @@
         <dd><p>Coefficient tables for fitted regression models in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, four standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.</p>
         </dd><dt><a href="table-regression-supported-models.html">Supported models</a></dt>
         <dd><p>The model classes <code><a href="../reference/table_regression.html">table_regression()</a></code> supports, in one table: linear and generalized linear models, robust and IV estimators, mixed effects, ordinal and multinomial outcomes, two-part count models, survival models, survey-weighted and Bayesian fits – with each family’s marginal-effects estimand, exponentiate semantics, robust-variance backends, and standardized-coefficient support.</p>
-        </dd><dt><a href="categorical-predictors.html">Categorical predictors</a></dt>
-        <dd><p>How categorical predictors enter a regression table and how to work with them: dummy coding and the reference level, joint (multiple-degree-of-freedom) tests of a factor, R’s polynomial contrasts for ordered factors, the scores-versus-dummies decision for ordinal predictors, successive-difference coding, and why continuous predictors should not be categorized.</p>
         </dd><dt><a href="table-regression-mixed.html">Mixed-effects regression tables</a></dt>
         <dd><p>Publication-ready tables for mixed-effects (multilevel) regression in R with <code><a href="../reference/table_regression.html">table_regression()</a></code>: the textbook model-building sequence on the High School &amp; Beyond data (ICC, contextual effects, random slopes, cross-level interactions), random effects as table rows, the boundary-corrected chi-bar-squared test, opt-in per-term LRT / RLRT, Nakagawa R-squared, Satterthwaite inference, three-level and crossed designs, and the <code>lme4</code>, <code>glmmTMB</code>, and <code>nlme</code> engines.</p>
         </dd><dt><a href="table-regression-counts.html">Count and two-part regression tables</a></dt>
@@ -100,6 +98,8 @@
         <dd><p>Publication-ready tables for multinomial logistic regression in R with <code><a href="../reference/table_regression.html">table_regression()</a></code>: outcome categories as columns, odds ratios (what Stata labels relative-risk ratios), per-category average marginal effects, changing the reference category, nested comparison by likelihood-ratio test, and the <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code> engine plus the <code>mlogit</code> discrete-choice engine.</p>
         </dd><dt><a href="table-regression-bayesian.html">Bayesian regression tables</a></dt>
         <dd><p>Publication-ready tables for Bayesian regression in R with <code><a href="../reference/table_regression.html">table_regression()</a></code>: posterior medians and credible intervals, the deliberate absence of p-values, convergence checks before reading, prior disclosure, random effects from the posterior draws, and the <code>rstanarm</code> and <code>brms</code> engines.</p>
+        </dd><dt><a href="categorical-predictors.html">Categorical predictors</a></dt>
+        <dd><p>How categorical predictors enter a regression table and how to work with them: dummy coding and the reference level, joint (multiple-degree-of-freedom) tests of a factor, R’s polynomial contrasts for ordered factors, the scores-versus-dummies decision for ordinal predictors, successive-difference coding, and why continuous predictors should not be categorized.</p>
         </dd><dt><a href="summary-tables-reporting.html">Summary tables for APA-style reporting</a></dt>
         <dd><p>Learn when to use table_categorical(), table_continuous(), table_continuous_lm(), and table_regression() for APA-style reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.</p>
       </dd></dl></div>

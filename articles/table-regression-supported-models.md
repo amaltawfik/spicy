@@ -81,10 +81,10 @@ How to read the columns:
   median with MAD SD and credible interval.
 - **Exponentiate** – the labelled ratio `exponentiate = TRUE` produces.
   The label follows the link: OR under logit, IRR for count log-links,
-  HR for proportional hazards, TR (time ratio) for
-  accelerated-failure-time models. Identity-link fits warn and stay
-  untouched; links whose exponential is not a ratio (probit, cauchit,
-  inverse) are refused.
+  RR for the binomial log link, MR (mean ratio) for Gamma log links, HR
+  for proportional hazards, TR (time ratio) for accelerated-failure-time
+  models. Identity-link fits warn and stay untouched; links whose
+  exponential is not a ratio (probit, cauchit, inverse) are refused.
 - **Blocks** – labelled subordinate row blocks rendered inside the same
   table (random effects, thresholds, zero components, per-outcome
   segments), each explained by a footer line.
@@ -118,10 +118,13 @@ models use the Lin-Wei grouped-dfbeta sandwich, and the `rms` fits take
 `betareg` take `CR*` via
 [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html);
 `pscl` two-part fits cluster both components. `estimatr` fits keep their
-own robust SEs; `svyglm` is design-based by default and additionally
-accepts design-aware `CR0`–`CR3`. Bayesian fits refuse `vcov` – nothing
-standard plays the sandwich role for a posterior. Whatever the backend,
-the footer names the estimator actually applied, and a robust vcov also
+own robust SEs, and `fixest` fits keep the estimator they were computed
+with (the footer carries fixest’s own label – IID, clustered,
+Newey-West, … – and spicy’s `HC*` / `CR*` tokens are refused for them);
+`svyglm` is design-based by default and additionally accepts
+design-aware `CR0`–`CR3`. Bayesian fits refuse `vcov` – nothing standard
+plays the sandwich role for a posterior. Whatever the backend, the
+footer names the estimator actually applied, and a robust vcov also
 flows into the AME uncertainty.
 
 **Standardized coefficients** (`standardized`). Available for `lm`,
@@ -129,10 +132,11 @@ flows into the AME uncertainty.
 [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)), the mixed
 engines (`lmer` / `glmer` / `glmmTMB` /
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)), and fixed-effects
-`stan_glm`-style Bayesian fits, where `"posthoc"`, `"basic"` and
-`"smart"` are exact affine rescales of the posterior draws. Other
-classes – including multilevel Bayesian fits and `brmsfit` – refuse with
-a hint to standardize predictors before fitting.
+Bayesian fits – `stan_glm`-style models and standard-formula `brm()`
+models – where `"posthoc"`, `"basic"` and `"smart"` are exact affine
+rescales of the posterior draws. Other classes – including multilevel
+Bayesian fits and brms formulas with distributional or special terms –
+refuse with a hint to standardize predictors before fitting.
 
 **Confidence intervals** (`ci_method`). Wald everywhere by default;
 `"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
@@ -172,8 +176,9 @@ large-sample default – with `iid`, `ker`, `rank` CIs and a native
 clustered bootstrap as `vcov` options), and the `fixest` estimators,
 whose absorbed fixed effects render as a default-on `Fixed effects:`
 block – one Yes / No row per factor, blank for non-fixest models in a
-mixed table – with the within R-squared among the default fit
-statistics.
+mixed table – with the within R-squared among the default fit statistics
+and per-factor `N (<factor>)` counts through the opt-in `"n_groups"`
+token.
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
 `glmmTMB` (with zero-inflation and dispersion blocks),
@@ -235,7 +240,8 @@ Harrell-style workflows drop in directly.
 **Bayesian.** `rstanarm` and `brms` fits are summarized from their
 posterior draws: posterior median, MAD SD, credible intervals,
 draws-native exponentiation and AME, sampler diagnostics checked on
-every fit. No p-values, by design. See
+every fit (with opt-in `pd`, `rhat`, `ess_bulk` / `ess_tail` and `mcse`
+columns). No p-values, by design. See
 [`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md).
 
 ## When a class is not supported

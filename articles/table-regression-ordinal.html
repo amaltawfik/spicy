@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -118,8 +118,9 @@ Good &lt; Very good health rating or a Likert agreement scale. The
 companion vignette <a href="table-regression.html"><em>Publication-ready
 regression tables</em></a> covers the shared mechanics
 (<code>vcov</code>, <code>ci_level</code>, output formats, multi-model
-layouts, broom integration); here we focus on what is <em>specific</em>
-to ordinal fits.</p>
+layouts, broom integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
+models</em></a>); here we focus on what is <em>specific</em> to ordinal
+fits.</p>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports both ordinal engines:</p>
 <ul>
 <li>
@@ -478,8 +479,12 @@ name, or a vector (see the main vignette, <em>How to specify
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
 <p>The footer switches to name the estimator and the clustering
-variable. Heteroskedasticity-consistent (<code>HC*</code>) estimators
-and the <code>bootstrap</code> / <code>jackknife</code> resamplers are
+variable. The clustering is applied <em>consistently</em>: the
+<code>Thresholds</code> rows and the AME columns are reweighted from the
+same <code>vcovCL</code> matrix as the slopes, so no row of the table
+quietly keeps model-based standard errors under a cluster-robust footer.
+Heteroskedasticity-consistent (<code>HC*</code>) estimators and the
+<code>bootstrap</code> / <code>jackknife</code> resamplers are
 <em>not</em> defined for ordinal fits and are refused with a clear
 <code>spicy_unsupported_vcov</code> error rather than a silent
 fallback.</p>
@@ -1447,8 +1452,8 @@ row is labelled by its response category in the
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rated_hea… Poor          age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rated_hea… Fair          age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rated_hea… Good          age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">691</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rated_hea… Good          age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rated_hea… <span style="color: #BB0000;">NA</span>            age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rated_hea… Poor          sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rated_hea… Fair          sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>   </span></span>

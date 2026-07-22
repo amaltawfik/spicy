@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -118,9 +118,10 @@ occurs</strong>, with censoring for the subjects whose event is not
 observed within follow-up. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
-integration); here we focus on what is specific to survival fits: hazard
-ratios and time ratios, event counts and concordance, and the variance
-estimators of multi-centre studies.</p>
+integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
+models</em></a>); here we focus on what is specific to survival fits:
+hazard ratios and time ratios, event counts and concordance, and the
+variance estimators of multi-centre studies.</p>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports four survival engines:</p>
 <ul>
 <li>
@@ -205,12 +206,21 @@ for the log-hazard <code>B</code> column.</li>
 <li>Inference is <strong>Wald-z</strong> on the log scale, matching
 <code>summary.coxph()</code> and Stata <code>stcox</code>; the statistic
 and p-value are invariant under the exponentiation.</li>
-<li>The footer reports <strong>events</strong> (163 deaths among 226
-patients — the precision and power of a survival model are governed
-chiefly by its event count, not its n) and the
+<li>The fit block carries the Cox default,
+<code>show_fit_stats = c("nobs", "n_events", "aic")</code>: <strong>N
+events</strong> (163 deaths among 226 patients — the precision and power
+of a survival model are governed chiefly by its event count, not its
+<ol start="14" style="list-style-type: lower-alpha">
+<li>sits next to <code>n</code> as its own row. The footer adds the
 <strong>concordance</strong> C = 0.64: the probability that, of two
 comparable patients, the one predicted to fail earlier actually does.
-0.5 is a coin flip; 0.64 is modest discrimination (Harrell 2015).</li>
+0.5 is a coin flip; 0.64 is modest discrimination (Harrell 2015). The
+same token also renders as a per-level <em>column</em> —
+<code>show_columns = c("n_events", "b", "ci", "p")</code> gives events/N
+next to each hazard ratio, the univariable screen below uses it, and
+binomial tables share the convention (see the core vignette).</li>
+</ol>
+</li>
 </ul>
 <p>The table reports the model, not its assumption: check
 proportionality with <code><a href="https://rdrr.io/pkg/survival/man/cox.zph.html" class="external-link">survival::cox.zph()</a></code> before publishing
@@ -230,7 +240,13 @@ table without ceremony: stratify the offending categorical factor
 (<code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> terms are absorbed into the baseline hazard, no
 coefficient row) or give the covariate a time-varying effect via
 counting-process data (<code>Surv(tstart, tstop, event)</code>); both
-render like any other fit.</p>
+render like any other fit. One planning note if absolute effects are on
+the menu: the RMST / risk-difference columns of the next-but-one section
+require a right-censored single-record fit — <code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> is
+supported (within-stratum baselines), but time-varying <code>tt()</code>
+terms, start–stop data and stratified <code>survreg</code> fits are
+refused for the estimands — so a remedy chosen here constrains what the
+table can report later.</p>
 </div>
 <div class="section level2">
 <h2 id="why-there-is-no-ame-column">Why there is no AME column<a class="anchor" aria-label="anchor" href="#why-there-is-no-ame-column"></a>
@@ -261,7 +277,11 @@ workflow question the assumption check left open: when
 degrades into a follow-up-weighted average of a changing effect, while
 the RMST difference over <code>[0, tau]</code> remains a well-defined
 estimand — in that case the absolute summaries lead the report rather
-than accompany it. Two absolute summaries do the job:</p>
+than accompany it. One honesty note carried through below: these columns
+are <em>model-based</em> — standardized from the fitted Cox curves — so
+a badly misspecified fit biases them too; with proportionality in
+serious doubt, the nonparametric RMST is the remedy. Two absolute
+summaries do the job:</p>
 <ul>
 <li>the <strong>restricted mean survival time (RMST)
 difference</strong>: the difference in mean event-free time over a fixed

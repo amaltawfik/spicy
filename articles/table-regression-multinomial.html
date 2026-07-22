@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -118,10 +118,11 @@ categories have no natural order: employment status, party choice,
 transport mode. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
-integration), and <a href="table-regression-ordinal.html"><em>Ordinal
-regression tables</em></a> covers the case where the categories
-<em>are</em> ordered. Order alone does not decide the model: the ordinal
-model buys parsimony — one slope per predictor instead of <span class="math inline">\(J-1\)</span> — at the price of the
+integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
+models</em></a>), and <a href="table-regression-ordinal.html"><em>Ordinal regression
+tables</em></a> covers the case where the categories <em>are</em>
+ordered. Order alone does not decide the model: the ordinal model buys
+parsimony — one slope per predictor instead of <span class="math inline">\(J-1\)</span> — at the price of the
 parallel-regressions constraint, and when that constraint is
 implausible, the multinomial model is the standard unconstrained
 alternative (Long &amp; Freese 2014), at the cost of extra coefficients
@@ -247,18 +248,19 @@ substantive interest.</li>
 <li>Inference is <strong>Wald-z</strong> (<code>df = Inf</code>),
 matching <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>-based practice for ML fits and Stata
 <code>mlogit</code>; <code>nnet</code> itself prints no p-values.</li>
-<li>The model-fit block reports <strong>n</strong> and
-<strong>AIC</strong>, once, under the first group — they belong to the
-model, not to an equation.</li>
+<li>The model-fit block reports <strong>n</strong>, the <strong>McFadden
+and Nagelkerke pseudo-R²</strong>, and <strong>AIC</strong>, once, under
+the first group — they belong to the model, not to an equation.</li>
 </ul>
 <p>Before reading any cell, the whole model earns its keep: against the
 intercept-only fit, the likelihood-ratio chi-squared is 41.9 on 12
 degrees of freedom (p &lt; .001) — the test Stata prints in its
 <code>mlogit</code> header and the first number Long &amp; Freese read.
-McFadden’s pseudo-R² is 1 − (−1242.9)/(−1263.8) = 0.017: a comparative
-index, not a share of explained variance (Long &amp; Freese 2014) — the
-contrast between the tiny value and the decisive test is exactly why it
-should not be read as one.</p>
+The printed <code>R² (McFadden)</code> row, 0.02 — precisely 1 −
+(−1242.9)/(−1263.8) = 0.017 — is a comparative index, not a share of
+explained variance (Long &amp; Freese 2014); the contrast between the
+tiny value and the decisive test is exactly why it should not be read as
+one.</p>
 <p>One scope note on inference: alongside the classical Wald-z default,
 <code>multinom</code> fits support <strong>cluster-robust standard
 errors</strong> (<code>vcov = "CR0"</code>–<code>"CR3"</code> with

@@ -134,7 +134,7 @@ Add percentages with `percent`:
 
 ``` r
 
-cross_tab(sochealth, smoking, education, percent = "col")
+cross_tab(sochealth, smoking, education, percent = "column")
 #> Crosstable: smoking x education (Column %)
 #> 
 #>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
@@ -255,24 +255,55 @@ covers grouped or one-way summary tables for categorical variables:
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  output = "tinytable"
+  by = education
 )
+#> Categorical table by education
+#> 
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  smoking           │                                                         
+#>    No              │        179               68.6                415        
+#>    Yes             │         78               29.9                112        
+#>    (Missing)       │          4                1.5                 12        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                         
+#>    No              │        177               67.8                310        
+#>    Yes             │         84               32.2                229        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │                                                         
+#>    No              │        113               43.3                174        
+#>    Yes             │        148               56.7                365        
+#> 
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  smoking           │                                                    
+#>    No              │       77.0            332         83.0       926   
+#>    Yes             │       20.8             59         14.8       249   
+#>    (Missing)       │        2.2              9          2.2        25   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                    
+#>    No              │       57.5            163         40.8       650   
+#>    Yes             │       42.5            237         59.2       550   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │                                                    
+#>    No              │       32.3             67         16.8       354   
+#>    Yes             │       67.7            333         83.2       846   
+#> 
+#>  Variable          │ Total %    p    Cramer's V 
+#> ───────────────────┼────────────────────────────
+#>  smoking           │          <.001     .14     
+#>    No              │  77.2                      
+#>    Yes             │  20.8                      
+#>    (Missing)       │   2.1                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001     .21     
+#>    No              │  54.2                      
+#>    Yes             │  45.8                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │          <.001     .22     
+#>    No              │  29.5                      
+#>    Yes             │  70.5
 ```
-
-| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Cramer's V |
-|----|----|----|----|----|----|----|----|----|----|----|
-|  | n | % | n | % | n | % | n | % |  |  |
-| smoking |     |      |     |      |     |      |     |      | \<.001 | .14 |
-|     No | 179 | 68.6 | 415 | 77.0 | 332 | 83.0 | 926 | 77.2 |       |     |
-|     Yes |  78 | 29.9 | 112 | 20.8 |  59 | 14.8 | 249 | 20.8 |       |     |
-|     (Missing) |   4 |  1.5 |  12 |  2.2 |   9 |  2.2 |  25 |  2.1 |       |     |
-| physical_activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
-|     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
-|     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
-| dentist_12m |     |      |     |      |     |      |     |      | \<.001 | .22 |
-|     No | 113 | 43.3 | 174 | 32.3 |  67 | 16.8 | 354 | 29.5 |       |     |
-|     Yes | 148 | 56.7 | 365 | 67.7 | 333 | 83.2 | 846 | 70.5 |       |     |
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 summarizes continuous variables, either overall or by a categorical `by`
@@ -347,12 +378,14 @@ table_continuous_lm(
 ```
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-reports the full coefficient table for one or several fitted
-[`lm()`](https://rdrr.io/r/stats/lm.html) or
-[`glm()`](https://rdrr.io/r/stats/glm.html) models, with APA-aligned
-formatting, factor grouping with reference rows, robust variance,
-standardised coefficients, average marginal effects, hierarchical
-comparisons, and side-by-side multi-model layouts:
+reports the full coefficient table for one or several fitted models —
+some thirty classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) /
+[`glm()`](https://rdrr.io/r/stats/glm.html) to mixed-effects, ordinal,
+survival and Bayesian engines (the full map is
+[`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md))
+— with APA-aligned formatting, factor grouping with reference rows,
+robust variance, standardised coefficients, average marginal effects,
+hierarchical comparisons, and side-by-side multi-model layouts:
 
 ``` r
 
@@ -423,45 +456,48 @@ sochealth |>
 
 ## Learn more
 
-- See
-  [`?varlist`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-  to inspect variables, labels, values, and missing data.
-- See [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md)
-  for one-way frequency tables (weights, sorting, custom missing values,
-  labelled-data display modes).
-- See
-  [`?cross_tab`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  for the full list of arguments (weights, simulation, association
-  measures).
-- See
-  [`?assoc_measures`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
-  for the complete list of association statistics;
-  [`?cramer_v`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
-  for the canonical entry point.
-- See
-  [`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  for grouped or one-way categorical tables.
-- See
-  [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  for continuous summaries and group comparisons.
-- See
-  [`?table_continuous_lm`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  for model-based mean-comparison tables with robust / cluster-robust /
-  bootstrap / jackknife SE, case weights, or additive covariate
-  adjustment.
-- See
-  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  for `lm` / `glm` coefficient tables with APA-aligned formatting,
-  robust variance, standardised coefficients, average marginal effects,
-  hierarchical comparisons, and side-by-side multi-model layouts.
-- See
-  [`?mean_n`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+**Explore and tabulate**
+
+- [`vignette("variable-exploration")`](https://amaltawfik.github.io/spicy/articles/variable-exploration.md)
+  — inspect variables, labels and missingness
+  ([`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)).
+- [`vignette("frequency-tables")`](https://amaltawfik.github.io/spicy/articles/frequency-tables.md)
+  — [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  in depth (weights, simulation, labelled data).
+- [`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
+  — choosing the right effect size for a contingency table.
+
+**Summary tables**
+
+- [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
+  and
+  [`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+  — the APA Table 1 / 2 builders.
+- [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+  — model-based group comparisons (robust SE, weights, covariate
+  adjustment).
+
+**Regression tables**
+
+- [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+  — the core guide, including the univariable screen
+  ([`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
+- [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
+  — the class-by-class capability map (some thirty model classes).
+- Family articles: mixed, counts, survival, ordinal, multinomial,
+  Bayesian — then
+  [`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
+  across all of them.
+
+**Putting it together**
+
+- [`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+  — the end-to-end APA reporting sequence tying the four `table_*`
+  helpers together.
+- [`?mean_n`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
   [`?sum_n`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
   [`?count_n`](https://amaltawfik.github.io/spicy/reference/count_n.md)
-  for row-wise summaries with optional minimum-valid-values rules.
-- See
-  [`?code_book`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  to generate an interactive HTML codebook;
-  [`?label_from_names`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
-  to derive variable labels from `"code. label"`-style column names
-  (e.g., LimeSurvey exports).
+  — row-wise summaries with minimum-valid-values rules.

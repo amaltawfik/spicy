@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -460,7 +460,8 @@ interval.</li>
 <li>
 <strong>Exponentiate</strong> – the labelled ratio
 <code>exponentiate = TRUE</code> produces. The label follows the link:
-OR under logit, IRR for count log-links, HR for proportional hazards, TR
+OR under logit, IRR for count log-links, RR for the binomial log link,
+MR (mean ratio) for Gamma log links, HR for proportional hazards, TR
 (time ratio) for accelerated-failure-time models. Identity-link fits
 warn and stay untouched; links whose exponential is not a ratio (probit,
 cauchit, inverse) are refused.</li>
@@ -506,22 +507,27 @@ Cox models use the Lin-Wei grouped-dfbeta sandwich, and the
 <code>survreg</code>, <code>gam</code> / <code>bam</code> and
 <code>betareg</code> take <code>CR*</code> via
 <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>pscl</code> two-part fits cluster
-both components. <code>estimatr</code> fits keep their own robust SEs;
-<code>svyglm</code> is design-based by default and additionally accepts
-design-aware <code>CR0</code>–<code>CR3</code>. Bayesian fits refuse
-<code>vcov</code> – nothing standard plays the sandwich role for a
-posterior. Whatever the backend, the footer names the estimator actually
-applied, and a robust vcov also flows into the AME uncertainty.</p>
+both components. <code>estimatr</code> fits keep their own robust SEs,
+and <code>fixest</code> fits keep the estimator they were computed with
+(the footer carries fixest’s own label – IID, clustered, Newey-West, … –
+and spicy’s <code>HC*</code> / <code>CR*</code> tokens are refused for
+them); <code>svyglm</code> is design-based by default and additionally
+accepts design-aware <code>CR0</code>–<code>CR3</code>. Bayesian fits
+refuse <code>vcov</code> – nothing standard plays the sandwich role for
+a posterior. Whatever the backend, the footer names the estimator
+actually applied, and a robust vcov also flows into the AME
+uncertainty.</p>
 <p><strong>Standardized coefficients</strong>
 (<code>standardized</code>). Available for <code>lm</code>,
 <code>glm</code> (including <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), the mixed
 engines (<code>lmer</code> / <code>glmer</code> / <code>glmmTMB</code> /
-<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>), and fixed-effects <code>stan_glm</code>-style
-Bayesian fits, where <code>"posthoc"</code>, <code>"basic"</code> and
-<code>"smart"</code> are exact affine rescales of the posterior draws.
-Other classes – including multilevel Bayesian fits and
-<code>brmsfit</code> – refuse with a hint to standardize predictors
-before fitting.</p>
+<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>), and fixed-effects Bayesian fits –
+<code>stan_glm</code>-style models and standard-formula
+<code>brm()</code> models – where <code>"posthoc"</code>,
+<code>"basic"</code> and <code>"smart"</code> are exact affine rescales
+of the posterior draws. Other classes – including multilevel Bayesian
+fits and brms formulas with distributional or special terms – refuse
+with a hint to standardize predictors before fitting.</p>
 <p><strong>Confidence intervals</strong> (<code>ci_method</code>). Wald
 everywhere by default; <code>"profile"</code> (profile likelihood) for
 <code>glm</code>, <code>polr</code> and <code>clm</code>;
@@ -560,7 +566,9 @@ clustered bootstrap as <code>vcov</code> options), and the
 <code>fixest</code> estimators, whose absorbed fixed effects render as a
 default-on <code>Fixed effects:</code> block – one Yes / No row per
 factor, blank for non-fixest models in a mixed table – with the within
-R-squared among the default fit statistics.</p>
+R-squared among the default fit statistics and per-factor
+<code>N (&lt;factor&gt;)</code> counts through the opt-in
+<code>"n_groups"</code> token.</p>
 <p><strong>Mixed effects.</strong> <code>lmer</code> (Satterthwaite t
 via <code>lmerTest</code>), <code>glmer</code>, <code>glmmTMB</code>
 (with zero-inflation and dispersion blocks), <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> and
@@ -607,9 +615,10 @@ Harrell-style workflows drop in directly.</p>
 <p><strong>Bayesian.</strong> <code>rstanarm</code> and
 <code>brms</code> fits are summarized from their posterior draws:
 posterior median, MAD SD, credible intervals, draws-native
-exponentiation and AME, sampler diagnostics checked on every fit. No
-p-values, by design. See
-<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code>.</p>
+exponentiation and AME, sampler diagnostics checked on every fit (with
+opt-in <code>pd</code>, <code>rhat</code>, <code>ess_bulk</code> /
+<code>ess_tail</code> and <code>mcse</code> columns). No p-values, by
+design. See <code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="when-a-class-is-not-supported">When a class is not supported<a class="anchor" aria-label="anchor" href="#when-a-class-is-not-supported"></a>

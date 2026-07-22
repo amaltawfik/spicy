@@ -45,9 +45,12 @@ for Bayesian fits (`rstanarm`, `brms`). The mechanics covered here —
 confidence levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods — apply
 across every supported class; variance-estimator availability varies by
-family, and each family vignette states its own set. One decision cuts
-across all of them — how to code, test, and present categorical
-*predictors* — and has its own vignette:
+family, and the complete map — every supported class with its estimands,
+variance estimators and fit statistics, including the families without a
+dedicated article (quantile regression, `fixest`, `betareg`, …) — is
+[`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md).
+One decision cuts across all of them — how to code, test, and present
+categorical *predictors* — and has its own vignette:
 [`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
 
 ## Basic usage
@@ -348,9 +351,12 @@ coefficient’s t-distribution and Satterthwaite-corrected degrees of
 freedom via
 [`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md),
 so `B` and AME are reported on the same inferential footing in the same
-table. `marginaleffects` is a Suggests dependency; when unavailable, the
-AME columns appear in the header but render as NA without erroring (the
-rest of the table is unaffected).
+table. `marginaleffects` is a Suggests dependency with two distinct
+failure modes: requesting AME columns *without the package installed* is
+a hard, classed error (`spicy_missing_pkg`, with the install hint),
+while a *computation* failure inside `avg_slopes()` on an installed
+system warns (`spicy_fallback`) and dashes the AME cells, leaving the
+rest of the table intact.
 
 ## Multiple models side by side
 
@@ -396,6 +402,76 @@ When all models share the same DV, the DV appears in the title. Use a
 named list — e.g. `list(Crude = m1, Adjusted = m2)` — to set the spanner
 labels explicitly; pass `model_labels = c(...)` to override the names
 from the list.
+
+## Univariable screening
+
+Epidemiological reporting often starts one step *before* the
+side-by-side table: a **univariable screen** — one simple regression per
+candidate predictor — set against the multivariable model, the classic
+“Table 2” of clinical and epidemiological journals (the layout of
+`gtsummary::tbl_uvregression()` and the EpiRHandbook workflow).
+[`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+builds that entire layout in one call: pass the data, the outcome, and
+the candidate predictors — reusing `sh`, the unordered-`education` copy
+of `sochealth` introduced in *Per-coefficient effect sizes*:
+
+``` r
+
+table_regression_uv(sh, outcome = smoking,
+                    predictors = c(sex, age, education),
+                    family = binomial(), exponentiate = TRUE)
+#> Univariable and multivariable logistic regression: smoking
+#> 
+#>                                       Univariable            Multiv… 
+#>                             ───────────────────────────────  ─────── 
+#>  Variable                 │  N     OR      95% CI       p      OR    
+#> ──────────────────────────┼──────────────────────────────────────────
+#>  sex:                     │                                          
+#>    Female (ref.)          │    –   –         –         –         –   
+#>    Male                   │ 1175  0.95  [0.72, 1.26]   .713     0.96 
+#>  age                      │ 1175  1.01  [1.00, 1.01]   .292     1.01 
+#>  education:               │                                          
+#>    Lower secondary (ref.) │    –   –         –         –         –   
+#>    Upper secondary        │ 1175  0.62  [0.44, 0.87]   .005     0.62 
+#>    Tertiary               │       0.41  [0.28, 0.60]  <.001     0.40 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │                                  1175    
+#>  R² (McFadden)            │                                     0.02 
+#>  R² (Nagelkerke)          │                                     0.03 
+#>  AIC                      │                                  1200.9  
+#> 
+#>                                Multivariable    
+#>                             ─────────────────── 
+#>  Variable                 │    95% CI       p   
+#> ──────────────────────────┼─────────────────────
+#>  sex:                     │                     
+#>    Female (ref.)          │      –         –    
+#>    Male                   │ [0.73, 1.28]   .800 
+#>  age                      │ [1.00, 1.02]   .214 
+#>  education:               │                     
+#>    Lower secondary (ref.) │      –         –    
+#>    Upper secondary        │ [0.44, 0.87]   .005 
+#>    Tertiary               │ [0.27, 0.59]  <.001 
+#> 
+#> Note. Logistic regression models.
+#> Std. errors: classical (Fisher information).
+#> OR = odds ratio.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+```
+
+Reading it: each *Univariable* row is its own simple logistic regression
+— the `N` column is per predictor, because listwise deletion can differ
+across candidates — while the *Multivariable* column group is the single
+joint model on the same candidates (`multivariable = FALSE` drops it,
+`complete_cases = TRUE` aligns every fit on the common complete cases).
+Comparing the two columns per row is the point of the layout: an
+association that survives adjustment reads differently from one that
+collapses. The multivariable `n` appears once, as a fit statistic — it
+belongs to the joint model, not to any predictor. A `p_adjust` argument
+treats the screen as one family of tests. For a time-to-event screen the
+same call takes `method = "coxph"` with a
+[`Surv()`](https://rdrr.io/pkg/survival/man/Surv.html) outcome — see
+[`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
 
 ## Hierarchical / nested regression
 
@@ -954,6 +1030,48 @@ corresponding risk ratio, so reading it as “a 60% lower probability of
 smoking” overstates the effect. The *Average marginal effects* section
 below reports the probability-scale counterpart for the same contrast
 (−0.15, that is, 15 percentage points).
+
+### Event counts per level
+
+Clinical and epidemiological tables conventionally carry the raw
+**events / N** next to each odds ratio (STROBE checklist item 15; the
+NEJM house style). The opt-in `"n_events"` column token renders exactly
+that — per factor level, with the full-sample count on numeric
+predictors and the intercept row:
+
+``` r
+
+table_regression(fit, show_columns = c("n_events", "b", "ci", "p"))
+#> Logistic regression: smoking
+#> 
+#>  Variable                 │   Events/N       B        95% CI        p   
+#> ──────────────────────────┼─────────────────────────────────────────────
+#>  (Intercept)              │      249/1175  -1.11  [-1.67, -0.55]  <.001 
+#>  sex:                     │                                             
+#>    Female (ref.)          │       131/606    –          –          –    
+#>    Male                   │       118/569  -0.04  [-0.32,  0.25]   .800 
+#>  age                      │      249/1175   0.01  [-0.00,  0.02]   .214 
+#>  education:               │                                             
+#>    Lower secondary (ref.) │        78/257    –          –          –    
+#>    Upper secondary        │       112/527  -0.48  [-0.82, -0.14]   .005 
+#>    Tertiary               │        59/391  -0.91  [-1.29, -0.52]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │       1175                                  
+#>  R² (McFadden)            │          0.02                               
+#>  R² (Nagelkerke)          │          0.03                               
+#>  AIC                      │       1200.9                                
+#> 
+#> Note. Logistic regression.
+#> Std. errors: classical (Fisher information).
+```
+
+The token is off by default and *deliberately narrow*: it is defined for
+binomial models with an ungrouped 0/1 response and for right-censored
+Cox models (events per factor level; Cox tables also carry `N events` as
+a default fit statistic — see
+[`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)).
+Requesting it anywhere else is a hard, classed error rather than a
+silently empty column.
 
 ### Term-level partial chi-square
 
@@ -1580,6 +1698,9 @@ without ambiguity.
 
 ## See also
 
+- [`vignette("table-regression-supported-models", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
+  — the map of every supported class: estimands, variance estimators,
+  standardized-coefficient scope, and fit statistics per family.
 - [`vignette("categorical-predictors", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
   for categorical *predictors* across all model families: dummy coding
   and reference levels, joint tests, ordinal predictors (scores vs

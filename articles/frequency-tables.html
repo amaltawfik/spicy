@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -353,10 +353,10 @@ test and effect size:</p>
 <div class="section level3">
 <h3 id="row-and-column-percentages">Row and column percentages<a class="anchor" aria-label="anchor" href="#row-and-column-percentages"></a>
 </h3>
-<p>Use <code>percent = "row"</code> or <code>percent = "col"</code> to
-display percentages instead of raw counts:</p>
+<p>Use <code>percent = "row"</code> or <code>percent = "column"</code>
+to display percentages instead of raw counts:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (Column %)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Values   <span style="color: #9E9E9E;">│</span>   Lower secondary    Upper secondary    Tertiary <span style="color: #9E9E9E;">│</span>   Total </span></span>
@@ -636,7 +636,7 @@ unweighted sample size:</p>
 processing:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>,</span>
-<span>          percent <span class="op">=</span> <span class="st">"col"</span>, styled <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>          percent <span class="op">=</span> <span class="st">"column"</span>, styled <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Values Lower secondary Upper secondary Tertiary</span></span>
 <span><span class="co">#&gt; 1     No            69.6            78.7     84.9</span></span>
 <span><span class="co">#&gt; 2    Yes            30.4            21.3     15.1</span></span></code></pre></div>
@@ -645,8 +645,9 @@ processing:</p>
 <div class="section level2">
 <h2 id="setting-global-defaults">Setting global defaults<a class="anchor" aria-label="anchor" href="#setting-global-defaults"></a>
 </h2>
-<p>You can set package-wide defaults with <code><a href="https://rdrr.io/r/base/options.html" class="external-link">options()</a></code> so you
-don’t have to repeat arguments:</p>
+<p>You can set <code><a href="../reference/cross_tab.html">cross_tab()</a></code> defaults with
+<code><a href="https://rdrr.io/r/base/options.html" class="external-link">options()</a></code> so you don’t have to repeat arguments (these
+options are read by <code><a href="../reference/cross_tab.html">cross_tab()</a></code> only):</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
 <span>  spicy.percent   <span class="op">=</span> <span class="st">"column"</span>,</span>

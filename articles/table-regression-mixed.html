@@ -63,13 +63,13 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
-    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
   </ul>
 </li>
@@ -118,8 +118,10 @@ repeated measurements nested in subjects or respondents nested in
 regions. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
-integration); here we focus on what is <em>specific</em> to mixed fits —
-above all, how the <strong>random effects</strong> are reported.</p>
+integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
+models</em></a>); here we focus on what is <em>specific</em> to mixed
+fits — above all, how the <strong>random effects</strong> are
+reported.</p>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports four mixed engines:</p>
 <ul>
 <li>
@@ -137,6 +139,10 @@ space, plus zero-inflation and dispersion components.</li>
 <strong><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></strong> — the classical engine
 (containment-df t-tests).</li>
 </ul>
+<p>The Bayesian mixed engines (<code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_lmer()</a></code> /
+<code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_glmer()</a></code>, <code>brm()</code> with grouping terms)
+render the same <em>Random effects</em> block from their posterior draws
+— see <code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code>.</p>
 <p>Two datasets carry the main narrative. The table anatomy is shown on
 <code><a href="https://rdrr.io/pkg/lme4/man/sleepstudy.html" class="external-link">lme4::sleepstudy</a></code> — reaction times of 18 subjects measured
 on 10 consecutive days of a sleep-restriction study, the canonical case
@@ -1147,9 +1153,8 @@ abundance where salamanders can occur:</p>
 each: relative to mined streams, unmined ones carry about three times
 the abundance (IRR 3.13) where salamanders occur at all, and about a
 fifth of the odds of structural absence (OR 0.18). Component blocks are
-covered in depth in the counts documentation
-(<code><a href="../reference/table_regression_models.html">?table_regression_counts</a></code>); opt out with
-<code>show_components = FALSE</code>.</p>
+covered in depth in <code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code>;
+opt out with <code>show_components = FALSE</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="nlmelme">
@@ -1761,6 +1766,26 @@ their terms are prefixed <code>re::</code> (correlations carry a
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> re::Subject::Days                     5.92       1.25     2.47      8.00 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> re::Subject::(Intercept), Days::cor   0.065<span style="text-decoration: underline;">6</span>     0.325   -<span style="color: #BB0000;">0.571</span>     0.703</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> re::Residual::                       25.6        1.51    22.4      28.4</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="where-next">Where next<a class="anchor" aria-label="anchor" href="#where-next"></a>
+</h2>
+<ul>
+<li>
+<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code> — the shared mechanics:
+output formats, multi-model layouts, <code>p_adjust</code>, broom
+methods.</li>
+<li>
+<code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code> — zero-inflation
+and dispersion component blocks in depth.</li>
+<li>
+<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code> — the same
+<em>Random effects</em> block from posterior draws
+(<code>stan_glmer</code>, <code>brm</code>).</li>
+<li>
+<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code> — the
+class-by-class capability map.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

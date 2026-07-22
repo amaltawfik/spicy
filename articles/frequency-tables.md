@@ -265,12 +265,12 @@ cross_tab(sochealth, smoking, education)
 
 ### Row and column percentages
 
-Use `percent = "row"` or `percent = "col"` to display percentages
+Use `percent = "row"` or `percent = "column"` to display percentages
 instead of raw counts:
 
 ``` r
 
-cross_tab(sochealth, smoking, education, percent = "col")
+cross_tab(sochealth, smoking, education, percent = "column")
 #> Crosstable: smoking x education (Column %)
 #> 
 #>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
@@ -578,7 +578,7 @@ Set `styled = FALSE` to get a plain data frame for further processing:
 ``` r
 
 cross_tab(sochealth, smoking, education,
-          percent = "col", styled = FALSE)
+          percent = "column", styled = FALSE)
 #>   Values Lower secondary Upper secondary Tertiary
 #> 1     No            69.6            78.7     84.9
 #> 2    Yes            30.4            21.3     15.1
@@ -586,9 +586,12 @@ cross_tab(sochealth, smoking, education,
 
 ## Setting global defaults
 
-You can set package-wide defaults with
-[`options()`](https://rdrr.io/r/base/options.html) so you don’t have to
-repeat arguments:
+You can set
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+defaults with [`options()`](https://rdrr.io/r/base/options.html) so you
+don’t have to repeat arguments (these options are read by
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+only):
 
 ``` r
 

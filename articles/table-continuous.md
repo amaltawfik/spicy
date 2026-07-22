@@ -622,8 +622,8 @@ and
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
 
 - `align = "decimal"` (default) aligns numeric columns on the decimal
-  mark, matching SPSS / SAS / LaTeX `siunitx` conventions. `"center"`,
-  `"right"`, and the legacy `"auto"` are the alternatives.
+  mark, matching SPSS / SAS / LaTeX `siunitx` conventions. `"center"`
+  and `"right"` are the alternatives.
 - `p_digits = 3` (default, the APA standard) drives both the displayed
   precision of the `p` column and the small-*p* threshold
   (`p_digits = 4` -\> `.0451` and `<.0001`).

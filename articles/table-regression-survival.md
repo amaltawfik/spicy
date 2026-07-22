@@ -12,9 +12,12 @@ whose event is not observed within follow-up. The companion vignette
 [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
-multi-model layouts, broom integration); here we focus on what is
-specific to survival fits: hazard ratios and time ratios, event counts
-and concordance, and the variance estimators of multi-centre studies.
+multi-model layouts, broom integration; the class-by-class map is
+[*Supported
+models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md));
+here we focus on what is specific to survival fits: hazard ratios and
+time ratios, event counts and concordance, and the variance estimators
+of multi-centre studies.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 supports four survival engines:
@@ -101,12 +104,18 @@ Reading the table:
 - Inference is **Wald-z** on the log scale, matching `summary.coxph()`
   and Stata `stcox`; the statistic and p-value are invariant under the
   exponentiation.
-- The footer reports **events** (163 deaths among 226 patients — the
-  precision and power of a survival model are governed chiefly by its
-  event count, not its n) and the **concordance** C = 0.64: the
-  probability that, of two comparable patients, the one predicted to
-  fail earlier actually does. 0.5 is a coin flip; 0.64 is modest
-  discrimination (Harrell 2015).
+- The fit block carries the Cox default,
+  `show_fit_stats = c("nobs", "n_events", "aic")`: **N events** (163
+  deaths among 226 patients — the precision and power of a survival
+  model are governed chiefly by its event count, not its
+  14. sits next to `n` as its own row. The footer adds the
+      **concordance** C = 0.64: the probability that, of two comparable
+      patients, the one predicted to fail earlier actually does. 0.5 is
+      a coin flip; 0.64 is modest discrimination (Harrell 2015). The
+      same token also renders as a per-level *column* —
+      `show_columns = c("n_events", "b", "ci", "p")` gives events/N next
+      to each hazard ratio, the univariable screen below uses it, and
+      binomial tables share the convention (see the core vignette).
 
 The table reports the model, not its assumption: check proportionality
 with
@@ -131,7 +140,14 @@ ceremony: stratify the offending categorical factor
 ([`strata()`](https://rdrr.io/pkg/survival/man/strata.html) terms are
 absorbed into the baseline hazard, no coefficient row) or give the
 covariate a time-varying effect via counting-process data
-(`Surv(tstart, tstop, event)`); both render like any other fit.
+(`Surv(tstart, tstop, event)`); both render like any other fit. One
+planning note if absolute effects are on the menu: the RMST /
+risk-difference columns of the next-but-one section require a
+right-censored single-record fit —
+[`strata()`](https://rdrr.io/pkg/survival/man/strata.html) is supported
+(within-stratum baselines), but time-varying `tt()` terms, start–stop
+data and stratified `survreg` fits are refused for the estimands — so a
+remedy chosen here constrains what the table can report later.
 
 ## Why there is no AME column
 
@@ -160,8 +176,11 @@ question the assumption check left open: when
 proportionality, the hazard ratio degrades into a follow-up-weighted
 average of a changing effect, while the RMST difference over `[0, tau]`
 remains a well-defined estimand — in that case the absolute summaries
-lead the report rather than accompany it. Two absolute summaries do the
-job:
+lead the report rather than accompany it. One honesty note carried
+through below: these columns are *model-based* — standardized from the
+fitted Cox curves — so a badly misspecified fit biases them too; with
+proportionality in serious doubt, the nonparametric RMST is the remedy.
+Two absolute summaries do the job:
 
 - the **restricted mean survival time (RMST) difference**: the
   difference in mean event-free time over a fixed window `[0, tau]` —

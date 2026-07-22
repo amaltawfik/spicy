@@ -12,7 +12,10 @@ natural order: employment status, party choice, transport mode. The
 companion vignette [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
-multi-model layouts, broom integration), and [*Ordinal regression
+multi-model layouts, broom integration; the class-by-class map is
+[*Supported
+models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)),
+and [*Ordinal regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
 covers the case where the categories *are* ordered. Order alone does not
 decide the model: the ordinal model buys parsimony — one slope per
@@ -150,16 +153,18 @@ row blocks; side by side is the publication convention. Reading it:
 - Inference is **Wald-z** (`df = Inf`), matching
   [`summary()`](https://rdrr.io/r/base/summary.html)-based practice for
   ML fits and Stata `mlogit`; `nnet` itself prints no p-values.
-- The model-fit block reports **n** and **AIC**, once, under the first
-  group — they belong to the model, not to an equation.
+- The model-fit block reports **n**, the **McFadden and Nagelkerke
+  pseudo-R²**, and **AIC**, once, under the first group — they belong to
+  the model, not to an equation.
 
 Before reading any cell, the whole model earns its keep: against the
 intercept-only fit, the likelihood-ratio chi-squared is 41.9 on 12
 degrees of freedom (p \< .001) — the test Stata prints in its `mlogit`
-header and the first number Long & Freese read. McFadden’s pseudo-R² is
-1 − (−1242.9)/(−1263.8) = 0.017: a comparative index, not a share of
-explained variance (Long & Freese 2014) — the contrast between the tiny
-value and the decisive test is exactly why it should not be read as one.
+header and the first number Long & Freese read. The printed
+`R² (McFadden)` row, 0.02 — precisely 1 − (−1242.9)/(−1263.8) = 0.017 —
+is a comparative index, not a share of explained variance (Long & Freese
+2014); the contrast between the tiny value and the decisive test is
+exactly why it should not be read as one.
 
 One scope note on inference: alongside the classical Wald-z default,
 `multinom` fits support **cluster-robust standard errors**
