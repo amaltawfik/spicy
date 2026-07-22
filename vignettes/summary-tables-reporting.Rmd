@@ -346,7 +346,8 @@ tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity")
+  labels = c("Smoking status", "Regular physical activity"),
+  output = "tinytable"
 )
 
 tab |>
