@@ -103,7 +103,8 @@ an explicit <code>data</code> argument, the current data context is used.</p>
 <span>  min_valid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regex <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  user_na <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -157,10 +158,48 @@ If <code>TRUE</code>, the <code>select</code> argument is treated as a regular e
 <dd><p>Logical. If <code>FALSE</code> (the default), messages are suppressed.
 If <code>TRUE</code>, prints a message about non-numeric columns excluded.</p></dd>
 
+
+<dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (the default), declared missing
+values count as missing – both in the computed summary and in the
+<code>min_valid</code> valid-count gate. If <code>FALSE</code>, the declared codes are
+treated as ordinary numbers. See the "Declared missing values"
+section of <code><a href="freq.html">freq()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A numeric vector of row-wise sums.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a></h2>
+
+
+
+<p>Survey files imported with <strong>haven</strong> often carry <em>declared missing
+values</em>: codes such as <code>8 = Don't know</code> or <code>9 = Refused</code> that the
+source file marks as missing while keeping them distinct from a
+plain <code>NA</code>. Two kinds of declaration exist: <code>na_values</code> / <code>na_range</code>
+metadata on <code><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">haven::labelled_spss()</a></code> vectors, and tagged missing
+values created by <code><a href="https://haven.tidyverse.org/reference/tagged_na.html" class="external-link">haven::tagged_na()</a></code> (the Stata <code>.a</code>, <code>.b</code>, ...
+convention).</p>
+<p>spicy honors the declaration by default (<code>user_na = TRUE</code>):
+declared missing values are excluded from every statistic exactly
+like <code>NA</code> – valid percentages, means, chi-squared tests,
+association measures, row-wise summaries, and group definitions –
+but they are not erased from display. <code><a href="freq.html">freq()</a></code> lists each observed
+declared value as its own row of the Missing block, with its value
+label; <code><a href="cross_tab.html">cross_tab()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>, and
+<code><a href="table_continuous.html">table_continuous()</a></code> disclose the exclusion in the table note
+(<code>Declared missing values removed: x (2).</code>); <code><a href="varlist.html">varlist()</a></code> and
+<code><a href="code_book.html">code_book()</a></code> count them as missing in <code>N_valid</code> / <code>NAs</code> /
+<code>N_distinct</code> while still listing the declared codes in <code>Values</code>.</p>
+<p>Every function involved offers the same escape hatch: set
+<code>user_na = FALSE</code> to ignore the declaration and treat the declared
+codes as valid values (the behavior of spicy before 0.13.0).
+Tagged missing values are genuine <code>NA</code>s either way; for them,
+<code>user_na = FALSE</code> only collapses the per-tag breakdown back into
+the regular <code>NA</code> count.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -107,6 +107,7 @@ test with an APA-style association measure).</p>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3L</span>,</span>
+<span>  user_na <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">styled</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -221,6 +222,15 @@ p-value (and to determine the small-<code>p</code> threshold below which
 matches the <code>p_digits</code> argument of the <code>table_*()</code> family.</p></dd>
 
 
+<dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (the default), declared missing
+values in <code>x</code>, <code>y</code>, or <code>by</code> are treated as missing: they are
+excluded from the table and its statistics like <code>NA</code>, and the
+exclusion is disclosed in the table note (<code>Declared missing values removed: ...</code>). If <code>FALSE</code>, the declared codes tabulate
+as categories (and, in <code>by</code>, define groups). See the "Declared
+missing values" section of <code><a href="freq.html">freq()</a></code>.</p></dd>
+
+
 <dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>
 <dd><p>Defunct. <code>styled = TRUE</code> is now <code>output = "default"</code>
 (the default) and <code>styled = FALSE</code> is now <code>output = "data.frame"</code>;
@@ -278,6 +288,36 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <p>Example:</p>
 <p></p><div class="sourceCode r"><pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.simulate_p <span class="op">=</span> <span class="cn">TRUE</span>, spicy.rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span><span class="op">)</span></span></code></pre><p></p></div>
+    </div>
+    <div class="section level2">
+    <h2 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a></h2>
+
+
+
+<p>Survey files imported with <strong>haven</strong> often carry <em>declared missing
+values</em>: codes such as <code>8 = Don't know</code> or <code>9 = Refused</code> that the
+source file marks as missing while keeping them distinct from a
+plain <code>NA</code>. Two kinds of declaration exist: <code>na_values</code> / <code>na_range</code>
+metadata on <code><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">haven::labelled_spss()</a></code> vectors, and tagged missing
+values created by <code><a href="https://haven.tidyverse.org/reference/tagged_na.html" class="external-link">haven::tagged_na()</a></code> (the Stata <code>.a</code>, <code>.b</code>, ...
+convention).</p>
+<p>spicy honors the declaration by default (<code>user_na = TRUE</code>):
+declared missing values are excluded from every statistic exactly
+like <code>NA</code> – valid percentages, means, chi-squared tests,
+association measures, row-wise summaries, and group definitions –
+but they are not erased from display. <code><a href="freq.html">freq()</a></code> lists each observed
+declared value as its own row of the Missing block, with its value
+label; <code>cross_tab()</code>, <code><a href="table_categorical.html">table_categorical()</a></code>, and
+<code><a href="table_continuous.html">table_continuous()</a></code> disclose the exclusion in the table note
+(<code>Declared missing values removed: x (2).</code>); <code><a href="varlist.html">varlist()</a></code> and
+<code><a href="code_book.html">code_book()</a></code> count them as missing in <code>N_valid</code> / <code>NAs</code> /
+<code>N_distinct</code> while still listing the declared codes in <code>Values</code>.</p>
+<p>Every function involved offers the same escape hatch: set
+<code>user_na = FALSE</code> to ignore the declaration and treat the declared
+codes as valid values (the behavior of spicy before 0.13.0).
+Tagged missing values are genuine <code>NA</code>s either way; for them,
+<code>user_na = FALSE</code> only collapses the per-tag breakdown back into
+the regular <code>NA</code> count.</p>
     </div>
 
     <div class="section level2">

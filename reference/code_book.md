@@ -21,7 +21,8 @@ code_book(
   include_na = FALSE,
   title = "Codebook",
   filename = NULL,
-  factor_levels = c("all", "observed")
+  factor_levels = c("all", "observed"),
+  user_na = TRUE
 )
 ```
 
@@ -82,6 +83,16 @@ code_book(
   `"observed"` shows only levels present in the data, preserving factor
   level order.
 
+- user_na:
+
+  Logical. If `TRUE` (the default), declared missing values count as
+  missing in `N_valid`, `NAs`, and `N_distinct` (all three columns share
+  one missing definition). If `FALSE`, they count as valid. Either way,
+  the declared codes remain listed in `Values` (with their value labels
+  when declared) – a codebook documents the full coding scheme. See the
+  "Declared missing values" section of
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
+
 ## Value
 
 A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
@@ -103,6 +114,41 @@ A [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object.
 Requires the following package:
 
 - **DT**
+
+## Declared missing values
+
+Survey files imported with **haven** often carry *declared missing
+values*: codes such as `8 = Don't know` or `9 = Refused` that the source
+file marks as missing while keeping them distinct from a plain `NA`. Two
+kinds of declaration exist: `na_values` / `na_range` metadata on
+[`haven::labelled_spss()`](https://haven.tidyverse.org/reference/labelled_spss.html)
+vectors, and tagged missing values created by
+[`haven::tagged_na()`](https://haven.tidyverse.org/reference/tagged_na.html)
+(the Stata `.a`, `.b`, ... convention).
+
+spicy honors the declaration by default (`user_na = TRUE`): declared
+missing values are excluded from every statistic exactly like `NA` –
+valid percentages, means, chi-squared tests, association measures,
+row-wise summaries, and group definitions – but they are not erased from
+display.
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) lists
+each observed declared value as its own row of the Missing block, with
+its value label;
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+and
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+disclose the exclusion in the table note
+(`Declared missing values removed: x (2).`);
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+and `code_book()` count them as missing in `N_valid` / `NAs` /
+`N_distinct` while still listing the declared codes in `Values`.
+
+Every function involved offers the same escape hatch: set
+`user_na = FALSE` to ignore the declaration and treat the declared codes
+as valid values (the behavior of spicy before 0.13.0). Tagged missing
+values are genuine `NA`s either way; for them, `user_na = FALSE` only
+collapses the per-tag breakdown back into the regular `NA` count.
 
 ## See also
 

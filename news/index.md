@@ -4,6 +4,47 @@
 
 ### Breaking changes
 
+- Declared missing values are now honored package-wide. Codes that
+  survey files declare as missing (`na_values` / `na_range` metadata on
+  haven-imported columns, and
+  [`haven::tagged_na()`](https://haven.tidyverse.org/reference/tagged_na.html)
+  values) are treated as missing by default in
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md),
+  [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md), and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
+  they are excluded from statistics exactly like `NA` (valid percents,
+  means, chi-squared tests and association measures, `min_valid` gates,
+  group definitions), so numbers change for labelled survey data.
+  Nothing disappears silently:
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) shows
+  each declared value as its own labelled row in its Missing block
+  (tagged NAs get per-tag rows with their labels), and the tabulation
+  helpers disclose the exclusion in the table note (“Declared missing
+  values removed: …”). Migration: every function involved gains the same
+  escape hatch, `user_na = FALSE`, which restores the previous behavior
+  of treating declared codes as valid values. See the new “Declared
+  missing values” section in
+  [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md).
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md), and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  count columns are now internally coherent for labelled data:
+  `N_distinct` uses the same missing definition as `N_valid` / `NAs`
+  (declared missing values and `NA` elements of list and `POSIXlt`
+  columns no longer count as distinct valid values), `na_range` codes
+  observed in the data are listed in `Values` like `na_values` codes
+  instead of vanishing, and value labels attached to tagged NAs
+  (e.g. `Refused = tagged_na("a")`) now appear in `Values`.
+
 - [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
   is no longer exported. It has always been documented as internal
   plumbing; use
