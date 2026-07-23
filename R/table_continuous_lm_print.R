@@ -152,7 +152,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       paste0(
         "Adjusted for ",
         paste(covariates, collapse = ", "),
-        " (", adjustment, ")."
+        " (",
+        adjustment,
+        ")."
       )
     )
   }
@@ -179,16 +181,21 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # used by the CR* branch.
 # `boot_valid`: integer vector of valid bootstrap replicate counts
 # (one lm fit per table variable); NULL outside vcov = "bootstrap".
-.tclm_vcov_label <- function(vcov_type, cluster_name = NA_character_,
-                             boot_valid = NULL) {
+.tclm_vcov_label <- function(
+  vcov_type,
+  cluster_name = NA_character_,
+  boot_valid = NULL
+) {
   if (startsWith(vcov_type, "HC")) {
     return(sprintf("heteroskedasticity-robust (%s)", vcov_type))
   }
   if (startsWith(vcov_type, "CR")) {
     label <- sprintf("cluster-robust (%s)", vcov_type)
     if (
-      is.character(cluster_name) && length(cluster_name) == 1L &&
-        !is.na(cluster_name) && nzchar(cluster_name)
+      is.character(cluster_name) &&
+        length(cluster_name) == 1L &&
+        !is.na(cluster_name) &&
+        nzchar(cluster_name)
     ) {
       label <- paste0(label, ", clusters by ", cluster_name)
     }

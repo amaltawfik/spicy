@@ -24,7 +24,6 @@
 # and are marked `# nocov` in the source.
 # ---------------------------------------------------------------------------
 
-
 # ---- compute_lm_model_stats: covariate path, focal F-stat unavailable ------
 
 test_that("compute_lm_model_stats sets f2/omega2 to NA when the focal F is missing", {
@@ -103,7 +102,7 @@ test_that("compute_lm_partial_omega2 returns NA when residual SS is zero", {
 test_that("compute_lm_partial_omega2 returns NA when n <= df1", {
   # A crafted fs whose numerator df exceeds the sample size hits the
   # `n <= fs$df1` guard.
-  m <- stats::lm(mpg ~ wt + hp, data = mtcars)   # n = 32
+  m <- stats::lm(mpg ~ wt + hp, data = mtcars) # n = 32
   out <- spicy:::compute_lm_partial_omega2(
     m,
     fs = list(f_obs = 5, df1 = 1000, df2 = 29)
@@ -224,7 +223,11 @@ test_that("compute_smd_ci_lm matches the effectsize::cohens_d noncentral CI", {
   d_spicy <- unname(stats::coef(fsm)[2]) / summary(fsm)$sigma
   expect_equal(d_spicy, -ed$Cohens_d, tolerance = 1e-12)
 
-  ci_d <- spicy:::compute_smd_ci_lm(fsm, ci_level = 0.95, hedges_correct = FALSE)
+  ci_d <- spicy:::compute_smd_ci_lm(
+    fsm,
+    ci_level = 0.95,
+    hedges_correct = FALSE
+  )
   expect_equal(ci_d, c(-ed$CI_high, -ed$CI_low), tolerance = 1e-6)
 
   # Hedges' g bounds are exactly j * d bounds with j = 1 - 3 / (4 df - 1).
@@ -266,10 +269,16 @@ test_that("model-level omega2/f2 CI bounds satisfy the Steiger defining equation
   oci <- spicy:::compute_omega2_ci_lm(fit, ci_level = 0.95)
   ncp_lo <- oci[1] * n_tot / (1 - oci[1])
   ncp_hi <- oci[2] * n_tot / (1 - oci[2])
-  expect_equal(stats::pf(f_obs, df1, df2, ncp = ncp_lo), 0.975,
-               tolerance = 1e-6)
-  expect_equal(stats::pf(f_obs, df1, df2, ncp = ncp_hi), 0.025,
-               tolerance = 1e-6)
+  expect_equal(
+    stats::pf(f_obs, df1, df2, ncp = ncp_lo),
+    0.975,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    stats::pf(f_obs, df1, df2, ncp = ncp_hi),
+    0.025,
+    tolerance = 1e-6
+  )
 
   # f^2 bounds share the same ncp roots: f2 = ncp / N = b / (1 - b),
   # an exact algebraic mapping between the two CIs.
@@ -288,7 +297,10 @@ test_that("partial omega2 CI matches the effectsize partial eta2 CI", {
   oci <- spicy:::compute_omega2_ci_lm(m, ci_level = 0.95, focal_term = "hp")
   ee <- effectsize::eta_squared(
     stats::anova(m),
-    partial = TRUE, ci = 0.95, alternative = "two.sided", verbose = FALSE
+    partial = TRUE,
+    ci = 0.95,
+    alternative = "two.sided",
+    verbose = FALSE
   )
   expect_equal(
     oci,

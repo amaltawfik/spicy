@@ -32,7 +32,6 @@
 # from the scaled SE using the same critical value as the unscaled
 # inference (z for glm -- df = Inf -- matching `compute_coef_inference`).
 
-
 # ---- Public-internal dispatch --------------------------------------------
 
 standardize_glm <- function(
@@ -45,41 +44,81 @@ standardize_glm <- function(
   boot_n = 1000L
 ) {
   method <- match.arg(method)
-  if (is.null(weights)) weights <- stats::weights(fit)
+  if (is.null(weights)) {
+    weights <- stats::weights(fit)
+  }
 
   out <- switch(
     method,
-    refit   = standardize_refit_glm(fit, vcov_type, cluster, ci_level,
-                                     weights, boot_n),
+    refit = standardize_refit_glm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n
+    ),
     posthoc = standardize_algebraic_glm(
-                fit, vcov_type, cluster, ci_level, weights, boot_n,
-                factor_treatment = "unscaled", input_scaling = "sd",
-                sd_y_div = 1
-              ),
-    basic   = standardize_algebraic_glm(
-                fit, vcov_type, cluster, ci_level, weights, boot_n,
-                factor_treatment = "scale", input_scaling = "sd",
-                sd_y_div = 1
-              ),
-    smart   = standardize_algebraic_glm(
-                fit, vcov_type, cluster, ci_level, weights, boot_n,
-                factor_treatment = "unscaled", input_scaling = "gelman",
-                sd_y_div = 1
-              ),
-    pseudo  = standardize_pseudo_glm(fit, vcov_type, cluster, ci_level,
-                                      weights, boot_n)
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n,
+      factor_treatment = "unscaled",
+      input_scaling = "sd",
+      sd_y_div = 1
+    ),
+    basic = standardize_algebraic_glm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n,
+      factor_treatment = "scale",
+      input_scaling = "sd",
+      sd_y_div = 1
+    ),
+    smart = standardize_algebraic_glm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n,
+      factor_treatment = "unscaled",
+      input_scaling = "gelman",
+      sd_y_div = 1
+    ),
+    pseudo = standardize_pseudo_glm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n
+    )
   )
   # Record the method ACTUALLY applied (the refit path may fall back to
   # the algebraic posthoc, setting the attribute itself).
-  if (is.null(attr(out, "used_method"))) attr(out, "used_method") <- method
+  if (is.null(attr(out, "used_method"))) {
+    attr(out, "used_method") <- method
+  }
   out
 }
 
 
 # ---- Method 1: refit (Long & Freese x-standardization) -------------------
 
-standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
-                                   weights, boot_n) {
+standardize_refit_glm <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n
+) {
   mf <- stats::model.frame(fit)
   mf[["(weights)"]] <- NULL
 
@@ -88,7 +127,9 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
   # change the model).
   resp_name <- all.vars(stats::formula(fit)[[2L]])[1L]
   for (nm in names(mf)) {
-    if (identical(nm, resp_name)) next
+    if (identical(nm, resp_name)) {
+      next
+    }
     # Matrix-valued columns (`poly(x, 2)` / `splines::ns()` bases,
     # `cbind()` responses) are left untouched: scaling them column-blind
     # corrupts the frame; the refit then declines into the algebraic
@@ -104,7 +145,9 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
   formula <- strip_formula_env(stats::formula(fit))
   fam <- stats::family(fit)
   args <- list(formula = formula, family = fam, data = mf)
-  if (!is.null(weights)) args$weights <- weights
+  if (!is.null(weights)) {
+    args$weights <- weights
+  }
   fit_std <- tryCatch(
     suppressWarnings(do.call(stats::glm, args)),
     error = function(e) NULL
@@ -130,8 +173,15 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
       class = "spicy_fallback"
     )
     out <- standardize_algebraic_glm(
-      fit, vcov_type, cluster, ci_level, weights, boot_n,
-      factor_treatment = "unscaled", input_scaling = "sd", sd_y_div = 1
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n,
+      factor_treatment = "unscaled",
+      input_scaling = "sd",
+      sd_y_div = 1
     )
     attr(out, "used_method") <- "posthoc"
     return(out)
@@ -144,8 +194,14 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
     weights = weights,
     boot_n = boot_n
   )
-  glm_coefs_inference_table(fit_std, vc_std, vcov_type, cluster, ci_level,
-                              intercept_to_na = FALSE)
+  glm_coefs_inference_table(
+    fit_std,
+    vc_std,
+    vcov_type,
+    cluster,
+    ci_level,
+    intercept_to_na = FALSE
+  )
 }
 
 
@@ -166,18 +222,27 @@ standardize_refit_glm <- function(fit, vcov_type, cluster, ci_level,
 #   * sd_y_div : positive scalar divisor applied to every \u03B2
 #       1                       : X-only methods
 #       sd(Y*) (Menard latent)  : pseudo
-standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
-                                       weights, boot_n,
-                                       factor_treatment = c("scale", "unscaled"),
-                                       input_scaling = c("sd", "gelman"),
-                                       sd_y_div = 1) {
+standardize_algebraic_glm <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n,
+  factor_treatment = c("scale", "unscaled"),
+  input_scaling = c("sd", "gelman"),
+  sd_y_div = 1
+) {
   factor_treatment <- match.arg(factor_treatment)
   input_scaling <- match.arg(input_scaling)
 
   b <- stats::coef(fit)
   vc <- compute_model_vcov(
-    fit, type = vcov_type, cluster = cluster,
-    weights = weights, boot_n = boot_n
+    fit,
+    type = vcov_type,
+    cluster = cluster,
+    weights = weights,
+    boot_n = boot_n
   )
   se_b_raw <- sqrt(diag(vc))
 
@@ -199,10 +264,11 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
   mm <- stats::model.matrix(fit)
   # Per-column scale factors from the shared single-source helper.
   scale_factor <- .algebraic_scale_factors(
-    mm, detect_factor_design_cols(fit),
+    mm,
+    detect_factor_design_cols(fit),
     factor_treatment = factor_treatment,
-    input_scaling    = input_scaling,
-    sd_y_div         = sd_y_div
+    input_scaling = input_scaling,
+    sd_y_div = sd_y_div
   )
 
   beta <- b * scale_factor
@@ -229,8 +295,8 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
   # statistic, so df / p / CI must follow the same regime).
   df_vec <- rep(Inf, length(b))
   use_satt <- startsWith(vcov_type, "CR") &&
-                !is.null(cluster) &&
-                spicy_pkg_available("clubSandwich")
+    !is.null(cluster) &&
+    spicy_pkg_available("clubSandwich")
   if (use_satt) {
     df_satt_map <- compute_satt_df_per_coef(fit, vc, cluster)
     if (!is.null(df_satt_map)) {
@@ -252,7 +318,7 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
       crit_i <- stats::qnorm(1 - alpha / 2)
       p_value[i] <- 2 * stats::pnorm(abs(stat[i]), lower.tail = FALSE)
     }
-    ci_low[i]  <- beta[i] - crit_i * se_beta[i]
+    ci_low[i] <- beta[i] - crit_i * se_beta[i]
     ci_high[i] <- beta[i] + crit_i * se_beta[i]
   }
 
@@ -272,8 +338,14 @@ standardize_algebraic_glm <- function(fit, vcov_type, cluster, ci_level,
 
 # ---- Method 5: pseudo (Menard 2011 fully-standardised) -------------------
 
-standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
-                                    weights, boot_n) {
+standardize_pseudo_glm <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n
+) {
   sd_y_star <- compute_menard_sd_y_star(fit)
   if (!is.finite(sd_y_star) || sd_y_star <= 0) {
     spicy_warn(
@@ -285,7 +357,8 @@ standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
         ),
         "i" = sprintf(
           "Family `%s` (link `%s`) is outside this scope; \u03B2 returned as NA.",
-          stats::family(fit)$family, stats::family(fit)$link
+          stats::family(fit)$family,
+          stats::family(fit)$link
         ),
         "i" = paste0(
           "For non-binomial glms, use `standardized = \"refit\"` ",
@@ -310,8 +383,14 @@ standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
     ))
   }
   standardize_algebraic_glm(
-    fit, vcov_type, cluster, ci_level, weights, boot_n,
-    factor_treatment = "unscaled", input_scaling = "sd",
+    fit,
+    vcov_type,
+    cluster,
+    ci_level,
+    weights,
+    boot_n,
+    factor_treatment = "unscaled",
+    input_scaling = "sd",
     sd_y_div = sd_y_star
   )
 }
@@ -326,11 +405,13 @@ standardize_pseudo_glm <- function(fit, vcov_type, cluster, ci_level,
 # pi^2/6). Returns NA for non-binomial families (caller emits caveat).
 compute_menard_sd_y_star <- function(fit) {
   fam <- stats::family(fit)
-  if (!identical(fam$family, "binomial")) return(NA_real_)
+  if (!identical(fam$family, "binomial")) {
+    return(NA_real_)
+  }
   eta_hat <- tryCatch(
     as.numeric(stats::predict(fit, type = "link")),
-    error = function(e) NULL   # nocov: predict(type="link") cannot error on
-                               # a converged binomial glm; defensive only.
+    error = function(e) NULL # nocov: predict(type="link") cannot error on
+    # a converged binomial glm; defensive only.
   )
   # `predict(type = "link")` is padded back to the ORIGINAL data length
   # when the fit used `na.action = na.exclude` (napredict() reinserts NA
@@ -338,14 +419,18 @@ compute_menard_sd_y_star <- function(fit) {
   # the rows the model actually used, so strip those NA before taking the
   # variance -- otherwise a perfectly valid binomial fit would yield
   # SD(Y*) = NA and trigger the misleading "family outside scope" caveat.
-  if (is.null(eta_hat)) return(NA_real_)   # nocov: NULL arm unreachable (see above).
+  if (is.null(eta_hat)) {
+    return(NA_real_)
+  } # nocov: NULL arm unreachable (see above).
   eta_hat <- eta_hat[is.finite(eta_hat)]
-  if (length(eta_hat) < 2L) return(NA_real_)
+  if (length(eta_hat) < 2L) {
+    return(NA_real_)
+  }
   var_eta <- stats::var(eta_hat)
   var_link <- switch(
     fam$link,
-    "logit"   = pi^2 / 3,
-    "probit"  = 1,
+    "logit" = pi^2 / 3,
+    "probit" = 1,
     "cloglog" = pi^2 / 6,
     # The log link (log-binomial / relative-risk model) has NO latent-
     # threshold interpretation -- it models log(p) = X'beta multiplicatively,
@@ -353,27 +438,48 @@ compute_menard_sd_y_star <- function(fit) {
     # Long & Freese latent-variable standardisation is therefore undefined
     # here; return NA so the caller emits the "outside scope" caveat (use
     # standardized = "refit" for a log-binomial fit). Was wrongly pi^2/3.
-    "log"     = NA_real_,
+    "log" = NA_real_,
     NA_real_
   )
-  if (!is.finite(var_link)) return(NA_real_)
+  if (!is.finite(var_link)) {
+    return(NA_real_)
+  }
   sqrt(var_eta + var_link)
 }
 
 
 # ---- Internal: refit-method coefs table (z-asymptotic for glm) -----------
 
-glm_coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
-                                       ci_level, intercept_to_na = TRUE) {
+glm_coefs_inference_table <- function(
+  fit_std,
+  vc_std,
+  vcov_type,
+  cluster,
+  ci_level,
+  intercept_to_na = TRUE
+) {
   cf <- stats::coef(fit_std)
   rows <- lapply(seq_along(cf), function(i) {
     if (is.na(cf[i])) {
-      list(estimate = NA_real_, se = NA_real_, ci_lower = NA_real_,
-           ci_upper = NA_real_, statistic = NA_real_, df = NA_real_,
-           p.value = NA_real_)
+      list(
+        estimate = NA_real_,
+        se = NA_real_,
+        ci_lower = NA_real_,
+        ci_upper = NA_real_,
+        statistic = NA_real_,
+        df = NA_real_,
+        p.value = NA_real_
+      )
     } else {
-      compute_coef_inference(fit_std, i, vc_std, vcov_type,
-                             cluster, ci_level, test = "z")
+      compute_coef_inference(
+        fit_std,
+        i,
+        vc_std,
+        vcov_type,
+        cluster,
+        ci_level,
+        test = "z"
+      )
     }
   })
 
@@ -388,10 +494,13 @@ glm_coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
     p_value = vapply(rows, `[[`, double(1), "p.value"),
     stringsAsFactors = FALSE
   )
-  if (isTRUE(intercept_to_na) && nrow(out) >= 1L &&
-        out$term[1] == "(Intercept)") {
-    out[1, c("estimate", "se", "ci_low", "ci_high",
-             "statistic", "p_value")] <- NA_real_
+  if (
+    isTRUE(intercept_to_na) && nrow(out) >= 1L && out$term[1] == "(Intercept)"
+  ) {
+    out[
+      1,
+      c("estimate", "se", "ci_low", "ci_high", "statistic", "p_value")
+    ] <- NA_real_
   }
   out
 }

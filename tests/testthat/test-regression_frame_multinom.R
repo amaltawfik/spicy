@@ -10,13 +10,15 @@
 #   * Oracle cross-validation against parameters::model_parameters().
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_multinom_iris <- function() {
   skip_if_not_installed("nnet")
-  nnet::multinom(Species ~ Sepal.Length + Sepal.Width,
-                 data = iris, trace = FALSE)
+  nnet::multinom(
+    Species ~ Sepal.Length + Sepal.Width,
+    data = iris,
+    trace = FALSE
+  )
 }
 
 .fit_multinom_factor <- function() {
@@ -52,7 +54,7 @@ test_that("multinom: info$family is multinomial/logit", {
   fit <- .fit_multinom_iris()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "multinomial")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
 })
 
 test_that("multinom: info$dv reads the response variable name", {
@@ -94,8 +96,10 @@ test_that("multinom: coefs table has (n_outcomes - 1) blocks of (n_preds + 1) ro
   # 3 outcomes -> 2 non-ref blocks; 2 predictors + Intercept = 3 rows per block
   non_ref_rows <- fr$coefs[!fr$coefs$is_ref, ]
   expect_identical(nrow(non_ref_rows), 6L)
-  expect_setequal(unique(non_ref_rows$outcome_level),
-                  c("versicolor", "virginica"))
+  expect_setequal(
+    unique(non_ref_rows$outcome_level),
+    c("versicolor", "virginica")
+  )
 })
 
 test_that("multinom: outcome_level populated on EVERY coefs row", {
@@ -112,9 +116,9 @@ test_that("multinom: each outcome block includes (Intercept) + predictors", {
   # per-model term-pivot.
   for (out in c("versicolor", "virginica")) {
     block <- fr$coefs[fr$coefs$outcome_level == out & !fr$coefs$is_ref, ]
-    expect_true(paste0(out, ": (Intercept)")  %in% block$term, info = out)
+    expect_true(paste0(out, ": (Intercept)") %in% block$term, info = out)
     expect_true(paste0(out, ": Sepal.Length") %in% block$term, info = out)
-    expect_true(paste0(out, ": Sepal.Width")  %in% block$term, info = out)
+    expect_true(paste0(out, ": Sepal.Width") %in% block$term, info = out)
   }
 })
 
@@ -129,11 +133,17 @@ test_that("multinom: coefs estimates match stats::coef(fit) matrix entries", {
     for (term in colnames(cm)) {
       # Phase 7c4: term is prefixed with the outcome.
       prefixed_term <- paste0(out, ": ", term)
-      row <- fr$coefs[fr$coefs$outcome_level == out &
-                       fr$coefs$term == prefixed_term & !fr$coefs$is_ref, ]
-      expect_equal(row$estimate, unname(cm[out, term]),
-                   tolerance = 1e-10,
-                   info = paste(out, "::", term))
+      row <- fr$coefs[
+        fr$coefs$outcome_level == out &
+          fr$coefs$term == prefixed_term &
+          !fr$coefs$is_ref,
+      ]
+      expect_equal(
+        row$estimate,
+        unname(cm[out, term]),
+        tolerance = 1e-10,
+        info = paste(out, "::", term)
+      )
     }
   }
 })
@@ -145,11 +155,17 @@ test_that("multinom: SE matches summary(fit)$standard.errors matrix entries", {
   for (out in rownames(sm)) {
     for (term in colnames(sm)) {
       prefixed_term <- paste0(out, ": ", term)
-      row <- fr$coefs[fr$coefs$outcome_level == out &
-                       fr$coefs$term == prefixed_term & !fr$coefs$is_ref, ]
-      expect_equal(row$std_error, unname(sm[out, term]),
-                   tolerance = 1e-10,
-                   info = paste(out, "::", term))
+      row <- fr$coefs[
+        fr$coefs$outcome_level == out &
+          fr$coefs$term == prefixed_term &
+          !fr$coefs$is_ref,
+      ]
+      expect_equal(
+        row$std_error,
+        unname(sm[out, term]),
+        tolerance = 1e-10,
+        info = paste(out, "::", term)
+      )
     }
   }
 })
@@ -200,8 +216,10 @@ test_that("multinom: supports$exponentiate = TRUE (RR vs reference outcome)", {
 test_that("multinom: title_prefix = 'Multinomial logistic regression'", {
   fit <- .fit_multinom_iris()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Multinomial logistic regression")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Multinomial logistic regression"
+  )
 })
 
 
@@ -220,16 +238,35 @@ test_that("multinom coefs match parameters::model_parameters() (oracle)", {
     # parameters reports per-outcome coefs; match on (Parameter, Response).
     # Phase 7c4: spicy's term is "<outcome>: <predictor>"; strip the
     # prefix to compare against parameters' bare Parameter column.
-    bare_term <- sub(paste0("^", spicy_row$outcome_level, ": "), "",
-                     spicy_row$term)
-    oracle_row <- oracle[oracle$Parameter == bare_term &
-                         oracle$Response == spicy_row$outcome_level, ]
-    if (nrow(oracle_row) == 0L) next
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste(spicy_row$outcome_level, "::", spicy_row$term))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste(spicy_row$outcome_level, "::", spicy_row$term))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste(spicy_row$outcome_level, "::", spicy_row$term))
+    bare_term <- sub(
+      paste0("^", spicy_row$outcome_level, ": "),
+      "",
+      spicy_row$term
+    )
+    oracle_row <- oracle[
+      oracle$Parameter == bare_term &
+        oracle$Response == spicy_row$outcome_level,
+    ]
+    if (nrow(oracle_row) == 0L) {
+      next
+    }
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste(spicy_row$outcome_level, "::", spicy_row$term)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste(spicy_row$outcome_level, "::", spicy_row$term)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste(spicy_row$outcome_level, "::", spicy_row$term)
+    )
   }
 })

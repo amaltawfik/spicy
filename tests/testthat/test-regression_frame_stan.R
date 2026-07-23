@@ -19,7 +19,6 @@
 # `set.seed()` makes the draws deterministic for assertion stability.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fast-fit helpers ------------------------------------------------------
 
 # Stan model compilation is unreliable on GitHub Actions runners
@@ -38,7 +37,11 @@
   brms::brm(
     Reaction ~ Days,
     data = lme4::sleepstudy,
-    chains = 1, iter = 400, refresh = 0, silent = 2, backend = "rstan"
+    chains = 1,
+    iter = 400,
+    refresh = 0,
+    silent = 2,
+    backend = "rstan"
   )
 }
 
@@ -53,7 +56,11 @@
   brms::brm(
     Reaction ~ Days + treatment,
     data = d,
-    chains = 1, iter = 400, refresh = 0, silent = 2, backend = "rstan"
+    chains = 1,
+    iter = 400,
+    refresh = 0,
+    silent = 2,
+    backend = "rstan"
   )
 }
 
@@ -67,7 +74,11 @@
     am ~ mpg,
     data = d,
     family = brms::bernoulli(),
-    chains = 1, iter = 400, refresh = 0, silent = 2, backend = "rstan"
+    chains = 1,
+    iter = 400,
+    refresh = 0,
+    silent = 2,
+    backend = "rstan"
   )
 }
 
@@ -80,7 +91,9 @@
   rstanarm::stan_glm(
     Reaction ~ Days,
     data = lme4::sleepstudy,
-    chains = 1, iter = 400, refresh = 0
+    chains = 1,
+    iter = 400,
+    refresh = 0
   )
 }
 
@@ -156,18 +169,30 @@ test_that("brmsfit: estimate matches posterior median; std_error matches posteri
   b_vars <- grep("^b_", posterior::variables(draws), value = TRUE)
   sm <- posterior::summarise_draws(
     posterior::subset_draws(draws, variable = b_vars),
-    "median", "mad"
+    "median",
+    "mad"
   )
   # Match by stripping the b_ prefix on summary side.
-  human <- ifelse(sm$variable == "b_Intercept", "(Intercept)",
-                  sub("^b_", "", sm$variable))
+  human <- ifelse(
+    sm$variable == "b_Intercept",
+    "(Intercept)",
+    sub("^b_", "", sm$variable)
+  )
   for (i in seq_along(human)) {
     nm <- human[i]
     row <- fr$coefs[fr$coefs$term == nm & !fr$coefs$is_ref, ]
-    expect_equal(row$estimate,  sm$median[i], tolerance = 1e-10,
-                 info = paste("term:", nm))
-    expect_equal(row$std_error, sm$mad[i],    tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      row$estimate,
+      sm$median[i],
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
+    expect_equal(
+      row$std_error,
+      sm$mad[i],
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -177,7 +202,7 @@ test_that("brmsfit: estimate matches posterior median; std_error matches posteri
 test_that("brmsfit gaussian: title_prefix names linear + brmsfit engine", {
   fit <- .fit_brms_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "linear",  fixed = TRUE)
+  expect_match(fr$info$extras$title_prefix, "linear", fixed = TRUE)
   expect_match(fr$info$extras$title_prefix, "brmsfit", fixed = TRUE)
 })
 
@@ -185,7 +210,7 @@ test_that("brmsfit logit: family = bernoulli/logit; title decorates with logisti
   fit <- .fit_brms_logit()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "bernoulli")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
   expect_match(fr$info$extras$title_prefix, "logistic", fixed = TRUE)
 })
 
@@ -201,7 +226,7 @@ test_that("brmsfit: supports flags reflect Bayesian conventions", {
   expect_false(sp$partial_effect_size)
   expect_false(sp$classical_r2)
   expect_false(sp$nested_lrt)
-  expect_false(sp$exponentiate)   # identity link
+  expect_false(sp$exponentiate) # identity link
   expect_false(sp$standardise_refit)
 })
 
@@ -275,10 +300,10 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(
     fit,
     centrality = "median",
-    ci         = 0.95,
-    ci_method  = "eti",
-    test       = NULL,
-    effects    = "fixed"
+    ci = 0.95,
+    ci_method = "eti",
+    test = NULL,
+    effects = "fixed"
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
@@ -287,15 +312,17 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
   # `b_Days`, ...). Strip the `b_` prefix and rewrite `b_Intercept`
   # to `(Intercept)` so the intersection on a meaningful set of
   # names always succeeds.
-  oracle_terms <- ifelse(oracle$Parameter == "b_Intercept",
-                         "(Intercept)",
-                         sub("^b_", "", oracle$Parameter))
+  oracle_terms <- ifelse(
+    oracle$Parameter == "b_Intercept",
+    "(Intercept)",
+    sub("^b_", "", oracle$Parameter)
+  )
   # Drop the distributional / sigma rows on the oracle side so the
   # intersection is restricted to true fixed effects.
   shared <- intersect(b_rows$term, oracle_terms)
   expect_gt(length(shared), 0L)
   for (nm in shared) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle_terms == nm, ]
     oracle_est <- oracle_row$Median %||% oracle_row$Coefficient
     # Posterior comparisons across packages have larger natural
@@ -303,8 +330,11 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
     # size, package-specific scaling of priors). 1e-3 reflects the
     # audit-discipline guidance in design doc section 7 ("tolerance
     # 1e-3 for posterior summaries").
-    expect_equal(spicy_row$estimate, oracle_est,
-                 tolerance = 1e-3,
-                 info = paste("oracle estimate mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_est,
+      tolerance = 1e-3,
+      info = paste("oracle estimate mismatch on term:", nm)
+    )
   }
 })

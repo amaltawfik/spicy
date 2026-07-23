@@ -17,7 +17,6 @@
 # the public path is reachable.
 # ---------------------------------------------------------------------------
 
-
 # ---- lm path: extract_partial_effect_rows() early returns ----------------
 
 test_that("lm path returns empty when no partial token is active", {
@@ -25,9 +24,11 @@ test_that("lm path returns empty when no partial token is active", {
   # `length(active) == 0L` branch returns empty_coefs_long().
   m <- lm(mpg ~ wt + hp, data = mtcars)
   out <- spicy:::extract_partial_effect_rows(
-    fit = m, ci_level = 0.95,
+    fit = m,
+    ci_level = 0.95,
     show_columns = c("b", "se"),
-    model_id = "M1", outcome = "mpg"
+    model_id = "M1",
+    outcome = "mpg"
   )
   expect_s3_class(out, "data.frame")
   expect_identical(nrow(out), 0L)
@@ -38,9 +39,11 @@ test_that("lm intercept-only model returns empty (no term labels)", {
   # `length(term_labels) == 0L` returns empty_coefs_long().
   m <- lm(mpg ~ 1, data = mtcars)
   out <- spicy:::extract_partial_effect_rows(
-    fit = m, ci_level = 0.95,
+    fit = m,
+    ci_level = 0.95,
     show_columns = c("partial_f2"),
-    model_id = "M1", outcome = "mpg"
+    model_id = "M1",
+    outcome = "mpg"
   )
   expect_s3_class(out, "data.frame")
   expect_identical(nrow(out), 0L)
@@ -53,12 +56,14 @@ test_that("lm with a singular coef skips the NA term but keeps valid terms", {
   d <- mtcars
   d$hp2 <- d$hp * 2
   m <- lm(mpg ~ wt + hp + hp2, data = d)
-  expect_true(any(is.na(stats::coef(m))))   # confirm the singular setup
+  expect_true(any(is.na(stats::coef(m)))) # confirm the singular setup
 
   out <- spicy:::extract_partial_effect_rows(
-    fit = m, ci_level = 0.95,
+    fit = m,
+    ci_level = 0.95,
     show_columns = c("partial_f2"),
-    model_id = "M1", outcome = "mpg"
+    model_id = "M1",
+    outcome = "mpg"
   )
   expect_gt(nrow(out), 0L)
   # The aliased coefficient never appears as a partial-effect term.
@@ -74,9 +79,11 @@ test_that("lm with every term aliased/failed returns empty", {
   d$hp2 <- d$hp * 2
   m <- lm(mpg ~ hp + hp2, data = d)
   out <- spicy:::extract_partial_effect_rows(
-    fit = m, ci_level = 0.95,
+    fit = m,
+    ci_level = 0.95,
     show_columns = c("partial_f2"),
-    model_id = "M1", outcome = "mpg"
+    model_id = "M1",
+    outcome = "mpg"
   )
   expect_s3_class(out, "data.frame")
   expect_identical(nrow(out), 0L)
@@ -102,9 +109,11 @@ test_that("glm path returns empty when partial_chi2 token absent", {
   # it returns empty_coefs_long().
   g <- glm(am ~ hp, data = mtcars, family = binomial)
   out <- spicy:::extract_partial_effect_rows(
-    fit = g, ci_level = 0.95,
+    fit = g,
+    ci_level = 0.95,
     show_columns = c("b", "se"),
-    model_id = "M1", outcome = "am"
+    model_id = "M1",
+    outcome = "am"
   )
   expect_s3_class(out, "data.frame")
   expect_identical(nrow(out), 0L)
@@ -119,9 +128,11 @@ test_that("glm partial_chi2 path skips a singular coef but keeps valid terms", {
   expect_true(any(is.na(stats::coef(g))))
 
   out <- spicy:::extract_partial_effect_rows(
-    fit = g, ci_level = 0.95,
+    fit = g,
+    ci_level = 0.95,
     show_columns = c("partial_chi2"),
-    model_id = "M1", outcome = "am"
+    model_id = "M1",
+    outcome = "am"
   )
   expect_gt(nrow(out), 0L)
   expect_true(all(out$estimate_type == "partial_chi2"))
@@ -152,7 +163,9 @@ test_that("attach helper is a no-op when partial_chi2 token is absent", {
   fit <- lme4::lmer(Reaction ~ Days + period + (1 | Subject), data = dd)
   coefs <- spicy:::.merMod_coefs(fit, ci_level = 0.95, family_z = FALSE)
   out <- spicy:::.attach_partial_chi2_to_frame_coefs(
-    coefs, fit, show_columns = c("b", "se", "ci", "p")
+    coefs,
+    fit,
+    show_columns = c("b", "se", "ci", "p")
   )
   expect_identical(out, coefs)
 })
@@ -165,7 +178,9 @@ test_that("attach helper is a no-op when the chi^2 rows are NULL", {
   fit <- lme4::lmer(Reaction ~ 1 + (1 | Subject), data = lme4::sleepstudy)
   coefs <- spicy:::.merMod_coefs(fit, ci_level = 0.95, family_z = FALSE)
   out <- suppressWarnings(spicy:::.attach_partial_chi2_to_frame_coefs(
-    coefs, fit, show_columns = c("b", "partial_chi2")
+    coefs,
+    fit,
+    show_columns = c("b", "partial_chi2")
   ))
   expect_identical(out, coefs)
 })
@@ -181,10 +196,12 @@ test_that("attach helper pads coefs-only columns on the chi^2 rows", {
   fit <- lme4::lmer(Reaction ~ Days + period + (1 | Subject), data = dd)
 
   coefs <- spicy:::.merMod_coefs(fit, ci_level = 0.95, family_z = FALSE)
-  coefs$extra_marker <- NA_real_   # a column the chi^2 rows do not build
+  coefs$extra_marker <- NA_real_ # a column the chi^2 rows do not build
 
   out <- spicy:::.attach_partial_chi2_to_frame_coefs(
-    coefs, fit, show_columns = c("b", "partial_chi2")
+    coefs,
+    fit,
+    show_columns = c("b", "partial_chi2")
   )
   # The new partial_chi2 rows were appended ...
   expect_gt(nrow(out), nrow(coefs))

@@ -8,11 +8,14 @@
 make_ord <- function(seed = 1, n = 220) {
   set.seed(seed)
   data.frame(
-    x1    = rnorm(n),
+    x1 = rnorm(n),
     smoke = factor(sample(c("no", "yes"), n, TRUE)),
-    yc    = factor(sample(c("Poor", "Fair", "Good", "Very good"), n, TRUE),
-                   levels = c("Poor", "Fair", "Good", "Very good"),
-                   ordered = TRUE))
+    yc = factor(
+      sample(c("Poor", "Fair", "Good", "Very good"), n, TRUE),
+      levels = c("Poor", "Fair", "Good", "Very good"),
+      ordered = TRUE
+    )
+  )
 }
 thr_terms <- c("Poor | Fair", "Fair | Good", "Good | Very good")
 
@@ -22,7 +25,7 @@ test_that("polr thresholds render as a labelled Thresholds block (default)", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
   df <- table_regression(fit, output = "data.frame")
-  expect_true(any(grepl("^Thresholds", trimws(df$Variable))))   # header row
+  expect_true(any(grepl("^Thresholds", trimws(df$Variable)))) # header row
   expect_setequal(trimws(df$Variable)[grepl("\\|", df$Variable)], thr_terms)
 })
 
@@ -39,8 +42,11 @@ test_that("clm thresholds render as a labelled Thresholds block (default)", {
 test_that(".append_threshold_rows matches summary.polr to machine precision", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
-  fr <- as_regression_frame(fit, show_columns = expand_show_columns("b"),
-                            ci_level = 0.95)
+  fr <- as_regression_frame(
+    fit,
+    show_columns = expand_show_columns("b"),
+    ci_level = 0.95
+  )
   cf <- .append_threshold_rows(fr$coefs, fr$info$extras$thresholds, 0.95)
   tr <- cf[cf$is_threshold %in% TRUE, , drop = FALSE]
 
@@ -48,9 +54,9 @@ test_that(".append_threshold_rows matches summary.polr to machine precision", {
   zr <- sm[grepl("\\|", rownames(sm)), , drop = FALSE]
   idx <- match(tr$term, rownames(zr))
   expect_false(anyNA(idx))
-  expect_equal(tr$estimate,  unname(zr[idx, "Value"]),      tolerance = 1e-10)
+  expect_equal(tr$estimate, unname(zr[idx, "Value"]), tolerance = 1e-10)
   expect_equal(tr$std_error, unname(zr[idx, "Std. Error"]), tolerance = 1e-10)
-  expect_equal(tr$statistic, unname(zr[idx, "t value"]),    tolerance = 1e-8)
+  expect_equal(tr$statistic, unname(zr[idx, "t value"]), tolerance = 1e-8)
 
   z <- stats::qnorm(0.975)
   expect_equal(tr$ci_lower, tr$estimate - z * tr$std_error, tolerance = 1e-12)
@@ -63,8 +69,11 @@ test_that(".append_threshold_rows matches summary.polr to machine precision", {
 test_that(".append_threshold_rows matches summary.clm incl. p-value", {
   skip_if_not_installed("ordinal")
   fit <- ordinal::clm(yc ~ x1 + smoke, data = make_ord())
-  fr <- as_regression_frame(fit, show_columns = expand_show_columns("b"),
-                            ci_level = 0.95)
+  fr <- as_regression_frame(
+    fit,
+    show_columns = expand_show_columns("b"),
+    ci_level = 0.95
+  )
   cf <- .append_threshold_rows(fr$coefs, fr$info$extras$thresholds, 0.95)
   tr <- cf[cf$is_threshold %in% TRUE, , drop = FALSE]
 
@@ -72,9 +81,9 @@ test_that(".append_threshold_rows matches summary.clm incl. p-value", {
   zr <- sm[grepl("\\|", rownames(sm)), , drop = FALSE]
   idx <- match(tr$term, rownames(zr))
   expect_false(anyNA(idx))
-  expect_equal(tr$estimate,  unname(zr[idx, "Estimate"]),   tolerance = 1e-10)
+  expect_equal(tr$estimate, unname(zr[idx, "Estimate"]), tolerance = 1e-10)
   expect_equal(tr$std_error, unname(zr[idx, "Std. Error"]), tolerance = 1e-10)
-  expect_equal(tr$p_value,   unname(zr[idx, "Pr(>|z|)"]),   tolerance = 1e-8)
+  expect_equal(tr$p_value, unname(zr[idx, "Pr(>|z|)"]), tolerance = 1e-8)
 })
 
 # ---- exponentiate: thresholds stay on the log-odds scale -------------------
@@ -83,7 +92,7 @@ test_that("thresholds are NOT exponentiated under exponentiate = TRUE", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
   df <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
-  est_col <- setdiff(names(df), "Variable")[1]      # "OR" header under exp
+  est_col <- setdiff(names(df), "Variable")[1] # "OR" header under exp
   tr <- df[trimws(df$Variable) == "Poor | Fair", , drop = FALSE]
   shown <- as.numeric(trimws(tr[[est_col]]))
   raw <- unname(summary(fit)$coefficients["Poor|Fair", "Value"])
@@ -97,8 +106,11 @@ test_that("thresholds are NOT exponentiated under exponentiate = TRUE", {
 test_that("footer builder switches between gloss (rows) and compact line", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
-  fr <- as_regression_frame(fit, show_columns = expand_show_columns("b"),
-                            ci_level = 0.95)
+  fr <- as_regression_frame(
+    fit,
+    show_columns = expand_show_columns("b"),
+    ci_level = 0.95
+  )
   # footer mode: no is_threshold rows -> compact numeric line
   compact <- build_ordinal_thresholds_footer_block_from_frames(list(fr))
   expect_match(compact, "Thresholds: .*= ")
@@ -141,7 +153,7 @@ test_that("non-ordinal fits are unaffected by show_thresholds", {
 test_that("a section separator is emitted before the Thresholds block", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
-  res <- table_regression(fit)                       # default (printable) output
+  res <- table_regression(fit) # default (printable) output
   sep <- attr(res, "section_sep_rows")
   expect_length(sep, 1L)
   expect_gt(sep, 1L)
@@ -155,8 +167,10 @@ test_that("a section separator is emitted before the Thresholds block", {
 test_that("polr/clm default fit-stats = n + McFadden + Nagelkerke + AIC", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("ordinal")
-  for (fit in list(MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE),
-                   ordinal::clm(yc ~ x1 + smoke, data = make_ord()))) {
+  for (fit in list(
+    MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE),
+    ordinal::clm(yc ~ x1 + smoke, data = make_ord())
+  )) {
     df <- table_regression(fit, output = "data.frame")
     v <- trimws(df$Variable)
     expect_true(any(v == "n"))
@@ -174,19 +188,27 @@ test_that(".ordinal_pseudo_r2 matches the closed-form null and performance", {
 
   # self-contained closed-form null log-likelihood (marginal proportions):
   # an intercept-only cumulative model reproduces the category frequencies.
-  ll  <- as.numeric(stats::logLik(fit))
-  nk  <- as.numeric(table(d$yc)); nk <- nk[nk > 0]
+  ll <- as.numeric(stats::logLik(fit))
+  nk <- as.numeric(table(d$yc))
+  nk <- nk[nk > 0]
   ll0 <- sum(nk * log(nk / sum(nk)))
-  n   <- stats::nobs(fit)
+  n <- stats::nobs(fit)
   expect_equal(pr$mcfadden, 1 - ll / ll0, tolerance = 1e-9)
-  cs <- 1 - exp((ll0 - ll) * 2 / n); up <- 1 - exp(ll0 * 2 / n)
+  cs <- 1 - exp((ll0 - ll) * 2 / n)
+  up <- 1 - exp(ll0 * 2 / n)
   expect_equal(pr$nagelkerke, cs / up, tolerance = 1e-9)
 
   skip_if_not_installed("performance")
-  expect_equal(pr$mcfadden,
-               as.numeric(performance::r2_mcfadden(fit)$R2), tolerance = 1e-6)
-  expect_equal(pr$nagelkerke,
-               as.numeric(performance::r2_nagelkerke(fit)), tolerance = 1e-6)
+  expect_equal(
+    pr$mcfadden,
+    as.numeric(performance::r2_mcfadden(fit)$R2),
+    tolerance = 1e-6
+  )
+  expect_equal(
+    pr$nagelkerke,
+    as.numeric(performance::r2_nagelkerke(fit)),
+    tolerance = 1e-6
+  )
 })
 
 test_that("ordinal pseudo-R2 survives a refit-hostile scope (update() would fail)", {

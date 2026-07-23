@@ -213,13 +213,13 @@ test_that("varlist() handles exotic / empty column types without crashing", {
   # historically tripped up the `Values` summary path. The radix sort
   # helper short-circuits on length <= 1 to keep these inputs safe.
   exotic <- list(
-    empty_int       = integer(0),
-    empty_char      = character(0),
-    empty_factor    = factor(character(0)),
-    all_na_date     = as.Date(c(NA, NA, NA)),
-    all_na_posix    = as.POSIXct(c(NA_character_, NA_character_)),
-    difftime_days   = structure(c(1, 2, 3), class = "difftime", units = "days"),
-    factor_unused   = factor(c("a", "a"), levels = c("a", "b", "c"))
+    empty_int = integer(0),
+    empty_char = character(0),
+    empty_factor = factor(character(0)),
+    all_na_date = as.Date(c(NA, NA, NA)),
+    all_na_posix = as.POSIXct(c(NA_character_, NA_character_)),
+    difftime_days = structure(c(1, 2, 3), class = "difftime", units = "days"),
+    factor_unused = factor(c("a", "a"), levels = c("a", "b", "c"))
   )
   for (nm in names(exotic)) {
     df <- data.frame(x = exotic[[nm]])
@@ -612,7 +612,11 @@ test_that("varlist() honours `factor_levels = 'all'` for labelled (declared > ob
 test_that("match_varlist_factor_levels rejects bad inputs with a stable message", {
   msg <- '`factor_levels` must be "observed" or "all".'
   expect_error(varlist(mtcars, factor_levels = "foo"), msg, fixed = TRUE)
-  expect_error(varlist(mtcars, factor_levels = NA_character_), msg, fixed = TRUE)
+  expect_error(
+    varlist(mtcars, factor_levels = NA_character_),
+    msg,
+    fixed = TRUE
+  )
   expect_error(varlist(mtcars, factor_levels = character()), msg, fixed = TRUE)
   expect_error(varlist(mtcars, factor_levels = 1L), msg, fixed = TRUE)
   expect_error(
@@ -668,8 +672,14 @@ test_that("varlist() warns and marks the cell when a column cannot be summarized
   )
 
   expect_length(warnings, 2L)
-  expect_match(warnings[[1]], "Could not summarize column `x`.*synthetic failure")
-  expect_match(warnings[[2]], "Could not summarize column `y`.*synthetic failure")
+  expect_match(
+    warnings[[1]],
+    "Could not summarize column `x`.*synthetic failure"
+  )
+  expect_match(
+    warnings[[2]],
+    "Could not summarize column `y`.*synthetic failure"
+  )
   expect_equal(
     unname(res$Values),
     rep("<error: synthetic failure>", 2L)

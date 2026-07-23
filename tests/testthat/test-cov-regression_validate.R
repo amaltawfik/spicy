@@ -27,7 +27,11 @@ mt$cyl <- factor(mt$cyl)
 test_that("validate_vcov_cluster_lists – non-character scalar vcov errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    spicy:::validate_vcov_cluster_lists(123, cluster = NULL, models = list(fit)),
+    spicy:::validate_vcov_cluster_lists(
+      123,
+      cluster = NULL,
+      models = list(fit)
+    ),
     class = "spicy_invalid_input"
   )
 })
@@ -37,7 +41,9 @@ test_that("validate_vcov_cluster_lists – length-2 character vector vcov errors
   # Not a list, but a length-2 character vector: fails the scalar check.
   expect_error(
     spicy:::validate_vcov_cluster_lists(
-      c("HC3", "HC0"), cluster = NULL, models = list(fit)
+      c("HC3", "HC0"),
+      cluster = NULL,
+      models = list(fit)
     ),
     class = "spicy_invalid_input"
   )
@@ -47,7 +53,9 @@ test_that("validate_vcov_cluster_lists – NA scalar vcov errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     spicy:::validate_vcov_cluster_lists(
-      NA_character_, cluster = NULL, models = list(fit)
+      NA_character_,
+      cluster = NULL,
+      models = list(fit)
     ),
     class = "spicy_invalid_input"
   )
@@ -63,7 +71,9 @@ test_that("validate_vcov_cluster_lists – CR* without cluster (multi-model) err
   fit2 <- lm(mpg ~ cyl, data = mt)
   err <- tryCatch(
     spicy:::validate_vcov_cluster_lists(
-      vcov = "CR2", cluster = NULL, models = list(fit1, fit2)
+      vcov = "CR2",
+      cluster = NULL,
+      models = list(fit1, fit2)
     ),
     error = function(e) e
   )
@@ -117,7 +127,9 @@ test_that("expand_show_columns – duplicate atom across group + literal is de-d
 test_that("validate_token_vector – NA element errors spicy_invalid_input", {
   expect_error(
     spicy:::validate_token_vector(
-      c("b", NA), valid = c("b", "se"), arg = "show_columns"
+      c("b", NA),
+      valid = c("b", "se"),
+      arg = "show_columns"
     ),
     class = "spicy_invalid_input"
   )
@@ -126,7 +138,9 @@ test_that("validate_token_vector – NA element errors spicy_invalid_input", {
 test_that("validate_token_vector – empty-string element errors spicy_invalid_input", {
   err <- tryCatch(
     spicy:::validate_token_vector(
-      c("b", ""), valid = c("b", "se"), arg = "show_columns"
+      c("b", ""),
+      valid = c("b", "se"),
+      arg = "show_columns"
     ),
     error = function(e) e
   )
@@ -230,7 +244,10 @@ test_that("validate_predictor_labels – unnamed character vector errors", {
 test_that("validate_predictor_labels – NA value errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    spicy:::validate_predictor_labels(c(wt = NA_character_), models = list(fit)),
+    spicy:::validate_predictor_labels(
+      c(wt = NA_character_),
+      models = list(fit)
+    ),
     class = "spicy_invalid_input"
   )
 })
@@ -244,8 +261,7 @@ test_that("detect_non_additive_terms – nls fit falls back to formula() RHS", {
   # nls fits have no `terms` component, so attr(terms(fit), ...) errors and
   # the function must rebuild term labels from formula(fit). The b*wt term
   # expands to a `b:wt` interaction, so has_problem is TRUE.
-  nlsfit <- nls(mpg ~ a + b * wt, data = mtcars,
-                start = list(a = 30, b = -5))
+  nlsfit <- nls(mpg ~ a + b * wt, data = mtcars, start = list(a = 30, b = -5))
   out <- spicy:::detect_non_additive_terms(nlsfit)
   expect_true(out$has_problem)
   expect_true("b:wt" %in% out$interactions)
@@ -279,16 +295,21 @@ test_that("validate_output_resources - aborts when system clipboard unavailable"
   old_available <- get("clipr_available", envir = ns)
   unlockBinding("clipr_available", ns)
   assign("clipr_available", function(...) FALSE, envir = ns)
-  on.exit({
-    unlockBinding("clipr_available", ns)
-    assign("clipr_available", old_available, envir = ns)
-    lockBinding("clipr_available", ns)
-  }, add = TRUE)
+  on.exit(
+    {
+      unlockBinding("clipr_available", ns)
+      assign("clipr_available", old_available, envir = ns)
+      lockBinding("clipr_available", ns)
+    },
+    add = TRUE
+  )
   lockBinding("clipr_available", ns)
 
   err <- tryCatch(
     spicy:::validate_output_resources(
-      output = "clipboard", excel_path = NULL, word_path = NULL
+      output = "clipboard",
+      excel_path = NULL,
+      word_path = NULL
     ),
     error = function(e) e
   )
@@ -303,16 +324,21 @@ test_that("validate_output_resources - clipboard OK when available is a no-op", 
   old_available <- get("clipr_available", envir = ns)
   unlockBinding("clipr_available", ns)
   assign("clipr_available", function(...) TRUE, envir = ns)
-  on.exit({
-    unlockBinding("clipr_available", ns)
-    assign("clipr_available", old_available, envir = ns)
-    lockBinding("clipr_available", ns)
-  }, add = TRUE)
+  on.exit(
+    {
+      unlockBinding("clipr_available", ns)
+      assign("clipr_available", old_available, envir = ns)
+      lockBinding("clipr_available", ns)
+    },
+    add = TRUE
+  )
   lockBinding("clipr_available", ns)
 
   expect_null(
     spicy:::validate_output_resources(
-      output = "clipboard", excel_path = NULL, word_path = NULL
+      output = "clipboard",
+      excel_path = NULL,
+      word_path = NULL
     )
   )
 })

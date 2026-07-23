@@ -23,30 +23,43 @@ mt <- mtcars
 test_that(".validate_structured warns when Variable column is not character", {
   s <- list(
     body = data.frame(Variable = c(1L, 2L), B = c(1.0, 2.0)),
-    reference_rows = integer(0), factor_header_rows = integer(0),
-    fit_stat_rows = integer(0), level_rows = integer(0),
+    reference_rows = integer(0),
+    factor_header_rows = integer(0),
+    fit_stat_rows = integer(0),
+    level_rows = integer(0),
     outcome_row = integer(0),
     col_meta = list(B = list(precision = 2L)),
-    spanners = NULL, ci_pairs = list(),
+    spanners = NULL,
+    ci_pairs = list(),
     format_spec = list(decimal_mark = ".")
   )
-  expect_warning(spicy:::.validate_structured(s),
-                 "Variable column is not character")
+  expect_warning(
+    spicy:::.validate_structured(s),
+    "Variable column is not character"
+  )
 })
 
 test_that(".validate_structured warns on a non-numeric, non-all-NA column", {
   s <- list(
-    body = data.frame(Variable = c("a", "b"),
-                      B = c("x", "y"), stringsAsFactors = FALSE),
-    reference_rows = integer(0), factor_header_rows = integer(0),
-    fit_stat_rows = integer(0), level_rows = integer(0),
+    body = data.frame(
+      Variable = c("a", "b"),
+      B = c("x", "y"),
+      stringsAsFactors = FALSE
+    ),
+    reference_rows = integer(0),
+    factor_header_rows = integer(0),
+    fit_stat_rows = integer(0),
+    level_rows = integer(0),
     outcome_row = integer(0),
     col_meta = list(B = list(precision = 2L)),
-    spanners = NULL, ci_pairs = list(),
+    spanners = NULL,
+    ci_pairs = list(),
     format_spec = list(decimal_mark = ".")
   )
-  expect_warning(spicy:::.validate_structured(s),
-                 "Column 2 \\(B\\) is not numeric")
+  expect_warning(
+    spicy:::.validate_structured(s),
+    "Column 2 \\(B\\) is not numeric"
+  )
 })
 
 test_that(".validate_structured skips a body column with no col_meta entry", {
@@ -56,12 +69,16 @@ test_that(".validate_structured skips a body column with no col_meta entry", {
   # have warned. `B` (an in-range apa column) carries the only col_meta.
   s <- list(
     body = data.frame(Variable = "a", B = 0.5, Extra = 2.0),
-    reference_rows = integer(0), factor_header_rows = integer(0),
-    fit_stat_rows = integer(0), level_rows = integer(0),
+    reference_rows = integer(0),
+    factor_header_rows = integer(0),
+    fit_stat_rows = integer(0),
+    level_rows = integer(0),
     outcome_row = integer(0),
-    col_meta = list(B = list(precision = 3L, p_style = "apa",
-                             token = "p", threshold = 0.001)),
-    spanners = NULL, ci_pairs = list(),
+    col_meta = list(
+      B = list(precision = 3L, p_style = "apa", token = "p", threshold = 0.001)
+    ),
+    spanners = NULL,
+    ci_pairs = list(),
     format_spec = list(decimal_mark = ".")
   )
   expect_silent(spicy:::.validate_structured(s))
@@ -75,24 +92,35 @@ test_that(".validate_structured skips a body column with no col_meta entry", {
   # This proves the clean-case silence above came from the col_meta skip
   # branch -- not from a loop that never ran or that always stays silent.
   s_meta <- s
-  s_meta$col_meta$Extra <- list(precision = 3L, p_style = "apa",
-                                token = "p", threshold = 0.001)
-  expect_warning(spicy:::.validate_structured(s_meta),
-                 "Column Extra: 1 p-value\\(s\\) outside \\[0, 1\\]")
+  s_meta$col_meta$Extra <- list(
+    precision = 3L,
+    p_style = "apa",
+    token = "p",
+    threshold = 0.001
+  )
+  expect_warning(
+    spicy:::.validate_structured(s_meta),
+    "Column Extra: 1 p-value\\(s\\) outside \\[0, 1\\]"
+  )
 })
 
 test_that(".validate_structured warns on a negative precision", {
   s <- list(
     body = data.frame(Variable = "a", B = 1.0),
-    reference_rows = integer(0), factor_header_rows = integer(0),
-    fit_stat_rows = integer(0), level_rows = integer(0),
+    reference_rows = integer(0),
+    factor_header_rows = integer(0),
+    fit_stat_rows = integer(0),
+    level_rows = integer(0),
     outcome_row = integer(0),
     col_meta = list(B = list(precision = -2L)),
-    spanners = NULL, ci_pairs = list(),
+    spanners = NULL,
+    ci_pairs = list(),
     format_spec = list(decimal_mark = ".")
   )
-  expect_warning(spicy:::.validate_structured(s),
-                 "precision must be a non-negative integer")
+  expect_warning(
+    spicy:::.validate_structured(s),
+    "precision must be a non-negative integer"
+  )
 })
 
 
@@ -102,8 +130,11 @@ test_that(".validate_structured warns on a negative precision", {
 
 test_that("build_structured_body produces a 0-row, correctly-shaped body", {
   fit <- lm(mpg ~ wt, data = mt)
-  fr <- spicy:::as_regression_frame(fit, model_id = "M1",
-                                    show_columns = c("b", "p"))
+  fr <- spicy:::as_regression_frame(
+    fit,
+    model_id = "M1",
+    show_columns = c("b", "p")
+  )
   aligned <- spicy:::align_frames(list(fr), model_ids = "M1")
   # Strip every coefficient and fit-stat row so length(rows) == 0.
   aligned$coefs_aligned <- aligned$coefs_aligned[0, , drop = FALSE]
@@ -111,15 +142,25 @@ test_that("build_structured_body produces a 0-row, correctly-shaped body", {
   cs <- spicy:::build_column_spec(c("b", "p"), "M1", stats::setNames("", "M1"))
 
   s <- spicy:::build_structured_body(
-    aligned = aligned, show_columns = c("b", "p"),
+    aligned = aligned,
+    show_columns = c("b", "p"),
     show_fit_stats = character(0),
-    reference_style = "row", factor_layout = "grouped",
-    ci_level = 0.95, digits = 2, p_digits = 3,
-    effect_size_digits = 2, fit_digits = 2, ic_digits = 1,
-    decimal_mark = ".", reference_label = "(ref.)",
-    outcome_labels = NULL, labels_from_outcomes = FALSE,
-    model_ids = "M1", label_map = stats::setNames("", "M1"),
-    col_spec = cs, labels = NULL,
+    reference_style = "row",
+    factor_layout = "grouped",
+    ci_level = 0.95,
+    digits = 2,
+    p_digits = 3,
+    effect_size_digits = 2,
+    fit_digits = 2,
+    ic_digits = 1,
+    decimal_mark = ".",
+    reference_label = "(ref.)",
+    outcome_labels = NULL,
+    labels_from_outcomes = FALSE,
+    model_ids = "M1",
+    label_map = stats::setNames("", "M1"),
+    col_spec = cs,
+    labels = NULL,
     model_outcomes = stats::setNames("mpg", "M1"),
     model_outcome_labels = NULL
   )
@@ -139,19 +180,29 @@ test_that(".build_structured_fit_stat_rows skips absent tokens and CI-only model
   # first non-ci target col resolves to NA and is skipped (575).
   # `r2` is not a column of fit_stats, so that token is skipped (561).
   expanded <- list(
-    list(name = "M1: B",  cs = list(model_id = "M1"), ci_role = NULL),
+    list(name = "M1: B", cs = list(model_id = "M1"), ci_role = NULL),
     list(name = "M2: LL", cs = list(model_id = "M2"), ci_role = "LL")
   )
-  empty_row <- data.frame(Variable = NA_character_,
-                          "M1: B" = NA_real_, "M2: LL" = NA_real_,
-                          check.names = FALSE, stringsAsFactors = FALSE)
+  empty_row <- data.frame(
+    Variable = NA_character_,
+    "M1: B" = NA_real_,
+    "M2: LL" = NA_real_,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
   fs <- data.frame(model_id = "M1", nobs = 30L, stringsAsFactors = FALSE)
 
   rows <- spicy:::.build_structured_fit_stat_rows(
-    fit_stats = fs, show_fit_stats = c("nobs", "r2"),
-    model_ids = c("M1", "M2"), col_spec = NULL, expanded = expanded,
-    empty_row = empty_row, digits = 2, fit_digits = 2,
-    ic_digits = 1, p_digits = 3
+    fit_stats = fs,
+    show_fit_stats = c("nobs", "r2"),
+    model_ids = c("M1", "M2"),
+    col_spec = NULL,
+    expanded = expanded,
+    empty_row = empty_row,
+    digits = 2,
+    fit_digits = 2,
+    ic_digits = 1,
+    p_digits = 3
   )
   # Only the nobs row survives (r2 dropped).
   expect_length(rows, 1L)
@@ -168,16 +219,26 @@ test_that(".build_structured_fit_stat_rows skips a model with no fit_stats row",
     list(name = "M1: B", cs = list(model_id = "M1"), ci_role = NULL),
     list(name = "M2: B", cs = list(model_id = "M2"), ci_role = NULL)
   )
-  empty_row <- data.frame(Variable = NA_character_,
-                          "M1: B" = NA_real_, "M2: B" = NA_real_,
-                          check.names = FALSE, stringsAsFactors = FALSE)
+  empty_row <- data.frame(
+    Variable = NA_character_,
+    "M1: B" = NA_real_,
+    "M2: B" = NA_real_,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
   fs <- data.frame(model_id = "M1", nobs = 42L, stringsAsFactors = FALSE)
 
   rows <- spicy:::.build_structured_fit_stat_rows(
-    fit_stats = fs, show_fit_stats = "nobs",
-    model_ids = c("M1", "M2"), col_spec = NULL, expanded = expanded,
-    empty_row = empty_row, digits = 2, fit_digits = 2,
-    ic_digits = 1, p_digits = 3
+    fit_stats = fs,
+    show_fit_stats = "nobs",
+    model_ids = c("M1", "M2"),
+    col_spec = NULL,
+    expanded = expanded,
+    empty_row = empty_row,
+    digits = 2,
+    fit_digits = 2,
+    ic_digits = 1,
+    p_digits = 3
   )
   expect_length(rows, 1L)
   expect_identical(rows[[1]]$row[["M1: B"]], 42)
@@ -191,14 +252,26 @@ test_that(".build_structured_fit_stat_rows skips a model with no fit_stats row",
 
 test_that(".build_structured_outcome_row returns NULL when model_outcomes is empty", {
   f <- spicy:::.build_structured_outcome_row
-  expect_null(f(model_outcomes = NULL, model_outcome_labels = NULL,
-                outcome_labels = NULL, model_ids = "M1",
-                label_map = NULL, col_spec = NULL,
-                expanded = NULL, empty_row = NULL))
-  expect_null(f(model_outcomes = character(0), model_outcome_labels = NULL,
-                outcome_labels = NULL, model_ids = "M1",
-                label_map = NULL, col_spec = NULL,
-                expanded = NULL, empty_row = NULL))
+  expect_null(f(
+    model_outcomes = NULL,
+    model_outcome_labels = NULL,
+    outcome_labels = NULL,
+    model_ids = "M1",
+    label_map = NULL,
+    col_spec = NULL,
+    expanded = NULL,
+    empty_row = NULL
+  ))
+  expect_null(f(
+    model_outcomes = character(0),
+    model_outcome_labels = NULL,
+    outcome_labels = NULL,
+    model_ids = "M1",
+    label_map = NULL,
+    col_spec = NULL,
+    expanded = NULL,
+    empty_row = NULL
+  ))
 })
 
 test_that(".build_structured_outcome_row default-labels arm returns NULL (override system pending)", {
@@ -207,11 +280,16 @@ test_that(".build_structured_outcome_row default-labels arm returns NULL (overri
   # text-override system is not finalised, so the function still
   # returns NULL.
   f <- spicy:::.build_structured_outcome_row
-  expect_null(f(model_outcomes = c("mpg", "hp"),
-                model_outcome_labels = NULL,
-                outcome_labels = NULL, model_ids = c("M1", "M2"),
-                label_map = NULL, col_spec = NULL,
-                expanded = NULL, empty_row = NULL))
+  expect_null(f(
+    model_outcomes = c("mpg", "hp"),
+    model_outcome_labels = NULL,
+    outcome_labels = NULL,
+    model_ids = c("M1", "M2"),
+    label_map = NULL,
+    col_spec = NULL,
+    expanded = NULL,
+    empty_row = NULL
+  ))
 })
 
 
@@ -276,10 +354,16 @@ test_that(".build_structured_spanners returns NULL when there is nothing to span
   expect_null(spicy:::.build_structured_spanners(c("B"), list(), NULL))
   # All-empty label_map.
   expect_null(spicy:::.build_structured_spanners(
-    c("B"), list(), stats::setNames(c("", ""), c("M1", "M2"))))
+    c("B"),
+    list(),
+    stats::setNames(c("", ""), c("M1", "M2"))
+  ))
   # Single distinct label.
   expect_null(spicy:::.build_structured_spanners(
-    c("B"), list(), stats::setNames("A", "M1")))
+    c("B"),
+    list(),
+    stats::setNames("A", "M1")
+  ))
 })
 
 test_that(".build_structured_spanners skips an empty-string label among distinct labels", {
@@ -291,7 +375,8 @@ test_that(".build_structured_spanners skips an empty-string label among distinct
     list(cs = list(model_id = "M2"))
   )
   sp <- spicy:::.build_structured_spanners(
-    c("M1B", "M2B"), expanded,
+    c("M1B", "M2B"),
+    expanded,
     stats::setNames(c("A", ""), c("M1", "M2"))
   )
   expect_named(sp, "A")

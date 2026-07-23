@@ -951,9 +951,19 @@ table_continuous_lm <- function(
   weights = NULL,
   vcov = c(
     "classical",
-    "HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5",
-    "CR0", "CR1", "CR2", "CR3",
-    "bootstrap", "jackknife"
+    "HC0",
+    "HC1",
+    "HC2",
+    "HC3",
+    "HC4",
+    "HC4m",
+    "HC5",
+    "CR0",
+    "CR1",
+    "CR2",
+    "CR3",
+    "bootstrap",
+    "jackknife"
   ),
   cluster = NULL,
   boot_n = 1000,
@@ -1001,7 +1011,10 @@ table_continuous_lm <- function(
       ci_level <= 0 ||
       ci_level >= 1
   ) {
-    spicy_abort("`ci_level` must be a single number between 0 and 1.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`ci_level` must be a single number between 0 and 1.",
+      class = "spicy_invalid_input"
+    )
   }
   if (
     !is.numeric(digits) ||
@@ -1009,7 +1022,10 @@ table_continuous_lm <- function(
       is.na(digits) ||
       digits < 0
   ) {
-    spicy_abort("`digits` must be a single non-negative number.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`digits` must be a single non-negative number.",
+      class = "spicy_invalid_input"
+    )
   }
   digits <- as.integer(digits)
   if (
@@ -1018,7 +1034,10 @@ table_continuous_lm <- function(
       is.na(fit_digits) ||
       fit_digits < 0
   ) {
-    spicy_abort("`fit_digits` must be a single non-negative number.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`fit_digits` must be a single non-negative number.",
+      class = "spicy_invalid_input"
+    )
   }
   fit_digits <- as.integer(fit_digits)
   if (
@@ -1028,7 +1047,9 @@ table_continuous_lm <- function(
       effect_size_digits < 0
   ) {
     spicy_abort(
-      "`effect_size_digits` must be a single non-negative number.", class = "spicy_invalid_input")
+      "`effect_size_digits` must be a single non-negative number.",
+      class = "spicy_invalid_input"
+    )
   }
   effect_size_digits <- as.integer(effect_size_digits)
   if (
@@ -1038,7 +1059,9 @@ table_continuous_lm <- function(
       p_digits < 1
   ) {
     spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).", class = "spicy_invalid_input")
+      "`p_digits` must be a single integer >= 1 (typically 2-4).",
+      class = "spicy_invalid_input"
+    )
   }
   p_digits <- as.integer(p_digits)
   if (
@@ -1048,14 +1071,22 @@ table_continuous_lm <- function(
       boot_n < 50
   ) {
     spicy_abort(
-      "`boot_n` must be a single positive integer (>= 50).", class = "spicy_invalid_input")
+      "`boot_n` must be a single positive integer (>= 50).",
+      class = "spicy_invalid_input"
+    )
   }
   boot_n <- as.integer(boot_n)
   if (!decimal_mark %in% c(".", ",")) {
-    spicy_abort('`decimal_mark` must be "." or ",".', class = "spicy_invalid_input")
+    spicy_abort(
+      '`decimal_mark` must be "." or ",".',
+      class = "spicy_invalid_input"
+    )
   }
   if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
-    spicy_abort("`labels` must be a named character vector.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`labels` must be a named character vector.",
+      class = "spicy_invalid_input"
+    )
   }
   for (.arg in c(
     "regex",
@@ -1069,7 +1100,10 @@ table_continuous_lm <- function(
   )) {
     .val <- get(.arg)
     if (!is.logical(.val) || length(.val) != 1L || is.na(.val)) {
-      spicy_abort(sprintf("`%s` must be TRUE/FALSE.", .arg), class = "spicy_invalid_input")
+      spicy_abort(
+        sprintf("`%s` must be TRUE/FALSE.", .arg),
+        class = "spicy_invalid_input"
+      )
     }
   }
 
@@ -1086,7 +1120,9 @@ table_continuous_lm <- function(
   by_vector <- data[[by_name]]
   if (!is_supported_lm_predictor(by_vector)) {
     spicy_abort(
-      "`by` must be numeric, logical, character, or factor.", class = "spicy_invalid_input")
+      "`by` must be numeric, logical, character, or factor.",
+      class = "spicy_invalid_input"
+    )
   }
 
   if (effect_size %in% c("d", "g")) {
@@ -1100,13 +1136,17 @@ table_continuous_lm <- function(
             "predictor with exactly two non-empty levels."
           ),
           effect_size
-        ), class = "spicy_invalid_input")
+        ),
+        class = "spicy_invalid_input"
+      )
     }
   }
 
   if (isTRUE(effect_size_ci) && identical(effect_size, "none")) {
     spicy_warn(
-      "`effect_size_ci` is ignored when `effect_size = \"none\"`.", class = "spicy_ignored_arg")
+      "`effect_size_ci` is ignored when `effect_size = \"none\"`.",
+      class = "spicy_ignored_arg"
+    )
     effect_size_ci <- FALSE
   }
 
@@ -1115,18 +1155,29 @@ table_continuous_lm <- function(
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
   if (!is.null(weights_vec)) {
     if (any(!is.finite(weights_vec), na.rm = TRUE)) {
-      spicy_abort("`weights` must contain only finite values.", class = "spicy_invalid_input")
+      spicy_abort(
+        "`weights` must contain only finite values.",
+        class = "spicy_invalid_input"
+      )
     }
     if (any(weights_vec < 0, na.rm = TRUE)) {
-      spicy_abort("`weights` must be non-negative.", class = "spicy_invalid_input")
+      spicy_abort(
+        "`weights` must be non-negative.",
+        class = "spicy_invalid_input"
+      )
     }
     if (all(is.na(weights_vec) | weights_vec == 0)) {
-      spicy_abort("`weights` must contain at least one positive value.", class = "spicy_invalid_input")
+      spicy_abort(
+        "`weights` must contain at least one positive value.",
+        class = "spicy_invalid_input"
+      )
     }
   }
   if (isTRUE(show_weighted_n) && is.null(weights_vec)) {
     spicy_warn(
-      "`show_weighted_n` is ignored when `weights` is not supplied.", class = "spicy_ignored_arg")
+      "`show_weighted_n` is ignored when `weights` is not supplied.",
+      class = "spicy_ignored_arg"
+    )
     show_weighted_n <- FALSE
   }
 
@@ -1161,7 +1212,9 @@ table_continuous_lm <- function(
           "(an atomic vector or a single column name in `data`)."
         ),
         vcov
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
   if (!cluster_allowed && !is.null(cluster_vec)) {
     spicy_abort(
@@ -1172,7 +1225,9 @@ table_continuous_lm <- function(
           "\"bootstrap\", or \"jackknife\". Got `vcov = \"%s\"`."
         ),
         vcov
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
   if (is_cr_vcov && !requireNamespace("clubSandwich", quietly = TRUE)) {
     spicy_abort(
@@ -1182,12 +1237,18 @@ table_continuous_lm <- function(
           "Install it with install.packages(\"clubSandwich\")."
         ),
         vcov
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
-  if (!is.null(cluster_vec) &&
-        length(unique(stats::na.omit(cluster_vec))) < 2L) {
+  if (
+    !is.null(cluster_vec) &&
+      length(unique(stats::na.omit(cluster_vec))) < 2L
+  ) {
     spicy_abort(
-      "`cluster` must contain at least two distinct non-missing values.", class = "spicy_invalid_input")
+      "`cluster` must contain at least two distinct non-missing values.",
+      class = "spicy_invalid_input"
+    )
   }
 
   available_names <- names(data)
@@ -1196,7 +1257,12 @@ table_continuous_lm <- function(
     data,
     "exclude"
   )
-  excluded_names <- unique(c(excluded_names, by_name, weights_name, cluster_name))
+  excluded_names <- unique(c(
+    excluded_names,
+    by_name,
+    weights_name,
+    cluster_name
+  ))
 
   if (isTRUE(regex)) {
     select_val <- tryCatch(
@@ -1207,7 +1273,9 @@ table_continuous_lm <- function(
       !is.character(select_val) || length(select_val) != 1L || is.na(select_val)
     ) {
       spicy_abort(
-        "When `regex = TRUE`, `select` must be a single regex pattern.", class = "spicy_invalid_input")
+        "When `regex = TRUE`, `select` must be a single regex pattern.",
+        class = "spicy_invalid_input"
+      )
     }
     selected_names <- grep(select_val, available_names, value = TRUE)
   } else {
@@ -1215,7 +1283,10 @@ table_continuous_lm <- function(
     selected_pos <- tryCatch(
       tidyselect::eval_select(select_quo, data),
       error = function(e) {
-        spicy_abort("`select` must select columns in `data`.", class = "spicy_invalid_input")
+        spicy_abort(
+          "`select` must select columns in `data`.",
+          class = "spicy_invalid_input"
+        )
       }
     )
     selected_names <- names(selected_pos)
@@ -1267,7 +1338,10 @@ table_continuous_lm <- function(
   }
 
   if (length(numeric_outcomes) == 0L) {
-    spicy_warn("No numeric outcome columns selected.", class = "spicy_no_selection")
+    spicy_warn(
+      "No numeric outcome columns selected.",
+      class = "spicy_no_selection"
+    )
     return(data.frame())
   }
 
@@ -1684,8 +1758,11 @@ fit_categorical_predictor_lm_rows <- function(
   # producing an omnibus F that mixes the focal effect with covariate
   # nuisance -- wrong. Restrict to coefficients whose term assignment
   # equals the position of `x` in the model's term list.
-  x_coef_idx <- which(stats::model.matrix(fit) |>
-    attr("assign") == which(attr(stats::terms(fit), "term.labels") == "x"))
+  x_coef_idx <- which(
+    stats::model.matrix(fit) |>
+      attr("assign") ==
+      which(attr(stats::terms(fit), "term.labels") == "x")
+  )
   if (length(x_coef_idx) == 0L) {
     # nocov start: defensive fallback. The model formula always includes
     # the focal term "x" (see `rhs_terms`/`reformulate` above) and
@@ -1743,9 +1820,14 @@ fit_categorical_predictor_lm_rows <- function(
     r2 = c(model_stats$r2, rep(NA_real_, length(levs) - 1L)),
     adj_r2 = c(model_stats$adj_r2, rep(NA_real_, length(levs) - 1L)),
     n = rep(length(y), length(levs)),
-    weighted_n = rep(if (is.null(weights)) NA_real_ else sum(weights), length(levs)),
-    boot_n_valid = rep(as.integer(attr(vc, "boot_n_valid") %||% NA_integer_),
-                       length(levs)),
+    weighted_n = rep(
+      if (is.null(weights)) NA_real_ else sum(weights),
+      length(levs)
+    ),
+    boot_n_valid = rep(
+      as.integer(attr(vc, "boot_n_valid") %||% NA_integer_),
+      length(levs)
+    ),
     stringsAsFactors = FALSE
   )
 

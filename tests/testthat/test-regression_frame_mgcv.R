@@ -2,7 +2,6 @@
 # Phase 6f tests: as_regression_frame() method for mgcv::gam / bam.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_gam_gaussian <- function() {
@@ -13,7 +12,13 @@
 
 .fit_gam_poisson <- function() {
   skip_if_not_installed("mgcv")
-  dat <- mgcv::gamSim(1, n = 400, dist = "poisson", scale = 0.1, verbose = FALSE)
+  dat <- mgcv::gamSim(
+    1,
+    n = 400,
+    dist = "poisson",
+    scale = 0.1,
+    verbose = FALSE
+  )
   mgcv::gam(y ~ s(x0) + x2, data = dat, family = poisson)
 }
 
@@ -43,14 +48,16 @@ test_that("gam gaussian: info$family is gaussian/identity", {
   fit <- .fit_gam_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("gam gaussian: title_prefix = 'Generalised additive model (GAM)'", {
   fit <- .fit_gam_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Generalised additive model (GAM)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Generalised additive model (GAM)"
+  )
 })
 
 test_that("gam: info$dv reads the response variable name", {
@@ -69,9 +76,11 @@ test_that("gam: coefs estimates match summary(fit)$p.coeff (parametric only)", {
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   expect_identical(b_rows$term, names(pcoef))
   for (nm in names(pcoef)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(pcoef[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(pcoef[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -93,12 +102,21 @@ test_that("gam gaussian: SE / t / p byte-match summary(fit)$p.table", {
   pt <- summary(fit)$p.table
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(pt)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(pt[nm, "Std. Error"]), tolerance = 1e-10)
-    expect_equal(b_rows$statistic[b_rows$term == nm],
-                 unname(pt[nm, "t value"]),    tolerance = 1e-10)
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(pt[nm, "Pr(>|t|)"]),   tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(pt[nm, "Std. Error"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$statistic[b_rows$term == nm],
+      unname(pt[nm, "t value"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(pt[nm, "Pr(>|t|)"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -110,10 +128,12 @@ test_that("gam: smooth-term summary stashed in info$extras$smooth_terms", {
   fr <- as_regression_frame(fit, model_id = "M1")
   st <- fr$info$extras$smooth_terms
   expect_s3_class(st, "data.frame")
-  expect_identical(nrow(st), 2L)  # s(x0) + s(x1)
-  expect_setequal(colnames(st),
-                  c("term", "edf", "ref_df", "statistic", "stat_type", "p_value"))
-  expect_identical(st$stat_type, c("F", "F"))  # Gaussian -> F statistic
+  expect_identical(nrow(st), 2L) # s(x0) + s(x1)
+  expect_setequal(
+    colnames(st),
+    c("term", "edf", "ref_df", "statistic", "stat_type", "p_value")
+  )
+  expect_identical(st$stat_type, c("F", "F")) # Gaussian -> F statistic
 })
 
 test_that("gam: n_smooth_terms = nrow(smooth_terms)", {
@@ -128,16 +148,21 @@ test_that("gam: n_smooth_terms = nrow(smooth_terms)", {
 test_that("gam: r_squared = summary(fit)$r.sq (GAM-adjusted)", {
   fit <- .fit_gam_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$r_squared, summary(fit)$r.sq,
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$r_squared,
+    summary(fit)$r.sq,
+    tolerance = 1e-10
+  )
 })
 
 test_that("gam: pseudo_r2$dev_explained = summary(fit)$dev.expl", {
   fit <- .fit_gam_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$pseudo_r2$dev_explained,
-               summary(fit)$dev.expl,
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$pseudo_r2$dev_explained,
+    summary(fit)$dev.expl,
+    tolerance = 1e-10
+  )
 })
 
 test_that("gam: AIC / BIC / logLik / nobs finite", {
@@ -174,7 +199,7 @@ test_that("gam poisson: family is poisson/log; title 'Poisson GAM'", {
   fit <- .fit_gam_poisson()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "poisson")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
   expect_identical(fr$info$extras$title_prefix, "Poisson GAM")
 })
 
@@ -222,9 +247,11 @@ test_that("gam parametric coefs match parameters::model_parameters() (oracle)", 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    if (nrow(oracle_row) == 0L) next
+    if (nrow(oracle_row) == 0L) {
+      next
+    }
     spicy_row <- b_rows[b_rows$term == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6)
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6)
+    expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
+    expect_equal(spicy_row$std_error, oracle_row$SE, tolerance = 1e-6)
   }
 })

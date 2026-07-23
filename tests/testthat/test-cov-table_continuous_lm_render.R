@@ -130,7 +130,8 @@ test_that("export_continuous_lm_table tinytable falls back to per-column default
     hit_ids <- character(0)
     for (b in blocks) {
       css_id <- regmatches(
-        b, regexec(r"{css_id:\s*'([^']+)'}", b, perl = TRUE)
+        b,
+        regexec(r"{css_id:\s*'([^']+)'}", b, perl = TRUE)
       )[[1]][2]
       pairs <- regmatches(b, gregexpr(pair_re, b, perl = TRUE))[[1]]
       for (p in pairs) {
@@ -152,7 +153,8 @@ test_that("export_continuous_lm_table tinytable falls back to per-column default
         aligns <- c(
           aligns,
           regmatches(
-            rule, regexec(r"{text-align:\s*([a-z]+)}", rule, perl = TRUE)
+            rule,
+            regexec(r"{text-align:\s*([a-z]+)}", rule, perl = TRUE)
           )[[1]][2]
         )
       }

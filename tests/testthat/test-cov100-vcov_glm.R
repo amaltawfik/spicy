@@ -65,22 +65,30 @@ test_that(".boot_percentile_ci uses exact order statistics at integer ranks", {
 test_that(".boot_percentile_ci small-R branches match boot::boot.ci type='perc'", {
   skip_if_not_installed("boot")
   fake_boot <- function(t) {
-    structure(list(t0 = mean(t), t = matrix(t, ncol = 1), R = length(t)),
-              class = "boot")
+    structure(
+      list(t0 = mean(t), t = matrix(t, ncol = 1), R = length(t)),
+      class = "boot"
+    )
   }
   t5 <- c(3.2, 1.5, 4.8, 2.1, 5.9)
   # boot warns "extreme order statistics used as endpoints" for R = 5.
   b5 <- suppressWarnings(
     boot::boot.ci(fake_boot(t5), conf = 0.95, type = "perc")$percent
   )
-  expect_equal(spicy:::.boot_percentile_ci(t5, 0.95),
-               unname(b5[1, 4:5]), tolerance = 1e-12)
+  expect_equal(
+    spicy:::.boot_percentile_ci(t5, 0.95),
+    unname(b5[1, 4:5]),
+    tolerance = 1e-12
+  )
   t7 <- c(10, 40, 20, 70, 50, 30, 60)
   b7 <- suppressWarnings(
     boot::boot.ci(fake_boot(t7), conf = 0.5, type = "perc")$percent
   )
-  expect_equal(spicy:::.boot_percentile_ci(t7, 0.5),
-               unname(b7[1, 4:5]), tolerance = 1e-12)
+  expect_equal(
+    spicy:::.boot_percentile_ci(t7, 0.5),
+    unname(b7[1, 4:5]),
+    tolerance = 1e-12
+  )
 })
 
 # ---- R/vcov.R 744/762/777-779: .robust_vcov_support capability entries ----
@@ -94,8 +102,13 @@ test_that(".robust_vcov_support grants glm.nb (negbin) the full estimator set", 
   expect_identical(class(nb)[1L], "negbin")
   expect_identical(
     spicy:::.robust_vcov_support(nb),
-    c("classical", paste0("HC", 0:5), paste0("CR", 0:3),
-      "bootstrap", "jackknife")
+    c(
+      "classical",
+      paste0("HC", 0:5),
+      paste0("CR", 0:3),
+      "bootstrap",
+      "jackknife"
+    )
   )
 })
 
@@ -106,8 +119,10 @@ test_that(".robust_vcov_support grants mgcv::bam cluster-robust CR* only", {
   db$y <- 1 + 2 * db$x + rnorm(100)
   bam_fit <- mgcv::bam(y ~ x, data = db)
   expect_identical(class(bam_fit)[1L], "bam")
-  expect_identical(spicy:::.robust_vcov_support(bam_fit),
-                   c("classical", paste0("CR", 0:3)))
+  expect_identical(
+    spicy:::.robust_vcov_support(bam_fit),
+    c("classical", paste0("CR", 0:3))
+  )
 })
 
 test_that(".robust_vcov_support grants rms lrm / cph / Glm CR* only", {
@@ -139,14 +154,24 @@ test_that(".apply_robust_vcov_to_coefs leaves rows whose term is not in coef() u
   fit <- lm(mpg ~ wt + hp, data = mtcars)
   coefs <- data.frame(
     term = c("wt", "ghost_term"),
-    estimate_type = "B", is_ref = FALSE,
+    estimate_type = "B",
+    is_ref = FALSE,
     estimate = c(stats::coef(fit)[["wt"]], 1.23),
-    std_error = c(0.5, 99), statistic = c(1, 2), df = c(3, 4),
-    p_value = c(0.5, 0.6), ci_lower = c(0, 0), ci_upper = c(1, 1),
-    test_type = "t", stringsAsFactors = FALSE
+    std_error = c(0.5, 99),
+    statistic = c(1, 2),
+    df = c(3, 4),
+    p_value = c(0.5, 0.6),
+    ci_lower = c(0, 0),
+    ci_upper = c(1, 1),
+    test_type = "t",
+    stringsAsFactors = FALSE
   )
   out <- spicy:::.apply_robust_vcov_to_coefs(
-    coefs, fit, vcov_type = "HC1", cluster = NULL, ci_level = 0.95
+    coefs,
+    fit,
+    vcov_type = "HC1",
+    cluster = NULL,
+    ci_level = 0.95
   )
   # Matched row: inference rewritten from the sandwich HC1 matrix (oracle).
   se_orc <- sqrt(diag(sandwich::vcovHC(fit, type = "HC1")))[["wt"]]
@@ -154,9 +179,11 @@ test_that(".apply_robust_vcov_to_coefs leaves rows whose term is not in coef() u
   expect_equal(out$std_error[1], se_orc, tolerance = 1e-12)
   expect_equal(out$statistic[1], b_wt / se_orc, tolerance = 1e-12)
   expect_equal(out$df[1], stats::df.residual(fit), tolerance = 1e-12)
-  expect_equal(out$ci_lower[1],
-               b_wt - stats::qt(0.975, stats::df.residual(fit)) * se_orc,
-               tolerance = 1e-12)
+  expect_equal(
+    out$ci_lower[1],
+    b_wt - stats::qt(0.975, stats::df.residual(fit)) * se_orc,
+    tolerance = 1e-12
+  )
   # Unmatched term: `next` fires, every inference cell stays as supplied.
   expect_identical(out$std_error[2], 99)
   expect_identical(out$statistic[2], 2)
@@ -169,10 +196,14 @@ test_that(".apply_robust_vcov_to_coefs leaves rows whose term is not in coef() u
 # ---- R/vcov.R 846/856: .robust_vcov_label HC branch + passthrough ----
 
 test_that(".robust_vcov_label formats HC labels and passes other types through", {
-  expect_identical(spicy:::.robust_vcov_label("HC3"),
-                   "heteroskedasticity-robust (HC3)")
-  expect_identical(spicy:::.robust_vcov_label("HC0", estimator = "White (HC0)"),
-                   "heteroskedasticity-robust (White (HC0))")
+  expect_identical(
+    spicy:::.robust_vcov_label("HC3"),
+    "heteroskedasticity-robust (HC3)"
+  )
+  expect_identical(
+    spicy:::.robust_vcov_label("HC0", estimator = "White (HC0)"),
+    "heteroskedasticity-robust (White (HC0))"
+  )
   # Neither HC* nor CR*: the type string passes through unchanged.
   expect_identical(spicy:::.robust_vcov_label("bootstrap"), "bootstrap")
   expect_identical(spicy:::.robust_vcov_label("jackknife"), "jackknife")
@@ -181,7 +212,7 @@ test_that(".robust_vcov_label formats HC labels and passes other types through",
 # ---- R/vcov.R 877/894: .expected_cluster_length fallbacks ----
 
 test_that(".expected_cluster_length falls back to fit$n when coxph dfbeta fails", {
-  skip_if_not_installed("survival")  # registers residuals.coxph for dispatch
+  skip_if_not_installed("survival") # registers residuals.coxph for dispatch
   # A coxph-classed stub on which residuals(type = "dfbeta") errors: the
   # tryCatch yields NA, so the fit$n fallback (last element) must be used.
   fake_cox <- structure(list(n = 25L), class = "coxph")
@@ -226,7 +257,8 @@ test_that(".coxph_cluster_robust_vcov handles a single-coefficient fit (vector d
   expect_identical(dimnames(vc), list("x", "x"))
   # Oracle: survival's own Lin-Wei robust variance from coxph(+ cluster()).
   native <- survival::coxph(
-    survival::Surv(time, status) ~ x + survival::cluster(cl), data = d
+    survival::Surv(time, status) ~ x + survival::cluster(cl),
+    data = d
   )$var
   expect_equal(unname(vc[1, 1]), unname(native[1, 1]), tolerance = 1e-12)
 })
@@ -243,9 +275,16 @@ test_that("spicy_glm_exp_header maps ordinal cloglog to HR and negbin log to IRR
 # ---- R/glm_compute.R 349: Tjur R2 length guard (na.exclude padding) ----
 
 test_that("Tjur R2 returns NA when na.exclude pads fitted() beyond the response", {
-  d <- data.frame(x = c(1, 2, 3, 4, NA, 6, 7, 8, 9, 10),
-                  y = c(0, 0, 0, 1, 1, 1, 0, 1, 1, 1))
-  fit_ex <- glm(y ~ x, data = d, family = binomial, na.action = stats::na.exclude)
+  d <- data.frame(
+    x = c(1, 2, 3, 4, NA, 6, 7, 8, 9, 10),
+    y = c(0, 0, 0, 1, 1, 1, 0, 1, 1, 1)
+  )
+  fit_ex <- glm(
+    y ~ x,
+    data = d,
+    family = binomial,
+    na.action = stats::na.exclude
+  )
   # napredict() pads fitted() to 10 values while the model.frame response
   # keeps the 9 complete cases -> the length guard must return NA.
   expect_identical(length(stats::fitted(fit_ex)), 10L)
@@ -256,5 +295,9 @@ test_that("Tjur R2 returns NA when na.exclude pads fitted() beyond the response"
   pi_hat <- stats::fitted(fit_om)
   y_om <- d$y[-5]
   oracle <- mean(pi_hat[y_om == 1]) - mean(pi_hat[y_om == 0])
-  expect_equal(spicy:::compute_pseudo_r2_tjur(fit_om), oracle, tolerance = 1e-12)
+  expect_equal(
+    spicy:::compute_pseudo_r2_tjur(fit_om),
+    oracle,
+    tolerance = 1e-12
+  )
 })

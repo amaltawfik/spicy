@@ -9,7 +9,6 @@
 # `corr(_cons, slope) Subject | SE | 95% CI`.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lmer_slope_corr <- function() {
@@ -31,14 +30,12 @@
 
 .fit_glmmTMB_slope_corr <- function() {
   skip_if_not_installed("glmmTMB")
-  glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject),
-                    data = lme4::sleepstudy)
+  glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
 }
 
 .fit_lme_slope_corr <- function() {
   skip_if_not_installed("nlme")
-  nlme::lme(distance ~ age, data = nlme::Orthodont,
-             random = ~ age | Subject)
+  nlme::lme(distance ~ age, data = nlme::Orthodont, random = ~ age | Subject)
 }
 
 
@@ -60,9 +57,9 @@ test_that("lmer (Days | Subject): rho row has finite Wald SE + CI", {
   # sub-vcov of merDeriv's full vcov on the variance scale (see test 2 for
   # the gradient derivation); CI = rho +/- z * SE clamped to [-1, 1].
   g_vc <- as.matrix(lme4::VarCorr(fit)[["Subject"]])
-  var_int   <- g_vc[1L, 1L]
+  var_int <- g_vc[1L, 1L]
   var_slope <- g_vc[2L, 2L]
-  rho_est   <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
+  rho_est <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
   v <- tryCatch(
     as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var")),
     error = function(e) NULL
@@ -79,10 +76,16 @@ test_that("lmer (Days | Subject): rho row has finite Wald SE + CI", {
   z <- qnorm(0.975)
   expect_equal(rho_rows$corr, rho_est, tolerance = 1e-12)
   expect_equal(rho_rows$std_error, se_oracle, tolerance = 1e-10)
-  expect_equal(rho_rows$ci_lower, max(-1, rho_est - z * se_oracle),
-               tolerance = 1e-10)
-  expect_equal(rho_rows$ci_upper, min(1, rho_est + z * se_oracle),
-               tolerance = 1e-10)
+  expect_equal(
+    rho_rows$ci_lower,
+    max(-1, rho_est - z * se_oracle),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    rho_rows$ci_upper,
+    min(1, rho_est + z * se_oracle),
+    tolerance = 1e-10
+  )
 })
 
 test_that("lmer rho CI is clamped to [-1, 1] (boundary)", {
@@ -92,7 +95,7 @@ test_that("lmer rho CI is clamped to [-1, 1] (boundary)", {
   rho <- fr$info$random_effects$variance_components
   rho <- rho[rho$is_correlation %in% TRUE, ]
   expect_true(rho$ci_lower >= -1)
-  expect_true(rho$ci_upper <=  1)
+  expect_true(rho$ci_upper <= 1)
 })
 
 
@@ -108,10 +111,10 @@ test_that("lmer rho SE matches the manual Delta-method formula to 1e-10", {
   # Reference computation: pull the 3x3 vcov sub-matrix from merDeriv
   # directly and apply the Delta-method formula in-line.
   g_vc <- as.matrix(lme4::VarCorr(fit)[["Subject"]])
-  var_int   <- g_vc[1L, 1L]
+  var_int <- g_vc[1L, 1L]
   var_slope <- g_vc[2L, 2L]
-  cov_ij    <- g_vc[1L, 2L]
-  rho_est   <- cov_ij / sqrt(var_int * var_slope)
+  cov_ij <- g_vc[1L, 2L]
+  rho_est <- cov_ij / sqrt(var_int * var_slope)
 
   v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
   n_fix <- length(lme4::fixef(fit))
@@ -142,8 +145,11 @@ test_that("lmer 3-term random block: variance + correlation SE are correct (colu
   set.seed(123)
   n <- 600
   g <- factor(rep(1:30, length.out = n))
-  x1 <- rnorm(n); x2 <- rnorm(n)
-  b0 <- rnorm(30, 0, 2); b1 <- rnorm(30, 0, 1.5); b2 <- rnorm(30, 0, 1)
+  x1 <- rnorm(n)
+  x2 <- rnorm(n)
+  b0 <- rnorm(30, 0, 2)
+  b1 <- rnorm(30, 0, 1.5)
+  b2 <- rnorm(30, 0, 1)
   y <- 1 + 0.5 * x1 - 0.3 * x2 + b0[g] + b1[g] * x1 + b2[g] * x2 + rnorm(n)
   fit <- lme4::lmer(
     y ~ x1 + x2 + (1 + x1 + x2 | g),
@@ -172,13 +178,23 @@ test_that("lmer 3-term random block: variance + correlation SE are correct (colu
   # Correlation rows: SE must equal a numDeriv gradient of
   # rho = cov / sqrt(var_i var_j) quadratic-formed with the 6x6
   # sub-vcov of the column-major vech.
-  vech <- c(g_vc[1, 1], g_vc[2, 1], g_vc[3, 1],
-            g_vc[2, 2], g_vc[3, 2], g_vc[3, 3])
+  vech <- c(
+    g_vc[1, 1],
+    g_vc[2, 1],
+    g_vc[3, 1],
+    g_vc[2, 2],
+    g_vc[3, 2],
+    g_vc[3, 3]
+  )
   re_cov6 <- re_block[1:6, 1:6, drop = FALSE]
   rho_fun <- function(vv, i, j) {
     m <- matrix(0, 3, 3)
-    m[1, 1] <- vv[1]; m[2, 1] <- m[1, 2] <- vv[2]; m[3, 1] <- m[1, 3] <- vv[3]
-    m[2, 2] <- vv[4]; m[3, 2] <- m[2, 3] <- vv[5]; m[3, 3] <- vv[6]
+    m[1, 1] <- vv[1]
+    m[2, 1] <- m[1, 2] <- vv[2]
+    m[3, 1] <- m[1, 3] <- vv[3]
+    m[2, 2] <- vv[4]
+    m[3, 2] <- m[2, 3] <- vv[5]
+    m[3, 3] <- vv[6]
     m[i, j] / sqrt(m[i, i] * m[j, j])
   }
   corr <- vc[vc$is_correlation %in% TRUE, ]
@@ -189,8 +205,12 @@ test_that("lmer 3-term random block: variance + correlation SE are correct (colu
     j <- match(pair[2L], rownames(g_vc))
     gr <- numDeriv::grad(function(vv) rho_fun(vv, i, j), vech)
     truth <- sqrt(as.numeric(t(gr) %*% re_cov6 %*% gr))
-    expect_equal(corr$std_error[k], truth, tolerance = 1e-6,
-                 info = paste("corr SE mismatch:", corr$term[k]))
+    expect_equal(
+      corr$std_error[k],
+      truth,
+      tolerance = 1e-6,
+      info = paste("corr SE mismatch:", corr$term[k])
+    )
   }
 })
 
@@ -230,9 +250,9 @@ test_that("glmer (binomial logit) (x | g): rho row has finite Wald SE + CI", {
   # vcov; the (x | g) block still sits right after the fixed effects
   # as var(Int), cov, var(x) -- column-major vech).
   g_vc <- as.matrix(lme4::VarCorr(fit)[["g"]])
-  var_int   <- g_vc[1L, 1L]
+  var_int <- g_vc[1L, 1L]
   var_slope <- g_vc[2L, 2L]
-  rho_est   <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
+  rho_est <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
   v <- tryCatch(
     as.matrix(merDeriv::vcov.glmerMod(fit, full = TRUE, ranpar = "var")),
     error = function(e) NULL
@@ -249,10 +269,16 @@ test_that("glmer (binomial logit) (x | g): rho row has finite Wald SE + CI", {
   z <- qnorm(0.975)
   expect_equal(rho_rows$corr, rho_est, tolerance = 1e-12)
   expect_equal(rho_rows$std_error, se_oracle, tolerance = 1e-10)
-  expect_equal(rho_rows$ci_lower, max(-1, rho_est - z * se_oracle),
-               tolerance = 1e-10)
-  expect_equal(rho_rows$ci_upper, min(1, rho_est + z * se_oracle),
-               tolerance = 1e-10)
+  expect_equal(
+    rho_rows$ci_lower,
+    max(-1, rho_est - z * se_oracle),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    rho_rows$ci_upper,
+    min(1, rho_est + z * se_oracle),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -273,15 +299,18 @@ test_that("glmmTMB (Days | Subject): rho row has finite SE + CI", {
   cor_rn <- grep("^Cor\\.", rownames(ci_sd), value = TRUE)
   expect_identical(length(cor_rn), 1L)
   z <- qnorm(0.975)
-  expect_equal(rho_rows$corr, unname(ci_sd[cor_rn, "Estimate"]),
-               tolerance = 1e-12)
-  expect_equal(rho_rows$ci_lower, unname(ci_sd[cor_rn, 1L]),
-               tolerance = 1e-12)
-  expect_equal(rho_rows$ci_upper, unname(ci_sd[cor_rn, 2L]),
-               tolerance = 1e-12)
-  expect_equal(rho_rows$std_error,
-               unname((ci_sd[cor_rn, 2L] - ci_sd[cor_rn, 1L]) / (2 * z)),
-               tolerance = 1e-12)
+  expect_equal(
+    rho_rows$corr,
+    unname(ci_sd[cor_rn, "Estimate"]),
+    tolerance = 1e-12
+  )
+  expect_equal(rho_rows$ci_lower, unname(ci_sd[cor_rn, 1L]), tolerance = 1e-12)
+  expect_equal(rho_rows$ci_upper, unname(ci_sd[cor_rn, 2L]), tolerance = 1e-12)
+  expect_equal(
+    rho_rows$std_error,
+    unname((ci_sd[cor_rn, 2L] - ci_sd[cor_rn, 1L]) / (2 * z)),
+    tolerance = 1e-12
+  )
 })
 
 test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
@@ -299,15 +328,22 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
   cor_rn <- grep("^cor\\(", rownames(iv), value = TRUE)
   expect_identical(length(cor_rn), 1L)
   z <- qnorm(0.975)
-  expect_equal(rho_rows$corr, unname(iv[cor_rn, "est."]),
-               tolerance = 1e-12)
-  expect_equal(rho_rows$ci_lower, unname(iv[cor_rn, "lower"]),
-               tolerance = 1e-12)
-  expect_equal(rho_rows$ci_upper, unname(iv[cor_rn, "upper"]),
-               tolerance = 1e-12)
-  expect_equal(rho_rows$std_error,
-               unname((iv[cor_rn, "upper"] - iv[cor_rn, "lower"]) / (2 * z)),
-               tolerance = 1e-12)
+  expect_equal(rho_rows$corr, unname(iv[cor_rn, "est."]), tolerance = 1e-12)
+  expect_equal(
+    rho_rows$ci_lower,
+    unname(iv[cor_rn, "lower"]),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    rho_rows$ci_upper,
+    unname(iv[cor_rn, "upper"]),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    rho_rows$std_error,
+    unname((iv[cor_rn, "upper"] - iv[cor_rn, "lower"]) / (2 * z)),
+    tolerance = 1e-12
+  )
 })
 
 
@@ -316,15 +352,18 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
 test_that("table_regression(lmer slope) renders the rho row with SE + CI", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_slope_corr()
-  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
-                         output = "data.frame")
+  df <- table_regression(
+    fit,
+    show_columns = c("b", "se", "ci"),
+    output = "data.frame"
+  )
   # the correlation row's label ends in ", Days)"; unique to it
   rho <- df[grepl(", Days)", df$Variable, fixed = TRUE), , drop = FALSE]
   expect_equal(nrow(rho), 1L)
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
-  expect_true(grepl("[0-9]", rho[[se_col]][1]))    # SE populated, no en-dash
-  expect_true(grepl("[0-9]", rho[[ci_col]][1]))    # CI populated
+  expect_true(grepl("[0-9]", rho[[se_col]][1])) # SE populated, no en-dash
+  expect_true(grepl("[0-9]", rho[[ci_col]][1])) # CI populated
 })
 
 

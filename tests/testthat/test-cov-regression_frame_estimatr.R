@@ -8,7 +8,6 @@
 #     term has no dropped reference level (lines 170, 192)
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lm_robust_cov <- function() {
@@ -81,13 +80,21 @@ test_that("lm_robust ci_level=0.90 rebuilds CI from est/se/df (Wald-t)", {
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
     est <- unname(stats::coef(fit)[nm])
-    se  <- unname(sm[nm, "Std. Error"])
-    df  <- unname(sm[nm, "DF"])
+    se <- unname(sm[nm, "Std. Error"])
+    df <- unname(sm[nm, "DF"])
     t_crit <- stats::qt(0.5 + 0.90 / 2, df = df)
-    expect_equal(b_rows$ci_lower[b_rows$term == nm], est - t_crit * se,
-                 tolerance = 1e-10, info = nm)
-    expect_equal(b_rows$ci_upper[b_rows$term == nm], est + t_crit * se,
-                 tolerance = 1e-10, info = nm)
+    expect_equal(
+      b_rows$ci_lower[b_rows$term == nm],
+      est - t_crit * se,
+      tolerance = 1e-10,
+      info = nm
+    )
+    expect_equal(
+      b_rows$ci_upper[b_rows$term == nm],
+      est + t_crit * se,
+      tolerance = 1e-10,
+      info = nm
+    )
   }
 })
 
@@ -99,7 +106,7 @@ test_that("lm_robust ci_level=0.90 yields a narrower CI than the engine 95%", {
   b_rows <- fr90$coefs[!fr90$coefs$is_ref, ]
   for (nm in rownames(sm)) {
     width90 <- b_rows$ci_upper[b_rows$term == nm] -
-               b_rows$ci_lower[b_rows$term == nm]
+      b_rows$ci_lower[b_rows$term == nm]
     width95 <- sm[nm, "CI Upper"] - sm[nm, "CI Lower"]
     expect_lt(width90, width95)
   }

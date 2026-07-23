@@ -12,7 +12,6 @@
 #   * .check_nnet_available() missing-package abort (mocked spicy_pkg_available).
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_multinom_binary_cov <- function() {
@@ -68,7 +67,8 @@ test_that("binary multinom: .multinom_coefs() promotes the flat vector directly"
   expect_identical(unique(coefs$outcome_level), "virginica")
   expect_setequal(
     coefs$term,
-    paste0("virginica: ", c("(Intercept)", "Sepal.Length", "Sepal.Width")))
+    paste0("virginica: ", c("(Intercept)", "Sepal.Length", "Sepal.Width"))
+  )
   expect_false(any(coefs$is_ref))
 })
 
@@ -80,8 +80,13 @@ test_that("binary multinom: estimates/SE match coef + standard.errors vectors", 
   non_ref <- fr$coefs[!fr$coefs$is_ref, ]
   for (term in names(cf)) {
     row <- non_ref[non_ref$term == paste0("virginica: ", term), ]
-    expect_equal(row$estimate,  unname(cf[term]), tolerance = 1e-10, info = term)
-    expect_equal(row$std_error, unname(se[term]), tolerance = 1e-10, info = term)
+    expect_equal(row$estimate, unname(cf[term]), tolerance = 1e-10, info = term)
+    expect_equal(
+      row$std_error,
+      unname(se[term]),
+      tolerance = 1e-10,
+      info = term
+    )
   }
 })
 
@@ -95,10 +100,22 @@ test_that("binary multinom: coefs match parameters::model_parameters() (oracle)"
     spicy_row <- non_ref[i, ]
     bare_term <- sub("^virginica: ", "", spicy_row$term)
     orow <- oracle[oracle$Parameter == bare_term, ]
-    if (nrow(orow) == 0L) next
-    expect_equal(spicy_row$estimate,  orow$Coefficient, tolerance = 1e-6, info = bare_term)
-    expect_equal(spicy_row$std_error, orow$SE,          tolerance = 1e-6, info = bare_term)
-    expect_equal(spicy_row$p_value,   orow$p,           tolerance = 1e-6, info = bare_term)
+    if (nrow(orow) == 0L) {
+      next
+    }
+    expect_equal(
+      spicy_row$estimate,
+      orow$Coefficient,
+      tolerance = 1e-6,
+      info = bare_term
+    )
+    expect_equal(
+      spicy_row$std_error,
+      orow$SE,
+      tolerance = 1e-6,
+      info = bare_term
+    )
+    expect_equal(spicy_row$p_value, orow$p, tolerance = 1e-6, info = bare_term)
   }
 })
 

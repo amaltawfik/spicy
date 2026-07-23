@@ -18,43 +18,43 @@
 # arms are reached through the public table_regression() API.
 # ---------------------------------------------------------------------------
 
-
 # ---- Helper: minimal valid frame (mirrors test-cov-frame_core.R) -----------
 
 .cov100_frame <- function(supports = NULL) {
   coefs <- data.frame(
-    term             = "x",
-    parent_var       = "x",
-    label            = "x",
+    term = "x",
+    parent_var = "x",
+    label = "x",
     factor_level_pos = NA_integer_,
-    is_ref           = FALSE,
-    estimate_type    = "B",
-    estimate         = 1.0,
-    std_error        = 0.1,
-    ci_lower         = 0.8,
-    ci_upper         = 1.2,
+    is_ref = FALSE,
+    estimate_type = "B",
+    estimate = 1.0,
+    std_error = 0.1,
+    ci_lower = 0.8,
+    ci_upper = 1.2,
     stringsAsFactors = FALSE
   )
   info <- list(
-    class        = "lm",
-    family       = list(family = "gaussian", link = "identity"),
-    dv           = "y",
-    n_obs        = 100L,
+    class = "lm",
+    family = list(family = "gaussian", link = "identity"),
+    dv = "y",
+    n_obs = 100L,
     weights_kind = "none",
-    fit_stats    = list(nobs = 100L),
-    vcov_kind    = "model",
-    vcov_label   = "OLS",
-    ci_level     = 0.95,
-    ci_method    = "wald",
-    supports     = supports %||% list(
-      ame                 = TRUE,
-      partial_effect_size = TRUE,
-      classical_r2        = TRUE,
-      nested_lrt          = TRUE,
-      exponentiate        = FALSE,
-      standardise_refit   = TRUE
-    ),
-    extras       = list()
+    fit_stats = list(nobs = 100L),
+    vcov_kind = "model",
+    vcov_label = "OLS",
+    ci_level = 0.95,
+    ci_method = "wald",
+    supports = supports %||%
+      list(
+        ame = TRUE,
+        partial_effect_size = TRUE,
+        classical_r2 = TRUE,
+        nested_lrt = TRUE,
+        exponentiate = FALSE,
+        standardise_refit = TRUE
+      ),
+    extras = list()
   )
   spicy:::new_regression_frame(coefs, info, list(dummy = TRUE))
 }
@@ -70,8 +70,10 @@ test_that("print method emits the exact three-line summary and returns invisibly
     c(
       "<spicy_regression_frame> lm  (n = 100)",
       "  coefs: 1 rows x 10 cols | family: gaussian / identity | ci: wald",
-      paste0("  supports: ame, partial_effect_size, classical_r2, ",
-             "nested_lrt, standardise_refit")
+      paste0(
+        "  supports: ame, partial_effect_size, classical_r2, ",
+        "nested_lrt, standardise_refit"
+      )
     )
   )
   # invisible(x): the frame comes back unchanged and invisibly.
@@ -125,23 +127,25 @@ test_that(".null_lrt_glmmTMB returns NULL when the glm null refit fails", {
   set.seed(7)
   n <- 120
   d <- data.frame(
-    covy  = rpois(n, 3),
+    covy = rpois(n, 3),
     covlx = runif(n, 1, 2),
-    g     = factor(rep(1:12, each = 10))
+    g = factor(rep(1:12, each = 10))
   )
   # A transformed predictor breaks the null refit: model.frame(fit) stores
   # the combined column "log(covlx)", so re-evaluating the term log(covlx)
   # against it fails ('covlx' is not in scope), tryCatch yields fit_null =
   # NULL, and the helper bails (line 833).
-  fit_log <- glmmTMB::glmmTMB(covy ~ log(covlx) + (1 | g),
-                              family = poisson, data = d)
+  fit_log <- glmmTMB::glmmTMB(
+    covy ~ log(covlx) + (1 | g),
+    family = poisson,
+    data = d
+  )
   expect_null(spicy:::.null_lrt_glmmTMB(fit_log))
 
   # Positive control on the same data: with an untransformed predictor the
   # refit succeeds and a well-formed LRT comes back -- proving the NULL
   # above is the refit-failure arm, not a degraded always-NULL helper.
-  fit_ok <- glmmTMB::glmmTMB(covy ~ covlx + (1 | g),
-                             family = poisson, data = d)
+  fit_ok <- glmmTMB::glmmTMB(covy ~ covlx + (1 | g), family = poisson, data = d)
   res <- spicy:::.null_lrt_glmmTMB(fit_ok)
   expect_type(res, "list")
   expect_identical(res$df, 1L)
@@ -156,16 +160,24 @@ test_that("Poisson distribution variance is NA when lambda over/underflows", {
   # Overflow: exp(800) = Inf -> !is.finite(lambda) arm.
   expect_identical(
     spicy:::.nakagawa_distribution_variance(
-      list(family = "poisson", link = "log",
-           null_intercept = 800, null_var_g = 0)
+      list(
+        family = "poisson",
+        link = "log",
+        null_intercept = 800,
+        null_var_g = 0
+      )
     ),
     NA_real_
   )
   # Underflow: exp(-800) == 0 -> lambda <= 0 arm.
   expect_identical(
     spicy:::.nakagawa_distribution_variance(
-      list(family = "poisson", link = "log",
-           null_intercept = -800, null_var_g = 0)
+      list(
+        family = "poisson",
+        link = "log",
+        null_intercept = -800,
+        null_var_g = 0
+      )
     ),
     NA_real_
   )
@@ -173,8 +185,7 @@ test_that("Poisson distribution variance is NA when lambda over/underflows", {
   # variance = log1p(1 / 1) = log(2).
   expect_identical(
     spicy:::.nakagawa_distribution_variance(
-      list(family = "poisson", link = "log",
-           null_intercept = 0, null_var_g = 0)
+      list(family = "poisson", link = "log", null_intercept = 0, null_var_g = 0)
     ),
     log1p(1)
   )
@@ -209,9 +220,10 @@ test_that("variance-explained partial columns are rejected for mixed models", {
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   err <- tryCatch(
-    table_regression(fit,
-                     show_columns = c("b", "partial_eta2",
-                                      "partial_omega2_ci")),
+    table_regression(
+      fit,
+      show_columns = c("b", "partial_eta2", "partial_omega2_ci")
+    ),
     spicy_invalid_input = function(e) e
   )
   expect_s3_class(err, "spicy_invalid_input")
@@ -219,7 +231,10 @@ test_that("variance-explained partial columns are rejected for mixed models", {
   # LRT-based partial_chi2 (which stays allowed for mixed fits).
   expect_match(conditionMessage(err), "partial_eta2", fixed = TRUE)
   expect_match(conditionMessage(err), "partial_omega2_ci", fixed = TRUE)
-  expect_match(conditionMessage(err),
-               "not defined for mixed-effects models", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "not defined for mixed-effects models",
+    fixed = TRUE
+  )
   expect_match(conditionMessage(err), "partial_chi2", fixed = TRUE)
 })

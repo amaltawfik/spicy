@@ -10,8 +10,10 @@
 empty_glance_table <- function(fit_stats) {
   structure(
     data.frame(Variable = character(0), stringsAsFactors = FALSE),
-    title = NULL, note = NULL,
-    spicy_long = NULL, spicy_fit_stats = fit_stats,
+    title = NULL,
+    note = NULL,
+    spicy_long = NULL,
+    spicy_fit_stats = fit_stats,
     class = c("spicy_regression_table", "spicy_table", "data.frame")
   )
 }
@@ -21,21 +23,46 @@ test_that("glance – NULL fit-stats attr → empty broom-shaped tibble", {
   empty <- empty_glance_table(NULL)
   g <- broom::glance(empty)
   expect_equal(nrow(g), 0L)
-  expect_true(all(c("model_id", "outcome", "nobs", "weighted_nobs",
-                    "r.squared", "adj.r.squared", "omega2", "sigma",
-                    "rmse", "f2", "AIC", "AICc", "BIC", "deviance",
-                    "df.residual") %in% names(g)))
+  expect_true(all(
+    c(
+      "model_id",
+      "outcome",
+      "nobs",
+      "weighted_nobs",
+      "r.squared",
+      "adj.r.squared",
+      "omega2",
+      "sigma",
+      "rmse",
+      "f2",
+      "AIC",
+      "AICc",
+      "BIC",
+      "deviance",
+      "df.residual"
+    ) %in%
+      names(g)
+  ))
 })
 
 test_that("glance – zero-row fit-stats attr → empty broom-shaped tibble", {
   # An attribute present but with nrow == 0 hits the same guard branch.
   zero <- data.frame(
-    model_id = character(0), outcome = character(0),
-    nobs = integer(0), weighted_nobs = numeric(0),
-    r2 = numeric(0), adj_r2 = numeric(0), omega2 = numeric(0),
-    sigma = numeric(0), rmse = numeric(0), f2 = numeric(0),
-    AIC = numeric(0), AICc = numeric(0), BIC = numeric(0),
-    deviance = numeric(0), df_residual = numeric(0),
+    model_id = character(0),
+    outcome = character(0),
+    nobs = integer(0),
+    weighted_nobs = numeric(0),
+    r2 = numeric(0),
+    adj_r2 = numeric(0),
+    omega2 = numeric(0),
+    sigma = numeric(0),
+    rmse = numeric(0),
+    f2 = numeric(0),
+    AIC = numeric(0),
+    AICc = numeric(0),
+    BIC = numeric(0),
+    deviance = numeric(0),
+    df_residual = numeric(0),
     stringsAsFactors = FALSE
   )
   empty <- empty_glance_table(zero)
@@ -46,10 +73,23 @@ test_that("glance – zero-row fit-stats attr → empty broom-shaped tibble", {
   # pass-through of `zero`'s own (snake_case, non-canonical) columns.
   expect_named(
     g,
-    c("model_id", "outcome", "nobs", "weighted_nobs",
-      "r.squared", "adj.r.squared", "omega2", "sigma",
-      "rmse", "f2", "AIC", "AICc", "BIC", "deviance",
-      "df.residual")
+    c(
+      "model_id",
+      "outcome",
+      "nobs",
+      "weighted_nobs",
+      "r.squared",
+      "adj.r.squared",
+      "omega2",
+      "sigma",
+      "rmse",
+      "f2",
+      "AIC",
+      "AICc",
+      "BIC",
+      "deviance",
+      "df.residual"
+    )
   )
   # `zero` carried snake_case names (r2, adj_r2, df_residual); the
   # canonical schema must replace them, never leak them through.

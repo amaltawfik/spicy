@@ -29,15 +29,19 @@ test_that("statistic header: z for glm, t for lm, per-model in mixed tables", {
 
 test_that("statistic header: z for coxph and Gamma-log glm", {
   skip_if_not_installed("survival")
-  cx <- survival::coxph(survival::Surv(time, status) ~ age,
-                        data = survival::lung)
-  expect_true("z" %in% names(table_regression(cx,
-                                              show_columns = c("b", "t", "p"))))
+  cx <- survival::coxph(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung
+  )
+  expect_true(
+    "z" %in% names(table_regression(cx, show_columns = c("b", "t", "p")))
+  )
   set.seed(1)
   d <- data.frame(y = rgamma(100, 2, 0.5), x = rnorm(100))
   gg <- glm(y ~ x, data = d, family = Gamma(link = "log"))
-  expect_true("z" %in% names(table_regression(gg,
-                                              show_columns = c("b", "t", "p"))))
+  expect_true(
+    "z" %in% names(table_regression(gg, show_columns = c("b", "t", "p")))
+  )
 })
 
 test_that("forgotten list(): model passed as vcov gets a clear error", {
@@ -63,8 +67,7 @@ test_that("forgotten list(): model passed as vcov gets a clear error", {
 test_that("vcov validation still accepts strings and string lists", {
   m1 <- lm(mpg ~ wt, data = mtcars)
   m2 <- lm(mpg ~ hp, data = mtcars)
-  expect_s3_class(table_regression(m1, vcov = "HC3"),
-                  "spicy_regression_table")
+  expect_s3_class(table_regression(m1, vcov = "HC3"), "spicy_regression_table")
   expect_s3_class(
     table_regression(list(m1, m2), vcov = list("classical", "HC3")),
     "spicy_regression_table"
@@ -74,8 +77,10 @@ test_that("vcov validation still accepts strings and string lists", {
 test_that("AME request on an incapable class is refused, not an empty column", {
   skip_if_not_installed("survival")
   # coxph has its own earlier class-specific refusal (kept).
-  cx <- survival::coxph(survival::Surv(time, status) ~ age,
-                        data = survival::lung)
+  cx <- survival::coxph(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung
+  )
   err_cox <- tryCatch(
     table_regression(cx, show_columns = c("b", "ame")),
     spicy_invalid_input = function(e) e
@@ -95,7 +100,8 @@ test_that("AME request on an incapable class is refused, not an empty column", {
   skip_if_not_installed("flexsurv")
   fs <- flexsurv::flexsurvreg(
     survival::Surv(futime, fustat) ~ age,
-    data = survival::ovarian, dist = "weibull"
+    data = survival::ovarian,
+    dist = "weibull"
   )
   err_fs <- tryCatch(
     table_regression(fs, show_columns = c("b", "ame")),
@@ -104,8 +110,10 @@ test_that("AME request on an incapable class is refused, not an empty column", {
   expect_s3_class(err_fs, "spicy_invalid_input")
   expect_match(
     conditionMessage(err_fs),
-    paste0("No average-marginal-effects backend exists for this class ",
-           "(see ?table_regression_models, column AME)."),
+    paste0(
+      "No average-marginal-effects backend exists for this class ",
+      "(see ?table_regression_models, column AME)."
+    ),
     fixed = TRUE
   )
 

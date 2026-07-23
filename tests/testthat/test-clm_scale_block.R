@@ -5,8 +5,11 @@
 test_that("scale coefficients render as a block with the summary values", {
   skip_if_not_installed("ordinal")
   d <- sochealth
-  fit <- ordinal::clm(self_rated_health ~ age + smoking, scale = ~ smoking,
-                      data = d)
+  fit <- ordinal::clm(
+    self_rated_health ~ age + smoking,
+    scale = ~smoking,
+    data = d
+  )
   out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
   expect_match(out, "Scale effects", fixed = TRUE)
 
@@ -26,8 +29,11 @@ test_that("scale coefficients render as a block with the summary values", {
 test_that("scale rows stay on the log scale under exponentiate", {
   skip_if_not_installed("ordinal")
   d <- sochealth
-  fit <- ordinal::clm(self_rated_health ~ age + smoking, scale = ~ smoking,
-                      data = d)
+  fit <- ordinal::clm(
+    self_rated_health ~ age + smoking,
+    scale = ~smoking,
+    data = d
+  )
   td_raw <- broom::tidy(table_regression(fit))
   td_exp <- broom::tidy(table_regression(fit, exponentiate = TRUE))
   raw <- td_raw$estimate[td_raw$term == "scale_smokingYes"]
@@ -38,12 +44,18 @@ test_that("scale rows stay on the log scale under exponentiate", {
   b_raw <- td_raw$estimate[td_raw$term == "smokingYes"]
   b_exp <- td_exp$estimate[td_exp$term == "smokingYes"]
   expect_equal(exp(b_raw), b_exp, tolerance = 1e-10)
-  out <- paste(capture.output(print(
-    table_regression(fit, exponentiate = TRUE)
-  )), collapse = "\n")
+  out <- paste(
+    capture.output(print(
+      table_regression(fit, exponentiate = TRUE)
+    )),
+    collapse = "\n"
+  )
   expect_match(out, "not exponentiated", fixed = TRUE)
-  expect_match(out, "log standard deviation of the latent response",
-               fixed = TRUE)
+  expect_match(
+    out,
+    "log standard deviation of the latent response",
+    fixed = TRUE
+  )
 })
 
 
@@ -64,11 +76,17 @@ test_that("location-only clm and polr carry no scale block", {
 test_that("scale rows are exempt from keep / drop like other blocks", {
   skip_if_not_installed("ordinal")
   d <- sochealth
-  fit <- ordinal::clm(self_rated_health ~ age + smoking, scale = ~ smoking,
-                      data = d)
-  out <- paste(capture.output(print(
-    table_regression(fit, keep = "^age$")
-  )), collapse = "\n")
+  fit <- ordinal::clm(
+    self_rated_health ~ age + smoking,
+    scale = ~smoking,
+    data = d
+  )
+  out <- paste(
+    capture.output(print(
+      table_regression(fit, keep = "^age$")
+    )),
+    collapse = "\n"
+  )
   expect_match(out, "Scale effects", fixed = TRUE)
   expect_match(out, "Thresholds", fixed = TRUE)
 })
@@ -77,14 +95,15 @@ test_that("scale rows are exempt from keep / drop like other blocks", {
 test_that("tidy() names the response category of per-category AME rows", {
   skip_if_not_installed("MASS")
   d <- sochealth
-  fit <- MASS::polr(self_rated_health ~ age + smoking, data = d,
-                    Hess = TRUE)
+  fit <- MASS::polr(self_rated_health ~ age + smoking, data = d, Hess = TRUE)
   td <- broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   expect_true("outcome_level" %in% names(td))
   ame_age <- td[td$estimate_type == "ame" & td$term == "age", ]
   expect_identical(nrow(ame_age), 4L)
-  expect_identical(as.character(ame_age$outcome_level),
-                   levels(d$self_rated_health))
+  expect_identical(
+    as.character(ame_age$outcome_level),
+    levels(d$self_rated_health)
+  )
   # Coefficient rows of a single-outcome model carry no category.
   expect_true(all(is.na(td$outcome_level[td$estimate_type == "B"])))
   # Single-outcome classes get the column, all NA.

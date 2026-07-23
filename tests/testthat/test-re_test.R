@@ -64,40 +64,56 @@ test_that("rlrt matches RLRsim::exactRLRT on a single-component fit", {
 test_that("rlrt refuses richer random structures with a pointer to lrt", {
   skip_if_not_installed("RLRsim")
   fit <- .rt_lmer_slope()
-  expect_error(table_regression(fit, re_test = "rlrt"),
-               class = "spicy_unsupported")
+  expect_error(
+    table_regression(fit, re_test = "rlrt"),
+    class = "spicy_unsupported"
+  )
 })
 
 test_that("re_test validation and guards", {
   fit <- .rt_lmer_int()
-  expect_error(table_regression(fit, re_test = "wald"),
-               class = "spicy_invalid_input")
-  expect_error(table_regression(fit, re_test = "lrt", show_re = FALSE),
-               class = "spicy_invalid_input")
+  expect_error(
+    table_regression(fit, re_test = "wald"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, re_test = "lrt", show_re = FALSE),
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("lrt works for nlme::lme (random = ~ slope | group)", {
   skip_if_not_installed("nlme")
-  ml <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-                  random = ~ age | Subject)
+  ml <- nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ age | Subject
+  )
   vc <- .rt_vc(ml, re_test = "lrt")
   tested <- vc[!is.na(vc$p.value), ]
   expect_equal(nrow(tested), 1L)
   expect_match(tested$term, "re::Subject::age", fixed = TRUE)
   # oracle: hand REML LRT vs the intercept-only reduced refit (built
   # directly -- update(lme_fit) needs nlme on the search path)
-  ml_red <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-                      random = ~ 1 | Subject)
-  chi2_h <- 2 * (as.numeric(stats::logLik(ml)) -
-                   as.numeric(stats::logLik(ml_red)))
+  ml_red <- nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
+  chi2_h <- 2 *
+    (as.numeric(stats::logLik(ml)) -
+      as.numeric(stats::logLik(ml_red)))
   expect_equal(tested$statistic, chi2_h, tolerance = 1e-6)
 })
 
 test_that("rlrt works for a single-component nlme::lme (matches exactRLRT)", {
   skip_if_not_installed("nlme")
   skip_if_not_installed("RLRsim")
-  mi <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                  random = ~ 1 | Subject)
+  mi <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
   set.seed(7)
   vc <- .rt_vc(mi, re_test = "rlrt")
   tested <- vc[!is.na(vc$p.value), ]
@@ -109,8 +125,10 @@ test_that("rlrt works for a single-component nlme::lme (matches exactRLRT)", {
 
 test_that("lrt works for glmmTMB and never tests rho / residual", {
   skip_if_not_installed("glmmTMB")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject),
-                          data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (Days | Subject),
+    data = lme4::sleepstudy
+  )
   vc <- .rt_vc(fit, re_test = "lrt")
   expect_true(any(!is.na(vc$p.value)))
   expect_true(all(is.na(vc$p.value[grepl("::cor", vc$term)])))
@@ -119,15 +137,21 @@ test_that("lrt works for glmmTMB and never tests rho / residual", {
 
 test_that("the footer discloses the per-term test", {
   fit <- .rt_lmer_slope()
-  out <- paste(capture.output(print(table_regression(fit, re_test = "lrt"))),
-               collapse = "\n")
+  out <- paste(
+    capture.output(print(table_regression(fit, re_test = "lrt"))),
+    collapse = "\n"
+  )
   expect_match(out, "chi-bar-squared reference", fixed = TRUE)
 })
 
 test_that("stars never land on variance-component rows", {
   fit <- .rt_lmer_slope()
-  df <- table_regression(fit, re_test = "lrt", stars = TRUE,
-                         output = "data.frame")
+  df <- table_regression(
+    fit,
+    re_test = "lrt",
+    stars = TRUE,
+    output = "data.frame"
+  )
   b_col <- names(df)[2]
   re_rows <- grepl("Subject", df$Variable, fixed = TRUE)
   expect_false(any(grepl("[*]", df[[b_col]][re_rows])))

@@ -13,8 +13,7 @@
 
 .fit_glmmTMB_slope_cov <- function() {
   skip_if_not_installed("glmmTMB")
-  glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject),
-                    data = lme4::sleepstudy)
+  glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
 }
 
 
@@ -32,8 +31,10 @@ test_that("glmmTMB with a factor predictor emits a reference row", {
 
 test_that("glmmTMB with NO factor predictor has no reference rows", {
   skip_if_not_installed("glmmTMB")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                           data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_false(any(fr$coefs$is_ref %in% TRUE))
 })
@@ -57,8 +58,10 @@ test_that("glmmTMB random slope carries a correlation row with finite SE/CI", {
 
 test_that("glmmTMB n_groups is pulled from summary()$ngrps$cond", {
   skip_if_not_installed("glmmTMB")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                           data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   ng <- fr$info$n_groups
   expect_true(!is.null(ng))
@@ -72,7 +75,7 @@ test_that("table_regression(glmmTMB factor) renders factor block + panel", {
   fit <- .fit_glmmTMB_factor_cov()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "grp:",            fixed = TRUE)
-  expect_match(combined, "Random effects",  fixed = TRUE)
-  expect_match(combined, "N (Subject)",     fixed = TRUE)
+  expect_match(combined, "grp:", fixed = TRUE)
+  expect_match(combined, "Random effects", fixed = TRUE)
+  expect_match(combined, "N (Subject)", fixed = TRUE)
 })

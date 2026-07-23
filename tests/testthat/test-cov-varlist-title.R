@@ -48,7 +48,10 @@ test_that("varlist_is_data_first() skips unloaded namespaces in the slow path", 
   # loaded we cannot observe the skip, so skip the test.
   pkgs <- c("dplyr", "tidyr", "tibble")
   loaded <- vapply(pkgs, isNamespaceLoaded, logical(1))
-  skip_if(all(loaded), "all of dplyr/tidyr/tibble are loaded; cannot hit `next`")
+  skip_if(
+    all(loaded),
+    "all of dplyr/tidyr/tibble are loaded; cannot hit `next`"
+  )
 
   # A verb that is neither curated nor a real data-first function:
   # every loaded namespace introspects (and rejects) it, every

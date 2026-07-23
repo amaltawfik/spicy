@@ -25,11 +25,15 @@
 # the conventional Steiger inversion and always brackets the
 # Olejnik & Algina point estimate in non-degenerate cases.
 
-
 # ---- Public-internal entry point ------------------------------------------
 
-extract_partial_effect_rows <- function(fit, ci_level, show_columns,
-                                         model_id, outcome) {
+extract_partial_effect_rows <- function(
+  fit,
+  ci_level,
+  show_columns,
+  model_id,
+  outcome
+) {
   # glm path: only partial_chi2 is defined (variance-explained
   # tokens were rejected upstream by validate_class_appropriate_tokens).
   if (inherits(fit, "glm")) {
@@ -48,9 +52,14 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
   # Map both atomic tokens AND their _ci counterparts to the same
   # underlying long-data computation: `partial_f2_ci` reuses the same
   # CI columns built by `partial_f2`.
-  partial_tokens <- c("partial_f2", "partial_f2_ci",
-                       "partial_eta2", "partial_eta2_ci",
-                       "partial_omega2", "partial_omega2_ci")
+  partial_tokens <- c(
+    "partial_f2",
+    "partial_f2_ci",
+    "partial_eta2",
+    "partial_eta2_ci",
+    "partial_omega2",
+    "partial_omega2_ci"
+  )
   active <- intersect(show_columns, partial_tokens)
   if (length(active) == 0L) {
     return(empty_coefs_long())
@@ -88,10 +97,16 @@ extract_partial_effect_rows <- function(fit, ci_level, show_columns,
   rows <- list()
   for (i in seq_along(cf_names)) {
     term_idx <- assign_idx[i]
-    if (term_idx == 0L) next       # intercept -- no partial effect
-    if (is.na(cf[i])) next         # singular coef -- en-dashed by renderer
+    if (term_idx == 0L) {
+      next
+    } # intercept -- no partial effect
+    if (is.na(cf[i])) {
+      next
+    } # singular coef -- en-dashed by renderer
     eff <- cache[[as.character(term_idx)]]
-    if (is.null(eff)) next         # drop1 failed -- renderer en-dashes
+    if (is.null(eff)) {
+      next
+    } # drop1 failed -- renderer en-dashes
 
     nm <- cf_names[i]
     fmeta <- factor_meta[[nm]]
@@ -225,10 +240,16 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
   rows <- list()
   for (i in seq_along(cf_names)) {
     term_idx <- assign_idx[i]
-    if (term_idx == 0L) next
-    if (is.na(cf[i])) next
+    if (term_idx == 0L) {
+      next
+    }
+    if (is.na(cf[i])) {
+      next
+    }
     eff <- cache[[as.character(term_idx)]]
-    if (is.null(eff)) next
+    if (is.null(eff)) {
+      next
+    }
 
     nm <- cf_names[i]
     fmeta <- factor_meta[[nm]]
@@ -293,7 +314,9 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     },
     error = function(e) NULL
   )
-  if (is.null(fixed_form)) return(NULL)  # nocov
+  if (is.null(fixed_form)) {
+    return(NULL)
+  } # nocov
 
   bhat <- tryCatch(
     if (inherits(fit, "glmmTMB")) {
@@ -308,21 +331,30 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     },
     error = function(e) NULL
   )
-  if (is.null(bhat) || length(bhat) == 0L) return(NULL)  # nocov
+  if (is.null(bhat) || length(bhat) == 0L) {
+    return(NULL)
+  } # nocov
 
-  V <- tryCatch({
-    v <- stats::vcov(fit)
-    # glmmTMB::vcov returns an S3 object of class c("vcov.glmmTMB",
-    # "matrix") -- the $cond slot is accessible via `$cond` /
-    # `[["cond"]]`. lme4 / nlme return a plain matrix-like object.
-    if (inherits(fit, "glmmTMB")) {
-      v_cond <- tryCatch(v$cond, error = function(e) NULL)
-      if (is.null(v_cond)) v_cond <- tryCatch(v[["cond"]], error = function(e) NULL)  # nocov: v$cond never NULL for glmmTMB
-      if (!is.null(v_cond)) v <- v_cond
-    }
-    as.matrix(v)
-  }, error = function(e) NULL)
-  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)  # nocov
+  V <- tryCatch(
+    {
+      v <- stats::vcov(fit)
+      # glmmTMB::vcov returns an S3 object of class c("vcov.glmmTMB",
+      # "matrix") -- the $cond slot is accessible via `$cond` /
+      # `[["cond"]]`. lme4 / nlme return a plain matrix-like object.
+      if (inherits(fit, "glmmTMB")) {
+        v_cond <- tryCatch(v$cond, error = function(e) NULL)
+        if (is.null(v_cond)) {
+          v_cond <- tryCatch(v[["cond"]], error = function(e) NULL)
+        } # nocov: v$cond never NULL for glmmTMB
+        if (!is.null(v_cond)) v <- v_cond
+      }
+      as.matrix(v)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(V) || nrow(V) != length(bhat)) {
+    return(NULL)
+  } # nocov
 
   data <- tryCatch(
     if (inherits(fit, c("lme", "gls"))) {
@@ -336,15 +368,21 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     stats::model.matrix(fixed_form, data = data),
     error = function(e) NULL
   )
-  if (is.null(mm) || ncol(mm) != length(bhat)) return(NULL)  # nocov
+  if (is.null(mm) || ncol(mm) != length(bhat)) {
+    return(NULL)
+  } # nocov
 
   assign_idx <- attr(mm, "assign")
   term_labels <- attr(stats::terms(fixed_form), "term.labels")
-  if (is.null(assign_idx) || is.null(term_labels) ||
-      length(term_labels) == 0L) return(NULL)
+  if (
+    is.null(assign_idx) || is.null(term_labels) || length(term_labels) == 0L
+  ) {
+    return(NULL)
+  }
 
-  factor_meta <- tryCatch(detect_factor_term_meta(fit),
-                           error = function(e) list())
+  factor_meta <- tryCatch(detect_factor_term_meta(fit), error = function(e) {
+    list()
+  })
 
   unique_terms <- unique(assign_idx[assign_idx != 0L])
   chi2_cache <- list()
@@ -352,10 +390,13 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     cols <- which(assign_idx == k)
     b_sub <- bhat[cols]
     V_sub <- V[cols, cols, drop = FALSE]
-    chi2_val <- tryCatch({
-      Vinv <- solve(V_sub)
-      as.numeric(t(b_sub) %*% Vinv %*% b_sub)
-    }, error = function(e) NA_real_)
+    chi2_val <- tryCatch(
+      {
+        Vinv <- solve(V_sub)
+        as.numeric(t(b_sub) %*% Vinv %*% b_sub)
+      },
+      error = function(e) NA_real_
+    )
     df_val <- length(cols)
     if (!is.finite(chi2_val) || chi2_val < 0) {
       # nocov start
@@ -365,7 +406,7 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     }
     chi2_cache[[as.character(k)]] <- list(
       chi2 = chi2_val,
-      df   = df_val,
+      df = df_val,
       p_value = stats::pchisq(chi2_val, df = df_val, lower.tail = FALSE)
     )
   }
@@ -373,35 +414,41 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
   rows <- list()
   for (i in seq_along(bhat)) {
     term_idx <- assign_idx[i]
-    if (term_idx == 0L) next
+    if (term_idx == 0L) {
+      next
+    }
     eff <- chi2_cache[[as.character(term_idx)]]
-    if (is.null(eff)) next  # nocov: cache entry only NULL via the unreachable chi2-fail arm
+    if (is.null(eff)) {
+      next
+    } # nocov: cache entry only NULL via the unreachable chi2-fail arm
 
     nm <- names(bhat)[i]
     fmeta <- factor_meta[[nm]]
-    parent_var <- fmeta$factor_term  %||% nm
-    label      <- fmeta$factor_level %||% nm
-    pos        <- fmeta$factor_level_pos %||% NA_integer_
+    parent_var <- fmeta$factor_term %||% nm
+    label <- fmeta$factor_level %||% nm
+    pos <- fmeta$factor_level_pos %||% NA_integer_
 
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = nm,
-      parent_var       = parent_var,
-      label            = label,
+      term = nm,
+      parent_var = parent_var,
+      label = label,
       factor_level_pos = as.integer(pos),
-      is_ref           = FALSE,
-      estimate_type    = "partial_chi2",
-      estimate         = eff$chi2,
-      std_error        = NA_real_,
-      df               = as.numeric(eff$df),
-      statistic        = eff$chi2,
-      p_value          = eff$p_value,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = "X2",
+      is_ref = FALSE,
+      estimate_type = "partial_chi2",
+      estimate = eff$chi2,
+      std_error = NA_real_,
+      df = as.numeric(eff$df),
+      statistic = eff$chi2,
+      p_value = eff$p_value,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = "X2",
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(NULL)  # nocov
+  if (length(rows) == 0L) {
+    return(NULL)
+  } # nocov
   do.call(rbind, rows)
 }
 
@@ -410,9 +457,13 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
 # `partial_chi2` is in show_columns. No-op otherwise. Mirrors the
 # AME-attach helper in regression_ame.R.
 .attach_partial_chi2_to_frame_coefs <- function(coefs, fit, show_columns) {
-  if (!"partial_chi2" %in% show_columns) return(coefs)
+  if (!"partial_chi2" %in% show_columns) {
+    return(coefs)
+  }
   rows <- .compute_partial_chi2_rows_for_mixed(fit)
-  if (is.null(rows) || nrow(rows) == 0L) return(coefs)
+  if (is.null(rows) || nrow(rows) == 0L) {
+    return(coefs)
+  }
   for (col in setdiff(colnames(coefs), colnames(rows))) {
     rows[[col]] <- coefs[[col]][NA_integer_]
   }

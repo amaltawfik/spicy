@@ -16,7 +16,6 @@
 # robust vcov per underlying fit, every output engine, tidy()) is the
 # ordinary multi-model machinery.
 
-
 #' Univariable screening table (with optional multivariable merge)
 #'
 #' Fits one model per candidate predictor (the *univariable screen*)
@@ -118,36 +117,49 @@
 #' )
 #' }
 #' @export
-table_regression_uv <- function(data,
-                                outcome,
-                                predictors,
-                                method = c("glm", "lm", "coxph"),
-                                family = stats::binomial(),
-                                multivariable = TRUE,
-                                complete_cases = FALSE,
-                                show_columns = c("n", "b", "ci", "p"),
-                                title = NULL,
-                                ...) {
+table_regression_uv <- function(
+  data,
+  outcome,
+  predictors,
+  method = c("glm", "lm", "coxph"),
+  family = stats::binomial(),
+  multivariable = TRUE,
+  complete_cases = FALSE,
+  show_columns = c("n", "b", "ci", "p"),
+  title = NULL,
+  ...
+) {
   family_supplied <- !missing(family)
   method <- spicy_match_arg(method)
   if (!is.data.frame(data)) {
-    spicy_abort("`data` must be a data frame.",
-                class = "spicy_invalid_input")
+    spicy_abort("`data` must be a data frame.", class = "spicy_invalid_input")
   }
-  if (!is.logical(multivariable) || length(multivariable) != 1L ||
-        is.na(multivariable)) {
-    spicy_abort("`multivariable` must be TRUE/FALSE.",
-                class = "spicy_invalid_input")
+  if (
+    !is.logical(multivariable) ||
+      length(multivariable) != 1L ||
+      is.na(multivariable)
+  ) {
+    spicy_abort(
+      "`multivariable` must be TRUE/FALSE.",
+      class = "spicy_invalid_input"
+    )
   }
-  if (!is.logical(complete_cases) || length(complete_cases) != 1L ||
-        is.na(complete_cases)) {
-    spicy_abort("`complete_cases` must be TRUE/FALSE.",
-                class = "spicy_invalid_input")
+  if (
+    !is.logical(complete_cases) ||
+      length(complete_cases) != 1L ||
+      is.na(complete_cases)
+  ) {
+    spicy_abort(
+      "`complete_cases` must be TRUE/FALSE.",
+      class = "spicy_invalid_input"
+    )
   }
   if (identical(method, "coxph") && family_supplied) {
     spicy_abort(
-      c("`family` is not meaningful for `method = \"coxph\"`.",
-        "i" = "The Cox model has no family; drop the argument."),
+      c(
+        "`family` is not meaningful for `method = \"coxph\"`.",
+        "i" = "The Cox model has no family; drop the argument."
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -163,15 +175,21 @@ table_regression_uv <- function(data,
       identical(family$link, "identity")
     if (is_gaussian_identity) {
       spicy_warn(
-        paste0("`family = gaussian()` is ignored for `method = \"lm\"`: ",
-               "the linear screen already fits it."),
+        paste0(
+          "`family = gaussian()` is ignored for `method = \"lm\"`: ",
+          "the linear screen already fits it."
+        ),
         class = "spicy_ignored_arg"
       )
     } else {
       spicy_abort(
-        c("`family` is not meaningful for `method = \"lm\"`.",
-          "i" = paste0("Use `method = \"glm\"` to fit that family, or ",
-                       "drop the argument for the linear screen.")),
+        c(
+          "`family` is not meaningful for `method = \"lm\"`.",
+          "i" = paste0(
+            "Use `method = \"glm\"` to fit that family, or ",
+            "drop the argument for the linear screen."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -179,13 +197,19 @@ table_regression_uv <- function(data,
   # A gaussian/identity glm is lm by another name; in the screen the
   # right spelling exists as an argument, so point straight at it
   # (the generic "refit with lm()" caveat would be off-target here).
-  if (identical(method, "glm") &&
-        identical(family$family, "gaussian") &&
-        identical(family$link, "identity")) {
+  if (
+    identical(method, "glm") &&
+      identical(family$family, "gaussian") &&
+      identical(family$link, "identity")
+  ) {
     spicy_abort(
-      c(paste0("`family = gaussian()` with the identity link is ",
-               "`lm` by another name."),
-        "i" = "Use `method = \"lm\"` for the linear screen."),
+      c(
+        paste0(
+          "`family = gaussian()` with the identity link is ",
+          "`lm` by another name."
+        ),
+        "i" = "Use `method = \"lm\"` for the linear screen."
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -200,9 +224,13 @@ table_regression_uv <- function(data,
       deparse1(outcome_expr[[1L]]) %in% c("Surv", "survival::Surv")
     if (!is_surv_call) {
       spicy_abort(
-        c(paste0("`method = \"coxph\"` needs a survival outcome: ",
-                 "`outcome = Surv(time, status)`."),
-          "i" = sprintf("Got `%s`.", deparse1(outcome_expr))),
+        c(
+          paste0(
+            "`method = \"coxph\"` needs a survival outcome: ",
+            "`outcome = Surv(time, status)`."
+          ),
+          "i" = sprintf("Got `%s`.", deparse1(outcome_expr))
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -216,7 +244,9 @@ table_regression_uv <- function(data,
     outcome_name <- deparse1(outcome_expr)
   } else {
     outcome_name <- resolve_single_column_selection(
-      rlang::enquo(outcome), data, "outcome"
+      rlang::enquo(outcome),
+      data,
+      "outcome"
     )
     outcome_vars <- outcome_name
   }
@@ -224,8 +254,10 @@ table_regression_uv <- function(data,
   pred_names <- setdiff(names(pred_pos), outcome_vars)
   if (length(pred_names) == 0L) {
     spicy_abort(
-      c("`predictors` selected no columns (besides the outcome).",
-        "i" = "Pass at least one predictor, e.g. `predictors = c(age, sex)`."),
+      c(
+        "`predictors` selected no columns (besides the outcome).",
+        "i" = "Pass at least one predictor, e.g. `predictors = c(age, sex)`."
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -246,9 +278,13 @@ table_regression_uv <- function(data,
   if (!is.null(dots$cluster)) {
     if (!is.atomic(dots$cluster)) {
       spicy_abort(
-        c("`cluster` must be a single vector for a univariable screen.",
-          "i" = paste0("Supply one value per row of `data`; per-model ",
-                       "cluster lists are not meaningful here.")),
+        c(
+          "`cluster` must be a single vector for a univariable screen.",
+          "i" = paste0(
+            "Supply one value per row of `data`; per-model ",
+            "cluster lists are not meaningful here."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -256,47 +292,73 @@ table_regression_uv <- function(data,
       spicy_abort(
         sprintf(
           "`cluster` must have one value per row of `data` (%d), not %d.",
-          nrow(data), length(dots$cluster)
+          nrow(data),
+          length(dots$cluster)
         ),
         class = "spicy_invalid_input"
       )
     }
   }
-  want_estimands <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p",
-                          "risk_diff", "risk_diff_se", "risk_diff_ci",
-                          "risk_diff_p") %in% show_columns)
+  want_estimands <- any(
+    c(
+      "rmst",
+      "rmst_se",
+      "rmst_ci",
+      "rmst_p",
+      "risk_diff",
+      "risk_diff_se",
+      "risk_diff_ci",
+      "risk_diff_p"
+    ) %in%
+      show_columns
+  )
   if (want_estimands && !identical(method, "coxph")) {
     spicy_abort(
-      c(paste0("RMST / risk-difference columns need a survival screen: ",
-               "`method = \"coxph\"`."),
-        "i" = paste0("For lm / glm screens, use the AME family ",
-                     "instead.")),
+      c(
+        paste0(
+          "RMST / risk-difference columns need a survival screen: ",
+          "`method = \"coxph\"`."
+        ),
+        "i" = paste0("For lm / glm screens, use the AME family ", "instead.")
+      ),
       class = "spicy_invalid_input"
     )
   }
   if (want_estimands && identical(dots$tau, "minmax")) {
     spicy_abort(
-      c(paste0("`tau = \"minmax\"` is not available in the univariable ",
-               "screen."),
-        "i" = paste0("Each univariable fit would resolve its own ",
-                     "horizon, making the dRMST column incomparable ",
-                     "across predictors. Give one shared numeric ",
-                     "`tau`.")),
+      c(
+        paste0(
+          "`tau = \"minmax\"` is not available in the univariable ",
+          "screen."
+        ),
+        "i" = paste0(
+          "Each univariable fit would resolve its own ",
+          "horizon, making the dRMST column incomparable ",
+          "across predictors. Give one shared numeric ",
+          "`tau`."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
   if (isTRUE(dots$nested)) {
     spicy_abort(
-      c("`nested = TRUE` is not meaningful for a univariable screen.",
-        "i" = paste0("The univariable models are not nested in one ",
-                     "another; compare the multivariable model to a ",
-                     "reduced fit with `table_regression(list(m1, m2), ",
-                     "nested = TRUE)` instead.")),
+      c(
+        "`nested = TRUE` is not meaningful for a univariable screen.",
+        "i" = paste0(
+          "The univariable models are not nested in one ",
+          "another; compare the multivariable model to a ",
+          "reduced fit with `table_regression(list(m1, m2), ",
+          "nested = TRUE)` instead."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
   # gtsummary convention (tbl_regression: intercept = FALSE default).
-  if (is.null(dots$show_intercept)) dots$show_intercept <- FALSE
+  if (is.null(dots$show_intercept)) {
+    dots$show_intercept <- FALSE
+  }
 
   if (isTRUE(complete_cases)) {
     cc <- stats::complete.cases(data[, c(outcome_vars, pred_names)])
@@ -315,8 +377,9 @@ table_regression_uv <- function(data,
   fit_one <- function(rhs_names) {
     f <- stats::reformulate(bt(rhs_names), response = response_str)
     environment(f) <- environment()
-    switch(method,
-      lm    = stats::lm(f, data = data),
+    switch(
+      method,
+      lm = stats::lm(f, data = data),
       coxph = survival::coxph(f, data = data),
       stats::glm(f, data = data, family = family)
     )
@@ -327,9 +390,13 @@ table_regression_uv <- function(data,
       fit_one(pred_names[k]),
       error = function(e) {
         spicy_abort(
-          c(sprintf("The univariable model for `%s` failed to fit.",
-                    pred_names[k]),
-            "x" = conditionMessage(e)),
+          c(
+            sprintf(
+              "The univariable model for `%s` failed to fit.",
+              pred_names[k]
+            ),
+            "x" = conditionMessage(e)
+          ),
           class = "spicy_invalid_data"
         )
       }
@@ -339,11 +406,11 @@ table_regression_uv <- function(data,
 
   bundle <- structure(
     list(
-      fits           = fits,
-      outcome        = outcome_name,
-      predictors     = pred_names,
+      fits = fits,
+      outcome = outcome_name,
+      predictors = pred_names,
       complete_cases = isTRUE(complete_cases),
-      n_data         = nrow(data)
+      n_data = nrow(data)
     ),
     class = "spicy_uv_screen"
   )
@@ -354,8 +421,10 @@ table_regression_uv <- function(data,
       fit_one(pred_names),
       error = function(e) {
         spicy_abort(
-          c("The multivariable model failed to fit.",
-            "x" = conditionMessage(e)),
+          c(
+            "The multivariable model failed to fit.",
+            "x" = conditionMessage(e)
+          ),
           class = "spicy_invalid_data"
         )
       }
@@ -367,7 +436,9 @@ table_regression_uv <- function(data,
     if (!is.null(dots$cluster)) {
       cl_multi <- dots$cluster
       om <- stats::na.action(fit_multi)
-      if (!is.null(om)) cl_multi <- cl_multi[-om]
+      if (!is.null(om)) {
+        cl_multi <- cl_multi[-om]
+      }
       dots$cluster <- list(dots$cluster, cl_multi)
     }
   }
@@ -389,19 +460,22 @@ table_regression_uv <- function(data,
     } else if (identical(method, "coxph")) {
       "Cox"
     } else {
-      switch(paste(family$family, family$link),
-        "binomial logit"  = "logistic",
+      switch(
+        paste(family$family, family$link),
+        "binomial logit" = "logistic",
         "binomial probit" = "probit",
-        "poisson log"     = "Poisson",
+        "poisson log" = "Poisson",
         family$family
       )
     }
     title <- if (isTRUE(multivariable)) {
-      sprintf("Univariable and multivariable %s regression: %s",
-              type, outcome_name)
+      sprintf(
+        "Univariable and multivariable %s regression: %s",
+        type,
+        outcome_name
+      )
     } else {
-      sprintf("Univariable %s regression screen: %s",
-              type, outcome_name)
+      sprintf("Univariable %s regression screen: %s", type, outcome_name)
     }
   }
 
@@ -430,30 +504,30 @@ table_regression_uv <- function(data,
 #' @export
 terms.spicy_uv_screen <- function(x, ...) {
   bt <- function(v) paste0("`", v, "`")
-  stats::terms(stats::reformulate(bt(x$predictors),
-                                  response = bt(x$outcome)))
+  stats::terms(stats::reformulate(bt(x$predictors), response = bt(x$outcome)))
 }
 
 
 #' @export
-as_regression_frame.spicy_uv_screen <- function(fit,
-                                                model_id = "M1",
-                                                vcov = "classical",
-                                                cluster = NULL,
-                                                boot_n = 1000L,
-                                                ci_level = 0.95,
-                                                ci_method = "wald",
-                                                standardized = "none",
-                                                exponentiate = FALSE,
-                                                show_columns = c("b", "se",
-                                                                 "ci", "p"),
-                                                show_fit_stats = NULL,
-                                                use_ame_satterthwaite = FALSE,
-                                                cluster_name = NULL,
-                                                re_ci = "wald",
-                                                tau = NULL,
-                                                at_time = NULL,
-                                                ...) {
+as_regression_frame.spicy_uv_screen <- function(
+  fit,
+  model_id = "M1",
+  vcov = "classical",
+  cluster = NULL,
+  boot_n = 1000L,
+  ci_level = 0.95,
+  ci_method = "wald",
+  standardized = "none",
+  exponentiate = FALSE,
+  show_columns = c("b", "se", "ci", "p"),
+  show_fit_stats = NULL,
+  use_ame_satterthwaite = FALSE,
+  cluster_name = NULL,
+  re_ci = "wald",
+  tau = NULL,
+  at_time = NULL,
+  ...
+) {
   bundle <- fit
   blocks <- list()
   ns <- integer(0)
@@ -468,35 +542,38 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     cluster_k <- cluster
     if (!is.null(cluster_k) && is.atomic(cluster_k)) {
       om <- stats::na.action(bundle$fits[[k]])
-      if (!is.null(om) &&
-            length(cluster_k) != .uv_fit_n(bundle$fits[[k]])) {
+      if (
+        !is.null(om) &&
+          length(cluster_k) != .uv_fit_n(bundle$fits[[k]])
+      ) {
         cluster_k <- cluster_k[-om]
       }
     }
     fr <- as_regression_frame(
       bundle$fits[[k]],
-      model_id              = model_id,
-      vcov                  = vcov,
-      cluster               = cluster_k,
-      boot_n                = boot_n,
-      ci_level              = ci_level,
-      ci_method             = ci_method,
-      standardized          = "none",
-      exponentiate          = exponentiate,
-      show_columns          = setdiff(show_columns, "n"),
-      show_fit_stats        = show_fit_stats,
+      model_id = model_id,
+      vcov = vcov,
+      cluster = cluster_k,
+      boot_n = boot_n,
+      ci_level = ci_level,
+      ci_method = ci_method,
+      standardized = "none",
+      exponentiate = exponentiate,
+      show_columns = setdiff(show_columns, "n"),
+      show_fit_stats = show_fit_stats,
       use_ame_satterthwaite = FALSE,
-      cluster_name          = cluster_name,
-      tau                   = tau,
-      at_time               = at_time
+      cluster_name = cluster_name,
+      tau = tau,
+      at_time = at_time
     )
-    if (is.null(base_info)) base_info <- fr$info
+    if (is.null(base_info)) {
+      base_info <- fr$info
+    }
     # Per-fit flags must be pooled, not read off the first fit: any
     # rank-deficient univariable model keeps its footer disclosure.
     if (isTRUE(fr$info$extras$has_singular)) {
       any_singular <- TRUE
-      singular_terms <- c(singular_terms,
-                          fr$info$extras$singular_terms)
+      singular_terms <- c(singular_terms, fr$info$extras$singular_terms)
     }
     cf <- fr$coefs
     block <- cf[cf$parent_var == pred, , drop = FALSE]
@@ -505,8 +582,13 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     # known input yields an empty block today; guards future engines.
     if (nrow(block) == 0L) {
       spicy_warn(
-        sprintf(paste0("Univariable screen: predictor `%s` produced no ",
-                       "estimable coefficient and was dropped."), pred),
+        sprintf(
+          paste0(
+            "Univariable screen: predictor `%s` produced no ",
+            "estimable coefficient and was dropped."
+          ),
+          pred
+        ),
         class = "spicy_caveat"
       )
       next
@@ -543,7 +625,7 @@ as_regression_frame.spicy_uv_screen <- function(fit,
   info <- base_info
   info$class <- "uv_screen"
   info$n_obs <- max(ns)
-  info$extras$has_singular   <- any_singular
+  info$extras$has_singular <- any_singular
   info$extras$singular_terms <- unique(singular_terms)
   # The composite is not class "glm", so the footer's vcov theme would
   # fall back to the frame's raw vcov_label and print a different
@@ -568,18 +650,21 @@ as_regression_frame.spicy_uv_screen <- function(fit,
     )
   } else if (length(unique(ns)) > 1L) {
     sprintf(
-      paste0("Each univariable model is fit on its own complete ",
-             "cases; N varies by predictor (%d-%d)."),
-      min(ns), max(ns)
+      paste0(
+        "Each univariable model is fit on its own complete ",
+        "cases; N varies by predictor (%d-%d)."
+      ),
+      min(ns),
+      max(ns)
     )
   } else {
     NULL
   }
-  info$supports$ame                 <- FALSE
+  info$supports$ame <- FALSE
   info$supports$partial_effect_size <- FALSE
-  info$supports$classical_r2        <- FALSE
-  info$supports$nested_lrt          <- FALSE
-  info$supports$standardise_refit   <- FALSE
+  info$supports$classical_r2 <- FALSE
+  info$supports$nested_lrt <- FALSE
+  info$supports$standardise_refit <- FALSE
 
   new_regression_frame(coefs, info, bundle)
 }
@@ -588,20 +673,32 @@ as_regression_frame.spicy_uv_screen <- function(fit,
 # Footer theme: the univariable-screen sample disclosure, read from
 # extras$uv_disclosure. Same dedupe conventions as its siblings.
 build_uv_disclosure_footer_block_from_frames <- function(frames) {
-  if (!is.list(frames) || length(frames) == 0L) return(NULL)
-  notes <- vapply(frames, function(f) {
-    as.character(f$info$extras$uv_disclosure %||% NA_character_)
-  }, character(1))
-  if (all(is.na(notes))) return(NULL)
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  notes <- vapply(
+    frames,
+    function(f) {
+      as.character(f$info$extras$uv_disclosure %||% NA_character_)
+    },
+    character(1)
+  )
+  if (all(is.na(notes))) {
+    return(NULL)
+  }
   affected <- which(!is.na(notes))
   if (length(unique(notes[affected])) == 1L) {
     return(notes[affected][1L])
   }
   # nocov start -- a table carries at most one uv_screen frame today;
   # kept for symmetry with the sibling reference-note builders.
-  per <- vapply(affected, function(k) {
-    sprintf("Model %d: %s", k, notes[k])
-  }, character(1))
+  per <- vapply(
+    affected,
+    function(k) {
+      sprintf("Model %d: %s", k, notes[k])
+    },
+    character(1)
+  )
   paste(per, collapse = "\n")
   # nocov end
 }

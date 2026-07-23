@@ -10,8 +10,10 @@ test_that("lrt: a failing reduced refit warns spicy_fallback and leaves the term
   # (0 + Days | Subject): dropping the bar's only slope leaves
   # `(0 | Subject)`, which lme4 cannot fit (no random-effect
   # parameters left) -> the reduced refit fails.
-  fit <- lme4::lmer(Reaction ~ Days + (0 + Days | Subject),
-                    data = lme4::sleepstudy)
+  fit <- lme4::lmer(
+    Reaction ~ Days + (0 + Days | Subject),
+    data = lme4::sleepstudy
+  )
   expect_warning(
     res <- spicy:::.re_term_tests_lrt(fit),
     regexp = "reduced refit for random term `Days` (Subject) failed",
@@ -24,35 +26,39 @@ test_that("lrt: a failing reduced refit warns spicy_fallback and leaves the term
 
 test_that("lrt: dropping one of two intercept-only bars uses q = 1 (chibar2 with chi2_0 mass)", {
   skip_if_not_installed("lme4")
-  fit <- lme4::lmer(diameter ~ 1 + (1 | plate) + (1 | sample),
-                    data = lme4::Penicillin)
+  fit <- lme4::lmer(
+    diameter ~ 1 + (1 | plate) + (1 | sample),
+    data = lme4::Penicillin
+  )
   res <- spicy:::.re_term_tests_lrt(fit)
   expect_identical(res$group, c("plate", "sample"))
   expect_identical(res$term, c("(Intercept)", "(Intercept)"))
   expect_identical(res$df, c(1, 1))
   # oracle: hand REML LRT against directly refitted one-bar models
-  red_plate  <- lme4::lmer(diameter ~ 1 + (1 | sample),
-                           data = lme4::Penicillin)
-  red_sample <- lme4::lmer(diameter ~ 1 + (1 | plate),
-                           data = lme4::Penicillin)
-  chi_plate  <- 2 * (as.numeric(stats::logLik(fit)) -
-                       as.numeric(stats::logLik(red_plate)))
-  chi_sample <- 2 * (as.numeric(stats::logLik(fit)) -
-                       as.numeric(stats::logLik(red_sample)))
+  red_plate <- lme4::lmer(diameter ~ 1 + (1 | sample), data = lme4::Penicillin)
+  red_sample <- lme4::lmer(diameter ~ 1 + (1 | plate), data = lme4::Penicillin)
+  chi_plate <- 2 *
+    (as.numeric(stats::logLik(fit)) -
+      as.numeric(stats::logLik(red_plate)))
+  chi_sample <- 2 *
+    (as.numeric(stats::logLik(fit)) -
+      as.numeric(stats::logLik(red_sample)))
   expect_equal(res$statistic, c(chi_plate, chi_sample), tolerance = 1e-6)
   # q = 1: p = 0.5 * P(chi2_1 > x) + 0.5 * chi2_0 point mass at 0 (= 0 here)
   expect_equal(
     res$p_value,
-    0.5 * stats::pchisq(c(chi_plate, chi_sample), df = 1,
-                        lower.tail = FALSE),
+    0.5 * stats::pchisq(c(chi_plate, chi_sample), df = 1, lower.tail = FALSE),
     tolerance = 1e-6
   )
 })
 
 test_that("lme lrt: a non-formula `random =` structure warns unsupported, rows stay untested", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                   random = list(Subject = ~ 1))
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = list(Subject = ~1)
+  )
   expect_warning(
     res <- spicy:::.re_term_tests_lrt_lme(fit),
     regexp = "support only a simple",
@@ -65,7 +71,7 @@ test_that("lme lrt: the `random = ~ terms` shorthand resolves the group and reus
   skip_if_not_installed("nlme")
   # Orthodont is groupedData, so `random = ~ 1` takes the group
   # (Subject) from the fitted object, not the formula.
-  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont, random = ~ 1)
+  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont, random = ~1)
   res <- spicy:::.re_term_tests_lrt_lme(fit)
   expect_identical(res$group, "Subject")
   expect_identical(res$term, "(Intercept)")
@@ -73,12 +79,16 @@ test_that("lme lrt: the `random = ~ terms` shorthand resolves the group and reus
   # oracle: whole-block LRT on the FIT'S estimator (2026-07-09,
   # dev/re_lrt_ml_reml_finding.md) -- the default lme is REML, so the
   # comparison is REML logLik vs the null model's REML logLik (gls).
-  full_reml <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                         random = ~ 1 | Subject, method = "REML")
-  null_gls <- nlme::gls(distance ~ age, data = nlme::Orthodont,
-                        method = "REML")
-  chi2_h <- 2 * (as.numeric(stats::logLik(full_reml)) -
-                   as.numeric(stats::logLik(null_gls)))
+  full_reml <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject,
+    method = "REML"
+  )
+  null_gls <- nlme::gls(distance ~ age, data = nlme::Orthodont, method = "REML")
+  chi2_h <- 2 *
+    (as.numeric(stats::logLik(full_reml)) -
+      as.numeric(stats::logLik(null_gls)))
   expect_equal(res$statistic, chi2_h, tolerance = 1e-6)
   expect_equal(
     res$p_value,
@@ -108,8 +118,7 @@ test_that("lme lrt: a failing reduced refit warns spicy_fallback and returns not
 
 test_that("rlrt aborts with spicy_missing_pkg when RLRsim is not installed", {
   skip_if_not_installed("lme4")
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject),
-                    data = lme4::sleepstudy)
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   testthat::local_mocked_bindings(spicy_pkg_available = function(pkg) FALSE)
   expect_error(
     spicy:::.re_term_tests_rlrt(fit),

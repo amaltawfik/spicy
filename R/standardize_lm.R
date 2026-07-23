@@ -21,7 +21,6 @@
 # effectsize doesn't expose. Cross-validated against
 # effectsize::standardize_parameters() in tests as the oracle.
 
-
 # ---- Shared helper ---------------------------------------------------------
 
 # Standardisation refits run on the model frame, whose columns are the
@@ -50,23 +49,51 @@ standardize_lm <- function(
   boot_n = 1000L
 ) {
   method <- match.arg(method)
-  if (is.null(weights)) weights <- stats::weights(fit)
+  if (is.null(weights)) {
+    weights <- stats::weights(fit)
+  }
 
   out <- switch(
     method,
-    refit   = standardize_refit_lm(fit, vcov_type, cluster, ci_level,
-                                    weights, boot_n),
-    posthoc = standardize_posthoc_lm(fit, vcov_type, cluster, ci_level,
-                                      weights, boot_n),
-    basic   = standardize_basic_lm(fit, vcov_type, cluster, ci_level,
-                                    weights, boot_n),
-    smart   = standardize_smart_lm(fit, vcov_type, cluster, ci_level,
-                                    weights, boot_n)
+    refit = standardize_refit_lm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n
+    ),
+    posthoc = standardize_posthoc_lm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n
+    ),
+    basic = standardize_basic_lm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n
+    ),
+    smart = standardize_smart_lm(
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n
+    )
   )
   # Record the method ACTUALLY applied (the refit path may fall back to
   # posthoc, setting the attribute itself) so the footer can disclose a
   # fallback instead of printing the refit wording over posthoc numbers.
-  if (is.null(attr(out, "used_method"))) attr(out, "used_method") <- method
+  if (is.null(attr(out, "used_method"))) {
+    attr(out, "used_method") <- method
+  }
   out
 }
 
@@ -79,8 +106,14 @@ standardize_lm <- function(
 # Inference under refit is **identical** to inference on the
 # original fit (linear transformation preserves t and p) -- the only
 # differences are the magnitudes (beta) and SEs.
-standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
-                                  weights, boot_n) {
+standardize_refit_lm <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n
+) {
   mf <- stats::model.frame(fit)
   # Drop the auxiliary "(weights)" column that lm() injects when
   # weights are supplied -- passing it back as data confuses lm().
@@ -110,7 +143,9 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
   # asked for.
   formula <- strip_formula_env(stats::formula(fit))
   args <- list(formula = formula, data = mf)
-  if (!is.null(weights)) args$weights <- weights
+  if (!is.null(weights)) {
+    args$weights <- weights
+  }
   fit_std <- tryCatch(
     suppressWarnings(do.call(stats::lm, args)),
     error = function(e) NULL
@@ -138,7 +173,12 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
       class = "spicy_fallback"
     )
     out <- standardize_posthoc_lm(
-      fit, vcov_type, cluster, ci_level, weights, boot_n
+      fit,
+      vcov_type,
+      cluster,
+      ci_level,
+      weights,
+      boot_n
     )
     attr(out, "used_method") <- "posthoc"
     return(out)
@@ -157,8 +197,14 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
   # predictors are at their mean and factor predictors at the
   # reference level. Meaningful (non-zero in unbalanced designs);
   # matches effectsize::standardize_parameters(method = "refit").
-  coefs_inference_table(fit_std, vc_std, vcov_type, cluster, ci_level,
-                        intercept_to_na = FALSE)
+  coefs_inference_table(
+    fit_std,
+    vc_std,
+    vcov_type,
+    cluster,
+    ci_level,
+    intercept_to_na = FALSE
+  )
 }
 
 
@@ -178,12 +224,23 @@ standardize_refit_lm <- function(fit, vcov_type, cluster, ci_level,
 # Inference: SE_beta scales by the same per-column factor; t and p
 # are unchanged under linear transformation; CI rebuilt from
 # scaled SE.
-standardize_posthoc_lm <- function(fit, vcov_type, cluster, ci_level,
-                                    weights, boot_n) {
+standardize_posthoc_lm <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n
+) {
   scale_and_rebuild(
-    fit, vcov_type, cluster, ci_level, weights, boot_n,
-    factor_treatment = "unscaled",   # factors: scale by 1/sd_y only
-    input_scaling    = "sd"          # every numeric column: sd(X)
+    fit,
+    vcov_type,
+    cluster,
+    ci_level,
+    weights,
+    boot_n,
+    factor_treatment = "unscaled", # factors: scale by 1/sd_y only
+    input_scaling = "sd" # every numeric column: sd(X)
   )
 }
 
@@ -194,12 +251,23 @@ standardize_posthoc_lm <- function(fit, vcov_type, cluster, ci_level,
 # factor dummies. Matches `effectsize::standardize_parameters(
 # method = "basic")` -- the "naive" / "raw" approach where every
 # column gets the same algebraic treatment.
-standardize_basic_lm <- function(fit, vcov_type, cluster, ci_level,
-                                  weights, boot_n) {
+standardize_basic_lm <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n
+) {
   scale_and_rebuild(
-    fit, vcov_type, cluster, ci_level, weights, boot_n,
-    factor_treatment = "scale",      # factors: scale by sd_col/sd_y
-    input_scaling    = "sd"          # every numeric column: sd(X)
+    fit,
+    vcov_type,
+    cluster,
+    ci_level,
+    weights,
+    boot_n,
+    factor_treatment = "scale", # factors: scale by sd_col/sd_y
+    input_scaling = "sd" # every numeric column: sd(X)
   )
 }
 
@@ -234,12 +302,23 @@ standardize_basic_lm <- function(fit, vcov_type, cluster, ci_level,
 # the components) -- and the binary rule applies to the PRODUCT
 # column: a binary x binary interaction column is itself 0/1, so it
 # is left unscaled like any other binary input.
-standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
-                                  weights, boot_n) {
+standardize_smart_lm <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n
+) {
   scale_and_rebuild(
-    fit, vcov_type, cluster, ci_level, weights, boot_n,
-    factor_treatment = "unscaled",   # factors: scale by 1/sd_y only
-    input_scaling    = "gelman"      # continuous x 2sd, binaries raw
+    fit,
+    vcov_type,
+    cluster,
+    ci_level,
+    weights,
+    boot_n,
+    factor_treatment = "unscaled", # factors: scale by 1/sd_y only
+    input_scaling = "gelman" # continuous x 2sd, binaries raw
   )
 }
 
@@ -255,14 +334,24 @@ standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
 #   * factor_treatment routes dummies under "sd" scaling only
 #     ("unscaled" -> 1/sd_y_div for posthoc/smart, "scale" -> like any
 #     column for basic).
-.algebraic_scale_factors <- function(mm, factor_cols,
-                                     factor_treatment, input_scaling,
-                                     sd_y_div = 1) {
+.algebraic_scale_factors <- function(
+  mm,
+  factor_cols,
+  factor_treatment,
+  input_scaling,
+  sd_y_div = 1
+) {
   sd_x <- apply(mm, 2, stats::sd)
-  is_binary_numeric <- vapply(seq_len(ncol(mm)), function(j) {
-    if (j %in% factor_cols) return(FALSE)
-    length(unique(mm[, j])) == 2L
-  }, logical(1))
+  is_binary_numeric <- vapply(
+    seq_len(ncol(mm)),
+    function(j) {
+      if (j %in% factor_cols) {
+        return(FALSE)
+      }
+      length(unique(mm[, j])) == 2L
+    },
+    logical(1)
+  )
   if (input_scaling == "gelman") {
     # Gelman (2008): continuous inputs x 2sd; binary inputs -- numeric
     # 0/1 and factor dummies alike -- untouched.
@@ -301,10 +390,16 @@ standardize_smart_lm <- function(fit, vcov_type, cluster, ci_level,
 # distinct values that is NOT factor-derived. Factor-derived dummies
 # (which are also 0/1) are routed via factor_treatment under "sd"
 # scaling, and are always unscaled under "gelman".
-scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
-                               weights, boot_n,
-                               factor_treatment = c("scale", "unscaled"),
-                               input_scaling = c("sd", "gelman")) {
+scale_and_rebuild <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n,
+  factor_treatment = c("scale", "unscaled"),
+  input_scaling = c("sd", "gelman")
+) {
   factor_treatment <- match.arg(factor_treatment)
   input_scaling <- match.arg(input_scaling)
 
@@ -328,10 +423,11 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
   # (factor-derived columns routed via factor_treatment, binary
   # numerics via the gelman rule).
   scale_factor <- .algebraic_scale_factors(
-    mm, detect_factor_design_cols(fit),
+    mm,
+    detect_factor_design_cols(fit),
     factor_treatment = factor_treatment,
-    input_scaling    = input_scaling,
-    sd_y_div         = sd_y
+    input_scaling = input_scaling,
+    sd_y_div = sd_y
   )
 
   # beta and SE_beta. Singular coefs (NA in b) propagate naturally.
@@ -347,8 +443,10 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
   # b/SE_b is unchanged from the original; we recompute from
   # scaled values for code symmetry.
   df_resid <- stats::df.residual(fit)
-  is_asymptotic <- vcov_type %in% c("bootstrap", "jackknife") ||
-    !is.finite(df_resid) || df_resid <= 0
+  is_asymptotic <- vcov_type %in%
+    c("bootstrap", "jackknife") ||
+    !is.finite(df_resid) ||
+    df_resid <= 0
   alpha <- 1 - ci_level
   crit <- if (is_asymptotic) {
     stats::qnorm(1 - alpha / 2)
@@ -382,17 +480,28 @@ scale_and_rebuild <- function(fit, vcov_type, cluster, ci_level,
 
 # Used by standardize_refit_lm() to compute (beta, SE, CI, t, p) from
 # the refitted lm + its recomputed vcov.
-coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
-                                   ci_level, intercept_to_na = TRUE) {
+coefs_inference_table <- function(
+  fit_std,
+  vc_std,
+  vcov_type,
+  cluster,
+  ci_level,
+  intercept_to_na = TRUE
+) {
   cf <- stats::coef(fit_std)
   rows <- lapply(seq_along(cf), function(i) {
     if (is.na(cf[i])) {
-      list(estimate = NA_real_, se = NA_real_, ci_lower = NA_real_,
-           ci_upper = NA_real_, statistic = NA_real_, df = NA_real_,
-           p.value = NA_real_)
+      list(
+        estimate = NA_real_,
+        se = NA_real_,
+        ci_lower = NA_real_,
+        ci_upper = NA_real_,
+        statistic = NA_real_,
+        df = NA_real_,
+        p.value = NA_real_
+      )
     } else {
-      compute_coef_inference(fit_std, i, vc_std, vcov_type,
-                                 cluster, ci_level)
+      compute_coef_inference(fit_std, i, vc_std, vcov_type, cluster, ci_level)
     }
   })
 
@@ -407,10 +516,13 @@ coefs_inference_table <- function(fit_std, vc_std, vcov_type, cluster,
     p_value = vapply(rows, `[[`, double(1), "p.value"),
     stringsAsFactors = FALSE
   )
-  if (isTRUE(intercept_to_na) && nrow(out) >= 1L &&
-        out$term[1] == "(Intercept)") {
-    out[1, c("estimate", "se", "ci_low", "ci_high",
-             "statistic", "p_value")] <- NA_real_
+  if (
+    isTRUE(intercept_to_na) && nrow(out) >= 1L && out$term[1] == "(Intercept)"
+  ) {
+    out[
+      1,
+      c("estimate", "se", "ci_low", "ci_high", "statistic", "p_value")
+    ] <- NA_real_
   }
   out
 }
@@ -432,9 +544,12 @@ detect_factor_design_cols <- function(fit) {
     # $xlevels fast path hits first).
     xlevels <- tryCatch(
       stats::.getXlevels(stats::terms(fit), stats::model.frame(fit)),
-      error = function(e) NULL)
+      error = function(e) NULL
+    )
   }
-  if (is.null(xlevels) || length(xlevels) == 0L) return(integer(0))
+  if (is.null(xlevels) || length(xlevels) == 0L) {
+    return(integer(0))
+  }
 
   mm <- stats::model.matrix(fit)
   assign_vec <- attr(mm, "assign")
@@ -444,7 +559,9 @@ detect_factor_design_cols <- function(fit) {
   out <- integer(0)
   for (i in seq_along(assign_vec)) {
     term_idx <- assign_vec[i]
-    if (term_idx == 0L) next   # intercept
+    if (term_idx == 0L) {
+      next
+    } # intercept
     term_name <- term_labels[term_idx]
     # Pure factor main effect (no interaction with another variable)
     if (term_name %in% factor_terms) {
@@ -461,23 +578,39 @@ detect_factor_design_cols <- function(fit) {
 # the standardise table into long-format rows with
 # estimate_type = "beta" so it stacks via rbind() with the existing
 # B rows.
-extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
-                               ci_level, weights, boot_n,
-                               model_id, outcome) {
+extract_beta_rows <- function(
+  fit,
+  standardized,
+  vcov_type,
+  cluster,
+  ci_level,
+  weights,
+  boot_n,
+  model_id,
+  outcome
+) {
   # Dispatch on class: glm has its own 5-method standardise machinery
   # (5th = "pseudo", Menard 2011 fully-standardised), with X-only
   # algebraic semantics for the other four (Long & Freese 2014 Section 4.7.2).
   std_table <- if (inherits(fit, "glm")) {
     standardize_glm(
-      fit, method = standardized,
-      vcov_type = vcov_type, cluster = cluster,
-      ci_level = ci_level, weights = weights, boot_n = boot_n
+      fit,
+      method = standardized,
+      vcov_type = vcov_type,
+      cluster = cluster,
+      ci_level = ci_level,
+      weights = weights,
+      boot_n = boot_n
     )
   } else {
     standardize_lm(
-      fit, method = standardized,
-      vcov_type = vcov_type, cluster = cluster,
-      ci_level = ci_level, weights = weights, boot_n = boot_n
+      fit,
+      method = standardized,
+      vcov_type = vcov_type,
+      cluster = cluster,
+      ci_level = ci_level,
+      weights = weights,
+      boot_n = boot_n
     )
   }
 
@@ -491,11 +624,16 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     is_singular <- is.na(cf[i])
 
     build_one_b_row(
-      nm = nm, model_id = model_id, outcome = outcome,
+      nm = nm,
+      model_id = model_id,
+      outcome = outcome,
       estimate_type = "beta",
-      estimate = std_table$estimate[i], se = std_table$se[i],
-      ci_low = std_table$ci_low[i], ci_high = std_table$ci_high[i],
-      statistic = std_table$statistic[i], df = std_table$df[i],
+      estimate = std_table$estimate[i],
+      se = std_table$se[i],
+      ci_low = std_table$ci_low[i],
+      ci_high = std_table$ci_high[i],
+      statistic = std_table$statistic[i],
+      df = std_table$df[i],
       p_value = std_table$p_value[i],
       test_type = NA_character_,
       is_singular = is_singular,
@@ -544,7 +682,9 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     },
     error = function(e) NULL
   )
-  if (is.null(data)) return(NULL)  # nocov (model.frame/getData errors on real fits)
+  if (is.null(data)) {
+    return(NULL)
+  } # nocov (model.frame/getData errors on real fits)
 
   # Identify the response variable -- non-Gaussian families (binomial,
   # poisson, ...) require y bounded / integer-valued, so we standardise
@@ -558,11 +698,16 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   )[1L]
 
   for (nm in names(data)) {
-    if (!is.numeric(data[[nm]]) || !is.null(dim(data[[nm]])) ||
-        startsWith(nm, "(")) {
-      next  # skip matrix columns (poly/ns bases, cbind() responses)
+    if (
+      !is.numeric(data[[nm]]) ||
+        !is.null(dim(data[[nm]])) ||
+        startsWith(nm, "(")
+    ) {
+      next # skip matrix columns (poly/ns bases, cbind() responses)
     }
-    if (!is_gaussian && identical(nm, response_var)) next  # skip y on glmm
+    if (!is_gaussian && identical(nm, response_var)) {
+      next
+    } # skip y on glmm
     sd_x <- stats::sd(data[[nm]], na.rm = TRUE)
     if (is.finite(sd_x) && sd_x > 0) {
       data[[nm]] <- as.numeric(scale(data[[nm]]))
@@ -574,8 +719,10 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   # (log of a z-scored variable, ...) -- a different model, silently.
   # Decline instead; the caller warns and omits the beta rows.
   if (inherits(fit, c("lme", "gls"))) {
-    vars <- tryCatch(as.list(attr(stats::terms(fit), "variables"))[-1L],
-                     error = function(e) NULL)
+    vars <- tryCatch(
+      as.list(attr(stats::terms(fit), "variables"))[-1L],
+      error = function(e) NULL
+    )
     if (is.null(vars) || !all(vapply(vars, is.symbol, logical(1)))) {
       return(NULL)
     }
@@ -591,34 +738,44 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   # the *evaluated* terms, and an intact formula environment lets an
   # inline transform silently re-evaluate against the caller's raw
   # unscaled vectors instead of erroring into the warned fallback.
-  fit_std <- tryCatch({
-    call_copy <- stats::getCall(fit)
-    if (is.null(call_copy)) return(NULL)  # nocov (real fits always carry a call)
-    if (inherits(fit, "lmerModLmerTest") || inherits(fit, "lmerMod")) {
-      call_copy[[1L]] <- quote(lme4::lmer)
-      call_copy <- match.call(lme4::lmer, call_copy)
-      call_copy$formula <- strip_formula_env(stats::formula(fit))
-    } else if (inherits(fit, "glmerMod")) {
-      call_copy[[1L]] <- quote(lme4::glmer)
-      call_copy <- match.call(lme4::glmer, call_copy)
-      call_copy$formula <- strip_formula_env(stats::formula(fit))
-    } else if (inherits(fit, "glmmTMB")) {
-      call_copy[[1L]] <- quote(glmmTMB::glmmTMB)
-      call_copy <- match.call(glmmTMB::glmmTMB, call_copy)
-      call_copy$formula <- strip_formula_env(stats::formula(fit))
-    } else if (inherits(fit, "lme")) {
-      call_copy[[1L]] <- quote(nlme::lme)
-      call_copy <- match.call(nlme::lme, call_copy)
-      call_copy$fixed <- strip_formula_env(stats::formula(fit))
-    } else {
-      # nocov start (only the 4 dispatched engines ever reach here)
-      return(NULL)
-      # nocov end
-    }
-    call_copy$data <- data
-    suppressMessages(suppressWarnings(eval(call_copy, envir = parent.frame())))
-  }, error = function(e) NULL)
-  if (is.null(fit_std)) return(NULL)
+  fit_std <- tryCatch(
+    {
+      call_copy <- stats::getCall(fit)
+      if (is.null(call_copy)) {
+        return(NULL)
+      } # nocov (real fits always carry a call)
+      if (inherits(fit, "lmerModLmerTest") || inherits(fit, "lmerMod")) {
+        call_copy[[1L]] <- quote(lme4::lmer)
+        call_copy <- match.call(lme4::lmer, call_copy)
+        call_copy$formula <- strip_formula_env(stats::formula(fit))
+      } else if (inherits(fit, "glmerMod")) {
+        call_copy[[1L]] <- quote(lme4::glmer)
+        call_copy <- match.call(lme4::glmer, call_copy)
+        call_copy$formula <- strip_formula_env(stats::formula(fit))
+      } else if (inherits(fit, "glmmTMB")) {
+        call_copy[[1L]] <- quote(glmmTMB::glmmTMB)
+        call_copy <- match.call(glmmTMB::glmmTMB, call_copy)
+        call_copy$formula <- strip_formula_env(stats::formula(fit))
+      } else if (inherits(fit, "lme")) {
+        call_copy[[1L]] <- quote(nlme::lme)
+        call_copy <- match.call(nlme::lme, call_copy)
+        call_copy$fixed <- strip_formula_env(stats::formula(fit))
+      } else {
+        # nocov start (only the 4 dispatched engines ever reach here)
+        return(NULL)
+        # nocov end
+      }
+      call_copy$data <- data
+      suppressMessages(suppressWarnings(eval(
+        call_copy,
+        envir = parent.frame()
+      )))
+    },
+    error = function(e) NULL
+  )
+  if (is.null(fit_std)) {
+    return(NULL)
+  }
 
   # Extract fixef + vcov from the refitted model (engine-aware), then
   # build frame-schema rows with estimate_type = "beta". Inference is
@@ -635,52 +792,61 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     },
     error = function(e) NULL
   )
-  if (is.null(bhat) || length(bhat) == 0L) return(NULL)  # nocov (fixef extraction never errors/empties on a converged refit)
+  if (is.null(bhat) || length(bhat) == 0L) {
+    return(NULL)
+  } # nocov (fixef extraction never errors/empties on a converged refit)
 
-  V <- tryCatch({
-    v <- stats::vcov(fit_std)
-    if (inherits(fit_std, "glmmTMB")) {
-      v_cond <- tryCatch(v$cond, error = function(e) NULL)
-      # nocov start (secondary fallback; `v$cond` succeeds for real glmmTMB vcov)
-      if (is.null(v_cond)) v_cond <- tryCatch(v[["cond"]],
-                                                error = function(e) NULL)
-      # nocov end
-      if (!is.null(v_cond)) v <- v_cond
-    }
-    as.matrix(v)
-  }, error = function(e) NULL)
-  if (is.null(V) || nrow(V) != length(bhat)) return(NULL)  # nocov (vcov is square + conformable on a converged refit)
+  V <- tryCatch(
+    {
+      v <- stats::vcov(fit_std)
+      if (inherits(fit_std, "glmmTMB")) {
+        v_cond <- tryCatch(v$cond, error = function(e) NULL)
+        # nocov start (secondary fallback; `v$cond` succeeds for real glmmTMB vcov)
+        if (is.null(v_cond)) {
+          v_cond <- tryCatch(v[["cond"]], error = function(e) NULL)
+        }
+        # nocov end
+        if (!is.null(v_cond)) v <- v_cond
+      }
+      as.matrix(v)
+    },
+    error = function(e) NULL
+  )
+  if (is.null(V) || nrow(V) != length(bhat)) {
+    return(NULL)
+  } # nocov (vcov is square + conformable on a converged refit)
 
   se <- sqrt(diag(V))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
-  factor_meta <- tryCatch(detect_factor_term_meta(fit),
-                           error = function(e) list())
+  factor_meta <- tryCatch(detect_factor_term_meta(fit), error = function(e) {
+    list()
+  })
 
   nm <- names(bhat)
   rows <- lapply(seq_along(bhat), function(i) {
     fmeta <- factor_meta[[nm[i]]]
-    parent_var <- fmeta$factor_term  %||% nm[i]
-    label      <- fmeta$factor_level %||% nm[i]
-    pos        <- fmeta$factor_level_pos %||% NA_integer_
+    parent_var <- fmeta$factor_term %||% nm[i]
+    label <- fmeta$factor_level %||% nm[i]
+    pos <- fmeta$factor_level_pos %||% NA_integer_
 
     stat <- bhat[i] / se[i]
-    p    <- 2 * stats::pnorm(-abs(stat))
+    p <- 2 * stats::pnorm(-abs(stat))
 
     data.frame(
-      term             = nm[i],
-      parent_var       = parent_var,
-      label            = label,
+      term = nm[i],
+      parent_var = parent_var,
+      label = label,
       factor_level_pos = as.integer(pos),
-      is_ref           = FALSE,
-      estimate_type    = "beta",
-      estimate         = as.numeric(bhat[i]),
-      std_error        = as.numeric(se[i]),
-      df               = Inf,
-      statistic        = as.numeric(stat),
-      p_value          = as.numeric(p),
-      ci_lower         = as.numeric(bhat[i] - z_crit * se[i]),
-      ci_upper         = as.numeric(bhat[i] + z_crit * se[i]),
-      test_type        = "z",
+      is_ref = FALSE,
+      estimate_type = "beta",
+      estimate = as.numeric(bhat[i]),
+      std_error = as.numeric(se[i]),
+      df = Inf,
+      statistic = as.numeric(stat),
+      p_value = as.numeric(p),
+      ci_lower = as.numeric(bhat[i] - z_crit * se[i]),
+      ci_upper = as.numeric(bhat[i] + z_crit * se[i]),
+      test_type = "z",
       stringsAsFactors = FALSE
     )
   })
@@ -693,8 +859,12 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
 # engine). All four mixed-effects methods (lmer / glmer / glmmTMB /
 # lme) currently support only the "refit" method; other choices fall
 # back to refit with a spicy_fallback warning.
-.attach_beta_to_frame_coefs <- function(coefs, fit, standardized,
-                                          ci_level = 0.95) {
+.attach_beta_to_frame_coefs <- function(
+  coefs,
+  fit,
+  standardized,
+  ci_level = 0.95
+) {
   if (identical(standardized, "none") || is.null(standardized)) {
     return(coefs)
   }
@@ -702,8 +872,10 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
     spicy_warn(
       c(
         sprintf(
-          paste0("`standardized = \"%s\"` is not yet implemented for ",
-                  "mixed-effects fits; falling back to \"refit\"."),
+          paste0(
+            "`standardized = \"%s\"` is not yet implemented for ",
+            "mixed-effects fits; falling back to \"refit\"."
+          ),
           standardized
         ),
         "i" = paste0(
@@ -719,8 +891,10 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   if (is.null(res)) {
     spicy_warn(
       c(
-        paste0("Standardised coefficients unavailable: the refit on ",
-               "z-scored data could not be built for this fit."),
+        paste0(
+          "Standardised coefficients unavailable: the refit on ",
+          "z-scored data could not be built for this fit."
+        ),
         "i" = paste0(
           "Formulas with inline function calls (`log(x)`, `poly(x, 2)`, ",
           "...) cannot be re-evaluated on z-scored data. Pre-build the ",
@@ -745,13 +919,15 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   idx <- match(beta_rows$term, b_rows$term)
   ok <- !is.na(idx) &
     b_rows$test_type[idx] %in% "t" &
-    is.finite(b_rows$df[idx]) & b_rows$df[idx] > 0 &
-    is.finite(beta_rows$statistic) & is.finite(beta_rows$std_error)
+    is.finite(b_rows$df[idx]) &
+    b_rows$df[idx] > 0 &
+    is.finite(beta_rows$statistic) &
+    is.finite(beta_rows$std_error)
   if (any(ok)) {
-    beta_rows$df[ok]        <- b_rows$df[idx[ok]]
+    beta_rows$df[ok] <- b_rows$df[idx[ok]]
     beta_rows$test_type[ok] <- "t"
-    beta_rows$p_value[ok]   <- 2 * stats::pt(-abs(beta_rows$statistic[ok]),
-                                             df = beta_rows$df[ok])
+    beta_rows$p_value[ok] <- 2 *
+      stats::pt(-abs(beta_rows$statistic[ok]), df = beta_rows$df[ok])
     crit <- stats::qt(0.5 + ci_level / 2, df = beta_rows$df[ok])
     beta_rows$ci_lower[ok] <- beta_rows$estimate[ok] -
       crit * beta_rows$std_error[ok]
@@ -760,7 +936,7 @@ extract_beta_rows <- function(fit, standardized, vcov_type, cluster,
   }
 
   for (col in setdiff(colnames(coefs), colnames(beta_rows))) {
-    beta_rows[[col]] <- coefs[[col]][NA_integer_]  # nocov (beta_rows already carries the full coefs schema)
+    beta_rows[[col]] <- coefs[[col]][NA_integer_] # nocov (beta_rows already carries the full coefs schema)
   }
   beta_rows <- beta_rows[, colnames(coefs), drop = FALSE]
   rbind(coefs, beta_rows)

@@ -37,9 +37,10 @@ test_that("M3: single-model reference rows still en-dash everywhere", {
 
 test_that("m2: gt renders model labels that collide under make.names()", {
   skip_if_not_installed("gt")
-  g <- table_regression(list("Step 1" = .sp_m_factor(),
-                             "Step.1" = .sp_m_plain()),
-                        output = "gt")
+  g <- table_regression(
+    list("Step 1" = .sp_m_factor(), "Step.1" = .sp_m_plain()),
+    output = "gt"
+  )
   expect_s3_class(g, "gt_tbl")
 })
 

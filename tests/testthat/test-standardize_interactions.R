@@ -11,7 +11,7 @@
 .si_data <- function(seed = 5, n = 300) {
   set.seed(seed)
   x <- rnorm(n)
-  z <- 0.6 * x + rnorm(n)  # correlated components: conventions differ
+  z <- 0.6 * x + rnorm(n) # correlated components: conventions differ
   y <- 1 + 0.5 * x + 0.3 * z + 0.4 * x * z + rnorm(n)
   data.frame(y = y, x = x, z = z)
 }
@@ -22,9 +22,11 @@ test_that("refit interaction beta matches effectsize refit (1e-7)", {
   fit <- lm(y ~ x * z, data = d)
   s <- suppressWarnings(spicy:::standardize_lm(fit, method = "refit"))
   es <- effectsize::standardize_parameters(fit, method = "refit")
-  expect_equal(s$estimate[s$term == "x:z"],
-               es$Std_Coefficient[es$Parameter == "x:z"],
-               tolerance = 1e-7)
+  expect_equal(
+    s$estimate[s$term == "x:z"],
+    es$Std_Coefficient[es$Parameter == "x:z"],
+    tolerance = 1e-7
+  )
 })
 
 test_that("basic interaction beta matches effectsize basic AND lm.beta (1e-7)", {
@@ -35,8 +37,11 @@ test_that("basic interaction beta matches effectsize basic AND lm.beta (1e-7)", 
 
   if (requireNamespace("effectsize", quietly = TRUE)) {
     es <- effectsize::standardize_parameters(fit, method = "basic")
-    expect_equal(b_spicy, es$Std_Coefficient[es$Parameter == "x:z"],
-                 tolerance = 1e-7)
+    expect_equal(
+      b_spicy,
+      es$Std_Coefficient[es$Parameter == "x:z"],
+      tolerance = 1e-7
+    )
   }
   # Manual lm.beta convention: b * sd(product column) / sd(y).
   X <- model.matrix(fit)
@@ -62,38 +67,56 @@ test_that("smart: binary x binary product column stays unscaled (Gelman)", {
   # each smart beta reduces to b / sd(y).
   b <- coef(fit)
   for (trm in c("b1", "b2", "b1:b2")) {
-    expect_equal(s_smart$estimate[s_smart$term == trm],
-                 unname(b[trm]) / sd(d$y),
-                 tolerance = 1e-10)
+    expect_equal(
+      s_smart$estimate[s_smart$term == trm],
+      unname(b[trm]) / sd(d$y),
+      tolerance = 1e-10
+    )
   }
 })
 
 test_that("fallback-aware footer: refit failure names the posthoc convention", {
   set.seed(31)
-  xp <- exp(rnorm(200)); z <- rnorm(200)
+  xp <- exp(rnorm(200))
+  z <- rnorm(200)
   d <- data.frame(y = log(xp) * 0.5 + z + rnorm(200), xp = xp, z = z)
   fit <- lm(y ~ log(xp) * z, data = d)
   fb_seen <- FALSE
   out <- withCallingHandlers(
-    table_regression(fit, standardized = "refit",
-                     show_columns = c("b", "beta", "p")),
-    spicy_fallback = function(c) { fb_seen <<- TRUE; invokeRestart("muffleWarning") },
+    table_regression(
+      fit,
+      standardized = "refit",
+      show_columns = c("b", "beta", "p")
+    ),
+    spicy_fallback = function(c) {
+      fb_seen <<- TRUE
+      invokeRestart("muffleWarning")
+    },
     spicy_caveat = function(c) invokeRestart("muffleWarning")
   )
   expect_true(fb_seen)
   note <- paste(attr(out, "note"), collapse = "\n")
-  expect_match(note, "\"refit\" failed; algebraic (posthoc) scaling applied",
-               fixed = TRUE)
-  expect_match(note, "SD of the product (or transformed) design column",
-               fixed = TRUE)
+  expect_match(
+    note,
+    "\"refit\" failed; algebraic (posthoc) scaling applied",
+    fixed = TRUE
+  )
+  expect_match(
+    note,
+    "SD of the product (or transformed) design column",
+    fixed = TRUE
+  )
 })
 
 test_that("non-fallback refit keeps the refit footer wording", {
   d <- .si_data()
   fit <- lm(y ~ x * z, data = d)
   out <- withCallingHandlers(
-    table_regression(fit, standardized = "refit",
-                     show_columns = c("b", "beta", "p")),
+    table_regression(
+      fit,
+      standardized = "refit",
+      show_columns = c("b", "beta", "p")
+    ),
     spicy_caveat = function(c) invokeRestart("muffleWarning")
   )
   note <- paste(attr(out, "note"), collapse = "\n")

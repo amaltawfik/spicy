@@ -15,14 +15,18 @@
 #     skip and the final empty-rows return.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_polr_link <- function(method) {
   skip_if_not_installed("MASS")
   data(housing, package = "MASS", envir = environment())
-  MASS::polr(Sat ~ Infl + Type + Cont, weights = Freq, data = housing,
-             Hess = TRUE, method = method)
+  MASS::polr(
+    Sat ~ Infl + Type + Cont,
+    weights = Freq,
+    data = housing,
+    Hess = TRUE,
+    method = method
+  )
 }
 
 .fit_clm_link <- function(link) {
@@ -40,8 +44,10 @@ test_that("polr probit fit reports the probit link and title", {
   expect_match(fr$info$extras$title_prefix, "Cumulative probit", fixed = TRUE)
   # A probit model has no odds: the assumption suffix is the
   # link-neutral parallel-slopes name, never "proportional odds".
-  expect_identical(fr$info$extras$title_prefix,
-                   "Cumulative probit regression (parallel slopes)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cumulative probit regression (parallel slopes)"
+  )
   expect_invisible(spicy:::validate_regression_frame(fr))
 })
 
@@ -49,16 +55,24 @@ test_that("the assumption suffix is named by the link across engines", {
   # polr logit keeps the canonical proportional-odds name.
   fit_l <- .fit_polr_link("logistic")
   fr_l <- as_regression_frame(fit_l, model_id = "M1")
-  expect_identical(fr_l$info$extras$title_prefix,
-                   "Cumulative logit regression (proportional odds)")
+  expect_identical(
+    fr_l$info$extras$title_prefix,
+    "Cumulative logit regression (proportional odds)"
+  )
   # clm shares the mapping: probit -> parallel slopes.
   skip_if_not_installed("ordinal")
   fit_cp <- .fit_clm_link("probit")
   fr_cp <- as_regression_frame(fit_cp, model_id = "M1")
-  expect_match(fr_cp$info$extras$title_prefix, "(parallel slopes)",
-               fixed = TRUE)
-  expect_false(grepl("proportional odds", fr_cp$info$extras$title_prefix,
-                     fixed = TRUE))
+  expect_match(
+    fr_cp$info$extras$title_prefix,
+    "(parallel slopes)",
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "proportional odds",
+    fr_cp$info$extras$title_prefix,
+    fixed = TRUE
+  ))
 })
 
 test_that("polr cloglog fit reports the cloglog link and title", {
@@ -74,24 +88,28 @@ test_that("polr cloglog fit reports the cloglog link and title", {
   # proportional-hazards model (McCullagh 1980); "proportional odds"
   # only exists under logit.
   expect_identical(fr$info$family$family, "cumulative")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Cumulative cloglog regression (proportional hazards)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cumulative cloglog regression (proportional hazards)"
+  )
   # cloglog is a non-canonical link but exponentiation is still offered
   # (hazard-ratio interpretation), shared by all cumulative-link fits.
   expect_true(isTRUE(fr$info$supports$exponentiate))
   # housing's Sat has 3 ordered levels -> (k - 1) = 2 cumulative
   # thresholds, named for the adjacent-level cutpoints.
-  expect_identical(fr$info$extras$response_levels,
-                   c("Low", "Medium", "High"))
-  expect_identical(nrow(fr$info$extras$thresholds),
-                   length(fit$lev) - 1L)
-  expect_identical(fr$info$extras$thresholds$term,
-                   c("Low|Medium", "Medium|High"))
+  expect_identical(fr$info$extras$response_levels, c("Low", "Medium", "High"))
+  expect_identical(nrow(fr$info$extras$thresholds), length(fit$lev) - 1L)
+  expect_identical(
+    fr$info$extras$thresholds$term,
+    c("Low|Medium", "Medium|High")
+  )
   # The three factor predictors (Infl, Type, Cont) each contribute one
   # synthesised reference row; structural content, not just a count.
   expect_identical(sum(fr$coefs$is_ref), 3L)
-  expect_identical(fr$coefs$term[fr$coefs$is_ref],
-                   c("InflLow", "TypeTower", "ContLow"))
+  expect_identical(
+    fr$coefs$term[fr$coefs$is_ref],
+    c("InflLow", "TypeTower", "ContLow")
+  )
   # Reference rows carry NA estimates and z-asymptotic test type for the
   # estimated rows.
   expect_true(all(is.na(fr$coefs$estimate[fr$coefs$is_ref])))
@@ -110,22 +128,26 @@ test_that("polr loglog fit reports the loglog link and title", {
   # reading, so the suffix falls to the link-neutral parallel-slopes
   # name of the shared restriction.
   expect_identical(fr$info$family$family, "cumulative")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Cumulative loglog regression (parallel slopes)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cumulative loglog regression (parallel slopes)"
+  )
   expect_true(isTRUE(fr$info$supports$exponentiate))
   # housing's Sat has 3 ordered levels -> (k - 1) = 2 cumulative
   # thresholds, named for the adjacent-level cutpoints.
-  expect_identical(fr$info$extras$response_levels,
-                   c("Low", "Medium", "High"))
-  expect_identical(nrow(fr$info$extras$thresholds),
-                   length(fit$lev) - 1L)
-  expect_identical(fr$info$extras$thresholds$term,
-                   c("Low|Medium", "Medium|High"))
+  expect_identical(fr$info$extras$response_levels, c("Low", "Medium", "High"))
+  expect_identical(nrow(fr$info$extras$thresholds), length(fit$lev) - 1L)
+  expect_identical(
+    fr$info$extras$thresholds$term,
+    c("Low|Medium", "Medium|High")
+  )
   # The three factor predictors (Infl, Type, Cont) each contribute one
   # synthesised reference row; structural content, not just a count.
   expect_identical(sum(fr$coefs$is_ref), 3L)
-  expect_identical(fr$coefs$term[fr$coefs$is_ref],
-                   c("InflLow", "TypeTower", "ContLow"))
+  expect_identical(
+    fr$coefs$term[fr$coefs$is_ref],
+    c("InflLow", "TypeTower", "ContLow")
+  )
   expect_true(all(is.na(fr$coefs$estimate[fr$coefs$is_ref])))
   expect_true(all(fr$coefs$test_type[!fr$coefs$is_ref] == "z"))
 })
@@ -133,8 +155,10 @@ test_that("polr loglog fit reports the loglog link and title", {
 test_that("polr cauchit fit reports the cauchit link and title", {
   skip_if_not_installed("MASS")
   set.seed(42)
-  df <- data.frame(y = ordered(sample(1:3, 200, replace = TRUE)),
-                   x = rnorm(200))
+  df <- data.frame(
+    y = ordered(sample(1:3, 200, replace = TRUE)),
+    x = rnorm(200)
+  )
   fit <- MASS::polr(y ~ x, data = df, Hess = TRUE, method = "cauchit")
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "cauchit")
@@ -178,13 +202,19 @@ test_that("clm flexible Aranda-Ordaz link hits the switch fallback title", {
   # Aranda-Ordaz is a valid clm link but is NOT in the .clm_link_title
   # switch, so it exercises the paste0() fallback arm.
   fit <- suppressWarnings(
-    ordinal::clm(rating ~ temp + contact, data = ordinal::wine,
-                 link = "Aranda-Ordaz"))
+    ordinal::clm(
+      rating ~ temp + contact,
+      data = ordinal::wine,
+      link = "Aranda-Ordaz"
+    )
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "Aranda-Ordaz")
   # A flexible-link family has no odds reading: link-neutral suffix.
-  expect_identical(fr$info$extras$title_prefix,
-                   "Cumulative Aranda-Ordaz regression (parallel slopes)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cumulative Aranda-Ordaz regression (parallel slopes)"
+  )
 })
 
 
@@ -201,10 +231,10 @@ test_that("intercept-only clm yields an empty coefs frame (no predictors)", {
   expect_invisible(spicy:::validate_regression_frame(fr))
   expect_true(all(
     c("term", "parent_var", "label", "estimate", "is_ref") %in%
-      colnames(fr$coefs)))
+      colnames(fr$coefs)
+  ))
   # Thresholds are still present even with no predictors.
-  expect_identical(nrow(fr$info$extras$thresholds),
-                   length(fit$y.levels) - 1L)
+  expect_identical(nrow(fr$info$extras$thresholds), length(fit$y.levels) - 1L)
 })
 
 
@@ -226,8 +256,11 @@ test_that("intercept-only clm yields an empty coefs frame (no predictors)", {
 
 test_that("clm equidistant thresholds get correct, non-NA SEs", {
   skip_if_not_installed("ordinal")
-  fit <- ordinal::clm(rating ~ temp + contact, data = ordinal::wine,
-                      threshold = "equidistant")
+  fit <- ordinal::clm(
+    rating ~ temp + contact,
+    data = ordinal::wine,
+    threshold = "equidistant"
+  )
   th <- spicy:::.clm_thresholds(fit)
   alpha_names <- names(fit$alpha)
   # Equidistant uses the reduced (threshold.1, spacing) parameterization.
@@ -249,8 +282,11 @@ test_that("clm equidistant thresholds get correct, non-NA SEs", {
 
 test_that("clm symmetric thresholds get correct, non-NA SEs", {
   skip_if_not_installed("ordinal")
-  fit <- ordinal::clm(rating ~ temp + contact, data = ordinal::wine,
-                      threshold = "symmetric")
+  fit <- ordinal::clm(
+    rating ~ temp + contact,
+    data = ordinal::wine,
+    threshold = "symmetric"
+  )
   th <- spicy:::.clm_thresholds(fit)
   alpha_names <- names(fit$alpha)
   # Symmetric uses the reduced (central.1, central.2, spacing.1) layout.
@@ -267,8 +303,11 @@ test_that("clm symmetric thresholds get correct, non-NA SEs", {
 
 test_that("clm flexible thresholds get correct per-cutpoint SEs", {
   skip_if_not_installed("ordinal")
-  fit <- ordinal::clm(rating ~ temp + contact, data = ordinal::wine,
-                      threshold = "flexible")
+  fit <- ordinal::clm(
+    rating ~ temp + contact,
+    data = ordinal::wine,
+    threshold = "flexible"
+  )
   th <- spicy:::.clm_thresholds(fit)
   # Flexible names cutpoints "1|2", "2|3", ... -- (k - 1) of them.
   expect_identical(th$term, c("1|2", "2|3", "3|4", "4|5"))
@@ -283,14 +322,17 @@ test_that("clm flexible thresholds get correct per-cutpoint SEs", {
 test_that("continuous-only polr fit synthesises no reference rows", {
   skip_if_not_installed("MASS")
   set.seed(1)
-  df <- data.frame(y = ordered(sample(1:3, 150, replace = TRUE)),
-                   x1 = rnorm(150), x2 = rnorm(150))
+  df <- data.frame(
+    y = ordered(sample(1:3, 150, replace = TRUE)),
+    x1 = rnorm(150),
+    x2 = rnorm(150)
+  )
   fit <- MASS::polr(y ~ x1 + x2, data = df, Hess = TRUE)
   rr <- spicy:::.ordinal_reference_rows(fit)
   expect_identical(nrow(rr), 0L)
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(sum(fr$coefs$is_ref), 0L)
-  expect_identical(nrow(fr$coefs), 2L)  # x1, x2 -- no ref rows
+  expect_identical(nrow(fr$coefs), 2L) # x1, x2 -- no ref rows
 })
 
 
@@ -304,14 +346,19 @@ test_that("ordered (polynomial-contrast) predictor synthesises no ref rows", {
   # (the `next` arm) and returns the empty frame.
   set.seed(7)
   n <- 300
-  xo <- ordered(sample(c("lo", "mid", "hi"), n, replace = TRUE),
-                levels = c("lo", "mid", "hi"))
+  xo <- ordered(
+    sample(c("lo", "mid", "hi"), n, replace = TRUE),
+    levels = c("lo", "mid", "hi")
+  )
   df <- data.frame(y = ordered(sample(1:4, n, replace = TRUE)), xo = xo)
   fit <- MASS::polr(y ~ xo, data = df, Hess = TRUE)
   # Confirm the precondition: a factor term with reference_dropped = FALSE.
   fts <- spicy:::detect_factor_terms(fit)
-  expect_true(any(vapply(fts, function(f) !isTRUE(f$reference_dropped),
-                         logical(1))))
+  expect_true(any(vapply(
+    fts,
+    function(f) !isTRUE(f$reference_dropped),
+    logical(1)
+  )))
   rr <- spicy:::.ordinal_reference_rows(fit)
   expect_identical(nrow(rr), 0L)
   fr <- as_regression_frame(fit, model_id = "M1")
@@ -323,8 +370,10 @@ test_that("ordered (polynomial-contrast) predictor also skips ref rows in clm", 
   skip_if_not_installed("ordinal")
   set.seed(7)
   n <- 300
-  xo <- ordered(sample(c("lo", "mid", "hi"), n, replace = TRUE),
-                levels = c("lo", "mid", "hi"))
+  xo <- ordered(
+    sample(c("lo", "mid", "hi"), n, replace = TRUE),
+    levels = c("lo", "mid", "hi")
+  )
   df <- data.frame(y = ordered(sample(1:4, n, replace = TRUE)), xo = xo)
   fit <- ordinal::clm(y ~ xo, data = df)
   rr <- spicy:::.ordinal_reference_rows(fit)
@@ -337,9 +386,9 @@ test_that("has_weights detects non-uniform prior weights for polr AND clm", {
   data(housing, package = "MASS")
   # Neither class stores $weights; the previous polr check was always
   # FALSE and clm hardcoded FALSE.
-  p_w  <- MASS::polr(Sat ~ Infl, weights = Freq, data = housing, Hess = TRUE)
+  p_w <- MASS::polr(Sat ~ Infl, weights = Freq, data = housing, Hess = TRUE)
   p_nw <- MASS::polr(Sat ~ Infl, data = housing, Hess = TRUE)
-  c_w  <- ordinal::clm(Sat ~ Infl, weights = Freq, data = housing)
+  c_w <- ordinal::clm(Sat ~ Infl, weights = Freq, data = housing)
   c_nw <- ordinal::clm(Sat ~ Infl, data = housing)
   expect_true(as_regression_frame(p_w)$info$extras$has_weights)
   expect_false(as_regression_frame(p_nw)$info$extras$has_weights)

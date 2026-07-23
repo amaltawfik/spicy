@@ -14,13 +14,14 @@
 #     (skipped if not installed).
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_coxph_basic <- function() {
   skip_if_not_installed("survival")
-  survival::coxph(survival::Surv(time, status) ~ age + sex,
-                  data = survival::lung)
+  survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
 }
 
 .fit_coxph_factor <- function() {
@@ -32,28 +33,40 @@
 
 .fit_survreg_weibull <- function() {
   skip_if_not_installed("survival")
-  survival::survreg(survival::Surv(time, status) ~ age + sex,
-                    data = survival::lung, dist = "weibull")
+  survival::survreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    dist = "weibull"
+  )
 }
 
 .fit_survreg_lognormal <- function() {
   skip_if_not_installed("survival")
-  survival::survreg(survival::Surv(time, status) ~ age + sex,
-                    data = survival::lung, dist = "lognormal")
+  survival::survreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    dist = "lognormal"
+  )
 }
 
 .fit_survreg_gaussian <- function() {
   skip_if_not_installed("survival")
-  survival::survreg(survival::Surv(time, status) ~ age,
-                    data = survival::lung, dist = "gaussian")
+  survival::survreg(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung,
+    dist = "gaussian"
+  )
 }
 
 .fit_survreg_factor <- function() {
   skip_if_not_installed("survival")
   d <- survival::lung
   d$ph.ecog <- factor(d$ph.ecog, labels = c("0", "1", "2", "3"))
-  survival::survreg(survival::Surv(time, status) ~ age + ph.ecog,
-                    data = d, dist = "weibull")
+  survival::survreg(
+    survival::Surv(time, status) ~ age + ph.ecog,
+    data = d,
+    dist = "weibull"
+  )
 }
 
 
@@ -82,7 +95,7 @@ test_that("coxph: info$family is cox/log (hardcoded; no family slot)", {
   fit <- .fit_coxph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "cox")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 })
 
 test_that("coxph: info$dv is the full Surv(...) LHS expression", {
@@ -121,10 +134,12 @@ test_that("coxph: coefs estimates match stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -134,10 +149,12 @@ test_that("coxph: p-values match summary(fit)$coefficients", {
   sm <- summary(fit)$coefficients
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "Pr(>|z|)"]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "Pr(>|z|)"]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -176,8 +193,10 @@ test_that("coxph: supports flags are correct", {
 test_that("coxph: title_prefix = 'Cox proportional hazards regression'", {
   fit <- .fit_coxph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Cox proportional hazards regression")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cox proportional hazards regression"
+  )
 })
 
 test_that("coxph: concordance + Cox-Snell pseudo-R2 surfaced in extras / fit_stats", {
@@ -194,8 +213,11 @@ test_that("coxph: AIC/BIC/logLik match stats:: helpers", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_equal(fr$info$fit_stats$aic, stats::AIC(fit), tolerance = 1e-10)
   expect_equal(fr$info$fit_stats$bic, stats::BIC(fit), tolerance = 1e-10)
-  expect_equal(fr$info$fit_stats$log_lik, as.numeric(stats::logLik(fit)),
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$log_lik,
+    as.numeric(stats::logLik(fit)),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -232,14 +254,14 @@ test_that("survreg Weibull: info$family$family = 'weibull'; link = 'log'", {
   fit <- .fit_survreg_weibull()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "weibull")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 })
 
 test_that("survreg Gaussian: info$family$link = 'identity'", {
   fit <- .fit_survreg_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("survreg: info$dv is the full Surv(...) LHS expression", {
@@ -276,10 +298,12 @@ test_that("survreg Weibull: coefs estimates match stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -289,11 +313,15 @@ test_that("survreg Weibull: p-values match summary(fit)$table", {
   sm <- summary(fit)$table
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
-    if (nm == "Log(scale)") next
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "p"]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    if (nm == "Log(scale)") {
+      next
+    }
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "p"]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -325,12 +353,18 @@ test_that("survreg gaussian: supports$exponentiate = FALSE", {
 # ---- 11. survreg: title prefix -------------------------------------------
 
 test_that("survreg: title_prefix names the distribution", {
-  expect_identical(as_regression_frame(.fit_survreg_weibull())$info$extras$title_prefix,
-                   "Weibull AFT regression")
-  expect_identical(as_regression_frame(.fit_survreg_lognormal())$info$extras$title_prefix,
-                   "Log-normal AFT regression")
-  expect_identical(as_regression_frame(.fit_survreg_gaussian())$info$extras$title_prefix,
-                   "Gaussian AFT regression")
+  expect_identical(
+    as_regression_frame(.fit_survreg_weibull())$info$extras$title_prefix,
+    "Weibull AFT regression"
+  )
+  expect_identical(
+    as_regression_frame(.fit_survreg_lognormal())$info$extras$title_prefix,
+    "Log-normal AFT regression"
+  )
+  expect_identical(
+    as_regression_frame(.fit_survreg_gaussian())$info$extras$title_prefix,
+    "Gaussian AFT regression"
+  )
 })
 
 
@@ -353,21 +387,35 @@ test_that("coxph coefs match parameters::model_parameters() (oracle)", {
   fit <- .fit_coxph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
 
-  oracle <- parameters::model_parameters(fit,
-                                          ci = 0.95,
-                                          ci_method = "wald",
-                                          exponentiate = FALSE)
+  oracle <- parameters::model_parameters(
+    fit,
+    ci = 0.95,
+    ci_method = "wald",
+    exponentiate = FALSE
+  )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })
 
@@ -376,23 +424,39 @@ test_that("survreg Weibull coefs match parameters::model_parameters() (oracle)",
   fit <- .fit_survreg_weibull()
   fr <- as_regression_frame(fit, model_id = "M1")
 
-  oracle <- parameters::model_parameters(fit,
-                                          ci = 0.95,
-                                          ci_method = "wald",
-                                          exponentiate = FALSE)
+  oracle <- parameters::model_parameters(
+    fit,
+    ci = 0.95,
+    ci_method = "wald",
+    exponentiate = FALSE
+  )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   # parameters may report Log(scale) or auxiliary rows; only check the
   # rows the frame surfaces.
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    if (nrow(oracle_row) == 0L) next
+    if (nrow(oracle_row) == 0L) {
+      next
+    }
     spicy_row <- b_rows[b_rows$term == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })

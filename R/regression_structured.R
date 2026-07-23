@@ -77,25 +77,30 @@
 #   )
 #
 
-build_structured_body <- function(aligned,
-                                   show_columns,
-                                   show_fit_stats,
-                                   reference_style,
-                                   factor_layout,
-                                   ci_level,
-                                   digits, p_digits,
-                                   effect_size_digits, fit_digits, ic_digits,
-                                   decimal_mark,
-                                   reference_label,
-                                   outcome_labels,
-                                   labels_from_outcomes,
-                                   model_ids,
-                                   label_map,
-                                   col_spec,
-                                   labels = NULL,
-                                   model_outcomes = NULL,
-                                   model_outcome_labels = NULL,
-                                   ci_label = "CI") {
+build_structured_body <- function(
+  aligned,
+  show_columns,
+  show_fit_stats,
+  reference_style,
+  factor_layout,
+  ci_level,
+  digits,
+  p_digits,
+  effect_size_digits,
+  fit_digits,
+  ic_digits,
+  decimal_mark,
+  reference_label,
+  outcome_labels,
+  labels_from_outcomes,
+  model_ids,
+  label_map,
+  col_spec,
+  labels = NULL,
+  model_outcomes = NULL,
+  model_outcome_labels = NULL,
+  ci_label = "CI"
+) {
   group_factor_levels <- identical(factor_layout, "grouped")
   coefs <- aligned$coefs_aligned
 
@@ -117,10 +122,12 @@ build_structured_body <- function(aligned,
   ci_pct <- formatC(ci_level * 100, format = "g")
   ci_label_str <- paste0(ci_pct, "% ", ci_label)
 
-  expanded <- list()  # list of (struct_col_name, source_field, meta)
+  expanded <- list() # list of (struct_col_name, source_field, meta)
   for (cs in col_spec) {
-    if (length(cs$fields) == 2L &&
-        identical(cs$fields, c("ci_low", "ci_high"))) {
+    if (
+      length(cs$fields) == 2L &&
+        identical(cs$fields, c("ci_low", "ci_high"))
+    ) {
       ll_name <- paste0(cs$col_name, ": LL")
       ul_name <- paste0(cs$col_name, ": UL")
       expanded[[length(expanded) + 1L]] <- list(
@@ -139,22 +146,30 @@ build_structured_body <- function(aligned,
         ci_pair = ll_name,
         ci_label = ci_label_str
       )
-    } else if (length(cs$fields) == 2L &&
-                 identical(cs$fields, c("estimate", "df"))) {
+    } else if (
+      length(cs$fields) == 2L &&
+        identical(cs$fields, c("estimate", "df"))
+    ) {
       # partial_chi2: keep estimate + df as separate numeric cols.
       est_name <- cs$col_name
-      df_name  <- paste0(cs$col_name, ": df")
+      df_name <- paste0(cs$col_name, ": df")
       expanded[[length(expanded) + 1L]] <- list(
-        name = est_name, source = "estimate", cs = cs
+        name = est_name,
+        source = "estimate",
+        cs = cs
       )
       expanded[[length(expanded) + 1L]] <- list(
-        name = df_name, source = "df", cs = cs,
+        name = df_name,
+        source = "df",
+        cs = cs,
         is_df = TRUE
       )
     } else {
       # Single field.
       expanded[[length(expanded) + 1L]] <- list(
-        name = cs$col_name, source = cs$fields[1L], cs = cs
+        name = cs$col_name,
+        source = cs$fields[1L],
+        cs = cs
       )
     }
   }
@@ -166,10 +181,18 @@ build_structured_body <- function(aligned,
     cs <- e$cs
     token <- cs$token
     # Precision selection mirrors format_cell_value() / format_fit_stat_value()
-    prec <- if (token %in% c("partial_f2", "partial_f2_ci",
-                              "partial_eta2", "partial_eta2_ci",
-                              "partial_omega2", "partial_omega2_ci",
-                              "partial_chi2")) {
+    prec <- if (
+      token %in%
+        c(
+          "partial_f2",
+          "partial_f2_ci",
+          "partial_eta2",
+          "partial_eta2_ci",
+          "partial_omega2",
+          "partial_omega2_ci",
+          "partial_chi2"
+        )
+    ) {
       effect_size_digits
     } else if (identical(token, "p") || identical(token, "ame_p")) {
       p_digits
@@ -179,14 +202,16 @@ build_structured_body <- function(aligned,
       # where pd lives (.95 to 1).
       p_digits
     } else if (token %in% c("ess_bulk", "ess_tail")) {
-      0L    # effective SAMPLE SIZES: integers, never "959.60"
+      0L # effective SAMPLE SIZES: integers, never "959.60"
     } else if (identical(token, "rhat")) {
-      3L    # the 1.01 convergence target needs them
+      3L # the 1.01 convergence target needs them
     } else {
       digits
     }
     # df column inside partial_chi2 is integer-valued.
-    if (isTRUE(e$is_df)) prec <- 0L
+    if (isTRUE(e$is_df)) {
+      prec <- 0L
+    }
 
     p_style <- if (token %in% c("p", "ame_p", "pd")) "apa" else NULL
     threshold <- if (token %in% c("p", "ame_p")) 10^(-p_digits) else NULL
@@ -219,9 +244,13 @@ build_structured_body <- function(aligned,
   #   2. for each term: optional factor header + coef row
   #   3. fit-stat rows
   empty_row <- as.data.frame(
-    c(list(Variable = NA_character_),
-      stats::setNames(rep(list(NA_real_), length(struct_col_names)),
-                       struct_col_names)),
+    c(
+      list(Variable = NA_character_),
+      stats::setNames(
+        rep(list(NA_real_), length(struct_col_names)),
+        struct_col_names
+      )
+    ),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
@@ -245,7 +274,11 @@ build_structured_body <- function(aligned,
   outcome_row <- .build_structured_outcome_row(
     model_outcomes = model_outcomes,
     model_outcome_labels = model_outcome_labels,
-    outcome_labels = if (isTRUE(labels_from_outcomes)) FALSE else outcome_labels,
+    outcome_labels = if (isTRUE(labels_from_outcomes)) {
+      FALSE
+    } else {
+      outcome_labels
+    },
     model_ids = model_ids,
     label_map = label_map,
     col_spec = col_spec,
@@ -260,9 +293,14 @@ build_structured_body <- function(aligned,
   }
 
   # --- Body rows (per term) ---
-  term_meta <- unique(coefs[, c("term", "order_idx", "is_reference",
-                                 "is_intercept", "factor_term",
-                                 "factor_level")])
+  term_meta <- unique(coefs[, c(
+    "term",
+    "order_idx",
+    "is_reference",
+    "is_intercept",
+    "factor_term",
+    "factor_level"
+  )])
   term_meta <- term_meta[order(term_meta$order_idx), , drop = FALSE]
   rownames(term_meta) <- NULL
 
@@ -273,12 +311,17 @@ build_structured_body <- function(aligned,
   for (i in seq_len(nrow(term_meta))) {
     rt <- term_meta[i, , drop = FALSE]
 
-    if (isTRUE(group_factor_levels) &&
-          !is.na(rt$factor_term) &&
-          !identical(rt$factor_term, current_factor)) {
+    if (
+      isTRUE(group_factor_levels) &&
+        !is.na(rt$factor_term) &&
+        !identical(rt$factor_term, current_factor)
+    ) {
       # Factor header row: Variable = factor label, all numerics NA.
       header_label <- .resolve_factor_header_label(
-        rt$factor_term, reference_style, ref_level_map, labels
+        rt$factor_term,
+        reference_style,
+        ref_level_map,
+        labels
       )
       hdr <- empty_row
       hdr$Variable <- header_label
@@ -287,11 +330,16 @@ build_structured_body <- function(aligned,
       current_factor <- rt$factor_term
     }
     new_factor_row <- !is.na(rt$factor_term) &&
-                       !identical(rt$factor_term, current_factor)
-    if (is.na(rt$factor_term)) current_factor <- NA_character_
+      !identical(rt$factor_term, current_factor)
+    if (is.na(rt$factor_term)) {
+      current_factor <- NA_character_
+    }
 
     new_row <- .build_structured_body_row(
-      rt, coefs, col_spec, expanded,
+      rt,
+      coefs,
+      col_spec,
+      expanded,
       reference_label = reference_label,
       reference_style = reference_style,
       group_factor_levels = group_factor_levels,
@@ -299,14 +347,15 @@ build_structured_body <- function(aligned,
       empty_row = empty_row
     )
     # Annotation injection for flat layout (same logic as renderer)
-    if (identical(reference_style, "annotation") &&
-          !isTRUE(group_factor_levels) &&
-          isTRUE(new_factor_row) &&
-          rt$factor_term %in% names(ref_level_map)) {
+    if (
+      identical(reference_style, "annotation") &&
+        !isTRUE(group_factor_levels) &&
+        isTRUE(new_factor_row) &&
+        rt$factor_term %in% names(ref_level_map)
+    ) {
       ref_lvl_flat <- ref_level_map[[rt$factor_term]]
       if (!is.na(ref_lvl_flat) && nzchar(ref_lvl_flat)) {
-        new_row$Variable <- paste0(new_row$Variable,
-                                    " [vs ", ref_lvl_flat, "]")
+        new_row$Variable <- paste0(new_row$Variable, " [vs ", ref_lvl_flat, "]")
         current_factor <- rt$factor_term
       }
     }
@@ -325,13 +374,20 @@ build_structured_body <- function(aligned,
 
   # --- Fit-stat rows ---
   fit_stats <- aligned$fit_stats_aligned
-  if (length(show_fit_stats) > 0L && !is.null(fit_stats) &&
-        nrow(fit_stats) > 0L) {
+  if (
+    length(show_fit_stats) > 0L && !is.null(fit_stats) && nrow(fit_stats) > 0L
+  ) {
     fit_rows <- .build_structured_fit_stat_rows(
-      fit_stats, show_fit_stats, model_ids, col_spec, expanded,
+      fit_stats,
+      show_fit_stats,
+      model_ids,
+      col_spec,
+      expanded,
       empty_row = empty_row,
-      digits = digits, fit_digits = fit_digits,
-      ic_digits = ic_digits, p_digits = p_digits,
+      digits = digits,
+      fit_digits = fit_digits,
+      ic_digits = ic_digits,
+      p_digits = p_digits,
       n_groups_by_model = aligned$n_groups_by_model,
       fixef_by_model = aligned$fixef_by_model
     )
@@ -358,7 +414,7 @@ build_structured_body <- function(aligned,
   }
 
   if (length(rows) == 0L) {
-    body_df <- empty_row[-1L, , drop = FALSE]  # zero-row data.frame
+    body_df <- empty_row[-1L, , drop = FALSE] # zero-row data.frame
   } else {
     body_df <- do.call(rbind, rows)
     rownames(body_df) <- NULL
@@ -368,14 +424,13 @@ build_structured_body <- function(aligned,
   # The char body's spanners map "label -> integer body col indices
   # (excluding Variable)". For the structured body we map the same
   # labels to structured col indices.
-  spanners <- .build_structured_spanners(struct_col_names, expanded,
-                                            label_map)
+  spanners <- .build_structured_spanners(struct_col_names, expanded, label_map)
 
   # ---- CI pairs ---------------------------------------------------------
   ci_pairs <- list()
   for (e in expanded) {
     if (identical(e$ci_role, "LL")) {
-      ll_idx <- match(e$name, struct_col_names) + 1L  # +1 for Variable
+      ll_idx <- match(e$name, struct_col_names) + 1L # +1 for Variable
       ul_idx <- match(e$ci_pair, struct_col_names) + 1L
       ci_pairs[[length(ci_pairs) + 1L]] <- list(
         label = e$ci_label,
@@ -449,9 +504,10 @@ build_structured_body <- function(aligned,
     for (j in 2:ncol(body)) {
       col <- body[[j]]
       if (!is.numeric(col) && !all(is.na(col))) {
-        problems <- c(problems,
-                       sprintf("Column %d (%s) is not numeric.",
-                               j, names(body)[j]))
+        problems <- c(
+          problems,
+          sprintf("Column %d (%s) is not numeric.", j, names(body)[j])
+        )
       }
     }
   }
@@ -466,7 +522,9 @@ build_structured_body <- function(aligned,
   fit_rows <- struct$fit_stat_rows %||% integer(0)
   for (col_name in names(body)[-1L]) {
     meta <- struct$col_meta[[col_name]]
-    if (is.null(meta)) next
+    if (is.null(meta)) {
+      next
+    }
     if (identical(meta$p_style, "apa")) {
       vals <- body[[col_name]]
       if (is.numeric(vals)) {
@@ -474,9 +532,14 @@ build_structured_body <- function(aligned,
         coef_vals <- vals[coef_idx]
         bad <- !is.na(coef_vals) & (coef_vals < 0 | coef_vals > 1)
         if (any(bad)) {
-          problems <- c(problems,
-                         sprintf("Column %s: %d p-value(s) outside [0, 1].",
-                                 col_name, sum(bad)))
+          problems <- c(
+            problems,
+            sprintf(
+              "Column %s: %d p-value(s) outside [0, 1].",
+              col_name,
+              sum(bad)
+            )
+          )
         }
       }
     }
@@ -492,9 +555,15 @@ build_structured_body <- function(aligned,
       if (is.numeric(ll) && is.numeric(ul)) {
         bad <- !is.na(ll) & !is.na(ul) & ll > ul
         if (any(bad)) {
-          problems <- c(problems,
-                         sprintf("CI pair %s / %s: %d row(s) have LL > UL.",
-                                 ll_col, ul_col, sum(bad)))
+          problems <- c(
+            problems,
+            sprintf(
+              "CI pair %s / %s: %d row(s) have LL > UL.",
+              ll_col,
+              ul_col,
+              sum(bad)
+            )
+          )
         }
       }
     }
@@ -504,18 +573,24 @@ build_structured_body <- function(aligned,
   for (col_name in names(struct$col_meta)) {
     prec <- struct$col_meta[[col_name]]$precision
     if (!is.null(prec) && (!is.numeric(prec) || prec < 0L)) {
-      problems <- c(problems,
-                     sprintf("Column %s: precision must be a non-negative integer (got %s).",
-                             col_name, paste(prec, collapse = " ")))
+      problems <- c(
+        problems,
+        sprintf(
+          "Column %s: precision must be a non-negative integer (got %s).",
+          col_name,
+          paste(prec, collapse = " ")
+        )
+      )
     }
   }
 
   # decimal_mark
   dm <- struct$format_spec$decimal_mark
   if (!isTRUE(dm %in% c(".", ","))) {
-    problems <- c(problems,
-                   sprintf("decimal_mark must be '.' or ',' (got '%s').",
-                           dm))
+    problems <- c(
+      problems,
+      sprintf("decimal_mark must be '.' or ',' (got '%s').", dm)
+    )
   }
 
   if (length(problems) > 0L) {
@@ -533,14 +608,26 @@ build_structured_body <- function(aligned,
 
 # ---- Body row builder (structured) ---------------------------------------
 
-.build_structured_body_row <- function(rt, coefs, col_spec, expanded,
-                                         reference_label, reference_style,
-                                         group_factor_levels,
-                                         labels, empty_row) {
+.build_structured_body_row <- function(
+  rt,
+  coefs,
+  col_spec,
+  expanded,
+  reference_label,
+  reference_style,
+  group_factor_levels,
+  labels,
+  empty_row
+) {
   # Variable label: identical to char body's format_term_label().
   row <- empty_row
-  row$Variable <- format_term_label(rt, reference_label, reference_style,
-                                      group_factor_levels, labels)
+  row$Variable <- format_term_label(
+    rt,
+    reference_label,
+    reference_style,
+    group_factor_levels,
+    labels
+  )
 
   for (e in expanded) {
     cs <- e$cs
@@ -552,13 +639,21 @@ build_structured_body <- function(aligned,
     # Random-effect variance rows (estimate_type = "vc") display on the B
     # (estimate / SE / CI) axis: alias "vc" to the "B" column here, mirroring
     # the char body's build_body_row().
-    et_match <- if (identical(cs$estimate_type, "B")) c("B", "vc") else
+    et_match <- if (identical(cs$estimate_type, "B")) {
+      c("B", "vc")
+    } else {
       cs$estimate_type
-    long_row <- coefs[coefs$model_id == cs$model_id &
-                        coefs$term == rt$term &
-                        coefs$estimate_type %in% et_match, ,
-                        drop = FALSE]
-    if (nrow(long_row) == 0L) next   # cell stays NA (blank)
+    }
+    long_row <- coefs[
+      coefs$model_id == cs$model_id &
+        coefs$term == rt$term &
+        coefs$estimate_type %in% et_match,
+      ,
+      drop = FALSE
+    ]
+    if (nrow(long_row) == 0L) {
+      next
+    } # cell stays NA (blank)
     val <- long_row[[e$source]][1L]
     if (!is.null(val) && length(val) == 1L) {
       row[[e$name]] <- as.numeric(val)
@@ -570,13 +665,20 @@ build_structured_body <- function(aligned,
 
 # ---- Fit-stat rows (structured) ------------------------------------------
 
-.build_structured_fit_stat_rows <- function(fit_stats, show_fit_stats,
-                                              model_ids, col_spec, expanded,
-                                              empty_row,
-                                              digits, fit_digits,
-                                              ic_digits, p_digits,
-                                              n_groups_by_model = NULL,
-                                              fixef_by_model = NULL) {
+.build_structured_fit_stat_rows <- function(
+  fit_stats,
+  show_fit_stats,
+  model_ids,
+  col_spec,
+  expanded,
+  empty_row,
+  digits,
+  fit_digits,
+  ic_digits,
+  p_digits,
+  n_groups_by_model = NULL,
+  fixef_by_model = NULL
+) {
   # Each fit-stat row puts the value in the FIRST structured sub-column
   # of each model (i.e., the col_name of the first col_spec entry per
   # model, which in the structured expansion is the FIRST expanded
@@ -585,7 +687,8 @@ build_structured_body <- function(aligned,
   # CI) entry per model so the value lands on the natural display
   # column, matching the char body's behaviour.
   first_struct_col_per_model <- stats::setNames(
-    rep(NA_character_, length(model_ids)), model_ids
+    rep(NA_character_, length(model_ids)),
+    model_ids
   )
   for (e in expanded) {
     m_id <- e$cs$model_id
@@ -606,23 +709,31 @@ build_structured_body <- function(aligned,
     # char console body carries the grouped Yes/No block instead.
     if (identical(tk, "fixed_effects")) {
       fe <- .fixed_effects_cells(fixef_by_model, model_ids)
-      if (is.null(fe)) next
+      if (is.null(fe)) {
+        next
+      }
       for (fct in fe$factors) {
         row <- empty_row
         row$Variable <- sprintf("FE: %s", fct)
         col_overrides <- list()
         for (m_id in model_ids) {
           target_col <- first_struct_col_per_model[[m_id]]
-          if (is.na(target_col)) next
+          if (is.na(target_col)) {
+            next
+          }
           cell <- fe$cells[fct, m_id]
           row[[target_col]] <- switch(cell, Yes = 1, No = 0, NA_real_)
           col_overrides[[target_col]] <- list(
-            fit_stat = tk, precision = 0L,
-            p_style = NULL, threshold = NULL
+            fit_stat = tk,
+            precision = 0L,
+            p_style = NULL,
+            threshold = NULL
           )
         }
-        rows[[length(rows) + 1L]] <- list(row = row,
-                                          col_overrides = col_overrides)
+        rows[[length(rows) + 1L]] <- list(
+          row = row,
+          col_overrides = col_overrides
+        )
       }
       next
     }
@@ -637,14 +748,18 @@ build_structured_body <- function(aligned,
           fct_union <- union(fct_union, names(ng))
         }
       }
-      if (length(fct_union) == 0L) next
+      if (length(fct_union) == 0L) {
+        next
+      }
       for (fct in fct_union) {
         row <- empty_row
         row$Variable <- sprintf("N (%s)", fct)
         col_overrides <- list()
         for (m_id in model_ids) {
           target_col <- first_struct_col_per_model[[m_id]]
-          if (is.na(target_col)) next
+          if (is.na(target_col)) {
+            next
+          }
           ng <- ngl_all[[m_id]]
           row[[target_col]] <- if (!is.null(ng) && fct %in% names(ng)) {
             as.numeric(ng[[fct]])
@@ -652,39 +767,58 @@ build_structured_body <- function(aligned,
             NA_real_
           }
           col_overrides[[target_col]] <- list(
-            fit_stat = tk, precision = 0L,
-            p_style = NULL, threshold = NULL
+            fit_stat = tk,
+            precision = 0L,
+            p_style = NULL,
+            threshold = NULL
           )
         }
-        rows[[length(rows) + 1L]] <- list(row = row,
-                                          col_overrides = col_overrides)
+        rows[[length(rows) + 1L]] <- list(
+          row = row,
+          col_overrides = col_overrides
+        )
       }
       next
     }
-    if (!tk %in% names(fit_stats)) next
+    if (!tk %in% names(fit_stats)) {
+      next
+    }
     # icc: drop the row when no model carries a value (mirrors
     # build_fit_stats_rows).
-    if (identical(tk, "icc") && all(is.na(fit_stats[[tk]]))) next
+    if (identical(tk, "icc") && all(is.na(fit_stats[[tk]]))) {
+      next
+    }
     row <- empty_row
     row$Variable <- fit_stat_label(tk)
     col_overrides <- list()
 
     # Per-token precision: same logic as format_fit_stat_value()
-    prec <- .fit_stat_precision(tk, digits = digits, fit_digits = fit_digits,
-                                  ic_digits = ic_digits, p_digits = p_digits)
+    prec <- .fit_stat_precision(
+      tk,
+      digits = digits,
+      fit_digits = fit_digits,
+      ic_digits = ic_digits,
+      p_digits = p_digits
+    )
     p_style <- if (identical(tk, "p_change")) "apa" else NULL
     threshold <- if (identical(tk, "p_change")) 10^(-p_digits) else NULL
     is_change_p <- identical(tk, "p_change")
 
     for (m_id in model_ids) {
       target_col <- first_struct_col_per_model[[m_id]]
-      if (is.na(target_col)) next
+      if (is.na(target_col)) {
+        next
+      }
       sub <- fit_stats[fit_stats$model_id == m_id, , drop = FALSE]
-      if (nrow(sub) == 0L) next
+      if (nrow(sub) == 0L) {
+        next
+      }
       val <- sub[[tk]][1L]
       # nocov start: nrow(sub) >= 1 is guaranteed by the guard above, so
       # sub[[tk]][1L] is always a scalar (NA at worst), never NULL.
-      if (is.null(val)) val <- NA_real_
+      if (is.null(val)) {
+        val <- NA_real_
+      }
       # nocov end
       row[[target_col]] <- as.numeric(val)
 
@@ -703,24 +837,63 @@ build_structured_body <- function(aligned,
   rows
 }
 
-.fit_stat_precision <- function(token, digits, fit_digits, ic_digits,
-                                  p_digits) {
+.fit_stat_precision <- function(
+  token,
+  digits,
+  fit_digits,
+  ic_digits,
+  p_digits
+) {
   is_int <- token %in% c("nobs", "weighted_nobs", "n_groups")
-  is_fit <- token %in% c("r2", "adj_r2", "omega2", "f2", "sigma", "rmse",
-                          "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
-                          "pseudo_r2_tjur", "theta", "alpha", "phi",
-                          "within_r2", "r2_bayes",
-                          "r2_marginal", "r2_conditional", "icc",
-                          "r2_change", "adj_r2_change", "f2_change",
-                          "f_change")
-  is_ic <- token %in% c("aic", "aicc", "bic",
-                         "elpd_loo", "looic", "waic",
-                         "aic_change", "aicc_change", "bic_change")
+  is_fit <- token %in%
+    c(
+      "r2",
+      "adj_r2",
+      "omega2",
+      "f2",
+      "sigma",
+      "rmse",
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "theta",
+      "alpha",
+      "phi",
+      "within_r2",
+      "r2_bayes",
+      "r2_marginal",
+      "r2_conditional",
+      "icc",
+      "r2_change",
+      "adj_r2_change",
+      "f2_change",
+      "f_change"
+    )
+  is_ic <- token %in%
+    c(
+      "aic",
+      "aicc",
+      "bic",
+      "elpd_loo",
+      "looic",
+      "waic",
+      "aic_change",
+      "aicc_change",
+      "bic_change"
+    )
   is_p <- identical(token, "p_change")
-  if (is_int) return(0L)
-  if (is_p) return(as.integer(p_digits))
-  if (is_fit) return(as.integer(fit_digits))
-  if (is_ic) return(as.integer(ic_digits))
+  if (is_int) {
+    return(0L)
+  }
+  if (is_p) {
+    return(as.integer(p_digits))
+  }
+  if (is_fit) {
+    return(as.integer(fit_digits))
+  }
+  if (is_ic) {
+    return(as.integer(ic_digits))
+  }
   as.integer(digits)
 }
 
@@ -734,22 +907,31 @@ build_structured_body <- function(aligned,
 # structured column of each model). String-producing layers -- the shared
 # string-body formatter and the Excel writer -- overlay the text, so every
 # engine shows the same row print() shows (finding B-structured-outcome).
-.build_structured_outcome_row <- function(model_outcomes,
-                                            model_outcome_labels,
-                                            outcome_labels,
-                                            model_ids,
-                                            label_map,
-                                            col_spec,
-                                            expanded,
-                                            empty_row) {
+.build_structured_outcome_row <- function(
+  model_outcomes,
+  model_outcome_labels,
+  outcome_labels,
+  model_ids,
+  label_map,
+  col_spec,
+  expanded,
+  empty_row
+) {
   # Same suppression logic as build_outcome_row().
-  if (isFALSE(outcome_labels) || is.null(outcome_labels)) return(NULL)
-  if (!is.character(outcome_labels)) return(NULL)                      # nocov
-  if (length(model_ids) <= 1L) return(NULL)
+  if (isFALSE(outcome_labels) || is.null(outcome_labels)) {
+    return(NULL)
+  }
+  if (!is.character(outcome_labels)) {
+    return(NULL)
+  } # nocov
+  if (length(model_ids) <= 1L) {
+    return(NULL)
+  }
 
   # First non-CI structured sub-column of each model.
   first_col_per_model <- stats::setNames(
-    rep(NA_character_, length(model_ids)), model_ids
+    rep(NA_character_, length(model_ids)),
+    model_ids
   )
   for (e in expanded) {
     m_id <- e$cs$model_id
@@ -761,10 +943,14 @@ build_structured_body <- function(aligned,
   labels_by_col <- character(0)
   for (i in seq_along(model_ids)) {
     target <- first_col_per_model[[model_ids[i]]]
-    if (is.na(target)) next                                            # nocov
+    if (is.na(target)) {
+      next
+    } # nocov
     labels_by_col[[target]] <- outcome_labels[i]
   }
-  if (length(labels_by_col) == 0L) return(NULL)                        # nocov
+  if (length(labels_by_col) == 0L) {
+    return(NULL)
+  } # nocov
 
   row <- empty_row
   row$Variable <- "Outcome"
@@ -774,13 +960,19 @@ build_structured_body <- function(aligned,
 
 # ---- Factor header label resolution --------------------------------------
 
-.resolve_factor_header_label <- function(factor_term, reference_style,
-                                            ref_level_map, labels) {
+.resolve_factor_header_label <- function(
+  factor_term,
+  reference_style,
+  ref_level_map,
+  labels
+) {
   # Mirrors build_factor_header_row()'s Variable cell content.
   lbl <- resolve_label(factor_term, labels)
   base <- paste0(lbl, ":")
-  if (identical(reference_style, "annotation") &&
-        factor_term %in% names(ref_level_map)) {
+  if (
+    identical(reference_style, "annotation") &&
+      factor_term %in% names(ref_level_map)
+  ) {
     ref_lvl <- ref_level_map[[factor_term]]
     if (!is.na(ref_lvl) && nzchar(ref_lvl)) {
       return(paste0(base, " [ref: ", ref_lvl, "]"))
@@ -803,8 +995,12 @@ build_structured_body <- function(aligned,
 # internally; the rendered separator follows the cell's locale.
 .excel_numfmt <- function(precision, p_style) {
   precision <- as.integer(precision)
-  if (is.na(precision) || precision < 0L) precision <- 0L
-  if (precision == 0L) return("0")
+  if (is.na(precision) || precision < 0L) {
+    precision <- 0L
+  }
+  if (precision == 0L) {
+    return("0")
+  }
   zeros <- strrep("0", precision)
   if (identical(p_style, "apa")) {
     return(paste0("#.", zeros))
@@ -819,7 +1015,9 @@ build_structured_body <- function(aligned,
     return(NULL)
   }
   digits <- as.integer(round(-log10(threshold)))
-  if (digits < 1L) digits <- 1L
+  if (digits < 1L) {
+    digits <- 1L
+  }
   paste0("<", decimal_mark, strrep("0", digits - 1L), "1")
 }
 
@@ -827,9 +1025,14 @@ build_structured_body <- function(aligned,
 # applying precision, APA p-style (drop leading zero), reference en-dash,
 # and below-threshold "<.001" overrides. Used by engines that drive
 # their formatters via pre-formatted strings (flextable, console).
-.cell_to_string <- function(val, row_idx, col_meta_entry,
-                              reference_rows, decimal_mark = ".",
-                              ref_models = NULL) {
+.cell_to_string <- function(
+  val,
+  row_idx,
+  col_meta_entry,
+  reference_rows,
+  decimal_mark = ".",
+  ref_models = NULL
+) {
   if (row_idx %in% reference_rows) {
     # En-dash only in the columns of models that HAVE the factor; a model
     # the factor is absent from gets a blank cell (char-body parity, M3).
@@ -839,7 +1042,9 @@ build_structured_body <- function(aligned,
     return(if (in_model) "\u2013" else "")
   }
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
-  if (is.na(val)) return("")
+  if (is.na(val)) {
+    return("")
+  }
   # Fixed-effects disclosure cells are numeric-encoded in the
   # structured body (1 = absorbed, 0 = not, NA = non-fixest model) but
   # every string-driven engine (tinytable, flextable / Word, Excel,
@@ -852,15 +1057,17 @@ build_structured_body <- function(aligned,
   # formatC g-style -- a fixed decimal count misleads across
   # coefficient scales.
   if (!is.null(cfmt$signif)) {
-    out <- sub("\\.$", "", formatC(val, digits = as.integer(cfmt$signif),
-                                   format = "g", flag = "#"))
+    out <- sub(
+      "\\.$",
+      "",
+      formatC(val, digits = as.integer(cfmt$signif), format = "g", flag = "#")
+    )
     if (!identical(decimal_mark, ".")) {
-      out <- sub(".", decimal_mark, out, fixed = TRUE)                # nocov
+      out <- sub(".", decimal_mark, out, fixed = TRUE) # nocov
     }
     return(out)
   }
-  if (!is.null(cfmt$threshold) && is.finite(val) &&
-        val < cfmt$threshold) {
+  if (!is.null(cfmt$threshold) && is.finite(val) && val < cfmt$threshold) {
     return(.below_threshold_text(cfmt$threshold, decimal_mark))
   }
   s <- format_number(val, cfmt$precision, decimal_mark)
@@ -891,14 +1098,16 @@ build_structured_body <- function(aligned,
 # `decimal_mark` is read from the structured format spec ("." or ",").
 .pad_for_decimal_align <- function(body, struct) {
   decimal_mark <- struct$format_spec$decimal_mark
-  fig_space <- "\u2007"   # U+2007 figure space (digit-width)
-  na_dash   <- "\u2013"   # U+2013 en dash (Phase 7c14 typography:
-                            # was em dash before; en dash is the
-                            # Chicago / NEJM / JAMA tabular "not
-                            # applicable" glyph).
+  fig_space <- "\u2007" # U+2007 figure space (digit-width)
+  na_dash <- "\u2013" # U+2013 en dash (Phase 7c14 typography:
+  # was em dash before; en dash is the
+  # Chicago / NEJM / JAMA tabular "not
+  # applicable" glyph).
 
   for (j in seq_along(body)) {
-    if (j == 1L) next       # Variable column stays as-is
+    if (j == 1L) {
+      next
+    } # Variable column stays as-is
     col_vals <- body[[j]]
     # Compute per-cell LHS / RHS widths for decimal-bearing cells.
     lhs <- character(length(col_vals))
@@ -906,7 +1115,8 @@ build_structured_body <- function(aligned,
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
       if (is.na(v) || !nzchar(v) || identical(v, na_dash)) {
-        lhs[i] <- ""; rhs[i] <- ""
+        lhs[i] <- ""
+        rhs[i] <- ""
         next
       }
       pos <- regexpr(decimal_mark, v, fixed = TRUE)
@@ -923,11 +1133,15 @@ build_structured_body <- function(aligned,
     # blank cells contribute nothing and stay un-padded.
     max_lhs <- max(nchar(lhs))
     max_rhs <- max(nchar(rhs))
-    if (max_lhs == 0L && max_rhs == 0L) next
+    if (max_lhs == 0L && max_rhs == 0L) {
+      next
+    }
 
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
-      if (is.na(v) || !nzchar(v)) next
+      if (is.na(v) || !nzchar(v)) {
+        next
+      }
       # Phase 7c24 (item g): en-dash cells (factor reference rows /
       # "not applicable" placeholders) used to skip the padding
       # entirely, so gt centred them in the column instead of
@@ -955,8 +1169,7 @@ build_structured_body <- function(aligned,
         # to fill the (absent) RHS digits.
         col_vals[i] <- paste0(pad_lhs, v, fig_space, pad_rhs)
       } else {
-        col_vals[i] <- paste0(pad_lhs, lhs[i], decimal_mark,
-                               rhs[i], pad_rhs)
+        col_vals[i] <- paste0(pad_lhs, lhs[i], decimal_mark, rhs[i], pad_rhs)
       }
     }
     body[[j]] <- col_vals
@@ -977,20 +1190,28 @@ build_structured_body <- function(aligned,
   n_rows <- nrow(body_num)
   for (j in seq_along(body_num)) {
     col_name <- names(body_num)[j]
-    if (j == 1L) next  # Variable column stays as-is
+    if (j == 1L) {
+      next
+    } # Variable column stays as-is
     meta <- struct$col_meta[[col_name]]
     col_vals <- body_num[[j]]
     formatted <- character(n_rows)
     for (i in seq_len(n_rows)) {
       formatted[i] <- .cell_to_string(
-        col_vals[i], i, meta, reference_rows, decimal_mark,
+        col_vals[i],
+        i,
+        meta,
+        reference_rows,
+        decimal_mark,
         ref_models = struct$reference_models_by_row[[as.character(i)]]
       )
     }
     # Outcome row (multi-DV): the label text lives in metadata (the typed
     # body stays numeric); overlay it on the model's first sub-column.
-    if (length(struct$outcome_row) == 1L &&
-        col_name %in% names(struct$outcome_labels_by_col)) {
+    if (
+      length(struct$outcome_row) == 1L &&
+        col_name %in% names(struct$outcome_labels_by_col)
+    ) {
       formatted[struct$outcome_row] <-
         struct$outcome_labels_by_col[[col_name]]
     }
@@ -1021,29 +1242,42 @@ build_structured_body <- function(aligned,
       }
     }
   }
-  list(precision = prec, p_style = p_style, threshold = threshold,
-       fit_stat = fit_stat, signif = col_meta_entry$signif)
+  list(
+    precision = prec,
+    p_style = p_style,
+    threshold = threshold,
+    fit_stat = fit_stat,
+    signif = col_meta_entry$signif
+  )
 }
 
 .build_structured_spanners <- function(struct_col_names, expanded, label_map) {
-  if (is.null(label_map) || !any(nzchar(label_map))) return(NULL)
+  if (is.null(label_map) || !any(nzchar(label_map))) {
+    return(NULL)
+  }
   labels <- unique(unname(label_map))
-  if (length(labels) <= 1L) return(NULL)
+  if (length(labels) <= 1L) {
+    return(NULL)
+  }
   # nocov start: unreachable defensive twin of the `label_map` guard above --
   # passing `any(nzchar(label_map))` means `labels` (its unique values)
   # retains at least one non-empty string, so this can never be TRUE.
-  if (!any(nzchar(labels))) return(NULL)
+  if (!any(nzchar(labels))) {
+    return(NULL)
+  }
   # nocov end
 
   out <- list()
   for (lbl in labels) {
-    if (!nzchar(lbl)) next
+    if (!nzchar(lbl)) {
+      next
+    }
     # Find struct cols whose source col_spec belongs to a model with this label.
     matching <- integer(0)
     for (i in seq_along(expanded)) {
       m_id <- expanded[[i]]$cs$model_id
       if (identical(label_map[[m_id]], lbl)) {
-        matching <- c(matching, i + 1L)  # +1 for Variable
+        matching <- c(matching, i + 1L) # +1 for Variable
       }
     }
     if (length(matching) > 0L) out[[lbl]] <- matching
@@ -1051,7 +1285,9 @@ build_structured_body <- function(aligned,
   # nocov start: every label in `labels` comes from a model that is also
   # in `expanded`, so each label matches at least its own model and `out`
   # can never be empty here for a consistent label_map. Defensive guard.
-  if (length(out) == 0L) return(NULL)
+  if (length(out) == 0L) {
+    return(NULL)
+  }
   # nocov end
   out
 }

@@ -12,7 +12,6 @@
 # package / built tarball, where _pkgdown.yml is not shipped).
 # ---------------------------------------------------------------------------
 
-
 .vignette_names <- function(vignettes_dir) {
   files <- list.files(vignettes_dir, pattern = "\\.Rmd$")
   files <- files[!startsWith(files, "_")]

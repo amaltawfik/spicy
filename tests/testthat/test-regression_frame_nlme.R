@@ -12,21 +12,24 @@
 #     (skipped if not installed).
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lme_basic <- function() {
   skip_if_not_installed("nlme")
-  nlme::lme(distance ~ age + Sex,
-            data   = nlme::Orthodont,
-            random = ~ 1 | Subject)
+  nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
 }
 
 .fit_gls_corcs <- function() {
   skip_if_not_installed("nlme")
-  nlme::gls(distance ~ age + Sex,
-            data        = nlme::Orthodont,
-            correlation = nlme::corCompSymm(form = ~ 1 | Subject))
+  nlme::gls(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    correlation = nlme::corCompSymm(form = ~ 1 | Subject)
+  )
 }
 
 .fit_gls_plain <- function() {
@@ -60,7 +63,7 @@ test_that("lme: info$family is gaussian/identity (hardcoded; no family slot)", {
   fit <- .fit_lme_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("lme: info$dv reads the response variable name", {
@@ -84,10 +87,12 @@ test_that("lme: coefs estimates match nlme::fixef()", {
   legacy <- nlme::fixef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -98,9 +103,11 @@ test_that("lme: coefs SE matches sqrt(diag(vcov))", {
   expected_se <- sqrt(diag(V))
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(expected_se)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(expected_se[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(expected_se[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -110,9 +117,11 @@ test_that("lme: per-coef df matches summary(fit)$tTable[, 'DF']", {
   tT <- summary(fit)$tTable
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(tT)) {
-    expect_equal(b_rows$df[b_rows$term == nm],
-                 unname(tT[nm, "DF"]),
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$df[b_rows$term == nm],
+      unname(tT[nm, "DF"]),
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -122,10 +131,12 @@ test_that("lme: p-values match summary(fit)$tTable", {
   tT <- summary(fit)$tTable
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(tT)) {
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(tT[nm, "p-value"]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(tT[nm, "p-value"]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -166,9 +177,11 @@ test_that("lme: ICC matches var_random / (var_random + var_resid)", {
   vc <- fr$info$random_effects$variance_components
   var_r <- vc$variance[vc$group == "Subject"]
   var_e <- vc$variance[vc$group == "Residual"]
-  expect_equal(fr$info$random_effects$icc,
-               var_r / (var_r + var_e),
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$random_effects$icc,
+    var_r / (var_r + var_e),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -186,16 +199,18 @@ test_that("lme: AIC/BIC/logLik/nobs match stats:: helpers", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_equal(fr$info$fit_stats$aic, stats::AIC(fit), tolerance = 1e-10)
   expect_equal(fr$info$fit_stats$bic, stats::BIC(fit), tolerance = 1e-10)
-  expect_equal(fr$info$fit_stats$log_lik, as.numeric(stats::logLik(fit)),
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$log_lik,
+    as.numeric(stats::logLik(fit)),
+    tolerance = 1e-10
+  )
   expect_identical(fr$info$fit_stats$nobs, as.integer(stats::nobs(fit)))
 })
 
 test_that("lme: fit_stats$sigma matches stats::sigma()", {
   fit <- .fit_lme_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$sigma, stats::sigma(fit),
-               tolerance = 1e-10)
+  expect_equal(fr$info$fit_stats$sigma, stats::sigma(fit), tolerance = 1e-10)
 })
 
 
@@ -216,8 +231,10 @@ test_that("lme: supports flags are correct", {
 test_that("lme: title_prefix = 'Linear mixed-effects regression (nlme)'", {
   fit <- .fit_lme_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Linear mixed-effects regression (nlme)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Linear mixed-effects regression (nlme)"
+  )
 })
 
 
@@ -269,10 +286,12 @@ test_that("gls: coefs estimates match stats::coef()", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -290,10 +309,12 @@ test_that("gls: p-values match summary(fit)$tTable", {
   tT <- summary(fit)$tTable
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(tT)) {
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(tT[nm, "p-value"]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(tT[nm, "p-value"]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -320,8 +341,10 @@ test_that("gls without correlation structure: vcov_label is plain Wald", {
 test_that("gls: title_prefix = 'Generalised least squares (nlme)'", {
   fit <- .fit_gls_corcs()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Generalised least squares (nlme)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Generalised least squares (nlme)"
+  )
 })
 
 test_that("gls: factor predictor synthesises a reference row", {
@@ -342,21 +365,33 @@ test_that("lme coefs match parameters::model_parameters() (oracle)", {
 
   oracle <- parameters::model_parameters(
     fit,
-    ci         = 0.95,
-    ci_method  = "wald",
-    effects    = "fixed"
+    ci = 0.95,
+    ci_method = "wald",
+    effects = "fixed"
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })
 
@@ -367,19 +402,31 @@ test_that("gls coefs match parameters::model_parameters() (oracle)", {
 
   oracle <- parameters::model_parameters(
     fit,
-    ci         = 0.95,
-    ci_method  = "wald"
+    ci = 0.95,
+    ci_method = "wald"
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })

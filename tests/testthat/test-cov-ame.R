@@ -33,8 +33,12 @@ test_that("extract_ame_satterthwaite returns empty when the only predictor is lo
   )
   fit <- lm(y ~ lg, data = df)
   rows <- spicy:::extract_ame_satterthwaite(
-    fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
-    model_id = "M1", outcome = "y"
+    fit,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
   expect_s3_class(rows, "data.frame")
   expect_equal(nrow(rows), 0L)
@@ -53,7 +57,10 @@ test_that("build_ame_contrasts_for_predictor returns list() for an absent predic
 
 test_that("build_ame_contrasts_for_predictor returns list() for a logical predictor", {
   set.seed(2)
-  df <- data.frame(y = rnorm(60), lg = sample(c(TRUE, FALSE), 60, replace = TRUE))
+  df <- data.frame(
+    y = rnorm(60),
+    lg = sample(c(TRUE, FALSE), 60, replace = TRUE)
+  )
   fit <- lm(y ~ lg, data = df)
   # Logical predictor: present in the model frame, neither numeric nor
   # factor -> falls through to the trailing `list()`.
@@ -70,19 +77,30 @@ test_that("extract_ame_marginaleffects uses z-inference under bootstrap vcov", {
   # marginaleffects renders as a z-statistic (test_type "z").
   skip_if_no_me()
   set.seed(3)
-  df <- data.frame(y = rnorm(100), x = rnorm(100),
-                   g = factor(sample(letters[1:4], 100, replace = TRUE)))
+  df <- data.frame(
+    y = rnorm(100),
+    x = rnorm(100),
+    g = factor(sample(letters[1:4], 100, replace = TRUE))
+  )
   fit <- lm(y ~ x + g, data = df)
   rows <- spicy:::extract_ame_marginaleffects(
-    fit, vc = vcov(fit), vcov_type = "bootstrap", ci_level = 0.95,
-    model_id = "M1", outcome = "y"
+    fit,
+    vc = vcov(fit),
+    vcov_type = "bootstrap",
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
   expect_gt(nrow(rows), 0L)
   expect_true(all(rows$test_type == "z"))
 
   rows_jk <- spicy:::extract_ame_marginaleffects(
-    fit, vc = vcov(fit), vcov_type = "jackknife", ci_level = 0.95,
-    model_id = "M1", outcome = "y"
+    fit,
+    vc = vcov(fit),
+    vcov_type = "jackknife",
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
   expect_true(all(rows_jk$test_type == "z"))
 })
@@ -96,12 +114,20 @@ test_that("extract_ame_marginaleffects warns and returns empty when avg_slopes f
   # empty_coefs_long().
   skip_if_no_me()
   fit <- lm(mpg ~ wt, data = mtcars)
-  bad_vc <- matrix(NA_real_, 3L, 3L,
-                   dimnames = list(c("a", "b", "c"), c("a", "b", "c")))
+  bad_vc <- matrix(
+    NA_real_,
+    3L,
+    3L,
+    dimnames = list(c("a", "b", "c"), c("a", "b", "c"))
+  )
   expect_warning(
     rows <- spicy:::extract_ame_marginaleffects(
-      fit, vc = bad_vc, vcov_type = "classical", ci_level = 0.95,
-      model_id = "M1", outcome = "mpg"
+      fit,
+      vc = bad_vc,
+      vcov_type = "classical",
+      ci_level = 0.95,
+      model_id = "M1",
+      outcome = "mpg"
     ),
     class = "spicy_fallback"
   )
@@ -114,12 +140,21 @@ test_that("extract_ame_marginaleffects warns and returns empty when avg_slopes f
 test_that("extract_ame_glm warns and returns empty when avg_slopes fails", {
   skip_if_no_me()
   fit <- glm(vs ~ wt, data = mtcars, family = binomial)
-  bad_vc <- matrix(NA_real_, 3L, 3L,
-                   dimnames = list(c("a", "b", "c"), c("a", "b", "c")))
+  bad_vc <- matrix(
+    NA_real_,
+    3L,
+    3L,
+    dimnames = list(c("a", "b", "c"), c("a", "b", "c"))
+  )
   expect_warning(
     rows <- spicy:::extract_ame_glm(
-      fit, vc = bad_vc, vcov_type = "classical", cluster = NULL,
-      ci_level = 0.95, model_id = "M1", outcome = "vs"
+      fit,
+      vc = bad_vc,
+      vcov_type = "classical",
+      cluster = NULL,
+      ci_level = 0.95,
+      model_id = "M1",
+      outcome = "vs"
     ),
     class = "spicy_fallback"
   )
@@ -136,8 +171,13 @@ test_that("extract_ame_glm resolves inline factor(x) to the model-frame column",
   skip_if_no_me()
   fit <- glm(vs ~ wt + factor(cyl), data = mtcars, family = binomial)
   rows <- suppressWarnings(spicy:::extract_ame_glm(
-    fit, vc = vcov(fit), vcov_type = "classical", cluster = NULL,
-    ci_level = 0.95, model_id = "M1", outcome = "vs"
+    fit,
+    vc = vcov(fit),
+    vcov_type = "classical",
+    cluster = NULL,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "vs"
   ))
   expect_true(any(rows$term == "wt"))
   expect_true(any(grepl("^factor\\(cyl\\)", rows$term)))
@@ -151,10 +191,16 @@ test_that("compute_satt_df_per_coef returns NULL when coef_test errors", {
   # catches it and returns NULL so the caller can fall back to z.
   skip_if_no_cs()
   fit <- glm(vs ~ wt, data = mtcars, family = binomial)
-  bad_vc <- matrix(NA_real_, 3L, 3L,
-                   dimnames = list(c("a", "b", "c"), c("a", "b", "c")))
+  bad_vc <- matrix(
+    NA_real_,
+    3L,
+    3L,
+    dimnames = list(c("a", "b", "c"), c("a", "b", "c"))
+  )
   res <- spicy:::compute_satt_df_per_coef(
-    fit, vc = bad_vc, cluster = mtcars$cyl
+    fit,
+    vc = bad_vc,
+    cluster = mtcars$cyl
   )
   expect_null(res)
 })
@@ -219,9 +265,14 @@ test_that(".compute_ame_rows_for_frame resolves inline factor(x) for a glmer fit
   mt <- mtcars
   mt$grp <- factor(rep(1:8, length.out = nrow(mt)))
   fit <- suppressWarnings(lme4::glmer(
-    vs ~ wt + factor(cyl) + (1 | grp), data = mt, family = binomial
+    vs ~ wt + factor(cyl) + (1 | grp),
+    data = mt,
+    family = binomial
   ))
-  rows <- suppressWarnings(spicy:::.compute_ame_rows_for_frame(fit, ci_level = 0.95))
+  rows <- suppressWarnings(spicy:::.compute_ame_rows_for_frame(
+    fit,
+    ci_level = 0.95
+  ))
   expect_true(any(rows$term == "wt"))
   expect_true(any(grepl("^factor\\(cyl\\)", rows$term)))
 })
@@ -234,11 +285,16 @@ test_that(".attach_ame_to_frame_coefs is a no-op when compute returns NULL", {
   skip_if_no_me()
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   coefs <- spicy:::as_regression_frame(
-    fit, model_id = "M1", show_columns = c("b", "se")
+    fit,
+    model_id = "M1",
+    show_columns = c("b", "se")
   )$coefs
   res <- testthat::with_mocked_bindings(
     spicy:::.attach_ame_to_frame_coefs(
-      coefs, fit, ci_level = 0.95, show_columns = c("b", "ame")
+      coefs,
+      fit,
+      ci_level = 0.95,
+      show_columns = c("b", "ame")
     ),
     .compute_ame_rows_for_frame = function(...) NULL,
     .package = "spicy"
@@ -251,11 +307,16 @@ test_that(".attach_ame_to_frame_coefs is a no-op when ame_rows shares no columns
   skip_if_no_me()
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   coefs <- spicy:::as_regression_frame(
-    fit, model_id = "M1", show_columns = c("b", "se")
+    fit,
+    model_id = "M1",
+    show_columns = c("b", "se")
   )$coefs
   res <- testthat::with_mocked_bindings(
     spicy:::.attach_ame_to_frame_coefs(
-      coefs, fit, ci_level = 0.95, show_columns = c("b", "ame")
+      coefs,
+      fit,
+      ci_level = 0.95,
+      show_columns = c("b", "ame")
     ),
     # Disjoint column names -> intersect() empty -> early return.
     .compute_ame_rows_for_frame = function(...) {
@@ -273,11 +334,16 @@ test_that(".attach_ame_to_frame_coefs pads coefs-only columns with NA on AME row
   skip_if_no_me()
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   coefs <- spicy:::as_regression_frame(
-    fit, model_id = "M1", show_columns = c("b", "se")
+    fit,
+    model_id = "M1",
+    show_columns = c("b", "se")
   )$coefs
   coefs$legacy_col <- "carry-over"
   res <- spicy:::.attach_ame_to_frame_coefs(
-    coefs, fit, ci_level = 0.95, show_columns = c("b", "ame")
+    coefs,
+    fit,
+    ci_level = 0.95,
+    show_columns = c("b", "ame")
   )
   # AME rows were appended.
   expect_true("ame" %in% res$estimate_type)

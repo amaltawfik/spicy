@@ -3,13 +3,14 @@
 # Covers coxph / cph / survreg / flexsurvreg distinct content lines.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_coxph_sf <- function() {
   skip_if_not_installed("survival")
-  survival::coxph(survival::Surv(time, status) ~ age + sex,
-                  data = survival::lung)
+  survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
 }
 
 .fit_cph_sf <- function() {
@@ -20,15 +21,21 @@
 
 .fit_survreg_sf <- function() {
   skip_if_not_installed("survival")
-  survival::survreg(survival::Surv(time, status) ~ age + sex,
-                    data = survival::lung, dist = "weibull")
+  survival::survreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    dist = "weibull"
+  )
 }
 
 .fit_flexsurv_sf <- function() {
   skip_if_not_installed("flexsurv")
   skip_if_not_installed("survival")
-  flexsurv::flexsurvreg(survival::Surv(time, status) ~ age + sex,
-                        data = survival::lung, dist = "weibull")
+  flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    dist = "weibull"
+  )
 }
 
 
@@ -114,7 +121,7 @@ test_that("survival footer is NULL for an empty frames list", {
 
 test_that("survival footer skips non-survival models in mixed lists", {
   fr_cox <- as_regression_frame(.fit_coxph_sf(), model_id = "M1")
-  fr_lm  <- as_regression_frame(lm(mpg ~ wt, data = mtcars), model_id = "M2")
+  fr_lm <- as_regression_frame(lm(mpg ~ wt, data = mtcars), model_id = "M2")
   # Only the coxph entry contributes; the function returns the cox text
   # without a "Model 1:" prefix (no multi-model context with content).
   out <- spicy:::build_survival_footer_block_from_frames(list(fr_cox, fr_lm))

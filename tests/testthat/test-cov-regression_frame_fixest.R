@@ -17,7 +17,6 @@
 # audit findings.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .cov_air <- function() {
@@ -33,14 +32,19 @@ test_that("feglm binomial: title_prefix switch arm -> 'Logistic regression'", {
   skip_if_not_installed("fixest")
   d <- .cov_air()
   d$bin <- as.integer(d$Ozone > stats::median(d$Ozone))
-  fit <- fixest::feglm(bin ~ Solar.R + Wind | Month, data = d,
-                       family = stats::binomial())
+  fit <- fixest::feglm(
+    bin ~ Solar.R + Wind | Month,
+    data = d,
+    family = stats::binomial()
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
 
-  expect_identical(fr$info$extras$title_prefix,
-                   "Logistic regression (fixed effects)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Logistic regression (fixed effects)"
+  )
   expect_identical(fr$info$family$family, "binomial")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
   expect_invisible(spicy:::validate_regression_frame(fr))
   # z-asymptotic inference (binomial coeftable has "z value").
   b_rows <- fr$coefs[!fr$coefs$is_ref, ]
@@ -70,8 +74,12 @@ test_that("feols without a fixed-effect block sets info$n_groups = NULL", {
 test_that("feols with an ordered factor synthesises no reference row", {
   skip_if_not_installed("fixest")
   d <- .cov_air()
-  d$Wind_ord <- cut(d$Wind, 3, labels = c("low", "mid", "high"),
-                    ordered_result = TRUE)
+  d$Wind_ord <- cut(
+    d$Wind,
+    3,
+    labels = c("low", "mid", "high"),
+    ordered_result = TRUE
+  )
   fit <- fixest::feols(Ozone ~ Solar.R + Wind_ord | Month, data = d)
   fr <- as_regression_frame(fit, model_id = "M1")
 
@@ -107,9 +115,9 @@ test_that("feols with an ordered factor synthesises no reference row", {
 # binomial) mixture; avoids a hard MASS dependency.
 .cov_nb_data <- function() {
   set.seed(101)
-  n  <- 400L
-  g  <- factor(sample(seq_len(8L), n, replace = TRUE))
-  x  <- stats::rnorm(n)
+  n <- 400L
+  g <- factor(sample(seq_len(8L), n, replace = TRUE))
+  x <- stats::rnorm(n)
   mu <- exp(0.6 + 0.5 * x + as.numeric(g) * 0.05)
   th <- 1.5
   lambda <- stats::rgamma(n, shape = th, scale = mu / th)
@@ -129,7 +137,7 @@ test_that("fenegbin is detected as GLM-like (z-asymptotic, log link, IRR)", {
 
   # Family / link.
   expect_identical(fr$info$family$family, "negbin")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 
   # GLM-like inference: z value with infinite df, NOT Wald-t.
   b_rows <- fr$coefs[!fr$coefs$is_ref, ]
@@ -138,10 +146,8 @@ test_that("fenegbin is detected as GLM-like (z-asymptotic, log link, IRR)", {
 
   # The z statistic + p value must equal summary(fit)$coeftable.
   sm <- summary(fit)$coeftable
-  expect_equal(b_rows$statistic[b_rows$term == "x"],
-               unname(sm["x", "z value"]))
-  expect_equal(b_rows$p_value[b_rows$term == "x"],
-               unname(sm["x", "Pr(>|z|)"]))
+  expect_equal(b_rows$statistic[b_rows$term == "x"], unname(sm["x", "z value"]))
+  expect_equal(b_rows$p_value[b_rows$term == "x"], unname(sm["x", "Pr(>|z|)"]))
 
   # The auxiliary ".theta" dispersion row is NOT a model coefficient.
   expect_false(".theta" %in% fr$coefs$term)
@@ -153,8 +159,10 @@ test_that("fenegbin is detected as GLM-like (z-asymptotic, log link, IRR)", {
   expect_true(fr$info$supports$exponentiate)
 
   # Title prefix switch arm.
-  expect_identical(fr$info$extras$title_prefix,
-                   "Negative-binomial regression (fixed effects)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Negative-binomial regression (fixed effects)"
+  )
 
   # Dispersion theta surfaced (matches fit$theta, a positive scalar).
   expect_equal(fr$info$extras$theta, unname(as.numeric(fit$theta)))

@@ -33,32 +33,47 @@
 # upstream (regression_validate.R Phase F).
 
 dispatch_regression_output <- function(
-    rendered,
-    aligned,
-    output = "default",
-    excel_path = NULL,
-    excel_sheet = "Regression",
-    clipboard_delim = "\t",
-    word_path = NULL,
-    word_template = NULL) {
-  output <- match.arg(output, c("default", "data.frame", "long",
-                                 "tinytable", "gt", "flextable",
-                                 "excel", "clipboard", "word"))
+  rendered,
+  aligned,
+  output = "default",
+  excel_path = NULL,
+  excel_sheet = "Regression",
+  clipboard_delim = "\t",
+  word_path = NULL,
+  word_template = NULL
+) {
+  output <- match.arg(
+    output,
+    c(
+      "default",
+      "data.frame",
+      "long",
+      "tinytable",
+      "gt",
+      "flextable",
+      "excel",
+      "clipboard",
+      "word"
+    )
+  )
 
-  switch(output,
-    default     = output_default(rendered, aligned),
-    data.frame  = output_data_frame(rendered),
-    long        = output_long(aligned),
-    tinytable   = output_tinytable(rendered),
-    gt          = output_gt(rendered),
-    flextable   = output_flextable(rendered),
-    excel       = output_excel(rendered, excel_path, excel_sheet),
-    clipboard   = output_clipboard(rendered, clipboard_delim),
-    word        = output_word(rendered, word_path, word_template),
+  switch(
+    output,
+    default = output_default(rendered, aligned),
+    data.frame = output_data_frame(rendered),
+    long = output_long(aligned),
+    tinytable = output_tinytable(rendered),
+    gt = output_gt(rendered),
+    flextable = output_flextable(rendered),
+    excel = output_excel(rendered, excel_path, excel_sheet),
+    clipboard = output_clipboard(rendered, clipboard_delim),
+    word = output_word(rendered, word_path, word_template),
     # nocov start -- defensive: match.arg() above forbids any other
     # value, so this branch is unreachable in practice.
-    spicy_abort(sprintf("Unknown output \"%s\".", output),
-                class = "spicy_invalid_input")
+    spicy_abort(
+      sprintf("Unknown output \"%s\".", output),
+      class = "spicy_invalid_input"
+    )
     # nocov end
   )
 }
@@ -68,10 +83,9 @@ dispatch_regression_output <- function(
 # Carries the analytic data as attributes so broom methods (tidy,
 # glance) can read them without re-running the pipeline.
 output_default <- function(rendered, aligned) {
-  attr(rendered, "spicy_long")     <- aligned$coefs_aligned
+  attr(rendered, "spicy_long") <- aligned$coefs_aligned
   attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_aligned
-  class(rendered) <- c("spicy_regression_table", "spicy_table",
-                       "data.frame")
+  class(rendered) <- c("spicy_regression_table", "spicy_table", "data.frame")
   rendered
 }
 
@@ -93,10 +107,16 @@ output_data_frame <- function(rendered) {
 #   is_intercept, is_reference, factor_term, factor_level
 output_long <- function(aligned) {
   long <- aligned$coefs_aligned
-  if (is.null(long) || nrow(long) == 0L) return(long)
+  if (is.null(long) || nrow(long) == 0L) {
+    return(long)
+  }
   # Rename to broom convention
-  ren <- c(se = "std.error", ci_low = "conf.low", ci_high = "conf.high",
-           p_value = "p.value")
+  ren <- c(
+    se = "std.error",
+    ci_low = "conf.low",
+    ci_high = "conf.high",
+    p_value = "p.value"
+  )
   for (old in names(ren)) {
     if (old %in% names(long)) {
       names(long)[names(long) == old] <- ren[[old]]
@@ -148,8 +168,12 @@ output_long <- function(aligned) {
 # When `spanners` is non-null, the per-column labels are stripped
 # of their multi-model "Label: " prefix (the Model spanner sits in
 # its own row above the column-labels row in rich outputs).
-.build_label_rows <- function(body, ci_spanners, spanners = NULL,
-                                col_meta = NULL) {
+.build_label_rows <- function(
+  body,
+  ci_spanners,
+  spanners = NULL,
+  col_meta = NULL
+) {
   n <- ncol(body)
   # Prefer `col_meta$display_label` per column when available: it
   # already strips both the "Model X: " prefix and the dedup `.N`
@@ -158,9 +182,13 @@ output_long <- function(aligned) {
   # Falls back to the legacy strip-prefix-only path when col_meta
   # isn't supplied (older callers / non-table_regression body).
   top <- if (!is.null(col_meta)) {
-    vapply(names(body), function(nm) {
-      .lookup_display_label(nm, col_meta)
-    }, character(1))
+    vapply(
+      names(body),
+      function(nm) {
+        .lookup_display_label(nm, col_meta)
+      },
+      character(1)
+    )
   } else if (!is.null(spanners) && length(spanners) > 0L) {
     stripped <- .strip_spanner_prefix(body, spanners)
     names(stripped)
@@ -190,9 +218,13 @@ output_long <- function(aligned) {
 # `: LL` variant which carries the same `display_label` ("95% CI").
 .lookup_display_label <- function(nm, col_meta) {
   m <- col_meta[[nm]]
-  if (!is.null(m)) return(m$display_label %||% nm)
+  if (!is.null(m)) {
+    return(m$display_label %||% nm)
+  }
   m_ll <- col_meta[[paste0(nm, ": LL")]]
-  if (!is.null(m_ll)) return(m_ll$display_label %||% nm)
+  if (!is.null(m_ll)) {
+    return(m_ll$display_label %||% nm)
+  }
   nm
 }
 
@@ -207,11 +239,18 @@ output_long <- function(aligned) {
 # (flextable, excel, word via flextable) honour the layout.
 .warn_merged_layout_ignored <- function(rendered, engine) {
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
-  if (!identical(fit_stats_layout, "merged")) return(invisible(NULL))
+  if (!identical(fit_stats_layout, "merged")) {
+    return(invisible(NULL))
+  }
   spicy_warn(
-    c(sprintf("`fit_stats_layout = \"merged\"` is not supported by `output = \"%s\"`.", engine),
+    c(
+      sprintf(
+        "`fit_stats_layout = \"merged\"` is not supported by `output = \"%s\"`.",
+        engine
+      ),
       "i" = "Falling back to `\"first_col\"` layout for the fit-stat rows.",
-      "i" = "For merged fit-stat cells, use `output = \"flextable\"`, `\"excel\"`, or `\"word\"`."),
+      "i" = "For merged fit-stat cells, use `output = \"flextable\"`, `\"excel\"`, or `\"word\"`."
+    ),
     class = "spicy_ignored_arg"
   )
 }
@@ -236,8 +275,12 @@ output_long <- function(aligned) {
 .fit_stat_merge_ranges <- function(body, spanners, group_sep) {
   n_rows <- nrow(body)
   n_cols <- ncol(body)
-  if (length(group_sep) == 0L || group_sep[1L] < 2L ||
-        group_sep[1L] > n_rows || n_cols < 2L) {
+  if (
+    length(group_sep) == 0L ||
+      group_sep[1L] < 2L ||
+      group_sep[1L] > n_rows ||
+      n_cols < 2L
+  ) {
     return(list())
   }
   fit_rows <- seq.int(group_sep[1L], n_rows)
@@ -266,14 +309,16 @@ output_tinytable <- function(rendered) {
     # nocov start -- only reachable when 'tinytable' is not installed;
     # CI / dev runs always have it via Suggests.
     spicy_abort(
-      c("Output `\"tinytable\"` requires the 'tinytable' package.",
-        "i" = "Install it with `install.packages(\"tinytable\")`."),
+      c(
+        "Output `\"tinytable\"` requires the 'tinytable' package.",
+        "i" = "Install it with `install.packages(\"tinytable\")`."
+      ),
       class = "spicy_missing_pkg"
     )
     # nocov end
   }
   title <- attr(rendered, "title")
-  note  <- attr(rendered, "note")
+  note <- attr(rendered, "note")
   group_sep <- attr(rendered, "group_sep_rows")
 
   # ---- Read structured (typed) body, derive padded display strings ----
@@ -300,7 +345,7 @@ output_tinytable <- function(rendered) {
   format_spec <- struct$format_spec
   decimal_mark <- format_spec$decimal_mark
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
-  has_ci_spanner    <- length(ci_spanners) > 0L
+  has_ci_spanner <- length(ci_spanners) > 0L
 
   # Strip "Model X: " prefix from structured col names for multi-model
   # display (the model spanner above carries the prefix), then rename
@@ -342,16 +387,22 @@ output_tinytable <- function(rendered) {
   # so the same per-col-spanner pattern works for both cases.
   # (CI columns were already renamed to LL / UL above; no second pass needed.)
   for (j in seq_along(body_names_orig)) {
-    if (j %in% ci_cols_set) next
+    if (j %in% ci_cols_set) {
+      next
+    }
     names(body)[j] <- ""
   }
   n_cols <- ncol(body)
-  tt <- tinytable::tt(body,
-                       caption = title %||% "",
-                       notes = if (!is.null(note)) note else NULL)
+  tt <- tinytable::tt(
+    body,
+    caption = title %||% "",
+    notes = if (!is.null(note)) note else NULL
+  )
   gspec <- list()
   for (j in seq_along(body_names_orig)) {
-    if (j %in% ci_cols_set) next
+    if (j %in% ci_cols_set) {
+      next
+    }
     # Look up `col_meta` by the ORIGINAL prefixed col name (e.g.
     # "Step 1: p.2") because `col_meta` is keyed on the structured
     # col names, NOT on the post-strip body colnames. Use the
@@ -429,26 +480,33 @@ output_tinytable <- function(rendered) {
   }
   # Spanner rows (CI level at i = -1, model level at i = -2 when
   # both present).
-  ci_i <- -1L  # CI spanner row index (or -1 alone when only CI)
+  ci_i <- -1L # CI spanner row index (or -1 alone when only CI)
   model_i <- if (has_ci_spanner) -2L else -1L
   if (has_ci_spanner) {
-    tt <- tinytable::style_tt(tt, i = ci_i, j = seq_len(n_cols),
-                               align = "c")
+    tt <- tinytable::style_tt(tt, i = ci_i, j = seq_len(n_cols), align = "c")
     tt <- tinytable::style_tt(tt, i = ci_i, j = 1L, align = "l")
   }
   if (has_model_spanner) {
-    tt <- tinytable::style_tt(tt, i = model_i, j = seq_len(n_cols),
-                               align = "c")
+    tt <- tinytable::style_tt(tt, i = model_i, j = seq_len(n_cols), align = "c")
     tt <- tinytable::style_tt(tt, i = model_i, j = 1L, align = "l")
   }
 
   # APA borders applied last (table_continuous_lm convention).
   # Top rule above the outermost header row.
-  top_i <- if (has_model_spanner) model_i
-           else if (has_ci_spanner) ci_i
-           else 0L
-  tt <- tinytable::style_tt(tt, i = top_i, j = seq_len(n_cols),
-                             line = "t", line_width = 0.06)
+  top_i <- if (has_model_spanner) {
+    model_i
+  } else if (has_ci_spanner) {
+    ci_i
+  } else {
+    0L
+  }
+  tt <- tinytable::style_tt(
+    tt,
+    i = top_i,
+    j = seq_len(n_cols),
+    line = "t",
+    line_width = 0.06
+  )
   # Mid-rule under each model spanner (only over spanned columns).
   if (has_model_spanner) {
     # `line_trim = "lr"` shortens the under-rule by a small amount on
@@ -458,38 +516,68 @@ output_tinytable <- function(rendered) {
     # between models. Mirrors the console renderer where the
     # cross-column join character already breaks the rule visually.
     for (lbl in names(spanners)) {
-      tt <- tinytable::style_tt(tt, i = model_i, j = spanners[[lbl]],
-                                 line = "b", line_width = 0.06,
-                                 line_trim = "lr")
+      tt <- tinytable::style_tt(
+        tt,
+        i = model_i,
+        j = spanners[[lbl]],
+        line = "b",
+        line_width = 0.06,
+        line_trim = "lr"
+      )
     }
   }
   # Mid-rule under each CI spanner (only over LL/UL pairs).
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
-      tt <- tinytable::style_tt(tt, i = ci_i, j = cs$cols,
-                                 line = "b", line_width = 0.06)
+      tt <- tinytable::style_tt(
+        tt,
+        i = ci_i,
+        j = cs$cols,
+        line = "b",
+        line_width = 0.06
+      )
     }
   }
   # Sub-rule under column labels.
-  tt <- tinytable::style_tt(tt, i = 0L, j = seq_len(n_cols),
-                             line = "b", line_width = 0.06)
-  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
-        group_sep[1L] <= nrow(body)) {
-    tt <- tinytable::style_tt(tt, i = group_sep[1L] - 1L,
-                               j = seq_len(n_cols),
-                               line = "b", line_width = 0.03,
-                               line_color = "#cccccc")
+  tt <- tinytable::style_tt(
+    tt,
+    i = 0L,
+    j = seq_len(n_cols),
+    line = "b",
+    line_width = 0.06
+  )
+  if (
+    length(group_sep) >= 1L &&
+      group_sep[1L] >= 2L &&
+      group_sep[1L] <= nrow(body)
+  ) {
+    tt <- tinytable::style_tt(
+      tt,
+      i = group_sep[1L] - 1L,
+      j = seq_len(n_cols),
+      line = "b",
+      line_width = 0.03,
+      line_color = "#cccccc"
+    )
   }
   if (nrow(body) > 0L) {
-    tt <- tinytable::style_tt(tt, i = nrow(body), j = seq_len(n_cols),
-                               line = "b", line_width = 0.06)
+    tt <- tinytable::style_tt(
+      tt,
+      i = nrow(body),
+      j = seq_len(n_cols),
+      line = "b",
+      line_width = 0.06
+    )
   }
 
   # Factor-level rows: indent the Variable cell.
   if (length(level_rows) > 0L) {
     tt <- tinytable::style_tt(
-      tt, i = level_rows, j = 1L,
-      indent = 1, html_css = "padding-left: 1.4em;"
+      tt,
+      i = level_rows,
+      j = 1L,
+      indent = 1,
+      html_css = "padding-left: 1.4em;"
     )
   }
 
@@ -524,8 +612,8 @@ output_tinytable <- function(rendered) {
   if (!is.null(note)) {
     .html_escape <- function(s) {
       s <- gsub("&", "&amp;", s, fixed = TRUE)
-      s <- gsub("<", "&lt;",  s, fixed = TRUE)
-      s <- gsub(">", "&gt;",  s, fixed = TRUE)
+      s <- gsub("<", "&lt;", s, fixed = TRUE)
+      s <- gsub(">", "&gt;", s, fixed = TRUE)
       s
     }
     note_html <- .html_escape(note)
@@ -572,8 +660,10 @@ output_tinytable <- function(rendered) {
         #    one piece (newlines inside survive as plain text); a
         #    perl multiline regex covers it.
         x@table_string <- sub(
-          "<tfoot>[\\s\\S]*?</tfoot>", "",
-          x@table_string, perl = TRUE
+          "<tfoot>[\\s\\S]*?</tfoot>",
+          "",
+          x@table_string,
+          perl = TRUE
         )
         # 2. Open the centering outer + inline-block inner wrapper
         #    just before `<table ...>`. We match the literal "<table "
@@ -582,14 +672,16 @@ output_tinytable <- function(rendered) {
         x@table_string <- sub(
           "<table ",
           paste0(open_outer, open_inner, "<table "),
-          x@table_string, fixed = TRUE
+          x@table_string,
+          fixed = TRUE
         )
         # 3. Append the note div + close both wrappers right after
         #    `</table>`.
         x@table_string <- sub(
           "</table>",
           paste0("</table>", note_div, close_both),
-          x@table_string, fixed = TRUE
+          x@table_string,
+          fixed = TRUE
         )
       }
       x
@@ -616,8 +708,10 @@ output_gt <- function(rendered) {
   if (!spicy_pkg_available("gt")) {
     # nocov start
     spicy_abort(
-      c("Output `\"gt\"` requires the 'gt' package.",
-        "i" = "Install it with `install.packages(\"gt\")`."),
+      c(
+        "Output `\"gt\"` requires the 'gt' package.",
+        "i" = "Install it with `install.packages(\"gt\")`."
+      ),
       class = "spicy_missing_pkg"
     )
     # nocov end
@@ -628,7 +722,7 @@ output_gt <- function(rendered) {
   .warn_merged_layout_ignored(rendered, "gt")
 
   title <- attr(rendered, "title")
-  note  <- attr(rendered, "note")
+  note <- attr(rendered, "note")
   group_sep <- attr(rendered, "group_sep_rows")
 
   # ---- Read structured (typed) body, derive padded display strings ----
@@ -662,7 +756,7 @@ output_gt <- function(rendered) {
   decimal_mark <- format_spec$decimal_mark
 
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
-  has_ci_spanner    <- length(ci_spanners) > 0L
+  has_ci_spanner <- length(ci_spanners) > 0L
   orig_names <- names(body)
   n_cols <- ncol(body)
   n_rows <- nrow(body)
@@ -709,7 +803,9 @@ output_gt <- function(rendered) {
   }
   # nocov end
   for (j in seq_along(orig_names)) {
-    if (j %in% ci_cols_set) next  # CI cols get their own spanner
+    if (j %in% ci_cols_set) {
+      next
+    } # CI cols get their own spanner
     # Use `col_meta$display_label` for the spanner text (bare,
     # no Model prefix, no dedup `.N` suffix). Falls back to the
     # legacy `strip_prefix` path for structured bodies without
@@ -720,10 +816,11 @@ output_gt <- function(rendered) {
     } else if (!is.null(lbl) && nzchar(lbl)) {
       lbl
     } else {
-      strip_prefix(orig_names[j])  # nocov -- legacy: display_label always set
+      strip_prefix(orig_names[j]) # nocov -- legacy: display_label always set
     }
     tbl <- gt::tab_spanner(
-      tbl, label = bare,
+      tbl,
+      label = bare,
       columns = orig_names[j],
       id = paste0("col_span_", j, "_", make.names(bare))
     )
@@ -732,7 +829,8 @@ output_gt <- function(rendered) {
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
       tbl <- gt::tab_spanner(
-        tbl, label = cs$label,
+        tbl,
+        label = cs$label,
         columns = orig_names[cs$cols],
         id = paste0("ci_span_", paste(cs$cols, collapse = "_"))
       )
@@ -746,8 +844,12 @@ output_gt <- function(rendered) {
     for (k in seq_along(spanners)) {
       lbl <- names(spanners)[k]
       cols_in_span <- orig_names[spanners[[k]]]
-      tbl <- gt::tab_spanner(tbl, label = lbl, columns = cols_in_span,
-                              id = paste0("model_span_", k))
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = lbl,
+        columns = cols_in_span,
+        id = paste0("model_span_", k)
+      )
     }
   }
 
@@ -762,12 +864,21 @@ output_gt <- function(rendered) {
   # way for cells inside the table but isn't honoured uniformly by
   # the renderer in some viewer / quarto contexts -- the explicit
   # hex sidesteps that.
-  rule <- gt::cell_borders(sides = "bottom", color = "#333333",
-                            weight = gt::px(1))
-  rule_top <- gt::cell_borders(sides = "top", color = "#333333",
-                                weight = gt::px(1))
-  rule_light <- gt::cell_borders(sides = "bottom", color = "#cccccc",
-                                  weight = gt::px(1))
+  rule <- gt::cell_borders(
+    sides = "bottom",
+    color = "#333333",
+    weight = gt::px(1)
+  )
+  rule_top <- gt::cell_borders(
+    sides = "top",
+    color = "#333333",
+    weight = gt::px(1)
+  )
+  rule_light <- gt::cell_borders(
+    sides = "bottom",
+    color = "#cccccc",
+    weight = gt::px(1)
+  )
   tbl <- gt::tab_options(
     tbl,
     table.border.top.width = gt::px(0),
@@ -813,7 +924,8 @@ output_gt <- function(rendered) {
     model_span_ids <- paste0("model_span_", seq_along(spanners))
     # Top rule above the Model row.
     tbl <- gt::tab_style(
-      tbl, style = rule_top,
+      tbl,
+      style = rule_top,
       locations = gt::cells_column_spanners(spanners = model_span_ids)
     )
     # NOTE: we DON'T apply `rule` (bottom border) here via
@@ -826,7 +938,8 @@ output_gt <- function(rendered) {
   } else {
     # Single-model: the col_span_*'s ARE the outermost level.
     tbl <- gt::tab_style(
-      tbl, style = rule_top,
+      tbl,
+      style = rule_top,
       locations = gt::cells_column_spanners(spanners = gt::everything())
     )
   }
@@ -838,7 +951,8 @@ output_gt <- function(rendered) {
   # them).
   if (length(ci_cols_set) > 0L) {
     tbl <- gt::tab_style(
-      tbl, style = rule_top,
+      tbl,
+      style = rule_top,
       locations = gt::cells_column_labels(
         columns = orig_names[ci_cols_set]
       )
@@ -852,19 +966,23 @@ output_gt <- function(rendered) {
   # with the `column_labels.border.bottom.*` `tab_options` set
   # above.
   tbl <- gt::tab_style(
-    tbl, style = rule,
+    tbl,
+    style = rule,
     locations = gt::cells_column_labels(columns = gt::everything())
   )
   if (n_rows > 0L) {
     tbl <- gt::tab_style(
-      tbl, style = rule,
+      tbl,
+      style = rule,
       locations = gt::cells_body(rows = n_rows)
     )
   }
-  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
-        group_sep[1L] <= n_rows) {
+  if (
+    length(group_sep) >= 1L && group_sep[1L] >= 2L && group_sep[1L] <= n_rows
+  ) {
     tbl <- gt::tab_style(
-      tbl, style = rule_light,
+      tbl,
+      style = rule_light,
       locations = gt::cells_body(rows = group_sep[1L] - 1L)
     )
   }
@@ -912,7 +1030,8 @@ output_gt <- function(rendered) {
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
       tbl <- gt::tab_style(
-        tbl, style = rule,
+        tbl,
+        style = rule,
         locations = gt::cells_column_spanners(
           spanners = paste0("ci_span_", paste(cs$cols, collapse = "_"))
         )
@@ -929,8 +1048,7 @@ output_gt <- function(rendered) {
     # `cols_align_decimal()` needed (and avoids gt's alignment bug
     # with `fmt(fns = ...)` output that displayed APA p-values as
     # `. 213`).
-    tbl <- gt::cols_align(tbl, align = "center",
-                           columns = orig_names[-1L])
+    tbl <- gt::cols_align(tbl, align = "center", columns = orig_names[-1L])
   }
   # Factor-level rows: indent the Variable cell.
   if (length(level_rows) > 0L) {
@@ -953,9 +1071,11 @@ output_gt <- function(rendered) {
       tbl,
       style = list(
         gt::cell_text(align = "left"),
-        gt::cell_borders(sides = "bottom",
-                          color = "transparent",
-                          weight = gt::px(0))
+        gt::cell_borders(
+          sides = "bottom",
+          color = "transparent",
+          weight = gt::px(0)
+        )
       ),
       locations = gt::cells_title(groups = "title")
     )
@@ -987,8 +1107,8 @@ output_gt <- function(rendered) {
   }
   esc <- function(s) {
     s <- gsub("&", "&amp;", s, fixed = TRUE)
-    s <- gsub("<", "&lt;",  s, fixed = TRUE)
-    s <- gsub(">", "&gt;",  s, fixed = TRUE)
+    s <- gsub("<", "&lt;", s, fixed = TRUE)
+    s <- gsub(">", "&gt;", s, fixed = TRUE)
     s
   }
   note_one_line <- gsub("\n", " ", note, fixed = TRUE)
@@ -1007,7 +1127,8 @@ output_gt <- function(rendered) {
     "'Segoe UI Symbol', 'Noto Color Emoji'; ",
     "font-size: 0.9em; line-height: 1.25; ",
     "color: #333333; text-align: left;\">",
-    note_html, "</div>"
+    note_html,
+    "</div>"
   )
   open_outer <- paste0(
     "<div class=\"spicy-gt-outer\" ",
@@ -1090,12 +1211,14 @@ output_gt <- function(rendered) {
   html_str <- sub(
     "<table ",
     paste0(open_outer, open_inner, spanner_css, "<table "),
-    html_str, fixed = TRUE
+    html_str,
+    fixed = TRUE
   )
   html_str <- sub(
     "</table>",
     paste0("</table>", note_div, close_both),
-    html_str, fixed = TRUE
+    html_str,
+    fixed = TRUE
   )
   html_str
 }
@@ -1104,8 +1227,11 @@ output_gt <- function(rendered) {
 print.spicy_gt <- function(x, ...) {
   note <- attr(x, "spicy_note")
   class(x) <- setdiff(class(x), "spicy_gt")
-  if (interactive() && !isTRUE(getOption("knitr.in.progress")) &&
-        requireNamespace("htmltools", quietly = TRUE)) {
+  if (
+    interactive() &&
+      !isTRUE(getOption("knitr.in.progress")) &&
+      requireNamespace("htmltools", quietly = TRUE)
+  ) {
     h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
     h_str <- .spicy_gt_html_postprocess(h_str, note)
     print(htmltools::browsable(htmltools::HTML(h_str)))
@@ -1131,7 +1257,8 @@ knit_print.spicy_gt <- function(x, ...) {
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
     if (!is.null(note) && nzchar(note)) {
       x <- gt::tab_source_note(
-        x, source_note = gsub("\n", " ", note, fixed = TRUE)
+        x,
+        source_note = gsub("\n", " ", note, fixed = TRUE)
       )
     }
     return(knitr::knit_print(x, ...))
@@ -1147,8 +1274,10 @@ output_flextable <- function(rendered) {
   if (!spicy_pkg_available("flextable")) {
     # nocov start
     spicy_abort(
-      c("Output `\"flextable\"` requires the 'flextable' package.",
-        "i" = "Install it with `install.packages(\"flextable\")`."),
+      c(
+        "Output `\"flextable\"` requires the 'flextable' package.",
+        "i" = "Install it with `install.packages(\"flextable\")`."
+      ),
       class = "spicy_missing_pkg"
     )
     # nocov end
@@ -1171,7 +1300,7 @@ output_flextable <- function(rendered) {
   group_sep <- attr(rendered, "group_sep_rows")
 
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
-  has_ci_spanner    <- length(ci_spanners) > 0L
+  has_ci_spanner <- length(ci_spanners) > 0L
 
   orig_names <- names(body)
   n_cols <- ncol(body)
@@ -1182,8 +1311,7 @@ output_flextable <- function(rendered) {
   # entire body of this function in a restore-on-exit so other code
   # in the user session is unaffected.
   prev_defaults <- flextable::get_flextable_defaults()
-  on.exit(do.call(flextable::set_flextable_defaults, prev_defaults),
-          add = TRUE)
+  on.exit(do.call(flextable::set_flextable_defaults, prev_defaults), add = TRUE)
   flextable::set_flextable_defaults(font.family = "Calibri")
 
   ft <- flextable::flextable(body)
@@ -1212,7 +1340,9 @@ output_flextable <- function(rendered) {
   # else arm further below (and this helper's body) is never reached
   # through table_regression(). Kept for bodies predating display_label.
   strip_model_prefix <- function(name) {
-    if (!has_model_spanner) return(name)
+    if (!has_model_spanner) {
+      return(name)
+    }
     for (lbl in names(spanners)) {
       prefix <- paste0(lbl, ": ")
       if (startsWith(name, prefix)) {
@@ -1230,22 +1360,25 @@ output_flextable <- function(rendered) {
   names(display_labels) <- orig_names
   display_labels[[orig_names[1L]]] <- ""
   for (j in seq_len(n_cols)) {
-    if (j == 1L) next
+    if (j == 1L) {
+      next
+    }
     if (j %in% ci_col_set) {
       for (cs in ci_spanners) {
         if (identical(cs$cols[1L], j)) {
-          display_labels[[orig_names[j]]] <- "LL"; break
+          display_labels[[orig_names[j]]] <- "LL"
+          break
         }
         if (identical(cs$cols[2L], j)) {
-          display_labels[[orig_names[j]]] <- "UL"; break
+          display_labels[[orig_names[j]]] <- "UL"
+          break
         }
       }
     } else {
       display_labels[[orig_names[j]]] <- ""
     }
   }
-  ft <- do.call(flextable::set_header_labels,
-                 c(list(x = ft), display_labels))
+  ft <- do.call(flextable::set_header_labels, c(list(x = ft), display_labels))
 
   # Helper: compress contiguous identical labels into single spans
   # (input vector of per-col labels -> add_header_row(values, colwidths)).
@@ -1257,7 +1390,9 @@ output_flextable <- function(rendered) {
     while (i <= n) {
       lbl <- label_at_col[i]
       j <- i
-      while (j < n && label_at_col[j + 1L] == lbl) j <- j + 1L
+      while (j < n && label_at_col[j + 1L] == lbl) {
+        j <- j + 1L
+      }
       values <- c(values, lbl)
       widths <- c(widths, j - i + 1L)
       i <- j + 1L
@@ -1288,14 +1423,17 @@ output_flextable <- function(rendered) {
       sub_label_at_col[j] <- if (!is.null(lbl) && nzchar(lbl)) {
         lbl
       } else {
-        strip_model_prefix(orig_names[j])  # nocov -- display_label always set
+        strip_model_prefix(orig_names[j]) # nocov -- display_label always set
       }
     }
   }
   rs <- build_run_spec(sub_label_at_col)
-  ft <- flextable::add_header_row(ft, top = TRUE,
-                                   values = rs$values,
-                                   colwidths = rs$colwidths)
+  ft <- flextable::add_header_row(
+    ft,
+    top = TRUE,
+    values = rs$values,
+    colwidths = rs$colwidths
+  )
 
   if (has_model_spanner) {
     model_labels_at_col <- rep("", n_cols)
@@ -1303,9 +1441,12 @@ output_flextable <- function(rendered) {
       model_labels_at_col[spanners[[lbl]]] <- lbl
     }
     rs <- build_run_spec(model_labels_at_col)
-    ft <- flextable::add_header_row(ft, top = TRUE,
-                                     values = rs$values,
-                                     colwidths = rs$colwidths)
+    ft <- flextable::add_header_row(
+      ft,
+      top = TRUE,
+      values = rs$values,
+      colwidths = rs$colwidths
+    )
   }
 
   # APA borders. The header now has up to 3 rows (model spanner row
@@ -1322,11 +1463,21 @@ output_flextable <- function(rendered) {
     # "Variable" -- otherwise inherits that grey hairline and shows
     # an extra line right above the "Variable" label). Then draw
     # the black 1pt mid-rule under each model spanner col-range.
-    ft <- flextable::hline(ft, i = 1L, j = seq_len(n_cols),
-                            part = "header", border = bd_none)
+    ft <- flextable::hline(
+      ft,
+      i = 1L,
+      j = seq_len(n_cols),
+      part = "header",
+      border = bd_none
+    )
     for (lbl in names(spanners)) {
-      ft <- flextable::hline(ft, i = 1L, j = spanners[[lbl]],
-                              part = "header", border = bd)
+      ft <- flextable::hline(
+        ft,
+        i = 1L,
+        j = spanners[[lbl]],
+        part = "header",
+        border = bd
+      )
     }
   }
   # Bottom border of the per-col + CI spanner row.
@@ -1335,19 +1486,36 @@ output_flextable <- function(rendered) {
   # Without the clearing pass, the default grey bleeds across the row
   # and overshoots the CI bracket visually.
   sub_row_idx <- if (has_model_spanner) 2L else 1L
-  ft <- flextable::hline(ft, i = sub_row_idx, j = seq_len(n_cols),
-                          part = "header", border = bd_none)
+  ft <- flextable::hline(
+    ft,
+    i = sub_row_idx,
+    j = seq_len(n_cols),
+    part = "header",
+    border = bd_none
+  )
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
-      ft <- flextable::hline(ft, i = sub_row_idx, j = cs$cols,
-                              part = "header", border = bd)
+      ft <- flextable::hline(
+        ft,
+        i = sub_row_idx,
+        j = cs$cols,
+        part = "header",
+        border = bd
+      )
     }
   }
   ft <- flextable::hline_bottom(ft, part = "header", border = bd)
-  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
-        group_sep[1L] <= nrow(body)) {
-    ft <- flextable::hline(ft, i = group_sep[1L] - 1L,
-                            part = "body", border = bd_light)
+  if (
+    length(group_sep) >= 1L &&
+      group_sep[1L] >= 2L &&
+      group_sep[1L] <= nrow(body)
+  ) {
+    ft <- flextable::hline(
+      ft,
+      i = group_sep[1L] - 1L,
+      part = "body",
+      border = bd_light
+    )
   }
   if (nrow(body) > 0L) {
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
@@ -1377,13 +1545,17 @@ output_flextable <- function(rendered) {
   ft <- flextable::align(ft, j = 1L, part = "body", align = "left")
   if (n_cols >= 2L) {
     numeric_j <- 2:n_cols
-    ft <- flextable::align(ft, j = numeric_j, part = "body",
-                            align = "center")
+    ft <- flextable::align(ft, j = numeric_j, part = "body", align = "center")
   }
   # Factor-level row indentation.
   if (length(level_rows) > 0L) {
-    ft <- flextable::padding(ft, i = level_rows, j = 1L,
-                              part = "body", padding.left = 20)
+    ft <- flextable::padding(
+      ft,
+      i = level_rows,
+      j = 1L,
+      part = "body",
+      padding.left = 20
+    )
   }
 
   # fit_stats_layout = "merged": merge each model's numeric sub-
@@ -1393,10 +1565,14 @@ output_flextable <- function(rendered) {
   if (identical(fit_stats_layout, "merged")) {
     specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
     for (sp in specs) {
-      ft <- flextable::merge_at(ft, i = sp$row, j = sp$cols,
-                                  part = "body")
-      ft <- flextable::align(ft, i = sp$row, j = sp$cols,
-                              part = "body", align = "center")
+      ft <- flextable::merge_at(ft, i = sp$row, j = sp$cols, part = "body")
+      ft <- flextable::align(
+        ft,
+        i = sp$row,
+        j = sp$cols,
+        part = "body",
+        align = "center"
+      )
     }
   }
 
@@ -1406,7 +1582,7 @@ output_flextable <- function(rendered) {
   ft <- flextable::set_table_properties(ft, layout = "autofit")
 
   title <- attr(rendered, "title")
-  note  <- attr(rendered, "note")
+  note <- attr(rendered, "note")
   if (!is.null(title) && nzchar(title)) {
     # APA Manual 7 Section 7.10-Section 7.11: table caption is flush-left
     # (italic-styled by Word's "Table Caption" style at the OOXML
@@ -1432,8 +1608,7 @@ output_flextable <- function(rendered) {
       caption = flextable::as_paragraph(
         flextable::as_chunk(
           title,
-          props = officer::fp_text(font.family = "Calibri",
-                                    font.size = 11)
+          props = officer::fp_text(font.family = "Calibri", font.size = 11)
         )
       ),
       align_with_table = FALSE,
@@ -1448,16 +1623,16 @@ output_flextable <- function(rendered) {
     # leading "Note." chunk is italicised and the remainder is in
     # regular type.
     note_one_line <- gsub("\n", " ", note, fixed = TRUE)
-    fp_normal <- officer::fp_text(font.family = "Calibri",
-                                            font.size = 10)
-    fp_italic <- officer::fp_text(font.family = "Calibri",
-                                            font.size = 10,
-                                            italic = TRUE)
+    fp_normal <- officer::fp_text(font.family = "Calibri", font.size = 10)
+    fp_italic <- officer::fp_text(
+      font.family = "Calibri",
+      font.size = 10,
+      italic = TRUE
+    )
     if (startsWith(note_one_line, "Note.")) {
       para <- flextable::as_paragraph(
         flextable::as_chunk("Note.", props = fp_italic),
-        flextable::as_chunk(substring(note_one_line, 6L),
-                             props = fp_normal)
+        flextable::as_chunk(substring(note_one_line, 6L), props = fp_normal)
       )
     } else {
       para <- flextable::as_paragraph(
@@ -1502,8 +1677,8 @@ output_flextable <- function(rendered) {
   }
   esc <- function(s) {
     s <- gsub("&", "&amp;", s, fixed = TRUE)
-    s <- gsub("<", "&lt;",  s, fixed = TRUE)
-    s <- gsub(">", "&gt;",  s, fixed = TRUE)
+    s <- gsub("<", "&lt;", s, fixed = TRUE)
+    s <- gsub(">", "&gt;", s, fixed = TRUE)
     s
   }
   note_one_line <- gsub("\n", " ", note, fixed = TRUE)
@@ -1519,7 +1694,8 @@ output_flextable <- function(rendered) {
     "font-family: Calibri, 'Calibri', Arial, sans-serif; ",
     "font-size: 0.875rem; line-height: 1.25; ",
     "text-align: left;\">",
-    note_html, "</div>"
+    note_html,
+    "</div>"
   )
   open_outer <- paste0(
     "<div class=\"spicy-ft-outer\" ",
@@ -1575,11 +1751,15 @@ output_flextable <- function(rendered) {
   html_str <- sub(
     "<table ",
     paste0(open_outer, open_inner, border_collapse_css, "<table "),
-    html_str, fixed = TRUE
+    html_str,
+    fixed = TRUE
   )
-  html_str <- sub("</table>",
-                   paste0("</table>", note_div, close_both),
-                   html_str, fixed = TRUE)
+  html_str <- sub(
+    "</table>",
+    paste0("</table>", note_div, close_both),
+    html_str,
+    fixed = TRUE
+  )
   html_str
 }
 
@@ -1587,8 +1767,11 @@ output_flextable <- function(rendered) {
 print.spicy_flextable <- function(x, ...) {
   note <- attr(x, "spicy_note")
   class(x) <- setdiff(class(x), "spicy_flextable")
-  if (interactive() && !isTRUE(getOption("knitr.in.progress")) &&
-        requireNamespace("htmltools", quietly = TRUE)) {
+  if (
+    interactive() &&
+      !isTRUE(getOption("knitr.in.progress")) &&
+      requireNamespace("htmltools", quietly = TRUE)
+  ) {
     h <- flextable::htmltools_value(x = x)
     h_str <- as.character(h)
     h_str <- .spicy_ft_html_postprocess(h_str, note)
@@ -1655,8 +1838,10 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   if (!spicy_pkg_available("openxlsx2")) {
     # nocov start
     spicy_abort(
-      c("Output `\"excel\"` requires the 'openxlsx2' package.",
-        "i" = "Install it with `install.packages(\"openxlsx2\")`."),
+      c(
+        "Output `\"excel\"` requires the 'openxlsx2' package.",
+        "i" = "Install it with `install.packages(\"openxlsx2\")`."
+      ),
       class = "spicy_missing_pkg"
     )
     # nocov end
@@ -1679,29 +1864,33 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # in col_meta, reference/fit-stat row markers). Engines consume it
   # directly -- no string parsing.
   struct <- attr(rendered, "structured")
-  body <- struct$body                                # numeric body
-  spanners <- struct$spanners                        # model-level spanners
-  ci_spanners <- struct$ci_pairs                     # CI pairs (LL/UL)
-  col_meta <- struct$col_meta                        # per-col format spec
+  body <- struct$body # numeric body
+  spanners <- struct$spanners # model-level spanners
+  ci_spanners <- struct$ci_pairs # CI pairs (LL/UL)
+  col_meta <- struct$col_meta # per-col format spec
   format_spec <- struct$format_spec
   reference_rows <- struct$reference_rows
   fit_stat_rows <- struct$fit_stat_rows
   level_rows <- struct$level_rows
   title <- attr(rendered, "title")
-  note  <- attr(rendered, "note")
+  note <- attr(rendered, "note")
   group_sep <- attr(rendered, "group_sep_rows")
 
   n_cols <- ncol(body)
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
-  has_ci_spanner    <- length(ci_spanners) > 0L
+  has_ci_spanner <- length(ci_spanners) > 0L
 
   wb <- openxlsx2::wb_workbook()
   wb <- openxlsx2::wb_add_worksheet(wb, sheet = excel_sheet)
 
   start_row <- 1L
   if (!is.null(title) && nzchar(title)) {
-    wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
-                                 x = title, start_row = start_row)
+    wb <- openxlsx2::wb_add_data(
+      wb,
+      sheet = excel_sheet,
+      x = title,
+      start_row = start_row
+    )
     start_row <- start_row + 2L
   }
 
@@ -1711,16 +1900,22 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   #   * sub-column header row (Variable, B, SE, LL, UL, p, ...)
   current_row <- start_row
   model_row_excel <- NA_integer_
-  ci_row_excel    <- NA_integer_
+  ci_row_excel <- NA_integer_
 
   write_spanner_row <- function(wb, label_at_col, row) {
-    df <- as.data.frame(as.list(label_at_col),
-                        stringsAsFactors = FALSE,
-                        col.names = paste0("V", seq_along(label_at_col)))
+    df <- as.data.frame(
+      as.list(label_at_col),
+      stringsAsFactors = FALSE,
+      col.names = paste0("V", seq_along(label_at_col))
+    )
     names(df) <- names(body)
-    openxlsx2::wb_add_data(wb, sheet = excel_sheet,
-                            x = df, start_row = row,
-                            col_names = FALSE)
+    openxlsx2::wb_add_data(
+      wb,
+      sheet = excel_sheet,
+      x = df,
+      start_row = row,
+      col_names = FALSE
+    )
   }
 
   if (has_model_spanner) {
@@ -1734,7 +1929,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       idx <- spanners[[lbl]]
       if (length(idx) >= 2L) {
         wb <- openxlsx2::wb_merge_cells(
-          wb, sheet = excel_sheet,
+          wb,
+          sheet = excel_sheet,
           dims = openxlsx2::wb_dims(rows = model_row_excel, cols = idx)
         )
       }
@@ -1749,15 +1945,20 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # (optional) header_bottom. Multi-model: model spanner row
   # (already written) + header_top + header_bottom.
   header_top_excel <- current_row
-  hdr <- .build_label_rows(body, ci_spanners, spanners,
-                            col_meta = struct$col_meta)
+  hdr <- .build_label_rows(
+    body,
+    ci_spanners,
+    spanners,
+    col_meta = struct$col_meta
+  )
   wb <- write_spanner_row(wb, hdr$top, header_top_excel)
   # Merge "95% CI" across each LL+UL pair on the top header row.
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
       if (length(cs$cols) >= 2L) {
         wb <- openxlsx2::wb_merge_cells(
-          wb, sheet = excel_sheet,
+          wb,
+          sheet = excel_sheet,
           dims = openxlsx2::wb_dims(rows = header_top_excel, cols = cs$cols)
         )
       }
@@ -1784,10 +1985,14 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # `na.strings = ""` so NA numeric cells render as blank (not "#N/A");
   # below we overwrite reference-row and below-threshold cells with
   # text overrides ("--" / "<.001").
-  wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
-                               x = body, start_row = body_first_row,
-                               col_names = FALSE,
-                               na.strings = "")
+  wb <- openxlsx2::wb_add_data(
+    wb,
+    sheet = excel_sheet,
+    x = body,
+    start_row = body_first_row,
+    col_names = FALSE,
+    na.strings = ""
+  )
   body_end_row <- body_first_row + nrow(body) - 1L
 
   # ---- Per-cell number format (using col_meta from structured body) ------
@@ -1801,20 +2006,23 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # the structured body's col_meta, populated by render_regression_table().
   if (nrow(body) > 0L && n_cols >= 2L) {
     body_rows_idx <- seq.int(body_first_row, body_end_row)
-    na_dash <- "\u2013"  # U+2013 en dash (Phase 7c14 typography)
+    na_dash <- "\u2013" # U+2013 en dash (Phase 7c14 typography)
     for (j in 2:n_cols) {
       col_name <- names(body)[j]
       meta <- col_meta[[col_name]]
       # nocov start -- defensive: render_regression_table() emits a
       # col_meta entry for every numeric body column, so a lookup miss
       # cannot occur through table_regression().
-      if (is.null(meta)) next
+      if (is.null(meta)) {
+        next
+      }
       # nocov end
 
       # Default per-column numfmt
       default_fmt <- .excel_numfmt(meta$precision, meta$p_style)
       wb <- openxlsx2::wb_add_numfmt(
-        wb, sheet = excel_sheet,
+        wb,
+        sheet = excel_sheet,
         dims = openxlsx2::wb_dims(rows = body_rows_idx, cols = j),
         numfmt = default_fmt
       )
@@ -1827,7 +2035,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           )
           excel_row <- body_first_row + ov$row - 1L
           wb <- openxlsx2::wb_add_numfmt(
-            wb, sheet = excel_sheet,
+            wb,
+            sheet = excel_sheet,
             dims = openxlsx2::wb_dims(rows = excel_row, cols = j),
             numfmt = ov_fmt
           )
@@ -1835,10 +2044,13 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       }
       # Outcome row (multi-DV): overlay the label text (metadata; the typed
       # body keeps the cell NA).
-      if (length(struct$outcome_row) == 1L &&
-          col_name %in% names(struct$outcome_labels_by_col)) {
+      if (
+        length(struct$outcome_row) == 1L &&
+          col_name %in% names(struct$outcome_labels_by_col)
+      ) {
         wb <- openxlsx2::wb_add_data(
-          wb, sheet = excel_sheet,
+          wb,
+          sheet = excel_sheet,
           x = struct$outcome_labels_by_col[[col_name]],
           start_row = body_first_row + struct$outcome_row - 1L,
           start_col = j
@@ -1850,28 +2062,39 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       if (length(reference_rows) > 0L) {
         for (i in reference_rows) {
           ref_models <- struct$reference_models_by_row[[as.character(i)]]
-          if (!is.null(ref_models) && !is.null(meta$model_id) &&
-              !meta$model_id %in% ref_models) {
+          if (
+            !is.null(ref_models) &&
+              !is.null(meta$model_id) &&
+              !meta$model_id %in% ref_models
+          ) {
             next
           }
           excel_row <- body_first_row + i - 1L
           wb <- openxlsx2::wb_add_data(
-            wb, sheet = excel_sheet, x = na_dash,
-            start_row = excel_row, start_col = j
+            wb,
+            sheet = excel_sheet,
+            x = na_dash,
+            start_row = excel_row,
+            start_col = j
           )
         }
       }
       # Below-threshold p-values: overwrite numeric with "<.001" text
       if (!is.null(meta$threshold)) {
-        below_text <- .below_threshold_text(meta$threshold,
-                                             format_spec$decimal_mark)
+        below_text <- .below_threshold_text(
+          meta$threshold,
+          format_spec$decimal_mark
+        )
         col_vals <- body[[j]]
         for (i in seq_along(col_vals)) {
           if (!is.na(col_vals[i]) && col_vals[i] < meta$threshold) {
             excel_row <- body_first_row + i - 1L
             wb <- openxlsx2::wb_add_data(
-              wb, sheet = excel_sheet, x = below_text,
-              start_row = excel_row, start_col = j
+              wb,
+              sheet = excel_sheet,
+              x = below_text,
+              start_row = excel_row,
+              start_col = j
             )
           }
         }
@@ -1896,15 +2119,22 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # so an explicit `top_border = "thin"` call paints all four sides
   # unless the others are set to NULL. We pass NULL on every
   # unused side to draw only the intended rule.
-  draw_rule <- function(wb, rows, cols,
-                         top = NULL, bottom = NULL, weight = "thin") {
+  draw_rule <- function(
+    wb,
+    rows,
+    cols,
+    top = NULL,
+    bottom = NULL,
+    weight = "thin"
+  ) {
     openxlsx2::wb_add_border(
-      wb, sheet = excel_sheet,
+      wb,
+      sheet = excel_sheet,
       dims = openxlsx2::wb_dims(rows = rows, cols = cols),
-      top_border    = if (isTRUE(top))    weight else NULL,
+      top_border = if (isTRUE(top)) weight else NULL,
       bottom_border = if (isTRUE(bottom)) weight else NULL,
-      left_border   = NULL,
-      right_border  = NULL
+      left_border = NULL,
+      right_border = NULL
     )
   }
   # Choose the top-of-header row: model spanner if present,
@@ -1920,19 +2150,26 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # the "95% CI" merge) can drop the top border on cells inside
   # the merge; the duplicate draw on the unmerged row above
   # guarantees the rule appears continuous across the full row.
-  wb <- draw_rule(wb, rows = top_rule_row, cols = seq_len(n_cols),
-                   top = TRUE)
+  wb <- draw_rule(wb, rows = top_rule_row, cols = seq_len(n_cols), top = TRUE)
   if (top_rule_row > 1L) {
-    wb <- draw_rule(wb, rows = top_rule_row - 1L,
-                     cols = seq_len(n_cols), bottom = TRUE)
+    wb <- draw_rule(
+      wb,
+      rows = top_rule_row - 1L,
+      cols = seq_len(n_cols),
+      bottom = TRUE
+    )
   }
   # Mid-rule under each model spanner span. Drawn ONLY over the
   # spanner cells (cols 2..n of the model); the Variable column
   # stays without a bottom rule on the model spanner row.
   if (has_model_spanner) {
     for (lbl in names(spanners)) {
-      wb <- draw_rule(wb, rows = model_row_excel,
-                       cols = spanners[[lbl]], bottom = TRUE)
+      wb <- draw_rule(
+        wb,
+        rows = model_row_excel,
+        cols = spanners[[lbl]],
+        bottom = TRUE
+      )
     }
   }
   # Mid-rule under each "95% CI" merged cell on the top header
@@ -1943,29 +2180,53 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # merge under any Excel renderer.
   if (has_ci_spanner) {
     for (cs in ci_spanners) {
-      wb <- draw_rule(wb, rows = header_top_excel,
-                       cols = cs$cols, bottom = TRUE)
+      wb <- draw_rule(
+        wb,
+        rows = header_top_excel,
+        cols = cs$cols,
+        bottom = TRUE
+      )
       if (!is.na(header_bottom_excel)) {
-        wb <- draw_rule(wb, rows = header_bottom_excel,
-                         cols = cs$cols, top = TRUE)
+        wb <- draw_rule(
+          wb,
+          rows = header_bottom_excel,
+          cols = cs$cols,
+          top = TRUE
+        )
       }
     }
   }
   # Sub-rule under the last header row (column-labels row, or the
   # LL/UL sub-row when present).
-  wb <- draw_rule(wb, rows = header_row_excel, cols = seq_len(n_cols),
-                   bottom = TRUE)
+  wb <- draw_rule(
+    wb,
+    rows = header_row_excel,
+    cols = seq_len(n_cols),
+    bottom = TRUE
+  )
   # Hair rule between last coefficient and first fit-stat row.
-  if (length(group_sep) >= 1L && group_sep[1L] >= 2L &&
-        group_sep[1L] <= nrow(body)) {
+  if (
+    length(group_sep) >= 1L &&
+      group_sep[1L] >= 2L &&
+      group_sep[1L] <= nrow(body)
+  ) {
     last_coef_excel <- body_first_row + group_sep[1L] - 2L
-    wb <- draw_rule(wb, rows = last_coef_excel, cols = seq_len(n_cols),
-                     bottom = TRUE, weight = "hair")
+    wb <- draw_rule(
+      wb,
+      rows = last_coef_excel,
+      cols = seq_len(n_cols),
+      bottom = TRUE,
+      weight = "hair"
+    )
   }
   # Bottom rule under last body row.
   if (nrow(body) > 0L) {
-    wb <- draw_rule(wb, rows = body_end_row, cols = seq_len(n_cols),
-                     bottom = TRUE)
+    wb <- draw_rule(
+      wb,
+      rows = body_end_row,
+      cols = seq_len(n_cols),
+      bottom = TRUE
+    )
   }
 
   # ---- Alignment (default Calibri font, no custom override) ---------------
@@ -1996,20 +2257,25 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     header_rows <- header_rows[!is.na(header_rows)]
     if (n_cols >= 2L) {
       wb <- openxlsx2::wb_add_cell_style(
-        wb, sheet = excel_sheet,
+        wb,
+        sheet = excel_sheet,
         dims = openxlsx2::wb_dims(rows = header_rows, cols = 2:n_cols),
-        horizontal = "center", vertical = "center"
+        horizontal = "center",
+        vertical = "center"
       )
     }
     wb <- openxlsx2::wb_add_cell_style(
-      wb, sheet = excel_sheet,
+      wb,
+      sheet = excel_sheet,
       dims = openxlsx2::wb_dims(rows = header_rows, cols = 1L),
-      horizontal = "left", vertical = "center"
+      horizontal = "left",
+      vertical = "center"
     )
     if (nrow(body) > 0L) {
       body_rows <- seq.int(body_first_row, body_end_row)
       wb <- openxlsx2::wb_add_cell_style(
-        wb, sheet = excel_sheet,
+        wb,
+        sheet = excel_sheet,
         dims = openxlsx2::wb_dims(rows = body_rows, cols = 1L),
         horizontal = "left"
       )
@@ -2019,16 +2285,20 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       if (length(level_rows) > 0L) {
         level_excel_rows <- body_first_row + level_rows - 1L
         wb <- openxlsx2::wb_add_cell_style(
-          wb, sheet = excel_sheet,
+          wb,
+          sheet = excel_sheet,
           dims = openxlsx2::wb_dims(rows = level_excel_rows, cols = 1L),
-          horizontal = "left", indent = "1"
+          horizontal = "left",
+          indent = "1"
         )
       }
       if (n_cols >= 2L) {
         wb <- openxlsx2::wb_add_cell_style(
-          wb, sheet = excel_sheet,
+          wb,
+          sheet = excel_sheet,
           dims = openxlsx2::wb_dims(rows = body_rows, cols = 2:n_cols),
-          horizontal = "right", vertical = "center"
+          horizontal = "right",
+          vertical = "center"
         )
       }
     }
@@ -2046,11 +2316,13 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     for (sp in specs) {
       excel_row <- body_first_row + sp$row - 1L
       wb <- openxlsx2::wb_merge_cells(
-        wb, sheet = excel_sheet,
+        wb,
+        sheet = excel_sheet,
         dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols)
       )
       wb <- openxlsx2::wb_add_cell_style(
-        wb, sheet = excel_sheet,
+        wb,
+        sheet = excel_sheet,
         dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols),
         horizontal = "center"
       )
@@ -2060,8 +2332,12 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   if (!is.null(note) && nzchar(note)) {
     foot_row <- body_end_row + 2L
     note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
-    wb <- openxlsx2::wb_add_data(wb, sheet = excel_sheet,
-                                 x = note_lines, start_row = foot_row)
+    wb <- openxlsx2::wb_add_data(
+      wb,
+      sheet = excel_sheet,
+      x = note_lines,
+      start_row = foot_row
+    )
   }
 
   openxlsx2::wb_save(wb, file = excel_path, overwrite = TRUE)
@@ -2079,8 +2355,10 @@ output_clipboard <- function(rendered, clipboard_delim) {
   if (!spicy_pkg_available("clipr")) {
     # nocov start
     spicy_abort(
-      c("Output `\"clipboard\"` requires the 'clipr' package.",
-        "i" = "Install it with `install.packages(\"clipr\")`."),
+      c(
+        "Output `\"clipboard\"` requires the 'clipr' package.",
+        "i" = "Install it with `install.packages(\"clipr\")`."
+      ),
       class = "spicy_missing_pkg"
     )
     # nocov end
@@ -2090,8 +2368,10 @@ output_clipboard <- function(rendered, clipboard_delim) {
     # typically unavailable on headless CI runners; we test the
     # branch behaviourally elsewhere via mocking.
     spicy_abort(
-      c("System clipboard is not available.",
-        "i" = "On Linux, install xclip or xsel."),
+      c(
+        "System clipboard is not available.",
+        "i" = "On Linux, install xclip or xsel."
+      ),
       class = "spicy_unsupported"
     )
     # nocov end
@@ -2124,13 +2404,13 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   # in the structured body -- no string parsing required.
   struct <- attr(rendered, "structured")
   body <- .format_structured_to_string_body(struct)
-  title    <- attr(rendered, "title")
-  note     <- attr(rendered, "note")
+  title <- attr(rendered, "title")
+  note <- attr(rendered, "note")
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
   n_cols <- ncol(body)
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
-  has_ci_spanner    <- length(ci_spanners) > 0L
+  has_ci_spanner <- length(ci_spanners) > 0L
 
   pad_row <- function(first, n) c(first, rep("", max(0L, n - 1L)))
 
@@ -2166,8 +2446,12 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   # Bottom row with the LL / UL sub-labels appears below if any
   # CI column exists. Matches the table_continuous_lm clipboard
   # convention exactly.
-  hdr <- .build_label_rows(body, ci_spanners, spanners,
-                            col_meta = struct$col_meta)
+  hdr <- .build_label_rows(
+    body,
+    ci_spanners,
+    spanners,
+    col_meta = struct$col_meta
+  )
   add_row(hdr$top)
   if (has_ci_spanner) {
     add_row(hdr$bottom)
@@ -2182,7 +2466,9 @@ clipboard_payload <- function(rendered, clipboard_delim) {
 
   if (!is.null(note) && nzchar(note)) {
     note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
-    for (ln in note_lines) add_row(pad_row(ln, n_cols))
+    for (ln in note_lines) {
+      add_row(pad_row(ln, n_cols))
+    }
   }
 
   lines <- vapply(rows, paste, character(1), collapse = clipboard_delim)
@@ -2192,12 +2478,16 @@ clipboard_payload <- function(rendered, clipboard_delim) {
 # ---- word ----------------------------------------------------------------
 
 output_word <- function(rendered, word_path, word_template = NULL) {
-  if (!spicy_pkg_available("flextable") ||
-      !spicy_pkg_available("officer")) {
+  if (
+    !spicy_pkg_available("flextable") ||
+      !spicy_pkg_available("officer")
+  ) {
     # nocov start
     spicy_abort(
-      c("Output `\"word\"` requires the 'flextable' and 'officer' packages.",
-        "i" = "Install with `install.packages(c(\"flextable\", \"officer\"))`."),
+      c(
+        "Output `\"word\"` requires the 'flextable' and 'officer' packages.",
+        "i" = "Install with `install.packages(c(\"flextable\", \"officer\"))`."
+      ),
       class = "spicy_missing_pkg"
     )
     # nocov end
@@ -2226,12 +2516,13 @@ output_word <- function(rendered, word_path, word_template = NULL) {
       caption = flextable::as_paragraph(
         flextable::as_chunk(
           title,
-          props = officer::fp_text(font.family = "Calibri",
-                                    font.size = 11)
+          props = officer::fp_text(font.family = "Calibri", font.size = 11)
         )
       ),
       autonum = officer::run_autonum(
-        seq_id = "tab", pre_label = "Table ", post_label = ": "
+        seq_id = "tab",
+        pre_label = "Table ",
+        post_label = ": "
       ),
       align_with_table = FALSE,
       fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
@@ -2260,7 +2551,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
     doc <- officer::read_docx()
   }
   doc <- flextable::body_add_flextable(
-    doc, value = ft,
+    doc,
+    value = ft,
     align = "center",
     keepnext = TRUE,
     split = FALSE
@@ -2344,8 +2636,10 @@ as_structured <- function(x) {
   s <- attr(x, "structured")
   if (is.null(s)) {
     spicy_abort(
-      c("`x` has no structured view attached.",
-        "i" = "Was it built by `table_regression()` (>= 0.12.0)?"),
+      c(
+        "`x` has no structured view attached.",
+        "i" = "Was it built by `table_regression()` (>= 0.12.0)?"
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -2362,7 +2656,9 @@ print.spicy_regression_table <- function(x, ...) {
   # the attribute (to integer(0) when no fit-stats footer is present).
   # Reached only if a caller manually constructed an object that
   # bypasses the renderer.
-  if (is.null(group_sep)) group_sep <- integer(0)
+  if (is.null(group_sep)) {
+    group_sep <- integer(0)
+  }
   # nocov end
   # The subordinate "Thresholds" section rule is ASCII-only: union it in here
   # so the gt / flextable / tinytable / excel backends -- which read the raw
@@ -2386,9 +2682,13 @@ print.spicy_regression_table <- function(x, ...) {
   # `B | 95% CI | p | AME | 95% CI.2 | p.2`.
   struct <- attr(x, "structured")
   display_labels <- if (!is.null(struct) && !is.null(struct$col_meta)) {
-    vapply(names(body), function(nm) {
-      .lookup_display_label(nm, struct$col_meta)
-    }, character(1))
+    vapply(
+      names(body),
+      function(nm) {
+        .lookup_display_label(nm, struct$col_meta)
+      },
+      character(1)
+    )
   } else {
     names(body)
   }

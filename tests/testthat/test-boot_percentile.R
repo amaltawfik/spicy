@@ -11,16 +11,23 @@
 test_that("percentile interpolation matches boot::boot.ci type='perc' exactly", {
   skip_if_not_installed("boot")
   set.seed(3)
-  t0 <- rnorm(437)  # deliberately not a round replicate count
+  t0 <- rnorm(437) # deliberately not a round replicate count
   for (lvl in c(0.90, 0.95, 0.99)) {
     ours <- spicy:::.boot_percentile_ci(t0, lvl)
     b <- boot::boot.ci(
-      structure(list(t0 = mean(t0), t = matrix(t0, ncol = 1), R = length(t0)),
-                class = "boot"),
-      conf = lvl, type = "perc"
+      structure(
+        list(t0 = mean(t0), t = matrix(t0, ncol = 1), R = length(t0)),
+        class = "boot"
+      ),
+      conf = lvl,
+      type = "perc"
     )$percent
-    expect_equal(ours, unname(b[1, 4:5]), tolerance = 1e-12,
-                 info = paste("level", lvl))
+    expect_equal(
+      ours,
+      unname(b[1, 4:5]),
+      tolerance = 1e-12,
+      info = paste("level", lvl)
+    )
   }
 })
 
@@ -29,11 +36,19 @@ test_that("boot_percentile: CI bounds are the replicate quantiles; SE/p stay Wal
   d <- .bp_data()
   fit <- lm(y ~ x + z, data = d)
   set.seed(42)
-  frw <- as_regression_frame(fit, vcov = "bootstrap", boot_n = 400L,
-                             ci_method = "wald")
+  frw <- as_regression_frame(
+    fit,
+    vcov = "bootstrap",
+    boot_n = 400L,
+    ci_method = "wald"
+  )
   set.seed(42)
-  frp <- as_regression_frame(fit, vcov = "bootstrap", boot_n = 400L,
-                             ci_method = "boot_percentile")
+  frp <- as_regression_frame(
+    fit,
+    vcov = "bootstrap",
+    boot_n = 400L,
+    ci_method = "boot_percentile"
+  )
   # Same seed a third time: recover the replicate matrix the frames used.
   set.seed(42)
   vc <- spicy:::compute_model_vcov(fit, type = "bootstrap", boot_n = 400L)
@@ -52,24 +67,36 @@ test_that("boot_percentile: CI bounds are the replicate quantiles; SE/p stay Wal
   expect_equal(bp$estimate, unname(coef(fit)["x"]), tolerance = 1e-12)
   se_oracle <- stats::sd(bb[, "x"])
   expect_equal(bp$std_error, se_oracle, tolerance = 1e-12)
-  expect_equal(bp$p_value,
-               2 * pnorm(abs(bp$estimate / se_oracle), lower.tail = FALSE),
-               tolerance = 1e-12)
+  expect_equal(
+    bp$p_value,
+    2 * pnorm(abs(bp$estimate / se_oracle), lower.tail = FALSE),
+    tolerance = 1e-12
+  )
   # Wald CI: estimate +/- qnorm(0.975) * SE, exactly.
-  expect_equal(c(bw$ci_lower, bw$ci_upper),
-               bp$estimate + c(-1, 1) * qnorm(0.975) * se_oracle,
-               tolerance = 1e-12)
+  expect_equal(
+    c(bw$ci_lower, bw$ci_upper),
+    bp$estimate + c(-1, 1) * qnorm(0.975) * se_oracle,
+    tolerance = 1e-12
+  )
   # Percentile CI: boot::boot.ci(type = "perc") on the SAME replicates.
   b <- boot::boot.ci(
-    structure(list(t0 = bp$estimate, t = matrix(bb[, "x"], ncol = 1),
-                   R = nrow(bb)), class = "boot"),
-    conf = 0.95, type = "perc"
+    structure(
+      list(t0 = bp$estimate, t = matrix(bb[, "x"], ncol = 1), R = nrow(bb)),
+      class = "boot"
+    ),
+    conf = 0.95,
+    type = "perc"
   )$percent
-  expect_equal(c(bp$ci_lower, bp$ci_upper), unname(b[1, 4:5]),
-               tolerance = 1e-12)
+  expect_equal(
+    c(bp$ci_lower, bp$ci_upper),
+    unname(b[1, 4:5]),
+    tolerance = 1e-12
+  )
   # CI bounds differ (percentile vs Wald-symmetric).
-  expect_gt(max(abs(c(bp$ci_lower - bw$ci_lower, bp$ci_upper - bw$ci_upper))),
-            0)
+  expect_gt(
+    max(abs(c(bp$ci_lower - bw$ci_lower, bp$ci_upper - bw$ci_upper))),
+    0
+  )
   # And are NOT symmetric around the estimate in general.
   expect_gt(abs((bp$ci_upper - bp$estimate) - (bp$estimate - bp$ci_lower)), 0)
   expect_identical(frp$info$ci_method, "boot_percentile")
@@ -85,20 +112,28 @@ test_that("boot_percentile CI matches a manual same-seed replicate quantile", {
   expect_false(is.null(bb))
   expect_identical(attr(vc, "boot_n_valid"), nrow(bb))
   set.seed(9)
-  fr <- as_regression_frame(fit, vcov = "bootstrap", boot_n = 300L,
-                            ci_method = "boot_percentile")
+  fr <- as_regression_frame(
+    fit,
+    vcov = "bootstrap",
+    boot_n = 300L,
+    ci_method = "boot_percentile"
+  )
   r <- fr$coefs[fr$coefs$term == "x" & fr$coefs$estimate_type == "B", ]
-  expect_equal(c(r$ci_lower, r$ci_upper),
-               spicy:::.boot_percentile_ci(bb[, "x"], 0.95),
-               tolerance = 1e-12)
+  expect_equal(
+    c(r$ci_lower, r$ci_upper),
+    spicy:::.boot_percentile_ci(bb[, "x"], 0.95),
+    tolerance = 1e-12
+  )
   # External oracle: identical bounds from boot::boot.ci(type = "perc").
   b <- boot::boot.ci(
-    structure(list(t0 = r$estimate, t = matrix(bb[, "x"], ncol = 1),
-                   R = nrow(bb)), class = "boot"),
-    conf = 0.95, type = "perc"
+    structure(
+      list(t0 = r$estimate, t = matrix(bb[, "x"], ncol = 1), R = nrow(bb)),
+      class = "boot"
+    ),
+    conf = 0.95,
+    type = "perc"
   )$percent
-  expect_equal(c(r$ci_lower, r$ci_upper), unname(b[1, 4:5]),
-               tolerance = 1e-12)
+  expect_equal(c(r$ci_lower, r$ci_upper), unname(b[1, 4:5]), tolerance = 1e-12)
   # Bootstrap SE is the replicate sd (cov(bb) uses the R - 1 denominator).
   expect_equal(r$std_error, stats::sd(bb[, "x"]), tolerance = 1e-12)
 })
@@ -115,8 +150,12 @@ test_that("boot_percentile validation: requires bootstrap vcov and no standardiz
     class = "spicy_invalid_input"
   )
   expect_error(
-    table_regression(fit, vcov = "bootstrap", ci_method = "boot_percentile",
-                     standardized = "posthoc"),
+    table_regression(
+      fit,
+      vcov = "bootstrap",
+      ci_method = "boot_percentile",
+      standardized = "posthoc"
+    ),
     class = "spicy_invalid_input"
   )
 })
@@ -125,8 +164,12 @@ test_that("footers: replicate count on the Std. errors line, percentile CI note"
   d <- .bp_data()
   fit <- lm(y ~ x, data = d)
   set.seed(5)
-  res <- table_regression(fit, vcov = "bootstrap", boot_n = 200L,
-                          ci_method = "boot_percentile")
+  res <- table_regression(
+    fit,
+    vcov = "bootstrap",
+    boot_n = 200L,
+    ci_method = "boot_percentile"
+  )
   note <- paste(attr(res, "note"), collapse = "\n")
   expect_match(note, "nonparametric bootstrap (200 replicates)", fixed = TRUE)
   expect_match(note, "95% CIs: bootstrap percentile.", fixed = TRUE)
@@ -142,8 +185,11 @@ test_that("footer: jackknife names the scheme", {
   d <- .bp_data()
   fit <- lm(y ~ x, data = d)
   res <- table_regression(fit, vcov = "jackknife")
-  expect_match(paste(attr(res, "note"), collapse = "\n"),
-               "jackknife (leave-one-out)", fixed = TRUE)
+  expect_match(
+    paste(attr(res, "note"), collapse = "\n"),
+    "jackknife (leave-one-out)",
+    fixed = TRUE
+  )
 })
 
 test_that("exponentiate: percentile bounds are exponentiated (transformation-respecting)", {
@@ -153,10 +199,16 @@ test_that("exponentiate: percentile bounds are exponentiated (transformation-res
   d$y <- rbinom(n, 1, plogis(0.6 * d$x))
   fit <- glm(y ~ x, data = d, family = binomial())
   set.seed(33)
-  fr_raw <- as_regression_frame(fit, vcov = "bootstrap", boot_n = 200L,
-                                ci_method = "boot_percentile")
-  raw <- fr_raw$coefs[fr_raw$coefs$term == "x" &
-                        fr_raw$coefs$estimate_type == "B", ]
+  fr_raw <- as_regression_frame(
+    fit,
+    vcov = "bootstrap",
+    boot_n = 200L,
+    ci_method = "boot_percentile"
+  )
+  raw <- fr_raw$coefs[
+    fr_raw$coefs$term == "x" &
+      fr_raw$coefs$estimate_type == "B",
+  ]
   # Same-seed replicate oracle (mirrors the lm manual-quantile test): the
   # link-scale bounds are the percentile quantiles of the SAME replicates.
   set.seed(33)
@@ -166,8 +218,13 @@ test_that("exponentiate: percentile bounds are exponentiated (transformation-res
   expect_equal(c(raw$ci_lower, raw$ci_upper), pci, tolerance = 1e-12)
   # The displayed OR CI equals exp() of the link-scale percentile bounds.
   set.seed(33)
-  tbl <- table_regression(fit, vcov = "bootstrap", boot_n = 200L,
-                          ci_method = "boot_percentile", exponentiate = TRUE)
+  tbl <- table_regression(
+    fit,
+    vcov = "bootstrap",
+    boot_n = 200L,
+    ci_method = "boot_percentile",
+    exponentiate = TRUE
+  )
   st <- as_structured(tbl)
   i_x <- which(st$body$Variable == "x")
   ll <- st$body[["95% CI: LL"]][i_x]

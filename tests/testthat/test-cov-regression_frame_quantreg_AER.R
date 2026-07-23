@@ -9,7 +9,6 @@
 #     (ordered) factor and the empty-rows fall-through return.
 # ---------------------------------------------------------------------------
 
-
 # ---- rq with a treatment-contrast factor: reference row is synthesised ----
 
 test_that("rq with a factor predictor synthesises one reference row", {
@@ -26,7 +25,7 @@ test_that("rq with a factor predictor synthesises one reference row", {
   expect_identical(sum(rows$is_ref), 1L)
 
   ref <- rows[rows$is_ref, ]
-  expect_identical(ref$label, "4")               # first level is the reference
+  expect_identical(ref$label, "4") # first level is the reference
   expect_true(is.na(ref$estimate))
   expect_true(is.na(ref$std_error))
   expect_identical(ref$test_type, NA_character_)
@@ -41,8 +40,11 @@ test_that("rq factor estimates still byte-match coef(fit) on the B rows", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]), tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -130,8 +132,18 @@ test_that("rq se='rank' rank CIs honour ci_level (90% vs 95% differ)", {
   skip_if_not_installed("quantreg")
   fit <- quantreg::rq(mpg ~ wt + cyl, data = mtcars, tau = 0.5)
 
-  fr90 <- as_regression_frame(fit, model_id = "M1", se = "rank", ci_level = 0.90)
-  fr95 <- as_regression_frame(fit, model_id = "M1", se = "rank", ci_level = 0.95)
+  fr90 <- as_regression_frame(
+    fit,
+    model_id = "M1",
+    se = "rank",
+    ci_level = 0.90
+  )
+  fr95 <- as_regression_frame(
+    fit,
+    model_id = "M1",
+    se = "rank",
+    ci_level = 0.95
+  )
   b90 <- fr90$coefs[fr90$coefs$estimate_type == "B" & !fr90$coefs$is_ref, ]
   b95 <- fr95$coefs[fr95$coefs$estimate_type == "B" & !fr95$coefs$is_ref, ]
 
@@ -139,10 +151,16 @@ test_that("rq se='rank' rank CIs honour ci_level (90% vs 95% differ)", {
   o90 <- summary(fit, se = "rank", alpha = 0.10)$coefficients
   o95 <- summary(fit, se = "rank", alpha = 0.05)$coefficients
   for (nm in rownames(o90)) {
-    expect_equal(b90$ci_lower[b90$term == nm], unname(o90[nm, "lower bd"]),
-                 tolerance = 1e-10)
-    expect_equal(b95$ci_lower[b95$term == nm], unname(o95[nm, "lower bd"]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b90$ci_lower[b90$term == nm],
+      unname(o90[nm, "lower bd"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b95$ci_lower[b95$term == nm],
+      unname(o95[nm, "lower bd"]),
+      tolerance = 1e-10
+    )
   }
   # The 95% interval must be strictly wider than the 90% on at least one term.
   expect_true(any(b95$ci_lower < b90$ci_lower | b95$ci_upper > b90$ci_upper))
@@ -155,8 +173,11 @@ test_that("rq se='rank' point estimates still byte-match coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm], unname(legacy[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -173,8 +194,8 @@ test_that("rq se='iid' parametric path: Wald CIs from SE (unchanged)", {
   t_crit <- stats::qt(0.975, df = df_val)
   for (nm in rownames(sm)) {
     est <- unname(sm[nm, "Value"])
-    se  <- unname(sm[nm, "Std. Error"])
-    r   <- b_rows[b_rows$term == nm, ]
+    se <- unname(sm[nm, "Std. Error"])
+    r <- b_rows[b_rows$term == nm, ]
     expect_equal(r$std_error, se, tolerance = 1e-10)
     expect_equal(r$ci_lower, est - t_crit * se, tolerance = 1e-10)
     expect_equal(r$ci_upper, est + t_crit * se, tolerance = 1e-10)

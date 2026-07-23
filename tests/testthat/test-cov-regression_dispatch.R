@@ -25,8 +25,10 @@ test_that("output = 'long' renames to broom columns and drops order_idx", {
   lo <- table_regression(fit, output = "long")
   expect_s3_class(lo, "data.frame")
   # broom-canonical names present, internal names renamed away
-  expect_true(all(c("std.error", "conf.low", "conf.high", "p.value") %in%
-                    names(lo)))
+  expect_true(all(
+    c("std.error", "conf.low", "conf.high", "p.value") %in%
+      names(lo)
+  ))
   expect_false("se" %in% names(lo))
   expect_false("order_idx" %in% names(lo))
   expect_gt(nrow(lo), 0L)
@@ -51,17 +53,24 @@ test_that("output_long returns the input unchanged for empty / NULL coefs", {
 
 test_that(".build_label_rows strips the 'Model: ' prefix when col_meta is NULL", {
   body <- data.frame(Variable = "a", `M1: B` = 1, check.names = FALSE)
-  hdr <- spicy:::.build_label_rows(body, ci_spanners = list(),
-                                   spanners = list(M1 = 2L),
-                                   col_meta = NULL)
+  hdr <- spicy:::.build_label_rows(
+    body,
+    ci_spanners = list(),
+    spanners = list(M1 = 2L),
+    col_meta = NULL
+  )
   # The "M1: " prefix is stripped from the spanned column label.
   expect_identical(hdr$top, c("Variable", "B"))
 })
 
 test_that(".build_label_rows falls back to bare names when no spanners / col_meta", {
   body <- data.frame(Variable = "a", `M1: B` = 1, check.names = FALSE)
-  hdr <- spicy:::.build_label_rows(body, ci_spanners = list(),
-                                   spanners = NULL, col_meta = NULL)
+  hdr <- spicy:::.build_label_rows(
+    body,
+    ci_spanners = list(),
+    spanners = NULL,
+    col_meta = NULL
+  )
   expect_identical(hdr$top, c("Variable", "M1: B"))
 })
 
@@ -75,8 +84,11 @@ test_that(".fit_stat_merge_ranges single-model spans cols 2..n per fit-stat row"
   r <- table_regression(m1, show_columns = c("b", "ci", "p"))
   struct <- attr(r, "structured")
   # spanners = NULL forces the single-model `list(2:n_cols)` branch.
-  specs <- spicy:::.fit_stat_merge_ranges(struct$body, NULL,
-                                          attr(r, "group_sep_rows"))
+  specs <- spicy:::.fit_stat_merge_ranges(
+    struct$body,
+    NULL,
+    attr(r, "group_sep_rows")
+  )
   expect_gt(length(specs), 0L)
   # Every spec covers the full data-column range (col 2 .. ncol).
   n_cols <- ncol(struct$body)
@@ -95,14 +107,17 @@ test_that(".spicy_gt_html_postprocess injects an escaped note div and is a no-op
   out <- spicy:::.spicy_gt_html_postprocess(h, "Note. a < b & c > d")
   expect_match(out, "spicy-gt-note", fixed = TRUE)
   expect_match(out, "<em>Note.</em>", fixed = TRUE)
-  expect_match(out, "&amp;", fixed = TRUE)   # & escaped
-  expect_match(out, "&lt;",  fixed = TRUE)   # < escaped
-  expect_match(out, "&gt;",  fixed = TRUE)   # > escaped
+  expect_match(out, "&amp;", fixed = TRUE) # & escaped
+  expect_match(out, "&lt;", fixed = TRUE) # < escaped
+  expect_match(out, "&gt;", fixed = TRUE) # > escaped
   # Pin the complete rendered note (em-split label + escaped remainder, up to
   # the closing div) -- the entity checks above alone would pass on scrambled
   # or truncated note text.
-  expect_match(out, "<em>Note.</em> a &lt; b &amp; c &gt; d</div>",
-               fixed = TRUE)
+  expect_match(
+    out,
+    "<em>Note.</em> a &lt; b &amp; c &gt; d</div>",
+    fixed = TRUE
+  )
   # NULL / empty note -> unchanged input
   expect_identical(spicy:::.spicy_gt_html_postprocess(h, NULL), h)
   expect_identical(spicy:::.spicy_gt_html_postprocess(h, ""), h)
@@ -175,7 +190,10 @@ test_that("print.spicy_gt interactive branch renders browsable HTML with the not
   # being hostage to mock reliability.
   expect_true(
     is.null(res) ||
-      inherits(res, c("shiny.tag", "shiny.tag.list", "gt_tbl", "flextable", "html"))
+      inherits(
+        res,
+        c("shiny.tag", "shiny.tag.list", "gt_tbl", "flextable", "html")
+      )
   )
 })
 
@@ -185,12 +203,14 @@ test_that("print.spicy_gt interactive branch renders browsable HTML with the not
 # ============================================================================
 
 test_that(".spicy_ft_html_postprocess strips tfoot and injects the note div", {
-  hf <- paste0("<table border=\"1\">",
-               "<tfoot><tr><td>old foot</td></tr></tfoot>",
-               "<tr><td>x</td></tr></table>")
+  hf <- paste0(
+    "<table border=\"1\">",
+    "<tfoot><tr><td>old foot</td></tr></tfoot>",
+    "<tr><td>x</td></tr></table>"
+  )
   of <- spicy:::.spicy_ft_html_postprocess(hf, "Note. ft note.")
   expect_match(of, "spicy-ft-note", fixed = TRUE)
-  expect_false(grepl("<tfoot>", of, fixed = TRUE))   # rendered tfoot removed
+  expect_false(grepl("<tfoot>", of, fixed = TRUE)) # rendered tfoot removed
   expect_match(of, "border-collapse: collapse", fixed = TRUE)
   # Pin the complete rendered note text (em-split "Note." label + remainder).
   expect_match(of, "<em>Note.</em> ft note.</div>", fixed = TRUE)
@@ -245,8 +265,11 @@ test_that("print.spicy_flextable interactive branch renders browsable HTML with 
   skip_if_not_installed("flextable")
   skip_if_not_installed("htmltools")
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  ft <- table_regression(fit, output = "flextable",
-                         note = "Note. interactive ft.")
+  ft <- table_regression(
+    fit,
+    output = "flextable",
+    note = "Note. interactive ft."
+  )
   # As above: the interactive arm returns invisible(NULL).
   res <- testthat::with_mocked_bindings(
     {
@@ -263,7 +286,10 @@ test_that("print.spicy_flextable interactive branch renders browsable HTML with 
   # being hostage to mock reliability.
   expect_true(
     is.null(res) ||
-      inherits(res, c("shiny.tag", "shiny.tag.list", "gt_tbl", "flextable", "html"))
+      inherits(
+        res,
+        c("shiny.tag", "shiny.tag.list", "gt_tbl", "flextable", "html")
+      )
   )
 })
 
@@ -271,8 +297,11 @@ test_that("flextable footer accepts a custom note without the 'Note.' prefix", {
   skip_if_not_installed("flextable")
   fit <- lm(mpg ~ wt + cyl, data = mt)
   # A note NOT starting with "Note." hits the non-italic single-chunk arm.
-  ft <- table_regression(fit, output = "flextable",
-                         note = "Custom footer, no prefix.")
+  ft <- table_regression(
+    fit,
+    output = "flextable",
+    note = "Custom footer, no prefix."
+  )
   expect_s3_class(ft, "flextable")
   expect_identical(attr(ft, "spicy_note"), "Custom footer, no prefix.")
 
@@ -294,13 +323,16 @@ test_that("flextable footer accepts a custom note without the 'Note.' prefix", {
   # Contrast: a "Note."-prefixed note takes the OTHER arm and italicises only
   # the leading "Note." chunk, leaving the remainder in regular type. This pins
   # that the non-italic outcome above is specific to the no-prefix branch.
-  ft_prefixed <- table_regression(fit, output = "flextable",
-                                  note = "Note. has a prefix.")
+  ft_prefixed <- table_regression(
+    fit,
+    output = "flextable",
+    note = "Note. has a prefix."
+  )
   prefixed_cell <- ft_prefixed$footer$content$data[[1, 1]]
   expect_identical(nrow(prefixed_cell), 2L)
   expect_identical(prefixed_cell$txt[[1L]], "Note.")
-  expect_true(prefixed_cell$italic[[1L]])    # "Note." italicised
-  expect_false(prefixed_cell$italic[[2L]])   # remainder in regular type
+  expect_true(prefixed_cell$italic[[1L]]) # "Note." italicised
+  expect_false(prefixed_cell$italic[[2L]]) # remainder in regular type
 })
 
 
@@ -312,7 +344,7 @@ test_that("tinytable renders with a note div (with-note finalize path)", {
   skip_if_not_installed("tinytable")
   m1 <- lm(mpg ~ wt + cyl, data = mt)
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
-  tt <- table_regression(list(m1, m2), output = "tinytable")  # note present
+  tt <- table_regression(list(m1, m2), output = "tinytable") # note present
   html <- tinytable::save_tt(tt, output = "html")
   expect_match(html, "spicy-tt-note", fixed = TRUE)
   # The note div carries the actual note text (em-split leading "Note."),
@@ -328,8 +360,12 @@ test_that("tinytable renders without a note (no-note finalize path)", {
   skip_if_not_installed("tinytable")
   m1 <- lm(mpg ~ wt + cyl, data = mt)
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
-  tt <- table_regression(list(m1, m2), output = "tinytable",
-                         note = FALSE, title = FALSE)
+  tt <- table_regression(
+    list(m1, m2),
+    output = "tinytable",
+    note = FALSE,
+    title = FALSE
+  )
   html <- tinytable::save_tt(tt, output = "html")
   expect_false(grepl("spicy-tt-note", html, fixed = TRUE))
   # Table body still rendered.
@@ -352,8 +388,12 @@ test_that("output = 'word' renders from a user-supplied template", {
   on.exit(unlink(c(tmpl, out_path)), add = TRUE)
   # Build a minimal valid template.
   print(officer::read_docx(), target = tmpl)
-  res <- table_regression(fit, output = "word", word_path = out_path,
-                          word_template = tmpl)
+  res <- table_regression(
+    fit,
+    output = "word",
+    word_path = out_path,
+    word_template = tmpl
+  )
   expect_true(inherits(res, "data.frame"))
   expect_true(file.exists(out_path))
   expect_gt(file.info(out_path)$size, 0L)
@@ -364,9 +404,12 @@ test_that("output = 'word' errors when the template file does not exist", {
   skip_if_not_installed("officer")
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit, output = "word",
-                     word_path = tempfile(fileext = ".docx"),
-                     word_template = tempfile(fileext = ".docx")),
+    table_regression(
+      fit,
+      output = "word",
+      word_path = tempfile(fileext = ".docx"),
+      word_template = tempfile(fileext = ".docx")
+    ),
     class = "spicy_invalid_input"
   )
 })
@@ -521,6 +564,8 @@ test_that("clipboard_payload() builds a delimited payload without touching the c
   expect_true(any(grepl("\t", lines, fixed = TRUE)))
   # Custom delimiter is honoured (pipe instead of tab): same complete header.
   txt_pipe <- spicy:::clipboard_payload(rendered, "|")
-  expect_true("Variable|B|SE|95% CI|95% CI|p" %in%
-                strsplit(txt_pipe, "\n", fixed = TRUE)[[1L]])
+  expect_true(
+    "Variable|B|SE|95% CI|95% CI|p" %in%
+      strsplit(txt_pipe, "\n", fixed = TRUE)[[1L]]
+  )
 })

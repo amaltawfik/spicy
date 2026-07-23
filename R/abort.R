@@ -189,20 +189,28 @@ spicy_pkg_available <- function(pkg) {
 # Lives next to `spicy_pkg_available()` because it is a small,
 # horizontally-shared utility used across the regression layer.
 extract_arg_column_name <- function(arg_expr) {
-  if (is.null(arg_expr)) return(NA_character_)
+  if (is.null(arg_expr)) {
+    return(NA_character_)
+  }
   if (is.symbol(arg_expr)) {
     nm <- as.character(arg_expr)
-    if (identical(nm, "NULL") || !nzchar(nm)) return(NA_character_)
+    if (identical(nm, "NULL") || !nzchar(nm)) {
+      return(NA_character_)
+    }
     return(nm)
   }
   if (is.call(arg_expr)) {
     op <- tryCatch(as.character(arg_expr[[1]]), error = function(e) "")
-    if (identical(op, "$") && length(arg_expr) == 3L &&
-          is.symbol(arg_expr[[3]])) {
+    if (
+      identical(op, "$") && length(arg_expr) == 3L && is.symbol(arg_expr[[3]])
+    ) {
       return(as.character(arg_expr[[3]]))
     }
-    if (identical(op, "[[") && length(arg_expr) == 3L &&
-          is.character(arg_expr[[3]])) {
+    if (
+      identical(op, "[[") &&
+        length(arg_expr) == 3L &&
+        is.character(arg_expr[[3]])
+    ) {
       return(arg_expr[[3]])
     }
     # `~region` -> "region";  `~region:year` -> "region:year"
@@ -236,34 +244,51 @@ extract_arg_column_name <- function(arg_expr) {
 # model's model.frame. See the twin comment there for why they stay
 # separate.
 resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
-  if (is.null(cluster)) return(NULL)
+  if (is.null(cluster)) {
+    return(NULL)
+  }
   if (inherits(cluster, "formula")) {
     vars <- all.vars(cluster)
     if (length(vars) == 0L) {
       spicy_abort(
-        c(sprintf("`%s` formula must reference at least one variable.",
-                  arg_label),
-          "i" = "Example: `cluster = ~region`."),
+        c(
+          sprintf(
+            "`%s` formula must reference at least one variable.",
+            arg_label
+          ),
+          "i" = "Example: `cluster = ~region`."
+        ),
         class = "spicy_invalid_input"
       )
     }
     src <- cluster_lookup_data(fit, vars)
     if (length(src$missing)) {
       spicy_abort(
-        c(sprintf("`%s` formula references unknown variable(s): %s.",
-                  arg_label,
-                  paste(shQuote(src$missing), collapse = ", ")),
-          "i" = paste0("Looked in: model.frame(fit)",
-                        if (src$tried_original) " + the model's `data`" else "",
-                        if (length(src$available)) {
-                          paste0(". Available there: ",
-                                  paste(shQuote(src$available),
-                                        collapse = ", "))
-                        } else ".")),
+        c(
+          sprintf(
+            "`%s` formula references unknown variable(s): %s.",
+            arg_label,
+            paste(shQuote(src$missing), collapse = ", ")
+          ),
+          "i" = paste0(
+            "Looked in: model.frame(fit)",
+            if (src$tried_original) " + the model's `data`" else "",
+            if (length(src$available)) {
+              paste0(
+                ". Available there: ",
+                paste(shQuote(src$available), collapse = ", ")
+              )
+            } else {
+              "."
+            }
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
-    if (length(vars) == 1L) return(src$df[[vars]])
+    if (length(vars) == 1L) {
+      return(src$df[[vars]])
+    }
     return(interaction(src$df[, vars, drop = FALSE], drop = TRUE))
   }
   if (is.character(cluster) && length(cluster) == 1L) {
@@ -271,13 +296,21 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
     if (length(src$missing)) {
       avail <- if (length(src$available)) {
         paste(shQuote(src$available), collapse = ", ")
-      } else "<no data attached to the fit>"
+      } else {
+        "<no data attached to the fit>"
+      }
       spicy_abort(
-        c(sprintf("`%s = \"%s\"`: column not found.", arg_label, cluster),
-          "i" = paste0("Looked in: model.frame(fit)",
-                        if (src$tried_original) " + the model's `data`" else "",
-                        ". Available: ", avail, "."),
-          "i" = "Or pass a formula (`cluster = ~region`) or a vector."),
+        c(
+          sprintf("`%s = \"%s\"`: column not found.", arg_label, cluster),
+          "i" = paste0(
+            "Looked in: model.frame(fit)",
+            if (src$tried_original) " + the model's `data`" else "",
+            ". Available: ",
+            avail,
+            "."
+          ),
+          "i" = "Or pass a formula (`cluster = ~region`) or a vector."
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -302,15 +335,25 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
 cluster_lookup_data <- function(fit, vars) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (!is.null(mf) && all(vars %in% names(mf))) {
-    return(list(df = mf, missing = character(0),
-                available = names(mf), tried_original = FALSE))
+    return(list(
+      df = mf,
+      missing = character(0),
+      available = names(mf),
+      tried_original = FALSE
+    ))
   }
   # Fall back to the original `data` argument (full dataset).
-  orig <- tryCatch({
-    cl <- fit$call
-    if (is.null(cl) || is.null(cl$data)) NULL
-    else eval(cl$data, environment(stats::formula(fit)))
-  }, error = function(e) NULL)
+  orig <- tryCatch(
+    {
+      cl <- fit$call
+      if (is.null(cl) || is.null(cl$data)) {
+        NULL
+      } else {
+        eval(cl$data, environment(stats::formula(fit)))
+      }
+    },
+    error = function(e) NULL
+  )
   if (!is.null(orig) && is.data.frame(orig)) {
     # .spicy_nobs, not stats::nobs: classes without a registered nobs
     # method (rq, multinom) would return NA here and silently skip the
@@ -328,26 +371,36 @@ cluster_lookup_data <- function(fit, vars) {
     # downstream length validation / capability gates handle the rest.
     if (!is.na(n_fit) && nrow(orig) != n_fit && !is.null(mf)) {
       na_action <- attr(mf, "na.action")
-      if (!is.null(na_action) &&
-            nrow(orig) - length(na_action) == n_fit) {
+      if (
+        !is.null(na_action) &&
+          nrow(orig) - length(na_action) == n_fit
+      ) {
         orig <- orig[-na_action, , drop = FALSE]
       }
     }
     have <- intersect(vars, names(orig))
     if (length(have) == length(vars)) {
-      return(list(df = orig, missing = character(0),
-                  available = names(orig), tried_original = TRUE))
+      return(list(
+        df = orig,
+        missing = character(0),
+        available = names(orig),
+        tried_original = TRUE
+      ))
     }
-    return(list(df = orig,
-                missing = setdiff(vars, names(orig)),
-                available = names(orig),
-                tried_original = TRUE))
+    return(list(
+      df = orig,
+      missing = setdiff(vars, names(orig)),
+      available = names(orig),
+      tried_original = TRUE
+    ))
   }
   # Last resort: report what model.frame had.
-  list(df = mf %||% data.frame(),
-       missing = setdiff(vars, names(mf %||% data.frame())),
-       available = names(mf %||% data.frame()),
-       tried_original = FALSE)
+  list(
+    df = mf %||% data.frame(),
+    missing = setdiff(vars, names(mf %||% data.frame())),
+    available = names(mf %||% data.frame()),
+    tried_original = FALSE
+  )
 }
 
 
@@ -363,7 +416,9 @@ cluster_lookup_data <- function(fit, vars) {
 # vector cluster) and a single formula (formulas are lists under
 # the hood but inherit "formula").
 resolve_cluster_arg <- function(cluster, models) {
-  if (is.null(cluster)) return(NULL)
+  if (is.null(cluster)) {
+    return(NULL)
+  }
   if (inherits(cluster, "formula")) {
     # Single formula -> recycle to all models.
     return(lapply(models, function(m) resolve_cluster(cluster, m)))
@@ -372,15 +427,21 @@ resolve_cluster_arg <- function(cluster, models) {
     return(lapply(models, function(m) resolve_cluster(cluster, m)))
   }
   # A plain list (not an atomic vector) treated as per-model.
-  if (is.list(cluster) && !is.atomic(cluster) &&
-        identical(class(cluster), "list")) {
+  if (
+    is.list(cluster) && !is.atomic(cluster) && identical(class(cluster), "list")
+  ) {
     if (length(cluster) != length(models)) {
       spicy_abort(
         c(
-          sprintf("`cluster` is a list of length %d but `models` has length %d.",
-                  length(cluster), length(models)),
-          "i" = paste0("Pass one cluster (recycled to all models) or a ",
-                        "list of length(models).")
+          sprintf(
+            "`cluster` is a list of length %d but `models` has length %d.",
+            length(cluster),
+            length(models)
+          ),
+          "i" = paste0(
+            "Pass one cluster (recycled to all models) or a ",
+            "list of length(models)."
+          )
         ),
         class = "spicy_invalid_input"
       )

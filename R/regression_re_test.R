@@ -27,7 +27,6 @@
 # The whole-block significance signal (LR test vs the no-random-effects model,
 # chi-bar-squared) stays in the footer regardless of `re_test`.
 
-
 # Dispatch. Returns a data.frame(group, term, statistic, df, p_value) whose
 # (group, term) keys match the variance_components rows, or NULL when nothing
 # is testable. Failures of individual refits leave that term untested (NA
@@ -45,9 +44,13 @@
 
 .re_term_tests_lrt <- function(fit) {
   f <- tryCatch(stats::formula(fit), error = function(e) NULL)
-  if (is.null(f)) return(NULL)                                         # nocov
+  if (is.null(f)) {
+    return(NULL)
+  } # nocov
   bars <- tryCatch(.re_findbars(f), error = function(e) NULL)
-  if (is.null(bars) || length(bars) == 0L) return(NULL)                # nocov
+  if (is.null(bars) || length(bars) == 0L) {
+    return(NULL)
+  } # nocov
   ll_full <- as.numeric(stats::logLik(fit))
 
   out <- list()
@@ -70,8 +73,10 @@
         nl <- .compute_null_model_lrt(fit)
         if (!is.null(nl)) {
           out[[length(out) + 1L]] <- data.frame(
-            group = grp, term = s,
-            statistic = nl$chi2, df = as.numeric(nl$df),
+            group = grp,
+            term = s,
+            statistic = nl$chi2,
+            df = as.numeric(nl$df),
             p_value = nl$p_chibar2,
             stringsAsFactors = FALSE
           )
@@ -84,7 +89,8 @@
           c(
             sprintf(
               "Per-term LR test: the reduced refit for random term `%s` (%s) failed.",
-              s, grp
+              s,
+              grp
             ),
             "i" = "The row's test columns stay NA."
           ),
@@ -96,20 +102,26 @@
       # Dropping one variance + its covariances with the (q - 1) other terms
       # of the bar: chi-bar-squared mixture 0.5 chi2_{q-1} + 0.5 chi2_{q}.
       q <- 1L + (n_terms_bar - 1L)
-      p <- 0.5 * stats::pchisq(chi2, df = q, lower.tail = FALSE) +
+      p <- 0.5 *
+        stats::pchisq(chi2, df = q, lower.tail = FALSE) +
         if (q - 1L > 0L) {
           0.5 * stats::pchisq(chi2, df = q - 1L, lower.tail = FALSE)
         } else {
-          0.5 * as.numeric(chi2 <= 0)   # chi2_0 point mass at 0
+          0.5 * as.numeric(chi2 <= 0) # chi2_0 point mass at 0
         }
       out[[length(out) + 1L]] <- data.frame(
-        group = grp, term = s,
-        statistic = chi2, df = as.numeric(q), p_value = p,
+        group = grp,
+        term = s,
+        statistic = chi2,
+        df = as.numeric(q),
+        p_value = p,
         stringsAsFactors = FALSE
       )
     }
   }
-  if (length(out) == 0L) return(NULL)                                  # nocov
+  if (length(out) == 0L) {
+    return(NULL)
+  } # nocov
   do.call(rbind, out)
 }
 
@@ -127,7 +139,7 @@
   other_bars <- other_bars[other_bars != this_bar]
 
   new_bar <- if (identical(s, "(Intercept)")) {
-    character(0)                       # drop the whole intercept-only bar
+    character(0) # drop the whole intercept-only bar
   } else {
     keep <- setdiff(slopes, s)
     lhs <- paste(c(if (has_int) "1" else "0", keep), collapse = " + ")
@@ -143,7 +155,9 @@
     ),
     error = function(e) NULL
   )
-  if (is.null(new_f)) return(NULL)                                     # nocov
+  if (is.null(new_f)) {
+    return(NULL)
+  } # nocov
 
   tryCatch(
     suppressWarnings(suppressMessages(stats::update(fit, formula = new_f))),
@@ -170,7 +184,9 @@
     )
     NULL
   }
-  if (!inherits(rnd, "formula") || length(rnd) != 2L) return(unsupported())
+  if (!inherits(rnd, "formula") || length(rnd) != 2L) {
+    return(unsupported())
+  }
   rhs <- rnd[[2L]]
   if (is.call(rhs) && identical(rhs[[1L]], as.name("|"))) {
     lhs_expr <- rhs[[2L]]
@@ -180,9 +196,13 @@
     lhs_expr <- rhs
     grp <- names(fit$groups)[1L]
   }
-  tt <- tryCatch(stats::terms(stats::reformulate(deparse1(lhs_expr))),
-                 error = function(e) NULL)
-  if (is.null(tt)) return(unsupported())                               # nocov
+  tt <- tryCatch(
+    stats::terms(stats::reformulate(deparse1(lhs_expr))),
+    error = function(e) NULL
+  )
+  if (is.null(tt)) {
+    return(unsupported())
+  } # nocov
   slopes <- attr(tt, "term.labels")
   has_int <- attr(tt, "intercept") == 1L
   n_terms_bar <- length(slopes) + as.integer(has_int)
@@ -197,8 +217,10 @@
       nl <- .compute_null_model_lrt(fit)
       if (!is.null(nl)) {
         out[[length(out) + 1L]] <- data.frame(
-          group = grp, term = s,
-          statistic = nl$chi2, df = as.numeric(nl$df),
+          group = grp,
+          term = s,
+          statistic = nl$chi2,
+          df = as.numeric(nl$df),
           p_value = nl$p_chibar2,
           stringsAsFactors = FALSE
         )
@@ -208,8 +230,12 @@
     keep <- setdiff(slopes, s)
     new_rnd <- tryCatch(
       stats::as.formula(
-        paste0("~", paste(c(if (has_int) "1" else "0", keep),
-                          collapse = " + "), " | ", grp),
+        paste0(
+          "~",
+          paste(c(if (has_int) "1" else "0", keep), collapse = " + "),
+          " | ",
+          grp
+        ),
         env = environment(stats::formula(fit))
       ),
       error = function(e) NULL
@@ -218,18 +244,30 @@
     # stats::update(fit, random = ...) fails when nlme is not attached (the
     # captured call is unqualified `lme(...)`): requalify to nlme::lme first,
     # exactly like .null_lrt_lme().
-    red <- if (is.null(new_rnd)) NULL else tryCatch({                  # nocov
-      call_copy <- fit$call
-      call_copy[[1L]] <- quote(nlme::lme)
-      call_copy$random <- new_rnd
-      suppressWarnings(suppressMessages(eval(call_copy, envir = parent.frame())))
-    }, error = function(e) NULL)
+    red <- if (is.null(new_rnd)) {
+      NULL
+    } else {
+      tryCatch(
+        {
+          # nocov
+          call_copy <- fit$call
+          call_copy[[1L]] <- quote(nlme::lme)
+          call_copy$random <- new_rnd
+          suppressWarnings(suppressMessages(eval(
+            call_copy,
+            envir = parent.frame()
+          )))
+        },
+        error = function(e) NULL
+      )
+    }
     if (is.null(red)) {
       spicy_warn(
         c(
           sprintf(
             "Per-term LR test: the reduced refit for random term `%s` (%s) failed.",
-            s, grp
+            s,
+            grp
           ),
           "i" = "The row's test columns stay NA."
         ),
@@ -239,19 +277,25 @@
     }
     chi2 <- max(0, 2 * (ll_full - as.numeric(stats::logLik(red))))
     q <- 1L + (n_terms_bar - 1L)
-    p <- 0.5 * stats::pchisq(chi2, df = q, lower.tail = FALSE) +
+    p <- 0.5 *
+      stats::pchisq(chi2, df = q, lower.tail = FALSE) +
       if (q - 1L > 0L) {
         0.5 * stats::pchisq(chi2, df = q - 1L, lower.tail = FALSE)
       } else {
-        0.5 * as.numeric(chi2 <= 0)                                    # nocov
+        0.5 * as.numeric(chi2 <= 0) # nocov
       }
     out[[length(out) + 1L]] <- data.frame(
-      group = grp, term = s,
-      statistic = chi2, df = as.numeric(q), p_value = p,
+      group = grp,
+      term = s,
+      statistic = chi2,
+      df = as.numeric(q),
+      p_value = p,
       stringsAsFactors = FALSE
     )
   }
-  if (length(out) == 0L) return(NULL)                                  # nocov
+  if (length(out) == 0L) {
+    return(NULL)
+  } # nocov
   do.call(rbind, out)
 }
 
@@ -269,14 +313,15 @@
   # exactRLRT() is exact for ONE variance component in a Gaussian LMM
   # (lmer or lme fits are both accepted by RLRsim).
   is_lmer <- inherits(fit, "lmerMod") && !inherits(fit, "glmerMod")
-  is_lme  <- inherits(fit, "lme")
+  is_lme <- inherits(fit, "lme")
   n_var <- if (is_lmer) {
     vc <- lme4::VarCorr(fit)
     sum(vapply(vc, function(m) nrow(as.matrix(m)), integer(1)))
   } else if (is_lme) {
     # One unconstrained reStruct parameter <=> a single variance component.
-    length(tryCatch(stats::coef(fit$modelStruct$reStruct),
-                    error = function(e) numeric(2)))
+    length(tryCatch(stats::coef(fit$modelStruct$reStruct), error = function(e) {
+      numeric(2)
+    }))
   } else {
     NA_integer_
   }
@@ -293,7 +338,9 @@
     )
   }
   res <- tryCatch(RLRsim::exactRLRT(fit), error = function(e) NULL)
-  if (is.null(res)) return(NULL)                                       # nocov
+  if (is.null(res)) {
+    return(NULL)
+  } # nocov
   if (is_lmer) {
     vc <- lme4::VarCorr(fit)
     grp <- names(vc)[1L]
@@ -304,8 +351,10 @@
     term <- setdiff(vcn, "Residual")[1L]
   }
   data.frame(
-    group = grp, term = term,
-    statistic = unname(res$statistic), df = NA_real_,
+    group = grp,
+    term = term,
+    statistic = unname(res$statistic),
+    df = NA_real_,
     p_value = unname(res$p.value),
     stringsAsFactors = FALSE
   )
@@ -315,8 +364,12 @@
 # Validate the `re_test` argument: "none" (default), "lrt", or "rlrt".
 .validate_re_test <- function(x) {
   choices <- c("none", "lrt", "rlrt")
-  if (identical(x, choices)) return("none")          # unset default vector
-  if (length(x) == 1L && !is.na(x) && x %in% choices) return(x)
+  if (identical(x, choices)) {
+    return("none")
+  } # unset default vector
+  if (length(x) == 1L && !is.na(x) && x %in% choices) {
+    return(x)
+  }
   spicy_abort(
     c(
       "`re_test` must be one of \"none\", \"lrt\", or \"rlrt\".",
@@ -341,7 +394,7 @@
 .validate_re_ci <- function(x, models) {
   choices <- c("wald", "profile")
   val <- if (identical(x, choices)) {
-    "wald"                                           # unset default vector
+    "wald" # unset default vector
   } else if (length(x) == 1L && !is.na(x) && x %in% choices) {
     x
   } else {
@@ -360,9 +413,13 @@
     # Profile CIs run through lme4's confint machinery: lmer / glmer
     # only. glmmTMB and nlme::lme have their own native CI routes
     # (TMB::sdreport; apVar), which the default already uses.
-    bad <- vapply(models, function(m) {
-      inherits(m, c("glmmTMB", "lme"))
-    }, logical(1))
+    bad <- vapply(
+      models,
+      function(m) {
+        inherits(m, c("glmmTMB", "lme"))
+      },
+      logical(1)
+    )
     if (any(bad)) {
       spicy_abort(
         c(

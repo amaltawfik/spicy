@@ -24,8 +24,10 @@ skip_if_no_marginaleffects <- function() {
 # of appearance.
 ame_factor_order <- function(out, factor_var) {
   long <- broom::tidy(out)
-  ame_rows <- long[long$estimate_type == "ame" &
-                     startsWith(long$term, factor_var), ]
+  ame_rows <- long[
+    long$estimate_type == "ame" &
+      startsWith(long$term, factor_var),
+  ]
   ame_rows$term
 }
 
@@ -47,8 +49,7 @@ test_that("lm AME: ordered-factor rows in levels() order, not alphabetical", {
 test_that("glm(binomial) AME: ordered-factor rows in levels() order", {
   skip_if_no_marginaleffects()
   out <- table_regression(
-    glm(smoking ~ sex + age + education, data = sochealth,
-        family = binomial),
+    glm(smoking ~ sex + age + education, data = sochealth, family = binomial),
     show_columns = c("b", "ame", "ame_ci", "ame_p")
   )
   ord <- ame_factor_order(out, "education")
@@ -65,8 +66,10 @@ test_that("glm(poisson) AME: ordered-factor rows in levels() order (family-agnos
   df <- data.frame(
     y = rpois(300, lambda = 2),
     x = rnorm(300),
-    grp = ordered(sample(c("Beta", "Gamma", "Alpha"), 300, replace = TRUE),
-                  levels = c("Beta", "Gamma", "Alpha"))
+    grp = ordered(
+      sample(c("Beta", "Gamma", "Alpha"), 300, replace = TRUE),
+      levels = c("Beta", "Gamma", "Alpha")
+    )
   )
   out <- table_regression(
     glm(y ~ x + grp, data = df, family = poisson),
@@ -95,8 +98,7 @@ test_that("glm(poisson) AME: ordered-factor rows in levels() order (family-agnos
 test_that("ordered factor + AME: synthetic reference row is emitted", {
   skip_if_no_marginaleffects()
   out <- table_regression(
-    glm(smoking ~ sex + age + education, data = sochealth,
-        family = binomial),
+    glm(smoking ~ sex + age + education, data = sochealth, family = binomial),
     show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
   )
   body <- as.data.frame(out, stringsAsFactors = FALSE)
@@ -109,8 +111,7 @@ test_that("ordered factor + AME: synthetic reference row is emitted", {
 
 test_that("ordered factor WITHOUT AME: no synthetic reference row", {
   out <- table_regression(
-    glm(smoking ~ sex + age + education, data = sochealth,
-        family = binomial)
+    glm(smoking ~ sex + age + education, data = sochealth, family = binomial)
   )
   body <- as.data.frame(out, stringsAsFactors = FALSE)
   vars <- trimws(body$Variable)
@@ -130,8 +131,7 @@ test_that("AME extraction triggered by ame_ci / ame_p / ame_se (not only 'ame')"
   # alone, so requesting just `ame_ci` and `ame_p` (a legitimate
   # compact-table choice) produced empty columns in the header.
   # The fix accepts any token of the AME family.
-  fit <- glm(smoking ~ age + education, data = sochealth,
-             family = binomial)
+  fit <- glm(smoking ~ age + education, data = sochealth, family = binomial)
 
   for (cols in list(
     c("b", "p", "ame_ci"),
@@ -142,9 +142,14 @@ test_that("AME extraction triggered by ame_ci / ame_p / ame_se (not only 'ame')"
     out <- table_regression(fit, show_columns = cols)
     long <- broom::tidy(out)
     n_ame_rows <- sum(long$estimate_type == "ame", na.rm = TRUE)
-    expect_gt(n_ame_rows, 0L,
-              label = sprintf("show_columns = c(%s)",
-                              paste(shQuote(cols), collapse = ", ")))
+    expect_gt(
+      n_ame_rows,
+      0L,
+      label = sprintf(
+        "show_columns = c(%s)",
+        paste(shQuote(cols), collapse = ", ")
+      )
+    )
   }
 })
 
@@ -158,12 +163,9 @@ test_that("ref-row en-dashes follow estimate_type semantics (plain factor: B + A
   # to confirm the en-dash follows the estimate_type semantics, not
   # the position in show_columns.
   fit <- glm(smoking ~ sex + age, data = sochealth, family = binomial)
-  out <- table_regression(fit,
-                          show_columns = c("ame_p", "ame", "b", "p"))
-  body <- as.data.frame(out, stringsAsFactors = FALSE,
-                         check.names = FALSE)
-  ref_row <- body[trimws(body$Variable) == "Female (ref.)", ,
-                   drop = FALSE]
+  out <- table_regression(fit, show_columns = c("ame_p", "ame", "b", "p"))
+  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  ref_row <- body[trimws(body$Variable) == "Female (ref.)", , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
   # Every data column of the ref-row contains an en-dash, because
   # `Female` is the reference for both B and AME blocks.
@@ -181,12 +183,10 @@ test_that("stars = TRUE suffixes stars to AME cells (independent of ame_p column
   #   * B + AME (no p cols) -> stars on B AND on AME
   #   * B + AME + both p    -> stars on B AND on AME (independent of
   #                            p columns being displayed)
-  fit <- glm(smoking ~ sex + education, data = sochealth,
-             family = binomial)
+  fit <- glm(smoking ~ sex + education, data = sochealth, family = binomial)
 
   pull_cells <- function(out, col_name) {
-    body <- as.data.frame(out, stringsAsFactors = FALSE,
-                          check.names = FALSE)
+    body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
     body[[col_name]]
   }
 
@@ -196,14 +196,16 @@ test_that("stars = TRUE suffixes stars to AME cells (independent of ame_p column
   expect_true(any(grepl("\\*", ame_cells_1)))
 
   # B + AME (no p columns)
-  out2 <- table_regression(fit, stars = TRUE,
-                           show_columns = c("b", "ame"))
+  out2 <- table_regression(fit, stars = TRUE, show_columns = c("b", "ame"))
   expect_true(any(grepl("\\*", pull_cells(out2, "B"))))
   expect_true(any(grepl("\\*", pull_cells(out2, "AME"))))
 
   # B + p + AME + ame_p (everything)
-  out3 <- table_regression(fit, stars = TRUE,
-                           show_columns = c("b", "p", "ame", "ame_p"))
+  out3 <- table_regression(
+    fit,
+    stars = TRUE,
+    show_columns = c("b", "p", "ame", "ame_p")
+  )
   expect_true(any(grepl("\\*", pull_cells(out3, "B"))))
   expect_true(any(grepl("\\*", pull_cells(out3, "AME"))))
 })
@@ -217,23 +219,23 @@ test_that("ref-row en-dashes follow estimate_type semantics (ordered factor: AME
   # ONLY the AME columns and BLANK the B columns. This is the
   # pedagogical signal -- the en-dash placement tells the reader
   # WHICH estimate type the reference applies to.
-  fit <- glm(smoking ~ sex + education, data = sochealth,
-             family = binomial)
-  out <- table_regression(fit,
-                          show_columns = c("b", "p", "ame", "ame_p"))
-  body <- as.data.frame(out, stringsAsFactors = FALSE,
-                         check.names = FALSE)
-  ref_row <- body[trimws(body$Variable) == "Lower secondary (ref.)",
-                   , drop = FALSE]
+  fit <- glm(smoking ~ sex + education, data = sochealth, family = binomial)
+  out <- table_regression(fit, show_columns = c("b", "p", "ame", "ame_p"))
+  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  ref_row <- body[
+    trimws(body$Variable) == "Lower secondary (ref.)",
+    ,
+    drop = FALSE
+  ]
   expect_equal(nrow(ref_row), 1L)
   # Columns 1 = Variable label; cols 2-3 = B / p of B; cols 4-5 =
   # AME / p of AME. B columns BLANK, AME columns en-dashed.
   cells <- as.character(ref_row[, -1L])
   expect_equal(length(cells), 4L)
-  expect_true(trimws(cells[1]) == "")   # B blank
-  expect_true(trimws(cells[2]) == "")   # p of B blank
-  expect_match(cells[3], "–")            # AME en-dash
-  expect_match(cells[4], "–")            # p of AME en-dash
+  expect_true(trimws(cells[1]) == "") # B blank
+  expect_true(trimws(cells[2]) == "") # p of B blank
+  expect_match(cells[3], "–") # AME en-dash
+  expect_match(cells[4], "–") # p of AME en-dash
 })
 
 
@@ -247,12 +249,10 @@ test_that("multi-model: ref-row of a factor missing from a model is BLANK in tha
   # Stata `esttab`: when a factor is absent from a model, ALL its
   # rows (ref + non-ref) are blank in that model's columns.
   sh <- na.omit(sochealth[, c("smoking", "sex", "physical_activity")])
-  m1 <- glm(smoking ~ sex + physical_activity, data = sh,
-            family = binomial)
+  m1 <- glm(smoking ~ sex + physical_activity, data = sh, family = binomial)
   m2 <- glm(smoking ~ sex, data = sh, family = binomial)
   out <- table_regression(list(M1 = m1, M2 = m2))
-  body <- as.data.frame(out, stringsAsFactors = FALSE,
-                         check.names = FALSE)
+  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
   ref_row <- body[trimws(body$Variable) == "No (ref.)", , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
   # M1 columns: en-dash (factor present, reference level).
@@ -273,9 +273,11 @@ test_that("2-level ordered factor + AME: ref row + .L + 1 AME row, in order", {
   # logic degrades gracefully on the minimal case.
   set.seed(1)
   df <- data.frame(
-    y   = rnorm(200),
-    grp = ordered(sample(c("Lo", "Hi"), 200, replace = TRUE),
-                  levels = c("Lo", "Hi"))
+    y = rnorm(200),
+    grp = ordered(
+      sample(c("Lo", "Hi"), 200, replace = TRUE),
+      levels = c("Lo", "Hi")
+    )
   )
   out <- table_regression(
     lm(y ~ grp, data = df),
@@ -283,9 +285,9 @@ test_that("2-level ordered factor + AME: ref row + .L + 1 AME row, in order", {
   )
   body <- as.data.frame(out, stringsAsFactors = FALSE)
   vars <- trimws(body$Variable)
-  ref_pos  <- which(grepl("^Lo \\(ref\\.\\)$", vars))
+  ref_pos <- which(grepl("^Lo \\(ref\\.\\)$", vars))
   poly_pos <- which(vars == ".L")
-  ame_pos  <- which(vars == "Hi")
+  ame_pos <- which(vars == "Hi")
   expect_length(ref_pos, 1L)
   expect_length(poly_pos, 1L)
   expect_length(ame_pos, 1L)

@@ -5,14 +5,12 @@
 # category. Display-only -- tidy() / output = "long" keep the long form.
 # ---------------------------------------------------------------------------
 
-
 .fit_multinom_soc <- function(formula = employment_status ~ age + sex) {
   skip_if_not_installed("nnet")
   # do.call() embeds the formula VALUE in the stored call: helpers that
   # pass a `formula` variable otherwise break anova.multinom() later
   # (the symbol re-evaluates to base::formula in another env).
-  do.call(nnet::multinom,
-          list(formula, data = quote(sochealth), trace = FALSE))
+  do.call(nnet::multinom, list(formula, data = quote(sochealth), trace = FALSE))
 }
 
 
@@ -43,16 +41,20 @@ test_that("single multinom renders outcome categories as column groups", {
 test_that("columns-layout cells match the summary(fit) oracle", {
   fit <- .fit_multinom_soc()
   df <- as.data.frame(table_regression(fit))
-  b  <- summary(fit)$coefficients
+  b <- summary(fit)$coefficients
   se <- summary(fit)$standard.errors
-  z  <- b / se
-  p  <- 2 * pnorm(-abs(z))
+  z <- b / se
+  p <- 2 * pnorm(-abs(z))
   # trimws(): cells carry decimal-alignment padding.
   for (cat in c("Student", "Unemployed", "Inactive")) {
-    expect_identical(trimws(df[df$Variable == "age", paste0(cat, ": B")]),
-                     formatC(b[cat, "age"], format = "f", digits = 2))
-    expect_identical(trimws(df[df$Variable == "age", paste0(cat, ": SE")]),
-                     formatC(se[cat, "age"], format = "f", digits = 2))
+    expect_identical(
+      trimws(df[df$Variable == "age", paste0(cat, ": B")]),
+      formatC(b[cat, "age"], format = "f", digits = 2)
+    )
+    expect_identical(
+      trimws(df[df$Variable == "age", paste0(cat, ": SE")]),
+      formatC(se[cat, "age"], format = "f", digits = 2)
+    )
     expect_identical(
       trimws(df[df$Variable == "age", paste0(cat, ": p")]),
       sub("^0", "", formatC(p[cat, "age"], format = "f", digits = 3))
@@ -67,8 +69,10 @@ test_that("columns layout compacts to B/SE/p; atomic tokens restore CI", {
   fit <- .fit_multinom_soc()
   df <- as.data.frame(table_regression(fit))
   expect_false(any(grepl("CI", names(df))))
-  df_ci <- as.data.frame(table_regression(fit,
-                                          show_columns = c("b", "ci", "p")))
+  df_ci <- as.data.frame(table_regression(
+    fit,
+    show_columns = c("b", "ci", "p")
+  ))
   expect_true(any(grepl("95% CI", names(df_ci), fixed = TRUE)))
   # The explicit group token auto-compacts exactly like multi-model
   # tables (documented parity).
@@ -81,8 +85,7 @@ test_that("columns layout compacts to B/SE/p; atomic tokens restore CI", {
 
 test_that("'Reference outcome:' note prints in columns AND rows layouts", {
   fit <- .fit_multinom_soc()
-  out1 <- paste(capture.output(print(table_regression(fit))),
-                collapse = "\n")
+  out1 <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
   expect_match(out1, "Reference outcome: Employed.", fixed = TRUE)
   # Multi-model fallback (rows layout) keeps the note, deduped to one
   # shared line when every model has the same reference.
@@ -99,8 +102,11 @@ test_that("outcome_labels overrides the category spanners", {
   fit <- .fit_multinom_soc()
   tr <- table_regression(
     fit,
-    outcome_labels = c("Student vs Employed", "Unemployed vs Employed",
-                       "Inactive vs Employed")
+    outcome_labels = c(
+      "Student vs Employed",
+      "Unemployed vs Employed",
+      "Inactive vs Employed"
+    )
   )
   # data.frame colnames carry the full labels (the console spanner can
   # truncate to the group's column width).
@@ -112,16 +118,22 @@ test_that("outcome_labels overrides the category spanners", {
 
 test_that("outcome_labels validates length against non-ref categories", {
   fit <- .fit_multinom_soc()
-  expect_error(table_regression(fit, outcome_labels = c("a", "b")),
-               class = "spicy_invalid_input")
-  expect_error(table_regression(fit, outcome_labels = 1:3),
-               class = "spicy_invalid_input")
+  expect_error(
+    table_regression(fit, outcome_labels = c("a", "b")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, outcome_labels = 1:3),
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("model_labels is refused for a single multinom", {
   fit <- .fit_multinom_soc()
-  expect_error(table_regression(fit, model_labels = "M1"),
-               class = "spicy_invalid_input")
+  expect_error(
+    table_regression(fit, model_labels = "M1"),
+    class = "spicy_invalid_input"
+  )
 })
 
 
@@ -141,10 +153,15 @@ test_that("per-category AME adds the reference group last, AME-only", {
   # categories for a given predictor.
   ame_cols <- grep(": AME$", names(df), value = TRUE)
   expect_identical(length(ame_cols), 4L)
-  tr_long <- attr(table_regression(fit, show_columns = c("b", "ame")),
-                  "spicy_long")
-  ame_age <- tr_long[tr_long$estimate_type == "ame" &
-                       grepl(": age$", tr_long$term), "estimate"]
+  tr_long <- attr(
+    table_regression(fit, show_columns = c("b", "ame")),
+    "spicy_long"
+  )
+  ame_age <- tr_long[
+    tr_long$estimate_type == "ame" &
+      grepl(": age$", tr_long$term),
+    "estimate"
+  ]
   expect_identical(length(ame_age), 4L)
   expect_lt(abs(sum(ame_age)), 1e-8)
 })
@@ -153,7 +170,7 @@ test_that("per-category AME adds the reference group last, AME-only", {
 # ---- 7. Multi-model and nested keep the rows layout ----------------------
 
 test_that("multi-model and nested multinom keep the rows layout", {
-  fit  <- .fit_multinom_soc()
+  fit <- .fit_multinom_soc()
   fit0 <- .fit_multinom_soc(employment_status ~ age)
   df_m <- as.data.frame(table_regression(list(fit0, fit)))
   expect_true(any(grepl("Student: ", df_m$Variable, fixed = TRUE)))
@@ -168,9 +185,13 @@ test_that("tidy() and output='long' keep the long prefixed form", {
   fit <- .fit_multinom_soc()
   tr <- table_regression(fit)
   long <- attr(tr, "spicy_long")
-  expect_true(all(grepl("^(Student|Unemployed|Inactive): ",
-                        long$term[long$term != "(Intercept)" &
-                                    !long$is_intercept])))
+  expect_true(all(grepl(
+    "^(Student|Unemployed|Inactive): ",
+    long$term[
+      long$term != "(Intercept)" &
+        !long$is_intercept
+    ]
+  )))
   lg <- table_regression(fit, output = "long")
   expect_true(any(grepl("Student: ", lg$term, fixed = TRUE)))
   # keep/drop reaches the long payload identically in both layouts.
@@ -184,16 +205,17 @@ test_that("tidy() and output='long' keep the long prefixed form", {
 test_that("binary multinom renders a single-group table", {
   skip_if_not_installed("nnet")
   d <- sochealth
-  d$working <- factor(ifelse(d$employment_status == "Employed",
-                             "Employed", "Not employed"))
+  d$working <- factor(ifelse(
+    d$employment_status == "Employed",
+    "Employed",
+    "Not employed"
+  ))
   fit <- nnet::multinom(working ~ age + sex, data = d, trace = FALSE)
   df <- as.data.frame(table_regression(fit))
   # The single non-reference category still names its column group --
   # that's what tells the reader the contrast direction.
-  expect_true(all(paste0("Not employed: ", c("B", "SE", "p"))
-                  %in% names(df)))
-  out <- paste(capture.output(print(table_regression(fit))),
-               collapse = "\n")
+  expect_true(all(paste0("Not employed: ", c("B", "SE", "p")) %in% names(df)))
+  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
   expect_match(out, "Reference outcome: Employed.", fixed = TRUE)
 })
 
@@ -212,7 +234,8 @@ test_that(".multinom_columns_spanners covers ref-present ordering", {
   # Reference present (AME case): override labels the non-ref groups,
   # the reference keeps its own name.
   sp <- .multinom_columns_spanners(
-    c("Student", "Unemployed", "Employed"), "Employed",
+    c("Student", "Unemployed", "Employed"),
+    "Employed",
     c("S vs E", "U vs E")
   )
   expect_identical(sp, c("S vs E", "U vs E", "Employed"))
@@ -229,8 +252,7 @@ test_that(".multinom_columns_active gates exactly", {
   expect_true(.multinom_columns_active(list(fit), nested = FALSE))
   expect_false(.multinom_columns_active(fit, nested = TRUE))
   expect_false(.multinom_columns_active(list(fit, fit), nested = FALSE))
-  expect_false(.multinom_columns_active(lm(mpg ~ wt, mtcars),
-                                        nested = FALSE))
+  expect_false(.multinom_columns_active(lm(mpg ~ wt, mtcars), nested = FALSE))
 })
 
 # ---- Adversarial-review fixes (2026-07-04 second batch) -------------------
@@ -258,8 +280,7 @@ test_that("keep/drop and show_intercept govern display AND long payload", {
 test_that("reference_style = 'footer' lists bare, deduped levels", {
   fit <- .fit_multinom_soc()
   out <- paste(
-    capture.output(print(table_regression(fit,
-                                          reference_style = "footer"))),
+    capture.output(print(table_regression(fit, reference_style = "footer"))),
     collapse = "\n"
   )
   expect_match(out, "sex = Female", fixed = TRUE)
@@ -276,8 +297,7 @@ test_that("outcome_labels = FALSE is a no-op; duplicates are refused", {
   df <- as.data.frame(table_regression(fit, outcome_labels = FALSE))
   expect_true("Student: B" %in% names(df))
   expect_error(
-    table_regression(fit,
-                     outcome_labels = c("Same", "Same", "Other")),
+    table_regression(fit, outcome_labels = c("Same", "Same", "Other")),
     class = "spicy_invalid_input"
   )
 })
@@ -287,9 +307,14 @@ test_that("matrix-response multinom renders (response_levels fallback)", {
   set.seed(7)
   n <- 150
   x <- rnorm(n)
-  counts <- t(vapply(x, function(xi) {
-    p <- exp(c(0, 0.4 * xi, -0.3 * xi)); as.vector(rmultinom(1, 5, p))
-  }, numeric(3)))
+  counts <- t(vapply(
+    x,
+    function(xi) {
+      p <- exp(c(0, 0.4 * xi, -0.3 * xi))
+      as.vector(rmultinom(1, 5, p))
+    },
+    numeric(3)
+  ))
   colnames(counts) <- c("a", "b", "c")
   fitm <- nnet::multinom(counts ~ x, trace = FALSE)
   df <- as.data.frame(table_regression(fitm))
@@ -304,16 +329,17 @@ test_that("mixed-class multi-model qualifies the reference-outcome note", {
   d$emp <- as.integer(d$employment_status == "Employed")
   fg <- glm(emp ~ age, data = d, family = binomial())
   fm <- nnet::multinom(employment_status ~ age, data = d, trace = FALSE)
-  out <- paste(capture.output(print(table_regression(list(fg, fm)))),
-               collapse = "\n")
+  out <- paste(
+    capture.output(print(table_regression(list(fg, fm)))),
+    collapse = "\n"
+  )
   expect_match(out, "Model 2: Reference outcome: Employed.", fixed = TRUE)
   expect_false(grepl("\nReference outcome: Employed.", out, fixed = TRUE))
 })
 
 test_that("ordered-factor predictor gets the polynomial footer note", {
   fit <- .fit_multinom_soc(employment_status ~ age + education)
-  out <- paste(capture.output(print(table_regression(fit))),
-               collapse = "\n")
+  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
   # education is an ordered factor in sochealth: the .L/.Q rows must
   # carry the polynomial-trends note (detection was defeated by the
   # outcome prefix when the footer read the original frames).
@@ -326,8 +352,10 @@ test_that("differing reference outcomes get per-model footer lines", {
   d$es2 <- stats::relevel(d$employment_status, ref = "Student")
   fit1 <- nnet::multinom(employment_status ~ age, data = d, trace = FALSE)
   fit2 <- nnet::multinom(es2 ~ age, data = d, trace = FALSE)
-  out <- paste(capture.output(print(table_regression(list(fit1, fit2)))),
-               collapse = "\n")
+  out <- paste(
+    capture.output(print(table_regression(list(fit1, fit2)))),
+    collapse = "\n"
+  )
   expect_match(out, "Model 1: Reference outcome: Employed.", fixed = TRUE)
   expect_match(out, "Model 2: Reference outcome: Student.", fixed = TRUE)
 })

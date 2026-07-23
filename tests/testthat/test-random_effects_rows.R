@@ -26,12 +26,15 @@ test_that("RE variance components render as a 'Random effects' rows block", {
   fit <- .rr_lmer_slope()
   df <- table_regression(fit, output = "data.frame")
   v <- trimws(df$Variable)
-  expect_true(any(grepl("Random effects", v, fixed = TRUE)))                          # block header
-  expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE)))  # SD intercept
-  expect_true(any(grepl("(Residual)", v, fixed = TRUE)))           # residual SD
-  expect_true(any(grepl(", Days)", v, fixed = TRUE)))              # correlation
+  expect_true(any(grepl("Random effects", v, fixed = TRUE))) # block header
+  expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE))) # SD intercept
+  expect_true(any(grepl("(Residual)", v, fixed = TRUE))) # residual SD
+  expect_true(any(grepl(", Days)", v, fixed = TRUE))) # correlation
   # the RE block sorts LAST -- after every fixed-effect row
-  expect_gt(which(grepl("Random effects", v, fixed = TRUE))[1], which(v == "Days")[1])
+  expect_gt(
+    which(grepl("Random effects", v, fixed = TRUE))[1],
+    which(v == "Days")[1]
+  )
 })
 
 ## ---- 2. vc token, no per-row p, values match VarCorr (SD scale) -----------
@@ -42,16 +45,16 @@ test_that("vc rows carry estimate_type 'vc', no p, and match VarCorr on the SD s
   vc <- .vc_rows(fit)
   expect_gt(nrow(vc), 0L)
   expect_true(all(vc$estimate_type == "vc"))
-  expect_true(all(is.na(vc$p.value)))            # no per-row p (boundary)
+  expect_true(all(is.na(vc$p.value))) # no per-row p (boundary)
 
   V <- lme4::VarCorr(fit)
-  sd_int   <- attr(V$Subject, "stddev")[["(Intercept)"]]
+  sd_int <- attr(V$Subject, "stddev")[["(Intercept)"]]
   sd_slope <- attr(V$Subject, "stddev")[["Days"]]
-  sigma    <- attr(V, "sc")                      # residual SD
+  sigma <- attr(V, "sc") # residual SD
   ests <- vc$estimate
-  expect_true(any(abs(ests - sd_int)   < 1e-6))
+  expect_true(any(abs(ests - sd_int) < 1e-6))
   expect_true(any(abs(ests - sd_slope) < 1e-6))
-  expect_true(any(abs(ests - sigma)    < 1e-6))
+  expect_true(any(abs(ests - sigma) < 1e-6))
 })
 
 ## ---- 3. re_scale = "variance" ---------------------------------------------
@@ -69,7 +72,8 @@ test_that("re_scale = 'variance' puts variances (not SDs) on the vc rows", {
 
 test_that("exponentiate leaves the vc rows on their native scale (glmer)", {
   skip_if_not_installed("lme4")
-  d <- mtcars; d$cyl <- factor(d$cyl)
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
   m <- suppressWarnings(suppressMessages(
     lme4::glmer(am ~ mpg + (1 | cyl), data = d, family = binomial)
   ))
@@ -84,7 +88,7 @@ test_that("footer carries the chi-bar-squared LR test and the RE summary", {
   fit <- .rr_lmer_slope()
   out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
   expect_match(out, "Random effects (REML):", fixed = TRUE)
-  expect_match(out, "LR test",                fixed = TRUE)
+  expect_match(out, "LR test", fixed = TRUE)
 })
 
 ## ---- 6. show_re = FALSE ----------------------------------------------------
@@ -112,7 +116,11 @@ test_that("m4: lm-only fit-stat tokens on a mixed fit are rejected with a pointe
   )
   # the LRT-based partial_chi2 is NOT rejected (it is defined for mixed fits)
   expect_error(
-    table_regression(fit, show_fit_stats = c("r2_marginal"), output = "data.frame"),
+    table_regression(
+      fit,
+      show_fit_stats = c("r2_marginal"),
+      output = "data.frame"
+    ),
     NA
   )
 })
@@ -121,8 +129,10 @@ test_that("m4: lm-only fit-stat tokens on a mixed fit are rejected with a pointe
 
 test_that("glmmTMB renders vc rows", {
   skip_if_not_installed("glmmTMB")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject),
-                          data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (Days | Subject),
+    data = lme4::sleepstudy
+  )
   df <- table_regression(fit, output = "data.frame")
   v <- trimws(df$Variable)
   expect_true(any(grepl("Random effects", v, fixed = TRUE)))
@@ -131,8 +141,11 @@ test_that("glmmTMB renders vc rows", {
 
 test_that("nlme::lme renders vc rows", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-                   random = ~ age | Subject)
+  fit <- nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ age | Subject
+  )
   df <- table_regression(fit, output = "data.frame")
   v <- trimws(df$Variable)
   expect_true(any(grepl("Random effects", v, fixed = TRUE)))
@@ -146,13 +159,16 @@ test_that("structured body carries the vc rows (backend parity)", {
   fit <- .rr_lmer_slope()
   s <- as_structured(table_regression(fit, show_columns = c("b", "se", "ci")))
   b <- s$body
-  re <- b[grepl("Subject (Intercept)", b$Variable, fixed = TRUE), ,
-          drop = FALSE]
+  re <- b[
+    grepl("Subject (Intercept)", b$Variable, fixed = TRUE),
+    ,
+    drop = FALSE
+  ]
   expect_equal(nrow(re), 1L)
   # estimate + SE populated as numerics (not NA): rich engines show values
   num_cols <- names(b)[vapply(b, is.numeric, logical(1))]
   vals <- unlist(re[, num_cols])
-  expect_true(sum(is.finite(vals)) >= 3L)   # est + SE + CI bounds
+  expect_true(sum(is.finite(vals)) >= 3L) # est + SE + CI bounds
 })
 
 test_that("keep/drop never mutilates the Random effects block", {
@@ -162,7 +178,7 @@ test_that("keep/drop never mutilates the Random effects block", {
   # the whole block survives a keep that matches only one predictor
   expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE)))
   expect_true(any(grepl("(Residual)", v, fixed = TRUE)))
-  expect_false(any(v == "(Intercept)"))     # the fixed intercept IS filtered
+  expect_false(any(v == "(Intercept)")) # the fixed intercept IS filtered
 })
 
 test_that("flat layout renders display labels, not internal re:: keys", {
@@ -175,15 +191,20 @@ test_that("flat layout renders display labels, not internal re:: keys", {
 
 test_that("show_re is validated as a logical scalar", {
   fit <- .rr_lmer_slope()
-  expect_error(table_regression(fit, show_re = "yes"),
-               class = "spicy_invalid_input")
+  expect_error(
+    table_regression(fit, show_re = "yes"),
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("beta-only display omits the RE block instead of rendering it empty", {
   fit <- .rr_lmer_slope()
   df <- suppressWarnings(table_regression(
-    fit, standardized = "refit", show_columns = c("beta", "se"),
-    output = "data.frame"))
+    fit,
+    standardized = "refit",
+    show_columns = c("beta", "se"),
+    output = "data.frame"
+  ))
   expect_false(any(grepl("Random effects", df$Variable, fixed = TRUE)))
 })
 
@@ -191,21 +212,25 @@ test_that("correlation rows align across engines (lme4 vs glmmTMB)", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("broom")
   fit_l <- .rr_lmer_slope()
-  fit_t <- glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject),
-                            data = lme4::sleepstudy)
+  fit_t <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (Days | Subject),
+    data = lme4::sleepstudy
+  )
   td_l <- broom::tidy(table_regression(fit_l))
   td_t <- broom::tidy(table_regression(fit_t))
   key_l <- td_l$term[td_l$estimate_type == "vc" & grepl("::cor", td_l$term)]
   key_t <- td_t$term[td_t$estimate_type == "vc" & grepl("::cor", td_t$term)]
-  expect_identical(key_l, key_t)    # same canonical key -> same table row
+  expect_identical(key_l, key_t) # same canonical key -> same table row
   # and the glmmTMB rho still carries SE after the key normalization
   expect_true(is.finite(td_t$std.error[td_t$term == key_t]))
 })
 
 test_that("multi-model RE block puts the Residual row last", {
-  fit_int <- lme4::lmer(Reaction ~ Days + (1 | Subject),
-                        data = lme4::sleepstudy)
-  fit_sl  <- .rr_lmer_slope()
+  fit_int <- lme4::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
+  fit_sl <- .rr_lmer_slope()
   df <- table_regression(list(fit_int, fit_sl), output = "data.frame")
   v <- trimws(df$Variable)
   i_res <- which(grepl("(Residual)", v, fixed = TRUE))
@@ -238,7 +263,9 @@ test_that("cbind-response glmer gets the chi-bar-squared LR footer line", {
   skip_if_not_installed("lme4")
   m <- suppressMessages(lme4::glmer(
     cbind(incidence, size - incidence) ~ period + (1 | herd),
-    data = lme4::cbpp, family = binomial))
+    data = lme4::cbpp,
+    family = binomial
+  ))
   nl <- spicy:::.compute_null_model_lrt(m)
   expect_false(is.null(nl))
   expect_true(is.finite(nl$chi2) && nl$chi2 > 0)
@@ -250,9 +277,14 @@ test_that("labels accepts coefficient-level keys on mixed fits", {
   skip_if_not_installed("lme4")
   m <- suppressMessages(lme4::glmer(
     cbind(incidence, size - incidence) ~ period + (1 | herd),
-    data = lme4::cbpp, family = binomial))
-  df <- table_regression(m, labels = c(period2 = "Period 2"),
-                         output = "data.frame")
+    data = lme4::cbpp,
+    family = binomial
+  ))
+  df <- table_regression(
+    m,
+    labels = c(period2 = "Period 2"),
+    output = "data.frame"
+  )
   expect_true(any(grepl("Period 2", df$Variable, fixed = TRUE)))
   # a grouping factor is NOT a coefficient name: still rejected
   expect_error(
@@ -276,11 +308,15 @@ test_that("n_groups: dynamic label + numeric cell when one shared factor", {
 test_that("n_groups: crossed factors render one N (<factor>) row each", {
   skip_if_not_installed("lme4")
   set.seed(1)
-  d <- data.frame(y = stats::rnorm(300), x = stats::rnorm(300),
-                  g1 = factor(sample(10, 300, TRUE)),
-                  g2 = factor(sample(15, 300, TRUE)))
+  d <- data.frame(
+    y = stats::rnorm(300),
+    x = stats::rnorm(300),
+    g1 = factor(sample(10, 300, TRUE)),
+    g2 = factor(sample(15, 300, TRUE))
+  )
   m <- suppressWarnings(suppressMessages(
-    lme4::lmer(y ~ x + (1 | g1) + (1 | g2), data = d)))
+    lme4::lmer(y ~ x + (1 | g1) + (1 | g2), data = d)
+  ))
   df <- table_regression(m, output = "data.frame")
   v <- trimws(df$Variable)
   # One row per grouping factor (was one crammed "N (groups)" cell).
@@ -292,7 +328,8 @@ test_that("n_groups: crossed factors render one N (<factor>) row each", {
 test_that("n_groups: nested factor names pass verbatim, one row each", {
   skip_if_not_installed("lme4")
   fit <- suppressMessages(
-    lme4::lmer(strength ~ 1 + (1 | batch/cask), data = lme4::Pastes))
+    lme4::lmer(strength ~ 1 + (1 | batch / cask), data = lme4::Pastes)
+  )
   df <- table_regression(fit, output = "data.frame")
   v <- trimws(df$Variable)
   # Verbatim names in the per-factor labels (a naive "+s" used to
@@ -309,7 +346,7 @@ test_that("variance-component SEs are skipped above the size cap", {
   skip_if_not_installed("merDeriv")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
 
-  old <- options(spicy.re_se_max_n = 50L)   # sleepstudy has n = 180
+  old <- options(spicy.re_se_max_n = 50L) # sleepstudy has n = 180
   on.exit(options(old), add = TRUE)
 
   expect_warning(tr <- table_regression(fit), class = "spicy_caveat")
@@ -351,11 +388,15 @@ test_that("raising the size cap restores the variance-component SEs", {
 
 test_that("re_ci = 'profile' matches the confint profile oracle exactly", {
   skip_if_not_installed("lme4")
-  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject),
-                    data = lme4::sleepstudy)
+  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
   orc <- suppressWarnings(suppressMessages(
-    confint(fit, parm = "theta_", method = "profile", oldNames = FALSE,
-            quiet = TRUE)
+    confint(
+      fit,
+      parm = "theta_",
+      method = "profile",
+      oldNames = FALSE,
+      quiet = TRUE
+    )
   ))
 
   tr <- table_regression(fit, re_ci = "profile")
@@ -369,15 +410,26 @@ test_that("re_ci = 'profile' matches the confint profile oracle exactly", {
     r <- vc[vc$term == term, ]
     c(r$conf.low, r$conf.high)
   }
-  expect_equal(ci_of("re::Subject::(Intercept)"),
-               unname(orc["sd_(Intercept)|Subject", ]), tolerance = 1e-6)
-  expect_equal(ci_of("re::Subject::Days"),
-               unname(orc["sd_Days|Subject", ]), tolerance = 1e-6)
-  expect_equal(ci_of("re::Subject::(Intercept), Days::cor"),
-               unname(orc["cor_Days.(Intercept)|Subject", ]),
-               tolerance = 1e-6)
-  expect_equal(ci_of("re::Residual::"),
-               unname(orc["sigma", ]), tolerance = 1e-6)
+  expect_equal(
+    ci_of("re::Subject::(Intercept)"),
+    unname(orc["sd_(Intercept)|Subject", ]),
+    tolerance = 1e-6
+  )
+  expect_equal(
+    ci_of("re::Subject::Days"),
+    unname(orc["sd_Days|Subject", ]),
+    tolerance = 1e-6
+  )
+  expect_equal(
+    ci_of("re::Subject::(Intercept), Days::cor"),
+    unname(orc["cor_Days.(Intercept)|Subject", ]),
+    tolerance = 1e-6
+  )
+  expect_equal(
+    ci_of("re::Residual::"),
+    unname(orc["sigma", ]),
+    tolerance = 1e-6
+  )
 
   # Footer discloses the method (a profile CI has no reconstructing SE).
   out <- paste(capture.output(print(tr)), collapse = "\n")
@@ -385,18 +437,24 @@ test_that("re_ci = 'profile' matches the confint profile oracle exactly", {
 
   # Likelihood intervals transform exactly: the variance-scale display
   # shows the squared SD bounds (the profile CI for sigma^2 itself).
-  ttv <- broom::tidy(table_regression(fit, re_ci = "profile",
-                                      re_scale = "variance"))
+  ttv <- broom::tidy(table_regression(
+    fit,
+    re_ci = "profile",
+    re_scale = "variance"
+  ))
   vcv <- ttv[ttv$estimate_type == "vc", ]
   r <- vcv[vcv$term == "re::Subject::(Intercept)", ]
-  expect_equal(c(r$conf.low, r$conf.high),
-               unname(orc["sd_(Intercept)|Subject", ])^2, tolerance = 1e-6)
+  expect_equal(
+    c(r$conf.low, r$conf.high),
+    unname(orc["sd_(Intercept)|Subject", ])^2,
+    tolerance = 1e-6
+  )
 })
 
 test_that("re_ci = 'profile' sidesteps the size cap without note or warning", {
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  old <- options(spicy.re_se_max_n = 50L)   # sleepstudy has n = 180
+  old <- options(spicy.re_se_max_n = 50L) # sleepstudy has n = 180
   on.exit(options(old), add = TRUE)
 
   expect_no_warning(tr <- table_regression(fit, re_ci = "profile"))
@@ -411,15 +469,22 @@ test_that("re_ci = 'profile' sidesteps the size cap without note or warning", {
 test_that("re_ci validates its value and its engine support", {
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  expect_error(table_regression(fit, re_ci = "banana"),
-               class = "spicy_invalid_input")
-  expect_error(table_regression(fit, re_ci = "profile", show_re = FALSE),
-               class = "spicy_invalid_input")
+  expect_error(
+    table_regression(fit, re_ci = "banana"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, re_ci = "profile", show_re = FALSE),
+    class = "spicy_invalid_input"
+  )
   skip_if_not_installed("glmmTMB")
-  gt <- suppressWarnings(glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                                          data = lme4::sleepstudy))
-  err <- tryCatch(table_regression(gt, re_ci = "profile"),
-                  error = function(e) e)
+  gt <- suppressWarnings(glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  ))
+  err <- tryCatch(table_regression(gt, re_ci = "profile"), error = function(e) {
+    e
+  })
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "lme4", fixed = TRUE)
 })
@@ -442,17 +507,25 @@ test_that("ci_level is honored by the vc CI paths of all mixed engines", {
   skip_if_not_installed("merDeriv")
   v95 <- vc_ci(table_regression(fit), trm)^2
   v90 <- vc_ci(table_regression(fit, ci_level = 0.90), trm)^2
-  expect_equal((v90[2] - v90[1]) / (v95[2] - v95[1]),
-               qnorm(0.95) / qnorm(0.975), tolerance = 1e-8)
+  expect_equal(
+    (v90[2] - v90[1]) / (v95[2] - v95[1]),
+    qnorm(0.95) / qnorm(0.975),
+    tolerance = 1e-8
+  )
 
   # Profile path: matches the confint oracle at the requested level.
   orc90 <- suppressWarnings(suppressMessages(
-    confint(fit, parm = "theta_", method = "profile", oldNames = FALSE,
-            level = 0.90, quiet = TRUE)
+    confint(
+      fit,
+      parm = "theta_",
+      method = "profile",
+      oldNames = FALSE,
+      level = 0.90,
+      quiet = TRUE
+    )
   ))
   p90 <- vc_ci(table_regression(fit, re_ci = "profile", ci_level = 0.90), trm)
-  expect_equal(p90, unname(orc90["sd_(Intercept)|Subject", ]),
-               tolerance = 1e-6)
+  expect_equal(p90, unname(orc90["sd_(Intercept)|Subject", ]), tolerance = 1e-6)
 })
 
 test_that("ci_level reaches the nlme and glmmTMB vc CI paths", {
@@ -465,20 +538,30 @@ test_that("ci_level reaches the nlme and glmmTMB vc CI paths", {
   trm <- "re::Subject::(Intercept)"
 
   skip_if_not_installed("nlme")
-  lf <- nlme::lme(Reaction ~ Days, random = ~ 1 | Subject,
-                  data = lme4::sleepstudy)
+  lf <- nlme::lme(
+    Reaction ~ Days,
+    random = ~ 1 | Subject,
+    data = lme4::sleepstudy
+  )
   o_lme <- nlme::intervals(lf, level = 0.90, which = "var-cov")
-  expect_equal(vc_ci(table_regression(lf, ci_level = 0.90), trm),
-               as.numeric(o_lme$reStruct$Subject[1, c("lower", "upper")]),
-               tolerance = 1e-6)
+  expect_equal(
+    vc_ci(table_regression(lf, ci_level = 0.90), trm),
+    as.numeric(o_lme$reStruct$Subject[1, c("lower", "upper")]),
+    tolerance = 1e-6
+  )
 
   skip_if_not_installed("glmmTMB")
-  gt <- suppressWarnings(glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                                          data = lme4::sleepstudy,
-                                          REML = TRUE))
+  gt <- suppressWarnings(glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy,
+    REML = TRUE
+  ))
   o_tmb <- confint(gt, method = "Wald", parm = "theta_", level = 0.90)
-  expect_equal(vc_ci(table_regression(gt, ci_level = 0.90), trm),
-               unname(as.numeric(o_tmb[1, 1:2])), tolerance = 1e-6)
+  expect_equal(
+    vc_ci(table_regression(gt, ci_level = 0.90), trm),
+    unname(as.numeric(o_tmb[1, 1:2])),
+    tolerance = 1e-6
+  )
 })
 
 test_that("re_ci default (wald) is unchanged and differs from profile", {
@@ -487,12 +570,16 @@ test_that("re_ci default (wald) is unchanged and differs from profile", {
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   tw <- broom::tidy(table_regression(fit))
   tp <- broom::tidy(table_regression(fit, re_ci = "profile"))
-  vw <- tw[tw$estimate_type == "vc" &
-             tw$term == "re::Subject::(Intercept)", ]
-  vp <- tp[tp$estimate_type == "vc" &
-             tp$term == "re::Subject::(Intercept)", ]
-  expect_true(is.finite(vw$std.error))       # Wald SE present
-  expect_true(is.na(vp$std.error))           # profile: no SE
+  vw <- tw[
+    tw$estimate_type == "vc" &
+      tw$term == "re::Subject::(Intercept)",
+  ]
+  vp <- tp[
+    tp$estimate_type == "vc" &
+      tp$term == "re::Subject::(Intercept)",
+  ]
+  expect_true(is.finite(vw$std.error)) # Wald SE present
+  expect_true(is.na(vp$std.error)) # profile: no SE
   expect_false(isTRUE(all.equal(vw$conf.low, vp$conf.low)))
 })
 
@@ -511,25 +598,39 @@ test_that("3-term random block SEs align slot-by-slot (merDeriv >= 0.2-6)", {
   # differ, so a few percent of drift is expected; a slot permutation
   # shows up as 50%+ discrepancies.
   set.seed(42)
-  ng <- 40; per <- 12; n <- ng * per
+  ng <- 40
+  per <- 12
+  n <- ng * per
   g <- factor(rep(seq_len(ng), each = per))
-  x1 <- rnorm(n); x2 <- rnorm(n)
-  b0 <- rnorm(ng, 0, 1.2); b1 <- rnorm(ng, 0, 0.8); b2 <- rnorm(ng, 0, 0.5)
-  y <- 2 + 0.5 * x1 - 0.3 * x2 + b0[g] + b1[g] * x1 + b2[g] * x2 +
+  x1 <- rnorm(n)
+  x2 <- rnorm(n)
+  b0 <- rnorm(ng, 0, 1.2)
+  b1 <- rnorm(ng, 0, 0.8)
+  b2 <- rnorm(ng, 0, 0.5)
+  y <- 2 +
+    0.5 * x1 -
+    0.3 * x2 +
+    b0[g] +
+    b1[g] * x1 +
+    b2[g] * x2 +
     rnorm(n, 0, 1)
   d <- data.frame(y, x1, x2, g)
-  m_lmer <- lme4::lmer(y ~ x1 + x2 + (x1 + x2 | g), data = d,
-                       REML = FALSE)
-  m_tmb  <- glmmTMB::glmmTMB(y ~ x1 + x2 + (x1 + x2 | g), data = d,
-                             REML = FALSE)
+  m_lmer <- lme4::lmer(y ~ x1 + x2 + (x1 + x2 | g), data = d, REML = FALSE)
+  m_tmb <- glmmTMB::glmmTMB(y ~ x1 + x2 + (x1 + x2 | g), data = d, REML = FALSE)
   vc_l <- as_regression_frame(m_lmer)$info$random_effects$variance_components
   vc_t <- as_regression_frame(m_tmb)$info$random_effects$variance_components
   keep <- function(vc) {
-    vc[!(vc$is_correlation %in% TRUE) & vc$group != "Residual",
-       c("group", "term", "variance", "std_error")]
+    vc[
+      !(vc$is_correlation %in% TRUE) & vc$group != "Residual",
+      c("group", "term", "variance", "std_error")
+    ]
   }
-  cmp <- merge(keep(vc_l), keep(vc_t), by = c("group", "term"),
-               suffixes = c("_lmer", "_tmb"))
+  cmp <- merge(
+    keep(vc_l),
+    keep(vc_t),
+    by = c("group", "term"),
+    suffixes = c("_lmer", "_tmb")
+  )
   expect_identical(nrow(cmp), 3L)
   expect_true(all(is.finite(cmp$std_error_lmer)))
   # Same ML optimum: variances agree tightly.

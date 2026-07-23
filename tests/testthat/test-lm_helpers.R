@@ -87,9 +87,9 @@ test_that("resolve_covariates_argument: accepts numeric / integer / logical / fa
   data <- data.frame(
     n_dbl = c(1.0, 2.0, 3.0),
     n_int = 1:3,
-    l     = c(TRUE, FALSE, TRUE),
-    f     = factor(c("a", "b", "a")),
-    c     = c("x", "y", "z")
+    l = c(TRUE, FALSE, TRUE),
+    f = factor(c("a", "b", "a")),
+    c = c("x", "y", "z")
   )
   expect_identical(
     spicy:::resolve_covariates_argument(
@@ -243,7 +243,7 @@ test_that("resolve_covariates_argument: where() may overlap with by -> errors", 
 test_that("resolve_covariates_argument: every error inherits from spicy_error", {
   data <- data.frame(age = 1:3)
   expect_error(
-    spicy:::resolve_covariates_argument(rlang::quo(~ age), data),
+    spicy:::resolve_covariates_argument(rlang::quo(~age), data),
     class = "spicy_error"
   )
   expect_error(
@@ -437,12 +437,18 @@ test_that("adjustment: NULL covariates -> attr is NA, both methods identical", {
     sex = factor(rep(c("F", "M"), each = n / 2))
   )
   out_p <- table_continuous_lm(
-    df, select = bmi, by = sex,
-    adjustment = "proportional", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    adjustment = "proportional",
+    output = "long"
   )
   out_b <- table_continuous_lm(
-    df, select = bmi, by = sex,
-    adjustment = "balanced", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    adjustment = "balanced",
+    output = "long"
   )
   expect_identical(attr(out_p, "adjustment"), NA_character_)
   expect_identical(attr(out_b, "adjustment"), NA_character_)
@@ -460,12 +466,20 @@ test_that("adjustment: numeric-only covariates -> proportional == balanced", {
     sex = factor(rep(c("F", "M"), each = n / 2))
   )
   out_p <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = c(age, weight),
-    adjustment = "proportional", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = c(age, weight),
+    adjustment = "proportional",
+    output = "long"
   )
   out_b <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = c(age, weight),
-    adjustment = "balanced", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = c(age, weight),
+    adjustment = "balanced",
+    output = "long"
   )
   # With purely numeric covariates the two methods coincide because
   # `mean(numeric)` is the same regardless of weighting.
@@ -484,12 +498,20 @@ test_that("adjustment: factor covariate makes proportional and balanced diverge"
     race = factor(c(rep("A", 90L), rep("B", 30L)))
   )
   out_p <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = race,
-    adjustment = "proportional", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = race,
+    adjustment = "proportional",
+    output = "long"
   )
   out_b <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = race,
-    adjustment = "balanced", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = race,
+    adjustment = "balanced",
+    output = "long"
   )
   # The emmeans must differ -- proof the dispatch actually does
   # something different rather than silently no-op.
@@ -506,15 +528,23 @@ test_that("adjustment proportional: matches manual G-computation", {
   )
   fit <- stats::lm(bmi ~ sex + race, data = df)
 
-  manual <- vapply(levels(df$sex), function(lvl) {
-    tmp <- df
-    tmp$sex <- factor(lvl, levels = levels(df$sex))
-    mean(stats::predict(fit, newdata = tmp))
-  }, numeric(1))
+  manual <- vapply(
+    levels(df$sex),
+    function(lvl) {
+      tmp <- df
+      tmp$sex <- factor(lvl, levels = levels(df$sex))
+      mean(stats::predict(fit, newdata = tmp))
+    },
+    numeric(1)
+  )
 
   out <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = race,
-    adjustment = "proportional", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = race,
+    adjustment = "proportional",
+    output = "long"
   )
   expect_equal(out$emmean, unname(manual), tolerance = 1e-9)
 })
@@ -534,18 +564,26 @@ test_that("adjustment balanced: matches manual equal-weight grid average", {
   # × numeric covs at sample mean. Race has 2 levels A / B,
   # so the grid for each focal sex is {(A, mean(age)), (B, mean(age))},
   # both with equal weight 1/2.
-  manual <- vapply(levels(df$sex), function(lvl) {
-    grid <- data.frame(
-      sex = factor(lvl, levels = levels(df$sex)),
-      race = factor(levels(df$race), levels = levels(df$race)),
-      age = mean(df$age)
-    )
-    mean(stats::predict(fit, newdata = grid))
-  }, numeric(1))
+  manual <- vapply(
+    levels(df$sex),
+    function(lvl) {
+      grid <- data.frame(
+        sex = factor(lvl, levels = levels(df$sex)),
+        race = factor(levels(df$race), levels = levels(df$race)),
+        age = mean(df$age)
+      )
+      mean(stats::predict(fit, newdata = grid))
+    },
+    numeric(1)
+  )
 
   out <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = c(race, age),
-    adjustment = "balanced", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = c(race, age),
+    adjustment = "balanced",
+    output = "long"
   )
   expect_equal(out$emmean, unname(manual), tolerance = 1e-9)
 })
@@ -563,8 +601,12 @@ test_that("adjustment proportional: oracle match against marginaleffects (point 
   fit <- stats::lm(bmi ~ sex + race + age, data = df)
 
   spicy_out <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = c(race, age),
-    adjustment = "proportional", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = c(race, age),
+    adjustment = "proportional",
+    output = "long"
   )
 
   # G-computation counterfactual: replicate the data once per focal
@@ -598,8 +640,12 @@ test_that("adjustment proportional: SE matches manual quadratic form", {
   )
 
   spicy_out <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = c(race, age),
-    adjustment = "proportional", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = c(race, age),
+    adjustment = "proportional",
+    output = "long"
   )
 
   # Manual SE: the linear contrast that defines the proportional
@@ -608,13 +654,17 @@ test_that("adjustment proportional: SE matches manual quadratic form", {
   # all observed rows. SE = sqrt(avg_row %*% vcov(fit) %*% avg_row^T).
   fit <- stats::lm(bmi ~ sex + race + age, data = df)
   vc <- stats::vcov(fit)
-  manual_se <- vapply(levels(df$sex), function(lvl) {
-    nd <- df
-    nd$sex <- factor(lvl, levels = levels(df$sex))
-    X <- stats::model.matrix(stats::delete.response(stats::terms(fit)), nd)
-    avg <- colMeans(X)
-    sqrt(sum((avg %*% vc) * avg))
-  }, numeric(1))
+  manual_se <- vapply(
+    levels(df$sex),
+    function(lvl) {
+      nd <- df
+      nd$sex <- factor(lvl, levels = levels(df$sex))
+      X <- stats::model.matrix(stats::delete.response(stats::terms(fit)), nd)
+      avg <- colMeans(X)
+      sqrt(sum((avg %*% vc) * avg))
+    },
+    numeric(1)
+  )
   expect_equal(spicy_out$emmean_se, unname(manual_se), tolerance = 1e-12)
 })
 
@@ -631,10 +681,14 @@ test_that("adjustment balanced: oracle match against emmeans::emmeans default", 
   fit <- stats::lm(bmi ~ sex + race + age, data = df)
 
   spicy_out <- table_continuous_lm(
-    df, select = bmi, by = sex, covariates = c(race, age),
-    adjustment = "balanced", output = "long"
+    df,
+    select = bmi,
+    by = sex,
+    covariates = c(race, age),
+    adjustment = "balanced",
+    output = "long"
   )
-  emm_out <- as.data.frame(emmeans::emmeans(fit, ~ sex))
+  emm_out <- as.data.frame(emmeans::emmeans(fit, ~sex))
   ord <- match(spicy_out$level, as.character(emm_out$sex))
   expect_equal(spicy_out$emmean, emm_out$emmean[ord], tolerance = 1e-8)
   expect_equal(spicy_out$emmean_se, emm_out$SE[ord], tolerance = 1e-8)
@@ -644,8 +698,8 @@ test_that("print method emits Adjusted for footer iff covariates non-empty", {
   set.seed(201L)
   df <- data.frame(
     score = rnorm(40, 50, 5),
-    age   = rnorm(40, 30, 5),
-    sex   = factor(rep(c("F", "M"), each = 20L))
+    age = rnorm(40, 30, 5),
+    sex = factor(rep(c("F", "M"), each = 20L))
   )
 
   # Without covariates: NO "Adjusted for" line.
@@ -658,16 +712,22 @@ test_that("print method emits Adjusted for footer iff covariates non-empty", {
 
   # With covariate: footer present and names the cov + method.
   out_p <- table_continuous_lm(
-    df, select = "score", by = sex,
-    covariates = age, adjustment = "proportional"
+    df,
+    select = "score",
+    by = sex,
+    covariates = age,
+    adjustment = "proportional"
   )
   txt_p <- paste(capture.output(print(out_p)), collapse = "\n")
   expect_true(grepl("Adjusted for age", txt_p, fixed = TRUE))
   expect_true(grepl("(proportional)", txt_p, fixed = TRUE))
 
   out_b <- table_continuous_lm(
-    df, select = "score", by = sex,
-    covariates = age, adjustment = "balanced"
+    df,
+    select = "score",
+    by = sex,
+    covariates = age,
+    adjustment = "balanced"
   )
   txt_b <- paste(capture.output(print(out_b)), collapse = "\n")
   expect_true(grepl("Adjusted for age", txt_b, fixed = TRUE))
@@ -678,12 +738,14 @@ test_that("print footer lists multiple covariates separated by commas", {
   set.seed(202L)
   df <- data.frame(
     score = rnorm(40, 50, 5),
-    age   = rnorm(40, 30, 5),
+    age = rnorm(40, 30, 5),
     weight = rnorm(40, 70, 10),
-    sex   = factor(rep(c("F", "M"), each = 20L))
+    sex = factor(rep(c("F", "M"), each = 20L))
   )
   out <- table_continuous_lm(
-    df, select = "score", by = sex,
+    df,
+    select = "score",
+    by = sex,
     covariates = c(age, weight)
   )
   txt <- paste(capture.output(print(out)), collapse = "\n")
@@ -727,7 +789,9 @@ test_that("adjustment: invalid value rejected with a classed error", {
   # the valid values.
   expect_error(
     table_continuous_lm(
-      df, select = bmi, by = sex,
+      df,
+      select = bmi,
+      by = sex,
       adjustment = "bogus"
     ),
     "`adjustment` must be one of",

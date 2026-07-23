@@ -32,45 +32,63 @@
 # every other class spicy supports.
 # ---------------------------------------------------------------------------
 
-
 #' `as_regression_frame()` method for `ols` fits (rms::ols()).
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.ols <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     cluster = NULL,
-                                     cluster_name = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     show_columns = character(0),
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.ols <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = FALSE)
   # CR* -> rms::robcov() cluster sandwich. ols keeps Wald t with df.residual
   # (the rms convention); a no-op for the default. estimates carries the
   # intercept renamed to "(Intercept)" so the rows align by name.
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "t",
-                                       estimates = .rms_coef_named(fit))
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "t",
+    estimates = .rms_coef_named(fit)
+  )
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
   # robust vcov is recomputed inside and honoured.
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .rms_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id,
-                     rms_class  = "ols")
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .rms_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id,
+    rms_class = "ols"
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "Huber")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "Huber"
+    )
   }
 
   new_regression_frame(coefs, info, fit)
@@ -82,37 +100,56 @@ as_regression_frame.ols <- function(fit,
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.lrm <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     cluster = NULL,
-                                     cluster_name = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     show_columns = character(0),
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.lrm <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = TRUE)
   # CR* -> rms::robcov() cluster sandwich (Wald z); a no-op for the default.
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "z",
-                                       estimates = .rms_coef_named(fit))
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "z",
+    estimates = .rms_coef_named(fit)
+  )
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
   # robust vcov is recomputed inside and honoured.
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .rms_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id,
-                     rms_class  = "lrm")
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .rms_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id,
+    rms_class = "lrm"
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "Huber")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "Huber"
+    )
   }
 
   new_regression_frame(coefs, info, fit)
@@ -124,33 +161,46 @@ as_regression_frame.lrm <- function(fit,
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.cph <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     cluster = NULL,
-                                     cluster_name = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.cph <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  model_id = "M1",
+  ...
+) {
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = TRUE)
   # CR* -> rms::robcov() == the Lin-Wei grouped-dfbeta sandwich (= coxph
   # cluster=); Wald z. No intercept row, so no rename needed. No-op by default.
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "z",
-                                       estimates = .rms_coef_named(fit))
-  info  <- .rms_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id,
-                     rms_class  = "cph")
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "z",
+    estimates = .rms_coef_named(fit)
+  )
+  info <- .rms_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id,
+    rms_class = "cph"
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "Lin-Wei")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "Lin-Wei"
+    )
   }
 
   new_regression_frame(coefs, info, fit)
@@ -162,23 +212,31 @@ as_regression_frame.cph <- function(fit,
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.Glm <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     cluster = NULL,
-                                     cluster_name = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     show_columns = character(0),
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.Glm <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_rms_available()
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = TRUE)
   # CR* -> rms::robcov() cluster sandwich (Wald z); a no-op for the default.
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "z",
-                                       estimates = .rms_coef_named(fit))
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "z",
+    estimates = .rms_coef_named(fit)
+  )
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
   # robust vcov is recomputed inside and honoured. marginaleffects has no
   # rms::Glm support (rms's predict.Glm rejects the glm-style
@@ -188,19 +246,29 @@ as_regression_frame.Glm <- function(fit,
   # (oracle-checked against stats::glm on the same data).
   fit_for_ame <- fit
   class(fit_for_ame) <- setdiff(class(fit_for_ame), c("Glm", "rms"))
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit_for_ame, ci_level,
-                                      show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .rms_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id,
-                     rms_class  = "Glm")
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit_for_ame,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .rms_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id,
+    rms_class = "Glm"
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "Huber")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "Huber"
+    )
   }
 
   new_regression_frame(coefs, info, fit)
@@ -231,7 +299,7 @@ as_regression_frame.Glm <- function(fit,
   # datadist (fit$var is only populated on ols; lrm/cph need vcov()).
   V <- as.matrix(stats::vcov(fit))
   est <- unname(cf)
-  se  <- sqrt(diag(V))
+  se <- sqrt(diag(V))
   nm_raw <- names(cf)
 
   # Normalise the intercept name for cross-class schema consistency.
@@ -240,15 +308,17 @@ as_regression_frame.Glm <- function(fit,
   # cph has no intercept (baseline hazard absorbs it); drop the row
   # if rms reports one (defensive -- usually it doesn't).
   if (inherits(fit, "cph") && "(Intercept)" %in% nm) {
-    keep <- nm != "(Intercept)"                                         # nocov
-    est <- est[keep]; se <- se[keep]; nm <- nm[keep]                    # nocov
-    nm_raw <- nm_raw[keep]                                              # nocov
+    keep <- nm != "(Intercept)" # nocov
+    est <- est[keep]
+    se <- se[keep]
+    nm <- nm[keep] # nocov
+    nm_raw <- nm_raw[keep] # nocov
   }
 
   # Inference: ols uses Wald-t with df.residual; lrm / cph / Glm use
   # Wald z-asymptotic.
   if (is_glm) {
-    stat    <- est / se
+    stat <- est / se
     p_value <- 2 * stats::pnorm(-abs(stat))
     df <- rep(Inf, length(est))
     z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -256,12 +326,16 @@ as_regression_frame.Glm <- function(fit,
     ci_upper <- est + z_crit * se
     test_type_col <- rep("z", length(est))
   } else {
-    dfr <- tryCatch(fit$df.residual %||% stats::df.residual(fit),
-                    error = function(e) Inf)
+    dfr <- tryCatch(
+      fit$df.residual %||% stats::df.residual(fit),
+      error = function(e) Inf
+    )
     # Defensive: a genuine rms::ols() fit always carries a finite
     # df.residual, so this NULL/non-finite fallback is never reached.
-    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf  # nocov
-    stat    <- est / se
+    if (is.null(dfr) || !is.finite(dfr)) {
+      dfr <- Inf
+    } # nocov
+    stat <- est / se
     p_value <- 2 * stats::pt(-abs(stat), df = dfr)
     df <- rep(as.numeric(dfr), length(est))
     t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
@@ -272,36 +346,47 @@ as_regression_frame.Glm <- function(fit,
 
   # Factor-meta from rms's "varname=level" naming convention.
   factor_meta <- .rms_factor_meta(fit, nm_raw)
-  ft  <- vapply(nm_raw, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm_raw, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm_raw, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm_raw,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm_raw,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm_raw,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = test_type_col,
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = test_type_col,
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .rms_reference_rows(fit, factor_meta)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   coefs
 }
 
@@ -313,22 +398,26 @@ as_regression_frame.Glm <- function(fit,
   out <- list()
   for (nm in nm_raw) {
     if (nm == "Intercept" || !grepl("=", nm, fixed = TRUE)) {
-      out[[nm]] <- list(factor_term = NA_character_,
-                        factor_level = NA_character_,
-                        factor_level_pos = NA_integer_)
+      out[[nm]] <- list(
+        factor_term = NA_character_,
+        factor_level = NA_character_,
+        factor_level_pos = NA_integer_
+      )
       next
     }
     parts <- strsplit(nm, "=", fixed = TRUE)[[1L]]
-    var_name  <- parts[1L]
-    lvl_name  <- paste(parts[-1L], collapse = "=")  # rejoin in case of "=" in level
+    var_name <- parts[1L]
+    lvl_name <- paste(parts[-1L], collapse = "=") # rejoin in case of "=" in level
     # Determine the level position by looking up the original factor in
     # fit$Design$values if available, else fall back to position by
     # ordering of coef-names sharing the same prefix.
     levels_vec <- .rms_factor_levels(fit, var_name)
     pos <- match(lvl_name, levels_vec, nomatch = NA_integer_)
-    out[[nm]] <- list(factor_term = var_name,
-                      factor_level = lvl_name,
-                      factor_level_pos = as.integer(pos))
+    out[[nm]] <- list(
+      factor_term = var_name,
+      factor_level = lvl_name,
+      factor_level_pos = as.integer(pos)
+    )
   }
   out
 }
@@ -347,7 +436,7 @@ as_regression_frame.Glm <- function(fit,
     # Defensive: rms always populates Design$parms for categorical
     # predictors, so the parms branch above always returns first for a
     # real factor; this Design$values fallback never fires on a genuine fit.
-    return(as.character(values))  # nocov
+    return(as.character(values)) # nocov
   }
   character(0)
 }
@@ -357,147 +446,189 @@ as_regression_frame.Glm <- function(fit,
 # variable that appears in factor_meta, find its reference level (the
 # one not represented in coefs) and add a row.
 .rms_reference_rows <- function(fit, factor_meta) {
-  factor_terms_present <- unique(unlist(lapply(factor_meta, `[[`, "factor_term")))
+  factor_terms_present <- unique(unlist(lapply(
+    factor_meta,
+    `[[`,
+    "factor_term"
+  )))
   factor_terms_present <- factor_terms_present[!is.na(factor_terms_present)]
-  if (length(factor_terms_present) == 0L) return(.empty_coefs_frame())
+  if (length(factor_terms_present) == 0L) {
+    return(.empty_coefs_frame())
+  }
 
   rows <- list()
   for (var_name in factor_terms_present) {
     levels_vec <- .rms_factor_levels(fit, var_name)
-    if (length(levels_vec) < 2L) next
-    coefs_levels <- vapply(factor_meta, function(m) {
-      if (identical(m$factor_term, var_name)) m$factor_level else NA_character_
-    }, character(1))
+    if (length(levels_vec) < 2L) {
+      next
+    }
+    coefs_levels <- vapply(
+      factor_meta,
+      function(m) {
+        if (identical(m$factor_term, var_name)) {
+          m$factor_level
+        } else {
+          NA_character_
+        }
+      },
+      character(1)
+    )
     coefs_levels <- coefs_levels[!is.na(coefs_levels)]
     ref_levels <- setdiff(levels_vec, coefs_levels)
-    if (length(ref_levels) == 0L) next
+    if (length(ref_levels) == 0L) {
+      next
+    }
     ref_lvl <- ref_levels[1L]
     term_name <- paste0(var_name, "=", ref_lvl)
     ref_pos <- match(ref_lvl, levels_vec) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
-      parent_var       = var_name,
-      label            = ref_lvl,
+      term = term_name,
+      parent_var = var_name,
+      label = ref_lvl,
       factor_level_pos = as.integer(ref_pos),
-      is_ref           = TRUE,
-      estimate_type    = "B",
-      estimate         = NA_real_,
-      std_error        = NA_real_,
-      df               = NA_real_,
-      statistic        = NA_real_,
-      p_value          = NA_real_,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = NA_character_,
+      is_ref = TRUE,
+      estimate_type = "B",
+      estimate = NA_real_,
+      std_error = NA_real_,
+      df = NA_real_,
+      statistic = NA_real_,
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = NA_character_,
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(.empty_coefs_frame())
+  if (length(rows) == 0L) {
+    return(.empty_coefs_frame())
+  }
   do.call(rbind, rows)
 }
 
 
 # Build the info list for an rms fit.
-.rms_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                       model_id, rms_class) {
+.rms_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id,
+  rms_class
+) {
   # DV: for cph the LHS is "Surv(time, status)"; otherwise just the
   # response variable name.
   dv <- if (rms_class == "cph") {
-    tryCatch(deparse1(stats::formula(fit)[[2L]]),
-             error = function(e) all.vars(stats::formula(fit))[1L])
+    tryCatch(deparse1(stats::formula(fit)[[2L]]), error = function(e) {
+      all.vars(stats::formula(fit))[1L]
+    })
   } else {
     all.vars(stats::formula(fit))[1L]
   }
   dv_label <- if (rms_class == "cph") dv else .extract_dv_label(fit, dv)
 
   fam <- .rms_family_info(fit, rms_class)
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   fit_stats <- .rms_fit_stats(fit, rms_class)
 
   # supports flags vary by class.
-  exp_ok <- rms_class %in% c("lrm", "cph") ||
-            (rms_class == "Glm" && !identical(fam$link, "identity"))
+  exp_ok <- rms_class %in%
+    c("lrm", "cph") ||
+    (rms_class == "Glm" && !identical(fam$link, "identity"))
   classical_r2_ok <- rms_class == "ols"
 
   supports <- list(
     # AME is undefined for Cox PH (cph): hazard-scale effects with
     # unreliable SEs; report hazard ratios (exponentiate) instead.
-    ame                 = rms_class != "cph",
+    ame = rms_class != "cph",
     partial_effect_size = FALSE,
-    classical_r2        = classical_r2_ok,
-    nested_lrt          = TRUE,
-    exponentiate        = exp_ok,
-    standardise_refit   = FALSE
+    classical_r2 = classical_r2_ok,
+    nested_lrt = TRUE,
+    exponentiate = exp_ok,
+    standardise_refit = FALSE
   )
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = .rms_title_prefix(rms_class, fam),
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    rms_stats             = if (!is.null(fit$stats)) as.list(fit$stats) else NULL,
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = .rms_title_prefix(rms_class, fam),
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    rms_stats = if (!is.null(fit$stats)) as.list(fit$stats) else NULL,
     # Phase 7c2: for cph, expose events count alongside the subject
     # count for the survival footer block. Mirrors survival::coxph
     # info$extras$n_events.
-    n_events              = if (rms_class == "cph" && !is.null(fit$stats) &&
-                                "Events" %in% names(fit$stats)) {
-                              as.integer(fit$stats[["Events"]])
-                            } else NA_integer_
+    n_events = if (
+      rms_class == "cph" &&
+        !is.null(fit$stats) &&
+        "Events" %in% names(fit$stats)
+    ) {
+      as.integer(fit$stats[["Events"]])
+    } else {
+      NA_integer_
+    }
   )
 
   list(
-    class          = rms_class,
-    family         = fam,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(.rms_nobs(fit, rms_class)),
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = rms_class,
+    family = fam,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(.rms_nobs(fit, rms_class)),
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||%
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||%
       (if (rms_class == "ols") "Classical" else "Wald asymptotic (z)"),
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
 
 .rms_family_info <- function(fit, rms_class) {
-  switch(rms_class,
+  switch(
+    rms_class,
     ols = list(family = "gaussian", link = "identity"),
     lrm = list(family = "binomial", link = "logit"),
-    cph = list(family = "cox",      link = "log"),
+    cph = list(family = "cox", link = "log"),
     Glm = {
       fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-      if (!is.null(fam)) list(family = fam$family, link = fam$link)
-      # Defensive: stats::family() always returns the stored family for a
-      # genuine rms::Glm() fit, so this gaussian fallback is never reached.
-      else                list(family = "gaussian", link = "identity")  # nocov
+      if (!is.null(fam)) {
+        list(family = fam$family, link = fam$link)
+      } else {
+        # Defensive: stats::family() always returns the stored family for a
+        # genuine rms::Glm() fit, so this gaussian fallback is never reached.
+        list(family = "gaussian", link = "identity")
+      } # nocov
     }
   )
 }
 
 
 .rms_title_prefix <- function(rms_class, fam) {
-  switch(rms_class,
+  switch(
+    rms_class,
     ols = "Linear regression (rms)",
     lrm = "Logistic regression (rms)",
     cph = "Cox proportional hazards regression (rms)",
     Glm = {
-      base <- switch(fam$family,
+      base <- switch(
+        fam$family,
         binomial = "Logistic",
-        poisson  = "Poisson",
-        Gamma    = "Gamma",
+        poisson = "Poisson",
+        Gamma = "Gamma",
         gaussian = "Linear",
         paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
       )
@@ -513,11 +644,15 @@ as_regression_frame.Glm <- function(fit,
 .rms_nobs <- function(fit, rms_class) {
   st <- fit$stats
   if (!is.null(st)) {
-    if ("Obs" %in% names(st)) return(as.integer(st[["Obs"]]))
-    if ("n"   %in% names(st)) return(as.integer(st[["n"]]))
+    if ("Obs" %in% names(st)) {
+      return(as.integer(st[["Obs"]]))
+    }
+    if ("n" %in% names(st)) return(as.integer(st[["n"]]))
   }
-  if (!is.null(fit$residuals)) return(length(fit$residuals))
-  NA_integer_                                                            # nocov
+  if (!is.null(fit$residuals)) {
+    return(length(fit$residuals))
+  }
+  NA_integer_ # nocov
 }
 
 
@@ -526,66 +661,73 @@ as_regression_frame.Glm <- function(fit,
   st <- fit$stats %||% numeric(0)
   if (rms_class == "ols") {
     list(
-      r_squared      = as.numeric(st["R2"] %||% NA_real_),
-      adj_r_squared  = NA_real_,
-      pseudo_r2      = NULL,
-      aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-      bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-      log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                                error = function(e) NA_real_),
-      deviance       = NA_real_,
-      sigma          = as.numeric(st["Sigma"] %||% NA_real_),
-      nobs           = as.integer(st["n"] %||% NA_integer_)
+      r_squared = as.numeric(st["R2"] %||% NA_real_),
+      adj_r_squared = NA_real_,
+      pseudo_r2 = NULL,
+      aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+      bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+      log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+        NA_real_
+      }),
+      deviance = NA_real_,
+      sigma = as.numeric(st["Sigma"] %||% NA_real_),
+      nobs = as.integer(st["n"] %||% NA_integer_)
     )
   } else if (rms_class == "lrm") {
     list(
-      r_squared      = NA_real_,
-      adj_r_squared  = NA_real_,
-      pseudo_r2      = list(
-        nagelkerke   = as.numeric(st["R2"]  %||% NA_real_),
-        c_index      = as.numeric(st["C"]   %||% NA_real_),
-        brier        = as.numeric(st["Brier"] %||% NA_real_)
+      r_squared = NA_real_,
+      adj_r_squared = NA_real_,
+      pseudo_r2 = list(
+        nagelkerke = as.numeric(st["R2"] %||% NA_real_),
+        c_index = as.numeric(st["C"] %||% NA_real_),
+        brier = as.numeric(st["Brier"] %||% NA_real_)
       ),
-      aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-      bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-      log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                                error = function(e) NA_real_),
-      deviance       = NA_real_,
-      sigma          = NA_real_,
-      nobs           = as.integer(st["Obs"] %||% NA_integer_)
+      aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+      bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+      log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+        NA_real_
+      }),
+      deviance = NA_real_,
+      sigma = NA_real_,
+      nobs = as.integer(st["Obs"] %||% NA_integer_)
     )
   } else if (rms_class == "cph") {
     list(
-      r_squared      = NA_real_,
-      adj_r_squared  = NA_real_,
-      pseudo_r2      = list(
-        nagelkerke   = as.numeric(st["R2"]  %||% NA_real_),
-        dxy          = as.numeric(st["Dxy"] %||% NA_real_)
+      r_squared = NA_real_,
+      adj_r_squared = NA_real_,
+      pseudo_r2 = list(
+        nagelkerke = as.numeric(st["R2"] %||% NA_real_),
+        dxy = as.numeric(st["Dxy"] %||% NA_real_)
       ),
-      aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-      bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-      log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                                error = function(e) NA_real_),
-      deviance       = NA_real_,
-      sigma          = NA_real_,
-      nobs           = as.integer(st["Obs"] %||% NA_integer_),
+      aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+      bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+      log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+        NA_real_
+      }),
+      deviance = NA_real_,
+      sigma = NA_real_,
+      nobs = as.integer(st["Obs"] %||% NA_integer_),
       # Cox convention: n AND number of events as fit-stat rows (the
       # survival footer keeps concordance only) -- mirrors coxph.
-      n_events       = as.integer(st["Events"] %||% NA_integer_)
+      n_events = as.integer(st["Events"] %||% NA_integer_)
     )
-  } else {  # Glm
+  } else {
+    # Glm
     list(
-      r_squared      = NA_real_,
-      adj_r_squared  = NA_real_,
-      pseudo_r2      = NULL,
-      aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-      bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-      log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                                error = function(e) NA_real_),
-      deviance       = tryCatch(suppressWarnings(stats::deviance(fit)),
-                                error = function(e) NA_real_),
-      sigma          = NA_real_,
-      nobs           = as.integer(length(fit$residuals) %||% NA_integer_)
+      r_squared = NA_real_,
+      adj_r_squared = NA_real_,
+      pseudo_r2 = NULL,
+      aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+      bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+      log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+        NA_real_
+      }),
+      deviance = tryCatch(
+        suppressWarnings(stats::deviance(fit)),
+        error = function(e) NA_real_
+      ),
+      sigma = NA_real_,
+      nobs = as.integer(length(fit$residuals) %||% NA_integer_)
     )
   }
 }

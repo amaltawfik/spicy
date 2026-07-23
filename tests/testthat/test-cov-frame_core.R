@@ -17,43 +17,42 @@
 # way to drive the defensive NA / NULL arms.
 # ---------------------------------------------------------------------------
 
-
 # ---- Helper: minimal valid frame (mirrors test-regression_frame.R) ---------
 
 .cov_valid_frame <- function() {
   coefs <- data.frame(
-    term             = "x",
-    parent_var       = "x",
-    label            = "x",
+    term = "x",
+    parent_var = "x",
+    label = "x",
     factor_level_pos = NA_integer_,
-    is_ref           = FALSE,
-    estimate_type    = "B",
-    estimate         = 1.0,
-    std_error        = 0.1,
-    ci_lower         = 0.8,
-    ci_upper         = 1.2,
+    is_ref = FALSE,
+    estimate_type = "B",
+    estimate = 1.0,
+    std_error = 0.1,
+    ci_lower = 0.8,
+    ci_upper = 1.2,
     stringsAsFactors = FALSE
   )
   info <- list(
-    class        = "lm",
-    family       = list(family = "gaussian", link = "identity"),
-    dv           = "y",
-    n_obs        = 100L,
+    class = "lm",
+    family = list(family = "gaussian", link = "identity"),
+    dv = "y",
+    n_obs = 100L,
     weights_kind = "none",
-    fit_stats    = list(nobs = 100L),
-    vcov_kind    = "model",
-    vcov_label   = "OLS",
-    ci_level     = 0.95,
-    ci_method    = "wald",
-    supports     = list(
-      ame                 = TRUE,
+    fit_stats = list(nobs = 100L),
+    vcov_kind = "model",
+    vcov_label = "OLS",
+    ci_level = 0.95,
+    ci_method = "wald",
+    supports = list(
+      ame = TRUE,
       partial_effect_size = TRUE,
-      classical_r2        = TRUE,
-      nested_lrt          = TRUE,
-      exponentiate        = FALSE,
-      standardise_refit   = TRUE
+      classical_r2 = TRUE,
+      nested_lrt = TRUE,
+      exponentiate = FALSE,
+      standardise_refit = TRUE
     ),
-    extras       = list()
+    extras = list()
   )
   spicy:::new_regression_frame(coefs, info, list(dummy = TRUE))
 }
@@ -63,7 +62,7 @@
 
 test_that("validator rejects info that is not a named list (lines 369-372)", {
   frame <- .cov_valid_frame()
-  frame$info <- list(1, 2, 3)   # a list, but unnamed
+  frame$info <- list(1, 2, 3) # a list, but unnamed
   err <- tryCatch(
     spicy:::validate_regression_frame(frame),
     spicy_invalid_frame = function(e) e
@@ -141,8 +140,10 @@ test_that(".null_lrt_merMod returns NULL when lme4 is unavailable (line 614)", {
 test_that(".null_lrt_glmmTMB returns NULL when glmmTMB is unavailable (line 675)", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("lme4")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                          data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   with_mocked_bindings(
     expect_null(spicy:::.null_lrt_glmmTMB(fit)),
     requireNamespace = function(...) FALSE,
@@ -152,8 +153,11 @@ test_that(".null_lrt_glmmTMB returns NULL when glmmTMB is unavailable (line 675)
 
 test_that(".null_lrt_lme returns NULL when nlme is unavailable (line 719)", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                   random = ~ 1 | Subject)
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
   with_mocked_bindings(
     expect_null(spicy:::.null_lrt_lme(fit)),
     requireNamespace = function(...) FALSE,
@@ -169,7 +173,8 @@ test_that(".merMod_glm_family_title_safe falls back to fam$family (line 670)", {
   # so the tryCatch yields NA and the helper falls back to fam$family.
   junk <- structure(list(), class = "zzz_no_family_method")
   out <- spicy:::.merMod_glm_family_title_safe(
-    junk, list(family = "quasipoisson")
+    junk,
+    list(family = "quasipoisson")
   )
   expect_identical(out, "quasipoisson")
 
@@ -212,8 +217,12 @@ test_that("distribution variance is NA for non-finite Gaussian sigma (line 863)"
 })
 
 test_that("distribution variance is NA for non-finite Poisson lambda (line 890)", {
-  comps <- list(family = "poisson", link = "log",
-                null_intercept = Inf, null_var_g = 0)
+  comps <- list(
+    family = "poisson",
+    link = "log",
+    null_intercept = Inf,
+    null_var_g = 0
+  )
   expect_true(is.na(spicy:::.nakagawa_distribution_variance(comps)))
 })
 
@@ -243,8 +252,13 @@ test_that("distribution variance honours the binomial link switch", {
 # ---- .nakagawa_assemble(): degenerate total (line 846) --------------------
 
 test_that(".nakagawa_assemble returns NA list when total variance is 0 (line 846)", {
-  comps <- list(var_f = 0, var_g = 0, family = "gaussian",
-                link = "identity", sigma = 0)
+  comps <- list(
+    var_f = 0,
+    var_g = 0,
+    family = "gaussian",
+    link = "identity",
+    sigma = 0
+  )
   out <- spicy:::.nakagawa_assemble(comps)
   expect_true(is.list(out))
   expect_true(is.na(out$marginal))
@@ -266,8 +280,11 @@ test_that(".nakagawa_components_merMod returns NULL without lme4 (line 931)", {
 
 test_that(".nakagawa_components_lme returns NULL without nlme (line 1050)", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                   random = ~ 1 | Subject)
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
   with_mocked_bindings(
     expect_null(spicy:::.nakagawa_components_lme(fit)),
     requireNamespace = function(...) FALSE,
@@ -278,8 +295,10 @@ test_that(".nakagawa_components_lme returns NULL without nlme (line 1050)", {
 test_that(".nakagawa_components_glmmTMB returns NULL without glmmTMB (line 1123)", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("lme4")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                          data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   with_mocked_bindings(
     expect_null(spicy:::.nakagawa_components_glmmTMB(fit)),
     requireNamespace = function(...) FALSE,
@@ -296,12 +315,12 @@ test_that(".nakagawa_components_glmmTMB bails on a non-trivial dispformula (line
   n <- 300
   d <- data.frame(
     yc = rnorm(n),
-    x  = rnorm(n),
-    g  = factor(rep(seq_len(30), length.out = n))
+    x = rnorm(n),
+    g = factor(rep(seq_len(30), length.out = n))
   )
   # dispformula = ~ x introduces a real dispersion predictor; the Nakagawa
   # self-implementation refuses it (returns NULL) so the caller falls
   # through to performance.
-  fit <- glmmTMB::glmmTMB(yc ~ x + (1 | g), dispformula = ~ x, data = d)
+  fit <- glmmTMB::glmmTMB(yc ~ x + (1 | g), dispformula = ~x, data = d)
   expect_null(spicy:::.nakagawa_components_glmmTMB(fit))
 })

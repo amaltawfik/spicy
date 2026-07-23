@@ -10,7 +10,6 @@
 #     title-case fall-through arm.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .cov_fit_hurdle_numeric <- function() {
@@ -95,17 +94,19 @@ test_that("geometric hurdle title_prefix names Geometric", {
 test_that("geometric zeroinfl title_prefix names Geometric", {
   fit <- .cov_fit_zeroinfl_geometric()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Geometric zero-inflated regression")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Geometric zero-inflated regression"
+  )
 })
 
 
 # ---- 4. .pscl_dist_title() helper: explicit + fall-through (lines 298/300) -
 
 test_that(".pscl_dist_title maps the known count distributions", {
-  expect_identical(spicy:::.pscl_dist_title("poisson"),   "Poisson")
+  expect_identical(spicy:::.pscl_dist_title("poisson"), "Poisson")
   expect_identical(spicy:::.pscl_dist_title("geometric"), "Geometric")
-  expect_identical(spicy:::.pscl_dist_title("negbin"),    "Negative-binomial")
+  expect_identical(spicy:::.pscl_dist_title("negbin"), "Negative-binomial")
 })
 
 test_that(".pscl_dist_title title-cases an unrecognised distribution (default arm)", {
@@ -113,5 +114,5 @@ test_that(".pscl_dist_title title-cases an unrecognised distribution (default ar
   # default switch arm is only reachable by a direct call. It should
   # upper-case the first letter and keep the rest verbatim.
   expect_identical(spicy:::.pscl_dist_title("binomial"), "Binomial")
-  expect_identical(spicy:::.pscl_dist_title("zeta"),     "Zeta")
+  expect_identical(spicy:::.pscl_dist_title("zeta"), "Zeta")
 })

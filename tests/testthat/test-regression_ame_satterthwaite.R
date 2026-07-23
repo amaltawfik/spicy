@@ -72,8 +72,12 @@ test_that("extract_ame_satterthwaite – produces one row per non-reference cont
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
   rows <- spicy:::extract_ame_satterthwaite(
-    fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
-    model_id = "M1", outcome = "y"
+    fit,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
   # 1 numeric AME (x) + 9 factor contrasts (gb..gj)
   expect_equal(nrow(rows), 10L)
@@ -86,17 +90,25 @@ test_that("extract_ame_satterthwaite – t-stat = est/se, p from t-dist + df_Sat
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
   rows <- spicy:::extract_ame_satterthwaite(
-    fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
-    model_id = "M1", outcome = "y"
+    fit,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
   # Recompute t and p locally and compare
   for (i in seq_len(nrow(rows))) {
-    expect_equal(rows$statistic[i], rows$estimate[i] / rows$se[i],
-                 tolerance = 1e-12)
-    expect_equal(rows$p_value[i],
-                 2 * pt(abs(rows$statistic[i]),
-                        df = rows$df[i], lower.tail = FALSE),
-                 tolerance = 1e-12)
+    expect_equal(
+      rows$statistic[i],
+      rows$estimate[i] / rows$se[i],
+      tolerance = 1e-12
+    )
+    expect_equal(
+      rows$p_value[i],
+      2 * pt(abs(rows$statistic[i]), df = rows$df[i], lower.tail = FALSE),
+      tolerance = 1e-12
+    )
   }
 })
 
@@ -105,28 +117,35 @@ test_that("extract_ame_satterthwaite – matches direct clubSandwich call (oracl
   df <- mk_clustered_data()
   fit <- lm(y ~ x + g, data = df)
   ours <- spicy:::extract_ame_satterthwaite(
-    fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
-    model_id = "M1", outcome = "y"
+    fit,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
   # Direct oracle: build contrasts the same way and call linear_contrast
   # ourselves. Estimates + SE + df + CI must match to machine epsilon
   # because Path A is a thin wrapper.
   contrasts <- list()
   for (v in c("x", "g")) {
-    contrasts <- c(contrasts,
-                   spicy:::build_ame_contrasts_for_predictor(fit, v))
+    contrasts <- c(contrasts, spicy:::build_ame_contrasts_for_predictor(fit, v))
   }
   cmat <- do.call(rbind, lapply(contrasts, `[[`, "vector"))
   rownames(cmat) <- vapply(contrasts, `[[`, character(1), "term_id")
   oracle <- clubSandwich::linear_contrast(
-    fit, vcov = "CR2", cluster = df$cluster,
-    contrasts = cmat, test = "Satterthwaite", level = 0.95
+    fit,
+    vcov = "CR2",
+    cluster = df$cluster,
+    contrasts = cmat,
+    test = "Satterthwaite",
+    level = 0.95
   )
   expect_equal(ours$estimate, oracle$Est, tolerance = 1e-12)
-  expect_equal(ours$se,       oracle$SE,  tolerance = 1e-12)
-  expect_equal(ours$df,       oracle$df,  tolerance = 1e-12)
-  expect_equal(ours$ci_low,   oracle$CI_L, tolerance = 1e-12)
-  expect_equal(ours$ci_high,  oracle$CI_U, tolerance = 1e-12)
+  expect_equal(ours$se, oracle$SE, tolerance = 1e-12)
+  expect_equal(ours$df, oracle$df, tolerance = 1e-12)
+  expect_equal(ours$ci_low, oracle$CI_L, tolerance = 1e-12)
+  expect_equal(ours$ci_high, oracle$CI_U, tolerance = 1e-12)
 })
 
 test_that("extract_ame_satterthwaite – empty when formula has no main-effect predictors", {
@@ -135,8 +154,12 @@ test_that("extract_ame_satterthwaite – empty when formula has no main-effect p
   # Pure interaction term only – no main effects to compute AME for
   fit <- lm(y ~ x:g, data = df)
   rows <- spicy:::extract_ame_satterthwaite(
-    fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
-    model_id = "M1", outcome = "y"
+    fit,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
   expect_equal(nrow(rows), 0L)
 })
@@ -147,8 +170,12 @@ test_that("extract_ame_satterthwaite – errors with classed condition on functi
   fit <- lm(y ~ poly(x, 2), data = df)
   err <- tryCatch(
     spicy:::extract_ame_satterthwaite(
-      fit, vcov_type = "CR2", cluster = df$cluster, ci_level = 0.95,
-      model_id = "M1", outcome = "y"
+      fit,
+      vcov_type = "CR2",
+      cluster = df$cluster,
+      ci_level = 0.95,
+      model_id = "M1",
+      outcome = "y"
     ),
     error = function(e) e
   )
@@ -169,9 +196,14 @@ test_that("extract_ame_rows – Path A taken when use_ame_satterthwaite = TRUE",
   fit <- lm(y ~ x + g, data = df)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = df$cluster)
   rows <- spicy:::extract_ame_rows(
-    fit, vc = vc, vcov_type = "CR2", cluster = df$cluster,
-    ci_level = 0.95, use_ame_satterthwaite = TRUE,
-    model_id = "M1", outcome = "y"
+    fit,
+    vc = vc,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    use_ame_satterthwaite = TRUE,
+    model_id = "M1",
+    outcome = "y"
   )
   expect_true(nrow(rows) > 0L)
   expect_true(all(rows$test_type == "t"))
@@ -188,9 +220,14 @@ test_that("extract_ame_rows – Path A failure on poly() falls back to Path B", 
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = df$cluster)
   # Should warn about Satterthwaite fallback then succeed via Path B
   rows <- suppressWarnings(spicy:::extract_ame_rows(
-    fit, vc = vc, vcov_type = "CR2", cluster = df$cluster,
-    ci_level = 0.95, use_ame_satterthwaite = TRUE,
-    model_id = "M1", outcome = "y"
+    fit,
+    vc = vc,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    use_ame_satterthwaite = TRUE,
+    model_id = "M1",
+    outcome = "y"
   ))
   expect_true(nrow(rows) > 0L)
 })
@@ -205,8 +242,12 @@ test_that("extract_ame_marginaleffects – bare factor variable matches model.fr
   fit <- lm(mpg ~ wt + cyl, data = mt)
   vc <- vcov(fit)
   rows <- spicy:::extract_ame_marginaleffects(
-    fit, vc = vc, vcov_type = "classical", ci_level = 0.95,
-    model_id = "M1", outcome = "mpg"
+    fit,
+    vc = vc,
+    vcov_type = "classical",
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "mpg"
   )
   expect_true(any(rows$term == "cyl6"))
   expect_true(any(rows$term == "cyl8"))
@@ -225,8 +266,12 @@ test_that("extract_ame_marginaleffects – handles inline factor(x) transform (P
   fit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
   vc <- vcov(fit)
   rows <- suppressWarnings(spicy:::extract_ame_marginaleffects(
-    fit, vc = vc, vcov_type = "classical", ci_level = 0.95,
-    model_id = "M1", outcome = "mpg"
+    fit,
+    vc = vc,
+    vcov_type = "classical",
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "mpg"
   ))
   expect_true(any(rows$term == "wt"))
   expect_true(any(grepl("^factor\\(cyl\\)", rows$term)))
@@ -243,9 +288,14 @@ test_that("extract_ame_rows – fallback wording differs by cause (Q14b)", {
   w1 <- tryCatch(
     withCallingHandlers(
       spicy:::extract_ame_rows(
-        fit_poly, vc = vc, vcov_type = "CR2", cluster = df$cluster,
-        ci_level = 0.95, use_ame_satterthwaite = TRUE,
-        model_id = "M1", outcome = "y"
+        fit_poly,
+        vc = vc,
+        vcov_type = "CR2",
+        cluster = df$cluster,
+        ci_level = 0.95,
+        use_ame_satterthwaite = TRUE,
+        model_id = "M1",
+        outcome = "y"
       ),
       spicy_fallback = function(c) stop(conditionMessage(c))
     ),
@@ -273,9 +323,14 @@ test_that("extract_ame_rows – unexpected internal failure uses 'open an issue'
   w <- tryCatch(
     withCallingHandlers(
       spicy:::extract_ame_rows(
-        fit, vc = vc, vcov_type = "CR2", cluster = df$cluster,
-        ci_level = 0.95, use_ame_satterthwaite = TRUE,
-        model_id = "M1", outcome = "y"
+        fit,
+        vc = vc,
+        vcov_type = "CR2",
+        cluster = df$cluster,
+        ci_level = 0.95,
+        use_ame_satterthwaite = TRUE,
+        model_id = "M1",
+        outcome = "y"
       ),
       spicy_fallback = function(c) stop(conditionMessage(c))
     ),
@@ -296,8 +351,12 @@ test_that("extract_ame_marginaleffects – avg_slopes failure emits spicy_fallba
   w <- tryCatch(
     withCallingHandlers(
       spicy:::extract_ame_marginaleffects(
-        fit, vc = bad_vc, vcov_type = "classical", ci_level = 0.95,
-        model_id = "M1", outcome = "mpg"
+        fit,
+        vc = bad_vc,
+        vcov_type = "classical",
+        ci_level = 0.95,
+        model_id = "M1",
+        outcome = "mpg"
       ),
       spicy_fallback = function(c) stop(conditionMessage(c))
     ),
@@ -318,14 +377,19 @@ test_that("table_regression – CR2 + AME triggers the Satterthwaite footer", {
   # Include AME_p alongside AME + p to silence the spicy_caveat that
   # flags the ambiguity of "which p column belongs to what".
   out <- table_regression(
-    fit, vcov = "CR2", cluster = df$cluster,
+    fit,
+    vcov = "CR2",
+    cluster = df$cluster,
     show_columns = c("b", "se", "p", "ame", "ame_p")
   )
   note <- attr(out, "note")
   # Phase 7c22 (item e): footer trimmed -- "t-test with Satterthwaite
   # df" (no Pustejovsky & Tipton ref, no clubSandwich function name).
-  expect_match(note, "AME inference: t-test with Satterthwaite df",
-                fixed = TRUE)
-  expect_false(grepl("Pustejovsky", note,            fixed = TRUE))
+  expect_match(
+    note,
+    "AME inference: t-test with Satterthwaite df",
+    fixed = TRUE
+  )
+  expect_false(grepl("Pustejovsky", note, fixed = TRUE))
   expect_false(grepl("clubSandwich::linear_contrast", note, fixed = TRUE))
 })

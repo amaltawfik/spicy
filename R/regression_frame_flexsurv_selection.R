@@ -14,7 +14,6 @@
 #     outcome_level marking which equation each row belongs to.
 # ---------------------------------------------------------------------------
 
-
 # ============================================================================
 # flexsurv::flexsurvreg
 # ============================================================================
@@ -24,14 +23,16 @@
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.flexsurvreg <- function(fit,
-                                             vcov = "model",
-                                             vcov_label = NULL,
-                                             ci_level = 0.95,
-                                             ci_method = NULL,
-                                             exponentiate = FALSE,
-                                             model_id = "M1",
-                                             ...) {
+as_regression_frame.flexsurvreg <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  exponentiate = FALSE,
+  model_id = "M1",
+  ...
+) {
   .check_flexsurv_available()
 
   # Covariates on ancillary parameters (anc = list(shape = ~x, ...)) act
@@ -42,11 +43,15 @@ as_regression_frame.flexsurvreg <- function(fit,
   if (isTRUE(exponentiate) && .flexsurv_has_anc_covariates(fit)) {
     spicy_abort(
       c(
-        paste0("`exponentiate = TRUE` is not available for `flexsurvreg` ",
-               "fits with covariates on ancillary parameters (`anc =`)."),
-        "i" = paste0("Ancillary coefficients act on their own parameter ",
-                     "scales; exponentiating them would mislabel the ",
-                     "estimates."),
+        paste0(
+          "`exponentiate = TRUE` is not available for `flexsurvreg` ",
+          "fits with covariates on ancillary parameters (`anc =`)."
+        ),
+        "i" = paste0(
+          "Ancillary coefficients act on their own parameter ",
+          "scales; exponentiating them would mislabel the ",
+          "estimates."
+        ),
         "i" = "Drop `exponentiate = TRUE` to report link-scale coefficients."
       ),
       class = "spicy_invalid_input"
@@ -54,12 +59,14 @@ as_regression_frame.flexsurvreg <- function(fit,
   }
 
   coefs <- .flexsurv_coefs(fit, ci_level = ci_level)
-  info  <- .flexsurv_info(fit,
-                          vcov_kind  = vcov,
-                          vcov_label = vcov_label,
-                          ci_level   = ci_level,
-                          ci_method  = ci_method,
-                          model_id   = model_id)
+  info <- .flexsurv_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id
+  )
 
   new_regression_frame(coefs, info, fit)
 }
@@ -83,7 +90,9 @@ as_regression_frame.flexsurvreg <- function(fit,
 # distribution shape/scale aux parameters which are listed first).
 .flexsurv_coefs <- function(fit, ci_level) {
   res <- fit$res
-  if (is.null(res)) return(.empty_coefs_frame())                       # nocov
+  if (is.null(res)) {
+    return(.empty_coefs_frame())
+  } # nocov
 
   all_names <- rownames(res)
   # The auxiliary distribution parameters (shape, scale, rate, ...) are
@@ -97,8 +106,8 @@ as_regression_frame.flexsurvreg <- function(fit,
   }
 
   est <- unname(res[cov_names, "est"])
-  se  <- unname(res[cov_names, "se"])
-  stat    <- est / se
+  se <- unname(res[cov_names, "se"])
+  stat <- est / se
   p_value <- 2 * stats::pnorm(-abs(stat))
   df <- rep(Inf, length(est))
 
@@ -115,36 +124,47 @@ as_regression_frame.flexsurvreg <- function(fit,
   }
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(cov_names, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(cov_names, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(cov_names, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    cov_names,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    cov_names,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    cov_names,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  cov_names,  ft)
-  label      <- ifelse(is.na(lvl), cov_names, lvl)
+  parent_var <- ifelse(is.na(ft), cov_names, ft)
+  label <- ifelse(is.na(lvl), cov_names, lvl)
 
   coefs <- data.frame(
-    term             = cov_names,
-    parent_var       = parent_var,
-    label            = label,
+    term = cov_names,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(cov_names)),
-    estimate_type    = rep("B", length(cov_names)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = rep("z", length(cov_names)),
+    is_ref = rep(FALSE, length(cov_names)),
+    estimate_type = rep("B", length(cov_names)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = rep("z", length(cov_names)),
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .flexsurv_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   coefs
 }
 
@@ -155,32 +175,38 @@ as_regression_frame.flexsurvreg <- function(fit,
   # predictors group under their parent variable with a reference row,
   # like every other engine.
   fts <- detect_factor_terms(fit)
-  if (length(fts) == 0L) return(.empty_coefs_frame())
+  if (length(fts) == 0L) {
+    return(.empty_coefs_frame())
+  }
   rows <- list()
   for (ft in fts) {
-    if (!isTRUE(ft$reference_dropped)) next
+    if (!isTRUE(ft$reference_dropped)) {
+      next
+    }
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
-      parent_var       = ft$factor_term,
-      label            = ref_lvl,
+      term = term_name,
+      parent_var = ft$factor_term,
+      label = ref_lvl,
       factor_level_pos = as.integer(ref_pos),
-      is_ref           = TRUE,
-      estimate_type    = "B",
-      estimate         = NA_real_,
-      std_error        = NA_real_,
-      df               = NA_real_,
-      statistic        = NA_real_,
-      p_value          = NA_real_,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = NA_character_,
+      is_ref = TRUE,
+      estimate_type = "B",
+      estimate = NA_real_,
+      std_error = NA_real_,
+      df = NA_real_,
+      statistic = NA_real_,
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = NA_character_,
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(.empty_coefs_frame())
+  if (length(rows) == 0L) {
+    return(.empty_coefs_frame())
+  }
   do.call(rbind, rows)
 }
 
@@ -190,7 +216,9 @@ as_regression_frame.flexsurvreg <- function(fit,
 # non-location entry with columns means anc covariates are present.
 .flexsurv_has_anc_covariates <- function(fit) {
   mx <- fit$mx %||% list()
-  if (length(mx) == 0L) return(FALSE)
+  if (length(mx) == 0L) {
+    return(FALSE)
+  }
   loc <- fit$dlist$location %||% character(0)
   anc <- mx[setdiff(names(mx), loc)]
   any(vapply(anc, length, integer(1)) > 0L)
@@ -207,20 +235,23 @@ as_regression_frame.flexsurvreg <- function(fit,
 .flexsurv_location_link <- function(fit, dist_clean) {
   if (grepl("^survspline", dist_clean)) {
     sc <- fit$aux$scale %||% fit$scale %||% "hazard"
-    return(switch(sc,
-      hazard = "log",
-      odds   = "log",
-      normal = "probit",
-      "log"
-    ))
+    return(switch(sc, hazard = "log", odds = "log", normal = "probit", "log"))
   }
   "log"
 }
 
 
-.flexsurv_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
-  dv <- tryCatch(deparse1(stats::formula(fit)[[2L]]),
-                 error = function(e) all.vars(stats::formula(fit))[1L])
+.flexsurv_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id
+) {
+  dv <- tryCatch(deparse1(stats::formula(fit)[[2L]]), error = function(e) {
+    all.vars(stats::formula(fit))[1L]
+  })
   dv_label <- dv
 
   dist <- fit$dlist$name %||% "weibull"
@@ -229,22 +260,27 @@ as_regression_frame.flexsurvreg <- function(fit,
   # The location link feeds the G1 exponentiate gate: hardcoding "log"
   # let flexsurvspline(scale = "normal") -- a probit-like location scale
   # whose exp(B) has no estimand -- through the gate unchallenged.
-  fam <- list(family = dist_clean,
-              link = .flexsurv_location_link(fit, dist_clean))
+  fam <- list(
+    family = dist_clean,
+    link = .flexsurv_location_link(fit, dist_clean)
+  )
 
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   fit_stats <- list(
-    r_squared      = NA_real_,
-    adj_r_squared  = NA_real_,
-    pseudo_r2      = NULL,
-    aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-    bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-    log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                              error = function(e) NA_real_),
-    deviance       = NA_real_,
-    sigma          = NA_real_,
-    nobs           = as.integer(stats::nobs(fit) %||% fit$N %||% NA_integer_)
+    r_squared = NA_real_,
+    adj_r_squared = NA_real_,
+    pseudo_r2 = NULL,
+    aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+    bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+    log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+      NA_real_
+    }),
+    deviance = NA_real_,
+    sigma = NA_real_,
+    nobs = as.integer(stats::nobs(fit) %||% fit$N %||% NA_integer_)
   )
 
   supports <- list(
@@ -252,68 +288,73 @@ as_regression_frame.flexsurvreg <- function(fit,
     # predictor -- declaring TRUE without attaching rendered an EMPTY
     # column (finding M2). Refused until a survival-AME estimand is
     # designed (see the causal-survival roadmap: RMST / risk differences).
-    ame                 = FALSE,
+    ame = FALSE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = TRUE,  # time-ratios or hazard-ratios
-    standardise_refit   = FALSE
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = TRUE, # time-ratios or hazard-ratios
+    standardise_refit = FALSE
   )
 
   # Stash auxiliary distribution parameters (shape/scale/rate) in extras.
   aux_names <- fit$dlist$pars %||% character(0)
   aux_coefs <- if (length(aux_names) > 0L && !is.null(fit$res)) {
     stats::setNames(fit$res[aux_names, "est"], aux_names)
-  } else NULL
+  } else {
+    NULL
+  }
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = paste0(.flexsurv_dist_title(dist_clean),
-                                    " parametric survival regression"),
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    distribution          = dist_clean,
-    aux_parameters        = aux_coefs
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = paste0(
+      .flexsurv_dist_title(dist_clean),
+      " parametric survival regression"
+    ),
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    distribution = dist_clean,
+    aux_parameters = aux_coefs
   )
 
   list(
-    class          = "flexsurvreg",
-    family         = fam,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit) %||% fit$N %||% NA_integer_),
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = "flexsurvreg",
+    family = fam,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(stats::nobs(fit) %||% fit$N %||% NA_integer_),
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Wald asymptotic (z)",
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% "Wald asymptotic (z)",
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
 
 .flexsurv_dist_title <- function(dist) {
-  switch(dist,
-    weibull       = "Weibull",
-    weibullPH     = "Weibull (PH)",
-    lognormal     = "Log-normal",
-    lnorm         = "Log-normal",
-    gompertz      = "Gompertz",
-    gamma         = "Gamma",
-    exponential   = "Exponential",
-    exp           = "Exponential",
-    llogis        = "Log-logistic",
-    gengamma      = "Generalised gamma",
-    genf          = "Generalised F",
+  switch(
+    dist,
+    weibull = "Weibull",
+    weibullPH = "Weibull (PH)",
+    lognormal = "Log-normal",
+    lnorm = "Log-normal",
+    gompertz = "Gompertz",
+    gamma = "Gamma",
+    exponential = "Exponential",
+    exp = "Exponential",
+    llogis = "Log-logistic",
+    gengamma = "Generalised gamma",
+    genf = "Generalised F",
     paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
   )
 }
@@ -333,22 +374,26 @@ as_regression_frame.flexsurvreg <- function(fit,
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.selection <- function(fit,
-                                           vcov = "model",
-                                           vcov_label = NULL,
-                                           ci_level = 0.95,
-                                           ci_method = NULL,
-                                           model_id = "M1",
-                                           ...) {
+as_regression_frame.selection <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  model_id = "M1",
+  ...
+) {
   .check_sampleSelection_available()
 
   coefs <- .selection_coefs(fit, ci_level = ci_level)
-  info  <- .selection_info(fit,
-                            vcov_kind  = vcov,
-                            vcov_label = vcov_label,
-                            ci_level   = ci_level,
-                            ci_method  = ci_method,
-                            model_id   = model_id)
+  info <- .selection_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id
+  )
 
   new_regression_frame(coefs, info, fit)
 }
@@ -375,7 +420,7 @@ as_regression_frame.selection <- function(fit,
   sm <- summary(fit)
   est_mat <- sm$estimate
   if (is.null(est_mat) || nrow(est_mat) == 0L) {
-    return(.empty_coefs_frame())                                       # nocov
+    return(.empty_coefs_frame()) # nocov
   }
 
   # Identify which rows belong to selection vs outcome vs aux parameters.
@@ -386,31 +431,32 @@ as_regression_frame.selection <- function(fit,
 
   if (is.na(n_sel) || is.na(n_out)) {
     # Defensive fallback: treat everything as one block.
-    n_sel <- nrow(est_mat) - 2L                                        # nocov
-    n_out <- 0L                                                         # nocov
+    n_sel <- nrow(est_mat) - 2L # nocov
+    n_out <- 0L # nocov
   }
 
   selection_idx <- seq_len(n_sel)
-  outcome_idx   <- seq_len(n_out) + n_sel
-  aux_idx       <- setdiff(seq_len(nrow(est_mat)),
-                            c(selection_idx, outcome_idx))
+  outcome_idx <- seq_len(n_out) + n_sel
+  aux_idx <- setdiff(seq_len(nrow(est_mat)), c(selection_idx, outcome_idx))
 
   blocks <- list()
   if (length(selection_idx) > 0L) {
     blocks[[length(blocks) + 1L]] <- .selection_block(
       est_mat[selection_idx, , drop = FALSE],
       outcome_label = "selection",
-      ci_level      = ci_level
+      ci_level = ci_level
     )
   }
   if (length(outcome_idx) > 0L) {
     blocks[[length(blocks) + 1L]] <- .selection_block(
       est_mat[outcome_idx, , drop = FALSE],
       outcome_label = "outcome",
-      ci_level      = ci_level
+      ci_level = ci_level
     )
   }
-  if (length(blocks) == 0L) return(.empty_coefs_frame())               # nocov
+  if (length(blocks) == 0L) {
+    return(.empty_coefs_frame())
+  } # nocov
   do.call(rbind, blocks)
 }
 
@@ -418,10 +464,10 @@ as_regression_frame.selection <- function(fit,
 # Helper: build a coefs block from a slice of summary$estimate. Wald z
 # (the engine returns t-style columns but they are asymptotic z).
 .selection_block <- function(mat, outcome_label, ci_level) {
-  nm  <- rownames(mat)
+  nm <- rownames(mat)
   est <- unname(mat[, "Estimate"])
-  se  <- unname(mat[, "Std. Error"])
-  stat    <- unname(mat[, "t value"])
+  se <- unname(mat[, "Std. Error"])
+  stat <- unname(mat[, "t value"])
   p_value <- unname(mat[, "Pr(>|t|)"])
   df <- rep(Inf, length(est))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -437,108 +483,126 @@ as_regression_frame.selection <- function(fit,
   # carries the block prefix (visual: "selection: (Intercept)" /
   # "outcome: (Intercept)" under an "(Intercept):" section header).
   data.frame(
-    term             = paste0(outcome_label, ": ", nm),
-    parent_var       = nm,
-    label            = paste0(outcome_label, ": ", nm),
+    term = paste0(outcome_label, ": ", nm),
+    parent_var = nm,
+    label = paste0(outcome_label, ": ", nm),
     factor_level_pos = rep(NA_integer_, length(nm)),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = rep("z", length(nm)),
-    outcome_level    = rep(outcome_label, length(nm)),
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = rep("z", length(nm)),
+    outcome_level = rep(outcome_label, length(nm)),
     stringsAsFactors = FALSE
   )
 }
 
 
-.selection_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
+.selection_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id
+) {
   # Heckman has two response variables (selection indicator + outcome).
   # We surface the outcome variable name as the primary DV.
   out_formula <- tryCatch(fit$outcome$formula, error = function(e) NULL)
   dv <- if (!is.null(out_formula)) {
     tryCatch(all.vars(out_formula)[1L], error = function(e) "outcome")
-  } else "outcome"
+  } else {
+    "outcome"
+  }
   dv_label <- dv
 
   fam <- list(family = "heckman", link = "identity")
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
-  n_obs <- as.integer(tryCatch(stats::nobs(fit), error = function(e) NA_integer_))
+  n_obs <- as.integer(tryCatch(stats::nobs(fit), error = function(e) {
+    NA_integer_
+  }))
 
   fit_stats <- list(
-    r_squared      = NA_real_,
-    adj_r_squared  = NA_real_,
-    pseudo_r2      = NULL,
-    aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-    bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-    log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                              error = function(e) NA_real_),
-    deviance       = NA_real_,
-    sigma          = NA_real_,
-    nobs           = n_obs
+    r_squared = NA_real_,
+    adj_r_squared = NA_real_,
+    pseudo_r2 = NULL,
+    aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+    bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+    log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+      NA_real_
+    }),
+    deviance = NA_real_,
+    sigma = NA_real_,
+    nobs = n_obs
   )
 
   supports <- list(
     # No avg_slopes() method handles the two-equation selection model
     # (finding M2: TRUE here rendered an empty column). Refused.
-    ame                 = FALSE,
+    ame = FALSE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = FALSE,
-    standardise_refit   = FALSE
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = FALSE,
+    standardise_refit = FALSE
   )
 
   # sigma + rho from summary$estimate (last two rows by convention).
   sm <- summary(fit)
   est_mat <- sm$estimate
-  sigma_val <- tryCatch(unname(est_mat["sigma", "Estimate"]),
-                        error = function(e) NA_real_)
-  rho_val   <- tryCatch(unname(est_mat["rho", "Estimate"]),
-                        error = function(e) NA_real_)
+  sigma_val <- tryCatch(
+    unname(est_mat["sigma", "Estimate"]),
+    error = function(e) NA_real_
+  )
+  rho_val <- tryCatch(unname(est_mat["rho", "Estimate"]), error = function(e) {
+    NA_real_
+  })
 
-  method_label <- switch(fit$method %||% "ml",
-    "ml"    = "Maximum likelihood",
+  method_label <- switch(
+    fit$method %||% "ml",
+    "ml" = "Maximum likelihood",
     "2step" = "Heckman two-step",
     fit$method %||% "ml"
   )
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = "Heckman selection model",
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    selection_sigma       = as.numeric(sigma_val),
-    selection_rho         = as.numeric(rho_val),
-    estimation_method     = method_label
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = "Heckman selection model",
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    selection_sigma = as.numeric(sigma_val),
+    selection_rho = as.numeric(rho_val),
+    estimation_method = method_label
   )
 
   list(
-    class          = "selection",
-    family         = fam,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = n_obs,
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = "selection",
+    family = fam,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = n_obs,
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Wald asymptotic (z)",
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% "Wald asymptotic (z)",
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }

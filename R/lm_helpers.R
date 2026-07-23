@@ -79,7 +79,9 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
           "name in `data`."
         ),
         arg
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   if (is.null(val)) {
@@ -97,7 +99,9 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
           "`lm()`."
         ),
         arg
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   if (is.character(val) && length(val) == 1L && val %in% names(data)) {
@@ -126,7 +130,9 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
           "name in `data`."
         ),
         arg
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   if (length(val) != nrow(data)) {
@@ -136,7 +142,9 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
         arg,
         length(val),
         nrow(data)
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   val
@@ -202,7 +210,8 @@ resolve_covariates_argument <- function(
             "Use a tidyselect expression instead, e.g. ",
             "`%s = c(age, sex)` or `%s = all_of(c(\"age\", \"sex\"))`."
           ),
-          arg, arg
+          arg,
+          arg
         ),
         "i" = "Interactions, polynomials and other formula-based covariates are planned for a future release."
       ),
@@ -310,7 +319,8 @@ resolve_covariates_argument <- function(
           "`%s` overlaps with `by` (`%s`): a variable cannot be ",
           "both predictor and covariate."
         ),
-        arg, by_name
+        arg,
+        by_name
       ),
       class = "spicy_invalid_input"
     )

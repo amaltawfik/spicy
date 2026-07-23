@@ -5,7 +5,6 @@
 #  - Correlation rows pass through scale conversion unchanged (rho unitless)
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lmer_slope_7c7b <- function() {
@@ -15,14 +14,16 @@
 
 .fit_glmmTMB_slope_7c7b <- function() {
   skip_if_not_installed("glmmTMB")
-  glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject),
-                    data = lme4::sleepstudy)
+  glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
 }
 
 .fit_lme_slope_7c7b <- function() {
   skip_if_not_installed("nlme")
-  nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-            random = ~ age | Subject)
+  nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ age | Subject
+  )
 }
 
 
@@ -31,35 +32,43 @@
 test_that(".re_components_on_scale: sqrt() transform on variance + sd cols", {
   vc <- data.frame(
     group = c("Subject", "Residual"),
-    term  = c("(Intercept)", ""),
+    term = c("(Intercept)", ""),
     variance = c(1378.18, 960.46),
-    sd       = c(37.12, 30.99),
-    corr     = NA_real_,
+    sd = c(37.12, 30.99),
+    corr = NA_real_,
     is_correlation = c(FALSE, FALSE),
     std_error = c(505.77, 107.05),
-    ci_lower  = c(386.89, 750.65),
-    ci_upper  = c(2369.47, 1170.27),
+    ci_lower = c(386.89, 750.65),
+    ci_upper = c(2369.47, 1170.27),
     ci_method = c("wald", "wald"),
     stringsAsFactors = FALSE
   )
   sd_scaled <- spicy:::.re_components_on_scale(vc, "sd")
   # Estimate column becomes sqrt() of variance
   expect_equal(sd_scaled$variance, sqrt(vc$variance), tolerance = 1e-10)
-  expect_equal(sd_scaled$sd,       sqrt(vc$variance), tolerance = 1e-10)
+  expect_equal(sd_scaled$sd, sqrt(vc$variance), tolerance = 1e-10)
   # CI by sqrt (monotonic)
   expect_equal(sd_scaled$ci_lower, sqrt(vc$ci_lower), tolerance = 1e-10)
   expect_equal(sd_scaled$ci_upper, sqrt(vc$ci_upper), tolerance = 1e-10)
   # SE via Delta-method: SE_sd = SE_var / (2 * sd)
-  expect_equal(sd_scaled$std_error, vc$std_error / (2 * sd_scaled$sd),
-               tolerance = 1e-10)
+  expect_equal(
+    sd_scaled$std_error,
+    vc$std_error / (2 * sd_scaled$sd),
+    tolerance = 1e-10
+  )
 })
 
 test_that(".re_components_on_scale: variance scale is identity", {
   vc <- data.frame(
-    group = "Subject", term = "(Intercept)",
-    variance = 100, sd = 10, corr = NA_real_,
+    group = "Subject",
+    term = "(Intercept)",
+    variance = 100,
+    sd = 10,
+    corr = NA_real_,
     is_correlation = FALSE,
-    std_error = 20, ci_lower = 60, ci_upper = 140,
+    std_error = 20,
+    ci_lower = 60,
+    ci_upper = 140,
     ci_method = "wald",
     stringsAsFactors = FALSE
   )
@@ -70,14 +79,14 @@ test_that(".re_components_on_scale: variance scale is identity", {
 test_that(".re_components_on_scale: correlation rows pass through unchanged", {
   vc <- data.frame(
     group = c("Subject", "Subject"),
-    term  = c("(Intercept)", "(Intercept), Days"),
+    term = c("(Intercept)", "(Intercept), Days"),
     variance = c(612, NA),
-    sd       = c(24.7, NA),
-    corr     = c(NA, 0.07),
+    sd = c(24.7, NA),
+    corr = c(NA, 0.07),
     is_correlation = c(FALSE, TRUE),
     std_error = c(289, 0.27),
-    ci_lower  = c(46, -0.49),
-    ci_upper  = c(1178, 0.59),
+    ci_lower = c(46, -0.49),
+    ci_upper = c(1178, 0.59),
     ci_method = c("wald", "wald"),
     stringsAsFactors = FALSE
   )
@@ -85,16 +94,19 @@ test_that(".re_components_on_scale: correlation rows pass through unchanged", {
   # Row 1 (variance) gets converted
   expect_equal(out$sd[1L], sqrt(612), tolerance = 1e-10)
   # Row 2 (correlation) unchanged
-  expect_identical(out$corr[2L],      vc$corr[2L])
+  expect_identical(out$corr[2L], vc$corr[2L])
   expect_identical(out$std_error[2L], vc$std_error[2L])
-  expect_identical(out$ci_lower[2L],  vc$ci_lower[2L])
-  expect_identical(out$ci_upper[2L],  vc$ci_upper[2L])
+  expect_identical(out$ci_lower[2L], vc$ci_lower[2L])
+  expect_identical(out$ci_upper[2L], vc$ci_upper[2L])
 })
 
 test_that(".re_components_on_scale: NA-safe for missing SE columns", {
   vc <- data.frame(
-    group = "Subject", term = "(Intercept)",
-    variance = 100, sd = 10, corr = NA_real_,
+    group = "Subject",
+    term = "(Intercept)",
+    variance = 100,
+    sd = 10,
+    corr = NA_real_,
     stringsAsFactors = FALSE
   )
   out <- spicy:::.re_components_on_scale(vc, "sd")
@@ -192,13 +204,23 @@ test_that("scale conversion applied to a real lme frame matches oracle SD", {
   fit <- .fit_lme_slope_7c7b()
   fr <- as_regression_frame(fit)
   vc_sd <- spicy:::.re_components_on_scale(
-    fr$info$random_effects$variance_components, "sd")
+    fr$info$random_effects$variance_components,
+    "sd"
+  )
   ci <- nlme::intervals(fit, which = "var-cov")$reStruct$Subject
-  intercept_row <- vc_sd[vc_sd$group == "Subject" &
-                          vc_sd$term == "(Intercept)" &
-                          !(vc_sd$is_correlation %in% TRUE), ]
-  expect_equal(intercept_row$ci_lower, unname(ci["sd((Intercept))", "lower"]),
-               tolerance = 1e-10)
-  expect_equal(intercept_row$ci_upper, unname(ci["sd((Intercept))", "upper"]),
-               tolerance = 1e-10)
+  intercept_row <- vc_sd[
+    vc_sd$group == "Subject" &
+      vc_sd$term == "(Intercept)" &
+      !(vc_sd$is_correlation %in% TRUE),
+  ]
+  expect_equal(
+    intercept_row$ci_lower,
+    unname(ci["sd((Intercept))", "lower"]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    intercept_row$ci_upper,
+    unname(ci["sd((Intercept))", "upper"]),
+    tolerance = 1e-10
+  )
 })

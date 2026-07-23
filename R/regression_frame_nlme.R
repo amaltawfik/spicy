@@ -25,41 +25,55 @@
 #     "X" / "y" slots are fixed-effect / response dummies).
 # ---------------------------------------------------------------------------
 
-
 #' `as_regression_frame()` method for `lme` fits (nlme::lme()).
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.lme <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     cluster = NULL,
-                                     cluster_name = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     show_columns = character(0),
-                                     standardized = "none",
-                                     exponentiate = FALSE,
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.lme <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  standardized = "none",
+  exponentiate = FALSE,
+  model_id = "M1",
+  ...
+) {
   .check_nlme_available()
 
   coefs <- .lme_coefs(fit, ci_level = ci_level)
   coefs <- .apply_robust_vcov_to_coefs(
-    coefs, fit, vcov, cluster, ci_level,
-    test = "t", estimates = nlme::fixef(fit)
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "t",
+    estimates = nlme::fixef(fit)
   )
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
   coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
-  info  <- .lme_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id)
+  info <- .lme_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id
+  )
   if (!vcov %in% c("model", "classical")) {
     info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_)
   }
@@ -77,22 +91,26 @@ as_regression_frame.lme <- function(fit,
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.gls <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.gls <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  model_id = "M1",
+  ...
+) {
   .check_nlme_available()
 
   coefs <- .gls_coefs(fit, ci_level = ci_level)
-  info  <- .gls_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id)
+  info <- .gls_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id
+  )
 
   new_regression_frame(coefs, info, fit)
 }
@@ -121,48 +139,59 @@ as_regression_frame.gls <- function(fit,
   fixef <- nlme::fixef(fit)
   V <- as.matrix(stats::vcov(fit))
   est <- unname(fixef)
-  se  <- sqrt(diag(V))
-  nm  <- names(fixef)
+  se <- sqrt(diag(V))
+  nm <- names(fixef)
 
   tT <- summary(fit)$tTable
-  df      <- unname(tT[nm, "DF"])
-  stat    <- unname(tT[nm, "t-value"])
+  df <- unname(tT[nm, "DF"])
+  stat <- unname(tT[nm, "t-value"])
   p_value <- unname(tT[nm, "p-value"])
   t_crit <- stats::qt(0.5 + ci_level / 2, df = df)
   ci_lower <- est - t_crit * se
   ci_upper <- est + t_crit * se
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = rep("t", length(nm)),
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = rep("t", length(nm)),
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .nlme_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   coefs
 }
 
@@ -172,12 +201,12 @@ as_regression_frame.gls <- function(fit,
   cf <- stats::coef(fit)
   V <- as.matrix(stats::vcov(fit))
   est <- unname(cf)
-  se  <- sqrt(diag(V))
-  nm  <- names(cf)
+  se <- sqrt(diag(V))
+  nm <- names(cf)
   df_val <- as.numeric(stats::nobs(fit) - length(cf))
 
   tT <- summary(fit)$tTable
-  stat    <- unname(tT[nm, "t-value"])
+  stat <- unname(tT[nm, "t-value"])
   p_value <- unname(tT[nm, "p-value"])
   df <- rep(df_val, length(est))
   t_crit <- stats::qt(0.5 + ci_level / 2, df = df_val)
@@ -185,36 +214,47 @@ as_regression_frame.gls <- function(fit,
   ci_upper <- est + t_crit * se
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = df,
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = rep("t", length(nm)),
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = df,
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = rep("t", length(nm)),
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .nlme_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   coefs
 }
 
@@ -224,38 +264,51 @@ as_regression_frame.gls <- function(fit,
 # nlme::getData()).
 .nlme_reference_rows <- function(fit) {
   fts <- detect_factor_terms(fit)
-  if (length(fts) == 0L) return(.empty_coefs_frame())
+  if (length(fts) == 0L) {
+    return(.empty_coefs_frame())
+  }
   rows <- list()
   for (ft in fts) {
-    if (!isTRUE(ft$reference_dropped)) next
+    if (!isTRUE(ft$reference_dropped)) {
+      next
+    }
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
-      parent_var       = ft$factor_term,
-      label            = ref_lvl,
+      term = term_name,
+      parent_var = ft$factor_term,
+      label = ref_lvl,
       factor_level_pos = as.integer(ref_pos),
-      is_ref           = TRUE,
-      estimate_type    = "B",
-      estimate         = NA_real_,
-      std_error        = NA_real_,
-      df               = NA_real_,
-      statistic        = NA_real_,
-      p_value          = NA_real_,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = NA_character_,
+      is_ref = TRUE,
+      estimate_type = "B",
+      estimate = NA_real_,
+      std_error = NA_real_,
+      df = NA_real_,
+      statistic = NA_real_,
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = NA_character_,
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(.empty_coefs_frame())
+  if (length(rows) == 0L) {
+    return(.empty_coefs_frame())
+  }
   do.call(rbind, rows)
 }
 
 
 # Build the info list for an lme fit.
-.lme_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
+.lme_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id
+) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label_nlme(fit, dv)
 
@@ -267,72 +320,83 @@ as_regression_frame.gls <- function(fit,
   n_groups <- if (length(ng) > 0L) {
     setNames(as.integer(ng[1L]), primary_group)
   } else {
-    NULL  # nocov  (lme fits always carry >= 1 grouping factor)
+    NULL # nocov  (lme fits always carry >= 1 grouping factor)
   }
 
   re <- .lme_random_effects(fit, ci_level = ci_level)
   fit_stats <- .nlme_fit_stats(fit)
 
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   supports <- list(
-    ame                 = TRUE,
+    ame = TRUE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = FALSE,
-    standardise_refit   = TRUE
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = FALSE,
+    standardise_refit = TRUE
   )
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = "Linear mixed-effects regression (nlme)",
-    exp_applied           = FALSE,
-    exp_header            = NA_character_
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = "Linear mixed-effects regression (nlme)",
+    exp_applied = FALSE,
+    exp_header = NA_character_
   )
 
   list(
-    class          = "lme",
-    family         = list(family = "gaussian", link = "identity"),
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit)),
-    n_groups       = n_groups,
-    weights_kind   = "none",
+    class = "lme",
+    family = list(family = "gaussian", link = "identity"),
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(stats::nobs(fit)),
+    n_groups = n_groups,
+    weights_kind = "none",
     random_effects = re,
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Wald (model-based)",
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% "Wald (model-based)",
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
 
 # Build the info list for a gls fit. No random effects; correlation
 # structure label is surfaced in vcov_label.
-.gls_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
+.gls_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id
+) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label_nlme(fit, dv)
 
   fit_stats <- .nlme_fit_stats(fit)
 
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   supports <- list(
-    ame                 = TRUE,
+    ame = TRUE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = FALSE,
-    standardise_refit   = FALSE
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = FALSE,
+    standardise_refit = FALSE
   )
 
   corr_label <- .gls_corstruct_label(fit)
@@ -343,34 +407,34 @@ as_regression_frame.gls <- function(fit,
   }
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = "Generalised least squares (nlme)",
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = "Generalised least squares (nlme)",
+    exp_applied = FALSE,
+    exp_header = NA_character_,
     correlation_structure = corr_label
   )
 
   list(
-    class          = "gls",
-    family         = list(family = "gaussian", link = "identity"),
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit)),
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = "gls",
+    family = list(family = "gaussian", link = "identity"),
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(stats::nobs(fit)),
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% default_vcov_label,
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% default_vcov_label,
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
@@ -388,18 +452,20 @@ as_regression_frame.gls <- function(fit,
     list(marginal = NA_real_, conditional = NA_real_)
   }
   list(
-    r_squared      = NA_real_,
-    adj_r_squared  = NA_real_,
-    pseudo_r2      = NULL,
-    r2_marginal    = r2_ns$marginal,
+    r_squared = NA_real_,
+    adj_r_squared = NA_real_,
+    pseudo_r2 = NULL,
+    r2_marginal = r2_ns$marginal,
     r2_conditional = r2_ns$conditional,
-    aic            = stats::AIC(fit),
-    bic            = stats::BIC(fit),
-    log_lik        = as.numeric(stats::logLik(fit)),
-    deviance       = tryCatch(suppressWarnings(stats::deviance(fit)),
-                              error = function(e) NA_real_),
-    sigma          = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
-    nobs           = as.integer(stats::nobs(fit))
+    aic = stats::AIC(fit),
+    bic = stats::BIC(fit),
+    log_lik = as.numeric(stats::logLik(fit)),
+    deviance = tryCatch(
+      suppressWarnings(stats::deviance(fit)),
+      error = function(e) NA_real_
+    ),
+    sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
+    nobs = as.integer(stats::nobs(fit))
   )
 }
 
@@ -410,8 +476,14 @@ as_regression_frame.gls <- function(fit,
 .lme_random_effects <- function(fit, ci_level = 0.95) {
   # nlme::lme exposes the estimator via fit$method: "REML" (default)
   # or "ML". Feeds the footer's "(REML)" / "(ML)" clarification.
-  method <- if (!is.null(fit$method) &&
-                fit$method %in% c("REML", "ML")) fit$method else NA_character_
+  method <- if (
+    !is.null(fit$method) &&
+      fit$method %in% c("REML", "ML")
+  ) {
+    fit$method
+  } else {
+    NA_character_
+  }
   vc <- tryCatch(nlme::VarCorr(fit), error = function(e) NULL)
   # nocov start  (VarCorr() does not error for a valid lme fit)
   if (is.null(vc)) {
@@ -421,20 +493,22 @@ as_regression_frame.gls <- function(fit,
   raw <- unclass(vc)
   rn <- rownames(raw)
   variances <- suppressWarnings(as.numeric(raw[, "Variance"]))
-  sds       <- suppressWarnings(as.numeric(raw[, "StdDev"]))
+  sds <- suppressWarnings(as.numeric(raw[, "StdDev"]))
 
   # The grouping factor name comes from fit$dims$ngrps[1].
   group_nm <- names(fit$dims$ngrps)[1L]
   rows <- list()
   for (i in seq_along(rn)) {
-    if (is.na(variances[i])) next  # skip rows that don't parse (sub-header lines)
+    if (is.na(variances[i])) {
+      next
+    } # skip rows that don't parse (sub-header lines)
     grp <- if (identical(rn[i], "Residual")) "Residual" else group_nm
     rows[[length(rows) + 1L]] <- data.frame(
-      group     = grp,
-      term      = if (identical(rn[i], "Residual")) "" else rn[i],
-      variance  = variances[i],
-      sd        = sds[i],
-      corr      = NA_real_,
+      group = grp,
+      term = if (identical(rn[i], "Residual")) "" else rn[i],
+      variance = variances[i],
+      sd = sds[i],
+      corr = NA_real_,
       stringsAsFactors = FALSE
     )
   }
@@ -452,10 +526,14 @@ as_regression_frame.gls <- function(fit,
   # (SE(sd^2) = 2*sd*SE(sd)).
   vc_df <- .lme_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
 
-  icc <- .merMod_icc(vc_df)  # reuse: same variance-ratio rule
+  icc <- .merMod_icc(vc_df) # reuse: same variance-ratio rule
   null_lrt <- .compute_null_model_lrt(fit)
-  list(variance_components = vc_df, icc = icc, method = method,
-       null_lrt = null_lrt)
+  list(
+    variance_components = vc_df,
+    icc = icc,
+    method = method,
+    null_lrt = null_lrt
+  )
 }
 
 
@@ -474,12 +552,18 @@ as_regression_frame.gls <- function(fit,
     nlme::intervals(fit, which = "var-cov"),
     error = function(e) NULL
   )
-  if (is.null(ci_obj) || is.null(ci_obj$reStruct)) return(vc_df)        # nocov
+  if (is.null(ci_obj) || is.null(ci_obj$reStruct)) {
+    return(vc_df)
+  } # nocov
   group_ci <- ci_obj$reStruct[[group_nm]]
-  if (is.null(group_ci)) return(vc_df)                                  # nocov
+  if (is.null(group_ci)) {
+    return(vc_df)
+  } # nocov
 
   cor_rows <- grep("^cor\\(", rownames(group_ci), value = TRUE)
-  if (length(cor_rows) == 0L) return(vc_df)
+  if (length(cor_rows) == 0L) {
+    return(vc_df)
+  }
 
   rows_extra <- list()
   for (rn in cor_rows) {
@@ -491,8 +575,10 @@ as_regression_frame.gls <- function(fit,
     # both sides against the group's known variance-row terms -- robust to
     # term names that themselves contain a comma-free "," is impossible in
     # an R name, but matching keeps the split principled.
-    known <- vc_df$term[vc_df$group == group_nm &
-                          !(vc_df$is_correlation %in% TRUE)]
+    known <- vc_df$term[
+      vc_df$group == group_nm &
+        !(vc_df$is_correlation %in% TRUE)
+    ]
     commas <- gregexpr(",", pair, fixed = TRUE)[[1L]]
     for (pos in commas) {
       lhs <- trimws(substr(pair, 1L, pos - 1L))
@@ -504,11 +590,11 @@ as_regression_frame.gls <- function(fit,
       }
     }
     rows_extra[[length(rows_extra) + 1L]] <- data.frame(
-      group          = group_nm,
-      term           = pair,
-      variance       = NA_real_,
-      sd             = NA_real_,
-      corr           = est,
+      group = group_nm,
+      term = pair,
+      variance = NA_real_,
+      sd = NA_real_,
+      corr = est,
       is_correlation = TRUE,
       stringsAsFactors = FALSE
     )
@@ -517,8 +603,11 @@ as_regression_frame.gls <- function(fit,
   # Insert correlation rows BEFORE the residual (so the residual stays
   # at the bottom of the group's section).
   is_resid <- vc_df$group == "Residual"
-  rbind(vc_df[!is_resid, , drop = FALSE], extra_df,
-        vc_df[is_resid,  , drop = FALSE])
+  rbind(
+    vc_df[!is_resid, , drop = FALSE],
+    extra_df,
+    vc_df[is_resid, , drop = FALSE]
+  )
 }
 
 
@@ -528,23 +617,27 @@ as_regression_frame.gls <- function(fit,
   # nocov start  (only invoked from the defensive guards below)
   na_block <- function(df) {
     df$std_error <- NA_real_
-    df$ci_lower  <- NA_real_
-    df$ci_upper  <- NA_real_
+    df$ci_lower <- NA_real_
+    df$ci_upper <- NA_real_
     df$ci_method <- NA_character_
     df
   }
   # nocov end
-  if (nrow(vc_df) == 0L) return(na_block(vc_df))                       # nocov
+  if (nrow(vc_df) == 0L) {
+    return(na_block(vc_df))
+  } # nocov
 
   ci_obj <- tryCatch(
     nlme::intervals(fit, level = ci_level, which = "var-cov"),
     error = function(e) NULL
   )
-  if (is.null(ci_obj)) return(na_block(vc_df))                         # nocov
+  if (is.null(ci_obj)) {
+    return(na_block(vc_df))
+  } # nocov
 
   vc_df$std_error <- NA_real_
-  vc_df$ci_lower  <- NA_real_
-  vc_df$ci_upper  <- NA_real_
+  vc_df$ci_lower <- NA_real_
+  vc_df$ci_upper <- NA_real_
   vc_df$ci_method <- NA_character_
 
   # z at the SAME level as the intervals() call: the SE is derived from
@@ -566,48 +659,64 @@ as_regression_frame.gls <- function(fit,
       # nlme's rowname joins with a bare comma -- try both orders and both
       # separators via exact-string matching.
       group_ci <- ci_obj$reStruct[[g]]
-      if (is.null(group_ci)) next                                      # nocov
+      if (is.null(group_ci)) {
+        next
+      } # nocov
       comps <- strsplit(t, ", ", fixed = TRUE)[[1L]]
       targets <- if (length(comps) == 2L) {
-        paste0("cor(", c(paste(comps, collapse = ","),
-                         paste(rev(comps), collapse = ","),
-                         paste(comps, collapse = ", "),
-                         paste(rev(comps), collapse = ", ")), ")")
+        paste0(
+          "cor(",
+          c(
+            paste(comps, collapse = ","),
+            paste(rev(comps), collapse = ","),
+            paste(comps, collapse = ", "),
+            paste(rev(comps), collapse = ", ")
+          ),
+          ")"
+        )
       } else {
-        paste0("cor(", t, ")")                                         # nocov
+        paste0("cor(", t, ")") # nocov
       }
       row_idx <- which(rownames(group_ci) %in% targets)[1L]
-      if (is.na(row_idx)) next                                         # nocov
-      cor_est   <- group_ci[row_idx, "est."]
+      if (is.na(row_idx)) {
+        next
+      } # nocov
+      cor_est <- group_ci[row_idx, "est."]
       cor_lower <- group_ci[row_idx, "lower"]
       cor_upper <- group_ci[row_idx, "upper"]
       vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
-      vc_df$ci_lower[i]  <- cor_lower
-      vc_df$ci_upper[i]  <- cor_upper
+      vc_df$ci_lower[i] <- cor_lower
+      vc_df$ci_upper[i] <- cor_upper
       vc_df$ci_method[i] <- "wald"
       next
     }
 
     if (identical(g, "Residual")) {
       sigma_ci <- ci_obj$sigma
-      if (is.null(sigma_ci) || length(sigma_ci) != 3L) next            # nocov
-      sd_est   <- unname(sigma_ci["est."])
+      if (is.null(sigma_ci) || length(sigma_ci) != 3L) {
+        next
+      } # nocov
+      sd_est <- unname(sigma_ci["est."])
       sd_lower <- unname(sigma_ci["lower"])
       sd_upper <- unname(sigma_ci["upper"])
     } else {
       group_ci <- ci_obj$reStruct[[g]]
-      if (is.null(group_ci)) next                                      # nocov
+      if (is.null(group_ci)) {
+        next
+      } # nocov
       target <- paste0("sd(", t, ")")
       row_idx <- match(target, rownames(group_ci))
-      if (is.na(row_idx)) next                                         # nocov
-      sd_est   <- group_ci[row_idx, "est."]
+      if (is.na(row_idx)) {
+        next
+      } # nocov
+      sd_est <- group_ci[row_idx, "est."]
       sd_lower <- group_ci[row_idx, "lower"]
       sd_upper <- group_ci[row_idx, "upper"]
     }
     se_sd <- (sd_upper - sd_lower) / (2 * z)
     vc_df$std_error[i] <- 2 * sd_est * se_sd
-    vc_df$ci_lower[i]  <- max(0, sd_lower)^2
-    vc_df$ci_upper[i]  <- sd_upper^2
+    vc_df$ci_lower[i] <- max(0, sd_lower)^2
+    vc_df$ci_upper[i] <- sd_upper^2
     vc_df$ci_method[i] <- "wald"
   }
   vc_df
@@ -618,7 +727,9 @@ as_regression_frame.gls <- function(fit,
 # label like "corCompSymm" or NULL if no structure was specified.
 .gls_corstruct_label <- function(fit) {
   cs <- fit$modelStruct$corStruct
-  if (is.null(cs)) return(NULL)
+  if (is.null(cs)) {
+    return(NULL)
+  }
   class(cs)[1L]
 }
 
@@ -627,10 +738,15 @@ as_regression_frame.gls <- function(fit,
 # for lme / gls (returns reStruct / corStruct), so we go through
 # nlme::getData() to find the response column.
 .extract_dv_label_nlme <- function(fit, dv) {
-  tryCatch({
-    d <- nlme::getData(fit)
-    if (is.null(d) || !(dv %in% names(d))) return(dv)
-    lab <- attr(d[[dv]], "label")
-    if (is.character(lab) && length(lab) == 1L && nzchar(lab)) lab else dv
-  }, error = function(e) dv)
+  tryCatch(
+    {
+      d <- nlme::getData(fit)
+      if (is.null(d) || !(dv %in% names(d))) {
+        return(dv)
+      }
+      lab <- attr(d[[dv]], "label")
+      if (is.character(lab) && length(lab) == 1L && nzchar(lab)) lab else dv
+    },
+    error = function(e) dv
+  )
 }

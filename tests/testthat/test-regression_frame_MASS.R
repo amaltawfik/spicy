@@ -3,7 +3,6 @@
 # (polr is covered by test-regression_frame_ordinal.R from Phase 5b.)
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_glm_nb <- function() {
@@ -48,20 +47,19 @@ test_that("negbin: family normalised to 'negbin' (theta stripped)", {
   fit <- .fit_glm_nb()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "negbin")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 })
 
 test_that("negbin: title_prefix names Negative-binomial", {
   fit <- .fit_glm_nb()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Negative-binomial regression")
+  expect_identical(fr$info$extras$title_prefix, "Negative-binomial regression")
 })
 
 test_that("negbin: theta + se_theta surfaced in extras", {
   fit <- .fit_glm_nb()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$extras$theta,    fit$theta,    tolerance = 1e-10)
+  expect_equal(fr$info$extras$theta, fit$theta, tolerance = 1e-10)
   expect_equal(fr$info$extras$se_theta, fit$SE.theta, tolerance = 1e-10)
 })
 
@@ -71,9 +69,11 @@ test_that("negbin: coef extraction matches stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -95,8 +95,10 @@ test_that("rlm: info$class is 'rlm'", {
 test_that("rlm: title_prefix = 'Robust linear regression (M-estimator)'", {
   fit <- .fit_rlm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Robust linear regression (M-estimator)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Robust linear regression (M-estimator)"
+  )
 })
 
 test_that("rlm: psi_function detected as 'Huber' for default", {
@@ -145,9 +147,11 @@ test_that("rlm: coefs estimates match stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -182,10 +186,10 @@ test_that("negbin coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6)
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6)
+    expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
+    expect_equal(spicy_row$std_error, oracle_row$SE, tolerance = 1e-6)
   }
 })
 
@@ -196,9 +200,9 @@ test_that("rlm coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6)
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6)
+    expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
+    expect_equal(spicy_row$std_error, oracle_row$SE, tolerance = 1e-6)
   }
 })

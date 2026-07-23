@@ -1364,8 +1364,17 @@ table_regression <- function(
   labels = NULL,
   title = NULL,
   note = NULL,
-  output = c("default", "data.frame", "long", "gt", "flextable",
-             "tinytable", "excel", "clipboard", "word"),
+  output = c(
+    "default",
+    "data.frame",
+    "long",
+    "gt",
+    "flextable",
+    "tinytable",
+    "excel",
+    "clipboard",
+    "word"
+  ),
   excel_path = NULL,
   excel_sheet = "Regression",
   clipboard_delim = "\t",
@@ -1380,8 +1389,10 @@ table_regression <- function(
   # "object 'region' not found" -- emit our migration error
   # pointing at `~region` / `"region"` instead.
   cluster_expr <- substitute(cluster)
-  if (is.symbol(cluster_expr) &&
-        !identical(as.character(cluster_expr), "cluster")) {
+  if (
+    is.symbol(cluster_expr) &&
+      !identical(as.character(cluster_expr), "cluster")
+  ) {
     sym <- as.character(cluster_expr)
     # Only complain if R would FAIL to evaluate the symbol --
     # `cluster = region` where `region` is a local variable IS
@@ -1389,14 +1400,26 @@ table_regression <- function(
     exists_local <- exists(sym, envir = parent.frame(), inherits = TRUE)
     if (!exists_local) {
       spicy_abort(
-        c(sprintf(paste0("`cluster = %s`: unquoted bare names are not ",
-                          "supported."), sym),
-          "i" = sprintf("Use `cluster = ~%s` (formula) or `cluster = \"%s\"` (string).",
-                         sym, sym),
-          "i" = paste0("Bare-name NSE breaks under programmatic use ",
-                        "(function wrapping, dynamic column choice, ",
-                        "loops). The formula form is composable for ",
-                        "multi-way clustering: `~region:year`.")),
+        c(
+          sprintf(
+            paste0(
+              "`cluster = %s`: unquoted bare names are not ",
+              "supported."
+            ),
+            sym
+          ),
+          "i" = sprintf(
+            "Use `cluster = ~%s` (formula) or `cluster = \"%s\"` (string).",
+            sym,
+            sym
+          ),
+          "i" = paste0(
+            "Bare-name NSE breaks under programmatic use ",
+            "(function wrapping, dynamic column choice, ",
+            "loops). The formula form is composable for ",
+            "multi-way clustering: `~region:year`."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -1446,11 +1469,17 @@ table_regression <- function(
   mn_columns_active <- .multinom_columns_active(models, nested)
   if (mn_columns_active && !is.null(model_labels)) {
     spicy_abort(
-      c(paste0("`model_labels` does not apply to a single multinomial ",
-               "model: the column groups are outcome categories, ",
-               "not models."),
-        "i" = paste0("Use `outcome_labels` to relabel the category ",
-                     "spanners.")),
+      c(
+        paste0(
+          "`model_labels` does not apply to a single multinomial ",
+          "model: the column groups are outcome categories, ",
+          "not models."
+        ),
+        "i" = paste0(
+          "Use `outcome_labels` to relabel the category ",
+          "spanners."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -1464,8 +1493,9 @@ table_regression <- function(
   # compacts identically. The user can pass atomic tokens
   # (e.g. `c("b", "se", "ci", "p")`) to restore CI.
   if (is.null(show_columns)) {
-    is_multi <- is.list(models) && !inherits(models, "lm") &&
-                  length(models) >= 2L
+    is_multi <- is.list(models) &&
+      !inherits(models, "lm") &&
+      length(models) >= 2L
     show_columns <- if (is_multi || mn_columns_active) {
       "all_b_compact"
     } else {
@@ -1479,11 +1509,10 @@ table_regression <- function(
   # a 5-model side-by-side table got 4 cells per model (AME + SE + CI
   # + p) for 20 columns total, while the lm equivalent `"all_b"` would
   # auto-drop CI for the same multi-model context.
-  is_multi <- is.list(models) && !inherits(models, "lm") &&
-                length(models) >= 2L
+  is_multi <- is.list(models) && !inherits(models, "lm") && length(models) >= 2L
   if (is_multi || mn_columns_active) {
-    if ("all_b"   %in% show_columns) {
-      show_columns <- sub("^all_b$",   "all_b_compact",   show_columns)
+    if ("all_b" %in% show_columns) {
+      show_columns <- sub("^all_b$", "all_b_compact", show_columns)
     }
     if ("all_ame" %in% show_columns) {
       show_columns <- sub("^all_ame$", "all_ame_compact", show_columns)
@@ -1495,8 +1524,7 @@ table_regression <- function(
   # through from < 0.12 code.
   all_bayes_models <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
-  show_columns <- expand_show_columns(show_columns,
-                                      bayesian = all_bayes_models)
+  show_columns <- expand_show_columns(show_columns, bayesian = all_bayes_models)
 
   # Phase C -- vocabulary tokens (steps 9-12). validate_show_columns
   # also rejects "beta" combined with `standardized = "none"` (Q3).
@@ -1510,7 +1538,9 @@ table_regression <- function(
   # explicit "suppress" as "no tokens to inject", instead of leaving
   # FALSE in the path and tripping `inherits(show_fit_stats, "character")`
   # checks further down.
-  if (isFALSE(show_fit_stats)) show_fit_stats <- character(0)
+  if (isFALSE(show_fit_stats)) {
+    show_fit_stats <- character(0)
+  }
   # Q3 -- auto-inject "beta" right after "B" when standardized != "none"
   # AND beta is not already requested. Done after validation so the
   # reject-beta-without-method branch fires before the orchestrator
@@ -1539,56 +1569,78 @@ table_regression <- function(
     # criteria, no classical or pseudo R^2 -- nobs only. Exclude them
     # from the frequentist class buckets so the glm branch does not
     # inject AIC / pseudo-R^2 tokens the Bayesian gate would refuse.
-    is_bayes <- vapply(models, inherits, logical(1),
-                       c("stanreg", "brmsfit"))
+    is_bayes <- vapply(models, inherits, logical(1), c("stanreg", "brmsfit"))
     any_glm <- any(vapply(models, inherits, logical(1), "glm") & !is_bayes)
-    any_lm_only <- any(vapply(models, function(f) {
-      inherits(f, "lm") && !inherits(f, "glm")
-    }, logical(1)) & !is_bayes)
+    any_lm_only <- any(
+      vapply(
+        models,
+        function(f) {
+          inherits(f, "lm") && !inherits(f, "glm")
+        },
+        logical(1)
+      ) &
+        !is_bayes
+    )
     # Phase 7c9a: mixed-effects class-aware default. lmer / glmer /
     # glmmTMB / lme get nobs + Nakagawa marginal/conditional R^2 + AIC
     # + BIC. classical R^2 is not defined, and the two R^2 of Nakagawa
     # are the standard publication statistic for mixed models (Nakagawa
     # & Schielzeth 2013; widely required by APA / journal templates).
-    any_mixed <- any(vapply(models, function(f) {
-      inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme"))
-    }, logical(1)))
+    any_mixed <- any(vapply(
+      models,
+      function(f) {
+        inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme"))
+      },
+      logical(1)
+    ))
     # Ordinal cumulative-link (polr / clm): nobs + the two pseudo-R^2 that
     # generalise the binary-logit default (McFadden = Stata ologit default,
     # Nagelkerke = SPSS PLUM) + AIC. summary.polr reports Residual Deviance +
     # AIC; Stata/SPSS lead with the pseudo-R^2, so those are the headline here.
-    any_ordinal <- any(vapply(models, function(f) {
-      inherits(f, c("polr", "clm"))
-    }, logical(1)))
+    any_ordinal <- any(vapply(
+      models,
+      function(f) {
+        inherits(f, c("polr", "clm"))
+      },
+      logical(1)
+    ))
     show_fit_stats <- character(0)
     if (any_lm_only) {
       show_fit_stats <- c(show_fit_stats, "nobs", "r2", "adj_r2")
     }
     if (any_glm) {
-      show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only) "nobs",
-                            "pseudo_r2_mcfadden",
-                            "pseudo_r2_nagelkerke",
-                            "aic")
+      show_fit_stats <- c(
+        show_fit_stats,
+        if (!any_lm_only) "nobs",
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "aic"
+      )
     }
     if (any_mixed) {
       # n_groups + icc render as fit-stat ROWS (aligned per model), like
       # sjPlot / modelsummary -- not footer prose. ICC is blank when not
       # computable (random slopes, multiple grouping factors, non-Gaussian
       # without a link-scale formula).
-      show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only && !any_glm) "nobs",
-                            "n_groups", "icc",
-                            "r2_marginal",
-                            "r2_conditional",
-                            "aic", "bic")
+      show_fit_stats <- c(
+        show_fit_stats,
+        if (!any_lm_only && !any_glm) "nobs",
+        "n_groups",
+        "icc",
+        "r2_marginal",
+        "r2_conditional",
+        "aic",
+        "bic"
+      )
     }
     if (any_ordinal) {
-      show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only && !any_glm && !any_mixed) "nobs",
-                            "pseudo_r2_mcfadden",
-                            "pseudo_r2_nagelkerke",
-                            "aic")
+      show_fit_stats <- c(
+        show_fit_stats,
+        if (!any_lm_only && !any_glm && !any_mixed) "nobs",
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "aic"
+      )
     }
     if (any(is_bayes)) {
       # Bayesian default: n + the posterior-median Bayesian R^2 --
@@ -1599,37 +1651,50 @@ table_regression <- function(
       # mirroring how "r2" is blank for the Bayesian side -- silently
       # dropping the Bayesian model's default R^2 would contradict
       # the never-silently-wrong policy.
-      show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only && !any_glm) "nobs",
-                            "r2_bayes")
+      show_fit_stats <- c(
+        show_fit_stats,
+        if (!any_lm_only && !any_glm) "nobs",
+        "r2_bayes"
+      )
     }
     # multinom: same pseudo-R2 pair as the other categorical families
     # (dev/fit_stats_by_class.md). Its null model is intercept-only, whose
     # log-likelihood has the ordinal path's closed form.
-    any_multinom <- any(vapply(models, function(f) {
-      inherits(f, "multinom")
-    }, logical(1)))
+    any_multinom <- any(vapply(
+      models,
+      function(f) {
+        inherits(f, "multinom")
+      },
+      logical(1)
+    ))
     if (any_multinom) {
-      show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only && !any_glm && !any_mixed &&
-                                  !any_ordinal) "nobs",
-                            "pseudo_r2_mcfadden",
-                            "pseudo_r2_nagelkerke",
-                            "aic")
+      show_fit_stats <- c(
+        show_fit_stats,
+        if (!any_lm_only && !any_glm && !any_mixed && !any_ordinal) "nobs",
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "aic"
+      )
     }
     # Cox proportional hazards (survival::coxph and rms::cph, which
     # inherits from it): the field convention reports n AND the number
     # of events (EpiRHandbook survival chapter; Stata stcox header).
     # n_events is NA outside the coxph frame, and the renderer skips
     # the row when no model carries a value.
-    any_coxph <- any(vapply(models, function(f) {
-      inherits(f, "coxph")
-    }, logical(1)))
+    any_coxph <- any(vapply(
+      models,
+      function(f) {
+        inherits(f, "coxph")
+      },
+      logical(1)
+    ))
     if (any_coxph) {
-      show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only && !any_glm && !any_mixed &&
-                                  !any_ordinal) "nobs",
-                            "n_events", "aic")
+      show_fit_stats <- c(
+        show_fit_stats,
+        if (!any_lm_only && !any_glm && !any_mixed && !any_ordinal) "nobs",
+        "n_events",
+        "aic"
+      )
     }
     # fixest: the field convention leads with the absorbed-FE
     # disclosure (etable, modelsummary and esttab all default it on),
@@ -1637,16 +1702,22 @@ table_regression <- function(
     # auto-drop as all-NA for feglm / fepois, which carry fixest's
     # McFadden "pr2" instead) and AIC.
     any_fixest <- any(vapply(models, inherits, logical(1), "fixest"))
-    any_fixest_glm <- any(vapply(models, function(m) {
-      inherits(m, "fixest") && !is.null(m$family)
-    }, logical(1)))
+    any_fixest_glm <- any(vapply(
+      models,
+      function(m) {
+        inherits(m, "fixest") && !is.null(m$family)
+      },
+      logical(1)
+    ))
     if (any_fixest) {
-      show_fit_stats <- c(show_fit_stats,
-                            if (!any_lm_only && !any_glm && !any_mixed &&
-                                  !any_ordinal) "nobs",
-                            "r2", "within_r2",
-                            if (any_fixest_glm) "pseudo_r2_mcfadden",
-                            "aic")
+      show_fit_stats <- c(
+        show_fit_stats,
+        if (!any_lm_only && !any_glm && !any_mixed && !any_ordinal) "nobs",
+        "r2",
+        "within_r2",
+        if (any_fixest_glm) "pseudo_r2_mcfadden",
+        "aic"
+      )
     }
     # Universal safety net: a class matched by none of the branches above
     # (betareg, survreg, coxph, multinom, mlogit, rms, stan, ...) still
@@ -1682,18 +1753,26 @@ table_regression <- function(
   # `"boot_percentile"` are likelihood / resampling constructions with
   # no posterior analogue -- both are refused HERE with the Bayesian
   # alternative, not routed into a downstream generic error.
-  is_bayes_ci <- vapply(models, inherits, logical(1),
-                        c("stanreg", "brmsfit"))
+  is_bayes_ci <- vapply(models, inherits, logical(1), c("stanreg", "brmsfit"))
   if (identical(ci_method, "hdi") && !all(is_bayes_ci)) {
     offending <- class(models[[which(!is_bayes_ci)[1]]])[1]
     spicy_abort(
       c(
-        paste0("`ci_method = \"hdi\"` is defined only for Bayesian ",
-               "fits (`stanreg` / `brmsfit`)."),
-        "x" = sprintf(paste0("`%s` has no posterior draws to take a ",
-                             "highest-density interval of."), offending),
-        "i" = paste0("Frequentist fits use `ci_method = \"wald\"` ",
-                     "(default), `\"profile\"`, or `\"boot_percentile\"`.")
+        paste0(
+          "`ci_method = \"hdi\"` is defined only for Bayesian ",
+          "fits (`stanreg` / `brmsfit`)."
+        ),
+        "x" = sprintf(
+          paste0(
+            "`%s` has no posterior draws to take a ",
+            "highest-density interval of."
+          ),
+          offending
+        ),
+        "i" = paste0(
+          "Frequentist fits use `ci_method = \"wald\"` ",
+          "(default), `\"profile\"`, or `\"boot_percentile\"`."
+        )
       ),
       class = "spicy_invalid_input"
     )
@@ -1701,14 +1780,20 @@ table_regression <- function(
   if (ci_method %in% c("profile", "boot_percentile") && any(is_bayes_ci)) {
     spicy_abort(
       c(
-        sprintf("`ci_method = \"%s\"` is not defined for Bayesian fits.",
-                ci_method),
-        "i" = paste0("A posterior has no profile likelihood or bootstrap ",
-                     "replicates; the credible interval is computed from ",
-                     "the posterior draws."),
-        "i" = paste0("Use the default equal-tailed credible interval, ",
-                     "or `ci_method = \"hdi\"` for the highest-density ",
-                     "interval.")
+        sprintf(
+          "`ci_method = \"%s\"` is not defined for Bayesian fits.",
+          ci_method
+        ),
+        "i" = paste0(
+          "A posterior has no profile likelihood or bootstrap ",
+          "replicates; the credible interval is computed from ",
+          "the posterior draws."
+        ),
+        "i" = paste0(
+          "Use the default equal-tailed credible interval, ",
+          "or `ci_method = \"hdi\"` for the highest-density ",
+          "interval."
+        )
       ),
       class = "spicy_invalid_input"
     )
@@ -1726,19 +1811,32 @@ table_regression <- function(
     # `clm` (confint.clm). class(f)[1] pins the PLAIN glm and excludes glm
     # subclasses whose confint() is not profile (svyglm design-based, gam).
     # Any other class is rejected rather than silently returning Wald.
-    supports_profile <- vapply(models, function(f) {
-      class(f)[1] %in% c("glm", "polr", "clm")
-    }, logical(1))
+    supports_profile <- vapply(
+      models,
+      function(f) {
+        class(f)[1] %in% c("glm", "polr", "clm")
+      },
+      logical(1)
+    )
     if (!all(supports_profile)) {
       offending <- class(models[[which(!supports_profile)[1]]])[1]
       spicy_abort(
         c(
-          paste0("`ci_method = \"profile\"` is available only for `glm` and ",
-                 "ordinal (`polr` / `clm`) fits."),
-          "x" = sprintf(paste0("`%s` has no profile-likelihood path; its CIs ",
-                               "would silently fall back to Wald."), offending),
-          "i" = paste0("Use `ci_method = \"wald\"` (default), or a robust ",
-                       "`vcov` for robust (Wald) CIs.")
+          paste0(
+            "`ci_method = \"profile\"` is available only for `glm` and ",
+            "ordinal (`polr` / `clm`) fits."
+          ),
+          "x" = sprintf(
+            paste0(
+              "`%s` has no profile-likelihood path; its CIs ",
+              "would silently fall back to Wald."
+            ),
+            offending
+          ),
+          "i" = paste0(
+            "Use `ci_method = \"wald\"` (default), or a robust ",
+            "`vcov` for robust (Wald) CIs."
+          )
         ),
         class = "spicy_invalid_input"
       )
@@ -1749,10 +1847,13 @@ table_regression <- function(
     # methods (lm / glm / polr / clm) resolve the request themselves --
     # this is the single consolidated disclosure of that override.
     vlist <- if (is.list(vcov)) vcov else rep(list(vcov), length(models))
-    overridden <- vapply(vlist, function(v) {
-      !(is.character(v) && length(v) == 1L &&
-          v %in% c("model", "classical"))
-    }, logical(1))
+    overridden <- vapply(
+      vlist,
+      function(v) {
+        !(is.character(v) && length(v) == 1L && v %in% c("model", "classical"))
+      },
+      logical(1)
+    )
     if (any(overridden)) {
       mod_labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
         names(models)
@@ -1761,9 +1862,12 @@ table_regression <- function(
       }
       spicy_warn(
         c(
-          paste0("`ci_method = \"profile\"` is ignored under a robust or ",
-                 "resampling `vcov`: ",
-                 paste(mod_labels[overridden], collapse = ", "), "."),
+          paste0(
+            "`ci_method = \"profile\"` is ignored under a robust or ",
+            "resampling `vcov`: ",
+            paste(mod_labels[overridden], collapse = ", "),
+            "."
+          ),
           "i" = paste0(
             "Profile CIs are model-based likelihood quantities; the ",
             "requested `vcov` takes precedence and its Wald CIs are ",
@@ -1784,19 +1888,29 @@ table_regression <- function(
   # the raw Wald machinery, not the replicates).
   if (identical(ci_method, "boot_percentile")) {
     vlist <- if (is.list(vcov)) vcov else rep(list(vcov), length(models))
-    all_boot <- all(vapply(vlist, function(v) {
-      is.character(v) && length(v) == 1L && identical(v, "bootstrap")
-    }, logical(1)))
+    all_boot <- all(vapply(
+      vlist,
+      function(v) {
+        is.character(v) && length(v) == 1L && identical(v, "bootstrap")
+      },
+      logical(1)
+    ))
     if (!all_boot) {
       spicy_abort(
         c(
-          paste0("`ci_method = \"boot_percentile\"` requires ",
-                 "`vcov = \"bootstrap\"` for every model."),
-          "i" = paste0("Percentile CIs are quantiles of the bootstrap ",
-                       "replicates; they reuse the same resamples as the ",
-                       "bootstrap SEs (no second resampling pass)."),
-          "i" = paste0("Set `vcov = \"bootstrap\"` (tune with `boot_n`), ",
-                       "or drop `ci_method = \"boot_percentile\"`.")
+          paste0(
+            "`ci_method = \"boot_percentile\"` requires ",
+            "`vcov = \"bootstrap\"` for every model."
+          ),
+          "i" = paste0(
+            "Percentile CIs are quantiles of the bootstrap ",
+            "replicates; they reuse the same resamples as the ",
+            "bootstrap SEs (no second resampling pass)."
+          ),
+          "i" = paste0(
+            "Set `vcov = \"bootstrap\"` (tune with `boot_n`), ",
+            "or drop `ci_method = \"boot_percentile\"`."
+          )
         ),
         class = "spicy_invalid_input"
       )
@@ -1804,11 +1918,15 @@ table_regression <- function(
     if (!identical(standardized, "none")) {
       spicy_abort(
         c(
-          paste0("`ci_method = \"boot_percentile\"` is not available ",
-                 "with `standardized`."),
-          "i" = paste0("Percentile CIs are quantiles of the raw-",
-                       "coefficient replicates; standardised betas would ",
-                       "need their own resampling scheme.")
+          paste0(
+            "`ci_method = \"boot_percentile\"` is not available ",
+            "with `standardized`."
+          ),
+          "i" = paste0(
+            "Percentile CIs are quantiles of the raw-",
+            "coefficient replicates; standardised betas would ",
+            "need their own resampling scheme."
+          )
         ),
         class = "spicy_invalid_input"
       )
@@ -1819,9 +1937,13 @@ table_regression <- function(
   # only -- it derives SD(Y*) from the link-scale latent variance,
   # which is undefined for lm.
   if (identical(standardized, "pseudo")) {
-    any_lm_only <- any(vapply(models, function(f) {
-      inherits(f, "lm") && !inherits(f, "glm")
-    }, logical(1)))
+    any_lm_only <- any(vapply(
+      models,
+      function(f) {
+        inherits(f, "lm") && !inherits(f, "glm")
+      },
+      logical(1)
+    ))
     if (any_lm_only) {
       spicy_abort(
         c(
@@ -1862,8 +1984,10 @@ table_regression <- function(
     # gate on the leading class being exactly "glm".
     if (identical(class(f)[1L], "glm")) {
       fam <- stats::family(f)
-      if (identical(fam$family, "gaussian") &&
-            identical(fam$link, "identity")) {
+      if (
+        identical(fam$family, "gaussian") &&
+          identical(fam$link, "identity")
+      ) {
         spicy_warn(
           c(
             sprintf(
@@ -1890,7 +2014,7 @@ table_regression <- function(
   validate_logical_scalar(show_intercept, "show_intercept")
   validate_logical_scalar(nested, "nested")
   validate_caption_arg(title, "title")
-  validate_caption_arg(note,  "note")
+  validate_caption_arg(note, "note")
   validate_digit_arg(digits, "digits")
   validate_digit_arg(p_digits, "p_digits")
   validate_digit_arg(effect_size_digits, "effect_size_digits")
@@ -1904,16 +2028,21 @@ table_regression <- function(
   # Finding (a) of the Bayesian recon: a posterior has no p-values, so a
   # p_adjust request was a silent no-op. Refuse it when every model is
   # Bayesian (mixed-class tables keep it: the frequentist columns adjust).
-  if (!identical(p_adjust, "none") &&
+  if (
+    !identical(p_adjust, "none") &&
       length(models) > 0L &&
-      all(vapply(models, inherits, logical(1),
-                 c("stanreg", "brmsfit")))) {
+      all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+  ) {
     spicy_abort(
-      c("`p_adjust` is not available for Bayesian fits: there are no p-values to adjust.",
-        "i" = paste0("Bayesian tables report posterior medians and ",
-                     "credible intervals; the probability-of-direction ",
-                     "column (`show_columns = \"pd\"`) is the closest ",
-                     "posterior summary.")),
+      c(
+        "`p_adjust` is not available for Bayesian fits: there are no p-values to adjust.",
+        "i" = paste0(
+          "Bayesian tables report posterior medians and ",
+          "credible intervals; the probability-of-direction ",
+          "column (`show_columns = \"pd\"`) is the closest ",
+          "posterior summary."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -1963,13 +2092,18 @@ table_regression <- function(
   # standardized x non-additive caveat is emitted later (after
   # extracts) since it inspects each fit. Q1 / Q2 conflict warnings
   # are runtime / orchestrator-only and emitted here.
-  if (!is.null(model_labels) &&
-      is.list(models) && !is.null(names(models)) &&
-      all(nzchar(names(models)))) {
+  if (
+    !is.null(model_labels) &&
+      is.list(models) &&
+      !is.null(names(models)) &&
+      all(nzchar(names(models)))
+  ) {
     spicy_warn(
       c(
-        paste0("Both `names(models)` and `model_labels` were supplied; ",
-               "the explicit `model_labels` takes precedence (Q1)."),
+        paste0(
+          "Both `names(models)` and `model_labels` were supplied; ",
+          "the explicit `model_labels` takes precedence (Q1)."
+        ),
         "i" = "Drop one of the two to silence this warning."
       ),
       class = "spicy_ignored_arg"
@@ -1978,8 +2112,11 @@ table_regression <- function(
   if (isFALSE(show_intercept) && !identical(intercept_position, "first")) {
     spicy_warn(
       c(
-        paste0("`intercept_position = \"", intercept_position,
-               "\"` is ignored when `show_intercept = FALSE` (Q2)."),
+        paste0(
+          "`intercept_position = \"",
+          intercept_position,
+          "\"` is ignored when `show_intercept = FALSE` (Q2)."
+        ),
         "i" = "Drop `intercept_position` or set `show_intercept = TRUE`."
       ),
       class = "spicy_ignored_arg"
@@ -1993,18 +2130,26 @@ table_regression <- function(
   # is a false alarm. Fire only when divergence is plausible:
   # any glm in the set, or any model with a non-additive term
   # (interaction / transform) detected by detect_non_additive_terms().
-  if (all(c("ame", "p") %in% show_columns) &&
-        !("ame_p" %in% show_columns)) {
+  if (
+    all(c("ame", "p") %in% show_columns) &&
+      !("ame_p" %in% show_columns)
+  ) {
     any_glm <- any(vapply(models, inherits, logical(1), "glm"))
-    any_non_additive <- any(vapply(models, function(f) {
-      detect_non_additive_terms(f)$has_problem
-    }, logical(1)))
+    any_non_additive <- any(vapply(
+      models,
+      function(f) {
+        detect_non_additive_terms(f)$has_problem
+      },
+      logical(1)
+    ))
     if (any_glm || any_non_additive) {
       spicy_warn(
         c(
-          paste0("`\"ame\"` and `\"p\"` shown without `\"ame_p\"`: the ",
-                 "`p` column is for B (or beta), not the AME. They can ",
-                 "differ under non-linear links or interactions."),
+          paste0(
+            "`\"ame\"` and `\"p\"` shown without `\"ame_p\"`: the ",
+            "`p` column is for B (or beta), not the AME. They can ",
+            "differ under non-linear links or interactions."
+          ),
           "i" = "Add `\"ame_p\"` to display the AME-specific p-value."
         ),
         class = "spicy_caveat"
@@ -2032,13 +2177,15 @@ table_regression <- function(
   # clusters was passed, we walk the captured expression element by
   # element. Falls back to NA -> footer renders "cluster vector
   # supplied" the way it did before.
-  cluster_name_list <- if (is.call(cluster_expr) &&
-                            identical(as.character(cluster_expr[[1]]), "list")) {
+  cluster_name_list <- if (
+    is.call(cluster_expr) &&
+      identical(as.character(cluster_expr[[1]]), "list")
+  ) {
     elems <- as.list(cluster_expr)[-1L]
     if (length(elems) == n_models) {
       vapply(elems, extract_arg_column_name, character(1))
     } else {
-      rep(NA_character_, n_models)   # nocov -- validate_vcov_cluster_lists() Step 7 aborts on length mismatch
+      rep(NA_character_, n_models) # nocov -- validate_vcov_cluster_lists() Step 7 aborts on length mismatch
     }
   } else {
     rep(extract_arg_column_name(cluster_expr), n_models)
@@ -2047,22 +2194,34 @@ table_regression <- function(
   # through do.call, so the expression walk above yields NA. They stamp
   # the user-facing column name as an attribute instead; it wins.
   attr_names <- if (is.list(cluster) && !is.atomic(cluster)) {
-    vapply(cluster, function(x) {
-      attr(x, "spicy_cluster_name", exact = TRUE) %||% NA_character_
-    }, character(1))
+    vapply(
+      cluster,
+      function(x) {
+        attr(x, "spicy_cluster_name", exact = TRUE) %||% NA_character_
+      },
+      character(1)
+    )
   } else {
-    rep(attr(cluster, "spicy_cluster_name", exact = TRUE) %||%
-          NA_character_, n_models)
+    rep(
+      attr(cluster, "spicy_cluster_name", exact = TRUE) %||%
+        NA_character_,
+      n_models
+    )
   }
   if (length(attr_names) == n_models) {
-    cluster_name_list <- ifelse(is.na(attr_names), cluster_name_list,
-                                attr_names)
+    cluster_name_list <- ifelse(
+      is.na(attr_names),
+      cluster_name_list,
+      attr_names
+    )
   }
 
   # Detect AME-Satterthwaite path activation (Q14b)
-  any_cr <- any(vapply(vcov_list,
-                       function(v) is.character(v) && startsWith(v, "CR"),
-                       logical(1)))
+  any_cr <- any(vapply(
+    vcov_list,
+    function(v) is.character(v) && startsWith(v, "CR"),
+    logical(1)
+  ))
   use_ame_satt <- any_cr && "ame" %in% show_columns
 
   # ---- Per-model extraction (Layer 1) ------------------------------------
@@ -2081,21 +2240,21 @@ table_regression <- function(
   for (i in seq_len(n_models)) {
     frames[[i]] <- as_regression_frame(
       models[[i]],
-      model_id              = model_ids[i],
-      vcov                  = vcov_list[[i]],
-      cluster               = cluster_list[[i]],
-      boot_n                = boot_n,
-      ci_level              = ci_level,
-      ci_method             = ci_method,
-      standardized          = standardized,
-      exponentiate          = exponentiate,
-      show_columns          = show_columns,
-      show_fit_stats        = show_fit_stats,
+      model_id = model_ids[i],
+      vcov = vcov_list[[i]],
+      cluster = cluster_list[[i]],
+      boot_n = boot_n,
+      ci_level = ci_level,
+      ci_method = ci_method,
+      standardized = standardized,
+      exponentiate = exponentiate,
+      show_columns = show_columns,
+      show_fit_stats = show_fit_stats,
       use_ame_satterthwaite = use_ame_satt,
-      cluster_name          = cluster_name_list[i],
-      re_ci                 = re_ci_val,
-      tau                   = tau,
-      at_time               = at_time
+      cluster_name = cluster_name_list[i],
+      re_ci = re_ci_val,
+      tau = tau,
+      at_time = at_time
     )
     # Truthfulness gate: `standardized` requires a class with a real
     # standardized-coefficients path (the beta attach). Classes without
@@ -2109,7 +2268,7 @@ table_regression <- function(
     # earlier, inside the frame method, with the Bayesian rationale.
     std_ok <- isTRUE(frames[[i]]$info$supports$standardise_refit) ||
       (isTRUE(frames[[i]]$info$supports$standardise_algebraic) &&
-         standardized %in% c("posthoc", "basic", "smart"))
+        standardized %in% c("posthoc", "basic", "smart"))
     if (!identical(standardized, "none") && !std_ok) {
       model_tag <- if (n_models > 1L) {
         sprintf("model %d (class %s)", i, class(models[[i]])[1L])
@@ -2118,17 +2277,24 @@ table_regression <- function(
       }
       spicy_abort(
         c(
-          sprintf("`standardized = \"%s\"` is not supported for %s.",
-                  standardized, model_tag),
-          "i" = paste0("Standardized coefficients are available for ",
-                       "`lm`, `glm` (incl. `MASS::glm.nb`), mixed ",
-                       "models (`lmer` / `glmer` / `glmmTMB` / ",
-                       "`nlme::lme`), and fixed-effects `stan_glm`",
-                       "-style fits (\"posthoc\" / \"basic\" / ",
-                       "\"smart\")."),
-          "i" = paste0("To compare predictor effects in other classes, ",
-                       "use average marginal effects where supported: ",
-                       "`show_columns = c(\"b\", \"ame\")`.")
+          sprintf(
+            "`standardized = \"%s\"` is not supported for %s.",
+            standardized,
+            model_tag
+          ),
+          "i" = paste0(
+            "Standardized coefficients are available for ",
+            "`lm`, `glm` (incl. `MASS::glm.nb`), mixed ",
+            "models (`lmer` / `glmer` / `glmmTMB` / ",
+            "`nlme::lme`), and fixed-effects `stan_glm`",
+            "-style fits (\"posthoc\" / \"basic\" / ",
+            "\"smart\")."
+          ),
+          "i" = paste0(
+            "To compare predictor effects in other classes, ",
+            "use average marginal effects where supported: ",
+            "`show_columns = c(\"b\", \"ame\")`."
+          )
         ),
         class = "spicy_unsupported_standardized"
       )
@@ -2136,13 +2302,26 @@ table_regression <- function(
     # Truthfulness gate: RMST / risk-difference columns exist only for
     # coxph fits (the g-computation engine); any other class would
     # render the requested columns empty.
-    wants_estimand <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p",
-                            "risk_diff", "risk_diff_se",
-                            "risk_diff_ci", "risk_diff_p") %in%
-                            show_columns)
-    if (wants_estimand &&
-        !any(frames[[i]]$coefs$estimate_type %in%
-               c("rmst", "risk_diff"))) {
+    wants_estimand <- any(
+      c(
+        "rmst",
+        "rmst_se",
+        "rmst_ci",
+        "rmst_p",
+        "risk_diff",
+        "risk_diff_se",
+        "risk_diff_ci",
+        "risk_diff_p"
+      ) %in%
+        show_columns
+    )
+    if (
+      wants_estimand &&
+        !any(
+          frames[[i]]$coefs$estimate_type %in%
+            c("rmst", "risk_diff")
+        )
+    ) {
       model_tag <- if (n_models > 1L) {
         sprintf("model %d (class %s)", i, class(models[[i]])[1L])
       } else {
@@ -2154,10 +2333,12 @@ table_regression <- function(
             "RMST / risk-difference columns are not available for %s.",
             model_tag
           ),
-          "i" = paste0("They are computed by g-computation from a ",
-                       "`survival::coxph` fit on right-censored ",
-                       "single-record data, or a `survival::survreg` ",
-                       "fit.")
+          "i" = paste0(
+            "They are computed by g-computation from a ",
+            "`survival::coxph` fit on right-censored ",
+            "single-record data, or a `survival::survreg` ",
+            "fit."
+          )
         ),
         class = "spicy_invalid_input"
       )
@@ -2167,8 +2348,7 @@ table_regression <- function(
     # binary response provide (.attach_event_counts). A frame without
     # them would render a requested column entirely empty -- error
     # instead, naming the model.
-    if ("n_events" %in% show_columns &&
-        is.null(frames[[i]]$coefs$events)) {
+    if ("n_events" %in% show_columns && is.null(frames[[i]]$coefs$events)) {
       model_tag <- if (n_models > 1L) {
         sprintf("model %d (class %s)", i, class(models[[i]])[1L])
       } else {
@@ -2180,13 +2360,17 @@ table_regression <- function(
             "`show_columns = \"n_events\"` is not available for %s.",
             model_tag
           ),
-          "i" = paste0("Outcome event counts need a binary (binomial ",
-                       "family) outcome with an ungrouped 0/1, logical, ",
-                       "or two-level factor response -- or a coxph fit ",
-                       "on right-censored single-record data."),
-          "i" = paste0("The model-total event count is also available ",
-                       "as a fit statistic for survival models: ",
-                       "`show_fit_stats = c(\"nobs\", \"n_events\")`.")
+          "i" = paste0(
+            "Outcome event counts need a binary (binomial ",
+            "family) outcome with an ungrouped 0/1, logical, ",
+            "or two-level factor response -- or a coxph fit ",
+            "on right-censored single-record data."
+          ),
+          "i" = paste0(
+            "The model-total event count is also available ",
+            "as a fit statistic for survival models: ",
+            "`show_fit_stats = c(\"nobs\", \"n_events\")`."
+          )
         ),
         class = "spicy_invalid_input"
       )
@@ -2199,10 +2383,12 @@ table_regression <- function(
     # polr / clm / multinom / mlogit / betareg / fixest / pscl / rms / mgcv /
     # svyglm / stan -- which never applied exp -- are handled here.
     exp_out <- .apply_exp_to_frame(
-      frames[[i]]$coefs, frames[[i]]$info, exponentiate
+      frames[[i]]$coefs,
+      frames[[i]]$info,
+      exponentiate
     )
     frames[[i]]$coefs <- exp_out$coefs
-    frames[[i]]$info  <- exp_out$info
+    frames[[i]]$info <- exp_out$info
 
     # Attach precomputed non-additivity metadata so the standardized
     # caveat footer (build_standardized_caveat_footer_block_from_frames())
@@ -2217,11 +2403,17 @@ table_regression <- function(
     # component coefficients are substantive hypotheses and join the p-adjust
     # family (unlike ordinal thresholds).
     cb_i <- frames[[i]]$info$extras$component_blocks
-    if (isTRUE(show_components) &&
+    if (
+      isTRUE(show_components) &&
         "b" %in% show_columns &&
-        !is.null(cb_i) && length(cb_i) > 0L) {
+        !is.null(cb_i) &&
+        length(cb_i) > 0L
+    ) {
       frames[[i]]$coefs <- .append_component_rows(
-        frames[[i]]$coefs, cb_i, exponentiate)
+        frames[[i]]$coefs,
+        cb_i,
+        exponentiate
+      )
       # Record whether each block's exp actually applied (footer gloss).
       frames[[i]]$info$extras$component_blocks <- lapply(cb_i, function(b) {
         b$exp_applied <- isTRUE(exponentiate) && isTRUE(b$exp_ok)
@@ -2234,7 +2426,9 @@ table_regression <- function(
     # and reference rows excluded), not just the displayed subset.
     if (!identical(p_adjust, "none")) {
       frames[[i]]$coefs <- apply_p_adjust_to_frame_coefs(
-        frames[[i]]$coefs, p_adjust)
+        frames[[i]]$coefs,
+        p_adjust
+      )
     }
 
     # Ordinal thresholds as a subordinate "Thresholds" block of rows
@@ -2245,11 +2439,18 @@ table_regression <- function(
     # (else the rows would render empty); when thresholds are not promoted to
     # rows they fall back to the compact footer line (titlefooter layer).
     thr_i <- frames[[i]]$info$extras$thresholds
-    if (isTRUE(show_thresholds) &&
+    if (
+      isTRUE(show_thresholds) &&
         any(c("b", "beta") %in% show_columns) &&
-        !is.null(thr_i) && is.data.frame(thr_i) && nrow(thr_i) > 0L) {
+        !is.null(thr_i) &&
+        is.data.frame(thr_i) &&
+        nrow(thr_i) > 0L
+    ) {
       frames[[i]]$coefs <- .append_threshold_rows(
-        frames[[i]]$coefs, thr_i, ci_level)
+        frames[[i]]$coefs,
+        thr_i,
+        ci_level
+      )
     }
 
     # Scale (dispersion) coefficients of a `scale = ~` clm: their own
@@ -2259,9 +2460,13 @@ table_regression <- function(
     # coefficient column being shown, else the rows would render empty.
     # Without the block the fit rendered as if its scale part did not exist.
     sc_i <- frames[[i]]$info$extras$scale_effects
-    if (isTRUE(show_components) &&
+    if (
+      isTRUE(show_components) &&
         any(c("b", "beta") %in% show_columns) &&
-        !is.null(sc_i) && is.data.frame(sc_i) && nrow(sc_i) > 0L) {
+        !is.null(sc_i) &&
+        is.data.frame(sc_i) &&
+        nrow(sc_i) > 0L
+    ) {
       frames[[i]]$coefs <- .rbind_union(frames[[i]]$coefs, sc_i)
     }
 
@@ -2275,10 +2480,13 @@ table_regression <- function(
     # column a variance component can honestly fill (a vc is never
     # standardized), so the block is omitted rather than rendered empty.
     re_i <- frames[[i]]$info$random_effects
-    if (isTRUE(show_re) &&
+    if (
+      isTRUE(show_re) &&
         "b" %in% show_columns &&
-        !is.null(re_i) && is.data.frame(re_i$variance_components) &&
-        nrow(re_i$variance_components) > 0L) {
+        !is.null(re_i) &&
+        is.data.frame(re_i$variance_components) &&
+        nrow(re_i$variance_components) > 0L
+    ) {
       # Opt-in per-term significance tests (LRT with the chi-bar-squared
       # boundary correction, or the exact RLRT): fill the otherwise-NA test
       # columns of the vc rows. Refits happen here, once per random term.
@@ -2288,19 +2496,27 @@ table_regression <- function(
         NULL
       }
       frames[[i]]$coefs <- .append_random_effects_rows(
-        frames[[i]]$coefs, re_i, re_scale = re_scale_val,
-        term_tests = term_tests, re_test = re_test_val)
+        frames[[i]]$coefs,
+        re_i,
+        re_scale = re_scale_val,
+        term_tests = term_tests,
+        re_test = re_test_val
+      )
     }
   }
 
   # Singular mixed fits: the table note states the FACT (boundary
   # estimate, SE/CI omitted); the actionable advice belongs here, to the
   # analyst, once per table -- not in a published table note.
-  singular_mixed <- vapply(frames, function(fr) {
-    isTRUE(fr$info$extras$has_singular) &&
-      (fr$info$class %||% "") %in%
-        c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
-  }, logical(1))
+  singular_mixed <- vapply(
+    frames,
+    function(fr) {
+      isTRUE(fr$info$extras$has_singular) &&
+        (fr$info$class %||% "") %in%
+          c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
+    },
+    logical(1)
+  )
   if (any(singular_mixed)) {
     labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
       names(models)
@@ -2327,9 +2543,13 @@ table_regression <- function(
   # Variance-component SE / CI skipped for size: the note states the fact;
   # the advice (raise the cap or test the random terms) belongs here, to
   # the analyst, once per table.
-  re_se_skipped <- vapply(frames, function(fr) {
-    !is.na(fr$info$extras$re_se_skipped_n %||% NA_integer_)
-  }, logical(1))
+  re_se_skipped <- vapply(
+    frames,
+    function(fr) {
+      !is.na(fr$info$extras$re_se_skipped_n %||% NA_integer_)
+    },
+    logical(1)
+  )
   if (any(re_se_skipped)) {
     labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
       names(models)
@@ -2339,8 +2559,10 @@ table_regression <- function(
     spicy_warn(
       c(
         sprintf(
-          paste0("Variance-component SEs and CIs skipped for %s: n exceeds ",
-                 "`options(\"spicy.re_se_max_n\")` = %s."),
+          paste0(
+            "Variance-component SEs and CIs skipped for %s: n exceeds ",
+            "`options(\"spicy.re_se_max_n\")` = %s."
+          ),
           paste(labels[re_se_skipped], collapse = ", "),
           format(.re_se_size_cap(), big.mark = ",")
         ),
@@ -2363,13 +2585,21 @@ table_regression <- function(
   # and the incapable ones en-dash -- so only the all-incapable case
   # errors.
   if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
-    ame_ok <- vapply(frames, function(fr) {
-      isTRUE(fr$info$supports$ame)
-    }, logical(1))
+    ame_ok <- vapply(
+      frames,
+      function(fr) {
+        isTRUE(fr$info$supports$ame)
+      },
+      logical(1)
+    )
     if (!any(ame_ok)) {
-      classes <- unique(vapply(frames, function(fr) {
-        fr$info$class %||% "?"
-      }, character(1)))
+      classes <- unique(vapply(
+        frames,
+        function(fr) {
+          fr$info$class %||% "?"
+        },
+        character(1)
+      ))
       # Cox models have the ABSOLUTE estimand family instead: point
       # there rather than leaving the reader without a next step.
       hint_main <- if (any(classes == "coxph")) {
@@ -2403,10 +2633,14 @@ table_regression <- function(
   # exp() -- i.e. every link is identity or otherwise non-exponentiable. Keyed
   # on the frames' own info$extras$exp_applied, so it covers classes with no
   # stats::family() method (polr / clm / multinom / fixest / betareg / ...).
-  if (isTRUE(exponentiate) &&
-      !any(vapply(frames,
-                  function(fr) isTRUE(fr$info$extras$exp_applied),
-                  logical(1)))) {
+  if (
+    isTRUE(exponentiate) &&
+      !any(vapply(
+        frames,
+        function(fr) isTRUE(fr$info$extras$exp_applied),
+        logical(1)
+      ))
+  ) {
     spicy_warn(
       c(
         "`exponentiate = TRUE` has no effect on identity-link fits.",
@@ -2443,19 +2677,21 @@ table_regression <- function(
   # frames (one model), and so does the dispatch payload below --
   # tidy() and output = "long" keep the long frame with outcome_level
   # and prefixed terms. See R/regression_multinom_layout.R.
-  frames_render    <- frames
+  frames_render <- frames
   model_ids_render <- model_ids
-  mn_spanners      <- NULL
-  mn_exploded      <- FALSE
+  mn_spanners <- NULL
+  mn_exploded <- FALSE
   if (mn_columns_active) {
     ex <- .explode_multinom_frame(frames[[1L]])
     if (!is.null(ex)) {
-      frames_render    <- ex$frames
+      frames_render <- ex$frames
       model_ids_render <- ex$model_ids
       # `outcome_labels = FALSE` is documented as "suppress the
       # Outcome body row"; the columns layout has no such row, so
       # FALSE is a no-op here (not an override).
-      if (isFALSE(outcome_labels)) outcome_labels <- NULL
+      if (isFALSE(outcome_labels)) {
+        outcome_labels <- NULL
+      }
       mn_spanners <- .multinom_columns_spanners(
         ex$model_ids,
         frames[[1L]]$info$extras$reference_outcome %||% NA_character_,
@@ -2513,8 +2749,11 @@ table_regression <- function(
       substring(ca$term, nchar(lvl) + 3L),
       ca$term
     )
-    ad$coefs_aligned <- ca[bare %in% unique(aligned$coefs_aligned$term), ,
-                           drop = FALSE]
+    ad$coefs_aligned <- ca[
+      bare %in% unique(aligned$coefs_aligned$term),
+      ,
+      drop = FALSE
+    ]
     ad
   } else {
     aligned
@@ -2553,8 +2792,11 @@ table_regression <- function(
   # rows, NA for non-factor rows) instead of the frame's `parent_var`
   # column. Coalesce to recover the parent-var view of the display.
   ca <- aligned$coefs_aligned
-  displayed_parent_vars <- unique(ifelse(is.na(ca$factor_term),
-                                            ca$term, ca$factor_term))
+  displayed_parent_vars <- unique(ifelse(
+    is.na(ca$factor_term),
+    ca$term,
+    ca$factor_term
+  ))
 
   # Footer: model-facing themes read `frames` (one entry per model);
   # the label-reading themes (reference categories, polynomial
@@ -2586,24 +2828,37 @@ table_regression <- function(
   # directly. Frame coefs have parent_var = term for non-factor predictors
   # (no NA fallback), so the "any factor" test is parent_var != term on
   # any non-intercept row.
-  if (identical(reference_style, "none") &&
-        identical(factor_layout, "flat") &&
-        any(vapply(frames_render, function(f) {
+  if (
+    identical(reference_style, "none") &&
+      identical(factor_layout, "flat") &&
+      any(vapply(
+        frames_render,
+        function(f) {
           coefs <- f$coefs
-          !is.null(coefs) && nrow(coefs) > 0L &&
+          !is.null(coefs) &&
+            nrow(coefs) > 0L &&
             any(coefs$parent_var != coefs$term & coefs$term != "(Intercept)")
-        }, logical(1)))) {
+        },
+        logical(1)
+      ))
+  ) {
     spicy_inform(
-      c(paste0("`reference_style = \"none\"` with `factor_layout = ",
-               "\"flat\"`: reference levels are not displayed anywhere."),
-        "i" = paste0("State the reference convention in the surrounding ",
-                     "text or table caption.")),
+      c(
+        paste0(
+          "`reference_style = \"none\"` with `factor_layout = ",
+          "\"flat\"`: reference levels are not displayed anywhere."
+        ),
+        "i" = paste0(
+          "State the reference convention in the surrounding ",
+          "text or table caption."
+        )
+      ),
       class = "spicy_silent_reference"
     )
   }
 
   full_footer_str <- if (is.null(note)) {
-    if (length(footer_main)) footer_main else NULL   # nocov -- NULL arm unreachable: the type footer block always emits
+    if (length(footer_main)) footer_main else NULL # nocov -- NULL arm unreachable: the type footer block always emits
   } else if (isFALSE(note)) {
     NULL
   } else {
@@ -2629,21 +2884,29 @@ table_regression <- function(
     nms[missing_idx] <- paste0("Model ", missing_idx)
     nms
   } else {
-    NULL  # render_regression_table generates "Model 1", ... as fallback
+    NULL # render_regression_table generates "Model 1", ... as fallback
   }
   # "95% CrI" (equal-tailed) or "95% HDI" header when EVERY frame is a
   # posterior interval (the design promise in regression_frame_stan.R;
   # the hdi gate guarantees posterior_hdi is all-Bayesian): mixed
   # frequentist + Bayesian tables keep the shared "CI" label, with a
   # per-model footer disclosure from the CI-method block.
-  frame_ci_methods <- vapply(frames, function(f) {
-    f$info$ci_method %||% ""
-  }, character(1))
-  ci_label_val <- if (length(frames) > 0L &&
-                        all(frame_ci_methods == "posterior_quantile")) {
+  frame_ci_methods <- vapply(
+    frames,
+    function(f) {
+      f$info$ci_method %||% ""
+    },
+    character(1)
+  )
+  ci_label_val <- if (
+    length(frames) > 0L &&
+      all(frame_ci_methods == "posterior_quantile")
+  ) {
     "CrI"
-  } else if (length(frames) > 0L &&
-               all(frame_ci_methods == "posterior_hdi")) {
+  } else if (
+    length(frames) > 0L &&
+      all(frame_ci_methods == "posterior_hdi")
+  ) {
     "HDI"
   } else {
     "CI"

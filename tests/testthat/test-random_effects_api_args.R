@@ -5,7 +5,6 @@
 #   re_columns   -- subset of c("est", "se", "ci"); "est" is mandatory
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lmer_api <- function() {
@@ -45,7 +44,9 @@ test_that("build_random_effects_footer_block_from_frames(show_re=FALSE) -> NULL"
   fit <- .fit_lmer_api()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(
-    list(fr), show_re = FALSE)
+    list(fr),
+    show_re = FALSE
+  )
   expect_null(out)
 })
 
@@ -58,7 +59,7 @@ test_that("re_scale = 'variance' shows variance values, not SD", {
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
   var_value <- vc$variance[vc$group == "Subject"]
-  sd_value  <- sqrt(var_value)
+  sd_value <- sqrt(var_value)
   out <- capture.output(print(table_regression(fit, re_scale = "variance")))
   combined <- paste(out, collapse = "\n")
   # Variance value should appear, SD value should not.
@@ -71,7 +72,8 @@ test_that("re_scale = 'sd' (default) shows SD values", {
   fit <- .fit_lmer_api()
   fr <- as_regression_frame(fit)
   sd_value <- sqrt(fr$info$random_effects$variance_components$variance[
-    fr$info$random_effects$variance_components$group == "Subject"])
+    fr$info$random_effects$variance_components$group == "Subject"
+  ])
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, sprintf("%.2f", sd_value), fixed = TRUE)
@@ -84,24 +86,29 @@ test_that("invalid re_scale value triggers match.arg error", {
 })
 
 
-
-
 # ---- 3. re_columns subsets the RE-row columns (rows layout) -------------
 # In the rows layout the SE / CI columns are shared with the fixed effects;
 # re_columns en-dashes them on the RE rows only. A cell "has a number" when it
 # shows a value, and is en-dashed / blank otherwise -- tested on the body.
 
 .re_cell_has_num <- function(df, col) {
-  r <- df[grepl("Subject (Intercept)", df$Variable, fixed = TRUE), ,
-          drop = FALSE]
+  r <- df[
+    grepl("Subject (Intercept)", df$Variable, fixed = TRUE),
+    ,
+    drop = FALSE
+  ]
   grepl("[0-9]", r[[col]][1])
 }
 
 test_that("re_columns = 'est' en-dashes SE and CI on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
-                         re_columns = "est", output = "data.frame")
+  df <- table_regression(
+    fit,
+    show_columns = c("b", "se", "ci"),
+    re_columns = "est",
+    output = "data.frame"
+  )
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
   expect_false(.re_cell_has_num(df, se_col))
@@ -113,8 +120,12 @@ test_that("re_columns = 'est' en-dashes SE and CI on the RE rows", {
 test_that("re_columns = c('est', 'se') keeps SE, en-dashes CI on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
-                         re_columns = c("est", "se"), output = "data.frame")
+  df <- table_regression(
+    fit,
+    show_columns = c("b", "se", "ci"),
+    re_columns = c("est", "se"),
+    output = "data.frame"
+  )
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
   expect_true(.re_cell_has_num(df, se_col))
@@ -124,8 +135,12 @@ test_that("re_columns = c('est', 'se') keeps SE, en-dashes CI on the RE rows", {
 test_that("re_columns = c('est', 'ci') keeps CI, en-dashes SE on the RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
-                         re_columns = c("est", "ci"), output = "data.frame")
+  df <- table_regression(
+    fit,
+    show_columns = c("b", "se", "ci"),
+    re_columns = c("est", "ci"),
+    output = "data.frame"
+  )
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
   expect_false(.re_cell_has_num(df, se_col))
@@ -135,8 +150,11 @@ test_that("re_columns = c('est', 'ci') keeps CI, en-dashes SE on the RE rows", {
 test_that("re_columns default (all three) shows estimate + SE + CI on RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  df <- table_regression(fit, show_columns = c("b", "se", "ci"),
-                         output = "data.frame")
+  df <- table_regression(
+    fit,
+    show_columns = c("b", "se", "ci"),
+    output = "data.frame"
+  )
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
   expect_true(.re_cell_has_num(df, se_col))
@@ -170,28 +188,31 @@ test_that("re_columns rejects unknown tokens", {
 # ---- 5. Helpers in isolation --------------------------------------------
 
 test_that(".validate_re_columns happy path returns input", {
-  expect_identical(spicy:::.validate_re_columns(c("est", "se", "ci")),
-                   c("est", "se", "ci"))
+  expect_identical(
+    spicy:::.validate_re_columns(c("est", "se", "ci")),
+    c("est", "se", "ci")
+  )
   expect_identical(spicy:::.validate_re_columns("est"), "est")
-  expect_identical(spicy:::.validate_re_columns(c("est", "se")),
-                   c("est", "se"))
+  expect_identical(spicy:::.validate_re_columns(c("est", "se")), c("est", "se"))
 })
 
 test_that(".validate_re_columns rejects 'est'-missing input", {
-  expect_error(spicy:::.validate_re_columns(c("se", "ci")),
-               class = "spicy_invalid_input")
+  expect_error(
+    spicy:::.validate_re_columns(c("se", "ci")),
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that(".re_components_on_scale('variance') is a no-op", {
   vc <- data.frame(
-    group     = c("Subject", "Residual"),
-    term      = c("(Intercept)", ""),
-    variance  = c(1378.18, 960.46),
-    sd        = c(37.12,    30.99),
-    corr      = c(NA_real_, NA_real_),
+    group = c("Subject", "Residual"),
+    term = c("(Intercept)", ""),
+    variance = c(1378.18, 960.46),
+    sd = c(37.12, 30.99),
+    corr = c(NA_real_, NA_real_),
     std_error = c(13.5, 5.1),
-    ci_lower  = c(1100, 850),
-    ci_upper  = c(1700, 1100),
+    ci_lower = c(1100, 850),
+    ci_upper = c(1700, 1100),
     stringsAsFactors = FALSE
   )
   out <- spicy:::.re_components_on_scale(vc, "variance")

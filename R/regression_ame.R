@@ -22,11 +22,18 @@
 # `estimate_type = "ame"`, ready to rbind() with B/beta rows in
 # `extract_lm_phase1()`.
 
-
 # ---- Public-internal entry point ------------------------------------------
 
-extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
-                              use_ame_satterthwaite, model_id, outcome) {
+extract_ame_rows <- function(
+  fit,
+  vc,
+  vcov_type,
+  cluster,
+  ci_level,
+  use_ame_satterthwaite,
+  model_id,
+  outcome
+) {
   # Class-aware dispatch (Phase 3 Step 5).
   #
   # For `glm`, AME is on the response scale (E[Y|X] = link^-1(eta)) and
@@ -41,15 +48,27 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
   # underlying coefficient (the same coef whose name matches the AME
   # term_id) as the df of the AME t-statistic.
   if (inherits(fit, "glm")) {
-    return(extract_ame_glm(fit, vc, vcov_type, cluster, ci_level,
-                            model_id, outcome))
+    return(extract_ame_glm(
+      fit,
+      vc,
+      vcov_type,
+      cluster,
+      ci_level,
+      model_id,
+      outcome
+    ))
   }
 
   # Path A: try Satterthwaite when CR* and AME requested
   if (isTRUE(use_ame_satterthwaite)) {
     rows <- tryCatch(
       extract_ame_satterthwaite(
-        fit, vcov_type, cluster, ci_level, model_id, outcome
+        fit,
+        vcov_type,
+        cluster,
+        ci_level,
+        model_id,
+        outcome
       ),
       error = function(e) e
     )
@@ -98,8 +117,7 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
     }
   }
   # Path B: marginaleffects with our vcov matrix + df-aware
-  extract_ame_marginaleffects(fit, vc, vcov_type, ci_level,
-                               model_id, outcome)
+  extract_ame_marginaleffects(fit, vc, vcov_type, ci_level, model_id, outcome)
 }
 
 
@@ -109,8 +127,14 @@ extract_ame_rows <- function(fit, vc, vcov_type, cluster, ci_level,
 # interactions), build the closed-form linear contrast that
 # represents the AME, pass it to `clubSandwich::linear_contrast()`,
 # and format the result as a long-format row.
-extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
-                                       model_id, outcome) {
+extract_ame_satterthwaite <- function(
+  fit,
+  vcov_type,
+  cluster,
+  ci_level,
+  model_id,
+  outcome
+) {
   if (!spicy_pkg_available("clubSandwich")) {
     # nocov start
     spicy_abort(
@@ -167,8 +191,7 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
 
   # Stack contrasts into a matrix and pass once to linear_contrast()
   contrast_mat <- do.call(rbind, lapply(contrast_set, `[[`, "vector"))
-  rownames(contrast_mat) <- vapply(contrast_set, `[[`, character(1),
-                                    "term_id")
+  rownames(contrast_mat) <- vapply(contrast_set, `[[`, character(1), "term_id")
 
   # `clubSandwich::linear_contrast()` returns one row of inference
   # per contrast row. Output columns: Coef, Est, SE, df, CI_L, CI_U
@@ -220,11 +243,14 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
       # convention (`paste0(v, lvl)` -> "educationUpper secondary"), the
       # lookup misses; fall back to the factor metadata carried in spec.
       factor_term = fmeta$factor_term %||%
-        spec$factor_term %||% NA_character_,
+        spec$factor_term %||%
+        NA_character_,
       factor_level = fmeta$factor_level %||%
-        spec$factor_level %||% NA_character_,
+        spec$factor_level %||%
+        NA_character_,
       factor_level_pos = fmeta$factor_level_pos %||%
-        spec$factor_level_pos %||% NA_integer_
+        spec$factor_level_pos %||%
+        NA_integer_
     )
   })
   do.call(rbind, rows)
@@ -240,7 +266,9 @@ extract_ame_satterthwaite <- function(fit, vcov_type, cluster, ci_level,
 # - factor v: k-1 contrasts, one per non-reference level.
 build_ame_contrasts_for_predictor <- function(fit, v) {
   data <- stats::model.frame(fit)
-  if (!v %in% names(data)) return(list())
+  if (!v %in% names(data)) {
+    return(list())
+  }
 
   if (is.numeric(data[[v]])) {
     return(list(list(
@@ -254,12 +282,14 @@ build_ame_contrasts_for_predictor <- function(fit, v) {
     # has >= 2 used levels (lm/glm reject single-level factor terms with
     # "contrasts can be applied only to factors with 2 or more levels"),
     # so this guard is not reachable from a fitted model.
-    if (length(lvls) < 2L) return(list()) # nocov
+    if (length(lvls) < 2L) {
+      return(list())
+    } # nocov
     ref <- lvls[1]
     out <- list()
     for (lvl in lvls[-1]) {
       out[[length(out) + 1L]] <- list(
-        term_id = paste0(v, lvl),  # match the lm coef naming convention
+        term_id = paste0(v, lvl), # match the lm coef naming convention
         vector = build_factor_ame_contrast(fit, v, lvl, ref),
         # Carry factor metadata so extract_ame_satterthwaite() can
         # populate the row's factor_term / factor_level /
@@ -313,8 +343,14 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 
 # ---- Path B -- AME via marginaleffects (general) ---------------------------
 
-extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
-                                         model_id, outcome) {
+extract_ame_marginaleffects <- function(
+  fit,
+  vc,
+  vcov_type,
+  ci_level,
+  model_id,
+  outcome
+) {
   if (!spicy_pkg_available("marginaleffects")) {
     # nocov start
     spicy_abort(
@@ -384,7 +420,8 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
     } else {
       cand <- grep(
         paste0("(^|\\()", var_name, "(\\)|$)"),
-        mf_names, value = TRUE
+        mf_names,
+        value = TRUE
       )
       if (length(cand) > 0L) cand[1L] else var_name
     }
@@ -394,11 +431,12 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
     # for binary numerics like am in {0, 1} (it returns "1 - 0"),
     # which would produce `am1` and de-align with the B coef row
     # named `am`. Anchor on the model-frame class to disambiguate.
-    is_factor_var <- col_name %in% mf_names &&
-                      is.factor(mf[[col_name]])
-    term_id <- if (is_factor_var &&
-                    !is.na(contrast_str) &&
-                    grepl(" - ", contrast_str)) {
+    is_factor_var <- col_name %in% mf_names && is.factor(mf[[col_name]])
+    term_id <- if (
+      is_factor_var &&
+        !is.na(contrast_str) &&
+        grepl(" - ", contrast_str)
+    ) {
       lvl <- sub(" - .*$", "", contrast_str)
       paste0(col_name, lvl)
     } else {
@@ -462,9 +500,15 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
   # in `levels(mf[[var]])`; non-factor rows keep their input order.
   # Then drop the helper columns.
   if (nrow(out) > 1L) {
-    out <- out[order(match(out$`.spicy_var`, unique(out$`.spicy_var`)),
-                       out$`.spicy_lvl_pos`,
-                       na.last = FALSE), , drop = FALSE]
+    out <- out[
+      order(
+        match(out$`.spicy_var`, unique(out$`.spicy_var`)),
+        out$`.spicy_lvl_pos`,
+        na.last = FALSE
+      ),
+      ,
+      drop = FALSE
+    ]
     rownames(out) <- NULL
   }
   out$`.spicy_var` <- NULL
@@ -490,8 +534,15 @@ extract_ame_marginaleffects <- function(fit, vc, vcov_type, ci_level,
 #         (AME, SE_CR, df_Satt).
 #         This is the Pustejovsky & Tipton (2018, Section 4) approximation
 #         for nonlinear contrasts under cluster correlation.
-extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
-                              model_id, outcome) {
+extract_ame_glm <- function(
+  fit,
+  vc,
+  vcov_type,
+  cluster,
+  ci_level,
+  model_id,
+  outcome
+) {
   if (!spicy_pkg_available("marginaleffects")) {
     # nocov start
     spicy_abort(
@@ -532,8 +583,8 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # CR* augmentation: Satterthwaite df from clubSandwich, mapped to
   # AME rows via the dominant-coef approximation.
   use_satt <- startsWith(vcov_type, "CR") &&
-                !is.null(cluster) &&
-                spicy_pkg_available("clubSandwich")
+    !is.null(cluster) &&
+    spicy_pkg_available("clubSandwich")
   df_satt_map <- if (use_satt) {
     compute_satt_df_per_coef(fit, vc, cluster)
   } else {
@@ -557,7 +608,8 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     } else {
       cand <- grep(
         paste0("(^|\\()", var_name, "(\\)|$)"),
-        mf_names, value = TRUE
+        mf_names,
+        value = TRUE
       )
       # The `var_name` fallback is unreachable from a valid fit: a term
       # marginaleffects reports either is a bare model-frame column (the
@@ -566,11 +618,12 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     }
 
     # Reconstruct coef-style term_id only for true factor variables.
-    is_factor_var <- col_name %in% mf_names &&
-                      is.factor(mf[[col_name]])
-    term_id <- if (is_factor_var &&
-                    !is.na(contrast_str) &&
-                    grepl(" - ", contrast_str)) {
+    is_factor_var <- col_name %in% mf_names && is.factor(mf[[col_name]])
+    term_id <- if (
+      is_factor_var &&
+        !is.na(contrast_str) &&
+        grepl(" - ", contrast_str)
+    ) {
       lvl <- sub(" - .*$", "", contrast_str)
       paste0(col_name, lvl)
     } else {
@@ -579,12 +632,12 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     fmeta <- factor_meta[[term_id]]
 
     est_i <- ame_table$estimate[i]
-    se_i  <- ame_table$std.error[i]
+    se_i <- ame_table$std.error[i]
     ci_lo_i <- ame_table$conf.low[i]
     ci_hi_i <- ame_table$conf.high[i]
-    stat_i  <- ame_table$statistic[i]
-    p_i     <- ame_table$p.value[i]
-    df_i    <- Inf
+    stat_i <- ame_table$statistic[i]
+    p_i <- ame_table$p.value[i]
+    df_i <- Inf
     test_type_i <- "z"
 
     if (!is.null(df_satt_map) && term_id %in% names(df_satt_map)) {
@@ -650,9 +703,15 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # Sort within each variable: factor rows by their level position
   # in `levels(mf[[var]])`; non-factor rows keep their input order.
   if (nrow(out) > 1L) {
-    out <- out[order(match(out$`.spicy_var`, unique(out$`.spicy_var`)),
-                       out$`.spicy_lvl_pos`,
-                       na.last = FALSE), , drop = FALSE]
+    out <- out[
+      order(
+        match(out$`.spicy_var`, unique(out$`.spicy_var`)),
+        out$`.spicy_lvl_pos`,
+        na.last = FALSE
+      ),
+      ,
+      drop = FALSE
+    ]
     rownames(out) <- NULL
   }
   out$`.spicy_var` <- NULL
@@ -689,67 +748,76 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 #
 # Returns a zero-row frame coefs subset on failure (missing
 # marginaleffects, `avg_slopes()` errors, fit class out of scope).
-.compute_ame_rows_for_frame <- function(fit, ci_level, vc = NULL,
-                                        hdi = FALSE) {
-  if (!spicy_pkg_available("marginaleffects")) return(NULL)
+.compute_ame_rows_for_frame <- function(fit, ci_level, vc = NULL, hdi = FALSE) {
+  if (!spicy_pkg_available("marginaleffects")) {
+    return(NULL)
+  }
   if (inherits(fit, c("stanreg", "brmsfit"))) {
     # Bayesian fits: draws-native summaries under the table's own
     # conventions (median / MAD SD / ETI-or-HDI; no statistic, no p).
     # The shared row-mapping below consumes the same column shape.
     ame_table <- .compute_bayes_ame_table(fit, ci_level, hdi = hdi)
   } else {
-  # `vc` is the robust coefficient vcov requested for this fit (HC* / CR*).
-  # Passing it to avg_slopes() makes the AME standard errors / CIs / p-values
-  # honour that estimator (via the delta method) -- the AME point estimates are
-  # vcov-independent and unchanged. When `vc` is NULL we omit it, so avg_slopes
-  # uses the fit's own vcov (the model-based one, or the design-based estimator
-  # for svyglm).
-  do_slopes <- function(vcarg) {
-    suppressWarnings(suppressMessages(
-      marginaleffects::avg_slopes(
-        fit, conf_level = ci_level, df = Inf, vcov = vcarg
-      )
-    ))
-  }
-  fail_warn <- function(e) {
-    spicy_warn(
-      c(
-        "AME computation via `marginaleffects::avg_slopes()` failed.",
-        "x" = paste0("Reason: ", conditionMessage(e)),
-        "i" = "AME column will be en-dashed in the displayed table."
-      ),
-      class = "spicy_fallback"
-    )
-    NULL
-  }
-  ame_table <- tryCatch(
-    do_slopes(if (!is.null(vc)) vc else TRUE),
-    error = function(e) {
-      # Some model types reject a custom vcov matrix in avg_slopes() (e.g.
-      # glmmTMB accepts only TRUE/FALSE/"HC0"). Fall back to the model-based
-      # AME so the estimates still appear -- they are vcov-independent; only the
-      # SE / CI / p revert to model-based -- with a clear warning.
-      if (!is.null(vc)) {
-        spicy_warn(
-          c(
-            paste0("Robust-vcov AME is not available for this model type; ",
-                   "AME uncertainty falls back to the model-based vcov."),
-            "x" = paste0("Reason: ", conditionMessage(e)),
-            "i" = "The AME point estimates are unaffected (they are vcov-independent)."
-          ),
-          class = "spicy_fallback"
+    # `vc` is the robust coefficient vcov requested for this fit (HC* / CR*).
+    # Passing it to avg_slopes() makes the AME standard errors / CIs / p-values
+    # honour that estimator (via the delta method) -- the AME point estimates are
+    # vcov-independent and unchanged. When `vc` is NULL we omit it, so avg_slopes
+    # uses the fit's own vcov (the model-based one, or the design-based estimator
+    # for svyglm).
+    do_slopes <- function(vcarg) {
+      suppressWarnings(suppressMessages(
+        marginaleffects::avg_slopes(
+          fit,
+          conf_level = ci_level,
+          df = Inf,
+          vcov = vcarg
         )
-        tryCatch(do_slopes(TRUE), error = fail_warn)
-      } else {
-        fail_warn(e)
-      }
+      ))
     }
-  )
+    fail_warn <- function(e) {
+      spicy_warn(
+        c(
+          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          "x" = paste0("Reason: ", conditionMessage(e)),
+          "i" = "AME column will be en-dashed in the displayed table."
+        ),
+        class = "spicy_fallback"
+      )
+      NULL
+    }
+    ame_table <- tryCatch(
+      do_slopes(if (!is.null(vc)) vc else TRUE),
+      error = function(e) {
+        # Some model types reject a custom vcov matrix in avg_slopes() (e.g.
+        # glmmTMB accepts only TRUE/FALSE/"HC0"). Fall back to the model-based
+        # AME so the estimates still appear -- they are vcov-independent; only the
+        # SE / CI / p revert to model-based -- with a clear warning.
+        if (!is.null(vc)) {
+          spicy_warn(
+            c(
+              paste0(
+                "Robust-vcov AME is not available for this model type; ",
+                "AME uncertainty falls back to the model-based vcov."
+              ),
+              "x" = paste0("Reason: ", conditionMessage(e)),
+              "i" = "The AME point estimates are unaffected (they are vcov-independent)."
+            ),
+            class = "spicy_fallback"
+          )
+          tryCatch(do_slopes(TRUE), error = fail_warn)
+        } else {
+          fail_warn(e)
+        }
+      }
+    )
   }
-  if (is.null(ame_table) || nrow(ame_table) == 0L) return(NULL)
+  if (is.null(ame_table) || nrow(ame_table) == 0L) {
+    return(NULL)
+  }
 
-  factor_meta <- tryCatch(detect_factor_term_meta(fit),
-                           error = function(e) list())
+  factor_meta <- tryCatch(detect_factor_term_meta(fit), error = function(e) {
+    list()
+  })
   # Engine-aware data-frame retrieval: stats::model.frame() returns
   # the lmeStruct (not the data) for nlme::lme fits, so we use
   # nlme::getData() instead. lme4 + glmmTMB + lm / glm all return a
@@ -767,7 +835,7 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   has_group <- "group" %in% names(ame_table)
 
   rows <- lapply(seq_len(nrow(ame_table)), function(i) {
-    var_name     <- ame_table$term[i]
+    var_name <- ame_table$term[i]
     contrast_str <- ame_table$contrast[i] %||% NA_character_
 
     # marginaleffects strips inline transforms like `factor(cyl)` and
@@ -776,8 +844,11 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     col_name <- if (var_name %in% mf_names) {
       var_name
     } else {
-      cand <- grep(paste0("(^|\\()", var_name, "(\\)|$)"),
-                   mf_names, value = TRUE)
+      cand <- grep(
+        paste0("(^|\\()", var_name, "(\\)|$)"),
+        mf_names,
+        value = TRUE
+      )
       # The `var_name` fallback is unreachable from a valid fit (see the
       # equivalent guard in extract_ame_glm()): a reported term is either
       # a bare model-frame column or matches a wrapped one via the grep.
@@ -788,8 +859,9 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     # Reconstruct a coef-style term id for factor rows so the renderer
     # groups them under the parent factor header. For numeric / logical
     # predictors the term IS the variable name.
-    term_id <- if (is_factor_var && !is.na(contrast_str) &&
-                    grepl(" - ", contrast_str)) {
+    term_id <- if (
+      is_factor_var && !is.na(contrast_str) && grepl(" - ", contrast_str)
+    ) {
       lvl <- sub(" - .*$", "", contrast_str)
       paste0(col_name, lvl)
     } else {
@@ -806,11 +878,11 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
     }
 
-    parent_var <- fmeta$factor_term  %||%
+    parent_var <- fmeta$factor_term %||%
       (if (is_factor_var) col_name else term_id)
-    label      <- fmeta$factor_level %||%
+    label <- fmeta$factor_level %||%
       (if (!is.na(lvl_str)) lvl_str else term_id)
-    pos        <- fmeta$factor_level_pos %||% lvl_pos
+    pos <- fmeta$factor_level_pos %||% lvl_pos
 
     # Per-category AME: `term` / `label` / `parent_var` stay BARE (the predictor
     # itself), so each AME row aligns to its B row by `term`; the outcome
@@ -821,21 +893,21 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
     grp <- if (has_group) as.character(ame_table$group[i]) else NA_character_
 
     data.frame(
-      term             = term_id,
-      parent_var       = parent_var,
-      label            = label,
+      term = term_id,
+      parent_var = parent_var,
+      label = label,
       factor_level_pos = as.integer(pos),
-      is_ref           = FALSE,
-      estimate_type    = "ame",
-      estimate         = as.numeric(ame_table$estimate[i]),
-      std_error        = as.numeric(ame_table$std.error[i]),
-      df               = Inf,
-      statistic        = as.numeric(ame_table$statistic[i]),
-      p_value          = as.numeric(ame_table$p.value[i]),
-      ci_lower         = as.numeric(ame_table$conf.low[i]),
-      ci_upper         = as.numeric(ame_table$conf.high[i]),
-      test_type        = "z",
-      outcome_level    = grp,
+      is_ref = FALSE,
+      estimate_type = "ame",
+      estimate = as.numeric(ame_table$estimate[i]),
+      std_error = as.numeric(ame_table$std.error[i]),
+      df = Inf,
+      statistic = as.numeric(ame_table$statistic[i]),
+      p_value = as.numeric(ame_table$p.value[i]),
+      ci_lower = as.numeric(ame_table$conf.low[i]),
+      ci_upper = as.numeric(ame_table$conf.high[i]),
+      test_type = "z",
+      outcome_level = grp,
       stringsAsFactors = FALSE
     )
   })
@@ -885,60 +957,75 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       NULL
     }
   )
-  if (is.null(s) || nrow(s) == 0L) return(NULL)
+  if (is.null(s) || nrow(s) == 0L) {
+    return(NULL)
+  }
   base <- as.data.frame(s)
   has_contrast <- "contrast" %in% names(base)
-  has_group    <- "group" %in% names(base)
+  has_group <- "group" %in% names(base)
 
   out <- data.frame(
-    term      = as.character(base$term),
-    contrast  = if (has_contrast) as.character(base$contrast)
-                else NA_character_,
-    estimate  = as.numeric(base$estimate),
+    term = as.character(base$term),
+    contrast = if (has_contrast) {
+      as.character(base$contrast)
+    } else {
+      NA_character_
+    },
+    estimate = as.numeric(base$estimate),
     std.error = NA_real_,
     statistic = NA_real_,
-    p.value   = NA_real_,
-    conf.low  = as.numeric(base$conf.low),
+    p.value = NA_real_,
+    conf.low = as.numeric(base$conf.low),
     conf.high = as.numeric(base$conf.high),
     stringsAsFactors = FALSE
   )
-  if (has_group) out$group <- as.character(base$group)
+  if (has_group) {
+    out$group <- as.character(base$group)
+  }
 
-  dr <- tryCatch(marginaleffects::posterior_draws(s),
-                 error = function(e) NULL)
+  dr <- tryCatch(marginaleffects::posterior_draws(s), error = function(e) NULL)
   if (!is.null(dr) && all(c("draw", "term") %in% names(dr))) {
     lo_pr <- (1 - ci_level) / 2
     hi_pr <- 1 - lo_pr
-    key_out <- paste(out$term,
-                     if (has_contrast) out$contrast else "",
-                     if (has_group) out$group else "")
-    key_dr <- paste(as.character(dr$term),
-                    if (has_contrast) as.character(dr$contrast) else "",
-                    if (has_group) as.character(dr$group) else "")
+    key_out <- paste(
+      out$term,
+      if (has_contrast) out$contrast else "",
+      if (has_group) out$group else ""
+    )
+    key_dr <- paste(
+      as.character(dr$term),
+      if (has_contrast) as.character(dr$contrast) else "",
+      if (has_group) as.character(dr$group) else ""
+    )
     for (k in seq_len(nrow(out))) {
       d <- dr$draw[key_dr == key_out[k]]
-      if (length(d) < 2L) next                                        # nocov
-      out$estimate[k]  <- stats::median(d)
+      if (length(d) < 2L) {
+        next
+      } # nocov
+      out$estimate[k] <- stats::median(d)
       out$std.error[k] <- stats::mad(d)
       ci <- if (isTRUE(hdi)) {
         .hdi_interval(d, ci_level)
       } else {
         unname(stats::quantile(d, c(lo_pr, hi_pr)))
       }
-      out$conf.low[k]  <- ci[1L]
+      out$conf.low[k] <- ci[1L]
       out$conf.high[k] <- ci[2L]
     }
-  } else {                                                            # nocov start
+  } else {
+    # nocov start
     # posterior_draws unavailable: keep avg_slopes' own draws-based
     # median + equal-tailed interval; the SE cell dashes.
     spicy_warn(
-      paste0("AME draws could not be extracted via ",
-             "marginaleffects::posterior_draws(); the AME SE column ",
-             "is en-dashed and the interval is marginaleffects' ",
-             "equal-tailed default."),
+      paste0(
+        "AME draws could not be extracted via ",
+        "marginaleffects::posterior_draws(); the AME SE column ",
+        "is en-dashed and the interval is marginaleffects' ",
+        "equal-tailed default."
+      ),
       class = "spicy_fallback"
     )
-  }                                                                   # nocov end
+  } # nocov end
   out
 }
 
@@ -948,7 +1035,9 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 # Their AME (and standardized) estimate is equally undefined. Works on both the
 # frame schema (`is_ref`) and the legacy long-format (`is_reference`).
 .aliased_coef_terms <- function(coefs) {
-  if (is.null(coefs) || nrow(coefs) == 0L) return(character(0))
+  if (is.null(coefs) || nrow(coefs) == 0L) {
+    return(character(0))
+  }
   is_b <- coefs$estimate_type == "B"
   # [[ (not $): data.frame $ partial-matches, so `coefs$is_ref` would
   # silently resolve to a legacy `is_reference` column and the second
@@ -969,11 +1058,20 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 # A no-op when (a) `show_columns` doesn't ask for AME, (b) the
 # marginaleffects package is unavailable, (c) `avg_slopes()` errors.
 # The returned coefs always has the same schema as the input.
-.attach_ame_to_frame_coefs <- function(coefs, fit, ci_level, show_columns,
-                                       vcov_type = "model", cluster = NULL,
-                                       hdi = FALSE, vcov_matrix = NULL) {
+.attach_ame_to_frame_coefs <- function(
+  coefs,
+  fit,
+  ci_level,
+  show_columns,
+  vcov_type = "model",
+  cluster = NULL,
+  hdi = FALSE,
+  vcov_matrix = NULL
+) {
   ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
-  if (!any(ame_tokens %in% show_columns)) return(coefs)
+  if (!any(ame_tokens %in% show_columns)) {
+    return(coefs)
+  }
   # Robust AME uncertainty: when a robust vcov was requested for the
   # coefficients, recompute the same matrix and pass it to avg_slopes so the AME
   # SE / CI / p honour the requested estimator. A no-op for the model-based
@@ -983,13 +1081,20 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # passes it via `vcov_matrix` (rq: the coefficient rows and the AME must
   # share ONE computation -- for bootstrap, one replicate draw).
   vc <- vcov_matrix
-  if (is.null(vc) && !is.null(vcov_type) &&
-        !vcov_type %in% c("model", "classical", "survey-Taylor")) {
-    vc <- tryCatch(compute_model_vcov(fit, type = vcov_type, cluster = cluster),
-                   error = function(e) NULL)
+  if (
+    is.null(vc) &&
+      !is.null(vcov_type) &&
+      !vcov_type %in% c("model", "classical", "survey-Taylor")
+  ) {
+    vc <- tryCatch(
+      compute_model_vcov(fit, type = vcov_type, cluster = cluster),
+      error = function(e) NULL
+    )
   }
   ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc, hdi = hdi)
-  if (is.null(ame_rows) || nrow(ame_rows) == 0L) return(coefs)
+  if (is.null(ame_rows) || nrow(ame_rows) == 0L) {
+    return(coefs)
+  }
   # A perfectly-collinear (aliased) predictor has an NA coefficient and an
   # en-dashed B row; its AME is equally undefined, but marginaleffects returns a
   # finite 0 (not NA), which would render a misleading "0.00". Mirror the B-row
@@ -999,8 +1104,14 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   if (length(aliased)) {
     hit <- ame_rows$term %in% aliased
     if (any(hit)) {
-      for (col in c("estimate", "std_error", "ci_lower", "ci_upper",
-                    "statistic", "p_value")) {
+      for (col in c(
+        "estimate",
+        "std_error",
+        "ci_lower",
+        "ci_upper",
+        "statistic",
+        "p_value"
+      )) {
         ame_rows[[col]][hit] <- NA_real_
       }
     }
@@ -1012,14 +1123,21 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # coefficients (ordinal proportional-odds: one shared B per predictor) the AME
   # terms stay BARE and the renderer pivots outcome_level into per-category
   # columns. Data-driven, not class-driven.
-  b_per_outcome <- "outcome_level" %in% names(coefs) &&
+  b_per_outcome <- "outcome_level" %in%
+    names(coefs) &&
     any(!is.na(coefs$outcome_level))
   if (b_per_outcome && "outcome_level" %in% names(ame_rows)) {
     has_cat <- !is.na(ame_rows$outcome_level)
-    ame_rows$term[has_cat]  <- paste0(ame_rows$outcome_level[has_cat], ": ",
-                                      ame_rows$term[has_cat])
-    ame_rows$label[has_cat] <- paste0(ame_rows$outcome_level[has_cat], ": ",
-                                      ame_rows$label[has_cat])
+    ame_rows$term[has_cat] <- paste0(
+      ame_rows$outcome_level[has_cat],
+      ": ",
+      ame_rows$term[has_cat]
+    )
+    ame_rows$label[has_cat] <- paste0(
+      ame_rows$outcome_level[has_cat],
+      ": ",
+      ame_rows$label[has_cat]
+    )
   }
   # Reference-level placeholder AME rows: the legacy lm/glm extractor
   # emits one reference row PER estimate_type (build_reference_rows:
@@ -1044,7 +1162,9 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       character(0)
     }
     add <- lapply(ref_i, function(r) {
-      if (!(coefs$parent_var[r] %in% ame_parents)) return(NULL)      # nocov
+      if (!(coefs$parent_var[r] %in% ame_parents)) {
+        return(NULL)
+      } # nocov
       ref_out <- if ("outcome_level" %in% names(coefs)) {
         coefs$outcome_level[r]
       } else {
@@ -1055,18 +1175,23 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
       } else {
         NA_character_
       }
-      do.call(rbind, lapply(outs, function(o) {
-        row <- ame_rows[1L, , drop = FALSE]
-        row[1L, ] <- NA
-        row$term             <- coefs$term[r]
-        row$parent_var       <- coefs$parent_var[r]
-        row$label            <- coefs$label[r]
-        row$factor_level_pos <- coefs$factor_level_pos[r]
-        row$is_ref           <- TRUE
-        row$estimate_type    <- "ame"
-        if ("outcome_level" %in% names(row)) row$outcome_level <- o
-        row
-      }))
+      do.call(
+        rbind,
+        lapply(outs, function(o) {
+          row <- ame_rows[1L, , drop = FALSE]
+          row[1L, ] <- NA
+          row$term <- coefs$term[r]
+          row$parent_var <- coefs$parent_var[r]
+          row$label <- coefs$label[r]
+          row$factor_level_pos <- coefs$factor_level_pos[r]
+          row$is_ref <- TRUE
+          row$estimate_type <- "ame"
+          if ("outcome_level" %in% names(row)) {
+            row$outcome_level <- o
+          }
+          row
+        })
+      )
     })
     add <- do.call(rbind, Filter(Negate(is.null), add))
     if (!is.null(add) && nrow(add) > 0L) {
@@ -1076,7 +1201,9 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
   # Defensive no-op: a structurally-incompatible AME frame (no shared columns)
   # is never produced by .compute_ame_rows_for_frame, but guard so a future /
   # mocked caller cannot inject garbage rows into the coefs frame.
-  if (length(intersect(names(coefs), names(ame_rows))) == 0L) return(coefs)
+  if (length(intersect(names(coefs), names(ame_rows))) == 0L) {
+    return(coefs)
+  }
   # Column-union rbind: per-category AME rows carry an `outcome_level` column
   # the proportional-odds B rows (polr / clm) lack, and the base coefs may carry
   # columns the AME rows lack. Pad both sides to the union so the structured
@@ -1089,7 +1216,11 @@ extract_ame_glm <- function(fit, vc, vcov_type, cluster, ci_level,
 # rbind two coefs-shaped data.frames with differing columns: pad each to the
 # union (NA of the source column's type) and bind in the first frame's order.
 .rbind_union <- function(a, b) {
-  for (col in setdiff(names(b), names(a))) a[[col]] <- b[[col]][NA_integer_]
-  for (col in setdiff(names(a), names(b))) b[[col]] <- a[[col]][NA_integer_]
+  for (col in setdiff(names(b), names(a))) {
+    a[[col]] <- b[[col]][NA_integer_]
+  }
+  for (col in setdiff(names(a), names(b))) {
+    b[[col]] <- a[[col]][NA_integer_]
+  }
   rbind(a, b[, names(a), drop = FALSE])
 }

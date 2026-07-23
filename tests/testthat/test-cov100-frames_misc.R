@@ -6,7 +6,6 @@
 # main per-engine frame test files do not reach.
 # ---------------------------------------------------------------------------
 
-
 # ---- lm legacy reshape: zero-coefficient fit ------------------------------
 
 test_that("lm with no coefficients yields a zero-row schema coefs frame", {
@@ -17,9 +16,22 @@ test_that("lm with no coefficients yields a zero-row schema coefs frame", {
   expect_identical(nrow(fr$coefs), 0L)
   expect_identical(
     names(fr$coefs),
-    c("term", "parent_var", "label", "factor_level_pos", "is_ref",
-      "estimate_type", "estimate", "std_error", "df", "statistic",
-      "p_value", "ci_lower", "ci_upper", "test_type")
+    c(
+      "term",
+      "parent_var",
+      "label",
+      "factor_level_pos",
+      "is_ref",
+      "estimate_type",
+      "estimate",
+      "std_error",
+      "df",
+      "statistic",
+      "p_value",
+      "ci_lower",
+      "ci_upper",
+      "test_type"
+    )
   )
   expect_identical(fr$info$class, "lm")
 })
@@ -43,10 +55,14 @@ test_that(".scalar_or_na maps non-numeric, non-logical input to NA_real_", {
 test_that(".vcov_label_from_kind falls back to the kind name when unknown", {
   expect_identical(spicy:::.vcov_label_from_kind("XYZ"), "XYZ")
   # Known kinds keep their curated labels.
-  expect_identical(spicy:::.vcov_label_from_kind("HC3"),
-                   "HC3 heteroskedasticity-consistent")
-  expect_identical(spicy:::.vcov_label_from_kind("model", is_glm = TRUE),
-                   "Model-based (asymptotic)")
+  expect_identical(
+    spicy:::.vcov_label_from_kind("HC3"),
+    "HC3 heteroskedasticity-consistent"
+  )
+  expect_identical(
+    spicy:::.vcov_label_from_kind("model", is_glm = TRUE),
+    "Model-based (asymptotic)"
+  )
 })
 
 
@@ -93,12 +109,12 @@ test_that("coxph penalized (ridge) fit routes through the est/se fallback", {
   expect_false("z" %in% colnames(summary(fit)$coefficients))
   fr <- as_regression_frame(fit, model_id = "M1")
   est <- unname(stats::coef(fit))
-  se  <- unname(sqrt(diag(as.matrix(stats::vcov(fit)))))
+  se <- unname(sqrt(diag(as.matrix(stats::vcov(fit)))))
   expect_identical(nrow(fr$coefs), 2L)
-  expect_equal(fr$coefs$estimate,  est)
+  expect_equal(fr$coefs$estimate, est)
   expect_equal(fr$coefs$std_error, se)
   expect_equal(fr$coefs$statistic, est / se)
-  expect_equal(fr$coefs$p_value,   2 * stats::pnorm(-abs(est / se)))
+  expect_equal(fr$coefs$p_value, 2 * stats::pnorm(-abs(est / se)))
   expect_identical(unique(fr$coefs$test_type), "z")
 })
 
@@ -131,18 +147,21 @@ test_that(".fixest_title_prefix maps GLM families to family-aware titles", {
   )
   expect_identical(
     spicy:::.fixest_title_prefix(
-      list(family = "inverse.gaussian", link = "1/mu^2"), TRUE),
+      list(family = "inverse.gaussian", link = "1/mu^2"),
+      TRUE
+    ),
     "Inverse-Gaussian regression (fixed effects)"
   )
   # Any other family name falls through to the capitalised default.
   expect_identical(
-    spicy:::.fixest_title_prefix(list(family = "quasipoisson", link = "log"),
-                                 TRUE),
+    spicy:::.fixest_title_prefix(
+      list(family = "quasipoisson", link = "log"),
+      TRUE
+    ),
     "Quasipoisson regression (fixed effects)"
   )
   expect_identical(
-    spicy:::.fixest_title_prefix(list(family = "gaussian", link = "log"),
-                                 TRUE),
+    spicy:::.fixest_title_prefix(list(family = "gaussian", link = "log"), TRUE),
     "Gaussian regression (fixed effects)"
   )
 })
@@ -154,17 +173,22 @@ test_that("flexsurvreg with an ordered (poly-contrast) factor emits no reference
   skip_if_not_installed("flexsurv")
   skip_if_not_installed("survival")
   ov <- survival::ovarian
-  ov$ogrp <- ordered(cut(ov$age, breaks = c(0, 50, 60, 100),
-                         labels = c("lo", "mid", "hi")))
-  fit <- flexsurv::flexsurvreg(survival::Surv(futime, fustat) ~ ogrp,
-                               data = ov, dist = "weibull")
+  ov$ogrp <- ordered(cut(
+    ov$age,
+    breaks = c(0, 50, 60, 100),
+    labels = c("lo", "mid", "hi")
+  ))
+  fit <- flexsurv::flexsurvreg(
+    survival::Surv(futime, fustat) ~ ogrp,
+    data = ov,
+    dist = "weibull"
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   # Polynomial contrasts have no reference level: detect_factor_terms()
   # flags reference_dropped = FALSE and no synthetic row is emitted.
   expect_false(any(fr$coefs$is_ref))
   expect_identical(fr$coefs$term, c("ogrp.L", "ogrp.Q"))
-  expect_equal(fr$coefs$estimate,
-               unname(fit$res[c("ogrp.L", "ogrp.Q"), "est"]))
+  expect_equal(fr$coefs$estimate, unname(fit$res[c("ogrp.L", "ogrp.Q"), "est"]))
 })
 
 test_that(".flexsurv_has_anc_covariates is FALSE when the fit has no mx slot", {
@@ -184,7 +208,8 @@ test_that("selection frame reads the DV from fit$outcome$formula when present", 
   fit <- sampleSelection::selection(
     lfp ~ age + I(age^2) + faminc + kids + educ,
     wage ~ exper + I(exper^2) + educ + city,
-    data = Mroz87, method = "2step"
+    data = Mroz87,
+    method = "2step"
   )
   # Real selection objects carry no $outcome component, so the dv falls
   # back to the generic "outcome" label.

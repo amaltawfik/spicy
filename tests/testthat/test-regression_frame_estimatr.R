@@ -2,7 +2,6 @@
 # Phase 6a tests: as_regression_frame() methods for estimatr fits.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lm_robust_basic <- function() {
@@ -58,7 +57,7 @@ test_that("lm_robust: info$family is gaussian/identity", {
   fit <- .fit_lm_robust_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("lm_robust: info$dv reads the response variable name", {
@@ -70,8 +69,7 @@ test_that("lm_robust: info$dv reads the response variable name", {
 test_that("lm_robust: title_prefix names robust SE", {
   fit <- .fit_lm_robust_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Linear regression (robust SE)")
+  expect_identical(fr$info$extras$title_prefix, "Linear regression (robust SE)")
 })
 
 
@@ -83,10 +81,12 @@ test_that("lm_robust: coefs estimates match stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -96,16 +96,27 @@ test_that("lm_robust: SE / p / df / CI byte-match summary(fit)$coefficients", {
   sm <- summary(fit)$coefficients
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(sm[nm, "Std. Error"]), tolerance = 1e-10)
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "Pr(>|t|)"]),  tolerance = 1e-10)
-    expect_equal(b_rows$df[b_rows$term == nm],
-                 unname(sm[nm, "DF"]))
-    expect_equal(b_rows$ci_lower[b_rows$term == nm],
-                 unname(sm[nm, "CI Lower"]), tolerance = 1e-10)
-    expect_equal(b_rows$ci_upper[b_rows$term == nm],
-                 unname(sm[nm, "CI Upper"]), tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(sm[nm, "Std. Error"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "Pr(>|t|)"]),
+      tolerance = 1e-10
+    )
+    expect_equal(b_rows$df[b_rows$term == nm], unname(sm[nm, "DF"]))
+    expect_equal(
+      b_rows$ci_lower[b_rows$term == nm],
+      unname(sm[nm, "CI Lower"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$ci_upper[b_rows$term == nm],
+      unname(sm[nm, "CI Upper"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -158,10 +169,12 @@ test_that("lm_robust clustered: vcov_label = 'Cluster-robust (CR2)'", {
 test_that("lm_robust: r.squared / adj.r.squared match fit slots", {
   fit <- .fit_lm_robust_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$r_squared,     fit$r.squared,
-               tolerance = 1e-10)
-  expect_equal(fr$info$fit_stats$adj_r_squared, fit$adj.r.squared,
-               tolerance = 1e-10)
+  expect_equal(fr$info$fit_stats$r_squared, fit$r.squared, tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$adj_r_squared,
+    fit$adj.r.squared,
+    tolerance = 1e-10
+  )
 })
 
 test_that("lm_robust: AIC / BIC / log_lik are NA (not MLE)", {
@@ -202,8 +215,7 @@ test_that("iv_robust: info$class is 'iv_robust'", {
 test_that("iv_robust: title_prefix names IV", {
   fit <- .fit_iv_robust_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "IV regression (robust SE)")
+  expect_identical(fr$info$extras$title_prefix, "IV regression (robust SE)")
 })
 
 test_that("iv_robust: supports$classical_r2 = FALSE (IV R2 non-standard)", {
@@ -218,10 +230,16 @@ test_that("iv_robust: SE / p byte-match summary", {
   sm <- summary(fit)$coefficients
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(sm[nm, "Std. Error"]), tolerance = 1e-10)
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "Pr(>|t|)"]),  tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(sm[nm, "Std. Error"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "Pr(>|t|)"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -237,13 +255,25 @@ test_that("lm_robust coefs match parameters::model_parameters() (oracle)", {
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })

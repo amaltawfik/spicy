@@ -15,7 +15,6 @@
 # crafted factor_meta -- mirroring the .qr_reference_rows() cov tests.
 # ---------------------------------------------------------------------------
 
-
 # ---- 1. .check_rms_available(): abort when rms is missing -----------------
 
 test_that(".check_rms_available aborts with spicy_missing_pkg when rms absent", {
@@ -74,8 +73,11 @@ test_that(".rms_reference_rows returns an empty frame when no factor terms prese
   # early `length(factor_terms_present) == 0L` guard returns the empty
   # coefs frame before the synthesis loop.
   fm <- list(
-    z = list(factor_term = NA_character_, factor_level = NA_character_,
-             factor_level_pos = NA_integer_)
+    z = list(
+      factor_term = NA_character_,
+      factor_level = NA_character_,
+      factor_level_pos = NA_integer_
+    )
   )
   rr <- spicy:::.rms_reference_rows(fit, fm)
   expect_identical(nrow(rr), 0L)

@@ -8,14 +8,16 @@
 #     missing-package aborts (mocked spicy_pkg_available)
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_flexsurv_cov <- function() {
   skip_if_not_installed("flexsurv")
   skip_if_not_installed("survival")
-  flexsurv::flexsurvreg(survival::Surv(time, status) ~ age + sex,
-                        data = survival::lung, dist = "weibull")
+  flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    dist = "weibull"
+  )
 }
 
 
@@ -26,12 +28,16 @@ test_that("flexsurvreg: ci_level != 0.95 rebuilds CIs from est +/- z*se", {
   fr <- as_regression_frame(fit, model_id = "M1", ci_level = 0.90)
   non_ref <- fr$coefs[!fr$coefs$is_ref, ]
   z_crit <- stats::qnorm(0.5 + 0.90 / 2)
-  expect_equal(non_ref$ci_lower,
-               non_ref$estimate - z_crit * non_ref$std_error,
-               tolerance = 1e-12)
-  expect_equal(non_ref$ci_upper,
-               non_ref$estimate + z_crit * non_ref$std_error,
-               tolerance = 1e-12)
+  expect_equal(
+    non_ref$ci_lower,
+    non_ref$estimate - z_crit * non_ref$std_error,
+    tolerance = 1e-12
+  )
+  expect_equal(
+    non_ref$ci_upper,
+    non_ref$estimate + z_crit * non_ref$std_error,
+    tolerance = 1e-12
+  )
   # A 90% interval is strictly narrower than the engine's hardcoded 95%.
   fr95 <- as_regression_frame(fit, model_id = "M1", ci_level = 0.95)
   nr95 <- fr95$coefs[!fr95$coefs$is_ref, ]
@@ -58,8 +64,11 @@ test_that("flexsurvreg: ci_level surfaced unchanged in info", {
 test_that("flexsurvreg: intercept-only fit yields an empty coefs frame", {
   skip_if_not_installed("flexsurv")
   skip_if_not_installed("survival")
-  fit <- flexsurv::flexsurvreg(survival::Surv(time, status) ~ 1,
-                               data = survival::lung, dist = "weibull")
+  fit <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ 1,
+    data = survival::lung,
+    dist = "weibull"
+  )
 
   # fit$res holds only the aux distribution rows; cov_names is therefore empty.
   expect_setequal(rownames(fit$res), fit$dlist$pars)
@@ -81,22 +90,25 @@ test_that("flexsurvreg: intercept-only fit yields an empty coefs frame", {
 # ---- 2. .flexsurv_dist_title(): switch arms + default --------------------
 
 test_that(".flexsurv_dist_title maps every named distribution", {
-  expect_identical(spicy:::.flexsurv_dist_title("weibull"),     "Weibull")
-  expect_identical(spicy:::.flexsurv_dist_title("weibullPH"),   "Weibull (PH)")
-  expect_identical(spicy:::.flexsurv_dist_title("lognormal"),   "Log-normal")
-  expect_identical(spicy:::.flexsurv_dist_title("lnorm"),       "Log-normal")
-  expect_identical(spicy:::.flexsurv_dist_title("gompertz"),    "Gompertz")
-  expect_identical(spicy:::.flexsurv_dist_title("gamma"),       "Gamma")
+  expect_identical(spicy:::.flexsurv_dist_title("weibull"), "Weibull")
+  expect_identical(spicy:::.flexsurv_dist_title("weibullPH"), "Weibull (PH)")
+  expect_identical(spicy:::.flexsurv_dist_title("lognormal"), "Log-normal")
+  expect_identical(spicy:::.flexsurv_dist_title("lnorm"), "Log-normal")
+  expect_identical(spicy:::.flexsurv_dist_title("gompertz"), "Gompertz")
+  expect_identical(spicy:::.flexsurv_dist_title("gamma"), "Gamma")
   expect_identical(spicy:::.flexsurv_dist_title("exponential"), "Exponential")
-  expect_identical(spicy:::.flexsurv_dist_title("exp"),         "Exponential")
-  expect_identical(spicy:::.flexsurv_dist_title("llogis"),      "Log-logistic")
-  expect_identical(spicy:::.flexsurv_dist_title("gengamma"),    "Generalised gamma")
-  expect_identical(spicy:::.flexsurv_dist_title("genf"),        "Generalised F")
+  expect_identical(spicy:::.flexsurv_dist_title("exp"), "Exponential")
+  expect_identical(spicy:::.flexsurv_dist_title("llogis"), "Log-logistic")
+  expect_identical(
+    spicy:::.flexsurv_dist_title("gengamma"),
+    "Generalised gamma"
+  )
+  expect_identical(spicy:::.flexsurv_dist_title("genf"), "Generalised F")
 })
 
 test_that(".flexsurv_dist_title default capitalises an unknown distribution", {
   expect_identical(spicy:::.flexsurv_dist_title("royston"), "Royston")
-  expect_identical(spicy:::.flexsurv_dist_title("spline"),  "Spline")
+  expect_identical(spicy:::.flexsurv_dist_title("spline"), "Spline")
 })
 
 

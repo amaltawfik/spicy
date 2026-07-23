@@ -8,7 +8,6 @@
 # Item (b): Deviance fit-stat uses ic_digits (1L) not digits (2L).
 # ---------------------------------------------------------------------------
 
-
 # ---- Item (e): AME-Satterthwaite footer trim --------------------------
 
 test_that("AME-Satterthwaite footer no longer references Pustejovsky & Tipton", {
@@ -18,16 +17,20 @@ test_that("AME-Satterthwaite footer no longer references Pustejovsky & Tipton", 
   d$region <- factor(rep(c("A", "B", "C", "D"), length.out = nrow(d)))
   fit <- lm(mpg ~ wt + cyl, data = d)
   out <- capture.output(print(
-    table_regression(fit, show_columns = c("b", "ame"),
-                      vcov = "CR2", cluster = ~region)
+    table_regression(
+      fit,
+      show_columns = c("b", "ame"),
+      vcov = "CR2",
+      cluster = ~region
+    )
   ))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "AME inference:",                fixed = TRUE)
-  expect_match(combined, "Satterthwaite df",              fixed = TRUE)
+  expect_match(combined, "AME inference:", fixed = TRUE)
+  expect_match(combined, "Satterthwaite df", fixed = TRUE)
   # Phase 7c22: ref + function-name dropped from the table note.
-  expect_false(grepl("Pustejovsky", combined,       fixed = TRUE))
-  expect_false(grepl("clubSandwich::",  combined,   fixed = TRUE))
-  expect_false(grepl("linear_contrast", combined,   fixed = TRUE))
+  expect_false(grepl("Pustejovsky", combined, fixed = TRUE))
+  expect_false(grepl("clubSandwich::", combined, fixed = TRUE))
+  expect_false(grepl("linear_contrast", combined, fixed = TRUE))
 })
 
 
@@ -39,8 +42,11 @@ test_that("polynomial-trends footer drops when ordered factor filtered out", {
   fit <- lm(mpg ~ wt + cyl_o, data = d)
   # Without filter: footer fires.
   out_full <- capture.output(print(table_regression(fit)))
-  expect_match(paste(out_full, collapse = "\n"),
-                "polynomial trends", fixed = TRUE)
+  expect_match(
+    paste(out_full, collapse = "\n"),
+    "polynomial trends",
+    fixed = TRUE
+  )
   # With drop = "cyl_o": ordered factor not shown -> footer must suppress.
   out_drop <- capture.output(print(
     table_regression(fit, drop = "cyl_o")
@@ -82,7 +88,7 @@ test_that("Deviance fit-stat uses ic_digits (1 decimal by default)", {
   ))
   combined <- paste(out, collapse = "\n")
   # default ic_digits = 1L -> "23.9" not "23.92"
-  expect_match(combined, "[0-9]+\\.[0-9](\\s|$)")  # at least one decimal
+  expect_match(combined, "[0-9]+\\.[0-9](\\s|$)") # at least one decimal
   # No three-decimal artefact (would indicate digits = 2L use).
   dev_line <- grep("Deviance", strsplit(combined, "\n")[[1L]], value = TRUE)
   if (length(dev_line) > 0L) {
@@ -93,12 +99,11 @@ test_that("Deviance fit-stat uses ic_digits (1 decimal by default)", {
 test_that("Deviance precision matches AIC / BIC precision (ic_digits)", {
   fit <- glm(am ~ mpg + cyl, data = mtcars, family = binomial)
   out <- capture.output(print(
-    table_regression(fit, show_fit_stats = c("aic", "deviance"),
-                      ic_digits = 3L)
+    table_regression(fit, show_fit_stats = c("aic", "deviance"), ic_digits = 3L)
   ))
   combined <- paste(out, collapse = "\n")
   # With ic_digits = 3L, both AIC and Deviance render with 3 decimals.
-  aic_line <- grep("AIC",      strsplit(combined, "\n")[[1L]], value = TRUE)
+  aic_line <- grep("AIC", strsplit(combined, "\n")[[1L]], value = TRUE)
   dev_line <- grep("Deviance", strsplit(combined, "\n")[[1L]], value = TRUE)
   expect_true(any(grepl("\\.[0-9][0-9][0-9]", aic_line)))
   expect_true(any(grepl("\\.[0-9][0-9][0-9]", dev_line)))

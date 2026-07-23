@@ -22,10 +22,14 @@ with_clipr_capture <- function(code, sink_env) {
   unlockBinding("clipr_available", ns)
   unlockBinding("write_clip", ns)
   assign("clipr_available", function(...) TRUE, envir = ns)
-  assign("write_clip", function(content, ...) {
-    sink_env$payload <- content
-    invisible(content)
-  }, envir = ns)
+  assign(
+    "write_clip",
+    function(content, ...) {
+      sink_env$payload <- content
+      invisible(content)
+    },
+    envir = ns
+  )
   lockBinding("clipr_available", ns)
   lockBinding("write_clip", ns)
 
@@ -141,8 +145,11 @@ test_that("print.spicy_flextable interactive arm displays post-processed browsab
   mt <- mtcars
   mt$cyl <- factor(mt$cyl)
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  ft <- table_regression(fit, output = "flextable",
-                         note = "Note. interactive ft path.")
+  ft <- table_regression(
+    fit,
+    output = "flextable",
+    note = "Note. interactive ft path."
+  )
 
   viewed <- NULL
   withr::local_options(viewer = function(url, ...) {
@@ -176,12 +183,16 @@ test_that("excel: outcome row is overlaid and reference dashes skip models witho
 
   mt <- mtcars
   mt$cyl <- factor(mt$cyl)
-  m1 <- lm(mpg ~ wt + cyl, data = mt)  # has the cyl factor -> reference row
-  m2 <- lm(mpg ~ wt, data = mt)        # no factor
+  m1 <- lm(mpg ~ wt + cyl, data = mt) # has the cyl factor -> reference row
+  m2 <- lm(mpg ~ wt, data = mt) # no factor
   path <- withr::local_tempfile(fileext = ".xlsx")
 
-  table_regression(list(m1, m2), outcome_labels = c("MPG a", "MPG b"),
-                   output = "excel", excel_path = path)
+  table_regression(
+    list(m1, m2),
+    outcome_labels = c("MPG a", "MPG b"),
+    output = "excel",
+    excel_path = path
+  )
 
   wb <- openxlsx2::wb_load(path)
   cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
@@ -189,8 +200,8 @@ test_that("excel: outcome row is overlaid and reference dashes skip models witho
   # --- Outcome row: label text lands in each model's FIRST sub-column ----
   orow <- which(!is.na(cells$A) & trimws(cells$A) == "Outcome")
   expect_length(orow, 1L)
-  expect_identical(cells$B[orow], "MPG a")   # model 1 first sub-column (B)
-  expect_identical(cells$E[orow], "MPG b")   # model 2 first sub-column (B)
+  expect_identical(cells$B[orow], "MPG a") # model 1 first sub-column (B)
+  expect_identical(cells$E[orow], "MPG b") # model 2 first sub-column (B)
   # Non-first sub-columns stay empty on the Outcome row.
   expect_true(is.na(cells$C[orow]))
   expect_true(is.na(cells$F[orow]))
@@ -198,7 +209,7 @@ test_that("excel: outcome row is overlaid and reference dashes skip models witho
   # --- Reference row: en-dash only under the model that HAS the factor ---
   rrow <- which(!is.na(cells$A) & grepl("4 \\(ref\\.\\)$", trimws(cells$A)))
   expect_length(rrow, 1L)
-  expect_identical(cells$B[rrow], "\u2013")  # model 1: en-dash marker
+  expect_identical(cells$B[rrow], "\u2013") # model 1: en-dash marker
   # Model 2 has no cyl term: its cells stay blank (line 1796 skip).
   expect_true(is.na(cells$E[rrow]))
   expect_true(is.na(cells$F[rrow]))
@@ -207,8 +218,11 @@ test_that("excel: outcome row is overlaid and reference dashes skip models witho
   # Numeric oracle: model 1 intercept round-trips at full precision.
   irow <- which(!is.na(cells$A) & trimws(cells$A) == "(Intercept)")
   expect_length(irow, 1L)
-  expect_equal(as.numeric(cells$B[irow]), unname(coef(m1)[1]),
-               tolerance = 1e-10)
+  expect_equal(
+    as.numeric(cells$B[irow]),
+    unname(coef(m1)[1]),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -256,16 +270,20 @@ test_that("n_groups fit-stat row leaves a blank cell under a non-mixed model", {
   mm <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = sl)
   ml <- lm(Reaction ~ Days, data = sl)
 
-  tb <- table_regression(list(mm, ml),
-                         show_fit_stats = c("nobs", "n_groups"),
-                         output = "data.frame")
+  tb <- table_regression(
+    list(mm, ml),
+    show_fit_stats = c("nobs", "n_groups"),
+    output = "data.frame"
+  )
 
   # Shared single grouping factor -> dynamic "N (Subject)" label.
   ngrow <- which(trimws(tb$Variable) == "N (Subject)")
   expect_length(ngrow, 1L)
   # Mixed model: numeric group count (oracle: 18 subjects in sleepstudy).
-  expect_identical(trimws(tb[ngrow, "Model 1: B"]),
-                   as.character(length(unique(sl$Subject))))
+  expect_identical(
+    trimws(tb[ngrow, "Model 1: B"]),
+    as.character(length(unique(sl$Subject)))
+  )
   # lm has no grouping structure: the cell is blank, not "0" or "NA".
   expect_identical(trimws(tb[ngrow, "Model 2: B"]), "")
   expect_identical(trimws(tb[ngrow, "Model 2: SE"]), "")
@@ -281,8 +299,11 @@ test_that("render tolerates aligned coefs lacking the outcome_level column", {
   mt <- mtcars
   mt$cyl <- factor(mt$cyl)
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  fr <- spicy:::as_regression_frame(fit, model_id = "m1",
-                                    show_columns = c("b", "se", "ci", "p"))
+  fr <- spicy:::as_regression_frame(
+    fit,
+    model_id = "m1",
+    show_columns = c("b", "se", "ci", "p")
+  )
   aligned <- spicy:::align_frames(list(fr), model_ids = "m1")
   expect_true("outcome_level" %in% names(aligned$coefs_aligned))
   rt_with <- spicy:::render_regression_table(aligned)
@@ -302,9 +323,14 @@ test_that("render tolerates aligned coefs lacking the outcome_level column", {
 # ---------------------------------------------------------------------------
 
 test_that("subordinate-block rows with NA/empty factor_level fall back to the term", {
-  tr <- data.frame(term = "1|2", is_intercept = FALSE, is_reference = FALSE,
-                   factor_term = "Thresholds", factor_level = NA_character_,
-                   stringsAsFactors = FALSE)
+  tr <- data.frame(
+    term = "1|2",
+    is_intercept = FALSE,
+    is_reference = FALSE,
+    factor_term = "Thresholds",
+    factor_level = NA_character_,
+    stringsAsFactors = FALSE
+  )
   # Grouped layout: two-space indent + term used as the display label.
   expect_identical(
     spicy:::format_term_label(tr, "(ref.)", "label", TRUE, NULL),
@@ -382,8 +408,10 @@ test_that("apply_keep_drop_filter passes empty aligned objects through unchanged
     spicy:::apply_keep_drop_filter(al_null, keep = "wt"),
     al_null
   )
-  al_zero <- list(coefs_aligned = data.frame(term = character(0)),
-                  term_order = character(0))
+  al_zero <- list(
+    coefs_aligned = data.frame(term = character(0)),
+    term_order = character(0)
+  )
   expect_identical(
     spicy:::apply_keep_drop_filter(al_zero, drop = "wt"),
     al_zero
@@ -419,11 +447,18 @@ test_that("build_ascii_table skips a spanner over a zero-width column", {
 # ---------------------------------------------------------------------------
 
 test_that("build_ascii_table truncates a spanner label wider than its span", {
-  df <- data.frame(Variable = "a", B = "1.0", p = ".04",
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    Variable = "a",
+    B = "1.0",
+    p = ".04",
+    stringsAsFactors = FALSE
+  )
   lbl <- "An extremely long model label"
-  out <- spicy:::build_ascii_table(df, spanners = setNames(list(2:3), lbl),
-                           align_left_cols = 1L)
+  out <- spicy:::build_ascii_table(
+    df,
+    spanners = setNames(list(2:3), lbl),
+    align_left_cols = 1L
+  )
   lines <- strsplit(out, "\n", fixed = TRUE)[[1]]
 
   # Span width = length of the underline rule under the spanner.
@@ -434,8 +469,7 @@ test_that("build_ascii_table truncates a spanner label wider than its span", {
   # The label is cut to the span width with a VISIBLE ellipsis marker
   # (2026-07-09 polish: a silent cut read as a complete, wrong
   # label); the full label is absent.
-  expect_identical(trimws(lines[1]),
-                   paste0(substr(lbl, 1, span_w - 1L), "…"))
+  expect_identical(trimws(lines[1]), paste0(substr(lbl, 1, span_w - 1L), "…"))
   expect_false(grepl(lbl, out, fixed = TRUE))
 })
 

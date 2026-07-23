@@ -19,7 +19,6 @@
 # INTERNAL throughout the 0.x cycle. No @export. No public reference page.
 # ---------------------------------------------------------------------------
 
-
 # ---- Version constant -----------------------------------------------------
 
 # Schema version attached as attr(frame, "spicy_frame_version"). Bumped only
@@ -39,13 +38,13 @@ spicy_frame_version <- function() {
 # single source of truth for the supports field set the validator requires.
 default_supports <- function() {
   list(
-    ame                 = FALSE,
+    ame = FALSE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = FALSE,
-    exponentiate        = FALSE,
-    standardise_refit   = FALSE,
-    robust_vcov         = FALSE
+    classical_r2 = FALSE,
+    nested_lrt = FALSE,
+    exponentiate = FALSE,
+    standardise_refit = FALSE,
+    robust_vcov = FALSE
   )
 }
 
@@ -54,15 +53,15 @@ default_supports <- function() {
 # component, ...) are merged on top by new_regression_frame().
 default_extras <- function() {
   list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = NULL,
-    exp_applied           = FALSE,
-    exp_header            = NA_character_
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = NULL,
+    exp_applied = FALSE,
+    exp_header = NA_character_
   )
 }
 
@@ -73,9 +72,9 @@ default_extras <- function() {
 empty_random_effects <- function() {
   list(
     variance_components = data.frame(),
-    icc                 = NA_real_,
-    method              = NA_character_,
-    null_lrt            = NULL
+    icc = NA_real_,
+    method = NA_character_,
+    null_lrt = NULL
   )
 }
 
@@ -87,32 +86,41 @@ empty_random_effects <- function() {
 # live in exactly one location. Pairs with validate_regression_frame() per the
 # standard new_<class>() / validate_<class>() constructor convention.
 new_regression_frame <- function(coefs, info, fit) {
-  info$supports <- utils::modifyList(default_supports(), info$supports %||% list())
-  info$extras   <- utils::modifyList(default_extras(),   info$extras   %||% list())
+  info$supports <- utils::modifyList(
+    default_supports(),
+    info$supports %||% list()
+  )
+  info$extras <- utils::modifyList(default_extras(), info$extras %||% list())
   structure(
     list(coefs = coefs, info = info),
-    class               = "spicy_regression_frame",
+    class = "spicy_regression_frame",
     spicy_frame_version = spicy_frame_version(),
-    fit                 = fit
+    fit = fit
   )
 }
 
 #' @export
 print.spicy_regression_frame <- function(x, ...) {
   info <- x$info
-  fam  <- info$family
+  fam <- info$family
   cat(sprintf(
     "<spicy_regression_frame> %s  (n = %s)\n",
-    info$class %||% "?", format(info$n_obs %||% NA)
+    info$class %||% "?",
+    format(info$n_obs %||% NA)
   ))
   cat(sprintf(
     "  coefs: %d rows x %d cols | family: %s / %s | ci: %s\n",
-    nrow(x$coefs), ncol(x$coefs),
-    fam$family %||% "?", fam$link %||% "?", info$ci_method %||% "?"
+    nrow(x$coefs),
+    ncol(x$coefs),
+    fam$family %||% "?",
+    fam$link %||% "?",
+    info$ci_method %||% "?"
   ))
   on_flags <- names(Filter(isTRUE, info$supports))
-  cat(sprintf("  supports: %s\n",
-              if (length(on_flags)) paste(on_flags, collapse = ", ") else "(none)"))
+  cat(sprintf(
+    "  supports: %s\n",
+    if (length(on_flags)) paste(on_flags, collapse = ", ") else "(none)"
+  ))
   invisible(x)
 }
 
@@ -186,7 +194,9 @@ as_regression_frame.default <- function(fit, ...) {
         "are on the 2026-2027 roadmap."
       ),
       "i" = paste0(
-        "If you would like to see support for ", sQuote(cls), ", ",
+        "If you would like to see support for ",
+        sQuote(cls),
+        ", ",
         "please open an issue: ",
         "https://github.com/amaltawfik/spicy/issues"
       )
@@ -294,7 +304,8 @@ validate_regression_frame <- function(frame) {
       c(
         sprintf(
           "Regression frame schema version mismatch: got '%s', expected '%s'.",
-          ver, spicy_frame_version()
+          ver,
+          spicy_frame_version()
         ),
         "i" = paste0(
           "If you are running an external as_regression_frame() method ",
@@ -339,8 +350,16 @@ validate_regression_frame <- function(frame) {
   }
 
   required_cols <- c(
-    "term", "parent_var", "label", "factor_level_pos", "is_ref",
-    "estimate_type", "estimate", "std_error", "ci_lower", "ci_upper"
+    "term",
+    "parent_var",
+    "label",
+    "factor_level_pos",
+    "is_ref",
+    "estimate_type",
+    "estimate",
+    "std_error",
+    "ci_lower",
+    "ci_upper"
   )
   missing_cols <- setdiff(required_cols, names(coefs))
   if (length(missing_cols) > 0L) {
@@ -355,16 +374,16 @@ validate_regression_frame <- function(frame) {
 
   # Type checks for required columns. Per-column to give actionable errors.
   type_specs <- list(
-    term             = "character",
-    parent_var       = "character",
-    label            = "character",
+    term = "character",
+    parent_var = "character",
+    label = "character",
     factor_level_pos = "integer",
-    is_ref           = "logical",
-    estimate_type    = "character",
-    estimate         = "double",
-    std_error        = "double",
-    ci_lower         = "double",
-    ci_upper         = "double"
+    is_ref = "logical",
+    estimate_type = "character",
+    estimate = "double",
+    std_error = "double",
+    ci_lower = "double",
+    ci_upper = "double"
   )
   for (col in names(type_specs)) {
     expected <- type_specs[[col]]
@@ -388,12 +407,12 @@ validate_regression_frame <- function(frame) {
   # legitimately omit them.
   optional_specs <- list(
     outcome_level = "character",
-    df            = "double",
-    statistic     = "double",
-    p_value       = "double",
-    pd            = "double",
-    test_type     = "character",
-    row_extras    = "list"
+    df = "double",
+    statistic = "double",
+    p_value = "double",
+    pd = "double",
+    test_type = "character",
+    row_extras = "list"
   )
   for (col in names(optional_specs)) {
     if (col %in% names(coefs)) {
@@ -421,8 +440,14 @@ validate_regression_frame <- function(frame) {
   # emitted by extract_partial_effect_rows(). The legacy uppercase
   # "AME" emitted by extract_lm_phase1() has been normalised to "ame".
   allowed_types <- c(
-    "B", "beta", "ame", "vc",
-    "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2"
+    "B",
+    "beta",
+    "ame",
+    "vc",
+    "partial_f2",
+    "partial_eta2",
+    "partial_omega2",
+    "partial_chi2"
   )
   bad_types <- setdiff(unique(coefs$estimate_type), allowed_types)
   if (length(bad_types) > 0L) {
@@ -466,9 +491,18 @@ validate_regression_frame <- function(frame) {
   }
 
   required_info <- c(
-    "class", "family", "dv", "n_obs", "weights_kind",
-    "fit_stats", "vcov_kind", "vcov_label",
-    "ci_level", "ci_method", "supports", "extras"
+    "class",
+    "family",
+    "dv",
+    "n_obs",
+    "weights_kind",
+    "fit_stats",
+    "vcov_kind",
+    "vcov_label",
+    "ci_level",
+    "ci_method",
+    "supports",
+    "extras"
   )
   missing_info <- setdiff(required_info, names(info))
   if (length(missing_info) > 0L) {
@@ -482,8 +516,14 @@ validate_regression_frame <- function(frame) {
   }
 
   # Scalar string fields
-  for (field in c("class", "dv", "vcov_kind", "vcov_label",
-                  "ci_method", "weights_kind")) {
+  for (field in c(
+    "class",
+    "dv",
+    "vcov_kind",
+    "vcov_label",
+    "ci_method",
+    "weights_kind"
+  )) {
     val <- info[[field]]
     if (!is.character(val) || length(val) != 1L || is.na(val)) {
       spicy_abort(
@@ -517,8 +557,12 @@ validate_regression_frame <- function(frame) {
   }
 
   # n_obs: positive integer or numeric
-  if (!is.numeric(info$n_obs) || length(info$n_obs) != 1L ||
-        is.na(info$n_obs) || info$n_obs <= 0) {
+  if (
+    !is.numeric(info$n_obs) ||
+      length(info$n_obs) != 1L ||
+      is.na(info$n_obs) ||
+      info$n_obs <= 0
+  ) {
     spicy_abort(
       "Invalid regression frame: `info$n_obs` must be a positive scalar.",
       class = "spicy_invalid_frame"
@@ -527,8 +571,7 @@ validate_regression_frame <- function(frame) {
 
   # ci_level in (0, 1)
   cl <- info$ci_level
-  if (!is.numeric(cl) || length(cl) != 1L || is.na(cl) ||
-        cl <= 0 || cl >= 1) {
+  if (!is.numeric(cl) || length(cl) != 1L || is.na(cl) || cl <= 0 || cl >= 1) {
     spicy_abort(
       "Invalid regression frame: `info$ci_level` must be a scalar in (0, 1).",
       class = "spicy_invalid_frame"
@@ -588,8 +631,11 @@ validate_regression_frame <- function(frame) {
     )
   }
   for (field in required_supports) {
-    if (!is.logical(sp[[field]]) || length(sp[[field]]) != 1L ||
-          is.na(sp[[field]])) {
+    if (
+      !is.logical(sp[[field]]) ||
+        length(sp[[field]]) != 1L ||
+        is.na(sp[[field]])
+    ) {
       spicy_abort(
         sprintf(
           "Invalid regression frame: `info$supports$%s` must be a length-1 non-NA logical.",
@@ -697,30 +743,48 @@ validate_regression_frame <- function(frame) {
 # unavailable or fails -- callers then return NULL (no LRT line)
 # rather than printing a number under a wrong label.
 .null_reml_loglik_lm <- function(null_f, data, weights = NULL) {
-  if (!requireNamespace("nlme", quietly = TRUE)) return(NA_real_)      # nocov
+  if (!requireNamespace("nlme", quietly = TRUE)) {
+    return(NA_real_)
+  } # nocov
   fit0 <- tryCatch(
     if (is.null(weights)) {
       nlme::gls(null_f, data = data, method = "REML")
     } else {
       data[[".spicy_vw."]] <- 1 / weights
-      nlme::gls(null_f, data = data, method = "REML",
-                weights = nlme::varFixed(~.spicy_vw.))
+      nlme::gls(
+        null_f,
+        data = data,
+        method = "REML",
+        weights = nlme::varFixed(~.spicy_vw.)
+      )
     },
     error = function(e) NULL
   )
-  if (is.null(fit0)) return(NA_real_)
+  if (is.null(fit0)) {
+    return(NA_real_)
+  }
   as.numeric(stats::logLik(fit0))
 }
 
 
 .compute_null_model_lrt <- function(fit) {
-  res <- tryCatch({
-    if (inherits(fit, "glmmTMB"))            .null_lrt_glmmTMB(fit)
-    else if (inherits(fit, "merMod"))         .null_lrt_merMod(fit)
-    else if (inherits(fit, "lme"))            .null_lrt_lme(fit)
-    else                                       NULL
-  }, error = function(e) NULL)
-  if (is.null(res)) return(NULL)
+  res <- tryCatch(
+    {
+      if (inherits(fit, "glmmTMB")) {
+        .null_lrt_glmmTMB(fit)
+      } else if (inherits(fit, "merMod")) {
+        .null_lrt_merMod(fit)
+      } else if (inherits(fit, "lme")) {
+        .null_lrt_lme(fit)
+      } else {
+        NULL
+      }
+    },
+    error = function(e) NULL
+  )
+  if (is.null(res)) {
+    return(NULL)
+  }
   # nocov start -- the per-engine helpers already guard df <= 0 / non-finite
   # chi^2 and return NULL upstream, so a non-NULL res is always well-formed.
   if (!is.finite(res$chi2) || !is.finite(res$df) || res$df <= 0L) {
@@ -746,7 +810,9 @@ validate_regression_frame <- function(frame) {
 # variance / covariance block).
 .merMod_n_re_params <- function(fit) {
   vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
-  if (is.null(vc)) return(NA_integer_)  # nocov -- VarCorr never fails on a converged merMod
+  if (is.null(vc)) {
+    return(NA_integer_)
+  } # nocov -- VarCorr never fails on a converged merMod
   total <- 0L
   for (g in names(vc)) {
     n <- nrow(as.matrix(vc[[g]]))
@@ -764,7 +830,7 @@ validate_regression_frame <- function(frame) {
   if (requireNamespace("reformulas", quietly = TRUE)) {
     reformulas::findbars(x)
   } else {
-    suppressWarnings(lme4::findbars(x))                                  # nocov
+    suppressWarnings(lme4::findbars(x)) # nocov
   }
 }
 
@@ -772,13 +838,15 @@ validate_regression_frame <- function(frame) {
   if (requireNamespace("reformulas", quietly = TRUE)) {
     reformulas::nobars(x)
   } else {
-    suppressWarnings(lme4::nobars(x))                                    # nocov
+    suppressWarnings(lme4::nobars(x)) # nocov
   }
 }
 
 
 .null_lrt_merMod <- function(fit) {
-  if (!requireNamespace("lme4", quietly = TRUE)) return(NULL)
+  if (!requireNamespace("lme4", quietly = TRUE)) {
+    return(NULL)
+  }
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
   is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
 
@@ -786,7 +854,9 @@ validate_regression_frame <- function(frame) {
     .re_nobars(stats::formula(fit, fixed.only = TRUE))
   )
   data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
-  if (is.null(data)) return(NULL)  # nocov -- model.frame succeeds for a fitted merMod
+  if (is.null(data)) {
+    return(NULL)
+  } # nocov -- model.frame succeeds for a fitted merMod
 
   # Likelihood follows the fit's estimator (ranova / Stata / RLRsim
   # convention): a REML lmer keeps its REML logLik and is compared to
@@ -807,7 +877,9 @@ validate_regression_frame <- function(frame) {
     ),
     error = function(e) NULL
   )
-  if (is.null(null_f)) return(NULL)                                    # nocov
+  if (is.null(null_f)) {
+    return(NULL)
+  } # nocov
   # Prior weights ride the model frame ("(weights)" column); the null
   # refit must carry them or its likelihood is not comparable -- the
   # unweighted null inflated chi2 (e.g. 103.91 vs ranova's 102.05 on
@@ -821,7 +893,9 @@ validate_regression_frame <- function(frame) {
     },
     error = function(e) NULL
   )
-  if (is.null(fit_null)) return(NULL)
+  if (is.null(fit_null)) {
+    return(NULL)
+  }
 
   ll_full <- as.numeric(stats::logLik(fit_full_ml))
   ll_null <- if (is_reml) {
@@ -829,17 +903,23 @@ validate_regression_frame <- function(frame) {
   } else {
     as.numeric(stats::logLik(fit_null))
   }
-  if (!is.finite(ll_null)) return(NULL)
+  if (!is.finite(ll_null)) {
+    return(NULL)
+  }
   chi2 <- 2 * (ll_full - ll_null)
   df_q <- .merMod_n_re_params(fit)
-  if (is.na(df_q)) return(NULL)  # nocov -- .merMod_n_re_params is non-NA for a converged fit
+  if (is.na(df_q)) {
+    return(NULL)
+  } # nocov -- .merMod_n_re_params is non-NA for a converged fit
 
   list(
-    chi2          = chi2,
-    df            = as.integer(df_q),
-    family_label  = if (is_gaussian) "linear regression" else
-                       sprintf("%s regression",
-                               .merMod_glm_family_title_safe(fit, fam))
+    chi2 = chi2,
+    df = as.integer(df_q),
+    family_label = if (is_gaussian) {
+      "linear regression"
+    } else {
+      sprintf("%s regression", .merMod_glm_family_title_safe(fit, fam))
+    }
   )
 }
 
@@ -847,9 +927,10 @@ validate_regression_frame <- function(frame) {
 # Pretty family label for the LRT footer line. Falls back to the
 # bare family name when the title-case helper isn't available.
 .merMod_glm_family_title_safe <- function(fit, fam) {
-  if (exists(".merMod_glm_family_title", mode = "function",
-              inherits = TRUE)) {
-    out <- tryCatch(.merMod_glm_family_title(fit), error = function(e) NA_character_)
+  if (exists(".merMod_glm_family_title", mode = "function", inherits = TRUE)) {
+    out <- tryCatch(.merMod_glm_family_title(fit), error = function(e) {
+      NA_character_
+    })
     if (!is.na(out) && nzchar(out)) {
       return(tolower(out))
     }
@@ -859,7 +940,9 @@ validate_regression_frame <- function(frame) {
 
 
 .null_lrt_glmmTMB <- function(fit) {
-  if (!requireNamespace("glmmTMB", quietly = TRUE)) return(NULL)
+  if (!requireNamespace("glmmTMB", quietly = TRUE)) {
+    return(NULL)
+  }
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
   is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
 
@@ -867,7 +950,9 @@ validate_regression_frame <- function(frame) {
     .re_nobars(stats::formula(fit, fixed.only = TRUE, component = "cond"))
   )
   data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
-  if (is.null(data)) return(NULL)  # nocov -- model.frame succeeds for a fitted glmmTMB
+  if (is.null(data)) {
+    return(NULL)
+  } # nocov -- model.frame succeeds for a fitted glmmTMB
 
   # Safe response name: see the .null_lrt_merMod comment (a transformed or
   # matrix response only exists in the model frame as its combined column).
@@ -878,7 +963,9 @@ validate_regression_frame <- function(frame) {
     ),
     error = function(e) NULL
   )
-  if (is.null(null_f)) return(NULL)                                    # nocov
+  if (is.null(null_f)) {
+    return(NULL)
+  } # nocov
   # ENGINE-NATIVE null: refit with glmmTMB itself, dropping only the
   # conditional random effects (which is what df_q counts below).
   # Same estimator (TMB), same REML flag, same weight convention --
@@ -891,48 +978,77 @@ validate_regression_frame <- function(frame) {
   # LRT (the old glm() null could not fit those families at all).
   w <- stats::model.weights(data)
   is_reml <- isTRUE(tryCatch(fit$modelInfo$REML, error = function(e) FALSE))
-  args <- list(null_f, data = data, family = fit$modelInfo$family,
-               REML = is_reml)
-  zif <- tryCatch(fit$modelInfo$allForm$ziformula,   error = function(e) NULL)
+  args <- list(
+    null_f,
+    data = data,
+    family = fit$modelInfo$family,
+    REML = is_reml
+  )
+  zif <- tryCatch(fit$modelInfo$allForm$ziformula, error = function(e) NULL)
   dif <- tryCatch(fit$modelInfo$allForm$dispformula, error = function(e) NULL)
-  if (!is.null(w))   args$weights     <- w
-  if (!is.null(zif)) args$ziformula   <- zif
-  if (!is.null(dif)) args$dispformula <- dif
+  if (!is.null(w)) {
+    args$weights <- w
+  }
+  if (!is.null(zif)) {
+    args$ziformula <- zif
+  }
+  if (!is.null(dif)) {
+    args$dispformula <- dif
+  }
   fit_null <- tryCatch(
     suppressWarnings(do.call(glmmTMB::glmmTMB, args)),
     error = function(e) NULL
   )
-  if (is.null(fit_null)) return(NULL)
+  if (is.null(fit_null)) {
+    return(NULL)
+  }
 
   ll_full <- as.numeric(stats::logLik(fit))
   ll_null <- as.numeric(stats::logLik(fit_null))
-  if (!is.finite(ll_null)) return(NULL)
+  if (!is.finite(ll_null)) {
+    return(NULL)
+  }
   chi2 <- 2 * (ll_full - ll_null)
 
   # Count random params in glmmTMB: VarCorr()$cond is a list of
   # per-grouping covariance matrices.
   vc <- tryCatch(glmmTMB::VarCorr(fit)$cond, error = function(e) NULL)
-  if (is.null(vc)) return(NULL)  # nocov -- VarCorr$cond is non-NULL for a converged glmmTMB
-  df_q <- sum(vapply(vc, function(m) {
-    n <- nrow(as.matrix(m))
-    as.integer(n * (n + 1L) / 2L)
-  }, integer(1)))
-  if (df_q <= 0L) return(NULL)  # nocov -- a fitted random structure has >= 1 free parameter
+  if (is.null(vc)) {
+    return(NULL)
+  } # nocov -- VarCorr$cond is non-NULL for a converged glmmTMB
+  df_q <- sum(vapply(
+    vc,
+    function(m) {
+      n <- nrow(as.matrix(m))
+      as.integer(n * (n + 1L) / 2L)
+    },
+    integer(1)
+  ))
+  if (df_q <= 0L) {
+    return(NULL)
+  } # nocov -- a fitted random structure has >= 1 free parameter
 
   list(
     chi2 = chi2,
-    df   = df_q,
-    family_label = if (is_gaussian) "linear regression" else
-                      sprintf("%s regression", fam$family)
+    df = df_q,
+    family_label = if (is_gaussian) {
+      "linear regression"
+    } else {
+      sprintf("%s regression", fam$family)
+    }
   )
 }
 
 
 .null_lrt_lme <- function(fit) {
-  if (!requireNamespace("nlme", quietly = TRUE)) return(NULL)
+  if (!requireNamespace("nlme", quietly = TRUE)) {
+    return(NULL)
+  }
   no_re_formula <- stats::formula(fit)
   data <- tryCatch(nlme::getData(fit), error = function(e) NULL)
-  if (is.null(data)) return(NULL)  # nocov -- getData succeeds for a fitted lme
+  if (is.null(data)) {
+    return(NULL)
+  } # nocov -- getData succeeds for a fitted lme
 
   # nlme::lme is Gaussian by spec. Likelihood follows the fit's
   # estimator (ranova / Stata convention): a REML lme keeps its REML
@@ -952,35 +1068,50 @@ validate_regression_frame <- function(frame) {
     # accepts the FITTED structures as specs and re-estimates their
     # parameters on the null model, matching anova(gls, lme).
     fit0 <- tryCatch(
-      nlme::gls(no_re_formula, data = data, method = fit$method,
-                weights = var_struct, correlation = cor_struct),
+      nlme::gls(
+        no_re_formula,
+        data = data,
+        method = fit$method,
+        weights = var_struct,
+        correlation = cor_struct
+      ),
       error = function(e) NULL
     )
     if (is.null(fit0)) NA_real_ else as.numeric(stats::logLik(fit0))
   } else if (is_reml) {
     .null_reml_loglik_lm(no_re_formula, data)
   } else {
-    fit_null <- tryCatch(stats::lm(no_re_formula, data = data),
-                         error = function(e) NULL)
-    if (is.null(fit_null)) return(NULL)  # nocov -- null lm fits on the same data
+    fit_null <- tryCatch(
+      stats::lm(no_re_formula, data = data),
+      error = function(e) NULL
+    )
+    if (is.null(fit_null)) {
+      return(NULL)
+    } # nocov -- null lm fits on the same data
     as.numeric(stats::logLik(fit_null))
   }
-  if (!is.finite(ll_null)) return(NULL)
+  if (!is.finite(ll_null)) {
+    return(NULL)
+  }
   chi2 <- 2 * (ll_full - ll_null)
 
   # Count random params in lme: reStruct holds per-grouping pdMat.
   re_struct <- tryCatch(fit$modelStruct$reStruct, error = function(e) NULL)
-  if (is.null(re_struct)) return(NULL)  # nocov -- reStruct is present for a fitted lme
+  if (is.null(re_struct)) {
+    return(NULL)
+  } # nocov -- reStruct is present for a fitted lme
   df_q <- 0L
   for (g in names(re_struct)) {
     n <- nrow(as.matrix(nlme::pdMatrix(re_struct[[g]])))
     df_q <- df_q + as.integer(n * (n + 1L) / 2L)
   }
-  if (df_q <= 0L) return(NULL)  # nocov -- a fitted random structure has >= 1 free parameter
+  if (df_q <= 0L) {
+    return(NULL)
+  } # nocov -- a fitted random structure has >= 1 free parameter
 
   list(
     chi2 = chi2,
-    df   = df_q,
+    df = df_q,
     family_label = "linear regression"
   )
 }
@@ -1035,16 +1166,24 @@ validate_regression_frame <- function(frame) {
 }
 
 .nakagawa_r2_via_performance <- function(fit) {
-  if (!requireNamespace("performance", quietly = TRUE)) return(.nakagawa_na())
+  if (!requireNamespace("performance", quietly = TRUE)) {
+    return(.nakagawa_na())
+  }
   res <- tryCatch(
     suppressWarnings(suppressMessages(performance::r2_nakagawa(fit))),
     error = function(e) NULL
   )
-  if (is.null(res)) return(.nakagawa_na())  # nocov -- performance::r2_nakagawa() does not error on supported fits
-  marg <- tryCatch(as.numeric(res$R2_marginal),    error = function(e) NA_real_)
+  if (is.null(res)) {
+    return(.nakagawa_na())
+  } # nocov -- performance::r2_nakagawa() does not error on supported fits
+  marg <- tryCatch(as.numeric(res$R2_marginal), error = function(e) NA_real_)
   cond <- tryCatch(as.numeric(res$R2_conditional), error = function(e) NA_real_)
-  if (length(marg) != 1L) marg <- NA_real_  # nocov -- r2_nakagawa() returns scalar R2_marginal
-  if (length(cond) != 1L) cond <- NA_real_  # nocov -- r2_nakagawa() returns scalar R2_conditional
+  if (length(marg) != 1L) {
+    marg <- NA_real_
+  } # nocov -- r2_nakagawa() returns scalar R2_marginal
+  if (length(cond) != 1L) {
+    cond <- NA_real_
+  } # nocov -- r2_nakagawa() returns scalar R2_conditional
   list(marginal = marg, conditional = cond)
 }
 
@@ -1054,20 +1193,30 @@ validate_regression_frame <- function(frame) {
 # with the building blocks (var_f, var_g, family, link, sigma,
 # intercept_lp) consumed by .nakagawa_assemble().
 .nakagawa_components <- function(fit) {
-  if (inherits(fit, "glmmTMB")) return(.nakagawa_components_glmmTMB(fit))
-  if (inherits(fit, "merMod"))  return(.nakagawa_components_merMod(fit))
-  if (inherits(fit, "lme"))     return(.nakagawa_components_lme(fit))
+  if (inherits(fit, "glmmTMB")) {
+    return(.nakagawa_components_glmmTMB(fit))
+  }
+  if (inherits(fit, "merMod")) {
+    return(.nakagawa_components_merMod(fit))
+  }
+  if (inherits(fit, "lme")) {
+    return(.nakagawa_components_lme(fit))
+  }
   NULL
 }
 
 # Combine the components into the two R^2 values.
 .nakagawa_assemble <- function(comps) {
   var_d <- .nakagawa_distribution_variance(comps)
-  if (!is.finite(var_d)) return(.nakagawa_na())
+  if (!is.finite(var_d)) {
+    return(.nakagawa_na())
+  }
   total <- comps$var_f + comps$var_g + var_d
-  if (!is.finite(total) || total <= 0) return(.nakagawa_na())
+  if (!is.finite(total) || total <= 0) {
+    return(.nakagawa_na())
+  }
   list(
-    marginal    = comps$var_f / total,
+    marginal = comps$var_f / total,
     conditional = (comps$var_f + comps$var_g) / total
   )
 }
@@ -1076,23 +1225,27 @@ validate_regression_frame <- function(frame) {
 # Gaussian uses the residual sigma; non-Gaussian uses the closed-form
 # theoretical variance of the latent-link representation.
 .nakagawa_distribution_variance <- function(comps) {
-  fam  <- comps$family
+  fam <- comps$family
   link <- comps$link
 
   # Gaussian / Gaussian identity: residual variance from sigma(fit).
   if (identical(fam, "gaussian")) {
     sig <- comps$sigma
-    if (!is.finite(sig)) return(NA_real_)
+    if (!is.finite(sig)) {
+      return(NA_real_)
+    }
     return(sig^2)
   }
 
   # Binomial: distribution variance depends on link function.
   if (identical(fam, "binomial")) {
-    return(switch(link,
-                  logit   = pi^2 / 3,
-                  probit  = 1,
-                  cloglog = pi^2 / 6,
-                  NA_real_))
+    return(switch(
+      link,
+      logit = pi^2 / 3,
+      probit = 1,
+      cloglog = pi^2 / 6,
+      NA_real_
+    ))
   }
 
   # Poisson log: lognormal approximation (Nakagawa et al. 2017
@@ -1107,9 +1260,13 @@ validate_regression_frame <- function(frame) {
   if (identical(fam, "poisson") && identical(link, "log")) {
     int_null <- comps$null_intercept
     var_g_null <- comps$null_var_g
-    if (!is.finite(int_null) || !is.finite(var_g_null)) return(NA_real_)
+    if (!is.finite(int_null) || !is.finite(var_g_null)) {
+      return(NA_real_)
+    }
     lambda <- exp(int_null + 0.5 * var_g_null)
-    if (!is.finite(lambda) || lambda <= 0) return(NA_real_)
+    if (!is.finite(lambda) || lambda <= 0) {
+      return(NA_real_)
+    }
     return(log1p(1 / lambda))
   }
 
@@ -1130,14 +1287,24 @@ validate_regression_frame <- function(frame) {
 # inflation. The caller falls through to performance for those.
 .nakagawa_supported_family <- function(fit) {
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-  if (is.null(fam) || is.null(fam$family)) return(FALSE)
-  if (identical(fam$family, "gaussian")) return(TRUE)
+  if (is.null(fam) || is.null(fam$family)) {
+    return(FALSE)
+  }
+  if (identical(fam$family, "gaussian")) {
+    return(TRUE)
+  }
   if (identical(fam$family, "binomial")) {
-    if (!fam$link %in% c("logit", "probit", "cloglog")) return(FALSE)
+    if (!fam$link %in% c("logit", "probit", "cloglog")) {
+      return(FALSE)
+    }
     # Reject cbind(succ, fail) / matrix response (multi-trial binomial).
-    resp <- tryCatch(stats::model.response(stats::model.frame(fit)),
-                      error = function(e) NULL)
-    if (is.matrix(resp) && ncol(resp) >= 2L) return(FALSE)
+    resp <- tryCatch(
+      stats::model.response(stats::model.frame(fit)),
+      error = function(e) NULL
+    )
+    if (is.matrix(resp) && ncol(resp) >= 2L) {
+      return(FALSE)
+    }
     return(TRUE)
   }
   if (identical(fam$family, "poisson") && identical(fam$link, "log")) {
@@ -1150,63 +1317,86 @@ validate_regression_frame <- function(frame) {
 # ---- Engine-specific component extractors --------------------------------
 
 .nakagawa_components_merMod <- function(fit) {
-  if (!requireNamespace("lme4", quietly = TRUE)) return(NULL)
+  if (!requireNamespace("lme4", quietly = TRUE)) {
+    return(NULL)
+  }
 
   # Self-impl covers Gaussian + Bernoulli + Poisson(log). Anything else
   # (cbind binomial, negbinom, custom families) -> NULL so the caller
   # falls through to performance::r2_nakagawa().
-  if (!.nakagawa_supported_family(fit)) return(NULL)
+  if (!.nakagawa_supported_family(fit)) {
+    return(NULL)
+  }
 
   # Fixed-effect linear predictor (population-level, re.form = NA).
-  fix_lp <- tryCatch(stats::predict(fit, re.form = NA),
-                      error = function(e) NULL)
-  if (is.null(fix_lp) || !any(is.finite(fix_lp))) return(NULL)  # nocov -- predict(re.form=NA) is finite for a converged fit
+  fix_lp <- tryCatch(stats::predict(fit, re.form = NA), error = function(e) {
+    NULL
+  })
+  if (is.null(fix_lp) || !any(is.finite(fix_lp))) {
+    return(NULL)
+  } # nocov -- predict(re.form=NA) is finite for a converged fit
   var_f <- as.numeric(stats::var(fix_lp))
-  if (!is.finite(var_f)) return(NULL)  # nocov -- variance of a finite linear predictor is finite
+  if (!is.finite(var_f)) {
+    return(NULL)
+  } # nocov -- variance of a finite linear predictor is finite
 
   # Random-effect variance contribution: sum_g mean_i(z_i W_g z_i^T).
   # VarCorr() keys by grouping factor (e.g. "Subject"); mmList() keys
   # by the full term "<RHS> | <group>". Match them via the trailing
   # "| group" segment so (1 | g) and (x | g) both map to grouping g.
-  vc <- tryCatch(lme4::VarCorr(fit),  error = function(e) NULL)
+  vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
   mm_list <- tryCatch(lme4::getME(fit, "mmList"), error = function(e) NULL)
-  if (is.null(vc) || is.null(mm_list)) return(NULL)  # nocov -- VarCorr / mmList present for a fitted merMod
+  if (is.null(vc) || is.null(mm_list)) {
+    return(NULL)
+  } # nocov -- VarCorr / mmList present for a fitted merMod
   # Build group_for_mm: each mmList name parsed to its grouping factor.
-  group_for_mm <- vapply(names(mm_list), function(nm) {
-    parts <- strsplit(nm, "\\|", fixed = FALSE)[[1L]]
-    if (length(parts) < 2L) return(NA_character_)  # nocov -- mmList names always contain a "| group" segment
-    trimws(parts[length(parts)])
-  }, character(1))
+  group_for_mm <- vapply(
+    names(mm_list),
+    function(nm) {
+      parts <- strsplit(nm, "\\|", fixed = FALSE)[[1L]]
+      if (length(parts) < 2L) {
+        return(NA_character_)
+      } # nocov -- mmList names always contain a "| group" segment
+      trimws(parts[length(parts)])
+    },
+    character(1)
+  )
   var_g <- 0
   for (g in names(vc)) {
-    W  <- as.matrix(vc[[g]])             # random-effect covariance matrix
+    W <- as.matrix(vc[[g]]) # random-effect covariance matrix
     idx <- which(group_for_mm == g)
-    if (length(idx) == 0L) return(NULL)  # nocov -- every VarCorr group has a matching mmList entry
+    if (length(idx) == 0L) {
+      return(NULL)
+    } # nocov -- every VarCorr group has a matching mmList entry
     # Per-group contribution: sum over mmList entries assigned to g.
     for (k in idx) {
       Z <- as.matrix(mm_list[[k]])
       # The per-term mmList entry has columns matching the RHS of the
       # random-effect formula; W is keyed by the same columns.
       cols <- intersect(colnames(W), colnames(Z))
-      if (length(cols) == 0L) return(NULL)  # nocov -- W and Z share random-effect column names by construction
+      if (length(cols) == 0L) {
+        return(NULL)
+      } # nocov -- W and Z share random-effect column names by construction
       W_sub <- W[cols, cols, drop = FALSE]
       Z_sub <- Z[, cols, drop = FALSE]
       var_g <- var_g + sum((Z_sub %*% W_sub) * Z_sub) / nrow(Z_sub)
     }
   }
-  if (!is.finite(var_g)) return(NULL)  # nocov -- accumulated random-effect variance is finite
+  if (!is.finite(var_g)) {
+    return(NULL)
+  } # nocov -- accumulated random-effect variance is finite
 
   fam <- stats::family(fit)
   null <- .nakagawa_null_params(fit, fam)
   list(
-    var_f          = var_f,
-    var_g          = var_g,
-    family         = fam$family,
-    link           = fam$link,
-    sigma          = stats::sigma(fit),
-    intercept_lp   = mean(fix_lp),
+    var_f = var_f,
+    var_g = var_g,
+    family = fam$family,
+    link = fam$link,
+    sigma = stats::sigma(fit),
+    intercept_lp = mean(fix_lp),
     null_intercept = null$intercept,
-    null_var_g     = null$var_g
+    null_var_g = null$var_g
   )
 }
 
@@ -1222,21 +1412,34 @@ validate_regression_frame <- function(frame) {
 # `~ 1 + (re | g)` preserving the original random structure.
 .nakagawa_null_params <- function(fit, fam) {
   na_pair <- list(intercept = NA_real_, var_g = NA_real_)
-  if (!identical(fam$family, "poisson")) return(na_pair)
+  if (!identical(fam$family, "poisson")) {
+    return(na_pair)
+  }
   bars <- tryCatch(
     (.re_findbars(stats::formula(fit))),
     error = function(e) NULL
   )
-  if (is.null(bars) || length(bars) == 0L) return(na_pair)  # nocov -- a mixed-effects poisson fit always has random-effect bars
-  null_rhs <- paste0("1 + ",
-                     paste(vapply(bars, function(b) {
-                       # deparse1(), not deparse(): a long random-effect bar
-                       # deparses to a multi-line character vector, which would
-                       # violate the vapply `character(1)` contract and throw
-                       # (silently bypassing native Nakagawa R^2). deparse1()
-                       # collapses to a single string. R >= 4.0 (Depends 4.1).
-                       paste0("(", deparse1(b), ")")
-                     }, character(1)), collapse = " + "))
+  if (is.null(bars) || length(bars) == 0L) {
+    return(na_pair)
+  } # nocov -- a mixed-effects poisson fit always has random-effect bars
+  null_rhs <- paste0(
+    "1 + ",
+    paste(
+      vapply(
+        bars,
+        function(b) {
+          # deparse1(), not deparse(): a long random-effect bar
+          # deparses to a multi-line character vector, which would
+          # violate the vapply `character(1)` contract and throw
+          # (silently bypassing native Nakagawa R^2). deparse1()
+          # collapses to a single string. R >= 4.0 (Depends 4.1).
+          paste0("(", deparse1(b), ")")
+        },
+        character(1)
+      ),
+      collapse = " + "
+    )
+  )
   null_formula <- stats::reformulate(
     null_rhs,
     response = as.character(stats::formula(fit)[[2L]])
@@ -1245,9 +1448,13 @@ validate_regression_frame <- function(frame) {
     suppressWarnings(suppressMessages(stats::update(fit, null_formula))),
     error = function(e) NULL
   )
-  if (is.null(null_fit)) return(na_pair)
+  if (is.null(null_fit)) {
+    return(na_pair)
+  }
   fe <- tryCatch(lme4::fixef(null_fit), error = function(e) NULL)
-  if (is.null(fe) || length(fe) == 0L) return(na_pair)  # nocov -- the null "~ 1 + (re|g)" fit always has an intercept
+  if (is.null(fe) || length(fe) == 0L) {
+    return(na_pair)
+  } # nocov -- the null "~ 1 + (re|g)" fit always has an intercept
   int <- as.numeric(fe[1L])
   # Random-effect variance of the null model for the Poisson lognormal
   # baseline lambda = exp(intercept_null + 0.5 * var_g_null). Nakagawa
@@ -1262,44 +1469,58 @@ validate_regression_frame <- function(frame) {
   # corrupting the distribution variance. Verified to reproduce
   # performance::r2_nakagawa() to ~1e-16 on (x | g) Poisson fits.
   vc_null <- tryCatch(lme4::VarCorr(null_fit), error = function(e) NULL)
-  if (is.null(vc_null)) return(list(intercept = int, var_g = NA_real_))  # nocov -- VarCorr present for the converged null fit
+  if (is.null(vc_null)) {
+    return(list(intercept = int, var_g = NA_real_))
+  } # nocov -- VarCorr present for the converged null fit
   var_g_null <- 0
   for (g in names(vc_null)) {
     W <- as.matrix(vc_null[[g]])
     int_col <- match("(Intercept)", colnames(W))
-    if (is.na(int_col)) next  # nocov -- the rebuilt "1 + (re|g)" null model always carries a random intercept
+    if (is.na(int_col)) {
+      next
+    } # nocov -- the rebuilt "1 + (re|g)" null model always carries a random intercept
     var_g_null <- var_g_null + W[int_col, int_col]
   }
   list(intercept = int, var_g = var_g_null)
 }
 
 .nakagawa_components_lme <- function(fit) {
-  if (!requireNamespace("nlme", quietly = TRUE)) return(NULL)
+  if (!requireNamespace("nlme", quietly = TRUE)) {
+    return(NULL)
+  }
   # nlme::lme is Gaussian / identity in the standard interface.
   # Fixed-effect linear predictor: level = 0 -> population-level.
-  fix_lp <- tryCatch(stats::predict(fit, level = 0),
-                      error = function(e) NULL)
-  if (is.null(fix_lp) || !any(is.finite(fix_lp))) return(NULL)  # nocov -- predict(level=0) is finite for a converged lme
+  fix_lp <- tryCatch(stats::predict(fit, level = 0), error = function(e) NULL)
+  if (is.null(fix_lp) || !any(is.finite(fix_lp))) {
+    return(NULL)
+  } # nocov -- predict(level=0) is finite for a converged lme
   var_f <- as.numeric(stats::var(fix_lp))
-  if (!is.finite(var_f)) return(NULL)  # nocov -- variance of a finite linear predictor is finite
+  if (!is.finite(var_f)) {
+    return(NULL)
+  } # nocov -- variance of a finite linear predictor is finite
 
   # Random-effect variance: sum_g mean_i(z_i W_g z_i^T).
-  vc <- tryCatch(.lme_random_covariance_matrices(fit),
-                  error = function(e) NULL)
-  if (is.null(vc)) return(NULL)  # nocov -- reStruct-derived covariance matrices are recoverable for a fitted lme
-  var_g <- tryCatch(.lme_re_variance_contribution(fit, vc),
-                     error = function(e) NA_real_)
-  if (!is.finite(var_g)) return(NULL)  # nocov -- accumulated random-effect variance is finite
+  vc <- tryCatch(.lme_random_covariance_matrices(fit), error = function(e) NULL)
+  if (is.null(vc)) {
+    return(NULL)
+  } # nocov -- reStruct-derived covariance matrices are recoverable for a fitted lme
+  var_g <- tryCatch(
+    .lme_re_variance_contribution(fit, vc),
+    error = function(e) NA_real_
+  )
+  if (!is.finite(var_g)) {
+    return(NULL)
+  } # nocov -- accumulated random-effect variance is finite
 
   list(
-    var_f          = var_f,
-    var_g          = var_g,
-    family         = "gaussian",
-    link           = "identity",
-    sigma          = stats::sigma(fit),
-    intercept_lp   = mean(fix_lp),
+    var_f = var_f,
+    var_g = var_g,
+    family = "gaussian",
+    link = "identity",
+    sigma = stats::sigma(fit),
+    intercept_lp = mean(fix_lp),
     null_intercept = NA_real_,
-    null_var_g     = NA_real_   # not needed for Gaussian
+    null_var_g = NA_real_ # not needed for Gaussian
   )
 }
 
@@ -1326,16 +1547,22 @@ validate_regression_frame <- function(frame) {
 # grouping factors g of mean_i(z_i W_g z_i^T).
 .lme_re_variance_contribution <- function(fit, vc_list) {
   data <- tryCatch(nlme::getData(fit), error = function(e) NULL)
-  if (is.null(data)) return(NA_real_)  # nocov -- getData succeeds for a fitted lme
+  if (is.null(data)) {
+    return(NA_real_)
+  } # nocov -- getData succeeds for a fitted lme
   re_formulas <- nlme::reStruct(fit$modelStruct$reStruct)
   total <- 0
   n <- stats::nobs(fit)
   for (g in names(vc_list)) {
     W <- vc_list[[g]]
     rhs <- attr(re_formulas[[g]], "formula")
-    if (is.null(rhs)) rhs <- stats::formula(re_formulas[[g]])  # nocov -- reStruct entries always carry a "formula" attribute
+    if (is.null(rhs)) {
+      rhs <- stats::formula(re_formulas[[g]])
+    } # nocov -- reStruct entries always carry a "formula" attribute
     Z <- stats::model.matrix(rhs, data = data)
-    if (nrow(Z) != n) return(NA_real_)  # nocov -- Z is built from the same n-row model data
+    if (nrow(Z) != n) {
+      return(NA_real_)
+    } # nocov -- Z is built from the same n-row model data
     total <- total + sum((Z %*% W) * Z) / n
   }
   total
@@ -1347,55 +1574,81 @@ validate_regression_frame <- function(frame) {
 # 2017 only formalises the standard one-level case); fits with active
 # zi / dispformula components return NA gracefully.
 .nakagawa_components_glmmTMB <- function(fit) {
-  if (!requireNamespace("glmmTMB", quietly = TRUE)) return(NULL)
+  if (!requireNamespace("glmmTMB", quietly = TRUE)) {
+    return(NULL)
+  }
 
   # Self-impl families only; fall through to performance otherwise.
-  if (!.nakagawa_supported_family(fit)) return(NULL)
+  if (!.nakagawa_supported_family(fit)) {
+    return(NULL)
+  }
   # Refuse zero-inflated / dispformula models (Nakagawa formulas don't
   # cover these without the extra components performance handles).
-  zi_form    <- tryCatch(stats::formula(fit, component = "zi"),
-                          error = function(e) NULL)
-  disp_form  <- tryCatch(stats::formula(fit, component = "disp"),
-                          error = function(e) NULL)
-  if (!is.null(zi_form) && length(zi_form) >= 3L &&
-      !identical(deparse(zi_form[[length(zi_form)]]), "0")) {
-    return(NULL)  # nocov -- glmmTMB zi formulas are one-sided (length 2); this >= 3 arm is a defensive guard
+  zi_form <- tryCatch(
+    stats::formula(fit, component = "zi"),
+    error = function(e) NULL
+  )
+  disp_form <- tryCatch(
+    stats::formula(fit, component = "disp"),
+    error = function(e) NULL
+  )
+  if (
+    !is.null(zi_form) &&
+      length(zi_form) >= 3L &&
+      !identical(deparse(zi_form[[length(zi_form)]]), "0")
+  ) {
+    return(NULL) # nocov -- glmmTMB zi formulas are one-sided (length 2); this >= 3 arm is a defensive guard
   }
-  if (!is.null(disp_form) && length(disp_form) >= 2L &&
+  if (
+    !is.null(disp_form) &&
+      length(disp_form) >= 2L &&
       !identical(deparse(disp_form[[length(disp_form)]]), "1") &&
-      !identical(deparse(disp_form[[length(disp_form)]]), "")) {
+      !identical(deparse(disp_form[[length(disp_form)]]), "")
+  ) {
     # ~1 is the default flat dispersion -- fine. Anything else: bail.
     if (length(all.vars(disp_form)) > 0L) return(NULL)
   }
 
   # Conditional fixed-effect linear predictor.
-  fix_lp <- tryCatch(stats::predict(fit, re.form = NA, type = "link"),
-                      error = function(e) NULL)
-  if (is.null(fix_lp) || !any(is.finite(fix_lp))) return(NULL)  # nocov -- conditional predict is finite for a converged glmmTMB
+  fix_lp <- tryCatch(
+    stats::predict(fit, re.form = NA, type = "link"),
+    error = function(e) NULL
+  )
+  if (is.null(fix_lp) || !any(is.finite(fix_lp))) {
+    return(NULL)
+  } # nocov -- conditional predict is finite for a converged glmmTMB
   var_f <- as.numeric(stats::var(fix_lp))
-  if (!is.finite(var_f)) return(NULL)  # nocov -- variance of a finite linear predictor is finite
+  if (!is.finite(var_f)) {
+    return(NULL)
+  } # nocov -- variance of a finite linear predictor is finite
 
   # Random-effect variance: glmmTMB::VarCorr()$cond is a list of
   # grouping-factor covariance matrices on the variance scale. We
   # reconstruct the per-group random-effect model matrix from the
   # right-hand side of each random-effect formula in formula(fit).
   vc <- tryCatch(glmmTMB::VarCorr(fit), error = function(e) NULL)
-  if (is.null(vc) || is.null(vc$cond)) return(NULL)  # nocov -- VarCorr$cond is present for a fitted glmmTMB
-  var_g <- tryCatch(.glmmTMB_re_variance_contribution(fit, vc$cond),
-                     error = function(e) NA_real_)
-  if (!is.finite(var_g)) return(NULL)  # nocov -- accumulated random-effect variance is finite
+  if (is.null(vc) || is.null(vc$cond)) {
+    return(NULL)
+  } # nocov -- VarCorr$cond is present for a fitted glmmTMB
+  var_g <- tryCatch(
+    .glmmTMB_re_variance_contribution(fit, vc$cond),
+    error = function(e) NA_real_
+  )
+  if (!is.finite(var_g)) {
+    return(NULL)
+  } # nocov -- accumulated random-effect variance is finite
 
   fam <- stats::family(fit)
   null <- .nakagawa_null_params(fit, fam)
   list(
-    var_f          = var_f,
-    var_g          = var_g,
-    family         = fam$family,
-    link           = fam$link,
-    sigma          = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
-    intercept_lp   = mean(fix_lp),
+    var_f = var_f,
+    var_g = var_g,
+    family = fam$family,
+    link = fam$link,
+    sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
+    intercept_lp = mean(fix_lp),
     null_intercept = null$intercept,
-    null_var_g     = null$var_g
+    null_var_g = null$var_g
   )
 }
 
@@ -1404,23 +1657,31 @@ validate_regression_frame <- function(frame) {
 # (RHS of each (...|group) term in formula(fit, component = "cond")).
 .glmmTMB_re_variance_contribution <- function(fit, vc_cond) {
   data <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
-  if (is.null(data)) return(NA_real_)  # nocov -- model.frame succeeds for a fitted glmmTMB
+  if (is.null(data)) {
+    return(NA_real_)
+  } # nocov -- model.frame succeeds for a fitted glmmTMB
   # lme4-style parser: pick (..|group) terms from the conditional formula.
   full_formula <- stats::formula(fit, component = "cond")
   re_terms <- .extract_re_terms(full_formula)
-  if (length(re_terms) == 0L) return(NA_real_)  # nocov -- a mixed-effects fit always has >= 1 random-effect term
+  if (length(re_terms) == 0L) {
+    return(NA_real_)
+  } # nocov -- a mixed-effects fit always has >= 1 random-effect term
   n <- stats::nobs(fit)
   total <- 0
   for (g in names(vc_cond)) {
     W <- as.matrix(vc_cond[[g]])
     # Find the random-effect formula whose RHS-group matches g.
     re_form <- re_terms[[g]]
-    if (is.null(re_form)) next  # nocov -- every VarCorr$cond group has a matching parsed random-effect term
+    if (is.null(re_form)) {
+      next
+    } # nocov -- every VarCorr$cond group has a matching parsed random-effect term
     Z <- tryCatch(
       stats::model.matrix(re_form, data = data),
       error = function(e) NULL
     )
-    if (is.null(Z) || nrow(Z) != n) return(NA_real_)  # nocov -- Z is built from the same n-row model data
+    if (is.null(Z) || nrow(Z) != n) {
+      return(NA_real_)
+    } # nocov -- Z is built from the same n-row model data
     total <- total + sum((Z %*% W) * Z) / n
   }
   total
@@ -1433,21 +1694,25 @@ validate_regression_frame <- function(frame) {
   rhs <- formula[[length(formula)]]
   out <- list()
   walk <- function(node) {
-    if (length(node) == 1L) return(invisible(NULL))
+    if (length(node) == 1L) {
+      return(invisible(NULL))
+    }
     op <- as.character(node[[1L]])
     if (op == "(" && length(node) == 2L) {
       walk(node[[2L]])
       return(invisible(NULL))
     }
     if (op %in% c("+", "*", ":")) {
-      for (k in 2:length(node)) walk(node[[k]])
+      for (k in 2:length(node)) {
+        walk(node[[k]])
+      }
       return(invisible(NULL))
     }
     if (op == "|") {
       slope_expr <- node[[2L]]
       group_expr <- node[[3L]]
       slope_f <- stats::as.formula(call("~", slope_expr))
-      group  <- deparse(group_expr)
+      group <- deparse(group_expr)
       out[[group]] <<- slope_f
     }
   }

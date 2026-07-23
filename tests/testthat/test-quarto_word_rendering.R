@@ -10,7 +10,6 @@
 # attached via tab_source_note at delegation time).
 # ---------------------------------------------------------------------------
 
-
 .with_pandoc_to <- function(to, code) {
   old <- knitr::opts_knit$get("rmarkdown.pandoc.to")
   knitr::opts_knit$set(rmarkdown.pandoc.to = to)
@@ -47,13 +46,15 @@ test_that("docx target: spicy_gt carries the note and skips raw HTML", {
 test_that("HTML target keeps the styled-note post-processing", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("gt")
-  ft  <- table_regression(.fit_qw(), output = "flextable")
+  ft <- table_regression(.fit_qw(), output = "flextable")
   gtb <- table_regression(.fit_qw(), output = "gt")
   s_ft <- .with_pandoc_to(
-    "html", paste(as.character(knitr::knit_print(ft)), collapse = "")
+    "html",
+    paste(as.character(knitr::knit_print(ft)), collapse = "")
   )
   s_gt <- .with_pandoc_to(
-    "html", paste(as.character(knitr::knit_print(gtb)), collapse = "")
+    "html",
+    paste(as.character(knitr::knit_print(gtb)), collapse = "")
   )
   expect_match(s_ft, "spicy-ft-note", fixed = TRUE)
   expect_match(s_gt, "spicy-gt-note", fixed = TRUE)
@@ -63,10 +64,13 @@ test_that("docx target: table_continuous_lm flextable renders too", {
   # The class tags are shared, so the shared knit_print fix must cover
   # the TCLM rich path as well.
   skip_if_not_installed("flextable")
-  tcl <- table_continuous_lm(sochealth, select = wellbeing_score,
-                             by = physical_activity,
-                             covariates = c(age, sex),
-                             output = "flextable")
+  tcl <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
+    covariates = c(age, sex),
+    output = "flextable"
+  )
   out <- .with_pandoc_to("docx", knitr::knit_print(tcl))
   s <- paste(as.character(out), collapse = "")
   expect_match(s, "{=openxml}", fixed = TRUE)
@@ -82,7 +86,8 @@ test_that("as_flextable() returns the clean engine object, note intact", {
   # The note lives in the flextable footer natively (added at build
   # time), so nothing is lost by untagging.
   foot_txt <- paste(
-    unlist(clean$footer$content$data), collapse = " "
+    unlist(clean$footer$content$data),
+    collapse = " "
   )
   expect_match(foot_txt, "Std. errors", fixed = TRUE)
 })
@@ -99,20 +104,27 @@ test_that("end-to-end: rmarkdown -> Word document contains the table", {
 
   td <- withr::local_tempdir()
   rmd <- file.path(td, "qw.Rmd")
-  writeLines(c(
-    "---",
-    "output: word_document",
-    "---",
-    "",
-    "```{r, echo=FALSE}",
-    "fit <- lm(mpg ~ wt + hp, data = mtcars)",
-    "spicy::table_regression(fit, output = \"flextable\")",
-    "```"
-  ), rmd)
+  writeLines(
+    c(
+      "---",
+      "output: word_document",
+      "---",
+      "",
+      "```{r, echo=FALSE}",
+      "fit <- lm(mpg ~ wt + hp, data = mtcars)",
+      "spicy::table_regression(fit, output = \"flextable\")",
+      "```"
+    ),
+    rmd
+  )
   docx <- file.path(td, "qw.docx")
   suppressWarnings(suppressMessages(
-    rmarkdown::render(rmd, output_file = docx, quiet = TRUE,
-                      envir = new.env(parent = globalenv()))
+    rmarkdown::render(
+      rmd,
+      output_file = docx,
+      quiet = TRUE,
+      envir = new.env(parent = globalenv())
+    )
   ))
   expect_true(file.exists(docx))
   xml <- local({

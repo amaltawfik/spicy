@@ -6,7 +6,7 @@
 
 compute_lm_model_stats <- function(fit, focal_term = NULL) {
   sm <- summary(fit)
-  r2 <- unname(sm$r.squared)         # always overall R^2 (model-level)
+  r2 <- unname(sm$r.squared) # always overall R^2 (model-level)
   adj_r2 <- unname(sm$adj.r.squared) # always overall adj. R^2
   sigma_hat <- unname(sm$sigma)
   df_resid <- stats::df.residual(fit)
@@ -152,7 +152,10 @@ pick_es_value_lm <- function(model_stats, effect_size) {
     d = model_stats$d,
     g = model_stats$g,
     omega2 = model_stats$omega2,
-    spicy_abort(paste0("Unknown `effect_size`: ", effect_size), class = "spicy_invalid_input")
+    spicy_abort(
+      paste0("Unknown `effect_size`: ", effect_size),
+      class = "spicy_invalid_input"
+    )
   )
 }
 
@@ -531,6 +534,9 @@ compute_es_ci_lm <- function(fit, effect_size, ci_level, focal_term = NULL) {
     d = compute_smd_ci_lm(fit, ci_level, hedges_correct = FALSE),
     g = compute_smd_ci_lm(fit, ci_level, hedges_correct = TRUE),
     omega2 = compute_omega2_ci_lm(fit, ci_level, focal_term = focal_term),
-    spicy_abort(paste0("Unknown `effect_size`: ", effect_size), class = "spicy_invalid_input")
+    spicy_abort(
+      paste0("Unknown `effect_size`: ", effect_size),
+      class = "spicy_invalid_input"
+    )
   )
 }

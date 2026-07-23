@@ -11,14 +11,18 @@
 #     for fits whose survey.design has been detached or stripped of weights
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .cov_svy_design <- function() {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
-  survey::svydesign(id = ~1, strata = ~stype, weights = ~pw,
-                    data = apistrat, fpc = ~fpc)
+  survey::svydesign(
+    id = ~1,
+    strata = ~stype,
+    weights = ~pw,
+    data = apistrat,
+    fpc = ~fpc
+  )
 }
 
 
@@ -45,7 +49,7 @@ test_that(".check_survey_available error message points at install.packages", {
 # ---- 2. No-intercept factor model: reference NOT dropped -----------------
 
 test_that("svyglm no-intercept factor: every level present, zero reference rows", {
-  d   <- .cov_svy_design()
+  d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ 0 + stype, design = d)
 
   # .svyglm_reference_rows() should hit the `next` (ref not dropped) and
@@ -83,9 +87,12 @@ test_that(".svyglm_family_title falls through to lower-cased family name", {
 })
 
 test_that("svyglm Gamma fit: title_prefix uses the Gamma family label", {
-  d   <- .cov_svy_design()
-  fit <- survey::svyglm(api00 ~ ell, design = d,
-                        family = stats::Gamma(link = "log"))
+  d <- .cov_svy_design()
+  fit <- survey::svyglm(
+    api00 ~ ell,
+    design = d,
+    family = stats::Gamma(link = "log")
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_match(fr$info$extras$title_prefix, "Gamma", fixed = TRUE)
   expect_match(fr$info$extras$title_prefix, "Survey-weighted", fixed = TRUE)
@@ -95,14 +102,14 @@ test_that("svyglm Gamma fit: title_prefix uses the Gamma family label", {
 # ---- 4. Defensive NA branches for detached / weightless designs ----------
 
 test_that(".svyglm_weighted_n returns NA when survey.design is detached", {
-  d   <- .cov_svy_design()
+  d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ ell, design = d)
   fit$survey.design <- NULL
   expect_identical(spicy:::.svyglm_weighted_n(fit), NA_real_)
 })
 
 test_that(".svyglm_weighted_n returns NA when the design carries no weights", {
-  d   <- .cov_svy_design()
+  d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ ell, design = d)
   # Strip the inclusion probabilities so weights(design) is length-0.
   des <- fit$survey.design
@@ -112,14 +119,14 @@ test_that(".svyglm_weighted_n returns NA when the design carries no weights", {
 })
 
 test_that(".svyglm_design_class returns NA when survey.design is detached", {
-  d   <- .cov_svy_design()
+  d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ ell, design = d)
   fit$survey.design <- NULL
   expect_identical(spicy:::.svyglm_design_class(fit), NA_character_)
 })
 
 test_that(".svyglm_design_class names the design class for an attached design", {
-  d   <- .cov_svy_design()
+  d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ ell, design = d)
   expect_match(spicy:::.svyglm_design_class(fit), "design", fixed = TRUE)
 })

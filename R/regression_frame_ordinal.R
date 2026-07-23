@@ -29,22 +29,23 @@
 #     ratios for cloglog, etc. -- supports$exponentiate = TRUE.
 # ---------------------------------------------------------------------------
 
-
 #' `as_regression_frame()` method for `polr` fits (MASS::polr()).
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.polr <- function(fit,
-                                      vcov = "model",
-                                      vcov_label = NULL,
-                                      cluster = NULL,
-                                      cluster_name = NULL,
-                                      ci_level = 0.95,
-                                      ci_method = NULL,
-                                      show_columns = character(0),
-                                      model_id = "M1",
-                                      ...) {
+as_regression_frame.polr <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_MASS_available()
 
   # Profile CIs are model-based (confint.polr); a robust vcov takes precedence
@@ -57,26 +58,47 @@ as_regression_frame.polr <- function(fit,
   }
   coefs <- .polr_coefs(fit, ci_level = ci_level, ci_method = eff_ci_method)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "z")
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "z"
+  )
   # Per-category AME on P(Y = k): avg_slopes() returns one row per
   # (predictor, category), rendered as per-category blocks.
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .polr_info(fit,
-                      vcov_kind  = vcov,
-                      vcov_label = vcov_label,
-                      ci_level   = ci_level,
-                      ci_method  = ci_method,
-                      model_id   = model_id)
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .polr_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "CL")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "CL"
+    )
     # The Thresholds block follows the same estimator: its SE / z / p /
     # CI come from the same full vcovCL matrix as the slopes, so the
     # footer's "cluster-robust" claim covers every rendered row.
     info$extras$thresholds <- .reweight_thresholds_robust(
-      info$extras$thresholds, fit, vcov, cluster)
+      info$extras$thresholds,
+      fit,
+      vcov,
+      cluster
+    )
   }
 
   new_regression_frame(coefs, info, fit)
@@ -88,16 +110,18 @@ as_regression_frame.polr <- function(fit,
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.clm <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     cluster = NULL,
-                                     cluster_name = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     show_columns = character(0),
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.clm <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_ordinal_available()
 
   # Partial-proportional-odds clm fits (nominal = ~ ...) ARE supported: the
@@ -111,13 +135,19 @@ as_regression_frame.clm <- function(fit,
   if (is_ppo && !(vcov %in% c("model", "classical"))) {
     spicy_abort(
       c(
-        sprintf(paste0("A robust `vcov` (\"%s\") is not available for a ",
-                       "partial-proportional-odds `clm` fit (`nominal = ~ ...`)."),
-                vcov),
-        "i" = paste0("`sandwich` / `clubSandwich` have no estimating functions ",
-                     "for the non-proportional (nominal) terms. Use the default ",
-                     "model-based SEs, or drop `nominal` for a proportional-odds ",
-                     "fit.")
+        sprintf(
+          paste0(
+            "A robust `vcov` (\"%s\") is not available for a ",
+            "partial-proportional-odds `clm` fit (`nominal = ~ ...`)."
+          ),
+          vcov
+        ),
+        "i" = paste0(
+          "`sandwich` / `clubSandwich` have no estimating functions ",
+          "for the non-proportional (nominal) terms. Use the default ",
+          "model-based SEs, or drop `nominal` for a proportional-odds ",
+          "fit."
+        )
       ),
       class = "spicy_unsupported_vcov"
     )
@@ -134,25 +164,46 @@ as_regression_frame.clm <- function(fit,
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
   # coef(clm) orders thresholds before slopes; only the slope rows live in
   # coefs, and `match` selects their (offset) positions in the full vcovCL.
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "z")
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "z"
+  )
   # Per-category AME on P(Y = k): one row per (predictor, category).
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .clm_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id)
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .clm_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "CL")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "CL"
+    )
     # Thresholds follow the same estimator (see the polr method): PPO
     # fits never reach here (scale / nominal components are gated to
     # classical), so thr$term always matches the vcovCL rownames.
     info$extras$thresholds <- .reweight_thresholds_robust(
-      info$extras$thresholds, fit, vcov, cluster)
+      info$extras$thresholds,
+      fit,
+      vcov,
+      cluster
+    )
   }
 
   new_regression_frame(coefs, info, fit)
@@ -197,17 +248,17 @@ as_regression_frame.clm <- function(fit,
 # Build the coefs tibble for a polr fit. Predictor coefs only --
 # thresholds (fit$zeta) go into info$extras$thresholds.
 .polr_coefs <- function(fit, ci_level, ci_method = "wald") {
-  cf <- stats::coef(fit)  # excludes thresholds by construction
+  cf <- stats::coef(fit) # excludes thresholds by construction
   V_full <- as.matrix(stats::vcov(fit))
   # Subset vcov to predictor coefs only.
   V <- V_full[names(cf), names(cf), drop = FALSE]
   est <- unname(cf)
-  se  <- sqrt(diag(V))
-  nm  <- names(cf)
+  se <- sqrt(diag(V))
+  nm <- names(cf)
 
   # polr ships t-values but NO p-values. The MLE is asymptotic, so the
   # canonical Wald is z = est / se with p = 2 * pnorm(-abs(z)).
-  stat    <- est / se
+  stat <- est / se
   p_value <- 2 * stats::pnorm(-abs(stat))
   df <- rep(Inf, length(est))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -215,41 +266,54 @@ as_regression_frame.clm <- function(fit,
   ci_upper <- est + z_crit * se
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = rep("z", length(nm)),
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = rep("z", length(nm)),
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .ordinal_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   nonprop <- .ordinal_nonprop_rows(fit, ci_level)
   # polr fits never carry alpha.mat, so .ordinal_nonprop_rows() is always
   # NULL here; the branch is kept for structural symmetry with .clm_coefs
   # (where partial-PO clm fits do reach it).
-  if (!is.null(nonprop)) coefs <- .rbind_union(coefs, nonprop)        # nocov
+  if (!is.null(nonprop)) {
+    coefs <- .rbind_union(coefs, nonprop)
+  } # nocov
   .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
 }
 
@@ -264,13 +328,18 @@ as_regression_frame.clm <- function(fit,
 # Called only under a model-based vcov (a robust vcov takes precedence, so the
 # caller passes ci_method = "wald" then).
 .ordinal_maybe_profile_ci <- function(coefs, fit, ci_level, ci_method) {
-  if (!identical(ci_method, "profile")) return(coefs)
+  if (!identical(ci_method, "profile")) {
+    return(coefs)
+  }
   prow <- which(!coefs$is_ref & !is.na(coefs$estimate))
-  if (length(prow) == 0L) return(coefs)
+  if (length(prow) == 0L) {
+    return(coefs)
+  }
 
   pci <- tryCatch(
     suppressMessages(suppressWarnings(stats::confint(fit, level = ci_level))),
-    error = function(e) NULL)
+    error = function(e) NULL
+  )
   # confint() returns a named length-2 vector when there is a single predictor.
   if (!is.null(pci) && !is.matrix(pci)) {
     pci <- if (length(pci) == 2L && length(prow) == 1L) {
@@ -281,10 +350,15 @@ as_regression_frame.clm <- function(fit,
   }
   if (is.null(pci) || !is.matrix(pci) || ncol(pci) != 2L) {
     spicy_warn(
-      c("Profile-likelihood CI computation failed; falling back to Wald CI.",
-        "i" = paste0("Profile CIs use confint.polr / confint.clm; verify the ",
-                     "fit converged cleanly.")),
-      class = "spicy_fallback")
+      c(
+        "Profile-likelihood CI computation failed; falling back to Wald CI.",
+        "i" = paste0(
+          "Profile CIs use confint.polr / confint.clm; verify the ",
+          "fit converged cleanly."
+        )
+      ),
+      class = "spicy_fallback"
+    )
     return(coefs)
   }
   # Per row: profile the coefficients confint() returns (the PO / location
@@ -294,10 +368,15 @@ as_regression_frame.clm <- function(fit,
   hit <- !is.na(idx)
   if (!any(hit)) {
     spicy_warn(
-      c("Profile-likelihood CI computation failed; falling back to Wald CI.",
-        "i" = paste0("Profile CIs use confint.polr / confint.clm; verify the ",
-                     "fit converged cleanly.")),
-      class = "spicy_fallback")
+      c(
+        "Profile-likelihood CI computation failed; falling back to Wald CI.",
+        "i" = paste0(
+          "Profile CIs use confint.polr / confint.clm; verify the ",
+          "fit converged cleanly."
+        )
+      ),
+      class = "spicy_fallback"
+    )
     return(coefs)
   }
   coefs$ci_lower[prow[hit]] <- pci[idx[hit], 1L]
@@ -308,7 +387,14 @@ as_regression_frame.clm <- function(fit,
 
 # Build the info list for a polr fit. Thresholds (fit$zeta) go into
 # info$extras$thresholds as a data.frame with Wald-z inference.
-.polr_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
+.polr_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id
+) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
@@ -316,66 +402,74 @@ as_regression_frame.clm <- function(fit,
   link_short <- .polr_link_short(link)
   fam <- list(family = "cumulative", link = link_short)
 
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   pr2 <- .ordinal_pseudo_r2(fit)
   fit_stats <- list(
-    r_squared            = NA_real_,
-    adj_r_squared        = NA_real_,
-    pseudo_r2            = NULL,
-    pseudo_r2_mcfadden   = pr2$mcfadden,
+    r_squared = NA_real_,
+    adj_r_squared = NA_real_,
+    pseudo_r2 = NULL,
+    pseudo_r2_mcfadden = pr2$mcfadden,
     pseudo_r2_nagelkerke = pr2$nagelkerke,
-    aic                  = stats::AIC(fit),
-    bic                  = stats::BIC(fit),
-    log_lik              = as.numeric(stats::logLik(fit)),
-    deviance             = tryCatch(suppressWarnings(stats::deviance(fit)),
-                                    error = function(e) NA_real_),
-    sigma                = NA_real_,
-    nobs                 = as.integer(stats::nobs(fit))
+    aic = stats::AIC(fit),
+    bic = stats::BIC(fit),
+    log_lik = as.numeric(stats::logLik(fit)),
+    deviance = tryCatch(
+      suppressWarnings(stats::deviance(fit)),
+      error = function(e) NA_real_
+    ),
+    sigma = NA_real_,
+    nobs = as.integer(stats::nobs(fit))
   )
 
   supports <- list(
-    ame                 = TRUE,
+    ame = TRUE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = TRUE,  # OR for logit link; ratio for others
-    standardise_refit   = FALSE
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = TRUE, # OR for logit link; ratio for others
+    standardise_refit = FALSE
   )
 
   thresholds <- .polr_thresholds(fit)
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = .ordinal_has_weights(fit),
-    weighted_n            = NA_real_,
-    title_prefix          = paste0(.polr_link_title(link), " regression (",
-                                    .ordinal_assumption_label(link), ")"),
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    response_levels       = as.character(fit$lev %||% character(0)),
-    thresholds            = thresholds
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = .ordinal_has_weights(fit),
+    weighted_n = NA_real_,
+    title_prefix = paste0(
+      .polr_link_title(link),
+      " regression (",
+      .ordinal_assumption_label(link),
+      ")"
+    ),
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    response_levels = as.character(fit$lev %||% character(0)),
+    thresholds = thresholds
   )
 
   list(
-    class          = "polr",
-    family         = fam,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit)),
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = "polr",
+    family = fam,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(stats::nobs(fit)),
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Wald asymptotic (z)",
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% "Wald asymptotic (z)",
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
@@ -393,19 +487,23 @@ as_regression_frame.clm <- function(fit,
 # so reweighting here propagates everywhere.
 .reweight_thresholds_robust <- function(thr, fit, vcov_type, cluster) {
   if (is.null(thr) || !is.data.frame(thr) || nrow(thr) == 0L) {
-    return(thr)                                                       # nocov
+    return(thr) # nocov
   }
   vc <- tryCatch(
     compute_model_vcov(fit, type = vcov_type, cluster = cluster),
-    error = function(e) NULL                                          # nocov
+    error = function(e) NULL # nocov
   )
-  if (is.null(vc)) return(thr)                                        # nocov
+  if (is.null(vc)) {
+    return(thr)
+  } # nocov
   vc <- as.matrix(vc)
   idx <- match(thr$term, rownames(vc))
-  if (anyNA(idx)) return(thr)                                         # nocov
+  if (anyNA(idx)) {
+    return(thr)
+  } # nocov
   thr$std_error <- unname(sqrt(diag(vc)[idx]))
   thr$statistic <- thr$estimate / thr$std_error
-  thr$p_value   <- 2 * stats::pnorm(-abs(thr$statistic))
+  thr$p_value <- 2 * stats::pnorm(-abs(thr$statistic))
   thr
 }
 
@@ -414,7 +512,9 @@ as_regression_frame.clm <- function(fit,
   zeta <- fit$zeta %||% numeric(0)
   # nocov: polr requires >= 3 response levels, so zeta always has >= 2
   # thresholds; an empty zeta is structurally impossible for a valid fit.
-  if (length(zeta) == 0L) return(data.frame())
+  if (length(zeta) == 0L) {
+    return(data.frame())
+  }
   V <- as.matrix(stats::vcov(fit))
   zeta_names <- names(zeta)
   # zeta names are present in vcov rownames for polr.
@@ -422,34 +522,36 @@ as_regression_frame.clm <- function(fit,
   stat <- unname(zeta) / unname(se)
   p_value <- 2 * stats::pnorm(-abs(stat))
   data.frame(
-    term      = zeta_names,
-    estimate  = unname(zeta),
+    term = zeta_names,
+    estimate = unname(zeta),
     std_error = unname(se),
     statistic = stat,
-    p_value   = p_value,
+    p_value = p_value,
     stringsAsFactors = FALSE
   )
 }
 
 
 .polr_link_short <- function(method) {
-  switch(method,
+  switch(
+    method,
     logistic = "logit",
-    probit   = "probit",
-    cloglog  = "cloglog",
-    loglog   = "loglog",
-    cauchit  = "cauchit",
-    method   # nocov: polr$method is always one of the 5 links above
+    probit = "probit",
+    cloglog = "cloglog",
+    loglog = "loglog",
+    cauchit = "cauchit",
+    method # nocov: polr$method is always one of the 5 links above
   )
 }
 
 .polr_link_title <- function(method) {
-  switch(method,
+  switch(
+    method,
     logistic = "Cumulative logit",
-    probit   = "Cumulative probit",
-    cloglog  = "Cumulative cloglog",
-    loglog   = "Cumulative loglog",
-    cauchit  = "Cumulative cauchit",
+    probit = "Cumulative probit",
+    cloglog = "Cumulative cloglog",
+    loglog = "Cumulative loglog",
+    cauchit = "Cumulative cauchit",
     # nocov: polr$method is always one of the 5 links above.
     paste0("Cumulative ", method)
   )
@@ -463,10 +565,11 @@ as_regression_frame.clm <- function(fit,
 # assumption (Long 1997's parallel regression). Titling a probit fit
 # "proportional odds" would name a quantity the model does not have.
 .ordinal_assumption_label <- function(link, partial = FALSE) {
-  base <- switch(link,
+  base <- switch(
+    link,
     logistic = ,
-    logit    = "proportional odds",
-    cloglog  = "proportional hazards",
+    logit = "proportional odds",
+    cloglog = "proportional hazards",
     "parallel slopes"
   )
   if (partial) paste("partial", base) else base
@@ -485,19 +588,22 @@ as_regression_frame.clm <- function(fit,
   V_full <- as.matrix(stats::vcov(fit))
   V <- V_full[names(beta), names(beta), drop = FALSE]
   est <- unname(beta)
-  se  <- sqrt(diag(V))
-  nm  <- names(beta)
+  se <- sqrt(diag(V))
+  nm <- names(beta)
 
   # summary(clm)$coefficients carries Estimate, Std. Error, z value,
   # Pr(>|z|). The predictor rows are the ones whose name matches beta.
   sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)
-  if (!is.null(sm) && all(c("z value", "Pr(>|z|)") %in% colnames(sm)) &&
-      all(nm %in% rownames(sm))) {
-    stat    <- unname(sm[nm, "z value"])
+  if (
+    !is.null(sm) &&
+      all(c("z value", "Pr(>|z|)") %in% colnames(sm)) &&
+      all(nm %in% rownames(sm))
+  ) {
+    stat <- unname(sm[nm, "z value"])
     p_value <- unname(sm[nm, "Pr(>|z|)"])
   } else {
-    stat    <- est / se                                                # nocov
-    p_value <- 2 * stats::pnorm(-abs(stat))                            # nocov
+    stat <- est / se # nocov
+    p_value <- 2 * stats::pnorm(-abs(stat)) # nocov
   }
   df <- rep(Inf, length(est))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -505,38 +611,51 @@ as_regression_frame.clm <- function(fit,
   ci_upper <- est + z_crit * se
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = rep("z", length(nm)),
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = rep("z", length(nm)),
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .ordinal_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   nonprop <- .ordinal_nonprop_rows(fit, ci_level)
-  if (!is.null(nonprop)) coefs <- .rbind_union(coefs, nonprop)
+  if (!is.null(nonprop)) {
+    coefs <- .rbind_union(coefs, nonprop)
+  }
   .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
 }
 
@@ -553,9 +672,13 @@ as_regression_frame.clm <- function(fit,
 # the scale part did not exist -- an estimated component silently missing
 # from the table.
 .clm_scale_rows <- function(fit, ci_level) {
-  if (!inherits(fit, "clm")) return(NULL)
+  if (!inherits(fit, "clm")) {
+    return(NULL)
+  }
   zeta <- fit$zeta
-  if (is.null(zeta) || length(zeta) == 0L) return(NULL)
+  if (is.null(zeta) || length(zeta) == 0L) {
+    return(NULL)
+  }
   sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
   # summary.clm stacks thresholds, location, then scale rows: the scale block
@@ -563,33 +686,35 @@ as_regression_frame.clm <- function(fit,
   sm_scale <- if (!is.null(sm) && nrow(sm) >= length(zeta)) {
     sm[seq.int(nrow(sm) - length(zeta) + 1L, nrow(sm)), , drop = FALSE]
   } else {
-    NULL                                                               # nocov
+    NULL # nocov
   }
   out <- list()
   for (i in seq_along(zeta)) {
     est <- unname(zeta[i])
     if (!is.null(sm_scale) && "Std. Error" %in% colnames(sm_scale)) {
-      se   <- unname(sm_scale[i, "Std. Error"])
+      se <- unname(sm_scale[i, "Std. Error"])
       stat <- unname(sm_scale[i, "z value"])
-      p    <- unname(sm_scale[i, "Pr(>|z|)"])
+      p <- unname(sm_scale[i, "Pr(>|z|)"])
     } else {
-      se <- NA_real_; stat <- NA_real_; p <- NA_real_                  # nocov
+      se <- NA_real_
+      stat <- NA_real_
+      p <- NA_real_ # nocov
     }
     out[[length(out) + 1L]] <- data.frame(
-      term             = paste0("scale_", names(zeta)[i]),
-      parent_var       = "Scale effects",
-      label            = names(zeta)[i],
+      term = paste0("scale_", names(zeta)[i]),
+      parent_var = "Scale effects",
+      label = names(zeta)[i],
       factor_level_pos = i,
-      is_ref           = FALSE,
-      estimate_type    = "B",
-      estimate         = est,
-      std_error        = se,
-      df               = Inf,
-      statistic        = stat,
-      p_value          = p,
-      ci_lower         = est - z_crit * se,
-      ci_upper         = est + z_crit * se,
-      test_type        = "z",
+      is_ref = FALSE,
+      estimate_type = "B",
+      estimate = est,
+      std_error = se,
+      df = Inf,
+      statistic = stat,
+      p_value = p,
+      ci_lower = est - z_crit * se,
+      ci_upper = est + z_crit * se,
+      test_type = "z",
       stringsAsFactors = FALSE
     )
   }
@@ -608,9 +733,13 @@ as_regression_frame.clm <- function(fit,
 # (no `alpha.mat`) -- so it is a safe no-op on the shared coef-builder path.
 .ordinal_nonprop_rows <- function(fit, ci_level) {
   am <- fit$alpha.mat
-  if (is.null(am)) return(NULL)
+  if (is.null(am)) {
+    return(NULL)
+  }
   nom_terms <- setdiff(rownames(am), "(Intercept)")
-  if (length(nom_terms) == 0L) return(NULL)
+  if (length(nom_terms) == 0L) {
+    return(NULL)
+  }
   cuts <- colnames(am)
   sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)
   have_sm <- !is.null(sm) &&
@@ -623,28 +752,31 @@ as_regression_frame.clm <- function(fit,
       cname <- paste0(cut, ".", t)
       est <- unname(am[t, cut])
       if (have_sm && cname %in% rownames(sm)) {
-        se   <- unname(sm[cname, "Std. Error"])
+        se <- unname(sm[cname, "Std. Error"])
         stat <- unname(sm[cname, "z value"])
-        p    <- unname(sm[cname, "Pr(>|z|)"])
-      } else {                                                          # nocov
-        se <- NA_real_; stat <- NA_real_; p <- NA_real_                 # nocov
+        p <- unname(sm[cname, "Pr(>|z|)"])
+      } else {
+        # nocov
+        se <- NA_real_
+        stat <- NA_real_
+        p <- NA_real_ # nocov
       }
       pos <- pos + 1L
       out[[length(out) + 1L]] <- data.frame(
-        term             = cname,
-        parent_var       = "Non-proportional effects",
-        label            = paste0(t, " @ ", .prettify_threshold_label(cut)),
+        term = cname,
+        parent_var = "Non-proportional effects",
+        label = paste0(t, " @ ", .prettify_threshold_label(cut)),
         factor_level_pos = pos,
-        is_ref           = FALSE,
-        estimate_type    = "B",
-        estimate         = est,
-        std_error        = se,
-        df               = Inf,
-        statistic        = stat,
-        p_value          = p,
-        ci_lower         = est - z_crit * se,
-        ci_upper         = est + z_crit * se,
-        test_type        = "z",
+        is_ref = FALSE,
+        estimate_type = "B",
+        estimate = est,
+        std_error = se,
+        df = Inf,
+        statistic = stat,
+        p_value = p,
+        ci_lower = est - z_crit * se,
+        ci_upper = est + z_crit * se,
+        test_type = "z",
         stringsAsFactors = FALSE
       )
     }
@@ -655,81 +787,94 @@ as_regression_frame.clm <- function(fit,
 
 # Build the info list for a clm fit. Thresholds (fit$alpha) go into
 # info$extras$thresholds.
-.clm_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method, model_id) {
+.clm_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id
+) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
   link <- fit$link %||% "logit"
   fam <- list(family = "cumulative", link = link)
 
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   pr2 <- .ordinal_pseudo_r2(fit)
   fit_stats <- list(
-    r_squared            = NA_real_,
-    adj_r_squared        = NA_real_,
-    pseudo_r2            = NULL,
-    pseudo_r2_mcfadden   = pr2$mcfadden,
+    r_squared = NA_real_,
+    adj_r_squared = NA_real_,
+    pseudo_r2 = NULL,
+    pseudo_r2_mcfadden = pr2$mcfadden,
     pseudo_r2_nagelkerke = pr2$nagelkerke,
-    aic                  = stats::AIC(fit),
-    bic                  = stats::BIC(fit),
-    log_lik              = as.numeric(stats::logLik(fit)),
-    deviance             = tryCatch(suppressWarnings(stats::deviance(fit)),
-                                    error = function(e) NA_real_),
-    sigma                = NA_real_,
-    nobs                 = as.integer(stats::nobs(fit))
+    aic = stats::AIC(fit),
+    bic = stats::BIC(fit),
+    log_lik = as.numeric(stats::logLik(fit)),
+    deviance = tryCatch(
+      suppressWarnings(stats::deviance(fit)),
+      error = function(e) NA_real_
+    ),
+    sigma = NA_real_,
+    nobs = as.integer(stats::nobs(fit))
   )
 
   supports <- list(
-    ame                 = TRUE,
+    ame = TRUE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = TRUE,
-    standardise_refit   = FALSE
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = TRUE,
+    standardise_refit = FALSE
   )
 
   thresholds <- .clm_thresholds(fit)
   scale_effects <- .clm_scale_rows(fit, ci_level)
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = .ordinal_has_weights(fit),
-    weighted_n            = NA_real_,
-    title_prefix          = paste0(
-      .clm_link_title(link), " regression (",
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = .ordinal_has_weights(fit),
+    weighted_n = NA_real_,
+    title_prefix = paste0(
+      .clm_link_title(link),
+      " regression (",
       .ordinal_assumption_label(link, partial = !is.null(fit$nom.terms)),
-      ")"),
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    response_levels       = as.character(fit$y.levels %||% character(0)),
-    thresholds            = thresholds,
+      ")"
+    ),
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    response_levels = as.character(fit$y.levels %||% character(0)),
+    thresholds = thresholds,
     # Scale (dispersion) coefficients of a `scale = ~` clm. Stashed here --
     # like the thresholds -- so the orchestrator materialises them AFTER
     # exponentiation and p_adjust: they act on log(sigma) of the latent
     # variable, so exp(zeta) is a ratio of latent SDs, never an odds ratio.
-    scale_effects         = scale_effects
+    scale_effects = scale_effects
   )
 
   list(
-    class          = "clm",
-    family         = fam,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit)),
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = "clm",
+    family = fam,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(stats::nobs(fit)),
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Wald asymptotic (z)",
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% "Wald asymptotic (z)",
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
@@ -741,7 +886,9 @@ as_regression_frame.clm <- function(fit,
   alpha <- fit$alpha %||% numeric(0)
   # nocov: clm always estimates >= 1 cumulative threshold (k - 1 for k
   # response levels, k >= 2), so an empty alpha is impossible for a fit.
-  if (length(alpha) == 0L) return(data.frame())
+  if (length(alpha) == 0L) {
+    return(data.frame())
+  }
   # PPO (nominal = ~): alpha is expanded to "<cut>.<term>"; the baseline
   # thresholds are the ".(Intercept)" entries (the nominal effects are rendered
   # as coefficient rows by .ordinal_nonprop_rows). Restrict to those, and
@@ -752,25 +899,29 @@ as_regression_frame.clm <- function(fit,
   } else {
     display <- names(alpha)
   }
-  alpha_names <- names(alpha)   # full names for summary / vcov indexing
+  alpha_names <- names(alpha) # full names for summary / vcov indexing
   sm <- tryCatch(summary(fit)$coefficients, error = function(e) NULL)
-  if (!is.null(sm) && all(alpha_names %in% rownames(sm)) &&
-      all(c("Std. Error", "z value", "Pr(>|z|)") %in% colnames(sm))) {
-    se      <- unname(sm[alpha_names, "Std. Error"])
-    stat    <- unname(sm[alpha_names, "z value"])
+  if (
+    !is.null(sm) &&
+      all(alpha_names %in% rownames(sm)) &&
+      all(c("Std. Error", "z value", "Pr(>|z|)") %in% colnames(sm))
+  ) {
+    se <- unname(sm[alpha_names, "Std. Error"])
+    stat <- unname(sm[alpha_names, "z value"])
     p_value <- unname(sm[alpha_names, "Pr(>|z|)"])
-  } else {                                                              # nocov start
+  } else {
+    # nocov start
     V <- as.matrix(stats::vcov(fit))
     se <- sqrt(diag(V)[alpha_names])
     stat <- unname(alpha) / unname(se)
     p_value <- 2 * stats::pnorm(-abs(stat))
-  }                                                                     # nocov end
+  } # nocov end
   data.frame(
-    term      = display,
-    estimate  = unname(alpha),
+    term = display,
+    estimate = unname(alpha),
     std_error = se,
     statistic = stat,
-    p_value   = p_value,
+    p_value = p_value,
     stringsAsFactors = FALSE
   )
 }
@@ -786,26 +937,30 @@ as_regression_frame.clm <- function(fit,
 # CIs are Wald (`est +/- z * SE`): polr/clm do not profile threshold CIs, and
 # this matches the Wald CIs spicy uses for these classes' predictor rows.
 .append_threshold_rows <- function(coefs, thr, ci_level) {
-  if (is.null(thr) || !is.data.frame(thr) || nrow(thr) == 0L) return(coefs)
-  if (is.null(coefs$is_threshold)) coefs$is_threshold <- FALSE
+  if (is.null(thr) || !is.data.frame(thr) || nrow(thr) == 0L) {
+    return(coefs)
+  }
+  if (is.null(coefs$is_threshold)) {
+    coefs$is_threshold <- FALSE
+  }
   z <- stats::qnorm(0.5 + ci_level / 2)
   new <- data.frame(
-    term             = thr$term,
-    parent_var       = "Thresholds",
-    label            = .prettify_threshold_label(thr$term),
+    term = thr$term,
+    parent_var = "Thresholds",
+    label = .prettify_threshold_label(thr$term),
     factor_level_pos = seq_len(nrow(thr)),
-    is_ref           = FALSE,
-    estimate_type    = "B",
-    estimate         = thr$estimate,
-    std_error        = thr$std_error,
-    df               = Inf,
-    statistic        = thr$statistic,
-    p_value          = thr$p_value,
-    ci_lower         = thr$estimate - z * thr$std_error,
-    ci_upper         = thr$estimate + z * thr$std_error,
-    test_type        = "z",
-    outcome_level    = NA_character_,
-    is_threshold     = TRUE,
+    is_ref = FALSE,
+    estimate_type = "B",
+    estimate = thr$estimate,
+    std_error = thr$std_error,
+    df = Inf,
+    statistic = thr$statistic,
+    p_value = thr$p_value,
+    ci_lower = thr$estimate - z * thr$std_error,
+    ci_upper = thr$estimate + z * thr$std_error,
+    test_type = "z",
+    outcome_level = NA_character_,
+    is_threshold = TRUE,
     stringsAsFactors = FALSE
   )
   .rbind_union(coefs, new)
@@ -825,17 +980,28 @@ as_regression_frame.clm <- function(fit,
 # Cross-validated to performance::r2_mcfadden() / r2_nagelkerke() to ~1e-6.
 .ordinal_pseudo_r2 <- function(fit) {
   na <- list(mcfadden = NA_real_, nagelkerke = NA_real_)
-  ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) NA_real_)
+  ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+    NA_real_
+  })
   ll_null <- .ordinal_null_loglik(fit)
   n <- tryCatch(as.numeric(stats::nobs(fit)), error = function(e) NA_real_)
-  if (!is.finite(ll_full) || !is.finite(ll_null) || ll_null == 0 ||
-        !is.finite(n) || n <= 0) {
+  if (
+    !is.finite(ll_full) ||
+      !is.finite(ll_null) ||
+      ll_null == 0 ||
+      !is.finite(n) ||
+      n <= 0
+  ) {
     return(na)
   }
-  mcfadden  <- 1 - ll_full / ll_null
+  mcfadden <- 1 - ll_full / ll_null
   cox_snell <- 1 - exp((ll_null - ll_full) * 2 / n)
-  upper     <- 1 - exp(ll_null * 2 / n)
-  nagelkerke <- if (is.finite(upper) && upper > 0) cox_snell / upper else NA_real_
+  upper <- 1 - exp(ll_null * 2 / n)
+  nagelkerke <- if (is.finite(upper) && upper > 0) {
+    cox_snell / upper
+  } else {
+    NA_real_
+  }
   list(mcfadden = mcfadden, nagelkerke = nagelkerke)
 }
 
@@ -855,9 +1021,13 @@ as_regression_frame.clm <- function(fit,
 # and weighted).
 .ordinal_null_loglik <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
-  if (is.null(mf)) return(NA_real_)
+  if (is.null(mf)) {
+    return(NA_real_)
+  }
   y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
-  if (is.null(y) || length(y) == 0L) return(NA_real_)
+  if (is.null(y) || length(y) == 0L) {
+    return(NA_real_)
+  }
   w <- tryCatch(stats::model.weights(mf), error = function(e) NULL)
   # nnet::multinom keeps its case weights on the fit object, NOT in the
   # model frame (polr / clm put them there). Reading only the model frame
@@ -867,21 +1037,26 @@ as_regression_frame.clm <- function(fit,
     w_fit <- fit$weights
     if (is.numeric(w_fit) && length(w_fit) == length(y)) w <- w_fit
   }
-  if (is.null(w)) w <- rep(1, length(y))
+  if (is.null(w)) {
+    w <- rep(1, length(y))
+  }
   Wk <- tapply(w, y, sum)
   Wk <- Wk[is.finite(Wk) & Wk > 0]
   W <- sum(Wk)
-  if (!is.finite(W) || W <= 0) return(NA_real_)
+  if (!is.finite(W) || W <= 0) {
+    return(NA_real_)
+  }
   sum(Wk * log(Wk / W))
 }
 
 
 .clm_link_title <- function(link) {
-  switch(link,
-    logit   = "Cumulative logit",
-    probit  = "Cumulative probit",
+  switch(
+    link,
+    logit = "Cumulative logit",
+    probit = "Cumulative probit",
     cloglog = "Cumulative cloglog",
-    loglog  = "Cumulative loglog",
+    loglog = "Cumulative loglog",
     cauchit = "Cumulative cauchit",
     paste0("Cumulative ", link)
   )
@@ -896,32 +1071,38 @@ as_regression_frame.clm <- function(fit,
 # threshold).
 .ordinal_reference_rows <- function(fit) {
   fts <- detect_factor_terms(fit)
-  if (length(fts) == 0L) return(.empty_coefs_frame())
+  if (length(fts) == 0L) {
+    return(.empty_coefs_frame())
+  }
   rows <- list()
   for (ft in fts) {
-    if (!isTRUE(ft$reference_dropped)) next
+    if (!isTRUE(ft$reference_dropped)) {
+      next
+    }
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
-      parent_var       = ft$factor_term,
-      label            = ref_lvl,
+      term = term_name,
+      parent_var = ft$factor_term,
+      label = ref_lvl,
       factor_level_pos = as.integer(ref_pos),
-      is_ref           = TRUE,
-      estimate_type    = "B",
-      estimate         = NA_real_,
-      std_error        = NA_real_,
-      df               = NA_real_,
-      statistic        = NA_real_,
-      p_value          = NA_real_,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = NA_character_,
+      is_ref = TRUE,
+      estimate_type = "B",
+      estimate = NA_real_,
+      std_error = NA_real_,
+      df = NA_real_,
+      statistic = NA_real_,
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = NA_character_,
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(.empty_coefs_frame())
+  if (length(rows) == 0L) {
+    return(.empty_coefs_frame())
+  }
   do.call(rbind, rows)
 }
 
@@ -932,7 +1113,9 @@ as_regression_frame.clm <- function(fit,
 # in the model frame's "(weights)" column. Mirrors the lm convention:
 # has_weights means NON-UNIFORM weights.
 .ordinal_has_weights <- function(fit) {
-  w <- tryCatch(stats::model.weights(stats::model.frame(fit)),
-                error = function(e) NULL)
+  w <- tryCatch(
+    stats::model.weights(stats::model.frame(fit)),
+    error = function(e) NULL
+  )
   !is.null(w) && length(unique(w)) > 1L
 }

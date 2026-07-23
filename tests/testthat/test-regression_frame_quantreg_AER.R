@@ -3,7 +3,6 @@
 # AER::ivreg / AER::tobit.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_rq_median <- function() {
@@ -69,9 +68,11 @@ test_that("rq: coefs estimates match stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -84,18 +85,24 @@ test_that("rq: p-values byte-match summary(fit, se='nid') (the default)", {
   sm <- summary(fit, se = "nid", hs = TRUE)$coefficients
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "Pr(>|t|)"]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "Pr(>|t|)"]),
+      tolerance = 1e-10
+    )
   }
   sm_iid <- summary(fit, se = "iid")$coefficients
   fr_iid <- as_regression_frame(fit, model_id = "M1", vcov = "iid")
-  b_iid <- fr_iid$coefs[fr_iid$coefs$estimate_type == "B" &
-                          !fr_iid$coefs$is_ref, ]
+  b_iid <- fr_iid$coefs[
+    fr_iid$coefs$estimate_type == "B" &
+      !fr_iid$coefs$is_ref,
+  ]
   for (nm in rownames(sm_iid)) {
-    expect_equal(b_iid$p_value[b_iid$term == nm],
-                 unname(sm_iid[nm, "Pr(>|t|)"]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_iid$p_value[b_iid$term == nm],
+      unname(sm_iid[nm, "Pr(>|t|)"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -130,8 +137,12 @@ test_that("ivreg: r.squared / adj.r.squared from summary", {
   fit <- .fit_ivreg_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   sm <- summary(fit)
-  expect_equal(fr$info$fit_stats$r_squared,     sm$r.squared,     tolerance = 1e-10)
-  expect_equal(fr$info$fit_stats$adj_r_squared, sm$adj.r.squared, tolerance = 1e-10)
+  expect_equal(fr$info$fit_stats$r_squared, sm$r.squared, tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$adj_r_squared,
+    sm$adj.r.squared,
+    tolerance = 1e-10
+  )
 })
 
 test_that("ivreg: Wald-t with df.residual", {
@@ -148,10 +159,16 @@ test_that("ivreg: SE / p byte-match summary", {
   sm <- summary(fit)$coefficients
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(sm[nm, "Std. Error"]), tolerance = 1e-10)
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "Pr(>|t|)"]),   tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(sm[nm, "Std. Error"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "Pr(>|t|)"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -203,13 +220,13 @@ test_that("tobit: family normalised to gaussian/identity", {
   fit <- .fit_tobit_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("tobit: censoring boundaries surfaced (defaults: 0 / Inf)", {
   fit <- .fit_tobit_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$extras$tobit_left,  0)
+  expect_equal(fr$info$extras$tobit_left, 0)
   expect_identical(fr$info$extras$tobit_right, Inf)
 })
 
@@ -226,7 +243,7 @@ test_that("rq coefficients match parameters::model_parameters() (oracle, point e
   oracle <- parameters::model_parameters(fit, ci = 0.95)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
     expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
   }
@@ -239,9 +256,9 @@ test_that("ivreg coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6)
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6)
+    expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
+    expect_equal(spicy_row$std_error, oracle_row$SE, tolerance = 1e-6)
   }
 })

@@ -21,7 +21,6 @@
 # per replicate); SE = sd of replicates, Wald z / CI / p -- the
 # package's bootstrap layering.
 
-
 # ---- Data recovery ---------------------------------------------------------
 
 # The counterfactual push needs the fit's ORIGINAL data (raw columns,
@@ -36,10 +35,16 @@
   )
   if (!is.data.frame(data)) {
     spicy_abort(
-      c(paste0("RMST / risk-difference columns need the fit's original ",
-               "data, and it could not be recovered from the model call."),
-        "i" = paste0("Fit the model with a `data` argument that is ",
-                     "still available (a data frame in scope).")),
+      c(
+        paste0(
+          "RMST / risk-difference columns need the fit's original ",
+          "data, and it could not be recovered from the model call."
+        ),
+        "i" = paste0(
+          "Fit the model with a `data` argument that is ",
+          "still available (a data frame in scope)."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -54,15 +59,23 @@
       class = "spicy_invalid_input"
     )
   }
-  data <- data[stats::complete.cases(data[, fvars, drop = FALSE]), ,
-               drop = FALSE]
+  data <- data[
+    stats::complete.cases(data[, fvars, drop = FALSE]),
+    ,
+    drop = FALSE
+  ]
   # Guard against a silent mismatch between the recovered rows and the
   # fit (e.g. the data frame changed since fitting).
   if (nrow(data) != as.integer(fit$n[length(fit$n)])) {
     spicy_abort(
-      c("The recovered data does not match the fitted sample.",
-        "i" = sprintf("Recovered %d complete rows; the fit used %d.",
-                      nrow(data), as.integer(fit$n[length(fit$n)]))),
+      c(
+        "The recovered data does not match the fitted sample.",
+        "i" = sprintf(
+          "Recovered %d complete rows; the fit used %d.",
+          nrow(data),
+          as.integer(fit$n[length(fit$n)])
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -76,17 +89,23 @@
   specials <- attr(fit$terms, "specials")
   if (!is.null(specials$tt)) {
     spicy_abort(
-      sprintf("RMST / risk-difference columns are not available with time-transform `tt()` terms (%s).",
-              model_id),
+      sprintf(
+        "RMST / risk-difference columns are not available with time-transform `tt()` terms (%s).",
+        model_id
+      ),
       class = "spicy_invalid_input"
     )
   }
   y <- stats::model.response(stats::model.frame(fit))
   if (!inherits(y, "Surv") || ncol(y) != 2L) {
     spicy_abort(
-      c(sprintf("RMST / risk-difference columns need right-censored single-record data (%s).",
-                model_id),
-        "i" = "Counting-process (start-stop) responses have no per-subject curve."),
+      c(
+        sprintf(
+          "RMST / risk-difference columns need right-censored single-record data (%s).",
+          model_id
+        ),
+        "i" = "Counting-process (start-stop) responses have no per-subject curve."
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -107,20 +126,25 @@
 .coxph_baseline <- function(fit) {
   bh <- survival::basehaz(fit, centered = FALSE)
   if (is.null(bh$strata)) {
-    return(list(times = bh$time,
-                H0    = matrix(bh$hazard, ncol = 1L),
-                s_idx = NULL))
+    return(list(
+      times = bh$time,
+      H0 = matrix(bh$hazard, ncol = 1L),
+      s_idx = NULL
+    ))
   }
   grid <- sort(unique(bh$time))
   lv <- levels(bh$strata)
-  H0 <- vapply(lv, function(sl) {
-    b <- bh[bh$strata == sl, , drop = FALSE]
-    # Right-continuous step interpolation; 0 before the stratum's
-    # first event time.
-    c(0, b$hazard)[findInterval(grid, b$time) + 1L]
-  }, numeric(length(grid)))
-  H0 <- matrix(H0, nrow = length(grid),
-               dimnames = list(NULL, lv))
+  H0 <- vapply(
+    lv,
+    function(sl) {
+      b <- bh[bh$strata == sl, , drop = FALSE]
+      # Right-continuous step interpolation; 0 before the stratum's
+      # first event time.
+      c(0, b$hazard)[findInterval(grid, b$time) + 1L]
+    },
+    numeric(length(grid))
+  )
+  H0 <- matrix(H0, nrow = length(grid), dimnames = list(NULL, lv))
   mf <- stats::model.frame(fit)
   sp <- survival::untangle.specials(stats::terms(fit), "strata")
   s_subj <- if (length(sp$vars) == 1L) {
@@ -134,9 +158,13 @@
     # labels ("sex=male, agegrp=old") differ from the labels
     # survival::strata() builds from the model-frame special columns.
     spicy_abort(
-      c("The fit's strata labels do not match basehaz().",
-        "i" = paste0("Combine multiple stratification variables into a ",
-                     "single `strata(a, b)` term and refit.")),
+      c(
+        "The fit's strata labels do not match basehaz().",
+        "i" = paste0(
+          "Combine multiple stratification variables into a ",
+          "single `strata(a, b)` term and refit."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -149,14 +177,12 @@
 # from .coxph_baseline(); `s_idx` maps each row of `newdata` to its
 # stratum column (NULL = unstratified). Returns a vector S(times).
 .coxph_standardized_survival <- function(fit, newdata, H0, s_idx = NULL) {
-  lp <- stats::predict(fit, newdata = newdata, type = "lp",
-                       reference = "zero")
+  lp <- stats::predict(fit, newdata = newdata, type = "lp", reference = "zero")
   elp <- exp(lp)
   if (is.null(s_idx)) {
     # S matrix would be length(times) x n; average over subjects
     # without materializing it.
-    return(vapply(H0[, 1L], function(h) mean(exp(-h * elp)),
-                  numeric(1)))
+    return(vapply(H0[, 1L], function(h) mean(exp(-h * elp)), numeric(1)))
   }
   # Stratified: each subject's curve uses their own stratum baseline.
   M <- H0[, s_idx, drop = FALSE]
@@ -180,7 +206,9 @@
 # the value at the last event time <= t).
 .step_surv_at <- function(times, surv, t) {
   idx <- findInterval(t, times)
-  if (idx == 0L) return(1)
+  if (idx == 0L) {
+    return(1)
+  }
   surv[idx]
 }
 
@@ -190,20 +218,33 @@
 # One fit -> the estimand contrasts for every predictor variable.
 # Returns a data.frame: term, parent_var, label, factor_level_pos,
 # estimand ("rmst" / "risk_diff"), estimate.
-.coxph_estimand_points <- function(fit, data, want_rmst, want_risk,
-                                   tau, at_time) {
+.coxph_estimand_points <- function(
+  fit,
+  data,
+  want_rmst,
+  want_risk,
+  tau,
+  at_time
+) {
   bl <- .coxph_baseline(fit)
   times <- bl$times
 
   curve_stats <- function(newdata) {
     s <- .coxph_standardized_survival(fit, newdata, bl$H0, bl$s_idx)
-    c(rmst = if (want_rmst) .step_rmst(times, s, tau) else NA_real_,
-      risk = if (want_risk) 1 - .step_surv_at(times, s, at_time)
-             else NA_real_)
+    c(
+      rmst = if (want_rmst) .step_rmst(times, s, tau) else NA_real_,
+      risk = if (want_risk) {
+        1 - .step_surv_at(times, s, at_time)
+      } else {
+        NA_real_
+      }
+    )
   }
 
-  rhs_vars <- setdiff(all.vars(stats::formula(fit)),
-                      all.vars(stats::formula(fit)[[2L]]))
+  rhs_vars <- setdiff(
+    all.vars(stats::formula(fit)),
+    all.vars(stats::formula(fit)[[2L]])
+  )
   # Strata variables get no contrast row: they carry no coefficient
   # (the table has no HR row for them either), and standardization
   # deliberately holds each subject's stratum fixed.
@@ -229,9 +270,12 @@
         alt[[v]] <- .replace_level(col, lvls[j])
         d <- curve_stats(alt) - ref_stats
         rows[[length(rows) + 1L]] <- data.frame(
-          term = paste0(v, lvls[j]), parent_var = v, label = lvls[j],
+          term = paste0(v, lvls[j]),
+          parent_var = v,
+          label = lvls[j],
           factor_level_pos = as.integer(j),
-          rmst = unname(d["rmst"]), risk = unname(d["risk"]),
+          rmst = unname(d["rmst"]),
+          risk = unname(d["risk"]),
           stringsAsFactors = FALSE
         )
       }
@@ -240,9 +284,12 @@
       plus[[v]] <- col + 1
       d <- curve_stats(plus) - curve_stats(data)
       rows[[length(rows) + 1L]] <- data.frame(
-        term = v, parent_var = v, label = v,
+        term = v,
+        parent_var = v,
+        label = v,
         factor_level_pos = NA_integer_,
-        rmst = unname(d["rmst"]), risk = unname(d["risk"]),
+        rmst = unname(d["rmst"]),
+        risk = unname(d["risk"]),
         stringsAsFactors = FALSE
       )
     }
@@ -262,21 +309,30 @@
 # on the same Weibull fit: exact; and against the closed-form
 # exponential RMST: machine precision.
 .survreg_estimand_gates <- function(fit, model_id) {
-  if (length(fit$scale) > 1L ||
-        !is.null(attr(fit$terms, "specials")$strata)) {
+  if (
+    length(fit$scale) > 1L ||
+      !is.null(attr(fit$terms, "specials")$strata)
+  ) {
     spicy_abort(
-      c(sprintf("RMST / risk-difference columns are not available for a stratified survreg fit (%s).",
-                model_id),
-        "i" = "Per-stratum scale parameters are not standardized; refit without `strata()`."),
+      c(
+        sprintf(
+          "RMST / risk-difference columns are not available for a stratified survreg fit (%s).",
+          model_id
+        ),
+        "i" = "Per-stratum scale parameters are not standardized; refit without `strata()`."
+      ),
       class = "spicy_invalid_input"
     )
   }
   if (!is.character(fit$dist)) {
-    spicy_abort(                                                      # nocov start
-      sprintf("RMST / risk-difference columns need a named survreg distribution (%s).",
-              model_id),
+    spicy_abort(
+      # nocov start
+      sprintf(
+        "RMST / risk-difference columns need a named survreg distribution (%s).",
+        model_id
+      ),
       class = "spicy_invalid_input"
-    )                                                                 # nocov end
+    ) # nocov end
   }
   invisible(NULL)
 }
@@ -289,21 +345,35 @@
   )
   if (!is.data.frame(data)) {
     spicy_abort(
-      c(paste0("RMST / risk-difference columns need the fit's original ",
-               "data, and it could not be recovered from the model call."),
-        "i" = paste0("Fit the model with a `data` argument that is ",
-                     "still available (a data frame in scope).")),
+      c(
+        paste0(
+          "RMST / risk-difference columns need the fit's original ",
+          "data, and it could not be recovered from the model call."
+        ),
+        "i" = paste0(
+          "Fit the model with a `data` argument that is ",
+          "still available (a data frame in scope)."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
   fvars <- all.vars(stats::formula(fit))
-  data <- data[stats::complete.cases(data[, intersect(fvars, names(data)),
-                                          drop = FALSE]), , drop = FALSE]
+  data <- data[
+    stats::complete.cases(data[, intersect(fvars, names(data)), drop = FALSE]),
+    ,
+    drop = FALSE
+  ]
   if (nrow(data) != length(fit$linear.predictors)) {
     spicy_abort(
-      c("The recovered data does not match the fitted sample.",
-        "i" = sprintf("Recovered %d complete rows; the fit used %d.",
-                      nrow(data), length(fit$linear.predictors))),
+      c(
+        "The recovered data does not match the fitted sample.",
+        "i" = sprintf(
+          "Recovered %d complete rows; the fit used %d.",
+          nrow(data),
+          length(fit$linear.predictors)
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -311,28 +381,50 @@
 }
 
 
-.survreg_estimand_points <- function(fit, data, want_rmst, want_risk,
-                                     tau, at_time) {
+.survreg_estimand_points <- function(
+  fit,
+  data,
+  want_rmst,
+  want_risk,
+  tau,
+  at_time
+) {
   std_surv <- function(newdata) {
     lp <- stats::predict(fit, newdata = newdata, type = "lp")
     function(tt) {
-      vapply(tt, function(t1) {
-        mean(1 - survival::psurvreg(t1, mean = lp, scale = fit$scale,
-                                    distribution = fit$dist,
-                                    parms = fit$parms))
-      }, numeric(1))
+      vapply(
+        tt,
+        function(t1) {
+          mean(
+            1 -
+              survival::psurvreg(
+                t1,
+                mean = lp,
+                scale = fit$scale,
+                distribution = fit$dist,
+                parms = fit$parms
+              )
+          )
+        },
+        numeric(1)
+      )
     }
   }
   curve_stats <- function(newdata) {
     S <- std_surv(newdata)
-    c(rmst = if (want_rmst) {
-        stats::integrate(S, 0, tau, rel.tol = 1e-8,
-                         subdivisions = 400L)$value
-      } else NA_real_,
-      risk = if (want_risk) 1 - S(at_time) else NA_real_)
+    c(
+      rmst = if (want_rmst) {
+        stats::integrate(S, 0, tau, rel.tol = 1e-8, subdivisions = 400L)$value
+      } else {
+        NA_real_
+      },
+      risk = if (want_risk) 1 - S(at_time) else NA_real_
+    )
   }
-  rhs_vars <- setdiff(all.vars(stats::formula(fit)),
-                      all.vars(stats::formula(fit)[[2L]]))
+  rhs_vars <- setdiff(
+    all.vars(stats::formula(fit)),
+    all.vars(stats::formula(fit)[[2L]])
+  )
   .estimand_contrast_rows(data, rhs_vars, curve_stats)
 }
 
@@ -345,7 +437,9 @@
 # Variables absorbed by strata() terms (empty for unstratified fits).
 .coxph_strata_vars <- function(fit) {
   sp <- survival::untangle.specials(stats::terms(fit), "strata")
-  if (length(sp$vars) == 0L) return(character(0))
+  if (length(sp$vars) == 0L) {
+    return(character(0))
+  }
   all.vars(stats::reformulate(sp$vars))
 }
 
@@ -372,8 +466,7 @@
   f2 <- f
   environment(f2) <- env
   eval(
-    substitute(survival::coxph(FF, data = .spicy_boot_data.),
-               list(FF = f2)),
+    substitute(survival::coxph(FF, data = .spicy_boot_data.), list(FF = f2)),
     env
   )
 }
@@ -381,28 +474,54 @@
 
 # ---- Bootstrap inference ---------------------------------------------------
 
-.coxph_estimand_rows <- function(fit, model_id, outcome, show_columns,
-                                 tau = NULL, at_time = NULL,
-                                 ci_level = 0.95, boot_n = 1000L) {
+.coxph_estimand_rows <- function(
+  fit,
+  model_id,
+  outcome,
+  show_columns,
+  tau = NULL,
+  at_time = NULL,
+  ci_level = 0.95,
+  boot_n = 1000L
+) {
   .survival_estimand_rows(
-    fit, model_id, show_columns, tau, at_time, ci_level, boot_n,
-    gates_fn  = .coxph_estimand_gates,
-    data_fn   = .coxph_estimand_data,
+    fit,
+    model_id,
+    show_columns,
+    tau,
+    at_time,
+    ci_level,
+    boot_n,
+    gates_fn = .coxph_estimand_gates,
+    data_fn = .coxph_estimand_data,
     points_fn = .coxph_estimand_points,
-    refit_fn  = function(fit, dboot) .coxph_refit_on(stats::formula(fit), dboot)
+    refit_fn = function(fit, dboot) .coxph_refit_on(stats::formula(fit), dboot)
   )
 }
 
 
-.survreg_estimand_rows <- function(fit, model_id, outcome, show_columns,
-                                   tau = NULL, at_time = NULL,
-                                   ci_level = 0.95, boot_n = 1000L) {
+.survreg_estimand_rows <- function(
+  fit,
+  model_id,
+  outcome,
+  show_columns,
+  tau = NULL,
+  at_time = NULL,
+  ci_level = 0.95,
+  boot_n = 1000L
+) {
   .survival_estimand_rows(
-    fit, model_id, show_columns, tau, at_time, ci_level, boot_n,
-    gates_fn  = .survreg_estimand_gates,
-    data_fn   = .survreg_estimand_data,
+    fit,
+    model_id,
+    show_columns,
+    tau,
+    at_time,
+    ci_level,
+    boot_n,
+    gates_fn = .survreg_estimand_gates,
+    data_fn = .survreg_estimand_data,
     points_fn = .survreg_estimand_points,
-    refit_fn  = .survreg_refit_on
+    refit_fn = .survreg_refit_on
   )
 }
 
@@ -411,16 +530,30 @@
 # estimand paths: gates, data recovery, point estimates, and the
 # resample-refit-recompute loop are identical; only the four hooks
 # differ per class.
-.survival_estimand_rows <- function(fit, model_id, show_columns,
-                                    tau = NULL, at_time = NULL,
-                                    ci_level = 0.95, boot_n = 1000L,
-                                    gates_fn, data_fn, points_fn,
-                                    refit_fn) {
-  want_rmst <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p") %in%
-                     show_columns)
-  want_risk <- any(c("risk_diff", "risk_diff_se", "risk_diff_ci",
-                     "risk_diff_p") %in% show_columns)
-  if (!want_rmst && !want_risk) return(NULL)
+.survival_estimand_rows <- function(
+  fit,
+  model_id,
+  show_columns,
+  tau = NULL,
+  at_time = NULL,
+  ci_level = 0.95,
+  boot_n = 1000L,
+  gates_fn,
+  data_fn,
+  points_fn,
+  refit_fn
+) {
+  want_rmst <- any(
+    c("rmst", "rmst_se", "rmst_ci", "rmst_p") %in%
+      show_columns
+  )
+  want_risk <- any(
+    c("risk_diff", "risk_diff_se", "risk_diff_ci", "risk_diff_p") %in%
+      show_columns
+  )
+  if (!want_rmst && !want_risk) {
+    return(NULL)
+  }
   gates_fn(fit, model_id)
   data <- data_fn(fit)
 
@@ -432,29 +565,35 @@
   if (want_rmst && identical(tau, "minmax")) {
     y <- stats::model.response(stats::model.frame(fit))
     obs_time <- as.numeric(y[, 1L])
-    rhs_vars <- setdiff(all.vars(stats::formula(fit)),
-                        all.vars(stats::formula(fit)[[2L]]))
+    rhs_vars <- setdiff(
+      all.vars(stats::formula(fit)),
+      all.vars(stats::formula(fit)[[2L]])
+    )
     rhs_vars <- setdiff(rhs_vars, .coxph_strata_vars(fit))
     level_max <- numeric(0)
     for (v in rhs_vars) {
       col <- data[[v]]
       if (is.factor(col) || is.character(col)) {
-        level_max <- c(level_max,
-                       tapply(obs_time, as.character(col), max))
+        level_max <- c(level_max, tapply(obs_time, as.character(col), max))
       }
     }
-    tau_resolved <- if (length(level_max)) min(level_max) else
+    tau_resolved <- if (length(level_max)) {
+      min(level_max)
+    } else {
       max(obs_time)
+    }
   }
 
-  pts <- points_fn(fit, data, want_rmst, want_risk,
-                   tau_resolved, at_time)
-  if (is.null(pts) || nrow(pts) == 0L) return(NULL)
+  pts <- points_fn(fit, data, want_rmst, want_risk, tau_resolved, at_time)
+  if (is.null(pts) || nrow(pts) == 0L) {
+    return(NULL)
+  }
 
   # Bootstrap: resample subjects, refit, recompute every contrast.
   n <- nrow(data)
   boot_est <- array(
-    NA_real_, dim = c(boot_n, nrow(pts), 2L),
+    NA_real_,
+    dim = c(boot_n, nrow(pts), 2L),
     dimnames = list(NULL, pts$term, c("rmst", "risk"))
   )
   for (b in seq_len(boot_n)) {
@@ -468,13 +607,23 @@
     # A replicate whose design lost a level (or is otherwise singular)
     # carries NA coefficients that predict() would silently treat as
     # zero -- a phantom null contrast. Count it as failed instead.
-    if (is.null(rep_fit) || anyNA(stats::coef(rep_fit))) next
+    if (is.null(rep_fit) || anyNA(stats::coef(rep_fit))) {
+      next
+    }
     rep_pts <- tryCatch(
-      points_fn(rep_fit, data[idx, , drop = FALSE],
-                want_rmst, want_risk, tau_resolved, at_time),
+      points_fn(
+        rep_fit,
+        data[idx, , drop = FALSE],
+        want_rmst,
+        want_risk,
+        tau_resolved,
+        at_time
+      ),
       error = function(e) NULL
     )
-    if (is.null(rep_pts)) next
+    if (is.null(rep_pts)) {
+      next
+    }
     m <- match(pts$term, rep_pts$term)
     boot_est[b, , "rmst"] <- rep_pts$rmst[m]
     boot_est[b, , "risk"] <- rep_pts$risk[m]
@@ -483,50 +632,59 @@
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
   build <- function(estimand_key, estimate_type) {
     est <- pts[[estimand_key]]
-    reps <- matrix(boot_est[, , estimand_key], nrow = boot_n)
+    reps <- matrix(boot_est[,, estimand_key], nrow = boot_n)
     se <- apply(reps, 2L, stats::sd, na.rm = TRUE)
     n_valid <- apply(reps, 2L, function(x) sum(is.finite(x)))
     if (any(n_valid < boot_n * 0.5)) {
       spicy_abort(
         sprintf(
           "More than half of the %d bootstrap replicates failed for the %s column.",
-          boot_n, estimate_type
+          boot_n,
+          estimate_type
         ),
         class = "spicy_resampling_failed"
       )
     }
     stat <- est / se
     data.frame(
-      term             = pts$term,
-      parent_var       = pts$parent_var,
-      label            = pts$label,
+      term = pts$term,
+      parent_var = pts$parent_var,
+      label = pts$label,
       factor_level_pos = pts$factor_level_pos,
-      is_ref           = FALSE,
-      estimate_type    = estimate_type,
-      estimate         = est,
-      std_error        = unname(se),
-      df               = Inf,
-      statistic        = unname(stat),
-      p_value          = 2 * stats::pnorm(-abs(unname(stat))),
-      ci_lower         = est - z_crit * unname(se),
-      ci_upper         = est + z_crit * unname(se),
-      test_type        = "z",
+      is_ref = FALSE,
+      estimate_type = estimate_type,
+      estimate = est,
+      std_error = unname(se),
+      df = Inf,
+      statistic = unname(stat),
+      p_value = 2 * stats::pnorm(-abs(unname(stat))),
+      ci_lower = est - z_crit * unname(se),
+      ci_upper = est + z_crit * unname(se),
+      test_type = "z",
       stringsAsFactors = FALSE
     )
   }
 
   out <- list()
-  if (want_rmst) out$rmst <- build("rmst", "rmst")
-  if (want_risk) out$risk <- build("risk", "risk_diff")
+  if (want_rmst) {
+    out$rmst <- build("rmst", "rmst")
+  }
+  if (want_risk) {
+    out$risk <- build("risk", "risk_diff")
+  }
   keys <- c(if (want_rmst) "rmst", if (want_risk) "risk")
-  boot_valid <- min(vapply(keys, function(k) {
-    min(colSums(is.finite(matrix(boot_est[, , k], nrow = boot_n))))
-  }, numeric(1)))
+  boot_valid <- min(vapply(
+    keys,
+    function(k) {
+      min(colSums(is.finite(matrix(boot_est[,, k], nrow = boot_n))))
+    },
+    numeric(1)
+  ))
   list(
-    rows       = do.call(rbind, out),
-    tau        = if (want_rmst) tau_resolved else NULL,
-    at_time    = if (want_risk) at_time else NULL,
-    boot_n     = boot_n,
+    rows = do.call(rbind, out),
+    tau = if (want_rmst) tau_resolved else NULL,
+    at_time = if (want_risk) at_time else NULL,
+    boot_n = boot_n,
     boot_valid = as.integer(boot_valid),
     stratified = !is.null(attr(fit$terms, "specials")$strata)
   )
@@ -538,46 +696,70 @@
 # Table note for the estimand columns, read from
 # extras$survival_estimands (set by the coxph frame builder).
 build_survival_estimand_footer_block_from_frames <- function(frames) {
-  if (!is.list(frames) || length(frames) == 0L) return(NULL)
-  notes <- vapply(frames, function(f) {
-    es <- f$info$extras$survival_estimands
-    if (is.null(es)) return(NA_character_)
-    parts <- character(0)
-    if (!is.null(es$tau)) {
-      parts <- c(parts, sprintf(
-        "dRMST = difference in restricted mean survival time over [0, %s]",
-        format(es$tau)
-      ))
-    }
-    if (!is.null(es$at_time)) {
-      parts <- c(parts, sprintf(
-        "dRisk = difference in cumulative incidence at %s",
-        format(es$at_time)
-      ))
-    }
-    paste0(
-      paste(parts, collapse = "; "),
-      sprintf(
-        "; adjusted by g-computation from the fitted model%s, SEs by nonparametric bootstrap (%s replicates).",
-        if (isTRUE(es$stratified)) {
-          " (within-stratum baselines)"
-        } else {
-          ""
-        },
-        if (es$boot_valid < es$boot_n) {
-          sprintf("%d-%d", es$boot_valid, es$boot_n)
-        } else {
-          format(es$boot_n)
-        }
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  notes <- vapply(
+    frames,
+    function(f) {
+      es <- f$info$extras$survival_estimands
+      if (is.null(es)) {
+        return(NA_character_)
+      }
+      parts <- character(0)
+      if (!is.null(es$tau)) {
+        parts <- c(
+          parts,
+          sprintf(
+            "dRMST = difference in restricted mean survival time over [0, %s]",
+            format(es$tau)
+          )
+        )
+      }
+      if (!is.null(es$at_time)) {
+        parts <- c(
+          parts,
+          sprintf(
+            "dRisk = difference in cumulative incidence at %s",
+            format(es$at_time)
+          )
+        )
+      }
+      paste0(
+        paste(parts, collapse = "; "),
+        sprintf(
+          "; adjusted by g-computation from the fitted model%s, SEs by nonparametric bootstrap (%s replicates).",
+          if (isTRUE(es$stratified)) {
+            " (within-stratum baselines)"
+          } else {
+            ""
+          },
+          if (es$boot_valid < es$boot_n) {
+            sprintf("%d-%d", es$boot_valid, es$boot_n)
+          } else {
+            format(es$boot_n)
+          }
+        )
       )
-    )
-  }, character(1))
-  if (all(is.na(notes))) return(NULL)
+    },
+    character(1)
+  )
+  if (all(is.na(notes))) {
+    return(NULL)
+  }
   affected <- which(!is.na(notes))
   if (length(unique(notes[affected])) == 1L) {
     return(notes[affected][1L])
   }
-  paste(vapply(affected, function(k) {                                # nocov start
-    sprintf("Model %d: %s", k, notes[k])
-  }, character(1)), collapse = "\n")                                  # nocov end
+  paste(
+    vapply(
+      affected,
+      function(k) {
+        # nocov start
+        sprintf("Model %d: %s", k, notes[k])
+      },
+      character(1)
+    ),
+    collapse = "\n"
+  ) # nocov end
 }

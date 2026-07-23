@@ -107,7 +107,8 @@ test_that("align_frames – factor reference row precedes non-ref levels in grou
   aligned <- .align(fr, "M1")
   cyl_rows <- aligned$coefs_aligned[
     !is.na(aligned$coefs_aligned$factor_term) &
-      aligned$coefs_aligned$factor_term == "cyl", ]
+      aligned$coefs_aligned$factor_term == "cyl",
+  ]
   # The first cyl row should be the reference (is_reference TRUE)
   expect_true(cyl_rows$is_reference[1L])
 })
@@ -146,7 +147,8 @@ test_that("align_frames – captures factor_ref_levels even when refs dropped", 
 test_that("align_frames – multiple factors give one ref entry per factor", {
   # Coerce `am` to factor so it joins `cyl` in the ref-level map.
   # (In mtcars `am` is numeric 0/1 by default.)
-  d <- mt; d$am <- factor(d$am)
+  d <- mt
+  d$am <- factor(d$am)
   fr <- list(mk_frame(mpg ~ wt + cyl + am, "M1", data = d))
   aligned <- .align(fr, "M1", reference_style = "footer")
   expect_true(all(c("cyl", "am") %in% names(aligned$factor_ref_levels)))
@@ -221,6 +223,8 @@ test_that("pivot_aligned_wide – two models, side-by-side columns", {
     model_labels = c("Naive", "Adjusted")
   )
   # Both model labels produce their own value columns
-  expect_true(all(c("Naive__estimate", "Adjusted__estimate",
-                    "Naive__se", "Adjusted__se") %in% names(wide)))
+  expect_true(all(
+    c("Naive__estimate", "Adjusted__estimate", "Naive__se", "Adjusted__se") %in%
+      names(wide)
+  ))
 })

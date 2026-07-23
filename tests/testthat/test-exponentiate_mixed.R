@@ -7,13 +7,13 @@
 # response scale and must NOT be re-exponentiated).
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_glmer_logit <- function() {
   skip_if_not_installed("lme4")
   set.seed(1)
-  n <- 500; g <- factor(rep(1:25, length.out = n))
+  n <- 500
+  g <- factor(rep(1:25, length.out = n))
   x <- rnorm(n)
   y <- rbinom(n, 1, plogis(0.5 + 0.8 * x + rnorm(25)[g]))
   lme4::glmer(y ~ x + (1 | g), family = binomial)
@@ -22,7 +22,8 @@
 .fit_glmer_poisson <- function() {
   skip_if_not_installed("lme4")
   set.seed(2)
-  n <- 300; g <- factor(rep(1:15, length.out = n))
+  n <- 300
+  g <- factor(rep(1:15, length.out = n))
   x <- rnorm(n)
   y <- rpois(n, exp(1 + 0.3 * x + rnorm(15, 0, 0.3)[g]))
   lme4::glmer(y ~ x + (1 | g), family = poisson)
@@ -31,7 +32,8 @@
 .fit_glmmTMB_logit <- function() {
   skip_if_not_installed("glmmTMB")
   set.seed(1)
-  n <- 500; g <- factor(rep(1:25, length.out = n))
+  n <- 500
+  g <- factor(rep(1:25, length.out = n))
   x <- rnorm(n)
   y <- rbinom(n, 1, plogis(0.5 + 0.8 * x + rnorm(25)[g]))
   d <- data.frame(y = y, x = x, g = g)
@@ -95,7 +97,7 @@ test_that("exponentiate: z-statistic and p-value unchanged", {
   b_raw <- fr_raw$coefs[fr_raw$coefs$estimate_type == "B", ]
   b_exp <- fr_exp$coefs[fr_exp$coefs$estimate_type == "B", ]
   expect_equal(b_exp$statistic, b_raw$statistic, tolerance = 1e-12)
-  expect_equal(b_exp$p_value,   b_raw$p_value,   tolerance = 1e-12)
+  expect_equal(b_exp$p_value, b_raw$p_value, tolerance = 1e-12)
 })
 
 
@@ -104,15 +106,21 @@ test_that("exponentiate: z-statistic and p-value unchanged", {
 test_that("exponentiate does NOT re-exponentiate AME rows (already response-scale)", {
   skip_if_not_installed("marginaleffects")
   fit <- .fit_glmer_logit()
-  fr_no_exp <- as_regression_frame(fit, model_id = "M1",
-                                    show_columns = c("b", "ame"),
-                                    exponentiate = FALSE)
-  fr_exp    <- as_regression_frame(fit, model_id = "M1",
-                                    show_columns = c("b", "ame"),
-                                    exponentiate = TRUE)
+  fr_no_exp <- as_regression_frame(
+    fit,
+    model_id = "M1",
+    show_columns = c("b", "ame"),
+    exponentiate = FALSE
+  )
+  fr_exp <- as_regression_frame(
+    fit,
+    model_id = "M1",
+    show_columns = c("b", "ame"),
+    exponentiate = TRUE
+  )
   ame_no_exp <- fr_no_exp$coefs[fr_no_exp$coefs$estimate_type == "ame", ]
-  ame_exp    <- fr_exp$coefs[fr_exp$coefs$estimate_type == "ame", ]
-  expect_equal(ame_exp$estimate,  ame_no_exp$estimate,  tolerance = 1e-12)
+  ame_exp <- fr_exp$coefs[fr_exp$coefs$estimate_type == "ame", ]
+  expect_equal(ame_exp$estimate, ame_no_exp$estimate, tolerance = 1e-12)
   expect_equal(ame_exp$std_error, ame_no_exp$std_error, tolerance = 1e-12)
 })
 
@@ -147,8 +155,12 @@ test_that("lmer Gaussian: exponentiate is a no-op on B-rows", {
   fit <- .fit_lmer_gaussian()
   fr_raw <- as_regression_frame(fit, model_id = "M1")
   fr_exp <- as_regression_frame(fit, model_id = "M1", exponentiate = TRUE)
-  expect_equal(fr_exp$coefs$estimate,  fr_raw$coefs$estimate,  tolerance = 1e-12)
-  expect_equal(fr_exp$coefs$std_error, fr_raw$coefs$std_error, tolerance = 1e-12)
+  expect_equal(fr_exp$coefs$estimate, fr_raw$coefs$estimate, tolerance = 1e-12)
+  expect_equal(
+    fr_exp$coefs$std_error,
+    fr_raw$coefs$std_error,
+    tolerance = 1e-12
+  )
 })
 
 test_that("lmer Gaussian: exp_applied stays FALSE (no footer note)", {
@@ -168,9 +180,11 @@ test_that("table_regression(glmer, exponentiate = TRUE) renames B column to OR",
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "OR", fixed = TRUE)
   expect_match(combined, "OR = odds ratio", fixed = TRUE)
-  expect_match(combined,
-                "Coefficients exponentiated and displayed as OR",
-                fixed = TRUE)
+  expect_match(
+    combined,
+    "Coefficients exponentiated and displayed as OR",
+    fixed = TRUE
+  )
 })
 
 test_that("table_regression(glmer Poisson, exponentiate = TRUE) renames B to IRR", {
@@ -179,7 +193,7 @@ test_that("table_regression(glmer Poisson, exponentiate = TRUE) renames B to IRR
     table_regression(fit, exponentiate = TRUE)
   ))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "IRR",                       fixed = TRUE)
+  expect_match(combined, "IRR", fixed = TRUE)
   expect_match(combined, "IRR = incidence rate ratio", fixed = TRUE)
 })
 

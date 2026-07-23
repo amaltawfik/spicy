@@ -25,21 +25,22 @@
 #     is the FE-partialled-out variant.
 # ---------------------------------------------------------------------------
 
-
 #' `as_regression_frame()` method for `fixest` fits.
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.fixest <- function(fit,
-                                        vcov = "model",
-                                        vcov_label = NULL,
-                                        cluster = NULL,
-                                        ci_level = 0.95,
-                                        ci_method = NULL,
-                                        show_columns = character(0),
-                                        model_id = "M1",
-                                        ...) {
+as_regression_frame.fixest <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_fixest_available()
 
   # Family disambiguation. feglm / fepois store fit$family as a glm-family
@@ -55,15 +56,23 @@ as_regression_frame.fixest <- function(fit,
   coefs <- .fixest_coefs(fit, ci_level = ci_level, is_glm = is_glm)
   # AME rows when requested (finding M2): response-scale avg_slopes();
   # a robust vcov is recomputed inside and honoured.
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .fixest_info(fit,
-                        vcov_kind  = vcov,
-                        vcov_label = vcov_label,
-                        ci_level   = ci_level,
-                        ci_method  = ci_method,
-                        model_id   = model_id,
-                        is_glm     = is_glm)
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .fixest_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id,
+    is_glm = is_glm
+  )
 
   new_regression_frame(coefs, info, fit)
 }
@@ -91,14 +100,14 @@ as_regression_frame.fixest <- function(fit,
 .fixest_coefs <- function(fit, ci_level, is_glm) {
   cf <- stats::coef(fit)
   est <- unname(cf)
-  nm  <- names(cf)
+  nm <- names(cf)
   V <- as.matrix(stats::vcov(fit))
   se <- sqrt(diag(V))[nm]
 
   sm <- summary(fit)$coeftable
   if (is_glm) {
     # GLM-like fixest: Wald z-asymptotic.
-    stat    <- unname(sm[nm, "z value"])
+    stat <- unname(sm[nm, "z value"])
     p_value <- unname(sm[nm, "Pr(>|z|)"])
     df <- rep(Inf, length(est))
     z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -107,13 +116,15 @@ as_regression_frame.fixest <- function(fit,
     test_type_col <- rep("z", length(est))
   } else {
     # OLS-like fixest: Wald-t with df.residual.
-    stat    <- unname(sm[nm, "t value"])
+    stat <- unname(sm[nm, "t value"])
     p_value <- unname(sm[nm, "Pr(>|t|)"])
     dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
     # nocov: defensive; df.residual.fixest always returns a finite numeric
     # for a valid OLS feols, and the tryCatch above already maps any error
     # to Inf, so this NULL/non-finite normaliser is never exercised.
-    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf                    # nocov
+    if (is.null(dfr) || !is.finite(dfr)) {
+      dfr <- Inf
+    } # nocov
     df <- rep(as.numeric(dfr), length(est))
     t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
     ci_lower <- est - t_crit * se
@@ -122,36 +133,47 @@ as_regression_frame.fixest <- function(fit,
   }
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = test_type_col,
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = test_type_col,
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .fixest_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   coefs
 }
 
@@ -161,32 +183,38 @@ as_regression_frame.fixest <- function(fit,
 # from fit$call$data via fit$call_env), so factor predictors are seen.
 .fixest_reference_rows <- function(fit) {
   fts <- detect_factor_terms(fit)
-  if (length(fts) == 0L) return(.empty_coefs_frame())
+  if (length(fts) == 0L) {
+    return(.empty_coefs_frame())
+  }
   rows <- list()
   for (ft in fts) {
-    if (!isTRUE(ft$reference_dropped)) next
+    if (!isTRUE(ft$reference_dropped)) {
+      next
+    }
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
-      parent_var       = ft$factor_term,
-      label            = ref_lvl,
+      term = term_name,
+      parent_var = ft$factor_term,
+      label = ref_lvl,
       factor_level_pos = as.integer(ref_pos),
-      is_ref           = TRUE,
-      estimate_type    = "B",
-      estimate         = NA_real_,
-      std_error        = NA_real_,
-      df               = NA_real_,
-      statistic        = NA_real_,
-      p_value          = NA_real_,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = NA_character_,
+      is_ref = TRUE,
+      estimate_type = "B",
+      estimate = NA_real_,
+      std_error = NA_real_,
+      df = NA_real_,
+      statistic = NA_real_,
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = NA_character_,
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(.empty_coefs_frame())
+  if (length(rows) == 0L) {
+    return(.empty_coefs_frame())
+  }
   do.call(rbind, rows)
 }
 
@@ -219,22 +247,35 @@ as_regression_frame.fixest <- function(fit,
 # absorbed intercepts and the `var[[slope]]` entries are slopes.
 .fixest_intercept_fixefs <- function(fit) {
   fv <- fit$fixef_vars
-  if (is.null(fv) || length(fv) == 0L) return(character(0))
+  if (is.null(fv) || length(fv) == 0L) {
+    return(character(0))
+  }
   ft <- fit$fixef_terms
-  if (is.null(ft)) return(fv)
+  if (is.null(ft)) {
+    return(fv)
+  }
   intersect(fv, ft[!grepl("[[", ft, fixed = TRUE)])
 }
 
 
 # Build the info list for a fixest fit.
-.fixest_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                          model_id, is_glm) {
+.fixest_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id,
+  is_glm
+) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
   fam <- .fixest_family_info(fit, is_glm = is_glm)
 
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   fit_stats <- .fixest_fit_stats(fit, is_glm = is_glm)
 
@@ -253,33 +294,33 @@ as_regression_frame.fixest <- function(fit,
   exp_ok <- is_glm && !identical(fam$link, "identity")
 
   supports <- list(
-    ame                 = TRUE,
+    ame = TRUE,
     partial_effect_size = FALSE,
-    classical_r2        = !is_glm,
-    nested_lrt          = TRUE,
-    exponentiate        = exp_ok,
-    standardise_refit   = FALSE
+    classical_r2 = !is_glm,
+    nested_lrt = TRUE,
+    exponentiate = exp_ok,
+    standardise_refit = FALSE
   )
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = .fixest_title_prefix(fam, is_glm),
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    fixef_sizes           = fixef_sizes,
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = .fixest_title_prefix(fam, is_glm),
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    fixef_sizes = fixef_sizes,
     # Factors with a genuinely absorbed intercept (slope-only factors
     # excluded) -- drives the "Fixed effects" Yes/No disclosure block.
-    fixef_intercept       = .fixest_intercept_fixefs(fit),
-    vcov_type             = vt,
+    fixef_intercept = .fixest_intercept_fixefs(fit),
+    vcov_type = vt,
     # fenegbin dispersion: theta is stored as a length-1 (named ".theta")
     # numeric on the fit; NA for non-negbin families. Mirrors the
     # extras$theta surfaced by as_regression_frame.negbin() (MASS path).
-    theta                 = if (identical(fam$family, "negbin")) {
+    theta = if (identical(fam$family, "negbin")) {
       as.numeric(fit$theta %||% NA_real_)
     } else {
       NA_real_
@@ -287,21 +328,21 @@ as_regression_frame.fixest <- function(fit,
   )
 
   list(
-    class          = "fixest",
-    family         = fam,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit)),
-    n_groups       = n_groups,
-    weights_kind   = "none",
+    class = "fixest",
+    family = fam,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(stats::nobs(fit)),
+    n_groups = n_groups,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% default_label,
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% default_label,
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
@@ -312,36 +353,49 @@ as_regression_frame.fixest <- function(fit,
 # ordinal / multinom default family.
 .fixest_fit_stats <- function(fit, is_glm) {
   r2 <- if (!is_glm) {
-    tryCatch(fixest::fitstat(fit, type = c("r2", "ar2", "wr2"),
-                              verbose = FALSE, simplify = FALSE),
-             error = function(e) NULL)
+    tryCatch(
+      fixest::fitstat(
+        fit,
+        type = c("r2", "ar2", "wr2"),
+        verbose = FALSE,
+        simplify = FALSE
+      ),
+      error = function(e) NULL
+    )
   } else {
     NULL
   }
   pr2 <- if (is_glm) {
-    tryCatch(as.numeric(fixest::fitstat(fit, "pr2", simplify = TRUE)),
-             error = function(e) NA_real_)
+    tryCatch(
+      as.numeric(fixest::fitstat(fit, "pr2", simplify = TRUE)),
+      error = function(e) NA_real_
+    )
   } else {
     NA_real_
   }
   sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
   list(
-    r_squared      = as.numeric(r2$r2 %||% NA_real_),
-    adj_r_squared  = as.numeric(r2$ar2 %||% NA_real_),
+    r_squared = as.numeric(r2$r2 %||% NA_real_),
+    adj_r_squared = as.numeric(r2$ar2 %||% NA_real_),
     pseudo_r2_mcfadden = pr2,
-    pseudo_r2      = if (!is_glm && !is.null(r2$wr2)) {
+    pseudo_r2 = if (!is_glm && !is.null(r2$wr2)) {
       list(within_r2 = as.numeric(r2$wr2))
     } else if (is_glm && is.finite(pr2)) {
       list(mcfadden = pr2)
-    } else NULL,
-    aic            = tryCatch(stats::AIC(fit),     error = function(e) NA_real_),
-    bic            = tryCatch(stats::BIC(fit),     error = function(e) NA_real_),
-    log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                              error = function(e) NA_real_),
-    deviance       = tryCatch(suppressWarnings(stats::deviance(fit)),
-                              error = function(e) NA_real_),
-    sigma          = sigma_val,
-    nobs           = as.integer(stats::nobs(fit))
+    } else {
+      NULL
+    },
+    aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+    bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+    log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+      NA_real_
+    }),
+    deviance = tryCatch(
+      suppressWarnings(stats::deviance(fit)),
+      error = function(e) NA_real_
+    ),
+    sigma = sigma_val,
+    nobs = as.integer(stats::nobs(fit))
   )
 }
 
@@ -351,14 +405,18 @@ as_regression_frame.fixest <- function(fit,
   base <- if (!is_glm) {
     "Linear regression"
   } else {
-    switch(fam$family,
-      binomial         = "Logistic regression",
-      poisson          = "Poisson regression",
-      Gamma            = "Gamma regression",
+    switch(
+      fam$family,
+      binomial = "Logistic regression",
+      poisson = "Poisson regression",
+      Gamma = "Gamma regression",
       inverse.gaussian = "Inverse-Gaussian regression",
-      negbin           = "Negative-binomial regression",
-      paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L),
-             " regression")
+      negbin = "Negative-binomial regression",
+      paste0(
+        toupper(substr(fam$family, 1L, 1L)),
+        substring(fam$family, 2L),
+        " regression"
+      )
     )
   }
   paste0(base, " (fixed effects)")

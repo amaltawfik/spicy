@@ -2,7 +2,6 @@
 # Phase 6h tests: as_regression_frame() methods for mlogit + betareg.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_mlogit_fishing <- function() {
@@ -37,7 +36,7 @@ test_that("mlogit: family multinomial/logit", {
   fit <- .fit_mlogit_fishing()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "multinomial")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
 })
 
 test_that("mlogit: title_prefix names mlogit", {
@@ -72,9 +71,11 @@ test_that("mlogit: coefs estimates match stats::coef(fit)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   legacy <- stats::coef(fit)
   for (nm in names(legacy)) {
-    expect_equal(fr$coefs$estimate[fr$coefs$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      fr$coefs$estimate[fr$coefs$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -83,10 +84,16 @@ test_that("mlogit: SE / p byte-match summary(fit)$CoefTable", {
   fr <- as_regression_frame(fit, model_id = "M1")
   sm <- summary(fit)$CoefTable
   for (nm in rownames(sm)) {
-    expect_equal(fr$coefs$std_error[fr$coefs$term == nm],
-                 unname(sm[nm, "Std. Error"]), tolerance = 1e-10)
-    expect_equal(fr$coefs$p_value[fr$coefs$term == nm],
-                 unname(sm[nm, "Pr(>|z|)"]),   tolerance = 1e-10)
+    expect_equal(
+      fr$coefs$std_error[fr$coefs$term == nm],
+      unname(sm[nm, "Std. Error"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      fr$coefs$p_value[fr$coefs$term == nm],
+      unname(sm[nm, "Pr(>|z|)"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -109,7 +116,7 @@ test_that("betareg: family is beta/logit (default link)", {
   fit <- .fit_betareg_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "beta")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
 })
 
 test_that("betareg: title_prefix = 'Beta regression'", {
@@ -133,10 +140,16 @@ test_that("betareg: SE / p byte-match summary(fit)$coefficients$mean", {
   smm <- summary(fit)$coefficients$mean
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(smm)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(smm[nm, "Std. Error"]), tolerance = 1e-10)
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(smm[nm, "Pr(>|z|)"]),   tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(smm[nm, "Std. Error"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(smm[nm, "Pr(>|z|)"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -178,7 +191,9 @@ test_that("betareg: Wald z-asymptotic; supports$exponentiate = TRUE (logit link)
 test_that("betareg: pseudo_r2$pseudo from fit$pseudo.r.squared", {
   fit <- .fit_betareg_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$pseudo_r2$pseudo,
-               fit$pseudo.r.squared,
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$pseudo_r2$pseudo,
+    fit$pseudo.r.squared,
+    tolerance = 1e-10
+  )
 })

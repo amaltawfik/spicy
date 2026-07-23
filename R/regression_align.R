@@ -1,5 +1,3 @@
-
-
 # Frame-aware sibling of compute_canonical_term_order(). Reads
 # frames[[i]]$coefs$term instead of extracts[[i]]$coefs$term. The
 # `term` column name is identical in both schemas, so the body of
@@ -45,11 +43,12 @@ compute_canonical_term_order_from_frames <- function(frames) {
 #
 # Phase 0c sub-step C3.
 align_frames <- function(
-    frames,
-    model_ids,
-    show_intercept = TRUE,
-    intercept_position = c("first", "last"),
-    reference_style = c("row", "annotation", "footer", "none")) {
+  frames,
+  model_ids,
+  show_intercept = TRUE,
+  intercept_position = c("first", "last"),
+  reference_style = c("row", "annotation", "footer", "none")
+) {
   intercept_position <- match.arg(intercept_position)
   reference_style <- match.arg(reference_style)
 
@@ -64,109 +63,118 @@ align_frames <- function(
   }
 
   # ---- Build legacy-shape long coefs from frames ------------------------
-  coefs_long <- do.call(rbind, lapply(seq_along(frames), function(i) {
-    cf <- frames[[i]]$coefs
-    singular_terms <- frames[[i]]$info$extras$singular_terms %||% character(0)
-    test_type_col <- if (!is.null(cf$test_type)) {
-      as.character(cf$test_type)
-    } else {
-      rep(NA_character_, nrow(cf))
-    }
-    # Optional per-row N (univariable screening frames: each predictor
-    # block is its own fit, so N varies by row block). NA elsewhere.
-    n_obs_col <- if (!is.null(cf$n_obs)) {
-      as.numeric(cf$n_obs)
-    } else {
-      rep(NA_real_, nrow(cf))
-    }
-    # Optional per-row outcome event counts (show_columns "n_events",
-    # binomial fits): events observed in the row's factor level /
-    # model totals for continuous rows. NA elsewhere.
-    events_col <- if (!is.null(cf$events)) {
-      as.numeric(cf$events)
-    } else {
-      rep(NA_real_, nrow(cf))
-    }
-    events_n_col <- if (!is.null(cf$events_n)) {
-      as.numeric(cf$events_n)
-    } else {
-      rep(NA_real_, nrow(cf))
-    }
-    data.frame(
-      model_id         = rep(model_ids[i], nrow(cf)),
-      outcome          = rep(frames[[i]]$info$dv, nrow(cf)),
-      term             = cf$term,
-      estimate_type    = cf$estimate_type,
-      estimate         = cf$estimate,
-      se               = cf$std_error,
-      ci_low           = cf$ci_lower,
-      ci_high          = cf$ci_upper,
-      statistic        = cf$statistic,
-      df               = cf$df,
-      p_value          = cf$p_value,
-      test_type        = test_type_col,
-      n_obs            = n_obs_col,
-      events           = events_col,
-      events_n         = events_n_col,
-      is_singular      = cf$term %in% singular_terms,
-      is_intercept     = cf$term == "(Intercept)",
-      is_reference     = cf$is_ref,
-      factor_term      = ifelse(cf$parent_var == cf$term,
-                                NA_character_, cf$parent_var),
-      factor_level     = ifelse(cf$label == cf$term,
-                                NA_character_, cf$label),
-      factor_level_pos = as.integer(cf$factor_level_pos),
-      # Outcome category for per-category AME rows (ordinal / multinomial);
-      # NA for single-outcome frames that don't carry it. Drives the
-      # renderer's per-category AME column pivot.
-      outcome_level    = if (!is.null(cf$outcome_level)) {
-        as.character(cf$outcome_level)
+  coefs_long <- do.call(
+    rbind,
+    lapply(seq_along(frames), function(i) {
+      cf <- frames[[i]]$coefs
+      singular_terms <- frames[[i]]$info$extras$singular_terms %||% character(0)
+      test_type_col <- if (!is.null(cf$test_type)) {
+        as.character(cf$test_type)
       } else {
-        NA_character_
-      },
-      # Probability of direction (Bayesian frames only; NA elsewhere).
-      pd               = if (!is.null(cf$pd)) {
-        as.numeric(cf$pd)
+        rep(NA_character_, nrow(cf))
+      }
+      # Optional per-row N (univariable screening frames: each predictor
+      # block is its own fit, so N varies by row block). NA elsewhere.
+      n_obs_col <- if (!is.null(cf$n_obs)) {
+        as.numeric(cf$n_obs)
       } else {
-        NA_real_
-      },
-      # Per-parameter sampler diagnostics (Bayesian frames only).
-      rhat             = if (!is.null(cf$rhat)) {
-        as.numeric(cf$rhat)
+        rep(NA_real_, nrow(cf))
+      }
+      # Optional per-row outcome event counts (show_columns "n_events",
+      # binomial fits): events observed in the row's factor level /
+      # model totals for continuous rows. NA elsewhere.
+      events_col <- if (!is.null(cf$events)) {
+        as.numeric(cf$events)
       } else {
-        NA_real_
-      },
-      ess_bulk         = if (!is.null(cf$ess_bulk)) {
-        as.numeric(cf$ess_bulk)
+        rep(NA_real_, nrow(cf))
+      }
+      events_n_col <- if (!is.null(cf$events_n)) {
+        as.numeric(cf$events_n)
       } else {
-        NA_real_
-      },
-      ess_tail         = if (!is.null(cf$ess_tail)) {
-        as.numeric(cf$ess_tail)
-      } else {
-        NA_real_
-      },
-      mcse             = if (!is.null(cf$mcse)) {
-        as.numeric(cf$mcse)
-      } else {
-        NA_real_
-      },
-      stringsAsFactors = FALSE
-    )
-  }))
+        rep(NA_real_, nrow(cf))
+      }
+      data.frame(
+        model_id = rep(model_ids[i], nrow(cf)),
+        outcome = rep(frames[[i]]$info$dv, nrow(cf)),
+        term = cf$term,
+        estimate_type = cf$estimate_type,
+        estimate = cf$estimate,
+        se = cf$std_error,
+        ci_low = cf$ci_lower,
+        ci_high = cf$ci_upper,
+        statistic = cf$statistic,
+        df = cf$df,
+        p_value = cf$p_value,
+        test_type = test_type_col,
+        n_obs = n_obs_col,
+        events = events_col,
+        events_n = events_n_col,
+        is_singular = cf$term %in% singular_terms,
+        is_intercept = cf$term == "(Intercept)",
+        is_reference = cf$is_ref,
+        factor_term = ifelse(
+          cf$parent_var == cf$term,
+          NA_character_,
+          cf$parent_var
+        ),
+        factor_level = ifelse(cf$label == cf$term, NA_character_, cf$label),
+        factor_level_pos = as.integer(cf$factor_level_pos),
+        # Outcome category for per-category AME rows (ordinal / multinomial);
+        # NA for single-outcome frames that don't carry it. Drives the
+        # renderer's per-category AME column pivot.
+        outcome_level = if (!is.null(cf$outcome_level)) {
+          as.character(cf$outcome_level)
+        } else {
+          NA_character_
+        },
+        # Probability of direction (Bayesian frames only; NA elsewhere).
+        pd = if (!is.null(cf$pd)) {
+          as.numeric(cf$pd)
+        } else {
+          NA_real_
+        },
+        # Per-parameter sampler diagnostics (Bayesian frames only).
+        rhat = if (!is.null(cf$rhat)) {
+          as.numeric(cf$rhat)
+        } else {
+          NA_real_
+        },
+        ess_bulk = if (!is.null(cf$ess_bulk)) {
+          as.numeric(cf$ess_bulk)
+        } else {
+          NA_real_
+        },
+        ess_tail = if (!is.null(cf$ess_tail)) {
+          as.numeric(cf$ess_tail)
+        } else {
+          NA_real_
+        },
+        mcse = if (!is.null(cf$mcse)) {
+          as.numeric(cf$mcse)
+        } else {
+          NA_real_
+        },
+        stringsAsFactors = FALSE
+      )
+    })
+  )
 
   # ---- Build legacy-shape fit_stats from frames -------------------------
-  fit_stats <- do.call(rbind, lapply(seq_along(frames), function(i) {
-    as.data.frame(
-      .compact_fit_stats_for_legacy(frames[[i]]$info$fit_stats,
-                                    model_ids[i],
-                                    frames[[i]]$info$dv,
-                                    icc = frames[[i]]$info$random_effects$icc
-                                      %||% NA_real_,
-                                    n_groups = frames[[i]]$info$n_groups),
-      stringsAsFactors = FALSE
-    )
-  }))
+  fit_stats <- do.call(
+    rbind,
+    lapply(seq_along(frames), function(i) {
+      as.data.frame(
+        .compact_fit_stats_for_legacy(
+          frames[[i]]$info$fit_stats,
+          model_ids[i],
+          frames[[i]]$info$dv,
+          icc = frames[[i]]$info$random_effects$icc %||% NA_real_,
+          n_groups = frames[[i]]$info$n_groups
+        ),
+        stringsAsFactors = FALSE
+      )
+    })
+  )
 
   # ---- Everything below mirrors align_extracts() ------------------------
   ref_rows_all <- coefs_long[coefs_long$is_reference, , drop = FALSE]
@@ -184,8 +192,10 @@ align_frames <- function(
   if (!isTRUE(show_intercept)) {
     term_order <- term_order[term_order != "(Intercept)"]
     coefs_long <- coefs_long[coefs_long$term != "(Intercept)", , drop = FALSE]
-  } else if (identical(intercept_position, "last") &&
-             "(Intercept)" %in% term_order) {
+  } else if (
+    identical(intercept_position, "last") &&
+      "(Intercept)" %in% term_order
+  ) {
     term_order <- c(setdiff(term_order, "(Intercept)"), "(Intercept)")
   }
 
@@ -197,8 +207,14 @@ align_frames <- function(
   # show_thresholds / show_re paths) would otherwise land at their
   # first-appearance position, which in a multi-model table can fall ahead of a
   # predictor a later model introduces.
-  for (blk in c("Zero-inflation", "Zero hurdle", "Dispersion",
-                "Scale effects", "Thresholds", "Random effects")) {
+  for (blk in c(
+    "Zero-inflation",
+    "Zero hurdle",
+    "Dispersion",
+    "Scale effects",
+    "Thresholds",
+    "Random effects"
+  )) {
     blk_terms <- unique(coefs_long$term[coefs_long$factor_term %in% blk])
     if (length(blk_terms) > 0L) {
       blk_in_order <- intersect(term_order, blk_terms)
@@ -220,22 +236,32 @@ align_frames <- function(
   }
 
   coefs_long$order_idx <- match(coefs_long$term, term_order)
-  coefs_long <- coefs_long[order(coefs_long$order_idx,
-                                  coefs_long$estimate_type,
-                                  coefs_long$model_id), , drop = FALSE]
+  coefs_long <- coefs_long[
+    order(coefs_long$order_idx, coefs_long$estimate_type, coefs_long$model_id),
+    ,
+    drop = FALSE
+  ]
   rownames(coefs_long) <- NULL
 
-  outcome_labels_auto <- vapply(frames, function(f) {
-    f$info$dv_label %||% f$info$dv
-  }, character(1))
+  outcome_labels_auto <- vapply(
+    frames,
+    function(f) {
+      f$info$dv_label %||% f$info$dv
+    },
+    character(1)
+  )
 
-  exp_headers_auto <- vapply(frames, function(f) {
-    if (isTRUE(f$info$extras$exp_applied)) {
-      f$info$extras$exp_header
-    } else {
-      NA_character_
-    }
-  }, character(1))
+  exp_headers_auto <- vapply(
+    frames,
+    function(f) {
+      if (isTRUE(f$info$extras$exp_applied)) {
+        f$info$extras$exp_header
+      } else {
+        NA_character_
+      }
+    },
+    character(1)
+  )
   names(exp_headers_auto) <- model_ids
 
   # Per-model statistic-column header: the "t" TOKEN is API-stable, but
@@ -245,12 +271,18 @@ align_frames <- function(
   # t-referenced ones (lm, lmer-Satterthwaite). Stata prints z for logit
   # and t for regress; a hardcoded "t" header over z statistics
   # mislabels the column.
-  stat_headers_auto <- vapply(frames, function(f) {
-    tt <- unique(f$coefs$test_type[f$coefs$estimate_type == "B" &
-                                     !f$coefs$is_ref])
-    tt <- tt[!is.na(tt)]
-    if (length(tt) == 1L && tt %in% c("t", "z")) tt else NA_character_
-  }, character(1))
+  stat_headers_auto <- vapply(
+    frames,
+    function(f) {
+      tt <- unique(f$coefs$test_type[
+        f$coefs$estimate_type == "B" &
+          !f$coefs$is_ref
+      ])
+      tt <- tt[!is.na(tt)]
+      if (length(tt) == 1L && tt %in% c("t", "z")) tt else NA_character_
+    },
+    character(1)
+  )
   names(stat_headers_auto) <- model_ids
 
   # Raw per-model grouping-factor counts (named integer vectors; NULL for
@@ -258,7 +290,8 @@ align_frames <- function(
   # can carry a dynamic label ("N (Subject)") + numeric counts when every
   # model shares the same single grouping factor.
   n_groups_by_model <- stats::setNames(
-    lapply(frames, function(f) f$info$n_groups), model_ids
+    lapply(frames, function(f) f$info$n_groups),
+    model_ids
   )
 
   # Per-model absorbed-intercept factors (character vectors; NULL for
@@ -267,7 +300,8 @@ align_frames <- function(
   # sample statistic, slope-only included), fixef_by_model lists only
   # genuinely absorbed intercepts (a design disclosure).
   fixef_by_model <- stats::setNames(
-    lapply(frames, function(f) f$info$extras$fixef_intercept), model_ids
+    lapply(frames, function(f) f$info$extras$fixef_intercept),
+    model_ids
   )
 
   # Survival estimand horizons (resolved values, e.g. a numeric tau
@@ -311,8 +345,13 @@ align_frames <- function(
 # levels (`.L`, `.Q`, `.C`, `^4`, ...) it is the polynomial degree so
 # the table reads linear -> quadratic -> cubic -> ...
 group_factor_terms <- function(term_order, coefs_long) {
-  meta <- unique(coefs_long[, c("term", "factor_term", "factor_level",
-                                  "factor_level_pos", "is_reference")])
+  meta <- unique(coefs_long[, c(
+    "term",
+    "factor_term",
+    "factor_level",
+    "factor_level_pos",
+    "is_reference"
+  )])
   meta <- meta[!duplicated(meta$term), , drop = FALSE]
   rownames(meta) <- meta$term
 
@@ -320,7 +359,9 @@ group_factor_terms <- function(term_order, coefs_long) {
   visited <- setNames(logical(length(term_order)), term_order)
 
   for (t in term_order) {
-    if (isTRUE(visited[[t]])) next
+    if (isTRUE(visited[[t]])) {
+      next
+    }
     ft <- meta[t, "factor_term"]
     if (is.na(ft)) {
       out <- c(out, t)
@@ -333,19 +374,34 @@ group_factor_terms <- function(term_order, coefs_long) {
     # factor_term) keep their builder-supplied row order (factor_level_pos =
     # a sequence): the refs-first rule below is a per-FACTOR convention and
     # would float every reference row to the top of the whole block.
-    is_block <- ft %in% c("Thresholds", "Non-proportional effects",
-                          "Scale effects",
-                          "Random effects", "Zero-inflation", "Zero hurdle",
-                          "Dispersion")
+    is_block <- ft %in%
+      c(
+        "Thresholds",
+        "Non-proportional effects",
+        "Scale effects",
+        "Random effects",
+        "Zero-inflation",
+        "Zero hurdle",
+        "Dispersion"
+      )
     group_meta <- if (is_block) {
-      group_meta[order(group_meta$factor_level_pos, na.last = TRUE), ,
-                 drop = FALSE]
+      group_meta[
+        order(group_meta$factor_level_pos, na.last = TRUE),
+        ,
+        drop = FALSE
+      ]
     } else {
-      group_meta[order(!group_meta$is_reference,
-                       group_meta$factor_level_pos,
-                       na.last = TRUE), , drop = FALSE]
+      group_meta[
+        order(
+          !group_meta$is_reference,
+          group_meta$factor_level_pos,
+          na.last = TRUE
+        ),
+        ,
+        drop = FALSE
+      ]
     }
-    new <- intersect(group_meta$term, term_order)  # preserve any drops
+    new <- intersect(group_meta$term, term_order) # preserve any drops
     out <- c(out, new)
     visited[new] <- TRUE
   }
@@ -361,10 +417,18 @@ group_factor_terms <- function(term_order, coefs_long) {
 # the foundation for a future side-by-side wide export. Kept rather than
 # deleted so the tested shaping logic is ready when a consumer is added.
 pivot_aligned_wide <- function(
-    aligned,
-    value_fields = c("estimate", "se", "ci_low", "ci_high",
-                      "statistic", "df", "p_value"),
-    model_labels = NULL) {
+  aligned,
+  value_fields = c(
+    "estimate",
+    "se",
+    "ci_low",
+    "ci_high",
+    "statistic",
+    "df",
+    "p_value"
+  ),
+  model_labels = NULL
+) {
   coefs <- aligned$coefs_aligned
   if (nrow(coefs) == 0L) {
     return(empty_coefs_wide(value_fields, model_labels))
@@ -381,7 +445,8 @@ pivot_aligned_wide <- function(
     spicy_abort(
       sprintf(
         "`model_labels` length (%d) must equal number of models (%d).",
-        length(model_labels), n_models
+        length(model_labels),
+        n_models
       ),
       class = "spicy_invalid_input"
     )
@@ -390,10 +455,21 @@ pivot_aligned_wide <- function(
 
   # Term-level metadata: one row per (term, estimate_type), in the
   # canonical display order.
-  meta_cols <- c("term", "estimate_type", "is_intercept", "is_reference",
-                 "factor_term", "factor_level", "order_idx", "test_type")
-  meta <- coefs[!duplicated(coefs[, c("term", "estimate_type")]),
-                meta_cols, drop = FALSE]
+  meta_cols <- c(
+    "term",
+    "estimate_type",
+    "is_intercept",
+    "is_reference",
+    "factor_term",
+    "factor_level",
+    "order_idx",
+    "test_type"
+  )
+  meta <- coefs[
+    !duplicated(coefs[, c("term", "estimate_type")]),
+    meta_cols,
+    drop = FALSE
+  ]
   meta <- meta[order(meta$order_idx, meta$estimate_type), , drop = FALSE]
   rownames(meta) <- NULL
 
@@ -442,7 +518,9 @@ empty_coefs_wide <- function(value_fields, model_labels) {
     test_type = character(0),
     stringsAsFactors = FALSE
   )
-  if (is.null(model_labels)) return(base)
+  if (is.null(model_labels)) {
+    return(base)
+  }
   for (lbl in model_labels) {
     for (vf in value_fields) {
       base[[paste0(lbl, "__", vf)]] <- numeric(0)

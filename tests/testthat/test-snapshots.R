@@ -89,7 +89,7 @@ test_that("print.spicy_cross_tab: weighted + by interaction", {
     grp = rep(c("A", "B"), each = 6L),
     out = rep(c("hi", "lo", "lo"), times = 4L),
     sex = rep(c("F", "M"), times = 6L),
-    w   = c(1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2)
+    w = c(1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2)
   )
   expect_snapshot(
     cross_tab(df, grp, out, by = sex, weights = w, percent = "column")
@@ -122,9 +122,9 @@ test_that("print.spicy_categorical_table: by + auto assoc_measure (APA Note)", {
   # picks per-row measures, the "Effect size" column header collapses
   # and an APA-style `Note.` line documents the per-variable measure.
   df <- data.frame(
-    grp     = factor(rep(c("F", "M"), each = 6L)),
+    grp = factor(rep(c("F", "M"), each = 6L)),
     smoking = factor(rep(c("No", "Yes"), times = 6L)),
-    health  = factor(
+    health = factor(
       rep(c("low", "mid", "hi"), times = 4L),
       levels = c("low", "mid", "hi"),
       ordered = TRUE
@@ -139,7 +139,7 @@ test_that("print.spicy_continuous_lm_table: bivariate fit by group", {
   set.seed(1L)
   df <- data.frame(
     score = c(rnorm(8L, 70, 5), rnorm(8L, 75, 5)),
-    sex   = factor(rep(c("F", "M"), each = 8L))
+    sex = factor(rep(c("F", "M"), each = 8L))
   )
   expect_snapshot(
     table_continuous_lm(df, select = "score", by = sex)
@@ -150,13 +150,16 @@ test_that("print.spicy_continuous_lm_table: covariate-adjusted footer (proportio
   set.seed(2L)
   df <- data.frame(
     score = c(rnorm(8L, 70, 5), rnorm(8L, 75, 5)),
-    age   = c(rnorm(8L, 30, 5), rnorm(8L, 50, 5)),
-    sex   = factor(rep(c("F", "M"), each = 8L))
+    age = c(rnorm(8L, 30, 5), rnorm(8L, 50, 5)),
+    sex = factor(rep(c("F", "M"), each = 8L))
   )
   expect_snapshot(
     table_continuous_lm(
-      df, select = "score", by = sex,
-      covariates = age, adjustment = "proportional"
+      df,
+      select = "score",
+      by = sex,
+      covariates = age,
+      adjustment = "proportional"
     )
   )
 })
@@ -165,14 +168,17 @@ test_that("print.spicy_continuous_lm_table: covariate-adjusted footer (balanced)
   set.seed(3L)
   df <- data.frame(
     score = c(rnorm(8L, 70, 5), rnorm(8L, 75, 5)),
-    age   = c(rnorm(8L, 30, 5), rnorm(8L, 50, 5)),
-    race  = factor(c(rep("A", 12L), rep("B", 4L))),
-    sex   = factor(rep(c("F", "M"), each = 8L))
+    age = c(rnorm(8L, 30, 5), rnorm(8L, 50, 5)),
+    race = factor(c(rep("A", 12L), rep("B", 4L))),
+    sex = factor(rep(c("F", "M"), each = 8L))
   )
   expect_snapshot(
     table_continuous_lm(
-      df, select = "score", by = sex,
-      covariates = c(age, race), adjustment = "balanced"
+      df,
+      select = "score",
+      by = sex,
+      covariates = c(age, race),
+      adjustment = "balanced"
     )
   )
 })

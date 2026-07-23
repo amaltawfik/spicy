@@ -8,22 +8,26 @@
 #     Employ" reads as a complete -- wrong -- label).
 # ---------------------------------------------------------------------------
 
-
 .fit_j8 <- function() {
   skip_if_not_installed("nnet")
   set.seed(11)
   n <- 800
-  d <- data.frame(x1 = rnorm(n), x2 = rnorm(n),
-                  g = factor(sample(letters[1:8], n, TRUE)))
+  d <- data.frame(
+    x1 = rnorm(n),
+    x2 = rnorm(n),
+    g = factor(sample(letters[1:8], n, TRUE))
+  )
   nnet::multinom(g ~ x1 + x2, data = d, trace = FALSE)
 }
 
 
 test_that("continuation panels drop blank fit-stat stub rows", {
   fit <- .fit_j8()
-  out <- withr::with_options(list(width = 80),
-                             capture.output(print(table_regression(fit))))
-  n_rows   <- grep("^ n ", out)
+  out <- withr::with_options(
+    list(width = 80),
+    capture.output(print(table_regression(fit)))
+  )
+  n_rows <- grep("^ n ", out)
   aic_rows <- grep("^ AIC ", out)
   # Fit stats print ONCE, on the first panel only.
   expect_identical(length(n_rows), 1L)
@@ -53,22 +57,30 @@ test_that("multi-model panels with real per-model stats keep them all", {
 
 test_that("single-panel tables are untouched by the stub-drop logic", {
   fit <- lm(mpg ~ wt + hp, data = mtcars)
-  out <- withr::with_options(list(width = 200),
-                             capture.output(print(table_regression(fit))))
+  out <- withr::with_options(
+    list(width = 200),
+    capture.output(print(table_regression(fit)))
+  )
   expect_identical(length(grep("^ Variable ", out)), 1L)
   expect_identical(length(grep("^ n ", out)), 1L)
 })
 
 test_that("over-wide spanner labels truncate with a visible ellipsis", {
   skip_if_not_installed("nnet")
-  fit <- nnet::multinom(employment_status ~ age + sex, data = sochealth,
-                        trace = FALSE)
+  fit <- nnet::multinom(
+    employment_status ~ age + sex,
+    data = sochealth,
+    trace = FALSE
+  )
   out <- withr::with_options(
     list(width = 130),
     capture.output(print(table_regression(
       fit,
-      outcome_labels = c("Student vs Employed", "Unemployed vs Employed",
-                         "Inactive vs Employed")
+      outcome_labels = c(
+        "Student vs Employed",
+        "Unemployed vs Employed",
+        "Inactive vs Employed"
+      )
     )))
   )
   combined <- paste(out, collapse = "\n")
@@ -86,9 +98,11 @@ test_that("a 1-character spanner truncates without ellipsis (no room)", {
   # span_width == 1: the visible-truncation rule ("cut + ellipsis")
   # needs 2 characters; with 1 the label is cut hard instead.
   m <- data.frame(A = "1", B = "2")
-  out <- spicy:::build_ascii_table(m, padding = 0L,
-                           spanners = list("Long label" = 2L))
-  expect_match(strsplit(out, "\n", fixed = TRUE)[[1]][1], "L",
-               fixed = TRUE)
+  out <- spicy:::build_ascii_table(
+    m,
+    padding = 0L,
+    spanners = list("Long label" = 2L)
+  )
+  expect_match(strsplit(out, "\n", fixed = TRUE)[[1]][1], "L", fixed = TRUE)
   expect_false(grepl("…", out, fixed = TRUE))
 })

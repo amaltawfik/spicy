@@ -12,13 +12,16 @@
 #   * Oracle cross-validation against parameters::model_parameters().
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_polr_basic <- function() {
   skip_if_not_installed("MASS")
-  MASS::polr(Sat ~ Infl + Type + Cont,
-             weights = Freq, data = MASS::housing, Hess = TRUE)
+  MASS::polr(
+    Sat ~ Infl + Type + Cont,
+    weights = Freq,
+    data = MASS::housing,
+    Hess = TRUE
+  )
 }
 
 .fit_clm_basic <- function() {
@@ -52,7 +55,7 @@ test_that("polr (logit): info$family is cumulative/logit", {
   fit <- .fit_polr_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "cumulative")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
 })
 
 test_that("polr: info$dv is the response variable", {
@@ -85,10 +88,12 @@ test_that("polr: coefs estimates match stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -100,9 +105,11 @@ test_that("polr: SE matches sqrt(diag(vcov[pred, pred]))", {
   expected_se <- sqrt(diag(V[preds, preds]))
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in preds) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(expected_se[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(expected_se[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -115,8 +122,10 @@ test_that("polr: thresholds tibble has (k - 1) rows with finite p-values", {
   th <- fr$info$extras$thresholds
   expect_s3_class(th, "data.frame")
   expect_identical(nrow(th), length(fit$lev) - 1L)
-  expect_setequal(colnames(th),
-                  c("term", "estimate", "std_error", "statistic", "p_value"))
+  expect_setequal(
+    colnames(th),
+    c("term", "estimate", "std_error", "statistic", "p_value")
+  )
   expect_true(all(is.finite(th$p_value)))
 })
 
@@ -187,7 +196,7 @@ test_that("clm: info$family is cumulative/logit", {
   fit <- .fit_clm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "cumulative")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
 })
 
 
@@ -198,10 +207,12 @@ test_that("clm: coefs estimates match fit$beta", {
   fr <- as_regression_frame(fit, model_id = "M1")
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(fit$beta)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(fit$beta[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(fit$beta[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -211,10 +222,12 @@ test_that("clm: p-values match summary(fit)$coefficients byte-for-byte", {
   sm <- summary(fit)$coefficients
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(fit$beta)) {
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "Pr(>|z|)"]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "Pr(>|z|)"]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -243,7 +256,7 @@ test_that("clm: threshold estimates match fit$alpha", {
 test_that("clm: factor predictor synthesises one ref row (PO)", {
   fit <- .fit_clm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(sum(fr$coefs$is_ref), 2L)  # temp + contact each have ref
+  expect_identical(sum(fr$coefs$is_ref), 2L) # temp + contact each have ref
 })
 
 
@@ -259,12 +272,22 @@ test_that("polr coefs match parameters::model_parameters() (oracle)", {
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    if (nrow(oracle_row) == 0L) next
+    if (nrow(oracle_row) == 0L) {
+      next
+    }
     spicy_row <- b_rows[b_rows$term == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
   }
 })
 
@@ -278,13 +301,27 @@ test_that("clm coefs match parameters::model_parameters() (oracle)", {
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    if (nrow(oracle_row) == 0L) next
+    if (nrow(oracle_row) == 0L) {
+      next
+    }
     spicy_row <- b_rows[b_rows$term == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })

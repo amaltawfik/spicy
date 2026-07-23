@@ -319,7 +319,11 @@ glance.spicy_categorical_table <- function(x, ...) {
     "ci_upper"
   )
   measure_cols <- setdiff(names(long), std_cols)
-  measure_col <- if (length(measure_cols) > 0L) measure_cols[1] else NA_character_
+  measure_col <- if (length(measure_cols) > 0L) {
+    measure_cols[1]
+  } else {
+    NA_character_
+  }
   has_assoc <- !is.na(measure_col)
   has_assoc_ci <- all(c("ci_lower", "ci_upper") %in% names(long))
 

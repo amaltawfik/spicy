@@ -59,9 +59,10 @@ test_that("table_regression – 'beta' without standardized errors with spicy_in
 
 test_that("table_regression – partial_eta2 + partial_eta2_ci render as atomic columns", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit,
-                          show_columns = c("b", "partial_eta2",
-                                            "partial_eta2_ci"))
+  out <- table_regression(
+    fit,
+    show_columns = c("b", "partial_eta2", "partial_eta2_ci")
+  )
   wt_row <- out[out$Variable == "wt", , drop = FALSE]
   # `partial_eta2` is the estimate-only cell (no brackets); the CI
   # is in its own column under "η² 95% CI".
@@ -146,9 +147,18 @@ test_that("output = 'long' returns broom-style long format", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, output = "long")
   expect_s3_class(out, "data.frame")
-  expect_true(all(c("model_id", "term", "estimate", "std.error",
-                    "conf.low", "conf.high", "p.value")
-                  %in% names(out)))
+  expect_true(all(
+    c(
+      "model_id",
+      "term",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "p.value"
+    ) %in%
+      names(out)
+  ))
 })
 
 test_that("output = 'excel' without path errors with spicy_invalid_input", {
@@ -236,7 +246,7 @@ test_that("print.spicy_regression_table – invisible return + non-empty stdout"
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   txt <- capture.output(p <- print(out))
-  expect_identical(p, out)            # invisible(x) returns x
+  expect_identical(p, out) # invisible(x) returns x
   expect_true(any(nzchar(txt)))
   expect_true(any(grepl("Variable", txt)))
 })
@@ -288,8 +298,7 @@ test_that("Q1 – names(list) alone (no explicit model_labels): no warning", {
 test_that("Q2 – show_intercept=FALSE + non-default intercept_position warns", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_warning(
-    table_regression(fit, show_intercept = FALSE,
-                     intercept_position = "last"),
+    table_regression(fit, show_intercept = FALSE, intercept_position = "last"),
     class = "spicy_ignored_arg"
   )
 })
@@ -305,8 +314,7 @@ test_that("Q2 – show_intercept=FALSE + default intercept_position: no warning"
 test_that("stars validation – empty numeric errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit,
-                     stars = setNames(numeric(0), character(0))),
+    table_regression(fit, stars = setNames(numeric(0), character(0))),
     class = "spicy_invalid_input"
   )
 })
@@ -326,7 +334,7 @@ test_that("stars validation – out-of-range threshold errors", {
 test_that("stars validation – empty / unnamed name errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit, stars = c(0.05, 0.01)),       # no names
+    table_regression(fit, stars = c(0.05, 0.01)), # no names
     class = "spicy_invalid_input"
   )
   bad <- setNames(c(0.05, 0.01), c("*", ""))
@@ -410,8 +418,11 @@ test_that("show_fit_stats – change tokens accepted under nested = TRUE", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
-    table_regression(list(m1, m2), nested = TRUE,
-                     show_fit_stats = c("f_change", "BOGUS")),
+    table_regression(
+      list(m1, m2),
+      nested = TRUE,
+      show_fit_stats = c("f_change", "BOGUS")
+    ),
     class = "spicy_invalid_input"
   )
 })
@@ -465,8 +476,7 @@ test_that("outcome_labels – length mismatch errors spicy_invalid_input", {
 test_that("labels – unknown predictor key errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit,
-                     labels = c("nonexistent_predictor" = "Foo")),
+    table_regression(fit, labels = c("nonexistent_predictor" = "Foo")),
     class = "spicy_invalid_input"
   )
 })
@@ -493,8 +503,11 @@ test_that("nested = TRUE – different DV errors spicy_invalid_input", {
 test_that("output = 'excel' with non-existent dir errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    table_regression(fit, output = "excel",
-                     excel_path = "/no/such/directory/out.xlsx"),
+    table_regression(
+      fit,
+      output = "excel",
+      excel_path = "/no/such/directory/out.xlsx"
+    ),
     class = "spicy_invalid_input"
   )
 })
@@ -515,9 +528,10 @@ test_that("show_fit_stats – default tokens (n / R² / Adj.R²) appear in body"
 
 test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
   fit <- lm(mpg ~ wt, data = mt)
-  out <- table_regression(fit,
-                          show_fit_stats = c("nobs", "omega2",
-                                              "sigma", "aic"))
+  out <- table_regression(
+    fit,
+    show_fit_stats = c("nobs", "omega2", "sigma", "aic")
+  )
   expect_true("ω²" %in% out$Variable)
   expect_true("σ̂" %in% out$Variable)
   expect_true("AIC" %in% out$Variable)
@@ -532,8 +546,7 @@ test_that("show_fit_stats = FALSE drops the footer block", {
 test_that("show_fit_stats – multi-model: each model contributes its values", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(list(m1, m2),
-                          show_fit_stats = c("nobs", "r2"))
+  out <- table_regression(list(m1, m2), show_fit_stats = c("nobs", "r2"))
   # Both n rows present; R² differs across the two model columns
   expect_true("n" %in% out$Variable)
   expect_true("R²" %in% out$Variable)
@@ -556,9 +569,10 @@ test_that("group_sep_rows attribute marks the body / fit-stats divider", {
 
 test_that("labels – coef-style key (cyl6) renames the contrast row", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit,
-                          labels = c("cyl6" = "6 cylinders",
-                                      "cyl8" = "8 cylinders"))
+  out <- table_regression(
+    fit,
+    labels = c("cyl6" = "6 cylinders", "cyl8" = "8 cylinders")
+  )
   # Indented level rows are renamed (two-space level indent pinned)
   expect_true("  6 cylinders" %in% out$Variable)
   expect_true("  8 cylinders" %in% out$Variable)
@@ -568,10 +582,10 @@ test_that("labels – coef-style key (cyl6) renames the contrast row", {
 
 test_that("labels – mixed term + coef-style keys both honoured", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit,
-                          labels = c("cyl" = "Cylinders",
-                                      "cyl6" = "Six",
-                                      "wt" = "Weight"))
+  out <- table_regression(
+    fit,
+    labels = c("cyl" = "Cylinders", "cyl6" = "Six", "wt" = "Weight")
+  )
   expect_true("Weight" %in% out$Variable)
   expect_true("Cylinders:" %in% out$Variable)
   expect_true("  Six" %in% out$Variable)
@@ -623,8 +637,7 @@ test_that("duplicate values in `model_labels` error spicy_invalid_input", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
-    table_regression(list(m1, m2),
-                     model_labels = c("Same", "Same")),
+    table_regression(list(m1, m2), model_labels = c("Same", "Same")),
     class = "spicy_invalid_input"
   )
 })
@@ -635,7 +648,7 @@ test_that("DV smart spanner uses the bare variable name (NOT attr('label'))", {
   # can be a long phrase that would distort column widths. The
   # Outcome body row is suppressed (info is in the header).
   df <- data.frame(y = rnorm(50), x = rnorm(50))
-  attr(df$y, "label") <- "Wellbeing score (0-100)"   # NOT used
+  attr(df$y, "label") <- "Wellbeing score (0-100)" # NOT used
   fit_a <- lm(y ~ x, data = df)
   fit_b <- lm(x ~ y, data = df)
 
@@ -660,7 +673,8 @@ test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
   skip_if_not_installed("clubSandwich")
   set.seed(1)
   df <- data.frame(
-    y = rnorm(120), x = rnorm(120),
+    y = rnorm(120),
+    x = rnorm(120),
     region = factor(sample(letters[1:6], 120, replace = TRUE))
   )
   fit <- lm(y ~ x, data = df)
@@ -676,7 +690,8 @@ test_that("cluster_name – bare symbol extracted as variable name", {
   skip_if_not_installed("clubSandwich")
   set.seed(2)
   df <- data.frame(
-    y = rnorm(120), x = rnorm(120),
+    y = rnorm(120),
+    x = rnorm(120),
     region = factor(sample(letters[1:6], 120, replace = TRUE))
   )
   region_vec <- df$region
@@ -692,7 +707,8 @@ test_that("cluster_name – list(...) with named elements per model", {
   skip_if_not_installed("clubSandwich")
   set.seed(3)
   df <- data.frame(
-    y = rnorm(120), x = rnorm(120),
+    y = rnorm(120),
+    x = rnorm(120),
     region = factor(sample(letters[1:6], 120, replace = TRUE)),
     clinic = factor(sample(LETTERS[1:5], 120, replace = TRUE))
   )
@@ -706,9 +722,11 @@ test_that("cluster_name – list(...) with named elements per model", {
   note <- attr(out, "note")
   expect_identical(
     note,
-    paste0("Note. Linear regression models.\nStd. errors:\n",
-           "  Model 1: cluster-robust (CR2), clusters by region\n",
-           "  Model 2: cluster-robust (CR2), clusters by clinic")
+    paste0(
+      "Note. Linear regression models.\nStd. errors:\n",
+      "  Model 1: cluster-robust (CR2), clusters by region\n",
+      "  Model 2: cluster-robust (CR2), clusters by clinic"
+    )
   )
 })
 
@@ -728,8 +746,8 @@ test_that("extract_arg_column_name – handles all recognised forms", {
 test_that("outcome_labels – single model: row never shown (DV is in title)", {
   fit <- lm(mpg ~ wt, data = mt)
   out_null <- table_regression(fit, outcome_labels = NULL)
-  out_chr  <- table_regression(fit, outcome_labels = "Custom")
-  out_F    <- table_regression(fit, outcome_labels = FALSE)
+  out_chr <- table_regression(fit, outcome_labels = "Custom")
+  out_F <- table_regression(fit, outcome_labels = FALSE)
   expect_false("Outcome" %in% out_null$Variable)
   expect_false("Outcome" %in% out_chr$Variable)
   expect_false("Outcome" %in% out_F$Variable)
@@ -747,7 +765,7 @@ test_that("outcome_labels – multi-model differing DVs: NULL lifts DVs into spa
   # smart default moves the auto-detected DV names into the
   # multi-model spanner and suppresses the body Outcome row.
   m_mpg <- lm(mpg ~ wt, data = mt)
-  m_hp  <- lm(hp  ~ wt, data = mt)
+  m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp))
   expect_false("Outcome" %in% out$Variable)
   spans <- attr(out, "spanners")
@@ -756,9 +774,11 @@ test_that("outcome_labels – multi-model differing DVs: NULL lifts DVs into spa
 
 test_that("outcome_labels – explicit labels take precedence", {
   m_mpg <- lm(mpg ~ wt, data = mt)
-  m_hp  <- lm(hp  ~ wt, data = mt)
-  out <- table_regression(list(m_mpg, m_hp),
-                          outcome_labels = c("Fuel economy", "Horsepower"))
+  m_hp <- lm(hp ~ wt, data = mt)
+  out <- table_regression(
+    list(m_mpg, m_hp),
+    outcome_labels = c("Fuel economy", "Horsepower")
+  )
   outcome_row <- out[out$Variable == "Outcome", , drop = FALSE]
   # Cells are decimal-align padded; pin the exact trimmed content.
   expect_identical(trimws(outcome_row[, "Model 1: B"]), "Fuel economy")
@@ -767,7 +787,7 @@ test_that("outcome_labels – explicit labels take precedence", {
 
 test_that("outcome_labels – FALSE suppresses the row even with differing DVs", {
   m_mpg <- lm(mpg ~ wt, data = mt)
-  m_hp  <- lm(hp  ~ wt, data = mt)
+  m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp), outcome_labels = FALSE)
   expect_false("Outcome" %in% out$Variable)
 })
@@ -783,7 +803,7 @@ test_that("reference_style = 'annotation' – factor header annotated [ref: <lev
 
 test_that("reference_style = 'row' (default) – no factor header annotation", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit)   # default = "row"
+  out <- table_regression(fit) # default = "row"
   expect_true("cyl:" %in% out$Variable)
   expect_false(any(grepl("\\[ref: ", out$Variable)))
   expect_true(any(grepl("\\(ref\\.\\)", out$Variable)))
@@ -794,7 +814,7 @@ test_that("reference_style = 'annotation' – works with multiple factors", {
   mt2$gear <- factor(mt2$gear)
   fit <- lm(mpg ~ wt + cyl + gear, data = mt2)
   out <- table_regression(fit, reference_style = "annotation")
-  expect_true(any(grepl("^cyl: \\[ref: 4\\]$",  out$Variable)))
+  expect_true(any(grepl("^cyl: \\[ref: 4\\]$", out$Variable)))
   expect_true(any(grepl("^gear: \\[ref: 3\\]$", out$Variable)))
 })
 
@@ -839,7 +859,7 @@ test_that("no-intercept formula – alt syntax 'y ~ x - 1' is equivalent", {
 
 test_that("no-intercept formula – works with multi-model nested lookalike", {
   m_with_int <- lm(mpg ~ wt + cyl, data = mt)
-  m_no_int   <- lm(mpg ~ 0 + wt + cyl, data = mt)
+  m_no_int <- lm(mpg ~ 0 + wt + cyl, data = mt)
   # Side-by-side display (NOT nested – these aren't nested in the
   # likelihood sense). Validate that the rendering does not crash.
   out <- table_regression(list(m_with_int, m_no_int))
@@ -861,7 +881,7 @@ test_that("no-intercept formula – works with multi-model nested lookalike", {
 # the SEMANTIC content (cells + alignment) is unchanged.
 capture_norm <- function(out) {
   txt <- capture.output(print(out))
-  txt <- sub("[ \t]+$", "", txt)         # trim trailing whitespace
+  txt <- sub("[ \t]+$", "", txt) # trim trailing whitespace
   paste(txt, collapse = "\n")
 }
 
@@ -880,8 +900,12 @@ test_that("snapshot – multi-model with nested = TRUE comparison footer", {
 
 test_that("snapshot – standardized + stars + reference annotation", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit, standardized = "refit", stars = TRUE,
-                          reference_style = "annotation")
+  out <- table_regression(
+    fit,
+    standardized = "refit",
+    stars = TRUE,
+    reference_style = "annotation"
+  )
   expect_snapshot(cat(capture_norm(out)))
 })
 
@@ -919,7 +943,7 @@ test_that("spanner – multi-model unnamed + same DV: 'Model N' labels", {
 
 test_that("spanner – multi-model unnamed + distinct DVs: DV smart default", {
   m_mpg <- lm(mpg ~ wt, data = mt)
-  m_hp  <- lm(hp  ~ wt, data = mt)
+  m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp))
   spans <- attr(out, "spanners")
   expect_equal(names(spans), c("mpg", "hp"))
@@ -929,18 +953,19 @@ test_that("spanner – multi-model unnamed + distinct DVs: DV smart default", {
 
 test_that("spanner – explicit model_labels override DV smart default", {
   m_mpg <- lm(mpg ~ wt, data = mt)
-  m_hp  <- lm(hp  ~ wt, data = mt)
-  out <- table_regression(list(m_mpg, m_hp),
-                          model_labels = c("Fuel", "Power"))
+  m_hp <- lm(hp ~ wt, data = mt)
+  out <- table_regression(list(m_mpg, m_hp), model_labels = c("Fuel", "Power"))
   spans <- attr(out, "spanners")
   expect_equal(names(spans), c("Fuel", "Power"))
 })
 
 test_that("spanner – explicit outcome_labels keep the row; spanner stays generic", {
   m_mpg <- lm(mpg ~ wt, data = mt)
-  m_hp  <- lm(hp  ~ wt, data = mt)
-  out <- table_regression(list(m_mpg, m_hp),
-                          outcome_labels = c("Fuel economy", "Horsepower"))
+  m_hp <- lm(hp ~ wt, data = mt)
+  out <- table_regression(
+    list(m_mpg, m_hp),
+    outcome_labels = c("Fuel economy", "Horsepower")
+  )
   spans <- attr(out, "spanners")
   expect_equal(names(spans), c("Model 1", "Model 2"))
   expect_true("Outcome" %in% out$Variable)
@@ -963,7 +988,7 @@ test_that("spanner – multi-model print strips 'Label: ' prefix from headers", 
 test_that("spanner – .validate_spanners catches malformed input", {
   df <- data.frame(a = 1, b = 2, c = 3, d = 4)
   expect_error(
-    spicy:::build_ascii_table(df, spanners = list(2:3)),     # unnamed
+    spicy:::build_ascii_table(df, spanners = list(2:3)), # unnamed
     class = "spicy_invalid_input"
   )
   expect_error(
@@ -971,7 +996,7 @@ test_that("spanner – .validate_spanners catches malformed input", {
     class = "spicy_invalid_input"
   )
   expect_error(
-    spicy:::build_ascii_table(df, spanners = list(g = c(2, 4))),  # non-contiguous
+    spicy:::build_ascii_table(df, spanners = list(g = c(2, 4))), # non-contiguous
     class = "spicy_invalid_input"
   )
   expect_error(
@@ -986,7 +1011,7 @@ test_that("spanner – gt output applies tab_spanner + cols_label", {
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   g <- table_regression(list("A" = m1, "B" = m2), output = "gt")
   html <- as.character(gt::as_raw_html(g))
-  expect_match(html, ">A<")           # spanner label present
+  expect_match(html, ">A<") # spanner label present
   expect_match(html, ">B<")
   # Bare sub-column labels are used (cols_label stripped the prefix).
   # ">B<" matches both the spanner "B" and the bare-token "B"; ensure
@@ -1012,11 +1037,12 @@ test_that("spanner – flextable output adds a header row with spanners", {
 test_that("ordered factor – grouped under header, poly-order, auto footer note", {
   set.seed(1)
   df <- data.frame(
-    y   = rnorm(200),
-    x   = rnorm(200),
-    edu = ordered(sample(c("Low", "Med", "High", "Top"), 200,
-                          replace = TRUE),
-                  levels = c("Low", "Med", "High", "Top"))
+    y = rnorm(200),
+    x = rnorm(200),
+    edu = ordered(
+      sample(c("Low", "Med", "High", "Top"), 200, replace = TRUE),
+      levels = c("Low", "Med", "High", "Top")
+    )
   )
   fit <- lm(y ~ x + edu, df)
   out <- table_regression(fit)
@@ -1046,16 +1072,18 @@ test_that("ordered factor – grouped under header, poly-order, auto footer note
 test_that("ordered factor – fitting with factor(ordered = FALSE) restores treatment layout", {
   set.seed(1)
   df <- data.frame(
-    y   = rnorm(200),
-    edu = ordered(sample(c("Low", "Med", "High"), 200, replace = TRUE),
-                  levels = c("Low", "Med", "High"))
+    y = rnorm(200),
+    edu = ordered(
+      sample(c("Low", "Med", "High"), 200, replace = TRUE),
+      levels = c("Low", "Med", "High")
+    )
   )
   df$edu_t <- factor(df$edu, ordered = FALSE)
   fit <- lm(y ~ edu_t, df)
   out <- table_regression(fit)
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("edu_t:" %in% vars)
-  expect_true("Low (ref.)" %in% vars)   # vars is trimws()'d above
+  expect_true("Low (ref.)" %in% vars) # vars is trimws()'d above
   # No poly footer for this fit.
   note <- attr(out, "note")
   expect_false(grepl("polynomial trends", note))
@@ -1070,20 +1098,21 @@ test_that("default show_columns context-aware: single keeps CI, multi drops it",
   out2 <- table_regression(list(m1, m2))
   expect_false(any(grepl("95% CI", names(out2))))
   # Explicit user override restores CI even in multi-model.
-  out3 <- table_regression(list(m1, m2),
-                            show_columns = c("b", "se", "ci", "p"))
+  out3 <- table_regression(list(m1, m2), show_columns = c("b", "se", "ci", "p"))
   expect_true(all(c("Model 1: 95% CI", "Model 2: 95% CI") %in% names(out3)))
 })
 
 
 test_that("outcome_labels – NULL hides the row even when DVs differ + names supplied", {
   m1 <- lm(mpg ~ wt, data = mt)
-  m2 <- lm(hp  ~ wt, data = mt)
+  m2 <- lm(hp ~ wt, data = mt)
   out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
   expect_false("Outcome" %in% out$Variable)
   # Explicit opt-in still works.
-  out2 <- table_regression(list("Step 1" = m1, "Step 2" = m2),
-                            outcome_labels = c("Fuel", "Power"))
+  out2 <- table_regression(
+    list("Step 1" = m1, "Step 2" = m2),
+    outcome_labels = c("Fuel", "Power")
+  )
   expect_true("Outcome" %in% out2$Variable)
 })
 
@@ -1109,22 +1138,24 @@ test_that("reference row always FIRST in its factor group regardless of group_fa
   # at the end of coef order and group_factor_terms was gated on
   # TRUE). Now we always reorder so the ref is first in its group.
   df <- data.frame(
-    y   = rnorm(200),
+    y = rnorm(200),
     age = rnorm(200),
-    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
-                 levels = c("Female", "Male"))
+    sex = factor(
+      sample(c("Female", "Male"), 200, replace = TRUE),
+      levels = c("Female", "Male")
+    )
   )
   fit <- lm(y ~ age + sex, df)
 
   out_t <- table_regression(fit, factor_layout = "grouped")
   vars_t <- as.data.frame(out_t, stringsAsFactors = FALSE)$Variable
-  ref_t  <- which(vars_t == "  Female (ref.)")
+  ref_t <- which(vars_t == "  Female (ref.)")
   male_t <- which(vars_t == "  Male")
   expect_true(ref_t < male_t)
 
   out_f <- table_regression(fit, factor_layout = "flat")
   vars_f <- as.data.frame(out_f, stringsAsFactors = FALSE)$Variable
-  ref_f  <- which(vars_f == "sexFemale (ref.)")
+  ref_f <- which(vars_f == "sexFemale (ref.)")
   male_f <- which(vars_f == "sexMale")
   expect_true(ref_f < male_f)
 })
@@ -1136,33 +1167,44 @@ test_that("reference row always FIRST in its factor group regardless of group_fa
 
 test_that("reference_style = \"annotation\" + factor_layout = \"flat\" inlines [vs <ref>] on 1st dummy only", {
   df <- data.frame(
-    y   = rnorm(200),
-    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
-                 levels = c("Female", "Male")),
-    edu = factor(sample(c("Lower", "Upper", "Tertiary"), 200, replace = TRUE),
-                 levels = c("Lower", "Upper", "Tertiary"))
+    y = rnorm(200),
+    sex = factor(
+      sample(c("Female", "Male"), 200, replace = TRUE),
+      levels = c("Female", "Male")
+    ),
+    edu = factor(
+      sample(c("Lower", "Upper", "Tertiary"), 200, replace = TRUE),
+      levels = c("Lower", "Upper", "Tertiary")
+    )
   )
   fit <- lm(y ~ sex + edu, df)
-  out <- table_regression(fit, reference_style = "annotation",
-                          factor_layout = "flat")
+  out <- table_regression(
+    fit,
+    reference_style = "annotation",
+    factor_layout = "flat"
+  )
   vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
   # 2-level factor: the single non-ref dummy carries [vs Female]
   expect_true("sexMale [vs Female]" %in% vars)
   # 3-level factor: FIRST non-ref dummy carries [vs Lower]; second does not
   edu_rows <- grep("^edu", vars, value = TRUE)
   with_marker <- grep("[vs Lower]", edu_rows, fixed = TRUE, value = TRUE)
-  expect_identical(with_marker, "eduUpper [vs Lower]")  # exactly one, on 1st dummy
+  expect_identical(with_marker, "eduUpper [vs Lower]") # exactly one, on 1st dummy
   # Reference rows themselves are NOT in the body in annotation mode
   expect_false(any(grepl("Lower (ref.)", vars, fixed = TRUE)))
 })
 
 test_that("reference_style = \"footer\" adds a single 'Reference categories: ...' line", {
   df <- data.frame(
-    y   = rnorm(200),
-    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
-                 levels = c("Female", "Male")),
-    edu = factor(sample(c("Lower", "Upper", "Tertiary"), 200, replace = TRUE),
-                 levels = c("Lower", "Upper", "Tertiary"))
+    y = rnorm(200),
+    sex = factor(
+      sample(c("Female", "Male"), 200, replace = TRUE),
+      levels = c("Female", "Male")
+    ),
+    edu = factor(
+      sample(c("Lower", "Upper", "Tertiary"), 200, replace = TRUE),
+      levels = c("Lower", "Upper", "Tertiary")
+    )
   )
   fit <- lm(y ~ sex + edu, df)
   out <- table_regression(fit, reference_style = "footer")
@@ -1172,24 +1214,32 @@ test_that("reference_style = \"footer\" adds a single 'Reference categories: ...
   expect_false(any(grepl("[vs ", vars, fixed = TRUE)))
   # Footer line lists both factor references
   note <- attr(out, "note")
-  expect_match(note, "Reference categories: sex = Female; edu = Lower.",
-               fixed = TRUE)
+  expect_match(
+    note,
+    "Reference categories: sex = Female; edu = Lower.",
+    fixed = TRUE
+  )
   expect_match(note, "sex = Female")
   expect_match(note, "edu = Lower")
 })
 
 test_that("reference_style = \"none\" shows no reference info anywhere", {
   df <- data.frame(
-    y   = rnorm(200),
-    sex = factor(sample(c("Female", "Male"), 200, replace = TRUE),
-                 levels = c("Female", "Male"))
+    y = rnorm(200),
+    sex = factor(
+      sample(c("Female", "Male"), 200, replace = TRUE),
+      levels = c("Female", "Male")
+    )
   )
   fit <- lm(y ~ sex, df)
   # Suppress the spicy_inform emitted on flat+none; we test that
   # separately below.
   withCallingHandlers(
-    out <- table_regression(fit, reference_style = "none",
-                            factor_layout = "flat"),
+    out <- table_regression(
+      fit,
+      reference_style = "none",
+      factor_layout = "flat"
+    ),
     spicy_info = function(c) invokeRestart("muffleMessage")
   )
   vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
@@ -1202,14 +1252,13 @@ test_that("reference_style = \"none\" shows no reference info anywhere", {
 
 test_that("reference_style = \"none\" + factor_layout = \"flat\" emits spicy_inform once", {
   df <- data.frame(
-    y   = rnorm(100),
+    y = rnorm(100),
     sex = factor(sample(c("Female", "Male"), 100, replace = TRUE))
   )
   fit <- lm(y ~ sex, df)
   cnd <- NULL
   withCallingHandlers(
-    table_regression(fit, reference_style = "none",
-                     factor_layout = "flat"),
+    table_regression(fit, reference_style = "none", factor_layout = "flat"),
     spicy_info = function(c) {
       cnd <<- c
       invokeRestart("muffleMessage")
@@ -1236,14 +1285,13 @@ test_that("reference_style = \"none\" + factor_layout = \"grouped\" does NOT emi
   # warning is unnecessary -- only the FLAT case loses all visual
   # trace of the factor's existence beyond per-level dummies.
   df <- data.frame(
-    y   = rnorm(100),
+    y = rnorm(100),
     sex = factor(sample(c("Female", "Male"), 100, replace = TRUE))
   )
   fit <- lm(y ~ sex, df)
   cnd <- NULL
   withCallingHandlers(
-    table_regression(fit, reference_style = "none",
-                     factor_layout = "grouped"),
+    table_regression(fit, reference_style = "none", factor_layout = "grouped"),
     spicy_info = function(c) {
       cnd <<- c
       invokeRestart("muffleMessage")
@@ -1256,8 +1304,7 @@ test_that("reference_style = \"none\" with NO factors: no spicy_inform (nothing 
   fit <- lm(mpg ~ wt, data = mt)
   cnd <- NULL
   withCallingHandlers(
-    table_regression(fit, reference_style = "none",
-                     factor_layout = "flat"),
+    table_regression(fit, reference_style = "none", factor_layout = "flat"),
     spicy_info = function(c) {
       cnd <<- c
       invokeRestart("muffleMessage")
@@ -1279,7 +1326,7 @@ test_that("factor_layout = \"flat\" produces concatenated <var><level> labels", 
 
 test_that("factor_layout = \"grouped\" (default) inserts factor header + indents", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit)   # default grouped
+  out <- table_regression(fit) # default grouped
   vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
   expect_true("cyl:" %in% vars)
   expect_true(any(grepl("^  6$", vars)))

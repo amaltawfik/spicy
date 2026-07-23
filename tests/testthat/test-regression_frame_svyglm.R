@@ -12,14 +12,18 @@
 #   * Oracle cross-validation against parameters::model_parameters()
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .svy_design <- function() {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
-  survey::svydesign(id = ~1, strata = ~stype, weights = ~pw,
-                    data = apistrat, fpc = ~fpc)
+  survey::svydesign(
+    id = ~1,
+    strata = ~stype,
+    weights = ~pw,
+    data = apistrat,
+    fpc = ~fpc
+  )
 }
 
 .fit_svyglm_gaussian <- function() {
@@ -34,16 +38,18 @@
 
 .fit_svyglm_logit <- function() {
   d <- .svy_design()
-  survey::svyglm(I(api00 > mean(api00)) ~ ell + stype, design = d,
-                 family = quasibinomial())
+  survey::svyglm(
+    I(api00 > mean(api00)) ~ ell + stype,
+    design = d,
+    family = quasibinomial()
+  )
 }
 
 .fit_svyglm_poisson <- function() {
   d <- .svy_design()
   # `enroll` is a count (school enrolment); use a small subset to keep
   # the Poisson realistic on the API data.
-  survey::svyglm(enroll ~ ell + meals, design = d,
-                 family = quasipoisson())
+  survey::svyglm(enroll ~ ell + meals, design = d, family = quasipoisson())
 }
 
 
@@ -72,7 +78,7 @@ test_that("svyglm gaussian: info$family is gaussian/identity", {
   fit <- .fit_svyglm_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("svyglm: info$dv reads the response variable name", {
@@ -112,8 +118,11 @@ test_that("svyglm gaussian: coefs estimates match coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]), tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -124,8 +133,11 @@ test_that("svyglm: coefs SE matches sqrt(diag(vcov))", {
   expected_se <- sqrt(diag(V))
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(expected_se)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(expected_se[nm]), tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(expected_se[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -164,7 +176,7 @@ test_that("svyglm supports flags: ame TRUE, nested_lrt FALSE, classical_r2 FALSE
   expect_false(sp$partial_effect_size)
   expect_false(sp$classical_r2)
   expect_false(sp$nested_lrt)
-  expect_false(sp$exponentiate)   # identity link
+  expect_false(sp$exponentiate) # identity link
   # svyglm has no standardized-coefficients attach path: the flag is
   # FALSE so table_regression() refuses `standardized` fail-fast
   # instead of rendering an empty beta column.
@@ -183,16 +195,17 @@ test_that("svyglm logit: supports$exponentiate = TRUE (logit link)", {
 test_that("svyglm gaussian: title_prefix names the linear context", {
   fit <- .fit_svyglm_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Survey-weighted linear regression")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Survey-weighted linear regression"
+  )
 })
 
 test_that("svyglm logit: title_prefix names the logistic context", {
   fit <- .fit_svyglm_logit()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_match(fr$info$extras$title_prefix, "logistic", fixed = TRUE)
-  expect_match(fr$info$extras$title_prefix, "Survey-weighted",
-               fixed = TRUE)
+  expect_match(fr$info$extras$title_prefix, "Survey-weighted", fixed = TRUE)
 })
 
 test_that("svyglm poisson: title_prefix names the Poisson context", {
@@ -208,7 +221,7 @@ test_that("svyglm logit: family = quasibinomial / logit", {
   fit <- .fit_svyglm_logit()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "quasibinomial")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
 })
 
 test_that("svyglm logit: schema validity", {
@@ -224,7 +237,7 @@ test_that("svyglm poisson: family = quasipoisson / log", {
   fit <- .fit_svyglm_poisson()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "quasipoisson")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 })
 
 test_that("svyglm poisson: schema validity", {
@@ -253,22 +266,34 @@ test_that("svyglm gaussian coefs match parameters::model_parameters() (oracle)",
 
   oracle <- parameters::model_parameters(
     fit,
-    ci         = 0.95,
-    ci_method  = "wald",
-    test       = NULL,
+    ci = 0.95,
+    ci_method = "wald",
+    test = NULL,
     exponentiate = FALSE
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })
 
@@ -279,21 +304,33 @@ test_that("svyglm logit coefs match parameters::model_parameters() (oracle)", {
 
   oracle <- parameters::model_parameters(
     fit,
-    ci         = 0.95,
-    ci_method  = "wald",
-    test       = NULL,
+    ci = 0.95,
+    ci_method = "wald",
+    test = NULL,
     exponentiate = FALSE
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })

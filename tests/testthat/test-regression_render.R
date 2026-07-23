@@ -6,19 +6,30 @@ mt$cyl <- factor(mt$cyl)
 # Phase 0c sub-step C5: migrated from extract_lm_phase1 + align_extracts
 # (deleted) to as_regression_frame + align_frames. The aligned object
 # shape is identical via both paths.
-mk_frame_lm <- function(formula, model_id, data = mt,
-                         show_columns = c("b", "se", "ci", "p")) {
+mk_frame_lm <- function(
+  formula,
+  model_id,
+  data = mt,
+  show_columns = c("b", "se", "ci", "p")
+) {
   fit <- lm(formula, data = data)
-  spicy:::as_regression_frame(fit, model_id = model_id,
-                              show_columns = show_columns)
+  spicy:::as_regression_frame(
+    fit,
+    model_id = model_id,
+    show_columns = show_columns
+  )
 }
 
-mk_aligned <- function(formulas, ids,
-                        show_columns = c("b", "se", "ci", "p"),
-                        ...) {
+mk_aligned <- function(
+  formulas,
+  ids,
+  show_columns = c("b", "se", "ci", "p"),
+  ...
+) {
   frames <- Map(
     function(f, i) mk_frame_lm(f, i, show_columns = show_columns),
-    formulas, ids
+    formulas,
+    ids
   )
   spicy:::align_frames(frames, model_ids = unlist(ids), ...)
 }
@@ -42,7 +53,7 @@ test_that("render – wt term renders as a labelled coefficient row", {
   rt <- spicy:::render_regression_table(aligned)
   wt_row <- rt[rt$Variable == "wt", , drop = FALSE]
   expect_equal(nrow(wt_row), 1L)
-  expect_match(wt_row$B, "^-")     # mpg ~ wt → negative slope
+  expect_match(wt_row$B, "^-") # mpg ~ wt → negative slope
   expect_true(nzchar(wt_row$SE))
   expect_match(wt_row$`95% CI`, "^\\[")
 })
@@ -62,8 +73,10 @@ test_that("render – multi-model: column headers prefixed with model labels", {
 
 test_that("render – custom model_labels honoured in headers", {
   aligned <- mk_aligned(list(mpg ~ wt, mpg ~ wt + am), list("A", "B"))
-  rt <- spicy:::render_regression_table(aligned,
-                                        model_labels = c("Crude", "Adjusted"))
+  rt <- spicy:::render_regression_table(
+    aligned,
+    model_labels = c("Crude", "Adjusted")
+  )
   expect_true(any(grepl("^Crude: B$", names(rt))))
   expect_true(any(grepl("^Adjusted: B$", names(rt))))
 })
@@ -99,8 +112,10 @@ test_that("render – reference rows en-dashed in stat columns", {
 
 test_that("render – reference_label customisation", {
   aligned <- mk_aligned(list(mpg ~ cyl), list("M1"))
-  rt <- spicy:::render_regression_table(aligned,
-                                        reference_label = "[reference]")
+  rt <- spicy:::render_regression_table(
+    aligned,
+    reference_label = "[reference]"
+  )
   expect_true(any(grepl("\\[reference\\]", rt$Variable)))
 })
 
@@ -125,13 +140,13 @@ test_that("render – stars = FALSE: no stars added", {
 })
 
 test_that("render – stars custom thresholds applied", {
-  aligned <- mk_aligned(list(mpg ~ am), list("M1"))   # am: p ~ .0003
+  aligned <- mk_aligned(list(mpg ~ am), list("M1")) # am: p ~ .0003
   rt <- spicy:::render_regression_table(
     aligned,
     stars = c("†" = 0.10, "*" = 0.05)
   )
   am_row <- rt[rt$Variable == "am", , drop = FALSE]
-  expect_match(am_row$B, "\\*$")        # p < .05 picked
+  expect_match(am_row$B, "\\*$") # p < .05 picked
 })
 
 
@@ -140,18 +155,23 @@ test_that("render – stars custom thresholds applied", {
 # ============================================================================
 
 test_that("render – intercept_position = 'last' places intercept last", {
-  aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"),
-                        intercept_position = "last")
+  aligned <- mk_aligned(
+    list(mpg ~ wt + cyl),
+    list("M1"),
+    intercept_position = "last"
+  )
   # Disable fit-stats footer so the intercept is the literal last row.
-  rt <- spicy:::render_regression_table(aligned,
-                                        show_fit_stats = character(0))
+  rt <- spicy:::render_regression_table(aligned, show_fit_stats = character(0))
   intercept_idx <- which(rt$Variable == "(Intercept)")
   expect_equal(intercept_idx, nrow(rt))
 })
 
 test_that("render – show_intercept = FALSE drops intercept row", {
-  aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"),
-                        show_intercept = FALSE)
+  aligned <- mk_aligned(
+    list(mpg ~ wt + cyl),
+    list("M1"),
+    show_intercept = FALSE
+  )
   rt <- spicy:::render_regression_table(aligned)
   expect_false("(Intercept)" %in% rt$Variable)
 })
@@ -163,7 +183,8 @@ test_that("render – show_intercept = FALSE drops intercept row", {
 
 test_that("render – partial_eta2 + partial_eta2_ci as separate cells", {
   aligned <- mk_aligned(
-    list(mpg ~ wt + cyl), list("M1"),
+    list(mpg ~ wt + cyl),
+    list("M1"),
     show_columns = c("b", "partial_eta2", "partial_eta2_ci")
   )
   rt <- spicy:::render_regression_table(
@@ -174,15 +195,17 @@ test_that("render – partial_eta2 + partial_eta2_ci as separate cells", {
   expect_true("η²" %in% names(rt))
   expect_true("η² 95% CI" %in% names(rt))
   wt_row <- rt[rt$Variable == "wt", , drop = FALSE]
-  expect_match(trimws(wt_row$`η²`),
-                "^[0-9]+\\.[0-9]+$")
-  expect_match(trimws(wt_row$`η² 95% CI`),
-                "^\\[[0-9]+\\.[0-9]+, [0-9]+\\.[0-9]+\\]$")
+  expect_match(trimws(wt_row$`η²`), "^[0-9]+\\.[0-9]+$")
+  expect_match(
+    trimws(wt_row$`η² 95% CI`),
+    "^\\[[0-9]+\\.[0-9]+, [0-9]+\\.[0-9]+\\]$"
+  )
 })
 
 test_that("render – partial_omega2 column uses effect_size_digits", {
   aligned <- mk_aligned(
-    list(mpg ~ wt + cyl), list("M1"),
+    list(mpg ~ wt + cyl),
+    list("M1"),
     show_columns = c("b", "partial_omega2")
   )
   rt <- spicy:::render_regression_table(
@@ -224,8 +247,7 @@ test_that("render – labels also rename the intercept", {
 
 test_that("render – flat layout: factor reference uses <var><level> form", {
   aligned <- mk_aligned(list(mpg ~ wt + cyl), list("M1"))
-  rt <- spicy:::render_regression_table(aligned,
-                                        factor_layout = "flat")
+  rt <- spicy:::render_regression_table(aligned, factor_layout = "flat")
   # Reference row should be "cyl4 (ref.)" – matching the coef-name
   # convention used for the dummy rows ("cyl6", "cyl8").
   expect_true(any(grepl("^cyl4 \\(ref\\.\\)$", rt$Variable)))
@@ -242,8 +264,8 @@ test_that("render – decimal_mark = ',' uses comma + ';' CI separator", {
   aligned <- mk_aligned(list(mpg ~ wt), list("M1"))
   rt <- spicy:::render_regression_table(aligned, decimal_mark = ",")
   wt_row <- rt[rt$Variable == "wt", , drop = FALSE]
-  expect_match(wt_row$B, ",")              # decimal comma
-  expect_match(wt_row$`95% CI`, ";")       # CI separator switch
+  expect_match(wt_row$B, ",") # decimal comma
+  expect_match(wt_row$`95% CI`, ";") # CI separator switch
 })
 
 
@@ -273,6 +295,8 @@ test_that("format_stars – applies the strictest matching threshold", {
 
 test_that("resolve_stars_thresholds – TRUE → APA preset; FALSE → NULL", {
   expect_null(spicy:::resolve_stars_thresholds(FALSE))
-  expect_equal(spicy:::resolve_stars_thresholds(TRUE),
-               c("***" = 0.001, "**" = 0.01, "*" = 0.05))
+  expect_equal(
+    spicy:::resolve_stars_thresholds(TRUE),
+    c("***" = 0.001, "**" = 0.01, "*" = 0.05)
+  )
 })

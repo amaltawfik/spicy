@@ -27,47 +27,68 @@
 #     (deviance-explained ratio, the GAM-canonical pseudo-R^2).
 # ---------------------------------------------------------------------------
 
-
 #' `as_regression_frame()` method for `gam` fits (mgcv::gam() / bam()).
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.gam <- function(fit,
-                                     vcov = "model",
-                                     vcov_label = NULL,
-                                     cluster = NULL,
-                                     cluster_name = NULL,
-                                     ci_level = 0.95,
-                                     ci_method = NULL,
-                                     show_columns = character(0),
-                                     model_id = "M1",
-                                     ...) {
+as_regression_frame.gam <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_mgcv_available()
 
   fam <- stats::family(fit)
   is_gaussian_identity <- identical(fam$family, "gaussian") &&
-                          identical(fam$link, "identity")
+    identical(fam$link, "identity")
 
-  coefs <- .gam_coefs(fit, ci_level = ci_level,
-                       is_gaussian_identity = is_gaussian_identity)
+  coefs <- .gam_coefs(
+    fit,
+    ci_level = ci_level,
+    is_gaussian_identity = is_gaussian_identity
+  )
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "z")
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "z"
+  )
   # Response-scale AME on the parametric terms (marginaleffects::avg_slopes).
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .gam_info(fit,
-                     vcov_kind  = vcov,
-                     vcov_label = vcov_label,
-                     ci_level   = ci_level,
-                     ci_method  = ci_method,
-                     model_id   = model_id,
-                     is_gaussian_identity = is_gaussian_identity,
-                     fam        = fam)
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .gam_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id,
+    is_gaussian_identity = is_gaussian_identity,
+    fam = fam
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "CL")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "CL"
+    )
   }
 
   new_regression_frame(coefs, info, fit)
@@ -103,7 +124,7 @@ as_regression_frame.gam <- function(fit,
   }
 
   est <- unname(pcoef)
-  nm  <- names(pcoef)
+  nm <- names(pcoef)
 
   # mgcv labels the parametric p.table columns "t value"/"Pr(>|t|)" whenever
   # the dispersion (scale) is ESTIMATED -- gaussian-identity, but also every
@@ -114,24 +135,30 @@ as_regression_frame.gam <- function(fit,
   # "z value"/"Pr(>|z|)". Branch on the columns actually present, not on
   # is_gaussian_identity, so estimated-scale GAMs get real SE/stat/p-values
   # instead of an all-NA fallback.
-  if (!is.null(ptable) &&
-      all(c("t value", "Pr(>|t|)") %in% colnames(ptable))) {
-    se      <- unname(ptable[nm, "Std. Error"])
-    stat    <- unname(ptable[nm, "t value"])
+  if (
+    !is.null(ptable) &&
+      all(c("t value", "Pr(>|t|)") %in% colnames(ptable))
+  ) {
+    se <- unname(ptable[nm, "Std. Error"])
+    stat <- unname(ptable[nm, "t value"])
     p_value <- unname(ptable[nm, "Pr(>|t|)"])
     dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
     # Defensive: df.residual() on a valid estimated-scale gam always returns
     # a finite scalar; this only guards an unexpected NULL/Inf and is unreachable.
-    if (is.null(dfr) || !is.finite(dfr)) dfr <- Inf  # nocov
+    if (is.null(dfr) || !is.finite(dfr)) {
+      dfr <- Inf
+    } # nocov
     df <- rep(as.numeric(dfr), length(est))
     t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
     ci_lower <- est - t_crit * se
     ci_upper <- est + t_crit * se
     test_type_col <- rep("t", length(est))
-  } else if (!is.null(ptable) &&
-             all(c("z value", "Pr(>|z|)") %in% colnames(ptable))) {
-    se      <- unname(ptable[nm, "Std. Error"])
-    stat    <- unname(ptable[nm, "z value"])
+  } else if (
+    !is.null(ptable) &&
+      all(c("z value", "Pr(>|z|)") %in% colnames(ptable))
+  ) {
+    se <- unname(ptable[nm, "Std. Error"])
+    stat <- unname(ptable[nm, "z value"])
     p_value <- unname(ptable[nm, "Pr(>|z|)"])
     df <- rep(Inf, length(est))
     z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -145,151 +172,183 @@ as_regression_frame.gam <- function(fit,
     # fires for every real fit. This fallback only guards a hypothetical
     # future mgcv layout with neither column pair; leave estimates in place
     # but mark inference as unavailable rather than emitting wrong numbers.
-    se      <- rep(NA_real_, length(est))            # nocov start
-    stat    <- rep(NA_real_, length(est))
+    se <- rep(NA_real_, length(est)) # nocov start
+    stat <- rep(NA_real_, length(est))
     p_value <- rep(NA_real_, length(est))
-    df      <- rep(Inf, length(est))
+    df <- rep(Inf, length(est))
     ci_lower <- rep(NA_real_, length(est))
     ci_upper <- rep(NA_real_, length(est))
-    test_type_col <- rep("z", length(est))           # nocov end
+    test_type_col <- rep("z", length(est)) # nocov end
   }
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = test_type_col,
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = test_type_col,
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .gam_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   coefs
 }
 
 
 .gam_reference_rows <- function(fit) {
   fts <- detect_factor_terms(fit)
-  if (length(fts) == 0L) return(.empty_coefs_frame())
+  if (length(fts) == 0L) {
+    return(.empty_coefs_frame())
+  }
   rows <- list()
   for (ft in fts) {
-    if (!isTRUE(ft$reference_dropped)) next
+    if (!isTRUE(ft$reference_dropped)) {
+      next
+    }
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
-      parent_var       = ft$factor_term,
-      label            = ref_lvl,
+      term = term_name,
+      parent_var = ft$factor_term,
+      label = ref_lvl,
       factor_level_pos = as.integer(ref_pos),
-      is_ref           = TRUE,
-      estimate_type    = "B",
-      estimate         = NA_real_,
-      std_error        = NA_real_,
-      df               = NA_real_,
-      statistic        = NA_real_,
-      p_value          = NA_real_,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = NA_character_,
+      is_ref = TRUE,
+      estimate_type = "B",
+      estimate = NA_real_,
+      std_error = NA_real_,
+      df = NA_real_,
+      statistic = NA_real_,
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = NA_character_,
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(.empty_coefs_frame())
+  if (length(rows) == 0L) {
+    return(.empty_coefs_frame())
+  }
   do.call(rbind, rows)
 }
 
 
-.gam_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                       model_id, is_gaussian_identity, fam) {
+.gam_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id,
+  is_gaussian_identity,
+  fam
+) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
   fam_list <- list(family = fam$family, link = fam$link)
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   sm <- summary(fit)
   fit_stats <- list(
-    r_squared      = as.numeric(sm$r.sq %||% NA_real_),  # GAM-adjusted R^2
-    adj_r_squared  = as.numeric(sm$r.sq %||% NA_real_),  # same -- mgcv only reports adjusted
-    pseudo_r2      = if (!is.null(sm$dev.expl)) {
+    r_squared = as.numeric(sm$r.sq %||% NA_real_), # GAM-adjusted R^2
+    adj_r_squared = as.numeric(sm$r.sq %||% NA_real_), # same -- mgcv only reports adjusted
+    pseudo_r2 = if (!is.null(sm$dev.expl)) {
       list(dev_explained = as.numeric(sm$dev.expl))
-    } else NULL,
-    aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-    bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-    log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                              error = function(e) NA_real_),
-    deviance       = tryCatch(suppressWarnings(stats::deviance(fit)),
-                              error = function(e) NA_real_),
-    sigma          = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
-    nobs           = as.integer(stats::nobs(fit))
+    } else {
+      NULL
+    },
+    aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+    bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+    log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+      NA_real_
+    }),
+    deviance = tryCatch(
+      suppressWarnings(stats::deviance(fit)),
+      error = function(e) NA_real_
+    ),
+    sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
+    nobs = as.integer(stats::nobs(fit))
   )
 
   exp_ok <- !identical(fam$link, "identity")
 
   supports <- list(
-    ame                 = TRUE,
+    ame = TRUE,
     partial_effect_size = FALSE,
-    classical_r2        = is_gaussian_identity,
-    nested_lrt          = TRUE,
-    exponentiate        = exp_ok,
-    standardise_refit   = FALSE
+    classical_r2 = is_gaussian_identity,
+    nested_lrt = TRUE,
+    exponentiate = exp_ok,
+    standardise_refit = FALSE
   )
 
   # Build the smooth-term summary table for info$extras.
   smooth_terms <- .gam_smooth_terms(sm)
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = FALSE,
-    weighted_n            = NA_real_,
-    title_prefix          = .gam_title_prefix(fam, is_gaussian_identity),
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    smooth_terms          = smooth_terms,
-    n_smooth_terms        = nrow(smooth_terms)
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = FALSE,
+    weighted_n = NA_real_,
+    title_prefix = .gam_title_prefix(fam, is_gaussian_identity),
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    smooth_terms = smooth_terms,
+    n_smooth_terms = nrow(smooth_terms)
   )
 
   list(
-    class          = "gam",
-    family         = fam_list,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(stats::nobs(fit)),
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = "gam",
+    family = fam_list,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(stats::nobs(fit)),
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Bayesian (REML-implied)",
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% "Bayesian (REML-implied)",
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
@@ -299,16 +358,32 @@ as_regression_frame.gam <- function(fit,
 # p-value. Normalise the statistic column name.
 .gam_smooth_terms <- function(sm) {
   st <- sm$s.table
-  if (is.null(st) || nrow(st) == 0L) return(data.frame())
-  stat_col <- if ("F" %in% colnames(st)) "F" else if ("Chi.sq" %in% colnames(st)) "Chi.sq" else NA
-  p_col    <- if ("p-value" %in% colnames(st)) "p-value" else NA
+  if (is.null(st) || nrow(st) == 0L) {
+    return(data.frame())
+  }
+  stat_col <- if ("F" %in% colnames(st)) {
+    "F"
+  } else if ("Chi.sq" %in% colnames(st)) {
+    "Chi.sq"
+  } else {
+    NA
+  }
+  p_col <- if ("p-value" %in% colnames(st)) "p-value" else NA
   data.frame(
-    term      = rownames(st),
-    edf       = unname(st[, "edf"]),
-    ref_df    = unname(st[, "Ref.df"]),
-    statistic = if (is.na(stat_col)) rep(NA_real_, nrow(st)) else unname(st[, stat_col]),
+    term = rownames(st),
+    edf = unname(st[, "edf"]),
+    ref_df = unname(st[, "Ref.df"]),
+    statistic = if (is.na(stat_col)) {
+      rep(NA_real_, nrow(st))
+    } else {
+      unname(st[, stat_col])
+    },
     stat_type = if (identical(stat_col, "F")) "F" else "chi2",
-    p_value   = if (is.na(p_col)) rep(NA_real_, nrow(st)) else unname(st[, p_col]),
+    p_value = if (is.na(p_col)) {
+      rep(NA_real_, nrow(st))
+    } else {
+      unname(st[, p_col])
+    },
     stringsAsFactors = FALSE
   )
 }
@@ -318,10 +393,11 @@ as_regression_frame.gam <- function(fit,
   if (is_gaussian_identity) {
     "Generalised additive model (GAM)"
   } else {
-    base <- switch(fam$family,
-      binomial         = "Logistic",
-      poisson          = "Poisson",
-      Gamma            = "Gamma",
+    base <- switch(
+      fam$family,
+      binomial = "Logistic",
+      poisson = "Poisson",
+      Gamma = "Gamma",
       inverse.gaussian = "Inverse-Gaussian",
       paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
     )

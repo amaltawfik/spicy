@@ -64,7 +64,8 @@ code_book_ascii_filename <- function(filename) {
     iconv(filename, from = "UTF-8", to = "ASCII//TRANSLIT", sub = "")
   )
 
-  if (is.na(filename)) { # nocov start
+  if (is.na(filename)) {
+    # nocov start
     return(filename)
   } # nocov end
 

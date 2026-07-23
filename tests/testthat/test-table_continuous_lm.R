@@ -1469,7 +1469,7 @@ test_that("as.data.frame.spicy_continuous_lm_table strips spicy classes/attrs", 
   )
   expect_equal(attr(df, "by_var"), "sex")
   # Same content: 28 columns + same number of rows.
-  expect_equal(ncol(df), 29L)  # + boot_n_valid (2026-07-09)
+  expect_equal(ncol(df), 29L) # + boot_n_valid (2026-07-09)
   expect_equal(nrow(df), nrow(out))
   # Original object is unchanged.
   expect_true(inherits(out, "spicy_continuous_lm_table"))
@@ -1485,7 +1485,7 @@ test_that("as_tibble.spicy_continuous_lm_table returns a tbl_df", {
   )
   tib <- tibble::as_tibble(out)
   expect_s3_class(tib, "tbl_df")
-  expect_equal(ncol(tib), 29L)  # + boot_n_valid (2026-07-09)
+  expect_equal(ncol(tib), 29L) # + boot_n_valid (2026-07-09)
   expect_equal(nrow(tib), nrow(out))
   expect_true(inherits(out, "spicy_continuous_lm_table"))
 })
@@ -1515,8 +1515,16 @@ test_that("tidy() returns one row per parameter for binary categorical by", {
   # Standard broom columns present.
   expect_true(all(
     c(
-      "outcome", "label", "term", "estimate_type", "estimate",
-      "std.error", "conf.low", "conf.high", "statistic", "p.value"
+      "outcome",
+      "label",
+      "term",
+      "estimate_type",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "statistic",
+      "p.value"
     ) %in%
       names(tidy_out)
   ))
@@ -1566,9 +1574,21 @@ test_that("glance() returns one row per outcome with model-level stats", {
   expect_equal(nrow(glance_out), 2L)
   expect_true(all(
     c(
-      "outcome", "label", "predictor_type", "test_type", "statistic",
-      "df", "df.residual", "p.value", "r.squared", "adj.r.squared",
-      "es_type", "es_value", "es_ci_lower", "es_ci_upper", "nobs"
+      "outcome",
+      "label",
+      "predictor_type",
+      "test_type",
+      "statistic",
+      "df",
+      "df.residual",
+      "p.value",
+      "r.squared",
+      "adj.r.squared",
+      "es_type",
+      "es_value",
+      "es_ci_lower",
+      "es_ci_upper",
+      "nobs"
     ) %in%
       names(glance_out)
   ))
@@ -2009,7 +2029,7 @@ test_that("wide raw column names match wide display when ci_level is custom", {
 test_that("compute_wald_test degrades to NA on a singular submatrix", {
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
   vc <- stats::vcov(fit)
-  vc[, ] <- 0
+  vc[,] <- 0
   result <- spicy:::compute_wald_test(
     fit,
     coef_idx_set = 2:3,
@@ -2257,8 +2277,11 @@ test_that("glance() preserves df.residual without integer truncation", {
     cluster_id = rep(1:50, 4)
   )
   res <- table_continuous_lm(
-    d, outcome, by = predictor,
-    vcov = "CR2", cluster = cluster_id
+    d,
+    outcome,
+    by = predictor,
+    vcov = "CR2",
+    cluster = cluster_id
   )
   long <- as.data.frame(res)
   raw_df2 <- long$df2[1]
@@ -2312,7 +2335,11 @@ test_that("get_test_header_lm formats fractional df with one decimal", {
   expect_equal(hdr, "t(45.3)")
 
   long$df2 <- 45.0
-  hdr_int <- spicy:::get_test_header_lm(long, show_statistic = TRUE, exact = TRUE)
+  hdr_int <- spicy:::get_test_header_lm(
+    long,
+    show_statistic = TRUE,
+    exact = TRUE
+  )
   expect_equal(hdr_int, "t(45)")
 })
 
@@ -2572,7 +2599,11 @@ test_that("compute_resample_vcov_bootstrap reproducibility and weighted refit", 
   w <- stats::runif(nrow(sleep), 0.5, 1.5)
   fit_w <- stats::lm(extra ~ group, data = sleep, weights = w)
   set.seed(20260418)
-  vc_w <- spicy:::compute_resample_vcov_bootstrap(fit_w, boot_n = 100, weights = w)
+  vc_w <- spicy:::compute_resample_vcov_bootstrap(
+    fit_w,
+    boot_n = 100,
+    weights = w
+  )
   expect_true(is.matrix(vc_w))
   expect_equal(dim(vc_w), c(2L, 2L))
 })
@@ -2583,10 +2614,15 @@ test_that("compute_resample_vcov_jackknife reproduces the leave-one-out variance
   expect_true(is.matrix(vc))
   expect_equal(dim(vc), c(2L, 2L))
   # Closed-form jackknife for the slope
-  jacks <- vapply(seq_len(nrow(sleep)), function(i) {
-    stats::coef(stats::lm(extra ~ group, data = sleep[-i, ]))[2]
-  }, numeric(1))
-  jack_var <- ((length(jacks) - 1) / length(jacks)) * sum((jacks - mean(jacks))^2)
+  jacks <- vapply(
+    seq_len(nrow(sleep)),
+    function(i) {
+      stats::coef(stats::lm(extra ~ group, data = sleep[-i, ]))[2]
+    },
+    numeric(1)
+  )
+  jack_var <- ((length(jacks) - 1) / length(jacks)) *
+    sum((jacks - mean(jacks))^2)
   expect_equal(vc[2, 2], jack_var, tolerance = 1e-8)
 })
 
@@ -2919,11 +2955,20 @@ test_that("compute_lm_omega2 returns NA when sums of squares are degenerate", {
   # Constant outcome -> SS_total = 0 -> omega2 not defined.
   df <- data.frame(y = rep(5, 10), x = factor(rep(c("A", "B"), each = 5)))
   fit <- stats::lm(y ~ x, data = df)
-  expect_equal(spicy:::compute_lm_omega2(fit, df_effect = 1L, df_resid = 8L), NA_real_)
+  expect_equal(
+    spicy:::compute_lm_omega2(fit, df_effect = 1L, df_resid = 8L),
+    NA_real_
+  )
   # Negative df_effect rejected.
-  expect_equal(spicy:::compute_lm_omega2(fit, df_effect = 0L, df_resid = 8L), NA_real_)
+  expect_equal(
+    spicy:::compute_lm_omega2(fit, df_effect = 0L, df_resid = 8L),
+    NA_real_
+  )
   # Negative df_resid rejected.
-  expect_equal(spicy:::compute_lm_omega2(fit, df_effect = 1L, df_resid = 0L), NA_real_)
+  expect_equal(
+    spicy:::compute_lm_omega2(fit, df_effect = 1L, df_resid = 0L),
+    NA_real_
+  )
 })
 
 # ---- end coverage edge cases ----
@@ -3219,24 +3264,33 @@ test_that("get_test_header_lm returns NULL when test_type column is all NA", {
 test_that("get_test_header_lm returns plain z / chi^2 / t / F when df not available", {
   # z asymptotic
   block_z <- data.frame(
-    test_type = "z", df1 = 1L, df2 = NA_real_,
-    predictor_type = "continuous", level = NA_character_,
+    test_type = "z",
+    df1 = 1L,
+    df2 = NA_real_,
+    predictor_type = "continuous",
+    level = NA_character_,
     estimate = 1
   )
   expect_equal(spicy:::get_test_header_lm(block_z), "z")
 
   # chi^2 with no df1
   block_c <- data.frame(
-    test_type = "chi2", df1 = NA_integer_, df2 = NA_real_,
-    predictor_type = "categorical", level = c("a", "b"),
+    test_type = "chi2",
+    df1 = NA_integer_,
+    df2 = NA_real_,
+    predictor_type = "categorical",
+    level = c("a", "b"),
     estimate = c(NA, 1)
   )
   expect_equal(spicy:::get_test_header_lm(block_c), "χ²")
 
   # chi^2 with exact = FALSE -> bare "χ²"
   block_c2 <- data.frame(
-    test_type = "chi2", df1 = 2L, df2 = NA_real_,
-    predictor_type = "categorical", level = c("a", "b"),
+    test_type = "chi2",
+    df1 = 2L,
+    df2 = NA_real_,
+    predictor_type = "categorical",
+    level = c("a", "b"),
     estimate = c(NA, 1)
   )
   expect_equal(
@@ -3246,16 +3300,22 @@ test_that("get_test_header_lm returns plain z / chi^2 / t / F when df not availa
 
   # t with no df2
   block_t <- data.frame(
-    test_type = "t", df1 = 1L, df2 = NA_real_,
-    predictor_type = "continuous", level = NA_character_,
+    test_type = "t",
+    df1 = 1L,
+    df2 = NA_real_,
+    predictor_type = "continuous",
+    level = NA_character_,
     estimate = 1
   )
   expect_equal(spicy:::get_test_header_lm(block_t), "t")
 
   # F with no df1/df2
   block_f <- data.frame(
-    test_type = "F", df1 = NA_integer_, df2 = NA_real_,
-    predictor_type = "categorical", level = c("a", "b"),
+    test_type = "F",
+    df1 = NA_integer_,
+    df2 = NA_real_,
+    predictor_type = "categorical",
+    level = c("a", "b"),
     estimate = c(NA, 1)
   )
   expect_equal(spicy:::get_test_header_lm(block_f), "F")
@@ -3264,7 +3324,8 @@ test_that("get_test_header_lm returns plain z / chi^2 / t / F when df not availa
 test_that("get_test_header_lm returns the raw test_type for unknown labels", {
   block <- data.frame(
     test_type = "weirdo",
-    df1 = NA_integer_, df2 = NA_real_,
+    df1 = NA_integer_,
+    df2 = NA_real_,
     predictor_type = "continuous",
     level = NA_character_,
     estimate = 1
@@ -3298,7 +3359,11 @@ test_that("compute_lm_omega2 returns NA when y is non-numeric", {
 test_that("compute_smd_ci_lm returns NA when slope is not finite or x not factor", {
   # Numeric predictor (not a factor) -> NA
   fit_num <- stats::lm(mpg ~ wt, data = mtcars)
-  out <- spicy:::compute_smd_ci_lm(fit_num, ci_level = 0.95, hedges_correct = FALSE)
+  out <- spicy:::compute_smd_ci_lm(
+    fit_num,
+    ci_level = 0.95,
+    hedges_correct = FALSE
+  )
   expect_equal(out, c(NA_real_, NA_real_))
 
   # Factor predictor with > 2 levels -> NA
@@ -3693,7 +3758,11 @@ test_that("export_continuous_lm_table errors when required Suggests packages are
       display_df = display_df,
       output = out,
       ci_level = 0.95,
-      excel_path = if (identical(out, "excel")) tempfile(fileext = ".xlsx") else NULL,
+      excel_path = if (identical(out, "excel")) {
+        tempfile(fileext = ".xlsx")
+      } else {
+        NULL
+      },
       excel_sheet = "Sheet1",
       clipboard_delim = "\t",
       word_path = NULL

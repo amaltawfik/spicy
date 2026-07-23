@@ -4,7 +4,7 @@
 # attr(body, "structured"). Engines (Excel, gt, tinytable, flextable,
 # clipboard) consume it directly.
 
-mt <- mtcars  # local alias
+mt <- mtcars # local alias
 
 test_that("structured body: schema invariants (numerics, CI split, markers)", {
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
@@ -12,17 +12,32 @@ test_that("structured body: schema invariants (numerics, CI split, markers)", {
   s <- attr(r, "structured")
 
   expect_type(s, "list")
-  expect_named(s, c("body", "reference_rows", "reference_models_by_row",
-                     "factor_header_rows", "fit_stat_rows", "level_rows",
-                     "outcome_row", "outcome_labels_by_col",
-                     "col_meta", "spanners", "ci_pairs", "format_spec"),
-               ignore.order = TRUE)
+  expect_named(
+    s,
+    c(
+      "body",
+      "reference_rows",
+      "reference_models_by_row",
+      "factor_header_rows",
+      "fit_stat_rows",
+      "level_rows",
+      "outcome_row",
+      "outcome_labels_by_col",
+      "col_meta",
+      "spanners",
+      "ci_pairs",
+      "format_spec"
+    ),
+    ignore.order = TRUE
+  )
 
   # Variable col is character; all other body cols are numeric.
   expect_type(s$body$Variable, "character")
   for (j in 2:ncol(s$body)) {
-    expect_true(is.numeric(s$body[[j]]) || all(is.na(s$body[[j]])),
-                 info = paste("col", names(s$body)[j], "must be numeric"))
+    expect_true(
+      is.numeric(s$body[[j]]) || all(is.na(s$body[[j]])),
+      info = paste("col", names(s$body)[j], "must be numeric")
+    )
   }
 
   # CI is split into LL/UL: two columns per CI spanner.
@@ -46,12 +61,10 @@ test_that("structured body: raw numerics match aligned long extract", {
   s <- attr(r, "structured")
   # (Intercept) row: B == coef(m1)[1]
   intercept_b <- s$body$B[s$body$Variable == "(Intercept)"]
-  expect_equal(intercept_b, unname(coef(m1)["(Intercept)"]),
-                tolerance = 1e-12)
+  expect_equal(intercept_b, unname(coef(m1)["(Intercept)"]), tolerance = 1e-12)
   # wt row: p-value from broom matches stored p
   wt_p <- s$body$p[s$body$Variable == "wt"]
-  expect_true(is.numeric(wt_p) && is.finite(wt_p) &&
-                wt_p > 0 && wt_p < 1)
+  expect_true(is.numeric(wt_p) && is.finite(wt_p) && wt_p > 0 && wt_p < 1)
 })
 
 test_that("structured body: multi-model spanners + CI pairs per model", {
@@ -93,16 +106,17 @@ test_that("structured body validates p-value range invariant", {
   # and warns. We can't easily inject bad data through the public API,
   # so test the validator directly via :::.
   fake_struct <- list(
-    body = data.frame(Variable = c("a", "b"),
-                       p = c(0.5, 1.5)),
+    body = data.frame(Variable = c("a", "b"), p = c(0.5, 1.5)),
     reference_rows = integer(0),
     factor_header_rows = integer(0),
     fit_stat_rows = integer(0),
     level_rows = integer(0),
     outcome_row = integer(0),
-    col_meta = list(p = list(token = "p", precision = 3L,
-                              p_style = "apa", threshold = 0.001)),
-    spanners = NULL, ci_pairs = list(),
+    col_meta = list(
+      p = list(token = "p", precision = 3L, p_style = "apa", threshold = 0.001)
+    ),
+    spanners = NULL,
+    ci_pairs = list(),
     format_spec = list(decimal_mark = ".")
   )
   expect_warning(
@@ -113,16 +127,13 @@ test_that("structured body validates p-value range invariant", {
 
 test_that("structured body validates LL <= UL invariant", {
   fake_struct <- list(
-    body = data.frame(Variable = "a",
-                       LL = 0.5,
-                       UL = 0.2),
+    body = data.frame(Variable = "a", LL = 0.5, UL = 0.2),
     reference_rows = integer(0),
     factor_header_rows = integer(0),
     fit_stat_rows = integer(0),
     level_rows = integer(0),
     outcome_row = integer(0),
-    col_meta = list(LL = list(precision = 2L),
-                     UL = list(precision = 2L)),
+    col_meta = list(LL = list(precision = 2L), UL = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(list(label = "95% CI", cols = c(2L, 3L))),
     format_spec = list(decimal_mark = ".")
@@ -142,7 +153,8 @@ test_that("structured body validates decimal_mark", {
     level_rows = integer(0),
     outcome_row = integer(0),
     col_meta = list(B = list(precision = 2L)),
-    spanners = NULL, ci_pairs = list(),
+    spanners = NULL,
+    ci_pairs = list(),
     format_spec = list(decimal_mark = "x")
   )
   expect_warning(
@@ -165,7 +177,8 @@ test_that(".validate_structured warns with a classed spicy condition", {
     level_rows = integer(0),
     outcome_row = integer(0),
     col_meta = list(B = list(precision = 2L)),
-    spanners = NULL, ci_pairs = list(),
+    spanners = NULL,
+    ci_pairs = list(),
     format_spec = list(decimal_mark = "x")
   )
   expect_warning(
@@ -187,11 +200,24 @@ test_that("as_structured() returns the typed view with the documented schema", {
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   tbl <- table_regression(m1, show_columns = c("b", "se", "ci", "p"))
   s <- as_structured(tbl)
-  expect_named(s, c("body", "reference_rows", "reference_models_by_row",
-                     "factor_header_rows", "fit_stat_rows", "level_rows",
-                     "outcome_row", "outcome_labels_by_col",
-                     "col_meta", "spanners", "ci_pairs", "format_spec"),
-               ignore.order = TRUE)
+  expect_named(
+    s,
+    c(
+      "body",
+      "reference_rows",
+      "reference_models_by_row",
+      "factor_header_rows",
+      "fit_stat_rows",
+      "level_rows",
+      "outcome_row",
+      "outcome_labels_by_col",
+      "col_meta",
+      "spanners",
+      "ci_pairs",
+      "format_spec"
+    ),
+    ignore.order = TRUE
+  )
   # Body has typed columns (numeric where applicable).
   expect_type(s$body$Variable, "character")
   expect_true(is.numeric(s$body$B))

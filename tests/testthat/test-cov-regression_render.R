@@ -12,19 +12,30 @@
 mt <- mtcars
 mt$cyl <- factor(mt$cyl)
 
-mk_frame_lm <- function(formula, model_id, data = mt,
-                         show_columns = c("b", "se", "ci", "p")) {
+mk_frame_lm <- function(
+  formula,
+  model_id,
+  data = mt,
+  show_columns = c("b", "se", "ci", "p")
+) {
   fit <- lm(formula, data = data)
-  spicy:::as_regression_frame(fit, model_id = model_id,
-                              show_columns = show_columns)
+  spicy:::as_regression_frame(
+    fit,
+    model_id = model_id,
+    show_columns = show_columns
+  )
 }
 
-mk_aligned <- function(formulas, ids,
-                        show_columns = c("b", "se", "ci", "p"),
-                        ...) {
+mk_aligned <- function(
+  formulas,
+  ids,
+  show_columns = c("b", "se", "ci", "p"),
+  ...
+) {
   frames <- Map(
     function(f, i) mk_frame_lm(f, i, show_columns = show_columns),
-    formulas, ids
+    formulas,
+    ids
   )
   spicy:::align_frames(frames, model_ids = unlist(ids), ...)
 }
@@ -63,7 +74,8 @@ test_that("render – outcome falls back to coefs$outcome when fit_stats outcome
 
   # Explicit outcome_labels so the Outcome row is actually emitted.
   rt <- spicy:::render_regression_table(
-    aligned, outcome_labels = c("MPG", "Horsepower")
+    aligned,
+    outcome_labels = c("MPG", "Horsepower")
   )
   outcome_row <- rt[rt$Variable == "Outcome", , drop = FALSE]
   expect_equal(nrow(outcome_row), 1L)
@@ -112,11 +124,14 @@ test_that("build_model_spanners – returns NULL when no model column survives i
   # the body has none of the spec's columns -> every model is skipped and
   # `out` stays empty -> line 404 returns NULL.
   cs <- spicy:::build_column_spec(
-    c("b"), c("X1", "X2"), setNames(c("A", "B"), c("X1", "X2"))
+    c("b"),
+    c("X1", "X2"),
+    setNames(c("A", "B"), c("X1", "X2"))
   )
   sp <- spicy:::build_model_spanners(
-    data.frame(Variable = 1),          # body lacks all spec col_names
-    cs, setNames(c("A", "B"), c("X1", "X2"))
+    data.frame(Variable = 1), # body lacks all spec col_names
+    cs,
+    setNames(c("A", "B"), c("X1", "X2"))
   )
   expect_null(sp)
 })
@@ -128,19 +143,29 @@ test_that("build_model_spanners – returns NULL when no model column survives i
 
 test_that("format_term_label – reference row with NA factor_level uses the term", {
   tr <- data.frame(
-    term = "grpRef", order_idx = 1L, is_reference = TRUE,
-    is_intercept = FALSE, factor_term = NA_character_,
-    factor_level = NA_character_, stringsAsFactors = FALSE
+    term = "grpRef",
+    order_idx = 1L,
+    is_reference = TRUE,
+    is_intercept = FALSE,
+    factor_term = NA_character_,
+    factor_level = NA_character_,
+    stringsAsFactors = FALSE
   )
   flat <- spicy:::format_term_label(
-    tr, reference_label = "(ref.)", reference_style = "row",
-    group_factor_levels = FALSE, labels = NULL
+    tr,
+    reference_label = "(ref.)",
+    reference_style = "row",
+    group_factor_levels = FALSE,
+    labels = NULL
   )
   expect_identical(flat, "grpRef (ref.)")
 
   grouped <- spicy:::format_term_label(
-    tr, reference_label = "(ref.)", reference_style = "row",
-    group_factor_levels = TRUE, labels = NULL
+    tr,
+    reference_label = "(ref.)",
+    reference_style = "row",
+    group_factor_levels = TRUE,
+    labels = NULL
   )
   expect_identical(grouped, "  grpRef (ref.)")
 })
@@ -154,7 +179,9 @@ test_that("build_outcome_row – skips a model with no column", {
   # col_spec covers ONLY M1; model_ids includes M2 so its first column
   # resolves to NA and is skipped.
   col_spec_m1 <- spicy:::build_column_spec(
-    c("b", "p"), c("M1"), setNames("Model 1", "M1")
+    c("b", "p"),
+    c("M1"),
+    setNames("Model 1", "M1")
   )
   orow <- spicy:::build_outcome_row(
     outcome_labels = c("MPG", "Horsepower"),
@@ -166,13 +193,18 @@ test_that("build_outcome_row – skips a model with no column", {
   expect_identical(orow$Variable, "Outcome")
   # M1's outcome label lands in M1's first column; M2 silently absent.
   expect_true(any(vapply(orow, function(x) identical(x, "MPG"), logical(1))))
-  expect_false(any(vapply(orow, function(x) identical(x, "Horsepower"),
-                          logical(1))))
+  expect_false(any(vapply(
+    orow,
+    function(x) identical(x, "Horsepower"),
+    logical(1)
+  )))
 })
 
 test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
   col_spec <- spicy:::build_column_spec(
-    c("b"), c("M1", "M2"), setNames(c("Model 1", "Model 2"), c("M1", "M2"))
+    c("b"),
+    c("M1", "M2"),
+    setNames(c("Model 1", "Model 2"), c("M1", "M2"))
   )
   # outcome_labels = FALSE -> suppressed (line 771).
   expect_null(spicy:::build_outcome_row(
@@ -199,7 +231,9 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
   # reason NULL can come back here (FALSE-suppress at 771 and
   # NULL-auto-hide at 782 are both bypassed).
   col_spec_m1 <- spicy:::build_column_spec(
-    c("b"), c("M1"), setNames("Model 1", "M1")
+    c("b"),
+    c("M1"),
+    setNames("Model 1", "M1")
   )
   expect_null(spicy:::build_outcome_row(
     outcome_labels = "MPG",
@@ -218,8 +252,11 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
   )
   expect_false(is.null(two_model))
   expect_identical(two_model$Variable, "Outcome")
-  expect_true(any(vapply(two_model, function(x) identical(x, "MPG"),
-                         logical(1))))
+  expect_true(any(vapply(
+    two_model,
+    function(x) identical(x, "MPG"),
+    logical(1)
+  )))
 })
 
 
@@ -229,22 +266,36 @@ test_that("build_outcome_row – FALSE / single model / NULL return NULL", {
 
 test_that("build_fit_stats_rows – empty show_fit_stats or empty col_spec returns list()", {
   col_spec <- spicy:::build_column_spec(
-    c("b", "p"), c("M1"), setNames("", "M1")
+    c("b", "p"),
+    c("M1"),
+    setNames("", "M1")
   )
   fs <- data.frame(model_id = "M1", nobs = 10L, stringsAsFactors = FALSE)
   expect_identical(
     spicy:::build_fit_stats_rows(
-      fs, show_fit_stats = character(0), model_ids = "M1",
-      label_map = setNames("", "M1"), col_spec = col_spec,
-      digits = 2, fit_digits = 2, ic_digits = 1, decimal_mark = "."
+      fs,
+      show_fit_stats = character(0),
+      model_ids = "M1",
+      label_map = setNames("", "M1"),
+      col_spec = col_spec,
+      digits = 2,
+      fit_digits = 2,
+      ic_digits = 1,
+      decimal_mark = "."
     ),
     list()
   )
   expect_identical(
     spicy:::build_fit_stats_rows(
-      fs, show_fit_stats = "nobs", model_ids = "M1",
-      label_map = setNames("", "M1"), col_spec = list(),
-      digits = 2, fit_digits = 2, ic_digits = 1, decimal_mark = "."
+      fs,
+      show_fit_stats = "nobs",
+      model_ids = "M1",
+      label_map = setNames("", "M1"),
+      col_spec = list(),
+      digits = 2,
+      fit_digits = 2,
+      ic_digits = 1,
+      decimal_mark = "."
     ),
     list()
   )
@@ -252,17 +303,23 @@ test_that("build_fit_stats_rows – empty show_fit_stats or empty col_spec retur
 
 test_that("build_fit_stats_rows – skips token absent from schema and model absent from data", {
   col_spec <- spicy:::build_column_spec(
-    c("b", "p"), c("M1", "M2"),
+    c("b", "p"),
+    c("M1", "M2"),
     setNames(c("Model 1", "Model 2"), c("M1", "M2"))
   )
   # `r2` is NOT a column of fs -> token-skip branch (line 834).
   # M2 has no fit_stats row -> per-model skip branch (line 841).
   fs <- data.frame(model_id = "M1", nobs = 20L, stringsAsFactors = FALSE)
   rows <- spicy:::build_fit_stats_rows(
-    fs, show_fit_stats = c("nobs", "r2"), model_ids = c("M1", "M2"),
+    fs,
+    show_fit_stats = c("nobs", "r2"),
+    model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
     col_spec = col_spec,
-    digits = 2, fit_digits = 2, ic_digits = 1, decimal_mark = "."
+    digits = 2,
+    fit_digits = 2,
+    ic_digits = 1,
+    decimal_mark = "."
   )
   # Only the nobs row survives; r2 was dropped.
   expect_length(rows, 1L)
@@ -276,15 +333,25 @@ test_that("build_fit_stats_rows – skips a model whose first column is missing"
   # col_spec covers only M1; model_ids names M2 too -> M2's target_col
   # resolves to NA and is skipped (line 839).
   col_spec_m1 <- spicy:::build_column_spec(
-    c("b", "p"), c("M1"), setNames("Model 1", "M1")
+    c("b", "p"),
+    c("M1"),
+    setNames("Model 1", "M1")
   )
-  fs <- data.frame(model_id = c("M1", "M2"), nobs = c(20L, 20L),
-                   stringsAsFactors = FALSE)
+  fs <- data.frame(
+    model_id = c("M1", "M2"),
+    nobs = c(20L, 20L),
+    stringsAsFactors = FALSE
+  )
   rows <- spicy:::build_fit_stats_rows(
-    fs, show_fit_stats = "nobs", model_ids = c("M1", "M2"),
+    fs,
+    show_fit_stats = "nobs",
+    model_ids = c("M1", "M2"),
     label_map = setNames(c("Model 1", "Model 2"), c("M1", "M2")),
     col_spec = col_spec_m1,
-    digits = 2, fit_digits = 2, ic_digits = 1, decimal_mark = "."
+    digits = 2,
+    fit_digits = 2,
+    ic_digits = 1,
+    decimal_mark = "."
   )
   expect_length(rows, 1L)
   expect_identical(rows[[1]]$Variable, "n")
@@ -298,17 +365,17 @@ test_that("build_fit_stats_rows – skips a model whose first column is missing"
 # ============================================================================
 
 test_that("fit_stat_label – maps the remaining tokens to APA labels", {
-  expect_identical(spicy:::fit_stat_label("weighted_nobs"),   "Weighted n")
-  expect_identical(spicy:::fit_stat_label("rmse"),            "RMSE")
-  expect_identical(spicy:::fit_stat_label("f2"),              "f²")
-  expect_identical(spicy:::fit_stat_label("aicc"),            "AICc")
-  expect_identical(spicy:::fit_stat_label("adj_r2_change"),   "ΔAdj.R²")
-  expect_identical(spicy:::fit_stat_label("f2_change"),       "Δf²")
-  expect_identical(spicy:::fit_stat_label("lrt_change"),      "Δχ²")
-  expect_identical(spicy:::fit_stat_label("aicc_change"),     "ΔAICc")
+  expect_identical(spicy:::fit_stat_label("weighted_nobs"), "Weighted n")
+  expect_identical(spicy:::fit_stat_label("rmse"), "RMSE")
+  expect_identical(spicy:::fit_stat_label("f2"), "f²")
+  expect_identical(spicy:::fit_stat_label("aicc"), "AICc")
+  expect_identical(spicy:::fit_stat_label("adj_r2_change"), "ΔAdj.R²")
+  expect_identical(spicy:::fit_stat_label("f2_change"), "Δf²")
+  expect_identical(spicy:::fit_stat_label("lrt_change"), "Δχ²")
+  expect_identical(spicy:::fit_stat_label("aicc_change"), "ΔAICc")
   expect_identical(spicy:::fit_stat_label("deviance_change"), "ΔDeviance")
   # Unknown token falls through to the identity default (line 889).
-  expect_identical(spicy:::fit_stat_label("not_a_token"),     "not_a_token")
+  expect_identical(spicy:::fit_stat_label("not_a_token"), "not_a_token")
 })
 
 
@@ -324,6 +391,6 @@ test_that("resolve_stars_thresholds – unnamed numeric or non-numeric returns N
 })
 
 test_that("format_stars – NULL map or NA p returns empty string", {
-  expect_identical(spicy:::format_stars(0.001, NULL), "")          # NULL map
-  expect_identical(spicy:::format_stars(NA_real_, c("*" = 0.05)), "")  # NA p
+  expect_identical(spicy:::format_stars(0.001, NULL), "") # NULL map
+  expect_identical(spicy:::format_stars(NA_real_, c("*" = 0.05)), "") # NA p
 })

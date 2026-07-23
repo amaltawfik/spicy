@@ -2,7 +2,6 @@
 # Phase 6g tests: as_regression_frame() methods for rms fits.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_ols_basic <- function() {
@@ -22,13 +21,13 @@
 .fit_cph_basic <- function() {
   skip_if_not_installed("rms")
   skip_if_not_installed("survival")
-  rms::cph(survival::Surv(time, status) ~ age + sex,
-           data = survival::lung)
+  rms::cph(survival::Surv(time, status) ~ age + sex, data = survival::lung)
 }
 
 .fit_Glm_poisson <- function() {
   skip_if_not_installed("rms")
-  d <- mtcars; d$am_num <- as.numeric(d$am)
+  d <- mtcars
+  d$am_num <- as.numeric(d$am)
   rms::Glm(am_num ~ wt + cyl, data = d, family = poisson)
 }
 
@@ -81,21 +80,27 @@ test_that("ols: coefs estimates match stats::coef(fit)", {
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (raw_nm in names(legacy)) {
     nm <- if (raw_nm == "Intercept") "(Intercept)" else raw_nm
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[raw_nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[raw_nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
 test_that("ols: r2 + sigma from fit$stats", {
   fit <- .fit_ols_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$r_squared,
-               as.numeric(fit$stats["R2"]),
-               tolerance = 1e-10)
-  expect_equal(fr$info$fit_stats$sigma,
-               as.numeric(fit$stats["Sigma"]),
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$r_squared,
+    as.numeric(fit$stats["R2"]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    fr$info$fit_stats$sigma,
+    as.numeric(fit$stats["Sigma"]),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -129,7 +134,7 @@ test_that("lrm: family is binomial/logit", {
   fit <- .fit_lrm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "binomial")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
 })
 
 test_that("lrm: title_prefix = 'Logistic regression (rms)'", {
@@ -179,15 +184,18 @@ test_that("cph: info$class is 'cph'", {
 test_that("cph: title_prefix names Cox PH", {
   fit <- .fit_cph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "Cox proportional hazards",
-               fixed = TRUE)
+  expect_match(
+    fr$info$extras$title_prefix,
+    "Cox proportional hazards",
+    fixed = TRUE
+  )
 })
 
 test_that("cph: family is cox/log", {
   fit <- .fit_cph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "cox")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 })
 
 test_that("cph: dv is full Surv(...) LHS expression", {
@@ -213,7 +221,7 @@ test_that("Glm Poisson: schema valid; family poisson/log", {
   expect_invisible(spicy:::validate_regression_frame(fr))
   expect_identical(fr$info$class, "Glm")
   expect_identical(fr$info$family$family, "poisson")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
   expect_match(fr$info$extras$title_prefix, "Poisson", fixed = TRUE)
 })
 

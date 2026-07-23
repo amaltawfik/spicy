@@ -2,7 +2,6 @@
 # Phase 7c1 tests: random-effects footer block for mixed-effects fits.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lmer_re <- function() {
@@ -17,8 +16,11 @@
 
 .fit_lme_re <- function() {
   skip_if_not_installed("nlme")
-  nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-            random = ~ 1 | Subject)
+  nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
 }
 
 .fit_lm_no_re <- function() {
@@ -38,7 +40,7 @@ test_that("random effects footer fires for lmer fits (method + LR test)", {
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_true(is.character(out))
   expect_match(out, "Random effects (REML)", fixed = TRUE)
-  expect_match(out, "LR test",               fixed = TRUE)
+  expect_match(out, "LR test", fixed = TRUE)
   # N / ICC moved to fit-stat rows -- no longer in the footer.
   expect_false(grepl("18 Subjects", out, fixed = TRUE))
   expect_false(grepl("ICC", out, fixed = TRUE))
@@ -50,7 +52,7 @@ test_that("random effects footer fires for glmmTMB Gaussian-identity fits", {
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_true(is.character(out))
   expect_match(out, "Random effects", fixed = TRUE)
-  expect_match(out, "LR test",        fixed = TRUE)
+  expect_match(out, "LR test", fixed = TRUE)
 })
 
 test_that("random effects footer fires for nlme::lme fits", {
@@ -58,7 +60,7 @@ test_that("random effects footer fires for nlme::lme fits", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_match(out, "Random effects (REML)", fixed = TRUE)
-  expect_match(out, "LR test",               fixed = TRUE)
+  expect_match(out, "LR test", fixed = TRUE)
 })
 
 
@@ -75,8 +77,11 @@ test_that("random effects footer annotates lmer (REML default) with '(REML)'", {
 
 test_that("random effects footer annotates lmer (REML=FALSE) with '(ML)'", {
   skip_if_not_installed("lme4")
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject),
-                    data = lme4::sleepstudy, REML = FALSE)
+  fit <- lme4::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy,
+    REML = FALSE
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_match(out, "Random effects (ML):", fixed = TRUE)
@@ -84,7 +89,8 @@ test_that("random effects footer annotates lmer (REML=FALSE) with '(ML)'", {
 
 test_that("random effects footer annotates glmer with '(ML)' (REML undefined for GLMM)", {
   skip_if_not_installed("lme4")
-  d <- mtcars; d$cyl <- factor(d$cyl)
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
   suppressMessages(suppressWarnings(
     fit <- lme4::glmer(am ~ mpg + (1 | cyl), data = d, family = binomial)
   ))
@@ -103,8 +109,12 @@ test_that("random effects footer annotates lme (REML default) with '(REML)'", {
 
 test_that("random effects footer annotates lme (method='ML') with '(ML)'", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-                   random = ~ 1 | Subject, method = "ML")
+  fit <- nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject,
+    method = "ML"
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_match(out, "Random effects (ML):", fixed = TRUE)
@@ -112,8 +122,10 @@ test_that("random effects footer annotates lme (method='ML') with '(ML)'", {
 
 test_that("random effects footer annotates glmmTMB (default ML) with '(ML)'", {
   skip_if_not_installed("glmmTMB")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                           data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_match(out, "Random effects (ML):", fixed = TRUE)
@@ -121,8 +133,11 @@ test_that("random effects footer annotates glmmTMB (default ML) with '(ML)'", {
 
 test_that("random effects footer annotates glmmTMB (REML=TRUE) with '(REML)'", {
   skip_if_not_installed("glmmTMB")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                           data = lme4::sleepstudy, REML = TRUE)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy,
+    REML = TRUE
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(list(fr))
   expect_match(out, "Random effects (REML):", fixed = TRUE)
@@ -150,9 +165,9 @@ test_that("table_regression() footer carries the Random effects panel for lmer",
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
   # Phase 7c7c: structured panel format
-  expect_match(combined, "Random effects",     fixed = TRUE)
+  expect_match(combined, "Random effects", fixed = TRUE)
   expect_match(combined, "σ Subject (Intercept)", fixed = TRUE)
-  expect_match(combined, "N (Subject)",        fixed = TRUE)
+  expect_match(combined, "N (Subject)", fixed = TRUE)
 })
 
 test_that("table_regression() footer does NOT carry Random effects for lm", {
@@ -168,12 +183,11 @@ test_that("table_regression() footer does NOT carry Random effects for lm", {
 test_that("random effects footer prefixes per model for multi-model lists", {
   fit_lmer <- .fit_lmer_re()
   fr_lmer <- as_regression_frame(fit_lmer, model_id = "M1")
-  fit_lme  <- .fit_lme_re()
-  fr_lme  <- as_regression_frame(fit_lme, model_id = "M2")
+  fit_lme <- .fit_lme_re()
+  fr_lme <- as_regression_frame(fit_lme, model_id = "M2")
   out <- spicy:::build_random_effects_footer_block_from_frames(
-    list(fr_lmer, fr_lme))
+    list(fr_lmer, fr_lme)
+  )
   expect_match(out, "Model 1:", fixed = TRUE)
   expect_match(out, "Model 2:", fixed = TRUE)
 })
-
-

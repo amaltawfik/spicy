@@ -45,8 +45,10 @@ test_that("validate_models_input – class without `as_regression_frame` method 
     error = function(e) e
   )
   expect_s3_class(err, "spicy_unsupported")
-  expect_match(conditionMessage(err),
-               "no `as_regression_frame\\(\\)` method registered")
+  expect_match(
+    conditionMessage(err),
+    "no `as_regression_frame\\(\\)` method registered"
+  )
 })
 
 test_that("validate_models_input – other class errors with 'open an issue' hint", {
@@ -94,7 +96,9 @@ test_that("validate_token_vector – duplicates error spicy_invalid_input", {
 test_that("validate_token_vector – non-character errors", {
   expect_error(
     spicy:::validate_token_vector(
-      1:3, valid = c("B"), arg = "show_columns"
+      1:3,
+      valid = c("B"),
+      arg = "show_columns"
     ),
     class = "spicy_invalid_input"
   )
@@ -136,7 +140,9 @@ test_that("validate_vcov_cluster_lists – list element not a single string erro
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     spicy:::validate_vcov_cluster_lists(
-      vcov = list(c("HC3", "HC0")), cluster = NULL, models = list(fit)
+      vcov = list(c("HC3", "HC0")),
+      cluster = NULL,
+      models = list(fit)
     ),
     class = "spicy_invalid_input"
   )
@@ -148,7 +154,7 @@ test_that("validate_vcov_cluster_lists – cluster list length mismatch errors",
   expect_error(
     spicy:::validate_vcov_cluster_lists(
       vcov = list("classical", "classical"),
-      cluster = list(NULL),                # length 1 vs 2 models
+      cluster = list(NULL), # length 1 vs 2 models
       models = list(fit1, fit2)
     ),
     class = "spicy_invalid_input"
@@ -159,7 +165,9 @@ test_that("validate_vcov_cluster_lists – cluster vector length mismatch errors
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     spicy:::validate_vcov_cluster_lists(
-      vcov = "CR2", cluster = 1:5, models = list(fit)
+      vcov = "CR2",
+      cluster = 1:5,
+      models = list(fit)
     ),
     class = "spicy_invalid_input"
   )
@@ -173,12 +181,14 @@ test_that("validate_vcov_cluster_lists – cluster vector length mismatch errors
 test_that("detect_ame_satterthwaite_path – TRUE only when ame requested AND any vcov is CR*", {
   expect_true(spicy:::detect_ame_satterthwaite_path("CR2", c("b", "ame")))
   expect_true(spicy:::detect_ame_satterthwaite_path(
-    list("CR2", "classical"), c("b", "ame")
+    list("CR2", "classical"),
+    c("b", "ame")
   ))
   expect_false(spicy:::detect_ame_satterthwaite_path("HC3", c("b", "ame")))
   expect_false(spicy:::detect_ame_satterthwaite_path("CR2", c("b", "p")))
   expect_false(spicy:::detect_ame_satterthwaite_path(
-    list("classical", "HC3"), c("b", "ame")
+    list("classical", "HC3"),
+    c("b", "ame")
   ))
 })
 
@@ -219,9 +229,15 @@ test_that("emit_standardized_caveat – refit method uses 'after refit' wording"
 
 test_that("emit_standardized_caveat – silent when 'none' or no non-additive terms", {
   fit_add <- lm(mpg ~ wt + cyl, data = mt)
-  expect_silent(spicy:::emit_standardized_caveat_if_needed(list(fit_add), "refit"))
+  expect_silent(spicy:::emit_standardized_caveat_if_needed(
+    list(fit_add),
+    "refit"
+  ))
   fit_int <- lm(mpg ~ wt * cyl, data = mt)
-  expect_silent(spicy:::emit_standardized_caveat_if_needed(list(fit_int), "none"))
+  expect_silent(spicy:::emit_standardized_caveat_if_needed(
+    list(fit_int),
+    "none"
+  ))
 })
 
 
@@ -231,31 +247,41 @@ test_that("emit_standardized_caveat – silent when 'none' or no non-additive te
 
 test_that("validate_output_resources – excel without path errors", {
   expect_error(
-    spicy:::validate_output_resources("excel", excel_path = NULL,
-                                       word_path = NULL),
+    spicy:::validate_output_resources(
+      "excel",
+      excel_path = NULL,
+      word_path = NULL
+    ),
     class = "spicy_invalid_input"
   )
 })
 
 test_that("validate_output_resources – word without path errors", {
   expect_error(
-    spicy:::validate_output_resources("word", excel_path = NULL,
-                                       word_path = NULL),
+    spicy:::validate_output_resources(
+      "word",
+      excel_path = NULL,
+      word_path = NULL
+    ),
     class = "spicy_invalid_input"
   )
 })
 
 test_that("validate_output_resources – non-existent directory errors", {
   expect_error(
-    spicy:::validate_output_resources("excel",
-                                       excel_path = "/no/such/dir/x.xlsx",
-                                       word_path = NULL),
+    spicy:::validate_output_resources(
+      "excel",
+      excel_path = "/no/such/dir/x.xlsx",
+      word_path = NULL
+    ),
     class = "spicy_invalid_input"
   )
   expect_error(
-    spicy:::validate_output_resources("word",
-                                       excel_path = NULL,
-                                       word_path = "/no/such/dir/x.docx"),
+    spicy:::validate_output_resources(
+      "word",
+      excel_path = NULL,
+      word_path = "/no/such/dir/x.docx"
+    ),
     class = "spicy_invalid_input"
   )
 })

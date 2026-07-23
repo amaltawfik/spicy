@@ -5,7 +5,6 @@
 # end-to-end rendering.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_lmer_ns <- function() {
@@ -16,8 +15,11 @@
 .fit_glmer_ns <- function() {
   skip_if_not_installed("lme4")
   suppressMessages(suppressWarnings(
-    lme4::glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
-                 data = lme4::cbpp, family = binomial)
+    lme4::glmer(
+      cbind(incidence, size - incidence) ~ period + (1 | herd),
+      data = lme4::cbpp,
+      family = binomial
+    )
   ))
 }
 
@@ -44,10 +46,12 @@ test_that("lmer fit_stats has r2_marginal and r2_conditional fields", {
   expect_true(is.finite(fs$r2_marginal))
   expect_true(is.finite(fs$r2_conditional))
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-8)
-  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-8)
+  expect_equal(fs$r2_marginal, as.numeric(oracle$R2_marginal), tolerance = 1e-8)
+  expect_equal(
+    fs$r2_conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-8
+  )
 })
 
 test_that("glmer fit_stats has r2_marginal and r2_conditional fields", {
@@ -62,10 +66,12 @@ test_that("glmer fit_stats has r2_marginal and r2_conditional fields", {
   # cbind() binomial goes through the performance fallback, so the frame
   # value must agree with the oracle exactly.
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-8)
-  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-8)
+  expect_equal(fs$r2_marginal, as.numeric(oracle$R2_marginal), tolerance = 1e-8)
+  expect_equal(
+    fs$r2_conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-8
+  )
 })
 
 test_that("glmmTMB fit_stats has r2_marginal and r2_conditional fields", {
@@ -78,10 +84,12 @@ test_that("glmmTMB fit_stats has r2_marginal and r2_conditional fields", {
   expect_true(is.finite(fs$r2_marginal))
   expect_true(is.finite(fs$r2_conditional))
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-8)
-  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-8)
+  expect_equal(fs$r2_marginal, as.numeric(oracle$R2_marginal), tolerance = 1e-8)
+  expect_equal(
+    fs$r2_conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-8
+  )
 })
 
 test_that("lme fit_stats has r2_marginal and r2_conditional fields", {
@@ -94,10 +102,12 @@ test_that("lme fit_stats has r2_marginal and r2_conditional fields", {
   expect_true(is.finite(fs$r2_marginal))
   expect_true(is.finite(fs$r2_conditional))
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-8)
-  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-8)
+  expect_equal(fs$r2_marginal, as.numeric(oracle$R2_marginal), tolerance = 1e-8)
+  expect_equal(
+    fs$r2_conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-8
+  )
 })
 
 
@@ -109,10 +119,16 @@ test_that("lmer R^2 matches performance::r2_nakagawa() to 1e-10", {
   fr <- as_regression_frame(fit, model_id = "M1")
   fs <- fr$info$fit_stats
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-10)
-  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-10)
+  expect_equal(
+    fs$r2_marginal,
+    as.numeric(oracle$R2_marginal),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    fs$r2_conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-10
+  )
 })
 
 test_that("glmmTMB R^2 matches performance::r2_nakagawa() to 1e-10", {
@@ -121,10 +137,16 @@ test_that("glmmTMB R^2 matches performance::r2_nakagawa() to 1e-10", {
   fr <- as_regression_frame(fit, model_id = "M1")
   fs <- fr$info$fit_stats
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-10)
-  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-10)
+  expect_equal(
+    fs$r2_marginal,
+    as.numeric(oracle$R2_marginal),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    fs$r2_conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-10
+  )
 })
 
 test_that("lme R^2 matches performance::r2_nakagawa() to 1e-10", {
@@ -133,10 +155,16 @@ test_that("lme R^2 matches performance::r2_nakagawa() to 1e-10", {
   fr <- as_regression_frame(fit, model_id = "M1")
   fs <- fr$info$fit_stats
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(fs$r2_marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-10)
-  expect_equal(fs$r2_conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-10)
+  expect_equal(
+    fs$r2_marginal,
+    as.numeric(oracle$R2_marginal),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    fs$r2_conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -160,7 +188,7 @@ test_that("Gaussian lmer R^2 matches manual variance-decomposition formula", {
 
   fr <- as_regression_frame(fit, model_id = "M1")
   fs <- fr$info$fit_stats
-  expect_equal(fs$r2_marginal,    r2_m, tolerance = 1e-6)
+  expect_equal(fs$r2_marginal, r2_m, tolerance = 1e-6)
   expect_equal(fs$r2_conditional, r2_c, tolerance = 1e-6)
 })
 
@@ -169,7 +197,7 @@ test_that("Gaussian lmer R^2 matches manual variance-decomposition formula", {
 
 test_that(".regression_tokens$show_fit_stats includes the two new tokens", {
   toks <- spicy:::.regression_tokens$show_fit_stats
-  expect_true("r2_marginal"    %in% toks)
+  expect_true("r2_marginal" %in% toks)
   expect_true("r2_conditional" %in% toks)
 })
 
@@ -183,7 +211,7 @@ test_that("validate_show_fit_stats accepts r2_marginal + r2_conditional", {
 # ---- 5. Renderer label + precision --------------------------------------
 
 test_that("fit_stat_label() returns the APA-style label for the two tokens", {
-  expect_identical(spicy:::fit_stat_label("r2_marginal"),    "R² (marginal)")
+  expect_identical(spicy:::fit_stat_label("r2_marginal"), "R² (marginal)")
   expect_identical(spicy:::fit_stat_label("r2_conditional"), "R² (conditional)")
 })
 
@@ -195,11 +223,11 @@ test_that("default show_fit_stats for lmer includes Nakagawa R^2 + AIC + BIC", {
   fit <- .fit_lmer_ns()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "n",                fixed = TRUE)
-  expect_match(combined, "R² (marginal)",     fixed = TRUE)
-  expect_match(combined, "R² (conditional)",  fixed = TRUE)
-  expect_match(combined, "AIC",              fixed = TRUE)
-  expect_match(combined, "BIC",              fixed = TRUE)
+  expect_match(combined, "n", fixed = TRUE)
+  expect_match(combined, "R² (marginal)", fixed = TRUE)
+  expect_match(combined, "R² (conditional)", fixed = TRUE)
+  expect_match(combined, "AIC", fixed = TRUE)
+  expect_match(combined, "BIC", fixed = TRUE)
 })
 
 test_that("default show_fit_stats for lme includes Nakagawa R^2 + AIC + BIC", {
@@ -207,8 +235,8 @@ test_that("default show_fit_stats for lme includes Nakagawa R^2 + AIC + BIC", {
   fit <- .fit_lme_ns()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "R² (marginal)",     fixed = TRUE)
-  expect_match(combined, "R² (conditional)",  fixed = TRUE)
+  expect_match(combined, "R² (marginal)", fixed = TRUE)
+  expect_match(combined, "R² (conditional)", fixed = TRUE)
 })
 
 
@@ -218,9 +246,9 @@ test_that("lm output still uses classical R^2, NOT Nakagawa", {
   fit <- lm(mpg ~ wt + cyl, data = mtcars)
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "R²",          fixed = TRUE)
-  expect_false(grepl("R² (marginal)",     combined, fixed = TRUE))
-  expect_false(grepl("R² (conditional)",  combined, fixed = TRUE))
+  expect_match(combined, "R²", fixed = TRUE)
+  expect_false(grepl("R² (marginal)", combined, fixed = TRUE))
+  expect_false(grepl("R² (conditional)", combined, fixed = TRUE))
 })
 
 
@@ -230,7 +258,7 @@ test_that(".nakagawa_r2 returns NA list when performance is missing", {
   # Simulate performance-missing by stubbing requireNamespace.
   with_mocked_bindings(
     {
-      out <- spicy:::.nakagawa_r2(list())  # input doesn't matter
+      out <- spicy:::.nakagawa_r2(list()) # input doesn't matter
       expect_true(is.list(out))
       expect_true(is.na(out$marginal))
       expect_true(is.na(out$conditional))
@@ -254,8 +282,10 @@ test_that("self-impl handles Gaussian lmer without falling through to performanc
 test_that("self-impl handles Bernoulli glmer without falling through", {
   skip_if_not_installed("lme4")
   set.seed(1)
-  n <- 300; g <- factor(rep(1:15, length.out = n))
-  x <- rnorm(n); b0 <- rnorm(15)[g]
+  n <- 300
+  g <- factor(rep(1:15, length.out = n))
+  x <- rnorm(n)
+  b0 <- rnorm(15)[g]
   y <- rbinom(n, 1, plogis(0.5 + 0.8 * x + b0))
   fit <- lme4::glmer(y ~ x + (1 | g), family = binomial)
   comps <- spicy:::.nakagawa_components(fit)
@@ -266,9 +296,9 @@ test_that("self-impl handles Bernoulli glmer without falling through", {
 
 test_that("self-impl refuses cbind() binomial -> falls through to performance", {
   skip_if_not_installed("lme4")
-  fit <- .fit_glmer_ns()  # cbpp uses cbind(succ, fail)
+  fit <- .fit_glmer_ns() # cbpp uses cbind(succ, fail)
   comps <- spicy:::.nakagawa_components(fit)
-  expect_null(comps)  # gate rejects it
+  expect_null(comps) # gate rejects it
   # But .nakagawa_r2() still returns finite values via fallback
   skip_if_not_installed("performance")
   out <- spicy:::.nakagawa_r2(fit)
@@ -276,17 +306,21 @@ test_that("self-impl refuses cbind() binomial -> falls through to performance", 
   expect_true(is.finite(out$conditional))
   # The fallback IS performance::r2_nakagawa(), so equality is exact.
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(out$marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-10)
-  expect_equal(out$conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-10)
+  expect_equal(out$marginal, as.numeric(oracle$R2_marginal), tolerance = 1e-10)
+  expect_equal(
+    out$conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-10
+  )
 })
 
 test_that("self-impl handles Poisson(log) glmer without falling through", {
   skip_if_not_installed("lme4")
   set.seed(2)
-  n <- 300; g <- factor(rep(1:15, length.out = n))
-  x <- rnorm(n); b0 <- rnorm(15, 0, 0.3)[g]
+  n <- 300
+  g <- factor(rep(1:15, length.out = n))
+  x <- rnorm(n)
+  b0 <- rnorm(15, 0, 0.3)[g]
   y <- rpois(n, exp(1 + 0.3 * x + b0))
   fit <- lme4::glmer(y ~ x + (1 | g), family = poisson)
   comps <- spicy:::.nakagawa_components(fit)
@@ -298,16 +332,20 @@ test_that("self-impl matches oracle for Poisson(log) glmer", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("performance")
   set.seed(2)
-  n <- 300; g <- factor(rep(1:15, length.out = n))
-  x <- rnorm(n); b0 <- rnorm(15, 0, 0.3)[g]
+  n <- 300
+  g <- factor(rep(1:15, length.out = n))
+  x <- rnorm(n)
+  b0 <- rnorm(15, 0, 0.3)[g]
   y <- rpois(n, exp(1 + 0.3 * x + b0))
   fit <- lme4::glmer(y ~ x + (1 | g), family = poisson)
   out <- spicy:::.nakagawa_r2(fit)
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(out$marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-10)
-  expect_equal(out$conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-10)
+  expect_equal(out$marginal, as.numeric(oracle$R2_marginal), tolerance = 1e-10)
+  expect_equal(
+    out$conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-10
+  )
 })
 
 test_that("self-impl matches oracle for RANDOM-SLOPE Poisson(log) glmer", {
@@ -319,21 +357,26 @@ test_that("self-impl matches oracle for RANDOM-SLOPE Poisson(log) glmer", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("performance")
   set.seed(7)
-  n <- 600; g <- factor(rep(1:30, length.out = n))
+  n <- 600
+  g <- factor(rep(1:30, length.out = n))
   x <- rnorm(n)
-  b0 <- rnorm(30, 0, 0.5); b1 <- rnorm(30, 0, 0.3)
+  b0 <- rnorm(30, 0, 0.5)
+  b1 <- rnorm(30, 0, 0.3)
   y <- rpois(n, exp(0.8 + 0.3 * x + b0[g] + b1[g] * x))
   fit <- suppressWarnings(lme4::glmer(
-    y ~ x + (x | g), family = poisson,
+    y ~ x + (x | g),
+    family = poisson,
     control = lme4::glmerControl(check.conv.singular = "ignore")
   ))
   skip_if(lme4::isSingular(fit), "fit was singular this round")
   out <- spicy:::.nakagawa_r2(fit)
   oracle <- performance::r2_nakagawa(fit)
-  expect_equal(out$marginal,    as.numeric(oracle$R2_marginal),
-               tolerance = 1e-8)
-  expect_equal(out$conditional, as.numeric(oracle$R2_conditional),
-               tolerance = 1e-8)
+  expect_equal(out$marginal, as.numeric(oracle$R2_marginal), tolerance = 1e-8)
+  expect_equal(
+    out$conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-8
+  )
 })
 
 test_that(".nakagawa_supported_family rejects binomial cbind", {
@@ -345,13 +388,13 @@ test_that(".nakagawa_supported_family rejects binomial cbind", {
 test_that(".nakagawa_supported_family accepts Gaussian + Bernoulli + Poisson(log)", {
   expect_true(spicy:::.nakagawa_supported_family(
     lm(mpg ~ wt, data = mtcars)
-  ))  # Gaussian (any LM/GLM with gaussian family)
+  )) # Gaussian (any LM/GLM with gaussian family)
   expect_true(spicy:::.nakagawa_supported_family(
     glm(am ~ mpg, data = mtcars, family = binomial)
-  ))  # Bernoulli
+  )) # Bernoulli
   expect_true(spicy:::.nakagawa_supported_family(
     glm(cyl ~ mpg, data = mtcars, family = poisson)
-  ))  # Poisson(log)
+  )) # Poisson(log)
 })
 
 
@@ -364,8 +407,8 @@ test_that("user-supplied show_fit_stats wins over the mixed-default", {
     table_regression(fit, show_fit_stats = c("nobs", "aic"))
   ))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "n",   fixed = TRUE)
+  expect_match(combined, "n", fixed = TRUE)
   expect_match(combined, "AIC", fixed = TRUE)
-  expect_false(grepl("R² (marginal)",    combined, fixed = TRUE))
+  expect_false(grepl("R² (marginal)", combined, fixed = TRUE))
   expect_false(grepl("R² (conditional)", combined, fixed = TRUE))
 })

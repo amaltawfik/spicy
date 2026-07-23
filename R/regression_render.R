@@ -32,51 +32,55 @@
 #   partial_eta2\u2192 ("partial_eta2", ...)
 #   partial_omega2\u2192 ("partial_omega2", ...)
 
-
 # One outcome (bare response-variable name) per model_id, read from
 # the aligned fit stats with a coefs fallback. Shared by the
 # spanner-lift decision and the Outcome body row below -- the two
 # used to carry near-identical inline copies of this lookup.
 .aligned_model_outcomes <- function(aligned, model_ids) {
-  vapply(model_ids, function(m_id) {
-    fs <- aligned$fit_stats_aligned
-    out <- fs$outcome[fs$model_id == m_id][1]
-    if (length(out) == 0L || is.na(out)) {
-      cf <- aligned$coefs_aligned
-      cf_m <- cf[cf$model_id == m_id, , drop = FALSE]
-      if (nrow(cf_m) > 0L) cf_m$outcome[1] else NA_character_
-    } else {
-      out
-    }
-  }, character(1))
+  vapply(
+    model_ids,
+    function(m_id) {
+      fs <- aligned$fit_stats_aligned
+      out <- fs$outcome[fs$model_id == m_id][1]
+      if (length(out) == 0L || is.na(out)) {
+        cf <- aligned$coefs_aligned
+        cf_m <- cf[cf$model_id == m_id, , drop = FALSE]
+        if (nrow(cf_m) > 0L) cf_m$outcome[1] else NA_character_
+      } else {
+        out
+      }
+    },
+    character(1)
+  )
 }
 
 
 # ---- Public-internal entry point -----------------------------------------
 
 render_regression_table <- function(
-    aligned,
-    show_columns = c("b", "se", "ci", "p"),
-    show_fit_stats = c("nobs", "r2", "adj_r2"),
-    model_labels = NULL,
-    reference_label = "(ref.)",
-    reference_style = c("row", "annotation", "footer", "none"),
-    factor_layout = c("grouped", "flat"),
-    stars = FALSE,
-    ci_level = 0.95,
-    ci_label = "CI",
-    digits = 2L,
-    p_digits = 3L,
-    effect_size_digits = 2L,
-    fit_digits = 2L,
-    ic_digits = 1L,
-    decimal_mark = ".",
-    align = c("decimal", "center", "right"),
-    labels = NULL,
-    outcome_labels = NULL,
-    title = NULL,
-    note = NULL,
-    re_columns = c("est", "se", "ci")) {
+  aligned,
+  show_columns = c("b", "se", "ci", "p"),
+  show_fit_stats = c("nobs", "r2", "adj_r2"),
+  model_labels = NULL,
+  reference_label = "(ref.)",
+  reference_style = c("row", "annotation", "footer", "none"),
+  factor_layout = c("grouped", "flat"),
+  stars = FALSE,
+  ci_level = 0.95,
+  ci_label = "CI",
+  digits = 2L,
+  p_digits = 3L,
+  effect_size_digits = 2L,
+  fit_digits = 2L,
+  ic_digits = 1L,
+  decimal_mark = ".",
+  align = c("decimal", "center", "right"),
+  labels = NULL,
+  outcome_labels = NULL,
+  title = NULL,
+  note = NULL,
+  re_columns = c("est", "se", "ci")
+) {
   align <- match.arg(align)
   reference_style <- match.arg(reference_style)
   factor_layout <- match.arg(factor_layout)
@@ -125,21 +129,28 @@ render_regression_table <- function(
     # human-readable phrase (e.g. "Wellbeing score (0-100)") that
     # would distort column widths.
     model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
-    if (length(unique(model_outcomes)) == n_models &&
-          all(!is.na(model_outcomes)) &&
-          all(nzchar(model_outcomes))) {
+    if (
+      length(unique(model_outcomes)) == n_models &&
+        all(!is.na(model_outcomes)) &&
+        all(nzchar(model_outcomes))
+    ) {
       model_labels <- model_outcomes
       labels_from_outcomes <- TRUE
     }
   }
   if (is.null(model_labels)) {
-    model_labels <- if (n_models == 1L) "" else paste0("Model ", seq_len(n_models))
+    model_labels <- if (n_models == 1L) {
+      ""
+    } else {
+      paste0("Model ", seq_len(n_models))
+    }
   }
   if (length(model_labels) != n_models) {
     spicy_abort(
       sprintf(
         "`model_labels` length (%d) must equal number of models (%d).",
-        length(model_labels), n_models
+        length(model_labels),
+        n_models
       ),
       class = "spicy_invalid_input"
     )
@@ -153,31 +164,43 @@ render_regression_table <- function(
   # (binary glm, lm, mixed, ...) -> AME stays a single column. Data-driven:
   # the renderer never switches on the model class, only on whether the frame
   # carries per-category AME rows.
-  ame_cats_by_model <- setNames(lapply(model_ids, function(m) {
-    if (!"outcome_level" %in% names(coefs)) return(character(0))
-    mb <- coefs[coefs$model_id == m, , drop = FALSE]
-    # Multinomial: the COEFFICIENTS are already per-outcome (B rows carry an
-    # outcome_level), so the AME aligns to those rows and is NOT pivoted into
-    # category columns. Only single-block coefficients (ordinal) trigger the
-    # per-category column pivot.
-    if (any(mb$estimate_type == "B" & !is.na(mb$outcome_level))) {
-      return(character(0))
-    }
-    unique(mb$outcome_level[mb$estimate_type == "ame" & !is.na(mb$outcome_level)])
-  }), model_ids)
+  ame_cats_by_model <- setNames(
+    lapply(model_ids, function(m) {
+      if (!"outcome_level" %in% names(coefs)) {
+        return(character(0))
+      }
+      mb <- coefs[coefs$model_id == m, , drop = FALSE]
+      # Multinomial: the COEFFICIENTS are already per-outcome (B rows carry an
+      # outcome_level), so the AME aligns to those rows and is NOT pivoted into
+      # category columns. Only single-block coefficients (ordinal) trigger the
+      # per-category column pivot.
+      if (any(mb$estimate_type == "B" & !is.na(mb$outcome_level))) {
+        return(character(0))
+      }
+      unique(mb$outcome_level[
+        mb$estimate_type == "ame" & !is.na(mb$outcome_level)
+      ])
+    }),
+    model_ids
+  )
 
   # Per-model N availability: the "n" column renders only for models
   # whose frame carries per-row N data (univariable-screen bundles).
   # The reference layouts (gtsummary tbl_merge, EpiRHandbook) have no
   # N column on the multivariable side -- its single n is a fit-stat
   # row -- so an all-empty N column is dropped per model group.
-  models_with_n <- model_ids[vapply(model_ids, function(m) {
-    "n_obs" %in% names(coefs) &&
-      any(!is.na(coefs$n_obs[coefs$model_id == m]))
-  }, logical(1))]
+  models_with_n <- model_ids[vapply(
+    model_ids,
+    function(m) {
+      "n_obs" %in% names(coefs) && any(!is.na(coefs$n_obs[coefs$model_id == m]))
+    },
+    logical(1)
+  )]
 
   col_spec <- build_column_spec(
-    show_columns, model_ids, label_map,
+    show_columns,
+    model_ids,
+    label_map,
     ci_level = ci_level,
     ci_label = ci_label,
     model_exp_headers = aligned$exp_headers_auto,
@@ -188,9 +211,14 @@ render_regression_table <- function(
   )
 
   # One render row per unique term (in canonical order).
-  term_meta <- unique(coefs[, c("term", "order_idx", "is_reference",
-                                 "is_intercept", "factor_term",
-                                 "factor_level")])
+  term_meta <- unique(coefs[, c(
+    "term",
+    "order_idx",
+    "is_reference",
+    "is_intercept",
+    "factor_term",
+    "factor_level"
+  )])
   term_meta <- term_meta[order(term_meta$order_idx), , drop = FALSE]
   rownames(term_meta) <- NULL
 
@@ -215,9 +243,11 @@ render_regression_table <- function(
   for (i in seq_len(nrow(term_meta))) {
     rt <- term_meta[i, , drop = FALSE]
     # Insert factor header row at the start of each factor group
-    if (isTRUE(group_factor_levels) &&
+    if (
+      isTRUE(group_factor_levels) &&
         !is.na(rt$factor_term) &&
-        !identical(rt$factor_term, current_factor)) {
+        !identical(rt$factor_term, current_factor)
+    ) {
       ref_lvl <- if (rt$factor_term %in% names(ref_level_map)) {
         ref_level_map[[rt$factor_term]]
       } else {
@@ -226,28 +256,46 @@ render_regression_table <- function(
       # Rule off each subordinate block (ordinal `Thresholds`, partial-PO
       # `Non-proportional effects`) from the rows above, mirroring the
       # coefficients / fit-stats divide.
-      if (rt$factor_term %in%
-            c("Thresholds", "Non-proportional effects", "Scale effects",
-              "Random effects",
-              "Zero-inflation", "Zero hurdle", "Dispersion")) {
+      if (
+        rt$factor_term %in%
+          c(
+            "Thresholds",
+            "Non-proportional effects",
+            "Scale effects",
+            "Random effects",
+            "Zero-inflation",
+            "Zero hurdle",
+            "Dispersion"
+          )
+      ) {
         thr_sep <- c(thr_sep, length(rows) + 1L)
       }
       rows[[length(rows) + 1L]] <- build_factor_header_row(
-        rt$factor_term, col_spec, labels,
+        rt$factor_term,
+        col_spec,
+        labels,
         reference_style = reference_style,
         ref_level = ref_lvl
       )
       current_factor <- rt$factor_term
     }
-    if (is.na(rt$factor_term)) current_factor <- NA_character_
+    if (is.na(rt$factor_term)) {
+      current_factor <- NA_character_
+    }
 
     new_row <- build_body_row(
-      rt, coefs, col_spec, model_ids, label_map, show_columns,
+      rt,
+      coefs,
+      col_spec,
+      model_ids,
+      label_map,
+      show_columns,
       reference_label = reference_label,
       reference_style = reference_style,
       group_factor_levels = group_factor_levels,
       stars_map = stars_map,
-      digits = digits, p_digits = p_digits,
+      digits = digits,
+      p_digits = p_digits,
       effect_size_digits = effect_size_digits,
       decimal_mark = decimal_mark,
       labels = labels,
@@ -268,20 +316,20 @@ render_regression_table <- function(
     # first level-named row when AME columns are requested).
     is_poly_suffix <- !is.na(rt$factor_level) &&
       (startsWith(rt$factor_level, ".") ||
-         startsWith(rt$factor_level, "^"))
-    if (identical(reference_style, "annotation") &&
-          !isTRUE(group_factor_levels) &&
-          !is.na(rt$factor_term) &&
-          !isTRUE(rt$is_reference) &&
-          !is_poly_suffix &&
-          !(rt$factor_term %in% annotation_lifted_for) &&
-          rt$factor_term %in% names(ref_level_map)) {
+        startsWith(rt$factor_level, "^"))
+    if (
+      identical(reference_style, "annotation") &&
+        !isTRUE(group_factor_levels) &&
+        !is.na(rt$factor_term) &&
+        !isTRUE(rt$is_reference) &&
+        !is_poly_suffix &&
+        !(rt$factor_term %in% annotation_lifted_for) &&
+        rt$factor_term %in% names(ref_level_map)
+    ) {
       ref_lvl_flat <- ref_level_map[[rt$factor_term]]
       if (!is.na(ref_lvl_flat) && nzchar(ref_lvl_flat)) {
-        new_row$Variable <- paste0(new_row$Variable,
-                                    " [vs ", ref_lvl_flat, "]")
-        annotation_lifted_for <- c(annotation_lifted_for,
-                                    rt$factor_term)
+        new_row$Variable <- paste0(new_row$Variable, " [vs ", ref_lvl_flat, "]")
+        annotation_lifted_for <- c(annotation_lifted_for, rt$factor_term)
       }
     }
     rows[[length(rows) + 1L]] <- new_row
@@ -300,9 +348,10 @@ render_regression_table <- function(
   #
   # Both come from align_extracts(); fallback if absent.
   model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
-  model_outcome_labels <- if (!is.null(aligned$outcome_labels_auto) &&
-                               length(aligned$outcome_labels_auto) ==
-                                 length(model_ids)) {
+  model_outcome_labels <- if (
+    !is.null(aligned$outcome_labels_auto) &&
+      length(aligned$outcome_labels_auto) == length(model_ids)
+  ) {
     aligned$outcome_labels_auto
   } else {
     model_outcomes
@@ -331,13 +380,19 @@ render_regression_table <- function(
   # the body so its index is folded in via nrow(body).
   fit_stats <- aligned$fit_stats_aligned
   group_sep <- integer(0)
-  if (length(show_fit_stats) > 0L && !is.null(fit_stats) &&
-      nrow(fit_stats) > 0L) {
+  if (
+    length(show_fit_stats) > 0L && !is.null(fit_stats) && nrow(fit_stats) > 0L
+  ) {
     fit_rows <- build_fit_stats_rows(
-      fit_stats, show_fit_stats, model_ids, label_map,
+      fit_stats,
+      show_fit_stats,
+      model_ids,
+      label_map,
       col_spec = col_spec,
-      digits = digits, fit_digits = fit_digits,
-      ic_digits = ic_digits, p_digits = p_digits,
+      digits = digits,
+      fit_digits = fit_digits,
+      ic_digits = ic_digits,
+      p_digits = p_digits,
       decimal_mark = decimal_mark,
       n_groups_by_model = aligned$n_groups_by_model,
       fixef_by_model = aligned$fixef_by_model
@@ -362,18 +417,25 @@ render_regression_table <- function(
     # Detect CI-only columns by inspecting the col_spec: a CI col
     # has fields == c("ci_low", "ci_high"). Map col_name -> field-set
     # for the per-column dispatch.
-    ci_cols <- vapply(col_spec, function(cs) {
-      identical(cs$fields, c("ci_low", "ci_high"))
-    }, logical(1))
-    ci_col_names <- vapply(col_spec[ci_cols], `[[`, character(1),
-                            "col_name")
+    ci_cols <- vapply(
+      col_spec,
+      function(cs) {
+        identical(cs$fields, c("ci_low", "ci_high"))
+      },
+      logical(1)
+    )
+    ci_col_names <- vapply(col_spec[ci_cols], `[[`, character(1), "col_name")
     for (col in data_cols) {
       if (col %in% ci_col_names) {
-        body[[col]] <- align_ci_strings(body[[col]],
-                                          decimal_mark = decimal_mark)
+        body[[col]] <- align_ci_strings(
+          body[[col]],
+          decimal_mark = decimal_mark
+        )
       } else {
-        body[[col]] <- decimal_align_strings(body[[col]],
-                                              decimal_mark = decimal_mark)
+        body[[col]] <- decimal_align_strings(
+          body[[col]],
+          decimal_mark = decimal_mark
+        )
       }
     }
   }
@@ -437,11 +499,17 @@ build_model_spanners <- function(body, col_spec, label_map) {
   # nocov start - defensive: empty col_spec is rejected upstream by
   # validate_show_columns(); empty / single-element label_map yields
   # the early-return on lines 322-324 anyway.
-  if (length(col_spec) == 0L) return(NULL)
+  if (length(col_spec) == 0L) {
+    return(NULL)
+  }
   # nocov end
   labels <- unique(unname(label_map))
-  if (length(labels) <= 1L) return(NULL)
-  if (!any(nzchar(labels))) return(NULL)   # nocov - single-model has labels = ""; multi-model always has nzchar names via auto-fill
+  if (length(labels) <= 1L) {
+    return(NULL)
+  }
+  if (!any(nzchar(labels))) {
+    return(NULL)
+  } # nocov - single-model has labels = ""; multi-model always has nzchar names via auto-fill
 
   body_names <- names(body)
   spec_names <- vapply(col_spec, `[[`, character(1), "col_name")
@@ -450,16 +518,22 @@ build_model_spanners <- function(body, col_spec, label_map) {
   out <- list()
   for (m_id in unique(spec_model)) {
     m_lbl <- label_map[[m_id]]
-    if (!nzchar(m_lbl)) next  # nocov - same as line 324 guard
+    if (!nzchar(m_lbl)) {
+      next
+    } # nocov - same as line 324 guard
     cols_in_model <- spec_names[spec_model == m_id]
     idx <- match(cols_in_model, body_names)
     idx <- idx[!is.na(idx)]
-    if (!length(idx)) next    # nocov - cols_in_model always survive in body_names by construction
+    if (!length(idx)) {
+      next
+    } # nocov - cols_in_model always survive in body_names by construction
     idx <- sort(idx)
     # Spanners must be contiguous; build_column_spec emits columns in
     # model order so this holds by construction. Defensive check kept
     # so a future reordering surfaces loudly.
-    if (any(diff(idx) != 1L)) next   # nocov
+    if (any(diff(idx) != 1L)) {
+      next
+    } # nocov
     out[[m_lbl]] <- as.integer(idx)
   }
   if (!length(out)) NULL else out
@@ -472,17 +546,25 @@ build_model_spanners <- function(body, col_spec, label_map) {
 #   list(token, estimate_type, fields, header_short, header_with_model)
 # `model_ids`     : vector of model IDs (long format keys)
 # `label_map`     : named character vector mapping model_id \u2192 label
-build_column_spec <- function(show_columns, model_ids, label_map,
-                              ci_level = 0.95,
-                              ci_label = "CI",
-                              model_exp_headers = NULL,
-                              model_stat_headers = NULL,
-                              ame_categories = NULL,
-                              models_with_n = NULL,
-                              estimand_horizons = NULL) {
+build_column_spec <- function(
+  show_columns,
+  model_ids,
+  label_map,
+  ci_level = 0.95,
+  ci_label = "CI",
+  model_exp_headers = NULL,
+  model_stat_headers = NULL,
+  ame_categories = NULL,
+  models_with_n = NULL,
+  estimand_horizons = NULL
+) {
   # NULL (direct/legacy callers): keep the "n" column for every model.
-  if (is.null(models_with_n)) models_with_n <- model_ids
-  if (is.null(estimand_horizons)) estimand_horizons <- list()
+  if (is.null(models_with_n)) {
+    models_with_n <- model_ids
+  }
+  if (is.null(estimand_horizons)) {
+    estimand_horizons <- list()
+  }
   ci_pct <- formatC(ci_level * 100, format = "g")
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
@@ -503,54 +585,48 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     # predictor block by univariable-screening frames. Models without
     # per-row N data (n_obs all NA) drop the column for their group
     # (models_with_n): their single n is a fit-stat row instead.
-    n      = list(estimate_type = "B",
-                  fields = "n_obs",
-                  header_short = "N"),
+    n = list(estimate_type = "B", fields = "n_obs", header_short = "N"),
     # Outcome event counts "events/N" per factor level (reference row
     # included), model totals on continuous rows. Binomial outcomes
     # only -- the orchestrator gate errors otherwise.
-    n_events = list(estimate_type = "B",
-                    fields = c("events", "events_n"),
-                    header_short = "Events/N"),
-    b      = list(estimate_type = "B",
-                  fields = "estimate",
-                  header_short = "B"),
-    se     = list(estimate_type = "B",
-                  fields = "se",
-                  header_short = "SE"),
-    ci     = list(estimate_type = "B",
-                  fields = c("ci_low", "ci_high"),
-                  header_short = ci_hdr),
-    t      = list(estimate_type = "B",
-                  fields = "statistic",
-                  header_short = "t"),
-    p      = list(estimate_type = "B",
-                  fields = "p_value",
-                  header_short = "p"),
+    n_events = list(
+      estimate_type = "B",
+      fields = c("events", "events_n"),
+      header_short = "Events/N"
+    ),
+    b = list(estimate_type = "B", fields = "estimate", header_short = "B"),
+    se = list(estimate_type = "B", fields = "se", header_short = "SE"),
+    ci = list(
+      estimate_type = "B",
+      fields = c("ci_low", "ci_high"),
+      header_short = ci_hdr
+    ),
+    t = list(estimate_type = "B", fields = "statistic", header_short = "t"),
+    p = list(estimate_type = "B", fields = "p_value", header_short = "p"),
     # Probability of direction (Bayesian fits): share of posterior
     # draws on the dominant side of zero, range [0.5, 1].
-    pd     = list(estimate_type = "B",
-                  fields = "pd",
-                  header_short = "pd"),
+    pd = list(estimate_type = "B", fields = "pd", header_short = "pd"),
     # Per-parameter sampler diagnostics (BARG steps 2.B / 2.C:
     # convergence and resolution for every parameter).
-    rhat     = list(estimate_type = "B",
-                    fields = "rhat",
-                    header_short = "R-hat"),
-    ess_bulk = list(estimate_type = "B",
-                    fields = "ess_bulk",
-                    header_short = "ESS (bulk)"),
-    ess_tail = list(estimate_type = "B",
-                    fields = "ess_tail",
-                    header_short = "ESS (tail)"),
+    rhat = list(estimate_type = "B", fields = "rhat", header_short = "R-hat"),
+    ess_bulk = list(
+      estimate_type = "B",
+      fields = "ess_bulk",
+      header_short = "ESS (bulk)"
+    ),
+    ess_tail = list(
+      estimate_type = "B",
+      fields = "ess_tail",
+      header_short = "ESS (tail)"
+    ),
     # MCSE of the displayed posterior median (Bayesian Workflow
     # sec. 11.6: the criterion for how many digits are honest).
-    mcse     = list(estimate_type = "B",
-                    fields = "mcse",
-                    header_short = "MCSE"),
-    beta   = list(estimate_type = "beta",
-                  fields = "estimate",
-                  header_short = "\u03B2"),
+    mcse = list(estimate_type = "B", fields = "mcse", header_short = "MCSE"),
+    beta = list(
+      estimate_type = "beta",
+      fields = "estimate",
+      header_short = "\u03B2"
+    ),
     # AME family \u2013 split (was bundled "value [CI]" in <= 0.11).
     # Convention: only the estimate column itself ("AME") carries the
     # estimate-type label; SE / CI / p sub-columns are LEFT NAKED
@@ -566,77 +642,100 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     # (`all_b`, `all_ame`).
     # Survival estimands: the anchor headers carry the horizon
     # (`estimand_horizons`), the sub-columns stay naked like AME's.
-    rmst    = list(estimate_type = "rmst",
-                   fields = "estimate",
-                   header_short = if (!is.null(estimand_horizons$tau)) {
-                     sprintf("dRMST (%s)",
-                             format(estimand_horizons$tau))
-                   } else {
-                     "dRMST"                                          # nocov
-                   }),
-    rmst_se = list(estimate_type = "rmst",
-                   fields = "se",
-                   header_short = "SE"),
-    rmst_ci = list(estimate_type = "rmst",
-                   fields = c("ci_low", "ci_high"),
-                   header_short = ci_hdr),
-    rmst_p  = list(estimate_type = "rmst",
-                   fields = "p_value",
-                   header_short = "p"),
-    risk_diff    = list(estimate_type = "risk_diff",
-                        fields = "estimate",
-                        header_short =
-                          if (!is.null(estimand_horizons$at_time)) {
-                            sprintf("dRisk (%s)",
-                                    format(estimand_horizons$at_time))
-                          } else {
-                            "dRisk"                                   # nocov
-                          }),
-    risk_diff_se = list(estimate_type = "risk_diff",
-                        fields = "se",
-                        header_short = "SE"),
-    risk_diff_ci = list(estimate_type = "risk_diff",
-                        fields = c("ci_low", "ci_high"),
-                        header_short = ci_hdr),
-    risk_diff_p  = list(estimate_type = "risk_diff",
-                        fields = "p_value",
-                        header_short = "p"),
-    ame    = list(estimate_type = "ame",
-                  fields = "estimate",
-                  header_short = "AME"),
-    ame_se = list(estimate_type = "ame",
-                  fields = "se",
-                  header_short = "SE"),
-    ame_ci = list(estimate_type = "ame",
-                  fields = c("ci_low", "ci_high"),
-                  header_short = ci_hdr),
-    ame_p  = list(estimate_type = "ame",
-                  fields = "p_value",
-                  header_short = "p"),
+    rmst = list(
+      estimate_type = "rmst",
+      fields = "estimate",
+      header_short = if (!is.null(estimand_horizons$tau)) {
+        sprintf("dRMST (%s)", format(estimand_horizons$tau))
+      } else {
+        "dRMST" # nocov
+      }
+    ),
+    rmst_se = list(estimate_type = "rmst", fields = "se", header_short = "SE"),
+    rmst_ci = list(
+      estimate_type = "rmst",
+      fields = c("ci_low", "ci_high"),
+      header_short = ci_hdr
+    ),
+    rmst_p = list(
+      estimate_type = "rmst",
+      fields = "p_value",
+      header_short = "p"
+    ),
+    risk_diff = list(
+      estimate_type = "risk_diff",
+      fields = "estimate",
+      header_short = if (!is.null(estimand_horizons$at_time)) {
+        sprintf("dRisk (%s)", format(estimand_horizons$at_time))
+      } else {
+        "dRisk" # nocov
+      }
+    ),
+    risk_diff_se = list(
+      estimate_type = "risk_diff",
+      fields = "se",
+      header_short = "SE"
+    ),
+    risk_diff_ci = list(
+      estimate_type = "risk_diff",
+      fields = c("ci_low", "ci_high"),
+      header_short = ci_hdr
+    ),
+    risk_diff_p = list(
+      estimate_type = "risk_diff",
+      fields = "p_value",
+      header_short = "p"
+    ),
+    ame = list(
+      estimate_type = "ame",
+      fields = "estimate",
+      header_short = "AME"
+    ),
+    ame_se = list(estimate_type = "ame", fields = "se", header_short = "SE"),
+    ame_ci = list(
+      estimate_type = "ame",
+      fields = c("ci_low", "ci_high"),
+      header_short = ci_hdr
+    ),
+    ame_p = list(estimate_type = "ame", fields = "p_value", header_short = "p"),
     # Partial-variance-explained \u2013 split (was bundled too).
-    partial_f2        = list(estimate_type = "partial_f2",
-                              fields = "estimate",
-                              header_short = "f\u00B2"),
-    partial_f2_ci     = list(estimate_type = "partial_f2",
-                              fields = c("ci_low", "ci_high"),
-                              header_short = paste0("f\u00B2 ", ci_hdr)),
-    partial_eta2      = list(estimate_type = "partial_eta2",
-                              fields = "estimate",
-                              header_short = "\u03B7\u00B2"),
-    partial_eta2_ci   = list(estimate_type = "partial_eta2",
-                              fields = c("ci_low", "ci_high"),
-                              header_short = paste0("\u03B7\u00B2 ", ci_hdr)),
-    partial_omega2    = list(estimate_type = "partial_omega2",
-                              fields = "estimate",
-                              header_short = "\u03C9\u00B2"),
-    partial_omega2_ci = list(estimate_type = "partial_omega2",
-                              fields = c("ci_low", "ci_high"),
-                              header_short = paste0("\u03C9\u00B2 ", ci_hdr)),
+    partial_f2 = list(
+      estimate_type = "partial_f2",
+      fields = "estimate",
+      header_short = "f\u00B2"
+    ),
+    partial_f2_ci = list(
+      estimate_type = "partial_f2",
+      fields = c("ci_low", "ci_high"),
+      header_short = paste0("f\u00B2 ", ci_hdr)
+    ),
+    partial_eta2 = list(
+      estimate_type = "partial_eta2",
+      fields = "estimate",
+      header_short = "\u03B7\u00B2"
+    ),
+    partial_eta2_ci = list(
+      estimate_type = "partial_eta2",
+      fields = c("ci_low", "ci_high"),
+      header_short = paste0("\u03B7\u00B2 ", ci_hdr)
+    ),
+    partial_omega2 = list(
+      estimate_type = "partial_omega2",
+      fields = "estimate",
+      header_short = "\u03C9\u00B2"
+    ),
+    partial_omega2_ci = list(
+      estimate_type = "partial_omega2",
+      fields = c("ci_low", "ci_high"),
+      header_short = paste0("\u03C9\u00B2 ", ci_hdr)
+    ),
     # Partial chi-square (glm) \u2013 kept BUNDLED as "value (df)".
     # That's the universal reporting convention "chi2(df) = value".
-    partial_chi2      = list(estimate_type = "partial_chi2",
-                              fields = c("estimate", "df"),
-                              header_short = "\u03C7\u00B2")
+    partial_chi2 = list(
+      estimate_type = "partial_chi2",
+      fields = c("estimate", "df"),
+      header_short = "\u03C7\u00B2"
+    )
   )
 
   out <- list()
@@ -646,20 +745,28 @@ build_column_spec <- function(show_columns, model_ids, label_map,
     stat_hdr <- model_stat_headers[[m_id]]
     for (tk in show_columns) {
       desc <- base[[tk]]
-      if (is.null(desc)) next
+      if (is.null(desc)) {
+        next
+      }
       # All-empty per-model N column: drop it for this model group
       # (see the models_with_n comment at the call site).
-      if (identical(tk, "n") && !(m_id %in% models_with_n)) next
+      if (identical(tk, "n") && !(m_id %in% models_with_n)) {
+        next
+      }
       # Per-model B-header rebrand under exponentiate (Step 2 / glm).
       # Per-model statistic header: the "t" token displays the model's
       # actual reference distribution ("z" for z-asymptotic classes).
-      header_short <- if (identical(tk, "b") &&
-                            !is.na(exp_hdr) &&
-                            nzchar(exp_hdr)) {
+      header_short <- if (
+        identical(tk, "b") &&
+          !is.na(exp_hdr) &&
+          nzchar(exp_hdr)
+      ) {
         exp_hdr
-      } else if (identical(tk, "t") &&
-                   !is.na(stat_hdr) &&
-                   nzchar(stat_hdr)) {
+      } else if (
+        identical(tk, "t") &&
+          !is.na(stat_hdr) &&
+          nzchar(stat_hdr)
+      ) {
         stat_hdr
       } else {
         desc$header_short
@@ -710,11 +817,15 @@ build_column_spec <- function(show_columns, model_ids, label_map,
 
 make_unique_col_name <- function(spec_so_far, candidate) {
   used <- vapply(spec_so_far, `[[`, character(1), "col_name")
-  if (!candidate %in% used) return(candidate)
+  if (!candidate %in% used) {
+    return(candidate)
+  }
   k <- 2L
   repeat {
     new_name <- paste0(candidate, ".", k)
-    if (!new_name %in% used) return(new_name)
+    if (!new_name %in% used) {
+      return(new_name)
+    }
     k <- k + 1L
   }
 }
@@ -722,36 +833,65 @@ make_unique_col_name <- function(spec_so_far, candidate) {
 
 # ---- Body row builder ----------------------------------------------------
 
-build_body_row <- function(term_row, coefs, col_spec, model_ids,
-                            label_map, show_columns,
-                            reference_label, reference_style,
-                            group_factor_levels,
-                            stars_map,
-                            digits, p_digits, effect_size_digits,
-                            decimal_mark, labels,
-                            re_columns = c("est", "se", "ci")) {
-  cells <- list(Variable = format_term_label(
-    term_row, reference_label, reference_style, group_factor_levels, labels
-  ))
+build_body_row <- function(
+  term_row,
+  coefs,
+  col_spec,
+  model_ids,
+  label_map,
+  show_columns,
+  reference_label,
+  reference_style,
+  group_factor_levels,
+  stars_map,
+  digits,
+  p_digits,
+  effect_size_digits,
+  decimal_mark,
+  labels,
+  re_columns = c("est", "se", "ci")
+) {
+  cells <- list(
+    Variable = format_term_label(
+      term_row,
+      reference_label,
+      reference_style,
+      group_factor_levels,
+      labels
+    )
+  )
 
   for (cs in col_spec) {
     # Random-effect variance rows (estimate_type = "vc") render in the primary
     # B (estimate / SE / CI) columns: a variance component is not a coefficient
     # (kept as its own token so exp / standardize skip it) but it displays on
     # the same estimate/SE/CI axis. Alias "vc" to the "B" column here.
-    et_match <- if (identical(cs$estimate_type, "B")) c("B", "vc") else
+    et_match <- if (identical(cs$estimate_type, "B")) {
+      c("B", "vc")
+    } else {
       cs$estimate_type
-    long_row <- coefs[coefs$model_id == cs$model_id &
-                       coefs$term == term_row$term &
-                       coefs$estimate_type %in% et_match, ,
-                       drop = FALSE]
+    }
+    long_row <- coefs[
+      coefs$model_id == cs$model_id &
+        coefs$term == term_row$term &
+        coefs$estimate_type %in% et_match,
+      ,
+      drop = FALSE
+    ]
     # Per-category AME columns are tagged with an `outcome_level`; narrow to
     # that category so each column pulls its own cell. A NULL/NA tag (B columns,
     # single-outcome AME) leaves the match untouched.
-    if (!is.null(cs$outcome_level) && !is.na(cs$outcome_level) &&
-          "outcome_level" %in% names(long_row) && nrow(long_row) > 0L) {
-      long_row <- long_row[long_row$outcome_level %in% cs$outcome_level, ,
-                           drop = FALSE]
+    if (
+      !is.null(cs$outcome_level) &&
+        !is.na(cs$outcome_level) &&
+        "outcome_level" %in% names(long_row) &&
+        nrow(long_row) > 0L
+    ) {
+      long_row <- long_row[
+        long_row$outcome_level %in% cs$outcome_level,
+        ,
+        drop = FALSE
+      ]
     }
     # When the row's term does NOT exist in this model's coefs,
     # leave the cell BLANK -- regardless of whether the term is a
@@ -773,9 +913,11 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
     # they are DATA about the level, not an estimate, and the
     # reference category's events/N is exactly what STROBE item 16
     # asks readers to see (gtsummary's add_nevent shows it too).
-    if (isTRUE(long_row$is_reference[1L]) &&
-        !identical(cs$token, "n_events")) {
-      cells[[cs$col_name]] <- "\u2013"   # en-dash
+    if (
+      isTRUE(long_row$is_reference[1L]) &&
+        !identical(cs$token, "n_events")
+    ) {
+      cells[[cs$col_name]] <- "\u2013" # en-dash
       next
     }
     # `re_columns` (display-only): on a variance-component row, en-dash the
@@ -784,16 +926,21 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
     # always en-dashed on vc rows: the optional re_test statistic is a
     # chi-bar-squared LR statistic, which would be mislabelled under a t/z
     # header (it stays available via broom::tidy()).
-    if (identical(long_row$estimate_type[1L], "vc") &&
+    if (
+      identical(long_row$estimate_type[1L], "vc") &&
         (identical(cs$token, "t") ||
-         (identical(cs$token, "se") && !"se" %in% re_columns) ||
-         (identical(cs$token, "ci") && !"ci" %in% re_columns))) {
+          (identical(cs$token, "se") && !"se" %in% re_columns) ||
+          (identical(cs$token, "ci") && !"ci" %in% re_columns))
+    ) {
       cells[[cs$col_name]] <- "\u2013"
       next
     }
     cells[[cs$col_name]] <- format_cell_value(
-      long_row, cs, stars_map = stars_map,
-      digits = digits, p_digits = p_digits,
+      long_row,
+      cs,
+      stars_map = stars_map,
+      digits = digits,
+      p_digits = p_digits,
       effect_size_digits = effect_size_digits,
       decimal_mark = decimal_mark,
       show_columns = show_columns
@@ -806,25 +953,42 @@ build_body_row <- function(term_row, coefs, col_spec, model_ids,
 
 # ---- Cell formatter ------------------------------------------------------
 
-format_cell_value <- function(long_row, cs, stars_map,
-                               digits, p_digits, effect_size_digits,
-                               decimal_mark, show_columns) {
+format_cell_value <- function(
+  long_row,
+  cs,
+  stars_map,
+  digits,
+  p_digits,
+  effect_size_digits,
+  decimal_mark,
+  show_columns
+) {
   tk <- cs$token
-  is_es <- tk %in% c("partial_f2", "partial_f2_ci",
-                     "partial_eta2", "partial_eta2_ci",
-                     "partial_omega2", "partial_omega2_ci",
-                     "partial_chi2")
+  is_es <- tk %in%
+    c(
+      "partial_f2",
+      "partial_f2_ci",
+      "partial_eta2",
+      "partial_eta2_ci",
+      "partial_omega2",
+      "partial_omega2_ci",
+      "partial_chi2"
+    )
   digits_to_use <- if (is_es) effect_size_digits else digits
 
   # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) \u2013
   # SAS PROC LOGISTIC TYPE3 / car::Anova(type = 3) convention. Df sits
   # in parens to disambiguate factor terms (k-1 df) from numeric terms
   # (1 df) without burning an extra column.
-  if (length(cs$fields) == 2L &&
-      identical(cs$fields, c("estimate", "df"))) {
+  if (
+    length(cs$fields) == 2L &&
+      identical(cs$fields, c("estimate", "df"))
+  ) {
     est <- long_row$estimate[1]
     df_val <- long_row$df[1]
-    if (is.na(est)) return("\u2013")
+    if (is.na(est)) {
+      return("\u2013")
+    }
     val_str <- format_number(est, digits_to_use, decimal_mark)
     df_str <- if (is.na(df_val)) "" else paste0(" (", as.integer(df_val), ")")
     return(paste0(val_str, df_str))
@@ -833,26 +997,37 @@ format_cell_value <- function(long_row, cs, stars_map,
   # Outcome event counts: "events/N" (STROBE item 16 / NEJM
   # "no. of events/total no." style). Both integers; blank (not
   # en-dash) when the frame carries no event data for the row.
-  if (length(cs$fields) == 2L &&
-      identical(cs$fields, c("events", "events_n"))) {
+  if (
+    length(cs$fields) == 2L &&
+      identical(cs$fields, c("events", "events_n"))
+  ) {
     ev <- long_row$events[1]
     nn <- long_row$events_n[1]
-    if (is.na(ev) || is.na(nn)) return("")
+    if (is.na(ev) || is.na(nn)) {
+      return("")
+    }
     return(paste0(format(as.integer(ev)), "/", format(as.integer(nn))))
   }
 
   # CI-only rendering: "[lo, hi]" -- shared by `ci`, `ame_ci`,
   # `partial_f2_ci`, `partial_eta2_ci`, `partial_omega2_ci`.
-  if (length(cs$fields) == 2L &&
-      identical(cs$fields, c("ci_low", "ci_high"))) {
+  if (
+    length(cs$fields) == 2L &&
+      identical(cs$fields, c("ci_low", "ci_high"))
+  ) {
     lo <- long_row$ci_low[1]
     hi <- long_row$ci_high[1]
-    if (is.na(lo) || is.na(hi)) return("\u2013")
+    if (is.na(lo) || is.na(hi)) {
+      return("\u2013")
+    }
     ci_sep <- ci_bracket_separator(decimal_mark)
-    return(paste0("[",
-                  format_number(lo, digits_to_use, decimal_mark), ci_sep,
-                  format_number(hi, digits_to_use, decimal_mark),
-                  "]"))
+    return(paste0(
+      "[",
+      format_number(lo, digits_to_use, decimal_mark),
+      ci_sep,
+      format_number(hi, digits_to_use, decimal_mark),
+      "]"
+    ))
   }
 
   # Single-field cells
@@ -868,21 +1043,30 @@ format_cell_value <- function(long_row, cs, stars_map,
   # where the generic 2-decimal cell is blind (".998" vs "1.00").
   if (field == "pd") {
     val <- long_row[[field]][1]
-    if (!is.finite(val)) return("")
-    out <- formatC(val, format = "f", digits = p_digits,
-                   decimal.mark = decimal_mark)
+    if (!is.finite(val)) {
+      return("")
+    }
+    out <- formatC(
+      val,
+      format = "f",
+      digits = p_digits,
+      decimal.mark = decimal_mark
+    )
     return(sub("^0(?=[.,])", "", out, perl = TRUE))
   }
   if (field %in% c("ess_bulk", "ess_tail")) {
     val <- long_row[[field]][1]
-    if (!is.finite(val)) return("")
+    if (!is.finite(val)) {
+      return("")
+    }
     return(format(as.integer(round(val))))
   }
   if (field == "rhat") {
     val <- long_row[[field]][1]
-    if (!is.finite(val)) return("")
-    return(formatC(val, format = "f", digits = 3,
-                   decimal.mark = decimal_mark))
+    if (!is.finite(val)) {
+      return("")
+    }
+    return(formatC(val, format = "f", digits = 3, decimal.mark = decimal_mark))
   }
   # MCSE spans orders of magnitude across coefficient scales (a
   # log-odds MCSE ~0.01, a reaction-time one ~1.5), so a fixed
@@ -890,22 +1074,27 @@ format_cell_value <- function(long_row, cs, stars_map,
   # notation.
   if (field == "mcse") {
     val <- long_row[[field]][1]
-    if (!is.finite(val)) return("")
+    if (!is.finite(val)) {
+      return("")
+    }
     # Two significant digits with trailing zeros kept ("0.10", not
     # "0.1"), plain notation; strip the bare trailing point that
     # flag = "#" leaves on integer-valued output.
-    out <- sub("\\.$", "", formatC(val, digits = 2, format = "g",
-                                   flag = "#"))
+    out <- sub("\\.$", "", formatC(val, digits = 2, format = "g", flag = "#"))
     if (!identical(decimal_mark, ".")) {
-      out <- sub(".", decimal_mark, out, fixed = TRUE)                # nocov
+      out <- sub(".", decimal_mark, out, fixed = TRUE) # nocov
     }
     return(out)
   }
   if (field == "n_obs") {
-    if (is.na(val)) return("")
+    if (is.na(val)) {
+      return("")
+    }
     return(format(as.integer(val)))
   }
-  if (is.na(val)) return("\u2013")
+  if (is.na(val)) {
+    return("\u2013")
+  }
 
   if (field == "p_value") {
     out <- format_p_value(val, decimal_mark = decimal_mark, digits = p_digits)
@@ -944,15 +1133,16 @@ format_cell_value <- function(long_row, cs, stars_map,
   # displayed in `show_columns`; their purpose is precisely to
   # convey significance compactly without spending a column on the
   # p-value.
-  apply_stars <- !is.null(stars_map) && (
-    (tk == "b") ||
-    (tk == "beta" && !"b" %in% show_columns) ||
-    (tk == "ame")
-  )
+  apply_stars <- !is.null(stars_map) &&
+    ((tk == "b") ||
+      (tk == "beta" && !"b" %in% show_columns) ||
+      (tk == "ame"))
   # Never star a variance-component row: its optional p (re_test) is a
   # model-comparison chi-bar-squared test, not a coefficient test, and no
   # convention stars the random part.
-  if (identical(long_row$estimate_type[1L], "vc")) apply_stars <- FALSE
+  if (identical(long_row$estimate_type[1L], "vc")) {
+    apply_stars <- FALSE
+  }
   if (apply_stars) {
     p_val <- long_row$p_value[1]
     out <- paste0(out, format_stars(p_val, stars_map))
@@ -963,8 +1153,13 @@ format_cell_value <- function(long_row, cs, stars_map,
 
 # ---- Term label formatter ------------------------------------------------
 
-format_term_label <- function(term_row, reference_label, reference_style,
-                               group_factor_levels, labels) {
+format_term_label <- function(
+  term_row,
+  reference_label,
+  reference_style,
+  group_factor_levels,
+  labels
+) {
   term <- term_row$term
 
   if (isTRUE(term_row$is_intercept)) {
@@ -972,14 +1167,18 @@ format_term_label <- function(term_row, reference_label, reference_style,
   }
   if (isTRUE(term_row$is_reference)) {
     lvl <- term_row$factor_level
-    if (is.na(lvl) || !nzchar(lvl)) lvl <- term
+    if (is.na(lvl) || !nzchar(lvl)) {
+      lvl <- term
+    }
     if (isTRUE(group_factor_levels)) {
       # Grouped: factor header carries var name \u2192 indent + bare level.
       # Label lookup tries the coef-style key (e.g. "cyl4") first so
       # users can relabel individual reference rows; falls back to
       # the bare factor_level string.
       lbl <- resolve_label(term, labels)
-      if (identical(lbl, term)) lbl <- lvl
+      if (identical(lbl, term)) {
+        lbl <- lvl
+      }
       return(paste0("  ", lbl, " ", reference_label))
     }
     # Flat: no factor header \u2192 render as <var><level> (matching the
@@ -993,21 +1192,36 @@ format_term_label <- function(term_row, reference_label, reference_style,
   # effects, random-effect variance components) always render their display
   # label, even in the flat layout: their `term` is an internal key (e.g.
   # "re::Subject::Days") or a bare cut-point, not a coefficient name.
-  if (!is.na(term_row$factor_term) &&
+  if (
+    !is.na(term_row$factor_term) &&
       term_row$factor_term %in%
-        c("Thresholds", "Non-proportional effects", "Scale effects",
-          "Random effects", "Zero-inflation", "Zero hurdle", "Dispersion")) {
+        c(
+          "Thresholds",
+          "Non-proportional effects",
+          "Scale effects",
+          "Random effects",
+          "Zero-inflation",
+          "Zero hurdle",
+          "Dispersion"
+        )
+  ) {
     lvl <- term_row$factor_level
-    if (is.na(lvl) || !nzchar(lvl)) lvl <- term
+    if (is.na(lvl) || !nzchar(lvl)) {
+      lvl <- term
+    }
     return(paste0(if (isTRUE(group_factor_levels)) "  " else "", lvl))
   }
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
     lvl <- term_row$factor_level
-    if (is.na(lvl) || !nzchar(lvl)) lvl <- term
+    if (is.na(lvl) || !nzchar(lvl)) {
+      lvl <- term
+    }
     # Coef-style key first ("cyl6" \u2192 "6 cylinders"); otherwise the
     # bare factor level.
     lbl <- resolve_label(term, labels)
-    if (identical(lbl, term)) lbl <- lvl
+    if (identical(lbl, term)) {
+      lbl <- lvl
+    }
     return(paste0("  ", lbl))
   }
   resolve_label(term, labels)
@@ -1035,41 +1249,48 @@ resolve_label <- function(term, labels) {
 #
 # Returns a single-row data.frame to prepend to the body, or NULL
 # when the outcome row should not be displayed.
-build_outcome_row <- function(outcome_labels,
-                                model_ids,
-                                label_map,
-                                col_spec) {
+build_outcome_row <- function(outcome_labels, model_ids, label_map, col_spec) {
   n_models <- length(model_ids)
 
   if (isFALSE(outcome_labels)) {
-    return(NULL)                              # suppress entirely
+    return(NULL) # suppress entirely
   }
   if (n_models <= 1L) {
-    return(NULL)                              # DV is in title for single model
+    return(NULL) # DV is in title for single model
   }
   # Default (NULL) = hide. With the multi-model spanner now showing
   # the model label (or the DV name, via the smart-default in
   # render_regression_table), the Outcome body row would just repeat
   # information already in the header. The row appears only when the
   # user explicitly passes `outcome_labels = c(...)`.
-  if (is.null(outcome_labels)) return(NULL)
+  if (is.null(outcome_labels)) {
+    return(NULL)
+  }
 
   # Place each outcome label in the FIRST sub-column of its model
   # (mirrors the fit-stats footer convention).
-  first_col_per_model <- vapply(model_ids, function(m_id) {
-    for (cs in col_spec) {
-      if (identical(cs$model_id, m_id)) return(cs$col_name)
-    }
-    NA_character_
-  }, character(1))
+  first_col_per_model <- vapply(
+    model_ids,
+    function(m_id) {
+      for (cs in col_spec) {
+        if (identical(cs$model_id, m_id)) return(cs$col_name)
+      }
+      NA_character_
+    },
+    character(1)
+  )
   names(first_col_per_model) <- model_ids
   all_data_cols <- vapply(col_spec, `[[`, character(1), "col_name")
 
   cells <- list(Variable = "Outcome")
-  for (col in all_data_cols) cells[[col]] <- ""
+  for (col in all_data_cols) {
+    cells[[col]] <- ""
+  }
   for (i in seq_along(model_ids)) {
     target_col <- first_col_per_model[[model_ids[i]]]
-    if (is.na(target_col)) next
+    if (is.na(target_col)) {
+      next
+    }
     cells[[target_col]] <- outcome_labels[i]
   }
   as.data.frame(cells, stringsAsFactors = FALSE, check.names = FALSE)
@@ -1084,34 +1305,50 @@ build_outcome_row <- function(outcome_labels,
 # matching modelsummary / gtsummary convention. group_sep_rows attr
 # on the parent table marks the divider so the print method draws a
 # horizontal rule between the body and the fit-stats block.
-build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
-                                  label_map, col_spec,
-                                  digits, fit_digits, ic_digits,
-                                  decimal_mark, p_digits = 3L,
-                                  n_groups_by_model = NULL,
-                                  fixef_by_model = NULL) {
+build_fit_stats_rows <- function(
+  fit_stats,
+  show_fit_stats,
+  model_ids,
+  label_map,
+  col_spec,
+  digits,
+  fit_digits,
+  ic_digits,
+  decimal_mark,
+  p_digits = 3L,
+  n_groups_by_model = NULL,
+  fixef_by_model = NULL
+) {
   if (length(show_fit_stats) == 0L || length(col_spec) == 0L) {
     return(list())
   }
 
   # First sub-column per model (where the fit-stat value will land)
-  first_col_per_model <- vapply(model_ids, function(m_id) {
-    for (cs in col_spec) {
-      if (identical(cs$model_id, m_id)) return(cs$col_name)
-    }
-    NA_character_
-  }, character(1))
+  first_col_per_model <- vapply(
+    model_ids,
+    function(m_id) {
+      for (cs in col_spec) {
+        if (identical(cs$model_id, m_id)) return(cs$col_name)
+      }
+      NA_character_
+    },
+    character(1)
+  )
   names(first_col_per_model) <- model_ids
   all_data_cols <- vapply(col_spec, `[[`, character(1), "col_name")
 
   blank_cells <- function(lab) {
     cells <- list(Variable = lab)
-    for (col in all_data_cols) cells[[col]] <- ""
+    for (col in all_data_cols) {
+      cells[[col]] <- ""
+    }
     cells
   }
   push_row <- function(rows, cells) {
     rows[[length(rows) + 1L]] <- as.data.frame(
-      cells, stringsAsFactors = FALSE, check.names = FALSE
+      cells,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
     )
     rows
   }
@@ -1126,13 +1363,17 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
     # absorbs anything (etable prints no section either).
     if (identical(tk, "fixed_effects")) {
       fe <- .fixed_effects_cells(fixef_by_model, model_ids)
-      if (is.null(fe)) next
+      if (is.null(fe)) {
+        next
+      }
       rows <- push_row(rows, blank_cells("Fixed effects:"))
       for (fct in fe$factors) {
         cells <- blank_cells(paste0("  ", fct))
         for (m_id in model_ids) {
           target_col <- first_col_per_model[[m_id]]
-          if (is.na(target_col)) next
+          if (is.na(target_col)) {
+            next
+          }
           cells[[target_col]] <- fe$cells[fct, m_id]
         }
         rows <- push_row(rows, cells)
@@ -1153,12 +1394,16 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
           fct_union <- union(fct_union, names(ng))
         }
       }
-      if (length(fct_union) == 0L) next
+      if (length(fct_union) == 0L) {
+        next
+      }
       for (fct in fct_union) {
         cells <- blank_cells(sprintf("N (%s)", fct))
         for (m_id in model_ids) {
           target_col <- first_col_per_model[[m_id]]
-          if (is.na(target_col)) next
+          if (is.na(target_col)) {
+            next
+          }
           ng <- ngl_all[[m_id]]
           if (!is.null(ng) && fct %in% names(ng)) {
             cells[[target_col]] <- sprintf("%d", as.integer(ng[[fct]]))
@@ -1168,7 +1413,9 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
       }
       next
     }
-    if (!tk %in% names(fit_stats)) next   # token absent from fit_stats schema
+    if (!tk %in% names(fit_stats)) {
+      next
+    } # token absent from fit_stats schema
     # A fit-stat row where NO model has a value informs nobody: drop
     # it instead of rendering an empty row. Historically this skip was
     # limited to the mixed-only structure stats (icc / n_groups) and
@@ -1176,18 +1423,27 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
     # frames, whose model-level stats are all NA by construction --
     # any class-appropriate token still shows because at least one
     # model carries a value.
-    if (all(is.na(fit_stats[[tk]]))) next
+    if (all(is.na(fit_stats[[tk]]))) {
+      next
+    }
     cells <- blank_cells(fit_stat_label(tk))
     for (m_id in model_ids) {
       target_col <- first_col_per_model[[m_id]]
-      if (is.na(target_col)) next
+      if (is.na(target_col)) {
+        next
+      }
       sub <- fit_stats[fit_stats$model_id == m_id, , drop = FALSE]
-      if (nrow(sub) == 0L) next
+      if (nrow(sub) == 0L) {
+        next
+      }
       val <- sub[[tk]][1]
       cells[[target_col]] <- format_fit_stat_value(
-        tk, val,
-        digits = digits, fit_digits = fit_digits,
-        ic_digits = ic_digits, p_digits = p_digits,
+        tk,
+        val,
+        digits = digits,
+        fit_digits = fit_digits,
+        ic_digits = ic_digits,
+        p_digits = p_digits,
         decimal_mark = decimal_mark
       )
     }
@@ -1212,12 +1468,20 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
     fv <- fl[[m_id]]
     if (!is.null(fv) && length(fv) > 0L) fe_union <- union(fe_union, fv)
   }
-  if (length(fe_union) == 0L) return(NULL)
-  cells <- matrix("", nrow = length(fe_union), ncol = length(model_ids),
-                  dimnames = list(fe_union, model_ids))
+  if (length(fe_union) == 0L) {
+    return(NULL)
+  }
+  cells <- matrix(
+    "",
+    nrow = length(fe_union),
+    ncol = length(model_ids),
+    dimnames = list(fe_union, model_ids)
+  )
   for (m_id in model_ids) {
     fv <- fl[[m_id]]
-    if (is.null(fv)) next
+    if (is.null(fv)) {
+      next
+    }
     cells[, m_id] <- ifelse(fe_union %in% fv, "Yes", "No")
   }
   list(factors = fe_union, cells = cells)
@@ -1226,48 +1490,49 @@ build_fit_stats_rows <- function(fit_stats, show_fit_stats, model_ids,
 # Display label for each show_fit_stats token. Greek symbols and
 # typographic conventions per APA / modelsummary.
 fit_stat_label <- function(token) {
-  switch(token,
-    nobs                  = "n",
-    n_events              = "N events",
-    weighted_nobs         = "Weighted n",
-    r2                    = "R\u00B2",
-    adj_r2                = "Adj.R\u00B2",
-    omega2                = "\u03C9\u00B2",
-    pseudo_r2_mcfadden    = "R\u00B2 (McFadden)",
-    pseudo_r2_nagelkerke  = "R\u00B2 (Nagelkerke)",
-    pseudo_r2_tjur        = "R\u00B2 (Tjur)",
-    theta                 = "\u03B8 (dispersion)",
-    alpha                 = "\u03B1 (= 1/\u03B8)",
-    within_r2             = "R\u00B2 (within)",
-    phi                   = "\u03C6 (precision)",
-    r2_bayes              = "R\u00B2 (Bayes)",
-    elpd_loo              = "ELPD (LOO)",
-    looic                 = "LOOIC",
-    waic                  = "WAIC",
-    r2_marginal           = "R\u00B2 (marginal)",
-    r2_conditional        = "R\u00B2 (conditional)",
-    icc                   = "ICC",
+  switch(
+    token,
+    nobs = "n",
+    n_events = "N events",
+    weighted_nobs = "Weighted n",
+    r2 = "R\u00B2",
+    adj_r2 = "Adj.R\u00B2",
+    omega2 = "\u03C9\u00B2",
+    pseudo_r2_mcfadden = "R\u00B2 (McFadden)",
+    pseudo_r2_nagelkerke = "R\u00B2 (Nagelkerke)",
+    pseudo_r2_tjur = "R\u00B2 (Tjur)",
+    theta = "\u03B8 (dispersion)",
+    alpha = "\u03B1 (= 1/\u03B8)",
+    within_r2 = "R\u00B2 (within)",
+    phi = "\u03C6 (precision)",
+    r2_bayes = "R\u00B2 (Bayes)",
+    elpd_loo = "ELPD (LOO)",
+    looic = "LOOIC",
+    waic = "WAIC",
+    r2_marginal = "R\u00B2 (marginal)",
+    r2_conditional = "R\u00B2 (conditional)",
+    icc = "ICC",
     # (no n_groups entry: the token expands to per-factor
     # "N (<factor>)" rows inside both fit-stat builders and never
     # reaches this label map)
-    sigma                 = "\u03C3\u0302",
-    rmse                  = "RMSE",
-    f2                    = "f\u00B2",
-    aic                   = "AIC",
-    aicc                  = "AICc",
-    bic                   = "BIC",
-    deviance              = "Deviance",
+    sigma = "\u03C3\u0302",
+    rmse = "RMSE",
+    f2 = "f\u00B2",
+    aic = "AIC",
+    aicc = "AICc",
+    bic = "BIC",
+    deviance = "Deviance",
     # Nested-comparison change tokens (APA Table 7.13)
-    r2_change             = "\u0394R\u00B2",
-    adj_r2_change         = "\u0394Adj.R\u00B2",
-    f_change              = "F-change",
-    f2_change             = "\u0394f\u00B2",
-    lrt_change            = "\u0394\u03C7\u00B2",
-    aic_change            = "\u0394AIC",
-    aicc_change           = "\u0394AICc",
-    bic_change            = "\u0394BIC",
-    deviance_change       = "\u0394Deviance",
-    p_change              = "p (change)",
+    r2_change = "\u0394R\u00B2",
+    adj_r2_change = "\u0394Adj.R\u00B2",
+    f_change = "F-change",
+    f2_change = "\u0394f\u00B2",
+    lrt_change = "\u0394\u03C7\u00B2",
+    aic_change = "\u0394AIC",
+    aicc_change = "\u0394AICc",
+    bic_change = "\u0394BIC",
+    deviance_change = "\u0394Deviance",
+    p_change = "p (change)",
     token
   )
 }
@@ -1278,69 +1543,83 @@ fit_stat_label <- function(token) {
 #   sigma / rmse               \u2192 fit_digits
 #   AIC / AICc / BIC           \u2192 ic_digits
 #   deviance                   \u2192 digits
-format_fit_stat_value <- function(token, val,
-                                    digits, fit_digits, ic_digits,
-                                    p_digits = 3L,
-                                    decimal_mark = ".") {
+format_fit_stat_value <- function(
+  token,
+  val,
+  digits,
+  fit_digits,
+  ic_digits,
+  p_digits = 3L,
+  decimal_mark = "."
+) {
   # Change tokens render an en-dash on NA -- typically the first
   # model's column (no previous to compare to). Absolute fit stats
   # render an empty string (e.g. R\u00b2 is NA for a glm row in a mixed
   # table, which the user reads as "not applicable").
-  is_change <- token %in% c("r2_change", "adj_r2_change",
-                             "f_change", "f2_change", "lrt_change",
-                             "aic_change", "aicc_change", "bic_change",
-                             "deviance_change", "p_change")
+  is_change <- token %in%
+    c(
+      "r2_change",
+      "adj_r2_change",
+      "f_change",
+      "f2_change",
+      "lrt_change",
+      "aic_change",
+      "aicc_change",
+      "bic_change",
+      "deviance_change",
+      "p_change"
+    )
   if (is.null(val) || is.na(val)) {
     return(if (is_change) "\u2013" else "")
   }
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {
-    return(format_p_value(val, decimal_mark = decimal_mark,
-                          digits = p_digits))
+    return(format_p_value(val, decimal_mark = decimal_mark, digits = p_digits))
   }
-  prec <- switch(token,
-    nobs                  = 0L,
-    n_events              = 0L,
-    weighted_nobs         = 0L,
-    r2                    = fit_digits,
-    adj_r2                = fit_digits,
-    omega2                = fit_digits,
-    pseudo_r2_mcfadden    = fit_digits,
-    theta                 = fit_digits,
-    alpha                 = fit_digits,
-    within_r2             = fit_digits,
-    phi                   = fit_digits,
-    r2_bayes              = fit_digits,
-    elpd_loo              = ic_digits,
-    looic                 = ic_digits,
-    waic                  = ic_digits,
-    pseudo_r2_nagelkerke  = fit_digits,
-    pseudo_r2_tjur        = fit_digits,
-    r2_marginal           = fit_digits,
-    r2_conditional        = fit_digits,
-    icc                   = fit_digits,
-    sigma                 = fit_digits,
-    rmse                  = fit_digits,
-    f2                    = fit_digits,
-    aic                   = ic_digits,
-    aicc                  = ic_digits,
-    bic                   = ic_digits,
+  prec <- switch(
+    token,
+    nobs = 0L,
+    n_events = 0L,
+    weighted_nobs = 0L,
+    r2 = fit_digits,
+    adj_r2 = fit_digits,
+    omega2 = fit_digits,
+    pseudo_r2_mcfadden = fit_digits,
+    theta = fit_digits,
+    alpha = fit_digits,
+    within_r2 = fit_digits,
+    phi = fit_digits,
+    r2_bayes = fit_digits,
+    elpd_loo = ic_digits,
+    looic = ic_digits,
+    waic = ic_digits,
+    pseudo_r2_nagelkerke = fit_digits,
+    pseudo_r2_tjur = fit_digits,
+    r2_marginal = fit_digits,
+    r2_conditional = fit_digits,
+    icc = fit_digits,
+    sigma = fit_digits,
+    rmse = fit_digits,
+    f2 = fit_digits,
+    aic = ic_digits,
+    aicc = ic_digits,
+    bic = ic_digits,
     # Phase 7c22 (item b): deviance is on the same likelihood scale as
     # AIC / BIC / AICc (large values, IC family). The default
     # `ic_digits = 1L` matches Stata `estat ic` and SAS PROC LOGISTIC
     # convention; the previous `digits` (= 2L by default) over-
     # specified the precision for values typically in the hundreds.
-    deviance              = ic_digits,
+    deviance = ic_digits,
     # Change tokens: precision matches the absolute version
-    r2_change             = fit_digits,
-    adj_r2_change         = fit_digits,
-    f2_change             = fit_digits,
-    f_change              = digits,
-    lrt_change            = digits,
-    aic_change            = ic_digits,
-    aicc_change           = ic_digits,
-    bic_change            = ic_digits,
-    deviance_change       = ic_digits,
+    r2_change = fit_digits,
+    adj_r2_change = fit_digits,
+    f2_change = fit_digits,
+    f_change = digits,
+    lrt_change = digits,
+    aic_change = ic_digits,
+    aicc_change = ic_digits,
+    bic_change = ic_digits,
+    deviance_change = ic_digits,
     digits
   )
   if (is_change) {
@@ -1355,9 +1634,13 @@ format_fit_stat_value <- function(token, val,
 
 # ---- Factor header row ---------------------------------------------------
 
-build_factor_header_row <- function(factor_term, col_spec, labels,
-                                      reference_style = "row",
-                                      ref_level = NA_character_) {
+build_factor_header_row <- function(
+  factor_term,
+  col_spec,
+  labels,
+  reference_style = "row",
+  ref_level = NA_character_
+) {
   display <- if (!is.null(labels) && factor_term %in% names(labels)) {
     labels[[factor_term]]
   } else {
@@ -1367,8 +1650,11 @@ build_factor_header_row <- function(factor_term, col_spec, labels,
   # Q5 \u2013 annotation mode bakes "[ref: <level>]" into the factor
   # header so the reference level remains readable even though the
   # ref ROW was dropped during alignment.
-  if (identical(reference_style, "annotation") &&
-      !is.na(ref_level) && nzchar(ref_level)) {
+  if (
+    identical(reference_style, "annotation") &&
+      !is.na(ref_level) &&
+      nzchar(ref_level)
+  ) {
     header <- paste0(header, " [ref: ", ref_level, "]")
   }
   cells <- list(Variable = header)
@@ -1385,16 +1671,22 @@ build_factor_header_row <- function(factor_term, col_spec, labels,
 # Sorted strictest first \u2192 applied with cumulative "lowest threshold met"
 # semantics in format_stars().
 resolve_stars_thresholds <- function(stars) {
-  if (isFALSE(stars) || is.null(stars)) return(NULL)
+  if (isFALSE(stars) || is.null(stars)) {
+    return(NULL)
+  }
   if (isTRUE(stars)) {
     return(c("***" = 0.001, "**" = 0.01, "*" = 0.05))
   }
-  if (!is.numeric(stars) || is.null(names(stars))) return(NULL)
+  if (!is.numeric(stars) || is.null(names(stars))) {
+    return(NULL)
+  }
   stars[order(stars)]
 }
 
 format_stars <- function(p, stars_map) {
-  if (is.null(stars_map) || is.na(p)) return("")
+  if (is.null(stars_map) || is.na(p)) {
+    return("")
+  }
   for (sym in names(stars_map)) {
     if (p < stars_map[[sym]]) return(sym)
   }

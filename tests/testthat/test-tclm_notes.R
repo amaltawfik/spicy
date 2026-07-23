@@ -417,25 +417,33 @@ test_that("excel output writes the note lines below the table", {
 test_that("bootstrap note reports the valid replicate count", {
   set.seed(4)
   out <- table_continuous_lm(
-    sochealth, select = wellbeing_score, by = physical_activity,
-    vcov = "bootstrap", boot_n = 200, output = "long"
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
+    vcov = "bootstrap",
+    boot_n = 200,
+    output = "long"
   )
   expect_true("boot_n_valid" %in% names(out))
   expect_true(all(out$boot_n_valid <= 200L, na.rm = TRUE))
   expect_true(any(is.finite(out$boot_n_valid)))
   set.seed(4)
   tbl <- table_continuous_lm(
-    sochealth, select = wellbeing_score, by = physical_activity,
-    vcov = "bootstrap", boot_n = 200
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
+    vcov = "bootstrap",
+    boot_n = 200
   )
   note <- spicy:::.tclm_note_text(tbl)
-  expect_match(note, "nonparametric bootstrap (200 replicates).",
-               fixed = TRUE)
+  expect_match(note, "nonparametric bootstrap (200 replicates).", fixed = TRUE)
 })
 
 test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
   out <- table_continuous_lm(
-    sochealth, select = wellbeing_score, by = physical_activity,
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
     output = "data.frame"
   )
   expect_true(all(is.na(out$boot_n_valid)))

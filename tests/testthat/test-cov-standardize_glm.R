@@ -28,7 +28,6 @@
 # narrow `# nocov` in the source.
 # ---------------------------------------------------------------------------
 
-
 # ---- 1. Default-weights pull (line 48) ------------------------------------
 
 test_that("standardize_glm pulls weights from the fit when weights = NULL", {
@@ -51,9 +50,9 @@ test_that("standardize_glm pulls weights from the fit when weights = NULL", {
 
 test_that("glm refit emits an all-NA row for an aliased predictor", {
   d <- mtcars
-  d$dup <- d$wt * 2          # perfectly collinear with wt -> NA coefficient
+  d$dup <- d$wt * 2 # perfectly collinear with wt -> NA coefficient
   fit <- glm(am ~ wt + dup, data = d, family = binomial)
-  expect_true(any(is.na(stats::coef(fit))))   # precondition
+  expect_true(any(is.na(stats::coef(fit)))) # precondition
 
   tbl <- spicy:::standardize_glm(fit, method = "refit", weights = NULL)
   dup_row <- tbl[tbl$term == "dup", , drop = FALSE]
@@ -81,15 +80,27 @@ test_that("glm_coefs_inference_table NAs the intercept when intercept_to_na=TRUE
   mf[["(weights)"]] <- NULL
   resp_name <- all.vars(stats::formula(fit)[[2L]])[1L]
   for (nm in names(mf)) {
-    if (identical(nm, resp_name)) next
+    if (identical(nm, resp_name)) {
+      next
+    }
     if (is.numeric(mf[[nm]])) mf[[nm]] <- as.numeric(scale(mf[[nm]]))
   }
   fit_std <- glm(am ~ mpg, data = mf, family = binomial)
-  vc <- spicy:::compute_model_vcov(fit_std, type = "classical",
-                                cluster = NULL, weights = NULL, boot_n = 0L)
+  vc <- spicy:::compute_model_vcov(
+    fit_std,
+    type = "classical",
+    cluster = NULL,
+    weights = NULL,
+    boot_n = 0L
+  )
 
   out <- spicy:::glm_coefs_inference_table(
-    fit_std, vc, "classical", NULL, 0.95, intercept_to_na = TRUE
+    fit_std,
+    vc,
+    "classical",
+    NULL,
+    0.95,
+    intercept_to_na = TRUE
   )
 
   intercept <- out[out$term == "(Intercept)", , drop = FALSE]
@@ -113,15 +124,27 @@ test_that("glm_coefs_inference_table keeps the intercept when intercept_to_na=FA
   mf[["(weights)"]] <- NULL
   resp_name <- all.vars(stats::formula(fit)[[2L]])[1L]
   for (nm in names(mf)) {
-    if (identical(nm, resp_name)) next
+    if (identical(nm, resp_name)) {
+      next
+    }
     if (is.numeric(mf[[nm]])) mf[[nm]] <- as.numeric(scale(mf[[nm]]))
   }
   fit_std <- glm(am ~ mpg, data = mf, family = binomial)
-  vc <- spicy:::compute_model_vcov(fit_std, type = "classical",
-                                cluster = NULL, weights = NULL, boot_n = 0L)
+  vc <- spicy:::compute_model_vcov(
+    fit_std,
+    type = "classical",
+    cluster = NULL,
+    weights = NULL,
+    boot_n = 0L
+  )
 
   out <- spicy:::glm_coefs_inference_table(
-    fit_std, vc, "classical", NULL, 0.95, intercept_to_na = FALSE
+    fit_std,
+    vc,
+    "classical",
+    NULL,
+    0.95,
+    intercept_to_na = FALSE
   )
   intercept <- out[out$term == "(Intercept)", , drop = FALSE]
   expect_false(is.na(intercept$estimate))
@@ -147,7 +170,8 @@ test_that("compute_menard_sd_y_star returns NA for log-binomial (no latent thres
   x <- rnorm(400)
   y <- rbinom(400, 1, pmin(exp(-1.5 + 0.3 * x), 0.99))
   fit <- suppressWarnings(
-    glm(y ~ x, family = binomial(link = "log"), start = c(-1.5, 0)))
+    glm(y ~ x, family = binomial(link = "log"), start = c(-1.5, 0))
+  )
   skip_if(!fit$converged)
   expect_identical(family(fit)$link, "log")
   expect_true(is.na(spicy:::compute_menard_sd_y_star(fit)))
@@ -178,11 +202,10 @@ test_that("compute_menard_sd_y_star strips na.exclude NA padding (finite SD(Y*))
   # misreport the (perfectly supported) binomial/logit family as out of scope.
   d <- mtcars
   d$mpg[c(2, 5, 9)] <- NA
-  fit <- glm(am ~ mpg + wt, data = d, family = binomial,
-             na.action = na.exclude)
+  fit <- glm(am ~ mpg + wt, data = d, family = binomial, na.action = na.exclude)
 
   eta <- as.numeric(stats::predict(fit, type = "link"))
-  expect_true(anyNA(eta))                       # precondition: padding present
+  expect_true(anyNA(eta)) # precondition: padding present
 
   sd_y_star <- spicy:::compute_menard_sd_y_star(fit)
   expect_true(is.finite(sd_y_star))
@@ -194,21 +217,26 @@ test_that("compute_menard_sd_y_star strips na.exclude NA padding (finite SD(Y*))
 
   # Equivalently, an na.omit fit (rows physically dropped) must give the same
   # SD(Y*): the latent-variable SD is invariant to the NA-handling choice.
-  fit_omit <- glm(am ~ mpg + wt, data = d, family = binomial,
-                  na.action = na.omit)
+  fit_omit <- glm(
+    am ~ mpg + wt,
+    data = d,
+    family = binomial,
+    na.action = na.omit
+  )
   expect_equal(sd_y_star, spicy:::compute_menard_sd_y_star(fit_omit))
 })
 
 test_that("pseudo standardisation on an na.exclude fit returns finite betas (no caveat)", {
   d <- mtcars
   d$mpg[c(2, 5, 9)] <- NA
-  fit <- glm(am ~ mpg + wt, data = d, family = binomial,
-             na.action = na.exclude)
+  fit <- glm(am ~ mpg + wt, data = d, family = binomial, na.action = na.exclude)
 
   # No spicy_caveat: the family/link is supported, the only NA were padding.
   res <- withCallingHandlers(
     spicy:::standardize_glm(fit, method = "pseudo", weights = NULL),
-    spicy_caveat = function(w) stop("unexpected spicy_caveat: ", conditionMessage(w))
+    spicy_caveat = function(w) {
+      stop("unexpected spicy_caveat: ", conditionMessage(w))
+    }
   )
 
   expect_true(is.finite(res$estimate[res$term == "mpg"]))
@@ -237,22 +265,25 @@ test_that("algebraic glm re-aligns SEs by name for an aliased predictor (HC3)", 
   # the aliased term) -- not a silent length-p-1 -> length-p recycle, which
   # previously produced a wrong SE for every term and a recycling warning.
   d <- mtcars
-  d$dup <- d$wt * 2                 # perfectly collinear with wt
+  d$dup <- d$wt * 2 # perfectly collinear with wt
   fit <- glm(am ~ wt + dup, data = d, family = binomial)
-  expect_true(any(is.na(stats::coef(fit))))      # precondition: aliasing
+  expect_true(any(is.na(stats::coef(fit)))) # precondition: aliasing
 
   # Robust vcov really is reduced-width here (guard the precondition).
   vc_hc3 <- sandwich::vcovHC(fit, type = "HC3")
-  expect_equal(nrow(vc_hc3), 2L)                 # (Intercept), wt only
+  expect_equal(nrow(vc_hc3), 2L) # (Intercept), wt only
 
   # Must not warn about recycling / length mismatch.
   expect_no_warning(
     res <- spicy:::standardize_glm(
-      fit, method = "posthoc", vcov_type = "HC3", weights = NULL
+      fit,
+      method = "posthoc",
+      vcov_type = "HC3",
+      weights = NULL
     )
   )
 
-  wt_row  <- res[res$term == "wt", , drop = FALSE]
+  wt_row <- res[res$term == "wt", , drop = FALSE]
   dup_row <- res[res$term == "dup", , drop = FALSE]
 
   # Aliased term -> NA throughout (no recycled garbage).
@@ -263,11 +294,11 @@ test_that("algebraic glm re-aligns SEs by name for an aliased predictor (HC3)", 
 
   # Non-aliased term -> correct standardised estimate + HC3 SE from first
   # principles: beta = b * sd(wt); se = sqrt(vcovHC[wt, wt]) * sd(wt).
-  b  <- stats::coef(fit)
+  b <- stats::coef(fit)
   mm <- stats::model.matrix(fit)
   sd_wt <- stats::sd(mm[, "wt"])
   exp_est <- unname(b["wt"]) * sd_wt
-  exp_se  <- sqrt(vc_hc3["wt", "wt"]) * sd_wt
+  exp_se <- sqrt(vc_hc3["wt", "wt"]) * sd_wt
   expect_equal(wt_row$estimate, exp_est)
   expect_equal(wt_row$se, exp_se)
 })
@@ -297,11 +328,19 @@ test_that("smart (Gelman) glm: factor dummies untouched, continuous x 2 SD", {
   fit <- glm(am ~ wt + factor(cyl), data = mtcars, family = binomial())
   res <- spicy:::standardize_glm(fit, method = "smart", weights = NULL)
   b <- stats::coef(fit)
-  expect_equal(res$estimate[res$term == "factor(cyl)6"],
-               unname(b["factor(cyl)6"]), tolerance = 1e-12)
-  expect_equal(res$estimate[res$term == "factor(cyl)8"],
-               unname(b["factor(cyl)8"]), tolerance = 1e-12)
-  expect_equal(res$estimate[res$term == "wt"],
-               unname(b["wt"]) * 2 * stats::sd(mtcars$wt),
-               tolerance = 1e-12)
+  expect_equal(
+    res$estimate[res$term == "factor(cyl)6"],
+    unname(b["factor(cyl)6"]),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    res$estimate[res$term == "factor(cyl)8"],
+    unname(b["factor(cyl)8"]),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    res$estimate[res$term == "wt"],
+    unname(b["wt"]) * 2 * stats::sd(mtcars$wt),
+    tolerance = 1e-12
+  )
 })

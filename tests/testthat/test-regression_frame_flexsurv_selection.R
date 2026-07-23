@@ -3,29 +3,36 @@
 # sampleSelection.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_flexsurv_weibull <- function() {
   skip_if_not_installed("flexsurv")
   skip_if_not_installed("survival")
-  flexsurv::flexsurvreg(survival::Surv(time, status) ~ age + sex,
-                        data = survival::lung, dist = "weibull")
+  flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    dist = "weibull"
+  )
 }
 
 .fit_flexsurv_lognormal <- function() {
   skip_if_not_installed("flexsurv")
   skip_if_not_installed("survival")
-  flexsurv::flexsurvreg(survival::Surv(time, status) ~ age,
-                        data = survival::lung, dist = "lognormal")
+  flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung,
+    dist = "lognormal"
+  )
 }
 
 .fit_selection_heckman <- function() {
   skip_if_not_installed("sampleSelection")
   data("Mroz87", package = "sampleSelection", envir = environment())
-  sampleSelection::selection(lfp ~ age + faminc + kids5 + educ,
-                              wage ~ exper + educ + city,
-                              data = Mroz87)
+  sampleSelection::selection(
+    lfp ~ age + faminc + kids5 + educ,
+    wage ~ exper + educ + city,
+    data = Mroz87
+  )
 }
 
 
@@ -47,21 +54,25 @@ test_that("flexsurvreg Weibull: family = weibull/log", {
   fit <- .fit_flexsurv_weibull()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "weibull")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 })
 
 test_that("flexsurvreg Weibull: title = 'Weibull parametric survival regression'", {
   fit <- .fit_flexsurv_weibull()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Weibull parametric survival regression")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Weibull parametric survival regression"
+  )
 })
 
 test_that("flexsurvreg lognormal: title = 'Log-normal parametric survival regression'", {
   fit <- .fit_flexsurv_lognormal()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Log-normal parametric survival regression")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Log-normal parametric survival regression"
+  )
 })
 
 
@@ -90,12 +101,16 @@ test_that("flexsurvreg: coefs match fit$res for covariate rows", {
   fr <- as_regression_frame(fit, model_id = "M1")
   cov_names <- c("age", "sex")
   for (nm in cov_names) {
-    expect_equal(fr$coefs$estimate[fr$coefs$term == nm],
-                 unname(fit$res[nm, "est"]),
-                 tolerance = 1e-10)
-    expect_equal(fr$coefs$std_error[fr$coefs$term == nm],
-                 unname(fit$res[nm, "se"]),
-                 tolerance = 1e-10)
+    expect_equal(
+      fr$coefs$estimate[fr$coefs$term == nm],
+      unname(fit$res[nm, "est"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      fr$coefs$std_error[fr$coefs$term == nm],
+      unname(fit$res[nm, "se"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -141,7 +156,7 @@ test_that("selection: family = heckman/identity", {
   fit <- .fit_selection_heckman()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "heckman")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 
@@ -177,8 +192,10 @@ test_that("selection: sigma + rho surfaced in extras", {
 test_that("selection: estimation_method surfaced in extras", {
   fit <- .fit_selection_heckman()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_true(fr$info$extras$estimation_method %in%
-              c("Maximum likelihood", "Heckman two-step"))
+  expect_true(
+    fr$info$extras$estimation_method %in%
+      c("Maximum likelihood", "Heckman two-step")
+  )
 })
 
 
@@ -188,7 +205,7 @@ test_that("selection: term is prefixed with the block name (uniqueness)", {
   fit <- .fit_selection_heckman()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_true(any(grepl("^selection: ", fr$coefs$term)))
-  expect_true(any(grepl("^outcome: ",   fr$coefs$term)))
+  expect_true(any(grepl("^outcome: ", fr$coefs$term)))
   # Term-uniqueness within the model (otherwise the body builder
   # collapses the two (Intercept) rows into one).
   expect_identical(length(unique(fr$coefs$term)), nrow(fr$coefs))
@@ -196,11 +213,13 @@ test_that("selection: term is prefixed with the block name (uniqueness)", {
 
 test_that("table_regression() body shows separate selection vs outcome rows", {
   fit <- .fit_selection_heckman()
-  combined <- paste(capture.output(print(table_regression(fit))),
-                    collapse = "\n")
+  combined <- paste(
+    capture.output(print(table_regression(fit))),
+    collapse = "\n"
+  )
   expect_match(combined, "selection: (Intercept)", fixed = TRUE)
-  expect_match(combined, "outcome: (Intercept)",   fixed = TRUE)
+  expect_match(combined, "outcome: (Intercept)", fixed = TRUE)
   # `educ` appears in BOTH equations -- the body should show both rows.
   expect_match(combined, "selection: educ", fixed = TRUE)
-  expect_match(combined, "outcome: educ",   fixed = TRUE)
+  expect_match(combined, "outcome: educ", fixed = TRUE)
 })

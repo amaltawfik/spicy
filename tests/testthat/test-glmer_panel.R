@@ -12,7 +12,6 @@
 #       for Poisson(log).
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_glmer_bernoulli <- function() {
@@ -38,8 +37,11 @@
 .fit_glmer_cbpp <- function() {
   skip_if_not_installed("lme4")
   suppressMessages(suppressWarnings(
-    lme4::glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
-                 data = lme4::cbpp, family = binomial)
+    lme4::glmer(
+      cbind(incidence, size - incidence) ~ period + (1 | herd),
+      data = lme4::cbpp,
+      family = binomial
+    )
   ))
 }
 
@@ -99,10 +101,10 @@ test_that("glmer (Bernoulli) table_regression output uses structured panel", {
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "Random effects (ML):", fixed = TRUE)
-  expect_match(combined, "σ g (Intercept)",       fixed = TRUE)
+  expect_match(combined, "σ g (Intercept)", fixed = TRUE)
   # No "residual variance = 1.00" sentence anymore.
-  expect_false(grepl("residual variance",      combined, fixed = TRUE))
-  expect_false(grepl("σ (Residual)",            combined, fixed = TRUE))
+  expect_false(grepl("residual variance", combined, fixed = TRUE))
+  expect_false(grepl("σ (Residual)", combined, fixed = TRUE))
 })
 
 test_that("glmer (cbpp cbind binomial) table_regression output uses structured panel", {
@@ -110,9 +112,9 @@ test_that("glmer (cbpp cbind binomial) table_regression output uses structured p
   fit <- .fit_glmer_cbpp()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
-  expect_match(combined, "Random effects (ML)",  fixed = TRUE)
-  expect_match(combined, "σ herd (Intercept)",    fixed = TRUE)
-  expect_match(combined, "N (herd)",              fixed = TRUE)
+  expect_match(combined, "Random effects (ML)", fixed = TRUE)
+  expect_match(combined, "σ herd (Intercept)", fixed = TRUE)
+  expect_match(combined, "N (herd)", fixed = TRUE)
   # cbind binomial -> no ICC (gated; per-trial formula not in scope).
   expect_false(grepl("ICC", combined, fixed = TRUE))
 })
@@ -151,8 +153,11 @@ test_that("lmer (Gaussian) ICC unchanged: var_r / (var_r + sigma^2)", {
   vc <- fr$info$random_effects$variance_components
   var_r <- vc$variance[vc$group == "Subject"]
   var_e <- vc$variance[vc$group == "Residual"]
-  expect_equal(fr$info$random_effects$icc, var_r / (var_r + var_e),
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$random_effects$icc,
+    var_r / (var_r + var_e),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -192,5 +197,5 @@ test_that(".merMod_link_distribution_variance returns NA for cbind binomial", {
 test_that(".merMod_link_distribution_variance returns NA for Gaussian (handled upstream)", {
   fit <- .fit_lmer_baseline()
   v <- spicy:::.merMod_link_distribution_variance(fit, var_random = 1)
-  expect_true(is.na(v))  # Gaussian path uses sigma^2 from vc_df directly
+  expect_true(is.na(v)) # Gaussian path uses sigma^2 from vc_df directly
 })

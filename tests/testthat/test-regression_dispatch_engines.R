@@ -16,7 +16,8 @@ test_that("output = 'excel' writes a workbook to the supplied path", {
   path <- tempfile(fileext = ".xlsx")
   on.exit(unlink(path), add = TRUE)
   out <- table_regression(
-    fit, output = "excel",
+    fit,
+    output = "excel",
     excel_path = path,
     excel_sheet = "Reg"
   )
@@ -31,8 +32,7 @@ test_that("output = 'excel' with title + footer writes title row + footer rows",
   fit <- lm(mpg ~ wt + cyl, data = mt)
   path <- tempfile(fileext = ".xlsx")
   on.exit(unlink(path), add = TRUE)
-  table_regression(fit, output = "excel", excel_path = path,
-                   stars = TRUE)
+  table_regression(fit, output = "excel", excel_path = path, stars = TRUE)
   # Read back and check structure: first row should be the title text
   wb <- openxlsx2::wb_load(path)
   cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
@@ -51,8 +51,7 @@ test_that("output = 'clipboard' delegates to clipr::write_clip", {
     skip("Clipboard not available on this CI runner")
   }
   fit <- lm(mpg ~ wt, data = mt)
-  out <- table_regression(fit, output = "clipboard",
-                          clipboard_delim = "\t")
+  out <- table_regression(fit, output = "clipboard", clipboard_delim = "\t")
   expect_true(inherits(out, "data.frame"))
   pasted <- clipr::read_clip()
   expect_true(any(grepl("Variable", pasted)))
@@ -109,16 +108,16 @@ test_that("fit_stats_layout = 'merged' warns for engines without body-cell merge
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   # tinytable: HTML colspan is header-only.
   expect_warning(
-    table_regression(list(m1, m2),
-                     fit_stats_layout = "merged",
-                     output = "tinytable"),
+    table_regression(
+      list(m1, m2),
+      fit_stats_layout = "merged",
+      output = "tinytable"
+    ),
     class = "spicy_ignored_arg"
   )
   # gt: tab_spanner() covers columns, not body rows.
   expect_warning(
-    table_regression(list(m1, m2),
-                     fit_stats_layout = "merged",
-                     output = "gt"),
+    table_regression(list(m1, m2), fit_stats_layout = "merged", output = "gt"),
     class = "spicy_ignored_arg"
   )
   # Default `fit_stats_layout = "first_col"` should NOT warn.
@@ -184,18 +183,23 @@ test_that("dispatch_regression_output – unknown output rejected by match.arg",
 test_that("output = 'excel' with multi-model writes spanner row + merged cells + footer-reference line", {
   skip_if_not_installed("openxlsx2")
   df <- data.frame(
-    y   = rnorm(80),
+    y = rnorm(80),
     age = rnorm(80),
-    sex = factor(sample(c("Female", "Male"), 80, replace = TRUE),
-                 levels = c("Female", "Male"))
+    sex = factor(
+      sample(c("Female", "Male"), 80, replace = TRUE),
+      levels = c("Female", "Male")
+    )
   )
   m1 <- lm(y ~ age + sex, df)
   m2 <- lm(y ~ age + sex, df[sample(nrow(df), 60), ])
   path <- tempfile(fileext = ".xlsx")
   on.exit(unlink(path), add = TRUE)
-  table_regression(list("Crude" = m1, "Adjusted" = m2),
-                   output = "excel", excel_path = path,
-                   reference_style = "footer")
+  table_regression(
+    list("Crude" = m1, "Adjusted" = m2),
+    output = "excel",
+    excel_path = path,
+    reference_style = "footer"
+  )
   expect_true(file.exists(path))
   wb <- openxlsx2::wb_load(path)
   cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
@@ -206,9 +210,11 @@ test_that("output = 'excel' with multi-model writes spanner row + merged cells +
   })
   expect_true(any(has_spanner))
   # Reference categories line should appear somewhere in column A
-  expect_true(any(grepl("Reference categories",
-                         as.character(cells[, 1L]),
-                         fixed = TRUE)))
+  expect_true(any(grepl(
+    "Reference categories",
+    as.character(cells[, 1L]),
+    fixed = TRUE
+  )))
 })
 
 
@@ -220,12 +226,15 @@ test_that("output = 'excel' with mixed lm + glm carries the per-model regression
   skip_if_not_installed("openxlsx2")
   mt2 <- mtcars
   mt2$cyl <- factor(mt2$cyl)
-  m_lm  <- lm(mpg ~ wt, data = mt2)
+  m_lm <- lm(mpg ~ wt, data = mt2)
   m_glm <- glm(am ~ mpg, data = mt2, family = binomial)
   path <- tempfile(fileext = ".xlsx")
   on.exit(unlink(path), add = TRUE)
-  table_regression(list("OLS" = m_lm, "Logit" = m_glm),
-                   output = "excel", excel_path = path)
+  table_regression(
+    list("OLS" = m_lm, "Logit" = m_glm),
+    output = "excel",
+    excel_path = path
+  )
   wb <- openxlsx2::wb_load(path)
   cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
   col_a <- as.character(cells[, 1L])
@@ -240,12 +249,15 @@ test_that("output = 'excel' with mixed lm + glm carries the per-model regression
 
 test_that("`title` and `note` validator rejects TRUE and non-character", {
   fit <- lm(mpg ~ wt, data = mt)
-  expect_error(table_regression(fit, title = TRUE),
-                class = "spicy_invalid_input")
-  expect_error(table_regression(fit, note = 1L),
-                class = "spicy_invalid_input")
-  expect_error(table_regression(fit, title = c("a", "b")),
-                class = "spicy_invalid_input")
+  expect_error(
+    table_regression(fit, title = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_error(table_regression(fit, note = 1L), class = "spicy_invalid_input")
+  expect_error(
+    table_regression(fit, title = c("a", "b")),
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("`title = FALSE` and `note = FALSE` suppress both banners", {
@@ -257,10 +269,9 @@ test_that("`title = FALSE` and `note = FALSE` suppress both banners", {
 
 test_that("`title = \"...\"` and `note = \"...\"` override the auto banners", {
   fit <- lm(mpg ~ wt, data = mt)
-  out <- table_regression(fit, title = "Custom title",
-                           note = "Custom note.")
+  out <- table_regression(fit, title = "Custom title", note = "Custom note.")
   expect_identical(attr(out, "title"), "Custom title")
-  expect_identical(attr(out, "note"),  "Custom note.")
+  expect_identical(attr(out, "note"), "Custom note.")
 })
 
 
@@ -288,12 +299,20 @@ test_that("Excel: title = FALSE suppresses the A1 title cell", {
   fit <- lm(mpg ~ wt, data = mt)
   path <- tempfile(fileext = ".xlsx")
   on.exit(unlink(path), add = TRUE)
-  table_regression(fit, title = FALSE, note = FALSE,
-                   output = "excel", excel_path = path)
+  table_regression(
+    fit,
+    title = FALSE,
+    note = FALSE,
+    output = "excel",
+    excel_path = path
+  )
   wb <- openxlsx2::wb_load(path)
   cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
-  expect_false(grepl("Linear regression", as.character(cells[[1L]][1L]),
-                      fixed = TRUE))
+  expect_false(grepl(
+    "Linear regression",
+    as.character(cells[[1L]][1L]),
+    fixed = TRUE
+  ))
 })
 
 
@@ -352,8 +371,12 @@ test_that("output = 'gt' renders with APA borders", {
   g <- table_regression(list(m1, m2), output = "gt")
   expect_s3_class(g, "gt_tbl")
   # title = FALSE path
-  g2 <- table_regression(list(m1, m2), title = FALSE, note = FALSE,
-                          output = "gt")
+  g2 <- table_regression(
+    list(m1, m2),
+    title = FALSE,
+    note = FALSE,
+    output = "gt"
+  )
   expect_s3_class(g2, "gt_tbl")
 })
 
@@ -363,8 +386,12 @@ test_that("output = 'flextable' renders with APA borders", {
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
   ft <- table_regression(list(m1, m2), output = "flextable")
   expect_s3_class(ft, "flextable")
-  ft2 <- table_regression(list(m1, m2), title = FALSE, note = FALSE,
-                           output = "flextable")
+  ft2 <- table_regression(
+    list(m1, m2),
+    title = FALSE,
+    note = FALSE,
+    output = "flextable"
+  )
   expect_s3_class(ft2, "flextable")
 })
 
@@ -374,8 +401,12 @@ test_that("output = 'tinytable' renders with APA borders", {
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
   tt <- table_regression(list(m1, m2), output = "tinytable")
   expect_true(inherits(tt, "tinytable"))
-  tt2 <- table_regression(list(m1, m2), title = FALSE, note = FALSE,
-                           output = "tinytable")
+  tt2 <- table_regression(
+    list(m1, m2),
+    title = FALSE,
+    note = FALSE,
+    output = "tinytable"
+  )
   expect_true(inherits(tt2, "tinytable"))
 })
 
@@ -398,20 +429,29 @@ test_that(".fit_stat_merge_ranges emits one spec per (fit-stat row, model)", {
   r <- table_regression(list(m1, m2), show_columns = c("b", "ci", "p"))
   struct <- attr(r, "structured")
   specs <- spicy:::.fit_stat_merge_ranges(
-    struct$body, struct$spanners, attr(r, "group_sep_rows")
+    struct$body,
+    struct$spanners,
+    attr(r, "group_sep_rows")
   )
   # 3 fit-stat rows (n, R^2, Adj.R^2) x 2 models = 6 merge specs.
   expect_length(specs, 6L)
-  expect_identical(unique(vapply(specs, `[[`, integer(1L), "row")),
-                    attr(r, "group_sep_rows"):nrow(struct$body))
+  expect_identical(
+    unique(vapply(specs, `[[`, integer(1L), "row")),
+    attr(r, "group_sep_rows"):nrow(struct$body)
+  )
 })
 
 test_that(".fit_stat_merge_ranges returns empty list when no fit-stats present", {
   m1 <- lm(mpg ~ wt, data = mt)
-  r <- table_regression(m1, show_columns = c("b", "ci", "p"),
-                          show_fit_stats = FALSE)
+  r <- table_regression(
+    m1,
+    show_columns = c("b", "ci", "p"),
+    show_fit_stats = FALSE
+  )
   specs <- spicy:::.fit_stat_merge_ranges(
-    as.data.frame(r), attr(r, "spanners"), attr(r, "group_sep_rows")
+    as.data.frame(r),
+    attr(r, "spanners"),
+    attr(r, "group_sep_rows")
   )
   expect_length(specs, 0L)
 })
@@ -436,11 +476,19 @@ test_that("Excel fit_stats_layout = 'merged' inserts merged cells", {
   p_first <- tempfile(fileext = ".xlsx")
   p_merge <- tempfile(fileext = ".xlsx")
   on.exit(unlink(c(p_first, p_merge)), add = TRUE)
-  table_regression(list(m1, m2), output = "excel", excel_path = p_first,
-                   show_columns = c("b", "ci", "p"))
-  table_regression(list(m1, m2), output = "excel", excel_path = p_merge,
-                   show_columns = c("b", "ci", "p"),
-                   fit_stats_layout = "merged")
+  table_regression(
+    list(m1, m2),
+    output = "excel",
+    excel_path = p_first,
+    show_columns = c("b", "ci", "p")
+  )
+  table_regression(
+    list(m1, m2),
+    output = "excel",
+    excel_path = p_merge,
+    show_columns = c("b", "ci", "p"),
+    fit_stats_layout = "merged"
+  )
   # The merged-mode workbook embeds extra mergeCells XML entries
   # for each fit-stat row x model pair, so its file size is
   # strictly greater than the first_col baseline.
@@ -451,16 +499,20 @@ test_that("flextable fit_stats_layout = 'merged' emits colspan in fit-stat rows"
   skip_if_not_installed("flextable")
   m1 <- lm(mpg ~ wt + cyl, data = mt)
   m2 <- lm(mpg ~ wt + cyl + hp, data = mt)
-  ft <- table_regression(list(m1, m2), output = "flextable",
-                          show_columns = c("b", "ci", "p"),
-                          fit_stats_layout = "merged")
+  ft <- table_regression(
+    list(m1, m2),
+    output = "flextable",
+    show_columns = c("b", "ci", "p"),
+    fit_stats_layout = "merged"
+  )
   # Save and inspect HTML for body-cell colspan attributes.
   tmp <- tempfile(fileext = ".html")
   on.exit(unlink(tmp), add = TRUE)
   flextable::save_as_html(ft, path = tmp)
   html <- paste(readLines(tmp, warn = FALSE), collapse = "\n")
-  body_colspans <- regmatches(html,
-                                gregexpr('<td[^>]*colspan="[2-9]', html))[[1]]
+  body_colspans <- regmatches(html, gregexpr('<td[^>]*colspan="[2-9]', html))[[
+    1
+  ]]
   # 3 fit-stat rows x 2 models = 6 merged body cells.
   expect_gte(length(body_colspans), 6L)
 })
@@ -523,4 +575,3 @@ test_that("Excel: vertical borders are NOT applied (only top/bottom rules)", {
   )
   expect_false(any(full_borders))
 })
-

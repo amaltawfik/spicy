@@ -54,7 +54,7 @@ test_that("cluster_lookup_data hits model.frame and reports tried_original = FAL
 test_that("cluster_lookup_data falls back to original data for an off-model column", {
   df <- mtcars
   df$clinic <- factor(rep(letters[1:4], length.out = nrow(df)))
-  fit <- lm(mpg ~ wt, data = df)         # `clinic` not in the model frame
+  fit <- lm(mpg ~ wt, data = df) # `clinic` not in the model frame
   src <- spicy:::cluster_lookup_data(fit, "clinic")
   expect_length(src$missing, 0L)
   expect_true(src$tried_original)
@@ -75,9 +75,9 @@ test_that("resolve_cluster resolves a string cluster from the original data", {
 test_that("cluster_lookup_data subsets original data via na.action to match nobs", {
   df <- mtcars
   df$clinic <- factor(rep(letters[1:4], length.out = nrow(df)))
-  df$wt[c(2, 5)] <- NA                   # two rows dropped by lm()
+  df$wt[c(2, 5)] <- NA # two rows dropped by lm()
   fit <- lm(mpg ~ wt, data = df)
-  expect_lt(stats::nobs(fit), nrow(df))  # precondition: rows were dropped
+  expect_lt(stats::nobs(fit), nrow(df)) # precondition: rows were dropped
   src <- spicy:::cluster_lookup_data(fit, "clinic")
   expect_length(src$missing, 0L)
   expect_true(src$tried_original)
@@ -117,7 +117,7 @@ test_that("resolve_cluster errors for a string column absent everywhere", {
 test_that("resolve_cluster_arg errors when a cluster list length != models length", {
   models <- list(lm(mpg ~ wt, mtcars), lm(mpg ~ hp, mtcars))
   expect_error(
-    spicy:::resolve_cluster_arg(list(~gear), models),  # 1 cluster, 2 models
+    spicy:::resolve_cluster_arg(list(~gear), models), # 1 cluster, 2 models
     class = "spicy_invalid_input"
   )
 })

@@ -14,7 +14,6 @@
 #     unrecognised distribution name.
 # ---------------------------------------------------------------------------
 
-
 # ---- 1. .check_survival_available(): abort when survival is missing -------
 
 test_that(".check_survival_available aborts with spicy_missing_pkg when survival absent", {
@@ -70,7 +69,9 @@ test_that(".survival_reference_rows returns an empty coefs frame for an ordered 
   rows <- spicy:::.survival_reference_rows(fit)
   expect_identical(nrow(rows), 0L)
   # The empty frame still carries the canonical coefs schema columns.
-  expect_true(all(c("term", "parent_var", "is_ref", "estimate") %in% names(rows)))
+  expect_true(all(
+    c("term", "parent_var", "is_ref", "estimate") %in% names(rows)
+  ))
 })
 
 
@@ -78,8 +79,11 @@ test_that(".survival_reference_rows returns an empty coefs frame for an ordered 
 
 .cov_survreg_dist <- function(dist) {
   skip_if_not_installed("survival")
-  survival::survreg(survival::Surv(time, status) ~ age,
-                    data = survival::lung, dist = dist)
+  survival::survreg(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung,
+    dist = dist
+  )
 }
 
 test_that("survreg loglogistic: title_prefix = 'Log-logistic AFT regression'", {
@@ -140,38 +144,37 @@ test_that(".survreg_dist_title title-cases an unrecognised distribution name", {
 
 .cov_survreg_fit <- function(dist) {
   skip_if_not_installed("survival")
-  survival::survreg(survival::Surv(time, status) ~ age,
-                    data = survival::lung, dist = dist)
+  survival::survreg(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung,
+    dist = dist
+  )
 }
 
 test_that("survreg identity-scale dists report link = 'identity' (gaussian/logistic/t)", {
   for (d in c("gaussian", "logistic", "t")) {
     fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
-    expect_identical(fr$info$family$link, "identity",
-                     info = paste("dist =", d))
+    expect_identical(fr$info$family$link, "identity", info = paste("dist =", d))
   }
 })
 
 test_that("survreg log-scale dists report link = 'log' (weibull/exponential/lognormal/loglogistic)", {
   for (d in c("weibull", "exponential", "lognormal", "loglogistic")) {
     fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
-    expect_identical(fr$info$family$link, "log",
-                     info = paste("dist =", d))
+    expect_identical(fr$info$family$link, "log", info = paste("dist =", d))
   }
 })
 
 test_that("survreg exponentiate is FALSE for identity-scale dists (gaussian/logistic/t)", {
   for (d in c("gaussian", "logistic", "t")) {
     fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
-    expect_false(fr$info$supports$exponentiate,
-                 info = paste("dist =", d))
+    expect_false(fr$info$supports$exponentiate, info = paste("dist =", d))
   }
 })
 
 test_that("survreg exponentiate is TRUE for log-scale dists (weibull/lognormal)", {
   for (d in c("weibull", "lognormal", "loglogistic", "exponential")) {
     fr <- as_regression_frame(.cov_survreg_fit(d), model_id = "M1")
-    expect_true(fr$info$supports$exponentiate,
-                info = paste("dist =", d))
+    expect_true(fr$info$supports$exponentiate, info = paste("dist =", d))
   }
 })

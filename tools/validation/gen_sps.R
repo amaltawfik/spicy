@@ -1,6 +1,8 @@
 ## Generate .sps syntax files for the remaining 3 datasets
 
-suppressPackageStartupMessages({ library(spicy) })
+suppressPackageStartupMessages({
+  library(spicy)
+})
 
 write_crosstab_sps <- function(tab, file, var_a = "a", var_b = "b") {
   df <- as.data.frame.table(tab, responseName = "freq")
@@ -33,6 +35,11 @@ write_crosstab_sps(tab2, "tools/validation/HairEye.sps", "hair", "eye")
 # sochealth: smoking × education
 data(sochealth, package = "spicy")
 tab3 <- table(sochealth$smoking, sochealth$education)
-write_crosstab_sps(tab3, "tools/validation/sochealth.sps", "smoking", "education")
+write_crosstab_sps(
+  tab3,
+  "tools/validation/sochealth.sps",
+  "smoking",
+  "education"
+)
 
 cat("3 .sps files written.\n")

@@ -11,7 +11,8 @@
   d$sex <- factor(d$sex, 1:2, c("male", "female"))
   d$group <- factor(ifelse(d$ph.ecog >= 1, "ecog1plus", "ecog0"))
   fit <- survival::coxph(
-    survival::Surv(time, status) ~ age + group + strata(sex), data = d
+    survival::Surv(time, status) ~ age + group + strata(sex),
+    data = d
   )
   list(fit = fit, data = d)
 }
@@ -21,8 +22,12 @@ test_that("stratified point estimate matches the pinned adjustedCurves oracle", 
   skip_if_not_installed("survival")
   s <- .strata_fit()
   pts <- spicy:::.coxph_estimand_points(
-    s$fit, spicy:::.coxph_estimand_data(s$fit),
-    want_rmst = TRUE, want_risk = TRUE, tau = 500, at_time = 500
+    s$fit,
+    spicy:::.coxph_estimand_data(s$fit),
+    want_rmst = TRUE,
+    want_risk = TRUE,
+    tau = 500,
+    at_time = 500
   )
   row <- pts[pts$term == "groupecog1plus", ]
   # Pinned 2026-07-10 against adjustedCurves 0.11.4 adjusted_rmst
@@ -41,18 +46,26 @@ test_that("stratified curves equal an independent recomputation", {
 
   bh <- survival::basehaz(fit, centered = FALSE)
   grid <- sort(unique(bh$time))
-  H0m <- vapply(levels(bh$strata), function(sl) {
-    b <- bh[bh$strata == sl, , drop = FALSE]
-    c(0, b$hazard)[findInterval(grid, b$time) + 1L]
-  }, numeric(length(grid)))
+  H0m <- vapply(
+    levels(bh$strata),
+    function(sl) {
+      b <- bh[bh$strata == sl, , drop = FALSE]
+      c(0, b$hazard)[findInterval(grid, b$time) + 1L]
+    },
+    numeric(length(grid))
+  )
   mf <- stats::model.frame(fit)
   s_subj <- mf[["strata(sex)"]]
   s_idx <- match(as.character(s_subj), levels(bh$strata))
   std <- function(level) {
     cf <- d
     cf$group <- factor(level, levels = levels(d$group))
-    elp <- exp(stats::predict(fit, newdata = cf, type = "lp",
-                              reference = "zero"))
+    elp <- exp(stats::predict(
+      fit,
+      newdata = cf,
+      type = "lp",
+      reference = "zero"
+    ))
     rowMeans(exp(-sweep(H0m[, s_idx, drop = FALSE], 2L, elp, "*")))
   }
   rmst <- function(times, surv, tau) {
@@ -62,10 +75,18 @@ test_that("stratified curves equal an independent recomputation", {
   manual <- rmst(grid, std("ecog1plus"), 500) - rmst(grid, std("ecog0"), 500)
 
   pts <- spicy:::.coxph_estimand_points(
-    fit, d, want_rmst = TRUE, want_risk = FALSE, tau = 500, at_time = NULL
+    fit,
+    d,
+    want_rmst = TRUE,
+    want_risk = FALSE,
+    tau = 500,
+    at_time = NULL
   )
-  expect_equal(pts$rmst[pts$term == "groupecog1plus"], manual,
-               tolerance = 1e-10)
+  expect_equal(
+    pts$rmst[pts$term == "groupecog1plus"],
+    manual,
+    tolerance = 1e-10
+  )
 })
 
 
@@ -73,8 +94,12 @@ test_that("strata variables get no contrast row and minmax skips them", {
   skip_if_not_installed("survival")
   s <- .strata_fit()
   pts <- spicy:::.coxph_estimand_points(
-    s$fit, spicy:::.coxph_estimand_data(s$fit),
-    want_rmst = TRUE, want_risk = FALSE, tau = 500, at_time = NULL
+    s$fit,
+    spicy:::.coxph_estimand_data(s$fit),
+    want_rmst = TRUE,
+    want_risk = FALSE,
+    tau = 500,
+    at_time = NULL
   )
   expect_false(any(pts$parent_var == "sex"))
   expect_identical(spicy:::.coxph_strata_vars(s$fit), "sex")
@@ -82,8 +107,12 @@ test_that("strata variables get no contrast row and minmax skips them", {
   # the strata levels.
   set.seed(3)
   res <- spicy:::.coxph_estimand_rows(
-    s$fit, "M1", "y", show_columns = c("b", "rmst"),
-    tau = "minmax", boot_n = 20L
+    s$fit,
+    "M1",
+    "y",
+    show_columns = c("b", "rmst"),
+    tau = "minmax",
+    boot_n = 20L
   )
   obs <- s$data$time
   expected_tau <- min(tapply(obs, as.character(s$data$group), max))
@@ -96,9 +125,15 @@ test_that("the stratified table renders with the within-stratum footer", {
   skip_if_not_installed("survival")
   s <- .strata_fit()
   set.seed(11)
-  out <- paste(capture.output(print(table_regression(
-    s$fit, show_columns = c("b", "rmst"), tau = 500, boot_n = 30
-  ))), collapse = "\n")
+  out <- paste(
+    capture.output(print(table_regression(
+      s$fit,
+      show_columns = c("b", "rmst"),
+      tau = 500,
+      boot_n = 30
+    ))),
+    collapse = "\n"
+  )
   expect_match(out, "dRMST (500)", fixed = TRUE)
   expect_match(out, "within-stratum baselines", fixed = TRUE)
   expect_match(out, "-61.24", fixed = TRUE)
@@ -111,7 +146,8 @@ test_that("tt() and counting-process responses stay refused", {
   skip_if_not_installed("survival")
   d <- .strata_fit()$data
   fit_tt <- survival::coxph(
-    survival::Surv(time, status) ~ age + tt(age), data = d,
+    survival::Surv(time, status) ~ age + tt(age),
+    data = d,
     tt = function(x, t, ...) x * log(t)
   )
   expect_error(
@@ -142,8 +178,12 @@ test_that("several strata() terms are refused with the combine hint", {
   expect_identical(ncol(bl$H0), 4L)
   expect_false(anyNA(bl$s_idx))
   pts <- spicy:::.coxph_estimand_points(
-    f3, spicy:::.coxph_estimand_data(f3),
-    want_rmst = TRUE, want_risk = FALSE, tau = 500, at_time = NULL
+    f3,
+    spicy:::.coxph_estimand_data(f3),
+    want_rmst = TRUE,
+    want_risk = FALSE,
+    tau = 500,
+    at_time = NULL
   )
   expect_true(is.finite(pts$rmst[pts$term == "groupecog1plus"]))
 })

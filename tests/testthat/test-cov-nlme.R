@@ -15,7 +15,6 @@
 # zero-row var-cov frames) are marked # nocov in the source instead.
 # ---------------------------------------------------------------------------
 
-
 # ---- Ordered-factor predictor: polynomial contrasts ----------------------
 
 # An ordered factor uses contr.poly, so detect_factor_terms() flags the term
@@ -26,7 +25,7 @@
 test_that("lme with an ordered-factor predictor synthesises no reference rows", {
   skip_if_not_installed("nlme")
   d <- nlme::Orthodont
-  d$agef <- factor(d$age, ordered = TRUE)  # contr.poly -> .L/.Q/.C terms
+  d$agef <- factor(d$age, ordered = TRUE) # contr.poly -> .L/.Q/.C terms
   fit <- nlme::lme(distance ~ agef, data = d, random = ~ 1 | Subject)
 
   # Internal: reference-row synthesis returns an empty frame (no is_ref rows).
@@ -51,8 +50,7 @@ test_that("lme with an ordered-factor predictor synthesises no reference rows", 
 
 test_that("lme with nested random effects drops unparseable VarCorr rows", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(pixel ~ day, data = nlme::Pixel,
-                   random = ~ 1 | Dog/Side)
+  fit <- nlme::lme(pixel ~ day, data = nlme::Pixel, random = ~ 1 | Dog / Side)
 
   re <- spicy:::.lme_random_effects(fit)
   vc <- re$variance_components
@@ -79,15 +77,18 @@ test_that("lme with nested random effects drops unparseable VarCorr rows", {
 
 test_that(".lme_attach_wald_se_ci tolerates a frame without is_correlation", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                   random = ~ 1 | Subject)
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
 
   vc_df <- data.frame(
-    group    = "Subject",
-    term     = "(Intercept)",
+    group = "Subject",
+    term = "(Intercept)",
     variance = 7,
-    sd       = sqrt(7),
-    corr     = NA_real_,
+    sd = sqrt(7),
+    corr = NA_real_,
     stringsAsFactors = FALSE
   )
   expect_false("is_correlation" %in% names(vc_df))
@@ -95,8 +96,10 @@ test_that(".lme_attach_wald_se_ci tolerates a frame without is_correlation", {
   out <- spicy:::.lme_attach_wald_se_ci(vc_df, fit)
 
   # Schema columns added; no error from the missing is_correlation column.
-  expect_true(all(c("std_error", "ci_lower", "ci_upper", "ci_method") %in%
-                    names(out)))
+  expect_true(all(
+    c("std_error", "ci_lower", "ci_upper", "ci_method") %in%
+      names(out)
+  ))
   expect_identical(nrow(out), 1L)
   # The random-intercept row gets a finite Wald SE on the variance scale.
   expect_true(is.finite(out$std_error[1]))
@@ -124,8 +127,11 @@ test_that(".extract_dv_label_nlme returns a column 'label' attribute", {
 
 test_that(".extract_dv_label_nlme falls back to the name for a missing column", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                   random = ~ 1 | Subject)
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
   # A dv name that is not a column of getData(fit) -> returns the name.
   expect_identical(
     spicy:::.extract_dv_label_nlme(fit, "not_a_real_column"),
@@ -137,8 +143,11 @@ test_that(".extract_dv_label_nlme returns the name when no label attr exists", {
   skip_if_not_installed("nlme")
   # distance carries no "label" attribute -> the nzchar() guard is FALSE and
   # the helper returns the dv name.
-  fit <- nlme::lme(distance ~ age, data = nlme::Orthodont,
-                   random = ~ 1 | Subject)
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
   expect_identical(
     spicy:::.extract_dv_label_nlme(fit, "distance"),
     "distance"

@@ -4,11 +4,13 @@
 # a term across outcomes).
 # ---------------------------------------------------------------------------
 
-
 .fit_multinom_iris_oc <- function() {
   skip_if_not_installed("nnet")
-  nnet::multinom(Species ~ Sepal.Length + Sepal.Width,
-                 data = iris, trace = FALSE)
+  nnet::multinom(
+    Species ~ Sepal.Length + Sepal.Width,
+    data = iris,
+    trace = FALSE
+  )
 }
 
 .fit_mlogit_fishing_oc <- function() {
@@ -42,22 +44,24 @@ test_that("multi-model multinom body shows grouped rows with outcome", {
     collapse = "\n"
   )
   # Predictor section headers
-  expect_match(combined, "(Intercept):",  fixed = TRUE)
+  expect_match(combined, "(Intercept):", fixed = TRUE)
   expect_match(combined, "Sepal.Length:", fixed = TRUE)
-  expect_match(combined, "Sepal.Width:",  fixed = TRUE)
+  expect_match(combined, "Sepal.Width:", fixed = TRUE)
   # Outcome-labelled rows
   expect_match(combined, "versicolor: (Intercept)", fixed = TRUE)
-  expect_match(combined, "virginica: (Intercept)",  fixed = TRUE)
+  expect_match(combined, "virginica: (Intercept)", fixed = TRUE)
 })
 
 test_that("multinom shows DIFFERENT estimates for the two outcomes", {
   fit <- .fit_multinom_iris_oc()
-  combined <- paste(capture.output(print(table_regression(fit))),
-                    collapse = "\n")
+  combined <- paste(
+    capture.output(print(table_regression(fit))),
+    collapse = "\n"
+  )
   # versicolor intercept is -92.10; virginica intercept is -105.10 --
   # now side by side in the two category column groups. If the body
   # deduped to one value per term, we'd never see both.
-  expect_match(combined, "-92.10",  fixed = TRUE)
+  expect_match(combined, "-92.10", fixed = TRUE)
   expect_match(combined, "-105.10", fixed = TRUE)
 })
 
@@ -66,13 +70,15 @@ test_that("multinom shows DIFFERENT estimates for the two outcomes", {
 
 test_that("table_regression() body shows per-alternative mlogit sections", {
   fit <- .fit_mlogit_fishing_oc()
-  combined <- paste(capture.output(print(table_regression(fit))),
-                    collapse = "\n")
+  combined <- paste(
+    capture.output(print(table_regression(fit))),
+    collapse = "\n"
+  )
   # One labelled section per non-reference alternative, bare rows
   # inside (the Stata asclogit presentation; phase 2 of the
   # categorical layouts, dev/mlogit_two_segment_spec.md).
-  expect_match(combined, "boat:",    fixed = TRUE)
+  expect_match(combined, "boat:", fixed = TRUE)
   expect_match(combined, "charter:", fixed = TRUE)
-  expect_match(combined, "pier:",    fixed = TRUE)
+  expect_match(combined, "pier:", fixed = TRUE)
   expect_false(grepl("boat: (Intercept)", combined, fixed = TRUE))
 })

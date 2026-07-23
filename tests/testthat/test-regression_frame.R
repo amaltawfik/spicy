@@ -9,45 +9,47 @@
 #   * the validator catches schema violations (per documented contract)
 # ---------------------------------------------------------------------------
 
-
 # ---- Helper: build a minimal valid frame for validator tests ---------------
 
 # Builds a frame that satisfies every required field of the schema with
 # trivial data. Tests modify this scaffold to inject specific violations.
 .make_valid_frame <- function() {
   coefs <- data.frame(
-    term             = c("(Intercept)", "x"),
-    parent_var       = c("(Intercept)", "x"),
-    label            = c("(Intercept)", "x"),
+    term = c("(Intercept)", "x"),
+    parent_var = c("(Intercept)", "x"),
+    label = c("(Intercept)", "x"),
     factor_level_pos = c(NA_integer_, NA_integer_),
-    is_ref           = c(FALSE, FALSE),
-    estimate_type    = c("B", "B"),
-    estimate         = c(1.0, 0.5),
-    std_error        = c(0.1, 0.05),
-    ci_lower         = c(0.8, 0.4),
-    ci_upper         = c(1.2, 0.6),
+    is_ref = c(FALSE, FALSE),
+    estimate_type = c("B", "B"),
+    estimate = c(1.0, 0.5),
+    std_error = c(0.1, 0.05),
+    ci_lower = c(0.8, 0.4),
+    ci_upper = c(1.2, 0.6),
     stringsAsFactors = FALSE
   )
   info <- list(
-    class        = "lm",
-    family       = list(family = "gaussian", link = "identity"),
-    dv           = "y",
-    n_obs        = 100L,
+    class = "lm",
+    family = list(family = "gaussian", link = "identity"),
+    dv = "y",
+    n_obs = 100L,
     weights_kind = "none",
-    fit_stats    = list(nobs = 100L),
-    vcov_kind    = "model",
-    vcov_label   = "OLS",
-    ci_level     = 0.95,
-    ci_method    = "wald",
-    supports     = modifyList(default_supports(), list(
-      ame                 = TRUE,
-      partial_effect_size = TRUE,
-      classical_r2        = TRUE,
-      nested_lrt          = TRUE,
-      exponentiate        = FALSE,
-      standardise_refit   = TRUE
-    )),
-    extras       = list()
+    fit_stats = list(nobs = 100L),
+    vcov_kind = "model",
+    vcov_label = "OLS",
+    ci_level = 0.95,
+    ci_method = "wald",
+    supports = modifyList(
+      default_supports(),
+      list(
+        ame = TRUE,
+        partial_effect_size = TRUE,
+        classical_r2 = TRUE,
+        nested_lrt = TRUE,
+        exponentiate = FALSE,
+        standardise_refit = TRUE
+      )
+    ),
+    extras = list()
   )
   new_regression_frame(coefs, info, list(dummy = TRUE))
 }
@@ -72,7 +74,10 @@ test_that("as_regression_frame() is an S3 generic with default method", {
   expect_true(any(grepl("UseMethod", deparse(body(as_regression_frame)))))
   # The default method is registered. methods() returns a character vector
   # with one entry per registered method ("generic.class" format).
-  expect_true("as_regression_frame.default" %in% as.character(methods("as_regression_frame")))
+  expect_true(
+    "as_regression_frame.default" %in%
+      as.character(methods("as_regression_frame"))
+  )
 })
 
 test_that("as_regression_frame.default() errors with discoverable message", {
@@ -88,8 +93,11 @@ test_that("as_regression_frame.default() errors with discoverable message", {
     spicy_unsupported_class = function(e) e
   )
   expect_match(conditionMessage(err), "totally_made_up_fit", fixed = TRUE)
-  expect_match(conditionMessage(err), "github.com/amaltawfik/spicy/issues",
-               fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "github.com/amaltawfik/spicy/issues",
+    fixed = TRUE
+  )
 })
 
 test_that("as_regression_frame(NULL) errors discoverably", {
@@ -117,7 +125,7 @@ test_that("validate_regression_frame() rejects non-list frame", {
     class = "spicy_invalid_frame"
   )
   expect_error(
-    validate_regression_frame(list(1, 2)),   # unnamed list
+    validate_regression_frame(list(1, 2)), # unnamed list
     class = "spicy_invalid_frame"
   )
 })
@@ -187,8 +195,16 @@ test_that("validate_regression_frame() rejects non-data.frame coefs", {
 
 test_that("validate_regression_frame() catches each missing required coefs column", {
   required_cols <- c(
-    "term", "parent_var", "label", "factor_level_pos", "is_ref",
-    "estimate_type", "estimate", "std_error", "ci_lower", "ci_upper"
+    "term",
+    "parent_var",
+    "label",
+    "factor_level_pos",
+    "is_ref",
+    "estimate_type",
+    "estimate",
+    "std_error",
+    "ci_lower",
+    "ci_upper"
   )
   for (col in required_cols) {
     frame <- .make_valid_frame()
@@ -198,8 +214,12 @@ test_that("validate_regression_frame() catches each missing required coefs colum
       spicy_invalid_frame = function(e) e
     )
     expect_s3_class(err, "spicy_invalid_frame")
-    expect_match(conditionMessage(err), col, fixed = TRUE,
-                 info = paste("expected error to name missing column:", col))
+    expect_match(
+      conditionMessage(err),
+      col,
+      fixed = TRUE,
+      info = paste("expected error to name missing column:", col)
+    )
   }
 })
 
@@ -231,7 +251,7 @@ test_that("validate_regression_frame() catches wrong column types", {
 
 test_that("validate_regression_frame() restricts estimate_type values", {
   frame <- .make_valid_frame()
-  frame$coefs$estimate_type[1] <- "pd"   # not allowed
+  frame$coefs$estimate_type[1] <- "pd" # not allowed
   err <- tryCatch(
     validate_regression_frame(frame),
     spicy_invalid_frame = function(e) e
@@ -288,9 +308,18 @@ test_that("validate_regression_frame() type-checks optional coefs columns", {
 
 test_that("validate_regression_frame() catches each missing required info field", {
   required_info <- c(
-    "class", "family", "dv", "n_obs", "weights_kind",
-    "fit_stats", "vcov_kind", "vcov_label",
-    "ci_level", "ci_method", "supports", "extras"
+    "class",
+    "family",
+    "dv",
+    "n_obs",
+    "weights_kind",
+    "fit_stats",
+    "vcov_kind",
+    "vcov_label",
+    "ci_level",
+    "ci_method",
+    "supports",
+    "extras"
   )
   for (field in required_info) {
     frame <- .make_valid_frame()
@@ -300,8 +329,12 @@ test_that("validate_regression_frame() catches each missing required info field"
       spicy_invalid_frame = function(e) e
     )
     expect_s3_class(err, "spicy_invalid_frame")
-    expect_match(conditionMessage(err), field, fixed = TRUE,
-                 info = paste("expected error to name missing field:", field))
+    expect_match(
+      conditionMessage(err),
+      field,
+      fixed = TRUE,
+      info = paste("expected error to name missing field:", field)
+    )
   }
 })
 
@@ -364,7 +397,7 @@ test_that("validate_regression_frame() requires family with $family and $link", 
     class = "spicy_invalid_frame"
   )
 
-  frame$info$family <- list(family = "gaussian")   # missing $link
+  frame$info$family <- list(family = "gaussian") # missing $link
   expect_error(
     validate_regression_frame(frame),
     class = "spicy_invalid_frame"
@@ -396,8 +429,12 @@ test_that("validate_regression_frame() catches missing supports fields", {
       spicy_invalid_frame = function(e) e
     )
     expect_s3_class(err, "spicy_invalid_frame")
-    expect_match(conditionMessage(err), field, fixed = TRUE,
-                 info = paste("expected error to name missing support:", field))
+    expect_match(
+      conditionMessage(err),
+      field,
+      fixed = TRUE,
+      info = paste("expected error to name missing support:", field)
+    )
   }
 })
 
@@ -436,7 +473,7 @@ test_that("validate_regression_frame() type-checks optional info fields", {
 
   # n_groups: named numeric or NULL
   frame <- .make_valid_frame()
-  frame$info$n_groups <- c(30, 12)   # unnamed
+  frame$info$n_groups <- c(30, 12) # unnamed
   expect_error(
     validate_regression_frame(frame),
     class = "spicy_invalid_frame"

@@ -5,9 +5,11 @@
 # when the matrix has no colnames -- and no reference row exists.
 
 .ntc_data <- function() {
-  d <- sochealth[stats::complete.cases(
-    sochealth[, c("wellbeing_score", "age", "self_rated_health")]
-  ), ]
+  d <- sochealth[
+    stats::complete.cases(
+      sochealth[, c("wellbeing_score", "age", "self_rated_health")]
+    ),
+  ]
   d$srh <- factor(d$self_rated_health, ordered = FALSE)
   d
 }
@@ -20,10 +22,8 @@ test_that("successive-difference contrasts group with named suffixes", {
   fit <- lm(wellbeing_score ~ age + srh_sdif, data = d)
   td <- broom::tidy(table_regression(fit))
   rows <- td[td$factor_term %in% "srh_sdif", ]
-  expect_identical(as.character(rows$factor_level),
-                   c("2-1", "3-2", "4-3"))
-  out <- paste(capture.output(print(table_regression(fit))),
-               collapse = "\n")
+  expect_identical(as.character(rows$factor_level), c("2-1", "3-2", "4-3"))
+  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
   expect_match(out, "srh_sdif:", fixed = TRUE)
   # No reference row under a coding with no reference level.
   expect_false(grepl("(ref.)", out, fixed = TRUE))
@@ -43,8 +43,11 @@ test_that("unnamed contrast columns fall back to the column index", {
 
 test_that("a string contrast spec resolves through match.fun", {
   d <- .ntc_data()
-  fit <- lm(wellbeing_score ~ age + srh, data = d,
-            contrasts = list(srh = "contr.helmert"))
+  fit <- lm(
+    wellbeing_score ~ age + srh,
+    data = d,
+    contrasts = list(srh = "contr.helmert")
+  )
   td <- broom::tidy(table_regression(fit))
   rows <- td[td$factor_term %in% "srh", ]
   expect_identical(nrow(rows), 3L)
@@ -56,10 +59,11 @@ test_that("treatment and polynomial codings are untouched", {
   d <- .ntc_data()
   fit_t <- lm(wellbeing_score ~ age + srh, data = d)
   td <- broom::tidy(table_regression(fit_t))
-  expect_identical(as.character(td$factor_level[td$factor_term %in% "srh"]),
-                   c("Fair", "Good", "Very good"))
-  fit_p <- lm(wellbeing_score ~ age + self_rated_health,
-              data = .ntc_data())
+  expect_identical(
+    as.character(td$factor_level[td$factor_term %in% "srh"]),
+    c("Fair", "Good", "Very good")
+  )
+  fit_p <- lm(wellbeing_score ~ age + self_rated_health, data = .ntc_data())
   tp <- broom::tidy(table_regression(fit_p))
   expect_identical(
     as.character(tp$factor_level[tp$factor_term %in% "self_rated_health"]),

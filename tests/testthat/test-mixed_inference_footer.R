@@ -5,7 +5,6 @@
 #   (2) Footer -- the annotation line names the inference method.
 # ---------------------------------------------------------------------------
 
-
 # ---- 1. lmer fallback: Wald-z when lmerTest is NOT loaded --------------
 
 test_that("lmer (no lmerTest) -> Wald-z with df = Inf, p from pnorm", {
@@ -17,9 +16,11 @@ test_that("lmer (no lmerTest) -> Wald-z with df = Inf, p from pnorm", {
   # p-value should be 2 * pnorm(-|t|) with t = est / SE.
   for (i in seq_len(nrow(fr$coefs))) {
     stat <- fr$coefs$estimate[i] / fr$coefs$std_error[i]
-    expect_equal(fr$coefs$p_value[i],
-                 2 * stats::pnorm(-abs(stat)),
-                 tolerance = 1e-12)
+    expect_equal(
+      fr$coefs$p_value[i],
+      2 * stats::pnorm(-abs(stat)),
+      tolerance = 1e-12
+    )
   }
 })
 
@@ -29,12 +30,16 @@ test_that("lmer (no lmerTest) -> CI uses z-quantile (NOT t with naive df)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   z_crit <- stats::qnorm(0.975)
   for (i in seq_len(nrow(fr$coefs))) {
-    expect_equal(fr$coefs$ci_lower[i],
-                 fr$coefs$estimate[i] - z_crit * fr$coefs$std_error[i],
-                 tolerance = 1e-12)
-    expect_equal(fr$coefs$ci_upper[i],
-                 fr$coefs$estimate[i] + z_crit * fr$coefs$std_error[i],
-                 tolerance = 1e-12)
+    expect_equal(
+      fr$coefs$ci_lower[i],
+      fr$coefs$estimate[i] - z_crit * fr$coefs$std_error[i],
+      tolerance = 1e-12
+    )
+    expect_equal(
+      fr$coefs$ci_upper[i],
+      fr$coefs$estimate[i] + z_crit * fr$coefs$std_error[i],
+      tolerance = 1e-12
+    )
   }
 })
 
@@ -43,8 +48,10 @@ test_that("lmer (no lmerTest) -> CI uses z-quantile (NOT t with naive df)", {
 
 test_that("lmerTest::lmer -> Satterthwaite t-test, finite df", {
   skip_if_not_installed("lmerTest")
-  fit <- lmerTest::lmer(Reaction ~ Days + (1 | Subject),
-                         data = lme4::sleepstudy)
+  fit <- lmerTest::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_true(all(fr$coefs$test_type == "t"))
   expect_true(all(is.finite(fr$coefs$df)))
@@ -57,8 +64,10 @@ test_that("lmerTest::lmer -> Satterthwaite t-test, finite df", {
 
 test_that("footer annotates lmerModLmerTest fits with Satterthwaite line", {
   skip_if_not_installed("lmerTest")
-  fit <- lmerTest::lmer(Reaction ~ Days + (1 | Subject),
-                         data = lme4::sleepstudy)
+  fit <- lmerTest::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence, not just the method fragments.
@@ -76,8 +85,10 @@ test_that("footer annotates lmerMod (no lmerTest) with Wald-z recommendation", {
   # Pin the complete fallback sentence, including the recommendation.
   expect_identical(
     out,
-    paste0("p-values: Wald-z, large-sample approximation. ",
-           "Load `lmerTest` for Satterthwaite t-tests.")
+    paste0(
+      "p-values: Wald-z, large-sample approximation. ",
+      "Load `lmerTest` for Satterthwaite t-tests."
+    )
   )
 })
 
@@ -86,7 +97,8 @@ test_that("footer annotates lmerMod (no lmerTest) with Wald-z recommendation", {
 
 test_that("footer annotates glmer with Wald-z (lme4)", {
   skip_if_not_installed("lme4")
-  d <- mtcars; d$cyl <- factor(d$cyl)
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
   suppressMessages(suppressWarnings(
     fit <- lme4::glmer(am ~ mpg + (1 | cyl), data = d, family = binomial)
   ))
@@ -98,8 +110,10 @@ test_that("footer annotates glmer with Wald-z (lme4)", {
 
 test_that("footer annotates glmmTMB with Wald-z (glmmTMB)", {
   skip_if_not_installed("glmmTMB")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                           data = lme4::sleepstudy)
+  fit <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the glmmTMB class.
@@ -108,8 +122,11 @@ test_that("footer annotates glmmTMB with Wald-z (glmmTMB)", {
 
 test_that("footer annotates lme with containment df (nlme)", {
   skip_if_not_installed("nlme")
-  fit <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-                    random = ~ 1 | Subject)
+  fit <- nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the nlme class.
@@ -147,10 +164,8 @@ test_that("footer consolidates identical per-model lines (no 'Model k:' prefix)"
   # prefix would just be three identical copies of the same sentence
   # and is purely noise.
   skip_if_not_installed("lme4")
-  fit1 <- lme4::lmer(Reaction ~ 1    + (1 | Subject),
-                      data = lme4::sleepstudy)
-  fit2 <- lme4::lmer(Reaction ~ Days + (1 | Subject),
-                      data = lme4::sleepstudy)
+  fit1 <- lme4::lmer(Reaction ~ 1 + (1 | Subject), data = lme4::sleepstudy)
+  fit2 <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   fr1 <- as_regression_frame(fit1, model_id = "M1")
   fr2 <- as_regression_frame(fit2, model_id = "M2")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr1, fr2))
@@ -159,27 +174,36 @@ test_that("footer consolidates identical per-model lines (no 'Model k:' prefix)"
   # Pin the single consolidated sentence exactly.
   expect_identical(
     out,
-    paste0("p-values: Wald-z, large-sample approximation. ",
-           "Load `lmerTest` for Satterthwaite t-tests.")
+    paste0(
+      "p-values: Wald-z, large-sample approximation. ",
+      "Load `lmerTest` for Satterthwaite t-tests."
+    )
   )
 })
 
 test_that("footer prefixes per model in multi-model lists", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("nlme")
-  fit_lmer <- lme4::lmer(Reaction ~ Days + (1 | Subject),
-                          data = lme4::sleepstudy)
-  fit_lme  <- nlme::lme(distance ~ age + Sex, data = nlme::Orthodont,
-                         random = ~ 1 | Subject)
+  fit_lmer <- lme4::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
+  fit_lme <- nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
   fr1 <- as_regression_frame(fit_lmer, model_id = "M1")
-  fr2 <- as_regression_frame(fit_lme,  model_id = "M2")
+  fr2 <- as_regression_frame(fit_lme, model_id = "M2")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr1, fr2))
   # Pin the full two-line block: prefixed lmer fallback + lme line.
   expect_identical(
     out,
-    paste0("Model 1: p-values: Wald-z, large-sample approximation. ",
-           "Load `lmerTest` for Satterthwaite t-tests.\n",
-           "Model 2: p-values: t-test with containment df (nlme).")
+    paste0(
+      "Model 1: p-values: Wald-z, large-sample approximation. ",
+      "Load `lmerTest` for Satterthwaite t-tests.\n",
+      "Model 2: p-values: t-test with containment df (nlme)."
+    )
   )
 })
 
@@ -194,8 +218,10 @@ test_that("table_regression() footer surfaces the inference annotation", {
   # The full footer sentence must survive rendering as one printed line.
   expect_match(
     combined,
-    paste0("p-values: Wald-z, large-sample approximation. ",
-           "Load `lmerTest` for Satterthwaite t-tests."),
+    paste0(
+      "p-values: Wald-z, large-sample approximation. ",
+      "Load `lmerTest` for Satterthwaite t-tests."
+    ),
     fixed = TRUE
   )
 })
@@ -206,8 +232,10 @@ test_that("orchestrator path keeps the Satterthwaite footer (default ci_method)"
   # frames; that request must not override the Satterthwaite regime the
   # rows actually carry (the footer used to say "Wald-z ... Load
   # lmerTest" over Satterthwaite-t rows).
-  fit <- lmerTest::lmer(Reaction ~ Days + (Days | Subject),
-                        data = lme4::sleepstudy)
+  fit <- lmerTest::lmer(
+    Reaction ~ Days + (Days | Subject),
+    data = lme4::sleepstudy
+  )
   out <- table_regression(fit)
   note <- paste(attr(out, "note"), collapse = "\n")
   expect_match(note, "p-values: Satterthwaite t-test (lmerTest).", fixed = TRUE)
@@ -217,12 +245,16 @@ test_that("orchestrator path keeps the Satterthwaite footer (default ci_method)"
 test_that("CR* on mixed fits attributes the Satterthwaite df to clubSandwich", {
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("clubSandwich")
-  fit <- lmerTest::lmer(Reaction ~ Days + (1 | Subject),
-                        data = lme4::sleepstudy)
+  fit <- lmerTest::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
   out <- table_regression(fit, vcov = "CR2", cluster = ~Subject)
   note <- paste(attr(out, "note"), collapse = "\n")
-  expect_match(note,
-               "p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
-               fixed = TRUE)
+  expect_match(
+    note,
+    "p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+    fixed = TRUE
+  )
   expect_false(grepl("Satterthwaite t-test (lmerTest)", note, fixed = TRUE))
 })

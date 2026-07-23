@@ -8,7 +8,6 @@
 #     predictors (numeric-only formula -> length(fts) == 0L)
 # ---------------------------------------------------------------------------
 
-
 # ---- 1. Missing-package aborts (mocked availability check) ---------------
 
 test_that(".check_mlogit_available aborts with spicy_missing_pkg when mlogit absent", {

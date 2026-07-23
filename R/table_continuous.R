@@ -472,7 +472,10 @@ table_continuous <- function(
       ci_level <= 0 ||
       ci_level >= 1
   ) {
-    spicy_abort("`ci_level` must be a single number between 0 and 1.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`ci_level` must be a single number between 0 and 1.",
+      class = "spicy_invalid_input"
+    )
   }
   if (
     !is.numeric(digits) ||
@@ -480,7 +483,10 @@ table_continuous <- function(
       is.na(digits) ||
       digits < 0
   ) {
-    spicy_abort("`digits` must be a single non-negative number.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`digits` must be a single non-negative number.",
+      class = "spicy_invalid_input"
+    )
   }
   digits <- as.integer(digits)
   if (
@@ -490,7 +496,9 @@ table_continuous <- function(
       effect_size_digits < 0
   ) {
     spicy_abort(
-      "`effect_size_digits` must be a single non-negative number.", class = "spicy_invalid_input")
+      "`effect_size_digits` must be a single non-negative number.",
+      class = "spicy_invalid_input"
+    )
   }
   effect_size_digits <- as.integer(effect_size_digits)
   if (
@@ -500,14 +508,22 @@ table_continuous <- function(
       p_digits < 1
   ) {
     spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).", class = "spicy_invalid_input")
+      "`p_digits` must be a single integer >= 1 (typically 2-4).",
+      class = "spicy_invalid_input"
+    )
   }
   p_digits <- as.integer(p_digits)
   if (!decimal_mark %in% c(".", ",")) {
-    spicy_abort('`decimal_mark` must be "." or ","', class = "spicy_invalid_input")
+    spicy_abort(
+      '`decimal_mark` must be "." or ","',
+      class = "spicy_invalid_input"
+    )
   }
   if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
-    spicy_abort("`labels` must be a named character vector.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`labels` must be a named character vector.",
+      class = "spicy_invalid_input"
+    )
   }
   for (.lname in c(
     "statistic",
@@ -520,7 +536,10 @@ table_continuous <- function(
   )) {
     .lval <- get(.lname)
     if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
-      spicy_abort(sprintf("`%s` must be TRUE/FALSE.", .lname), class = "spicy_invalid_input")
+      spicy_abort(
+        sprintf("`%s` must be TRUE/FALSE.", .lname),
+        class = "spicy_invalid_input"
+      )
     }
   }
 
@@ -530,7 +549,10 @@ table_continuous <- function(
   # logical FALSE maps to "none". Character values are validated below.
   if (is.logical(effect_size)) {
     if (length(effect_size) != 1L || is.na(effect_size)) {
-      spicy_abort("`effect_size` must be a single TRUE/FALSE or character value.", class = "spicy_invalid_input")
+      spicy_abort(
+        "`effect_size` must be a single TRUE/FALSE or character value.",
+        class = "spicy_invalid_input"
+      )
     }
     effect_size <- if (isTRUE(effect_size)) "auto" else "none"
   }
@@ -541,7 +563,10 @@ table_continuous <- function(
     !is.null(p_value) &&
       (!is.logical(p_value) || length(p_value) != 1L || is.na(p_value))
   ) {
-    spicy_abort("`p_value` must be TRUE, FALSE, or NULL.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`p_value` must be TRUE, FALSE, or NULL.",
+      class = "spicy_invalid_input"
+    )
   }
   output <- spicy_match_arg(output)
   test_explicit <- !missing(test)
@@ -558,7 +583,9 @@ table_continuous <- function(
       resolve_single_column_selection(group_quo, data, "by"),
       error = function(e) {
         spicy_abort(
-          "`by` must be a single column name in `data`.", class = "spicy_invalid_input")
+          "`by` must be a single column name in `data`.",
+          class = "spicy_invalid_input"
+        )
       }
     )
   }
@@ -570,7 +597,9 @@ table_continuous <- function(
   if ((p_value || statistic) && !has_group) {
     if (p_value_explicit || statistic) {
       spicy_warn(
-        "`p_value` and `statistic` are ignored when `by` is not used.", class = "spicy_ignored_arg")
+        "`p_value` and `statistic` are ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
     }
     p_value <- FALSE
   }
@@ -583,21 +612,29 @@ table_continuous <- function(
       !effect_size_ci
   ) {
     spicy_warn(
-      "`test` is ignored when `p_value`, `statistic`, `effect_size`, and `effect_size_ci` are all turned off.", class = "spicy_ignored_arg")
+      "`test` is ignored when `p_value`, `statistic`, `effect_size`, and `effect_size_ci` are all turned off.",
+      class = "spicy_ignored_arg"
+    )
   }
   do_test <- (p_value || statistic) && has_group
 
   if ((has_es_request || effect_size_ci) && !has_group) {
     spicy_warn(
-      "`effect_size` is ignored when `by` is not used.", class = "spicy_ignored_arg")
+      "`effect_size` is ignored when `by` is not used.",
+      class = "spicy_ignored_arg"
+    )
   }
   if (!drop_na && !has_group) {
     spicy_warn(
-      "`drop_na = FALSE` is ignored when `by` is not used: a continuous summary has no \"(Missing)\" display row. NAs are always excluded from each variable's statistics and disclosed in the table note.", class = "spicy_ignored_arg")
+      "`drop_na = FALSE` is ignored when `by` is not used: a continuous summary has no \"(Missing)\" display row. NAs are always excluded from each variable's statistics and disclosed in the table note.",
+      class = "spicy_ignored_arg"
+    )
   }
   if (effect_size_ci && !has_es_request) {
     spicy_warn(
-      "`effect_size_ci` implies `effect_size != \"none\"`. Defaulting to `effect_size = \"auto\"`.", class = "spicy_ignored_arg")
+      "`effect_size_ci` implies `effect_size != \"none\"`. Defaulting to `effect_size = \"auto\"`.",
+      class = "spicy_ignored_arg"
+    )
     effect_size <- "auto"
     has_es_request <- TRUE
   }
@@ -619,7 +656,9 @@ table_continuous <- function(
     }
     if (!is.character(select) || length(select) != 1L || is.na(select)) {
       spicy_abort(
-        "When `regex = TRUE`, `select` must be a single character pattern.", class = "spicy_invalid_input")
+        "When `regex = TRUE`, `select` must be a single character pattern.",
+        class = "spicy_invalid_input"
+      )
     }
     matched <- grep(select, names(work), value = TRUE)
     work <- work[, matched, drop = FALSE]
@@ -675,16 +714,27 @@ table_continuous <- function(
   build_missing_note <- function() {
     parts <- character(0)
     if (length(na_dropped)) {
-      parts <- c(parts, paste0(
-        "Missing values removed: ",
-        paste(sprintf("%s (%d)", names(na_dropped), na_dropped),
-              collapse = ", "),
-        "."
-      ))
+      parts <- c(
+        parts,
+        paste0(
+          "Missing values removed: ",
+          paste(
+            sprintf("%s (%d)", names(na_dropped), na_dropped),
+            collapse = ", "
+          ),
+          "."
+        )
+      )
     }
     if (by_na_dropped > 0L) {
-      parts <- c(parts, sprintf("Rows with missing %s removed: %d.",
-                                group_col_name, by_na_dropped))
+      parts <- c(
+        parts,
+        sprintf(
+          "Rows with missing %s removed: %d.",
+          group_col_name,
+          by_na_dropped
+        )
+      )
     }
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
@@ -734,7 +784,9 @@ table_continuous <- function(
           "%d observation(s) with NA in `%s` were excluded.",
           n_na_groups,
           group_col_name
-        ), class = "spicy_dropped_na")
+        ),
+        class = "spicy_dropped_na"
+      )
       by_na_dropped <- n_na_groups
     }
     # NA-preserving copy for inference: the omnibus test and effect
@@ -1040,41 +1092,57 @@ resolve_effect_size_choice <- function(
   np_es <- c("r_rb", "epsilon_sq")
 
   if (is_parametric && effect_size %in% np_es) {
-    if (!explicit) return(auto_choice)
+    if (!explicit) {
+      return(auto_choice)
+    }
     spicy_abort(
       sprintf(
         "Effect size `%s` is a nonparametric measure; switch `test = \"nonparametric\"` or pick `\"hedges_g\"` / `\"eta_sq\"`.",
         effect_size
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
   if (!is_parametric && effect_size %in% parametric_es) {
-    if (!explicit) return(auto_choice)
+    if (!explicit) {
+      return(auto_choice)
+    }
     spicy_abort(
       sprintf(
         "Effect size `%s` is a parametric measure; switch `test` to `\"welch\"` / `\"student\"` or pick `\"r_rb\"` / `\"epsilon_sq\"`.",
         effect_size
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   two_group_only <- c("hedges_g", "r_rb")
   multi_group_only <- c("eta_sq", "epsilon_sq")
 
   if (n_groups == 2L && effect_size %in% multi_group_only) {
-    if (!explicit) return(auto_choice)
+    if (!explicit) {
+      return(auto_choice)
+    }
     spicy_abort(
       sprintf(
         "Effect size `%s` requires more than two groups; with two groups, pick `\"hedges_g\"` (parametric) or `\"r_rb\"` (nonparametric).",
         effect_size
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
   if (n_groups > 2L && effect_size %in% two_group_only) {
-    if (!explicit) return(auto_choice)
+    if (!explicit) {
+      return(auto_choice)
+    }
     spicy_abort(
       sprintf(
         "Effect size `%s` requires exactly two groups; with %d groups, pick `\"eta_sq\"` (parametric) or `\"epsilon_sq\"` (nonparametric).",
         effect_size,
         n_groups
-      ), class = "spicy_invalid_input")
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   effect_size
@@ -1111,7 +1179,11 @@ compute_effect_size <- function(
 
   if (identical(type, "r_rb")) {
     # Rank-biserial r from Wilcoxon W
-    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec), method = "radix")
+    grp_levels <- if (is.factor(gvec)) {
+      levels(gvec)
+    } else {
+      sort(unique(gvec), method = "radix")
+    }
     n1 <- sum(gvec == grp_levels[1])
     n2 <- sum(gvec == grp_levels[2])
     wt <- stats::wilcox.test(xvec ~ gvec)
@@ -1141,7 +1213,11 @@ compute_effect_size <- function(
     row$es_ci_upper <- ci[2]
   } else if (identical(type, "hedges_g")) {
     # Hedges' g (bias-corrected standardised mean difference)
-    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec), method = "radix")
+    grp_levels <- if (is.factor(gvec)) {
+      levels(gvec)
+    } else {
+      sort(unique(gvec), method = "radix")
+    }
     x1 <- xvec[gvec == grp_levels[1]]
     x2 <- xvec[gvec == grp_levels[2]]
     n1 <- length(x1)
@@ -1162,7 +1238,11 @@ compute_effect_size <- function(
   } else if (identical(type, "eta_sq")) {
     # Eta-squared from one-way ANOVA (SS_between / SS_total)
     grand_mean <- mean(xvec)
-    grp_levels <- if (is.factor(gvec)) levels(gvec) else sort(unique(gvec), method = "radix")
+    grp_levels <- if (is.factor(gvec)) {
+      levels(gvec)
+    } else {
+      sort(unique(gvec), method = "radix")
+    }
     ss_between <- 0
     for (g in grp_levels) {
       xg <- xvec[gvec == g]
@@ -1181,7 +1261,10 @@ compute_effect_size <- function(
     row$es_ci_lower <- ci[1]
     row$es_ci_upper <- ci[2]
   } else {
-    spicy_abort(sprintf("Unknown effect-size type `%s`.", type), class = "spicy_invalid_input")
+    spicy_abort(
+      sprintf("Unknown effect-size type `%s`.", type),
+      class = "spicy_invalid_input"
+    )
   }
 
   row
@@ -1586,12 +1669,22 @@ export_desc_table <- function(
     # This works regardless of which optional columns are present
     # (`has_ci`, `has_n`, `has_statistic`, `has_p`, `has_es`).
     col_keys <- c("Variable")
-    if (has_group) col_keys <- c(col_keys, "Group")
+    if (has_group) {
+      col_keys <- c(col_keys, "Group")
+    }
     col_keys <- c(col_keys, "M", "SD", "Min", "Max")
-    if (has_n) col_keys <- c(col_keys, "n")
-    if (has_statistic) col_keys <- c(col_keys, "Test")
-    if (has_p) col_keys <- c(col_keys, "p")
-    if (has_es) col_keys <- c(col_keys, "ES")
+    if (has_n) {
+      col_keys <- c(col_keys, "n")
+    }
+    if (has_statistic) {
+      col_keys <- c(col_keys, "Test")
+    }
+    if (has_p) {
+      col_keys <- c(col_keys, "p")
+    }
+    if (has_es) {
+      col_keys <- c(col_keys, "ES")
+    }
 
     gspec <- list()
     pos <- 1L
@@ -1651,8 +1744,12 @@ export_desc_table <- function(
       # "auto": legacy per-column rule -- right for n/p (when present),
       # center for the rest.
       right_j <- integer(0)
-      if (has_n) right_j <- c(right_j, gspec[["n"]])
-      if (has_p) right_j <- c(right_j, gspec[["p"]])
+      if (has_n) {
+        right_j <- c(right_j, gspec[["n"]])
+      }
+      if (has_p) {
+        right_j <- c(right_j, gspec[["p"]])
+      }
       center_j <- setdiff(numeric_j, right_j)
       if (length(center_j) > 0L) {
         tt <- tinytable::style_tt(tt, j = center_j, align = "c")
@@ -1736,25 +1833,45 @@ export_desc_table <- function(
       Min = "",
       Max = ""
     )
-    if (has_group) label_list[["Group"]] <- ""
+    if (has_group) {
+      label_list[["Group"]] <- ""
+    }
     if (has_ci) {
       label_list[["LL"]] <- "LL"
       label_list[["UL"]] <- "UL"
     }
-    if (has_n) label_list[["n"]] <- ""
-    if (has_statistic) label_list[["Test"]] <- ""
-    if (has_p) label_list[["p"]] <- ""
-    if (has_es) label_list[["ES"]] <- ""
+    if (has_n) {
+      label_list[["n"]] <- ""
+    }
+    if (has_statistic) {
+      label_list[["Test"]] <- ""
+    }
+    if (has_p) {
+      label_list[["p"]] <- ""
+    }
+    if (has_es) {
+      label_list[["ES"]] <- ""
+    }
     tbl <- gt::cols_label(tbl, .list = label_list)
 
     # Single-column spanners: include only columns that are present.
     single_cols <- c("Variable")
-    if (has_group) single_cols <- c(single_cols, "Group")
+    if (has_group) {
+      single_cols <- c(single_cols, "Group")
+    }
     single_cols <- c(single_cols, "M", "SD", "Min", "Max")
-    if (has_n) single_cols <- c(single_cols, "n")
-    if (has_statistic) single_cols <- c(single_cols, "Test")
-    if (has_p) single_cols <- c(single_cols, "p")
-    if (has_es) single_cols <- c(single_cols, "ES")
+    if (has_n) {
+      single_cols <- c(single_cols, "n")
+    }
+    if (has_statistic) {
+      single_cols <- c(single_cols, "Test")
+    }
+    if (has_p) {
+      single_cols <- c(single_cols, "p")
+    }
+    if (has_es) {
+      single_cols <- c(single_cols, "ES")
+    }
 
     for (col in single_cols) {
       tbl <- gt::tab_spanner(
@@ -1796,13 +1913,23 @@ export_desc_table <- function(
       # "auto": legacy per-column rule. Center descriptive / CI cols,
       # right-align n / p (when present).
       center_cols <- c("M", "SD", "Min", "Max")
-      if (has_ci) center_cols <- c(center_cols, "LL", "UL")
-      if (has_statistic) center_cols <- c(center_cols, "Test")
-      if (has_es) center_cols <- c(center_cols, "ES")
+      if (has_ci) {
+        center_cols <- c(center_cols, "LL", "UL")
+      }
+      if (has_statistic) {
+        center_cols <- c(center_cols, "Test")
+      }
+      if (has_es) {
+        center_cols <- c(center_cols, "ES")
+      }
       tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
       right_cols <- character(0)
-      if (has_n) right_cols <- c(right_cols, "n")
-      if (has_p) right_cols <- c(right_cols, "p")
+      if (has_n) {
+        right_cols <- c(right_cols, "n")
+      }
+      if (has_p) {
+        right_cols <- c(right_cols, "p")
+      }
       if (length(right_cols) > 0L) {
         tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
       }
@@ -2059,7 +2186,10 @@ export_desc_table <- function(
 
     if (output == "word") {
       if (is.null(word_path) || !nzchar(word_path)) {
-        spicy_abort("Provide `word_path` for output = 'word'.", class = "spicy_invalid_input")
+        spicy_abort(
+          "Provide `word_path` for output = 'word'.",
+          class = "spicy_invalid_input"
+        )
       }
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
@@ -2074,7 +2204,10 @@ export_desc_table <- function(
       spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
     }
     if (is.null(excel_path) || !nzchar(excel_path)) {
-      spicy_abort("Provide `excel_path` for output = 'excel'.", class = "spicy_invalid_input")
+      spicy_abort(
+        "Provide `excel_path` for output = 'excel'.",
+        class = "spicy_invalid_input"
+      )
     }
 
     display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
@@ -2160,28 +2293,36 @@ export_desc_table <- function(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
       top_border = "thin",
-      bottom_border = NULL, left_border = NULL, right_border = NULL
+      bottom_border = NULL,
+      left_border = NULL,
+      right_border = NULL
     )
     if (length(ci_j) > 0L) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
         bottom_border = "thin",
-        top_border = NULL, left_border = NULL, right_border = NULL
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
       )
     }
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
       bottom_border = "thin",
-      top_border = NULL, left_border = NULL, right_border = NULL
+      top_border = NULL,
+      left_border = NULL,
+      right_border = NULL
     )
     if (nrow(display_df) > 0) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
         bottom_border = "thin",
-        top_border = NULL, left_border = NULL, right_border = NULL
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
       )
     }
 
@@ -2191,7 +2332,9 @@ export_desc_table <- function(
         wb,
         dims = openxlsx2::wb_dims(rows = sr - 1L + 2L, cols = 1:nc),
         bottom_border = "hair",
-        top_border = NULL, left_border = NULL, right_border = NULL
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
       )
     }
 
@@ -2220,5 +2363,8 @@ export_desc_table <- function(
     return(invisible(display_df))
   }
 
-  spicy_abort(paste0("Unknown output format: ", output), class = "spicy_invalid_input") # nocov
+  spicy_abort(
+    paste0("Unknown output format: ", output),
+    class = "spicy_invalid_input"
+  ) # nocov
 }

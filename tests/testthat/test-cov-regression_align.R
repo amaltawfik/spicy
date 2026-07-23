@@ -63,10 +63,20 @@ test_that("pivot_aligned_wide – NULL model_labels defaults to 'Model i' column
     mk_frame_cov(mpg ~ wt + cyl, "M2")
   )
   aligned <- spicy:::align_frames(fr, model_ids = c("M1", "M2"))
-  wide <- spicy:::pivot_aligned_wide(aligned, value_fields = c("estimate", "se"))
+  wide <- spicy:::pivot_aligned_wide(
+    aligned,
+    value_fields = c("estimate", "se")
+  )
 
-  expect_true(all(c("Model 1__estimate", "Model 1__se",
-                    "Model 2__estimate", "Model 2__se") %in% names(wide)))
+  expect_true(all(
+    c(
+      "Model 1__estimate",
+      "Model 1__se",
+      "Model 2__estimate",
+      "Model 2__se"
+    ) %in%
+      names(wide)
+  ))
 })
 
 
@@ -96,8 +106,16 @@ test_that("pivot_aligned_wide – empty aligned returns empty wide shape (NULL l
   # empty_coefs_wide() base columns, NULL labels -> no per-model value cols
   expect_identical(
     names(wide),
-    c("term", "estimate_type", "is_intercept", "is_reference",
-      "factor_term", "factor_level", "order_idx", "test_type")
+    c(
+      "term",
+      "estimate_type",
+      "is_intercept",
+      "is_reference",
+      "factor_term",
+      "factor_level",
+      "order_idx",
+      "test_type"
+    )
   )
   expect_type(wide$term, "character")
   expect_type(wide$is_intercept, "logical")
@@ -113,6 +131,8 @@ test_that("pivot_aligned_wide – empty aligned with model_labels adds per-label
   )
 
   expect_equal(nrow(wide), 0L)
-  expect_true(all(c("A__estimate", "A__se", "B__estimate", "B__se") %in% names(wide)))
+  expect_true(all(
+    c("A__estimate", "A__se", "B__estimate", "B__se") %in% names(wide)
+  ))
   expect_type(wide[["A__estimate"]], "double")
 })

@@ -23,7 +23,6 @@
 #     Satterthwaite-corrected df under cluster-robust vcov
 #     (Pustejovsky & Tipton 2018).
 
-
 #' Tidy / glance methods for `spicy_regression_table`
 #'
 #' Standard [broom::tidy()] / [broom::glance()] interfaces for an
@@ -88,22 +87,22 @@ tidy.spicy_regression_table <- function(x, ...) {
     rep(NA_character_, nrow(long))
   }
   out <- data.frame(
-    model_id      = long$model_id,
-    outcome       = long$outcome,
+    model_id = long$model_id,
+    outcome = long$outcome,
     outcome_level = outcome_level,
-    term          = long$term,
+    term = long$term,
     estimate_type = long$estimate_type,
-    estimate      = long$estimate,
-    std.error     = long$se,
-    conf.low      = long$ci_low,
-    conf.high     = long$ci_high,
-    statistic     = long$statistic,
-    df            = long$df,
-    p.value       = long$p_value,
-    test_type     = long$test_type,
-    is_intercept  = long$is_intercept,
-    factor_term   = long$factor_term,
-    factor_level  = long$factor_level,
+    estimate = long$estimate,
+    std.error = long$se,
+    conf.low = long$ci_low,
+    conf.high = long$ci_high,
+    statistic = long$statistic,
+    df = long$df,
+    p.value = long$p_value,
+    test_type = long$test_type,
+    is_intercept = long$is_intercept,
+    factor_term = long$factor_term,
+    factor_level = long$factor_level,
     stringsAsFactors = FALSE
   )
   rownames(out) <- NULL
@@ -118,24 +117,24 @@ glance.spicy_regression_table <- function(x, ...) {
     return(maybe_as_tibble(empty_glance()))
   }
   out <- data.frame(
-    model_id       = fs$model_id,
-    outcome        = fs$outcome,
-    nobs           = as.integer(fs$nobs),
-    weighted_nobs  = fs$weighted_nobs,
-    r.squared      = fs$r2,
-    adj.r.squared  = fs$adj_r2,
-    omega2         = fs$omega2,
-    sigma          = fs$sigma,
-    rmse           = fs$rmse,
-    f2             = fs$f2,
+    model_id = fs$model_id,
+    outcome = fs$outcome,
+    nobs = as.integer(fs$nobs),
+    weighted_nobs = fs$weighted_nobs,
+    r.squared = fs$r2,
+    adj.r.squared = fs$adj_r2,
+    omega2 = fs$omega2,
+    sigma = fs$sigma,
+    rmse = fs$rmse,
+    f2 = fs$f2,
     # broom's glance() convention keeps the UPPERCASE column names;
     # the source columns follow the lowercase 0.13 token schema.
-    AIC            = fs$aic,
-    AICc           = fs$aicc,
-    BIC            = fs$bic,
-    deviance       = fs$deviance,
+    AIC = fs$aic,
+    AICc = fs$aicc,
+    BIC = fs$bic,
+    deviance = fs$deviance,
     # df.residual kept numeric -- see file header.
-    df.residual    = as.numeric(fs$df_residual),
+    df.residual = as.numeric(fs$df_residual),
     stringsAsFactors = FALSE
   )
   rownames(out) <- NULL
@@ -175,10 +174,11 @@ NULL
 #' @rdname as.data.frame.spicy_regression_table
 #' @exportS3Method base::as.data.frame
 as.data.frame.spicy_regression_table <- function(
-    x,
-    row.names = NULL,
-    optional = FALSE,
-    ...) {
+  x,
+  row.names = NULL,
+  optional = FALSE,
+  ...
+) {
   unclass_spicy_regression_table(x)
 }
 
@@ -194,12 +194,12 @@ as_tibble.spicy_regression_table <- function(x, ...) {
 # ---- Helpers -------------------------------------------------------------
 
 unclass_spicy_regression_table <- function(x) {
-  out <- as.data.frame.data.frame(x)        # avoid recursion
-  attr(out, "title")          <- attr(x, "title")
-  attr(out, "note")           <- attr(x, "note")
-  attr(out, "spicy_long")     <- NULL
+  out <- as.data.frame.data.frame(x) # avoid recursion
+  attr(out, "title") <- attr(x, "title")
+  attr(out, "note") <- attr(x, "note")
+  attr(out, "spicy_long") <- NULL
   attr(out, "spicy_fit_stats") <- NULL
-  attr(out, "col_spec")       <- NULL
+  attr(out, "col_spec") <- NULL
   class(out) <- "data.frame"
   out
 }
@@ -213,43 +213,43 @@ maybe_as_tibble <- function(df) {
 
 empty_tidy_long <- function() {
   data.frame(
-    model_id      = character(0),
-    outcome       = character(0),
+    model_id = character(0),
+    outcome = character(0),
     outcome_level = character(0),
-    term          = character(0),
+    term = character(0),
     estimate_type = character(0),
-    estimate      = numeric(0),
-    std.error     = numeric(0),
-    conf.low      = numeric(0),
-    conf.high     = numeric(0),
-    statistic     = numeric(0),
-    df            = numeric(0),
-    p.value       = numeric(0),
-    test_type     = character(0),
-    is_intercept  = logical(0),
-    factor_term   = character(0),
-    factor_level  = character(0),
+    estimate = numeric(0),
+    std.error = numeric(0),
+    conf.low = numeric(0),
+    conf.high = numeric(0),
+    statistic = numeric(0),
+    df = numeric(0),
+    p.value = numeric(0),
+    test_type = character(0),
+    is_intercept = logical(0),
+    factor_term = character(0),
+    factor_level = character(0),
     stringsAsFactors = FALSE
   )
 }
 
 empty_glance <- function() {
   data.frame(
-    model_id      = character(0),
-    outcome       = character(0),
-    nobs          = integer(0),
+    model_id = character(0),
+    outcome = character(0),
+    nobs = integer(0),
     weighted_nobs = numeric(0),
-    r.squared     = numeric(0),
+    r.squared = numeric(0),
     adj.r.squared = numeric(0),
-    omega2        = numeric(0),
-    sigma         = numeric(0),
-    rmse          = numeric(0),
-    f2            = numeric(0),
-    AIC           = numeric(0),
-    AICc          = numeric(0),
-    BIC           = numeric(0),
-    deviance      = numeric(0),
-    df.residual   = numeric(0),
+    omega2 = numeric(0),
+    sigma = numeric(0),
+    rmse = numeric(0),
+    f2 = numeric(0),
+    AIC = numeric(0),
+    AICc = numeric(0),
+    BIC = numeric(0),
+    deviance = numeric(0),
+    df.residual = numeric(0),
     stringsAsFactors = FALSE
   )
 }

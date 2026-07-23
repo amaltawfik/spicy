@@ -13,10 +13,23 @@ test_that("tidy – returns broom-canonical column names", {
   out <- table_regression(fit)
   td <- broom::tidy(out)
 
-  expected <- c("model_id", "outcome", "term", "estimate_type",
-                "estimate", "std.error", "conf.low", "conf.high",
-                "statistic", "df", "p.value", "test_type",
-                "is_intercept", "factor_term", "factor_level")
+  expected <- c(
+    "model_id",
+    "outcome",
+    "term",
+    "estimate_type",
+    "estimate",
+    "std.error",
+    "conf.low",
+    "conf.high",
+    "statistic",
+    "df",
+    "p.value",
+    "test_type",
+    "is_intercept",
+    "factor_term",
+    "factor_level"
+  )
   expect_true(all(expected %in% names(td)))
 })
 
@@ -75,14 +88,15 @@ test_that("tidy – empty input → empty broom-shaped tibble", {
   # Construct a manually-empty spicy_regression_table
   empty <- structure(
     data.frame(Variable = character(0), stringsAsFactors = FALSE),
-    title = NULL, note = NULL,
-    spicy_long = NULL, spicy_fit_stats = NULL,
+    title = NULL,
+    note = NULL,
+    spicy_long = NULL,
+    spicy_fit_stats = NULL,
     class = c("spicy_regression_table", "spicy_table", "data.frame")
   )
   td <- broom::tidy(empty)
   expect_equal(nrow(td), 0L)
-  expect_true(all(c("model_id", "term", "estimate", "p.value")
-                  %in% names(td)))
+  expect_true(all(c("model_id", "term", "estimate", "p.value") %in% names(td)))
 })
 
 
@@ -109,8 +123,14 @@ test_that("glance – broom-canonical column names", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   g <- broom::glance(out)
-  expected <- c("model_id", "outcome", "nobs", "r.squared",
-                "adj.r.squared", "df.residual")
+  expected <- c(
+    "model_id",
+    "outcome",
+    "nobs",
+    "r.squared",
+    "adj.r.squared",
+    "df.residual"
+  )
   expect_true(all(expected %in% names(g)))
 })
 
@@ -184,9 +204,14 @@ test_that("tidy ⇄ raw long: per-coef estimates round-trip", {
   raw <- table_regression(fit, output = "long")
   # Each B-row in tidy must match the corresponding raw entry
   for (i in seq_len(nrow(td))) {
-    if (td$estimate_type[i] != "B") next
-    raw_row <- raw[raw$term == td$term[i] & raw$estimate_type == "B",
-                   , drop = FALSE]
+    if (td$estimate_type[i] != "B") {
+      next
+    }
+    raw_row <- raw[
+      raw$term == td$term[i] & raw$estimate_type == "B",
+      ,
+      drop = FALSE
+    ]
     expect_equal(td$estimate[i], raw_row$estimate, tolerance = 1e-12)
     expect_equal(td$std.error[i], raw_row$std.error, tolerance = 1e-12)
   }

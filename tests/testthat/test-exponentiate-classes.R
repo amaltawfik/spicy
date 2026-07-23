@@ -12,7 +12,8 @@
 }
 
 .b_estimates <- function(coefs) {
-  keep <- coefs$estimate_type == "B" & !(coefs$is_ref %in% TRUE) &
+  keep <- coefs$estimate_type == "B" &
+    !(coefs$is_ref %in% TRUE) &
     !is.na(coefs$estimate)
   coefs$estimate[keep]
 }
@@ -20,24 +21,37 @@
 test_that("exponentiate: polr (ordinal logit) -> OR, exp applied", {
   skip_if_not_installed("MASS")
   data(housing, package = "MASS")
-  fit <- MASS::polr(Sat ~ Infl + Type, weights = Freq, data = housing,
-                    Hess = TRUE)
+  fit <- MASS::polr(
+    Sat ~ Infl + Type,
+    weights = Freq,
+    data = housing,
+    Hess = TRUE
+  )
   e <- .exp_frame(fit)
   expect_true(isTRUE(e$info$extras$exp_applied))
   expect_identical(e$info$extras$exp_header, "OR")
-  expect_equal(.b_estimates(e$coefs), exp(.b_estimates(e$raw)),
-               tolerance = 1e-6)
+  expect_equal(
+    .b_estimates(e$coefs),
+    exp(.b_estimates(e$raw)),
+    tolerance = 1e-6
+  )
 })
 
 test_that("exponentiate: multinom (multinomial logit) -> OR", {
   skip_if_not_installed("nnet")
-  fit <- nnet::multinom(Species ~ Sepal.Length + Sepal.Width, data = iris,
-                        trace = FALSE)
+  fit <- nnet::multinom(
+    Species ~ Sepal.Length + Sepal.Width,
+    data = iris,
+    trace = FALSE
+  )
   e <- .exp_frame(fit)
   expect_true(isTRUE(e$info$extras$exp_applied))
   expect_identical(e$info$extras$exp_header, "OR")
-  expect_equal(.b_estimates(e$coefs), exp(.b_estimates(e$raw)),
-               tolerance = 1e-6)
+  expect_equal(
+    .b_estimates(e$coefs),
+    exp(.b_estimates(e$raw)),
+    tolerance = 1e-6
+  )
 })
 
 test_that("exponentiate: MASS::glm.nb -> IRR (Negative Binomial family string)", {
@@ -54,8 +68,11 @@ test_that("exponentiate: mgcv gam (binomial logit) -> OR", {
   e <- .exp_frame(fit)
   expect_true(isTRUE(e$info$extras$exp_applied))
   expect_identical(e$info$extras$exp_header, "OR")
-  expect_equal(.b_estimates(e$coefs), exp(.b_estimates(e$raw)),
-               tolerance = 1e-6)
+  expect_equal(
+    .b_estimates(e$coefs),
+    exp(.b_estimates(e$raw)),
+    tolerance = 1e-6
+  )
 })
 
 test_that("exponentiate: fixest fepois (Poisson log) -> IRR", {
@@ -64,8 +81,11 @@ test_that("exponentiate: fixest fepois (Poisson log) -> IRR", {
   e <- .exp_frame(fit)
   expect_true(isTRUE(e$info$extras$exp_applied))
   expect_identical(e$info$extras$exp_header, "IRR")
-  expect_equal(.b_estimates(e$coefs), exp(.b_estimates(e$raw)),
-               tolerance = 1e-6)
+  expect_equal(
+    .b_estimates(e$coefs),
+    exp(.b_estimates(e$raw)),
+    tolerance = 1e-6
+  )
 })
 
 test_that("exponentiate: betareg (logit mean link) -> OR", {
@@ -95,17 +115,20 @@ test_that("exponentiate: survival coxph is NOT double-exponentiated", {
 
 test_that("exponentiate: central guard makes a second application a no-op", {
   fit <- glm(am ~ hp, family = binomial(), data = mtcars)
-  fr <- as_regression_frame(fit, exponentiate = TRUE)   # glm self-applies
+  fr <- as_regression_frame(fit, exponentiate = TRUE) # glm self-applies
   expect_true(isTRUE(fr$info$extras$exp_applied))
   before <- fr$coefs$estimate
-  out <- .apply_exp_to_frame(fr$coefs, fr$info, TRUE)    # must NOT exp again
+  out <- .apply_exp_to_frame(fr$coefs, fr$info, TRUE) # must NOT exp again
   expect_equal(out$coefs$estimate, before)
 })
 
 test_that("exponentiate: identity-link fit warns spicy_ignored_arg (post-extraction)", {
   expect_warning(
-    table_regression(lm(mpg ~ wt, data = mtcars), exponentiate = TRUE,
-                     output = "data.frame"),
+    table_regression(
+      lm(mpg ~ wt, data = mtcars),
+      exponentiate = TRUE,
+      output = "data.frame"
+    ),
     class = "spicy_ignored_arg"
   )
 })

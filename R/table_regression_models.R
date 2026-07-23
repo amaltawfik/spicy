@@ -16,50 +16,195 @@
 # function entry.
 # ---------------------------------------------------------------------------
 
-
 # The registry. One row per supported engine call. Kept internal; exposed
 # through table_regression_models().
 .supported_models_registry <- function() {
   df <- rbind(
-    c("Linear and generalized linear", "lm",       "stats::lm()",              "yes", "-",                    "-"),
-    c("Linear and generalized linear", "glm",      "stats::glm()",             "yes", "OR / IRR / RR (link)", "-"),
-    c("Linear and generalized linear", "negbin",   "MASS::glm.nb()",           "yes", "IRR",                  "-"),
-    c("Linear and generalized linear", "rlm",      "MASS::rlm()",              "yes", "-",                    "-"),
-    c("Linear and generalized linear", "nls",      "stats::nls()",             "no",  "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "lm_robust","estimatr::lm_robust()",    "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "iv_robust","estimatr::iv_robust()",    "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "ivreg",    "AER::ivreg()",             "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "tobit",    "AER::tobit()",             "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "rq",       "quantreg::rq()",           "yes", "-",                    "-"),
-    c("Robust, IV, quantile, panel",   "fixest",   "fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::fenegbin()", "yes", "`feglm`: OR / IRR", "-"),
-    c("Mixed effects",                 "lmerMod",  "lme4::lmer()",             "yes", "-",                    "Random effects"),
-    c("Mixed effects",                 "glmerMod", "lme4::glmer()",            "yes", "OR / IRR (link)",      "Random effects"),
-    c("Mixed effects",                 "glmmTMB",  "glmmTMB::glmmTMB()",       "yes", "link-dependent (IRR for count families)", "Random effects; Zero-inflation; Dispersion"),
-    c("Mixed effects",                 "lme",      "nlme::lme()",              "yes", "-",                    "Random effects"),
-    c("Mixed effects",                 "gls",      "nlme::gls()",              "yes", "-",                    "-"),
-    c("Ordinal",                       "polr",     "MASS::polr()",             "per category", "OR (logit)", "Thresholds"),
-    c("Ordinal",                       "clm",      "ordinal::clm()",           "per category", "OR (logit)", "Thresholds; Non-proportional effects"),
-    c("Categorical",                   "multinom", "nnet::multinom()",         "per outcome",  "OR",         "per-outcome blocks"),
-    c("Categorical",                   "mlogit",   "mlogit::mlogit()",         "no",  "OR",                  "per-alternative rows"),
-    c("Counts, two-part",              "zeroinfl", "pscl::zeroinfl()",         "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero-inflation"),
-    c("Counts, two-part",              "hurdle",   "pscl::hurdle()",           "yes (combined response)", "IRR (count) + OR (logit zero part)", "Zero hurdle"),
-    c("Survival",                      "coxph",    "survival::coxph()",        "RMST / risk diff", "HR",   "-"),
-    c("Survival",                      "survreg",  "survival::survreg()",      "yes + RMST / risk diff", "TR (log-scale distributions)","-"),
-    c("Survival",                      "cph",      "rms::cph()",               "no",  "HR",                  "-"),
-    c("Survival",                      "flexsurvreg", "flexsurv::flexsurvreg()", "no",  "TR / HR (dist)",    "distribution parameters"),
-    c("Survey-weighted",               "svyglm",   "survey::svyglm()",         "yes (design-based)", "OR / IRR", "-"),
-    c("Additive, proportions, selection", "gam",   "mgcv::gam(), mgcv::bam()",        "yes", "OR / IRR (link)",     "-"),
-    c("Additive, proportions, selection", "betareg", "betareg::betareg()",     "yes", "OR (mean link)",      "-"),
-    c("Additive, proportions, selection", "selection", "sampleSelection::selection()", "no", "-",           "selection component"),
-    c("rms",                           "ols",      "rms::ols()",               "yes", "-",                    "-"),
-    c("rms",                           "lrm",      "rms::lrm()",               "yes", "OR",                   "-"),
-    c("rms",                           "Glm",      "rms::Glm()",               "yes", "link-dependent",       "-"),
-    c("Bayesian",                      "stanreg",  "rstanarm::stan_glm(), rstanarm::stan_glmer()", "yes (draws)",  "link-dependent", "Random effects (if multilevel)"),
-    c("Bayesian",                      "brmsfit",  "brms::brm()",              "yes (draws)",  "link-dependent",       "Random effects (if multilevel)")
+    c("Linear and generalized linear", "lm", "stats::lm()", "yes", "-", "-"),
+    c(
+      "Linear and generalized linear",
+      "glm",
+      "stats::glm()",
+      "yes",
+      "OR / IRR / RR (link)",
+      "-"
+    ),
+    c(
+      "Linear and generalized linear",
+      "negbin",
+      "MASS::glm.nb()",
+      "yes",
+      "IRR",
+      "-"
+    ),
+    c("Linear and generalized linear", "rlm", "MASS::rlm()", "yes", "-", "-"),
+    c("Linear and generalized linear", "nls", "stats::nls()", "no", "-", "-"),
+    c(
+      "Robust, IV, quantile, panel",
+      "lm_robust",
+      "estimatr::lm_robust()",
+      "yes",
+      "-",
+      "-"
+    ),
+    c(
+      "Robust, IV, quantile, panel",
+      "iv_robust",
+      "estimatr::iv_robust()",
+      "yes",
+      "-",
+      "-"
+    ),
+    c("Robust, IV, quantile, panel", "ivreg", "AER::ivreg()", "yes", "-", "-"),
+    c("Robust, IV, quantile, panel", "tobit", "AER::tobit()", "yes", "-", "-"),
+    c("Robust, IV, quantile, panel", "rq", "quantreg::rq()", "yes", "-", "-"),
+    c(
+      "Robust, IV, quantile, panel",
+      "fixest",
+      "fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::fenegbin()",
+      "yes",
+      "`feglm`: OR / IRR",
+      "-"
+    ),
+    c("Mixed effects", "lmerMod", "lme4::lmer()", "yes", "-", "Random effects"),
+    c(
+      "Mixed effects",
+      "glmerMod",
+      "lme4::glmer()",
+      "yes",
+      "OR / IRR (link)",
+      "Random effects"
+    ),
+    c(
+      "Mixed effects",
+      "glmmTMB",
+      "glmmTMB::glmmTMB()",
+      "yes",
+      "link-dependent (IRR for count families)",
+      "Random effects; Zero-inflation; Dispersion"
+    ),
+    c("Mixed effects", "lme", "nlme::lme()", "yes", "-", "Random effects"),
+    c("Mixed effects", "gls", "nlme::gls()", "yes", "-", "-"),
+    c(
+      "Ordinal",
+      "polr",
+      "MASS::polr()",
+      "per category",
+      "OR (logit)",
+      "Thresholds"
+    ),
+    c(
+      "Ordinal",
+      "clm",
+      "ordinal::clm()",
+      "per category",
+      "OR (logit)",
+      "Thresholds; Non-proportional effects"
+    ),
+    c(
+      "Categorical",
+      "multinom",
+      "nnet::multinom()",
+      "per outcome",
+      "OR",
+      "per-outcome blocks"
+    ),
+    c(
+      "Categorical",
+      "mlogit",
+      "mlogit::mlogit()",
+      "no",
+      "OR",
+      "per-alternative rows"
+    ),
+    c(
+      "Counts, two-part",
+      "zeroinfl",
+      "pscl::zeroinfl()",
+      "yes (combined response)",
+      "IRR (count) + OR (logit zero part)",
+      "Zero-inflation"
+    ),
+    c(
+      "Counts, two-part",
+      "hurdle",
+      "pscl::hurdle()",
+      "yes (combined response)",
+      "IRR (count) + OR (logit zero part)",
+      "Zero hurdle"
+    ),
+    c("Survival", "coxph", "survival::coxph()", "RMST / risk diff", "HR", "-"),
+    c(
+      "Survival",
+      "survreg",
+      "survival::survreg()",
+      "yes + RMST / risk diff",
+      "TR (log-scale distributions)",
+      "-"
+    ),
+    c("Survival", "cph", "rms::cph()", "no", "HR", "-"),
+    c(
+      "Survival",
+      "flexsurvreg",
+      "flexsurv::flexsurvreg()",
+      "no",
+      "TR / HR (dist)",
+      "distribution parameters"
+    ),
+    c(
+      "Survey-weighted",
+      "svyglm",
+      "survey::svyglm()",
+      "yes (design-based)",
+      "OR / IRR",
+      "-"
+    ),
+    c(
+      "Additive, proportions, selection",
+      "gam",
+      "mgcv::gam(), mgcv::bam()",
+      "yes",
+      "OR / IRR (link)",
+      "-"
+    ),
+    c(
+      "Additive, proportions, selection",
+      "betareg",
+      "betareg::betareg()",
+      "yes",
+      "OR (mean link)",
+      "-"
+    ),
+    c(
+      "Additive, proportions, selection",
+      "selection",
+      "sampleSelection::selection()",
+      "no",
+      "-",
+      "selection component"
+    ),
+    c("rms", "ols", "rms::ols()", "yes", "-", "-"),
+    c("rms", "lrm", "rms::lrm()", "yes", "OR", "-"),
+    c("rms", "Glm", "rms::Glm()", "yes", "link-dependent", "-"),
+    c(
+      "Bayesian",
+      "stanreg",
+      "rstanarm::stan_glm(), rstanarm::stan_glmer()",
+      "yes (draws)",
+      "link-dependent",
+      "Random effects (if multilevel)"
+    ),
+    c(
+      "Bayesian",
+      "brmsfit",
+      "brms::brm()",
+      "yes (draws)",
+      "link-dependent",
+      "Random effects (if multilevel)"
+    )
   )
   out <- as.data.frame(df, stringsAsFactors = FALSE)
-  names(out) <- c("family", "class", "engine", "ame", "exponentiate",
-                  "blocks")
+  names(out) <- c("family", "class", "engine", "ame", "exponentiate", "blocks")
   out
 }
 
@@ -74,16 +219,23 @@
   # SPAN: downlit auto-links an inline code span only when the whole span is
   # a single `pkg::fun()` call, so each function becomes clickable on the
   # pkgdown site.
-  reg$class  <- paste0("`", reg$class, "`")
-  reg$engine <- vapply(strsplit(reg$engine, ", ", fixed = TRUE),
-                       function(fns) {
-                         paste0("`", fns, "`", collapse = ", ")
-                       }, character(1))
+  reg$class <- paste0("`", reg$class, "`")
+  reg$engine <- vapply(
+    strsplit(reg$engine, ", ", fixed = TRUE),
+    function(fns) {
+      paste0("`", fns, "`", collapse = ", ")
+    },
+    character(1)
+  )
   header <- "| Family | Class | Engine | AME | Exponentiate | Blocks |"
-  sep    <- "|---|---|---|---|---|---|"
-  rows <- vapply(seq_len(nrow(reg)), function(i) {
-    paste0("| ", paste(unlist(reg[i, ]), collapse = " | "), " |")
-  }, character(1))
+  sep <- "|---|---|---|---|---|---|"
+  rows <- vapply(
+    seq_len(nrow(reg)),
+    function(i) {
+      paste0("| ", paste(unlist(reg[i, ]), collapse = " | "), " |")
+    },
+    character(1)
+  )
   paste(c(header, sep, rows), collapse = "\n")
 }
 

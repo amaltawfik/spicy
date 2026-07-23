@@ -15,20 +15,19 @@ test_that("data recovery fails cleanly when the fit's data is gone", {
   d <- .est_lung2()
   e <- new.env()
   e$dd <- d
-  fit <- eval(quote(survival::coxph(survival::Surv(time, status) ~ age,
-                                    data = dd)), e)
+  fit <- eval(
+    quote(survival::coxph(survival::Surv(time, status) ~ age, data = dd)),
+    e
+  )
   # The data frame disappears from the call environment.
   rm("dd", envir = e)
-  expect_error(spicy:::.coxph_estimand_data(fit),
-               class = "spicy_invalid_input")
+  expect_error(spicy:::.coxph_estimand_data(fit), class = "spicy_invalid_input")
   # A formula column disappears from the recovered data.
   e$dd <- d[, setdiff(names(d), "age")]
-  expect_error(spicy:::.coxph_estimand_data(fit),
-               class = "spicy_invalid_input")
+  expect_error(spicy:::.coxph_estimand_data(fit), class = "spicy_invalid_input")
   # The recovered data no longer matches the fitted sample.
   e$dd <- d[1:50, ]
-  expect_error(spicy:::.coxph_estimand_data(fit),
-               class = "spicy_invalid_input")
+  expect_error(spicy:::.coxph_estimand_data(fit), class = "spicy_invalid_input")
 })
 
 
@@ -36,7 +35,8 @@ test_that("tt() terms are refused", {
   skip_if_not_installed("survival")
   d <- .est_lung2()
   fit_tt <- survival::coxph(
-    survival::Surv(time, status) ~ age + survival::tt(age), data = d,
+    survival::Surv(time, status) ~ age + survival::tt(age),
+    data = d,
     tt = function(x, t, ...) x * log(t)
   )
   expect_error(
@@ -51,11 +51,14 @@ test_that("character predictors contrast like factors; logical-only
   skip_if_not_installed("survival")
   d <- .est_lung2()
   d$sex_chr <- as.character(d$sex)
-  fit_chr <- survival::coxph(survival::Surv(time, status) ~ sex_chr,
-                             data = d)
+  fit_chr <- survival::coxph(survival::Surv(time, status) ~ sex_chr, data = d)
   pts <- spicy:::.coxph_estimand_points(
-    fit_chr, spicy:::.coxph_estimand_data(fit_chr),
-    want_rmst = TRUE, want_risk = FALSE, tau = 365, at_time = NULL
+    fit_chr,
+    spicy:::.coxph_estimand_data(fit_chr),
+    want_rmst = TRUE,
+    want_risk = FALSE,
+    tau = 365,
+    at_time = NULL
   )
   # Character predictors take the alphabetical (factor()) reference:
   # here "Female", so the contrast is Male - Female -- the NEGATIVE of
@@ -63,16 +66,19 @@ test_that("character predictors contrast like factors; logical-only
   expect_identical(pts$term, "sex_chrMale")
   fit_f <- survival::coxph(survival::Surv(time, status) ~ sex, data = d)
   pts_f <- spicy:::.coxph_estimand_points(
-    fit_f, spicy:::.coxph_estimand_data(fit_f),
-    want_rmst = TRUE, want_risk = FALSE, tau = 365, at_time = NULL
+    fit_f,
+    spicy:::.coxph_estimand_data(fit_f),
+    want_rmst = TRUE,
+    want_risk = FALSE,
+    tau = 365,
+    at_time = NULL
   )
   expect_equal(pts$rmst, -pts_f$rmst, tolerance = 1e-10)
 
   # A logical predictor is neither factor/character nor numeric for
   # the contrast builder: no estimand rows -> the class gate fires.
   d$flag <- d$age > 63
-  fit_lgl <- survival::coxph(survival::Surv(time, status) ~ flag,
-                             data = d)
+  fit_lgl <- survival::coxph(survival::Surv(time, status) ~ flag, data = d)
   expect_error(
     table_regression(fit_lgl, show_columns = c("b", "rmst"), tau = 365),
     class = "spicy_invalid_input"
@@ -99,8 +105,7 @@ test_that("partially failing replicates report a range of valid counts", {
   )
   set.seed(3)
   expect_error(
-    table_regression(fit, show_columns = c("b", "rmst"), tau = 365,
-                     boot_n = 8),
+    table_regression(fit, show_columns = c("b", "rmst"), tau = 365, boot_n = 8),
     class = "spicy_resampling_failed"
   )
 })
@@ -122,8 +127,7 @@ test_that("a rarely-resampled factor level yields a replicate range note", {
   )
   set.seed(11)
   tr <- suppressWarnings(
-    table_regression(fit, show_columns = c("b", "rmst"), tau = 20,
-                     boot_n = 20)
+    table_regression(fit, show_columns = c("b", "rmst"), tau = 20, boot_n = 20)
   )
   out <- paste(capture.output(print(tr)), collapse = "\n")
   expect_match(out, "\\d+-20 replicates")

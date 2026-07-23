@@ -178,7 +178,8 @@ varlist_impl <- function(
       return(res)
     }
 
-    if (interactive()) { # nocov start
+    if (interactive()) {
+      # nocov start
       tryCatch(
         tibble::view(res, title = "vl: (no columns selected)"),
         error = function(e) {
@@ -251,7 +252,8 @@ varlist_impl <- function(
 
   if (tbl) {
     return(res)
-  } else if (interactive()) { # nocov start
+  } else if (interactive()) {
+    # nocov start
     title_txt <- varlist_title(expr = raw_expr, selectors_used = !missing(...))
 
     tryCatch(

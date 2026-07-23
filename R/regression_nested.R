@@ -30,7 +30,6 @@
 # Mixed-class hierarchies route through the lm path; the glm side
 # en-dashes the variance-explained tokens.
 
-
 # ---- Public-internal entry point -----------------------------------------
 
 # Compute pairwise nested-comparison statistics for all adjacent pairs
@@ -49,14 +48,14 @@ compute_nested_comparisons <- function(fits) {
     fit_prev <- fits[[k]]
     fit_curr <- fits[[k + 1L]]
     pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
-    pair_glm   <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
+    pair_glm <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
     # coxph and nnet::multinom have a proper nested likelihood-ratio test
     # (anova.coxph -> Chisq; anova.multinom -> LR stat.) but no classical
     # R^2: route them through the LRT pair path, NOT the lm path (which
     # reads summary()$r.squared and crashes on those fits).
-    pair_lrt   <- (inherits(fit_prev, "coxph") && inherits(fit_curr, "coxph")) ||
+    pair_lrt <- (inherits(fit_prev, "coxph") && inherits(fit_curr, "coxph")) ||
       (inherits(fit_prev, "multinom") && inherits(fit_curr, "multinom"))
-    pair_rq    <- inherits(fit_prev, "rq") && inherits(fit_curr, "rq")
+    pair_rq <- inherits(fit_prev, "rq") && inherits(fit_curr, "rq")
     stats <- if (pair_mixed) {
       compute_one_pair_mixed(fit_prev, fit_curr)
     } else if (pair_rq) {
@@ -68,16 +67,16 @@ compute_nested_comparisons <- function(fits) {
     }
     result[[k]] <- data.frame(
       comparison = sprintf("Model %d vs Model %d", k + 1L, k),
-      r2_change       = stats$r2_change,
-      adj_r2_change   = stats$adj_r2_change,
-      f_change        = stats$f_change,
-      f2_change       = stats$f2_change,
-      lrt_change      = stats$lrt_change,
-      aic_change      = stats$aic_change,
-      aicc_change     = stats$aicc_change,
-      bic_change      = stats$bic_change,
+      r2_change = stats$r2_change,
+      adj_r2_change = stats$adj_r2_change,
+      f_change = stats$f_change,
+      f2_change = stats$f2_change,
+      lrt_change = stats$lrt_change,
+      aic_change = stats$aic_change,
+      aicc_change = stats$aicc_change,
+      bic_change = stats$bic_change,
       deviance_change = stats$deviance_change,
-      p_change        = stats$p_change,
+      p_change = stats$p_change,
       stringsAsFactors = FALSE
     )
   }
@@ -94,18 +93,25 @@ compute_nested_comparisons <- function(fits) {
 # function easy to test (no token-selection branching here).
 compute_one_pair_lm <- function(fit_prev, fit_curr) {
   na <- list(
-    r2_change = NA_real_, adj_r2_change = NA_real_,
-    f_change = NA_real_, f2_change = NA_real_,
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
     lrt_change = NA_real_,
-    aic_change = NA_real_, aicc_change = NA_real_, bic_change = NA_real_,
-    deviance_change = NA_real_, p_change = NA_real_
+    aic_change = NA_real_,
+    aicc_change = NA_real_,
+    bic_change = NA_real_,
+    deviance_change = NA_real_,
+    p_change = NA_real_
   )
 
   av <- tryCatch(
     suppressWarnings(stats::anova(fit_prev, fit_curr)),
     error = function(e) NULL
   )
-  if (is.null(av) || nrow(av) < 2L) return(na)
+  if (is.null(av) || nrow(av) < 2L) {
+    return(na)
+  }
 
   sm_prev <- summary(fit_prev)
   sm_curr <- summary(fit_curr)
@@ -115,24 +121,28 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
   adj_r2_c <- unname(sm_curr$adj.r.squared)
 
   F_stat <- if ("F" %in% names(av)) av[["F"]][2] else av[["F value"]][2]
-  p_val  <- av[["Pr(>F)"]][2]
+  p_val <- av[["Pr(>F)"]][2]
 
   f2_change <- if (is.finite(r2_c) && r2_c < 1) {
     (r2_c - r2_p) / (1 - r2_c)
   } else {
-    NA_real_                                                       # nocov
+    NA_real_ # nocov
   }
 
   # LRT -- asymptotic chi^2 via -2 (l_prev - l_curr). For lm with
   # constant sigma^2 assumption this matches anova(... test = "LRT") output.
-  ll_prev <- tryCatch(as.numeric(stats::logLik(fit_prev)),
-                       error = function(e) NA_real_)
-  ll_curr <- tryCatch(as.numeric(stats::logLik(fit_curr)),
-                       error = function(e) NA_real_)
+  ll_prev <- tryCatch(as.numeric(stats::logLik(fit_prev)), error = function(e) {
+    NA_real_
+  })
+  ll_curr <- tryCatch(as.numeric(stats::logLik(fit_curr)), error = function(e) {
+    NA_real_
+  })
   lrt_stat <- -2 * (ll_prev - ll_curr)
 
-  aic_p <- stats::AIC(fit_prev); aic_c <- stats::AIC(fit_curr)
-  bic_p <- stats::BIC(fit_prev); bic_c <- stats::BIC(fit_curr)
+  aic_p <- stats::AIC(fit_prev)
+  aic_c <- stats::AIC(fit_curr)
+  bic_p <- stats::BIC(fit_prev)
+  bic_c <- stats::BIC(fit_curr)
 
   # AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (sigma).
   aicc <- function(fit, aic_v) {
@@ -147,16 +157,16 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
   dev_c <- stats::deviance(fit_curr)
 
   list(
-    r2_change       = r2_c - r2_p,
-    adj_r2_change   = adj_r2_c - adj_r2_p,
-    f_change        = F_stat,
-    f2_change       = f2_change,
-    lrt_change      = lrt_stat,
-    aic_change      = aic_c - aic_p,
-    aicc_change     = aicc_c - aicc_p,
-    bic_change      = bic_c - bic_p,
-    deviance_change = dev_p - dev_c,   # positive when m_curr fits better
-    p_change        = p_val
+    r2_change = r2_c - r2_p,
+    adj_r2_change = adj_r2_c - adj_r2_p,
+    f_change = F_stat,
+    f2_change = f2_change,
+    lrt_change = lrt_stat,
+    aic_change = aic_c - aic_p,
+    aicc_change = aicc_c - aicc_p,
+    bic_change = bic_c - bic_p,
+    deviance_change = dev_p - dev_c, # positive when m_curr fits better
+    p_change = p_val
   )
 }
 
@@ -173,11 +183,16 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
 # meaningful and computed.
 compute_one_pair_glm <- function(fit_prev, fit_curr) {
   na <- list(
-    r2_change = NA_real_, adj_r2_change = NA_real_,
-    f_change = NA_real_, f2_change = NA_real_,
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
     lrt_change = NA_real_,
-    aic_change = NA_real_, aicc_change = NA_real_, bic_change = NA_real_,
-    deviance_change = NA_real_, p_change = NA_real_
+    aic_change = NA_real_,
+    aicc_change = NA_real_,
+    bic_change = NA_real_,
+    deviance_change = NA_real_,
+    p_change = NA_real_
   )
 
   av <- if (inherits(fit_prev, "multinom")) {
@@ -194,28 +209,35 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
       error = function(e) NULL
     )
   }
-  if (is.null(av) || nrow(av) < 2L) return(na)
+  if (is.null(av) || nrow(av) < 2L) {
+    return(na)
+  }
 
   # Column names vary across R versions and model classes: "Deviance" +
   # "Pr(>Chi)" is standard for binomial / poisson; "Pr(>F)" appears for quasi-
   # families when test = "F" is the natural test; anova.coxph reports the LRT as
   # "Chisq" + "Pr(>|Chi|)"; anova.multinom as "LR stat." + "Pr(Chi)". Look up
   # defensively, new names appended LAST so glm/coxph priority is untouched.
-  lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT", "Chisq", "LR stat."),
-                       names(av))
-  p_col <- intersect(
-    c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)", "Pr(Chi)"), names(av)
+  lrt_col <- intersect(
+    c("Deviance", "scaled dev.", "LRT", "Chisq", "LR stat."),
+    names(av)
   )
-  lrt_stat <- if (length(lrt_col) > 0L) av[[lrt_col[1L]]][2L] else NA_real_  # nocov
-  p_val <- if (length(p_col) > 0L) av[[p_col[1L]]][2L] else NA_real_         # nocov
+  p_col <- intersect(
+    c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)", "Pr(Chi)"),
+    names(av)
+  )
+  lrt_stat <- if (length(lrt_col) > 0L) av[[lrt_col[1L]]][2L] else NA_real_ # nocov
+  p_val <- if (length(p_col) > 0L) av[[p_col[1L]]][2L] else NA_real_ # nocov
 
-  aic_p <- stats::AIC(fit_prev); aic_c <- stats::AIC(fit_curr)
-  bic_p <- stats::BIC(fit_prev); bic_c <- stats::BIC(fit_curr)
+  aic_p <- stats::AIC(fit_prev)
+  aic_c <- stats::AIC(fit_curr)
+  bic_p <- stats::BIC(fit_prev)
+  bic_c <- stats::BIC(fit_curr)
 
   aicc <- function(fit, aic_v) {
     k <- length(stats::coef(fit)) + 1L
     n <- .spicy_nobs(fit)
-    if (n - k - 1L > 0L) aic_v + (2 * k * (k + 1L)) / (n - k - 1L) else NA_real_  # nocov
+    if (n - k - 1L > 0L) aic_v + (2 * k * (k + 1L)) / (n - k - 1L) else NA_real_ # nocov
   }
   aicc_p <- aicc(fit_prev, aic_p)
   aicc_c <- aicc(fit_curr, aic_c)
@@ -231,16 +253,16 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
   dev_c <- dev1(fit_curr)
 
   list(
-    r2_change       = NA_real_,
-    adj_r2_change   = NA_real_,
-    f_change        = NA_real_,
-    f2_change       = NA_real_,
-    lrt_change      = lrt_stat,
-    aic_change      = aic_c - aic_p,
-    aicc_change     = aicc_c - aicc_p,
-    bic_change      = bic_c - bic_p,
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
+    lrt_change = lrt_stat,
+    aic_change = aic_c - aic_p,
+    aicc_change = aicc_c - aicc_p,
+    bic_change = bic_c - bic_p,
     deviance_change = dev_p - dev_c,
-    p_change        = p_val
+    p_change = p_val
   )
 }
 
@@ -269,18 +291,25 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
 # debated -- see Vaida & Blanchard 2005).
 compute_one_pair_mixed <- function(fit_prev, fit_curr) {
   na <- list(
-    r2_change = NA_real_, adj_r2_change = NA_real_,
-    f_change = NA_real_, f2_change = NA_real_,
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
     lrt_change = NA_real_,
-    aic_change = NA_real_, aicc_change = NA_real_, bic_change = NA_real_,
-    deviance_change = NA_real_, p_change = NA_real_
+    aic_change = NA_real_,
+    aicc_change = NA_real_,
+    bic_change = NA_real_,
+    deviance_change = NA_real_,
+    p_change = NA_real_
   )
 
   av <- tryCatch(
     suppressWarnings(suppressMessages(stats::anova(fit_prev, fit_curr))),
     error = function(e) NULL
   )
-  if (is.null(av) || nrow(av) < 2L) return(na)
+  if (is.null(av) || nrow(av) < 2L) {
+    return(na)
+  }
 
   # Column names depend on engine + version. lme4 + glmmTMB return
   # ("npar", "AIC", "BIC", "logLik", "deviance"/"-2*log(L)", "Chisq",
@@ -289,13 +318,13 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
   # defensively so the same function handles all engines.
   cols <- names(av)
   chi_col <- intersect(c("Chisq", "L.Ratio"), cols)
-  p_col   <- intersect(c("Pr(>Chisq)", "p-value", "Pr(>Chi)"), cols)
+  p_col <- intersect(c("Pr(>Chisq)", "p-value", "Pr(>Chi)"), cols)
   aic_col <- intersect(c("AIC"), cols)
   bic_col <- intersect(c("BIC"), cols)
   dev_col <- intersect(c("-2*log(L)", "deviance", "Deviance"), cols)
 
   chi_stat <- if (length(chi_col)) av[[chi_col[1L]]][2L] else NA_real_
-  p_val    <- if (length(p_col))   av[[p_col[1L]]][2L]   else NA_real_
+  p_val <- if (length(p_col)) av[[p_col[1L]]][2L] else NA_real_
 
   aic_p <- if (length(aic_col)) av[[aic_col[1L]]][1L] else stats::AIC(fit_prev)
   aic_c <- if (length(aic_col)) av[[aic_col[1L]]][2L] else stats::AIC(fit_curr)
@@ -313,16 +342,16 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
   }
 
   list(
-    r2_change       = NA_real_,
-    adj_r2_change   = NA_real_,
-    f_change        = NA_real_,
-    f2_change       = NA_real_,
-    lrt_change      = as.numeric(chi_stat),
-    aic_change      = aic_c - aic_p,
-    aicc_change     = NA_real_,
-    bic_change      = bic_c - bic_p,
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
+    lrt_change = as.numeric(chi_stat),
+    aic_change = aic_c - aic_p,
+    aicc_change = NA_real_,
+    bic_change = bic_c - bic_p,
     deviance_change = as.numeric(dev_change),
-    p_change        = as.numeric(p_val)
+    p_change = as.numeric(p_val)
   )
 }
 
@@ -338,15 +367,21 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
 #
 # Phase 0c sub-step C3.
 attach_nested_stats_to_frames <- function(frames, fits) {
-  if (!isTRUE(length(fits) >= 2L)) return(frames)
+  if (!isTRUE(length(fits) >= 2L)) {
+    return(frames)
+  }
   comp <- compute_nested_comparisons(fits)
-  if (nrow(comp) == 0L) return(frames)   # nocov -- >= 2 fits always yield >= 1 comparison row
+  if (nrow(comp) == 0L) {
+    return(frames)
+  } # nocov -- >= 2 fits always yield >= 1 comparison row
   na_row <- comp[1L, , drop = FALSE]
   na_row[1L, ] <- NA
   change_cols <- setdiff(names(comp), "comparison")
   for (i in seq_along(frames)) {
     fs <- frames[[i]]$info$fit_stats
-    if (is.null(fs)) next                                          # nocov
+    if (is.null(fs)) {
+      next
+    } # nocov
     pair_row <- if (i == 1L) na_row else comp[i - 1L, , drop = FALSE]
     for (col in change_cols) {
       fs[[col]] <- pair_row[[col]][1L]
@@ -369,11 +404,16 @@ attach_nested_stats_to_frames <- function(frames, fits) {
 # from quantreg's own logLik.rq pseudo-likelihood methods.
 compute_one_pair_rq <- function(fit_prev, fit_curr) {
   na <- list(
-    r2_change = NA_real_, adj_r2_change = NA_real_,
-    f_change = NA_real_, f2_change = NA_real_,
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
     lrt_change = NA_real_,
-    aic_change = NA_real_, aicc_change = NA_real_, bic_change = NA_real_,
-    deviance_change = NA_real_, p_change = NA_real_
+    aic_change = NA_real_,
+    aicc_change = NA_real_,
+    bic_change = NA_real_,
+    deviance_change = NA_real_,
+    p_change = NA_real_
   )
   av <- tryCatch(
     suppressWarnings(stats::anova(fit_prev, fit_curr)),
@@ -381,18 +421,21 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
   )
   tb <- av$table
   if (is.null(tb) || !all(c("Tn", "pvalue") %in% names(tb))) {
-    return(na)                                                        # nocov
+    return(na) # nocov
   }
   aic_p <- tryCatch(stats::AIC(fit_prev), error = function(e) NA_real_)
   aic_c <- tryCatch(stats::AIC(fit_curr), error = function(e) NA_real_)
   bic_p <- tryCatch(stats::BIC(fit_prev), error = function(e) NA_real_)
   bic_c <- tryCatch(stats::BIC(fit_curr), error = function(e) NA_real_)
-  utils::modifyList(na, list(
-    f_change   = as.numeric(tb$Tn[1L]),
-    p_change   = as.numeric(tb$pvalue[1L]),
-    aic_change = aic_c - aic_p,
-    bic_change = bic_c - bic_p
-  ))
+  utils::modifyList(
+    na,
+    list(
+      f_change = as.numeric(tb$Tn[1L]),
+      p_change = as.numeric(tb$pvalue[1L]),
+      aic_change = aic_c - aic_p,
+      bic_change = bic_c - bic_p
+    )
+  )
 }
 
 
@@ -403,8 +446,8 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
 default_nested_tokens <- function(models) {
   mixed_classes <- c("merMod", "lmerModLmerTest", "glmmTMB", "lme")
   all_mixed <- all(vapply(models, inherits, logical(1), mixed_classes))
-  all_glm   <- all(vapply(models, inherits, logical(1), "glm"))
-  all_cox   <- all(vapply(models, inherits, logical(1), "coxph"))
+  all_glm <- all(vapply(models, inherits, logical(1), "glm"))
+  all_cox <- all(vapply(models, inherits, logical(1), "coxph"))
   all_multinom <- all(vapply(models, inherits, logical(1), "multinom"))
   if (all_mixed) {
     # Mixed-effects: AIC + BIC + chi^2 LRT + p. Variance-explained

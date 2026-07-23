@@ -2,7 +2,6 @@
 # Phase 6b tests: as_regression_frame() method for fixest fits.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_feols_basic <- function() {
@@ -60,14 +59,16 @@ test_that("feols: info$family is gaussian/identity (hardcoded; no family slot)",
   fit <- .fit_feols_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("feols: title_prefix = 'Linear regression (fixed effects)'", {
   fit <- .fit_feols_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Linear regression (fixed effects)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Linear regression (fixed effects)"
+  )
 })
 
 test_that("feols: info$dv reads the response variable", {
@@ -104,10 +105,12 @@ test_that("feols: coefs estimates match stats::coef(fit)", {
   legacy <- stats::coef(fit)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -117,12 +120,21 @@ test_that("feols: SE / p / t match summary(fit)$coeftable byte-equivalent", {
   sm <- summary(fit)$coeftable
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(sm)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(sm[nm, "Std. Error"]), tolerance = 1e-10)
-    expect_equal(b_rows$statistic[b_rows$term == nm],
-                 unname(sm[nm, "t value"]),    tolerance = 1e-10)
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(sm[nm, "Pr(>|t|)"]),   tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(sm[nm, "Std. Error"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$statistic[b_rows$term == nm],
+      unname(sm[nm, "t value"]),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(sm[nm, "Pr(>|t|)"]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -193,14 +205,16 @@ test_that("fepois: info$family is poisson/log", {
   fit <- .fit_fepois()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "poisson")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
 })
 
 test_that("fepois: title_prefix = 'Poisson regression (fixed effects)'", {
   fit <- .fit_fepois()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix,
-                   "Poisson regression (fixed effects)")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Poisson regression (fixed effects)"
+  )
 })
 
 test_that("fepois: Wald z-asymptotic (test_type='z', df=Inf)", {
@@ -235,13 +249,25 @@ test_that("feols coefs match parameters::model_parameters() (oracle)", {
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })

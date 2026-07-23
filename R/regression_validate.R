@@ -20,7 +20,6 @@
 # Phase E \u2013 cross-arg semantic     (steps 25-26, warnings only)
 # Phase F \u2013 output-dependent       (steps 27-29)
 
-
 # ---- Token vocabularies (canonical) ---------------------------------------
 
 # Token vocabularies (lm + glm). Match dev/table_regression_design.md \u00A74.
@@ -35,7 +34,12 @@
   # these (see `.show_columns_groups` below).
   show_columns_atomic = c(
     # B-coefficient family
-    "b", "beta", "se", "ci", "t", "p",
+    "b",
+    "beta",
+    "se",
+    "ci",
+    "t",
+    "p",
     # Per-row N (populated by univariable-screening frames, where each
     # predictor block is its own fit; blank for ordinary models)
     "n",
@@ -43,17 +47,29 @@
     # on continuous rows (binomial outcomes only; STROBE item 16)
     "n_events",
     # Average marginal effects (AME)
-    "ame", "ame_se", "ame_ci", "ame_p",
+    "ame",
+    "ame_se",
+    "ame_ci",
+    "ame_p",
     # Survival estimands (coxph): RMST difference over [0, tau] and
     # cumulative-incidence difference at `at_time`, by g-computation
-    "rmst", "rmst_se", "rmst_ci", "rmst_p",
-    "risk_diff", "risk_diff_se", "risk_diff_ci", "risk_diff_p",
+    "rmst",
+    "rmst_se",
+    "rmst_ci",
+    "rmst_p",
+    "risk_diff",
+    "risk_diff_se",
+    "risk_diff_ci",
+    "risk_diff_p",
     # Variance-explained partials (lm only) \u2013 split into
     # estimate-only + CI-only, matching the b / ci asymmetry-free
     # convention.
-    "partial_f2",     "partial_f2_ci",
-    "partial_eta2",   "partial_eta2_ci",
-    "partial_omega2", "partial_omega2_ci",
+    "partial_f2",
+    "partial_f2_ci",
+    "partial_eta2",
+    "partial_eta2_ci",
+    "partial_omega2",
+    "partial_omega2_ci",
     # LRT-based partial chi-square (glm; analog of partial F) \u2013
     # kept BUNDLED as "value (df)" because that is the standard
     # statistical-reporting convention (e.g. "chi2(2) = 5.34").
@@ -62,49 +78,73 @@
     "pd",
     # Per-parameter sampler diagnostics (Bayesian fits only), and the
     # Monte Carlo standard error of the displayed posterior median.
-    "rhat", "ess_bulk", "ess_tail", "mcse"
+    "rhat",
+    "ess_bulk",
+    "ess_tail",
+    "mcse"
   ),
   show_fit_stats = c(
-    "nobs", "weighted_nobs",
+    "nobs",
+    "weighted_nobs",
     # Variance-explained (lm only)
-    "r2", "adj_r2", "omega2",
+    "r2",
+    "adj_r2",
+    "omega2",
     # Pseudo-R\u00B2 family (glm only)
-    "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur",
+    "pseudo_r2_mcfadden",
+    "pseudo_r2_nagelkerke",
+    "pseudo_r2_tjur",
     # Negative-binomial dispersion (MASS::glm.nb only): theta
     # (V = mu + mu^2/theta) and alpha = 1/theta (Stata nbreg).
-    "theta", "alpha",
+    "theta",
+    "alpha",
     # Beta-regression precision (betareg only): phi (Ferrari &
     # Cribari-Neto 2004; Var(y) = mu(1-mu)/(1+phi)).
     "phi",
     # fixest only: the absorbed-fixed-effects Yes/No disclosure block
     # (one row per factor) and the within (FE-partialled) R-squared.
-    "fixed_effects", "within_r2",
+    "fixed_effects",
+    "within_r2",
     # Bayesian fits only: posterior-median Bayesian R^2 (Gelman et
     # al. 2019), and PSIS-LOO elpd / LOOIC (Vehtari et al. 2017).
-    "r2_bayes", "elpd_loo", "looic", "waic",
+    "r2_bayes",
+    "elpd_loo",
+    "looic",
+    "waic",
     # Mixed-effects R\u00B2 (Nakagawa & Schielzeth 2013; Nakagawa,
     # Johnson & Schielzeth 2017). marginal = variance explained by
     # fixed effects alone; conditional = variance explained by
     # fixed + random.
-    "r2_marginal", "r2_conditional",
+    "r2_marginal",
+    "r2_conditional",
     # Mixed-effects group structure: N per grouping factor + intraclass
     # correlation, as fit-stat rows (sjPlot / modelsummary convention).
     "n_events",
-    "n_groups", "icc",
-    "sigma", "rmse",
+    "n_groups",
+    "icc",
+    "sigma",
+    "rmse",
     "f2",
     # Lowercase like every other token (the 0.13 rename; renders as
     # "AIC" / "AICc" / "BIC" row labels unchanged) -- coherent with
     # the aic_change / aicc_change / bic_change tokens below.
-    "aic", "aicc", "bic", "deviance",
+    "aic",
+    "aicc",
+    "bic",
+    "deviance",
     # Nested-comparison change stats (APA Table 7.13 in-table rows).
     # `nested = TRUE` auto-injects a class-aware subset; the user
     # can request any of these explicitly in `show_fit_stats`.
-    "r2_change", "adj_r2_change",
-    "f_change", "f2_change",
+    "r2_change",
+    "adj_r2_change",
+    "f_change",
+    "f2_change",
     "lrt_change",
-    "aic_change", "aicc_change", "bic_change",
-    "deviance_change", "p_change"
+    "aic_change",
+    "aicc_change",
+    "bic_change",
+    "deviance_change",
+    "p_change"
   )
 )
 
@@ -115,14 +155,14 @@
 # atomic tokens. The expansion runs once, before validation, so
 # downstream code only ever sees atomic tokens.
 .show_columns_groups <- list(
-  all_b         = c("b", "se", "ci", "p"),
+  all_b = c("b", "se", "ci", "p"),
   all_b_compact = c("b", "se", "p"),
-  all_b_full    = c("b", "se", "ci", "t", "p"),
-  all_beta      = c("b", "beta", "se", "ci", "p"),
-  all_ame         = c("ame", "ame_se", "ame_ci", "ame_p"),
+  all_b_full = c("b", "se", "ci", "t", "p"),
+  all_beta = c("b", "beta", "se", "ci", "p"),
+  all_ame = c("ame", "ame_se", "ame_ci", "ame_p"),
   all_ame_compact = c("ame", "ame_p"),
-  all_f2     = c("partial_f2",     "partial_f2_ci"),
-  all_eta2   = c("partial_eta2",   "partial_eta2_ci"),
+  all_f2 = c("partial_f2", "partial_f2_ci"),
+  all_eta2 = c("partial_eta2", "partial_eta2_ci"),
   all_omega2 = c("partial_omega2", "partial_omega2_ci")
 )
 
@@ -131,12 +171,12 @@
 # error pointing at the replacement instead of silently aliasing
 # (per the pre-1.0 "hard errors over silent changes" policy).
 .show_columns_legacy <- list(
-  B       = c("b"),
-  SE      = c("se"),
-  CI      = c("ci"),
-  AME     = c("ame", "ame_ci"),     # old AME bundled estimate + CI
-  AME_p   = c("ame_p"),
-  AME_SE  = c("ame_se")
+  B = c("b"),
+  SE = c("se"),
+  CI = c("ci"),
+  AME = c("ame", "ame_ci"), # old AME bundled estimate + CI
+  AME_p = c("ame_p"),
+  AME_SE = c("ame_se")
 )
 
 
@@ -218,10 +258,14 @@ validate_models_input <- function(models) {
   }
 
   # Steps 2-3: per-element class check, aggregate-fail
-  problems <- vapply(seq_along(models), function(i) {
-    msg <- classify_unsupported_lm_class(models[[i]], position = i)
-    if (is.null(msg)) "" else msg
-  }, character(1))
+  problems <- vapply(
+    seq_along(models),
+    function(i) {
+      msg <- classify_unsupported_lm_class(models[[i]], position = i)
+      if (is.null(msg)) "" else msg
+    },
+    character(1)
+  )
   bad <- problems[nzchar(problems)]
   if (length(bad) > 0L) {
     spicy_abort(
@@ -249,7 +293,11 @@ validate_models_input <- function(models) {
 # new model classes ship; new methods become user-visible automatically
 # without touching this gate.
 classify_unsupported_lm_class <- function(fit, position = NULL) {
-  pos_prefix <- if (!is.null(position)) sprintf("Position %d: ", position) else ""
+  pos_prefix <- if (!is.null(position)) {
+    sprintf("Position %d: ", position)
+  } else {
+    ""
+  }
 
   # Common user mistake: passing raw data instead of a fit (Q10).
   if (is.data.frame(fit)) {
@@ -268,11 +316,15 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
     ))
   }
   # Accept any class that has a registered as_regression_frame method.
-  if (.has_as_regression_frame_method(fit)) return(NULL)
+  if (.has_as_regression_frame_method(fit)) {
+    return(NULL)
+  }
   paste0(
     pos_prefix,
-    sprintf("`%s` \u2013 no `as_regression_frame()` method registered. ",
-            class(fit)[1L]),
+    sprintf(
+      "`%s` \u2013 no `as_regression_frame()` method registered. ",
+      class(fit)[1L]
+    ),
     "If support would be useful, please open an issue: ",
     "https://github.com/amaltawfik/spicy/issues"
   )
@@ -286,8 +338,9 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
 .has_as_regression_frame_method <- function(fit) {
   cls <- class(fit)
   for (cl in cls) {
-    if (!is.null(utils::getS3method("as_regression_frame", cl,
-                                     optional = TRUE))) {
+    if (
+      !is.null(utils::getS3method("as_regression_frame", cl, optional = TRUE))
+    ) {
       return(TRUE)
     }
   }
@@ -334,23 +387,32 @@ validate_nested_alignment <- function(models, nested) {
   if (any(is_rq)) {
     if (!all(is_rq)) {
       spicy_abort(
-        c(paste0("`nested = TRUE` cannot mix quantile regression with ",
-                 "other model classes."),
-          "i" = paste0("The check-loss objective has no R-squared or ",
-                       "likelihood shared with the other fits; compare ",
-                       "rq models with rq models.")),
+        c(
+          paste0(
+            "`nested = TRUE` cannot mix quantile regression with ",
+            "other model classes."
+          ),
+          "i" = paste0(
+            "The check-loss objective has no R-squared or ",
+            "likelihood shared with the other fits; compare ",
+            "rq models with rq models."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
-    taus <- vapply(models, function(m) as.numeric(m$tau %||% 0.5),
-                   numeric(1))
+    taus <- vapply(models, function(m) as.numeric(m$tau %||% 0.5), numeric(1))
     if (length(unique(taus)) > 1L) {
       spicy_abort(
-        c("`nested = TRUE` needs all rq fits at the SAME tau.",
-          "i" = paste0("Comparing quantiles is a different analysis ",
-                       "(joint equality of slopes across taus); see ",
-                       "`quantreg::anova.rq()` on an rq fit with ",
-                       "multiple taus.")),
+        c(
+          "`nested = TRUE` needs all rq fits at the SAME tau.",
+          "i" = paste0(
+            "Comparing quantiles is a different analysis ",
+            "(joint equality of slopes across taus); see ",
+            "`quantreg::anova.rq()` on an rq fit with ",
+            "multiple taus."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -387,9 +449,13 @@ validate_nested_alignment <- function(models, nested) {
   }
 
   # Step 5: identical DV (response side of the formula)
-  dvs <- vapply(models, function(fit) {
-    deparse1(stats::formula(fit)[[2]])
-  }, character(1))
+  dvs <- vapply(
+    models,
+    function(fit) {
+      deparse1(stats::formula(fit)[[2]])
+    },
+    character(1)
+  )
   if (length(unique(dvs)) > 1L) {
     spicy_abort(
       c(
@@ -429,10 +495,12 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         "i" = "Wrap the models instead: `table_regression(list(m1, m2))`."
       )
     } else {
-      c("i" = paste0(
+      c(
+        "i" = paste0(
           "Pass a single string (\"classical\", \"HC3\", ...) or a ",
           "list of strings."
-        ))
+        )
+      )
     }
     spicy_abort(
       c(
@@ -449,13 +517,19 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   # Canonical vcov vocabulary (Q7). Validated upfront so an unknown
   # type is caught with a clear error instead of letting `sandwich` /
   # `clubSandwich` warn-and-fallback at compute time.
-  valid_vcov <- c("classical",
-                   paste0("HC", 0:5),
-                   paste0("CR", 0:3),
-                   "bootstrap", "jackknife",
-                   # quantreg::rq estimator family (refused for every
-                   # other class by the Step-6c capability gate).
-                   "nid", "iid", "ker", "rank")
+  valid_vcov <- c(
+    "classical",
+    paste0("HC", 0:5),
+    paste0("CR", 0:3),
+    "bootstrap",
+    "jackknife",
+    # quantreg::rq estimator family (refused for every
+    # other class by the Step-6c capability gate).
+    "nid",
+    "iid",
+    "ker",
+    "rank"
+  )
 
   # Step 6: vcov list length + element type
   if (is.list(vcov)) {
@@ -464,7 +538,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         c(
           sprintf(
             "`vcov` is a list of length %d but `models` has length %d.",
-            length(vcov), n_models
+            length(vcov),
+            n_models
           ),
           "i" = paste0(
             "Pass a single string (recycled to all models) or a ",
@@ -474,11 +549,13 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         class = "spicy_invalid_input"
       )
     }
-    if (!all(vapply(
-      vcov,
-      function(v) is.character(v) && length(v) == 1L && !is.na(v),
-      logical(1)
-    ))) {
+    if (
+      !all(vapply(
+        vcov,
+        function(v) is.character(v) && length(v) == 1L && !is.na(v),
+        logical(1)
+      ))
+    ) {
       spicy_abort(
         "Each element of `vcov` (when a list) must be a single string.",
         class = "spicy_invalid_input"
@@ -526,7 +603,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   # "classical" is supported by every class, so default calls never trip this.
   vcov_per_model <- if (is.list(vcov)) vcov else rep(list(vcov), n_models)
   for (i in seq_len(n_models)) {
-    vt        <- vcov_per_model[[i]]
+    vt <- vcov_per_model[[i]]
     supported <- .robust_vcov_support(models[[i]])
     if (!vt %in% supported) {
       # Bayesian fits are refused on principle, not because support is
@@ -535,22 +612,32 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       if (inherits(models[[i]], c("stanreg", "brmsfit"))) {
         spicy_abort(
           c(
-            sprintf("`vcov = \"%s\"` is not defined for Bayesian fits (`%s`).",
-                    vt, class(models[[i]])[1L]),
-            "i" = paste0("A posterior has no sandwich analogue: the ",
-                         "displayed uncertainty comes from the posterior ",
-                         "draws, not from an estimating equation."),
-            "i" = paste0("Model the clustering or heteroskedasticity ",
-                         "instead (rstanarm::stan_glmer(), brms ",
-                         "group-level or distributional terms).")
+            sprintf(
+              "`vcov = \"%s\"` is not defined for Bayesian fits (`%s`).",
+              vt,
+              class(models[[i]])[1L]
+            ),
+            "i" = paste0(
+              "A posterior has no sandwich analogue: the ",
+              "displayed uncertainty comes from the posterior ",
+              "draws, not from an estimating equation."
+            ),
+            "i" = paste0(
+              "Model the clustering or heteroskedasticity ",
+              "instead (rstanarm::stan_glmer(), brms ",
+              "group-level or distributional terms)."
+            )
           ),
           class = "spicy_unsupported_vcov"
         )
       }
       spicy_abort(
         c(
-          sprintf("`vcov = \"%s\"` is not available for `%s` models.",
-                  vt, class(models[[i]])[1L]),
+          sprintf(
+            "`vcov = \"%s\"` is not available for `%s` models.",
+            vt,
+            class(models[[i]])[1L]
+          ),
           "i" = sprintf(
             "This class supports: %s. Robust standard errors for more model classes are being added; see ?table_regression.",
             paste(supported, collapse = ", ")
@@ -568,7 +655,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         c(
           sprintf(
             "`cluster` is a list of length %d but `models` has length %d.",
-            length(cluster), n_models
+            length(cluster),
+            n_models
           ),
           "i" = paste0(
             "Pass a single vector / column name (recycled to all ",
@@ -581,7 +669,11 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   }
 
   # Step 8: per-model coherence (CR* requires cluster, length matches nobs)
-  vcov_per <- if (is.list(vcov)) vcov else replicate(n_models, vcov, simplify = FALSE)
+  vcov_per <- if (is.list(vcov)) {
+    vcov
+  } else {
+    replicate(n_models, vcov, simplify = FALSE)
+  }
   cluster_per <- if (is.list(cluster) && !is.atomic(cluster)) {
     cluster
   } else {
@@ -603,9 +695,12 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         spicy_abort(
           c(
             sprintf(
-              paste0("Model %d: `cluster` with `vcov = \"%s\"` is not ",
-                     "available for quantile regression."),
-              i, v_i
+              paste0(
+                "Model %d: `cluster` with `vcov = \"%s\"` is not ",
+                "available for quantile regression."
+              ),
+              i,
+              v_i
             ),
             "i" = paste0(
               "rq has no analytic cluster-robust estimator; use ",
@@ -618,9 +713,12 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       }
       if (!is.null(c_i) && is.atomic(c_i)) {
         .check_cluster_length(
-          models[[i]], c_i,
-          label = sprintf("`cluster%s`",
-                          if (n_models > 1L) sprintf("[[%d]]", i) else "")
+          models[[i]],
+          c_i,
+          label = sprintf(
+            "`cluster%s`",
+            if (n_models > 1L) sprintf("[[%d]]", i) else ""
+          )
         )
       }
       next
@@ -632,7 +730,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         c(
           sprintf(
             "Model %d uses `vcov = \"%s\"` but no cluster is supplied.",
-            i, v_i
+            i,
+            v_i
           ),
           "i" = if (n_models == 1L) {
             "Pass a cluster vector / column name, or use a non-cluster `vcov`."
@@ -653,9 +752,12 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     # ONE place. The label carries the per-model `[[i]]` index for multi-model.
     if (!is.null(c_i) && is.atomic(c_i)) {
       .check_cluster_length(
-        models[[i]], c_i,
-        label = sprintf("`cluster%s`",
-                        if (n_models > 1L) sprintf("[[%d]]", i) else "")
+        models[[i]],
+        c_i,
+        label = sprintf(
+          "`cluster%s`",
+          if (n_models > 1L) sprintf("[[%d]]", i) else ""
+        )
       )
     }
 
@@ -665,10 +767,13 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       spicy_warn(
         c(
           sprintf(
-            paste0("Model %d: `cluster` supplied but `vcov = \"%s\"` ",
-                    "is not cluster-robust; the cluster vector is ",
-                    "ignored."),
-            i, v_i
+            paste0(
+              "Model %d: `cluster` supplied but `vcov = \"%s\"` ",
+              "is not cluster-robust; the cluster vector is ",
+              "ignored."
+            ),
+            i,
+            v_i
           ),
           "i" = paste0(
             "Set `vcov` to `\"CR0\"`, `\"CR1\"`, `\"CR2\"`, or `\"CR3\"` ",
@@ -732,9 +837,11 @@ validate_show_columns <- function(show_columns, standardized) {
 #                                      2014 \u00A73.5; Allison "TYPE3")
 #   * glm -> no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
 #                                      1974 / Nagelkerke 1991 / Tjur 2009)
-validate_class_appropriate_tokens <- function(models,
-                                                show_columns,
-                                                show_fit_stats) {
+validate_class_appropriate_tokens <- function(
+  models,
+  show_columns,
+  show_fit_stats
+) {
   # TRUE "all" over the model set, not the historical any/any proxy:
   # the proxy classified a {glm, fixest} set as "all glm" (fixest
   # inherits neither lm nor glm) and rejected the package's OWN
@@ -743,20 +850,31 @@ validate_class_appropriate_tokens <- function(models,
   # hard-erroring. Mixed sets render class-inappropriate cells blank,
   # which is the intended behaviour; only homogeneous sets refuse.
   glm_flags <- vapply(models, inherits, logical(1), "glm")
-  lm_only_flags <- vapply(models, function(f) {
-    inherits(f, "lm") && !inherits(f, "glm")
-  }, logical(1))
+  lm_only_flags <- vapply(
+    models,
+    function(f) {
+      inherits(f, "lm") && !inherits(f, "glm")
+    },
+    logical(1)
+  )
   all_glm <- length(models) > 0L && all(glm_flags)
-  all_lm  <- length(models) > 0L && all(lm_only_flags)
+  all_lm <- length(models) > 0L && all(lm_only_flags)
 
   # Variance-explained partial tokens. Reject only when ALL models
   # are glm \u2013 in mixed sets, the renderer en-dashes glm rows and
   # populates lm rows, which is the right behaviour.
   if (all_glm) {
-    bad <- intersect(show_columns,
-                     c("partial_f2",     "partial_f2_ci",
-                       "partial_eta2",   "partial_eta2_ci",
-                       "partial_omega2", "partial_omega2_ci"))
+    bad <- intersect(
+      show_columns,
+      c(
+        "partial_f2",
+        "partial_f2_ci",
+        "partial_eta2",
+        "partial_eta2_ci",
+        "partial_omega2",
+        "partial_omega2_ci"
+      )
+    )
     if (length(bad) > 0L) {
       spicy_abort(
         c(
@@ -776,11 +894,20 @@ validate_class_appropriate_tokens <- function(models,
         class = "spicy_invalid_input"
       )
     }
-    bad_fit <- intersect(show_fit_stats,
-                          c("r2", "adj_r2", "omega2", "f2",
-                            # Nested change variants of the above
-                            "r2_change", "adj_r2_change",
-                            "f_change", "f2_change"))
+    bad_fit <- intersect(
+      show_fit_stats,
+      c(
+        "r2",
+        "adj_r2",
+        "omega2",
+        "f2",
+        # Nested change variants of the above
+        "r2_change",
+        "adj_r2_change",
+        "f_change",
+        "f2_change"
+      )
+    )
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
@@ -815,10 +942,10 @@ validate_class_appropriate_tokens <- function(models,
         class = "spicy_invalid_input"
       )
     }
-    bad_fit <- intersect(show_fit_stats,
-                          c("pseudo_r2_mcfadden",
-                             "pseudo_r2_nagelkerke",
-                             "pseudo_r2_tjur"))
+    bad_fit <- intersect(
+      show_fit_stats,
+      c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur")
+    )
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
@@ -837,19 +964,25 @@ validate_class_appropriate_tokens <- function(models,
   # compute from; in a MIXED table the frequentist models render a
   # blank cell, mirroring how "r2" renders blank for the Bayesian
   # side (the shipped p-dash policy, applied in both directions).
-  bayes_fit_req <- intersect(show_fit_stats,
-                             c("r2_bayes", "elpd_loo", "looic", "waic"))
+  bayes_fit_req <- intersect(
+    show_fit_stats,
+    c("r2_bayes", "elpd_loo", "looic", "waic")
+  )
   if (length(bayes_fit_req) > 0L) {
     none_bayes <- length(models) == 0L ||
       !any(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
     if (none_bayes) {
       spicy_abort(
-        c(sprintf(
+        c(
+          sprintf(
             "Token(s) %s in `show_fit_stats` are defined only for Bayesian fits.",
             paste(shQuote(bayes_fit_req), collapse = ", ")
           ),
-          "i" = paste0("They are computed from the posterior draws ",
-                       "(Bayesian R\u00B2; PSIS-LOO).")),
+          "i" = paste0(
+            "They are computed from the posterior draws ",
+            "(Bayesian R\u00B2; PSIS-LOO)."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -859,11 +992,13 @@ validate_class_appropriate_tokens <- function(models,
     loo_req <- intersect(bayes_fit_req, c("elpd_loo", "looic", "waic"))
     if (length(loo_req) > 0L && !spicy_pkg_available("loo")) {
       spicy_abort(
-        c(sprintf(
+        c(
+          sprintf(
             "Token(s) %s in `show_fit_stats` need the loo package.",
             paste(shQuote(loo_req), collapse = ", ")
           ),
-          "i" = "Install loo: `install.packages(\"loo\")`."),
+          "i" = "Install loo: `install.packages(\"loo\")`."
+        ),
         class = "spicy_missing_pkg"
       )
     }
@@ -877,15 +1012,22 @@ validate_class_appropriate_tokens <- function(models,
     all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
   if (all_bayes_cols && any(c("p", "t", "ame_p") %in% show_columns)) {
     spicy_abort(
-      c(paste0("Token(s) ",
-               paste(shQuote(intersect(c("p", "t", "ame_p"),
-                                       show_columns)),
-                     collapse = ", "),
-               " in `show_columns` are not defined for Bayesian fits."),
-        "i" = paste0("A posterior has no p-value or t-statistic (for ",
-                     "coefficients or AMEs). The probability of ",
-                     "direction (`\"pd\"`) is the closest posterior ",
-                     "summary.")),
+      c(
+        paste0(
+          "Token(s) ",
+          paste(
+            shQuote(intersect(c("p", "t", "ame_p"), show_columns)),
+            collapse = ", "
+          ),
+          " in `show_columns` are not defined for Bayesian fits."
+        ),
+        "i" = paste0(
+          "A posterior has no p-value or t-statistic (for ",
+          "coefficients or AMEs). The probability of ",
+          "direction (`\"pd\"`) is the closest posterior ",
+          "summary."
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -898,10 +1040,14 @@ validate_class_appropriate_tokens <- function(models,
       any(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
     if (!any_bayes_pd) {
       spicy_abort(
-        c('Token "pd" in `show_columns` is defined only for Bayesian fits.',
-          "i" = paste0("The probability of direction is a posterior-draw ",
-                       "summary (share of draws on the dominant side of ",
-                       "zero); frequentist fits have none.")),
+        c(
+          'Token "pd" in `show_columns` is defined only for Bayesian fits.',
+          "i" = paste0(
+            "The probability of direction is a posterior-draw ",
+            "summary (share of draws on the dominant side of ",
+            "zero); frequentist fits have none."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -911,22 +1057,30 @@ validate_class_appropriate_tokens <- function(models,
   # mixed table the columns would dash for most rows while the
   # automatic convergence guard ALREADY reports per-model sampler
   # problems in the footer, so the strict gate points there.
-  diag_cols <- intersect(show_columns,
-                         c("rhat", "ess_bulk", "ess_tail", "mcse"))
+  diag_cols <- intersect(
+    show_columns,
+    c("rhat", "ess_bulk", "ess_tail", "mcse")
+  )
   if (length(diag_cols) > 0L) {
     all_bayes_diag <- length(models) > 0L &&
       all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
     if (!all_bayes_diag) {
       spicy_abort(
-        c(sprintf(
+        c(
+          sprintf(
             "Token(s) %s in `show_columns` are shown only when every model is Bayesian.",
             paste(shQuote(diag_cols), collapse = ", ")
           ),
-          "i" = paste0("R-hat, ESS and MCSE are sampler diagnostics of ",
-                       "the posterior draws; frequentist fits have none."),
-          "i" = paste0("In a mixed table the automatic convergence guard ",
-                       "already reports sampler problems per model in ",
-                       "the footer.")),
+          "i" = paste0(
+            "R-hat, ESS and MCSE are sampler diagnostics of ",
+            "the posterior draws; frequentist fits have none."
+          ),
+          "i" = paste0(
+            "In a mixed table the automatic convergence guard ",
+            "already reports sampler problems per model in ",
+            "the footer."
+          )
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -938,11 +1092,24 @@ validate_class_appropriate_tokens <- function(models,
   all_bayes <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
   if (all_bayes) {
-    bad_fit <- intersect(show_fit_stats,
-                         c("aic", "aicc", "bic", "deviance",
-                           "r2", "adj_r2", "omega2", "f2",
-                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
-                           "pseudo_r2_tjur", "sigma", "rmse"))
+    bad_fit <- intersect(
+      show_fit_stats,
+      c(
+        "aic",
+        "aicc",
+        "bic",
+        "deviance",
+        "r2",
+        "adj_r2",
+        "omega2",
+        "f2",
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "pseudo_r2_tjur",
+        "sigma",
+        "rmse"
+      )
+    )
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
@@ -994,8 +1161,10 @@ validate_class_appropriate_tokens <- function(models,
     if (!all_betareg) {
       spicy_abort(
         c(
-          paste0("Token 'phi' in `show_fit_stats` is defined only ",
-                 "for beta-regression fits (`betareg::betareg`)."),
+          paste0(
+            "Token 'phi' in `show_fit_stats` is defined only ",
+            "for beta-regression fits (`betareg::betareg`)."
+          ),
           "i" = paste0(
             "phi is the beta-distribution precision ",
             "(Var(y) = mu(1-mu)/(1+phi); higher phi = less ",
@@ -1005,16 +1174,25 @@ validate_class_appropriate_tokens <- function(models,
         class = "spicy_invalid_input"
       )
     }
-    variable_prec <- vapply(models, function(m) {
-      length(tryCatch(stats::coef(m, model = "precision"),
-                      error = function(e) numeric(0))) != 1L
-    }, logical(1))
+    variable_prec <- vapply(
+      models,
+      function(m) {
+        length(tryCatch(
+          stats::coef(m, model = "precision"),
+          error = function(e) numeric(0)
+        )) !=
+          1L
+      },
+      logical(1)
+    )
     if (any(variable_prec)) {
       spicy_abort(
         c(
-          paste0("Token 'phi' needs a constant precision, but a ",
-                 "model has covariates on the precision ",
-                 "(`y ~ x | z`)."),
+          paste0(
+            "Token 'phi' needs a constant precision, but a ",
+            "model has covariates on the precision ",
+            "(`y ~ x | z`)."
+          ),
           "i" = paste0(
             "With precision covariates, phi is not a single number; ",
             "inspect the precision coefficients with ",
@@ -1031,8 +1209,7 @@ validate_class_appropriate_tokens <- function(models,
   # n_groups): the Fixed effects block is a cross-model design
   # disclosure, so a mixed lm + fixest table is exactly where it is
   # most useful -- non-fixest columns simply render blank cells.
-  fixest_tokens <- intersect(show_fit_stats,
-                             c("fixed_effects", "within_r2"))
+  fixest_tokens <- intersect(show_fit_stats, c("fixed_effects", "within_r2"))
   if (length(fixest_tokens) > 0L) {
     any_fixest <- length(models) > 0L &&
       any(vapply(models, inherits, logical(1), "fixest"))
@@ -1060,13 +1237,25 @@ validate_class_appropriate_tokens <- function(models,
   # mixed models; point the user at the Nakagawa marginal / conditional R^2.
   # Reject only when ALL models are mixed (a mixed set en-dashes the RE rows).
   all_mixed <- length(models) > 0L &&
-    all(vapply(models, inherits, logical(1),
-               c("merMod", "lmerModLmerTest", "glmmTMB", "lme")))
+    all(vapply(
+      models,
+      inherits,
+      logical(1),
+      c("merMod", "lmerModLmerTest", "glmmTMB", "lme")
+    ))
   if (all_mixed) {
-    bad_fit <- intersect(show_fit_stats,
-                         c("r2", "adj_r2", "omega2", "f2",
-                           "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
-                           "pseudo_r2_tjur"))
+    bad_fit <- intersect(
+      show_fit_stats,
+      c(
+        "r2",
+        "adj_r2",
+        "omega2",
+        "f2",
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "pseudo_r2_tjur"
+      )
+    )
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
@@ -1086,10 +1275,17 @@ validate_class_appropriate_tokens <- function(models,
     # partial_chi2 (LRT-based, drop1 test = "LRT") IS defined for mixed fits, so
     # it is deliberately NOT rejected here -- only the variance-explained
     # (least-squares) partials are undefined for mixed models.
-    bad_cols <- intersect(show_columns,
-                          c("partial_f2", "partial_f2_ci",
-                            "partial_eta2", "partial_eta2_ci",
-                            "partial_omega2", "partial_omega2_ci"))
+    bad_cols <- intersect(
+      show_columns,
+      c(
+        "partial_f2",
+        "partial_f2_ci",
+        "partial_eta2",
+        "partial_eta2_ci",
+        "partial_omega2",
+        "partial_omega2_ci"
+      )
+    )
     if (length(bad_cols) > 0L) {
       spicy_abort(
         c(
@@ -1194,17 +1390,22 @@ validate_show_fit_stats <- function(show_fit_stats) {
   # aic_change / aicc_change / bic_change tokens). Hard error, not a
   # silent alias, per the pre-1.0 policy; rendered row labels are
   # unchanged ("AIC" / "AICc" / "BIC").
-  legacy_ic <- intersect(as.character(show_fit_stats),
-                         c("AIC", "AICc", "BIC"))
+  legacy_ic <- intersect(as.character(show_fit_stats), c("AIC", "AICc", "BIC"))
   if (length(legacy_ic) > 0L) {
     spicy_abort(
       c(
-        paste0("Uppercase `show_fit_stats` token(s) used; spicy 0.13 ",
-               "switched the information criteria to lowercase."),
-        "i" = paste0("Replacement(s): ",
-                     paste(sprintf("`\"%s\"` -> `\"%s\"`",
-                                   legacy_ic, tolower(legacy_ic)),
-                           collapse = ", "), "."),
+        paste0(
+          "Uppercase `show_fit_stats` token(s) used; spicy 0.13 ",
+          "switched the information criteria to lowercase."
+        ),
+        "i" = paste0(
+          "Replacement(s): ",
+          paste(
+            sprintf("`\"%s\"` -> `\"%s\"`", legacy_ic, tolower(legacy_ic)),
+            collapse = ", "
+          ),
+          "."
+        ),
         "i" = "Rendered row labels are unchanged (AIC / AICc / BIC)."
       ),
       class = "spicy_invalid_input"
@@ -1224,25 +1425,38 @@ validate_show_fit_stats <- function(show_fit_stats) {
 # tokens. Emits a migration error for legacy uppercase tokens from
 # spicy <= 0.11 (`"B"`, `"AME"`, ...) pointing at the new name.
 expand_show_columns <- function(tokens, bayesian = FALSE) {
-  if (is.null(tokens) || length(tokens) == 0L) return(tokens)
+  if (is.null(tokens) || length(tokens) == 0L) {
+    return(tokens)
+  }
   tokens <- as.character(tokens)
   # Migration error: uppercase legacy tokens.
   legacy_used <- intersect(tokens, names(.show_columns_legacy))
   if (length(legacy_used)) {
-    msgs <- vapply(legacy_used, function(old) {
-      new_tok <- .show_columns_legacy[[old]]
-      sprintf("  `\"%s\"` -> %s", old,
-              paste(shQuote(new_tok), collapse = " + "))
-    }, character(1))
+    msgs <- vapply(
+      legacy_used,
+      function(old) {
+        new_tok <- .show_columns_legacy[[old]]
+        sprintf(
+          "  `\"%s\"` -> %s",
+          old,
+          paste(shQuote(new_tok), collapse = " + ")
+        )
+      },
+      character(1)
+    )
     spicy_abort(
       c(
-        paste0("Legacy uppercase `show_columns` token(s) used; ",
-                "spicy 0.12 switched to lowercase atomic tokens."),
+        paste0(
+          "Legacy uppercase `show_columns` token(s) used; ",
+          "spicy 0.12 switched to lowercase atomic tokens."
+        ),
         "i" = "Replacement(s):",
         msgs,
-        "i" = paste0("Or use a group token: \"all_b\" / ",
-                      "\"all_b_compact\" / \"all_ame\" / ",
-                      "\"all_f2\" / \"all_eta2\" / \"all_omega2\".")
+        "i" = paste0(
+          "Or use a group token: \"all_b\" / ",
+          "\"all_b_compact\" / \"all_ame\" / ",
+          "\"all_f2\" / \"all_eta2\" / \"all_omega2\"."
+        )
       ),
       class = "spicy_invalid_input"
     )
@@ -1260,7 +1474,9 @@ expand_show_columns <- function(tokens, bayesian = FALSE) {
         # them (BARG default: estimate + credible interval). An
         # explicitly typed atomic "p" / "ame_p" still hard-errors
         # downstream.
-        if (isTRUE(bayesian)) grp <- setdiff(grp, c("p", "t", "ame_p"))
+        if (isTRUE(bayesian)) {
+          grp <- setdiff(grp, c("p", "t", "ame_p"))
+        }
         expanded[[i]] <- grp
       } else {
         expanded[[i]] <- tok
@@ -1282,7 +1498,8 @@ validate_token_vector <- function(x, valid, arg) {
   if (anyNA(x) || any(!nzchar(x))) {
     spicy_abort(
       sprintf(
-        "`%s` must not contain NA or empty strings.", arg
+        "`%s` must not contain NA or empty strings.",
+        arg
       ),
       class = "spicy_invalid_input"
     )
@@ -1292,7 +1509,8 @@ validate_token_vector <- function(x, valid, arg) {
     spicy_abort(
       sprintf(
         "`%s` contains duplicate token(s): %s.",
-        arg, paste(shQuote(dups), collapse = ", ")
+        arg,
+        paste(shQuote(dups), collapse = ", ")
       ),
       class = "spicy_invalid_input"
     )
@@ -1303,7 +1521,8 @@ validate_token_vector <- function(x, valid, arg) {
       c(
         sprintf(
           "Unknown token(s) in `%s`: %s.",
-          arg, paste(shQuote(bad), collapse = ", ")
+          arg,
+          paste(shQuote(bad), collapse = ", ")
         ),
         "i" = sprintf(
           "Valid tokens: %s.",
@@ -1348,8 +1567,12 @@ validate_token_vector <- function(x, valid, arg) {
 # match.arg message), and BEFORE the expensive extraction loop (finding m3).
 .validate_re_scale <- function(x) {
   choices <- c("sd", "variance")
-  if (identical(x, choices)) return("sd")            # unset default vector
-  if (length(x) == 1L && !is.na(x) && x %in% choices) return(x)
+  if (identical(x, choices)) {
+    return("sd")
+  } # unset default vector
+  if (length(x) == 1L && !is.na(x) && x %in% choices) {
+    return(x)
+  }
   spicy_abort(
     c(
       "`re_scale` must be one of \"sd\" or \"variance\".",
@@ -1366,8 +1589,12 @@ validate_token_vector <- function(x, valid, arg) {
 # Step 15: digit args (non-negative integer scalar). Reused for
 # `digits`, `p_digits`, `effect_size_digits`, `fit_digits`, `ic_digits`.
 validate_digit_arg <- function(x, name) {
-  ok <- length(x) == 1L && is.numeric(x) && !is.na(x) &&
-    is.finite(x) && x >= 0 && x == as.integer(x)
+  ok <- length(x) == 1L &&
+    is.numeric(x) &&
+    !is.na(x) &&
+    is.finite(x) &&
+    x >= 0 &&
+    x == as.integer(x)
   if (!ok) {
     spicy_abort(
       sprintf("`%s` must be a single non-negative integer.", name),
@@ -1379,9 +1606,12 @@ validate_digit_arg <- function(x, name) {
 
 # Step 16: ci_level
 validate_ci_level <- function(ci_level) {
-  ok <- length(ci_level) == 1L && is.numeric(ci_level) &&
-    !is.na(ci_level) && is.finite(ci_level) &&
-    ci_level > 0 && ci_level < 1
+  ok <- length(ci_level) == 1L &&
+    is.numeric(ci_level) &&
+    !is.na(ci_level) &&
+    is.finite(ci_level) &&
+    ci_level > 0 &&
+    ci_level < 1
   if (!ok) {
     spicy_abort(
       "`ci_level` must be a single number in (0, 1) exclusive.",
@@ -1393,8 +1623,12 @@ validate_ci_level <- function(ci_level) {
 
 # Step 17: boot_n
 validate_boot_n <- function(boot_n) {
-  ok <- length(boot_n) == 1L && is.numeric(boot_n) && !is.na(boot_n) &&
-    is.finite(boot_n) && boot_n >= 1 && boot_n == as.integer(boot_n)
+  ok <- length(boot_n) == 1L &&
+    is.numeric(boot_n) &&
+    !is.na(boot_n) &&
+    is.finite(boot_n) &&
+    boot_n >= 1 &&
+    boot_n == as.integer(boot_n)
   if (!ok) {
     spicy_abort(
       paste0(
@@ -1428,8 +1662,12 @@ validate_logical_scalar <- function(x, name) {
 # show it" but carries no string payload, and silently mapping it to
 # NULL would mask user typos (e.g. `title = TURE`).
 validate_caption_arg <- function(x, name) {
-  if (is.null(x)) return(invisible(NULL))
-  if (isFALSE(x)) return(invisible(NULL))
+  if (is.null(x)) {
+    return(invisible(NULL))
+  }
+  if (isFALSE(x)) {
+    return(invisible(NULL))
+  }
   ok <- length(x) == 1L && is.character(x) && !is.na(x)
   if (!ok) {
     spicy_abort(
@@ -1447,12 +1685,19 @@ validate_caption_arg <- function(x, name) {
 # We accept "fdr" as an alias for "BH" (matching stats::p.adjust
 # itself) but normalise back to the canonical name in the orchestrator
 # so the footer wording is consistent.
-.spicy_p_adjust_methods <- c("none", "holm", "hochberg", "hommel",
-                              "bonferroni", "BH", "BY", "fdr")
+.spicy_p_adjust_methods <- c(
+  "none",
+  "holm",
+  "hochberg",
+  "hommel",
+  "bonferroni",
+  "BH",
+  "BY",
+  "fdr"
+)
 
 validate_p_adjust <- function(p_adjust) {
-  if (length(p_adjust) != 1L || !is.character(p_adjust) ||
-        is.na(p_adjust)) {
+  if (length(p_adjust) != 1L || !is.character(p_adjust) || is.na(p_adjust)) {
     spicy_abort(
       "`p_adjust` must be a single string.",
       class = "spicy_invalid_input"
@@ -1481,13 +1726,21 @@ validate_keep_drop <- function(keep, drop) {
   for (pair in list(c("keep", "keep"), c("drop", "drop"))) {
     arg_name <- pair[[1L]]
     val <- get(arg_name)
-    if (is.null(val)) next
-    if (!is.character(val) || length(val) == 0L ||
-          any(is.na(val)) || any(!nzchar(val))) {
+    if (is.null(val)) {
+      next
+    }
+    if (
+      !is.character(val) ||
+        length(val) == 0L ||
+        any(is.na(val)) ||
+        any(!nzchar(val))
+    ) {
       spicy_abort(
         sprintf(
-          paste0("`%s` must be NULL or a non-empty character vector ",
-                  "with no NA or empty-string elements."),
+          paste0(
+            "`%s` must be NULL or a non-empty character vector ",
+            "with no NA or empty-string elements."
+          ),
           arg_name
         ),
         class = "spicy_invalid_input"
@@ -1552,8 +1805,10 @@ validate_stars <- function(stars) {
 
 # Step 20: decimal_mark
 validate_decimal_mark <- function(decimal_mark) {
-  ok <- length(decimal_mark) == 1L && is.character(decimal_mark) &&
-    !is.na(decimal_mark) && nchar(decimal_mark) == 1L
+  ok <- length(decimal_mark) == 1L &&
+    is.character(decimal_mark) &&
+    !is.na(decimal_mark) &&
+    nchar(decimal_mark) == 1L
   if (!ok) {
     spicy_abort(
       "`decimal_mark` must be a single character (e.g. \".\" or \",\").",
@@ -1565,8 +1820,10 @@ validate_decimal_mark <- function(decimal_mark) {
 
 # Step 21: reference_label
 validate_reference_label <- function(reference_label) {
-  ok <- length(reference_label) == 1L && is.character(reference_label) &&
-    !is.na(reference_label) && nzchar(reference_label)
+  ok <- length(reference_label) == 1L &&
+    is.character(reference_label) &&
+    !is.na(reference_label) &&
+    nzchar(reference_label)
   if (!ok) {
     spicy_abort(
       "`reference_label` must be a single non-empty string.",
@@ -1581,8 +1838,11 @@ validate_model_labels <- function(model_labels, models) {
   if (is.null(model_labels)) {
     return(invisible(NULL))
   }
-  if (!is.character(model_labels) || any(is.na(model_labels)) ||
-        any(!nzchar(model_labels))) {
+  if (
+    !is.character(model_labels) ||
+      any(is.na(model_labels)) ||
+      any(!nzchar(model_labels))
+  ) {
     spicy_abort(
       paste0(
         "`model_labels` must be NULL or a character vector with ",
@@ -1595,7 +1855,8 @@ validate_model_labels <- function(model_labels, models) {
     spicy_abort(
       sprintf(
         "`model_labels` has length %d but `models` has length %d.",
-        length(model_labels), length(models)
+        length(model_labels),
+        length(models)
       ),
       class = "spicy_invalid_input"
     )
@@ -1634,7 +1895,8 @@ validate_outcome_labels <- function(outcome_labels, models) {
     spicy_abort(
       sprintf(
         "`outcome_labels` has length %d but `models` has length %d.",
-        length(outcome_labels), length(models)
+        length(outcome_labels),
+        length(models)
       ),
       class = "spicy_invalid_input"
     )
@@ -1682,8 +1944,9 @@ validate_predictor_labels <- function(labels, models) {
   # lme returns random-effect-augmented coefficients; clm mixes
   # thresholds in). .spicy_fixed_coef_names() knows each class.
   all_coefs <- unique(unlist(lapply(models, function(fit) {
-    tryCatch(.spicy_fixed_coef_names(fit),
-             error = function(e) names(stats::coef(fit)))
+    tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
+      names(stats::coef(fit))
+    })
   })))
   valid_keys <- unique(c(all_terms, all_coefs))
   unknown <- setdiff(nms, valid_keys)
@@ -1730,20 +1993,31 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
     if (info$has_problem) {
       parts <- character(0)
       if (length(info$interactions) > 0L) {
-        parts <- c(parts, sprintf(
-          "interactions: %s",
-          paste(info$interactions, collapse = ", ")
-        ))
+        parts <- c(
+          parts,
+          sprintf(
+            "interactions: %s",
+            paste(info$interactions, collapse = ", ")
+          )
+        )
       }
       if (length(info$transforms) > 0L) {
-        parts <- c(parts, sprintf(
-          "transforms: %s",
-          paste(info$transforms, collapse = ", ")
-        ))
+        parts <- c(
+          parts,
+          sprintf(
+            "transforms: %s",
+            paste(info$transforms, collapse = ", ")
+          )
+        )
       }
-      lines <- c(lines, sprintf(
-        "Model %d: %s", i, paste(parts, collapse = "; ")
-      ))
+      lines <- c(
+        lines,
+        sprintf(
+          "Model %d: %s",
+          i,
+          paste(parts, collapse = "; ")
+        )
+      )
     }
   }
 
@@ -1786,37 +2060,43 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
 # flexsurvreg, sampleSelection's selection). When no term labels are
 # extractable, returns has_problem = FALSE.
 detect_non_additive_terms <- function(fit) {
-  trms <- tryCatch(attr(stats::terms(fit), "term.labels"),
-                   error = function(e) NULL)
+  trms <- tryCatch(attr(stats::terms(fit), "term.labels"), error = function(e) {
+    NULL
+  })
   if (is.null(trms)) {
     # Fallback path: build a terms object from formula(fit)'s RHS.
     # For multi-equation fits (sampleSelection) and parameter-based
     # fits (nls), this may still error; in that case skip the check.
-    trms <- tryCatch({
-      f <- stats::formula(fit)
-      # The is.list() predicate below is reached (and FALSE) for every
-      # supported terms()-less fit, e.g. nls, whose formula() is a single
-      # formula. Only the inner subset body is narrowly nocov'd: the
-      # multi-equation fits whose formula() is list-valued (sampleSelection)
-      # error in formula() itself and are caught by the surrounding
-      # tryCatch, so no installed class reaches f <- f[[1L]].
-      if (is.list(f) && length(f) > 0L) {
-        f <- f[[1L]] # nocov
-      }
-      attr(stats::terms(f), "term.labels")
-    }, error = function(e) NULL)
+    trms <- tryCatch(
+      {
+        f <- stats::formula(fit)
+        # The is.list() predicate below is reached (and FALSE) for every
+        # supported terms()-less fit, e.g. nls, whose formula() is a single
+        # formula. Only the inner subset body is narrowly nocov'd: the
+        # multi-equation fits whose formula() is list-valued (sampleSelection)
+        # error in formula() itself and are caught by the surrounding
+        # tryCatch, so no installed class reaches f <- f[[1L]].
+        if (is.list(f) && length(f) > 0L) {
+          f <- f[[1L]] # nocov
+        }
+        attr(stats::terms(f), "term.labels")
+      },
+      error = function(e) NULL
+    )
   }
   if (is.null(trms)) {
-    return(list(has_problem = FALSE,
-                interactions = character(0),
-                transforms   = character(0)))
+    return(list(
+      has_problem = FALSE,
+      interactions = character(0),
+      transforms = character(0)
+    ))
   }
   interactions <- trms[grepl(":", trms, fixed = TRUE)]
-  transforms   <- trms[grepl("(", trms, fixed = TRUE)]
+  transforms <- trms[grepl("(", trms, fixed = TRUE)]
   list(
-    has_problem  = length(interactions) > 0L || length(transforms) > 0L,
+    has_problem = length(interactions) > 0L || length(transforms) > 0L,
     interactions = interactions,
-    transforms   = transforms
+    transforms = transforms
   )
 }
 
@@ -1941,8 +2221,10 @@ validate_output_resources <- function(output, excel_path, word_path) {
     )
     # nocov end
   }
-  if (identical(output, "flextable") &&
-        !spicy_pkg_available("flextable")) {
+  if (
+    identical(output, "flextable") &&
+      !spicy_pkg_available("flextable")
+  ) {
     # nocov start
     spicy_abort(
       c(
@@ -1953,8 +2235,10 @@ validate_output_resources <- function(output, excel_path, word_path) {
     )
     # nocov end
   }
-  if (identical(output, "tinytable") &&
-        !spicy_pkg_available("tinytable")) {
+  if (
+    identical(output, "tinytable") &&
+      !spicy_pkg_available("tinytable")
+  ) {
     # nocov start
     spicy_abort(
       c(
@@ -1976,21 +2260,29 @@ validate_output_resources <- function(output, excel_path, word_path) {
 # passed without a use. tau additionally accepts "minmax" (resolved
 # per fit and disclosed in the footer).
 validate_estimand_horizons <- function(show_columns, tau, at_time) {
-  wants_rmst <- any(c("rmst", "rmst_se", "rmst_ci", "rmst_p") %in%
-                      show_columns)
-  wants_risk <- any(c("risk_diff", "risk_diff_se", "risk_diff_ci",
-                      "risk_diff_p") %in% show_columns)
+  wants_rmst <- any(
+    c("rmst", "rmst_se", "rmst_ci", "rmst_p") %in%
+      show_columns
+  )
+  wants_risk <- any(
+    c("risk_diff", "risk_diff_se", "risk_diff_ci", "risk_diff_p") %in%
+      show_columns
+  )
   ok_scalar <- function(x) {
     is.numeric(x) && length(x) == 1L && is.finite(x) && x > 0
   }
   if (wants_rmst) {
     if (!(ok_scalar(tau) || identical(tau, "minmax"))) {
       spicy_abort(
-        c("RMST columns need an explicit horizon: pass `tau`.",
-          "i" = paste0("A positive time on the outcome's scale (e.g. ",
-                       "`tau = 365`), or `tau = \"minmax\"` for the ",
-                       "smallest per-group maximum follow-up."),
-          "i" = "The horizon defines the estimand; there is no default."),
+        c(
+          "RMST columns need an explicit horizon: pass `tau`.",
+          "i" = paste0(
+            "A positive time on the outcome's scale (e.g. ",
+            "`tau = 365`), or `tau = \"minmax\"` for the ",
+            "smallest per-group maximum follow-up."
+          ),
+          "i" = "The horizon defines the estimand; there is no default."
+        ),
         class = "spicy_invalid_input"
       )
     }
@@ -2003,10 +2295,14 @@ validate_estimand_horizons <- function(show_columns, tau, at_time) {
   if (wants_risk) {
     if (!ok_scalar(at_time)) {
       spicy_abort(
-        c("Risk-difference columns need an explicit landmark: pass `at_time`.",
-          "i" = paste0("A positive time on the outcome's scale (e.g. ",
-                       "`at_time = 365`)."),
-          "i" = "The landmark defines the estimand; there is no default."),
+        c(
+          "Risk-difference columns need an explicit landmark: pass `at_time`.",
+          "i" = paste0(
+            "A positive time on the outcome's scale (e.g. ",
+            "`at_time = 365`)."
+          ),
+          "i" = "The landmark defines the estimand; there is no default."
+        ),
         class = "spicy_invalid_input"
       )
     }

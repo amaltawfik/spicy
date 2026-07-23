@@ -498,8 +498,8 @@ export_continuous_lm_table <- function(
     if (!is.null(note) && nzchar(note)) {
       .html_escape <- function(s) {
         s <- gsub("&", "&amp;", s, fixed = TRUE)
-        s <- gsub("<", "&lt;",  s, fixed = TRUE)
-        s <- gsub(">", "&gt;",  s, fixed = TRUE)
+        s <- gsub("<", "&lt;", s, fixed = TRUE)
+        s <- gsub(">", "&gt;", s, fixed = TRUE)
         s
       }
       note_html <- .html_escape(note)
@@ -526,18 +526,22 @@ export_continuous_lm_table <- function(
       tt <- tinytable::style_tt(tt, finalize = function(x) {
         if (identical(x@output, "html")) {
           x@table_string <- sub(
-            "<tfoot>[\\s\\S]*?</tfoot>", "",
-            x@table_string, perl = TRUE
+            "<tfoot>[\\s\\S]*?</tfoot>",
+            "",
+            x@table_string,
+            perl = TRUE
           )
           x@table_string <- sub(
             "<table ",
             paste0(open_outer, open_inner, "<table "),
-            x@table_string, fixed = TRUE
+            x@table_string,
+            fixed = TRUE
           )
           x@table_string <- sub(
             "</table>",
             paste0("</table>", note_div, close_both),
-            x@table_string, fixed = TRUE
+            x@table_string,
+            fixed = TRUE
           )
         }
         x
@@ -758,12 +762,22 @@ export_continuous_lm_table <- function(
       # LOOKS decimal-aligned in any font with tabular figures
       # (Calibri's default in Word tables). Trade strict decimal
       # alignment for a single-font, visually consistent table.
-      ft <- flextable::align(ft, j = numeric_j, part = "header", align = "center")
+      ft <- flextable::align(
+        ft,
+        j = numeric_j,
+        part = "header",
+        align = "center"
+      )
       ft <- flextable::align(ft, j = numeric_j, part = "body", align = "center")
     } else if (identical(align, "center") && length(numeric_j) > 0L) {
       ft <- flextable::align(ft, j = numeric_j, part = "all", align = "center")
     } else if (identical(align, "right") && length(numeric_j) > 0L) {
-      ft <- flextable::align(ft, j = numeric_j, part = "header", align = "center")
+      ft <- flextable::align(
+        ft,
+        j = numeric_j,
+        part = "header",
+        align = "center"
+      )
       ft <- flextable::align(ft, j = numeric_j, part = "body", align = "right")
     }
 
@@ -823,7 +837,9 @@ export_continuous_lm_table <- function(
     if (identical(output, "word")) {
       if (is.null(word_path) || !nzchar(word_path)) {
         spicy_abort(
-          "`word_path` must be provided for `output = \"word\"`.", class = "spicy_invalid_input")
+          "`word_path` must be provided for `output = \"word\"`.",
+          class = "spicy_invalid_input"
+        )
       }
       # The footer added above flows into the docx via the flextable
       # object, mirroring table_regression()'s word output (which
@@ -850,7 +866,9 @@ export_continuous_lm_table <- function(
     }
     if (is.null(excel_path) || !nzchar(excel_path)) {
       spicy_abort(
-        "`excel_path` must be provided for `output = \"excel\"`.", class = "spicy_invalid_input")
+        "`excel_path` must be provided for `output = \"excel\"`.",
+        class = "spicy_invalid_input"
+      )
     }
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
@@ -940,28 +958,36 @@ export_continuous_lm_table <- function(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
       top_border = "thin",
-      bottom_border = NULL, left_border = NULL, right_border = NULL
+      bottom_border = NULL,
+      left_border = NULL,
+      right_border = NULL
     )
     if (has_ci) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
         bottom_border = "thin",
-        top_border = NULL, left_border = NULL, right_border = NULL
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
       )
     }
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
       bottom_border = "thin",
-      top_border = NULL, left_border = NULL, right_border = NULL
+      top_border = NULL,
+      left_border = NULL,
+      right_border = NULL
     )
     if (nrow(display_df) > 0) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
         bottom_border = "thin",
-        top_border = NULL, left_border = NULL, right_border = NULL
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
       )
     }
     # Note below the table (one worksheet row per note line), same

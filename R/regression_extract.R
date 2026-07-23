@@ -21,7 +21,6 @@
 # Plus metadata fields consumed by the multi-model alignment,
 # rendering, and footer-generation layers.
 
-
 # ---- Public-internal entry point ------------------------------------------
 
 extract_lm_phase1 <- function(
@@ -124,12 +123,16 @@ extract_lm_phase1 <- function(
   # -- AME is already on response scale by construction.
   is_glm <- inherits(fit, "glm")
   family_info <- if (is_glm) spicy_glm_family_info(fit) else NULL
-  exp_applied <- isTRUE(exponentiate) && is_glm &&
-                   !identical(family_info$link, "identity")
+  exp_applied <- isTRUE(exponentiate) &&
+    is_glm &&
+    !identical(family_info$link, "identity")
   if (exp_applied) {
     # Link gate (G1): probit / cauchit / inverse / ... hard error.
-    .assert_exp_link_ok(family_info$family, family_info$link,
-                        model_id = model_id)
+    .assert_exp_link_ok(
+      family_info$family,
+      family_info$link,
+      model_id = model_id
+    )
     coefs_long <- apply_exponentiate_to_coefs(coefs_long)
   }
 
@@ -159,10 +162,20 @@ extract_lm_phase1 <- function(
   }
 
   # ---- Partial effect-size rows (Step 6 + Phase 3 Step 3) ----------------
-  if (any(c("partial_f2", "partial_f2_ci",
-            "partial_eta2", "partial_eta2_ci",
-            "partial_omega2", "partial_omega2_ci",
-            "partial_chi2") %in% show_columns)) {
+  if (
+    any(
+      c(
+        "partial_f2",
+        "partial_f2_ci",
+        "partial_eta2",
+        "partial_eta2_ci",
+        "partial_omega2",
+        "partial_omega2_ci",
+        "partial_chi2"
+      ) %in%
+        show_columns
+    )
+  ) {
     partial_rows <- extract_partial_effect_rows(
       fit = fit,
       ci_level = ci_level,
@@ -203,14 +216,26 @@ extract_lm_phase1 <- function(
     cluster_name = cluster_name,
     use_ame_satterthwaite = use_ame_satterthwaite,
     has_singular = has_singular,
-    singular_terms = if (has_singular) names(cf)[is_singular_vec] else character(0),
+    singular_terms = if (has_singular) {
+      names(cf)[is_singular_vec]
+    } else {
+      character(0)
+    },
     has_weights = !is.null(weights) && length(unique(weights)) > 1L,
     weighted_n = if (!is.null(weights)) sum(weights) else NA_real_,
     nobs = stats::nobs(fit),
     is_glm = is_glm,
-    title_prefix = if (!is.null(family_info)) family_info$title_prefix else "Linear regression",
+    title_prefix = if (!is.null(family_info)) {
+      family_info$title_prefix
+    } else {
+      "Linear regression"
+    },
     exp_applied = exp_applied,
-    exp_header = if (!is.null(family_info)) family_info$exp_header else NA_character_,
+    exp_header = if (!is.null(family_info)) {
+      family_info$exp_header
+    } else {
+      NA_character_
+    },
     # Valid bootstrap replicate count (attr set by
     # compute_resample_vcov_bootstrap); the footer reports it -- Stata's
     # bootstrap header reports completed replications, not requested ones.
@@ -227,8 +252,16 @@ extract_lm_phase1 <- function(
 # Builds one row per fitted coefficient with estimate_type = "B".
 # Singular coefs (NA in coef(fit)) get NA-shaped rows with
 # is_singular = TRUE; the renderer turns these into en-dashes (Q22).
-build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
-                         model_id, outcome, ci_method = "wald") {
+build_b_rows <- function(
+  fit,
+  vc,
+  vcov_type,
+  cluster,
+  ci_level,
+  model_id,
+  outcome,
+  ci_method = "wald"
+) {
   cf <- stats::coef(fit)
   coef_names <- names(cf)
   is_singular_vec <- is.na(cf)
@@ -252,8 +285,9 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
       )),
       error = function(e) NULL
     )
-    if (is.null(profile_ci) || !is.matrix(profile_ci) ||
-          ncol(profile_ci) != 2L) {
+    if (
+      is.null(profile_ci) || !is.matrix(profile_ci) || ncol(profile_ci) != 2L
+    ) {
       spicy_warn(
         c(
           paste0(
@@ -273,14 +307,20 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
 
   rows <- lapply(seq_along(cf), function(i) {
     nm <- coef_names[i]
-    fmeta <- factor_meta[[nm]]   # NULL if not a factor contrast
+    fmeta <- factor_meta[[nm]] # NULL if not a factor contrast
 
     if (is_singular_vec[i]) {
       build_one_b_row(
-        nm = nm, model_id = model_id, outcome = outcome,
-        estimate = NA_real_, se = NA_real_,
-        ci_low = NA_real_, ci_high = NA_real_,
-        statistic = NA_real_, df = NA_real_, p_value = NA_real_,
+        nm = nm,
+        model_id = model_id,
+        outcome = outcome,
+        estimate = NA_real_,
+        se = NA_real_,
+        ci_low = NA_real_,
+        ci_high = NA_real_,
+        statistic = NA_real_,
+        df = NA_real_,
+        p_value = NA_real_,
         test_type = NA_character_,
         is_singular = TRUE,
         is_intercept = (nm == "(Intercept)"),
@@ -306,14 +346,20 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
       ci_low_i <- inf$ci_lower
       ci_high_i <- inf$ci_upper
       if (!is.null(profile_ci) && nm %in% rownames(profile_ci)) {
-        ci_low_i  <- profile_ci[nm, 1L]
+        ci_low_i <- profile_ci[nm, 1L]
         ci_high_i <- profile_ci[nm, 2L]
       }
       build_one_b_row(
-        nm = nm, model_id = model_id, outcome = outcome,
-        estimate = inf$estimate, se = inf$se,
-        ci_low = ci_low_i, ci_high = ci_high_i,
-        statistic = inf$statistic, df = inf$df, p_value = inf$p.value,
+        nm = nm,
+        model_id = model_id,
+        outcome = outcome,
+        estimate = inf$estimate,
+        se = inf$se,
+        ci_low = ci_low_i,
+        ci_high = ci_high_i,
+        statistic = inf$statistic,
+        df = inf$df,
+        p_value = inf$p.value,
         test_type = inf$test_type,
         is_singular = FALSE,
         is_intercept = (nm == "(Intercept)"),
@@ -330,13 +376,26 @@ build_b_rows <- function(fit, vc, vcov_type, cluster, ci_level,
 # Helper to build a single coefs row with all the standard columns.
 # Centralised so all row builders (B, beta, AME, partial_*) use the
 # same column structure -- required by `rbind()` upstream.
-build_one_b_row <- function(nm, model_id, outcome,
-                             estimate, se, ci_low, ci_high,
-                             statistic, df, p_value, test_type,
-                             is_singular, is_intercept, is_reference,
-                             factor_term, factor_level,
-                             factor_level_pos = NA_integer_,
-                             estimate_type = "B") {
+build_one_b_row <- function(
+  nm,
+  model_id,
+  outcome,
+  estimate,
+  se,
+  ci_low,
+  ci_high,
+  statistic,
+  df,
+  p_value,
+  test_type,
+  is_singular,
+  is_intercept,
+  is_reference,
+  factor_term,
+  factor_level,
+  factor_level_pos = NA_integer_,
+  estimate_type = "B"
+) {
   data.frame(
     model_id = model_id,
     outcome = outcome,
@@ -372,9 +431,13 @@ build_one_b_row <- function(nm, model_id, outcome,
 # In a no-intercept formula like `y ~ 0 + cyl`, R fits ALL k levels
 # of the first factor as real coefficients -- `detect_factor_terms()`
 # flags `reference_dropped = FALSE` for these and we skip them here.
-build_reference_rows <- function(fit, model_id, outcome,
-                                   ame_requested = FALSE,
-                                   beta_requested = FALSE) {
+build_reference_rows <- function(
+  fit,
+  model_id,
+  outcome,
+  ame_requested = FALSE,
+  beta_requested = FALSE
+) {
   factor_terms <- detect_factor_terms(fit)
   if (length(factor_terms) == 0L) {
     return(empty_coefs_long())
@@ -392,7 +455,9 @@ build_reference_rows <- function(fit, model_id, outcome,
     # row anchored on `levels()[1]` in that case.
     is_poly_with_ame <- identical(ft$contrast_type, "polynomial") &&
       isTRUE(ame_requested)
-    if (!is_treatment_dropped && !is_poly_with_ame) next
+    if (!is_treatment_dropped && !is_poly_with_ame) {
+      next
+    }
 
     ref_lvl <- if (is_treatment_dropped) {
       ft$reference_level
@@ -418,18 +483,26 @@ build_reference_rows <- function(fit, model_id, outcome,
     est_types <- character()
     if (is_treatment_dropped) {
       est_types <- c(est_types, "B")
-      if (isTRUE(beta_requested)) est_types <- c(est_types, "beta")
-      if (isTRUE(ame_requested))  est_types <- c(est_types, "ame")
+      if (isTRUE(beta_requested)) {
+        est_types <- c(est_types, "beta")
+      }
+      if (isTRUE(ame_requested)) est_types <- c(est_types, "ame")
     } else if (is_poly_with_ame) {
       est_types <- "ame"
     }
 
     for (et in est_types) {
       rows[[length(rows) + 1L]] <- build_one_b_row(
-        nm = term_name, model_id = model_id, outcome = outcome,
-        estimate = NA_real_, se = NA_real_,
-        ci_low = NA_real_, ci_high = NA_real_,
-        statistic = NA_real_, df = NA_real_, p_value = NA_real_,
+        nm = term_name,
+        model_id = model_id,
+        outcome = outcome,
+        estimate = NA_real_,
+        se = NA_real_,
+        ci_low = NA_real_,
+        ci_high = NA_real_,
+        statistic = NA_real_,
+        df = NA_real_,
+        p_value = NA_real_,
         test_type = NA_character_,
         is_singular = FALSE,
         is_intercept = FALSE,
@@ -475,7 +548,9 @@ detect_factor_terms <- function(fit) {
     # Only main-effect factor terms. Interaction terms (containing ":")
     # use these factors but get their own coef rows by R's coding;
     # we don't emit reference rows for them.
-    if (!(var %in% trms)) next
+    if (!(var %in% trms)) {
+      next
+    }
     lvls <- xlevels[[var]]
     # First try treatment-contrast detection: at least one coef must
     # follow the canonical `<var><level>` pattern.
@@ -527,10 +602,14 @@ detect_factor_terms <- function(fit) {
 # the first k-1 suffixes (one fewer than the number of levels --
 # the same df budget as treatment contrasts).
 poly_suffix_names <- function(k) {
-  if (k < 2L) return(character(0))
+  if (k < 2L) {
+    return(character(0))
+  }
   base <- c(".L", ".Q", ".C")
   n_contrasts <- k - 1L
-  if (n_contrasts <= 3L) return(base[seq_len(n_contrasts)])
+  if (n_contrasts <= 3L) {
+    return(base[seq_len(n_contrasts)])
+  }
   c(base, paste0("^", seq.int(4L, n_contrasts)))
 }
 
@@ -568,10 +647,14 @@ detect_factor_term_meta <- function(fit) {
 .spicy_contrast_suffixes <- function(fit, xlevels) {
   specs <- tryCatch(fit$contrasts, error = function(e) NULL)
   if (is.null(specs)) {
-    specs <- tryCatch(attr(stats::model.matrix(fit), "contrasts"),
-                      error = function(e) NULL)
+    specs <- tryCatch(
+      attr(stats::model.matrix(fit), "contrasts"),
+      error = function(e) NULL
+    )
   }
-  if (is.null(specs) || length(specs) == 0L) return(list())
+  if (is.null(specs) || length(specs) == 0L) {
+    return(list())
+  }
   out <- list()
   for (var in intersect(names(specs), names(xlevels))) {
     spec <- specs[[var]]
@@ -579,8 +662,11 @@ detect_factor_term_meta <- function(fit) {
     m <- NULL
     if (is.matrix(spec)) {
       m <- spec
-    } else if (is.character(spec) && length(spec) == 1L &&
-                 !spec %in% c("contr.treatment", "contr.poly")) {
+    } else if (
+      is.character(spec) &&
+        length(spec) == 1L &&
+        !spec %in% c("contr.treatment", "contr.poly")
+    ) {
       fn <- tryCatch(match.fun(spec), error = function(e) NULL)
       if (!is.null(fn)) {
         m <- tryCatch(fn(lvls), error = function(e) {
@@ -588,7 +674,9 @@ detect_factor_term_meta <- function(fit) {
         })
       }
     }
-    if (is.null(m) || !is.matrix(m) || ncol(m) == 0L) next
+    if (is.null(m) || !is.matrix(m) || ncol(m) == 0L) {
+      next
+    }
     out[[var]] <- colnames(m) %||% as.character(seq_len(ncol(m)))
   }
   out
@@ -607,78 +695,106 @@ detect_factor_term_meta <- function(fit) {
 .spicy_get_xlevels <- function(fit) {
   # Fast path: S3 fits store xlevels as a named list attribute.
   xlev <- tryCatch(fit$xlevels, error = function(e) NULL)
-  if (!is.null(xlev)) return(xlev)
+  if (!is.null(xlev)) {
+    return(xlev)
+  }
   # brmsfit: extract from fit$data (the original modelling data frame
   # stored by brms) using the formula's RHS to identify which columns
   # the model used. This avoids the brmsformula / model.frame
   # discrepancies that bite the generic path.
   if (inherits(fit, "brmsfit")) {
-    return(tryCatch({
-      f <- stats::formula(fit)
-      if (inherits(f, "brmsformula")) f <- f$formula
-      d <- fit$data
-      if (is.null(d)) return(NULL)
-      rhs_vars <- intersect(all.vars(f[-2L]), names(d))
-      out <- list()
-      for (v in rhs_vars) {
-        col <- d[[v]]
-        if (is.factor(col)) out[[v]] <- levels(col)
-      }
-      if (length(out) == 0L) NULL else out
-    }, error = function(e) NULL))
+    return(tryCatch(
+      {
+        f <- stats::formula(fit)
+        if (inherits(f, "brmsformula")) {
+          f <- f$formula
+        }
+        d <- fit$data
+        if (is.null(d)) {
+          return(NULL)
+        }
+        rhs_vars <- intersect(all.vars(f[-2L]), names(d))
+        out <- list()
+        for (v in rhs_vars) {
+          col <- d[[v]]
+          if (is.factor(col)) out[[v]] <- levels(col)
+        }
+        if (length(out) == 0L) NULL else out
+      },
+      error = function(e) NULL
+    ))
   }
   # stanreg: rstanarm stores the model frame at fit$data; same pattern
   # as brmsfit. Falls through to the generic path if missing.
   if (inherits(fit, "stanreg") && !is.null(fit$data)) {
-    return(tryCatch({
-      f <- stats::formula(fit)
-      d <- fit$data
-      rhs_vars <- intersect(all.vars(f[-2L]), names(d))
-      out <- list()
-      for (v in rhs_vars) {
-        col <- d[[v]]
-        if (is.factor(col)) out[[v]] <- levels(col)
-      }
-      if (length(out) == 0L) NULL else out
-    }, error = function(e) NULL))
+    return(tryCatch(
+      {
+        f <- stats::formula(fit)
+        d <- fit$data
+        rhs_vars <- intersect(all.vars(f[-2L]), names(d))
+        out <- list()
+        for (v in rhs_vars) {
+          col <- d[[v]]
+          if (is.factor(col)) out[[v]] <- levels(col)
+        }
+        if (length(out) == 0L) NULL else out
+      },
+      error = function(e) NULL
+    ))
   }
   # fixest: stats::model.frame(fit) returns an empty list. Reconstruct
   # the modelling data frame by evaluating fit$call$data in
   # fit$call_env (the call's lexical environment that fixest preserves).
   if (inherits(fit, "fixest")) {
-    return(tryCatch({
-      d <- eval(fit$call$data, envir = fit$call_env %||% parent.frame())
-      if (is.null(d)) return(NULL)  # nocov: feols() requires `data`; eval() yields a df or errors (caught below)
-      stats::.getXlevels(stats::terms(fit), d)
-    }, error = function(e) NULL))
+    return(tryCatch(
+      {
+        d <- eval(fit$call$data, envir = fit$call_env %||% parent.frame())
+        if (is.null(d)) {
+          return(NULL)
+        } # nocov: feols() requires `data`; eval() yields a df or errors (caught below)
+        stats::.getXlevels(stats::terms(fit), d)
+      },
+      error = function(e) NULL
+    ))
   }
   # flexsurvreg: no terms() method on the fit itself, but its
   # model.frame carries the terms attribute -- without this branch the
   # generic path failed and factor predictors rendered as raw contrast
   # names ("sexFemale") with no grouping and no reference row.
   if (inherits(fit, "flexsurvreg")) {
-    return(tryCatch({
-      mf <- stats::model.frame(fit)
-      trms <- attr(mf, "terms") %||% stats::terms(mf)
-      stats::.getXlevels(trms, mf)
-    }, error = function(e) NULL))
+    return(tryCatch(
+      {
+        mf <- stats::model.frame(fit)
+        trms <- attr(mf, "terms") %||% stats::terms(mf)
+        stats::.getXlevels(trms, mf)
+      },
+      error = function(e) NULL
+    ))
   }
   # nlme lme / gls: stats::model.frame(fit) returns reStruct / corStruct
   # objects (not the data frame). Use nlme::getData() which reconstructs
   # the modelling data frame from fit$call.
   if (inherits(fit, c("lme", "gls"))) {
-    return(tryCatch({
-      d <- nlme::getData(fit)
-      if (is.null(d)) return(NULL)  # nocov: lme/gls require `data`; getData() returns a df or errors (caught below)
-      stats::.getXlevels(stats::terms(fit), d)
-    }, error = function(e) NULL))
+    return(tryCatch(
+      {
+        d <- nlme::getData(fit)
+        if (is.null(d)) {
+          return(NULL)
+        } # nocov: lme/gls require `data`; getData() returns a df or errors (caught below)
+        stats::.getXlevels(stats::terms(fit), d)
+      },
+      error = function(e) NULL
+    ))
   }
   # Generic path (S4 merMod, others): reconstruct from terms + model frame.
-  tryCatch({
-    trms <- stats::terms(fit)
-    mf <- stats::model.frame(fit)
-    stats::.getXlevels(trms, mf)
-  }, error = function(e) NULL)
+  tryCatch(
+    {
+      trms <- stats::terms(fit)
+      mf <- stats::model.frame(fit)
+      stats::.getXlevels(trms, mf)
+    },
+    error = function(e) NULL
+  )
 }
 
 
@@ -689,11 +805,15 @@ detect_factor_term_meta <- function(fit) {
 .spicy_get_terms <- function(fit) {
   # Try the generic path first (lm, glm, merMod, svyglm, stanreg).
   trms <- tryCatch(stats::terms(fit), error = function(e) NULL)
-  if (!is.null(trms)) return(trms)
+  if (!is.null(trms)) {
+    return(trms)
+  }
   # brmsfit-specific path: unwrap the brmsformula.
   if (inherits(fit, "brmsfit")) {
     f <- tryCatch(stats::formula(fit), error = function(e) NULL)
-    if (inherits(f, "brmsformula")) f <- f$formula
+    if (inherits(f, "brmsformula")) {
+      f <- f$formula
+    }
     if (!is.null(f)) {
       return(tryCatch(stats::terms(f), error = function(e) NULL))
     }
@@ -703,10 +823,13 @@ detect_factor_term_meta <- function(fit) {
   # this, detect_factor_terms() returned an empty list and factor
   # predictors lost their reference rows.
   if (inherits(fit, "flexsurvreg")) {
-    return(tryCatch({
-      mf <- stats::model.frame(fit)
-      attr(mf, "terms") %||% stats::terms(mf)
-    }, error = function(e) NULL))
+    return(tryCatch(
+      {
+        mf <- stats::model.frame(fit)
+        attr(mf, "terms") %||% stats::terms(mf)
+      },
+      error = function(e) NULL
+    ))
   }
   # Reachable for any non-brmsfit whose stats::terms(fit) errors:
   # trms stays NULL, the class branches are skipped, and execution
@@ -771,9 +894,11 @@ detect_factor_term_meta <- function(fit) {
   if (inherits(fit, "brmsfit") && spicy_pkg_available("posterior")) {
     draws_vars <- posterior::variables(posterior::as_draws_array(fit))
     b_names <- grep("^b_", draws_vars, value = TRUE)
-    return(ifelse(b_names == "b_Intercept",
-                  "(Intercept)",
-                  sub("^b_", "", b_names)))
+    return(ifelse(
+      b_names == "b_Intercept",
+      "(Intercept)",
+      sub("^b_", "", b_names)
+    ))
   }
   if (inherits(fit, "stanreg") && !is.null(fit$coefficients)) {
     return(names(fit$coefficients))
@@ -788,11 +913,14 @@ detect_factor_term_meta <- function(fit) {
 # For poly contrasts `factor_level` holds the suffix (e.g. ".L") --
 # the renderer treats it as the sub-row label under the factor group
 # header.
-match_coef_to_factor <- function(coef_name, xlevels,
-                                 contrast_suffixes = NULL) {
-  if (coef_name == "(Intercept)") return(NULL)
+match_coef_to_factor <- function(coef_name, xlevels, contrast_suffixes = NULL) {
+  if (coef_name == "(Intercept)") {
+    return(NULL)
+  }
   # Skip interaction terms -- they involve multiple factors / numerics
-  if (grepl(":", coef_name, fixed = TRUE)) return(NULL)
+  if (grepl(":", coef_name, fixed = TRUE)) {
+    return(NULL)
+  }
 
   # Try the longest factor name first so that when one factor's name is a
   # prefix of another (e.g. `f` and `foo`), a coef like `fooC` matches the
@@ -800,7 +928,9 @@ match_coef_to_factor <- function(coef_name, xlevels,
   # ("ooC") happened to be a level of the shorter factor, the coef would be
   # mis-tagged to `f`.
   for (var in names(xlevels)[order(-nchar(names(xlevels)))]) {
-    if (!startsWith(coef_name, var)) next
+    if (!startsWith(coef_name, var)) {
+      next
+    }
     suffix <- substring(coef_name, nchar(var) + 1L)
     lvls <- xlevels[[var]]
     # Treatment-contrast match: suffix equals one of the actual levels.
@@ -810,9 +940,11 @@ match_coef_to_factor <- function(coef_name, xlevels,
     # is not alphabetical, e.g. `factor(grp, levels = c("low","med","high"))`
     # alphabetises as (high, low, med)).
     if (suffix %in% lvls) {
-      return(list(factor_term = var,
-                  factor_level = suffix,
-                  factor_level_pos = match(suffix, lvls)))
+      return(list(
+        factor_term = var,
+        factor_level = suffix,
+        factor_level_pos = match(suffix, lvls)
+      ))
     }
     # Polynomial-contrast match: suffix is one of the poly names R
     # generates for a k-level factor under `contr.poly`. Position is
@@ -820,9 +952,11 @@ match_coef_to_factor <- function(coef_name, xlevels,
     # as linear -> quadratic -> cubic -> ...
     poly_names <- poly_suffix_names(length(lvls))
     if (suffix %in% poly_names) {
-      return(list(factor_term = var,
-                  factor_level = suffix,
-                  factor_level_pos = poly_suffix_degree(suffix)))
+      return(list(
+        factor_term = var,
+        factor_level = suffix,
+        factor_level_pos = poly_suffix_degree(suffix)
+      ))
     }
     # Custom-coding match (successive differences, sum-to-zero,
     # Helmert, user matrices): the suffix is one of the contrast
@@ -831,9 +965,11 @@ match_coef_to_factor <- function(coef_name, xlevels,
     # the parent variable in contrast-column order.
     cs <- contrast_suffixes[[var]]
     if (!is.null(cs) && suffix %in% cs) {
-      return(list(factor_term = var,
-                  factor_level = suffix,
-                  factor_level_pos = match(suffix, cs)))
+      return(list(
+        factor_term = var,
+        factor_level = suffix,
+        factor_level_pos = match(suffix, cs)
+      ))
     }
   }
   NULL
@@ -843,9 +979,15 @@ match_coef_to_factor <- function(coef_name, xlevels,
 # polynomial degree (1, 2, 3, 4, ...). Used by `match_coef_to_factor` to
 # attach a sortable position to poly-coded coefficient rows.
 poly_suffix_degree <- function(suffix) {
-  if (identical(suffix, ".L")) return(1L)
-  if (identical(suffix, ".Q")) return(2L)
-  if (identical(suffix, ".C")) return(3L)
+  if (identical(suffix, ".L")) {
+    return(1L)
+  }
+  if (identical(suffix, ".Q")) {
+    return(2L)
+  }
+  if (identical(suffix, ".C")) {
+    return(3L)
+  }
   if (startsWith(suffix, "^")) {
     n <- suppressWarnings(as.integer(substring(suffix, 2L)))
     if (!is.na(n)) return(n)
@@ -861,8 +1003,7 @@ poly_suffix_degree <- function(suffix) {
 # numeric column per requested token. Tokens not in show_fit_stats
 # get NA so the wide schema is constant across models (downstream
 # bind_rows works without column-mismatch issues).
-extract_fit_stats <- function(fit, show_fit_stats, weights,
-                               model_id, outcome) {
+extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
   # Compute everything once, then subset by show_fit_stats.
   sm <- summary(fit)
   is_glm <- inherits(fit, "glm")
@@ -936,7 +1077,9 @@ extract_fit_stats <- function(fit, show_fit_stats, weights,
   # The previous unconditional `length(coef) + 1` over-counted k by one
   # for binomial/poisson fits, inflating their AICc relative to MuMIn.
   k <- as.integer(attr(stats::logLik(fit), "df"))
-  if (length(k) != 1L || is.na(k)) k <- length(stats::coef(fit)) + 1L
+  if (length(k) != 1L || is.na(k)) {
+    k <- length(stats::coef(fit)) + 1L
+  }
   n <- stats::nobs(fit)
   AICc_v <- if (n - k - 1L > 0L) {
     AIC_v + (2 * k * (k + 1L)) / (n - k - 1L)

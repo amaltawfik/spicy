@@ -36,9 +36,11 @@ test_that("compute_pseudo_r2_nagelkerke: NA when null logLik > 0 (upper <= 0)", 
   # both log-likelihoods taken from the stats::logLik oracles.
   mcfadden <- spicy:::compute_pseudo_r2_mcfadden(fit)
   expect_true(is.finite(mcfadden))
-  expect_equal(mcfadden,
-               1 - as.numeric(stats::logLik(fit)) / ll_null_oracle,
-               tolerance = 1e-8)
+  expect_equal(
+    mcfadden,
+    1 - as.numeric(stats::logLik(fit)) / ll_null_oracle,
+    tolerance = 1e-8
+  )
 })
 
 
@@ -48,9 +50,11 @@ test_that("compute_pseudo_r2_tjur: NA for grouped/proportion binomial (y not 0/1
   # A proportion-response binomial (weights = trials) has a fitted
   # response made of proportions, not 0/1, so the discrimination
   # coefficient is undefined -> NA (L272).
-  d <- data.frame(p = c(0.2, 0.5, 0.7, 0.3, 0.9, 0.1),
-                  x = 1:6,
-                  w = c(10, 12, 8, 9, 11, 7))
+  d <- data.frame(
+    p = c(0.2, 0.5, 0.7, 0.3, 0.9, 0.1),
+    x = 1:6,
+    w = c(10, 12, 8, 9, 11, 7)
+  )
   fit <- suppressWarnings(glm(p ~ x, data = d, family = binomial, weights = w))
   y <- stats::model.response(stats::model.frame(fit))
   expect_false(all(y %in% c(0, 1)))
@@ -84,9 +88,12 @@ test_that("compute_pseudo_r2_tjur: NA when one outcome class is empty (m0 = NaN)
 test_that("apply_exponentiate_to_frame_coefs: NULL and 0-row inputs pass through", {
   expect_null(spicy:::apply_exponentiate_to_frame_coefs(NULL))
   empty <- data.frame(
-    estimate_type = character(0), is_ref = logical(0),
-    estimate = numeric(0), std_error = numeric(0),
-    ci_lower = numeric(0), ci_upper = numeric(0)
+    estimate_type = character(0),
+    is_ref = logical(0),
+    estimate = numeric(0),
+    std_error = numeric(0),
+    ci_lower = numeric(0),
+    ci_upper = numeric(0)
   )
   out <- spicy:::apply_exponentiate_to_frame_coefs(empty)
   expect_equal(nrow(out), 0L)
@@ -99,9 +106,12 @@ test_that("apply_exponentiate_to_frame_coefs: no eligible rows -> unchanged", {
   # so a frame with only AME rows has no eligible rows and returns
   # untouched (L337).
   df_ame <- data.frame(
-    estimate_type = c("ame", "ame"), is_ref = c(FALSE, FALSE),
-    estimate = c(0.1, 0.2), std_error = c(0.01, 0.02),
-    ci_lower = c(0.05, 0.10), ci_upper = c(0.15, 0.30)
+    estimate_type = c("ame", "ame"),
+    is_ref = c(FALSE, FALSE),
+    estimate = c(0.1, 0.2),
+    std_error = c(0.01, 0.02),
+    ci_lower = c(0.05, 0.10),
+    ci_upper = c(0.15, 0.30)
   )
   out <- spicy:::apply_exponentiate_to_frame_coefs(df_ame)
   expect_identical(out$estimate, df_ame$estimate)
@@ -118,16 +128,22 @@ test_that("apply_exponentiate_to_frame_coefs: B rows exponentiate with delta-met
   # d/dB exp(B) = exp(B), so SE(exp(B)) = exp(B) * SE(B) where SE(B)
   # is the link-scale (log-odds) standard error.
   df_b <- data.frame(
-    estimate_type = c("B", "B"), is_ref = c(FALSE, FALSE),
-    estimate = c(0.5, -0.3), std_error = c(0.1, 0.2),
-    ci_lower = c(0.3, -0.5), ci_upper = c(0.7, -0.1)
+    estimate_type = c("B", "B"),
+    is_ref = c(FALSE, FALSE),
+    estimate = c(0.5, -0.3),
+    std_error = c(0.1, 0.2),
+    ci_lower = c(0.3, -0.5),
+    ci_upper = c(0.7, -0.1)
   )
   out <- spicy:::apply_exponentiate_to_frame_coefs(df_b)
   expect_equal(out$estimate, exp(c(0.5, -0.3)), tolerance = 1e-12)
   expect_equal(out$ci_lower, exp(c(0.3, -0.5)), tolerance = 1e-12)
   expect_equal(out$ci_upper, exp(c(0.7, -0.1)), tolerance = 1e-12)
-  expect_equal(out$std_error, exp(c(0.5, -0.3)) * c(0.1, 0.2),
-               tolerance = 1e-12)
+  expect_equal(
+    out$std_error,
+    exp(c(0.5, -0.3)) * c(0.1, 0.2),
+    tolerance = 1e-12
+  )
 })
 
 
@@ -181,13 +197,21 @@ test_that("compute_coef_inference (glm path): CR2 with non-finite Satterthwaite 
   # Precondition: clubSandwich returns a non-finite Satterthwaite df for
   # the between-cluster 'trt' coefficient on this separated fit.
   ct <- clubSandwich::coef_test(
-    fit, vcov = vc, cluster = d$cluster, test = "Satterthwaite"
+    fit,
+    vcov = vc,
+    cluster = d$cluster,
+    test = "Satterthwaite"
   )
   expect_false(is.finite(ct$df_Satt[2L]))
 
   res <- spicy:::compute_coef_inference(
-    fit = fit, coef_idx = 2L, vc = vc, vcov_type = "CR2",
-    cluster = d$cluster, ci_level = 0.95, test = "z"
+    fit = fit,
+    coef_idx = 2L,
+    vc = vc,
+    vcov_type = "CR2",
+    cluster = d$cluster,
+    ci_level = 0.95,
+    test = "z"
   )
 
   # We entered the CR* Satterthwaite return block (test_type 't', not 'z')...
@@ -222,10 +246,14 @@ test_that("compute_coef_inference (glm path): CR2 with non-finite Satterthwaite 
   # Same bounds pinned fully externally -- coef(fit) for the log-odds
   # estimate and the clubSandwich SE oracle -- so the CI is anchored end
   # to end, not just to res's own components.
-  expect_equal(res$ci_lower,
-               unname(stats::coef(fit)[2L]) - crit_z * unname(ct$SE[2L]),
-               tolerance = 1e-10)
-  expect_equal(res$ci_upper,
-               unname(stats::coef(fit)[2L]) + crit_z * unname(ct$SE[2L]),
-               tolerance = 1e-10)
+  expect_equal(
+    res$ci_lower,
+    unname(stats::coef(fit)[2L]) - crit_z * unname(ct$SE[2L]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    res$ci_upper,
+    unname(stats::coef(fit)[2L]) + crit_z * unname(ct$SE[2L]),
+    tolerance = 1e-10
+  )
 })

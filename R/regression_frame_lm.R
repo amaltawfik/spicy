@@ -13,7 +13,6 @@
 # the method names are NOT user-visible.
 # ---------------------------------------------------------------------------
 
-
 #' `as_regression_frame()` method for `lm` fits.
 #'
 #' Thin wrapper around `extract_lm_phase1()` that reshapes the legacy
@@ -23,21 +22,23 @@
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.lm <- function(fit,
-                                    vcov = "classical",
-                                    vcov_label = NULL,
-                                    cluster = NULL,
-                                    boot_n = 1000L,
-                                    ci_level = 0.95,
-                                    ci_method = "wald",
-                                    standardized = "none",
-                                    exponentiate = FALSE,
-                                    show_columns = c("b", "se", "ci", "p"),
-                                    show_fit_stats = c("nobs", "r2", "adj_r2"),
-                                    use_ame_satterthwaite = FALSE,
-                                    cluster_name = NULL,
-                                    model_id = "M1",
-                                    ...) {
+as_regression_frame.lm <- function(
+  fit,
+  vcov = "classical",
+  vcov_label = NULL,
+  cluster = NULL,
+  boot_n = 1000L,
+  ci_level = 0.95,
+  ci_method = "wald",
+  standardized = "none",
+  exponentiate = FALSE,
+  show_columns = c("b", "se", "ci", "p"),
+  show_fit_stats = c("nobs", "r2", "adj_r2"),
+  use_ame_satterthwaite = FALSE,
+  cluster_name = NULL,
+  model_id = "M1",
+  ...
+) {
   # Profile CIs are model-based likelihood quantities (MASS::confint.glm);
   # a robust / resampling vcov takes precedence -- its Wald CIs are used --
   # so only profile under a model-based vcov. Mirrors the polr / clm
@@ -46,9 +47,12 @@ as_regression_frame.lm <- function(fit,
   # orchestrator warns once per table; resolving here keeps
   # info$ci_method truthful (the CI footer and as_structured() consumers
   # see the EFFECTIVE method).
-  if (identical(ci_method, "profile") &&
-      !(is.character(vcov) && length(vcov) == 1L &&
-          vcov %in% c("model", "classical"))) {
+  if (
+    identical(ci_method, "profile") &&
+      !(is.character(vcov) &&
+        length(vcov) == 1L &&
+        vcov %in% c("model", "classical"))
+  ) {
     ci_method <- "wald"
   }
 
@@ -56,25 +60,28 @@ as_regression_frame.lm <- function(fit,
   # picks up class-specific bits (family, supports) by branching on
   # inherits(fit, "glm") below.
   legacy <- extract_lm_phase1(
-    fit                   = fit,
-    model_id              = model_id,
-    vcov_type             = vcov,
-    cluster               = cluster,
-    boot_n                = boot_n,
-    ci_level              = ci_level,
-    ci_method             = ci_method,
-    standardized          = standardized,
-    exponentiate          = exponentiate,
-    show_columns          = show_columns,
-    show_fit_stats        = show_fit_stats,
+    fit = fit,
+    model_id = model_id,
+    vcov_type = vcov,
+    cluster = cluster,
+    boot_n = boot_n,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    standardized = standardized,
+    exponentiate = exponentiate,
+    show_columns = show_columns,
+    show_fit_stats = show_fit_stats,
     use_ame_satterthwaite = use_ame_satterthwaite,
-    cluster_name          = cluster_name
+    cluster_name = cluster_name
   )
-  frame <- .legacy_to_frame(legacy, fit,
-                            vcov_kind  = vcov,
-                            vcov_label = vcov_label,
-                            ci_level   = ci_level,
-                            ci_method  = ci_method)
+  frame <- .legacy_to_frame(
+    legacy,
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method
+  )
   # Outcome event counts (binomial fits; no-op otherwise -- the
   # orchestrator gate errors on frames left without event data).
   if ("n_events" %in% show_columns) {
@@ -111,15 +118,23 @@ as_regression_frame.glm <- function(fit, ...) {
 # the existing accessor code (info$fit_stats is permissive on additional
 # fields). Sub-step 4 will trim what is genuinely unused once downstream
 # consumers all read from the frame.
-.legacy_to_frame <- function(legacy, fit,
-                              vcov_kind, vcov_label,
-                              ci_level, ci_method) {
+.legacy_to_frame <- function(
+  legacy,
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method
+) {
   coefs <- .reshape_coefs(legacy$coefs)
-  info  <- .build_info(legacy, fit,
-                       vcov_kind  = vcov_kind,
-                       vcov_label = vcov_label,
-                       ci_level   = ci_level,
-                       ci_method  = ci_method)
+  info <- .build_info(
+    legacy,
+    fit,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method
+  )
 
   new_regression_frame(coefs, info, fit)
 }
@@ -167,23 +182,23 @@ as_regression_frame.glm <- function(fit, ...) {
   )
 
   out <- data.frame(
-    term             = legacy_coefs$term,
-    parent_var       = parent_var,
-    label            = label,
+    term = legacy_coefs$term,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(legacy_coefs$factor_level_pos),
-    is_ref           = as.logical(legacy_coefs$is_reference),
-    estimate_type    = legacy_coefs$estimate_type,
-    estimate         = as.numeric(legacy_coefs$estimate),
-    std_error        = as.numeric(legacy_coefs$se),
-    df               = as.numeric(legacy_coefs$df),
-    statistic        = as.numeric(legacy_coefs$statistic),
-    p_value          = as.numeric(legacy_coefs$p_value),
-    ci_lower         = as.numeric(legacy_coefs$ci_low),
-    ci_upper         = as.numeric(legacy_coefs$ci_high),
+    is_ref = as.logical(legacy_coefs$is_reference),
+    estimate_type = legacy_coefs$estimate_type,
+    estimate = as.numeric(legacy_coefs$estimate),
+    std_error = as.numeric(legacy_coefs$se),
+    df = as.numeric(legacy_coefs$df),
+    statistic = as.numeric(legacy_coefs$statistic),
+    p_value = as.numeric(legacy_coefs$p_value),
+    ci_lower = as.numeric(legacy_coefs$ci_low),
+    ci_upper = as.numeric(legacy_coefs$ci_high),
     # Optional per-row test_type ("t" for lm, "z" for glm, NA for ref /
     # singular / partial / AME rows). Read by broom::tidy.spicy_regression_table
     # and downstream consumers; preserved as a string column.
-    test_type        = as.character(legacy_coefs$test_type),
+    test_type = as.character(legacy_coefs$test_type),
     stringsAsFactors = FALSE
   )
   # m1: an aliased (perfectly collinear) predictor has an NA coefficient and an
@@ -194,8 +209,14 @@ as_regression_frame.glm <- function(fit, ...) {
   if (length(aliased)) {
     hit <- out$estimate_type == "ame" & out$term %in% aliased
     if (any(hit)) {
-      for (col in c("estimate", "std_error", "ci_lower", "ci_upper",
-                    "statistic", "p_value")) {
+      for (col in c(
+        "estimate",
+        "std_error",
+        "ci_lower",
+        "ci_upper",
+        "statistic",
+        "p_value"
+      )) {
         out[[col]][hit] <- NA_real_
       }
     }
@@ -208,20 +229,20 @@ as_regression_frame.glm <- function(fit, ...) {
 # with no coefficients (degenerate but valid input).
 .empty_coefs_frame <- function() {
   data.frame(
-    term             = character(0),
-    parent_var       = character(0),
-    label            = character(0),
+    term = character(0),
+    parent_var = character(0),
+    label = character(0),
     factor_level_pos = integer(0),
-    is_ref           = logical(0),
-    estimate_type    = character(0),
-    estimate         = numeric(0),
-    std_error        = numeric(0),
-    df               = numeric(0),
-    statistic        = numeric(0),
-    p_value          = numeric(0),
-    ci_lower         = numeric(0),
-    ci_upper         = numeric(0),
-    test_type        = character(0),
+    is_ref = logical(0),
+    estimate_type = character(0),
+    estimate = numeric(0),
+    std_error = numeric(0),
+    df = numeric(0),
+    statistic = numeric(0),
+    p_value = numeric(0),
+    ci_lower = numeric(0),
+    ci_upper = numeric(0),
+    test_type = character(0),
     stringsAsFactors = FALSE
   )
 }
@@ -238,8 +259,14 @@ as_regression_frame.glm <- function(fit, ...) {
 # family_info). This keeps the schema minimal while preserving every
 # byte the footer renderer needs for byte-identical output after
 # round-tripping through `.frame_to_legacy_extract()` in sub-step 3.
-.build_info <- function(legacy, fit, vcov_kind, vcov_label,
-                         ci_level, ci_method) {
+.build_info <- function(
+  legacy,
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method
+) {
   is_glm <- inherits(fit, "glm")
   family <- .family_info(fit)
   weights_kind <- .weights_kind_from_fit(fit)
@@ -252,18 +279,26 @@ as_regression_frame.glm <- function(fit, ...) {
   # the schema unchanged. Renderer code (sub-steps 3-4) will consume them
   # via the same keys it uses today.
   fit_stats <- as.list(legacy$fit_stats)
-  fit_stats$model_id <- NULL  # bookkeeping, not data
-  fit_stats$outcome  <- NULL  # lives in info$dv
+  fit_stats$model_id <- NULL # bookkeeping, not data
+  fit_stats$outcome <- NULL # lives in info$dv
 
   # Provide the design-doc-documented schema field names AS aliases on
   # top of the legacy names. Sub-step 4 will pick one canonical naming
   # once downstream consumers migrate; for now, ship both so the renderer
   # can keep reading legacy keys while new tests can target the schema
   # keys.
-  if (!is.null(fit_stats$r2))        fit_stats$r_squared     <- fit_stats$r2
-  if (!is.null(fit_stats$adj_r2))    fit_stats$adj_r_squared <- fit_stats$adj_r2
-  if (!is.null(fit_stats$AIC))       fit_stats$aic           <- fit_stats$AIC
-  if (!is.null(fit_stats$BIC))       fit_stats$bic           <- fit_stats$BIC
+  if (!is.null(fit_stats$r2)) {
+    fit_stats$r_squared <- fit_stats$r2
+  }
+  if (!is.null(fit_stats$adj_r2)) {
+    fit_stats$adj_r_squared <- fit_stats$adj_r2
+  }
+  if (!is.null(fit_stats$AIC)) {
+    fit_stats$aic <- fit_stats$AIC
+  }
+  if (!is.null(fit_stats$BIC)) {
+    fit_stats$bic <- fit_stats$BIC
+  }
   # log_lik is not in the legacy fit_stats; derive directly from the fit.
   fit_stats$log_lik <- as.numeric(stats::logLik(fit))
 
@@ -271,9 +306,9 @@ as_regression_frame.glm <- function(fit, ...) {
   # into a single list keyed by method. NULL for lm.
   fit_stats$pseudo_r2 <- if (is_glm) {
     list(
-      mcfadden   = fit_stats$pseudo_r2_mcfadden,
+      mcfadden = fit_stats$pseudo_r2_mcfadden,
       nagelkerke = fit_stats$pseudo_r2_nagelkerke,
-      tjur       = fit_stats$pseudo_r2_tjur
+      tjur = fit_stats$pseudo_r2_tjur
     )
   } else {
     NULL
@@ -284,36 +319,36 @@ as_regression_frame.glm <- function(fit, ...) {
   # so future per-class methods (lmer, glmer, svyglm, ...) know which
   # extras keys to populate for parity with the existing renderers.
   extras <- list(
-    cluster_name          = legacy$cluster_name,
+    cluster_name = legacy$cluster_name,
     use_ame_satterthwaite = isTRUE(legacy$use_ame_satterthwaite),
-    has_singular          = isTRUE(legacy$has_singular),
-    singular_terms        = legacy$singular_terms %||% character(0),
-    has_weights           = isTRUE(legacy$has_weights),
-    weighted_n            = legacy$weighted_n %||% NA_real_,
-    title_prefix          = legacy$title_prefix %||%
+    has_singular = isTRUE(legacy$has_singular),
+    singular_terms = legacy$singular_terms %||% character(0),
+    has_weights = isTRUE(legacy$has_weights),
+    weighted_n = legacy$weighted_n %||% NA_real_,
+    title_prefix = legacy$title_prefix %||%
       (if (is_glm) "Generalized linear regression" else "Linear regression"),
-    exp_applied           = isTRUE(legacy$exp_applied),
-    exp_header            = legacy$exp_header %||% NA_character_,
-    boot_n_valid          = legacy$boot_n_valid %||% NA_integer_,
-    standardized_used     = legacy$standardized_used %||% NA_character_
+    exp_applied = isTRUE(legacy$exp_applied),
+    exp_header = legacy$exp_header %||% NA_character_,
+    boot_n_valid = legacy$boot_n_valid %||% NA_integer_,
+    standardized_used = legacy$standardized_used %||% NA_character_
   )
 
   list(
-    class          = class(fit)[1],
-    family         = family,
-    dv             = legacy$outcome,
-    dv_label       = legacy$outcome_label,
-    n_obs          = as.integer(legacy$nobs),
-    n_groups       = NULL,
-    weights_kind   = weights_kind,
+    class = class(fit)[1],
+    family = family,
+    dv = legacy$outcome,
+    dv_label = legacy$outcome_label,
+    n_obs = as.integer(legacy$nobs),
+    n_groups = NULL,
+    weights_kind = weights_kind,
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% .vcov_label_from_kind(vcov_kind, is_glm),
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% .vcov_label_from_kind(vcov_kind, is_glm),
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
@@ -322,8 +357,13 @@ as_regression_frame.glm <- function(fit, ...) {
 # it as a list. Round-trip: rebuild the data.frame structure by selecting
 # only the legacy-named scalar fields (drop the schema aliases and the
 # pseudo_r2 nested list we added in `.build_info()`).
-.compact_fit_stats_for_legacy <- function(fs, model_id, outcome,
-                                          icc = NA_real_, n_groups = NULL) {
+.compact_fit_stats_for_legacy <- function(
+  fs,
+  model_id,
+  outcome,
+  icc = NA_real_,
+  n_groups = NULL
+) {
   # Order matches the original `extract_fit_stats()` return, with the
   # nested-LRT change tokens appended at the end (Phase 0c C3:
   # attach_nested_stats_to_frames() injects these into fs BEFORE
@@ -334,55 +374,66 @@ as_regression_frame.glm <- function(fit, ...) {
   # legacy (`r2`, `adj_r2`, ...) and new-schema field names to the
   # single legacy shape the body builder consumes.
   out <- list(
-    model_id             = model_id,
-    outcome              = outcome,
-    nobs                 = .scalar_or_na(fs$nobs),
-    n_events             = .scalar_or_na(fs$n_events),
-    weighted_nobs        = .scalar_or_na(fs$weighted_nobs),
-    r2                   = .scalar_or_na(fs$r2  %||% fs$r_squared),
-    adj_r2               = .scalar_or_na(fs$adj_r2 %||% fs$adj_r_squared),
-    omega2               = .scalar_or_na(fs$omega2),
-    pseudo_r2_mcfadden   = .scalar_or_na(fs$pseudo_r2_mcfadden),
-    theta                = .scalar_or_na(fs$theta),
-    alpha                = .scalar_or_na(fs$alpha),
-    phi                  = .scalar_or_na(fs$phi),
-    r2_bayes             = .scalar_or_na(fs$r2_bayes),
-    elpd_loo             = .scalar_or_na(fs$elpd_loo),
-    looic                = .scalar_or_na(fs$looic),
-    waic                 = .scalar_or_na(fs$waic),
+    model_id = model_id,
+    outcome = outcome,
+    nobs = .scalar_or_na(fs$nobs),
+    n_events = .scalar_or_na(fs$n_events),
+    weighted_nobs = .scalar_or_na(fs$weighted_nobs),
+    r2 = .scalar_or_na(fs$r2 %||% fs$r_squared),
+    adj_r2 = .scalar_or_na(fs$adj_r2 %||% fs$adj_r_squared),
+    omega2 = .scalar_or_na(fs$omega2),
+    pseudo_r2_mcfadden = .scalar_or_na(fs$pseudo_r2_mcfadden),
+    theta = .scalar_or_na(fs$theta),
+    alpha = .scalar_or_na(fs$alpha),
+    phi = .scalar_or_na(fs$phi),
+    r2_bayes = .scalar_or_na(fs$r2_bayes),
+    elpd_loo = .scalar_or_na(fs$elpd_loo),
+    looic = .scalar_or_na(fs$looic),
+    waic = .scalar_or_na(fs$waic),
     pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
-    pseudo_r2_tjur       = .scalar_or_na(fs$pseudo_r2_tjur),
+    pseudo_r2_tjur = .scalar_or_na(fs$pseudo_r2_tjur),
     # fixest within (FE-partialled) R-squared, stashed in the
     # pseudo_r2 nested list by .fixest_fit_stats().
-    within_r2            = .scalar_or_na(fs$within_r2 %||%
-                                           fs$pseudo_r2$within_r2),
-    r2_marginal          = .scalar_or_na(fs$r2_marginal),
-    r2_conditional       = .scalar_or_na(fs$r2_conditional),
+    within_r2 = .scalar_or_na(
+      fs$within_r2 %||%
+        fs$pseudo_r2$within_r2
+    ),
+    r2_marginal = .scalar_or_na(fs$r2_marginal),
+    r2_conditional = .scalar_or_na(fs$r2_conditional),
     # Mixed-effects group structure. icc is a numeric scalar rendered
     # as a fit-stat row. n_groups stays in the legacy schema as a
     # placeholder column only: both fit-stat builders render one
     # "N (<factor>)" row per grouping factor from the RAW per-model
     # counts in aligned$n_groups_by_model (frame field
     # info$n_groups), never from this compacted shape.
-    icc                  = .scalar_or_na(icc),
-    n_groups             = NA_character_,
-    sigma                = .scalar_or_na(fs$sigma),
-    rmse                 = .scalar_or_na(fs$rmse),
-    f2                   = .scalar_or_na(fs$f2),
-    aic                  = .scalar_or_na(fs$AIC %||% fs$aic),
-    aicc                 = .scalar_or_na(fs$AICc %||% fs$aicc),
-    bic                  = .scalar_or_na(fs$BIC %||% fs$bic),
-    deviance             = .scalar_or_na(fs$deviance),
-    df_residual          = .scalar_or_na(fs$df_residual)
+    icc = .scalar_or_na(icc),
+    n_groups = NA_character_,
+    sigma = .scalar_or_na(fs$sigma),
+    rmse = .scalar_or_na(fs$rmse),
+    f2 = .scalar_or_na(fs$f2),
+    aic = .scalar_or_na(fs$AIC %||% fs$aic),
+    aicc = .scalar_or_na(fs$AICc %||% fs$aicc),
+    bic = .scalar_or_na(fs$BIC %||% fs$bic),
+    deviance = .scalar_or_na(fs$deviance),
+    df_residual = .scalar_or_na(fs$df_residual)
   )
   # Nested-LRT change tokens (present only when attach_nested_stats_*
   # ran for this model). Included only when present in `fs` -- this
   # mirrors the legacy extract_fit_stats() shape, which omits the
   # change columns when nested = FALSE and adds them post-hoc when
   # attach_nested_stats_to_extracts() runs.
-  change_keys <- c("r2_change", "adj_r2_change", "f_change", "f2_change",
-                   "lrt_change", "aic_change", "aicc_change",
-                   "bic_change", "deviance_change", "p_change")
+  change_keys <- c(
+    "r2_change",
+    "adj_r2_change",
+    "f_change",
+    "f2_change",
+    "lrt_change",
+    "aic_change",
+    "aicc_change",
+    "bic_change",
+    "deviance_change",
+    "p_change"
+  )
   for (k in change_keys) {
     if (!is.null(fs[[k]])) out[[k]] <- fs[[k]]
   }
@@ -399,8 +450,12 @@ as_regression_frame.glm <- function(fit, ...) {
 # variations (e.g. estimatr's stats::sigma(lm_robust) returns
 # numeric(0)).
 .scalar_or_na <- function(x) {
-  if (is.null(x) || length(x) == 0L) return(NA_real_)
-  if (!is.numeric(x) && !is.logical(x)) return(NA_real_)
+  if (is.null(x) || length(x) == 0L) {
+    return(NA_real_)
+  }
+  if (!is.numeric(x) && !is.logical(x)) {
+    return(NA_real_)
+  }
   as.numeric(x[1L])
 }
 
@@ -443,17 +498,17 @@ as_regression_frame.glm <- function(fit, ...) {
 .vcov_label_from_kind <- function(vcov_kind, is_glm = FALSE) {
   labels <- c(
     classical = if (is_glm) "Model-based (asymptotic)" else "OLS",
-    model     = if (is_glm) "Model-based (asymptotic)" else "OLS",
-    HC0       = "HC0 heteroskedasticity-consistent",
-    HC1       = "HC1 heteroskedasticity-consistent",
-    HC2       = "HC2 heteroskedasticity-consistent",
-    HC3       = "HC3 heteroskedasticity-consistent",
-    HC4       = "HC4 heteroskedasticity-consistent",
-    HC5       = "HC5 heteroskedasticity-consistent",
-    CR0       = "CR0 cluster-robust",
-    CR1       = "CR1 cluster-robust",
-    CR2       = "CR2 cluster-robust",
-    CR3       = "CR3 cluster-robust",
+    model = if (is_glm) "Model-based (asymptotic)" else "OLS",
+    HC0 = "HC0 heteroskedasticity-consistent",
+    HC1 = "HC1 heteroskedasticity-consistent",
+    HC2 = "HC2 heteroskedasticity-consistent",
+    HC3 = "HC3 heteroskedasticity-consistent",
+    HC4 = "HC4 heteroskedasticity-consistent",
+    HC5 = "HC5 heteroskedasticity-consistent",
+    CR0 = "CR0 cluster-robust",
+    CR1 = "CR1 cluster-robust",
+    CR2 = "CR2 cluster-robust",
+    CR3 = "CR3 cluster-robust",
     bootstrap = "Bootstrap",
     jackknife = "Jackknife"
   )
@@ -466,12 +521,12 @@ as_regression_frame.glm <- function(fit, ...) {
 # section 4 for the schema and section 6 for the per-class rationale.
 .lm_supports <- function() {
   list(
-    ame                 = TRUE,    # via marginaleffects::avg_slopes()
-    partial_effect_size = TRUE,    # partial f^2 / eta^2 / omega^2 with NCF CIs
-    classical_r2        = TRUE,    # R^2 / adj-R^2 well defined for lm
-    nested_lrt          = TRUE,    # nested model comparisons via anova()
-    exponentiate        = FALSE,   # identity link -- nothing to exponentiate
-    standardise_refit   = TRUE     # z-scored refit is class-agnostic for lm
+    ame = TRUE, # via marginaleffects::avg_slopes()
+    partial_effect_size = TRUE, # partial f^2 / eta^2 / omega^2 with NCF CIs
+    classical_r2 = TRUE, # R^2 / adj-R^2 well defined for lm
+    nested_lrt = TRUE, # nested model comparisons via anova()
+    exponentiate = FALSE, # identity link -- nothing to exponentiate
+    standardise_refit = TRUE # z-scored refit is class-agnostic for lm
   )
 }
 
@@ -481,12 +536,12 @@ as_regression_frame.glm <- function(fit, ...) {
 # exponentiate is TRUE because non-identity links produce OR / RR / IRR.
 .glm_supports <- function() {
   list(
-    ame                 = TRUE,
-    partial_effect_size = TRUE,    # partial chi^2 (regression_partial.R)
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = TRUE,
-    standardise_refit   = TRUE
+    ame = TRUE,
+    partial_effect_size = TRUE, # partial chi^2 (regression_partial.R)
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = TRUE,
+    standardise_refit = TRUE
   )
 }
 
@@ -499,7 +554,9 @@ as_regression_frame.glm <- function(fit, ...) {
 # gate with a clear error). glm convention: for a 2-level factor the
 # SECOND level is the event.
 .binary_event_indicator <- function(y) {
-  if (is.logical(y)) return(as.integer(y))
+  if (is.logical(y)) {
+    return(as.integer(y))
+  }
   if (is.factor(y) && nlevels(y) == 2L) {
     return(as.integer(y == levels(y)[2L]))
   }
@@ -522,29 +579,38 @@ as_regression_frame.glm <- function(fit, ...) {
 # table_regression() gate then errors.
 .attach_event_counts <- function(frame, fit, ev = NULL) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
-  if (is.null(mf)) return(frame)                                       # nocov
+  if (is.null(mf)) {
+    return(frame)
+  } # nocov
   if (is.null(ev)) {
     fam <- tryCatch(stats::family(fit)$family, error = function(e) "")
-    if (!fam %in% c("binomial", "quasibinomial")) return(frame)
+    if (!fam %in% c("binomial", "quasibinomial")) {
+      return(frame)
+    }
     ev <- .binary_event_indicator(stats::model.response(mf))
   }
-  if (is.null(ev) || length(ev) != nrow(mf)) return(frame)
+  if (is.null(ev) || length(ev) != nrow(mf)) {
+    return(frame)
+  }
   cf <- frame$coefs
   events <- rep(sum(ev), nrow(cf))
-  n_vec  <- rep(length(ev), nrow(cf))
+  n_vec <- rep(length(ev), nrow(cf))
   for (k in seq_len(nrow(cf))) {
     pv <- cf$parent_var[k]
     lv <- cf$label[k]
-    if (!identical(pv, cf$term[k]) && pv %in% names(mf) &&
-          (is.factor(mf[[pv]]) || is.character(mf[[pv]]))) {
+    if (
+      !identical(pv, cf$term[k]) &&
+        pv %in% names(mf) &&
+        (is.factor(mf[[pv]]) || is.character(mf[[pv]]))
+    ) {
       sel <- as.character(mf[[pv]]) == lv
       if (any(sel)) {
         events[k] <- sum(ev[sel])
-        n_vec[k]  <- sum(sel)
+        n_vec[k] <- sum(sel)
       }
     }
   }
-  cf$events   <- events
+  cf$events <- events
   cf$events_n <- n_vec
   frame$coefs <- cf
   frame

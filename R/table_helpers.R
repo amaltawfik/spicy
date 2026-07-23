@@ -161,8 +161,7 @@ safe_glyph_width <- function(x) {
 # appear"), Stata `esttab`, `modelsummary`, and Hochuli typography
 # guidelines. Multi-char placeholders are centred around the
 # decimal-mark position with bias-left for even widths.
-decimal_align_strings <- function(values, decimal_mark = ".",
-                                   pad_char = " ") {
+decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   if (length(values) == 0L) {
     return(character(0))
   }
@@ -270,8 +269,7 @@ ci_bracket_separator <- function(decimal_mark) {
 # `"[LL, UL]"` or blank / en-dash strings). NA / blank / en-dash
 # cells pass through and are padded to the same total width as
 # the aligned CI cells so the column stays rectangular.
-align_ci_strings <- function(values, decimal_mark = ".",
-                              pad_char = " ") {
+align_ci_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   if (length(values) == 0L) {
     return(character(0))
   }
@@ -283,8 +281,7 @@ align_ci_strings <- function(values, decimal_mark = ".",
   # only non-trivial cases here are "," and "; " (literal text);
   # escape defensively in case `sep` is ever extended.
   sep_re <- gsub("([.|()\\^{}+$*?])", "\\\\\\1", sep, perl = TRUE)
-  pattern <- paste0("^\\[\\s*(.*?)\\s*", sep_re,
-                    "\\s*(.*?)\\s*\\]\\s*$")
+  pattern <- paste0("^\\[\\s*(.*?)\\s*", sep_re, "\\s*(.*?)\\s*\\]\\s*$")
   parts <- regmatches(values, regexec(pattern, values))
 
   lls <- rep(NA_character_, length(values))

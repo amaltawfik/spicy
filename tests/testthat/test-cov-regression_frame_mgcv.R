@@ -13,7 +13,6 @@
 #       the all-NA else fallback.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_gam_no_parametric <- function() {
@@ -28,8 +27,10 @@
   skip_if_not_installed("mgcv")
   set.seed(2)
   dat <- mgcv::gamSim(1, n = 200, dist = "normal", scale = 2, verbose = FALSE)
-  dat$ogrp <- ordered(rep(c("lo", "mid", "hi"), length.out = nrow(dat)),
-                      levels = c("lo", "mid", "hi"))
+  dat$ogrp <- ordered(
+    rep(c("lo", "mid", "hi"), length.out = nrow(dat)),
+    levels = c("lo", "mid", "hi")
+  )
   # ordered() -> contr.poly: coefs ogrp.L, ogrp.Q (no dropped reference level).
   mgcv::gam(y ~ s(x0) + ogrp, data = dat)
 }
@@ -49,7 +50,7 @@
   skip_if_not_installed("mgcv")
   set.seed(4)
   dat <- mgcv::gamSim(1, n = 200, dist = "normal", scale = 2, verbose = FALSE)
-  dat$ypos <- dat$y - min(dat$y) + 1            # strictly positive response
+  dat$ypos <- dat$y - min(dat$y) + 1 # strictly positive response
   mgcv::gam(ypos ~ x2 + s(x0), data = dat, family = family)
 }
 
@@ -58,13 +59,22 @@
 
 test_that("gam with no parametric terms yields a zero-row coefs frame", {
   fit <- .fit_gam_no_parametric()
-  expect_length(summary(fit)$p.coeff, 0L)  # precondition for the branch
+  expect_length(summary(fit)$p.coeff, 0L) # precondition for the branch
 
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(nrow(fr$coefs), 0L)
   # Empty frame still carries the full schema columns.
-  expect_true(all(c("term", "parent_var", "estimate", "std_error",
-                    "is_ref", "estimate_type") %in% colnames(fr$coefs)))
+  expect_true(all(
+    c(
+      "term",
+      "parent_var",
+      "estimate",
+      "std_error",
+      "is_ref",
+      "estimate_type"
+    ) %in%
+      colnames(fr$coefs)
+  ))
 })
 
 test_that("gam with no parametric terms still produces a schema-valid frame", {
@@ -103,7 +113,7 @@ test_that("gam ordered-factor frame is schema-valid", {
 
 test_that("gam with no smooth terms yields an empty smooth_terms table", {
   fit <- .fit_gam_parametric_only()
-  expect_null(summary(fit)$s.table)  # precondition for the branch
+  expect_null(summary(fit)$s.table) # precondition for the branch
 
   fr <- as_regression_frame(fit, model_id = "M1")
   st <- fr$info$extras$smooth_terms
@@ -131,14 +141,16 @@ test_that("Gamma(log) GAM exposes t-labelled p.table and t-based inference", {
   # Precondition for the branch: family is NOT gaussian-identity, yet the
   # parametric p.table carries "t value"/"Pr(>|t|)" (estimated scale).
   fam <- stats::family(fit)
-  expect_false(identical(fam$family, "gaussian") &&
-               identical(fam$link, "identity"))
+  expect_false(
+    identical(fam$family, "gaussian") &&
+      identical(fam$link, "identity")
+  )
   sm <- summary(fit)
   expect_true(all(c("t value", "Pr(>|t|)") %in% colnames(sm$p.table)))
   expect_false(any(c("z value", "Pr(>|z|)") %in% colnames(sm$p.table)))
 
   fr <- as_regression_frame(fit, model_id = "M1")
-  b  <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
 
   # The bug this guards: the else fallback set these all-NA. They must be
   # populated for every parametric term.
@@ -157,17 +169,14 @@ test_that("Gamma(log) GAM exposes t-labelled p.table and t-based inference", {
 test_that("Gamma(log) GAM std_error/statistic/p_value match mgcv p.table", {
   skip_if_not_installed("mgcv")
   fit <- .fit_gam_estimated_scale(stats::Gamma(link = "log"))
-  sm  <- summary(fit)
-  fr  <- as_regression_frame(fit, model_id = "M1")
-  b   <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  sm <- summary(fit)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
 
   # First-principles oracle: read straight from mgcv's parametric p.table.
-  expect_equal(unname(b$std_error),
-               unname(sm$p.table[b$term, "Std. Error"]))
-  expect_equal(unname(b$statistic),
-               unname(sm$p.table[b$term, "t value"]))
-  expect_equal(unname(b$p_value),
-               unname(sm$p.table[b$term, "Pr(>|t|)"]))
+  expect_equal(unname(b$std_error), unname(sm$p.table[b$term, "Std. Error"]))
+  expect_equal(unname(b$statistic), unname(sm$p.table[b$term, "t value"]))
+  expect_equal(unname(b$p_value), unname(sm$p.table[b$term, "Pr(>|t|)"]))
 
   # CI is estimate +/- qt(0.975, df.residual) * SE (the t-reference CI).
   tcrit <- stats::qt(0.975, df = stats::df.residual(fit))
@@ -188,8 +197,8 @@ test_that("other estimated-scale families also get non-NA t inference", {
   )
   for (fam in families) {
     fit <- .fit_gam_estimated_scale(fam)
-    fr  <- as_regression_frame(fit, model_id = "M1")
-    b   <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+    fr <- as_regression_frame(fit, model_id = "M1")
+    b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
     expect_false(any(is.na(b$std_error)))
     expect_false(any(is.na(b$statistic)))
     expect_false(any(is.na(b$p_value)))
@@ -200,15 +209,20 @@ test_that("other estimated-scale families also get non-NA t inference", {
 test_that("known-scale family (poisson) still routes to the z-branch", {
   skip_if_not_installed("mgcv")
   set.seed(5)
-  dat <- mgcv::gamSim(1, n = 200, dist = "poisson", scale = 0.1,
-                      verbose = FALSE)
+  dat <- mgcv::gamSim(
+    1,
+    n = 200,
+    dist = "poisson",
+    scale = 0.1,
+    verbose = FALSE
+  )
   fit <- mgcv::gam(y ~ x2 + s(x0), data = dat, family = poisson())
-  sm  <- summary(fit)
+  sm <- summary(fit)
   # Known scale -> z-labelled columns.
   expect_true(all(c("z value", "Pr(>|z|)") %in% colnames(sm$p.table)))
 
   fr <- as_regression_frame(fit, model_id = "M1")
-  b  <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   expect_false(any(is.na(b$std_error)))
   expect_false(any(is.na(b$p_value)))
   expect_true(all(b$test_type == "z"))

@@ -25,10 +25,21 @@ test_that("compute_nested_comparisons - two lm models: one row of change stats",
   fits <- list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt))
   out <- spicy:::compute_nested_comparisons(fits)
   expect_equal(nrow(out), 1L)
-  expect_true(all(c("r2_change", "adj_r2_change", "f_change",
-                    "f2_change", "lrt_change", "aic_change",
-                    "aicc_change", "bic_change", "deviance_change",
-                    "p_change") %in% names(out)))
+  expect_true(all(
+    c(
+      "r2_change",
+      "adj_r2_change",
+      "f_change",
+      "f2_change",
+      "lrt_change",
+      "aic_change",
+      "aicc_change",
+      "bic_change",
+      "deviance_change",
+      "p_change"
+    ) %in%
+      names(out)
+  ))
 })
 
 test_that("compute_nested_comparisons - three lm models: two adjacent pair rows", {
@@ -39,8 +50,7 @@ test_that("compute_nested_comparisons - three lm models: two adjacent pair rows"
   )
   out <- spicy:::compute_nested_comparisons(fits)
   expect_equal(nrow(out), 2L)
-  expect_equal(out$comparison,
-                c("Model 2 vs Model 1", "Model 3 vs Model 2"))
+  expect_equal(out$comparison, c("Model 2 vs Model 1", "Model 3 vs Model 2"))
   expect_true(all(out$r2_change > 0))
 })
 
@@ -66,9 +76,11 @@ test_that("compute_one_pair_lm - r2_change matches summary() difference", {
   m1 <- lm(mpg ~ wt, mt)
   m2 <- lm(mpg ~ wt + cyl, mt)
   out <- spicy:::compute_one_pair_lm(m1, m2)
-  expect_equal(out$r2_change,
-                summary(m2)$r.squared - summary(m1)$r.squared,
-                tolerance = 1e-12)
+  expect_equal(
+    out$r2_change,
+    summary(m2)$r.squared - summary(m1)$r.squared,
+    tolerance = 1e-12
+  )
 })
 
 test_that("compute_one_pair_lm - f_change + p_change match anova(m1, m2)", {
@@ -98,8 +110,7 @@ test_that("compute_one_pair_glm - lrt_change matches anova(test='LRT')", {
   out <- spicy:::compute_one_pair_glm(g1, g2)
   av <- stats::anova(g1, g2, test = "LRT")
   lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT"), names(av))
-  expect_equal(out$lrt_change, unname(av[[lrt_col[1L]]][2L]),
-                tolerance = 1e-10)
+  expect_equal(out$lrt_change, unname(av[[lrt_col[1L]]][2L]), tolerance = 1e-10)
 })
 
 test_that("compute_one_pair_glm - variance-explained tokens are NA", {
@@ -131,8 +142,8 @@ test_that("attach_nested_stats_to_frames - Model 1 cells NA, M2+ filled", {
   out <- spicy:::attach_nested_stats_to_frames(frames, fits)
   for (f in out) {
     expect_true("r2_change" %in% names(f$info$fit_stats))
-    expect_true("f_change"  %in% names(f$info$fit_stats))
-    expect_true("p_change"  %in% names(f$info$fit_stats))
+    expect_true("f_change" %in% names(f$info$fit_stats))
+    expect_true("p_change" %in% names(f$info$fit_stats))
   }
   expect_true(is.na(out[[1L]]$info$fit_stats$r2_change))
   expect_true(is.na(out[[1L]]$info$fit_stats$f_change))
@@ -141,10 +152,10 @@ test_that("attach_nested_stats_to_frames - Model 1 cells NA, M2+ filled", {
 })
 
 test_that("attach_nested_stats_to_frames - single-fit no-op", {
-  frames <- list(spicy:::as_regression_frame(lm(mpg ~ wt, mt),
-                                              model_id = "M1"))
+  frames <- list(spicy:::as_regression_frame(lm(mpg ~ wt, mt), model_id = "M1"))
   out <- spicy:::attach_nested_stats_to_frames(
-    frames, list(lm(mpg ~ wt, mt))
+    frames,
+    list(lm(mpg ~ wt, mt))
   )
   expect_identical(out, frames)
 })
@@ -156,15 +167,21 @@ test_that("attach_nested_stats_to_frames - single-fit no-op", {
 
 test_that("default_nested_tokens - all-lm returns r2_change / f_change / p_change", {
   models <- list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt))
-  expect_equal(spicy:::default_nested_tokens(models),
-                c("r2_change", "f_change", "p_change"))
+  expect_equal(
+    spicy:::default_nested_tokens(models),
+    c("r2_change", "f_change", "p_change")
+  )
 })
 
 test_that("default_nested_tokens - all-glm returns lrt_change / p_change", {
-  models <- list(glm(am ~ mpg, mt, family = binomial),
-                  glm(am ~ mpg + wt, mt, family = binomial))
-  expect_equal(spicy:::default_nested_tokens(models),
-                c("lrt_change", "p_change"))
+  models <- list(
+    glm(am ~ mpg, mt, family = binomial),
+    glm(am ~ mpg + wt, mt, family = binomial)
+  )
+  expect_equal(
+    spicy:::default_nested_tokens(models),
+    c("lrt_change", "p_change")
+  )
 })
 
 
@@ -184,8 +201,7 @@ test_that("format_signed - explicit '+' on positive, '-' on negative", {
 # ============================================================================
 
 test_that("table_regression - nested = TRUE injects ΔR² / F-change / p (change) rows", {
-  fits <- list("S1" = lm(mpg ~ wt, mt),
-                "S2" = lm(mpg ~ wt + cyl, mt))
+  fits <- list("S1" = lm(mpg ~ wt, mt), "S2" = lm(mpg ~ wt + cyl, mt))
   out <- table_regression(fits, nested = TRUE)
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("ΔR²" %in% vars)
@@ -211,8 +227,10 @@ test_that("table_regression - nested = TRUE no longer emits 'Model comparison' f
 })
 
 test_that("table_regression - nested glm injects Δχ² / p (change) rows", {
-  fits <- list(glm(am ~ mpg, mt, family = binomial),
-                glm(am ~ mpg + wt, mt, family = binomial))
+  fits <- list(
+    glm(am ~ mpg, mt, family = binomial),
+    glm(am ~ mpg + wt, mt, family = binomial)
+  )
   out <- table_regression(fits, nested = TRUE)
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("Δχ²" %in% vars)
@@ -223,11 +241,11 @@ test_that("table_regression - nested glm injects Δχ² / p (change) rows", {
 
 test_that("table_regression - user can override change tokens via show_fit_stats", {
   fits <- list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt))
-  out <- table_regression(fits, nested = TRUE,
-                          show_fit_stats = c("nobs", "r2",
-                                              "aic_change",
-                                              "bic_change",
-                                              "p_change"))
+  out <- table_regression(
+    fits,
+    nested = TRUE,
+    show_fit_stats = c("nobs", "r2", "aic_change", "bic_change", "p_change")
+  )
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("ΔAIC" %in% vars)
   expect_true("ΔBIC" %in% vars)
@@ -238,20 +256,27 @@ test_that("table_regression - user can override change tokens via show_fit_stats
 
 test_that("table_regression - row order in show_fit_stats controls display order", {
   fits <- list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt))
-  out <- table_regression(fits, nested = TRUE,
-                          show_fit_stats = c("p_change", "r2_change",
-                                              "nobs"))
+  out <- table_regression(
+    fits,
+    nested = TRUE,
+    show_fit_stats = c("p_change", "r2_change", "nobs")
+  )
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   fit_vars <- vars[(length(vars) - 2L):length(vars)]
   expect_equal(fit_vars, c("p (change)", "ΔR²", "n"))
 })
 
 test_that("table_regression - all-glm with lm-only change tokens rejected", {
-  fits <- list(glm(am ~ mpg, mt, family = binomial),
-                glm(am ~ mpg + wt, mt, family = binomial))
+  fits <- list(
+    glm(am ~ mpg, mt, family = binomial),
+    glm(am ~ mpg + wt, mt, family = binomial)
+  )
   expect_error(
-    table_regression(fits, nested = TRUE,
-                     show_fit_stats = c("nobs", "r2_change", "p_change")),
+    table_regression(
+      fits,
+      nested = TRUE,
+      show_fit_stats = c("nobs", "r2_change", "p_change")
+    ),
     class = "spicy_invalid_input"
   )
 })

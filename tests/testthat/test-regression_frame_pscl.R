@@ -2,7 +2,6 @@
 # Phase 6c tests: as_regression_frame() methods for pscl hurdle / zeroinfl.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_hurdle_basic <- function() {
@@ -49,7 +48,7 @@ test_that("hurdle Poisson: info$family is poisson/log; title names Poisson hurdl
   fit <- .fit_hurdle_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "poisson")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
   expect_identical(fr$info$extras$title_prefix, "Poisson hurdle regression")
 })
 
@@ -74,10 +73,12 @@ test_that("hurdle: coefs estimates match coef(fit, model='count')", {
   legacy <- stats::coef(fit, model = "count")
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -87,10 +88,12 @@ test_that("hurdle: p-values match summary(fit)$coefficients$count byte-equivalen
   smc <- summary(fit)$coefficients$count
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(smc)) {
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(smc[nm, "Pr(>|z|)"]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(smc[nm, "Pr(>|z|)"]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -176,9 +179,11 @@ test_that("zeroinfl: coefs estimates match coef(fit, model='count')", {
   legacy <- stats::coef(fit, model = "count")
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -202,19 +207,36 @@ test_that("hurdle count-component coefs match parameters::model_parameters() (or
   fr <- as_regression_frame(fit, model_id = "M1")
 
   oracle <- parameters::model_parameters(
-    fit, ci = 0.95, exponentiate = FALSE, component = "conditional"
+    fit,
+    ci = 0.95,
+    exponentiate = FALSE,
+    component = "conditional"
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    if (nrow(oracle_row) == 0L) next
+    if (nrow(oracle_row) == 0L) {
+      next
+    }
     spicy_row <- b_rows[b_rows$term == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })

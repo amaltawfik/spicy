@@ -33,26 +33,36 @@
 #     coef(fit, model = "count").
 # ---------------------------------------------------------------------------
 
-
 #' `as_regression_frame()` method for `hurdle` fits (pscl::hurdle()).
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.hurdle <- function(fit,
-                                        vcov = "model",
-                                        vcov_label = NULL,
-                                        cluster = NULL,
-                                        cluster_name = NULL,
-                                        ci_level = 0.95,
-                                        ci_method = NULL,
-                                        show_columns = character(0),
-                                        model_id = "M1",
-                                        ...) {
+as_regression_frame.hurdle <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_pscl_available()
-  .pscl_frame(fit, vcov, vcov_label, cluster, cluster_name,
-              ci_level, ci_method, show_columns, model_id,
-              is_hurdle = TRUE)
+  .pscl_frame(
+    fit,
+    vcov,
+    vcov_label,
+    cluster,
+    cluster_name,
+    ci_level,
+    ci_method,
+    show_columns,
+    model_id,
+    is_hurdle = TRUE
+  )
 }
 
 
@@ -61,27 +71,47 @@ as_regression_frame.hurdle <- function(fit,
 #' @keywords internal
 #' @noRd
 #' @export
-as_regression_frame.zeroinfl <- function(fit,
-                                          vcov = "model",
-                                          vcov_label = NULL,
-                                          cluster = NULL,
-                                          cluster_name = NULL,
-                                          ci_level = 0.95,
-                                          ci_method = NULL,
-                                          show_columns = character(0),
-                                          model_id = "M1",
-                                          ...) {
+as_regression_frame.zeroinfl <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  model_id = "M1",
+  ...
+) {
   .check_pscl_available()
-  .pscl_frame(fit, vcov, vcov_label, cluster, cluster_name,
-              ci_level, ci_method, show_columns, model_id,
-              is_hurdle = FALSE)
+  .pscl_frame(
+    fit,
+    vcov,
+    vcov_label,
+    cluster,
+    cluster_name,
+    ci_level,
+    ci_method,
+    show_columns,
+    model_id,
+    is_hurdle = FALSE
+  )
 }
 
 
 # Shared body of the two pscl frame methods.
-.pscl_frame <- function(fit, vcov, vcov_label, cluster, cluster_name,
-                        ci_level, ci_method, show_columns, model_id,
-                        is_hurdle) {
+.pscl_frame <- function(
+  fit,
+  vcov,
+  vcov_label,
+  cluster,
+  cluster_name,
+  ci_level,
+  ci_method,
+  show_columns,
+  model_id,
+  is_hurdle
+) {
   coefs <- .pscl_coefs(fit, ci_level = ci_level)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
   # estfun/bread cover BOTH components; the coefs (count) rows are re-inferred
@@ -91,24 +121,42 @@ as_regression_frame.zeroinfl <- function(fit,
   # lands on the right positions of the full vcovCL matrix.
   cf_full <- stats::coef(fit)
   names(cf_full) <- sub("^count_", "", names(cf_full))
-  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level,
-                                       test = "z", estimates = cf_full)
+  coefs <- .apply_robust_vcov_to_coefs(
+    coefs,
+    fit,
+    vcov,
+    cluster,
+    ci_level,
+    test = "z",
+    estimates = cf_full
+  )
   # Combined-response AME (avg_slopes default): the marginal effect on E[Y]
   # through BOTH components; attaches to the main (count) rows.
-  coefs <- .attach_ame_to_frame_coefs(coefs, fit, ci_level, show_columns,
-                                      vcov_type = vcov, cluster = cluster)
-  info  <- .pscl_info(fit,
-                      vcov_kind  = vcov,
-                      vcov_label = vcov_label,
-                      ci_level   = ci_level,
-                      ci_method  = ci_method,
-                      model_id   = model_id,
-                      is_hurdle  = is_hurdle,
-                      vcov_type  = vcov,
-                      cluster    = cluster)
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = cluster
+  )
+  info <- .pscl_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    ci_method = ci_method,
+    model_id = model_id,
+    is_hurdle = is_hurdle,
+    vcov_type = vcov,
+    cluster = cluster
+  )
   if (!vcov %in% c("model", "classical")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_,
-                                          estimator = "CL")
+    info$vcov_label <- .robust_vcov_label(
+      vcov,
+      cluster_name %||% NA_character_,
+      estimator = "CL"
+    )
   }
   new_regression_frame(coefs, info, fit)
 }
@@ -138,7 +186,7 @@ as_regression_frame.zeroinfl <- function(fit,
 .pscl_coefs <- function(fit, ci_level) {
   cf <- stats::coef(fit, model = "count")
   est <- unname(cf)
-  nm  <- names(cf)
+  nm <- names(cf)
 
   # vcov(fit) has "count_<term>" / "zero_<term>" names; subset to the
   # count block.
@@ -150,11 +198,11 @@ as_regression_frame.zeroinfl <- function(fit,
   # summary(fit)$coefficients$count carries z + Pr(>|z|) directly.
   smc <- summary(fit)$coefficients$count
   if (!is.null(smc) && all(c("z value", "Pr(>|z|)") %in% colnames(smc))) {
-    stat    <- unname(smc[nm, "z value"])
+    stat <- unname(smc[nm, "z value"])
     p_value <- unname(smc[nm, "Pr(>|z|)"])
   } else {
-    stat    <- est / se                                                # nocov
-    p_value <- 2 * stats::pnorm(-abs(stat))                            # nocov
+    stat <- est / se # nocov
+    p_value <- 2 * stats::pnorm(-abs(stat)) # nocov
   }
   df <- rep(Inf, length(est))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)
@@ -162,36 +210,47 @@ as_regression_frame.zeroinfl <- function(fit,
   ci_upper <- est + z_crit * se
 
   factor_meta <- detect_factor_term_meta(fit)
-  ft  <- vapply(nm, function(n) factor_meta[[n]]$factor_term  %||% NA_character_,
-                character(1))
-  lvl <- vapply(nm, function(n) factor_meta[[n]]$factor_level %||% NA_character_,
-                character(1))
-  pos <- vapply(nm, function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
-                integer(1))
+  ft <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_term %||% NA_character_,
+    character(1)
+  )
+  lvl <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level %||% NA_character_,
+    character(1)
+  )
+  pos <- vapply(
+    nm,
+    function(n) factor_meta[[n]]$factor_level_pos %||% NA_integer_,
+    integer(1)
+  )
 
-  parent_var <- ifelse(is.na(ft),  nm,  ft)
-  label      <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- ifelse(is.na(ft), nm, ft)
+  label <- ifelse(is.na(lvl), nm, lvl)
 
   coefs <- data.frame(
-    term             = nm,
-    parent_var       = parent_var,
-    label            = label,
+    term = nm,
+    parent_var = parent_var,
+    label = label,
     factor_level_pos = as.integer(pos),
-    is_ref           = rep(FALSE, length(nm)),
-    estimate_type    = rep("B", length(nm)),
-    estimate         = est,
-    std_error        = se,
-    df               = as.numeric(df),
-    statistic        = stat,
-    p_value          = p_value,
-    ci_lower         = ci_lower,
-    ci_upper         = ci_upper,
-    test_type        = rep("z", length(nm)),
+    is_ref = rep(FALSE, length(nm)),
+    estimate_type = rep("B", length(nm)),
+    estimate = est,
+    std_error = se,
+    df = as.numeric(df),
+    statistic = stat,
+    p_value = p_value,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    test_type = rep("z", length(nm)),
     stringsAsFactors = FALSE
   )
 
   ref_rows <- .pscl_reference_rows(fit)
-  if (nrow(ref_rows) > 0L) coefs <- rbind(coefs, ref_rows)
+  if (nrow(ref_rows) > 0L) {
+    coefs <- rbind(coefs, ref_rows)
+  }
   coefs
 }
 
@@ -201,70 +260,91 @@ as_regression_frame.zeroinfl <- function(fit,
 # for hurdle / zeroinfl).
 .pscl_reference_rows <- function(fit) {
   fts <- detect_factor_terms(fit)
-  if (length(fts) == 0L) return(.empty_coefs_frame())
+  if (length(fts) == 0L) {
+    return(.empty_coefs_frame())
+  }
   rows <- list()
   for (ft in fts) {
-    if (!isTRUE(ft$reference_dropped)) next
+    if (!isTRUE(ft$reference_dropped)) {
+      next
+    }
     ref_lvl <- ft$reference_level
     term_name <- paste0(ft$factor_term, ref_lvl)
     ref_pos <- match(ref_lvl, ft$levels) %||% NA_integer_
     rows[[length(rows) + 1L]] <- data.frame(
-      term             = term_name,
-      parent_var       = ft$factor_term,
-      label            = ref_lvl,
+      term = term_name,
+      parent_var = ft$factor_term,
+      label = ref_lvl,
       factor_level_pos = as.integer(ref_pos),
-      is_ref           = TRUE,
-      estimate_type    = "B",
-      estimate         = NA_real_,
-      std_error        = NA_real_,
-      df               = NA_real_,
-      statistic        = NA_real_,
-      p_value          = NA_real_,
-      ci_lower         = NA_real_,
-      ci_upper         = NA_real_,
-      test_type        = NA_character_,
+      is_ref = TRUE,
+      estimate_type = "B",
+      estimate = NA_real_,
+      std_error = NA_real_,
+      df = NA_real_,
+      statistic = NA_real_,
+      p_value = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      test_type = NA_character_,
       stringsAsFactors = FALSE
     )
   }
-  if (length(rows) == 0L) return(.empty_coefs_frame())
+  if (length(rows) == 0L) {
+    return(.empty_coefs_frame())
+  }
   do.call(rbind, rows)
 }
 
 
 # Build the info list for a hurdle / zeroinfl fit.
-.pscl_info <- function(fit, vcov_kind, vcov_label, ci_level, ci_method,
-                        model_id, is_hurdle, vcov_type = "model",
-                        cluster = NULL) {
+.pscl_info <- function(
+  fit,
+  vcov_kind,
+  vcov_label,
+  ci_level,
+  ci_method,
+  model_id,
+  is_hurdle,
+  vcov_type = "model",
+  cluster = NULL
+) {
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
 
   # Family is determined by the count distribution.
-  count_dist <- if (is_hurdle) fit$dist$count %||% "poisson" else fit$dist %||% "poisson"
-  zero_dist  <- if (is_hurdle) fit$dist$zero  %||% "binomial" else "binomial"
+  count_dist <- if (is_hurdle) {
+    fit$dist$count %||% "poisson"
+  } else {
+    fit$dist %||% "poisson"
+  }
+  zero_dist <- if (is_hurdle) fit$dist$zero %||% "binomial" else "binomial"
   fam <- list(family = count_dist, link = "log")
 
-  if (is.null(ci_method)) ci_method <- "wald"
+  if (is.null(ci_method)) {
+    ci_method <- "wald"
+  }
 
   fit_stats <- list(
-    r_squared      = NA_real_,
-    adj_r_squared  = NA_real_,
-    pseudo_r2      = NULL,
-    aic            = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-    bic            = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-    log_lik        = tryCatch(as.numeric(stats::logLik(fit)),
-                              error = function(e) NA_real_),
-    deviance       = NA_real_,
-    sigma          = NA_real_,
-    nobs           = as.integer(fit$n %||% NA_integer_)
+    r_squared = NA_real_,
+    adj_r_squared = NA_real_,
+    pseudo_r2 = NULL,
+    aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
+    bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
+    log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+      NA_real_
+    }),
+    deviance = NA_real_,
+    sigma = NA_real_,
+    nobs = as.integer(fit$n %||% NA_integer_)
   )
 
   supports <- list(
-    ame                 = TRUE,
+    ame = TRUE,
     partial_effect_size = FALSE,
-    classical_r2        = FALSE,
-    nested_lrt          = TRUE,
-    exponentiate        = TRUE,  # IRR (count component is log link)
-    standardise_refit   = FALSE
+    classical_r2 = FALSE,
+    nested_lrt = TRUE,
+    exponentiate = TRUE, # IRR (count component is log link)
+    standardise_refit = FALSE
   )
 
   # The zero component ships as a fully-inferenced component block that the
@@ -281,8 +361,15 @@ as_regression_frame.zeroinfl <- function(fit,
     NA_character_
   }
   component_blocks <- list(
-    .pscl_component_block(fit, is_hurdle, zero_dist, zero_link, ci_level,
-                          vcov_type = vcov_type, cluster = cluster)
+    .pscl_component_block(
+      fit,
+      is_hurdle,
+      zero_dist,
+      zero_link,
+      ci_level,
+      vcov_type = vcov_type,
+      cluster = cluster
+    )
   )
   component_blocks <- Filter(Negate(is.null), component_blocks)
 
@@ -297,47 +384,48 @@ as_regression_frame.zeroinfl <- function(fit,
   has_weights <- !is.null(wts) && length(wts) > 0L && any(wts != 1)
 
   extras <- list(
-    cluster_name          = NULL,
+    cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular          = FALSE,
-    singular_terms        = character(0),
-    has_weights           = has_weights,
-    weighted_n            = if (has_weights) sum(wts) else NA_real_,
-    title_prefix          = title_prefix,
-    exp_applied           = FALSE,
-    exp_header            = NA_character_,
-    has_zi                = TRUE,
-    component_blocks      = component_blocks,
-    zero_dist             = zero_dist,
-    zero_link             = zero_link
+    has_singular = FALSE,
+    singular_terms = character(0),
+    has_weights = has_weights,
+    weighted_n = if (has_weights) sum(wts) else NA_real_,
+    title_prefix = title_prefix,
+    exp_applied = FALSE,
+    exp_header = NA_character_,
+    has_zi = TRUE,
+    component_blocks = component_blocks,
+    zero_dist = zero_dist,
+    zero_link = zero_link
   )
 
   list(
-    class          = if (is_hurdle) "hurdle" else "zeroinfl",
-    family         = fam,
-    dv             = dv,
-    dv_label       = dv_label,
-    n_obs          = as.integer(fit$n %||% NA_integer_),
-    n_groups       = NULL,
-    weights_kind   = "none",
+    class = if (is_hurdle) "hurdle" else "zeroinfl",
+    family = fam,
+    dv = dv,
+    dv_label = dv_label,
+    n_obs = as.integer(fit$n %||% NA_integer_),
+    n_groups = NULL,
+    weights_kind = "none",
     random_effects = empty_random_effects(),
-    fit_stats      = fit_stats,
-    vcov_kind      = vcov_kind,
-    vcov_label     = vcov_label %||% "Wald asymptotic (z)",
-    ci_level       = as.numeric(ci_level),
-    ci_method      = ci_method,
-    supports       = supports,
-    extras         = extras
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% "Wald asymptotic (z)",
+    ci_level = as.numeric(ci_level),
+    ci_method = ci_method,
+    supports = supports,
+    extras = extras
   )
 }
 
 
 # Title-case distribution label for the count component.
 .pscl_dist_title <- function(dist) {
-  switch(dist,
-    poisson       = "Poisson",
-    geometric     = "Geometric",
-    negbin        = "Negative-binomial",
+  switch(
+    dist,
+    poisson = "Poisson",
+    geometric = "Geometric",
+    negbin = "Negative-binomial",
     paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
   )
 }
@@ -353,15 +441,23 @@ as_regression_frame.zeroinfl <- function(fit,
 # The labels are per-SEMANTICS (dev/component_blocks_spec.md D1): zeroinfl
 # models P(structural zero) -> "Zero-inflation"; hurdle models P(y > 0) ->
 # "Zero hurdle" (verified numerically == glm(I(y > 0) ~ .) for binomial/logit).
-.pscl_component_block <- function(fit, is_hurdle, zero_dist, zero_link,
-                                  ci_level, vcov_type = "model",
-                                  cluster = NULL) {
+.pscl_component_block <- function(
+  fit,
+  is_hurdle,
+  zero_dist,
+  zero_link,
+  ci_level,
+  vcov_type = "model",
+  cluster = NULL
+) {
   smz <- summary(fit)$coefficients$zero
-  if (is.null(smz) || nrow(smz) == 0L) return(NULL)                    # nocov
+  if (is.null(smz) || nrow(smz) == 0L) {
+    return(NULL)
+  } # nocov
 
-  nm  <- rownames(smz)
+  nm <- rownames(smz)
   est <- unname(smz[, "Estimate"])
-  se  <- unname(smz[, "Std. Error"])
+  se <- unname(smz[, "Std. Error"])
   # Robust: re-infer from the zero_* block of the whole-model cluster sandwich.
   if (!vcov_type %in% c("model", "classical")) {
     vc_full <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
@@ -371,21 +467,23 @@ as_regression_frame.zeroinfl <- function(fit,
     }
   }
   stat <- est / se
-  p    <- 2 * stats::pnorm(-abs(stat))
-  z    <- stats::qnorm(0.5 + ci_level / 2)
+  p <- 2 * stats::pnorm(-abs(stat))
+  z <- stats::qnorm(0.5 + ci_level / 2)
 
   # Factor metadata for the ZERO component: its terms live on
   # fit$terms$zero; fit$levels carries the xlevels union of both components.
-  zero_vars <- tryCatch(all.vars(stats::delete.response(fit$terms$zero)),
-                        error = function(e) character(0))
+  zero_vars <- tryCatch(
+    all.vars(stats::delete.response(fit$terms$zero)),
+    error = function(e) character(0)
+  )
   xlev <- fit$levels[names(fit$levels) %in% zero_vars]
-  ft  <- rep(NA_character_, length(nm))
+  ft <- rep(NA_character_, length(nm))
   lvl <- rep(NA_character_, length(nm))
   pos <- rep(NA_integer_, length(nm))
   for (i in seq_along(nm)) {
     meta <- match_coef_to_factor(nm[i], xlev)
     if (!is.null(meta)) {
-      ft[i]  <- meta$factor_term
+      ft[i] <- meta$factor_term
       lvl[i] <- meta$factor_level
       pos[i] <- meta$factor_level_pos %||% NA_integer_
     }
@@ -393,16 +491,16 @@ as_regression_frame.zeroinfl <- function(fit,
 
   label_chr <- if (is_hurdle) "Zero hurdle" else "Zero-inflation"
   rows <- data.frame(
-    term             = paste0("zero_", nm),
-    label            = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),
+    term = paste0("zero_", nm),
+    label = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),
     factor_level_pos = as.integer(pos),
-    is_ref           = FALSE,
-    estimate         = est,
-    std_error        = se,
-    statistic        = stat,
-    p_value          = p,
-    ci_lower         = est - z * se,
-    ci_upper         = est + z * se,
+    is_ref = FALSE,
+    estimate = est,
+    std_error = se,
+    statistic = stat,
+    p_value = p,
+    ci_lower = est - z * se,
+    ci_upper = est + z * se,
     stringsAsFactors = FALSE
   )
 
@@ -411,21 +509,26 @@ as_regression_frame.zeroinfl <- function(fit,
     lvls <- xlev[[v]]
     present <- lvls[paste0(v, lvls) %in% nm]
     ref <- setdiff(lvls, present)
-    if (length(ref) == length(lvls)) next   # factor absent from zero coefs   # nocov
+    if (length(ref) == length(lvls)) {
+      next
+    } # factor absent from zero coefs   # nocov
     if (length(ref) >= 1L) {
-      rows <- rbind(rows, data.frame(
-        term             = paste0("zero_", v, ref[1L]),
-        label            = paste0(v, ": ", ref[1L]),
-        factor_level_pos = as.integer(match(ref[1L], lvls)),
-        is_ref           = TRUE,
-        estimate         = NA_real_,
-        std_error        = NA_real_,
-        statistic        = NA_real_,
-        p_value          = NA_real_,
-        ci_lower         = NA_real_,
-        ci_upper         = NA_real_,
-        stringsAsFactors = FALSE
-      ))
+      rows <- rbind(
+        rows,
+        data.frame(
+          term = paste0("zero_", v, ref[1L]),
+          label = paste0(v, ": ", ref[1L]),
+          factor_level_pos = as.integer(match(ref[1L], lvls)),
+          is_ref = TRUE,
+          estimate = NA_real_,
+          std_error = NA_real_,
+          statistic = NA_real_,
+          p_value = NA_real_,
+          ci_lower = NA_real_,
+          ci_upper = NA_real_,
+          stringsAsFactors = FALSE
+        )
+      )
     }
   }
 
@@ -445,11 +548,11 @@ as_regression_frame.zeroinfl <- function(fit,
   }
 
   list(
-    label  = label_chr,
-    link   = zero_link,
+    label = label_chr,
+    link = zero_link,
     exp_ok = identical(zero_link, "logit"),
-    gloss  = gloss,
-    coefs  = rows
+    gloss = gloss,
+    coefs = rows
   )
 }
 
@@ -466,9 +569,11 @@ as_regression_frame.zeroinfl <- function(fit,
   }
   fts <- vapply(rows$label, ft_of, character(1), USE.NAMES = FALSE)
   fct_order <- unique(fts[!is.na(fts)])
-  key1 <- ifelse(rows$label == "(Intercept)", 0L,
-                 ifelse(is.na(fts), length(fct_order) + 1L,
-                        match(fts, fct_order)))
+  key1 <- ifelse(
+    rows$label == "(Intercept)",
+    0L,
+    ifelse(is.na(fts), length(fct_order) + 1L, match(fts, fct_order))
+  )
   key2 <- ifelse(is.na(rows$factor_level_pos), 0L, rows$factor_level_pos)
   rows[order(key1, key2), , drop = FALSE]
 }

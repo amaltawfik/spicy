@@ -22,7 +22,6 @@
 # but the reconstruction logic is identical.
 # ---------------------------------------------------------------------------
 
-
 # ---- 1. build_b_rows(): profile-CI fallback (lines ~246-259) --------------
 
 test_that("profile CI on an intercept-only glm falls back to Wald with a warning", {
@@ -32,13 +31,22 @@ test_that("profile CI on an intercept-only glm falls back to Wald with a warning
   skip_if_not_installed("MASS")
   fit <- glm(am ~ 1, data = mtcars, family = binomial)
   vc <- spicy:::compute_model_vcov(
-    fit, type = "classical", cluster = NULL, weights = NULL, boot_n = 1000L
+    fit,
+    type = "classical",
+    cluster = NULL,
+    weights = NULL,
+    boot_n = 1000L
   )
 
   expect_warning(
     rows <- spicy:::build_b_rows(
-      fit = fit, vc = vc, vcov_type = "classical", cluster = NULL,
-      ci_level = 0.95, model_id = "M1", outcome = "am",
+      fit = fit,
+      vc = vc,
+      vcov_type = "classical",
+      cluster = NULL,
+      ci_level = 0.95,
+      model_id = "M1",
+      outcome = "am",
       ci_method = "profile"
     ),
     class = "spicy_fallback"
@@ -52,23 +60,31 @@ test_that("profile CI on an intercept-only glm falls back to Wald with a warning
   # Oracle pins: estimate / SE come straight from the classical fit, and
   # the fallback CI must equal stats::confint.default() (the textbook
   # Wald CI: coef +/- qnorm(0.975) * sqrt(diag(vcov))) on the link scale.
-  expect_equal(rows$estimate[1L], unname(stats::coef(fit)[1L]),
-               tolerance = 1e-12)
-  expect_equal(rows$se[1L], sqrt(stats::vcov(fit)[1L, 1L]),
-               tolerance = 1e-12)
+  expect_equal(
+    rows$estimate[1L],
+    unname(stats::coef(fit)[1L]),
+    tolerance = 1e-12
+  )
+  expect_equal(rows$se[1L], sqrt(stats::vcov(fit)[1L, 1L]), tolerance = 1e-12)
   wald_ci <- stats::confint.default(fit, level = 0.95)
-  expect_equal(rows$ci_low[1L],  unname(wald_ci["(Intercept)", 1L]),
-               tolerance = 1e-10)
-  expect_equal(rows$ci_high[1L], unname(wald_ci["(Intercept)", 2L]),
-               tolerance = 1e-10)
+  expect_equal(
+    rows$ci_low[1L],
+    unname(wald_ci["(Intercept)", 1L]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    rows$ci_high[1L],
+    unname(wald_ci["(Intercept)", 2L]),
+    tolerance = 1e-10
+  )
 
   # Internal consistency: the same CI re-derives from the row's own
   # estimate +/- z * SE, which is what build_b_rows() recomputes after
   # dropping profile.
   est <- rows$estimate[1L]
-  se  <- rows$se[1L]
-  z   <- stats::qnorm(0.975)
-  expect_equal(rows$ci_low[1L],  est - z * se, tolerance = 1e-8)
+  se <- rows$se[1L]
+  z <- stats::qnorm(0.975)
+  expect_equal(rows$ci_low[1L], est - z * se, tolerance = 1e-8)
   expect_equal(rows$ci_high[1L], est + z * se, tolerance = 1e-8)
 })
 
@@ -81,15 +97,23 @@ test_that("profile CI on a multi-coef glm matches stats::confint exactly", {
   # numerically 0 or 1" on the fit and on every profile refit -- a
   # fixture artefact, not the contract under test (the near-separation
   # is what makes the profile bounds differ visibly from Wald below).
-  fit <- suppressWarnings(glm(am ~ wt + hp, data = mtcars,
-                              family = binomial))
+  fit <- suppressWarnings(glm(am ~ wt + hp, data = mtcars, family = binomial))
   vc <- spicy:::compute_model_vcov(
-    fit, type = "classical", cluster = NULL, weights = NULL, boot_n = 1000L
+    fit,
+    type = "classical",
+    cluster = NULL,
+    weights = NULL,
+    boot_n = 1000L
   )
 
   rows <- suppressWarnings(spicy:::build_b_rows(
-    fit = fit, vc = vc, vcov_type = "classical", cluster = NULL,
-    ci_level = 0.95, model_id = "M1", outcome = "am",
+    fit = fit,
+    vc = vc,
+    vcov_type = "classical",
+    cluster = NULL,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "am",
     ci_method = "profile"
   ))
 
@@ -99,19 +123,21 @@ test_that("profile CI on a multi-coef glm matches stats::confint exactly", {
     stats::confint(fit, level = 0.95)
   ))
   expect_identical(rows$term, rownames(oracle))
-  expect_equal(rows$ci_low,  unname(oracle[, 1L]), tolerance = 1e-10)
+  expect_equal(rows$ci_low, unname(oracle[, 1L]), tolerance = 1e-10)
   expect_equal(rows$ci_high, unname(oracle[, 2L]), tolerance = 1e-10)
 
   # Profile is a CI-only refinement: estimate / SE remain the Wald values
   # from the classical fit.
   expect_equal(rows$estimate, unname(stats::coef(fit)), tolerance = 1e-12)
-  expect_equal(rows$se, unname(sqrt(diag(stats::vcov(fit)))),
-               tolerance = 1e-12)
+  expect_equal(rows$se, unname(sqrt(diag(stats::vcov(fit)))), tolerance = 1e-12)
   # And the profile bounds genuinely differ from Wald here (logistic on
   # n = 32), proving the override actually took effect.
   wald_ci <- stats::confint.default(fit, level = 0.95)
-  expect_false(isTRUE(all.equal(rows$ci_low, unname(wald_ci[, 1L]),
-                                tolerance = 1e-4)))
+  expect_false(isTRUE(all.equal(
+    rows$ci_low,
+    unname(wald_ci[, 1L]),
+    tolerance = 1e-4
+  )))
 })
 
 
@@ -179,8 +205,10 @@ test_that("table_regression on a 6-level ordered factor surfaces ^4 / ^5 trends"
   n <- 120L
   d <- data.frame(
     y = rnorm(n),
-    g = ordered(sample(c("a", "b", "c", "d", "e", "f"), n, replace = TRUE),
-                levels = c("a", "b", "c", "d", "e", "f"))
+    g = ordered(
+      sample(c("a", "b", "c", "d", "e", "f"), n, replace = TRUE),
+      levels = c("a", "b", "c", "d", "e", "f")
+    )
   )
   fit <- lm(y ~ g, data = d)
 
@@ -207,8 +235,10 @@ test_that("match_coef_to_factor tags the longest-prefix factor (name-collision)"
   # Realistic prefix collision: `grp` is a prefix of `grpsize`. The suffix
   # check already disambiguates these because "sizesmall" is not a grp level.
   xl <- list(grp = c("A", "B", "C"), grpsize = c("small", "large"))
-  expect_identical(spicy:::match_coef_to_factor("grpsizesmall", xl)$factor_term,
-                   "grpsize")
+  expect_identical(
+    spicy:::match_coef_to_factor("grpsizesmall", xl)$factor_term,
+    "grpsize"
+  )
   expect_identical(spicy:::match_coef_to_factor("grpB", xl)$factor_term, "grp")
 
   # Pathological collision: `f` is a prefix of `foo` AND the leftover suffix
@@ -344,7 +374,9 @@ test_that(".spicy_get_terms returns NULL for a flexsurvreg fit (terms() errors)"
   d <- d[stats::complete.cases(d[, c("time", "status", "sex")]), ]
   d$sex <- factor(d$sex)
   fit <- flexsurv::flexsurvreg(
-    survival::Surv(time, status) ~ sex, data = d, dist = "weibull"
+    survival::Surv(time, status) ~ sex,
+    data = d,
+    dist = "weibull"
   )
 
   # stats::terms() really does error on the fit...
@@ -372,13 +404,17 @@ test_that("AICc for binomial/poisson glm uses k = length(coef) (fixed dispersion
 
   # Binomial logistic: 3 coefficients -> k = 3 (NOT 4).
   fit_bin <- glm(am ~ wt + hp, data = mtcars, family = binomial)
-  k_bin <- length(stats::coef(fit_bin))          # 3, no +1 for fixed dispersion
+  k_bin <- length(stats::coef(fit_bin)) # 3, no +1 for fixed dispersion
   n_bin <- stats::nobs(fit_bin)
   expected_bin <- stats::AIC(fit_bin) +
     (2 * k_bin * (k_bin + 1)) / (n_bin - k_bin - 1)
 
   fs_bin <- spicy:::extract_fit_stats(
-    fit_bin, "AICc", weights = NULL, model_id = "M1", outcome = "am"
+    fit_bin,
+    "AICc",
+    weights = NULL,
+    model_id = "M1",
+    outcome = "am"
   )
   expect_equal(fs_bin$AICc, expected_bin, tolerance = 1e-8)
   # Sanity: this is strictly LESS than the old buggy k+1 value.
@@ -388,15 +424,22 @@ test_that("AICc for binomial/poisson glm uses k = length(coef) (fixed dispersion
 
   # Poisson: 3 coefficients -> k = 3 (NOT 4).
   set.seed(1)
-  dp <- data.frame(y = stats::rpois(40, 2),
-                   x1 = stats::rnorm(40), x2 = stats::rnorm(40))
+  dp <- data.frame(
+    y = stats::rpois(40, 2),
+    x1 = stats::rnorm(40),
+    x2 = stats::rnorm(40)
+  )
   fit_pois <- glm(y ~ x1 + x2, data = dp, family = poisson)
-  k_p <- length(stats::coef(fit_pois))           # 3
+  k_p <- length(stats::coef(fit_pois)) # 3
   n_p <- stats::nobs(fit_pois)
   expected_p <- stats::AIC(fit_pois) +
     (2 * k_p * (k_p + 1)) / (n_p - k_p - 1)
   fs_p <- spicy:::extract_fit_stats(
-    fit_pois, "AICc", weights = NULL, model_id = "M1", outcome = "y"
+    fit_pois,
+    "AICc",
+    weights = NULL,
+    model_id = "M1",
+    outcome = "y"
   )
   expect_equal(fs_p$AICc, expected_p, tolerance = 1e-8)
 })
@@ -405,19 +448,27 @@ test_that("AICc for lm and gaussian glm uses k = length(coef) + 1 (estimated dis
   # lm and dispersion-estimated glm families (gaussian/Gamma/...) DO fit a
   # residual variance, so k = length(coef) + 1. The fix preserves this case.
   fit_lm <- lm(mpg ~ wt + hp, data = mtcars)
-  k_lm <- length(stats::coef(fit_lm)) + 1L       # 4 (3 coefs + sigma)
+  k_lm <- length(stats::coef(fit_lm)) + 1L # 4 (3 coefs + sigma)
   n_lm <- stats::nobs(fit_lm)
   expected_lm <- stats::AIC(fit_lm) +
     (2 * k_lm * (k_lm + 1)) / (n_lm - k_lm - 1)
   fs_lm <- spicy:::extract_fit_stats(
-    fit_lm, "AICc", weights = NULL, model_id = "M1", outcome = "mpg"
+    fit_lm,
+    "AICc",
+    weights = NULL,
+    model_id = "M1",
+    outcome = "mpg"
   )
   expect_equal(fs_lm$AICc, expected_lm, tolerance = 1e-8)
 
   # gaussian glm estimates dispersion too -> same k, same AICc as the lm.
   fit_gg <- glm(mpg ~ wt + hp, data = mtcars, family = gaussian)
   fs_gg <- spicy:::extract_fit_stats(
-    fit_gg, "AICc", weights = NULL, model_id = "M1", outcome = "mpg"
+    fit_gg,
+    "AICc",
+    weights = NULL,
+    model_id = "M1",
+    outcome = "mpg"
   )
   expect_equal(fs_gg$AICc, expected_lm, tolerance = 1e-8)
 })

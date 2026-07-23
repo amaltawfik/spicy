@@ -14,7 +14,6 @@
 #   * random-slope fit -> correlation-row Wald SE / CI Delta-method path.
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .cov_fit_gamma_glmer <- function() {
@@ -39,15 +38,19 @@
     g = factor(rep(letters[1:6], each = 10))
   )
   suppressWarnings(
-    lme4::glmer(y ~ x + (1 | g), data = d,
-                family = inverse.gaussian(link = "log"))
+    lme4::glmer(
+      y ~ x + (1 | g),
+      data = d,
+      family = inverse.gaussian(link = "log")
+    )
   )
 }
 
 .cov_fit_poisson_glmer <- function() {
   skip_if_not_installed("lme4")
   set.seed(42)
-  n_g <- 20; n_i <- 15
+  n_g <- 20
+  n_i <- 15
   g <- factor(rep(seq_len(n_g), each = n_i))
   u <- rnorm(n_g, 0, 0.8)[as.integer(g)]
   x <- rnorm(n_g * n_i)
@@ -61,8 +64,7 @@
 
 .cov_fit_lmer_slope <- function() {
   skip_if_not_installed("lme4")
-  lme4::lmer(Reaction ~ Days + (1 + Days | Subject),
-             data = lme4::sleepstudy)
+  lme4::lmer(Reaction ~ Days + (1 + Days | Subject), data = lme4::sleepstudy)
 }
 
 
@@ -86,7 +88,8 @@ test_that("glmer.nb: family title falls through to the title-cased default", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("MASS")
   set.seed(7)
-  n_g <- 8; n_i <- 12
+  n_g <- 8
+  n_i <- 12
   g <- factor(rep(seq_len(n_g), each = n_i))
   u <- rnorm(n_g, 0, 0.5)[as.integer(g)]
   x <- rnorm(n_g * n_i)
@@ -94,7 +97,8 @@ test_that("glmer.nb: family title falls through to the title-cased default", {
   d <- data.frame(y = y, x = x, g = g)
   fit <- tryCatch(
     suppressWarnings(suppressMessages(
-      lme4::glmer.nb(y ~ x + (1 | g), data = d))),
+      lme4::glmer.nb(y ~ x + (1 | g), data = d)
+    )),
     error = function(e) skip("glmer.nb did not converge in this environment")
   )
   # Family string is "Negative Binomial(theta)"; the default switch arm
@@ -109,8 +113,10 @@ test_that("glmer.nb: family title falls through to the title-cased default", {
 test_that("lmer with ordered factor: no reference rows are emitted", {
   skip_if_not_installed("lme4")
   d <- lme4::sleepstudy
-  d$ord <- ordered(rep(c("lo", "mid", "hi"), length.out = nrow(d)),
-                   levels = c("lo", "mid", "hi"))
+  d$ord <- ordered(
+    rep(c("lo", "mid", "hi"), length.out = nrow(d)),
+    levels = c("lo", "mid", "hi")
+  )
   fit <- lme4::lmer(Reaction ~ Days + ord + (1 | Subject), data = d)
 
   # detect_factor_terms() classifies `ord` as polynomial -> reference_dropped
@@ -135,11 +141,15 @@ test_that(".merMod_icc returns NA for an empty variance-components frame", {
 test_that(".merMod_icc returns NA with more than one grouping factor", {
   skip_if_not_installed("lme4")
   # Crossed random intercepts: two grouping factors -> ICC undefined.
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject) + (1 | Days),
-                    data = lme4::sleepstudy)
+  fit <- lme4::lmer(
+    Reaction ~ Days + (1 | Subject) + (1 | Days),
+    data = lme4::sleepstudy
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
-  groups <- setdiff(unique(fr$info$random_effects$variance_components$group),
-                    "Residual")
+  groups <- setdiff(
+    unique(fr$info$random_effects$variance_components$group),
+    "Residual"
+  )
   expect_gt(length(groups), 1L)
   expect_true(is.na(fr$info$random_effects$icc))
 })
@@ -175,8 +185,10 @@ test_that(".extract_dv_label returns the response 'label' attribute", {
   d <- lme4::sleepstudy
   attr(d$Reaction, "label") <- "Reaction time (ms)"
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = d)
-  expect_identical(spicy:::.extract_dv_label(fit, "Reaction"),
-                   "Reaction time (ms)")
+  expect_identical(
+    spicy:::.extract_dv_label(fit, "Reaction"),
+    "Reaction time (ms)"
+  )
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$dv_label, "Reaction time (ms)")
 })
@@ -188,8 +200,10 @@ test_that("lmer random slope: correlation row gets a Wald SE + CI via merDeriv",
   skip_if_not_installed("lme4")
   skip_if_not_installed("merDeriv")
   fit <- .cov_fit_lmer_slope()
-  skip_if(lme4::isSingular(fit),
-          "random-slope fit is singular; merDeriv SE path is skipped")
+  skip_if(
+    lme4::isSingular(fit),
+    "random-slope fit is singular; merDeriv SE path is skipped"
+  )
   re <- spicy:::.merMod_random_effects(fit)
   vc <- re$variance_components
   corr_rows <- vc[vc$is_correlation %in% TRUE, , drop = FALSE]
@@ -208,12 +222,14 @@ test_that("lmer random slope: variance rows carry merDeriv Wald SE + CI", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("merDeriv")
   fit <- .cov_fit_lmer_slope()
-  skip_if(lme4::isSingular(fit),
-          "random-slope fit is singular; merDeriv SE path is skipped")
+  skip_if(
+    lme4::isSingular(fit),
+    "random-slope fit is singular; merDeriv SE path is skipped"
+  )
   re <- spicy:::.merMod_random_effects(fit)
   vc <- re$variance_components
   var_rows <- vc[!(vc$is_correlation %in% TRUE), , drop = FALSE]
   expect_true(all(is.finite(var_rows$std_error)))
-  expect_true(all(var_rows$ci_lower >= 0))    # variance CI lower clamped at 0
+  expect_true(all(var_rows$ci_lower >= 0)) # variance CI lower clamped at 0
   expect_true(all(var_rows$ci_method == "wald"))
 })

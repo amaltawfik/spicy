@@ -392,59 +392,75 @@ test_that("gamma_gk NA path returns scalar by default and full shape with detail
 
 test_that("PSPP oracle: mtcars 3x3 (gear x cyl)", {
   tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
-  expect_equal(cramer_v(tab),                       0.5308655, tolerance = 1e-5)
-  expect_equal(contingency_coef(tab),               0.6003875, tolerance = 1e-5)
-  expect_equal(kendall_tau_b(tab),                 -0.5125435, tolerance = 1e-5)
-  expect_equal(kendall_tau_c(tab),                 -0.4833984, tolerance = 1e-5)
-  expect_equal(gamma_gk(tab),                      -0.6573705, tolerance = 1e-5)
-  expect_equal(suppressWarnings(lambda_gk(tab, "symmetric")), 0.4857143, tolerance = 1e-5)
-  expect_equal(suppressWarnings(lambda_gk(tab, "row")),       0.5294118, tolerance = 1e-5)
-  expect_equal(suppressWarnings(lambda_gk(tab, "column")),    0.4444444, tolerance = 1e-5)
-  expect_equal(goodman_kruskal_tau(tab, "row"),      0.3825603, tolerance = 1e-5)
-  expect_equal(goodman_kruskal_tau(tab, "column"),   0.3386018, tolerance = 1e-5)
-  expect_equal(uncertainty_coef(tab, "symmetric"),   0.3504372, tolerance = 1e-5)
-  expect_equal(uncertainty_coef(tab, "row"),         0.3587709, tolerance = 1e-5)
-  expect_equal(uncertainty_coef(tab, "column"),      0.3424818, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "symmetric"),          -0.5124224, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "row"),                -0.5015198, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "column"),             -0.5238095, tolerance = 1e-5)
+  expect_equal(cramer_v(tab), 0.5308655, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab), 0.6003875, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab), -0.5125435, tolerance = 1e-5)
+  expect_equal(kendall_tau_c(tab), -0.4833984, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab), -0.6573705, tolerance = 1e-5)
+  expect_equal(
+    suppressWarnings(lambda_gk(tab, "symmetric")),
+    0.4857143,
+    tolerance = 1e-5
+  )
+  expect_equal(
+    suppressWarnings(lambda_gk(tab, "row")),
+    0.5294118,
+    tolerance = 1e-5
+  )
+  expect_equal(
+    suppressWarnings(lambda_gk(tab, "column")),
+    0.4444444,
+    tolerance = 1e-5
+  )
+  expect_equal(goodman_kruskal_tau(tab, "row"), 0.3825603, tolerance = 1e-5)
+  expect_equal(goodman_kruskal_tau(tab, "column"), 0.3386018, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "symmetric"), 0.3504372, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "row"), 0.3587709, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "column"), 0.3424818, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"), -0.5124224, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "row"), -0.5015198, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "column"), -0.5238095, tolerance = 1e-5)
 })
 
 test_that("PSPP oracle: mtcars 2x2 (vs x am)", {
   tab <- table(factor(mtcars$vs), factor(mtcars$am))
-  expect_equal(phi(tab),                            0.1683451, tolerance = 1e-5)
-  expect_equal(cramer_v(tab),                       0.1683451, tolerance = 1e-5)
-  expect_equal(contingency_coef(tab),               0.1660092, tolerance = 1e-5)
-  expect_equal(kendall_tau_b(tab),                  0.1683451, tolerance = 1e-5)
-  expect_equal(kendall_tau_c(tab),                  0.1640625, tolerance = 1e-5)
-  expect_equal(gamma_gk(tab),                       0.3333333, tolerance = 1e-5)
-  expect_equal(uncertainty_coef(tab, "symmetric"),  0.0208314, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "symmetric"),          0.1683367, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "row"),                0.1700405, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "column"),             0.1666667, tolerance = 1e-5)
+  expect_equal(phi(tab), 0.1683451, tolerance = 1e-5)
+  expect_equal(cramer_v(tab), 0.1683451, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab), 0.1660092, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab), 0.1683451, tolerance = 1e-5)
+  expect_equal(kendall_tau_c(tab), 0.1640625, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab), 0.3333333, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "symmetric"), 0.0208314, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"), 0.1683367, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "row"), 0.1700405, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "column"), 0.1666667, tolerance = 1e-5)
 })
 
 test_that("PSPP oracle: HairEyeColor 4x4 (Hair x Eye marginalised)", {
   tab <- margin.table(HairEyeColor, c(1, 2))
-  expect_equal(cramer_v(tab),                       0.2790446, tolerance = 1e-5)
-  expect_equal(contingency_coef(tab),               0.4351585, tolerance = 1e-5)
-  expect_equal(kendall_tau_b(tab),                  0.2247026, tolerance = 1e-5)
-  expect_equal(kendall_tau_c(tab),                  0.2046886, tolerance = 1e-5)
-  expect_equal(gamma_gk(tab),                       0.3177721, tolerance = 1e-5)
-  expect_equal(suppressWarnings(lambda_gk(tab, "symmetric")), 0.1430678, tolerance = 1e-5)
-  expect_equal(uncertainty_coef(tab, "symmetric"),  0.0984203, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "symmetric"),          0.2246768, tolerance = 1e-5)
+  expect_equal(cramer_v(tab), 0.2790446, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab), 0.4351585, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab), 0.2247026, tolerance = 1e-5)
+  expect_equal(kendall_tau_c(tab), 0.2046886, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab), 0.3177721, tolerance = 1e-5)
+  expect_equal(
+    suppressWarnings(lambda_gk(tab, "symmetric")),
+    0.1430678,
+    tolerance = 1e-5
+  )
+  expect_equal(uncertainty_coef(tab, "symmetric"), 0.0984203, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"), 0.2246768, tolerance = 1e-5)
 })
 
 test_that("PSPP oracle: sochealth (smoking x education)", {
   data(sochealth, package = "spicy", envir = environment())
   tab <- table(sochealth$smoking, sochealth$education)
-  expect_equal(cramer_v(tab),                       0.1356677, tolerance = 1e-5)
-  expect_equal(contingency_coef(tab),               0.1344361, tolerance = 1e-5)
-  expect_equal(kendall_tau_b(tab),                 -0.1264155, tolerance = 1e-5)
-  expect_equal(gamma_gk(tab),                      -0.2680678, tolerance = 1e-5)
-  expect_equal(uncertainty_coef(tab, "symmetric"),  0.0114876, tolerance = 1e-5)
-  expect_equal(somers_d(tab, "symmetric"),         -0.1200077, tolerance = 1e-5)
+  expect_equal(cramer_v(tab), 0.1356677, tolerance = 1e-5)
+  expect_equal(contingency_coef(tab), 0.1344361, tolerance = 1e-5)
+  expect_equal(kendall_tau_b(tab), -0.1264155, tolerance = 1e-5)
+  expect_equal(gamma_gk(tab), -0.2680678, tolerance = 1e-5)
+  expect_equal(uncertainty_coef(tab, "symmetric"), 0.0114876, tolerance = 1e-5)
+  expect_equal(somers_d(tab, "symmetric"), -0.1200077, tolerance = 1e-5)
 })
 
 test_that("yule_q warns when ad + bc = 0", {

@@ -1784,12 +1784,20 @@ test_that("align = 'decimal' produces gt and tinytable outputs", {
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
   out_gt <- table_categorical(
-    sochealth, select = smoking, by = sex, output = "gt", align = "decimal"
+    sochealth,
+    select = smoking,
+    by = sex,
+    output = "gt",
+    align = "decimal"
   )
   expect_s3_class(out_gt, "gt_tbl")
 
   out_tt <- table_categorical(
-    sochealth, select = smoking, by = sex, output = "tinytable", align = "decimal"
+    sochealth,
+    select = smoking,
+    by = sex,
+    output = "tinytable",
+    align = "decimal"
   )
   expect_true(inherits(out_tt, "tinytable"))
 })
@@ -1800,13 +1808,21 @@ test_that("align = 'center' / 'right' all render gt + tinytable", {
   for (a in c("center", "right")) {
     expect_s3_class(
       table_categorical(
-        sochealth, select = smoking, by = sex, output = "gt", align = a
+        sochealth,
+        select = smoking,
+        by = sex,
+        output = "gt",
+        align = a
       ),
       "gt_tbl"
     )
     expect_true(inherits(
       table_categorical(
-        sochealth, select = smoking, by = sex, output = "tinytable", align = a
+        sochealth,
+        select = smoking,
+        by = sex,
+        output = "tinytable",
+        align = a
       ),
       "tinytable"
     ))
@@ -1818,15 +1834,20 @@ test_that("align = 'decimal' / 'center' / 'right' all render flextable", {
   for (a in c("decimal", "center", "right")) {
     expect_s3_class(
       table_categorical(
-        sochealth, select = smoking, by = sex,
-        output = "flextable", align = a
+        sochealth,
+        select = smoking,
+        by = sex,
+        output = "flextable",
+        align = a
       ),
       "flextable"
     )
     expect_s3_class(
       table_categorical(
-        sochealth, select = smoking,
-        output = "flextable", align = a
+        sochealth,
+        select = smoking,
+        output = "flextable",
+        align = a
       ),
       "flextable"
     )
@@ -1840,8 +1861,12 @@ test_that("align flows to word output (cross-tab + oneway)", {
     tmp <- tempfile(fileext = ".docx")
     on.exit(unlink(tmp), add = TRUE)
     res <- table_categorical(
-      sochealth, select = smoking, by = sex,
-      output = "word", word_path = tmp, align = a
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "word",
+      word_path = tmp,
+      align = a
     )
     expect_equal(res, tmp)
     expect_true(file.exists(tmp))
@@ -1849,8 +1874,11 @@ test_that("align flows to word output (cross-tab + oneway)", {
     tmp2 <- tempfile(fileext = ".docx")
     on.exit(unlink(tmp2), add = TRUE)
     res2 <- table_categorical(
-      sochealth, select = smoking,
-      output = "word", word_path = tmp2, align = a
+      sochealth,
+      select = smoking,
+      output = "word",
+      word_path = tmp2,
+      align = a
     )
     expect_equal(res2, tmp2)
     expect_true(file.exists(tmp2))
@@ -1863,8 +1891,12 @@ test_that("align flows to excel output (cross-tab + oneway, all values)", {
     tmp <- tempfile(fileext = ".xlsx")
     on.exit(unlink(tmp), add = TRUE)
     res <- table_categorical(
-      sochealth, select = smoking, by = sex,
-      output = "excel", excel_path = tmp, align = a
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "excel",
+      excel_path = tmp,
+      align = a
     )
     expect_equal(res, tmp)
     expect_true(file.exists(tmp))
@@ -1886,11 +1918,17 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
   # alongside padded blank cells, making the column dot-aligned for
   # plain-text consumers. With center, no padding is applied.
   table_categorical(
-    sochealth, select = smoking, output = "clipboard", align = "decimal"
+    sochealth,
+    select = smoking,
+    output = "clipboard",
+    align = "decimal"
   )
   txt_dec <- captured$text
   table_categorical(
-    sochealth, select = smoking, output = "clipboard", align = "center"
+    sochealth,
+    select = smoking,
+    output = "clipboard",
+    align = "center"
   )
   txt_auto <- captured$text
   expect_true(nchar(txt_dec) > nchar(txt_auto))
@@ -1900,11 +1938,14 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
   # the quote (trim happens before wrapping), so empty cells remain
   # truly empty.
   table_categorical(
-    sochealth, select = smoking, by = sex,
-    output = "clipboard", align = "decimal"
+    sochealth,
+    select = smoking,
+    by = sex,
+    output = "clipboard",
+    align = "decimal"
   )
   txt_ct_dec <- captured$text
-  expect_match(txt_ct_dec, "=\"\\.\\d+\"")  # wrapped p with no padding
+  expect_match(txt_ct_dec, "=\"\\.\\d+\"") # wrapped p with no padding
   # No spaces inside the wrapped quote
   expect_false(any(grepl("=\"\\s+\\.\\d", strsplit(txt_ct_dec, "\n")[[1]])))
 })
@@ -1934,7 +1975,9 @@ test_that("as_tibble() returns a tbl_df", {
 
 test_that("tidy() returns long-format with broom-conventional columns (cross-tab)", {
   out <- table_categorical(
-    sochealth, select = c(smoking, physical_activity), by = sex
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = sex
   )
   td <- broom::tidy(out)
   expect_setequal(
@@ -1962,7 +2005,9 @@ test_that("tidy() returns no group column without by", {
 
 test_that("glance() returns chi-squared test + association measure (cross-tab)", {
   out <- table_categorical(
-    sochealth, select = c(smoking, physical_activity), by = sex
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = sex
   )
   gl <- broom::glance(out)
   expect_setequal(
@@ -2007,7 +2052,10 @@ test_that("glance() returns NA test/ES, populated n_total without by", {
 
 test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
   out <- table_categorical(
-    sochealth, select = smoking, by = sex, assoc_ci = TRUE
+    sochealth,
+    select = smoking,
+    by = sex,
+    assoc_ci = TRUE
   )
   gl <- broom::glance(out)
   expect_true(is.finite(gl$assoc_ci_lower))
@@ -2030,10 +2078,13 @@ test_that("glance() n_total excludes the synthetic 'Total' group", {
   # "(Missing)" level) -- and NOT 2 * 1200, which is what summing across
   # Female + Male + Total would give.
   expect_equal(gl$n_total, nrow(sochealth))
-  out_cc <- table_categorical(sochealth, select = smoking, by = sex,
-                              drop_na = TRUE)
-  expect_equal(broom::glance(out_cc)$n_total,
-               sum(!is.na(sochealth$smoking)))
+  out_cc <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    drop_na = TRUE
+  )
+  expect_equal(broom::glance(out_cc)$n_total, sum(!is.na(sochealth$smoking)))
 
   # Triple group setting with iris: 150 observations, three Species
   # plus a Total marginal -> n_total must remain 150, not 4 * 50.
@@ -2046,16 +2097,21 @@ test_that("glance() n_total excludes the synthetic 'Total' group", {
 
 test_that("glance() n_total stays correct when include_total = FALSE", {
   out <- table_categorical(
-    sochealth, select = smoking, by = sex, include_total = FALSE
+    sochealth,
+    select = smoking,
+    by = sex,
+    include_total = FALSE
   )
   gl <- broom::glance(out)
   expect_equal(gl$n_total, nrow(sochealth))
   out_cc <- table_categorical(
-    sochealth, select = smoking, by = sex, include_total = FALSE,
+    sochealth,
+    select = smoking,
+    by = sex,
+    include_total = FALSE,
     drop_na = TRUE
   )
-  expect_equal(broom::glance(out_cc)$n_total,
-               sum(!is.na(sochealth$smoking)))
+  expect_equal(broom::glance(out_cc)$n_total, sum(!is.na(sochealth$smoking)))
 })
 
 test_that("tidy() drops the synthetic 'Total' group", {
@@ -2067,7 +2123,10 @@ test_that("tidy() drops the synthetic 'Total' group", {
 
 test_that("tidy() respects include_total = FALSE without spurious Total rows", {
   out <- table_categorical(
-    sochealth, select = smoking, by = sex, include_total = FALSE
+    sochealth,
+    select = smoking,
+    by = sex,
+    include_total = FALSE
   )
   td <- broom::tidy(out)
   expect_false("Total" %in% td$group)
@@ -2081,10 +2140,15 @@ test_that("p_digits drives the small-p threshold in table_categorical()", {
   # rendered display via the same code path the printed and gt
   # outputs use.
   out_default <- table_categorical(
-    sochealth, select = smoking, by = education
+    sochealth,
+    select = smoking,
+    by = education
   )
   out_p4 <- table_categorical(
-    sochealth, select = smoking, by = education, p_digits = 4
+    sochealth,
+    select = smoking,
+    by = education,
+    p_digits = 4
   )
   # Both objects expose `display_df` as an attribute; the `p` column
   # is rendered in the report-wide form.
@@ -2198,7 +2262,10 @@ test_that("labels accepts a named character vector keyed by column name", {
     ),
     output = "long"
   )
-  expect_setequal(unique(out$variable), c("Current smoker", "Physical activity"))
+  expect_setequal(
+    unique(out$variable),
+    c("Current smoker", "Physical activity")
+  )
 })
 
 test_that("named labels relabel a subset; others fall back to the attribute label", {
@@ -2291,24 +2358,33 @@ test_that("default drop_na = FALSE shows the (Missing) level", {
 })
 
 test_that("drop_na = TRUE discloses removals in the missing_note", {
-  out <- table_categorical(sochealth, select = c(income_group, smoking),
-                           drop_na = TRUE)
+  out <- table_categorical(
+    sochealth,
+    select = c(income_group, smoking),
+    drop_na = TRUE
+  )
   note <- attr(out, "missing_note")
   expect_identical(
-    note, "Missing values removed: income_group (18), smoking (25)."
+    note,
+    "Missing values removed: income_group (18), smoking (25)."
   )
-  printed <- paste(capture.output(print(out)), collapse = "
-")
-  expect_match(printed, "Missing values removed: income_group (18)",
-               fixed = TRUE)
+  printed <- paste(
+    capture.output(print(out)),
+    collapse = "
+"
+  )
+  expect_match(
+    printed,
+    "Missing values removed: income_group (18)",
+    fixed = TRUE
+  )
 })
 
 test_that("drop_na = TRUE with by-NAs discloses both removals", {
   d <- sochealth
   d$sex_na <- d$sex
   d$sex_na[1:40] <- NA
-  out <- table_categorical(d, select = smoking, by = sex_na,
-                           drop_na = TRUE)
+  out <- table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
   expect_identical(
     attr(out, "missing_note"),
     "Missing values removed: smoking (25). Rows with missing sex_na removed: 40."
@@ -2328,8 +2404,8 @@ test_that("association stats ignore the (Missing) display level", {
   gl_drop <- broom::glance(
     table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
   )
-  expect_equal(gl_show$statistic,   gl_drop$statistic,   tolerance = 1e-12)
-  expect_equal(gl_show$p.value,     gl_drop$p.value,     tolerance = 1e-12)
+  expect_equal(gl_show$statistic, gl_drop$statistic, tolerance = 1e-12)
+  expect_equal(gl_show$p.value, gl_drop$p.value, tolerance = 1e-12)
   expect_equal(gl_show$assoc_value, gl_drop$assoc_value, tolerance = 1e-12)
   # And the displayed table nevertheless carries the (Missing) column.
   df <- as.data.frame(table_categorical(d, select = smoking, by = sex_na))
@@ -2341,25 +2417,32 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
   # The published contract (NEWS 0.13 dev): opting back into silent-drop
   # is DISCLOSED -- a reader can always see what left the table.
   df <- data.frame(
-    v1  = factor(c("a", "b", NA, "a", NA)),
+    v1 = factor(c("a", "b", NA, "a", NA)),
     grp = factor(c("A", "B", "A", NA, "B"))
   )
-  out <- table_categorical(df, select = v1, drop_na = TRUE,
-                           output = "default")
-  expect_identical(attr(out, "missing_note"),
-                   "Missing values removed: v1 (2).")
+  out <- table_categorical(df, select = v1, drop_na = TRUE, output = "default")
+  expect_identical(attr(out, "missing_note"), "Missing values removed: v1 (2).")
   printed <- paste(capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Missing values removed: v1 (2).", fixed = TRUE)
 
-  out_by <- table_categorical(df, select = v1, by = grp, drop_na = TRUE,
-                              output = "default")
+  out_by <- table_categorical(
+    df,
+    select = v1,
+    by = grp,
+    drop_na = TRUE,
+    output = "default"
+  )
   note <- attr(out_by, "missing_note")
   expect_match(note, "Missing values removed: v1 (2).", fixed = TRUE)
   expect_match(note, "Rows with missing grp removed: 1.", fixed = TRUE)
 
   # Nothing dropped -> no note at all (nothing to disclose).
   df_full <- data.frame(v1 = factor(c("a", "b", "a")))
-  out_full <- table_categorical(df_full, select = v1, drop_na = TRUE,
-                                output = "default")
+  out_full <- table_categorical(
+    df_full,
+    select = v1,
+    drop_na = TRUE,
+    output = "default"
+  )
   expect_null(attr(out_full, "missing_note"))
 })

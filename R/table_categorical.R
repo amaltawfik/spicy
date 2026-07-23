@@ -63,7 +63,9 @@
   }
   if (!is.character(assoc_measure)) {
     spicy_abort(
-      "`assoc_measure` must be a character string or named/unnamed character vector.", class = "spicy_invalid_input")
+      "`assoc_measure` must be a character string or named/unnamed character vector.",
+      class = "spicy_invalid_input"
+    )
   }
 
   has_names <- !is.null(names(assoc_measure)) &&
@@ -76,18 +78,24 @@
           "`assoc_measure = \"%s\"` is not one of: %s.",
           assoc_measure,
           paste(shQuote(valid), collapse = ", ")
-        ), class = "spicy_invalid_input")
+        ),
+        class = "spicy_invalid_input"
+      )
     }
     per_row[] <- assoc_measure
   } else if (has_names) {
-    bad_names <- setdiff(names(assoc_measure)[nzchar(names(assoc_measure))],
-                         select_names)
+    bad_names <- setdiff(
+      names(assoc_measure)[nzchar(names(assoc_measure))],
+      select_names
+    )
     if (length(bad_names) > 0L) {
       spicy_abort(
         sprintf(
           "`assoc_measure` keys not found in `select`: %s.",
           paste(shQuote(bad_names), collapse = ", ")
-        ), class = "spicy_invalid_input")
+        ),
+        class = "spicy_invalid_input"
+      )
     }
     bad_vals <- setdiff(unique(assoc_measure), valid)
     if (length(bad_vals) > 0L) {
@@ -95,7 +103,9 @@
         sprintf(
           "`assoc_measure` value(s) not recognised: %s.",
           paste(shQuote(bad_vals), collapse = ", ")
-        ), class = "spicy_invalid_input")
+        ),
+        class = "spicy_invalid_input"
+      )
     }
     per_row[] <- "auto" # default fallback for unnamed variables
     keyed <- assoc_measure[nzchar(names(assoc_measure))]
@@ -109,7 +119,9 @@
           length(assoc_measure),
           n,
           if (n > 1L) "s" else ""
-        ), class = "spicy_invalid_input")
+        ),
+        class = "spicy_invalid_input"
+      )
     }
     bad_vals <- setdiff(unique(assoc_measure), valid)
     if (length(bad_vals) > 0L) {
@@ -117,7 +129,9 @@
         sprintf(
           "`assoc_measure` value(s) not recognised: %s.",
           paste(shQuote(bad_vals), collapse = ", ")
-        ), class = "spicy_invalid_input")
+        ),
+        class = "spicy_invalid_input"
+      )
     }
     per_row[] <- as.character(assoc_measure)
   }
@@ -158,7 +172,9 @@
           select_names[i],
           var_n_levels,
           by_n_levels
-        ), class = "spicy_unsupported")
+        ),
+        class = "spicy_unsupported"
+      )
     }
   }
 
@@ -663,15 +679,23 @@ table_categorical <- function(
       names(tidyselect::eval_select(select_quo, data)),
       error = function(e) {
         spicy_abort(
-          "`select` must select at least one column in `data`.", class = "spicy_invalid_input")
+          "`select` must select at least one column in `data`.",
+          class = "spicy_invalid_input"
+        )
       }
     )
   }
   if (length(select_names) == 0) {
-    spicy_abort("`select` must select at least one column in `data`.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`select` must select at least one column in `data`.",
+      class = "spicy_invalid_input"
+    )
   }
   if (!all(select_names %in% names(data))) {
-    spicy_abort("Some `select` columns are missing in `data`.", class = "spicy_missing_column")
+    spicy_abort(
+      "Some `select` columns are missing in `data`.",
+      class = "spicy_missing_column"
+    )
   }
   # Select-less call: restrict the `everything()` default to eligible
   # categorical columns (factor, character, logical, labelled),
@@ -727,7 +751,9 @@ table_categorical <- function(
         sprintf(
           "Names in `labels` not found in `data`: %s.",
           paste(unknown, collapse = ", ")
-        ), class = "spicy_missing_column")
+        ),
+        class = "spicy_missing_column"
+      )
     }
   }
   labels <- resolve_variable_labels(data, select_names, labels)
@@ -737,7 +763,10 @@ table_categorical <- function(
       length(include_total) != 1 ||
       is.na(include_total)
   ) {
-    spicy_abort("`include_total` must be TRUE/FALSE.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`include_total` must be TRUE/FALSE.",
+      class = "spicy_invalid_input"
+    )
   }
   if (!is.logical(drop_na) || length(drop_na) != 1 || is.na(drop_na)) {
     spicy_abort("`drop_na` must be TRUE/FALSE.", class = "spicy_invalid_input")
@@ -753,19 +782,28 @@ table_categorical <- function(
   # loops have filled the ledger; print() appends it to the
   # association note.
   build_missing_note <- function() {
-    if (!drop_na) return(NULL)
+    if (!drop_na) {
+      return(NULL)
+    }
     parts <- character(0)
     if (length(na_dropped)) {
-      parts <- c(parts, paste0(
-        "Missing values removed: ",
-        paste(sprintf("%s (%d)", names(na_dropped), na_dropped),
-              collapse = ", "),
-        "."
-      ))
+      parts <- c(
+        parts,
+        paste0(
+          "Missing values removed: ",
+          paste(
+            sprintf("%s (%d)", names(na_dropped), na_dropped),
+            collapse = ", "
+          ),
+          "."
+        )
+      )
     }
     if (by_na_dropped > 0L) {
-      parts <- c(parts, sprintf("Rows with missing %s removed: %d.",
-                                by_name, by_na_dropped))
+      parts <- c(
+        parts,
+        sprintf("Rows with missing %s removed: %d.", by_name, by_na_dropped)
+      )
     }
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
@@ -776,7 +814,10 @@ table_categorical <- function(
     spicy_abort("`correct` must be TRUE/FALSE.", class = "spicy_invalid_input")
   }
   if (!is.logical(simulate_p) || length(simulate_p) != 1 || is.na(simulate_p)) {
-    spicy_abort("`simulate_p` must be TRUE/FALSE.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`simulate_p` must be TRUE/FALSE.",
+      class = "spicy_invalid_input"
+    )
   }
   if (
     !is.numeric(simulate_B) ||
@@ -784,7 +825,10 @@ table_categorical <- function(
       is.na(simulate_B) ||
       simulate_B < 1
   ) {
-    spicy_abort("`simulate_B` must be a positive integer.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`simulate_B` must be a positive integer.",
+      class = "spicy_invalid_input"
+    )
   }
   simulate_B <- as.integer(simulate_B)
   if (
@@ -792,17 +836,26 @@ table_categorical <- function(
       length(add_multilevel_header) != 1 ||
       is.na(add_multilevel_header)
   ) {
-    spicy_abort("`add_multilevel_header` must be TRUE/FALSE.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`add_multilevel_header` must be TRUE/FALSE.",
+      class = "spicy_invalid_input"
+    )
   }
   if (
     !is.logical(blank_na_wide) ||
       length(blank_na_wide) != 1 ||
       is.na(blank_na_wide)
   ) {
-    spicy_abort("`blank_na_wide` must be TRUE/FALSE.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`blank_na_wide` must be TRUE/FALSE.",
+      class = "spicy_invalid_input"
+    )
   }
   if (!identical(decimal_mark, ".") && !identical(decimal_mark, ",")) {
-    spicy_abort("`decimal_mark` must be either '.' or ','.", class = "spicy_invalid_input")
+    spicy_abort(
+      "`decimal_mark` must be either '.' or ','.",
+      class = "spicy_invalid_input"
+    )
   }
   for (.dname in c("percent_digits", "v_digits")) {
     .dval <- get(.dname)
@@ -810,7 +863,9 @@ table_categorical <- function(
       !is.numeric(.dval) || length(.dval) != 1L || is.na(.dval) || .dval < 0
     ) {
       spicy_abort(
-        paste0("`", .dname, "` must be a single non-negative number."), class = "spicy_invalid_input")
+        paste0("`", .dname, "` must be a single non-negative number."),
+        class = "spicy_invalid_input"
+      )
     }
   }
   # `p_digits` has a stricter floor than the other digits arguments:
@@ -824,7 +879,9 @@ table_categorical <- function(
       p_digits < 1
   ) {
     spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).", class = "spicy_invalid_input")
+      "`p_digits` must be a single integer >= 1 (typically 2-4).",
+      class = "spicy_invalid_input"
+    )
   }
   percent_digits <- as.integer(percent_digits)
   p_digits <- as.integer(p_digits)
@@ -833,20 +890,33 @@ table_categorical <- function(
   if (!has_group) {
     if (!include_total) {
       spicy_warn(
-        "`include_total` is ignored when `by` is not used.", class = "spicy_ignored_arg")
+        "`include_total` is ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
     }
     if (correct) {
-      spicy_warn("`correct` is ignored when `by` is not used.", class = "spicy_ignored_arg")
+      spicy_warn(
+        "`correct` is ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
     }
     if (simulate_p) {
-      spicy_warn("`simulate_p` is ignored when `by` is not used.", class = "spicy_ignored_arg")
+      spicy_warn(
+        "`simulate_p` is ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
     }
     if (!isTRUE(all(as.character(assoc_measure) == "auto"))) {
       spicy_warn(
-        "`assoc_measure` is ignored when `by` is not used.", class = "spicy_ignored_arg")
+        "`assoc_measure` is ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
     }
     if (assoc_ci) {
-      spicy_warn("`assoc_ci` is ignored when `by` is not used.", class = "spicy_ignored_arg")
+      spicy_warn(
+        "`assoc_ci` is ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
     }
     include_total <- TRUE
   }
@@ -856,7 +926,9 @@ table_categorical <- function(
 
   if (isTRUE(rescale) && is.null(weights_vec)) {
     spicy_warn(
-      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.", class = "spicy_ignored_arg")
+      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.",
+      class = "spicy_ignored_arg"
+    )
     rescale <- FALSE
   }
 
@@ -1497,7 +1569,10 @@ table_categorical <- function(
 
     if (output == "word") {
       if (is.null(word_path) || !nzchar(word_path)) {
-        spicy_abort("Provide `word_path` for output = 'word'.", class = "spicy_invalid_input")
+        spicy_abort(
+          "Provide `word_path` for output = 'word'.",
+          class = "spicy_invalid_input"
+        )
       }
       ft <- build_flextable_oneway(report_wide_char)
       flextable::save_as_docx(ft, path = word_path)
@@ -1518,7 +1593,10 @@ table_categorical <- function(
 
     if (output == "excel") {
       if (is.null(excel_path) || !nzchar(excel_path)) {
-        spicy_abort("Provide `excel_path` for output = 'excel'.", class = "spicy_invalid_input")
+        spicy_abort(
+          "Provide `excel_path` for output = 'excel'.",
+          class = "spicy_invalid_input"
+        )
       }
       if (!requireNamespace("openxlsx2", quietly = TRUE)) {
         spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
@@ -1554,7 +1632,8 @@ table_categorical <- function(
         dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
         top_border = "thin",
         bottom_border = "thin",
-        left_border = NULL, right_border = NULL
+        left_border = NULL,
+        right_border = NULL
       )
       if (nrow(body_xl) > 0) {
         # Body alignment. The Variable column is always left-aligned;
@@ -1591,7 +1670,9 @@ table_categorical <- function(
           wb,
           dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
           bottom_border = "thin",
-          top_border = NULL, left_border = NULL, right_border = NULL
+          top_border = NULL,
+          left_border = NULL,
+          right_border = NULL
         )
       }
 
@@ -1664,7 +1745,9 @@ table_categorical <- function(
     if (drop_na) {
       keep <- !is.na(x) & !is.na(g)
       nd_x <- sum(is.na(x))
-      if (nd_x > 0L) na_dropped[[select_names[i]]] <- nd_x
+      if (nd_x > 0L) {
+        na_dropped[[select_names[i]]] <- nd_x
+      }
       by_na_dropped <- max(by_na_dropped, sum(is.na(g)))
     }
 
@@ -1844,7 +1927,12 @@ table_categorical <- function(
     }
     long_raw$group <- factor(long_raw$group, levels = group_levels)
     long_raw <- long_raw[
-      order(long_raw$variable, long_raw$level, long_raw$group, method = "radix"),
+      order(
+        long_raw$variable,
+        long_raw$level,
+        long_raw$group,
+        method = "radix"
+      ),
       ,
       drop = FALSE
     ]
@@ -2541,7 +2629,10 @@ table_categorical <- function(
 
   if (output == "word") {
     if (is.null(word_path) || !nzchar(word_path)) {
-      spicy_abort("Provide `word_path` for output = 'word'.", class = "spicy_invalid_input")
+      spicy_abort(
+        "Provide `word_path` for output = 'word'.",
+        class = "spicy_invalid_input"
+      )
     }
     ft <- build_flextable(merge_ci_inline(report_wide_char))
     flextable::save_as_docx(ft, path = word_path)
@@ -2591,7 +2682,10 @@ table_categorical <- function(
   # ---------------- excel ----------------
   if (output == "excel") {
     if (is.null(excel_path) || !nzchar(excel_path)) {
-      spicy_abort("Provide `excel_path` for output = 'excel'.", class = "spicy_invalid_input")
+      spicy_abort(
+        "Provide `excel_path` for output = 'excel'.",
+        class = "spicy_invalid_input"
+      )
     }
     if (!requireNamespace("openxlsx2", quietly = TRUE)) {
       spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
@@ -2697,26 +2791,34 @@ table_categorical <- function(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
       top_border = "thin",
-      bottom_border = NULL, left_border = NULL, right_border = NULL
+      bottom_border = NULL,
+      left_border = NULL,
+      right_border = NULL
     )
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 1, cols = grp_j),
       bottom_border = "thin",
-      top_border = NULL, left_border = NULL, right_border = NULL
+      top_border = NULL,
+      left_border = NULL,
+      right_border = NULL
     )
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
       bottom_border = "thin",
-      top_border = NULL, left_border = NULL, right_border = NULL
+      top_border = NULL,
+      left_border = NULL,
+      right_border = NULL
     )
     if (nrow(body_xl) > 0) {
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = last_row, cols = 1:nc),
         bottom_border = "thin",
-        top_border = NULL, left_border = NULL, right_border = NULL
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
       )
     }
 

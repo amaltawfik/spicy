@@ -29,7 +29,7 @@ set.seed(421)
 .leak_d <- data.frame(y = .leak_y, xp = .leak_xp, z = .leak_z)
 
 test_that("bootstrap vcov refits on the fixed design (no env leak, exact oracle)", {
-  xp <- .leak_xp  # visible symbol: the old refit would silently use it
+  xp <- .leak_xp # visible symbol: the old refit would silently use it
   fit <- lm(y ~ log(xp) + z, data = .leak_d)
 
   set.seed(42)
@@ -43,13 +43,16 @@ test_that("bootstrap vcov refits on the fixed design (no env leak, exact oracle)
   bb <- matrix(NA_real_, 200L, ncol(X))
   for (b in seq_len(200L)) {
     i <- sample.int(n, n, replace = TRUE)
-    bb[b, ] <- lm.wfit(X[i, , drop = FALSE], yy[i],
-                       rep.int(1, n))$coefficients
+    bb[b, ] <- lm.wfit(X[i, , drop = FALSE], yy[i], rep.int(1, n))$coefficients
   }
   # ignore_attr: the bootstrap vcov now carries beta_boot / boot_n_valid
   # attributes (percentile-CI reuse, footer count).
-  expect_equal(unname(v), unname(stats::cov(bb)), tolerance = 1e-12,
-               ignore_attr = TRUE)
+  expect_equal(
+    unname(v),
+    unname(stats::cov(bb)),
+    tolerance = 1e-12,
+    ignore_attr = TRUE
+  )
 })
 
 test_that("bootstrap vcov now works on factor() formulas (was: 0 valid replicates)", {
@@ -65,14 +68,26 @@ test_that("bootstrap vcov now works on factor() formulas (was: 0 valid replicate
 
 test_that("glm bootstrap threads family, weights, and offset through glm.fit", {
   set.seed(5)
-  d <- data.frame(cnt = rpois(150, 5), x = rnorm(150),
-                  expo = runif(150, 1, 3), w = runif(150, 0.5, 2))
-  fit <- glm(cnt ~ x + offset(log(expo)), data = d, family = poisson(),
-             weights = w)
+  d <- data.frame(
+    cnt = rpois(150, 5),
+    x = rnorm(150),
+    expo = runif(150, 1, 3),
+    w = runif(150, 0.5, 2)
+  )
+  fit <- glm(
+    cnt ~ x + offset(log(expo)),
+    data = d,
+    family = poisson(),
+    weights = w
+  )
   set.seed(9)
   v <- suppressWarnings(
-    spicy:::compute_model_vcov(fit, type = "bootstrap", boot_n = 200L,
-                               weights = d$w)
+    spicy:::compute_model_vcov(
+      fit,
+      type = "bootstrap",
+      boot_n = 200L,
+      weights = d$w
+    )
   )
   set.seed(9)
   X <- model.matrix(fit)
@@ -83,16 +98,25 @@ test_that("glm bootstrap threads family, weights, and offset through glm.fit", {
   for (b in seq_len(200L)) {
     i <- sample.int(n, n, replace = TRUE)
     z <- tryCatch(
-      suppressWarnings(glm.fit(X[i, , drop = FALSE], yy[i],
-                               weights = d$w[i], offset = off[i],
-                               family = poisson(), control = fit$control)),
+      suppressWarnings(glm.fit(
+        X[i, , drop = FALSE],
+        yy[i],
+        weights = d$w[i],
+        offset = off[i],
+        family = poisson(),
+        control = fit$control
+      )),
       error = function(e) NULL
     )
     if (!is.null(z)) bb[b, ] <- z$coefficients
   }
   bb <- bb[stats::complete.cases(bb), , drop = FALSE]
-  expect_equal(unname(v), unname(stats::cov(bb)), tolerance = 1e-12,
-               ignore_attr = TRUE)
+  expect_equal(
+    unname(v),
+    unname(stats::cov(bb)),
+    tolerance = 1e-12,
+    ignore_attr = TRUE
+  )
 })
 
 test_that("jackknife matches the closed-form LOO formula on the fixed design", {
@@ -101,12 +125,19 @@ test_that("jackknife matches the closed-form LOO formula on the fixed design", {
   X <- model.matrix(fit)
   yy <- model.response(model.frame(fit))
   n <- nrow(X)
-  bj <- t(vapply(seq_len(n), function(g) {
-    lm.wfit(X[-g, , drop = FALSE], yy[-g], rep.int(1, n - 1L))$coefficients
-  }, numeric(ncol(X))))
+  bj <- t(vapply(
+    seq_len(n),
+    function(g) {
+      lm.wfit(X[-g, , drop = FALSE], yy[-g], rep.int(1, n - 1L))$coefficients
+    },
+    numeric(ncol(X))
+  ))
   centered <- sweep(bj, 2, colMeans(bj))
-  expect_equal(unname(v), unname((n - 1) / n * crossprod(centered)),
-               tolerance = 1e-10)
+  expect_equal(
+    unname(v),
+    unname((n - 1) / n * crossprod(centered)),
+    tolerance = 1e-10
+  )
 })
 
 test_that("jackknife works on factor() formulas", {
@@ -188,6 +219,9 @@ test_that("mixed refit: plain formula matches the manual z-scored refit", {
   dm2$ym <- as.numeric(scale(dm2$ym))
   dm2$lx <- as.numeric(scale(dm2$lx))
   oracle <- lme4::lmer(ym ~ lx + (1 | g), data = dm2)
-  expect_equal(res$coefs_beta$estimate[2],
-               unname(lme4::fixef(oracle)[2]), tolerance = 1e-6)
+  expect_equal(
+    res$coefs_beta$estimate[2],
+    unname(lme4::fixef(oracle)[2]),
+    tolerance = 1e-6
+  )
 })

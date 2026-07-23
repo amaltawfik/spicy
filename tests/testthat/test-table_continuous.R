@@ -2437,7 +2437,12 @@ test_that("ci = FALSE drops the CI columns from the rendered display df", {
 })
 
 test_that("output = 'long' is a synonym for output = 'data.frame'", {
-  out_df <- table_continuous(sleep, select = extra, by = group, output = "data.frame")
+  out_df <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    output = "data.frame"
+  )
   out_lg <- table_continuous(sleep, select = extra, by = group, output = "long")
   expect_identical(unclass(out_df), unclass(out_lg))
 })
@@ -2492,7 +2497,10 @@ test_that("tidy() returns one row per (variable x group) with broom columns", {
   )
   # estimate equals empirical mean
   setosa_sl <- td[td$outcome == "Sepal.Length" & td$group == "setosa", ]
-  expect_equal(setosa_sl$estimate, mean(iris$Sepal.Length[iris$Species == "setosa"]))
+  expect_equal(
+    setosa_sl$estimate,
+    mean(iris$Sepal.Length[iris$Species == "setosa"])
+  )
 })
 
 test_that("tidy() works without by (one row per variable)", {
@@ -2578,12 +2586,20 @@ test_that("raw data.frame / long outputs always carry analytic ci_lower / ci_upp
   # CI bounds and `n` so downstream code (broom::tidy, gtsummary, ...)
   # has access to them.
   out_df <- table_continuous(
-    sleep, select = extra, by = group,
-    ci = FALSE, show_n = FALSE, output = "data.frame"
+    sleep,
+    select = extra,
+    by = group,
+    ci = FALSE,
+    show_n = FALSE,
+    output = "data.frame"
   )
   out_lg <- table_continuous(
-    sleep, select = extra, by = group,
-    ci = FALSE, show_n = FALSE, output = "long"
+    sleep,
+    select = extra,
+    by = group,
+    ci = FALSE,
+    show_n = FALSE,
+    output = "long"
   )
   expect_true(all(c("ci_lower", "ci_upper", "n") %in% names(out_df)))
   expect_true(all(c("ci_lower", "ci_upper", "n") %in% names(out_lg)))
@@ -2593,10 +2609,15 @@ test_that("ci = FALSE structurally removes CI cols from the build_display_df out
   out <- table_continuous(sleep, select = extra, by = group, ci = FALSE)
   display <- spicy:::build_display_df(
     out,
-    digits = 2, decimal_mark = ".", ci_level = 0.95,
-    show_p = TRUE, show_statistic = FALSE,
-    show_n = TRUE, show_ci = FALSE,
-    show_effect_size = FALSE, show_effect_size_ci = FALSE,
+    digits = 2,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_n = TRUE,
+    show_ci = FALSE,
+    show_effect_size = FALSE,
+    show_effect_size_ci = FALSE,
     p_digits = 3L
   )
   expect_false(any(grepl("CI", names(display))))
@@ -2606,10 +2627,15 @@ test_that("show_n = FALSE structurally removes n col from build_display_df outpu
   out <- table_continuous(sleep, select = extra, by = group, show_n = FALSE)
   display <- spicy:::build_display_df(
     out,
-    digits = 2, decimal_mark = ".", ci_level = 0.95,
-    show_p = TRUE, show_statistic = FALSE,
-    show_n = FALSE, show_ci = TRUE,
-    show_effect_size = FALSE, show_effect_size_ci = FALSE,
+    digits = 2,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    show_statistic = FALSE,
+    show_n = FALSE,
+    show_ci = TRUE,
+    show_effect_size = FALSE,
+    show_effect_size_ci = FALSE,
     p_digits = 3L
   )
   expect_false("n" %in% names(display))
@@ -2621,22 +2647,31 @@ test_that("ci = FALSE renders structurally without CI in tinytable / gt / flexta
   skip_if_not_installed("flextable")
   expect_true(inherits(
     table_continuous(
-      sleep, select = extra, by = group,
-      ci = FALSE, output = "tinytable"
+      sleep,
+      select = extra,
+      by = group,
+      ci = FALSE,
+      output = "tinytable"
     ),
     "tinytable"
   ))
   expect_s3_class(
     table_continuous(
-      sleep, select = extra, by = group,
-      ci = FALSE, output = "gt"
+      sleep,
+      select = extra,
+      by = group,
+      ci = FALSE,
+      output = "gt"
     ),
     "gt_tbl"
   )
   expect_s3_class(
     table_continuous(
-      sleep, select = extra, by = group,
-      ci = FALSE, output = "flextable"
+      sleep,
+      select = extra,
+      by = group,
+      ci = FALSE,
+      output = "flextable"
     ),
     "flextable"
   )
@@ -2648,22 +2683,31 @@ test_that("show_n = FALSE renders structurally without n in tinytable / gt / fle
   skip_if_not_installed("flextable")
   expect_true(inherits(
     table_continuous(
-      sleep, select = extra, by = group,
-      show_n = FALSE, output = "tinytable"
+      sleep,
+      select = extra,
+      by = group,
+      show_n = FALSE,
+      output = "tinytable"
     ),
     "tinytable"
   ))
   expect_s3_class(
     table_continuous(
-      sleep, select = extra, by = group,
-      show_n = FALSE, output = "gt"
+      sleep,
+      select = extra,
+      by = group,
+      show_n = FALSE,
+      output = "gt"
     ),
     "gt_tbl"
   )
   expect_s3_class(
     table_continuous(
-      sleep, select = extra, by = group,
-      show_n = FALSE, output = "flextable"
+      sleep,
+      select = extra,
+      by = group,
+      show_n = FALSE,
+      output = "flextable"
     ),
     "flextable"
   )
@@ -2679,14 +2723,22 @@ test_that("ci = FALSE / show_n = FALSE flow to excel and word", {
       tmp_dx <- tempfile(fileext = ".docx")
       on.exit(unlink(c(tmp_xl, tmp_dx)), add = TRUE)
       table_continuous(
-        sleep, select = extra, by = group,
-        ci = ci, show_n = sn,
-        output = "excel", excel_path = tmp_xl
+        sleep,
+        select = extra,
+        by = group,
+        ci = ci,
+        show_n = sn,
+        output = "excel",
+        excel_path = tmp_xl
       )
       table_continuous(
-        sleep, select = extra, by = group,
-        ci = ci, show_n = sn,
-        output = "word", word_path = tmp_dx
+        sleep,
+        select = extra,
+        by = group,
+        ci = ci,
+        show_n = sn,
+        output = "word",
+        word_path = tmp_dx
       )
       expect_true(file.exists(tmp_xl))
       expect_true(file.exists(tmp_dx))
@@ -2706,14 +2758,20 @@ test_that("clipboard text reflects ci = FALSE structurally", {
     .package = "clipr"
   )
   table_continuous(
-    sleep, select = extra, by = group,
-    ci = FALSE, output = "clipboard"
+    sleep,
+    select = extra,
+    by = group,
+    ci = FALSE,
+    output = "clipboard"
   )
   expect_false(grepl("CI", captured$text, fixed = TRUE))
 
   table_continuous(
-    sleep, select = extra, by = group,
-    ci = TRUE, output = "clipboard"
+    sleep,
+    select = extra,
+    by = group,
+    ci = TRUE,
+    output = "clipboard"
   )
   expect_true(grepl("CI", captured$text, fixed = TRUE))
 })
@@ -2779,35 +2837,71 @@ test_that("every align value renders cleanly across every rendered engine", {
   )
   for (al in c("center", "right")) {
     if (requireNamespace("tinytable", quietly = TRUE)) {
-      out <- do.call(table_continuous, c(base_args, list(
-        output = "tinytable", align = al
-      )))
+      out <- do.call(
+        table_continuous,
+        c(
+          base_args,
+          list(
+            output = "tinytable",
+            align = al
+          )
+        )
+      )
       expect_true(inherits(out, "tinytable"))
     }
     if (requireNamespace("gt", quietly = TRUE)) {
-      out <- do.call(table_continuous, c(base_args, list(
-        output = "gt", align = al
-      )))
+      out <- do.call(
+        table_continuous,
+        c(
+          base_args,
+          list(
+            output = "gt",
+            align = al
+          )
+        )
+      )
       expect_s3_class(out, "gt_tbl")
     }
     if (requireNamespace("flextable", quietly = TRUE)) {
-      out <- do.call(table_continuous, c(base_args, list(
-        output = "flextable", align = al
-      )))
+      out <- do.call(
+        table_continuous,
+        c(
+          base_args,
+          list(
+            output = "flextable",
+            align = al
+          )
+        )
+      )
       expect_s3_class(out, "flextable")
     }
     if (requireNamespace("openxlsx2", quietly = TRUE)) {
       tmp <- tempfile(fileext = ".xlsx")
       on.exit(unlink(tmp), add = TRUE)
-      do.call(table_continuous, c(base_args, list(
-        output = "excel", align = al, excel_path = tmp
-      )))
+      do.call(
+        table_continuous,
+        c(
+          base_args,
+          list(
+            output = "excel",
+            align = al,
+            excel_path = tmp
+          )
+        )
+      )
       expect_true(file.exists(tmp))
     }
     if (requireNamespace("clipr", quietly = TRUE)) {
-      do.call(table_continuous, c(base_args, list(
-        output = "clipboard", align = al
-      )))
+      do.call(
+        table_continuous,
+        c(
+          base_args,
+          list(
+            output = "clipboard",
+            align = al
+          )
+        )
+      )
     }
   }
 })
@@ -2827,10 +2921,12 @@ test_that("output = 'word' errors when officer is not installed even if flextabl
   on.exit(unlink(tmp), add = TRUE)
   expect_error(
     table_continuous(
-      sleep, select = extra, by = group,
-      output = "word", word_path = tmp
+      sleep,
+      select = extra,
+      by = group,
+      output = "word",
+      word_path = tmp
     ),
     "Install package 'officer'"
   )
 })
-

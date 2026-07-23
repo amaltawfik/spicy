@@ -1,5 +1,3 @@
-
-
 # Frame-aware sibling of apply_p_adjust(). Operates on the frame's
 # coefs tibble whose column naming differs from the legacy long coefs:
 #   is_intercept -> derived (term == "(Intercept)")
@@ -12,24 +10,33 @@
 # just the legacy extract coefs) for the displayed values to reflect
 # the chosen p_adjust method.
 apply_p_adjust_to_frame_coefs <- function(coefs, method) {
-  if (identical(method, "none") || is.null(method)) return(coefs)
-  if (is.null(coefs) || nrow(coefs) == 0L) return(coefs)
+  if (identical(method, "none") || is.null(method)) {
+    return(coefs)
+  }
+  if (is.null(coefs) || nrow(coefs) == 0L) {
+    return(coefs)
+  }
 
   # Intercepts are excluded from the family: the main one by term, and the
   # component-block ones (zero-inflation / dispersion, terms "zero_(Intercept)"
   # / "zi.(Intercept)") by their display label.
   family_mask <- coefs$term != "(Intercept)" &
-                   !(coefs$label %in% "(Intercept)") &
-                   !coefs$is_ref &
-                   !is.na(coefs$p_value)
+    !(coefs$label %in% "(Intercept)") &
+    !coefs$is_ref &
+    !is.na(coefs$p_value)
 
-  if (!any(family_mask)) return(coefs)
+  if (!any(family_mask)) {
+    return(coefs)
+  }
 
   for (et in unique(coefs$estimate_type[family_mask])) {
     rows <- which(family_mask & coefs$estimate_type == et)
-    if (length(rows) == 0L) next
+    if (length(rows) == 0L) {
+      next
+    }
     coefs$p_value[rows] <- stats::p.adjust(
-      coefs$p_value[rows], method = method
+      coefs$p_value[rows],
+      method = method
     )
   }
   coefs
@@ -53,23 +60,37 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
 #   * `term_order` filtered to the same set
 #   * `factor_ref_levels` cleaned of factors whose group is now empty
 apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
-  if (is.null(keep) && is.null(drop)) return(aligned)
-  if (is.null(aligned$coefs_aligned) ||
-        nrow(aligned$coefs_aligned) == 0L) {
+  if (is.null(keep) && is.null(drop)) {
+    return(aligned)
+  }
+  if (
+    is.null(aligned$coefs_aligned) ||
+      nrow(aligned$coefs_aligned) == 0L
+  ) {
     return(aligned)
   }
 
   terms <- aligned$coefs_aligned$term
   matches_any <- function(term, patterns) {
-    vapply(term,
-           function(t) any(vapply(patterns,
-                                  function(p) grepl(p, t, perl = TRUE),
-                                  logical(1))),
-           logical(1))
+    vapply(
+      term,
+      function(t) {
+        any(vapply(patterns, function(p) grepl(p, t, perl = TRUE), logical(1)))
+      },
+      logical(1)
+    )
   }
 
-  keep_mask <- if (!is.null(keep)) matches_any(terms, keep) else rep(TRUE, length(terms))
-  drop_mask <- if (!is.null(drop)) matches_any(terms, drop) else rep(FALSE, length(terms))
+  keep_mask <- if (!is.null(keep)) {
+    matches_any(terms, keep)
+  } else {
+    rep(TRUE, length(terms))
+  }
+  drop_mask <- if (!is.null(drop)) {
+    matches_any(terms, drop)
+  } else {
+    rep(FALSE, length(terms))
+  }
   final_mask <- keep_mask & !drop_mask
 
   # Subordinate blocks are exempt from keep / drop: `keep` / `drop` select
@@ -79,8 +100,15 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
   # variances). The whole-block switches are `show_thresholds` / `show_re`.
   ca <- aligned$coefs_aligned
   subordinate <- ca$factor_term %in%
-    c("Thresholds", "Non-proportional effects", "Scale effects",
-      "Random effects", "Zero-inflation", "Zero hurdle", "Dispersion") |
+    c(
+      "Thresholds",
+      "Non-proportional effects",
+      "Scale effects",
+      "Random effects",
+      "Zero-inflation",
+      "Zero hurdle",
+      "Dispersion"
+    ) |
     (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
   final_mask <- final_mask | subordinate
 

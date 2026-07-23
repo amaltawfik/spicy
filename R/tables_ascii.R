@@ -32,13 +32,22 @@
 # must be contiguous (the renderer centers one label over one
 # continuous range; gaps would require multiple spanner rows).
 .validate_spanners <- function(spanners, n_cols) {
-  if (is.null(spanners)) return(NULL)
-  if (!is.list(spanners) || is.null(names(spanners)) ||
-        any(!nzchar(names(spanners)))) {
+  if (is.null(spanners)) {
+    return(NULL)
+  }
+  if (
+    !is.list(spanners) ||
+      is.null(names(spanners)) ||
+      any(!nzchar(names(spanners)))
+  ) {
     spicy_abort(
-      c(paste0("`spanners` must be a named list (label \u2192 ",
-                "integer column indices)."),
-        "i" = "Example: `list(\"Step 1\" = 2:5, \"Step 2\" = 6:9)`."),
+      c(
+        paste0(
+          "`spanners` must be a named list (label \u2192 ",
+          "integer column indices)."
+        ),
+        "i" = "Example: `list(\"Step 1\" = 2:5, \"Step 2\" = 6:9)`."
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -46,19 +55,18 @@
   used <- integer(0)
   for (lbl in names(spanners)) {
     idx <- suppressWarnings(as.integer(spanners[[lbl]]))
-    if (length(idx) == 0L || any(is.na(idx)) ||
-          any(idx < 1L) || any(idx > n_cols)) {
+    if (
+      length(idx) == 0L || any(is.na(idx)) || any(idx < 1L) || any(idx > n_cols)
+    ) {
       spicy_abort(
-        sprintf("`spanners[[\"%s\"]]` must be integers in 1..%d.",
-                lbl, n_cols),
+        sprintf("`spanners[[\"%s\"]]` must be integers in 1..%d.", lbl, n_cols),
         class = "spicy_invalid_input"
       )
     }
     idx <- sort(unique(idx))
     if (any(diff(idx) != 1L)) {
       spicy_abort(
-        sprintf("`spanners[[\"%s\"]]` must be a contiguous column range.",
-                lbl),
+        sprintf("`spanners[[\"%s\"]]` must be a contiguous column range.", lbl),
         class = "spicy_invalid_input"
       )
     }
@@ -229,7 +237,9 @@ build_ascii_table <- function(
   data_widths <- vapply(
     seq_along(df),
     function(i) {
-      if (nrow(df) == 0L) return(0L)
+      if (nrow(df) == 0L) {
+        return(0L)
+      }
       max(crayon::col_nchar(df[[i]], type = "width"), na.rm = TRUE)
     },
     integer(1)
@@ -272,15 +282,20 @@ build_ascii_table <- function(
       } else {
         "right"
       }
-      cell <- if (identical(col_align, "header-center") &&
-                    data_widths[i] > 0L &&
-                    data_widths[i] <= widths[i]) {
+      cell <- if (
+        identical(col_align, "header-center") &&
+          data_widths[i] > 0L &&
+          data_widths[i] <= widths[i]
+      ) {
         # Center the header within the data region, then right-pad
         # to the full cell width so the data's left margin is
         # preserved. Visual result: header sits above the data's
         # geometric centre, not the padded cell's centre.
-        centered_in_data <- pad_cell(values[i], data_widths[i],
-                                      align = "center")
+        centered_in_data <- pad_cell(
+          values[i],
+          data_widths[i],
+          align = "center"
+        )
         pad_cell(centered_in_data, widths[i], align = "right")
       } else {
         pad_cell(values[i], widths[i], align = col_align)
@@ -348,7 +363,8 @@ build_ascii_table <- function(
   light_rule <- style(make_light_rule(full_width, bar_positions))
 
   # --- Colorize vertical bars if supported
-  if (crayon::has_color()) { # nocov start
+  if (crayon::has_color()) {
+    # nocov start
     header_txt <- gsub("\u2502", style("\u2502"), header_txt, fixed = TRUE)
     rows_txt <- gsub("\u2502", style("\u2502"), rows_txt, fixed = TRUE)
   } # nocov end
@@ -367,14 +383,14 @@ build_ascii_table <- function(
     # widths[i]-wide region, excluding its left/right gutters and any
     # separator).
     col_starts <- integer(length(w))
-    col_ends   <- integer(length(w))
+    col_ends <- integer(length(w))
     pos <- 0L
     for (i in seq_along(w)) {
-      pos <- pos + 1L           # left gutter
+      pos <- pos + 1L # left gutter
       col_starts[i] <- pos + 1L # next char is the first cell char
-      pos <- pos + w[i]         # cell content
+      pos <- pos + w[i] # cell content
       col_ends[i] <- pos
-      pos <- pos + 1L           # right gutter
+      pos <- pos + 1L # right gutter
       if (i %in% sep_after) pos <- pos + 1L
     }
 
@@ -383,9 +399,11 @@ build_ascii_table <- function(
     for (lbl in names(spanners)) {
       cols <- spanners[[lbl]]
       span_start <- col_starts[min(cols)]
-      span_end   <- col_ends[max(cols)]
+      span_end <- col_ends[max(cols)]
       span_width <- span_end - span_start + 1L
-      if (span_width <= 0L) next
+      if (span_width <= 0L) {
+        next
+      }
       lab_disp <- if (nchar(lbl, type = "width") > span_width) {
         # Truncation must be VISIBLE: a silently cut label ("Inactive
         # vs Employ" for "Inactive vs Employed") reads as a complete
@@ -406,7 +424,9 @@ build_ascii_table <- function(
       for (k in seq_along(lab_chars)) {
         spanner_chars[lab_pos + k - 1L] <- lab_chars[k]
       }
-      for (p in span_start:span_end) underline_chars[p] <- "\u2500"
+      for (p in span_start:span_end) {
+        underline_chars[p] <- "\u2500"
+      }
     }
     spanner_line <- paste(spanner_chars, collapse = "")
     underline_line <- style(paste(underline_chars, collapse = ""))
@@ -764,8 +784,10 @@ spicy_print_table <- function(
             # data cols of the same model would break contiguity --
             # that doesn't arise in practice because the Variable
             # column is never in a spanner).
-            if (length(local_idx) == 1L ||
-                all(diff(local_idx) == 1L)) {
+            if (
+              length(local_idx) == 1L ||
+                all(diff(local_idx) == 1L)
+            ) {
               panel_spanners[[lbl]] <- local_idx
             }
           }
@@ -787,16 +809,26 @@ spicy_print_table <- function(
       # boundary rule is removed with the block only when the whole
       # block goes.
       panel_group_sep <- group_sep_rows
-      if (panel_i > 1L && !is.null(fit_stats_start) &&
-            fit_stats_start >= 1L && fit_stats_start <= nrow(sub)) {
+      if (
+        panel_i > 1L &&
+          !is.null(fit_stats_start) &&
+          fit_stats_start >= 1L &&
+          fit_stats_start <= nrow(sub)
+      ) {
         fit_rows <- fit_stats_start:nrow(sub)
         data_cols_local <- which(!(cols %in% align_left_cols))
         if (length(data_cols_local)) {
-          blank <- vapply(fit_rows, function(r) {
-            all(!nzchar(trimws(as.character(
-              unlist(sub[r, data_cols_local], use.names = FALSE)
-            ))))
-          }, logical(1))
+          blank <- vapply(
+            fit_rows,
+            function(r) {
+              all(
+                !nzchar(trimws(as.character(
+                  unlist(sub[r, data_cols_local], use.names = FALSE)
+                )))
+              )
+            },
+            logical(1)
+          )
           if (any(blank)) {
             sub <- sub[-fit_rows[blank], , drop = FALSE]
             if (all(blank)) {

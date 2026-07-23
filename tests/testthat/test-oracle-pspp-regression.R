@@ -48,11 +48,12 @@
 # R-squared (spicy implements McFadden / Nagelkerke / Tjur).
 # ---------------------------------------------------------------------------
 
-
 .pspp_soch <- function() {
-  d <- sochealth[stats::complete.cases(
-    sochealth[, c("income", "age", "sex", "smoking")]
-  ), ]
+  d <- sochealth[
+    stats::complete.cases(
+      sochealth[, c("income", "age", "sex", "smoking")]
+    ),
+  ]
   stopifnot(nrow(d) == 1175L)
   d
 }
@@ -66,26 +67,33 @@ test_that("PSPP oracle: OLS income ~ age + sex (B / SE / t / R2)", {
   pick <- function(col, term) b[[col]][b$term == term]
 
   # Coefficients table (PSPP REGRESSION, 10-decimal output).
-  expect_equal(pick("estimate", "(Intercept)"), 3380.1714015324,
-               tolerance = 1e-8)
-  expect_equal(pick("estimate", "age"),     2.6510718673, tolerance = 1e-8)
-  expect_equal(pick("estimate", "sexMale"), 663.2002182399,
-               tolerance = 1e-8)
-  expect_equal(pick("std.error", "(Intercept)"), 143.8959288818,
-               tolerance = 1e-8)
-  expect_equal(pick("std.error", "age"),     2.6832268967, tolerance = 1e-8)
-  expect_equal(pick("std.error", "sexMale"), 79.1641044725,
-               tolerance = 1e-8)
-  expect_equal(pick("statistic", "(Intercept)"), 23.4903893932,
-               tolerance = 1e-8)
-  expect_equal(pick("statistic", "age"),     0.9880162839, tolerance = 1e-8)
+  expect_equal(
+    pick("estimate", "(Intercept)"),
+    3380.1714015324,
+    tolerance = 1e-8
+  )
+  expect_equal(pick("estimate", "age"), 2.6510718673, tolerance = 1e-8)
+  expect_equal(pick("estimate", "sexMale"), 663.2002182399, tolerance = 1e-8)
+  expect_equal(
+    pick("std.error", "(Intercept)"),
+    143.8959288818,
+    tolerance = 1e-8
+  )
+  expect_equal(pick("std.error", "age"), 2.6832268967, tolerance = 1e-8)
+  expect_equal(pick("std.error", "sexMale"), 79.1641044725, tolerance = 1e-8)
+  expect_equal(
+    pick("statistic", "(Intercept)"),
+    23.4903893932,
+    tolerance = 1e-8
+  )
+  expect_equal(pick("statistic", "age"), 0.9880162839, tolerance = 1e-8)
   expect_equal(pick("statistic", "sexMale"), 8.3775370499, tolerance = 1e-8)
   # PSPP prints Sig. to 3 decimals: .323 / .000 -- convention check.
   expect_identical(round(pick("p.value", "age"), 3), 0.323)
 
   # Model summary.
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$r2,     0.0570967932, tolerance = 1e-8)
+  expect_equal(fr$info$fit_stats$r2, 0.0570967932, tolerance = 1e-8)
   expect_equal(fr$info$fit_stats$adj_r2, 0.0554877434, tolerance = 1e-8)
 })
 
@@ -99,20 +107,24 @@ test_that("PSPP oracle: SPSS Beta = standardized 'basic'; 'refit' keeps dummies 
   # PSPP's Coefficients table.
   lgb <- table_regression(fit, standardized = "basic", output = "long")
   beb <- lgb[lgb$estimate_type == "beta", ]
-  expect_equal(beb$estimate[beb$term == "age"],     0.0280262880,
-               tolerance = 1e-8)
-  expect_equal(beb$estimate[beb$term == "sexMale"], 0.2376390652,
-               tolerance = 1e-8)
+  expect_equal(beb$estimate[beb$term == "age"], 0.0280262880, tolerance = 1e-8)
+  expect_equal(
+    beb$estimate[beb$term == "sexMale"],
+    0.2376390652,
+    tolerance = 1e-8
+  )
 
   # The default "refit" z-scores y and the numeric predictors but
   # keeps the dummy at 0/1: same beta for the numeric predictor,
   # beta_dummy = b / sd(y) (documented divergence from SPSS).
   lgr <- table_regression(fit, standardized = "refit", output = "long")
   ber <- lgr[lgr$estimate_type == "beta", ]
-  expect_equal(ber$estimate[ber$term == "age"], 0.0280262880,
-               tolerance = 1e-8)
-  expect_equal(ber$estimate[ber$term == "sexMale"],
-               coef(fit)[["sexMale"]] / sd(d$income), tolerance = 1e-10)
+  expect_equal(ber$estimate[ber$term == "age"], 0.0280262880, tolerance = 1e-8)
+  expect_equal(
+    ber$estimate[ber$term == "sexMale"],
+    coef(fit)[["sexMale"]] / sd(d$income),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -124,43 +136,44 @@ test_that("PSPP oracle: logistic smoking ~ age + sex (B / SE / Wald / OR / CI)",
   pick <- function(col, term) b[[col]][b$term == term]
 
   # Variables in the Equation (B / S.E. / Wald = z^2).
-  expect_equal(pick("estimate", "(Intercept)"), -1.5416352312,
-               tolerance = 1e-7)
-  expect_equal(pick("estimate", "age"),     0.0050840704, tolerance = 1e-7)
-  expect_equal(pick("estimate", "sexMale"), -0.0508090959,
-               tolerance = 1e-7)
-  expect_equal(pick("std.error", "(Intercept)"), 0.2623940027,
-               tolerance = 1e-5)
-  expect_equal(pick("std.error", "age"),     0.0048440660, tolerance = 1e-5)
+  expect_equal(pick("estimate", "(Intercept)"), -1.5416352312, tolerance = 1e-7)
+  expect_equal(pick("estimate", "age"), 0.0050840704, tolerance = 1e-7)
+  expect_equal(pick("estimate", "sexMale"), -0.0508090959, tolerance = 1e-7)
+  expect_equal(pick("std.error", "(Intercept)"), 0.2623940027, tolerance = 1e-5)
+  expect_equal(pick("std.error", "age"), 0.0048440660, tolerance = 1e-5)
   expect_equal(pick("std.error", "sexMale"), 0.1430144333, tolerance = 1e-5)
-  expect_equal(pick("statistic", "(Intercept)")^2, 34.5187805150,
-               tolerance = 1e-5)
-  expect_equal(pick("statistic", "age")^2,     1.1015469287,
-               tolerance = 1e-5)
-  expect_equal(pick("statistic", "sexMale")^2, 0.1262185522,
-               tolerance = 1e-4)
+  expect_equal(
+    pick("statistic", "(Intercept)")^2,
+    34.5187805150,
+    tolerance = 1e-5
+  )
+  expect_equal(pick("statistic", "age")^2, 1.1015469287, tolerance = 1e-5)
+  expect_equal(pick("statistic", "sexMale")^2, 0.1262185522, tolerance = 1e-4)
 
   # Exp(B) and its CI: exp of the Wald link-scale bounds, the same
   # construction on both sides.
-  expect_equal(exp(pick("estimate", "age")),     1.0050970162,
-               tolerance = 1e-7)
-  expect_equal(exp(pick("estimate", "sexMale")), 0.9504601000,
-               tolerance = 1e-7)
-  expect_equal(exp(pick("estimate", "(Intercept)")), 0.2140308252,
-               tolerance = 1e-7)
-  expect_equal(exp(pick("conf.low",  "age")), 0.9955995858,
-               tolerance = 1e-6)
-  expect_equal(exp(pick("conf.high", "age")), 1.0146850464,
-               tolerance = 1e-6)
-  expect_equal(exp(pick("conf.low",  "sexMale")), 0.7181245662,
-               tolerance = 1e-6)
-  expect_equal(exp(pick("conf.high", "sexMale")), 1.2579633732,
-               tolerance = 1e-6)
+  expect_equal(exp(pick("estimate", "age")), 1.0050970162, tolerance = 1e-7)
+  expect_equal(exp(pick("estimate", "sexMale")), 0.9504601000, tolerance = 1e-7)
+  expect_equal(
+    exp(pick("estimate", "(Intercept)")),
+    0.2140308252,
+    tolerance = 1e-7
+  )
+  expect_equal(exp(pick("conf.low", "age")), 0.9955995858, tolerance = 1e-6)
+  expect_equal(exp(pick("conf.high", "age")), 1.0146850464, tolerance = 1e-6)
+  expect_equal(exp(pick("conf.low", "sexMale")), 0.7181245662, tolerance = 1e-6)
+  expect_equal(
+    exp(pick("conf.high", "sexMale")),
+    1.2579633732,
+    tolerance = 1e-6
+  )
 
   # Model summary: -2LL and Nagelkerke (PSPP prints Cox & Snell too;
   # spicy implements McFadden / Nagelkerke / Tjur).
-  expect_equal(-2 * as.numeric(logLik(fit)), 1212.4961020879,
-               tolerance = 1e-10)
-  expect_equal(spicy:::compute_pseudo_r2_nagelkerke(fit), 0.0016354918,
-               tolerance = 1e-7)
+  expect_equal(-2 * as.numeric(logLik(fit)), 1212.4961020879, tolerance = 1e-10)
+  expect_equal(
+    spicy:::compute_pseudo_r2_nagelkerke(fit),
+    0.0016354918,
+    tolerance = 1e-7
+  )
 })

@@ -17,12 +17,11 @@ test_that("rq default is the nid sandwich, exact vs summary.rq", {
   o <- summary(fit, se = "nid", hs = TRUE)$coefficients
   b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   expect_equal(b$std_error, unname(o[, "Std. Error"]), tolerance = 1e-12)
-  expect_equal(b$statistic, unname(o[, "t value"]),    tolerance = 1e-12)
+  expect_equal(b$statistic, unname(o[, "t value"]), tolerance = 1e-12)
   expect_match(fr$info$vcov_label, "nid", fixed = TRUE)
   # t inference with n - p df, byte-matching summary.rq's convention.
   expect_true(all(b$test_type == "t"))
-  expect_equal(unique(b$df),
-               length(fit$residuals) - length(stats::coef(fit)))
+  expect_equal(unique(b$df), length(fit$residuals) - length(stats::coef(fit)))
 })
 
 
@@ -33,8 +32,11 @@ test_that("rq default triangulates against parameters::", {
   fr <- as_regression_frame(fit)
   pp <- as.data.frame(parameters::model_parameters(fit))
   b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  expect_equal(b$std_error[b$term == "income"],
-               pp$SE[pp$Parameter == "income"], tolerance = 1e-6)
+  expect_equal(
+    b$std_error[b$term == "income"],
+    pp$SE[pp$Parameter == "income"],
+    tolerance = 1e-6
+  )
 })
 
 
@@ -45,8 +47,12 @@ test_that("rq iid and ker opt-ins are exact vs summary.rq", {
     fr <- as_regression_frame(fit, vcov = m)
     o <- summary(fit, se = m, covariance = TRUE)$coefficients
     b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-    expect_equal(b$std_error, unname(o[, "Std. Error"]),
-                 tolerance = 1e-12, info = m)
+    expect_equal(
+      b$std_error,
+      unname(o[, "Std. Error"]),
+      tolerance = 1e-12,
+      info = m
+    )
   }
   # iid understates nid on this openly heteroskedastic data (the reason
   # the default moved): pin the ordering, not the exact ratio.
@@ -83,18 +89,28 @@ test_that("rq bootstrap is quantreg-native, z-based, one draw", {
   set.seed(42)
   o <- summary(fit, se = "boot", R = 200, covariance = TRUE)
   b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  expect_equal(b$std_error, unname(o$coefficients[, "Std. Error"]),
-               tolerance = 1e-12)
+  expect_equal(
+    b$std_error,
+    unname(o$coefficients[, "Std. Error"]),
+    tolerance = 1e-12
+  )
   # House resampler rule: asymptotic z (summary.rq prints t(n-p); SEs
   # match exactly, the inference frame is disclosed via test_type).
   expect_true(all(b$test_type == "z"))
   expect_true(all(is.infinite(b$df)))
-  expect_equal(b$p_value, 2 * stats::pnorm(-abs(b$estimate / b$std_error)),
-               tolerance = 1e-12)
+  expect_equal(
+    b$p_value,
+    2 * stats::pnorm(-abs(b$estimate / b$std_error)),
+    tolerance = 1e-12
+  )
   # boot_percentile bounds come from the SAME replicate draw ($B).
   set.seed(42)
-  fr_p <- as_regression_frame(fit, vcov = "bootstrap", boot_n = 200,
-                              ci_method = "boot_percentile")
+  fr_p <- as_regression_frame(
+    fit,
+    vcov = "bootstrap",
+    boot_n = 200,
+    ci_method = "boot_percentile"
+  )
   set.seed(42)
   o2 <- summary(fit, se = "boot", R = 200, covariance = TRUE)
   bp <- fr_p$coefs[fr_p$coefs$estimate_type == "B" & !fr_p$coefs$is_ref, ]
@@ -132,8 +148,7 @@ test_that("weighted rq fits: disclosed, bootstrap refused", {
   data("engel", package = "quantreg")
   set.seed(1)
   w <- runif(nrow(engel), 0.5, 2)
-  fit <- quantreg::rq(foodexp ~ income, data = engel, tau = 0.5,
-                      weights = w)
+  fit <- quantreg::rq(foodexp ~ income, data = engel, tau = 0.5, weights = w)
   fr <- as_regression_frame(fit)
   expect_identical(fr$info$weights_kind, "case")
   expect_true(fr$info$extras$has_weights)
@@ -156,8 +171,12 @@ test_that("rq cluster formula survives NA-dropped rows; nested refused", {
   # must be subset by the fit's na.action to the 233 used rows --
   # summary.rq would re-subset a pre-aligned vector, so the backend
   # calls boot.rq directly on x / y it builds itself.
-  tb <- suppressWarnings(table_regression(fit, vcov = "bootstrap",
-                                          cluster = ~cl, boot_n = 50))
+  tb <- suppressWarnings(table_regression(
+    fit,
+    vcov = "bootstrap",
+    cluster = ~cl,
+    boot_n = 50
+  ))
   out <- paste(capture.output(print(tb)), collapse = "\n")
   expect_match(out, "wild gradient cluster bootstrap", fixed = TRUE)
 })
@@ -169,26 +188,31 @@ test_that("nested rq pairs ride anova.rq's Wald-type F", {
   f0 <- quantreg::rq(foodexp ~ 1, data = engel, tau = 0.5)
   f1 <- .rq_engel()
   o <- suppressWarnings(stats::anova(f0, f1))$table
-  tb <- suppressWarnings(table_regression(list(M1 = f0, M2 = f1),
-                                          nested = TRUE))
+  tb <- suppressWarnings(table_regression(
+    list(M1 = f0, M2 = f1),
+    nested = TRUE
+  ))
   out <- paste(capture.output(print(tb)), collapse = "\n")
   # The comparison rows carry the exact anova.rq statistic and p.
   expect_match(out, sprintf("%.2f", o$Tn[1L]), fixed = TRUE)
   cmp <- attr(tb, "nested_comparisons") %||%
     spicy:::compute_nested_comparisons(list(f0, f1))
   expect_equal(cmp$f_change[1L], as.numeric(o$Tn[1L]), tolerance = 1e-12)
-  expect_equal(cmp$p_change[1L], as.numeric(o$pvalue[1L]),
-               tolerance = 1e-12)
+  expect_equal(cmp$p_change[1L], as.numeric(o$pvalue[1L]), tolerance = 1e-12)
   # R-squared / likelihood families stay NA (undefined for check loss).
   expect_true(is.na(cmp$r2_change[1L]) && is.na(cmp$lrt_change[1L]))
   # AIC delta from quantreg's own pseudo-likelihood methods.
-  expect_equal(cmp$aic_change[1L],
-               as.numeric(stats::AIC(f1)) - as.numeric(stats::AIC(f0)),
-               tolerance = 1e-12)
+  expect_equal(
+    cmp$aic_change[1L],
+    as.numeric(stats::AIC(f1)) - as.numeric(stats::AIC(f0)),
+    tolerance = 1e-12
+  )
   # Guards: mixed classes and mixed taus are refused with the reason.
   expect_error(
-    table_regression(list(L = stats::lm(foodexp ~ income, data = engel),
-                          Q = f1), nested = TRUE),
+    table_regression(
+      list(L = stats::lm(foodexp ~ income, data = engel), Q = f1),
+      nested = TRUE
+    ),
     "mix quantile regression",
     class = "spicy_invalid_input"
   )
@@ -206,9 +230,12 @@ test_that("rq cluster works only through the wild gradient bootstrap", {
   data("engel", package = "quantreg")
   engel$cl <- rep(seq_len(47), each = 5)
   fit <- quantreg::rq(foodexp ~ income, data = engel, tau = 0.5)
-  tb <- suppressWarnings(table_regression(fit, vcov = "bootstrap",
-                                          cluster = engel$cl,
-                                          boot_n = 100))
+  tb <- suppressWarnings(table_regression(
+    fit,
+    vcov = "bootstrap",
+    cluster = engel$cl,
+    boot_n = 100
+  ))
   out <- paste(capture.output(print(tb)), collapse = "\n")
   expect_match(out, "wild gradient cluster bootstrap", fixed = TRUE)
   expect_error(
@@ -229,8 +256,11 @@ test_that("rq refuses HC*, CR*, jackknife; other classes refuse rq tokens", {
   fit <- .rq_engel()
   for (v in c("HC1", "CR2", "jackknife")) {
     expect_error(
-      table_regression(fit, vcov = v,
-                       cluster = if (v == "CR2") rep(1:47, each = 5)),
+      table_regression(
+        fit,
+        vcov = v,
+        cluster = if (v == "CR2") rep(1:47, each = 5)
+      ),
       class = "spicy_unsupported_vcov"
     )
   }
@@ -249,11 +279,17 @@ test_that("rq AME rows share the coefficient rows' vcov", {
   skip_if_not_installed("marginaleffects")
   fit <- .rq_engel()
   fr <- suppressWarnings(as_regression_frame(
-    fit, show_columns = c("b", "ame")))
-  se_b   <- fr$coefs$std_error[fr$coefs$estimate_type == "B" &
-                                 fr$coefs$term == "income"]
-  se_ame <- fr$coefs$std_error[fr$coefs$estimate_type == "ame" &
-                                 fr$coefs$term == "income"]
+    fit,
+    show_columns = c("b", "ame")
+  ))
+  se_b <- fr$coefs$std_error[
+    fr$coefs$estimate_type == "B" &
+      fr$coefs$term == "income"
+  ]
+  se_ame <- fr$coefs$std_error[
+    fr$coefs$estimate_type == "ame" &
+      fr$coefs$term == "income"
+  ]
   # Identity model: AME == slope, so the delta-method SE equals the
   # coefficient SE up to marginaleffects' numeric-jacobian noise
   # (~1e-5 relative) -- far tighter than the iid-vs-nid gap (> 2x),
@@ -261,12 +297,21 @@ test_that("rq AME rows share the coefficient rows' vcov", {
   expect_equal(se_ame, se_b, tolerance = 1e-4)
   # And an explicit iid request moves BOTH (no silent nid fallback).
   fr_i <- suppressWarnings(as_regression_frame(
-    fit, vcov = "iid", show_columns = c("b", "ame")))
-  expect_equal(fr_i$coefs$std_error[fr_i$coefs$estimate_type == "ame" &
-                                      fr_i$coefs$term == "income"],
-               fr_i$coefs$std_error[fr_i$coefs$estimate_type == "B" &
-                                      fr_i$coefs$term == "income"],
-               tolerance = 1e-4)
+    fit,
+    vcov = "iid",
+    show_columns = c("b", "ame")
+  ))
+  expect_equal(
+    fr_i$coefs$std_error[
+      fr_i$coefs$estimate_type == "ame" &
+        fr_i$coefs$term == "income"
+    ],
+    fr_i$coefs$std_error[
+      fr_i$coefs$estimate_type == "B" &
+        fr_i$coefs$term == "income"
+    ],
+    tolerance = 1e-4
+  )
 })
 
 
@@ -274,13 +319,15 @@ test_that("rq with a factor predictor at a non-central tau stays exact", {
   skip_if_not_installed("quantreg")
   # Real observational data (infert case-control study), factor
   # predictor, upper quartile -- the varied-inputs rule.
-  fit <- quantreg::rq(age ~ parity + education, data = infert,
-                      tau = 0.75)
+  fit <- quantreg::rq(age ~ parity + education, data = infert, tau = 0.75)
   fr <- suppressWarnings(as_regression_frame(fit))
   o <- suppressWarnings(summary(fit, se = "nid", hs = TRUE)$coefficients)
   b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  expect_equal(b$std_error[match(rownames(o), b$term)],
-               unname(o[, "Std. Error"]), tolerance = 1e-12)
+  expect_equal(
+    b$std_error[match(rownames(o), b$term)],
+    unname(o[, "Std. Error"]),
+    tolerance = 1e-12
+  )
   # Reference row for the factor's base level renders as usual.
   expect_true(any(fr$coefs$is_ref))
 })

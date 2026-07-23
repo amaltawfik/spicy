@@ -19,7 +19,6 @@
 # Each block makes a real assertion; engine-specific blocks are gated by
 # skip_if_not_installed().
 
-
 # ---- resolve_effect_size_choice() ---------------------------------------
 
 test_that("resolve_effect_size_choice short-circuits on 'none'", {
@@ -52,28 +51,40 @@ test_that("resolve_effect_size_choice silently falls back when not explicit", {
   # parametric test + nonparametric measure -> auto parametric default
   expect_identical(
     spicy:::resolve_effect_size_choice(
-      "r_rb", 2L, "welch", explicit = FALSE
+      "r_rb",
+      2L,
+      "welch",
+      explicit = FALSE
     ),
     "hedges_g"
   )
   # nonparametric test + parametric measure -> auto nonparametric default
   expect_identical(
     spicy:::resolve_effect_size_choice(
-      "hedges_g", 2L, "nonparametric", explicit = FALSE
+      "hedges_g",
+      2L,
+      "nonparametric",
+      explicit = FALSE
     ),
     "r_rb"
   )
   # multi-group measure with 2 groups -> auto two-group default
   expect_identical(
     spicy:::resolve_effect_size_choice(
-      "eta_sq", 2L, "welch", explicit = FALSE
+      "eta_sq",
+      2L,
+      "welch",
+      explicit = FALSE
     ),
     "hedges_g"
   )
   # two-group measure with 3 groups -> auto multi-group default
   expect_identical(
     spicy:::resolve_effect_size_choice(
-      "hedges_g", 3L, "welch", explicit = FALSE
+      "hedges_g",
+      3L,
+      "welch",
+      explicit = FALSE
     ),
     "eta_sq"
   )
@@ -113,7 +124,12 @@ test_that("compute_effect_size auto-resolves type from method/group count", {
 
   # type = NULL, nonparametric, 2 groups -> r_rb
   row_np <- spicy:::compute_effect_size(
-    x, g, 2L, "nonparametric", 0.95, type = NULL
+    x,
+    g,
+    2L,
+    "nonparametric",
+    0.95,
+    type = NULL
   )
   expect_identical(row_np$es_type, "r_rb")
 })
@@ -127,7 +143,12 @@ test_that("compute_effect_size auto-resolves multi-group types", {
   expect_identical(row$es_type, "eta_sq")
 
   row_np <- spicy:::compute_effect_size(
-    x, g, 3L, "nonparametric", 0.95, type = NULL
+    x,
+    g,
+    3L,
+    "nonparametric",
+    0.95,
+    type = NULL
   )
   expect_identical(row_np$es_type, "epsilon_sq")
 })

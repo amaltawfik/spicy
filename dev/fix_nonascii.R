@@ -16,7 +16,9 @@ pairs <- list(
 )
 for (path in files) {
   src <- readLines(path, warn = FALSE, encoding = "UTF-8")
-  for (p in pairs) src <- gsub(p[1], p[2], src, fixed = TRUE)
+  for (p in pairs) {
+    src <- gsub(p[1], p[2], src, fixed = TRUE)
+  }
   con <- file(path, "wb")
   writeLines(src, con = con, sep = "\n", useBytes = FALSE)
   close(con)

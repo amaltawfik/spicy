@@ -159,7 +159,9 @@ test_that("pre-existing duplicate input names are not blamed on the split", {
 
   # Pre-existing duplicates alongside an unrelated clean split.
   df2 <- data.frame(
-    q = 1, q = 2, "age. Age of respondent" = 3,
+    q = 1,
+    q = 2,
+    "age. Age of respondent" = 3,
     check.names = FALSE
   )
   out2 <- label_from_names(df2)

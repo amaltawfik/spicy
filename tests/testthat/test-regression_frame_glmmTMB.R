@@ -12,13 +12,11 @@
 #     with component = "conditional" (skipped if not installed).
 # ---------------------------------------------------------------------------
 
-
 # ---- Fixtures -------------------------------------------------------------
 
 .fit_glmmTMB_gauss <- function() {
   skip_if_not_installed("glmmTMB")
-  glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject),
-                   data = lme4::sleepstudy)
+  glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
 }
 
 .fit_glmmTMB_gauss_factor <- function() {
@@ -32,7 +30,7 @@
   skip_if_not_installed("glmmTMB")
   glmmTMB::glmmTMB(
     cbind(incidence, size - incidence) ~ period + (1 | herd),
-    data   = lme4::cbpp,
+    data = lme4::cbpp,
     family = binomial
   )
 }
@@ -42,17 +40,22 @@
   d <- mtcars
   d$cyl <- factor(d$cyl)
   d$counter <- as.integer(d$gear)
-  glmmTMB::glmmTMB(counter ~ mpg + (1 | cyl),
-                   data = d, family = poisson(link = "log"))
+  glmmTMB::glmmTMB(
+    counter ~ mpg + (1 | cyl),
+    data = d,
+    family = poisson(link = "log")
+  )
 }
 
 .fit_glmmTMB_zi <- function() {
   skip_if_not_installed("glmmTMB")
   data(Salamanders, package = "glmmTMB", envir = environment())
-  glmmTMB::glmmTMB(count ~ mined + (1 | site),
-                   zi = ~ mined,
-                   data = Salamanders,
-                   family = poisson)
+  glmmTMB::glmmTMB(
+    count ~ mined + (1 | site),
+    zi = ~mined,
+    data = Salamanders,
+    family = poisson
+  )
 }
 
 
@@ -81,7 +84,7 @@ test_that("glmmTMB Gaussian: info$family is gaussian/identity", {
   fit <- .fit_glmmTMB_gauss()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")
-  expect_identical(fr$info$family$link,   "identity")
+  expect_identical(fr$info$family$link, "identity")
 })
 
 test_that("glmmTMB: info$dv reads the response variable name", {
@@ -105,10 +108,12 @@ test_that("glmmTMB Gaussian: coefs estimates match glmmTMB::fixef(fit)$cond", {
   legacy <- glmmTMB::fixef(fit)$cond
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(legacy)) {
-    expect_equal(b_rows$estimate[b_rows$term == nm],
-                 unname(legacy[nm]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$estimate[b_rows$term == nm],
+      unname(legacy[nm]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -119,9 +124,11 @@ test_that("glmmTMB Gaussian: coefs SE matches sqrt(diag(vcov$cond))", {
   expected_se <- sqrt(diag(V))
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in names(expected_se)) {
-    expect_equal(b_rows$std_error[b_rows$term == nm],
-                 unname(expected_se[nm]),
-                 tolerance = 1e-10)
+    expect_equal(
+      b_rows$std_error[b_rows$term == nm],
+      unname(expected_se[nm]),
+      tolerance = 1e-10
+    )
   }
 })
 
@@ -142,10 +149,12 @@ test_that("glmmTMB Gaussian: p-values match summary(fit)$coefficients$cond", {
   smc <- summary(fit)$coefficients$cond
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in rownames(smc)) {
-    expect_equal(b_rows$p_value[b_rows$term == nm],
-                 unname(smc[nm, "Pr(>|z|)"]),
-                 tolerance = 1e-10,
-                 info = paste("term:", nm))
+    expect_equal(
+      b_rows$p_value[b_rows$term == nm],
+      unname(smc[nm, "Pr(>|z|)"]),
+      tolerance = 1e-10,
+      info = paste("term:", nm)
+    )
   }
 })
 
@@ -174,9 +183,11 @@ test_that("glmmTMB Gaussian: ICC matches var_random / (var_random + var_resid)",
   vc <- fr$info$random_effects$variance_components
   var_r <- vc$variance[vc$group == "Subject"]
   var_e <- vc$variance[vc$group == "Residual"]
-  expect_equal(fr$info$random_effects$icc,
-               var_r / (var_r + var_e),
-               tolerance = 1e-10)
+  expect_equal(
+    fr$info$random_effects$icc,
+    var_r / (var_r + var_e),
+    tolerance = 1e-10
+  )
 })
 
 
@@ -192,17 +203,19 @@ test_that("glmmTMB Gaussian: fit_stats$r_squared / adj_r_squared are NA", {
 test_that("glmmTMB Gaussian: fit_stats$sigma matches stats::sigma()", {
   fit <- .fit_glmmTMB_gauss()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$sigma, stats::sigma(fit),
-               tolerance = 1e-10)
+  expect_equal(fr$info$fit_stats$sigma, stats::sigma(fit), tolerance = 1e-10)
 })
 
 test_that("glmmTMB: AIC/BIC/logLik/nobs match stats:: helpers", {
   fit <- .fit_glmmTMB_gauss()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_equal(fr$info$fit_stats$aic, stats::AIC(fit),     tolerance = 1e-10)
-  expect_equal(fr$info$fit_stats$bic, stats::BIC(fit),     tolerance = 1e-10)
-  expect_equal(fr$info$fit_stats$log_lik, as.numeric(stats::logLik(fit)),
-               tolerance = 1e-10)
+  expect_equal(fr$info$fit_stats$aic, stats::AIC(fit), tolerance = 1e-10)
+  expect_equal(fr$info$fit_stats$bic, stats::BIC(fit), tolerance = 1e-10)
+  expect_equal(
+    fr$info$fit_stats$log_lik,
+    as.numeric(stats::logLik(fit)),
+    tolerance = 1e-10
+  )
   expect_identical(fr$info$fit_stats$nobs, as.integer(stats::nobs(fit)))
 })
 
@@ -217,7 +230,7 @@ test_that("glmmTMB Gaussian: supports flags are correct", {
   expect_false(sp$partial_effect_size)
   expect_false(sp$classical_r2)
   expect_true(sp$nested_lrt)
-  expect_false(sp$exponentiate)  # identity link
+  expect_false(sp$exponentiate) # identity link
   expect_true(sp$standardise_refit)
 })
 
@@ -247,7 +260,7 @@ test_that("glmmTMB binomial: info$family is binomial/logit; Wald z", {
   fit <- .fit_glmmTMB_binom()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "binomial")
-  expect_identical(fr$info$family$link,   "logit")
+  expect_identical(fr$info$family$link, "logit")
   expect_identical(fr$info$ci_method, "wald")
   expect_true(all(fr$coefs$test_type == "z" | fr$coefs$is_ref))
 })
@@ -256,14 +269,14 @@ test_that("glmmTMB binomial: title_prefix names 'Logistic'", {
   fit <- .fit_glmmTMB_binom()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_match(fr$info$extras$title_prefix, "Logistic", fixed = TRUE)
-  expect_match(fr$info$extras$title_prefix, "glmmTMB",  fixed = TRUE)
+  expect_match(fr$info$extras$title_prefix, "glmmTMB", fixed = TRUE)
 })
 
 test_that("glmmTMB poisson: info$family is poisson/log; title 'Poisson'", {
   fit <- .fit_glmmTMB_poisson()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "poisson")
-  expect_identical(fr$info$family$link,   "log")
+  expect_identical(fr$info$family$link, "log")
   expect_match(fr$info$extras$title_prefix, "Poisson", fixed = TRUE)
 })
 
@@ -281,16 +294,14 @@ test_that("glmmTMB zero-inflated: info$extras$has_zi = TRUE; component block cap
   expect_identical(blk$label, "Zero-inflation")
   expect_identical(blk$link, "logit")
   non_ref <- blk$coefs[!blk$coefs$is_ref, , drop = FALSE]
-  expect_setequal(non_ref$term,
-                  paste0("zi.", names(glmmTMB::fixef(fit)$zi)))
+  expect_setequal(non_ref$term, paste0("zi.", names(glmmTMB::fixef(fit)$zi)))
   expect_true(all(is.finite(non_ref$std_error)))
 })
 
 test_that("glmmTMB zero-inflated: title_prefix suffixed '(zero-inflated)'", {
   fit <- .fit_glmmTMB_zi()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix,
-               "(zero-inflated)", fixed = TRUE)
+  expect_match(fr$info$extras$title_prefix, "(zero-inflated)", fixed = TRUE)
 })
 
 test_that("glmmTMB non-zi: zi_coefs is NULL, has_zi = FALSE", {
@@ -310,22 +321,34 @@ test_that("glmmTMB Gaussian coefs match parameters::model_parameters() (oracle)"
 
   oracle <- parameters::model_parameters(
     fit,
-    ci         = 0.95,
-    ci_method  = "wald",
-    effects    = "fixed",
-    component  = "conditional"
+    ci = 0.95,
+    ci_method = "wald",
+    effects = "fixed",
+    component = "conditional"
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })
 
@@ -336,22 +359,34 @@ test_that("glmmTMB binomial coefs match parameters::model_parameters() (oracle)"
 
   oracle <- parameters::model_parameters(
     fit,
-    ci         = 0.95,
-    ci_method  = "wald",
-    effects    = "fixed",
-    component  = "conditional",
+    ci = 0.95,
+    ci_method = "wald",
+    effects = "fixed",
+    component = "conditional",
     exponentiate = FALSE
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   for (nm in oracle$Parameter) {
-    spicy_row  <- b_rows[b_rows$term == nm, ]
+    spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
-    expect_equal(spicy_row$estimate,  oracle_row$Coefficient, tolerance = 1e-6,
-                 info = paste("oracle B mismatch on term:", nm))
-    expect_equal(spicy_row$std_error, oracle_row$SE,          tolerance = 1e-6,
-                 info = paste("oracle SE mismatch on term:", nm))
-    expect_equal(spicy_row$p_value,   oracle_row$p,           tolerance = 1e-6,
-                 info = paste("oracle p mismatch on term:", nm))
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
   }
 })
