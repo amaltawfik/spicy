@@ -241,6 +241,50 @@ freq(sochealth, income_group, na_val = "High")
 #> Data: sochealth
 ```
 
+### Declared missing values
+
+Survey files imported with haven often declare codes as missing at the
+source – `8 = Refused`, `9 = Don't know` – through
+`na_values`/`na_range` (SPSS-style) or tagged NAs (Stata-style). In R
+these codes are *not* `NA`, so most packages silently treat them as
+valid answers. spicy honors the declaration by default: the codes are
+excluded from valid percentages and statistics, and
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) shows
+them as labelled rows of its Missing block instead of erasing them.
+
+``` r
+
+sh2 <- sochealth
+sh2$trust <- labelled::labelled_spss(
+  c(1, 2, 8, 1, 9, 2, 1, 8, 2, 1, rep(c(1, 2), 595)),
+  labels = c("Low" = 1, "High" = 2, "Refused" = 8, "Don't know" = 9),
+  na_values = c(8, 9)
+)
+freq(sh2, trust)
+#> Frequency table: trust
+#> 
+#>  Category   │ Values              Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────────────
+#>  Valid      │ [1] Low               599       49.9             50.0 
+#>             │ [2] High              598       49.8             50.0 
+#>  Missing    │ [8] Refused             2        0.2                  
+#>             │ [9] Don't know          1        0.1                  
+#> ────────────┼───────────────────────────────────────────────────────
+#>  Total      │                      1200      100.0            100.0 
+#> 
+#> Class: haven_labelled_spss, haven_labelled, vctrs_vctr, double
+#> Data: sh2
+```
+
+Set `user_na = FALSE` to treat the declared codes as ordinary categories
+instead. The same argument, with the same default, exists in
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+the `table_*()` helpers, and the row-wise functions – and the exclusions
+are always disclosed in the table note. See the “Declared missing
+values” section of
+[`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md) for the
+full contract.
+
 ## Cross-tabulations with cross_tab()
 
 ### Basic two-way table

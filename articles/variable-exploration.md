@@ -169,6 +169,12 @@ varlist(sochealth, smoking, education, income_group, tbl = TRUE)
 #> 3 income_group Household income group  Low, Lowe… orde…          4    1182    18
 ```
 
+Declared missing values (haven’s `na_values`/`na_range`, tagged NAs)
+count as missing here too: `N_valid`, `NAs`, and `N_distinct` all honor
+the declaration, consistently with the tabulation functions (see the
+“Declared missing values” section of
+[`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md)).
+
 This is often enough to confirm that labels, factor levels, and missing
 values look correct before moving on to tabulations.
 

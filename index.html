@@ -132,7 +132,7 @@
 <li>
 <strong>Row-wise summaries</strong> with <code><a href="reference/mean_n.html">mean_n()</a></code>, <code><a href="reference/sum_n.html">sum_n()</a></code>, and <code><a href="reference/count_n.html">count_n()</a></code>, with explicit control over missing values.</li>
 </ul>
-<p>Works with <code>labelled</code>, <code>factor</code>, <code>ordered</code>, <code>Date</code>, <code>POSIXct</code>, and other common variable types. For a full introduction, see <a href="https://amaltawfik.github.io/spicy/articles/spicy.html">Getting started with spicy</a>.</p>
+<p>Works with <code>labelled</code>, <code>factor</code>, <code>ordered</code>, <code>Date</code>, <code>POSIXct</code>, and other common variable types – and honors <strong>declared missing values</strong> (haven’s <code>na_values</code>/<code>na_range</code>, tagged NAs) across the descriptive functions, with disclosure notes and a <code>user_na</code> escape hatch. For a full introduction, see <a href="https://amaltawfik.github.io/spicy/articles/spicy.html">Getting started with spicy</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="supported-models">Supported models<a class="anchor" aria-label="anchor" href="#supported-models"></a>
@@ -302,7 +302,8 @@
 <span><span class="co">#&gt;  N        │               257                527         391 │    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt;.001</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.14</span></span></code></pre></div>
+<span><span class="co">#&gt; Cramer's V = 0.14</span></span>
+<span><span class="co">#&gt; Missing values removed: smoking (25).</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations</a> for <code><a href="reference/freq.html">freq()</a></code>, <code><a href="reference/cross_tab.html">cross_tab()</a></code>, percentages, weights, and tests.</p>
 </div>
 <div class="section level3">
@@ -317,8 +318,8 @@
 <span></span>
 <span><span class="co"># Detailed result with CI and p-value</span></span>
 <span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;    0.176     0.120     0.231  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
+<span><span class="co">#&gt;    0.176  --     0.120     0.231  &lt;.001</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures</a> for a guide on choosing the right measure.</p>
 </div>
 <div class="section level3">
@@ -404,7 +405,9 @@
 <span><span class="co">#&gt;  Variable                       │ 95% CI UL   n   </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼─────────────────</span></span>
 <span><span class="co">#&gt;  Body mass index                │   26.14    1188 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) │    3.62    1192</span></span></code></pre></div>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) │    3.62    1192 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Missing values removed: bmi (12), life_sat_health (8).</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -441,7 +444,9 @@
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) │ Lower secondary  &lt;.001 </span></span>
 <span><span class="co">#&gt;                                 │ Upper secondary        </span></span>
-<span><span class="co">#&gt;                                 │ Tertiary</span></span></code></pre></div>
+<span><span class="co">#&gt;                                 │ Tertiary               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Missing values removed: bmi (12), life_sat_health (8).</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
