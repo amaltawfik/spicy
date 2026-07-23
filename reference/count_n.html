@@ -112,13 +112,16 @@ automatically.</p></dd>
 
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
 <dd><p>Columns to include. Defaults to <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">tidyselect::everything()</a></code>.
-Uses tidyselect helpers like <code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">tidyselect::starts_with()</a></code>, etc.
+Uses tidyselect helpers like <code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">tidyselect::starts_with()</a></code>, etc.; a
+character vector of names is validated with <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">tidyselect::all_of()</a></code>,
+so unknown names raise an error (as in <code><a href="mean_n.html">mean_n()</a></code> and <code><a href="sum_n.html">sum_n()</a></code>).
 If <code>regex = TRUE</code>, <code>select</code> is treated as a regex string.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
-<dd><p>Character vector of column names to exclude after selection.
-Defaults to <code>NULL</code> (no exclusion).</p></dd>
+<dd><p>Columns to exclude after selection (names or positions,
+as accepted by <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">tidyselect::any_of()</a></code>). Defaults to <code>NULL</code>
+(no exclusion).</p></dd>
 
 
 <dt id="arg-count">count<a class="anchor" aria-label="anchor" href="#arg-count"></a></dt>
@@ -132,6 +135,8 @@ If <code>allow_coercion = FALSE</code>, matching is type-safe using <code><a hre
 <dt id="arg-special">special<a class="anchor" aria-label="anchor" href="#arg-special"></a></dt>
 <dd><p>Character vector of special values to count: <code>"NA"</code>, <code>"NaN"</code>, <code>"Inf"</code>, <code>"-Inf"</code>, or <code>"all"</code>.
 Defaults to <code>NULL</code>.
+Every entry is validated, including alongside <code>"all"</code>: any other
+value raises an error.
 <code>"NA"</code> uses <code><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na()</a></code>, and therefore includes both <code>NA</code> and <code>NaN</code> values.
 <code>"NaN"</code> uses <code><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.nan()</a></code> to match only actual NaN values.</p></dd>
 
@@ -159,7 +164,11 @@ If <code>TRUE</code>, prints processing messages.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A numeric vector of row-wise counts (unnamed), of length
-<code>nrow(data)</code>.</p>
+<code>nrow(data)</code>. Missing values never match a regular <code>count</code> value,
+so an all-<code>NA</code> row counts <code>0</code> unless <code>special</code> targets missing
+values. If the selection resolves to zero usable columns, a
+classed warning (<code>spicy_no_selection</code>) is emitted and <code>NA</code> is
+returned for all rows, as in <code><a href="mean_n.html">mean_n()</a></code> and <code><a href="sum_n.html">sum_n()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="strict-matching-allow-coercion-false-">Strict matching (<code>allow_coercion = FALSE</code>)<a class="anchor" aria-label="anchor" href="#strict-matching-allow-coercion-false-"></a></h2>

@@ -8,14 +8,18 @@
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Row sums with an optional minimum-valid-values rule — sum_n"><meta name="description" content="Computes row-wise sums across selected numeric columns of a
 data.frame or matrix. Missing values are handled per row via
 min_valid (an integer count or proportion of non-NA values
-required); rows that fail the rule return NA. Non-numeric
-columns are dropped silently (set verbose = TRUE to see which).
+required); rows that fail the rule return NA, and rows with no
+valid values at all return NA even when min_valid = 0.
+Non-numeric columns are dropped silently (set verbose = TRUE to
+see which).
 Designed to flow inside dplyr::mutate(): when called without
 an explicit data argument, the current data context is used."><meta property="og:description" content="Computes row-wise sums across selected numeric columns of a
 data.frame or matrix. Missing values are handled per row via
 min_valid (an integer count or proportion of non-NA values
-required); rows that fail the rule return NA. Non-numeric
-columns are dropped silently (set verbose = TRUE to see which).
+required); rows that fail the rule return NA, and rows with no
+valid values at all return NA even when min_valid = 0.
+Non-numeric columns are dropped silently (set verbose = TRUE to
+see which).
 Designed to flow inside dplyr::mutate(): when called without
 an explicit data argument, the current data context is used."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -82,8 +86,10 @@ an explicit data argument, the current data context is used."><meta property="og
     <p>Computes row-wise sums across selected numeric columns of a
 <code>data.frame</code> or <code>matrix</code>. Missing values are handled per row via
 <code>min_valid</code> (an integer count or proportion of non-<code>NA</code> values
-required); rows that fail the rule return <code>NA</code>. Non-numeric
-columns are dropped silently (set <code>verbose = TRUE</code> to see which).
+required); rows that fail the rule return <code>NA</code>, and rows with no
+valid values at all return <code>NA</code> even when <code>min_valid = 0</code>.
+Non-numeric columns are dropped silently (set <code>verbose = TRUE</code> to
+see which).
 Designed to flow inside <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code>: when called without
 an explicit <code>data</code> argument, the current data context is used.</p>
     </div>
@@ -129,7 +135,11 @@ half of the selected columns to be non-<code>NA</code>).</p></li>
 <li><p>a non-negative integer count up to the number of selected
 numeric columns.</p></li>
 </ul><p>Non-integer values <code>&gt;= 1</code> (e.g. <code>1.5</code>) and counts greater than
-<code>ncol(x)</code> raise an actionable error.</p></dd>
+<code>ncol(x)</code> raise an actionable error.</p>
+<p>Rows with zero valid values always return <code>NA</code>, even when
+<code>min_valid = 0</code>: an empty row-wise summary is undefined, so the
+raw <code><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowMeans()</a></code> / <code><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowSums()</a></code> identities (<code>NaN</code> / <code>0</code>) are never
+returned.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>

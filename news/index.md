@@ -54,6 +54,25 @@
 - The SE footer reads `"classical (Fisher information)"` (was
   `"classical (MLE inverse Hessian)"`).
 
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  now warns (class `spicy_no_selection`) and returns `NA` for all rows
+  when the selection resolves to zero usable columns, matching
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  (it silently returned all zeros). A valid selection where the value is
+  simply absent still counts `0`.
+
+- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  with `min_valid = 0` now return `NA` for rows with no valid values;
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  returned `NaN` and
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) a
+  silent `0` (the raw
+  [`rowMeans()`](https://rdrr.io/pkg/Matrix/man/colSums-methods.html) /
+  [`rowSums()`](https://rdrr.io/pkg/Matrix/man/colSums-methods.html)
+  identities).
+
 ### New supported models
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -225,6 +244,21 @@ rendering an empty column.
   reference levels, joint tests of a factor, ordinal predictors (scores
   vs dummies), successive-difference contrasts, and why continuous
   predictors should not be categorized.
+
+### Row-wise summaries
+
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  resolves `select` and `exclude` through the same tidyselect path as
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  and
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md):
+  unknown names in a character `select` raise a classed error (instead
+  of a base subscript error), and `exclude` accepts positions as well as
+  names.
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  validates every `special` entry before expanding `"all"`, so a typo
+  supplied alongside `"all"` (e.g. `special = c("all", "banana")`)
+  errors instead of being silently discarded.
 
 ### Minor improvements
 

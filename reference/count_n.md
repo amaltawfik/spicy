@@ -38,12 +38,19 @@ count_n(
   [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html).
   Uses tidyselect helpers like
   [`tidyselect::starts_with()`](https://tidyselect.r-lib.org/reference/starts_with.html),
-  etc. If `regex = TRUE`, `select` is treated as a regex string.
+  etc.; a character vector of names is validated with
+  [`tidyselect::all_of()`](https://tidyselect.r-lib.org/reference/all_of.html),
+  so unknown names raise an error (as in
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+  and
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)).
+  If `regex = TRUE`, `select` is treated as a regex string.
 
 - exclude:
 
-  Character vector of column names to exclude after selection. Defaults
-  to `NULL` (no exclusion).
+  Columns to exclude after selection (names or positions, as accepted by
+  [`tidyselect::any_of()`](https://tidyselect.r-lib.org/reference/all_of.html)).
+  Defaults to `NULL` (no exclusion).
 
 - count:
 
@@ -59,9 +66,10 @@ count_n(
 - special:
 
   Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`,
-  `"-Inf"`, or `"all"`. Defaults to `NULL`. `"NA"` uses
-  [`is.na()`](https://rdrr.io/r/base/NA.html), and therefore includes
-  both `NA` and `NaN` values. `"NaN"` uses
+  `"-Inf"`, or `"all"`. Defaults to `NULL`. Every entry is validated,
+  including alongside `"all"`: any other value raises an error. `"NA"`
+  uses [`is.na()`](https://rdrr.io/r/base/NA.html), and therefore
+  includes both `NA` and `NaN` values. `"NaN"` uses
   [`is.nan()`](https://rdrr.io/r/base/is.finite.html) to match only
   actual NaN values.
 
@@ -89,6 +97,12 @@ count_n(
 ## Value
 
 A numeric vector of row-wise counts (unnamed), of length `nrow(data)`.
+Missing values never match a regular `count` value, so an all-`NA` row
+counts `0` unless `special` targets missing values. If the selection
+resolves to zero usable columns, a classed warning
+(`spicy_no_selection`) is emitted and `NA` is returned for all rows, as
+in [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md)
+and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md).
 
 ## Strict matching (`allow_coercion = FALSE`)
 

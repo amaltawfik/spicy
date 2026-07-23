@@ -3,9 +3,10 @@
 Computes row-wise means across selected numeric columns of a
 `data.frame` or `matrix`. Missing values are handled per row via
 `min_valid` (an integer count or proportion of non-`NA` values
-required); rows that fail the rule return `NA`. Non-numeric columns are
-dropped silently (set `verbose = TRUE` to see which). Designed to flow
-inside
+required); rows that fail the rule return `NA`, and rows with no valid
+values at all return `NA` even when `min_valid = 0`. Non-numeric columns
+are dropped silently (set `verbose = TRUE` to see which). Designed to
+flow inside
 [`dplyr::mutate()`](https://dplyr.tidyverse.org/reference/mutate.html):
 when called without an explicit `data` argument, the current data
 context is used.
@@ -59,6 +60,12 @@ mean_n(
 
   Non-integer values `>= 1` (e.g. `1.5`) and counts greater than
   `ncol(x)` raise an actionable error.
+
+  Rows with zero valid values always return `NA`, even when
+  `min_valid = 0`: an empty row-wise summary is undefined, so the raw
+  [`rowMeans()`](https://rdrr.io/pkg/Matrix/man/colSums-methods.html) /
+  [`rowSums()`](https://rdrr.io/pkg/Matrix/man/colSums-methods.html)
+  identities (`NaN` / `0`) are never returned.
 
 - digits:
 

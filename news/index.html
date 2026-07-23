@@ -81,6 +81,8 @@
 <li><p><code>tidy()</code> labels AME rows <code>estimate_type = "ame"</code> (was <code>"AME"</code>).</p></li>
 <li><p>The <code>show_fit_stats</code> information criteria are lowercase tokens like everything else: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code> (was <code>"AIC"</code> / <code>"AICc"</code> / <code>"BIC"</code>). Uppercase errors with the replacement; rendered row labels are unchanged.</p></li>
 <li><p>The SE footer reads <code>"classical (Fisher information)"</code> (was <code>"classical (MLE inverse Hessian)"</code>).</p></li>
+<li><p><code><a href="../reference/count_n.html">count_n()</a></code> now warns (class <code>spicy_no_selection</code>) and returns <code>NA</code> for all rows when the selection resolves to zero usable columns, matching <code><a href="../reference/mean_n.html">mean_n()</a></code> and <code><a href="../reference/sum_n.html">sum_n()</a></code> (it silently returned all zeros). A valid selection where the value is simply absent still counts <code>0</code>.</p></li>
+<li><p><code><a href="../reference/mean_n.html">mean_n()</a></code> and <code><a href="../reference/sum_n.html">sum_n()</a></code> with <code>min_valid = 0</code> now return <code>NA</code> for rows with no valid values; <code><a href="../reference/mean_n.html">mean_n()</a></code> returned <code>NaN</code> and <code><a href="../reference/sum_n.html">sum_n()</a></code> a silent <code>0</code> (the raw <code><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowMeans()</a></code> / <code><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowSums()</a></code> identities).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-supported-models-development-version">New supported models<a class="anchor" aria-label="anchor" href="#new-supported-models-development-version"></a></h3>
@@ -118,6 +120,13 @@
 <li>Two-part models show their full model: the zero component of <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code> / <code>hurdle</code> and the <code>ziformula</code> / <code>dispformula</code> components of <code>glmmTMB</code> render as labelled row blocks with full inference (<code>show_components = FALSE</code> to opt out). A component is exponentiated only when its link yields a ratio.</li>
 <li>Class-aware fit-statistics defaults: pseudo-R² for ordinal and multinomial fits; every other class falls back to <code>nobs</code> + <code>AIC</code> instead of a blank block. The <code>N (groups)</code> row upgrades to plain counts (e.g. <code>N (Subject)</code>) when models share a single grouping factor.</li>
 <li>Six new vignettes: <em>Mixed-effects</em>, <em>Multinomial</em>, <em>Count and two-part</em>, <em>Survival</em>, and <em>Ordinal regression tables</em>, plus <em>Categorical predictors</em> — a cross-cutting guide to dummy coding and reference levels, joint tests of a factor, ordinal predictors (scores vs dummies), successive-difference contrasts, and why continuous predictors should not be categorized.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="row-wise-summaries-development-version">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/count_n.html">count_n()</a></code> resolves <code>select</code> and <code>exclude</code> through the same tidyselect path as <code><a href="../reference/mean_n.html">mean_n()</a></code> and <code><a href="../reference/sum_n.html">sum_n()</a></code>: unknown names in a character <code>select</code> raise a classed error (instead of a base subscript error), and <code>exclude</code> accepts positions as well as names.</li>
+<li>
+<code><a href="../reference/count_n.html">count_n()</a></code> validates every <code>special</code> entry before expanding <code>"all"</code>, so a typo supplied alongside <code>"all"</code> (e.g. <code>special = c("all", "banana")</code>) errors instead of being silently discarded.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
