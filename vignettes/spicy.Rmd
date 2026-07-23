@@ -219,9 +219,20 @@ sochealth |>
   univariable screen (`table_regression_uv()`).
 - `vignette("table-regression-supported-models")` — the
   class-by-class capability map (some thirty model classes).
-- Family articles: mixed, counts, survival, ordinal, multinomial,
-  Bayesian — then `vignette("categorical-predictors")` across all of
-  them.
+- `vignette("table-regression-mixed")` — mixed-effects (multilevel)
+  models, random effects as table rows, ICC.
+- `vignette("table-regression-counts")` — Poisson, negative-binomial,
+  zero-inflated and hurdle models.
+- `vignette("table-regression-survival")` — Cox hazard ratios and
+  accelerated failure time models.
+- `vignette("table-regression-ordinal")` — proportional-odds models,
+  thresholds, per-category marginal effects.
+- `vignette("table-regression-multinomial")` — multinomial logit with
+  outcome categories as columns.
+- `vignette("table-regression-bayesian")` — posterior medians,
+  credible intervals, convergence checks.
+- `vignette("categorical-predictors")` — reference levels, joint
+  tests, contrasts — across all of the above.
 
 **Putting it together**
 
