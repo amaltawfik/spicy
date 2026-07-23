@@ -1277,21 +1277,8 @@ table_continuous_lm <- function(
     NULL
   }
 
-  outcome_labels <- vapply(
-    numeric_outcomes,
-    function(nm) {
-      if (!is.null(labels) && nm %in% names(labels)) {
-        return(labels[[nm]])
-      }
-      lab <- attr(data[[nm]], "label", exact = TRUE)
-      if (is.null(lab) || !nzchar(lab)) nm else lab
-    },
-    character(1)
-  )
-  by_label <- attr(data[[by_name]], "label", exact = TRUE)
-  if (is.null(by_label) || !nzchar(by_label)) {
-    by_label <- by_name
-  }
+  outcome_labels <- resolve_variable_labels(data, numeric_outcomes, labels)
+  by_label <- resolve_variable_labels(data, by_name)
 
   rows <- lapply(
     seq_along(numeric_outcomes),

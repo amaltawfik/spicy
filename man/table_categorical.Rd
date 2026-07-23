@@ -6,7 +6,7 @@
 \usage{
 table_categorical(
   data,
-  select,
+  select = tidyselect::everything(),
   by = NULL,
   labels = NULL,
   levels_keep = NULL,
@@ -40,30 +40,27 @@ table_categorical(
 \item{data}{A data frame.}
 
 \item{select}{Columns to include as row variables. Supports tidyselect
-syntax and character vectors of column names.}
+syntax and character vectors of column names. When omitted,
+defaults to every eligible categorical column in \code{data}: factor,
+character, logical, and labelled (\code{haven} / \code{labelled}) columns,
+excluding the \code{by} column -- matching the select-less defaults of
+\code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}. An explicit
+\code{select} is taken verbatim (numeric columns included), so
+numeric-coded categorical variables can still be tabulated by
+naming them.}
 
 \item{by}{Optional grouping column used for columns/groups. Accepts an
 unquoted column name or a single character column name.}
 
-\item{labels}{Optional display labels for the variables. Two
-forms are accepted (matching \code{\link[=table_continuous]{table_continuous()}} and
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}):
-\itemize{
-\item A \strong{named character vector} whose names match column names
-in \code{data} (e.g. \code{c(bmi = "Body mass index")}); only listed
-columns are relabelled, others fall back to attribute-based
-labels or the column name. \strong{Recommended form}.
-\item A \strong{positional character vector} of the same length as
-\code{select}, in the same order. Backward-compatible with the
-spicy < 0.11.0 API.
-}
-
-When \code{NULL} (the default), column names are used as-is. If a
-variable label attribute is present (e.g. from \code{haven}), it is
-\emph{not} picked up here -- pass \code{labels = c(...)} explicitly. (The
-continuous companions auto-detect attribute labels; the
-categorical function is conservative because the indented row
-labels expect predictable text.)}
+\item{labels}{An optional \strong{named character vector} of variable
+labels whose names match column names in \code{data} (e.g.
+\code{c(smoking = "Current smoker")}) -- the same contract as
+\code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}. Only listed
+columns are relabelled. For the remaining columns (and when
+\code{labels = NULL}, the default), labels are auto-detected from the
+variable's label attribute (e.g. from \code{haven}); if none is found,
+the column name is used. Unnamed (positional) label vectors,
+accepted before 0.13.0, now raise an error.}
 
 \item{levels_keep}{Optional character vector of levels to keep/order for row
 modalities. If \code{NULL}, all observed levels are kept.}
@@ -218,8 +215,12 @@ as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}
 
 \item{clipboard_delim}{Delimiter for clipboard text export. Defaults to \code{"\\t"}.}
 
-\item{word_path}{Path for \code{output = "word"} or optional save path when
-\code{output = "flextable"}. Defaults to \code{NULL}.}
+\item{word_path}{File path for \code{output = "word"}. Defaults to
+\code{NULL}. Before 0.13.0, supplying it with \code{output = "flextable"}
+also wrote a \code{.docx} as a side effect; it is now used exclusively
+by \code{output = "word"} (the contract shared with the rest of the
+table family) and is ignored, with a warning, under
+\code{output = "flextable"}.}
 }
 \value{
 Depends on \code{output}:

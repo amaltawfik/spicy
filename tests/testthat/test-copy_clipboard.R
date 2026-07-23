@@ -60,15 +60,15 @@ test_that("copy_clipboard() works silently for different structures", {
 
   # Silent execution
   expect_silent(copy_clipboard(df, quiet = TRUE))
-  expect_silent(copy_clipboard(df, row.names.as.col = TRUE, quiet = TRUE))
-  expect_silent(copy_clipboard(df, col.names = FALSE, quiet = TRUE))
+  expect_silent(copy_clipboard(df, row_names_as_col = TRUE, quiet = TRUE))
+  expect_silent(copy_clipboard(df, col_names = FALSE, quiet = TRUE))
 
   expect_silent(copy_clipboard(mat, quiet = TRUE))
-  expect_silent(copy_clipboard(mat, row.names.as.col = TRUE, quiet = TRUE))
-  expect_silent(copy_clipboard(mat, col.names = FALSE, quiet = TRUE))
+  expect_silent(copy_clipboard(mat, row_names_as_col = TRUE, quiet = TRUE))
+  expect_silent(copy_clipboard(mat, col_names = FALSE, quiet = TRUE))
 
   expect_silent(copy_clipboard(tab, quiet = TRUE))
-  expect_silent(copy_clipboard(tab, row.names.as.col = TRUE, quiet = TRUE))
+  expect_silent(copy_clipboard(tab, row_names_as_col = TRUE, quiet = TRUE))
 
   expect_silent(copy_clipboard(arr, quiet = TRUE))
 
@@ -120,7 +120,37 @@ test_that("copy_clipboard() copies expected content", {
   expect_equal(chr_clip, vec_chr)
 })
 
-test_that("copy_clipboard validates availability and row.names.as.col", {
+test_that("copy_clipboard hard-errors on the pre-0.13.0 dot.case argument names", {
+  skip_if_not_installed("clipr")
+
+  df <- data.frame(x = 1)
+
+  # The rename trap fires before the clipr guards, so no mocking is
+  # needed and the error is reachable on any platform.
+  expect_error(
+    copy_clipboard(df, row.names.as.col = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    copy_clipboard(df, row.names = FALSE),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    copy_clipboard(df, col.names = FALSE),
+    class = "spicy_invalid_input"
+  )
+
+  # The message names the exact replacement for every legacy name used.
+  err <- tryCatch(
+    copy_clipboard(df, row.names = FALSE, col.names = FALSE),
+    error = function(e) e
+  )
+  msg <- paste(conditionMessage(err), collapse = "\n")
+  expect_match(msg, "`row.names` is now `row_names`.", fixed = TRUE)
+  expect_match(msg, "`col.names` is now `col_names`.", fixed = TRUE)
+})
+
+test_that("copy_clipboard validates availability and row_names_as_col", {
   skip_if_not_installed("clipr")
 
   local_mocked_bindings(
@@ -140,8 +170,8 @@ test_that("copy_clipboard validates availability and row.names.as.col", {
 
   with_mocked_clipr({
     expect_error(
-      copy_clipboard(data.frame(x = 1), row.names.as.col = 1),
-      "row.names.as.col"
+      copy_clipboard(data.frame(x = 1), row_names_as_col = 1),
+      "row_names_as_col"
     )
   })
 })
@@ -158,7 +188,7 @@ test_that("copy_clipboard errors when clipr is unavailable", {
   )
 })
 
-test_that("copy_clipboard captures write_clip messages and warnings", {
+test_that("copy_clipboard re-emits write_clip messages and warnings as conditions", {
   skip_if_not_installed("clipr")
 
   local_mocked_bindings(
@@ -167,32 +197,48 @@ test_that("copy_clipboard captures write_clip messages and warnings", {
   )
 
   clip_payload <- NULL
+  msgs <- character()
+  warns <- character()
   out <- capture.output(
-    ret <- with_mocked_clipr(
-      {
-        copy_clipboard(
-          data.frame(x = 1:2),
-          show_message = TRUE,
-          quiet = FALSE
-        )
+    withCallingHandlers(
+      ret <- with_mocked_clipr(
+        {
+          copy_clipboard(
+            data.frame(x = 1:2),
+            show_message = TRUE,
+            quiet = FALSE
+          )
+        },
+        write_clip = function(x, ...) {
+          clip_payload <<- x
+          message("mock message")
+          warning("mock warning")
+          invisible(NULL)
+        }
+      ),
+      message = function(m) {
+        msgs <<- c(msgs, conditionMessage(m))
+        invokeRestart("muffleMessage")
       },
-      write_clip = function(x, ...) {
-        clip_payload <<- x
-        message("mock message")
-        warning("mock warning")
-        invisible(NULL)
+      warning = function(w) {
+        warns <<- c(warns, conditionMessage(w))
+        invokeRestart("muffleWarning")
       }
     )
   )
 
   expect_s3_class(ret, "data.frame")
+  # The success banner stays on stdout; the backend conditions are
+  # real R conditions, no longer cat() text.
   expect_true(any(grepl("Data successfully copied to clipboard!", out)))
-  expect_true(any(grepl("Message: mock message", out)))
-  expect_true(any(grepl("Warning: mock warning", out)))
+  expect_false(any(grepl("mock message", out)))
+  expect_false(any(grepl("mock warning", out)))
+  expect_true(any(grepl("mock message", msgs)))
+  expect_true(any(grepl("mock warning", warns)))
   expect_equal(clip_payload$x, 1:2)
 })
 
-test_that("copy_clipboard warns when row.names.as.col is irrelevant", {
+test_that("suppressMessages() / suppressWarnings() silence the re-emitted conditions", {
   skip_if_not_installed("clipr")
 
   local_mocked_bindings(
@@ -201,33 +247,68 @@ test_that("copy_clipboard warns when row.names.as.col is irrelevant", {
   )
 
   out <- capture.output(
-    with_mocked_clipr({
-      copy_clipboard(
-        c("a", "b"),
-        row.names.as.col = TRUE,
-        quiet = FALSE,
-        show_message = FALSE
-      )
-    })
+    expect_silent(
+      suppressWarnings(suppressMessages(
+        with_mocked_clipr(
+          copy_clipboard(
+            data.frame(x = 1L),
+            show_message = FALSE,
+            quiet = FALSE
+          ),
+          write_clip = function(x, ...) {
+            message("mock message")
+            warning("mock warning")
+            invisible(NULL)
+          }
+        )
+      ))
+    )
   )
-
-  expect_true(any(grepl("has no effect", out)))
-
-  out_chr <- capture.output(
-    with_mocked_clipr({
-      copy_clipboard(
-        table(c("a", "b")),
-        row.names.as.col = "id",
-        quiet = FALSE,
-        show_message = FALSE
-      )
-    })
-  )
-
-  expect_true(any(grepl("is ignored because", out_chr)))
+  expect_false(any(grepl("mock", out)))
 })
 
-test_that("copy_clipboard rejects multi-element / NA / empty `row.names.as.col`", {
+test_that("copy_clipboard warns (classed) when row_names_as_col is irrelevant", {
+  skip_if_not_installed("clipr")
+
+  local_mocked_bindings(
+    requireNamespace = function(...) TRUE,
+    .package = "base"
+  )
+
+  with_mocked_clipr({
+    expect_warning(
+      copy_clipboard(
+        c("a", "b"),
+        row_names_as_col = TRUE,
+        quiet = FALSE,
+        show_message = FALSE
+      ),
+      class = "spicy_ignored_arg"
+    )
+    expect_warning(
+      copy_clipboard(
+        table(c("a", "b")),
+        row_names_as_col = "id",
+        quiet = FALSE,
+        show_message = FALSE
+      ),
+      class = "spicy_ignored_arg"
+    )
+    # And suppressWarnings() can mute it (a real R condition).
+    expect_silent(
+      suppressWarnings(
+        copy_clipboard(
+          c("a", "b"),
+          row_names_as_col = TRUE,
+          quiet = FALSE,
+          show_message = FALSE
+        )
+      )
+    )
+  })
+})
+
+test_that("copy_clipboard rejects multi-element / NA / empty `row_names_as_col`", {
   skip_if_not_installed("clipr")
 
   local_mocked_bindings(
@@ -238,23 +319,23 @@ test_that("copy_clipboard rejects multi-element / NA / empty `row.names.as.col`"
   with_mocked_clipr({
     msg <- "must be either FALSE, TRUE, or a single non-empty character string"
     expect_error(
-      copy_clipboard(data.frame(x = 1), row.names.as.col = c("id", "extra")),
+      copy_clipboard(data.frame(x = 1), row_names_as_col = c("id", "extra")),
       msg
     )
     expect_error(
-      copy_clipboard(data.frame(x = 1), row.names.as.col = c(TRUE, FALSE)),
+      copy_clipboard(data.frame(x = 1), row_names_as_col = c(TRUE, FALSE)),
       msg
     )
     expect_error(
-      copy_clipboard(data.frame(x = 1), row.names.as.col = NA),
+      copy_clipboard(data.frame(x = 1), row_names_as_col = NA),
       msg
     )
     expect_error(
-      copy_clipboard(data.frame(x = 1), row.names.as.col = NA_character_),
+      copy_clipboard(data.frame(x = 1), row_names_as_col = NA_character_),
       msg
     )
     expect_error(
-      copy_clipboard(data.frame(x = 1), row.names.as.col = ""),
+      copy_clipboard(data.frame(x = 1), row_names_as_col = ""),
       msg
     )
   })
@@ -268,7 +349,9 @@ test_that("copy_clipboard accumulates multiple captured messages / warnings", {
     .package = "base"
   )
 
-  out <- capture.output(
+  msgs <- character()
+  warns <- character()
+  withCallingHandlers(
     with_mocked_clipr(
       copy_clipboard(
         data.frame(x = 1L),
@@ -282,17 +365,25 @@ test_that("copy_clipboard accumulates multiple captured messages / warnings", {
         warning("second warning")
         invisible(NULL)
       }
-    )
+    ),
+    message = function(m) {
+      msgs <<- c(msgs, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    },
+    warning = function(w) {
+      warns <<- c(warns, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
   )
 
   # All four are surfaced, none silently dropped.
-  expect_true(any(grepl("Message: first message", out, fixed = TRUE)))
-  expect_true(any(grepl("Message: second message", out, fixed = TRUE)))
-  expect_true(any(grepl("Warning: first warning", out, fixed = TRUE)))
-  expect_true(any(grepl("Warning: second warning", out, fixed = TRUE)))
+  expect_true(any(grepl("first message", msgs, fixed = TRUE)))
+  expect_true(any(grepl("second message", msgs, fixed = TRUE)))
+  expect_true(any(grepl("first warning", warns, fixed = TRUE)))
+  expect_true(any(grepl("second warning", warns, fixed = TRUE)))
 })
 
-test_that("copy_clipboard `Warning:` prefix is consistent for the row.names.as.col warning", {
+test_that("copy_clipboard quiet = TRUE swallows backend conditions entirely", {
   skip_if_not_installed("clipr")
 
   local_mocked_bindings(
@@ -300,20 +391,16 @@ test_that("copy_clipboard `Warning:` prefix is consistent for the row.names.as.c
     .package = "base"
   )
 
-  out <- capture.output(
-    with_mocked_clipr({
-      copy_clipboard(
-        c("a", "b"),
-        row.names.as.col = TRUE,
-        show_message = FALSE,
-        quiet = FALSE
-      )
-    })
+  expect_silent(
+    with_mocked_clipr(
+      copy_clipboard(data.frame(x = 1L), quiet = TRUE),
+      write_clip = function(x, ...) {
+        message("mock message")
+        warning("mock warning")
+        invisible(NULL)
+      }
+    )
   )
-
-  # The needs_warning message now uses the same "Warning: " prefix as
-  # the captured-warning path (consistency polish).
-  expect_true(any(grepl("Warning: `row.names.as.col = TRUE` has no effect", out, fixed = TRUE)))
 })
 
 test_that("copy_clipboard adds row names column for data frames and matrices", {
@@ -325,10 +412,11 @@ test_that("copy_clipboard adds row names column for data frames and matrices", {
   )
 
   captured_df <- NULL
+  ret_df <- NULL
   with_mocked_clipr(
     {
       df <- data.frame(value = c(10, 20), row.names = c("a", "b"))
-      copy_clipboard(df, row.names.as.col = TRUE, quiet = TRUE)
+      ret_df <- copy_clipboard(df, row_names_as_col = TRUE, quiet = TRUE)
     },
     write_clip = function(x, ...) {
       captured_df <<- x
@@ -338,6 +426,9 @@ test_that("copy_clipboard adds row names column for data frames and matrices", {
 
   expect_equal(names(captured_df)[1], "rownames")
   expect_equal(captured_df$rownames, c("a", "b"))
+  # The invisible return is the transformed payload (what was sent to
+  # the clipboard), as documented.
+  expect_identical(ret_df, captured_df)
 
   captured_mat <- NULL
   with_mocked_clipr(
@@ -347,7 +438,7 @@ test_that("copy_clipboard adds row names column for data frames and matrices", {
         nrow = 2,
         dimnames = list(c("r1", "r2"), c("c1", "c2"))
       )
-      copy_clipboard(mat, row.names.as.col = "id", quiet = TRUE)
+      copy_clipboard(mat, row_names_as_col = "id", quiet = TRUE)
     },
     write_clip = function(x, ...) {
       captured_mat <<- x

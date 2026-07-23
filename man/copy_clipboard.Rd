@@ -6,9 +6,9 @@
 \usage{
 copy_clipboard(
   x,
-  row.names.as.col = FALSE,
-  row.names = TRUE,
-  col.names = TRUE,
+  row_names_as_col = FALSE,
+  row_names = TRUE,
+  col_names = TRUE,
   show_message = TRUE,
   quiet = FALSE,
   ...
@@ -18,17 +18,17 @@ copy_clipboard(
 \item{x}{A \code{data.frame}, matrix, 2D array, 3D array, table, or
 atomic vector to be copied.}
 
-\item{row.names.as.col}{Logical or character. If \code{FALSE} (the
+\item{row_names_as_col}{Logical or character. If \code{FALSE} (the
 default), row names are not added as a column. If \code{TRUE}, a
 column named \code{"rownames"} is prepended. If a character string,
 it is used as the column name for the promoted row names.
 Ignored (with a warning) when \code{x} is neither a \code{data.frame}
 nor a strict matrix.}
 
-\item{row.names}{Logical. If \code{TRUE} (the default), row names are
+\item{row_names}{Logical. If \code{TRUE} (the default), row names are
 included in the clipboard output; \code{FALSE} omits them.}
 
-\item{col.names}{Logical. If \code{TRUE} (the default), column names
+\item{col_names}{Logical. If \code{TRUE} (the default), column names
 are included in the clipboard output; \code{FALSE} omits them.}
 
 \item{show_message}{Logical. If \code{TRUE} (the default), prints a
@@ -38,11 +38,18 @@ success message after copying.}
 shown. If \code{TRUE}, suppresses all messages, including the
 success message, coercion notices, and warnings.}
 
-\item{...}{Additional arguments passed to \code{\link[clipr:write_clip]{clipr::write_clip()}}.}
+\item{...}{Additional arguments passed to \code{\link[clipr:write_clip]{clipr::write_clip()}}.
+The pre-0.13.0 dot.case argument names (\code{row.names.as.col},
+\code{row.names}, \code{col.names}) are trapped here and raise an error
+naming their snake_case replacements.}
 }
 \value{
-Invisibly returns \code{x}; the function is called for its
-clipboard side effect.
+Invisibly returns the object as it was sent to the
+clipboard: identical to \code{x} by default, but reflecting the
+\code{row_names_as_col} transformation when one was requested (e.g.
+a matrix comes back as a \code{data.frame} with the promoted
+row-name column). The function is called for its clipboard
+side effect.
 }
 \description{
 Copies a \code{data.frame}, matrix, 2D or higher array, table, or
@@ -56,13 +63,19 @@ platform.
 Objects that are not \code{data.frame}s or 2D matrices (atomic
 vectors, arrays, tables) are automatically coerced to character
 on the way to the clipboard, as required by
-\code{\link[clipr:write_clip]{clipr::write_clip()}}. The R-side object passed to \code{x} is never
-mutated.
+\code{\link[clipr:write_clip]{clipr::write_clip()}}. The caller's object is never modified in
+place; transformations happen on a local copy (see the return
+value).
 
 Multidimensional arrays (3D and higher) are flattened to a 1D
 character vector with one element per line. To preserve a
 tabular layout, extract a 2D slice first, e.g.
 \code{copy_clipboard(my_array[, , 1])}.
+
+Messages and warnings raised by the clipboard backend are
+re-emitted as regular R conditions, so \code{suppressMessages()} /
+\code{suppressWarnings()} work as usual; \code{quiet = TRUE} silences them
+all at once.
 }
 \examples{
 \donttest{
@@ -71,7 +84,7 @@ if (clipr::clipr_available()) {
   copy_clipboard(sochealth)
 
   # Data frame with row names as column
-  copy_clipboard(head(sochealth), row.names.as.col = "id")
+  copy_clipboard(head(sochealth), row_names_as_col = "id")
 
   # Matrix
   mat <- matrix(1:6, nrow = 2)

@@ -89,7 +89,10 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity")
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
+  )
 )
 ```
 
@@ -324,7 +327,10 @@ tab <- pkgdown_dark_gt(table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity"),
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
+  ),
   output = "gt"
 ))
 
@@ -346,7 +352,10 @@ tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity"),
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
+  ),
   output = "tinytable"
 )
 

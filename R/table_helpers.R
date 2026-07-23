@@ -16,6 +16,28 @@
 # `table_categorical()` started reusing them, the suffix became
 # misleading. Moved here for clarity.
 
+# Internal: resolve display labels for a set of columns. One contract
+# for the whole table family (`table_categorical()`,
+# `table_continuous()`, `table_continuous_lm()`): a user-supplied
+# NAMED character vector wins, then the column's `label` attribute
+# (haven / labelled convention), then the column name itself.
+# `labels = NULL` means "no user overrides". Returns an unnamed
+# character vector parallel to `cols`.
+resolve_variable_labels <- function(data, cols, labels = NULL) {
+  vapply(
+    cols,
+    function(nm) {
+      if (!is.null(labels) && nm %in% names(labels)) {
+        return(labels[[nm]])
+      }
+      lab <- attr(data[[nm]], "label", exact = TRUE)
+      if (is.null(lab) || !nzchar(lab)) nm else lab
+    },
+    character(1L),
+    USE.NAMES = FALSE
+  )
+}
+
 # Internal: format a single numeric (or vector) with `formatC()` and
 # the configured decimal mark. NA -> "" so blank cells render
 # cleanly. Vectorised by recursion -- the per-element branch is the

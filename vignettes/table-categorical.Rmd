@@ -66,6 +66,14 @@ table_categorical(
 )
 ```
 
+`select` itself is optional: when omitted, the table includes every
+eligible categorical column in the data -- factor, character,
+logical, and labelled (haven) columns -- excluding the `by` column,
+mirroring the select-less defaults of `table_continuous()` and
+`table_continuous_lm()`. An explicit `select` is taken verbatim, so
+numeric-coded categorical variables can still be tabulated by naming
+them.
+
 ## Output formats
 
 `table_categorical()` supports several output formats. The table below
@@ -127,17 +135,15 @@ table_categorical(
 
 ## Custom labels
 
-By default, `table_categorical()` uses variable names as row headers.
-Use the `labels` argument to provide human-readable labels. Two
-forms are accepted (matching `table_continuous()` and
-`table_continuous_lm()`):
-
-- A **named character vector** keyed by column name in `data` --
-  the recommended form. Only listed columns are relabelled; others
-  fall back to the column name.
-- A **positional character vector** of the same length as `select`
-  -- the legacy spicy < 0.11.0 form, kept for backward
-  compatibility.
+By default, `table_categorical()` labels each row block with the
+variable's label attribute when one is present (e.g. data imported
+with `haven`), and with the column name otherwise -- the same
+auto-detection as `table_continuous()` and `table_continuous_lm()`.
+Use the `labels` argument to override either: a **named character
+vector** keyed by column name in `data`. Only listed columns are
+relabelled; the others keep their attribute label or column name.
+(Unnamed positional label vectors, accepted before 0.13.0, now raise
+an error.)
 
 ```{r labels}
 table_categorical(

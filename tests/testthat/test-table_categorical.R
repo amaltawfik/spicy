@@ -21,7 +21,7 @@ test_that("table_categorical returns expected long raw structure", {
     data = df,
     select = c(v1, v2),
     by = grp,
-    labels = c("Var 1", "Var 2"),
+    labels = c(v1 = "Var 1", v2 = "Var 2"),
     include_total = TRUE,
     simulate_p = FALSE,
     output = "long"
@@ -48,7 +48,7 @@ test_that("table_categorical accepts weights as column name or numeric vector", 
     data = df,
     select = "v1",
     by = "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     weights = "w",
     simulate_p = FALSE,
     output = "long"
@@ -58,7 +58,7 @@ test_that("table_categorical accepts weights as column name or numeric vector", 
     data = df,
     select = "v1",
     by = "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     weights = df$w,
     simulate_p = FALSE,
     output = "long"
@@ -80,7 +80,7 @@ test_that("table_categorical accepts weights as an unquoted column name", {
       data = df,
       select = "v1",
       by = "grp",
-      labels = "Var 1",
+      labels = c(v1 = "Var 1"),
       weights = w,
       simulate_p = FALSE,
       output = "long"
@@ -91,7 +91,7 @@ test_that("table_categorical accepts weights as an unquoted column name", {
     data = df,
     select = "v1",
     by = "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     weights = "w",
     simulate_p = FALSE,
     output = "long"
@@ -303,7 +303,7 @@ test_that("table_categorical validates weights and simulate_B", {
       data = df,
       select = "v1",
       by = "grp",
-      labels = "Var 1",
+      labels = c(v1 = "Var 1"),
       weights = c(1, 2),
       output = "long"
     ),
@@ -316,7 +316,7 @@ test_that("table_categorical validates weights and simulate_B", {
       data = df,
       select = "v1",
       by = "grp",
-      labels = "Var 1",
+      labels = c(v1 = "Var 1"),
       simulate_B = 0,
       output = "long"
     ),
@@ -336,7 +336,7 @@ test_that("table_categorical keeps missing values as explicit levels when drop_n
     data = df,
     select = "v1",
     by = "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     drop_na = FALSE,
     simulate_p = FALSE,
     output = "long"
@@ -346,7 +346,7 @@ test_that("table_categorical keeps missing values as explicit levels when drop_n
     data = df,
     select = "v1",
     by = "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     drop_na = TRUE,
     simulate_p = FALSE,
     output = "long"
@@ -370,7 +370,7 @@ test_that("table_categorical returns tinytable object when requested", {
     data = df,
     select = "v1",
     by = "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     simulate_p = FALSE,
     output = "tinytable"
   )
@@ -476,7 +476,7 @@ test_that("table_categorical returns gt object when requested", {
     data = df,
     select = "v1",
     by = "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     simulate_p = FALSE,
     output = "gt"
   )
@@ -495,7 +495,7 @@ test_that("table_categorical default column is Cramer's V", {
     df,
     "v1",
     "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     output = "long"
   )
   # 2x2 -> auto rule now picks Phi (see NEWS for 0.11.0).
@@ -524,9 +524,11 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     by = sex,
     output = "default"
   )
+  # The note lists display labels; sochealth ships label attributes,
+  # picked up by the 0.13.0 attribute fallback.
   expect_match(
     attr(out_default, "assoc_note"),
-    "Note\\. Phi: smoking; Cramer's V: education\\."
+    "Note\\. Phi: Current smoker; Cramer's V: Highest education level\\."
   )
 
   # Force uniform Cramer's V via single-string -> no note
@@ -642,7 +644,7 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     df,
     "v1",
     "grp",
-    labels = "Var 1",
+    labels = c(v1 = "Var 1"),
     assoc_measure = "gamma",
     output = "long"
   )
@@ -772,7 +774,7 @@ test_that("table_categorical validates by", {
   )
 })
 
-test_that("table_categorical validates labels length", {
+test_that("table_categorical rejects unnamed labels vectors", {
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", labels = c("a", "b")),
@@ -896,7 +898,10 @@ test_that("table_categorical handles multiple select in wide output", {
     education,
     output = "data.frame"
   )
-  expect_true(all(c("smoking", "physical_activity") %in% out$Variable))
+  # sochealth ships label attributes, picked up by the fallback.
+  expect_true(all(
+    c("Current smoker", "Regular physical activity") %in% out$Variable
+  ))
 })
 
 # Ã¢â€â‚¬Ã¢â€â‚¬ include_total = FALSE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -1930,7 +1935,12 @@ test_that("tidy() returns long-format with broom-conventional columns (cross-tab
     c("outcome", "level", "group", "n", "proportion")
   )
   expect_true(all(td$proportion >= 0 & td$proportion <= 1))
-  expect_equal(unique(td$outcome), c("smoking", "physical_activity"))
+  # `outcome` carries the display labels; sochealth ships label
+  # attributes, picked up by the 0.13.0 attribute fallback.
+  expect_equal(
+    unique(td$outcome),
+    c("Current smoker", "Regular physical activity")
+  )
   # Real groups appear; the synthetic "Total" marginal is excluded
   # by `tidy()` (one row per real group, broom convention).
   expect_setequal(unique(td$group), c("Female", "Male"))
@@ -2118,16 +2128,57 @@ test_that("table_categorical does not over-truncate p in (10^-p_digits, 0.001)",
   expect_true(any(grepl("^\\.0001$", p_col)))
 })
 
-# ---- labels: dual-form (positional + named) -------------------------------
+# ---- labels: named-only contract + attribute fallback (0.13.0) ------------
 
-test_that("labels accepts the legacy positional character vector", {
-  out <- table_categorical(
-    sochealth,
-    select = c(smoking, physical_activity),
-    labels = c("Current smoker", "Physical activity"),
+test_that("labels rejects the legacy positional character vector", {
+  err <- tryCatch(
+    table_categorical(
+      sochealth,
+      select = c(smoking, physical_activity),
+      labels = c("Current smoker", "Physical activity"),
+      output = "long"
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    paste(conditionMessage(err), collapse = "\n"),
+    "must be a named character vector"
+  )
+})
+
+test_that("labels rejects partially named vectors", {
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = c(smoking, physical_activity),
+      labels = c(smoking = "Current smoker", "Physical activity"),
+      output = "long"
+    ),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("labels fall back to the label attribute (haven-style)", {
+  df <- data.frame(
+    smk = structure(
+      c("No", "Yes", "No", "Yes"),
+      label = "Current smoker"
+    ),
+    act = c("Low", "High", "Low", "High"),
+    stringsAsFactors = FALSE
+  )
+  out <- table_categorical(df, select = c(smk, act), output = "long")
+  expect_setequal(unique(out$variable), c("Current smoker", "act"))
+
+  # An explicit named label overrides the attribute.
+  out2 <- table_categorical(
+    df,
+    select = c(smk, act),
+    labels = c(smk = "Override"),
     output = "long"
   )
-  expect_setequal(unique(out$variable), c("Current smoker", "Physical activity"))
+  expect_setequal(unique(out2$variable), c("Override", "act"))
 })
 
 test_that("labels accepts a named character vector keyed by column name", {
@@ -2143,14 +2194,18 @@ test_that("labels accepts a named character vector keyed by column name", {
   expect_setequal(unique(out$variable), c("Current smoker", "Physical activity"))
 })
 
-test_that("named labels can relabel only a subset; others fall back to column name", {
+test_that("named labels relabel a subset; others fall back to the attribute label", {
   out <- table_categorical(
     sochealth,
     select = c(smoking, physical_activity),
     labels = c(smoking = "CS only"),
     output = "long"
   )
-  expect_setequal(unique(out$variable), c("CS only", "physical_activity"))
+  # physical_activity keeps its sochealth label attribute.
+  expect_setequal(
+    unique(out$variable),
+    c("CS only", "Regular physical activity")
+  )
 })
 
 test_that("named labels with unknown names error clearly", {
@@ -2164,22 +2219,57 @@ test_that("named labels with unknown names error clearly", {
   )
 })
 
-test_that("positional labels with wrong length error clearly", {
-  expect_error(
-    table_categorical(
-      sochealth,
-      select = c(smoking, physical_activity),
-      labels = c("A", "B", "C")
-    ),
-    class = "spicy_invalid_input"
-  )
-})
-
 test_that("non-character labels rejected at boundary", {
   expect_error(
     table_categorical(sochealth, select = smoking, labels = 123),
-    "must be a character vector"
+    "must be a named character vector"
   )
+})
+
+# ---- select: optional, defaults to eligible categorical columns -----------
+
+test_that("select-less call tabulates every eligible categorical column", {
+  df <- data.frame(
+    grp = factor(c("A", "A", "B", "B")),
+    fct = factor(c("x", "y", "x", "y")),
+    chr = c("u", "v", "u", "v"),
+    lgl = c(TRUE, FALSE, TRUE, FALSE),
+    num = c(1.5, 2.5, 3.5, 4.5),
+    stringsAsFactors = FALSE
+  )
+  out <- table_categorical(df, output = "long")
+  # factor / character / logical columns are in; numeric is out.
+  expect_setequal(unique(out$variable), c("grp", "fct", "chr", "lgl"))
+
+  # With `by`, the grouping column is excluded from the rows.
+  out_by <- table_categorical(df, by = grp, output = "long")
+  expect_setequal(unique(out_by$variable), c("fct", "chr", "lgl"))
+})
+
+test_that("select-less call keeps labelled (haven-style) columns", {
+  df <- data.frame(x = 1:4)
+  df$lab <- labelled::labelled(
+    c(1, 2, 1, 2),
+    labels = c(Low = 1, High = 2)
+  )
+  out <- table_categorical(df, output = "long")
+  expect_identical(unique(out$variable), "lab")
+})
+
+test_that("select-less call with no eligible column warns spicy_no_selection", {
+  df <- data.frame(a = 1:4, b = rnorm(4))
+  expect_warning(
+    res <- table_categorical(df),
+    class = "spicy_no_selection"
+  )
+  expect_identical(suppressWarnings(table_categorical(df)), data.frame())
+  expect_identical(res, data.frame())
+})
+
+test_that("explicit select is taken verbatim, numeric columns included", {
+  df <- data.frame(num = c(1, 2, 1, 2))
+  out <- table_categorical(df, select = num, output = "long")
+  expect_setequal(unique(out$level), c("1", "2"))
 })
 
 

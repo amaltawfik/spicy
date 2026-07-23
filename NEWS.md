@@ -54,6 +54,11 @@
   unused `...` argument is removed from the signature; passing
   unknown arguments now errors.
 
+* `copy_clipboard()` arguments use snake_case like every other spicy
+  function: `row_names_as_col`, `row_names`, and `col_names` (were
+  `row.names.as.col`, `row.names`, `col.names`). The old dot.case names
+  raise an error that names the exact replacement.
+
 * `table_regression(exponentiate = TRUE)` now errors on links whose
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, ...). Ratio links (logit, log, binomial / ordinal cloglog) are
@@ -65,6 +70,20 @@
   error, as its documentation always promised; such values were
   silently rendered with 3 decimals. Matches `table_continuous()`,
   `table_continuous_lm()`, and `cross_tab()`.
+
+* `table_categorical()` uses the same `labels` contract as
+  `table_continuous()` and `table_continuous_lm()`: a named character
+  vector (`labels = c(smoking = "Current smoker")`), with the other
+  columns falling back to the variable's label attribute (e.g. from
+  haven) and then to the column name. Unnamed positional label
+  vectors, accepted since before 0.11.0, now raise an error with a
+  migration hint.
+* `table_categorical(output = "flextable")` no longer writes a `.docx`
+  as a side effect when `word_path` is supplied: `word_path` is
+  consulted only by `output = "word"`, as everywhere else in the table
+  family. The old combination now warns (class `spicy_ignored_arg`);
+  save the returned object with `flextable::save_as_docx()` if you
+  relied on it.
 * `standardized = "smart"` scales continuous inputs by 2 SD and leaves
   binary inputs (0/1 and factor dummies) unscaled, as Gelman (2008)
   defines it. The rule was applied inverted since 0.12.0, halving every
@@ -234,6 +253,13 @@ rendering an empty column.
   every other class falls back to `nobs` + `AIC` instead of a blank
   block. The `N (groups)` row upgrades to plain counts (e.g.
   `N (Subject)`) when models share a single grouping factor.
+* `select` is optional in `table_categorical()`: when omitted, every
+  eligible categorical column is tabulated -- factor, character,
+  logical, and labelled (haven) columns, excluding `by` -- matching
+  the select-less defaults of `table_continuous()` and
+  `table_continuous_lm()`. An explicit `select` is still taken
+  verbatim, so numeric-coded categorical variables can be tabulated
+  by naming them.
 * Six new vignettes: *Mixed-effects*, *Multinomial*, *Count and
   two-part*, *Survival*, and *Ordinal regression tables*, plus
   *Categorical predictors* — a cross-cutting guide to dummy coding
@@ -274,6 +300,14 @@ rendering an empty column.
 
 * `freq()`'s error for an invalid `sort` value now lists `""` (no sorting) among the valid choices.
 
+* `copy_clipboard()` re-emits clipboard backend messages and warnings
+  as real R conditions instead of colored console text, and signals
+  the "`row_names_as_col` has no effect" notice as a classed warning
+  (`spicy_ignored_arg`), so `suppressMessages()` /
+  `suppressWarnings()` and condition handlers work; `quiet = TRUE`
+  still silences everything at once. Its invisible return value is
+  now documented as the object actually sent to the clipboard
+  (reflecting a requested row-name promotion).
 * Wide multi-model tables split into stacked panels more cleanly:
   continuation panels carry no empty stub rows, and over-wide column
   spanners truncate with a visible ellipsis.

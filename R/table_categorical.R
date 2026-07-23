@@ -212,26 +212,25 @@
 #'
 #' @param data A data frame.
 #' @param select Columns to include as row variables. Supports tidyselect
-#'   syntax and character vectors of column names.
+#'   syntax and character vectors of column names. When omitted,
+#'   defaults to every eligible categorical column in `data`: factor,
+#'   character, logical, and labelled (`haven` / `labelled`) columns,
+#'   excluding the `by` column -- matching the select-less defaults of
+#'   [table_continuous()] and [table_continuous_lm()]. An explicit
+#'   `select` is taken verbatim (numeric columns included), so
+#'   numeric-coded categorical variables can still be tabulated by
+#'   naming them.
 #' @param by Optional grouping column used for columns/groups. Accepts an
 #'   unquoted column name or a single character column name.
-#' @param labels Optional display labels for the variables. Two
-#'   forms are accepted (matching [table_continuous()] and
-#'   [table_continuous_lm()]):
-#'   - A **named character vector** whose names match column names
-#'     in `data` (e.g. `c(bmi = "Body mass index")`); only listed
-#'     columns are relabelled, others fall back to attribute-based
-#'     labels or the column name. **Recommended form**.
-#'   - A **positional character vector** of the same length as
-#'     `select`, in the same order. Backward-compatible with the
-#'     spicy < 0.11.0 API.
-#'
-#'   When `NULL` (the default), column names are used as-is. If a
-#'   variable label attribute is present (e.g. from `haven`), it is
-#'   *not* picked up here -- pass `labels = c(...)` explicitly. (The
-#'   continuous companions auto-detect attribute labels; the
-#'   categorical function is conservative because the indented row
-#'   labels expect predictable text.)
+#' @param labels An optional **named character vector** of variable
+#'   labels whose names match column names in `data` (e.g.
+#'   `c(smoking = "Current smoker")`) -- the same contract as
+#'   [table_continuous()] and [table_continuous_lm()]. Only listed
+#'   columns are relabelled. For the remaining columns (and when
+#'   `labels = NULL`, the default), labels are auto-detected from the
+#'   variable's label attribute (e.g. from `haven`); if none is found,
+#'   the column name is used. Unnamed (positional) label vectors,
+#'   accepted before 0.13.0, now raise an error.
 #' @param levels_keep Optional character vector of levels to keep/order for row
 #'   modalities. If `NULL`, all observed levels are kept.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
@@ -357,8 +356,12 @@
 #' @param excel_path Path for `output = "excel"`. Defaults to `NULL`.
 #' @param excel_sheet Sheet name for Excel export. Defaults to `"Categorical"`.
 #' @param clipboard_delim Delimiter for clipboard text export. Defaults to `"\t"`.
-#' @param word_path Path for `output = "word"` or optional save path when
-#'   `output = "flextable"`. Defaults to `NULL`.
+#' @param word_path File path for `output = "word"`. Defaults to
+#'   `NULL`. Before 0.13.0, supplying it with `output = "flextable"`
+#'   also wrote a `.docx` as a side effect; it is now used exclusively
+#'   by `output = "word"` (the contract shared with the rest of the
+#'   table family) and is ignored, with a warning, under
+#'   `output = "flextable"`.
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -574,7 +577,7 @@
 #' @export
 table_categorical <- function(
   data,
-  select,
+  select = tidyselect::everything(),
   by = NULL,
   labels = NULL,
   levels_keep = NULL,
@@ -612,6 +615,7 @@ table_categorical <- function(
   clipboard_delim = "\t",
   word_path = NULL
 ) {
+  select_missing <- missing(select)
   output <- match.arg(output)
   align <- match.arg(align)
 
@@ -623,6 +627,22 @@ table_categorical <- function(
 
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
+  }
+  # `word_path` is a save path for `output = "word"` only (the contract
+  # shared with the rest of the table family). Before 0.13.0,
+  # `output = "flextable"` also wrote a .docx as a side effect when
+  # `word_path` was supplied; warn so old callers see the change
+  # instead of silently getting no file.
+  if (
+    !is.null(word_path) && nzchar(word_path) && identical(output, "flextable")
+  ) {
+    spicy_warn(
+      c(
+        "`word_path` is ignored when `output = \"flextable\"`.",
+        "i" = "Use `output = \"word\"` to write a .docx, or save the returned object with `flextable::save_as_docx()`."
+      ),
+      class = "spicy_ignored_arg"
+    )
   }
   by_quo <- rlang::enquo(by)
   has_group <- !rlang::quo_is_null(by_quo)
@@ -653,49 +673,64 @@ table_categorical <- function(
   if (!all(select_names %in% names(data))) {
     spicy_abort("Some `select` columns are missing in `data`.", class = "spicy_missing_column")
   }
-  # `labels` accepts two shapes (matching the continuous companions):
-  # - named character vector keyed by column name in `data` (the
-  #   recommended form). Only listed columns are relabelled; the rest
-  #   fall back to their column name.
-  # - positional character vector of length `length(select)` in the
-  #   same order (the legacy spicy < 0.11.0 form).
-  if (is.null(labels)) {
-    labels <- select_names
-  } else {
-    if (!is.character(labels)) {
-      spicy_abort("`labels` must be a character vector.", class = "spicy_invalid_input")
-    }
-    labels_named <- !is.null(names(labels)) && all(nzchar(names(labels)))
-    if (labels_named) {
-      unknown <- setdiff(names(labels), names(data))
-      if (length(unknown) > 0L) {
-        spicy_abort(
-          sprintf(
-            "Names in `labels` not found in `data`: %s.",
-            paste(unknown, collapse = ", ")
-          ), class = "spicy_missing_column")
-      }
-      resolved <- select_names
-      hits <- intersect(select_names, names(labels))
-      resolved[match(hits, select_names)] <- unname(labels[hits])
-      labels <- resolved
-    } else {
-      if (length(labels) != length(select_names)) {
-        spicy_abort(
-          c(
-            sprintf(
-              "Positional `labels` has length %d but `select` chose %d variable(s).",
-              length(labels),
-              length(select_names)
-            ),
-            "i" = "Pass a named character vector keyed by column name in `data` to relabel only specific variables."
-          ),
-          class = "spicy_invalid_input"
-        )
-      }
+  # Select-less call: restrict the `everything()` default to eligible
+  # categorical columns (factor, character, logical, labelled),
+  # excluding `by` -- the categorical mirror of the numeric
+  # auto-restriction in the continuous companions. An explicit
+  # `select` is taken verbatim so numeric-coded categorical variables
+  # can still be tabulated by naming them.
+  if (select_missing) {
+    is_eligible <- vapply(
+      select_names,
+      function(nm) {
+        col <- data[[nm]]
+        is.factor(col) ||
+          is.character(col) ||
+          is.logical(col) ||
+          labelled::is.labelled(col)
+      },
+      logical(1)
+    )
+    select_names <- setdiff(select_names[is_eligible], by_name)
+    if (length(select_names) == 0L) {
+      spicy_warn(
+        "No categorical columns selected.",
+        class = "spicy_no_selection"
+      )
+      return(data.frame())
     }
   }
-  labels <- as.character(labels)
+  # `labels` must be a NAMED character vector keyed by column name in
+  # `data` (the contract shared with the continuous companions). Only
+  # listed columns are relabelled; the rest fall back to the column's
+  # `label` attribute (haven / labelled convention), then to the
+  # column name. Positional (unnamed) vectors -- the spicy < 0.13.0
+  # legacy form -- are rejected with a migration hint.
+  if (!is.null(labels)) {
+    if (
+      !is.character(labels) ||
+        is.null(names(labels)) ||
+        !all(nzchar(names(labels)))
+    ) {
+      spicy_abort(
+        c(
+          "`labels` must be a named character vector.",
+          "x" = "Unnamed (positional) `labels` vectors are no longer accepted.",
+          "i" = "Name the values by column: `labels = c(smoking = \"Current smoker\")`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    unknown <- setdiff(names(labels), names(data))
+    if (length(unknown) > 0L) {
+      spicy_abort(
+        sprintf(
+          "Names in `labels` not found in `data`: %s.",
+          paste(unknown, collapse = ", ")
+        ), class = "spicy_missing_column")
+    }
+  }
+  labels <- resolve_variable_labels(data, select_names, labels)
 
   if (
     !is.logical(include_total) ||
@@ -1457,17 +1492,7 @@ table_categorical <- function(
     }
 
     if (output == "flextable") {
-      ft <- build_flextable_oneway(report_wide_char)
-      if (!is.null(word_path) && nzchar(word_path)) {
-        # nocov start: officer-missing guard; officer is in Suggests and
-        # present in the test/CI environment, so the abort is unreachable here.
-        if (!requireNamespace("officer", quietly = TRUE)) {
-          spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
-        }
-        # nocov end
-        flextable::save_as_docx(ft, path = word_path)
-      }
-      return(ft)
+      return(build_flextable_oneway(report_wide_char))
     }
 
     if (output == "word") {
@@ -2511,17 +2536,7 @@ table_categorical <- function(
   }
 
   if (output == "flextable") {
-    ft <- build_flextable(merge_ci_inline(report_wide_char))
-    if (!is.null(word_path) && nzchar(word_path)) {
-      # nocov start: officer-missing guard; officer is in Suggests and
-      # present in the test/CI environment, so the abort is unreachable here.
-      if (!requireNamespace("officer", quietly = TRUE)) {
-        spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
-      }
-      # nocov end
-      flextable::save_as_docx(ft, path = word_path)
-    }
-    return(ft)
+    return(build_flextable(merge_ci_inline(report_wide_char)))
   }
 
   if (output == "word") {

@@ -5,7 +5,7 @@
 #   - parse_stats() note-text fallback for a single-level select variable
 #     (fmt_p / fmt_v NA cells)
 #   - one-way gt center/right alignment branches
-#   - flextable output that also writes a docx via `word_path`
+#   - flextable output ignoring `word_path` (classed warning, no file)
 #   - make_report_wide* skip-empty-label paths
 
 # ---- .assoc_label(): ordinal labels and identity fallback -----------------
@@ -25,15 +25,15 @@ test_that("ordinal assoc_measure values produce their column names end-to-end", 
     v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
   )
   expect_true("Stuart's Tau-c" %in% names(
-    table_categorical(df, "v1", "grp", labels = "V1",
+    table_categorical(df, "v1", "grp", labels = c(v1 = "V1"),
                       assoc_measure = "tau_c", output = "long")
   ))
   expect_true("Somers' D" %in% names(
-    table_categorical(df, "v1", "grp", labels = "V1",
+    table_categorical(df, "v1", "grp", labels = c(v1 = "V1"),
                       assoc_measure = "somers_d", output = "long")
   ))
   expect_true("Lambda" %in% names(
-    table_categorical(df, "v1", "grp", labels = "V1",
+    table_categorical(df, "v1", "grp", labels = c(v1 = "V1"),
                       assoc_measure = "lambda", output = "long")
   ))
 })
@@ -45,7 +45,7 @@ test_that("assoc_measure = NULL defaults to auto resolution", {
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
   )
-  out <- table_categorical(df, "v1", "grp", labels = "V1",
+  out <- table_categorical(df, "v1", "grp", labels = c(v1 = "V1"),
                            assoc_measure = NULL, output = "long")
   # 2x2 -> auto picks Phi
   expect_true("Phi" %in% names(out))
@@ -104,7 +104,7 @@ test_that("single-level select variable yields NA stats (note fallback)", {
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = factor(rep("only", 6))
   )
-  out <- table_categorical(df, "v1", "grp", labels = "V1", output = "long")
+  out <- table_categorical(df, "v1", "grp", labels = c(v1 = "V1"), output = "long")
   expect_true(all(is.na(out$p)))
   expect_true("Cramer's V" %in% names(out))
   expect_true(all(is.na(out[["Cramer's V"]])))
@@ -116,7 +116,7 @@ test_that("single-level select variable renders blank p / assoc cells (default)"
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = factor(rep("only", 6))
   )
-  out <- table_categorical(df, "v1", "grp", labels = "V1", output = "default")
+  out <- table_categorical(df, "v1", "grp", labels = c(v1 = "V1"), output = "default")
   expect_s3_class(out, "spicy_categorical_table")
   disp <- attr(out, "display_df")
   expect_true(all(disp$p == ""))
@@ -169,28 +169,32 @@ test_that("one-way gt output honours align = 'center' and 'right'", {
   expect_equal(unname(ar[["Variable"]]), "left")
 })
 
-# ---- flextable output with word_path also writes a docx -------------------
+# ---- flextable output ignores word_path (0.13.0, one word_path semantic) --
 
-test_that("one-way flextable output with word_path returns ft and writes docx", {
+test_that("one-way flextable output warns and does not write with word_path", {
   skip_if_not_installed("flextable")
-  skip_if_not_installed("officer")
   tmp <- tempfile(fileext = ".docx")
   on.exit(unlink(tmp), add = TRUE)
-  ft <- table_categorical(sochealth, select = smoking,
-                          output = "flextable", word_path = tmp)
+  expect_warning(
+    ft <- table_categorical(sochealth, select = smoking,
+                            output = "flextable", word_path = tmp),
+    class = "spicy_ignored_arg"
+  )
   expect_s3_class(ft, "flextable")
-  expect_true(file.exists(tmp))
+  expect_false(file.exists(tmp))
 })
 
-test_that("cross-tab flextable output with word_path returns ft and writes docx", {
+test_that("cross-tab flextable output warns and does not write with word_path", {
   skip_if_not_installed("flextable")
-  skip_if_not_installed("officer")
   tmp <- tempfile(fileext = ".docx")
   on.exit(unlink(tmp), add = TRUE)
-  ft <- table_categorical(sochealth, select = smoking, by = sex,
-                          output = "flextable", word_path = tmp)
+  expect_warning(
+    ft <- table_categorical(sochealth, select = smoking, by = sex,
+                            output = "flextable", word_path = tmp),
+    class = "spicy_ignored_arg"
+  )
   expect_s3_class(ft, "flextable")
-  expect_true(file.exists(tmp))
+  expect_false(file.exists(tmp))
 })
 
 # ---- make_report_wide*: skip a label with no rows -------------------------

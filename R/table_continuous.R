@@ -689,19 +689,8 @@ table_continuous <- function(
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
 
-  # --- label detection ---
-  var_labels <- vapply(
-    numeric_cols,
-    function(nm) {
-      if (!is.null(labels) && nm %in% names(labels)) {
-        return(labels[[nm]])
-      }
-      lab <- attr(data[[nm]], "label", exact = TRUE)
-      if (is.null(lab) || !nzchar(lab)) nm else lab
-    },
-    character(1L),
-    USE.NAMES = FALSE
-  )
+  # --- label detection (shared family contract) ---
+  var_labels <- resolve_variable_labels(data, numeric_cols, labels)
 
   # --- computation ---
   compute_one <- function(x, ci_level) {
