@@ -56,7 +56,13 @@ If \code{TRUE}, adds cumulative percentages.}
 \item \code{"-"} - decreasing frequency
 \item \code{"name+"} - alphabetical A-Z
 \item \code{"name-"} - alphabetical Z-A
-}}
+}
+
+For labelled variables displayed with their codes
+(\code{labelled_levels} \code{"prefixed"} or \code{"values"}), \code{"name+"} /
+\code{"name-"} sort by the underlying code (so \verb{[10]} follows \verb{[2]},
+as in SPSS), not by the display string. With
+\code{labelled_levels = "labels"}, labels sort alphabetically.}
 
 \item{na_val}{Atomic vector of numeric or character values to be treated as missing (\code{NA}).
 

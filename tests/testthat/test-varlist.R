@@ -395,6 +395,100 @@ test_that("summarize_values_minmax handles POSIXct columns", {
   expect_match(res$Values, "2024")
 })
 
+test_that("varlist() values = TRUE renders POSIXlt columns as datetimes", {
+  # Regression (audit finding posixlt-values-true-rendered-as-list):
+  # POSIXlt is a list underneath, so summarize_values_all() fell into
+  # the list-column branch ("List(3): list") without the datetime
+  # check that summarize_values_minmax() already had.
+  df <- tibble::tibble(
+    lt = as.POSIXlt(
+      c("2020-01-01 10:00:00", "2020-01-01 10:00:00", NA),
+      tz = "UTC"
+    )
+  )
+  res <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
+  expect_identical(res$Values, "2020-01-01 10:00:00, <NA>")
+  # Same rendering as the values = FALSE path on the same column.
+  res_minmax <- varlist(df, tbl = TRUE, include_na = TRUE)
+  expect_identical(res_minmax$Values, res$Values)
+})
+
+test_that("varlist() annotates difftime values with their units", {
+  # Regression (audit finding difftime-units-dropped-in-values):
+  # as.character() drops the units attribute, leaving "1.5, 2.5"
+  # ambiguous between hours and days.
+  df <- data.frame(
+    hours = as.difftime(c(1.5, 2.5, NA), units = "hours"),
+    days = as.difftime(c(1.5, 2.5, NA), units = "days")
+  )
+  res <- varlist(df, tbl = TRUE, values = TRUE, include_na = TRUE)
+  expect_identical(res$Values[1], "1.5, 2.5 (hours), <NA>")
+  expect_identical(res$Values[2], "1.5, 2.5 (days), <NA>")
+
+  # Compact path: units follow the truncated value list.
+  df6 <- data.frame(dt = as.difftime(1:6, units = "mins"))
+  res6 <- varlist(df6, tbl = TRUE)
+  expect_identical(res6$Values, "1, 2, 3, ..., 6 (mins)")
+})
+
+test_that("varlist() difftime units annotation degrades safely", {
+  # All-NA difftime: no values, so no dangling units annotation.
+  df_na <- data.frame(
+    dt = as.difftime(c(NA_real_, NA_real_), units = "hours")
+  )
+  res_na <- varlist(df_na, tbl = TRUE, values = TRUE, include_na = TRUE)
+  expect_identical(res_na$Values, "<NA>")
+  expect_identical(varlist(df_na, tbl = TRUE, include_na = TRUE)$Values, "<NA>")
+
+  # Malformed difftime without a units string: bare values, no suffix.
+  df_bad <- data.frame(dt = structure(c(1, 2), class = "difftime"))
+  expect_identical(varlist(df_bad, tbl = TRUE, values = TRUE)$Values, "1, 2")
+})
+
+test_that("varlist() shows an explicit NA factor level as <NA>", {
+  # Regression (audit finding addna-level-dropped-despite-factor-
+  # levels-all): the declared NA level of addNA() was silently
+  # dropped from Values while N_distinct counted it.
+  df <- data.frame(f = addNA(factor(c("a", "b", NA))))
+  res <- varlist(
+    df,
+    tbl = TRUE,
+    values = TRUE,
+    include_na = TRUE,
+    factor_levels = "all"
+  )
+  expect_identical(res$Values, "a, b, <NA>")
+  expect_identical(res$N_distinct, 3L)
+  expect_identical(res$NAs, 0L)
+
+  # "observed" shows the NA level too when observations carry it ...
+  res_obs <- varlist(df, tbl = TRUE, values = TRUE)
+  expect_identical(res_obs$Values, "a, b, <NA>")
+
+  # ... but drops it, like any unused level, when nothing does.
+  df_unused <- data.frame(f = addNA(factor(c("a", "b")), ifany = FALSE))
+  res_unused <- varlist(df_unused, tbl = TRUE, values = TRUE)
+  expect_identical(res_unused$Values, "a, b")
+  res_unused_all <- varlist(
+    df_unused,
+    tbl = TRUE,
+    values = TRUE,
+    factor_levels = "all"
+  )
+  expect_identical(res_unused_all$Values, "a, b, <NA>")
+})
+
+test_that("varlist() columns carry no names attribute", {
+  # Regression (audit finding tibble-columns-carry-names-attr):
+  # vapply's USE.NAMES default left variable names on 5 of 7 columns,
+  # breaking element-wise identical() comparisons.
+  res <- varlist(sochealth, tbl = TRUE)
+  for (col in names(res)) {
+    expect_null(names(res[[col]]), info = col)
+  }
+  expect_identical(res$Label[res$Variable == "sex"], "Sex")
+})
+
 test_that("varlist() summarizes matrix columns by rows", {
   mat <- rbind(c(1, 2), c(3, 4))
   df <- data.frame(x = I(mat))

@@ -733,6 +733,82 @@ test_that("table_categorical levels_keep with (Missing)", {
   lvls <- out$Level[!is.na(out$Level) & out$Level != ""]
   expect_equal(lvls, c("Low", "High", "(Missing)"))
 })
+
+test_that("table_categorical levels_keep no-match warns and names the levels", {
+  # Labelled column: internal level strings are the raw codes, so the
+  # bare label text can never match -- the variable used to vanish
+  # silently (audit finding levels-keep-labelled-silent-empty).
+  d <- data.frame(i = 1:20)
+  d$smoke <- labelled::labelled(
+    rep(c(1, 2), 10),
+    labels = c(Smoker = 1, `Non-smoker` = 2),
+    label = "Smoking"
+  )
+  cnd <- testthat::capture_warning(
+    table_categorical(
+      d,
+      select = smoke,
+      levels_keep = c("Smoker", "Non-smoker"),
+      output = "data.frame"
+    )
+  )
+  expect_s3_class(cnd, "spicy_no_selection")
+  expect_match(conditionMessage(cnd), "smoke", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "\"1\", \"2\"", fixed = TRUE)
+})
+
+test_that("table_categorical levels_keep no-match keeps the matching variable", {
+  # Multi-variable select: only the variable with zero matches is
+  # dropped (with a warning); the matching one still renders.
+  df <- data.frame(
+    a = factor(c("x", "y", "x", "y")),
+    b = factor(c("p", "q", "p", "q"))
+  )
+  expect_warning(
+    out <- table_categorical(
+      df,
+      select = c(a, b),
+      levels_keep = c("x", "y"),
+      output = "data.frame"
+    ),
+    class = "spicy_no_selection"
+  )
+  expect_true(all(out$Level %in% c("x", "y")))
+  expect_true(nrow(out) > 0L)
+})
+
+test_that("table_categorical grouped levels_keep no-match warns per variable", {
+  df <- data.frame(
+    grp = factor(c("A", "B", "A", "B")),
+    v = factor(c("x", "y", "x", "y"))
+  )
+  cnd <- testthat::capture_warning(
+    table_categorical(
+      df,
+      select = v,
+      by = grp,
+      levels_keep = c("bogus"),
+      output = "long"
+    )
+  )
+  expect_s3_class(cnd, "spicy_no_selection")
+  expect_match(conditionMessage(cnd), "\"x\", \"y\"", fixed = TRUE)
+})
+
+test_that(".warn_levels_keep_no_match truncates long level listings", {
+  cnd <- testthat::capture_warning(
+    .warn_levels_keep_no_match("v", as.character(1:12))
+  )
+  expect_s3_class(cnd, "spicy_no_selection")
+  expect_match(conditionMessage(cnd), "\"10\", ...", fixed = TRUE)
+  expect_no_match(conditionMessage(cnd), "\"11\"", fixed = TRUE)
+
+  # Defensive degenerate input: nothing available to list.
+  cnd_none <- testthat::capture_warning(
+    .warn_levels_keep_no_match("v", NA_character_)
+  )
+  expect_match(conditionMessage(cnd_none), "(none)", fixed = TRUE)
+})
 # ---- blank_na_wide -------------------------------------------------------
 
 test_that("table_categorical blank_na_wide replaces NA with empty strings", {
@@ -1383,30 +1459,39 @@ test_that("table_categorical grouped empty via levels_keep with non-matching lev
     grp = factor(c("A", "B", "A", "B")),
     v = factor(c("x", "y", "x", "y"))
   )
-  out <- table_categorical(
-    df,
-    select = v,
-    by = grp,
-    levels_keep = c("nonexistent"),
-    output = "data.frame"
+  expect_warning(
+    out <- table_categorical(
+      df,
+      select = v,
+      by = grp,
+      levels_keep = c("nonexistent"),
+      output = "data.frame"
+    ),
+    class = "spicy_no_selection"
   )
   expect_equal(nrow(out), 0L)
-  out_long <- table_categorical(
-    df,
-    select = v,
-    by = grp,
-    levels_keep = c("nonexistent"),
-    output = "long"
+  expect_warning(
+    out_long <- table_categorical(
+      df,
+      select = v,
+      by = grp,
+      levels_keep = c("nonexistent"),
+      output = "long"
+    ),
+    class = "spicy_no_selection"
   )
   expect_equal(nrow(out_long), 0L)
   # Also with assoc_measure = "none" to cover L1196
-  out_none <- table_categorical(
-    df,
-    select = v,
-    by = grp,
-    levels_keep = c("nonexistent"),
-    assoc_measure = "none",
-    output = "long"
+  expect_warning(
+    out_none <- table_categorical(
+      df,
+      select = v,
+      by = grp,
+      levels_keep = c("nonexistent"),
+      assoc_measure = "none",
+      output = "long"
+    ),
+    class = "spicy_no_selection"
   )
   expect_equal(nrow(out_none), 0L)
 })
@@ -1519,29 +1604,38 @@ test_that("table_categorical grouped all-NA renders empty default table", {
 
 test_that("table_categorical one-way levels_keep with no match returns empty", {
   df <- data.frame(x = factor(c("A", "B"), levels = c("A", "B", "C")))
-  out <- table_categorical(
-    df,
-    select = x,
-    levels_keep = c("nonexistent"),
-    output = "data.frame"
+  expect_warning(
+    out <- table_categorical(
+      df,
+      select = x,
+      levels_keep = c("nonexistent"),
+      output = "data.frame"
+    ),
+    class = "spicy_no_selection"
   )
   expect_equal(nrow(out), 0L)
   # levels_keep includes "C" which exists in factor levels but has 0 obs
-  # -> covers the `next` at match(lv, vals) returning NA
-  out2 <- table_categorical(
-    df,
-    select = x,
-    levels_keep = c("A", "C"),
-    output = "data.frame"
+  # -> covers the `next` at match(lv, vals) returning NA; partial
+  # matches keep their intersect semantics with no warning
+  expect_silent(
+    out2 <- table_categorical(
+      df,
+      select = x,
+      levels_keep = c("A", "C"),
+      output = "data.frame"
+    )
   )
   expect_equal(nrow(out2), 1L)
   expect_equal(as.character(out2$Level), "A")
   # Also test default output path (covers make_report_wide_oneway empty path)
-  out3 <- table_categorical(
-    df,
-    select = x,
-    levels_keep = c("nonexistent"),
-    output = "default"
+  expect_warning(
+    out3 <- table_categorical(
+      df,
+      select = x,
+      levels_keep = c("nonexistent"),
+      output = "default"
+    ),
+    class = "spicy_no_selection"
   )
   expect_s3_class(out3, "spicy_categorical_table")
 })

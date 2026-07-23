@@ -57,7 +57,9 @@ from \code{Values} but still counted in the \code{NAs} column.}
 \item{factor_levels}{Character. Controls how factor values are displayed
 in \code{Values}. \code{"observed"} (the default; \code{\link[=code_book]{code_book()}} uses \code{"all"})
 shows only levels present in the data, preserving factor level order.
-\code{"all"} shows all declared levels, including unused levels.}
+\code{"all"} shows all declared levels, including unused levels. An
+explicit \code{NA} level (e.g. from \code{\link[=addNA]{addNA()}}) is displayed as \verb{<NA>}
+among the declared levels.}
 
 \item{user_na}{Logical. If \code{TRUE} (the default), declared missing
 values count as missing in \code{N_valid}, \code{NAs}, and \code{N_distinct}
@@ -81,6 +83,8 @@ displayed. For labelled variables, \strong{prefixed labels} are displayed using
 \code{labelled::to_factor(levels = "prefixed")}.
 For factors, levels are displayed according to \code{factor_levels}.
 Matrix and array columns are summarized by their dimensions.
+\code{difftime} values are annotated with their units, e.g.
+\verb{1.5, 2.5 (hours)}.
 Missing value markers (\verb{<NA>}, \verb{<NaN>}) are optionally appended at the
 end (controlled via \code{include_na}). Literal strings \code{"NA"}, \code{"NaN"}, and
 \code{""} are quoted to distinguish them from missing markers.

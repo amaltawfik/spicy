@@ -49,7 +49,9 @@
 #' @param factor_levels Character. Controls how factor values are displayed
 #'   in `Values`. `"observed"` (the default; [code_book()] uses `"all"`)
 #'   shows only levels present in the data, preserving factor level order.
-#'   `"all"` shows all declared levels, including unused levels.
+#'   `"all"` shows all declared levels, including unused levels. An
+#'   explicit `NA` level (e.g. from [addNA()]) is displayed as `<NA>`
+#'   among the declared levels.
 #' @param user_na Logical. If `TRUE` (the default), declared missing
 #'   values count as missing in `N_valid`, `NAs`, and `N_distinct`
 #'   (all three columns share one missing definition). If `FALSE`,
@@ -73,6 +75,8 @@
 #'   `labelled::to_factor(levels = "prefixed")`.
 #'   For factors, levels are displayed according to `factor_levels`.
 #'   Matrix and array columns are summarized by their dimensions.
+#'   `difftime` values are annotated with their units, e.g.
+#'   `1.5, 2.5 (hours)`.
 #'   Missing value markers (`<NA>`, `<NaN>`) are optionally appended at the
 #'   end (controlled via `include_na`). Literal strings `"NA"`, `"NaN"`, and
 #'   `""` are quoted to distinguish them from missing markers.
@@ -210,6 +214,10 @@ varlist_impl <- function(
 
   x <- x[selectors]
 
+  # `USE.NAMES = FALSE` everywhere: the variable names already live in
+  # the `Variable` column, and stray names attributes on the other
+  # columns would change `identical()` / snapshot comparison semantics
+  # depending on which column is compared.
   res <- list(
     Variable = names(x),
     Label = vapply(
@@ -223,21 +231,36 @@ varlist_impl <- function(
           as.character(lbl)
         }
       },
-      character(1)
+      character(1),
+      USE.NAMES = FALSE
     ),
     Class = vapply(
       x,
       function(col) paste(class(col), collapse = ", "),
-      character(1)
+      character(1),
+      USE.NAMES = FALSE
     ),
     N_distinct = vapply(
       x,
       varlist_n_distinct,
       integer(1),
-      user_na = user_na
+      user_na = user_na,
+      USE.NAMES = FALSE
     ),
-    N_valid = vapply(x, varlist_n_valid, integer(1), user_na = user_na),
-    NAs = vapply(x, varlist_n_missing, integer(1), user_na = user_na)
+    N_valid = vapply(
+      x,
+      varlist_n_valid,
+      integer(1),
+      user_na = user_na,
+      USE.NAMES = FALSE
+    ),
+    NAs = vapply(
+      x,
+      varlist_n_missing,
+      integer(1),
+      user_na = user_na,
+      USE.NAMES = FALSE
+    )
   )
 
   res$Values <- vapply(

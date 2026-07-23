@@ -64,7 +64,13 @@ the column name is used. Unnamed (positional) label vectors,
 accepted before 0.13.0, now raise an error.}
 
 \item{levels_keep}{Optional character vector of levels to keep/order for row
-modalities. If \code{NULL}, all observed levels are kept.}
+modalities. If \code{NULL}, all observed levels are kept. Entries must
+match the level strings the table displays (for labelled columns
+these are the raw codes, or \code{"[code] label"} under
+\code{drop_na = TRUE}, not the bare label text). When nothing matches
+for a selected variable, that variable is dropped from the table
+with a classed warning (\code{spicy_no_selection}) listing the
+available level strings.}
 
 \item{include_total}{Logical. If \code{TRUE} (the default), includes a \code{Total} group
 when available.}

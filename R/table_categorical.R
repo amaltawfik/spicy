@@ -20,6 +20,38 @@
   )
 }
 
+# Loud guard for `levels_keep`: when the supplied levels match nothing
+# for a selected variable, that variable would silently vanish from
+# the table. The mismatch is systematic for labelled columns, whose
+# internal level strings are raw codes under `drop_na = FALSE` and
+# "[code] label" under `drop_na = TRUE` -- never the bare label text a
+# user naturally supplies. Warn with the exact strings that WOULD
+# match; the caller then skips the variable (partial matches keep
+# their usual intersect semantics).
+.warn_levels_keep_no_match <- function(var_name, available) {
+  available <- available[!is.na(available)]
+  listed <- if (length(available) == 0L) {
+    "(none)"
+  } else {
+    shown <- utils::head(available, 10L)
+    out <- paste0("\"", shown, "\"", collapse = ", ")
+    if (length(available) > length(shown)) {
+      out <- paste0(out, ", ...")
+    }
+    out
+  }
+  spicy_warn(
+    paste0(
+      "`levels_keep` matches no levels of `",
+      var_name,
+      "`; the variable is dropped from the table. Available levels: ",
+      listed,
+      "."
+    ),
+    class = "spicy_no_selection"
+  )
+}
+
 # Resolve the user-supplied `assoc_measure` into a named character vector
 # of length(select_names): one resolved measure per row variable. Accepts
 # four input shapes:
@@ -248,7 +280,13 @@
 #'   the column name is used. Unnamed (positional) label vectors,
 #'   accepted before 0.13.0, now raise an error.
 #' @param levels_keep Optional character vector of levels to keep/order for row
-#'   modalities. If `NULL`, all observed levels are kept.
+#'   modalities. If `NULL`, all observed levels are kept. Entries must
+#'   match the level strings the table displays (for labelled columns
+#'   these are the raw codes, or `"[code] label"` under
+#'   `drop_na = TRUE`, not the bare label text). When nothing matches
+#'   for a selected variable, that variable is dropped from the table
+#'   with a classed warning (`spicy_no_selection`) listing the
+#'   available level strings.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
 #'   when available.
 #' @param drop_na Logical. If `FALSE` (the default), missing values are
@@ -1228,6 +1266,10 @@ table_categorical <- function(
       } else {
         intersect(as.character(levels_keep), raw_levels)
       }
+      if (!is.null(levels_keep) && length(lv_use) == 0L) {
+        .warn_levels_keep_no_match(select_names[i], raw_levels)
+        next
+      }
       all_level_order <- c(all_level_order, lv_use)
 
       for (lv in lv_use) {
@@ -1874,8 +1916,8 @@ table_categorical <- function(
     vals_n <- as.character(ct_n$Values)
     vals_p <- as.character(ct_pct$Values)
 
+    raw_levels <- setdiff(unique(vals_n), c("Total", "N"))
     lv_use <- if (is.null(levels_keep)) {
-      raw_levels <- setdiff(unique(vals_n), c("Total", "N"))
       # Reorder to match original factor/occurrence order
       known <- intersect(var_level_order, raw_levels)
       extra <- setdiff(raw_levels, c(var_level_order, missing_label))
@@ -1883,6 +1925,10 @@ table_categorical <- function(
       c(known, extra, missing_end)
     } else {
       intersect(as.character(levels_keep), vals_n)
+    }
+    if (!is.null(levels_keep) && length(lv_use) == 0L) {
+      .warn_levels_keep_no_match(select_names[i], raw_levels)
+      next
     }
     all_level_order <- c(all_level_order, lv_use)
 

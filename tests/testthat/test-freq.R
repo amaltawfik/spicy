@@ -167,6 +167,51 @@ test_that("freq() correctly sorts by frequency and name", {
 })
 
 
+test_that("freq() name-sort orders labelled variables by underlying code", {
+  # Regression (audit finding name-sort-labelled-display-string):
+  # sorting the prefixed display string ranked "[10] Ten" before
+  # "[1] One" under C-collation. With codes visible ("prefixed" /
+  # "values"), name-sort follows the code, as in SPSS AVALUE.
+  s <- labelled::labelled(
+    c(1, 2, 10, 10, 2, 1, 10),
+    labels = c(One = 1, Two = 2, Ten = 10)
+  )
+
+  f_up <- freq(s, sort = "name+", output = "data.frame")
+  expect_equal(f_up$value, c("[1] One", "[2] Two", "[10] Ten"))
+
+  f_down <- freq(s, sort = "name-", output = "data.frame")
+  expect_equal(f_down$value, c("[10] Ten", "[2] Two", "[1] One"))
+
+  f_vals <- freq(
+    s,
+    sort = "name+",
+    labelled_levels = "values",
+    output = "data.frame"
+  )
+  expect_equal(f_vals$value, c("1", "2", "10"))
+
+  # With labels only, no code is visible: labels sort alphabetically.
+  f_labs <- freq(
+    s,
+    sort = "name+",
+    labelled_levels = "labels",
+    output = "data.frame"
+  )
+  expect_equal(f_labs$value, c("One", "Ten", "Two"))
+})
+
+
+test_that("freq() name-sort on labelled keeps the NA row last", {
+  s <- labelled::labelled(
+    c(1, 10, 2, NA),
+    labels = c(One = 1, Two = 2, Ten = 10)
+  )
+  res <- freq(s, sort = "name-", output = "data.frame")
+  expect_equal(res$value, c("[10] Ten", "[2] Two", "[1] One", NA))
+})
+
+
 test_that("freq() handles multiple data types correctly", {
   df <- data.frame(
     logical_col = c(TRUE, FALSE, TRUE, NA),
@@ -746,6 +791,22 @@ test_that("freq() drops NA-weighted rows and rescales over the remaining (0.11.0
   expect_equal(sum(res_rescaled$n), 2)
   # Unrescaled: total = sum of the surviving (non-NA) weights = 1 + 2 = 3.
   expect_equal(sum(res_unrescaled$n), 3)
+})
+
+test_that("freq() keeps the variable label when NA weights drop rows", {
+  # Regression (audit finding var-label-lost-na-weight-drop): base `[`
+  # subsetting stripped the `label` attribute from a plain atomic
+  # vector, losing the Label footer on the NA-weight path.
+  df <- data.frame(v = c(1, 2, 2, 3), w = c(1, 1, NA, 1))
+  attr(df$v, "label") <- "Plain numeric with label"
+
+  res <- suppressWarnings(freq(df, v, weights = w))
+  expect_identical(attr(res, "var_label"), "Plain numeric with label")
+  expect_identical(attr(res, "class_name"), "numeric")
+
+  # Control: no NA weights, label present either way.
+  res_ok <- freq(df, v)
+  expect_identical(attr(res_ok, "var_label"), "Plain numeric with label")
 })
 
 test_that("freq() errors when total frequency is zero", {

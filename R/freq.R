@@ -57,6 +57,12 @@
 #'   * `"-"` - decreasing frequency
 #'   * `"name+"` - alphabetical A-Z
 #'   * `"name-"` - alphabetical Z-A
+#'
+#'   For labelled variables displayed with their codes
+#'   (`labelled_levels` `"prefixed"` or `"values"`), `"name+"` /
+#'   `"name-"` sort by the underlying code (so `[10]` follows `[2]`,
+#'   as in SPSS), not by the display string. With
+#'   `labelled_levels = "labels"`, labels sort alphabetically.
 #' @param na_val Atomic vector of numeric or character values to be treated as missing (`NA`).
 #'
 #' For *labelled* variables (from **haven** or **labelled**), this argument
@@ -427,10 +433,13 @@ freq <- function(
       # Drop NA-weighted rows up front so they never reach `table()` /
       # `tapply()` (where they would otherwise be retained with weight
       # zero and inflate the rescale denominator). This matches the
-      # `cross_tab()` 0.11.0 behaviour.
+      # `cross_tab()` 0.11.0 behaviour. `x_original` stays full-length:
+      # it is only read for its `label` / class attributes below, and
+      # base `[` subsetting would strip the `label` attribute from a
+      # plain atomic vector (the haven pattern of a variable label
+      # without value labels), losing the printed Label footer.
       keep <- !is.na(weights)
       x <- x[keep]
-      x_original <- x_original[keep]
       weights <- weights[keep]
     }
 
@@ -496,7 +505,8 @@ freq <- function(
     x <- .user_na_zap(x)
   }
 
-  if (labelled::is.labelled(x)) {
+  x_is_labelled <- labelled::is.labelled(x)
+  if (x_is_labelled) {
     x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
   }
 
@@ -563,8 +573,21 @@ freq <- function(
   # guard keeps the call site small.
   if (sort != "" && nrow(df) > 1L) {
     decreasing <- sort %in% c("-", "name-")
-    sort_col <- if (sort %in% c("+", "-")) "n" else "value"
-    df <- df[order(df[[sort_col]], decreasing = decreasing, method = "radix"), ]
+    sort_keys <- if (sort %in% c("+", "-")) {
+      df$n
+    } else if (x_is_labelled && labelled_levels %in% c("prefixed", "values")) {
+      # Name-sorting a labelled variable displayed with its codes
+      # ("prefixed" / "values"): sort by the underlying code -- the
+      # level order `labelled::to_factor()` produces -- not by the
+      # display string, whose C-collation would rank "[10] Ten" before
+      # "[2] Two" (SPSS AVALUE sorts by value too). With
+      # `labelled_levels = "labels"` no code is visible, so the
+      # alphabetical display-string sort below applies.
+      match(df$value, levels(x))
+    } else {
+      df$value
+    }
+    df <- df[order(sort_keys, decreasing = decreasing, method = "radix"), ]
   }
 
   # Move missing-value rows to the end so cumulative columns match the

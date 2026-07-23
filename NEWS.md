@@ -365,6 +365,10 @@ rendering an empty column.
   `effect_size_ci` all turned off) instead of naming only the first
   two toggles.
 
+* `varlist()`, `vl()`, and `code_book()` annotate `difftime` values with their units in `Values` (e.g. `1.5, 2.5 (hours)`); the bare numbers were ambiguous between hours and days.
+
+* `varlist()` and `vl()` return tibble columns without stray names attributes (the variable names leaked onto 5 of the 7 columns), so element-wise `identical()` and snapshot comparisons behave the same for every column.
+
 ## Bug fixes
 
 * The asymptotic standard error of `kendall_tau_b()` mis-scaled one
@@ -399,6 +403,11 @@ rendering an empty column.
   measures reach the caller, as in `assoc_measures()`.
 * `print()` on `freq()` tables invisibly returns the table object
   itself (as documented), not the internally rebuilt display frame.
+* `freq()` keeps the variable label footer when observations with `NA` weights are dropped; base subsetting used to strip the `label` attribute from plain vectors that carry a variable label without value labels (the haven pattern), silently losing the footer.
+* `freq(sort = "name+")` / `"name-"` on labelled variables sorts by the underlying code whenever the code is displayed (`labelled_levels` `"prefixed"` or `"values"`), matching the SPSS by-value convention; string collation used to rank `[10]` ahead of `[2]`. With `labelled_levels = "labels"` the alphabetical label sort is unchanged.
+* `table_categorical()` warns (class `spicy_no_selection`) and lists the available level strings when `levels_keep` matches nothing for a selected variable, instead of silently dropping the variable from the table. For labelled columns the matching strings are the raw codes (or `"[code] label"` under `drop_na = TRUE`), never the bare label text.
+* `varlist()`, `vl()`, and `code_book()` render `POSIXlt` columns as datetime values under `values = TRUE`, as the compact summary already did, instead of a list-column summary (`List(3): list`).
+* `varlist()`, `vl()`, and `code_book()` show an explicit `NA` factor level (e.g. from `addNA()`) as `<NA>` in `Values` instead of silently dropping it, so `Values` and `N_distinct` agree on the declared levels.
 * `label_from_names()` no longer blames the split for duplicate
   column names that already existed in the input
   (`check.names = FALSE` data): pre-existing duplicates pass through

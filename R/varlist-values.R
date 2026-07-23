@@ -108,6 +108,11 @@ summarize_values_minmax <- function(
     )
   }
 
+  units_suffix <- varlist_difftime_units(col)
+  if (!is.null(units_suffix) && nzchar(val_str)) {
+    val_str <- paste0(val_str, " (", units_suffix, ")")
+  }
+
   extras <- format_varlist_missing_values(has_na, has_nan, include_na)
 
   if (length(extras)) {
@@ -130,7 +135,7 @@ summarize_values_all <- function(
   has_na <- varlist_has_na(col)
   has_nan <- varlist_has_nan(col)
 
-  show_vals <- function(v, sort_values = TRUE) {
+  show_vals <- function(v, sort_values = TRUE, units_suffix = NULL) {
     vals <- tryCatch(
       {
         if (sort_values) {
@@ -147,6 +152,15 @@ summarize_values_all <- function(
     vals_chr <- format_varlist_values(vals)
 
     vals_chr_clean <- vals_chr[!is.na(vals_chr)]
+
+    if (!is.null(units_suffix) && length(vals_chr_clean) > 0L) {
+      vals_chr_clean[[length(vals_chr_clean)]] <- paste0(
+        vals_chr_clean[[length(vals_chr_clean)]],
+        " (",
+        units_suffix,
+        ")"
+      )
+    }
 
     extras <- format_varlist_missing_values(has_na, has_nan, include_na)
 
@@ -176,6 +190,14 @@ summarize_values_all <- function(
     ))
   }
 
+  # Datetime columns must be caught before the `is.list()` check below
+  # (mirroring `summarize_values_minmax()`): POSIXlt is a list
+  # underneath, so without this branch its values render as a
+  # list-column summary ("List(3): list") instead of datetimes.
+  if (inherits(col, c("Date", "POSIXct", "POSIXlt"))) {
+    return(show_vals(stats::na.omit(col)))
+  }
+
   if (is.logical(col) || is.character(col)) {
     return(show_vals(stats::na.omit(col)))
   }
@@ -192,7 +214,10 @@ summarize_values_all <- function(
     ))
   }
 
-  show_vals(stats::na.omit(col))
+  show_vals(
+    stats::na.omit(col),
+    units_suffix = varlist_difftime_units(col)
+  )
 }
 
 
@@ -201,6 +226,23 @@ format_varlist_values <- function(x) {
   quote_values <- !is.na(values) & values %in% c("", "NA", "NaN")
   values[quote_values] <- paste0("\"", values[quote_values], "\"")
   values
+}
+
+
+# Units annotation for difftime columns: `as.character()` drops the
+# units attribute, so "1.5, 2.5" alone is ambiguous (hours? days?).
+# The `Values` summaries append the units once, after the value list
+# ("1.5, 2.5 (hours)"). Returns `NULL` for non-difftime columns and
+# for malformed difftime vectors without a usable units string.
+varlist_difftime_units <- function(col) {
+  if (!inherits(col, "difftime")) {
+    return(NULL)
+  }
+  units <- attr(col, "units", exact = TRUE)
+  if (!is.character(units) || length(units) != 1L || !nzchar(units)) {
+    return(NULL)
+  }
+  units
 }
 
 
@@ -344,10 +386,20 @@ varlist_is_nan <- function(x) {
 
 
 factor_values <- function(col, factor_levels = "observed") {
-  if (identical(factor_levels, "all")) {
-    return(levels(col))
+  vals <- if (identical(factor_levels, "all")) {
+    levels(col)
+  } else {
+    observed <- stats::na.omit(col)
+    levels(col)[levels(col) %in% as.character(observed)]
   }
 
-  observed <- stats::na.omit(col)
-  levels(col)[levels(col) %in% as.character(observed)]
+  # An explicit NA level (`addNA()`, `factor(exclude = NULL)`) is
+  # declared schema, not a missing value: `is.na()` is FALSE on its
+  # observations, so the `include_na` extras never cover it. Render it
+  # as the `<NA>` marker here; left as `NA_character_` it would be
+  # silently dropped by the downstream `!is.na()` display filter,
+  # contradicting both `factor_levels = "all"` ("shows all declared
+  # levels") and the row's own `N_distinct`.
+  vals[is.na(vals)] <- "<NA>"
+  vals
 }
