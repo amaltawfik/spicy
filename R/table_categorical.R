@@ -1560,7 +1560,9 @@ table_categorical <- function(
           padding.left = 14
         )
       }
-      flextable::autofit(ft)
+      ft <- flextable::autofit(ft)
+      class(ft) <- c("spicy_flextable", class(ft))
+      ft
     }
 
     if (output == "flextable") {
@@ -2620,7 +2622,9 @@ table_categorical <- function(
       )
     }
 
-    flextable::autofit(ft)
+    ft <- flextable::autofit(ft)
+    class(ft) <- c("spicy_flextable", class(ft))
+    ft
   }
 
   if (output == "flextable") {

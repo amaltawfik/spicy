@@ -855,8 +855,8 @@ export_continuous_lm_table <- function(
     # contexts (same trick as the tinytable branch above).
     if (!is.null(note) && nzchar(note)) {
       attr(ft, "spicy_note") <- note
-      class(ft) <- c("spicy_flextable", class(ft))
     }
+    class(ft) <- c("spicy_flextable", class(ft))
     return(ft)
   }
 

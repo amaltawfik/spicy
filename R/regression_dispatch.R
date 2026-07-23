@@ -1824,7 +1824,22 @@ knit_print.spicy_flextable <- function(x, ...) {
   # path, matching what the engines themselves do.
   pandoc_to <- knitr::opts_knit$get("rmarkdown.pandoc.to")
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
-    return(knitr::knit_print(x, ...))
+    out <- knitr::knit_print(x, ...)
+    # pandoc 3.1.x silently drops raw {=openxml} blocks whose <w:tbl>
+    # opening tag carries xmlns declarations (bisected 2026-07-24: any
+    # single xmlns attribute triggers the drop; the identical table
+    # without them renders as a native Word table). The declarations
+    # are redundant in a fragment -- pandoc's own document root
+    # declares these namespaces -- so strip them before pandoc sees
+    # the block.
+    if (inherits(out, "knit_asis")) {
+      out[1] <- gsub(
+        "(<w:tbl)(\\s+xmlns:[A-Za-z0-9]+=\"[^\"]*\")+(>)",
+        "\\1\\3",
+        out[1]
+      )
+    }
+    return(out)
   }
   h <- flextable::htmltools_value(x = x)
   h_str <- as.character(h)

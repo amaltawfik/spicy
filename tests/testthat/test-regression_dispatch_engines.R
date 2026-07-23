@@ -47,14 +47,22 @@ test_that("output = 'excel' with title + footer writes title row + footer rows",
 
 test_that("output = 'clipboard' delegates to clipr::write_clip", {
   skip_if_not_installed("clipr")
-  if (!clipr::clipr_available()) {
-    skip("Clipboard not available on this CI runner")
-  }
+  # Mocked round-trip: the real Windows clipboard is racy when other
+  # tests touched it in the same session (stale read-back), and the
+  # mock also exercises this path on headless runners.
+  captured <- NULL
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(content, ...) {
+      captured <<- content
+      invisible(content)
+    },
+    .package = "clipr"
+  )
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, output = "clipboard", clipboard_delim = "\t")
   expect_true(inherits(out, "data.frame"))
-  pasted <- clipr::read_clip()
-  expect_true(any(grepl("Variable", pasted)))
+  expect_true(any(grepl("Variable", captured)))
 })
 
 test_that("output = 'clipboard' errors with spicy_unsupported when system clipboard unavailable", {

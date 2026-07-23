@@ -2195,6 +2195,7 @@ export_desc_table <- function(
       return(invisible(word_path))
     }
 
+    class(ft) <- c("spicy_flextable", class(ft))
     return(ft)
   }
 
