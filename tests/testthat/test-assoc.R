@@ -137,11 +137,17 @@ test_that("gamma_gk matches DescTools", {
 
 # ── kendall_tau_b ────────────────────────────────────────────────────────────
 
-test_that("kendall_tau_b matches DescTools", {
-  res <- suppressWarnings(kendall_tau_b(tab_3x3(), detail = TRUE))
+test_that("kendall_tau_b estimate matches DescTools, CI the corrected ASE1", {
+  # The point estimate matches DescTools; the CI deliberately does
+  # NOT: `DescTools::KendallTauB()` mis-scales one margin term of
+  # the ASE gradient (the same bug spicy shipped through 0.12.0),
+  # so the CI is pinned to the corrected Brown & Benedetti ASE1
+  # (estimate -/+ z * 0.1495818, the PSPP CROSSTABS ASE on this
+  # table).
+  res <- kendall_tau_b(tab_3x3(), detail = TRUE)
   expect_equal(res[["estimate"]], -0.5125435, tolerance = 1e-5)
-  expect_equal(res[["ci_lower"]], -0.8043717, tolerance = 1e-4)
-  expect_equal(res[["ci_upper"]], -0.2207153, tolerance = 1e-4)
+  expect_equal(res[["ci_lower"]], -0.8057184, tolerance = 1e-6)
+  expect_equal(res[["ci_upper"]], -0.2193686, tolerance = 1e-6)
 })
 
 # ── kendall_tau_c ────────────────────────────────────────────────────────────
@@ -175,6 +181,33 @@ test_that("somers_d symmetric matches the harmonic mean of asymmetric (SPSS / PS
   expect_equal(sym, expected, tolerance = 1e-10)
   # PSPP CROSSTABS oracle value on this exact table:
   expect_equal(sym, -0.5124224, tolerance = 1e-5)
+})
+
+test_that("somers_d symmetric is 0, not NA, when C == D on a nondegenerate table", {
+  # The harmonic-mean form is 0/0 when concordant and discordant
+  # pairs are exactly equal, but the value is a well-defined 0
+  # (SAS / SPSS closed form); PSPP 2.0 prints .0000000 with a
+  # blank ASE on this table (PSPP never prints a symmetric-d ASE).
+  tu <- as.table(matrix(c(5, 5, 5, 5), 2))
+  expect_no_warning(sym <- somers_d(tu, "symmetric"))
+  expect_identical(sym, 0)
+
+  d <- somers_d(tu, "symmetric", detail = TRUE)
+  expect_identical(unname(d[["estimate"]]), 0)
+  expect_true(is.na(d[["se"]]))
+  expect_true(is.na(d[["p_value"]]))
+})
+
+test_that("somers_d symmetric still warns + NA when a direction is degenerate", {
+  # All observations in a single row: the "column" direction is
+  # undefined (denominator 0), so the symmetric value stays NA and
+  # the classed warning from the recursive call must surface.
+  degen <- as.table(matrix(c(5, 0, 3, 0), 2))
+  expect_warning(
+    res <- somers_d(degen, "symmetric"),
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(res, NA_real_)
 })
 
 # ── assoc_measures ───────────────────────────────────────────────────────────
@@ -298,6 +331,52 @@ test_that("validation rejects non-2D table", {
   t3d <- array(1:8, dim = c(2, 2, 2))
   class(t3d) <- "table"
   expect_error(cramer_v(t3d), "two-dimensional")
+})
+
+test_that("conf_level is validated across all 11 measures + assoc_measures", {
+  # Out-of-range values used to flow silently into `qnorm()`: e.g.
+  # `conf_level = -1` printed CI [Inf, -Inf] with no warning, and
+  # `conf_level = 95` printed NaN bounds as "--" behind an
+  # unclassed base "NaNs produced" warning.
+  tab <- tab_3x3()
+  tab2 <- tab_2x2()
+  fns_any <- list(
+    cramer_v,
+    contingency_coef,
+    lambda_gk,
+    goodman_kruskal_tau,
+    uncertainty_coef,
+    gamma_gk,
+    kendall_tau_b,
+    kendall_tau_c,
+    somers_d,
+    assoc_measures
+  )
+  for (fn in fns_any) {
+    expect_error(fn(tab, conf_level = 95), class = "spicy_invalid_input")
+  }
+  expect_error(phi(tab2, conf_level = 95), class = "spicy_invalid_input")
+  expect_error(yule_q(tab2, conf_level = 95), class = "spicy_invalid_input")
+})
+
+test_that("conf_level = 95 gets the percentage hint", {
+  expect_error(
+    cramer_v(tab_3x3(), detail = TRUE, conf_level = 95),
+    "conf_level = 0.95",
+    fixed = TRUE
+  )
+})
+
+test_that("conf_level rejects 0, 1, negatives, NA, vectors, non-numerics", {
+  tab <- tab_3x3()
+  for (bad in list(0, 1, -1, NA, NA_real_, c(0.9, 0.95), "0.95", Inf)) {
+    expect_error(
+      gamma_gk(tab, detail = TRUE, conf_level = bad),
+      class = "spicy_invalid_input"
+    )
+  }
+  # NULL stays the documented opt-out (CI omitted, no error).
+  expect_no_error(gamma_gk(tab, detail = TRUE, conf_level = NULL))
 })
 
 # ── conf_level = NULL returns without CI ───────────────────────────────────
@@ -463,6 +542,87 @@ test_that("PSPP oracle: sochealth (smoking x education)", {
   expect_equal(somers_d(tab, "symmetric"), -0.1200077, tolerance = 1e-5)
 })
 
+test_that("PSPP oracle: tau-b ASE1 matches PSPP 2.0 CROSSTABS on six tables", {
+  # Anti-regression for the mis-scaled tau-b ASE gradient shipped
+  # through 0.12.0 (the column-margin term was multiplied by
+  # delta1 * delta2 instead of divided by delta2 / multiplied by
+  # delta1). Oracle values are PSPP 2.0 CROSSTABS /STATISTICS=BTAU
+  # ASEs printed with SET FORMAT=F12.7 (fresh runs, 2026-07, via
+  # the tools/validation harness pattern). The SPSS Statistics
+  # Algorithms closed form and an independent numeric delta-method
+  # (multinomial gradient) oracle agree with every pinned value.
+  # `DescTools::KendallTauB()` shares the old bug, so DescTools
+  # must NOT be used as the SE oracle here.
+  taub_se <- function(tab) kendall_tau_b(tab, detail = TRUE)[["se"]]
+
+  expect_equal(taub_se(tab_3x3()), 0.1495818, tolerance = 1e-6)
+  expect_equal(taub_se(tab_2x2()), 0.1753244, tolerance = 1e-6)
+  expect_equal(
+    taub_se(margin.table(HairEyeColor, c(1, 2))),
+    0.0307275,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    taub_se(as.table(matrix(c(200, 10, 15, 30), 2))),
+    0.0644886,
+    tolerance = 1e-6
+  )
+  # The two sochealth ASEs are pinned at 1e-5: PSPP prints 7
+  # decimals, and on these small ASEs the print granularity alone
+  # exceeds a 1e-6 *relative* tolerance (absolute agreement is
+  # < 5e-8 on both).
+  data(sochealth, package = "spicy", envir = environment())
+  expect_equal(
+    taub_se(table(sochealth$smoking, sochealth$education)),
+    0.0273992,
+    tolerance = 1e-5
+  )
+  expect_equal(
+    taub_se(table(sochealth$education, sochealth$self_rated_health)),
+    0.0251407,
+    tolerance = 1e-5
+  )
+})
+
+test_that("PSPP oracle: sibling ASEs pinned (tau-b fix must not leak)", {
+  # gamma / tau-c / Somers' D / lambda / uncertainty coefficient
+  # ASEs matched PSPP 2.0 to 7 decimals both before and after the
+  # tau-b ASE fix (verified byte-identical). Pin one PSPP value
+  # each on mtcars 3x3 so a future edit to the shared concordance
+  # plumbing cannot drift a sibling formula unnoticed.
+  tab <- tab_3x3()
+  expect_equal(
+    gamma_gk(tab, detail = TRUE)[["se"]],
+    0.1727847,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    kendall_tau_c(tab, detail = TRUE)[["se"]],
+    0.1320920,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    somers_d(tab, "row", detail = TRUE)[["se"]],
+    0.1407720,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    somers_d(tab, "column", detail = TRUE)[["se"]],
+    0.1605058,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    lambda_gk(tab, "symmetric", detail = TRUE)[["se"]],
+    0.1292016,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    uncertainty_coef(tab, "symmetric", detail = TRUE)[["se"]],
+    0.0894061,
+    tolerance = 1e-6
+  )
+})
+
 test_that("yule_q warns when ad + bc = 0", {
   tab <- matrix(c(0L, 0L, 0L, 5L), 2, 2)
   class(tab) <- "table"
@@ -603,13 +763,46 @@ test_that("ordinal measures report NA p-value when the SE is zero", {
   }
 })
 
-test_that("kendall_tau_c zero-SE degenerate table gives NA p, not NaN", {
-  tab <- matrix(c(2L, 3L, 0L, 0L), 2, 2)
-  class(tab) <- "table"
-  res <- kendall_tau_c(tab, detail = TRUE)
-  expect_equal(res[["estimate"]], 0)
-  expect_true(is.na(res[["p_value"]]))
-  expect_false(is.nan(res[["p_value"]]))
+test_that("kendall_tau_c warns + returns NA when a variable is constant", {
+  # Family degenerate contract: previously returned a silent
+  # definite 0 with SE 0 and CI [0, 0] while gamma / tau-b /
+  # Somers' D all warned + NA on the same table, and PSPP reports
+  # the statistic as missing.
+  one_cell <- as.table(matrix(c(100, 0, 0, 0), 2))
+  expect_warning(
+    res <- kendall_tau_c(one_cell),
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(res, NA_real_)
+  expect_warning(
+    res_d <- kendall_tau_c(one_cell, detail = TRUE),
+    class = "spicy_undefined_stat"
+  )
+  expect_s3_class(res_d, "spicy_assoc_detail")
+  expect_named(res_d, c("estimate", "se", "ci_lower", "ci_upper", "p_value"))
+  expect_true(all(is.na(res_d)))
+
+  # One constant variable is enough (all observations in a single
+  # column here) -- the same tables on which tau-b's denominator
+  # guard fires.
+  col_const <- as.table(matrix(c(2, 3, 0, 0), 2))
+  expect_warning(
+    res2 <- kendall_tau_c(col_const),
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(res2, NA_real_)
+})
+
+test_that("assoc_measures reports the degenerate tau-c as an NA row", {
+  # The summary table used to print one definite "0.000 [0, 0]"
+  # tau-c row among 16 undefined "--" rows on this table.
+  one_cell <- as.table(matrix(c(100, 0, 0, 0), 2))
+  res <- suppressWarnings(assoc_measures(one_cell))
+  tauc_row <- res[res$measure == "Kendall's Tau-c", ]
+  expect_true(is.na(tauc_row$estimate))
+  expect_true(is.na(tauc_row$se))
+  expect_true(is.na(tauc_row$ci_lower))
+  expect_true(is.na(tauc_row$ci_upper))
 })
 
 test_that("assoc_measures re-emits classed warnings from undefined measures", {

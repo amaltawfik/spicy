@@ -13,9 +13,11 @@ kendall_tau_c(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 as a numeric scalar. If \code{TRUE}, return a named numeric vector
 including confidence interval and p-value.}
 
-\item{conf_level}{A number between 0 and 1 giving the confidence
-level (default \code{0.95}). Only used when \code{detail = TRUE}. Set
-to \code{NULL} to omit the confidence interval.}
+\item{conf_level}{A single number strictly between 0 and 1 giving
+the confidence level (default \code{0.95}). Only used when
+\code{detail = TRUE}. Set to \code{NULL} to omit the confidence interval.
+Any other value -- including percentages such as \code{95} -- raises
+a classed error (\code{spicy_invalid_input}).}
 
 \item{digits}{Number of decimal places used when printing the
 result (default \code{3}). Only affects the \code{detail = TRUE} output.}
@@ -39,6 +41,11 @@ square, and may fall outside that range otherwise.
 When the asymptotic standard error is zero (e.g. a perfect
 association), the Wald z-test is undefined and the p-value is
 \code{NA}, matching the other measures in the family.
+When one variable is constant (all observations in a single row
+or column), there are no untied pairs and the statistic
+degenerates to a meaningless 0: the function returns \code{NA} with a
+\code{spicy_undefined_stat} warning, like its siblings, matching the
+SPSS / PSPP behavior of reporting no value.
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }

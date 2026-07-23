@@ -354,6 +354,19 @@ test_that("cross_tab assoc_measure = 'somers_d' works", {
   expect_equal(attr(res, "assoc_measure"), "Somers' D")
 })
 
+test_that("requested Somers' D line survives a C == D (independence) table", {
+  # Symmetric Somers' d used to be a silent NA when concordant and
+  # discordant pairs were equal, so the association line the user
+  # asked for vanished from the printed note without a trace. It is
+  # now the correct 0 (PSPP prints .000).
+  x <- factor(rep(c("a", "a", "b", "b"), 5))
+  y <- factor(rep(c("u", "v", "u", "v"), 5))
+  res <- cross_tab(x, y, assoc_measure = "somers_d")
+  expect_identical(attr(res, "assoc_value"), 0)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("Somers' D", out, fixed = TRUE)))
+})
+
 test_that("cross_tab assoc_measure = 'lambda' works", {
   res <- cross_tab(mtcars, cyl, gear, assoc_measure = "lambda")
   expect_equal(attr(res, "assoc_measure"), "Lambda")

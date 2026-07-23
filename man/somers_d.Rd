@@ -24,9 +24,11 @@ or \code{"symmetric"} (harmonic mean of both directions).}
 as a numeric scalar. If \code{TRUE}, return a named numeric vector
 including confidence interval and p-value.}
 
-\item{conf_level}{A number between 0 and 1 giving the confidence
-level (default \code{0.95}). Only used when \code{detail = TRUE}. Set
-to \code{NULL} to omit the confidence interval.}
+\item{conf_level}{A single number strictly between 0 and 1 giving
+the confidence level (default \code{0.95}). Only used when
+\code{detail = TRUE}. Set to \code{NULL} to omit the confidence interval.
+Any other value -- including percentages such as \code{95} -- raises
+a classed error (\code{spicy_invalid_input}).}
 
 \item{digits}{Number of decimal places used when printing the
 result (default \code{3}). Only affects the \code{detail = TRUE} output.}
@@ -49,8 +51,17 @@ symmetric version (\code{direction = "symmetric"}) is the
 SPSS / PSPP convention; this is \strong{not} identical to
 Kendall's Tau-b (which is the \emph{geometric} mean of the same
 two quantities), although the two often agree to two
-decimals. No analytic SE / CI is reported for the symmetric
-form (DescTools follows the same convention).
+decimals. It is computed via the equivalent closed form
+\eqn{2(C - D)} divided by the sum of the two asymmetric
+denominators, so a table with exactly as many concordant as
+discordant pairs (e.g. an independence pattern) yields the
+well-defined value 0 -- the harmonic-mean form is 0/0 there --
+as printed by SPSS / PSPP. The symmetric estimate
+is \code{NA} only when one of the asymmetric directions is itself
+undefined (with the same \code{spicy_undefined_stat} warning). No
+analytic SE / CI is reported for the symmetric form: its \code{se}
+is always \code{NA}, matching PSPP, which prints no ASE for it
+(DescTools offers no symmetric form at all).
 
 The default \code{direction = "row"} differs deliberately from
 \code{\link[=lambda_gk]{lambda_gk()}} and \code{\link[=uncertainty_coef]{uncertainty_coef()}} (which default to

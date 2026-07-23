@@ -13,9 +13,11 @@ kendall_tau_b(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 as a numeric scalar. If \code{TRUE}, return a named numeric vector
 including confidence interval and p-value.}
 
-\item{conf_level}{A number between 0 and 1 giving the confidence
-level (default \code{0.95}). Only used when \code{detail = TRUE}. Set
-to \code{NULL} to omit the confidence interval.}
+\item{conf_level}{A single number strictly between 0 and 1 giving
+the confidence level (default \code{0.95}). Only used when
+\code{detail = TRUE}. Set to \code{NULL} to omit the confidence interval.
+Any other value -- including percentages such as \code{95} -- raises
+a classed error (\code{spicy_invalid_input}).}
 
 \item{digits}{Number of decimal places used when printing the
 result (default \code{3}). Only affects the \code{detail = TRUE} output.}
@@ -39,8 +41,12 @@ appropriate for square tables.
 When the asymptotic standard error is zero (e.g. a perfect
 association), the Wald z-test is undefined and the p-value is
 \code{NA}, matching the other measures in the family.
-Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
+
+The asymptotic standard error is the Brown and Benedetti (1977)
+ASE1, as printed by SPSS / PSPP \code{CROSSTABS}. It deliberately
+diverges from \code{DescTools::KendallTauB()}, whose implementation
+mis-scales one margin term of the gradient; see \code{\link[=cramer_v]{cramer_v()}}
+for full references.
 }
 \examples{
 tab <- table(sochealth$education, sochealth$self_rated_health)

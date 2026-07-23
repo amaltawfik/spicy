@@ -17,9 +17,11 @@ assoc_measures(
 \item{type}{Which family of measures to compute:
 \code{"all"} (default), \code{"nominal"}, or \code{"ordinal"}.}
 
-\item{conf_level}{A number between 0 and 1 giving the confidence
-level (default \code{0.95}). Set to \code{NULL} to omit the confidence
-interval.}
+\item{conf_level}{A single number strictly between 0 and 1 giving
+the confidence level (default \code{0.95}). Set to \code{NULL} to omit
+the confidence interval. Any other value -- including
+percentages such as \code{95} -- raises a classed error
+(\code{spicy_invalid_input}).}
 
 \item{digits}{Number of decimal places used when printing the
 result (default \code{3}).}
@@ -68,7 +70,9 @@ condition handlers and \code{suppressWarnings()} behave as they do
 for the individual functions.
 
 Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024).
+(Signorell et al., 2024), except for Kendall's Tau-b, whose
+ASE follows Brown and Benedetti (1977) as printed by SPSS /
+PSPP \code{CROSSTABS}; see \code{\link[=kendall_tau_b]{kendall_tau_b()}}.
 }
 \examples{
 tab <- table(sochealth$smoking, sochealth$education)
@@ -79,6 +83,10 @@ assoc_measures(tab, type = "ordinal")
 }
 \references{
 Agresti, A. (2002). \emph{Categorical Data Analysis} (2nd ed.). Wiley.
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+tests for correlation in two-way contingency tables. \emph{Journal of
+the American Statistical Association}, 72(358), 309-315.
 
 Liebetrau, A. M. (1983). \emph{Measures of Association}. Sage.
 

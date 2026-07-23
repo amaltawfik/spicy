@@ -63,15 +63,17 @@ test_that("count_n(verbose = TRUE) reports columns whose comparison fails", {
   expect_equal(res, c(0, 1))
 })
 
-# ---- assoc.R line 1360: symmetric Somers' d NA when d_r + d_c == 0 ---------
+# ---- assoc.R: symmetric Somers' d closed form when C == D ------------------
 
-test_that("somers_d(symmetric) returns NA when both asymmetric d are zero", {
-  # Uniform 2x2 table: C == D, so d(R|C) = d(C|R) = 0 and the harmonic
-  # mean is undefined (0/0); the NA arm must fire.
+test_that("somers_d(symmetric) returns 0 when both asymmetric d are zero", {
+  # Uniform 2x2 table: C == D, so d(R|C) = d(C|R) = 0. The harmonic
+  # mean is the 0/0 trap there, but the equivalent closed form
+  # 2(C - D) / (sum of asymmetric denominators) gives the correct 0
+  # (PSPP prints .000, Sig 1.000 on this table).
   tab <- as.table(matrix(c(1, 1, 1, 1), 2, 2))
   expect_identical(somers_d(tab, direction = "row"), 0)
   expect_identical(somers_d(tab, direction = "column"), 0)
-  expect_identical(somers_d(tab, direction = "symmetric"), NA_real_)
+  expect_identical(somers_d(tab, direction = "symmetric"), 0)
   # Contrast: with real association the symmetric value is the harmonic
   # mean of the two asymmetric values (SPSS/PSPP definition).
   t2 <- as.table(matrix(c(10, 2, 3, 8), 2, 2))
