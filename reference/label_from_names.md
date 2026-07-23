@@ -70,8 +70,11 @@ with
 The function raises an actionable error – rather than letting the
 downstream constructor raise a cryptic one – when the split produces:
 
-- duplicate column names (two original names share the same prefix
-  before `sep`); or
+- duplicate column names that the renaming itself creates (two original
+  names share the same prefix before `sep`, or a new name collides with
+  an existing one). Names that were already duplicated in the input
+  (`check.names = FALSE` data) are passed through untouched, not blamed
+  on the split; or
 
 - an empty column name (the original name starts with `sep` and has
   nothing before it).

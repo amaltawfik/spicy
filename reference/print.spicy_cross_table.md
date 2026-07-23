@@ -29,3 +29,7 @@ print(x, digits = NULL, decimal_mark = NULL, ...)
 - ...:
 
   Additional arguments passed to internal formatting functions.
+
+## Value
+
+Invisibly returns `x`.

@@ -136,7 +136,8 @@ If <code>allow_coercion = FALSE</code>, matching is type-safe using <code><a hre
 <dd><p>Character vector of special values to count: <code>"NA"</code>, <code>"NaN"</code>, <code>"Inf"</code>, <code>"-Inf"</code>, or <code>"all"</code>.
 Defaults to <code>NULL</code>.
 Every entry is validated, including alongside <code>"all"</code>: any other
-value raises an error.
+value raises an error, and so does an empty vector
+(<code>special = character(0)</code> selects nothing to count).
 <code>"NA"</code> uses <code><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na()</a></code>, and therefore includes both <code>NA</code> and <code>NaN</code> values.
 <code>"NaN"</code> uses <code><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.nan()</a></code> to match only actual NaN values.</p></dd>
 

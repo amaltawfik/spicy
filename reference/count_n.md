@@ -67,9 +67,10 @@ count_n(
 
   Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`,
   `"-Inf"`, or `"all"`. Defaults to `NULL`. Every entry is validated,
-  including alongside `"all"`: any other value raises an error. `"NA"`
-  uses [`is.na()`](https://rdrr.io/r/base/NA.html), and therefore
-  includes both `NA` and `NaN` values. `"NaN"` uses
+  including alongside `"all"`: any other value raises an error, and so
+  does an empty vector (`special = character(0)` selects nothing to
+  count). `"NA"` uses [`is.na()`](https://rdrr.io/r/base/NA.html), and
+  therefore includes both `NA` and `NaN` values. `"NaN"` uses
   [`is.nan()`](https://rdrr.io/r/base/is.finite.html) to match only
   actual NaN values.
 

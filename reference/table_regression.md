@@ -127,8 +127,11 @@ table_regression(
     fly).
 
   For multi-model use, pass a list of one form per model (mix-and-match
-  allowed). Bare unquoted names (`cluster = region`) are NOT accepted –
-  use `~region` or `"region"`. Default `NULL` (no clustering).
+  allowed). A bare unquoted name (`cluster = region`) is not column
+  selection: it is evaluated as an ordinary variable (the vector form
+  when `region` exists in the calling environment, a migration error
+  pointing at `~region` / `"region"` otherwise). Default `NULL` (no
+  clustering).
 
 - ci_level:
 
@@ -1130,10 +1133,14 @@ Three accepted forms, in order of preference:
     **different dataset** with matching row order, or is otherwise not a
     column of the model's `data`.
 
-Bare unquoted names (`cluster = region`) are **not** accepted – they
-would require non-standard evaluation magic that breaks under
-programmatic use (function wrapping, dynamic column choice, loops). Use
-`~region` or `"region"` instead.
+A bare unquoted name (`cluster = region`) is **not** column selection:
+it is evaluated as an ordinary R variable. If an object `region` exists
+in the calling environment, its value is used as the **vector** form
+above; if it does not (the typical "unquoted column name" intent), the
+call fails with a migration error pointing at `~region` / `"region"`.
+Bare-name column selection is deliberately unsupported – it would
+require non-standard evaluation magic that breaks under programmatic use
+(function wrapping, dynamic column choice, loops).
 
 For multi-model use, mix forms freely:
 `cluster = list(~region, "region", df$region)`.

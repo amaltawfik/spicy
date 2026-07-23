@@ -210,9 +210,12 @@ cluster-jackknife). Three accepted forms (see <em>How to specify
 <code>interaction(df$region, df$year)</code>, ... (for keys derived
 on the fly).</p></li>
 </ul><p>For multi-model use, pass a list of one form per model
-(mix-and-match allowed). Bare unquoted names
-(<code>cluster = region</code>) are NOT accepted – use <code>~region</code> or
-<code>"region"</code>. Default <code>NULL</code> (no clustering).</p></dd>
+(mix-and-match allowed). A bare unquoted name
+(<code>cluster = region</code>) is not column selection: it is evaluated
+as an ordinary variable (the vector form when <code>region</code> exists
+in the calling environment, a migration error pointing at
+<code>~region</code> / <code>"region"</code> otherwise). Default <code>NULL</code> (no
+clustering).</p></dd>
 
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
@@ -1170,10 +1173,15 @@ length <code>nobs(fit)</code>. Use this when the cluster key is
 <code>cluster = as.integer(format(df$date, "%Y"))</code>), comes from
 a <strong>different dataset</strong> with matching row order, or is
 otherwise not a column of the model's <code>data</code>.</p></li>
-</ol><p>Bare unquoted names (<code>cluster = region</code>) are <strong>not</strong> accepted –
-they would require non-standard evaluation magic that breaks
-under programmatic use (function wrapping, dynamic column
-choice, loops). Use <code>~region</code> or <code>"region"</code> instead.</p>
+</ol><p>A bare unquoted name (<code>cluster = region</code>) is <strong>not</strong> column
+selection: it is evaluated as an ordinary R variable. If an object
+<code>region</code> exists in the calling environment, its value is used as
+the <strong>vector</strong> form above; if it does not (the typical "unquoted
+column name" intent), the call fails with a migration error
+pointing at <code>~region</code> / <code>"region"</code>. Bare-name column selection is
+deliberately unsupported – it would require non-standard
+evaluation magic that breaks under programmatic use (function
+wrapping, dynamic column choice, loops).</p>
 <p>For multi-model use, mix forms freely:
 <code>cluster = list(~region, "region", df$region)</code>.</p>
 </div>

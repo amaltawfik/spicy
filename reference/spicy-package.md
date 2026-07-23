@@ -73,8 +73,8 @@ notice – avoid calling directly from downstream code):
 The [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
 and
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
-methods on `spicy_freq_table`, `spicy_categorical_table`,
-`spicy_continuous_table`, and `spicy_continuous_lm_table` follow the
+methods on `spicy_categorical_table`, `spicy_continuous_table`,
+`spicy_continuous_lm_table`, and `spicy_regression_table` follow the
 standard broom column conventions (`outcome`, `term`, `estimate`,
 `std.error`, `conf.low`, `conf.high`, `statistic`, `p.value`, `df`,
 `df.residual`, `r.squared`, `adj.r.squared`, `nobs`, ...). The set of

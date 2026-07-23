@@ -55,7 +55,11 @@ table_regression_uv(
   [`binomial()`](https://rdrr.io/r/stats/family.html). Refused for
   `method = "coxph"`, and
   [`gaussian()`](https://rdrr.io/r/stats/family.html) with the identity
-  link is refused too: use `method = "lm"` for the linear screen.
+  link is refused too: use `method = "lm"` for the linear screen. With
+  `method = "lm"`, any non-gaussian `family` is refused the same way
+  (use `method = "glm"`), and a supplied
+  [`gaussian()`](https://rdrr.io/r/stats/family.html) is ignored with a
+  classed warning – the linear screen already fits it.
 
 - multivariable:
 
