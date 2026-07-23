@@ -81,7 +81,7 @@ Rscript -e "devtools::spell_check()"
 Rscript -e "devtools::check()"
 
 # To format code
-air format .
+air format (pinned: air 0.7.0; the whole tree was one-shot formatted -- see .git-blame-ignore-revs) .
 ```
 
 ## Coding
