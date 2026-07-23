@@ -121,18 +121,6 @@ Reach for \code{build_ascii_table()} only when you need to render an
 arbitrary \code{data.frame} to a string with the same look as
 spicy's tables.
 }
-\examples{
-# Internal usage example (for developers)
-df <- data.frame(
-  Category = c("Valid", "", "Missing", "Total"),
-  Values = c("Yes", "No", "NA", ""),
-  Freq. = c(12, 8, 1, 21),
-  Percent = c(57.1, 38.1, 4.8, 100.0)
-)
-
-cat(build_ascii_table(df, padding = 0L))
-
-}
 \seealso{
 \code{\link[=spicy_print_table]{spicy_print_table()}} for a user-facing wrapper that adds titles and notes.
 }

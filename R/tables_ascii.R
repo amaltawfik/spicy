@@ -164,17 +164,6 @@
 #' A single character string containing the full ASCII-formatted table,
 #' suitable for direct printing with `cat()`.
 #'
-#' @examples
-#' # Internal usage example (for developers)
-#' df <- data.frame(
-#'   Category = c("Valid", "", "Missing", "Total"),
-#'   Values = c("Yes", "No", "NA", ""),
-#'   Freq. = c(12, 8, 1, 21),
-#'   Percent = c(57.1, 38.1, 4.8, 100.0)
-#' )
-#'
-#' cat(build_ascii_table(df, padding = 0L))
-#'
 #' @seealso
 #' [spicy_print_table()] for a user-facing wrapper that adds titles and notes.
 #'
