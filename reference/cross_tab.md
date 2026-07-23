@@ -28,10 +28,11 @@ cross_tab(
   simulate_p = FALSE,
   simulate_B = 2000,
   digits = NULL,
-  styled = TRUE,
+  output = c("default", "data.frame"),
   show_n = TRUE,
   decimal_mark = ".",
-  p_digits = 3L
+  p_digits = 3L,
+  styled
 )
 ```
 
@@ -60,7 +61,8 @@ cross_tab(
 
 - weights:
 
-  Optional numeric weights.
+  Optional numeric weights. A logical vector is also accepted and
+  coerced to 1/0 (include / exclude).
 
 - rescale:
 
@@ -106,14 +108,22 @@ cross_tab(
 
 - digits:
 
-  Number of decimals for cell values. Defaults to `NULL`, which is
-  resolved to `1` when `percent != "none"` and `0` when
-  `percent = "none"` (counts are always integers).
+  Number of decimals for cell values: a single non-negative integer.
+  Defaults to `NULL`, which is resolved to `1` when `percent != "none"`
+  and `0` when `percent = "none"` (counts are always integers). Same
+  role as `digits` in
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+  which formats percentages only and therefore uses a fixed default of
+  `1`.
 
-- styled:
+- output:
 
-  Logical. If `TRUE` (the default), returns a `spicy_cross_table` object
-  (for formatted printing). If `FALSE`, returns a plain `data.frame`.
+  Output format. `"default"` (the default) returns a `spicy_cross_table`
+  object (for formatted printing); `"data.frame"` returns a plain
+  `data.frame`. The values match the `output` argument of the
+  `table_*()` family; the rendered engines that family also accepts
+  (`"tinytable"`, `"gt"`, `"flextable"`, ...) are not available in
+  `cross_tab()`.
 
 - show_n:
 
@@ -134,25 +144,34 @@ cross_tab(
   used). Defaults to `3` (the APA standard); matches the `p_digits`
   argument of the `table_*()` family.
 
+- styled:
+
+  Defunct. `styled = TRUE` is now `output = "default"` (the default) and
+  `styled = FALSE` is now `output = "data.frame"`; supplying `styled` is
+  an error.
+
 ## Value
 
-Depends on `styled` and `by`:
+Depends on `output` and `by`:
 
-- `styled = TRUE`, no `by`: a `spicy_cross_table` object (a `data.frame`
-  carrying rendering metadata as attributes: `title`, `digits`,
-  `decimal_mark`, `n_row_idx`, `n_col_name`, and the inferential block
-  when `include_stats = TRUE`). Printing dispatches to
+- `output = "default"`, no `by`: a `spicy_cross_table` object (a
+  `data.frame` carrying rendering metadata as attributes: `title`,
+  `digits`, `decimal_mark`, `n_row_idx`, `n_col_name`, and the
+  inferential block when `include_stats = TRUE`). Printing dispatches to
   [`print.spicy_cross_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.md).
 
-- `styled = TRUE`, `by` supplied: a `spicy_cross_table_list`, i.e. a
-  named list of `spicy_cross_table` objects (one element per group
+- `output = "default"`, `by` supplied: a `spicy_cross_table_list`, i.e.
+  a named list of `spicy_cross_table` objects (one element per group
   level, named by that level). Printing dispatches to
   [`print.spicy_cross_table_list()`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table_list.md)
   which renders each table in turn separated by a blank line.
 
-- `styled = FALSE`: the same payload returned as a plain `data.frame`
-  (or named list of `data.frame`s with `by`), stripped of the `spicy_*`
-  classes for downstream programmatic use.
+- `output = "data.frame"`: the same payload returned as a plain
+  `data.frame` (or named list of `data.frame`s with `by`), stripped of
+  the `spicy_*` classes and of every metadata attribute (`title`,
+  `note`, `n_total`, `chi2`, `p_value`, `assoc_*`, ...). For
+  programmatic access to the statistics, read the attributes of the
+  default object, e.g. `attr(cross_tab(...), "p_value")`.
 
 Cell columns are the levels of `y`; rows are the levels of `x`. When
 `percent != "none"`, the `N` column (or `N` row) is added according to
@@ -176,11 +195,16 @@ default behavior:
 
 - **`options(spicy.rescale = TRUE)`** Automatically rescales weights so
   that total weighted N equals the raw N. Equivalent to setting
-  `rescale = TRUE` in each call.
+  `rescale = TRUE` in each call. Also read by
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), so
+  one option governs both tabulators.
 
 These options are convenient for users who wish to enforce consistent
-behavior across multiple calls to `cross_tab()` and other spicy table
-functions. They can be disabled or reset by setting them to `NULL`:
+behavior across multiple calls: `spicy.percent` and `spicy.simulate_p`
+apply to `cross_tab()`, and `spicy.rescale` applies to both
+`cross_tab()` and
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md). They
+can be disabled or reset by setting them to `NULL`:
 `options(spicy.percent = NULL, spicy.simulate_p = NULL, spicy.rescale = NULL)`.
 
 Example:
@@ -204,6 +228,7 @@ cross_tab(sochealth, smoking, education)
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 
 # Column percentages
 cross_tab(sochealth, smoking, education, percent = "column")
@@ -219,6 +244,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 
 # Weighted (rescaled)
 cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
@@ -234,6 +260,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> Chi-2(2) = 21.4, p <.001
 #> Cramer's V = 0.13
 #> Weight: weight (rescaled)
+#> Missing values removed: smoking (25).
 
 # Grouped by sex
 cross_tab(sochealth, smoking, education, by = sex)
@@ -248,6 +275,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> 
 #> Chi-2(2) = 7.1, p = .029
 #> Cramer's V = 0.11
+#> Missing values removed: smoking (14).
 #> 
 #> Crosstable: smoking x education (N) | sex = Male
 #> 
@@ -260,6 +288,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> 
 #> Chi-2(2) = 15.6, p <.001
 #> Cramer's V = 0.17
+#> Missing values removed: smoking (11).
 
 # Grouped by combination of variables
 cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
@@ -274,6 +303,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> 
 #> Chi-2(2) = 2.1, p = .356
 #> Cramer's V = 0.13
+#> Missing values removed: smoking (4).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.25-34
 #> 
@@ -286,6 +316,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> 
 #> Chi-2(2) = 14.2, p <.001
 #> Cramer's V = 0.36
+#> Missing values removed: smoking (3).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.35-49
 #> 
@@ -298,6 +329,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> 
 #> Chi-2(2) = 3.0, p = .223
 #> Cramer's V = 0.13
+#> Missing values removed: smoking (7).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.35-49
 #> 
@@ -310,6 +342,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> 
 #> Chi-2(2) = 6.9, p = .032
 #> Cramer's V = 0.19
+#> Missing values removed: smoking (3).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.50-64
 #> 
@@ -322,6 +355,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> 
 #> Chi-2(2) = 2.0, p = .360
 #> Cramer's V = 0.11
+#> Missing values removed: smoking (3).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.50-64
 #> 
@@ -334,6 +368,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> 
 #> Chi-2(2) = 2.1, p = .343
 #> Cramer's V = 0.12
+#> Missing values removed: smoking (4).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.65-75
 #> 
@@ -358,6 +393,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> 
 #> Chi-2(2) = 1.4, p = .499
 #> Cramer's V = 0.11
+#> Missing values removed: smoking (1).
 
 # Ordinal variables: auto-selects Kendall's Tau-b
 cross_tab(sochealth, education, self_rated_health)
@@ -373,6 +409,7 @@ cross_tab(sochealth, education, self_rated_health)
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
+#> Missing values removed: self_rated_health (20).
 
 # 2x2 table with Yates correction
 cross_tab(sochealth, smoking, physical_activity, correct = TRUE)
@@ -388,6 +425,7 @@ cross_tab(sochealth, smoking, physical_activity, correct = TRUE)
 #> Chi-2(1) = 0.0, p = .896
 #> Cramer's V = 0.01
 #> Yates continuity correction applied.
+#> Missing values removed: smoking (25).
 
 # APA-style p-value precision and European decimal mark
 cross_tab(sochealth, smoking, education, decimal_mark = ",", p_digits = 4)
@@ -402,4 +440,5 @@ cross_tab(sochealth, smoking, education, decimal_mark = ",", p_digits = 4)
 #> 
 #> Chi-2(2) = 21,6, p <,0001
 #> Cramer's V = 0,14
+#> Missing values removed: smoking (25).
 ```

@@ -274,6 +274,7 @@ cross_tab(sochealth, smoking, education)
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 
 # Ordinal: Kendall's Tau-b (automatic)
 cross_tab(sochealth, self_rated_health, education)
@@ -290,6 +291,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
+#> Missing values removed: self_rated_health (20).
 ```
 
 You can override the automatic choice:
@@ -310,6 +312,7 @@ cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Goodman-Kruskal Gamma = 0.31
+#> Missing values removed: self_rated_health (20).
 ```
 
 ## Confidence intervals

@@ -17,7 +17,7 @@ print(x, ...)
 
   A `data.frame` of class `"spicy_freq_table"` as returned by
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) (with
-  the default `styled = TRUE`). Rendering metadata is read from
+  the default `output = "default"`). Rendering metadata is read from
   attributes set by
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
 

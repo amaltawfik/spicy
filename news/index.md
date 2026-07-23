@@ -34,6 +34,46 @@
   unused factor level), instead of silently returning 0 – the same
   degenerate-table behavior as the rest of the association family.
 
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  replace the logical `styled` argument with `output`, the same
+  rendering argument the `table_*()` family uses. Migration:
+  `styled = TRUE` is now `output = "default"` (the default) and
+  `styled = FALSE` is now `output = "data.frame"`. Passing `styled`
+  raises a classed error (`spicy_defunct`) that spells out the
+  replacement. The rendered engines of the `table_*()` family
+  (`"tinytable"`, `"gt"`, `"flextable"`, …) are not accepted by the two
+  tabulators.
+
+- `cross_tab(output = "data.frame")` (previously `styled = FALSE`) now
+  returns a genuinely plain `data.frame` (and a list of plain data
+  frames with `by`): the metadata attributes (`title`, `note`,
+  `n_total`, `chi2`, `p_value`, `assoc_*`, …) are stripped, as
+  documented. For programmatic access to the statistics, read the
+  attributes of the default object instead, e.g.
+  `attr(cross_tab(...), "p_value")`.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) now
+  defaults to `rescale = FALSE` (raw weighted counts), matching
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  and reads `options(spicy.rescale)` the same way
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  does. Call `freq(..., rescale = TRUE)` to restore the previous
+  behavior.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) no
+  longer prints as a side effect: it returns its `spicy_freq_table`
+  visibly and regular auto-printing displays it, so a bare `freq(...)`
+  call still shows the table while `f <- freq(...)` is now silent (print
+  `f` to display it). The unused `...` argument is removed from the
+  signature; passing unknown arguments now errors.
+
+- [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
+  arguments use snake_case like every other spicy function:
+  `row_names_as_col`, `row_names`, and `col_names` (were
+  `row.names.as.col`, `row.names`, `col.names`). The old dot.case names
+  raise an error that names the exact replacement.
+
 - `table_regression(exponentiate = TRUE)` now errors on links whose
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, …). Ratio links (logit, log, binomial / ordinal cloglog) are
@@ -43,6 +83,34 @@
   defaults to `drop_na = FALSE`: missing values display as a
   `"(Missing)"` level instead of being silently removed. With
   `drop_na = TRUE`, a table note now reports what was removed.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  rejects `p_digits` below 1 with a classed error, as its documentation
+  always promised; such values were silently rendered with 3 decimals.
+  Matches
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  uses the same `labels` contract as
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md):
+  a named character vector (`labels = c(smoking = "Current smoker")`),
+  with the other columns falling back to the variable’s label attribute
+  (e.g. from haven) and then to the column name. Unnamed positional
+  label vectors, accepted since before 0.11.0, now raise an error with a
+  migration hint.
+
+- `table_categorical(output = "flextable")` no longer writes a `.docx`
+  as a side effect when `word_path` is supplied: `word_path` is
+  consulted only by `output = "word"`, as everywhere else in the table
+  family. The old combination now warns (class `spicy_ignored_arg`);
+  save the returned object with
+  [`flextable::save_as_docx()`](https://davidgohel.github.io/flextable/reference/save_as_docx.html)
+  if you relied on it.
 
 - `standardized = "smart"` scales continuous inputs by 2 SD and leaves
   binary inputs (0/1 and factor dummies) unscaled, as Gelman (2008)
@@ -252,12 +320,35 @@ rendering an empty column.
   instead of a blank block. The `N (groups)` row upgrades to plain
   counts (e.g. `N (Subject)`) when models share a single grouping
   factor.
+- `select` is optional in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  when omitted, every eligible categorical column is tabulated – factor,
+  character, logical, and labelled (haven) columns, excluding `by` –
+  matching the select-less defaults of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  An explicit `select` is still taken verbatim, so numeric-coded
+  categorical variables can be tabulated by naming them.
 - Six new vignettes: *Mixed-effects*, *Multinomial*, *Count and
   two-part*, *Survival*, and *Ordinal regression tables*, plus
   *Categorical predictors* — a cross-cutting guide to dummy coding and
   reference levels, joint tests of a factor, ordinal predictors (scores
   vs dummies), successive-difference contrasts, and why continuous
   predictors should not be categorized.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  reads `options(spicy.rescale)` like
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md);
+  an explicitly supplied `rescale` argument still wins.
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  gains `drop_na`, mirroring
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  the default `TRUE` keeps the historical behavior (rows with a missing
+  `by` value are removed), while `FALSE` displays them as a
+  `"(Missing)"` group with the group-comparison test and effect size
+  still computed on the observed groups only. In both modes the default
+  output now discloses removed missing values in a table note (“Missing
+  values removed: …”) instead of dropping them silently.
 
 ### Row-wise summaries
 
@@ -276,16 +367,61 @@ rendering an empty column.
 
 ### Minor improvements
 
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  now discloses excluded missing values in the table note
+  (`Missing values removed: x (2), y (1)`; with `by`, also
+  `Rows with missing g removed: 2.`) instead of silently dropping the NA
+  rows from the tabulation.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  accepts logical weights, coerced to 1/0 like
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  already did; they previously raised an error.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  warns (class `spicy_ignored_arg`) when a third positional argument is
+  supplied in vector mode, e.g. `cross_tab(df$x, df$y, df$z)`; the extra
+  argument used to be silently ignored.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  validates `digits` with the same classed error as
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md);
+  invalid values (negative, fractional, non-numeric) used to degrade the
+  display silently or fail with obscure base-R errors.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)’s
+  error for an invalid `sort` value now lists `""` (no sorting) among
+  the valid choices.
+
+- [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
+  re-emits clipboard backend messages and warnings as real R conditions
+  instead of colored console text, and signals the “`row_names_as_col`
+  has no effect” notice as a classed warning (`spicy_ignored_arg`), so
+  [`suppressMessages()`](https://rdrr.io/r/base/message.html) /
+  [`suppressWarnings()`](https://rdrr.io/r/base/warning.html) and
+  condition handlers work; `quiet = TRUE` still silences everything at
+  once. Its invisible return value is now documented as the object
+  actually sent to the clipboard (reflecting a requested row-name
+  promotion).
+
 - Wide multi-model tables split into stacked panels more cleanly:
   continuation panels carry no empty stub rows, and over-wide column
   spanners truncate with a visible ellipsis.
+
 - Under `exponentiate = TRUE` with a visible SE column, the footer
   states the SE scale (delta method) and that the CI bounds are
   asymmetric.
+
 - `show_fit_stats = FALSE` suppresses the fit-statistics block.
+
 - Placeholder cells decimal-align in the `gt` / `flextable` /
   `tinytable` / Word / Excel outputs; `"deviance"` prints at 1 decimal;
   the descriptive tables use a single font in Word outputs.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)’s
+  “`test` is ignored” warning states the full trigger condition
+  (`p_value`, `statistic`, `effect_size`, and `effect_size_ci` all
+  turned off) instead of naming only the first two toggles.
 
 ### Bug fixes
 

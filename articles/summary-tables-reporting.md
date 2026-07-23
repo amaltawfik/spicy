@@ -81,7 +81,10 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity")
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
+  )
 )
 #> Categorical table by education
 #> 
@@ -159,7 +162,9 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health │ Lower secondary     2.57       2.86    259  <.001 
 #>                           │ Upper secondary     3.43       3.63    534        
-#>                           │ Tertiary            4.01       4.21    399
+#>                           │ Tertiary            4.01       4.21    399        
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 ``` r
@@ -392,7 +397,9 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health │ Lower secondary  η² = 0.16 
 #>                           │ Upper secondary            
-#>                           │ Tertiary
+#>                           │ Tertiary                   
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 This keeps the reporting structure consistent while still using the
@@ -641,7 +648,10 @@ tab <- pkgdown_dark_gt(table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity"),
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
+  ),
   output = "gt"
 ))
 
@@ -666,7 +676,10 @@ tab <- table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = education,
-  labels = c("Smoking status", "Regular physical activity"),
+  labels = c(
+    smoking           = "Smoking status",
+    physical_activity = "Regular physical activity"
+  ),
   output = "tinytable"
 )
 

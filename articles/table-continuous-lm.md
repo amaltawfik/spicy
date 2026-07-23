@@ -669,3 +669,54 @@ broom::glance(out)
   [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow using the summary-table
   helpers along the APA Table 1 / 2 / 3 sequence.
+
+## References
+
+- American Psychological Association (2020). *Publication Manual of the
+  American Psychological Association* (7th ed.).
+- Austin, P. C., & Stuart, E. A. (2015). Moving towards best practice
+  when using inverse probability of treatment weighting (IPTW) using the
+  propensity score to estimate causal treatment effects in observational
+  studies. *Statistics in Medicine*, 34(28), 3661–3679.
+- Bell, R. M., & McCaffrey, D. F. (2002). Bias reduction in standard
+  errors for linear regression with multi-stage samples. *Survey
+  Methodology*, 28(2), 169–181.
+- Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2008).
+  Bootstrap-based improvements for inference with clustered errors.
+  *Review of Economics and Statistics*, 90(3), 414–427.
+- Cohen, J. (1988). *Statistical Power Analysis for the Behavioral
+  Sciences* (2nd ed.). Lawrence Erlbaum.
+- DuMouchel, W. H., & Duncan, G. J. (1983). Using sample survey weights
+  in multiple regression analyses of stratified samples. *Journal of the
+  American Statistical Association*, 78(383), 535–543.
+- Fitts, D. A. (2021). Expected and empirical coverages of different
+  methods for generating noncentral *t* confidence intervals for a
+  standardized mean difference. *Behavior Research Methods*, 53(6),
+  2412–2429.
+- Goulet-Pelletier, J.-C., & Cousineau, D. (2018). A review of effect
+  sizes and their confidence intervals, Part I: The Cohen’s *d* family.
+  *The Quantitative Methods for Psychology*, 14(4), 242–265.
+- Hays, W. L. (1963). *Statistics for Psychologists*. Holt, Rinehart and
+  Winston.
+- Hedges, L. V., & Olkin, I. (1985). *Statistical Methods for
+  Meta-Analysis*. Academic Press.
+- Lakens, D. (2013). Calculating and reporting effect sizes to
+  facilitate cumulative science: A practical primer for *t*-tests and
+  ANOVAs. *Frontiers in Psychology*, 4, 863.
+- Olejnik, S., & Algina, J. (2003). Generalized eta and omega squared
+  statistics: Measures of effect size for some common research designs.
+  *Psychological Methods*, 8(4), 434–447.
+- Pustejovsky, J. E., & Tipton, E. (2018). Small-sample methods for
+  cluster-robust variance estimation and hypothesis testing in fixed
+  effects models. *Journal of Business & Economic Statistics*, 36(4),
+  672–683.
+- Quenouille, M. H. (1956). Notes on bias in estimation. *Biometrika*,
+  43(3/4), 353–360.
+- Smithson, M. (2003). *Confidence Intervals*. Sage.
+- Steiger, J. H. (2004). Beyond the *F* test: Effect size confidence
+  intervals and tests of close fit in the analysis of variance and
+  contrast analysis. *Psychological Methods*, 9(2), 164–182.
+- Steiger, J. H., & Fouladi, R. T. (1997). Noncentrality interval
+  estimation and the evaluation of statistical models. In L. L.
+  Harlow, S. A. Mulaik, & J. H. Steiger (Eds.), *What if there were no
+  significance tests?* (pp. 221–257). Lawrence Erlbaum.

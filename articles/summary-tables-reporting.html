@@ -233,7 +233,10 @@ pipeline.</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span></span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    smoking           <span class="op">=</span> <span class="st">"Smoking status"</span>,</span>
+<span>    physical_activity <span class="op">=</span> <span class="st">"Regular physical activity"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -308,7 +311,9 @@ pipeline.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with health <span style="color: #9E9E9E;">│</span> Lower secondary     2.57       2.86    259  &lt;.001 </span></span>
 <span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Upper secondary     3.43       3.63    534        </span></span>
-<span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Tertiary            4.01       4.21    399</span></span></code></pre></div>
+<span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Tertiary            4.01       4.21    399        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -535,7 +540,9 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with health <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.16 </span></span>
 <span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Upper secondary            </span></span>
-<span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
+<span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Tertiary                   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>This keeps the reporting structure consistent while still using the
 function that fits each variable type.</p>
 </div>
@@ -786,7 +793,10 @@ changes what the rendering engine produces.</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    smoking           <span class="op">=</span> <span class="st">"Smoking status"</span>,</span>
+<span>    physical_activity <span class="op">=</span> <span class="st">"Regular physical activity"</span></span>
+<span>  <span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -1440,7 +1450,10 @@ table-specific styling:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking status"</span>, <span class="st">"Regular physical activity"</span><span class="op">)</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    smoking           <span class="op">=</span> <span class="st">"Smoking status"</span>,</span>
+<span>    physical_activity <span class="op">=</span> <span class="st">"Regular physical activity"</span></span>
+<span>  <span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
 <span><span class="op">)</span></span>
 <span></span>

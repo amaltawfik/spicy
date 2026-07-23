@@ -128,6 +128,7 @@ cross_tab(sochealth, smoking, education)
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 ```
 
 Add percentages with `percent`:
@@ -147,6 +148,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 ```
 
 Group by a third variable with `by`:
@@ -165,6 +167,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> 
 #> Chi-2(2) = 7.1, p = .029
 #> Cramer's V = 0.11
+#> Missing values removed: smoking (14).
 #> 
 #> Crosstable: smoking x education (N) | sex = Male
 #> 
@@ -177,6 +180,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> 
 #> Chi-2(2) = 15.6, p <.001
 #> Cramer's V = 0.17
+#> Missing values removed: smoking (11).
 ```
 
 When both variables are ordered factors,
@@ -200,6 +204,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
+#> Missing values removed: self_rated_health (20).
 ```
 
 ## Association measures
@@ -259,50 +264,65 @@ table_categorical(
 )
 #> Categorical table by education
 #> 
-#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ───────────────────┼─────────────────────────────────────────────────────────
-#>  smoking           │                                                         
-#>    No              │        179               68.6                415        
-#>    Yes             │         78               29.9                112        
-#>    (Missing)       │          4                1.5                 12        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                         
-#>    No              │        177               67.8                310        
-#>    Yes             │         84               32.2                229        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │                                                         
-#>    No              │        113               43.3                174        
-#>    Yes             │        148               56.7                365        
+#>  Variable                        │ Lower secondary n  Lower secondary % 
+#> ─────────────────────────────────┼──────────────────────────────────────
+#>  Current smoker                  │                                      
+#>    No                            │        179               68.6        
+#>    Yes                           │         78               29.9        
+#>    (Missing)                     │          4                1.5        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity       │                                      
+#>    No                            │        177               67.8        
+#>    Yes                           │         84               32.2        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist visit in last 12 months │                                      
+#>    No                            │        113               43.3        
+#>    Yes                           │        148               56.7        
 #> 
-#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
-#> ───────────────────┼────────────────────────────────────────────────────
-#>  smoking           │                                                    
-#>    No              │       77.0            332         83.0       926   
-#>    Yes             │       20.8             59         14.8       249   
-#>    (Missing)       │        2.2              9          2.2        25   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                    
-#>    No              │       57.5            163         40.8       650   
-#>    Yes             │       42.5            237         59.2       550   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │                                                    
-#>    No              │       32.3             67         16.8       354   
-#>    Yes             │       67.7            333         83.2       846   
+#>  Variable                        │ Upper secondary n  Upper secondary % 
+#> ─────────────────────────────────┼──────────────────────────────────────
+#>  Current smoker                  │                                      
+#>    No                            │        415               77.0        
+#>    Yes                           │        112               20.8        
+#>    (Missing)                     │         12                2.2        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity       │                                      
+#>    No                            │        310               57.5        
+#>    Yes                           │        229               42.5        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist visit in last 12 months │                                      
+#>    No                            │        174               32.3        
+#>    Yes                           │        365               67.7        
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  smoking           │          <.001     .14     
-#>    No              │  77.2                      
-#>    Yes             │  20.8                      
-#>    (Missing)       │   2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │          <.001     .21     
-#>    No              │  54.2                      
-#>    Yes             │  45.8                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │          <.001     .22     
-#>    No              │  29.5                      
-#>    Yes             │  70.5
+#>  Variable                        │ Tertiary n  Tertiary %  Total n  Total % 
+#> ─────────────────────────────────┼──────────────────────────────────────────
+#>  Current smoker                  │                                          
+#>    No                            │    332         83.0       926     77.2   
+#>    Yes                           │     59         14.8       249     20.8   
+#>    (Missing)                     │      9          2.2        25      2.1   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity       │                                          
+#>    No                            │    163         40.8       650     54.2   
+#>    Yes                           │    237         59.2       550     45.8   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist visit in last 12 months │                                          
+#>    No                            │     67         16.8       354     29.5   
+#>    Yes                           │    333         83.2       846     70.5   
+#> 
+#>  Variable                        │   p    Cramer's V 
+#> ─────────────────────────────────┼───────────────────
+#>  Current smoker                  │ <.001     .14     
+#>    No                            │                   
+#>    Yes                           │                   
+#>    (Missing)                     │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity       │ <.001     .21     
+#>    No                            │                   
+#>    Yes                           │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist visit in last 12 months │ <.001     .22     
+#>    No                            │                   
+#>    Yes                           │
 ```
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -346,7 +366,9 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health (1-5) │ Lower secondary  <.001 
 #>                                 │ Upper secondary        
-#>                                 │ Tertiary
+#>                                 │ Tertiary               
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -487,10 +509,21 @@ sochealth |>
   ([`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
 - [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
   — the class-by-class capability map (some thirty model classes).
-- Family articles: mixed, counts, survival, ordinal, multinomial,
-  Bayesian — then
-  [`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
-  across all of them.
+- [`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+  — mixed-effects (multilevel) models, random effects as table rows,
+  ICC.
+- [`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
+  — Poisson, negative-binomial, zero-inflated and hurdle models.
+- [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
+  — Cox hazard ratios and accelerated failure time models.
+- [`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
+  — proportional-odds models, thresholds, per-category marginal effects.
+- [`vignette("table-regression-multinomial")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
+  — multinomial logit with outcome categories as columns.
+- [`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
+  — posterior medians, credible intervals, convergence checks.
+- [`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
+  — reference levels, joint tests, contrasts — across all of the above.
 
 **Putting it together**
 

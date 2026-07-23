@@ -18,7 +18,7 @@ table (`"default"`), a wide or long numeric `data.frame`
 ``` r
 table_categorical(
   data,
-  select,
+  select = tidyselect::everything(),
   by = NULL,
   labels = NULL,
   levels_keep = NULL,
@@ -58,7 +58,16 @@ table_categorical(
 - select:
 
   Columns to include as row variables. Supports tidyselect syntax and
-  character vectors of column names.
+  character vectors of column names. When omitted, defaults to every
+  eligible categorical column in `data`: factor, character, logical, and
+  labelled (`haven` / `labelled`) columns, excluding the `by` column –
+  matching the select-less defaults of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  An explicit `select` is taken verbatim (numeric columns included), so
+  numeric-coded categorical variables can still be tabulated by naming
+  them.
 
 - by:
 
@@ -67,25 +76,17 @@ table_categorical(
 
 - labels:
 
-  Optional display labels for the variables. Two forms are accepted
-  (matching
+  An optional **named character vector** of variable labels whose names
+  match column names in `data` (e.g. `c(smoking = "Current smoker")`) –
+  the same contract as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)):
-
-  - A **named character vector** whose names match column names in
-    `data` (e.g. `c(bmi = "Body mass index")`); only listed columns are
-    relabelled, others fall back to attribute-based labels or the column
-    name. **Recommended form**.
-
-  - A **positional character vector** of the same length as `select`, in
-    the same order. Backward-compatible with the spicy \< 0.11.0 API.
-
-  When `NULL` (the default), column names are used as-is. If a variable
-  label attribute is present (e.g. from `haven`), it is *not* picked up
-  here – pass `labels = c(...)` explicitly. (The continuous companions
-  auto-detect attribute labels; the categorical function is conservative
-  because the indented row labels expect predictable text.)
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  Only listed columns are relabelled. For the remaining columns (and
+  when `labels = NULL`, the default), labels are auto-detected from the
+  variable's label attribute (e.g. from `haven`); if none is found, the
+  column name is used. Unnamed (positional) label vectors, accepted
+  before 0.13.0, now raise an error.
 
 - levels_keep:
 
@@ -120,6 +121,9 @@ table_categorical(
   Logical. If `FALSE` (the default), weights are used as-is. If `TRUE`,
   rescales weights so total weighted N matches raw N. Passed to
   [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+  When the argument is not supplied, the default is read from
+  `options(spicy.rescale)` (falling back to `FALSE`), matching
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
 
 - correct:
 
@@ -271,6 +275,11 @@ table_categorical(
 - add_multilevel_header:
 
   Logical. If `TRUE` (the default), merges top headers in Excel export.
+  Only consulted for `output = "excel"` on a grouped table (`by`
+  supplied); like the other output-scoped presentation arguments
+  (`excel_sheet`, `clipboard_delim`, ...), it is silently unused in
+  every other output and in one-way tables, which have a single header
+  row to begin with.
 
 - blank_na_wide:
 
@@ -291,8 +300,11 @@ table_categorical(
 
 - word_path:
 
-  Path for `output = "word"` or optional save path when
-  `output = "flextable"`. Defaults to `NULL`.
+  File path for `output = "word"`. Defaults to `NULL`. Before 0.13.0,
+  supplying it with `output = "flextable"` also wrote a `.docx` as a
+  side effect; it is now used exclusively by `output = "word"` (the
+  contract shared with the rest of the table family) and is ignored,
+  with a warning, under `output = "flextable"`.
 
 ## Value
 
@@ -379,27 +391,27 @@ table_categorical(
 )
 #> Categorical table by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  smoking           │                                                       .713 
-#>    No              │   475       76.6     451     77.8     926     77.2         
-#>    Yes             │   131       21.1     118     20.3     249     20.8         
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                       .832 
-#>    No              │   334       53.9     316     54.5     650     54.2         
-#>    Yes             │   286       46.1     264     45.5     550     45.8         
+#>  Variable                  │ Female n  Female %  Male n  Male %  Total n 
+#> ───────────────────────────┼─────────────────────────────────────────────
+#>  Current smoker            │                                             
+#>    No                      │   475       76.6     451     77.8     926   
+#>    Yes                     │   131       21.1     118     20.3     249   
+#>    (Missing)               │    14        2.3      11      1.9      25   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                             
+#>    No                      │   334       53.9     316     54.5     650   
+#>    Yes                     │   286       46.1     264     45.5     550   
 #> 
-#>  Variable          │ Phi 
-#> ───────────────────┼─────
-#>  smoking           │ .01 
-#>    No              │     
-#>    Yes             │     
-#>    (Missing)       │     
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌
-#>  physical_activity │ .01 
-#>    No              │     
-#>    Yes             │     
+#>  Variable                  │ Total %   p    Phi 
+#> ───────────────────────────┼────────────────────
+#>  Current smoker            │          .713  .01 
+#>    No                      │  77.2              
+#>    Yes                     │  20.8              
+#>    (Missing)               │   2.1              
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │          .832  .01 
+#>    No                      │  54.2              
+#>    Yes                     │  45.8              
 
 # One-way frequency-style table (no `by`).
 table_categorical(
@@ -408,16 +420,16 @@ table_categorical(
 )
 #> Categorical table
 #> 
-#>  Variable            │   n      %    
-#> ─────────────────────┼───────────────
-#>  smoking             │               
-#>    No                │  926    77.2  
-#>    Yes               │  249    20.8  
-#>    (Missing)         │   25     2.1  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity   │               
-#>    No                │  650    54.2  
-#>    Yes               │  550    45.8  
+#>  Variable                    │   n      %    
+#> ─────────────────────────────┼───────────────
+#>  Current smoker              │               
+#>    No                        │  926    77.2  
+#>    Yes                       │  249    20.8  
+#>    (Missing)                 │   25     2.1  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity   │               
+#>    No                        │  650    54.2  
+#>    Yes                       │  550    45.8  
 
 # Pretty labels keyed by column name.
 table_categorical(
@@ -474,38 +486,38 @@ table_categorical(
 )
 #> Categorical table by education
 #> 
-#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ───────────────────┼─────────────────────────────────────────────────────────
-#>  smoking           │                                                         
-#>    No              │        176               68.1                419        
-#>    Yes             │         79               30.6                114        
-#>    (Missing)       │          4                1.4                 13        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                         
-#>    No              │        174               67.2                315        
-#>    Yes             │         85               32.8                231        
+#>  Variable                  │ Lower secondary n  Lower secondary % 
+#> ───────────────────────────┼──────────────────────────────────────
+#>  Current smoker            │                                      
+#>    No                      │        176               68.1        
+#>    Yes                     │         79               30.6        
+#>    (Missing)               │          4                1.4        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                      
+#>    No                      │        174               67.2        
+#>    Yes                     │         85               32.8        
 #> 
-#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
-#> ───────────────────┼────────────────────────────────────────────────────
-#>  smoking           │                                                    
-#>    No              │       76.6            325         82.2      919.3  
-#>    Yes             │       21.0             60         15.2      253.7  
-#>    (Missing)       │        2.4             10          2.6       27.0  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                    
-#>    No              │       57.7            166         41.9      654.8  
-#>    Yes             │       42.3            229         58.1      545.2  
+#>  Variable                  │ Upper secondary n  Upper secondary %  Tertiary n 
+#> ───────────────────────────┼──────────────────────────────────────────────────
+#>  Current smoker            │                                                  
+#>    No                      │        419               76.6            325     
+#>    Yes                     │        114               21.0             60     
+#>    (Missing)               │         13                2.4             10     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                                  
+#>    No                      │        315               57.7            166     
+#>    Yes                     │        231               42.3            229     
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  smoking           │          <.001     .13     
-#>    No              │  76.6                      
-#>    Yes             │  21.1                      
-#>    (Missing)       │   2.2                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │          <.001     .19     
-#>    No              │  54.6                      
-#>    Yes             │  45.4                      
+#>  Variable                  │ Tertiary %  Total n  Total %    p    Cramer's V 
+#> ───────────────────────────┼─────────────────────────────────────────────────
+#>  Current smoker            │                               <.001     .13     
+#>    No                      │    82.2      919.3    76.6                      
+#>    Yes                     │    15.2      253.7    21.1                      
+#>    (Missing)               │     2.6       27.0     2.2                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                               <.001     .19     
+#>    No                      │    41.9      654.8    54.6                      
+#>    Yes                     │    58.1      545.2    45.4                      
 
 # Confidence interval for the association measure.
 table_categorical(
@@ -516,26 +528,26 @@ table_categorical(
 )
 #> Categorical table by education
 #> 
-#>  Variable    │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ─────────────┼─────────────────────────────────────────────────────────
-#>  smoking     │                                                         
-#>    No        │        179               68.6                415        
-#>    Yes       │         78               29.9                112        
-#>    (Missing) │          4                1.5                 12        
+#>  Variable       │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ────────────────┼─────────────────────────────────────────────────────────
+#>  Current smoker │                                                         
+#>    No           │        179               68.6                415        
+#>    Yes          │         78               29.9                112        
+#>    (Missing)    │          4                1.5                 12        
 #> 
-#>  Variable    │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
-#> ─────────────┼─────────────────────────────────────────────────────────────
-#>  smoking     │                                                             
-#>    No        │       77.0            332         83.0       926     77.2   
-#>    Yes       │       20.8             59         14.8       249     20.8   
-#>    (Missing) │        2.2              9          2.2        25      2.1   
+#>  Variable       │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
+#> ────────────────┼─────────────────────────────────────────────────────────────
+#>  Current smoker │                                                             
+#>    No           │       77.0            332         83.0       926     77.2   
+#>    Yes          │       20.8             59         14.8       249     20.8   
+#>    (Missing)    │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable    │   p    Cramer's V  CI lower  CI upper 
-#> ─────────────┼───────────────────────────────────────
-#>  smoking     │ <.001     .14        .08       .19    
-#>    No        │                                       
-#>    Yes       │                                       
-#>    (Missing) │                                       
+#>  Variable       │   p    Cramer's V  CI lower  CI upper 
+#> ────────────────┼───────────────────────────────────────
+#>  Current smoker │ <.001     .14        .08       .19    
+#>    No           │                                       
+#>    Yes          │                                       
+#>    (Missing)    │                                       
 
 # --- Per-variable association measure ----------------------------------
 
@@ -551,31 +563,31 @@ table_categorical(
 )
 #> Categorical table by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  smoking           │                                                       .713 
-#>    No              │   475       76.6     451     77.8     926     77.2         
-#>    Yes             │   131       21.1     118     20.3     249     20.8         
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education         │                                                       .344 
-#>    Lower secondary │   134       21.6     127     21.9     261     21.8         
-#>    Upper secondary │   290       46.8     249     42.9     539     44.9         
-#>    Tertiary        │   196       31.6     204     35.2     400     33.3         
+#>  Variable                │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ─────────────────────────┼──────────────────────────────────────────────────────
+#>  Current smoker          │                                                      
+#>    No                    │   475       76.6     451     77.8     926     77.2   
+#>    Yes                   │   131       21.1     118     20.3     249     20.8   
+#>    (Missing)             │    14        2.3      11      1.9      25      2.1   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │                                                      
+#>    Lower secondary       │   134       21.6     127     21.9     261     21.8   
+#>    Upper secondary       │   290       46.8     249     42.9     539     44.9   
+#>    Tertiary              │   196       31.6     204     35.2     400     33.3   
 #> 
-#>  Variable          │ Effect size 
-#> ───────────────────┼─────────────
-#>  smoking           │     .01     
-#>    No              │             
-#>    Yes             │             
-#>    (Missing)       │             
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education         │     .04     
-#>    Lower secondary │             
-#>    Upper secondary │             
-#>    Tertiary        │             
+#>  Variable                │  p    Effect size 
+#> ─────────────────────────┼───────────────────
+#>  Current smoker          │ .713      .01     
+#>    No                    │                   
+#>    Yes                   │                   
+#>    (Missing)             │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │ .344      .04     
+#>    Lower secondary       │                   
+#>    Upper secondary       │                   
+#>    Tertiary              │                   
 #> 
-#> Note. Phi: smoking; Cramer's V: education.
+#> Note. Phi: Current smoker; Cramer's V: Highest education level.
 
 # Force a uniform measure across all row variables.
 table_categorical(
@@ -586,29 +598,29 @@ table_categorical(
 )
 #> Categorical table by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  smoking           │                                                       .713 
-#>    No              │   475       76.6     451     77.8     926     77.2         
-#>    Yes             │   131       21.1     118     20.3     249     20.8         
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education         │                                                       .344 
-#>    Lower secondary │   134       21.6     127     21.9     261     21.8         
-#>    Upper secondary │   290       46.8     249     42.9     539     44.9         
-#>    Tertiary        │   196       31.6     204     35.2     400     33.3         
+#>  Variable                │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ─────────────────────────┼──────────────────────────────────────────────────────
+#>  Current smoker          │                                                      
+#>    No                    │   475       76.6     451     77.8     926     77.2   
+#>    Yes                   │   131       21.1     118     20.3     249     20.8   
+#>    (Missing)             │    14        2.3      11      1.9      25      2.1   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │                                                      
+#>    Lower secondary       │   134       21.6     127     21.9     261     21.8   
+#>    Upper secondary       │   290       46.8     249     42.9     539     44.9   
+#>    Tertiary              │   196       31.6     204     35.2     400     33.3   
 #> 
-#>  Variable          │ Cramer's V 
-#> ───────────────────┼────────────
-#>  smoking           │    .01     
-#>    No              │            
-#>    Yes             │            
-#>    (Missing)       │            
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education         │    .04     
-#>    Lower secondary │            
-#>    Upper secondary │            
-#>    Tertiary        │            
+#>  Variable                │  p    Cramer's V 
+#> ─────────────────────────┼──────────────────
+#>  Current smoker          │ .713     .01     
+#>    No                    │                  
+#>    Yes                   │                  
+#>    (Missing)             │                  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │ .344     .04     
+#>    Lower secondary       │                  
+#>    Upper secondary       │                  
+#>    Tertiary              │                  
 
 # Per-variable override (recommended named form).
 table_categorical(
@@ -623,45 +635,45 @@ table_categorical(
 )
 #> Categorical table by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  smoking           │                                                       .713 
-#>    No              │   475       76.6     451     77.8     926     77.2         
-#>    Yes             │   131       21.1     118     20.3     249     20.8         
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education         │                                                       .344 
-#>    Lower secondary │   134       21.6     127     21.9     261     21.8         
-#>    Upper secondary │   290       46.8     249     42.9     539     44.9         
-#>    Tertiary        │   196       31.6     204     35.2     400     33.3         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  self_rated_health │                                                       .849 
-#>    (Missing)       │    10        1.6      10      1.7      20      1.7         
-#>    Poor            │    31        5.0      30      5.2      61      5.1         
-#>    Fair            │   143       23.1     123     21.2     266     22.2         
-#>    Good            │   282       45.5     276     47.6     558     46.5         
-#>    Very good       │   154       24.8     141     24.3     295     24.6         
+#>  Variable                │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ─────────────────────────┼──────────────────────────────────────────────────────
+#>  Current smoker          │                                                      
+#>    No                    │   475       76.6     451     77.8     926     77.2   
+#>    Yes                   │   131       21.1     118     20.3     249     20.8   
+#>    (Missing)             │    14        2.3      11      1.9      25      2.1   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │                                                      
+#>    Lower secondary       │   134       21.6     127     21.9     261     21.8   
+#>    Upper secondary       │   290       46.8     249     42.9     539     44.9   
+#>    Tertiary              │   196       31.6     204     35.2     400     33.3   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Self-rated health       │                                                      
+#>    (Missing)             │    10        1.6      10      1.7      20      1.7   
+#>    Poor                  │    31        5.0      30      5.2      61      5.1   
+#>    Fair                  │   143       23.1     123     21.2     266     22.2   
+#>    Good                  │   282       45.5     276     47.6     558     46.5   
+#>    Very good             │   154       24.8     141     24.3     295     24.6   
 #> 
-#>  Variable          │ Effect size 
-#> ───────────────────┼─────────────
-#>  smoking           │     .01     
-#>    No              │             
-#>    Yes             │             
-#>    (Missing)       │             
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education         │     .04     
-#>    Lower secondary │             
-#>    Upper secondary │             
-#>    Tertiary        │             
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  self_rated_health │     .01     
-#>    (Missing)       │             
-#>    Poor            │             
-#>    Fair            │             
-#>    Good            │             
-#>    Very good       │             
+#>  Variable                │  p    Effect size 
+#> ─────────────────────────┼───────────────────
+#>  Current smoker          │ .713      .01     
+#>    No                    │                   
+#>    Yes                   │                   
+#>    (Missing)             │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │ .344      .04     
+#>    Lower secondary       │                   
+#>    Upper secondary       │                   
+#>    Tertiary              │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Self-rated health       │ .849      .01     
+#>    (Missing)             │                   
+#>    Poor                  │                   
+#>    Fair                  │                   
+#>    Good                  │                   
+#>    Very good             │                   
 #> 
-#> Note. Phi: smoking; Cramer's V: education; Kendall's Tau-b: self_rated_health.
+#> Note. Phi: Current smoker; Cramer's V: Highest education level; Kendall's Tau-b: Self-rated health.
 
 # --- Output formats -----------------------------------------------------
 
@@ -680,18 +692,18 @@ table_categorical(
   by = sex,
   output = "data.frame"
 )
-#>            Variable     Level Female n Female % Male n Male % Total n Total %
-#> 1           smoking        No      475     76.6    451   77.8     926    77.2
-#> 2           smoking       Yes      131     21.1    118   20.3     249    20.8
-#> 3           smoking (Missing)       14      2.3     11    1.9      25     2.1
-#> 4 physical_activity        No      334     53.9    316   54.5     650    54.2
-#> 5 physical_activity       Yes      286     46.1    264   45.5     550    45.8
-#>           p         Phi
-#> 1 0.7125196 0.010749501
-#> 2 0.7125196 0.010749501
-#> 3 0.7125196 0.010749501
-#> 4 0.8316763 0.006135851
-#> 5 0.8316763 0.006135851
+#>                    Variable     Level Female n Female % Male n Male % Total n
+#> 1            Current smoker        No      475     76.6    451   77.8     926
+#> 2            Current smoker       Yes      131     21.1    118   20.3     249
+#> 3            Current smoker (Missing)       14      2.3     11    1.9      25
+#> 4 Regular physical activity        No      334     53.9    316   54.5     650
+#> 5 Regular physical activity       Yes      286     46.1    264   45.5     550
+#>   Total %         p         Phi
+#> 1    77.2 0.7125196 0.010749501
+#> 2    20.8 0.7125196 0.010749501
+#> 3     2.1 0.7125196 0.010749501
+#> 4    54.2 0.8316763 0.006135851
+#> 5    45.8 0.8316763 0.006135851
 
 # Long data.frame (one row per (modality x group)).
 table_categorical(
@@ -700,22 +712,22 @@ table_categorical(
   by = sex,
   output = "long"
 )
-#>             variable     level  group   n  pct      chi2 df         p
-#> 1            smoking        No Female 475 76.6 0.1357733  1 0.7125196
-#> 2            smoking        No   Male 451 77.8 0.1357733  1 0.7125196
-#> 3            smoking        No  Total 926 77.2 0.1357733  1 0.7125196
-#> 4            smoking       Yes Female 131 21.1 0.1357733  1 0.7125196
-#> 5            smoking       Yes   Male 118 20.3 0.1357733  1 0.7125196
-#> 6            smoking       Yes  Total 249 20.8 0.1357733  1 0.7125196
-#> 7            smoking (Missing) Female  14  2.3 0.1357733  1 0.7125196
-#> 8            smoking (Missing)   Male  11  1.9 0.1357733  1 0.7125196
-#> 9            smoking (Missing)  Total  25  2.1 0.1357733  1 0.7125196
-#> 10 physical_activity        No Female 334 53.9 0.0451784  1 0.8316763
-#> 11 physical_activity        No   Male 316 54.5 0.0451784  1 0.8316763
-#> 12 physical_activity        No  Total 650 54.2 0.0451784  1 0.8316763
-#> 13 physical_activity       Yes Female 286 46.1 0.0451784  1 0.8316763
-#> 14 physical_activity       Yes   Male 264 45.5 0.0451784  1 0.8316763
-#> 15 physical_activity       Yes  Total 550 45.8 0.0451784  1 0.8316763
+#>                     variable     level  group   n  pct      chi2 df         p
+#> 1             Current smoker        No Female 475 76.6 0.1357733  1 0.7125196
+#> 2             Current smoker        No   Male 451 77.8 0.1357733  1 0.7125196
+#> 3             Current smoker        No  Total 926 77.2 0.1357733  1 0.7125196
+#> 4             Current smoker       Yes Female 131 21.1 0.1357733  1 0.7125196
+#> 5             Current smoker       Yes   Male 118 20.3 0.1357733  1 0.7125196
+#> 6             Current smoker       Yes  Total 249 20.8 0.1357733  1 0.7125196
+#> 7             Current smoker (Missing) Female  14  2.3 0.1357733  1 0.7125196
+#> 8             Current smoker (Missing)   Male  11  1.9 0.1357733  1 0.7125196
+#> 9             Current smoker (Missing)  Total  25  2.1 0.1357733  1 0.7125196
+#> 10 Regular physical activity        No Female 334 53.9 0.0451784  1 0.8316763
+#> 11 Regular physical activity        No   Male 316 54.5 0.0451784  1 0.8316763
+#> 12 Regular physical activity        No  Total 650 54.2 0.0451784  1 0.8316763
+#> 13 Regular physical activity       Yes Female 286 46.1 0.0451784  1 0.8316763
+#> 14 Regular physical activity       Yes   Male 264 45.5 0.0451784  1 0.8316763
+#> 15 Regular physical activity       Yes  Total 550 45.8 0.0451784  1 0.8316763
 #>            Phi
 #> 1  0.010749501
 #> 2  0.010749501

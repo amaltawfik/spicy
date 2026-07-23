@@ -17,7 +17,7 @@ print(x, ...)
 
   A `data.frame` of class `"spicy_categorical_table"` as returned by
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  with `output = "default"` and `styled = TRUE`.
+  with `output = "default"`.
 
 - ...:
 

@@ -132,50 +132,65 @@ variables, and a grouping variable:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        179               68.6                415        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          4                1.5                 12        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        177               67.8                310        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         84               32.2                229        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        113               43.3                174        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>        148               56.7                365        </span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>        179               68.6        </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>         78               29.9        </span></span>
+<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>          4                1.5        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>        177               67.8        </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>         84               32.2        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>        113               43.3        </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>        148               56.7        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       77.0            332         83.0       926   </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249   </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       57.5            163         40.8       650   </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       42.5            237         59.2       550   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       32.3             67         16.8       354   </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       67.7            333         83.2       846   </span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span> Upper secondary n  Upper secondary % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>        415               77.0        </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>        112               20.8        </span></span>
+<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>         12                2.2        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>        310               57.5        </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>        229               42.5        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>        174               32.3        </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>        365               67.7        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001     .14     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  77.2                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  20.8                      </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001     .21     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.2                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.8                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001     .22     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span> Tertiary n  Tertiary %  Total n  Total % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>    332         83.0       926     77.2   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>     59         14.8       249     20.8   </span></span>
+<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>      9          2.2        25      2.1   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>    163         40.8       650     54.2   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>    237         59.2       550     45.8   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>     67         16.8       354     29.5   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>    333         83.2       846     70.5   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>   p    Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼───────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span> &lt;.001     .14     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span> &lt;.001     .21     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span> &lt;.001     .22     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p>The default output is <code>"default"</code>, which prints a styled
 ASCII table to the console. Use <code>output = "data.frame"</code> to
 get a plain numeric data frame suitable for further processing.</p>
@@ -193,16 +208,23 @@ selected variables:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable            <span style="color: #9E9E9E;">│</span>   n      %    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────┼───────────────</span></span></span>
-<span><span class="co">#&gt;  smoking             <span style="color: #9E9E9E;">│</span>               </span></span>
-<span><span class="co">#&gt;    No                <span style="color: #9E9E9E;">│</span>  926    77.2  </span></span>
-<span><span class="co">#&gt;    Yes               <span style="color: #9E9E9E;">│</span>  249    20.8  </span></span>
-<span><span class="co">#&gt;    (Missing)         <span style="color: #9E9E9E;">│</span>   25     2.1  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity   <span style="color: #9E9E9E;">│</span>               </span></span>
-<span><span class="co">#&gt;    No                <span style="color: #9E9E9E;">│</span>  650    54.2  </span></span>
-<span><span class="co">#&gt;    Yes               <span style="color: #9E9E9E;">│</span>  550    45.8</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                    <span style="color: #9E9E9E;">│</span>   n      %    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────┼───────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker              <span style="color: #9E9E9E;">│</span>               </span></span>
+<span><span class="co">#&gt;    No                        <span style="color: #9E9E9E;">│</span>  926    77.2  </span></span>
+<span><span class="co">#&gt;    Yes                       <span style="color: #9E9E9E;">│</span>  249    20.8  </span></span>
+<span><span class="co">#&gt;    (Missing)                 <span style="color: #9E9E9E;">│</span>   25     2.1  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity   <span style="color: #9E9E9E;">│</span>               </span></span>
+<span><span class="co">#&gt;    No                        <span style="color: #9E9E9E;">│</span>  650    54.2  </span></span>
+<span><span class="co">#&gt;    Yes                       <span style="color: #9E9E9E;">│</span>  550    45.8</span></span></code></pre></div>
+<p><code>select</code> itself is optional: when omitted, the table
+includes every eligible categorical column in the data – factor,
+character, logical, and labelled (haven) columns – excluding the
+<code>by</code> column, mirroring the select-less defaults of
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>.
+An explicit <code>select</code> is taken verbatim, so numeric-coded
+categorical variables can still be tabulated by naming them.</p>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -800,7 +822,7 @@ column spanners, and proper alignment:</p>
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="Variable" class="gt_row gt_left">smoking</td>
+<td headers="Variable" class="gt_row gt_left">Current smoker</td>
 <td headers="Lower secondary_n" class="gt_row gt_center">   </td>
 <td headers="Lower secondary_pct" class="gt_row gt_center">    </td>
 <td headers="Upper secondary_n" class="gt_row gt_center">   </td>
@@ -852,7 +874,7 @@ column spanners, and proper alignment:</p>
 <td headers="assoc_col" class="gt_row gt_center">   </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">physical_activity</td>
+<td headers="Variable" class="gt_row gt_left">Regular physical activity</td>
 <td headers="Lower secondary_n" class="gt_row gt_center">   </td>
 <td headers="Lower secondary_pct" class="gt_row gt_center">    </td>
 <td headers="Upper secondary_n" class="gt_row gt_center">   </td>
@@ -891,7 +913,7 @@ column spanners, and proper alignment:</p>
 <td headers="assoc_col" class="gt_row gt_center">   </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">dentist_12m</td>
+<td headers="Variable" class="gt_row gt_left">Dentist visit in last 12 months</td>
 <td headers="Lower secondary_n" class="gt_row gt_center">   </td>
 <td headers="Lower secondary_pct" class="gt_row gt_center">    </td>
 <td headers="Upper secondary_n" class="gt_row gt_center">   </td>
@@ -1012,7 +1034,7 @@ column spanners, and proper alignment:</p>
 </thead>
 <tbody>
 <tr>
-<td data-row="1" data-col="1">smoking</td>
+<td data-row="1" data-col="1">Current smoker</td>
                   <td data-row="1" data-col="2">   </td>
                   <td data-row="1" data-col="3">    </td>
                   <td data-row="1" data-col="4">   </td>
@@ -1056,7 +1078,7 @@ column spanners, and proper alignment:</p>
                   <td data-row="4" data-col="9">   </td>
                 </tr>
 <tr>
-<td data-row="5" data-col="1">physical_activity</td>
+<td data-row="5" data-col="1">Regular physical activity</td>
                   <td data-row="5" data-col="2">   </td>
                   <td data-row="5" data-col="3">    </td>
                   <td data-row="5" data-col="4">   </td>
@@ -1106,36 +1128,33 @@ format (one row per modality x group):</p>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Variable     Level Lower secondary n Lower secondary % Upper secondary n</span></span>
-<span><span class="co">#&gt; 1  smoking        No               179              68.6               415</span></span>
-<span><span class="co">#&gt; 2  smoking       Yes                78              29.9               112</span></span>
-<span><span class="co">#&gt; 3  smoking (Missing)                 4               1.5                12</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span></span>
-<span><span class="co">#&gt; 1              77.0        332       83.0     926    77.2 2.012877e-05</span></span>
-<span><span class="co">#&gt; 2              20.8         59       14.8     249    20.8 2.012877e-05</span></span>
-<span><span class="co">#&gt; 3               2.2          9        2.2      25     2.1 2.012877e-05</span></span>
-<span><span class="co">#&gt;   Cramer's V</span></span>
-<span><span class="co">#&gt; 1  0.1356677</span></span>
-<span><span class="co">#&gt; 2  0.1356677</span></span>
-<span><span class="co">#&gt; 3  0.1356677</span></span></code></pre></div>
+<span><span class="co">#&gt;         Variable     Level Lower secondary n Lower secondary %</span></span>
+<span><span class="co">#&gt; 1 Current smoker        No               179              68.6</span></span>
+<span><span class="co">#&gt; 2 Current smoker       Yes                78              29.9</span></span>
+<span><span class="co">#&gt; 3 Current smoker (Missing)                 4               1.5</span></span>
+<span><span class="co">#&gt;   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n Total %</span></span>
+<span><span class="co">#&gt; 1               415              77.0        332       83.0     926    77.2</span></span>
+<span><span class="co">#&gt; 2               112              20.8         59       14.8     249    20.8</span></span>
+<span><span class="co">#&gt; 3                12               2.2          9        2.2      25     2.1</span></span>
+<span><span class="co">#&gt;              p Cramer's V</span></span>
+<span><span class="co">#&gt; 1 2.012877e-05  0.1356677</span></span>
+<span><span class="co">#&gt; 2 2.012877e-05  0.1356677</span></span>
+<span><span class="co">#&gt; 3 2.012877e-05  0.1356677</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="custom-labels">Custom labels<a class="anchor" aria-label="anchor" href="#custom-labels"></a>
 </h2>
-<p>By default, <code><a href="../reference/table_categorical.html">table_categorical()</a></code> uses variable names as
-row headers. Use the <code>labels</code> argument to provide
-human-readable labels. Two forms are accepted (matching
-<code><a href="../reference/table_continuous.html">table_continuous()</a></code> and
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>):</p>
-<ul>
-<li>A <strong>named character vector</strong> keyed by column name in
-<code>data</code> – the recommended form. Only listed columns are
-relabelled; others fall back to the column name.</li>
-<li>A <strong>positional character vector</strong> of the same length as
-<code>select</code> – the legacy spicy &lt; 0.11.0 form, kept for
-backward compatibility.</li>
-</ul>
+<p>By default, <code><a href="../reference/table_categorical.html">table_categorical()</a></code> labels each row block
+with the variable’s label attribute when one is present (e.g. data
+imported with <code>haven</code>), and with the column name otherwise –
+the same auto-detection as <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>. Use the <code>labels</code> argument
+to override either: a <strong>named character vector</strong> keyed by
+column name in <code>data</code>. Only listed columns are relabelled;
+the others keep their attribute label or column name. (Unnamed
+positional label vectors, accepted before 0.13.0, now raise an
+error.)</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -1210,26 +1229,26 @@ named vector to mix measures per row:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>        179               68.6                415        </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>          4                1.5                 12        </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>        179               68.6                415        </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>          4                1.5                 12        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total % </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>       77.0            332         83.0       926     77.2   </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249     20.8   </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25      2.1   </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                             </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>       77.0            332         83.0       926     77.2   </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249     20.8   </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25      2.1   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   p    Lambda </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼───────────────</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span> &lt;.001   .00   </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>               </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>               </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   p    Lambda </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼───────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span> &lt;.001   .00   </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>               </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>               </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Per-row: pick the right measure for each variable.</span></span>
 <span><span class="co"># `smoking` x `education` is 2x3 (binary x ordered) -&gt; Cramer's V;</span></span>
@@ -1249,12 +1268,12 @@ named vector to mix measures per row:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;  Current smoker    <span style="color: #9E9E9E;">│</span>                                                         </span></span>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        179               68.6                415        </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          4                1.5                 12        </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  self_rated_health <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>                                                         </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          1                0.4                 12        </span></span>
 <span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>         28               10.7                 28        </span></span>
 <span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>         86               33.0                118        </span></span>
@@ -1263,12 +1282,12 @@ named vector to mix measures per row:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;  Current smoker    <span style="color: #9E9E9E;">│</span>                                                    </span></span>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       77.0            332         83.0       926   </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249   </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  self_rated_health <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>                                                    </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.2              7          1.8        20   </span></span>
 <span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>        5.2              5          1.2        61   </span></span>
 <span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>       21.9             62         15.5       266   </span></span>
@@ -1277,19 +1296,19 @@ named vector to mix measures per row:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Effect size </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001      .14     </span></span>
+<span><span class="co">#&gt;  Current smoker    <span style="color: #9E9E9E;">│</span>          &lt;.001      .14     </span></span>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  77.2                       </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  20.8                       </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1                       </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  self_rated_health <span style="color: #9E9E9E;">│</span>          &lt;.001      .02     </span></span>
+<span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>          &lt;.001      .02     </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   1.7                       </span></span>
 <span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>   5.1                       </span></span>
 <span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>  22.2                       </span></span>
 <span><span class="co">#&gt;    Good            <span style="color: #9E9E9E;">│</span>  46.5                       </span></span>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>  24.6                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cramer's V: smoking; Kendall's Tau-b: self_rated_health.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cramer's V: Current smoker; Kendall's Tau-b: Self-rated health.</span></span></span></code></pre></div>
 <p>Add confidence intervals with <code>assoc_ci = TRUE</code>. In
 rendered formats (<code>gt</code>, <code>tinytable</code>,
 <code>flextable</code>, <code>word</code>), the CI is shown inline:</p>
@@ -1836,7 +1855,7 @@ rendered formats (<code>gt</code>, <code>tinytable</code>,
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="Variable" class="gt_row gt_left">smoking</td>
+<td headers="Variable" class="gt_row gt_left">Current smoker</td>
 <td headers="Lower secondary_n" class="gt_row gt_center">   </td>
 <td headers="Lower secondary_pct" class="gt_row gt_center">    </td>
 <td headers="Upper secondary_n" class="gt_row gt_center">   </td>
@@ -1888,7 +1907,7 @@ rendered formats (<code>gt</code>, <code>tinytable</code>,
 <td headers="assoc_col" class="gt_row gt_center">              </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">physical_activity</td>
+<td headers="Variable" class="gt_row gt_left">Regular physical activity</td>
 <td headers="Lower secondary_n" class="gt_row gt_center">   </td>
 <td headers="Lower secondary_pct" class="gt_row gt_center">    </td>
 <td headers="Upper secondary_n" class="gt_row gt_center">   </td>
@@ -1940,18 +1959,18 @@ rendered formats (<code>gt</code>, <code>tinytable</code>,
 <span>  assoc_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Variable     Level Lower secondary n Lower secondary % Upper secondary n</span></span>
-<span><span class="co">#&gt; 1  smoking        No               179              68.6               415</span></span>
-<span><span class="co">#&gt; 2  smoking       Yes                78              29.9               112</span></span>
-<span><span class="co">#&gt; 3  smoking (Missing)                 4               1.5                12</span></span>
-<span><span class="co">#&gt;   Upper secondary % Tertiary n Tertiary % Total n Total %            p</span></span>
-<span><span class="co">#&gt; 1              77.0        332       83.0     926    77.2 2.012877e-05</span></span>
-<span><span class="co">#&gt; 2              20.8         59       14.8     249    20.8 2.012877e-05</span></span>
-<span><span class="co">#&gt; 3               2.2          9        2.2      25     2.1 2.012877e-05</span></span>
-<span><span class="co">#&gt;   Cramer's V   CI lower  CI upper</span></span>
-<span><span class="co">#&gt; 1  0.1356677 0.07909264 0.1913716</span></span>
-<span><span class="co">#&gt; 2  0.1356677 0.07909264 0.1913716</span></span>
-<span><span class="co">#&gt; 3  0.1356677 0.07909264 0.1913716</span></span></code></pre></div>
+<span><span class="co">#&gt;         Variable     Level Lower secondary n Lower secondary %</span></span>
+<span><span class="co">#&gt; 1 Current smoker        No               179              68.6</span></span>
+<span><span class="co">#&gt; 2 Current smoker       Yes                78              29.9</span></span>
+<span><span class="co">#&gt; 3 Current smoker (Missing)                 4               1.5</span></span>
+<span><span class="co">#&gt;   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n Total %</span></span>
+<span><span class="co">#&gt; 1               415              77.0        332       83.0     926    77.2</span></span>
+<span><span class="co">#&gt; 2               112              20.8         59       14.8     249    20.8</span></span>
+<span><span class="co">#&gt; 3                12               2.2          9        2.2      25     2.1</span></span>
+<span><span class="co">#&gt;              p Cramer's V   CI lower  CI upper</span></span>
+<span><span class="co">#&gt; 1 2.012877e-05  0.1356677 0.07909264 0.1913716</span></span>
+<span><span class="co">#&gt; 2 2.012877e-05  0.1356677 0.07909264 0.1913716</span></span>
+<span><span class="co">#&gt; 3 2.012877e-05  0.1356677 0.07909264 0.1913716</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="weighted-tables">Weighted tables<a class="anchor" aria-label="anchor" href="#weighted-tables"></a>
@@ -1969,38 +1988,38 @@ unweighted N:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        176               68.1                419        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         79               30.6                114        </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          4                1.4                 13        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        174               67.2                315        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         85               32.8                231        </span></span>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker            <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>        176               68.1        </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>         79               30.6        </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>          4                1.4        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>        174               67.2        </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>         85               32.8        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       76.6            325         82.2      919.3  </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       21.0             60         15.2      253.7  </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.4             10          2.6       27.0  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       57.7            166         41.9      654.8  </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       42.3            229         58.1      545.2  </span></span>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Upper secondary n  Upper secondary %  Tertiary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼──────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker            <span style="color: #9E9E9E;">│</span>                                                  </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>        419               76.6            325     </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>        114               21.0             60     </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>         13                2.4             10     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                                                  </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>        315               57.7            166     </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>        231               42.3            229     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001     .13     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  76.6                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  21.1                      </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.2                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001     .19     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.6                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.4</span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Tertiary %  Total n  Total %    p    Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼─────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker            <span style="color: #9E9E9E;">│</span>                               &lt;.001     .13     </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    82.2      919.3    76.6                      </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    15.2      253.7    21.1                      </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>     2.6       27.0     2.2                      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                               &lt;.001     .19     </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    41.9      654.8    54.6                      </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    58.1      545.2    45.4</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
@@ -2018,29 +2037,29 @@ then discloses the listwise deletion in a note:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group   <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    Low          <span style="color: #9E9E9E;">│</span>        87                33.7                115        </span></span>
-<span><span class="co">#&gt;    Lower middle <span style="color: #9E9E9E;">│</span>        92                35.7                186        </span></span>
-<span><span class="co">#&gt;    Upper middle <span style="color: #9E9E9E;">│</span>        58                22.5                135        </span></span>
-<span><span class="co">#&gt;    High         <span style="color: #9E9E9E;">│</span>        21                 8.1                 94        </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Household income group <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Low                  <span style="color: #9E9E9E;">│</span>        87                33.7        </span></span>
+<span><span class="co">#&gt;    Lower middle         <span style="color: #9E9E9E;">│</span>        92                35.7        </span></span>
+<span><span class="co">#&gt;    Upper middle         <span style="color: #9E9E9E;">│</span>        58                22.5        </span></span>
+<span><span class="co">#&gt;    High                 <span style="color: #9E9E9E;">│</span>        21                 8.1        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total % </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group   <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    Low          <span style="color: #9E9E9E;">│</span>       21.7             45         11.4       247     20.9   </span></span>
-<span><span class="co">#&gt;    Lower middle <span style="color: #9E9E9E;">│</span>       35.1            110         27.9       388     32.8   </span></span>
-<span><span class="co">#&gt;    Upper middle <span style="color: #9E9E9E;">│</span>       25.5            135         34.3       328     27.7   </span></span>
-<span><span class="co">#&gt;    High         <span style="color: #9E9E9E;">│</span>       17.7            104         26.4       219     18.5   </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Upper secondary n  Upper secondary %  Tertiary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Household income group <span style="color: #9E9E9E;">│</span>                                                  </span></span>
+<span><span class="co">#&gt;    Low                  <span style="color: #9E9E9E;">│</span>        115               21.7             45     </span></span>
+<span><span class="co">#&gt;    Lower middle         <span style="color: #9E9E9E;">│</span>        186               35.1            110     </span></span>
+<span><span class="co">#&gt;    Upper middle         <span style="color: #9E9E9E;">│</span>        135               25.5            135     </span></span>
+<span><span class="co">#&gt;    High                 <span style="color: #9E9E9E;">│</span>         94               17.7            104     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   p    Kendall's Tau-b </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group   <span style="color: #9E9E9E;">│</span> &lt;.001        .22       </span></span>
-<span><span class="co">#&gt;    Low          <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    Lower middle <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    Upper middle <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    High         <span style="color: #9E9E9E;">│</span>                        </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Tertiary %  Total n  Total %    p    Kendall's Tau-b </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Household income group <span style="color: #9E9E9E;">│</span>                               &lt;.001        .22       </span></span>
+<span><span class="co">#&gt;    Low                  <span style="color: #9E9E9E;">│</span>    11.4       247     20.9                           </span></span>
+<span><span class="co">#&gt;    Lower middle         <span style="color: #9E9E9E;">│</span>    27.9       388     32.8                           </span></span>
+<span><span class="co">#&gt;    Upper middle         <span style="color: #9E9E9E;">│</span>    34.3       328     27.7                           </span></span>
+<span><span class="co">#&gt;    High                 <span style="color: #9E9E9E;">│</span>    26.4       219     18.5                           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: income_group (18).</span></span></span></code></pre></div>
 </div>
@@ -2060,26 +2079,26 @@ placing “(Missing)” first to highlight missingness:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable     <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    (Missing)  <span style="color: #9E9E9E;">│</span>         3                 1.1                  9        </span></span>
-<span><span class="co">#&gt;    Low        <span style="color: #9E9E9E;">│</span>        87                33.3                115        </span></span>
-<span><span class="co">#&gt;    High       <span style="color: #9E9E9E;">│</span>        21                 8.0                 94        </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Household income group <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    (Missing)            <span style="color: #9E9E9E;">│</span>         3                 1.1        </span></span>
+<span><span class="co">#&gt;    Low                  <span style="color: #9E9E9E;">│</span>        87                33.3        </span></span>
+<span><span class="co">#&gt;    High                 <span style="color: #9E9E9E;">│</span>        21                 8.0        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable     <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total % </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    (Missing)  <span style="color: #9E9E9E;">│</span>        1.7              6          1.5        18      1.5   </span></span>
-<span><span class="co">#&gt;    Low        <span style="color: #9E9E9E;">│</span>       21.3             45         11.2       247     20.6   </span></span>
-<span><span class="co">#&gt;    High       <span style="color: #9E9E9E;">│</span>       17.4            104         26.0       219     18.2   </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Upper secondary n  Upper secondary %  Tertiary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Household income group <span style="color: #9E9E9E;">│</span>                                                  </span></span>
+<span><span class="co">#&gt;    (Missing)            <span style="color: #9E9E9E;">│</span>          9                1.7              6     </span></span>
+<span><span class="co">#&gt;    Low                  <span style="color: #9E9E9E;">│</span>        115               21.3             45     </span></span>
+<span><span class="co">#&gt;    High                 <span style="color: #9E9E9E;">│</span>         94               17.4            104     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable     <span style="color: #9E9E9E;">│</span>   p    Kendall's Tau-b </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────┼────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group <span style="color: #9E9E9E;">│</span> &lt;.001       -0.01      </span></span>
-<span><span class="co">#&gt;    (Missing)  <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    Low        <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    High       <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Tertiary %  Total n  Total %    p    Kendall's Tau-b </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Household income group <span style="color: #9E9E9E;">│</span>                               &lt;.001       -0.01      </span></span>
+<span><span class="co">#&gt;    (Missing)            <span style="color: #9E9E9E;">│</span>     1.5        18      1.5                           </span></span>
+<span><span class="co">#&gt;    Low                  <span style="color: #9E9E9E;">│</span>    11.2       247     20.6                           </span></span>
+<span><span class="co">#&gt;    High                 <span style="color: #9E9E9E;">│</span>    26.0       219     18.2</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="formatting-options">Formatting options<a class="anchor" aria-label="anchor" href="#formatting-options"></a>
@@ -2097,26 +2116,26 @@ association measure:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>        179               68.60               415        </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>         78               29.90               112        </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>          4                1.50                12        </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>        179               68.60               415        </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>         78               29.90               112        </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>          4                1.50                12        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total % </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>       77.00           332        83.00       926     77.20  </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>       20.80            59        14.80       249     20.80  </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>        2.20             9         2.20        25      2.10  </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                             </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>       77.00           332        83.00       926     77.20  </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>       20.80            59        14.80       249     20.80  </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>        2.20             9         2.20        25      2.10  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   p     Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span> &lt;.0001     .136    </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>                    </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>                    </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   p     Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span> &lt;.0001     .136    </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>                    </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>                    </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p><code>p_digits</code> drives both the displayed precision of the
 <code>p</code> column and the small-<em>p</em> threshold
 (<code>p_digits = 3</code> -&gt; <code>&lt;.001</code>,
@@ -2147,27 +2166,27 @@ alignment:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %     p </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                       .713 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>      475      76.6     451    77.8      926     77.2       </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>      131      21.1     118    20.3      249     20.8       </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>       14       2.3      11     1.9       25      2.1       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                       .832 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>      334      53.9     316    54.5      650     54.2       </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>      286      46.1     264    45.5      550     45.8       </span></span>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼─────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker            <span style="color: #9E9E9E;">│</span>                                             </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>      475      76.6     451    77.8      926 </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>      131      21.1     118    20.3      249 </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>       14       2.3      11     1.9       25 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                                             </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>      334      53.9     316    54.5      650 </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>      286      46.1     264    45.5      550 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Phi </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span> .01 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span> .01 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Total %     p  Phi </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker            <span style="color: #9E9E9E;">│</span>          .713  .01 </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    77.2            </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    20.8            </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>     2.1            </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>          .832  .01 </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    54.2            </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    45.8</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tidying-for-downstream-pipelines">Tidying for downstream pipelines<a class="anchor" aria-label="anchor" href="#tidying-for-downstream-pipelines"></a>
@@ -2185,55 +2204,55 @@ downstream tidyverse-stats workflow:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                       .713 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>   475       76.6     451     77.8     926     77.2         </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>   131       21.1     118     20.3     249     20.8         </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>    14        2.3      11      1.9      25      2.1         </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                       .832 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>   334       53.9     316     54.5     650     54.2         </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>   286       46.1     264     45.5     550     45.8         </span></span>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼─────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker            <span style="color: #9E9E9E;">│</span>                                             </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>   475       76.6     451     77.8     926   </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>   131       21.1     118     20.3     249   </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>    14        2.3      11      1.9      25   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                                             </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>   334       53.9     316     54.5     650   </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>   286       46.1     264     45.5     550   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Phi </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span> .01 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span> .01 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span></span></span>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Total %   p    Phi </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker            <span style="color: #9E9E9E;">│</span>          .713  .01 </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>  77.2              </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>  20.8              </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>   2.1              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>          .832  .01 </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>  54.2              </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>  45.8</span></span>
 <span></span>
 <span><span class="co"># One row per (variable x level x group) with broom-style columns</span></span>
 <span><span class="co"># (outcome, level, group, n, proportion). The synthetic Total</span></span>
 <span><span class="co"># margin is excluded so each observation is counted once.</span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 5</span></span></span>
-<span><span class="co">#&gt;    outcome           level     group      n proportion</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> smoking           No        Female   475      0.766</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> smoking           No        Male     451      0.778</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> smoking           Yes       Female   131      0.211</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> smoking           Yes       Male     118      0.203</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> smoking           (Missing) Female    14      0.023</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> smoking           (Missing) Male      11      0.019</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> physical_activity No        Female   334      0.539</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> physical_activity No        Male     316      0.545</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> physical_activity Yes       Female   286      0.461</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> physical_activity Yes       Male     264      0.455</span></span>
+<span><span class="co">#&gt;    outcome                   level     group      n proportion</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Current smoker            No        Female   475      0.766</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Current smoker            No        Male     451      0.778</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Current smoker            Yes       Female   131      0.211</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Current smoker            Yes       Male     118      0.203</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Current smoker            (Missing) Female    14      0.023</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Current smoker            (Missing) Male      11      0.019</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Regular physical activity No        Female   334      0.539</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Regular physical activity No        Male     316      0.545</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Regular physical activity Yes       Female   286      0.461</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Regular physical activity Yes       Male     264      0.455</span></span>
 <span></span>
 <span><span class="co"># One row per outcome with the omnibus chi-squared test and the</span></span>
 <span><span class="co"># chosen association measure (test_type, statistic, df, p.value,</span></span>
 <span><span class="co"># assoc_type, assoc_value, assoc_ci_lower / assoc_ci_upper, n_total).</span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 10</span></span></span>
-<span><span class="co">#&gt;   outcome           test_type   statistic    df p.value assoc_type assoc_value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> physical_activity chi_squared    0.045<span style="text-decoration: underline;">2</span>     1   0.832 Phi            0.006<span style="text-decoration: underline;">14</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> smoking           chi_squared    0.136      1   0.713 Phi            0.010<span style="text-decoration: underline;">7</span> </span></span>
+<span><span class="co">#&gt;   outcome               test_type statistic    df p.value assoc_type assoc_value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Current smoker        chi_squa…    0.136      1   0.713 Phi            0.010<span style="text-decoration: underline;">7</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Regular physical act… chi_squa…    0.045<span style="text-decoration: underline;">2</span>     1   0.832 Phi            0.006<span style="text-decoration: underline;">14</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: assoc_ci_lower &lt;dbl&gt;, assoc_ci_upper &lt;dbl&gt;, n_total &lt;int&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">

@@ -138,7 +138,9 @@ to summarize:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────</span></span></span>
 <span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>   26.14    1188 </span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>   69.93    1200 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>    3.62    1192</span></span></code></pre></div>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>    3.62    1192 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>If you omit <code>select</code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>
 scans the data frame and keeps numeric columns:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -182,7 +184,9 @@ scans the data frame and keeps numeric columns:</p>
 <span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> 1192 </span></span>
 <span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> 1192 </span></span>
 <span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> 1192 </span></span>
-<span><span class="co">#&gt;  Survey design weight                       <span style="color: #9E9E9E;">│</span> 1200</span></span></code></pre></div>
+<span><span class="co">#&gt;  Survey design weight                       <span style="color: #9E9E9E;">│</span> 1200 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="grouped-summaries">Grouped summaries<a class="anchor" aria-label="anchor" href="#grouped-summaries"></a>
@@ -238,7 +242,9 @@ categories. When <code>by</code> is supplied, a Welch-test
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary        </span></span>
-<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary               </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>This is the main pattern for reporting continuous variables across
 groups such as education, sex, treatment arm, or survey wave. Pass
 <code>p_value = FALSE</code> to suppress the test column and keep the
@@ -340,7 +346,9 @@ alongside the default <em>p</em>-value column:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.16 [0.13, 0.20] </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary                         </span></span>
-<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary                                </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>Use <code>test = "student"</code> for equal-variance parametric tests
 or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -392,7 +400,9 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  ε² = 0.19 </span></span>
 <span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Upper secondary            </span></span>
-<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary</span></span></code></pre></div>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Tertiary                   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p><code>effect_size = TRUE</code> auto-selects the canonical measure
 for the chosen <code>test</code> and number of groups: Hedges’
 <em>g</em> (parametric, 2 groups), eta-squared (parametric, 3+ groups),
@@ -515,7 +525,9 @@ error.</p>
 <span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female  .453 </span></span>
-<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male</span></span></code></pre></div>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span></span></code></pre></div>
 <p>For more programmatic selection, set <code>regex = TRUE</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
@@ -595,14 +607,72 @@ two explicit removals:</p>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male      69.73      72.37    580        </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female     3.41       3.61    616   .267 </span></span>
-<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male       3.49       3.69    576</span></span></code></pre></div>
+<span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male       3.49       3.69    576        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
+</h2>
+<p>Missing values can never enter a mean, so they are always excluded
+from each variable’s statistics. The table discloses the exclusion in a
+note rather than staying silent:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72   </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>  3.55  1.25   1.00   5.00     3.48   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> 95% CI UL   n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>   26.14    1188 </span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>    3.62    1192 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+<p>Missing values in <code>by</code> are removed by default
+(<code>drop_na = TRUE</code>), again disclosed in the note. Set
+<code>drop_na = FALSE</code> to display them as a dedicated “(Missing)”
+group instead. The group-comparison test and effect size still cover the
+observed groups only, matching <code><a href="../reference/table_categorical.html">table_categorical()</a></code>:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">bmi</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">income_group</span>,</span>
+<span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group           M     SD    Min    Max   95% CI LL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index <span style="color: #9E9E9E;">│</span> Low           26.58  3.94  16.00  38.90    26.08   </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Lower middle  26.19  3.47  16.00  37.30    25.84   </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper middle  25.66  3.89  16.00  37.70    25.24   </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> High          25.15  3.43  16.00  35.00    24.68   </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> (Missing)     25.83  4.08  18.50  31.80    23.80   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group         95% CI UL   n     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index <span style="color: #9E9E9E;">│</span> Low             27.07    246  &lt;.001 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Lower middle    26.53    385        </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper middle    26.09    325        </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> High            25.61    214        </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> (Missing)       27.86     18        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="labels-and-output-formats">Labels and output formats<a class="anchor" aria-label="anchor" href="#labels-and-output-formats"></a>
 </h2>
 <p>Use <code>labels</code> to replace technical variable names with
 reporting labels:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -1311,7 +1381,7 @@ code)</td>
 </table>
 <p>For example, <code>tinytable</code> works well in Quarto and R
 Markdown documents:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1503,7 +1573,7 @@ Markdown documents:</p>
 <h2 id="export-to-excel-or-word">Export to Excel or Word<a class="anchor" aria-label="anchor" href="#export-to-excel-or-word"></a>
 </h2>
 <p>Use the same function to export the table directly:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1545,7 +1615,7 @@ every output; the underlying <code>n</code> and <code>ci_lower</code> /
 <code>output = "data.frame"</code> / <code>"long"</code> for downstream
 code.</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
@@ -1569,7 +1639,7 @@ to a plain <code>data.frame</code> / <code>tbl_df</code> (stripping the
 spicy formatting attributes) or piped into <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> /
 <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for any downstream tidyverse stats
 workflow:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
@@ -1591,7 +1661,9 @@ workflow:</p>
 <span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male      26.50    572        </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female    68.33    620  &lt;.001 </span></span>
-<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male      72.37    580</span></span>
+<span><span class="co">#&gt;                                <span style="color: #9E9E9E;">│</span> Male      72.37    580        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span>
 <span></span>
 <span><span class="co"># Long descriptive rows: one per (variable x group) with broom-style</span></span>
 <span><span class="co"># columns (outcome, label, group, estimate = mean, std.error,</span></span>

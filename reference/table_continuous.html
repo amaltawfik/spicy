@@ -135,6 +135,7 @@ adjustment.</p>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclude <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  regex <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  drop_na <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"welch"</span>, <span class="st">"student"</span>, <span class="st">"nonparametric"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -190,6 +191,28 @@ character vectors of column names.</p></dd>
 <dd><p>Logical. If <code>FALSE</code> (the default), uses tidyselect
 helpers. If <code>TRUE</code>, the <code>select</code> argument is treated as a regular
 expression.</p></dd>
+
+
+<dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
+<dd><p>Logical. Controls how missing values in the <code>by</code>
+column are handled – the same argument as <code><a href="table_categorical.html">table_categorical()</a></code>,
+with one structural difference: a continuous summary has no
+<code>"(Missing)"</code> row for the summarized variable itself (a mean
+cannot include <code>NA</code>), so <code>NA</code>s in each summarized variable are
+always excluded from that variable's statistics and the exclusion
+is disclosed in a table note ("Missing values removed: ...")
+rather than silent. If <code>TRUE</code> (the default, preserving this
+function's historical behavior; <code><a href="table_categorical.html">table_categorical()</a></code> defaults to
+<code>FALSE</code>), rows with <code>NA</code> in <code>by</code> are removed from the grouped
+summaries, with a warning and a dedicated note line ("Rows with
+missing ... removed"). If <code>FALSE</code>, rows with <code>NA</code> in <code>by</code> form a
+dedicated <code>"(Missing)"</code> group – the field convention for
+descriptive tables (gtsummary's "Unknown" row; see the
+Epidemiologist R Handbook, Descriptive tables) – while the
+group-comparison test and effect size are still computed on the
+observed groups only (show the missing, test the observed,
+matching <code><a href="table_categorical.html">table_categorical()</a></code>). Ignored (with a warning) when
+<code>by</code> is not used.</p></dd>
 
 
 <dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
@@ -483,6 +506,8 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   26.14    1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   69.93    1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by education (Welch p-value added by default).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -521,6 +546,8 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Test statistic alongside the p-value.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -560,6 +587,8 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  F(2, 638.59) = 144.35  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -647,6 +676,8 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>   3.45     1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>   3.79     1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>   3.46     1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pretty labels keyed by column name.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -668,6 +699,8 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼──────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index          <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health <span style="color: #9E9E9E;">│</span> 1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>

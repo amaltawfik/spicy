@@ -12,9 +12,9 @@ clipboard backend to be available on the platform.
 ``` r
 copy_clipboard(
   x,
-  row.names.as.col = FALSE,
-  row.names = TRUE,
-  col.names = TRUE,
+  row_names_as_col = FALSE,
+  row_names = TRUE,
+  col_names = TRUE,
   show_message = TRUE,
   quiet = FALSE,
   ...
@@ -28,7 +28,7 @@ copy_clipboard(
   A `data.frame`, matrix, 2D array, 3D array, table, or atomic vector to
   be copied.
 
-- row.names.as.col:
+- row_names_as_col:
 
   Logical or character. If `FALSE` (the default), row names are not
   added as a column. If `TRUE`, a column named `"rownames"` is
@@ -36,12 +36,12 @@ copy_clipboard(
   the promoted row names. Ignored (with a warning) when `x` is neither a
   `data.frame` nor a strict matrix.
 
-- row.names:
+- row_names:
 
   Logical. If `TRUE` (the default), row names are included in the
   clipboard output; `FALSE` omits them.
 
-- col.names:
+- col_names:
 
   Logical. If `TRUE` (the default), column names are included in the
   clipboard output; `FALSE` omits them.
@@ -61,11 +61,17 @@ copy_clipboard(
 
   Additional arguments passed to
   [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).
+  The pre-0.13.0 dot.case argument names (`row.names.as.col`,
+  `row.names`, `col.names`) are trapped here and raise an error naming
+  their snake_case replacements.
 
 ## Value
 
-Invisibly returns `x`; the function is called for its clipboard side
-effect.
+Invisibly returns the object as it was sent to the clipboard: identical
+to `x` by default, but reflecting the `row_names_as_col` transformation
+when one was requested (e.g. a matrix comes back as a `data.frame` with
+the promoted row-name column). The function is called for its clipboard
+side effect.
 
 ## Details
 
@@ -73,11 +79,18 @@ Objects that are not `data.frame`s or 2D matrices (atomic vectors,
 arrays, tables) are automatically coerced to character on the way to the
 clipboard, as required by
 [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).
-The R-side object passed to `x` is never mutated.
+The caller's object is never modified in place; transformations happen
+on a local copy (see the return value).
 
 Multidimensional arrays (3D and higher) are flattened to a 1D character
 vector with one element per line. To preserve a tabular layout, extract
 a 2D slice first, e.g. `copy_clipboard(my_array[, , 1])`.
+
+Messages and warnings raised by the clipboard backend are re-emitted as
+regular R conditions, so
+[`suppressMessages()`](https://rdrr.io/r/base/message.html) /
+[`suppressWarnings()`](https://rdrr.io/r/base/warning.html) work as
+usual; `quiet = TRUE` silences them all at once.
 
 ## Examples
 
@@ -88,7 +101,7 @@ if (clipr::clipr_available()) {
   copy_clipboard(sochealth)
 
   # Data frame with row names as column
-  copy_clipboard(head(sochealth), row.names.as.col = "id")
+  copy_clipboard(head(sochealth), row_names_as_col = "id")
 
   # Matrix
   mat <- matrix(1:6, nrow = 2)

@@ -103,10 +103,11 @@ test with an APA-style association measure).</p>
 <span>  simulate_p <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  simulate_B <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  styled <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  p_digits <span class="op">=</span> <span class="fl">3L</span></span>
+<span>  p_digits <span class="op">=</span> <span class="fl">3L</span>,</span>
+<span>  <span class="va">styled</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -135,7 +136,8 @@ or a combination of multiple variables (e.g. <code>interaction(vs, am)</code>).<
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
-<dd><p>Optional numeric weights.</p></dd>
+<dd><p>Optional numeric weights. A logical vector is also
+accepted and coerced to 1/0 (include / exclude).</p></dd>
 
 
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
@@ -182,14 +184,21 @@ Defaults to <code>2000</code>.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimals for cell values. Defaults to
-<code>NULL</code>, which is resolved to <code>1</code> when <code>percent != "none"</code> and
-<code>0</code> when <code>percent = "none"</code> (counts are always integers).</p></dd>
+<dd><p>Number of decimals for cell values: a single
+non-negative integer. Defaults to <code>NULL</code>, which is resolved to
+<code>1</code> when <code>percent != "none"</code> and <code>0</code> when <code>percent = "none"</code>
+(counts are always integers). Same role as <code>digits</code> in <code><a href="freq.html">freq()</a></code>,
+which formats percentages only and therefore uses a fixed
+default of <code>1</code>.</p></dd>
 
 
-<dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> (the default), returns a <code>spicy_cross_table</code> object
-(for formatted printing). If <code>FALSE</code>, returns a plain <code>data.frame</code>.</p></dd>
+<dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
+<dd><p>Output format. <code>"default"</code> (the default) returns a
+<code>spicy_cross_table</code> object (for formatted printing);
+<code>"data.frame"</code> returns a plain <code>data.frame</code>. The values match the
+<code>output</code> argument of the <code>table_*()</code> family; the rendered engines
+that family also accepts (<code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
+...) are not available in <code>cross_tab()</code>.</p></dd>
 
 
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
@@ -211,23 +220,33 @@ p-value (and to determine the small-<code>p</code> threshold below which
 <code>&lt; .001</code> notation is used). Defaults to <code>3</code> (the APA standard);
 matches the <code>p_digits</code> argument of the <code>table_*()</code> family.</p></dd>
 
+
+<dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>
+<dd><p>Defunct. <code>styled = TRUE</code> is now <code>output = "default"</code>
+(the default) and <code>styled = FALSE</code> is now <code>output = "data.frame"</code>;
+supplying <code>styled</code> is an error.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Depends on <code>styled</code> and <code>by</code>:</p><ul><li><p><code>styled = TRUE</code>, no <code>by</code>: a <code>spicy_cross_table</code> object
+    <p>Depends on <code>output</code> and <code>by</code>:</p><ul><li><p><code>output = "default"</code>, no <code>by</code>: a <code>spicy_cross_table</code> object
 (a <code>data.frame</code> carrying rendering metadata as attributes:
 <code>title</code>, <code>digits</code>, <code>decimal_mark</code>, <code>n_row_idx</code>, <code>n_col_name</code>,
 and the inferential block when <code>include_stats = TRUE</code>).
 Printing dispatches to <code><a href="print.spicy_cross_table.html">print.spicy_cross_table()</a></code>.</p></li>
-<li><p><code>styled = TRUE</code>, <code>by</code> supplied: a <code>spicy_cross_table_list</code>,
-i.e. a named list of <code>spicy_cross_table</code> objects (one element
-per group level, named by that level). Printing dispatches to
+<li><p><code>output = "default"</code>, <code>by</code> supplied: a
+<code>spicy_cross_table_list</code>, i.e. a named list of
+<code>spicy_cross_table</code> objects (one element per group level, named
+by that level). Printing dispatches to
 <code><a href="print.spicy_cross_table_list.html">print.spicy_cross_table_list()</a></code> which renders each table in
 turn separated by a blank line.</p></li>
-<li><p><code>styled = FALSE</code>: the same payload returned as a plain
-<code>data.frame</code> (or named list of <code>data.frame</code>s with <code>by</code>),
-stripped of the <code>spicy_*</code> classes for downstream programmatic
-use.</p></li>
+<li><p><code>output = "data.frame"</code>: the same payload returned as a
+plain <code>data.frame</code> (or named list of <code>data.frame</code>s with <code>by</code>),
+stripped of the <code>spicy_*</code> classes and of every metadata
+attribute (<code>title</code>, <code>note</code>, <code>n_total</code>, <code>chi2</code>, <code>p_value</code>,
+<code>assoc_*</code>, ...). For programmatic access to the statistics,
+read the attributes of the default object, e.g.
+<code>attr(cross_tab(...), "p_value")</code>.</p></li>
 </ul><p>Cell columns are the levels of <code>y</code>; rows are the levels of <code>x</code>.
 When <code>percent != "none"</code>, the <code>N</code> column (or <code>N</code> row) is added
 according to <code>show_n</code>. When <code>include_stats = TRUE</code>, the result
@@ -248,9 +267,12 @@ Enables Monte Carlo simulation for all Chi-squared tests by default.
 Equivalent to setting <code>simulate_p = TRUE</code> in every call.</p></li>
 <li><p><strong><code>options(spicy.rescale = TRUE)</code></strong>
 Automatically rescales weights so that total weighted N equals the raw N.
-Equivalent to setting <code>rescale = TRUE</code> in each call.</p></li>
-</ul><p>These options are convenient for users who wish to enforce consistent behavior
-across multiple calls to <code>cross_tab()</code> and other spicy table functions.
+Equivalent to setting <code>rescale = TRUE</code> in each call.
+Also read by <code><a href="freq.html">freq()</a></code>, so one option governs both tabulators.</p></li>
+</ul><p>These options are convenient for users who wish to enforce consistent
+behavior across multiple calls: <code>spicy.percent</code> and <code>spicy.simulate_p</code>
+apply to <code>cross_tab()</code>, and <code>spicy.rescale</code> applies to both
+<code>cross_tab()</code> and <code><a href="freq.html">freq()</a></code>.
 They can be disabled or reset by setting them to <code>NULL</code>:
 <code>options(spicy.percent = NULL, spicy.simulate_p = NULL, spicy.rescale = NULL)</code>.</p>
 <p>Example:</p>
@@ -273,6 +295,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Column percentages</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span></span>
@@ -288,6 +311,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Weighted (rescaled)</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span>, rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
@@ -303,6 +327,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.4, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Weight: weight (rescaled)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by sex</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></span>
@@ -317,6 +342,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = .029</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (14).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Male</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -329,6 +355,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (11).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by combination of variables</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">age_group</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -343,6 +370,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .356</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (4).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.25-34</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -355,6 +383,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 14.2, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.36</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (3).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.35-49</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -367,6 +396,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 3.0, p = .223</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (7).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.35-49</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -379,6 +409,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 6.9, p = .032</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.19</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (3).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.50-64</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -391,6 +422,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.0, p = .360</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (3).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.50-64</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -403,6 +435,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .343</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (4).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.65-75</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -427,6 +460,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 1.4, p = .499</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (1).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Ordinal variables: auto-selects Kendall's Tau-b</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span>, <span class="va">self_rated_health</span><span class="op">)</span></span></span>
@@ -442,6 +476,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Kendall's Tau-b = 0.20</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: self_rated_health (20).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 2x2 table with Yates correction</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">physical_activity</span>, correct <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
@@ -457,6 +492,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(1) = 0.0, p = .896</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.01</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Yates continuity correction applied.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># APA-style p-value precision and European decimal mark</span></span></span>
 <span class="r-in"><span><span class="fu">cross_tab</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, decimal_mark <span class="op">=</span> <span class="st">","</span>, p_digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
@@ -471,6 +507,7 @@ They can be disabled or reset by setting them to <code>NULL</code>:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21,6, p &lt;,0001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0,14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

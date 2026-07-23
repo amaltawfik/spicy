@@ -89,9 +89,9 @@ platform.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">copy_clipboard</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  row.names.as.col <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  row.names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  col.names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  row_names_as_col <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  row_names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  col_names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_message <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -107,7 +107,7 @@ platform.</p>
 atomic vector to be copied.</p></dd>
 
 
-<dt id="arg-row-names-as-col">row.names.as.col<a class="anchor" aria-label="anchor" href="#arg-row-names-as-col"></a></dt>
+<dt id="arg-row-names-as-col">row_names_as_col<a class="anchor" aria-label="anchor" href="#arg-row-names-as-col"></a></dt>
 <dd><p>Logical or character. If <code>FALSE</code> (the
 default), row names are not added as a column. If <code>TRUE</code>, a
 column named <code>"rownames"</code> is prepended. If a character string,
@@ -116,12 +116,12 @@ Ignored (with a warning) when <code>x</code> is neither a <code>data.frame</code
 nor a strict matrix.</p></dd>
 
 
-<dt id="arg-row-names">row.names<a class="anchor" aria-label="anchor" href="#arg-row-names"></a></dt>
+<dt id="arg-row-names">row_names<a class="anchor" aria-label="anchor" href="#arg-row-names"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (the default), row names are
 included in the clipboard output; <code>FALSE</code> omits them.</p></dd>
 
 
-<dt id="arg-col-names">col.names<a class="anchor" aria-label="anchor" href="#arg-col-names"></a></dt>
+<dt id="arg-col-names">col_names<a class="anchor" aria-label="anchor" href="#arg-col-names"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (the default), column names
 are included in the clipboard output; <code>FALSE</code> omits them.</p></dd>
 
@@ -138,25 +138,37 @@ success message, coercion notices, and warnings.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to <code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>.</p></dd>
+<dd><p>Additional arguments passed to <code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>.
+The pre-0.13.0 dot.case argument names (<code>row.names.as.col</code>,
+<code>row.names</code>, <code>col.names</code>) are trapped here and raise an error
+naming their snake_case replacements.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Invisibly returns <code>x</code>; the function is called for its
-clipboard side effect.</p>
+    <p>Invisibly returns the object as it was sent to the
+clipboard: identical to <code>x</code> by default, but reflecting the
+<code>row_names_as_col</code> transformation when one was requested (e.g.
+a matrix comes back as a <code>data.frame</code> with the promoted
+row-name column). The function is called for its clipboard
+side effect.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Objects that are not <code>data.frame</code>s or 2D matrices (atomic
 vectors, arrays, tables) are automatically coerced to character
 on the way to the clipboard, as required by
-<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>. The R-side object passed to <code>x</code> is never
-mutated.</p>
+<code><a href="http://matthewlincoln.net/clipr/reference/write_clip.html" class="external-link">clipr::write_clip()</a></code>. The caller's object is never modified in
+place; transformations happen on a local copy (see the return
+value).</p>
 <p>Multidimensional arrays (3D and higher) are flattened to a 1D
 character vector with one element per line. To preserve a
 tabular layout, extract a 2D slice first, e.g.
 <code>copy_clipboard(my_array[, , 1])</code>.</p>
+<p>Messages and warnings raised by the clipboard backend are
+re-emitted as regular R conditions, so <code><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages()</a></code> /
+<code><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings()</a></code> work as usual; <code>quiet = TRUE</code> silences them
+all at once.</p>
     </div>
 
     <div class="section level2">
@@ -167,7 +179,7 @@ tabular layout, extract a 2D slice first, e.g.
 <span class="r-in"><span>  <span class="fu">copy_clipboard</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># Data frame with row names as column</span></span></span>
-<span class="r-in"><span>  <span class="fu">copy_clipboard</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span>, row.names.as.col <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">copy_clipboard</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span>, row_names_as_col <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># Matrix</span></span></span>
 <span class="r-in"><span>  <span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>

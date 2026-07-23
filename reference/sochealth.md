@@ -188,4 +188,5 @@ cross_tab(sochealth, education, self_rated_health)
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
+#> Missing values removed: self_rated_health (20).
 ```

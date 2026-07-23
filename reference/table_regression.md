@@ -688,8 +688,8 @@ table_regression(
   decimal marks line up vertically (publication-style). For CI cells
   (`[LL, UL]`) the left bracket, the LL decimal point, the comma
   separator, the UL decimal point, and the right bracket are
-  independently aligned across rows. `"center"`, `"right"`, or `"auto"`
-  for legacy per-column alignment.
+  independently aligned across rows. `"center"` and `"right"` apply the
+  same alignment to every numeric column.
 
 - padding:
 

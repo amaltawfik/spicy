@@ -307,9 +307,12 @@ table_continuous_lm(
 - boot_n:
 
   Integer. Number of bootstrap replicates used when
-  `vcov = "bootstrap"`. Defaults to `1000`. Ignored otherwise. Larger
-  values reduce Monte-Carlo error in the bootstrap variance; typical
-  values for inference are `500`-`2000`.
+  `vcov = "bootstrap"`. Defaults to `1000`. Ignored otherwise. Must be
+  at least `50` (values below that floor raise an error: fewer
+  replicates make the variance estimate too noisy to use); non-integer
+  values are truncated (e.g. `500.9` becomes `500`). Larger values
+  reduce Monte-Carlo error in the bootstrap variance; typical values for
+  inference are `500`-`2000`.
 
 - contrast:
 
@@ -452,7 +455,10 @@ table_continuous_lm(
 - digits:
 
   Number of decimal places for descriptive values, regression
-  coefficients, and test statistics (default: `2`).
+  coefficients, and test statistics (default: `2`). Must be a single
+  non-negative number; non-integer values are truncated (e.g. `2.9`
+  becomes `2`). Same constraint for `fit_digits` and
+  `effect_size_digits`.
 
 - fit_digits:
 
@@ -475,7 +481,8 @@ table_continuous_lm(
   `.05` and `<.01`. Useful for genomics / GWAS contexts where adjusted
   *p*-values can be very small, or for journals using a coarser
   convention. Leading zeros are always stripped, following APA
-  convention.
+  convention. Values below `1` raise an error; non-integer values are
+  truncated (e.g. `3.7` becomes `3`).
 
 - decimal_mark:
 

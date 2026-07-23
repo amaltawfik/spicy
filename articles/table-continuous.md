@@ -34,7 +34,9 @@ table_continuous(
 #> ────────────────────────────────┼─────────────────
 #>  Body mass index                │   26.14    1188 
 #>  WHO-5 wellbeing index (0-100)  │   69.93    1200 
-#>  Satisfaction with health (1-5) │    3.62    1192
+#>  Satisfaction with health (1-5) │    3.62    1192 
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 If you omit `select`,
@@ -83,7 +85,9 @@ table_continuous(sochealth)
 #>  Satisfaction with work (1-5)               │ 1192 
 #>  Satisfaction with relationships (1-5)      │ 1192 
 #>  Satisfaction with standard of living (1-5) │ 1192 
-#>  Survey design weight                       │ 1200
+#>  Survey design weight                       │ 1200 
+#> 
+#> Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 ```
 
 ## Grouped summaries
@@ -140,7 +144,9 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health (1-5) │ Lower secondary  <.001 
 #>                                 │ Upper secondary        
-#>                                 │ Tertiary
+#>                                 │ Tertiary               
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 This is the main pattern for reporting continuous variables across
@@ -250,7 +256,9 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health (1-5) │ Lower secondary  η² = 0.16 [0.13, 0.20] 
 #>                                 │ Upper secondary                         
-#>                                 │ Tertiary
+#>                                 │ Tertiary                                
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 Use `test = "student"` for equal-variance parametric tests or
@@ -306,7 +314,9 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  ε² = 0.19 
 #>                                │ Upper secondary            
-#>                                │ Tertiary
+#>                                │ Tertiary                   
+#> 
+#> Missing values removed: bmi (12).
 ```
 
 `effect_size = TRUE` auto-selects the canonical measure for the chosen
@@ -436,7 +446,9 @@ table_continuous(
 #>                                             │ Male         
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with standard of living (1-5) │ Female  .453 
-#>                                             │ Male
+#>                                             │ Male         
+#> 
+#> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 ```
 
 For more programmatic selection, set `regex = TRUE`:
@@ -524,7 +536,71 @@ table_continuous(
 #>                                 │ Male      69.73      72.37    580        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health (1-5) │ Female     3.41       3.61    616   .267 
-#>                                 │ Male       3.49       3.69    576
+#>                                 │ Male       3.49       3.69    576        
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
+```
+
+## Handling missing values
+
+Missing values can never enter a mean, so they are always excluded from
+each variable’s statistics. The table discloses the exclusion in a note
+rather than staying silent:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health)
+)
+#> Descriptive statistics
+#> 
+#>  Variable                       │   M     SD    Min    Max   95% CI LL 
+#> ────────────────────────────────┼──────────────────────────────────────
+#>  Body mass index                │ 25.93  3.72  16.00  38.90    25.72   
+#>  Satisfaction with health (1-5) │  3.55  1.25   1.00   5.00     3.48   
+#> 
+#>  Variable                       │ 95% CI UL   n   
+#> ────────────────────────────────┼─────────────────
+#>  Body mass index                │   26.14    1188 
+#>  Satisfaction with health (1-5) │    3.62    1192 
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
+```
+
+Missing values in `by` are removed by default (`drop_na = TRUE`), again
+disclosed in the note. Set `drop_na = FALSE` to display them as a
+dedicated “(Missing)” group instead. The group-comparison test and
+effect size still cover the observed groups only, matching
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = bmi,
+  by = income_group,
+  drop_na = FALSE
+)
+#> Descriptive statistics
+#> 
+#>  Variable        │ Group           M     SD    Min    Max   95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  Body mass index │ Low           26.58  3.94  16.00  38.90    26.08   
+#>                  │ Lower middle  26.19  3.47  16.00  37.30    25.84   
+#>                  │ Upper middle  25.66  3.89  16.00  37.70    25.24   
+#>                  │ High          25.15  3.43  16.00  35.00    24.68   
+#>                  │ (Missing)     25.83  4.08  18.50  31.80    23.80   
+#> 
+#>  Variable        │ Group         95% CI UL   n     p   
+#> ─────────────────┼─────────────────────────────────────
+#>  Body mass index │ Low             27.07    246  <.001 
+#>                  │ Lower middle    26.53    385        
+#>                  │ Upper middle    26.09    325        
+#>                  │ High            25.61    214        
+#>                  │ (Missing)       27.86     18        
+#> 
+#> Missing values removed: bmi (12).
 ```
 
 ## Labels and output formats
@@ -682,7 +758,9 @@ out <- table_continuous(
 #>                                │ Male      26.50    572        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  <.001 
-#>                                │ Male      72.37    580
+#>                                │ Male      72.37    580        
+#> 
+#> Missing values removed: bmi (12).
 
 # Long descriptive rows: one per (variable x group) with broom-style
 # columns (outcome, label, group, estimate = mean, std.error,

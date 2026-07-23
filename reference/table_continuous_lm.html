@@ -360,6 +360,9 @@ cluster vectors) is not supported; use <code><a href="https://sandwich.R-Forge.R
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
 <dd><p>Integer. Number of bootstrap replicates used when
 <code>vcov = "bootstrap"</code>. Defaults to <code>1000</code>. Ignored otherwise.
+Must be at least <code>50</code> (values below that floor raise an error:
+fewer replicates make the variance estimate too noisy to use);
+non-integer values are truncated (e.g. <code>500.9</code> becomes <code>500</code>).
 Larger values reduce Monte-Carlo error in the bootstrap variance;
 typical values for inference are <code>500</code>-<code>2000</code>.</p></dd>
 
@@ -479,7 +482,10 @@ intervals (default: <code>0.95</code>). Must be between 0 and 1 exclusive.</p></
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
 <dd><p>Number of decimal places for descriptive values, regression
-coefficients, and test statistics (default: <code>2</code>).</p></dd>
+coefficients, and test statistics (default: <code>2</code>). Must be a single
+non-negative number; non-integer values are truncated (e.g. <code>2.9</code>
+becomes <code>2</code>). Same constraint for <code>fit_digits</code> and
+<code>effect_size_digits</code>.</p></dd>
 
 
 <dt id="arg-fit-digits">fit_digits<a class="anchor" aria-label="anchor" href="#arg-fit-digits"></a></dt>
@@ -502,7 +508,9 @@ prints <code>.045</code> and <code>&lt;.001</code>; <code>p_digits = 4</code> pr
 <code>&lt;.0001</code>; <code>p_digits = 2</code> prints <code>.05</code> and <code>&lt;.01</code>. Useful for
 genomics / GWAS contexts where adjusted <em>p</em>-values can be very
 small, or for journals using a coarser convention. Leading zeros
-are always stripped, following APA convention.</p></dd>
+are always stripped, following APA convention. Values below <code>1</code>
+raise an error; non-integer values are truncated (e.g. <code>3.7</code>
+becomes <code>3</code>).</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>

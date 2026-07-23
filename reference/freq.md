@@ -4,13 +4,13 @@ Creates a frequency table for a vector or variable from a data frame,
 with options for weighting, sorting, handling *labelled* data, defining
 custom missing values, and displaying cumulative percentages.
 
-When `styled = TRUE`, the function prints a spicy-formatted ASCII table
-using
+With `output = "default"`, the function returns a `spicy_freq_table`
+object that auto-prints as a spicy-formatted ASCII table via
 [`print.spicy_freq_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md)
 and
 [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md);
-otherwise, it returns a `data.frame` containing frequencies and
-proportions.
+with `output = "data.frame"`, it returns a plain `data.frame` containing
+frequencies and proportions.
 
 ## Usage
 
@@ -26,10 +26,10 @@ freq(
   na_val = NULL,
   labelled_levels = c("prefixed", "labels", "values"),
   factor_levels = c("observed", "all"),
-  rescale = TRUE,
+  rescale = FALSE,
   decimal_mark = ".",
-  styled = TRUE,
-  ...
+  output = c("default", "data.frame"),
+  styled
 )
 ```
 
@@ -47,9 +47,10 @@ freq(
 
 - weights:
 
-  Optional numeric vector of weights (same length as `x`). The variable
-  may be referenced as a bare name when it belongs to `data`, or as a
-  qualified expression like `other$w` (evaluated in the calling
+  Optional numeric vector of weights (same length as `x`). A logical
+  vector is also accepted and coerced to 1/0 (include / exclude). The
+  variable may be referenced as a bare name when it belongs to `data`,
+  or as a qualified expression like `other$w` (evaluated in the calling
   environment), which always takes precedence over `data` lookup.
   Observations with `NA` weights are dropped from the table with a
   warning; see `Details`.
@@ -57,6 +58,10 @@ freq(
 - digits:
 
   Number of decimal digits to display for percentages (default: `1`).
+  Same role as `digits` in
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  where the `NULL` default resolves to the same `1` decimal whenever
+  percentages are shown.
 
 - valid:
 
@@ -118,9 +123,13 @@ freq(
 
 - rescale:
 
-  Logical. If `TRUE` (default), rescale weights so that their total
-  equals the unweighted sample size (`length(weights)`). See `Details`
-  for the interaction with `NA` weights.
+  Logical. If `FALSE` (the default), weights are used as-is. If `TRUE`,
+  rescale weights so that their total equals the unweighted sample size
+  (`length(weights)`). When the argument is not supplied, the default
+  can be set globally with `options(spicy.rescale = TRUE)`, which is
+  read by both `freq()` and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+  See `Details` for the interaction with `NA` weights.
 
 - decimal_mark:
 
@@ -130,20 +139,25 @@ freq(
   and the three `table_*()` helpers, so European-locale users get a
   consistent experience across the package.
 
+- output:
+
+  Output format. `"default"` (the default) returns a `spicy_freq_table`
+  object that auto-prints as a formatted spicy table; `"data.frame"`
+  returns a plain `data.frame` with frequency values. The values match
+  the `output` argument of the `table_*()` family; the rendered engines
+  that family also accepts (`"tinytable"`, `"gt"`, `"flextable"`, ...)
+  are not available in `freq()`.
+
 - styled:
 
-  Logical. If `TRUE` (default), print the formatted spicy table. If
-  `FALSE`, return a plain `data.frame` with frequency values.
-
-- ...:
-
-  Additional arguments passed to
-  [`print.spicy_freq_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md).
+  Defunct. `styled = TRUE` is now `output = "default"` (the default) and
+  `styled = FALSE` is now `output = "data.frame"`; supplying `styled` is
+  an error.
 
 ## Value
 
-With `styled = FALSE`, a plain `data.frame` with no extra attributes and
-columns:
+With `output = "data.frame"`, a plain `data.frame` with no extra
+attributes and columns:
 
 - `value` - unique values or factor levels
 
@@ -156,12 +170,14 @@ columns:
 - `cum_prop`, `cum_valid_prop` - cumulative percentages (if
   `cum = TRUE`)
 
-With `styled = TRUE` (default), prints the formatted table to the
-console and invisibly returns a `spicy_freq_table` object: the same
-`data.frame` carrying rendering metadata as attributes (`digits`,
-`data_name`, `var_name`, `var_label`, `class_name`, `n_total`,
-`n_valid`, `weighted`, `rescaled`, `weight_var`) used by
+With `output = "default"` (the default), a `spicy_freq_table` object:
+the same `data.frame` carrying rendering metadata as attributes
+(`digits`, `data_name`, `var_name`, `var_label`, `class_name`,
+`n_total`, `n_valid`, `weighted`, `rescaled`, `weight_var`) used by
 [`print.spicy_freq_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md).
+The object is returned visibly, so a bare `freq(...)` call auto-prints
+at the console while `f <- freq(...)` stays silent (print `f` to display
+the table).
 
 ## Details
 
@@ -360,7 +376,23 @@ df <- data.frame(
   weight = c(12, 8, 10, 15, 7, 9)
 )
 
-# Weighted frequencies (normalized)
+# Weighted frequencies (raw weighted counts, the default)
+freq(df, sex, weights = weight)
+#> Frequency table: sex
+#> 
+#>  Category   │ Values      Freq.    Percent    Valid Percent 
+#> ────────────┼───────────────────────────────────────────────
+#>  Valid      │ Female         27       44.3             50.0 
+#>             │ Male           27       44.3             50.0 
+#>  Missing    │ NA              7       11.5                  
+#> ────────────┼───────────────────────────────────────────────
+#>  Total      │                61      100.0            100.0 
+#> 
+#> Class: factor
+#> Data: df
+#> Weight: weight
+
+# Weighted frequencies rescaled so the total matches the sample size
 freq(df, sex, weights = weight, rescale = TRUE)
 #> Frequency table: sex
 #> 
@@ -376,33 +408,17 @@ freq(df, sex, weights = weight, rescale = TRUE)
 #> Data: df
 #> Weight: weight (rescaled)
 
-# Weighted frequencies (without rescaling)
-freq(df, sex, weights = weight, rescale = FALSE)
-#> Frequency table: sex
-#> 
-#>  Category   │ Values      Freq.    Percent    Valid Percent 
-#> ────────────┼───────────────────────────────────────────────
-#>  Valid      │ Female         27       44.3             50.0 
-#>             │ Male           27       44.3             50.0 
-#>  Missing    │ NA              7       11.5                  
-#> ────────────┼───────────────────────────────────────────────
-#>  Total      │                61      100.0            100.0 
-#> 
-#> Class: factor
-#> Data: df
-#> Weight: weight
-
 # Base R style, with weights and cumulative percentages
 freq(df$sex, weights = df$weight, cum = TRUE)
 #> Frequency table: sex
 #> 
 #>  Category   │ Values      Freq.    Percent    Valid Percent    Cum. Percent 
 #> ────────────┼───────────────────────────────────────────────────────────────
-#>  Valid      │ Female          3       44.3             50.0            44.3 
-#>             │ Male            3       44.3             50.0            88.5 
-#>  Missing    │ NA              1       11.5                            100.0 
+#>  Valid      │ Female         27       44.3             50.0            44.3 
+#>             │ Male           27       44.3             50.0            88.5 
+#>  Missing    │ NA              7       11.5                            100.0 
 #> ────────────┼───────────────────────────────────────────────────────────────
-#>  Total      │                 6      100.0            100.0           100.0 
+#>  Total      │                61      100.0            100.0           100.0 
 #> 
 #>  Category   │ Values      Cum. Valid Percent 
 #> ────────────┼────────────────────────────────
@@ -414,7 +430,7 @@ freq(df$sex, weights = df$weight, cum = TRUE)
 #> 
 #> Class: factor
 #> Data: df
-#> Weight: df$weight (rescaled)
+#> Weight: df$weight
 
 # Piped version (tidy syntax) and sort alphabetically descending ("name-")
 df |> freq(sex, sort = "name-")
@@ -447,8 +463,8 @@ freq(sochealth, education, decimal_mark = ",")
 #> Class: ordered, factor
 #> Data: sochealth
 
-# Non-styled return (for programmatic use)
-f <- freq(df, sex, styled = FALSE)
+# Plain data.frame return (for programmatic use)
+f <- freq(df, sex, output = "data.frame")
 head(f)
 #>    value n      prop valid_prop
 #> 1 Female 3 0.5000000        0.6

@@ -35,6 +35,7 @@ table_continuous(
   by = NULL,
   exclude = NULL,
   regex = FALSE,
+  drop_na = TRUE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
@@ -88,6 +89,30 @@ table_continuous(
 
   Logical. If `FALSE` (the default), uses tidyselect helpers. If `TRUE`,
   the `select` argument is treated as a regular expression.
+
+- drop_na:
+
+  Logical. Controls how missing values in the `by` column are handled –
+  the same argument as
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  with one structural difference: a continuous summary has no
+  `"(Missing)"` row for the summarized variable itself (a mean cannot
+  include `NA`), so `NA`s in each summarized variable are always
+  excluded from that variable's statistics and the exclusion is
+  disclosed in a table note ("Missing values removed: ...") rather than
+  silent. If `TRUE` (the default, preserving this function's historical
+  behavior;
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  defaults to `FALSE`), rows with `NA` in `by` are removed from the
+  grouped summaries, with a warning and a dedicated note line ("Rows
+  with missing ... removed"). If `FALSE`, rows with `NA` in `by` form a
+  dedicated `"(Missing)"` group – the field convention for descriptive
+  tables (gtsummary's "Unknown" row; see the Epidemiologist R Handbook,
+  Descriptive tables) – while the group-comparison test and effect size
+  are still computed on the observed groups only (show the missing, test
+  the observed, matching
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
+  Ignored (with a warning) when `by` is not used.
 
 - test:
 
@@ -421,6 +446,8 @@ table_continuous(
 #> ───────────────────────────────┼─────────────────
 #>  Body mass index               │   26.14    1188 
 #>  WHO-5 wellbeing index (0-100) │   69.93    1200 
+#> 
+#> Missing values removed: bmi (12).
 
 # Grouped by education (Welch p-value added by default).
 table_continuous(
@@ -459,6 +486,8 @@ table_continuous(
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  <.001 
 #>                                │ Upper secondary        
 #>                                │ Tertiary               
+#> 
+#> Missing values removed: bmi (12).
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -498,6 +527,8 @@ table_continuous(
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  F(2, 638.59) = 144.35  <.001 
 #>                                │ Upper secondary                               
 #>                                │ Tertiary                                      
+#> 
+#> Missing values removed: bmi (12).
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -585,6 +616,8 @@ table_continuous(
 #>  Satisfaction with work (1-5)               │   3.45     1192 
 #>  Satisfaction with relationships (1-5)      │   3.79     1192 
 #>  Satisfaction with standard of living (1-5) │   3.46     1192 
+#> 
+#> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 
 # Pretty labels keyed by column name.
 table_continuous(
@@ -606,6 +639,8 @@ table_continuous(
 #> ──────────────────────────┼──────
 #>  Body mass index          │ 1188 
 #>  Satisfaction with health │ 1192 
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 
 # --- Output formats -----------------------------------------------------
 

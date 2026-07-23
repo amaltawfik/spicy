@@ -112,33 +112,12 @@ freq(sochealth, smoking, cum = TRUE)
 
 ### Weighted frequencies
 
-Supply a weight variable with `weights`. By default, `rescale = TRUE`
-adjusts the weighted total to match the unweighted sample size:
+Supply a weight variable with `weights`. By default (`rescale = FALSE`),
+the table shows the raw weighted counts:
 
 ``` r
 
 freq(sochealth, education, weights = weight)
-#> Frequency table: education
-#> 
-#>  Category   │ Values               Freq.    Percent 
-#> ────────────┼───────────────────────────────────────
-#>  Valid      │ Lower secondary        259       21.6 
-#>             │ Upper secondary        546       45.5 
-#>             │ Tertiary               395       32.9 
-#> ────────────┼───────────────────────────────────────
-#>  Total      │                       1200      100.0 
-#> 
-#> Label: Highest education level
-#> Class: ordered, factor
-#> Data: sochealth
-#> Weight: weight (rescaled)
-```
-
-Set `rescale = FALSE` to keep the raw weighted counts:
-
-``` r
-
-freq(sochealth, education, weights = weight, rescale = FALSE)
 #> Frequency table: education
 #> 
 #>  Category   │ Values               Freq.    Percent 
@@ -153,6 +132,28 @@ freq(sochealth, education, weights = weight, rescale = FALSE)
 #> Class: ordered, factor
 #> Data: sochealth
 #> Weight: weight
+```
+
+Set `rescale = TRUE` to adjust the weighted total to match the
+unweighted sample size:
+
+``` r
+
+freq(sochealth, education, weights = weight, rescale = TRUE)
+#> Frequency table: education
+#> 
+#>  Category   │ Values               Freq.    Percent 
+#> ────────────┼───────────────────────────────────────
+#>  Valid      │ Lower secondary        259       21.6 
+#>             │ Upper secondary        546       45.5 
+#>             │ Tertiary               395       32.9 
+#> ────────────┼───────────────────────────────────────
+#>  Total      │                       1200      100.0 
+#> 
+#> Label: Highest education level
+#> Class: ordered, factor
+#> Data: sochealth
+#> Weight: weight (rescaled)
 ```
 
 ### Labelled variables
@@ -261,6 +262,7 @@ cross_tab(sochealth, smoking, education)
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 ```
 
 ### Row and column percentages
@@ -283,6 +285,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 ```
 
 ``` r
@@ -299,6 +302,7 @@ cross_tab(sochealth, smoking, education, percent = "row")
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 ```
 
 ### Grouping with by
@@ -319,6 +323,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> 
 #> Chi-2(2) = 7.1, p = .029
 #> Cramer's V = 0.11
+#> Missing values removed: smoking (14).
 #> 
 #> Crosstable: smoking x education (N) | sex = Male
 #> 
@@ -331,6 +336,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> 
 #> Chi-2(2) = 15.6, p <.001
 #> Cramer's V = 0.17
+#> Missing values removed: smoking (11).
 ```
 
 For more than one grouping variable, use
@@ -351,6 +357,7 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(2) = 2.1, p = .356
 #> Cramer's V = 0.13
+#> Missing values removed: smoking (4).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.25-34
 #> 
@@ -363,6 +370,7 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(2) = 14.2, p <.001
 #> Cramer's V = 0.36
+#> Missing values removed: smoking (3).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.35-49
 #> 
@@ -375,6 +383,7 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(2) = 3.0, p = .223
 #> Cramer's V = 0.13
+#> Missing values removed: smoking (7).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.35-49
 #> 
@@ -387,6 +396,7 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(2) = 6.9, p = .032
 #> Cramer's V = 0.19
+#> Missing values removed: smoking (3).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.50-64
 #> 
@@ -399,6 +409,7 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(2) = 2.0, p = .360
 #> Cramer's V = 0.11
+#> Missing values removed: smoking (3).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Male.50-64
 #> 
@@ -411,6 +422,7 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(2) = 2.1, p = .343
 #> Cramer's V = 0.12
+#> Missing values removed: smoking (4).
 #> 
 #> Crosstable: smoking x education (N) | sex x age_group = Female.65-75
 #> 
@@ -435,6 +447,7 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(2) = 1.4, p = .499
 #> Cramer's V = 0.11
+#> Missing values removed: smoking (1).
 ```
 
 ### Ordinal variables
@@ -459,6 +472,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Kendall's Tau-b = 0.20
+#> Missing values removed: self_rated_health (20).
 ```
 
 You can override the automatic selection with `assoc_measure`:
@@ -479,6 +493,7 @@ cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> 
 #> Chi-2(6) = 73.2, p <.001
 #> Goodman-Kruskal Gamma = 0.31
+#> Missing values removed: self_rated_health (20).
 ```
 
 ### Confidence intervals for effect sizes
@@ -500,18 +515,15 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14, 95% CI [0.08, 0.19]
+#> Missing values removed: smoking (25).
 ```
 
 ### Weighted cross-tabulations
 
 Weights are supplied via `weights`, just like in
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md). The
-default differs, however:
-[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-defaults to `rescale = FALSE` (raw weighted counts), whereas
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
-defaults to `rescale = TRUE`. Without rescaling, the table shows raw
-weighted counts:
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
+both functions share the same default: `rescale = FALSE` (raw weighted
+counts).
 
 ``` r
 
@@ -528,6 +540,7 @@ cross_tab(sochealth, smoking, education, weights = weight)
 #> Chi-2(2) = 21.3, p <.001
 #> Cramer's V = 0.13
 #> Weight: weight
+#> Missing values removed: smoking (25).
 ```
 
 Pass `rescale = TRUE` to make the weighted total match the unweighted
@@ -548,6 +561,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> Chi-2(2) = 21.4, p <.001
 #> Cramer's V = 0.13
 #> Weight: weight (rescaled)
+#> Missing values removed: smoking (25).
 ```
 
 ### Monte Carlo simulation
@@ -569,16 +583,20 @@ cross_tab(sochealth, smoking, education,
 #> 
 #> Chi-2(NA) = 21.6, p <.001 (simulated)
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 ```
 
 ### Data frame output
 
-Set `styled = FALSE` to get a plain data frame for further processing:
+Set `output = "data.frame"` to get a plain data frame for further
+processing. The same argument works in
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
+the values match the `output` argument of the `table_*()` family:
 
 ``` r
 
 cross_tab(sochealth, smoking, education,
-          percent = "column", styled = FALSE)
+          percent = "column", output = "data.frame")
 #>   Values Lower secondary Upper secondary Tertiary
 #> 1     No            69.6            78.7     84.9
 #> 2    Yes            30.4            21.3     15.1
@@ -586,12 +604,13 @@ cross_tab(sochealth, smoking, education,
 
 ## Setting global defaults
 
-You can set
+You can set tabulation defaults with
+[`options()`](https://rdrr.io/r/base/options.html) so you don’t have to
+repeat arguments. `spicy.rescale` is read by both
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-defaults with [`options()`](https://rdrr.io/r/base/options.html) so you
-don’t have to repeat arguments (these options are read by
-[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-only):
+and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md);
+`spicy.percent` and `spicy.simulate_p` are read by
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
 
 ``` r
 
