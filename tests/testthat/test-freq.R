@@ -70,6 +70,28 @@ test_that("freq() handles weights and rescaling", {
   expect_true(sum(f_unscaled$n) > nrow(df))
 })
 
+test_that("freq() defaults to rescale = FALSE (raw weighted counts)", {
+  df <- data.frame(x = c("A", "B"), w = c(2, 2))
+
+  res_default <- freq(df, x, weights = w, styled = FALSE)
+  res_raw <- freq(df, x, weights = w, rescale = FALSE, styled = FALSE)
+
+  expect_equal(res_default, res_raw)
+  expect_equal(sum(res_default$n), sum(df$w))
+})
+
+test_that("freq() honors options(spicy.rescale) like cross_tab()", {
+  df <- data.frame(x = c("A", "B"), w = c(2, 2))
+
+  withr::local_options(spicy.rescale = TRUE)
+  res_opt <- freq(df, x, weights = w, styled = FALSE)
+  expect_equal(sum(res_opt$n), nrow(df))
+
+  # An explicit argument always wins over the option.
+  res_explicit <- freq(df, x, weights = w, rescale = FALSE, styled = FALSE)
+  expect_equal(sum(res_explicit$n), sum(df$w))
+})
+
 test_that("freq() rejects rescale when sum of weights is zero", {
   df <- data.frame(x = c("A", "B"), w = c(0, 0))
   expect_error(
@@ -169,9 +191,25 @@ test_that("freq() handles invalid weight and sort arguments", {
 })
 
 
-test_that("freq() prints styled table invisibly", {
+test_that("freq() returns the styled table visibly (auto-print model)", {
   x <- c("A", "B", "B", "C")
-  expect_invisible(freq(x, styled = TRUE))
+  expect_visible(freq(x, styled = TRUE))
+})
+
+test_that("freq() no longer prints as a side effect on assignment", {
+  out <- capture.output(f <- freq(c("A", "B", "B")))
+  expect_length(out, 0L)
+  expect_s3_class(f, "spicy_freq_table")
+  # Explicit print still renders the table.
+  expect_true(length(capture.output(print(f))) > 0L)
+})
+
+test_that("freq() rejects unknown arguments now that `...` is gone", {
+  # The old `...` forwarded to a print method that ignored everything;
+  # typos were silently swallowed. Base R's unused-argument error is
+  # locale-dependent, so only the error itself is asserted.
+  expect_error(freq(c(1, 2), srot = "-"))
+  expect_error(freq(c(1, 2), lines_color = "red"))
 })
 
 test_that("freq() cum = TRUE adds cumulative columns", {
@@ -251,7 +289,7 @@ test_that("freq() preserves footer metadata when input is a tibble", {
     x = c("A", "B", "B"),
     w = c(2, 3, 5)
   )
-  capture.output(res <- freq(tib, x, weights = w))
+  res <- freq(tib, x, weights = w)
 
   expect_equal(attr(res, "var_name"), "x")
   expect_equal(attr(res, "data_name"), "tib")
@@ -334,9 +372,9 @@ test_that("freq() cum + valid shows cumulative valid column", {
   )
 })
 
-test_that("freq() styled weighted output prints invisibly", {
+test_that("freq() styled weighted output is returned visibly", {
   df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
-  expect_invisible(freq(df, x, weights = w, styled = TRUE))
+  expect_visible(freq(df, x, weights = w, styled = TRUE))
 })
 
 test_that("freq() labelled with non-numeric na_val warns", {
@@ -348,8 +386,8 @@ test_that("freq() labelled with non-numeric na_val warns", {
   )
 })
 
-test_that("freq() styled cum output prints invisibly", {
-  expect_invisible(freq(c("A", "B", "B"), cum = TRUE, styled = TRUE))
+test_that("freq() styled cum output is returned visibly", {
+  expect_visible(freq(c("A", "B", "B"), cum = TRUE, styled = TRUE))
 })
 
 test_that("freq() errors when weight variable not found", {
@@ -433,15 +471,15 @@ test_that("freq() treats a variable holding NULL as no weighting", {
 
 test_that("freq() with `weights = NULL` carries no weighting metadata", {
   df <- data.frame(x = c("A", "B", "C"))
-  capture.output(res <- freq(df, x, weights = NULL))
+  res <- freq(df, x, weights = NULL)
 
   expect_false(isTRUE(attr(res, "weighted")))
   expect_null(attr(res, "weight_var"))
 })
 
-test_that("freq() cum + valid styled prints invisibly", {
+test_that("freq() cum + valid styled is returned visibly", {
   x <- c("A", "B", NA, "A")
-  expect_invisible(freq(x, cum = TRUE, valid = TRUE, styled = TRUE))
+  expect_visible(freq(x, cum = TRUE, valid = TRUE, styled = TRUE))
 })
 
 test_that("freq() warns when data is vector and x is given", {
@@ -453,9 +491,7 @@ test_that("freq() warns when data is vector and x is given", {
 })
 
 test_that("freq() aligns data_name on x when both data and x are vectors", {
-  capture.output(
-    res <- suppressWarnings(freq(c(1, 2, 3), x = c(4, 5, 6)))
-  )
+  res <- suppressWarnings(freq(c(1, 2, 3), x = c(4, 5, 6)))
 
   expect_equal(attr(res, "var_name"), "c(4, 5, 6)")
   expect_equal(attr(res, "data_name"), attr(res, "var_name"))
@@ -567,24 +603,78 @@ test_that("freq() validates logical arguments up front", {
   # Reuses validate_varlist_logical() – same error message format
   # as varlist() / code_book(), so users get a consistent diagnostic
   # across the package.
-  expect_error(freq(c(1, 2), valid = "yes"), "`valid` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
-  expect_error(freq(c(1, 2), valid = NA), "`valid` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
-  expect_error(freq(c(1, 2), valid = c(TRUE, FALSE)), "`valid` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(
+    freq(c(1, 2), valid = "yes"),
+    "`valid` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(c(1, 2), valid = NA),
+    "`valid` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(c(1, 2), valid = c(TRUE, FALSE)),
+    "`valid` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 
-  expect_error(freq(c(1, 2), cum = "yes"), "`cum` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
-  expect_error(freq(c(1, 2), cum = NA), "`cum` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(
+    freq(c(1, 2), cum = "yes"),
+    "`cum` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(c(1, 2), cum = NA),
+    "`cum` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 
-  expect_error(freq(c(1, 2), rescale = "no"), "`rescale` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
-  expect_error(freq(c(1, 2), rescale = NA), "`rescale` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(
+    freq(c(1, 2), rescale = "no"),
+    "`rescale` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(c(1, 2), rescale = NA),
+    "`rescale` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 
-  expect_error(freq(c(1, 2), styled = "yes"), "`styled` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
-  expect_error(freq(c(1, 2), styled = NA), "`styled` must be TRUE or FALSE", fixed = TRUE, class = "spicy_invalid_input")
+  expect_error(
+    freq(c(1, 2), styled = "yes"),
+    "`styled` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    freq(c(1, 2), styled = NA),
+    "`styled` must be TRUE or FALSE",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("freq() validates sort early", {
   expect_error(
     freq(c(1, 2), sort = "bad"),
     "Invalid value for 'sort'",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("freq() sort error message lists the valid default \"\"", {
+  expect_error(
+    freq(c(1, 2), sort = "bogus"),
+    "Use '' (no sorting), '+', '-', 'name+', or 'name-'.",
+    fixed = TRUE,
     class = "spicy_invalid_input"
   )
 })
@@ -687,10 +777,10 @@ test_that("freq() styled = FALSE strips spicy metadata attributes", {
   )
 })
 
-test_that("freq() styled = TRUE invisibly returns an object carrying metadata", {
+test_that("freq() styled = TRUE visibly returns an object carrying metadata", {
   df <- data.frame(x = c("A", "B", "C"), w = c(1, 2, 3))
   res <- withVisible(freq(df, x, weights = w))
-  expect_false(res$visible)
+  expect_true(res$visible)
   expect_s3_class(res$value, "spicy_freq_table")
   expect_equal(attr(res$value, "digits"), 1)
   expect_true(isTRUE(attr(res$value, "weighted")))

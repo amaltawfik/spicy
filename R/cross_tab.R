@@ -17,7 +17,8 @@
 #'   unset (use [freq()] for one-way tables).
 #' @param by Optional grouping variable or expression. Can be a single variable
 #'   or a combination of multiple variables (e.g. `interaction(vs, am)`).
-#' @param weights Optional numeric weights.
+#' @param weights Optional numeric weights. A logical vector is also
+#'   accepted and coerced to 1/0 (include / exclude).
 #' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
 #'   If `TRUE`, rescales weights so total weighted N matches raw N.
 #' @param percent One of `"none"` (the default), `"column"`, or `"row"`.
@@ -37,9 +38,10 @@
 #'   If `TRUE`, uses Monte Carlo simulation.
 #' @param simulate_B Integer. Number of replicates for Monte Carlo simulation.
 #'   Defaults to `2000`.
-#' @param digits Number of decimals for cell values. Defaults to
-#'   `NULL`, which is resolved to `1` when `percent != "none"` and
-#'   `0` when `percent = "none"` (counts are always integers).
+#' @param digits Number of decimals for cell values: a single
+#'   non-negative integer. Defaults to `NULL`, which is resolved to
+#'   `1` when `percent != "none"` and `0` when `percent = "none"`
+#'   (counts are always integers).
 #' @param styled Logical. If `TRUE` (the default), returns a `spicy_cross_table` object
 #'   (for formatted printing). If `FALSE`, returns a plain `data.frame`.
 #' @param show_n Logical. If `TRUE` (the default), adds marginal N totals when
@@ -69,8 +71,11 @@
 #'     turn separated by a blank line.
 #'   \item `styled = FALSE`: the same payload returned as a plain
 #'     `data.frame` (or named list of `data.frame`s with `by`),
-#'     stripped of the `spicy_*` classes for downstream programmatic
-#'     use.
+#'     stripped of the `spicy_*` classes and of every metadata
+#'     attribute (`title`, `note`, `n_total`, `chi2`, `p_value`,
+#'     `assoc_*`, ...). For programmatic access to the statistics,
+#'     read the attributes of the default `styled = TRUE` object,
+#'     e.g. `attr(cross_tab(...), "p_value")`.
 #' }
 #'
 #' Cell columns are the levels of `y`; rows are the levels of `x`.
@@ -95,9 +100,12 @@
 #' * **`options(spicy.rescale = TRUE)`**
 #'   Automatically rescales weights so that total weighted N equals the raw N.
 #'   Equivalent to setting `rescale = TRUE` in each call.
+#'   Also read by [freq()], so one option governs both tabulators.
 #'
-#' These options are convenient for users who wish to enforce consistent behavior
-#' across multiple calls to `cross_tab()` and other spicy table functions.
+#' These options are convenient for users who wish to enforce consistent
+#' behavior across multiple calls: `spicy.percent` and `spicy.simulate_p`
+#' apply to `cross_tab()`, and `spicy.rescale` applies to both
+#' `cross_tab()` and `freq()`.
 #' They can be disabled or reset by setting them to `NULL`:
 #' `options(spicy.percent = NULL, spicy.simulate_p = NULL, spicy.rescale = NULL)`.
 #'
@@ -168,8 +176,11 @@ cross_tab <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (!is.character(decimal_mark) || length(decimal_mark) != 1L ||
-      !decimal_mark %in% c(".", ",")) {
+  if (
+    !is.character(decimal_mark) ||
+      length(decimal_mark) != 1L ||
+      !decimal_mark %in% c(".", ",")
+  ) {
     spicy_abort(
       "`decimal_mark` must be either `\".\"` or `\",\"`.",
       class = "spicy_invalid_input"
@@ -182,14 +193,37 @@ cross_tab <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (!is.numeric(simulate_B) || length(simulate_B) != 1L ||
-      !is.finite(simulate_B) || simulate_B < 1L) {
+  if (
+    !is.numeric(simulate_B) ||
+      length(simulate_B) != 1L ||
+      !is.finite(simulate_B) ||
+      simulate_B < 1L
+  ) {
     spicy_abort(
       "`simulate_B` must be a positive integer.",
       class = "spicy_invalid_input"
     )
   }
   simulate_B <- as.integer(simulate_B)
+
+  # `NULL` keeps the context-dependent default (resolved below once
+  # `percent` is known); anything else must be a single non-negative
+  # integer, matching freq() and the table_*() family.
+  if (!is.null(digits)) {
+    if (
+      !is.numeric(digits) ||
+        length(digits) != 1L ||
+        !is.finite(digits) ||
+        digits < 0 ||
+        digits != as.integer(digits)
+    ) {
+      spicy_abort(
+        "`digits` must be `NULL` or a single non-negative integer.",
+        class = "spicy_invalid_input"
+      )
+    }
+    digits <- as.integer(digits)
+  }
 
   call_x <- substitute(x)
   call_y <- substitute(y)
@@ -227,6 +261,19 @@ cross_tab <- function(
       spicy_abort(
         "Vectors `x` and `y` must have the same length.",
         class = "spicy_invalid_data"
+      )
+    }
+    # In vector mode the first two arguments already are the row and
+    # column variables, so a third positional argument would be
+    # dropped. Warn instead of silently ignoring it. `call_y` is the
+    # unevaluated expression: the promise is never forced here.
+    if (!(missing(y) || identical(call_y, quote(NULL)))) {
+      spicy_warn(
+        sprintf(
+          "In vector mode, cross_tab(x_vector, y_vector, ...): the third argument `y` (%s) is ignored. The first two arguments are already the row and column variables.",
+          rlang::as_label(call_y)
+        ),
+        class = "spicy_ignored_arg"
       )
     }
   }
@@ -342,9 +389,14 @@ cross_tab <- function(
 
     # Weight
     if (!is.null(weights)) {
+      # Logical weights coerce naturally to 1/0 -- a common shorthand
+      # for "include / exclude" weighting. Matches freq().
+      if (is.logical(weights)) {
+        weights <- as.numeric(weights)
+      }
       if (!is.numeric(weights)) {
         spicy_abort(
-          "When using vector input, `weights` must be a numeric vector.",
+          "When using vector input, `weights` must be a numeric or logical vector.",
           class = "spicy_invalid_input"
         )
       }
@@ -421,8 +473,16 @@ cross_tab <- function(
 
   if (!rlang::quo_is_null(w_expr)) {
     w <- rlang::eval_tidy(w_expr, data)
+    # Logical weights coerce naturally to 1/0 -- a common shorthand
+    # for "include / exclude" weighting. Matches freq().
+    if (is.logical(w)) {
+      w <- as.numeric(w)
+    }
     if (!is.numeric(w)) {
-      spicy_abort("`weights` must be numeric.", class = "spicy_invalid_input")
+      spicy_abort(
+        "`weights` must be a numeric or logical vector.",
+        class = "spicy_invalid_input"
+      )
     }
     if (length(w) != nrow(data)) {
       spicy_abort(
@@ -449,7 +509,9 @@ cross_tab <- function(
           "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
           n_na,
           if (n_na > 1L) "s" else ""
-        ), class = "spicy_dropped_na")
+        ),
+        class = "spicy_dropped_na"
+      )
       # Drop NA-weighted rows up front so they never reach `xtabs()` or
       # `complete.cases()` (where they would otherwise inflate
       # `n_complete` during rescale).
@@ -463,7 +525,9 @@ cross_tab <- function(
 
   if (rescale && rlang::quo_is_null(w_expr)) {
     spicy_warn(
-      "`rescale = TRUE` has no effect since no weights provided.", class = "spicy_ignored_arg")
+      "`rescale = TRUE` has no effect since no weights provided.",
+      class = "spicy_ignored_arg"
+    )
   }
 
   data$`..spicy_w` <- w
@@ -496,6 +560,11 @@ cross_tab <- function(
     rownames(out) <- NULL
     out
   }
+
+  # Rows lost before grouping because `by` is NA (split() drops them
+  # from every group). Filled in the by-branch below; read lazily by
+  # compute_ctab() when it assembles each table's disclosure note.
+  n_by_dropped <- 0L
 
   compute_ctab <- function(df, group_label = NULL) {
     x_val <- rlang::eval_tidy(x_expr, df)
@@ -703,7 +772,9 @@ cross_tab <- function(
             "`correct = TRUE` ignored: Yates continuity correction only applies to 2x2 tables (this %dx%d table is not).",
             nrow(tab_stats),
             ncol(tab_stats)
-          ), class = "spicy_ignored_arg")
+          ),
+          class = "spicy_ignored_arg"
+        )
       }
       chi <- suppressWarnings(stats::chisq.test(
         tab_stats,
@@ -900,6 +971,44 @@ cross_tab <- function(
       }
     }
 
+    # NA disclosure: xtabs() silently excludes rows where x or y is NA.
+    # Report the per-variable counts in the table note (same wording as
+    # table_categorical()'s "Missing values removed" convention), naming
+    # only the variables that actually lost observations.
+    n_na_x <- sum(is.na(x_val))
+    n_na_y <- sum(is.na(y_val))
+    na_parts <- character(0)
+    if (n_na_x > 0L) {
+      na_parts <- c(na_parts, sprintf("%s (%d)", x_name, n_na_x))
+    }
+    if (n_na_y > 0L) {
+      na_parts <- c(na_parts, sprintf("%s (%d)", y_name, n_na_y))
+    }
+    if (length(na_parts) > 0L) {
+      na_text <- paste0(
+        "Missing values removed: ",
+        paste(na_parts, collapse = ", "),
+        "."
+      )
+      if (is.null(note) || note == "") {
+        note <- na_text
+      } else {
+        note <- paste0(note, "\n", na_text)
+      }
+    }
+    if (n_by_dropped > 0L) {
+      by_text <- sprintf(
+        "Rows with missing %s removed: %d.",
+        by_name,
+        n_by_dropped
+      )
+      if (is.null(note) || note == "") {
+        note <- by_text
+      } else {
+        note <- paste0(note, "\n", by_text)
+      }
+    }
+
     attr(df_out, "title") <- title
     attr(df_out, "note") <- note
     attr(df_out, "n_total") <- total_n
@@ -909,9 +1018,7 @@ cross_tab <- function(
     # Mark the N row / N column position robustly (string-matching on
     # `Values == "N"` would collide with a user-level literally named
     # "N", e.g. Yes/No factors).
-    attr(df_out, "n_row_idx") <- if (
-      styled && percent == "column" && show_n
-    ) {
+    attr(df_out, "n_row_idx") <- if (styled && percent == "column" && show_n) {
       nrow(df_out)
     } else {
       NA_integer_
@@ -944,6 +1051,9 @@ cross_tab <- function(
 
   if (!rlang::quo_is_null(by_expr)) {
     by_vals <- rlang::eval_tidy(by_expr, data)
+    # split() drops NA-by rows from every group; disclose the loss in
+    # each table's note (read by compute_ctab through its closure).
+    n_by_dropped <- sum(is.na(by_vals))
 
     if (is.factor(by_vals)) {
       f <- droplevels(by_vals)
@@ -974,6 +1084,8 @@ cross_tab <- function(
         tt
       })
       class(tables) <- c("spicy_cross_table_list", class(tables))
+    } else {
+      tables <- lapply(tables, strip_spicy_table_attrs)
     }
     return(tables)
   } else {
@@ -984,8 +1096,23 @@ cross_tab <- function(
     class(out) <- c("spicy_cross_table", "spicy_table", class(out))
     out
   } else {
-    as.data.frame(out, stringsAsFactors = FALSE)
+    strip_spicy_table_attrs(out)
   }
+}
+
+
+# Internal: return `df` as a genuinely plain data.frame -- the
+# `styled = FALSE` contract. Drops every spicy metadata attribute
+# (title, note, n_total, chi2, p_value, assoc_*, ...) the same way
+# freq()'s plain branch never attaches them. Programmatic access to
+# the statistics goes through the attributes of the styled object.
+strip_spicy_table_attrs <- function(df) {
+  out <- as.data.frame(df, stringsAsFactors = FALSE)
+  keep <- c("names", "row.names", "class")
+  for (a in setdiff(names(attributes(out)), keep)) {
+    attr(out, a) <- NULL
+  }
+  out
 }
 
 
@@ -1027,7 +1154,12 @@ print.spicy_cross_table_list <- function(x, ...) {
 #'
 #' @keywords internal
 #' @export
-print.spicy_cross_table <- function(x, digits = NULL, decimal_mark = NULL, ...) {
+print.spicy_cross_table <- function(
+  x,
+  digits = NULL,
+  decimal_mark = NULL,
+  ...
+) {
   title <- attr(x, "title")
   digits_attr <- attr(x, "digits")
   decimal_mark_attr <- attr(x, "decimal_mark")

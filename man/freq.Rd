@@ -15,10 +15,9 @@ freq(
   na_val = NULL,
   labelled_levels = c("prefixed", "labels", "values"),
   factor_levels = c("observed", "all"),
-  rescale = TRUE,
+  rescale = FALSE,
   decimal_mark = ".",
-  styled = TRUE,
-  ...
+  styled = TRUE
 )
 }
 \arguments{
@@ -29,6 +28,8 @@ vectors, \code{data} is ignored with a warning.}
 \item{x}{A variable from \code{data} (unquoted).}
 
 \item{weights}{Optional numeric vector of weights (same length as \code{x}).
+A logical vector is also accepted and coerced to 1/0
+(include / exclude).
 The variable may be referenced as a bare name when it belongs to \code{data},
 or as a qualified expression like \code{other$w} (evaluated in the calling
 environment), which always takes precedence over \code{data} lookup.
@@ -78,9 +79,13 @@ matches Stata's \code{tab}) shows only levels present in the data.
 keeps every declared level, including unused ones, which appear
 with \code{n = 0}.}
 
-\item{rescale}{Logical. If \code{TRUE} (default), rescale weights so that their
-total equals the unweighted sample size (\code{length(weights)}). See
-\code{Details} for the interaction with \code{NA} weights.}
+\item{rescale}{Logical. If \code{FALSE} (the default), weights are used
+as-is. If \code{TRUE}, rescale weights so that their total equals the
+unweighted sample size (\code{length(weights)}). When the argument is
+not supplied, the default can be set globally with
+\code{options(spicy.rescale = TRUE)}, which is read by both \code{freq()}
+and \code{\link[=cross_tab]{cross_tab()}}. See \code{Details} for the interaction with \code{NA}
+weights.}
 
 \item{decimal_mark}{Character used as the decimal mark in printed
 percentages. Either \code{"."} (the default) or \code{","}. Matches the
@@ -88,10 +93,9 @@ percentages. Either \code{"."} (the default) or \code{","}. Matches the
 \verb{table_*()} helpers, so European-locale users get a consistent
 experience across the package.}
 
-\item{styled}{Logical. If \code{TRUE} (default), print the formatted spicy table.
+\item{styled}{Logical. If \code{TRUE} (default), return a \code{spicy_freq_table}
+object that auto-prints as a formatted spicy table.
 If \code{FALSE}, return a plain \code{data.frame} with frequency values.}
-
-\item{...}{Additional arguments passed to \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}}.}
 }
 \value{
 With \code{styled = FALSE}, a plain \code{data.frame} with no extra attributes
@@ -104,21 +108,24 @@ and columns:
 \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if \code{cum = TRUE})
 }
 
-With \code{styled = TRUE} (default), prints the formatted table to the
-console and invisibly returns a \code{spicy_freq_table} object: the same
+With \code{styled = TRUE} (default), a \code{spicy_freq_table} object: the same
 \code{data.frame} carrying rendering metadata as attributes (\code{digits},
 \code{data_name}, \code{var_name}, \code{var_label}, \code{class_name}, \code{n_total},
 \code{n_valid}, \code{weighted}, \code{rescaled}, \code{weight_var}) used by
-\code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}}.
+\code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}}. The object is returned visibly, so a
+bare \code{freq(...)} call auto-prints at the console while
+\code{f <- freq(...)} stays silent (print \code{f} to display the table).
 }
 \description{
 Creates a frequency table for a vector or variable from a data frame, with
 options for weighting, sorting, handling \emph{labelled} data, defining custom
 missing values, and displaying cumulative percentages.
 
-When \code{styled = TRUE}, the function prints a spicy-formatted ASCII table
-using \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} and \code{\link[=spicy_print_table]{spicy_print_table()}}; otherwise, it
-returns a \code{data.frame} containing frequencies and proportions.
+When \code{styled = TRUE} (the default), the function returns a
+\code{spicy_freq_table} object that auto-prints as a spicy-formatted ASCII
+table via \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} and \code{\link[=spicy_print_table]{spicy_print_table()}};
+otherwise, it returns a plain \code{data.frame} containing frequencies and
+proportions.
 }
 \details{
 Designed to mimic common frequency procedures from SPSS or Stata
@@ -181,11 +188,11 @@ df <- data.frame(
   weight = c(12, 8, 10, 15, 7, 9)
 )
 
-# Weighted frequencies (normalized)
-freq(df, sex, weights = weight, rescale = TRUE)
+# Weighted frequencies (raw weighted counts, the default)
+freq(df, sex, weights = weight)
 
-# Weighted frequencies (without rescaling)
-freq(df, sex, weights = weight, rescale = FALSE)
+# Weighted frequencies rescaled so the total matches the sample size
+freq(df, sex, weights = weight, rescale = TRUE)
 
 # Base R style, with weights and cumulative percentages
 freq(df$sex, weights = df$weight, cum = TRUE)

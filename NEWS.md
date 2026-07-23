@@ -25,6 +25,25 @@
   silently returning 0 -- the same degenerate-table behavior as the
   rest of the association family.
 
+* `cross_tab(styled = FALSE)` now returns a genuinely plain
+  `data.frame` (and a list of plain data frames with `by`): the
+  metadata attributes (`title`, `note`, `n_total`, `chi2`,
+  `p_value`, `assoc_*`, ...) are stripped, as documented. For
+  programmatic access to the statistics, read the attributes of the
+  default styled object instead, e.g. `attr(cross_tab(...), "p_value")`.
+
+* `freq()` now defaults to `rescale = FALSE` (raw weighted counts),
+  matching `cross_tab()`, and reads `options(spicy.rescale)` the
+  same way `cross_tab()` does. Call `freq(..., rescale = TRUE)` to
+  restore the previous behavior.
+
+* `freq()` no longer prints as a side effect: it returns its
+  `spicy_freq_table` visibly and regular auto-printing displays it,
+  so a bare `freq(...)` call still shows the table while
+  `f <- freq(...)` is now silent (print `f` to display it). The
+  unused `...` argument is removed from the signature; passing
+  unknown arguments now errors.
+
 * `table_regression(exponentiate = TRUE)` now errors on links whose
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, ...). Ratio links (logit, log, binomial / ordinal cloglog) are
@@ -220,6 +239,16 @@ rendering an empty column.
   discarded.
 
 ## Minor improvements
+
+* `cross_tab()` now discloses excluded missing values in the table note (`Missing values removed: x (2), y (1)`; with `by`, also `Rows with missing g removed: 2.`) instead of silently dropping the NA rows from the tabulation.
+
+* `cross_tab()` accepts logical weights, coerced to 1/0 like `freq()` already did; they previously raised an error.
+
+* `cross_tab()` warns (class `spicy_ignored_arg`) when a third positional argument is supplied in vector mode, e.g. `cross_tab(df$x, df$y, df$z)`; the extra argument used to be silently ignored.
+
+* `cross_tab()` validates `digits` with the same classed error as `freq()`; invalid values (negative, fractional, non-numeric) used to degrade the display silently or fail with obscure base-R errors.
+
+* `freq()`'s error for an invalid `sort` value now lists `""` (no sorting) among the valid choices.
 
 * Wide multi-model tables split into stacked panels more cleanly:
   continuation panels carry no empty stub rows, and over-wide column

@@ -5,9 +5,11 @@
 #' options for weighting, sorting, handling *labelled* data, defining custom
 #' missing values, and displaying cumulative percentages.
 #'
-#' When `styled = TRUE`, the function prints a spicy-formatted ASCII table
-#' using [print.spicy_freq_table()] and [spicy_print_table()]; otherwise, it
-#' returns a `data.frame` containing frequencies and proportions.
+#' When `styled = TRUE` (the default), the function returns a
+#' `spicy_freq_table` object that auto-prints as a spicy-formatted ASCII
+#' table via [print.spicy_freq_table()] and [spicy_print_table()];
+#' otherwise, it returns a plain `data.frame` containing frequencies and
+#' proportions.
 #'
 #' @details
 #' Designed to mimic common frequency procedures from SPSS or Stata
@@ -34,6 +36,8 @@
 #'   vectors, `data` is ignored with a warning.
 #' @param x A variable from `data` (unquoted).
 #' @param weights Optional numeric vector of weights (same length as `x`).
+#'   A logical vector is also accepted and coerced to 1/0
+#'   (include / exclude).
 #'   The variable may be referenced as a bare name when it belongs to `data`,
 #'   or as a qualified expression like `other$w` (evaluated in the calling
 #'   environment), which always takes precedence over `data` lookup.
@@ -72,17 +76,21 @@
 #'   `"all"` (matches SPSS `FREQUENCIES` and [code_book()]'s default)
 #'   keeps every declared level, including unused ones, which appear
 #'   with `n = 0`.
-#' @param rescale Logical. If `TRUE` (default), rescale weights so that their
-#'   total equals the unweighted sample size (`length(weights)`). See
-#'   `Details` for the interaction with `NA` weights.
+#' @param rescale Logical. If `FALSE` (the default), weights are used
+#'   as-is. If `TRUE`, rescale weights so that their total equals the
+#'   unweighted sample size (`length(weights)`). When the argument is
+#'   not supplied, the default can be set globally with
+#'   `options(spicy.rescale = TRUE)`, which is read by both `freq()`
+#'   and [cross_tab()]. See `Details` for the interaction with `NA`
+#'   weights.
 #' @param decimal_mark Character used as the decimal mark in printed
 #'   percentages. Either `"."` (the default) or `","`. Matches the
 #'   `decimal_mark` argument of [cross_tab()] and the three
 #'   `table_*()` helpers, so European-locale users get a consistent
 #'   experience across the package.
-#' @param styled Logical. If `TRUE` (default), print the formatted spicy table.
+#' @param styled Logical. If `TRUE` (default), return a `spicy_freq_table`
+#'   object that auto-prints as a formatted spicy table.
 #'   If `FALSE`, return a plain `data.frame` with frequency values.
-#' @param ... Additional arguments passed to [print.spicy_freq_table()].
 #'
 #' @return
 #' With `styled = FALSE`, a plain `data.frame` with no extra attributes
@@ -95,12 +103,13 @@
 #'   \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if `cum = TRUE`)
 #' }
 #'
-#' With `styled = TRUE` (default), prints the formatted table to the
-#' console and invisibly returns a `spicy_freq_table` object: the same
+#' With `styled = TRUE` (default), a `spicy_freq_table` object: the same
 #' `data.frame` carrying rendering metadata as attributes (`digits`,
 #' `data_name`, `var_name`, `var_label`, `class_name`, `n_total`,
 #' `n_valid`, `weighted`, `rescaled`, `weight_var`) used by
-#' [print.spicy_freq_table()].
+#' [print.spicy_freq_table()]. The object is returned visibly, so a
+#' bare `freq(...)` call auto-prints at the console while
+#' `f <- freq(...)` stays silent (print `f` to display the table).
 #'
 #' @examples
 #' # Frequency table with labelled ordered factor
@@ -143,11 +152,11 @@
 #'   weight = c(12, 8, 10, 15, 7, 9)
 #' )
 #'
-#' # Weighted frequencies (normalized)
-#' freq(df, sex, weights = weight, rescale = TRUE)
+#' # Weighted frequencies (raw weighted counts, the default)
+#' freq(df, sex, weights = weight)
 #'
-#' # Weighted frequencies (without rescaling)
-#' freq(df, sex, weights = weight, rescale = FALSE)
+#' # Weighted frequencies rescaled so the total matches the sample size
+#' freq(df, sex, weights = weight, rescale = TRUE)
 #'
 #' # Base R style, with weights and cumulative percentages
 #' freq(df$sex, weights = df$weight, cum = TRUE)
@@ -182,13 +191,18 @@ freq <- function(
   na_val = NULL,
   labelled_levels = c("prefixed", "labels", "values"),
   factor_levels = c("observed", "all"),
-  rescale = TRUE,
+  rescale = FALSE,
   decimal_mark = ".",
-  styled = TRUE,
-  ...
+  styled = TRUE
 ) {
   labelled_levels <- match.arg(labelled_levels)
   factor_levels <- match_varlist_factor_levels(factor_levels)
+
+  # Global options (same hook as cross_tab(), so a single
+  # `options(spicy.rescale = TRUE)` governs both tabulators).
+  if (missing(rescale)) {
+    rescale <- getOption("spicy.rescale", FALSE)
+  }
 
   # B2: tighten `digits` to a non-negative integer (the rest of the
   # spicy 0.11.0 family does the same). Coerces silently if the user
@@ -225,7 +239,7 @@ freq <- function(
       !sort %in% c("", "+", "-", "name+", "name-")
   ) {
     spicy_abort(
-      "Invalid value for 'sort'. Use '+', '-', 'name+', or 'name-'.",
+      "Invalid value for 'sort'. Use '' (no sorting), '+', '-', 'name+', or 'name-'.",
       class = "spicy_invalid_input"
     )
   }
@@ -253,7 +267,9 @@ freq <- function(
     x <- data
   } else {
     spicy_warn(
-      "Both `data` and `x` are vectors; `data` is ignored.", class = "spicy_ignored_arg")
+      "Both `data` and `x` are vectors; `data` is ignored.",
+      class = "spicy_ignored_arg"
+    )
     # `x` is what gets analyzed here -- mirror the `!is_df && missing(x)`
     # branch above so the printed footer (`Data: ...`) does not surface
     # the name of the vector that was just declared "ignored".
@@ -351,7 +367,9 @@ freq <- function(
           "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
           n_na,
           if (n_na > 1L) "s" else ""
-        ), class = "spicy_dropped_na")
+        ),
+        class = "spicy_dropped_na"
+      )
       # Drop NA-weighted rows up front so they never reach `table()` /
       # `tapply()` (where they would otherwise be retained with weight
       # zero and inflate the rescale denominator). This matches the
@@ -377,7 +395,9 @@ freq <- function(
   if (labelled::is.labelled(x)) {
     if (!is.null(na_val) && !is.numeric(na_val)) {
       spicy_warn(
-        "For labelled variables, 'na_val' should match the underlying numeric value (e.g., 1), not the label.", class = "spicy_ignored_arg")
+        "For labelled variables, 'na_val' should match the underlying numeric value (e.g., 1), not the label.",
+        class = "spicy_ignored_arg"
+      )
     }
 
     if (!is.null(na_val)) {
@@ -481,7 +501,7 @@ freq <- function(
   if (!styled) {
     # Return a genuinely plain data.frame: no spicy print-method attributes
     # clinging to it. Users who want the metadata can keep `styled = TRUE`
-    # (default) and inspect the invisibly returned `spicy_freq_table`.
+    # (default) and inspect the returned `spicy_freq_table`.
     return(df)
   }
 
@@ -499,6 +519,8 @@ freq <- function(
 
   class(df) <- c("spicy_freq_table", "spicy_table", class(df))
 
-  print(df, ...)
-  invisible(df)
+  # Return VISIBLY and let standard auto-print dispatch to
+  # print.spicy_freq_table(): a bare freq(...) call still displays the
+  # table, while `f <- freq(...)` is silent (the cross_tab() model).
+  df
 }

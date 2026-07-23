@@ -39,7 +39,8 @@ unset (use \code{\link[=freq]{freq()}} for one-way tables).}
 \item{by}{Optional grouping variable or expression. Can be a single variable
 or a combination of multiple variables (e.g. \code{interaction(vs, am)}).}
 
-\item{weights}{Optional numeric weights.}
+\item{weights}{Optional numeric weights. A logical vector is also
+accepted and coerced to 1/0 (include / exclude).}
 
 \item{rescale}{Logical. If \code{FALSE} (the default), weights are used as-is.
 If \code{TRUE}, rescales weights so total weighted N matches raw N.}
@@ -68,9 +69,10 @@ If \code{TRUE}, uses Monte Carlo simulation.}
 \item{simulate_B}{Integer. Number of replicates for Monte Carlo simulation.
 Defaults to \code{2000}.}
 
-\item{digits}{Number of decimals for cell values. Defaults to
-\code{NULL}, which is resolved to \code{1} when \code{percent != "none"} and
-\code{0} when \code{percent = "none"} (counts are always integers).}
+\item{digits}{Number of decimals for cell values: a single
+non-negative integer. Defaults to \code{NULL}, which is resolved to
+\code{1} when \code{percent != "none"} and \code{0} when \code{percent = "none"}
+(counts are always integers).}
 
 \item{styled}{Logical. If \code{TRUE} (the default), returns a \code{spicy_cross_table} object
 (for formatted printing). If \code{FALSE}, returns a plain \code{data.frame}.}
@@ -104,8 +106,11 @@ per group level, named by that level). Printing dispatches to
 turn separated by a blank line.
 \item \code{styled = FALSE}: the same payload returned as a plain
 \code{data.frame} (or named list of \code{data.frame}s with \code{by}),
-stripped of the \verb{spicy_*} classes for downstream programmatic
-use.
+stripped of the \verb{spicy_*} classes and of every metadata
+attribute (\code{title}, \code{note}, \code{n_total}, \code{chi2}, \code{p_value},
+\verb{assoc_*}, ...). For programmatic access to the statistics,
+read the attributes of the default \code{styled = TRUE} object,
+e.g. \code{attr(cross_tab(...), "p_value")}.
 }
 
 Cell columns are the levels of \code{y}; rows are the levels of \code{x}.
@@ -138,10 +143,13 @@ Equivalent to setting \code{simulate_p = TRUE} in every call.
 \item \strong{\code{options(spicy.rescale = TRUE)}}
 Automatically rescales weights so that total weighted N equals the raw N.
 Equivalent to setting \code{rescale = TRUE} in each call.
+Also read by \code{\link[=freq]{freq()}}, so one option governs both tabulators.
 }
 
-These options are convenient for users who wish to enforce consistent behavior
-across multiple calls to \code{cross_tab()} and other spicy table functions.
+These options are convenient for users who wish to enforce consistent
+behavior across multiple calls: \code{spicy.percent} and \code{spicy.simulate_p}
+apply to \code{cross_tab()}, and \code{spicy.rescale} applies to both
+\code{cross_tab()} and \code{freq()}.
 They can be disabled or reset by setting them to \code{NULL}:
 \code{options(spicy.percent = NULL, spicy.simulate_p = NULL, spicy.rescale = NULL)}.
 

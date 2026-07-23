@@ -8,10 +8,10 @@ test_that("print.spicy_freq_table prints correctly and invisibly", {
   )
   var_label(x) <- "Satisfaction level"
 
-  # Generate the styled invisible return (spicy_freq_table carrying the
-  # print-method metadata). Swallow the printed output from the freq()
-  # call itself via capture.output.
-  capture.output(df <- freq(x))
+  # Generate the styled return (spicy_freq_table carrying the
+  # print-method metadata); assignment is silent since freq() returns
+  # visibly and no longer prints itself.
+  df <- freq(x)
 
   # Test invisibility of print method
   expect_invisible(print.spicy_freq_table(df))
@@ -41,9 +41,10 @@ test_that("print.spicy_freq_table handles weighted tables", {
     poids = c(1.2, 0.8, 1.5, 1.0, 0.7)
   )
 
-  # Weighted frequency table – keep the styled invisible return so that
-  # the metadata attributes needed by print.spicy_freq_table are present.
-  capture.output(ftab <- freq(df, sexe, weights = poids))
+  # Weighted frequency table -- keep the styled return so that the
+  # metadata attributes needed by print.spicy_freq_table are present.
+  # rescale = TRUE is explicit since 0.13.0 (the default is FALSE).
+  ftab <- freq(df, sexe, weights = poids, rescale = TRUE)
 
   output <- capture.output(print.spicy_freq_table(ftab))
 
@@ -55,7 +56,7 @@ test_that("print.spicy_freq_table handles weighted tables", {
 
 test_that("print.spicy_freq_table shows generic weight label when weight_var is empty", {
   df <- data.frame(x = c("A", "B", "C"), w = c(2, 3, 5))
-  capture.output(ftab <- freq(df, x, weights = w))
+  ftab <- freq(df, x, weights = w)
   attr(ftab, "weight_var") <- NULL
   output <- capture.output(print.spicy_freq_table(ftab))
   expect_true(any(grepl("Weight: \\(applied\\)", output)))
@@ -65,7 +66,7 @@ test_that("print.spicy_freq_table handles variables without labels or missing va
   # Vector without label and no missing values
   x <- factor(c("A", "B", "B", "A", "C", "A"))
 
-  capture.output(df <- freq(x))
+  df <- freq(x)
   output <- capture.output(print.spicy_freq_table(df))
 
   # Expect no Label line, but expect Data/Class
@@ -80,7 +81,7 @@ test_that("print.spicy_freq_table tolerates pathological var_label values", {
   # previously trigger "missing value where TRUE/FALSE needed" via
   # nzchar(NA_character_) returning NA inside the surrounding `if`.
   df <- data.frame(x = c("A", "B", "B"))
-  capture.output(ftab <- freq(df, x))
+  ftab <- freq(df, x)
 
   attr(ftab, "var_label") <- NA_character_
   out <- capture.output(print.spicy_freq_table(ftab))

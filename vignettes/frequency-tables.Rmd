@@ -66,17 +66,18 @@ freq(sochealth, smoking, cum = TRUE)
 
 ### Weighted frequencies
 
-Supply a weight variable with `weights`. By default, `rescale = TRUE`
-adjusts the weighted total to match the unweighted sample size:
+Supply a weight variable with `weights`. By default
+(`rescale = FALSE`), the table shows the raw weighted counts:
 
-```{r freq-weighted}
+```{r freq-weighted-raw}
 freq(sochealth, education, weights = weight)
 ```
 
-Set `rescale = FALSE` to keep the raw weighted counts:
+Set `rescale = TRUE` to adjust the weighted total to match the
+unweighted sample size:
 
-```{r freq-weighted-raw}
-freq(sochealth, education, weights = weight, rescale = FALSE)
+```{r freq-weighted}
+freq(sochealth, education, weights = weight, rescale = TRUE)
 ```
 
 ### Labelled variables
@@ -176,11 +177,9 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 
 ### Weighted cross-tabulations
 
-Weights are supplied via `weights`, just like in `freq()`. The
-default differs, however: `cross_tab()` defaults to
-`rescale = FALSE` (raw weighted counts), whereas `freq()` defaults
-to `rescale = TRUE`. Without rescaling, the table shows raw
-weighted counts:
+Weights are supplied via `weights`, just like in `freq()`, and both
+functions share the same default: `rescale = FALSE` (raw weighted
+counts).
 
 ```{r cross-weighted-raw}
 cross_tab(sochealth, smoking, education, weights = weight)
@@ -213,8 +212,10 @@ cross_tab(sochealth, smoking, education,
 
 ## Setting global defaults
 
-You can set `cross_tab()` defaults with `options()` so you don't have
-to repeat arguments (these options are read by `cross_tab()` only):
+You can set tabulation defaults with `options()` so you don't have
+to repeat arguments. `spicy.rescale` is read by both `cross_tab()`
+and `freq()`; `spicy.percent` and `spicy.simulate_p` are read by
+`cross_tab()`:
 
 ```{r options, eval = FALSE}
 options(
