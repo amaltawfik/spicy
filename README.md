@@ -76,8 +76,11 @@ row-wise summaries.
   with explicit control over missing values.
 
 Works with `labelled`, `factor`, `ordered`, `Date`, `POSIXct`, and other
-common variable types. For a full introduction, see [Getting started
-with spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
+common variable types – and honors **declared missing values** (haven’s
+`na_values`/`na_range`, tagged NAs) across the descriptive functions,
+with disclosure notes and a `user_na` escape hatch. For a full
+introduction, see [Getting started with
+spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
 
 ## Supported models
 
@@ -226,6 +229,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #> 
 #> Chi-2(2) = 21.6, p <.001
 #> Cramer's V = 0.14
+#> Missing values removed: smoking (25).
 ```
 
 See [Frequency tables and
@@ -243,8 +247,8 @@ cramer_v(tbl)
 
 # Detailed result with CI and p-value
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.176     0.120     0.231  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>    0.176  --     0.120     0.231  <.001
 ```
 
 See [Cramer’s V, Phi, and association
@@ -337,7 +341,9 @@ table_continuous(
 #>  Variable                       │ 95% CI UL   n   
 #> ────────────────────────────────┼─────────────────
 #>  Body mass index                │   26.14    1188 
-#>  Satisfaction with health (1-5) │    3.62    1192
+#>  Satisfaction with health (1-5) │    3.62    1192 
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 ``` r
@@ -376,7 +382,9 @@ table_continuous(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Satisfaction with health (1-5) │ Lower secondary  <.001 
 #>                                 │ Upper secondary        
-#>                                 │ Tertiary
+#>                                 │ Tertiary               
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 ``` r

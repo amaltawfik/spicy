@@ -129,6 +129,11 @@ For a focused inspection, select only the variables you want to review:
 varlist(sochealth, smoking, education, income_group, tbl = TRUE)
 ```
 
+Declared missing values (haven's `na_values`/`na_range`, tagged NAs)
+count as missing here too: `N_valid`, `NAs`, and `N_distinct` all
+honor the declaration, consistently with the tabulation functions
+(see the "Declared missing values" section of `?freq`).
+
 This is often enough to confirm that labels, factor levels, and missing
 values look correct before moving on to tabulations.
 
