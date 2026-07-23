@@ -23,9 +23,10 @@ cramer_v(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 
 - conf_level:
 
-  A number between 0 and 1 giving the confidence level (default `0.95`).
-  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
-  interval.
+  A single number strictly between 0 and 1 giving the confidence level
+  (default `0.95`). Only used when `detail = TRUE`. Set to `NULL` to
+  omit the confidence interval. Any other value – including percentages
+  such as `95` – raises a classed error (`spicy_invalid_input`).
 
 - digits:
 
@@ -54,6 +55,11 @@ differs from the noncentral chi-squared or bootstrap CIs reported by
 ## References
 
 Agresti, A. (2002). *Categorical Data Analysis* (2nd ed.). Wiley.
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of tests for
+correlation in two-way contingency tables. *Journal of the American
+Statistical Association*, 72(358), 309-315.
+[doi:10.1080/01621459.1977.10480995](https://doi.org/10.1080/01621459.1977.10480995)
 
 Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 

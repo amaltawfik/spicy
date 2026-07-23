@@ -23,9 +23,10 @@ contingency_coef(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 
 - conf_level:
 
-  A number between 0 and 1 giving the confidence level (default `0.95`).
-  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
-  interval.
+  A single number strictly between 0 and 1 giving the confidence level
+  (default `0.95`). Only used when `detail = TRUE`. Set to `NULL` to
+  omit the confidence interval. Any other value – including percentages
+  such as `95` – raises a classed error (`spicy_invalid_input`).
 
 - digits:
 
@@ -47,6 +48,10 @@ The contingency coefficient is \\C = \sqrt{\chi^2 / (\chi^2 + n)}\\. It
 ranges from 0 (independence) to a maximum that depends on the table
 dimensions. No standard asymptotic standard error exists, so the
 confidence interval is not computed.
+
+## References
+
+Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 
 ## See also
 

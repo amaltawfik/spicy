@@ -23,9 +23,10 @@ kendall_tau_c(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 
 - conf_level:
 
-  A number between 0 and 1 giving the confidence level (default `0.95`).
-  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
-  interval.
+  A single number strictly between 0 and 1 giving the confidence level
+  (default `0.95`). Only used when `detail = TRUE`. Set to `NULL` to
+  omit the confidence interval. Any other value – including percentages
+  such as `95` – raises a classed error (`spicy_invalid_input`).
 
 - digits:
 
@@ -46,11 +47,26 @@ where \\m = \min(r, c)\\. It is designed for rectangular tables; the
 estimate is bounded by \\\[-1, 1\]\\ only when the table is square, and
 may fall outside that range otherwise. When the asymptotic standard
 error is zero (e.g. a perfect association), the Wald z-test is undefined
-and the p-value is `NA`, matching the other measures in the family.
+and the p-value is `NA`, matching the other measures in the family. When
+one variable is constant (all observations in a single row or column),
+there are no untied pairs and the statistic degenerates to a meaningless
+0: the function returns `NA` with a `spicy_undefined_stat` warning, like
+its siblings, matching the SPSS / PSPP behavior of reporting no value.
 Standard error formulas follow the DescTools implementations (Signorell
 et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
+
+## References
+
+Stuart, A. (1953). The estimation and comparison of strengths of
+association in contingency tables. *Biometrika*, 40(1-2), 105-110.
+[doi:10.2307/2333101](https://doi.org/10.2307/2333101)
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of tests for
+correlation in two-way contingency tables. *Journal of the American
+Statistical Association*, 72(358), 309-315.
+[doi:10.1080/01621459.1977.10480995](https://doi.org/10.1080/01621459.1977.10480995)
 
 ## See also
 

@@ -34,6 +34,21 @@
   unused factor level), instead of silently returning 0 – the same
   degenerate-table behavior as the rest of the association family.
 
+- [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md)
+  returns `NA` with a `spicy_undefined_stat` warning when one variable
+  is constant (all observations in a single row or column), instead of a
+  silent definite 0 with SE 0 and a zero-width confidence interval – the
+  same degenerate-table contract as the rest of the ordinal family, and
+  what SPSS / PSPP report (no value).
+
+- The association measures and
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  validate `conf_level`: anything other than a single number strictly
+  between 0 and 1 (or `NULL` to omit the confidence interval) raises a
+  classed error (`spicy_invalid_input`), instead of silently producing
+  `Inf` or `NaN` confidence bounds. `conf_level = 95` gets a hint
+  suggesting `conf_level = 0.95`.
+
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   replace the logical `styled` argument with `output`, the same
@@ -461,6 +476,26 @@ rendering an empty column.
 
 ### Bug fixes
 
+- The asymptotic standard error of
+  [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
+  mis-scaled one margin term of its gradient, so every SE, confidence
+  interval, and Wald p-value it reported was wrong – typically by under
+  1% on near-balanced tables, but by up to 12% on tables with skewed
+  margins (the CI could be off at the second displayed decimal). Every
+  CRAN release from 0.6.0 through 0.12.0 shipped the wrong formula;
+  point estimates were always correct. The corrected ASE matches SPSS /
+  PSPP `CROSSTABS` to 7 decimals and is pinned to PSPP 2.0 on six
+  tables. It deliberately diverges from `DescTools::KendallTauB()`,
+  which computes the same wrong SE. Also affects the tau-b rows of
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  and the default ordered-by-ordered association line of
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+- `somers_d(direction = "symmetric")` returns the correct 0 instead of a
+  silent `NA` when concordant and discordant pairs are exactly equal
+  (e.g. an independence-pattern table), matching SPSS / PSPP; the
+  association line requested from
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  no longer silently disappears on such tables.
 - [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   no longer swallows the classed warnings its measures raise on
   degenerate tables: each distinct warning (e.g. `spicy_undefined_stat`

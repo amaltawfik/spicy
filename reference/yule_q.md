@@ -23,9 +23,10 @@ yule_q(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 
 - conf_level:
 
-  A number between 0 and 1 giving the confidence level (default `0.95`).
-  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
-  interval.
+  A single number strictly between 0 and 1 giving the confidence level
+  (default `0.95`). Only used when `detail = TRUE`. Set to `NULL` to
+  omit the confidence interval. Any other value – including percentages
+  such as `95` – raises a classed error (`spicy_invalid_input`).
 
 - digits:
 
@@ -56,6 +57,13 @@ Standard error formulas follow the DescTools implementations (Signorell
 et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
+
+## References
+
+Yule, G. U. (1900). On the association of attributes in statistics.
+*Philosophical Transactions of the Royal Society of London, Series A*,
+194, 257-319.
+[doi:10.1098/rsta.1900.0019](https://doi.org/10.1098/rsta.1900.0019)
 
 ## See also
 

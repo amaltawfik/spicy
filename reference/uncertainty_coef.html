@@ -108,9 +108,11 @@ including confidence interval and p-value.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>A number between 0 and 1 giving the confidence
-level (default <code>0.95</code>). Only used when <code>detail = TRUE</code>. Set
-to <code>NULL</code> to omit the confidence interval.</p></dd>
+<dd><p>A single number strictly between 0 and 1 giving
+the confidence level (default <code>0.95</code>). Only used when
+<code>detail = TRUE</code>. Set to <code>NULL</code> to omit the confidence interval.
+Any other value – including percentages such as <code>95</code> – raises
+a classed error (<code>spicy_invalid_input</code>).</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -159,6 +161,12 @@ estimates on tables with empty cells; that correction is
 uncommon in the information-theory literature and is not used
 here. The asymptotic standard errors follow the DescTools delta
 method; see <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Theil, H. (1970). On the estimation of relationships involving
+qualitative variables. <em>American Journal of Sociology</em>, 76(1),
+103-154. <a href="https://doi.org/10.1086/224909" class="external-link">doi:10.1086/224909</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

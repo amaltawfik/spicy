@@ -23,9 +23,10 @@ kendall_tau_b(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 
 - conf_level:
 
-  A number between 0 and 1 giving the confidence level (default `0.95`).
-  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
-  interval.
+  A single number strictly between 0 and 1 giving the confidence level
+  (default `0.95`). Only used when `detail = TRUE`. Set to `NULL` to
+  omit the confidence interval. Any other value – including percentages
+  such as `95` – raises a classed error (`spicy_invalid_input`).
 
 - digits:
 
@@ -47,10 +48,24 @@ pairs tied on the row variable, and \\n_2\\ is the number tied on the
 column variable. Tau-b corrects for ties and is appropriate for square
 tables. When the asymptotic standard error is zero (e.g. a perfect
 association), the Wald z-test is undefined and the p-value is `NA`,
-matching the other measures in the family. Standard error formulas
-follow the DescTools implementations (Signorell et al., 2024); see
+matching the other measures in the family.
+
+The asymptotic standard error is the Brown and Benedetti (1977) ASE1, as
+printed by SPSS / PSPP `CROSSTABS`. It deliberately diverges from
+`DescTools::KendallTauB()`, whose implementation mis-scales one margin
+term of the gradient; see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
+
+## References
+
+Kendall, M. G. (1938). A new measure of rank correlation. *Biometrika*,
+30(1-2), 81-93. [doi:10.2307/2332226](https://doi.org/10.2307/2332226)
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of tests for
+correlation in two-way contingency tables. *Journal of the American
+Statistical Association*, 72(358), 309-315.
+[doi:10.1080/01621459.1977.10480995](https://doi.org/10.1080/01621459.1977.10480995)
 
 ## See also
 

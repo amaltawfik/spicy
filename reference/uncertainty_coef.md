@@ -34,9 +34,10 @@ uncertainty_coef(
 
 - conf_level:
 
-  A number between 0 and 1 giving the confidence level (default `0.95`).
-  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
-  interval.
+  A single number strictly between 0 and 1 giving the confidence level
+  (default `0.95`). Only used when `detail = TRUE`. Set to `NULL` to
+  omit the confidence interval. Any other value – including percentages
+  such as `95` – raises a classed error (`spicy_invalid_input`).
 
 - digits:
 
@@ -90,6 +91,12 @@ information-theory literature and is not used here. The asymptotic
 standard errors follow the DescTools delta method; see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
+
+## References
+
+Theil, H. (1970). On the estimation of relationships involving
+qualitative variables. *American Journal of Sociology*, 76(1), 103-154.
+[doi:10.1086/224909](https://doi.org/10.1086/224909)
 
 ## See also
 

@@ -93,9 +93,11 @@ including confidence interval and p-value.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>A number between 0 and 1 giving the confidence
-level (default <code>0.95</code>). Only used when <code>detail = TRUE</code>. Set
-to <code>NULL</code> to omit the confidence interval.</p></dd>
+<dd><p>A single number strictly between 0 and 1 giving
+the confidence level (default <code>0.95</code>). Only used when
+<code>detail = TRUE</code>. Set to <code>NULL</code> to omit the confidence interval.
+Any other value – including percentages such as <code>95</code> – raises
+a classed error (<code>spicy_invalid_input</code>).</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -120,6 +122,16 @@ association), the Wald z-test is undefined and the p-value is
 <code>NA</code>, matching the other measures in the family.
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Goodman, L. A., &amp; Kruskal, W. H. (1954). Measures of association
+for cross classifications. <em>Journal of the American Statistical
+Association</em>, 49(268), 732-764. <a href="https://doi.org/10.2307/2281536" class="external-link">doi:10.2307/2281536</a></p>
+<p>Brown, M. B., &amp; Benedetti, J. K. (1977). Sampling behavior of
+tests for correlation in two-way contingency tables. <em>Journal of
+the American Statistical Association</em>, 72(358), 309-315.
+<a href="https://doi.org/10.1080/01621459.1977.10480995" class="external-link">doi:10.1080/01621459.1977.10480995</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

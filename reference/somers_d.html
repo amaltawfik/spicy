@@ -106,9 +106,11 @@ including confidence interval and p-value.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>A number between 0 and 1 giving the confidence
-level (default <code>0.95</code>). Only used when <code>detail = TRUE</code>. Set
-to <code>NULL</code> to omit the confidence interval.</p></dd>
+<dd><p>A single number strictly between 0 and 1 giving
+the confidence level (default <code>0.95</code>). Only used when
+<code>detail = TRUE</code>. Set to <code>NULL</code> to omit the confidence interval.
+Any other value – including percentages such as <code>95</code> – raises
+a classed error (<code>spicy_invalid_input</code>).</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -132,8 +134,17 @@ symmetric version (<code>direction = "symmetric"</code>) is the
 SPSS / PSPP convention; this is <strong>not</strong> identical to
 Kendall's Tau-b (which is the <em>geometric</em> mean of the same
 two quantities), although the two often agree to two
-decimals. No analytic SE / CI is reported for the symmetric
-form (DescTools follows the same convention).</p>
+decimals. It is computed via the equivalent closed form
+\(2(C - D)\) divided by the sum of the two asymmetric
+denominators, so a table with exactly as many concordant as
+discordant pairs (e.g. an independence pattern) yields the
+well-defined value 0 – the harmonic-mean form is 0/0 there –
+as printed by SPSS / PSPP. The symmetric estimate
+is <code>NA</code> only when one of the asymmetric directions is itself
+undefined (with the same <code>spicy_undefined_stat</code> warning). No
+analytic SE / CI is reported for the symmetric form: its <code>se</code>
+is always <code>NA</code>, matching PSPP, which prints no ASE for it
+(DescTools offers no symmetric form at all).</p>
 <p>The default <code>direction = "row"</code> differs deliberately from
 <code><a href="lambda_gk.html">lambda_gk()</a></code> and <code><a href="uncertainty_coef.html">uncertainty_coef()</a></code> (which default to
 <code>"symmetric"</code>): Somers' D is intrinsically asymmetric, its
@@ -144,6 +155,16 @@ offers only the two asymmetric directions, defaulting to
 <p>Standard error formulas for the asymmetric directions follow
 the DescTools implementations (Signorell et al., 2024); see
 <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Somers, R. H. (1962). A new asymmetric measure of association
+for ordinal variables. <em>American Sociological Review</em>, 27(6),
+799-811. <a href="https://doi.org/10.2307/2090408" class="external-link">doi:10.2307/2090408</a></p>
+<p>Brown, M. B., &amp; Benedetti, J. K. (1977). Sampling behavior of
+tests for correlation in two-way contingency tables. <em>Journal of
+the American Statistical Association</em>, 72(358), 309-315.
+<a href="https://doi.org/10.1080/01621459.1977.10480995" class="external-link">doi:10.1080/01621459.1977.10480995</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

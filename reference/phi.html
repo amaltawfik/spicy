@@ -90,9 +90,11 @@ including confidence interval and p-value.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>A number between 0 and 1 giving the confidence
-level (default <code>0.95</code>). Only used when <code>detail = TRUE</code>. Set
-to <code>NULL</code> to omit the confidence interval.</p></dd>
+<dd><p>A single number strictly between 0 and 1 giving
+the confidence level (default <code>0.95</code>). Only used when
+<code>detail = TRUE</code>. Set to <code>NULL</code> to omit the confidence interval.
+Any other value – including percentages such as <code>95</code> – raises
+a classed error (<code>spicy_invalid_input</code>).</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -119,6 +121,10 @@ and SPSS conventions. To recover the signed direction of the
 (e.g. <code>cor(x, y)</code> after coding both variables 0/1).</p>
 <p>The confidence interval uses the Fisher z-transformation on
 \(\phi\); see <code><a href="cramer_v.html">cramer_v()</a></code> for the formula and full references.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Liebetrau, A. M. (1983). <em>Measures of Association</em>. Sage.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

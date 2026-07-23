@@ -35,9 +35,10 @@ somers_d(
 
 - conf_level:
 
-  A number between 0 and 1 giving the confidence level (default `0.95`).
-  Only used when `detail = TRUE`. Set to `NULL` to omit the confidence
-  interval.
+  A single number strictly between 0 and 1 giving the confidence level
+  (default `0.95`). Only used when `detail = TRUE`. Set to `NULL` to
+  omit the confidence interval. Any other value – including percentages
+  such as `95` – raises a classed error (`spicy_invalid_input`).
 
 - digits:
 
@@ -59,8 +60,16 @@ independent variable. The symmetric version (`direction = "symmetric"`)
 is the *harmonic* mean of the two asymmetric values, matching the SPSS /
 PSPP convention; this is **not** identical to Kendall's Tau-b (which is
 the *geometric* mean of the same two quantities), although the two often
-agree to two decimals. No analytic SE / CI is reported for the symmetric
-form (DescTools follows the same convention).
+agree to two decimals. It is computed via the equivalent closed form
+\\2(C - D)\\ divided by the sum of the two asymmetric denominators, so a
+table with exactly as many concordant as discordant pairs (e.g. an
+independence pattern) yields the well-defined value 0 – the
+harmonic-mean form is 0/0 there – as printed by SPSS / PSPP. The
+symmetric estimate is `NA` only when one of the asymmetric directions is
+itself undefined (with the same `spicy_undefined_stat` warning). No
+analytic SE / CI is reported for the symmetric form: its `se` is always
+`NA`, matching PSPP, which prints no ASE for it (DescTools offers no
+symmetric form at all).
 
 The default `direction = "row"` differs deliberately from
 [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
@@ -75,6 +84,17 @@ Standard error formulas for the asymmetric directions follow the
 DescTools implementations (Signorell et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
+
+## References
+
+Somers, R. H. (1962). A new asymmetric measure of association for
+ordinal variables. *American Sociological Review*, 27(6), 799-811.
+[doi:10.2307/2090408](https://doi.org/10.2307/2090408)
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of tests for
+correlation in two-way contingency tables. *Journal of the American
+Statistical Association*, 72(358), 309-315.
+[doi:10.1080/01621459.1977.10480995](https://doi.org/10.1080/01621459.1977.10480995)
 
 ## See also
 
