@@ -13,7 +13,6 @@ build_ascii_table(
   padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
-  column_total_line = TRUE,
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
@@ -54,10 +53,10 @@ build_ascii_table(
   Logical. If `TRUE` (the default), a vertical separator is drawn after
   the first column (useful for separating categories from data).
 
-- row_total_line, column_total_line:
+- row_total_line:
 
-  Logical. Control horizontal rules before total rows or columns. Both
-  default to `TRUE`.
+  Logical. Controls the horizontal rule drawn before a total row.
+  Defaults to `TRUE`.
 
 - bottom_line:
 
@@ -167,11 +166,5 @@ df <- data.frame(
 )
 
 cat(build_ascii_table(df, padding = 0L))
-#>  Category │ Values  Freq.  Percent 
-#> ──────────┼────────────────────────
-#>  Valid    │ Yes        12     57.1 
-#>           │ No          8     38.1 
-#>  Missing  │ NA          1      4.8 
-#> ──────────┼────────────────────────
-#>  Total    │            21      100 
+#> Error in build_ascii_table(df, padding = 0L): could not find function "build_ascii_table"
 ```

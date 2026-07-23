@@ -6,13 +6,7 @@ measuring the strength of association between two categorical variables.
 ## Usage
 
 ``` r
-cramer_v(
-  x,
-  detail = FALSE,
-  conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
-)
+cramer_v(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 ```
 
 ## Arguments
@@ -37,10 +31,6 @@ cramer_v(
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 
@@ -96,9 +86,9 @@ tab <- table(sochealth$smoking, sochealth$education)
 cramer_v(tab)
 #> [1] 0.1356677
 cramer_v(tab, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.136     0.079     0.191  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>    0.136  --     0.079     0.191  <.001
 cramer_v(tab, detail = TRUE, conf_level = NULL)
-#> Estimate      p
-#>    0.136  <.001
+#> Estimate  SE      p
+#>    0.136  --  <.001
 ```

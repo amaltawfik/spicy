@@ -69,21 +69,18 @@
 <h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
 <div class="section level3">
 <h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
-<ul><li>
-<code>table_regression(exponentiate = TRUE)</code> now errors on links whose exponentiated coefficient is not a ratio (probit, cauchit, inverse, sqrt, …). Ratio links (logit, log, binomial / ordinal cloglog) are unchanged; identity links keep the warn-and-skip.</li>
-<li>
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code> defaults to <code>drop_na = FALSE</code>: missing values display as a <code>"(Missing)"</code> level instead of being silently removed. With <code>drop_na = TRUE</code>, a table note now reports what was removed.</li>
-<li>
-<code>standardized = "smart"</code> scales continuous inputs by 2 SD and leaves binary inputs (0/1 and factor dummies) unscaled, as Gelman (2008) defines it. The rule was applied inverted since 0.12.0, halving every continuous “smart” beta.</li>
-<li>
-<code>align = "auto"</code> is removed from all <code>table_*()</code> functions; use <code>"decimal"</code> (default), <code>"center"</code>, or <code>"right"</code>.</li>
-<li>
-<code>table_regression(show_fit_stats = character(0))</code> errors; use <code>FALSE</code> to suppress the block.</li>
-<li>Multi-model <code>show_columns = "all_b"</code> / <code>"all_ame"</code> auto-compact (CIs dropped); request atomic tokens to keep them.</li>
-<li>
-<code>tidy()</code> labels AME rows <code>estimate_type = "ame"</code> (was <code>"AME"</code>).</li>
-<li>The <code>show_fit_stats</code> information criteria are lowercase tokens like everything else: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code> (was <code>"AIC"</code> / <code>"AICc"</code> / <code>"BIC"</code>). Uppercase errors with the replacement; rendered row labels are unchanged.</li>
-<li>The SE footer reads <code>"classical (Fisher information)"</code> (was <code>"classical (MLE inverse Hessian)"</code>).</li>
+<ul><li><p><code><a href="../reference/build_ascii_table.html">build_ascii_table()</a></code> is no longer exported. It has always been documented as internal plumbing; use <code><a href="../reference/spicy_print_table.html">spicy_print_table()</a></code> for console rendering from code.</p></li>
+<li><p>The <code>column_total_line</code> argument of <code><a href="../reference/build_ascii_table.html">build_ascii_table()</a></code> and <code><a href="../reference/spicy_print_table.html">spicy_print_table()</a></code> is removed. It was accepted and documented but never had any effect.</p></li>
+<li><p>Association measures: <code>detail = TRUE</code> vectors now always include the standard error as an <code>se</code> element, and the internal-only <code>.include_se</code> argument is gone from every public signature.</p></li>
+<li><p><code>table_regression(exponentiate = TRUE)</code> now errors on links whose exponentiated coefficient is not a ratio (probit, cauchit, inverse, sqrt, …). Ratio links (logit, log, binomial / ordinal cloglog) are unchanged; identity links keep the warn-and-skip.</p></li>
+<li><p><code><a href="../reference/table_categorical.html">table_categorical()</a></code> defaults to <code>drop_na = FALSE</code>: missing values display as a <code>"(Missing)"</code> level instead of being silently removed. With <code>drop_na = TRUE</code>, a table note now reports what was removed.</p></li>
+<li><p><code>standardized = "smart"</code> scales continuous inputs by 2 SD and leaves binary inputs (0/1 and factor dummies) unscaled, as Gelman (2008) defines it. The rule was applied inverted since 0.12.0, halving every continuous “smart” beta.</p></li>
+<li><p><code>align = "auto"</code> is removed from all <code>table_*()</code> functions; use <code>"decimal"</code> (default), <code>"center"</code>, or <code>"right"</code>.</p></li>
+<li><p><code>table_regression(show_fit_stats = character(0))</code> errors; use <code>FALSE</code> to suppress the block.</p></li>
+<li><p>Multi-model <code>show_columns = "all_b"</code> / <code>"all_ame"</code> auto-compact (CIs dropped); request atomic tokens to keep them.</p></li>
+<li><p><code>tidy()</code> labels AME rows <code>estimate_type = "ame"</code> (was <code>"AME"</code>).</p></li>
+<li><p>The <code>show_fit_stats</code> information criteria are lowercase tokens like everything else: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code> (was <code>"AIC"</code> / <code>"AICc"</code> / <code>"BIC"</code>). Uppercase errors with the replacement; rendered row labels are unchanged.</p></li>
+<li><p>The SE footer reads <code>"classical (Fisher information)"</code> (was <code>"classical (MLE inverse Hessian)"</code>).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-supported-models-development-version">New supported models<a class="anchor" aria-label="anchor" href="#new-supported-models-development-version"></a></h3>

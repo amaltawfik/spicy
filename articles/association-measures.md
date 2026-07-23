@@ -80,15 +80,15 @@ cramer_v(tbl)
 #> [1] 0.1356677
 ```
 
-Pass `detail = TRUE` for the confidence interval and p-value. The
-p-value tests the null hypothesis of no association using the Pearson
-chi-squared test.
+Pass `detail = TRUE` for the standard error, confidence interval and
+p-value. The p-value tests the null hypothesis of no association using
+the Pearson chi-squared test.
 
 ``` r
 
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.136     0.079     0.191  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>    0.136  --     0.079     0.191  <.001
 ```
 
 ### Phi coefficient
@@ -105,8 +105,8 @@ association (Pearson chi-squared test).
 
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 phi(tbl_22, detail = TRUE)
-#> Estimate  CI lower  CI upper     p
-#>    0.006     0.000     0.063  .839
+#> Estimate  SE  CI lower  CI upper     p
+#>    0.006  --     0.000     0.063  .839
 ```
 
 ### Contingency coefficient
@@ -119,8 +119,8 @@ across tables of different sizes. The p-value tests H0: no association
 ``` r
 
 contingency_coef(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.134        --        --  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>    0.134  --        --        --  <.001
 ```
 
 ## Ordinal variables
@@ -138,8 +138,8 @@ strength when there are many ties.
 
 tbl_ord <- xtabs(~ self_rated_health + education, data = sochealth)
 gamma_gk(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.310     0.238     0.383  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.310  0.037     0.238     0.383  <.001
 ```
 
 A positive value means that higher values on one variable tend to occur
@@ -155,8 +155,8 @@ H0: Tau-b = 0 (Wald z-test).
 ``` r
 
 kendall_tau_b(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.205     0.155     0.254  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.205  0.025     0.155     0.254  <.001
 ```
 
 ### Kendall’s Tau-c
@@ -168,8 +168,8 @@ z-test).
 ``` r
 
 kendall_tau_c(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.200     0.151     0.248  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.200  0.025     0.151     0.248  <.001
 ```
 
 ### Somers’ D
@@ -187,8 +187,8 @@ construction.
 ``` r
 
 somers_d(tbl_ord, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.208     0.157     0.258  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.208  0.026     0.157     0.258  <.001
 ```
 
 ## Asymmetric (PRE) measures
@@ -208,8 +208,8 @@ category does not change across columns. The p-value tests H0: Lambda =
 
 tbl <- xtabs(~ self_rated_health + education, data = sochealth)
 lambda_gk(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper     p
-#>    0.012     0.000     0.039  .389
+#> Estimate     SE  CI lower  CI upper     p
+#>    0.012  0.014     0.000     0.039  .389
 ```
 
 ### Goodman-Kruskal Tau
@@ -221,8 +221,8 @@ the mode). The p-value tests H0: Tau = 0 (Wald z-test).
 ``` r
 
 goodman_kruskal_tau(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.017     0.008     0.026  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.017  0.005     0.008     0.026  <.001
 ```
 
 ### Uncertainty coefficient
@@ -234,8 +234,8 @@ p-value tests H0: U = 0 (Wald z-test).
 ``` r
 
 uncertainty_coef(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.028     0.016     0.040  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.028  0.006     0.016     0.040  <.001
 ```
 
 ## Yule’s Q
@@ -248,8 +248,8 @@ z-test).
 
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 yule_q(tbl_22, detail = TRUE)
-#> Estimate  CI lower  CI upper     p
-#>    0.015    -0.126     0.155  .839
+#> Estimate     SE  CI lower  CI upper     p
+#>    0.015  0.072    -0.126     0.155  .839
 ```
 
 ## Automatic selection in cross_tab()
@@ -320,8 +320,8 @@ confidence level defaults to 95% and can be changed with `conf_level`:
 ``` r
 
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
-#> Estimate  CI lower  CI upper      p
-#>    0.176     0.103     0.248  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>    0.176  --     0.103     0.248  <.001
 ```
 
 To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
@@ -329,8 +329,8 @@ To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
 ``` r
 
 cramer_v(tbl, detail = TRUE, conf_level = NULL)
-#> Estimate      p
-#>    0.176  <.001
+#> Estimate  SE      p
+#>    0.176  --  <.001
 ```
 
 ## Controlling decimal places
@@ -346,8 +346,8 @@ columns. The p-value follows APA-style formatting independent of
 ``` r
 
 cramer_v(tbl, detail = TRUE, digits = 4)
-#> Estimate  CI lower  CI upper      p
-#>   0.1762    0.1203    0.2309  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>   0.1762  --    0.1203    0.2309  <.001
 ```
 
 The same `digits` argument works for
@@ -381,6 +381,6 @@ without recalculating:
 
 res <- cramer_v(tbl, detail = TRUE)
 print(res, digits = 5)
-#> Estimate  CI lower  CI upper      p
-#>  0.17617   0.12031   0.23092  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>  0.17617  --   0.12031   0.23092  <.001
 ```

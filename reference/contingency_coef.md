@@ -6,13 +6,7 @@ two-way contingency table.
 ## Usage
 
 ``` r
-contingency_coef(
-  x,
-  detail = FALSE,
-  conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
-)
+contingency_coef(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 ```
 
 ## Arguments
@@ -37,10 +31,6 @@ contingency_coef(
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 

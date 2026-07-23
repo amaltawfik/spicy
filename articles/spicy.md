@@ -241,8 +241,8 @@ interval and p-value:
 ``` r
 
 cramer_v(tbl, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.136     0.079     0.191  <.001
+#> Estimate  SE  CI lower  CI upper      p
+#>    0.136  --     0.079     0.191  <.001
 ```
 
 ## Summary tables

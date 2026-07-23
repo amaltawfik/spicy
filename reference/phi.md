@@ -5,7 +5,7 @@
 ## Usage
 
 ``` r
-phi(x, detail = FALSE, conf_level = 0.95, digits = 3L, .include_se = FALSE)
+phi(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 ```
 
 ## Arguments
@@ -30,10 +30,6 @@ phi(x, detail = FALSE, conf_level = 0.95, digits = 3L, .include_se = FALSE)
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 
@@ -84,6 +80,6 @@ tab <- table(sochealth$smoking, sochealth$sex)
 phi(tab)
 #> [1] 0.0107495
 phi(tab, detail = TRUE)
-#> Estimate  CI lower  CI upper     p
-#>    0.011     0.000     0.068  .713
+#> Estimate  SE  CI lower  CI upper     p
+#>    0.011  --     0.000     0.068  .713
 ```

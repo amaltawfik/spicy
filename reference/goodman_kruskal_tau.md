@@ -11,8 +11,7 @@ goodman_kruskal_tau(
   direction = c("row", "column"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 )
 ```
 
@@ -43,10 +42,6 @@ goodman_kruskal_tau(
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 
@@ -99,6 +94,6 @@ tab <- table(sochealth$smoking, sochealth$education)
 goodman_kruskal_tau(tab)
 #> [1] 0.01840572
 goodman_kruskal_tau(tab, direction = "column", detail = TRUE)
-#> Estimate  CI lower  CI upper     p
-#>    0.008     0.001     0.014  .022
+#> Estimate     SE  CI lower  CI upper     p
+#>    0.008  0.003     0.001     0.014  .022
 ```

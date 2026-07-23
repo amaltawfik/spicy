@@ -4,29 +4,53 @@
 
 ### Breaking changes
 
+- [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
+  is no longer exported. It has always been documented as internal
+  plumbing; use
+  [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
+  for console rendering from code.
+
+- The `column_total_line` argument of
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
+  and
+  [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
+  is removed. It was accepted and documented but never had any effect.
+
+- Association measures: `detail = TRUE` vectors now always include the
+  standard error as an `se` element, and the internal-only `.include_se`
+  argument is gone from every public signature.
+
 - `table_regression(exponentiate = TRUE)` now errors on links whose
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, …). Ratio links (logit, log, binomial / ordinal cloglog) are
   unchanged; identity links keep the warn-and-skip.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   defaults to `drop_na = FALSE`: missing values display as a
   `"(Missing)"` level instead of being silently removed. With
   `drop_na = TRUE`, a table note now reports what was removed.
+
 - `standardized = "smart"` scales continuous inputs by 2 SD and leaves
   binary inputs (0/1 and factor dummies) unscaled, as Gelman (2008)
   defines it. The rule was applied inverted since 0.12.0, halving every
   continuous “smart” beta.
+
 - `align = "auto"` is removed from all `table_*()` functions; use
   `"decimal"` (default), `"center"`, or `"right"`.
+
 - `table_regression(show_fit_stats = character(0))` errors; use `FALSE`
   to suppress the block.
+
 - Multi-model `show_columns = "all_b"` / `"all_ame"` auto-compact (CIs
   dropped); request atomic tokens to keep them.
+
 - `tidy()` labels AME rows `estimate_type = "ame"` (was `"AME"`).
+
 - The `show_fit_stats` information criteria are lowercase tokens like
   everything else: `"aic"`, `"aicc"`, `"bic"` (was `"AIC"` / `"AICc"` /
   `"BIC"`). Uppercase errors with the replacement; rendered row labels
   are unchanged.
+
 - The SE footer reads `"classical (Fisher information)"` (was
   `"classical (MLE inverse Hessian)"`).
 

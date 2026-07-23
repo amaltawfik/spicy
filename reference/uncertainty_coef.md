@@ -11,8 +11,7 @@ uncertainty_coef(
   direction = c("symmetric", "row", "column"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 )
 ```
 
@@ -43,10 +42,6 @@ uncertainty_coef(
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 
@@ -107,6 +102,6 @@ tab <- table(sochealth$smoking, sochealth$education)
 uncertainty_coef(tab)
 #> [1] 0.01148762
 uncertainty_coef(tab, direction = "row", detail = TRUE)
-#> Estimate  CI lower  CI upper     p
-#>    0.018     0.003     0.032  .021
+#> Estimate     SE  CI lower  CI upper     p
+#>    0.018  0.008     0.003     0.032  .021
 ```

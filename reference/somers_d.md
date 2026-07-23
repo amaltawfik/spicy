@@ -11,8 +11,7 @@ somers_d(
   direction = c("row", "column", "symmetric"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 )
 ```
 
@@ -44,10 +43,6 @@ somers_d(
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 
@@ -97,6 +92,6 @@ tab <- table(sochealth$education, sochealth$self_rated_health)
 somers_d(tab, direction = "row")
 #> [1] 0.2015369
 somers_d(tab, direction = "column", detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.208     0.157     0.258  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.208  0.026     0.157     0.258  <.001
 ```

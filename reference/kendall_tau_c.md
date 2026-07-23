@@ -6,13 +6,7 @@ Tau-c) for a two-way contingency table of ordinal variables.
 ## Usage
 
 ``` r
-kendall_tau_c(
-  x,
-  detail = FALSE,
-  conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
-)
+kendall_tau_c(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 ```
 
 ## Arguments
@@ -37,10 +31,6 @@ kendall_tau_c(
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 

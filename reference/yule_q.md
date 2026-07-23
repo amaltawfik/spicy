@@ -6,7 +6,7 @@ contingency table.
 ## Usage
 
 ``` r
-yule_q(x, detail = FALSE, conf_level = 0.95, digits = 3L, .include_se = FALSE)
+yule_q(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 ```
 
 ## Arguments
@@ -31,10 +31,6 @@ yule_q(x, detail = FALSE, conf_level = 0.95, digits = 3L, .include_se = FALSE)
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 

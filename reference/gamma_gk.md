@@ -6,13 +6,7 @@ contingency table of ordinal variables.
 ## Usage
 
 ``` r
-gamma_gk(
-  x,
-  detail = FALSE,
-  conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
-)
+gamma_gk(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 ```
 
 ## Arguments
@@ -37,10 +31,6 @@ gamma_gk(
 
   Number of decimal places used when printing the result (default `3`).
   Only affects the `detail = TRUE` output.
-
-- .include_se:
-
-  Internal parameter; do not use.
 
 ## Value
 
@@ -86,6 +76,6 @@ tab <- table(sochealth$education, sochealth$self_rated_health)
 gamma_gk(tab)
 #> [1] 0.3104791
 gamma_gk(tab, detail = TRUE)
-#> Estimate  CI lower  CI upper      p
-#>    0.310     0.238     0.383  <.001
+#> Estimate     SE  CI lower  CI upper      p
+#>    0.310  0.037     0.238     0.383  <.001
 ```

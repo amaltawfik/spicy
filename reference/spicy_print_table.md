@@ -16,7 +16,6 @@ spicy_print_table(
   padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
-  column_total_line = TRUE,
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
@@ -61,12 +60,11 @@ spicy_print_table(
   Logical. If `TRUE` (the default), adds a vertical separator after the
   first column.
 
-- row_total_line, column_total_line, bottom_line:
+- row_total_line, bottom_line:
 
-  Logical flags controlling the presence of horizontal lines before
-  total rows/columns or at the bottom of the table. Both
-  `row_total_line` and `column_total_line` default to `TRUE`;
-  `bottom_line` defaults to `FALSE`.
+  Logical flags controlling the horizontal line before a total row and
+  the closing line at the bottom of the table. `row_total_line` defaults
+  to `TRUE`; `bottom_line` defaults to `FALSE`.
 
 - lines_color:
 
@@ -162,6 +160,11 @@ panel. Unicode line-drawing characters are used by default; coloured
 separators are drawn when the terminal supports ANSI colour
 ([`crayon::has_color()`](http://r-lib.github.io/crayon/reference/has_color.md))
 and fall back to monochrome otherwise.
+
+The layout arguments `spanners`, `display_labels`, `fit_stats_start`,
+`total_row_idx` and `group_sep_rows` are plumbing consumed by spicy's
+own print methods; they are documented for completeness and are rarely
+useful when calling this function directly.
 
 ## See also
 

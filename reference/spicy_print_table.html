@@ -91,7 +91,6 @@ wider than the console. Wraps the internal renderer
 <span>  padding <span class="op">=</span> <span class="fl">2L</span>,</span>
 <span>  first_column_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  row_total_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  column_total_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  bottom_line <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lines_color <span class="op">=</span> <span class="st">"darkgrey"</span>,</span>
 <span>  align_left_cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -137,11 +136,10 @@ the migration note from the pre-0.11.0 string enum.</p></dd>
 after the first column.</p></dd>
 
 
-<dt id="arg-row-total-line-column-total-line-bottom-line">row_total_line, column_total_line, bottom_line<a class="anchor" aria-label="anchor" href="#arg-row-total-line-column-total-line-bottom-line"></a></dt>
-<dd><p>Logical flags controlling
-the presence of horizontal lines before total rows/columns or at the bottom
-of the table.
-Both <code>row_total_line</code> and <code>column_total_line</code> default to <code>TRUE</code>;
+<dt id="arg-row-total-line-bottom-line">row_total_line, bottom_line<a class="anchor" aria-label="anchor" href="#arg-row-total-line-bottom-line"></a></dt>
+<dd><p>Logical flags controlling the
+horizontal line before a total row and the closing line at the
+bottom of the table. <code>row_total_line</code> defaults to <code>TRUE</code>;
 <code>bottom_line</code> defaults to <code>FALSE</code>.</p></dd>
 
 
@@ -229,6 +227,11 @@ on each panel. Unicode line-drawing characters are used by
 default; coloured separators are drawn when the terminal supports
 ANSI colour (<code><a href="http://r-lib.github.io/crayon/reference/has_color.html" class="external-link">crayon::has_color()</a></code>) and fall back to monochrome
 otherwise.</p>
+<p>The layout arguments <code>spanners</code>, <code>display_labels</code>,
+<code>fit_stats_start</code>, <code>total_row_idx</code> and <code>group_sep_rows</code> are
+plumbing consumed by spicy's own print methods; they are
+documented for completeness and are rarely useful when calling
+this function directly.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

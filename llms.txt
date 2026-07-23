@@ -743,8 +743,6 @@ labelled blocks).
 
 ## ASCII helpers
 
-- [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
-  : Build a formatted ASCII table
 - [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
   : Print a spicy-formatted ASCII table
 
