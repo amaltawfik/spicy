@@ -80,6 +80,13 @@ The ordinal family includes
 and
 [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md).
 
+Measures that are undefined on the given table appear as `NA` rows
+(printed as `--`). The classed warnings the individual functions raise
+(e.g. `spicy_undefined_stat`) are re-emitted once per distinct message
+after the table is assembled, so condition handlers and
+[`suppressWarnings()`](https://rdrr.io/r/base/warning.html) behave as
+they do for the individual functions.
+
 Standard error formulas follow the DescTools implementations (Signorell
 et al., 2024).
 

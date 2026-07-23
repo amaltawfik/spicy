@@ -45,8 +45,10 @@ Kendall's Tau-b is computed as \\\tau_b = (C - D) / \sqrt{(n_0 -
 n_1)(n_0 - n_2)}\\, where \\n_0 = n(n-1)/2\\, \\n_1\\ is the number of
 pairs tied on the row variable, and \\n_2\\ is the number tied on the
 column variable. Tau-b corrects for ties and is appropriate for square
-tables. Standard error formulas follow the DescTools implementations
-(Signorell et al., 2024); see
+tables. When the asymptotic standard error is zero (e.g. a perfect
+association), the Wald z-test is undefined and the p-value is `NA`,
+matching the other measures in the family. Standard error formulas
+follow the DescTools implementations (Signorell et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 

@@ -44,8 +44,11 @@ p-value tests H0: tau-c = 0 (Wald z-test).
 Stuart's Tau-c is computed as \\\tau_c = 2m(C - D) / (n^2(m - 1))\\,
 where \\m = \min(r, c)\\. It is designed for rectangular tables; the
 estimate is bounded by \\\[-1, 1\]\\ only when the table is square, and
-may fall outside that range otherwise. Standard error formulas follow
-the DescTools implementations (Signorell et al., 2024); see
+may fall outside that range otherwise. When the asymptotic standard
+error is zero (e.g. a perfect association), the Wald z-test is undefined
+and the p-value is `NA`, matching the other measures in the family.
+Standard error formulas follow the DescTools implementations (Signorell
+et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 

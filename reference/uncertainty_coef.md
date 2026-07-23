@@ -65,6 +65,21 @@ Let \\H_X\\ and \\H_Y\\ be the marginal entropies of the **row** and
 - `direction = "symmetric"`: \\U = 2 (H_X + H_Y - H\_{XY}) / (H_X +
   H_Y)\\.
 
+The default `direction = "symmetric"` follows the SPSS and DescTools
+convention: the symmetric coefficient is a standard, well-defined
+variant with its own asymptotic standard error.
+[`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
+deliberately differs (its default is `"row"`) because its symmetric form
+is a derived quantity without an analytic SE; see its documentation.
+
+When the marginal entropy in the denominator is zero (the predicted
+variable is constant, e.g. an unused factor level), the coefficient is
+the undefined form \\0/0\\: the function returns `NA` with a
+`spicy_undefined_stat` warning, like the other measures in the family.
+For `direction = "symmetric"` this happens only when both variables are
+constant; with a single constant variable the symmetric coefficient is a
+well-defined 0.
+
 The entropy terms use the standard mathematical convention \\0 \log 0 =
 0\\, matching SPSS / PSPP `CROSSTABS` and the definition in Cover &
 Thomas (2006). Note that `DescTools::UncertCoef()` applies an additional

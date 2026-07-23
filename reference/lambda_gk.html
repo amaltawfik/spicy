@@ -128,8 +128,14 @@ the independent variable is used to predict the dependent
 variable. It ranges from 0 (no reduction) to 1 (perfect
 prediction). Lambda can equal zero even when variables
 are associated if the modal category dominates in every
-column (or row).
-Standard error formulas follow the DescTools implementations
+column (or row).</p>
+<p>The default <code>direction = "symmetric"</code> follows the SPSS and
+DescTools convention: symmetric lambda is a standard,
+well-defined variant with its own asymptotic standard error.
+<code><a href="somers_d.html">somers_d()</a></code> deliberately differs (its default is <code>"row"</code>)
+because its symmetric form is a derived quantity without an
+analytic SE; see its documentation.</p>
+<p>Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
     </div>
     <div class="section level2">

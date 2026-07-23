@@ -135,6 +135,12 @@ restrict the output to a single family.</p>
 and (for 2x2 tables) <code><a href="phi.html">phi()</a></code> and <code><a href="yule_q.html">yule_q()</a></code>.</p>
 <p>The ordinal family includes <code><a href="gamma_gk.html">gamma_gk()</a></code>, <code><a href="kendall_tau_b.html">kendall_tau_b()</a></code>,
 <code><a href="kendall_tau_c.html">kendall_tau_c()</a></code>, and <code><a href="somers_d.html">somers_d()</a></code>.</p>
+<p>Measures that are undefined on the given table appear as <code>NA</code>
+rows (printed as <code>--</code>). The classed warnings the individual
+functions raise (e.g. <code>spicy_undefined_stat</code>) are re-emitted
+once per distinct message after the table is assembled, so
+condition handlers and <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings()</a></code> behave as they do
+for the individual functions.</p>
 <p>Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024).</p>
     </div>

@@ -96,7 +96,7 @@ table of ordinal variables.</p>
 <dd><p>Direction of prediction:
 <code>"row"</code> (default, column predicts row),
 <code>"column"</code> (row predicts column),
-or <code>"symmetric"</code> (average of both directions).</p></dd>
+or <code>"symmetric"</code> (harmonic mean of both directions).</p></dd>
 
 
 <dt id="arg-detail">detail<a class="anchor" aria-label="anchor" href="#arg-detail"></a></dt>
@@ -133,8 +133,15 @@ SPSS / PSPP convention; this is <strong>not</strong> identical to
 Kendall's Tau-b (which is the <em>geometric</em> mean of the same
 two quantities), although the two often agree to two
 decimals. No analytic SE / CI is reported for the symmetric
-form (DescTools follows the same convention).
-Standard error formulas for the asymmetric directions follow
+form (DescTools follows the same convention).</p>
+<p>The default <code>direction = "row"</code> differs deliberately from
+<code><a href="lambda_gk.html">lambda_gk()</a></code> and <code><a href="uncertainty_coef.html">uncertainty_coef()</a></code> (which default to
+<code>"symmetric"</code>): Somers' D is intrinsically asymmetric, its
+symmetric form is a derived convention without inference, and
+the reference implementation (<code>DescTools::SomersDelta()</code>)
+offers only the two asymmetric directions, defaulting to
+<code>"row"</code>.</p>
+<p>Standard error formulas for the asymmetric directions follow
 the DescTools implementations (Signorell et al., 2024); see
 <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
     </div>

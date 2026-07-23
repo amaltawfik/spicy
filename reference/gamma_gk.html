@@ -115,6 +115,9 @@ The p-value tests H0: gamma = 0 (Wald z-test).</p>
 \(C\) and \(D\) are the numbers of concordant and
 discordant pairs. It ignores tied pairs, making it appropriate
 for ordinal variables with many ties.
+When the asymptotic standard error is zero (e.g. a perfect
+association), the Wald z-test is undefined and the p-value is
+<code>NA</code>, matching the other measures in the family.
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see <code><a href="cramer_v.html">cramer_v()</a></code> for full references.</p>
     </div>

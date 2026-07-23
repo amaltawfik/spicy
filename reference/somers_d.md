@@ -24,8 +24,8 @@ somers_d(
 - direction:
 
   Direction of prediction: `"row"` (default, column predicts row),
-  `"column"` (row predicts column), or `"symmetric"` (average of both
-  directions).
+  `"column"` (row predicts column), or `"symmetric"` (harmonic mean of
+  both directions).
 
 - detail:
 
@@ -60,9 +60,19 @@ is the *harmonic* mean of the two asymmetric values, matching the SPSS /
 PSPP convention; this is **not** identical to Kendall's Tau-b (which is
 the *geometric* mean of the same two quantities), although the two often
 agree to two decimals. No analytic SE / CI is reported for the symmetric
-form (DescTools follows the same convention). Standard error formulas
-for the asymmetric directions follow the DescTools implementations
-(Signorell et al., 2024); see
+form (DescTools follows the same convention).
+
+The default `direction = "row"` differs deliberately from
+[`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md)
+and
+[`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)
+(which default to `"symmetric"`): Somers' D is intrinsically asymmetric,
+its symmetric form is a derived convention without inference, and the
+reference implementation (`DescTools::SomersDelta()`) offers only the
+two asymmetric directions, defaulting to `"row"`.
+
+Standard error formulas for the asymmetric directions follow the
+DescTools implementations (Signorell et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 

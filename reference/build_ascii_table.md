@@ -153,18 +153,3 @@ the same look as spicy's tables.
 
 [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
 for a user-facing wrapper that adds titles and notes.
-
-## Examples
-
-``` r
-# Internal usage example (for developers)
-df <- data.frame(
-  Category = c("Valid", "", "Missing", "Total"),
-  Values = c("Yes", "No", "NA", ""),
-  Freq. = c(12, 8, 1, 21),
-  Percent = c(57.1, 38.1, 4.8, 100.0)
-)
-
-cat(build_ascii_table(df, padding = 0L))
-#> Error in build_ascii_table(df, padding = 0L): could not find function "build_ascii_table"
-```

@@ -56,8 +56,17 @@ Lambda measures how much prediction error is reduced when the
 independent variable is used to predict the dependent variable. It
 ranges from 0 (no reduction) to 1 (perfect prediction). Lambda can equal
 zero even when variables are associated if the modal category dominates
-in every column (or row). Standard error formulas follow the DescTools
-implementations (Signorell et al., 2024); see
+in every column (or row).
+
+The default `direction = "symmetric"` follows the SPSS and DescTools
+convention: symmetric lambda is a standard, well-defined variant with
+its own asymptotic standard error.
+[`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md)
+deliberately differs (its default is `"row"`) because its symmetric form
+is a derived quantity without an analytic SE; see its documentation.
+
+Standard error formulas follow the DescTools implementations (Signorell
+et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 

@@ -44,8 +44,10 @@ p-value tests H0: gamma = 0 (Wald z-test).
 Gamma is computed as \\\gamma = (C - D) / (C + D)\\, where \\C\\ and
 \\D\\ are the numbers of concordant and discordant pairs. It ignores
 tied pairs, making it appropriate for ordinal variables with many ties.
-Standard error formulas follow the DescTools implementations (Signorell
-et al., 2024); see
+When the asymptotic standard error is zero (e.g. a perfect association),
+the Wald z-test is undefined and the p-value is `NA`, matching the other
+measures in the family. Standard error formulas follow the DescTools
+implementations (Signorell et al., 2024); see
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
 for full references.
 
