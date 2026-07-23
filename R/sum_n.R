@@ -3,8 +3,10 @@
 #' Computes row-wise sums across selected numeric columns of a
 #' `data.frame` or `matrix`. Missing values are handled per row via
 #' `min_valid` (an integer count or proportion of non-`NA` values
-#' required); rows that fail the rule return `NA`. Non-numeric
-#' columns are dropped silently (set `verbose = TRUE` to see which).
+#' required); rows that fail the rule return `NA`, and rows with no
+#' valid values at all return `NA` even when `min_valid = 0`.
+#' Non-numeric columns are dropped silently (set `verbose = TRUE` to
+#' see which).
 #' Designed to flow inside `dplyr::mutate()`: when called without
 #' an explicit `data` argument, the current data context is used.
 #'

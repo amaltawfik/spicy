@@ -22,11 +22,14 @@ count_n(
 automatically.}
 
 \item{select}{Columns to include. Defaults to \code{tidyselect::everything()}.
-Uses tidyselect helpers like \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc.
+Uses tidyselect helpers like \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc.; a
+character vector of names is validated with \code{\link[tidyselect:all_of]{tidyselect::all_of()}},
+so unknown names raise an error (as in \code{\link[=mean_n]{mean_n()}} and \code{\link[=sum_n]{sum_n()}}).
 If \code{regex = TRUE}, \code{select} is treated as a regex string.}
 
-\item{exclude}{Character vector of column names to exclude after selection.
-Defaults to \code{NULL} (no exclusion).}
+\item{exclude}{Columns to exclude after selection (names or positions,
+as accepted by \code{\link[tidyselect:any_of]{tidyselect::any_of()}}). Defaults to \code{NULL}
+(no exclusion).}
 
 \item{count}{Value(s) to count. Defaults to \code{NULL}. Ignored if \code{special} is used.
 Multiple values are allowed (e.g., \code{count = c(1, 2, 3)} or \code{count = c("yes", "no")}).
@@ -36,6 +39,8 @@ If \code{allow_coercion = FALSE}, matching is type-safe using \code{identical()}
 
 \item{special}{Character vector of special values to count: \code{"NA"}, \code{"NaN"}, \code{"Inf"}, \code{"-Inf"}, or \code{"all"}.
 Defaults to \code{NULL}.
+Every entry is validated, including alongside \code{"all"}: any other
+value raises an error.
 \code{"NA"} uses \code{is.na()}, and therefore includes both \code{NA} and \code{NaN} values.
 \code{"NaN"} uses \code{is.nan()} to match only actual NaN values.}
 
@@ -53,7 +58,11 @@ If \code{TRUE}, prints processing messages.}
 }
 \value{
 A numeric vector of row-wise counts (unnamed), of length
-\code{nrow(data)}.
+\code{nrow(data)}. Missing values never match a regular \code{count} value,
+so an all-\code{NA} row counts \code{0} unless \code{special} targets missing
+values. If the selection resolves to zero usable columns, a
+classed warning (\code{spicy_no_selection}) is emitted and \code{NA} is
+returned for all rows, as in \code{\link[=mean_n]{mean_n()}} and \code{\link[=sum_n]{sum_n()}}.
 }
 \description{
 Counts, for each row of a \code{data.frame} or \code{matrix}, how many

@@ -38,6 +38,13 @@
   are unchanged.
 * The SE footer reads `"classical (Fisher information)"` (was
   `"classical (MLE inverse Hessian)"`).
+* `count_n()` now warns (class `spicy_no_selection`) and returns `NA`
+  for all rows when the selection resolves to zero usable columns,
+  matching `mean_n()` and `sum_n()` (it silently returned all zeros).
+  A valid selection where the value is simply absent still counts `0`.
+* `mean_n()` and `sum_n()` with `min_valid = 0` now return `NA` for
+  rows with no valid values; `mean_n()` returned `NaN` and `sum_n()`
+  a silent `0` (the raw `rowMeans()` / `rowSums()` identities).
 
 ## New supported models
 
@@ -189,6 +196,17 @@ rendering an empty column.
   and reference levels, joint tests of a factor, ordinal predictors
   (scores vs dummies), successive-difference contrasts, and why
   continuous predictors should not be categorized.
+
+## Row-wise summaries
+
+* `count_n()` resolves `select` and `exclude` through the same
+  tidyselect path as `mean_n()` and `sum_n()`: unknown names in a
+  character `select` raise a classed error (instead of a base
+  subscript error), and `exclude` accepts positions as well as names.
+* `count_n()` validates every `special` entry before expanding
+  `"all"`, so a typo supplied alongside `"all"` (e.g.
+  `special = c("all", "banana")`) errors instead of being silently
+  discarded.
 
 ## Minor improvements
 

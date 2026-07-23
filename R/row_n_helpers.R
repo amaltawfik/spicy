@@ -1,14 +1,15 @@
-# Internal helpers shared by `mean_n()` and `sum_n()`. The two
-# user-facing functions had ~95 % identical bodies in spicy < 0.11.0
-# (only `rowMeans` vs. `rowSums` and the function-name labels
-# differed); centralising the shared logic here gives a single
-# source of truth for column resolution, validation and the
-# `min_valid` masking rule.
+# Internal helpers shared by the row-wise family (`mean_n()`,
+# `sum_n()`, `count_n()`). The two summary functions had ~95 %
+# identical bodies in spicy < 0.11.0 (only `rowMeans` vs. `rowSums`
+# and the function-name labels differed); centralising the shared
+# logic here gives a single source of truth for column resolution,
+# validation and the `min_valid` masking rule. `count_n()` shares
+# only the column resolution (`.resolve_row_n_data()`, with
+# `numeric_only = FALSE`).
 #
 # Naming convention: leading `.` for "internal", consistent with
 # `R/assoc.R` (`.validate_table`, `.assoc_result`, ...) and
 # `R/copy_clipboard.R` patterns.
-
 
 # Validate `min_valid` and turn it into an integer count of valid
 # columns required per row. Rules:
@@ -86,7 +87,10 @@
 
 
 # Resolve the column subset from `select` / `exclude` / `regex` and
-# return the data restricted to numeric columns only.
+# return the data restricted to numeric columns only (skip the
+# numeric filter with `numeric_only = FALSE`: `count_n()` compares
+# values of any column type, but must share the same select /
+# exclude / regex contract as its siblings).
 #
 # This factors out the regex / tidyselect / character branches that
 # `mean_n()` and `sum_n()` shared verbatim. The verbose message about
@@ -99,7 +103,8 @@
   exclude,
   regex,
   verbose,
-  fn_label
+  fn_label,
+  numeric_only = TRUE
 ) {
   if (regex) {
     select <- if (select_was_missing) ".*" else rlang::eval_tidy(select_quo)
@@ -125,17 +130,19 @@
 
   data <- dplyr::select(data, -tidyselect::any_of(exclude))
 
-  all_cols <- names(data)
-  data <- dplyr::select(data, tidyselect::where(is.numeric))
-  numeric_cols <- names(data)
+  if (numeric_only) {
+    all_cols <- names(data)
+    data <- dplyr::select(data, tidyselect::where(is.numeric))
+    numeric_cols <- names(data)
 
-  ignored <- setdiff(all_cols, numeric_cols)
-  if (verbose && length(ignored) > 0L) {
-    message(
-      fn_label,
-      "(): Ignored non-numeric columns: ",
-      paste(ignored, collapse = ", ")
-    )
+    ignored <- setdiff(all_cols, numeric_cols)
+    if (verbose && length(ignored) > 0L) {
+      message(
+        fn_label,
+        "(): Ignored non-numeric columns: ",
+        paste(ignored, collapse = ", ")
+      )
+    }
   }
 
   data
@@ -191,8 +198,11 @@
   min_valid <- .validate_min_valid(min_valid, ncol(data_mat))
 
   result <- fn(data_mat, na.rm = TRUE)
-  valid_rows <- rowSums(!is.na(data_mat)) >= min_valid
-  result[!valid_rows] <- NA_real_
+  n_valid <- rowSums(!is.na(data_mat))
+  # Rows with zero valid values are NA regardless of `min_valid`: at
+  # min_valid = 0 the raw rowMeans / rowSums identities (NaN / 0)
+  # must not leak through as plausible-looking results.
+  result[n_valid < min_valid | n_valid == 0L] <- NA_real_
 
   if (!is.null(digits)) {
     result <- round(result, digits)

@@ -12,10 +12,13 @@
 #'   `dplyr::mutate()`, where the current data context is used
 #'   automatically.
 #' @param select Columns to include. Defaults to `tidyselect::everything()`.
-#'   Uses tidyselect helpers like [tidyselect::starts_with()], etc.
+#'   Uses tidyselect helpers like [tidyselect::starts_with()], etc.; a
+#'   character vector of names is validated with [tidyselect::all_of()],
+#'   so unknown names raise an error (as in [mean_n()] and [sum_n()]).
 #'   If `regex = TRUE`, `select` is treated as a regex string.
-#' @param exclude Character vector of column names to exclude after selection.
-#'   Defaults to `NULL` (no exclusion).
+#' @param exclude Columns to exclude after selection (names or positions,
+#'   as accepted by [tidyselect::any_of()]). Defaults to `NULL`
+#'   (no exclusion).
 #' @param count Value(s) to count. Defaults to `NULL`. Ignored if `special` is used.
 #'   Multiple values are allowed (e.g., `count = c(1, 2, 3)` or `count = c("yes", "no")`).
 #'   R automatically coerces all values in `count` to a common type (e.g., `c(2, "2")` becomes `c("2", "2")`),
@@ -23,6 +26,8 @@
 #'   If `allow_coercion = FALSE`, matching is type-safe using `identical()`, and the type of `count` must match that of the values in the data.
 #' @param special Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`, `"-Inf"`, or `"all"`.
 #'   Defaults to `NULL`.
+#'   Every entry is validated, including alongside `"all"`: any other
+#'   value raises an error.
 #'   `"NA"` uses `is.na()`, and therefore includes both `NA` and `NaN` values.
 #'   `"NaN"` uses `is.nan()` to match only actual NaN values.
 #' @param allow_coercion Logical. If `TRUE` (the default), values are compared after coercion.
@@ -35,7 +40,11 @@
 #'   If `TRUE`, prints processing messages.
 #'
 #' @return A numeric vector of row-wise counts (unnamed), of length
-#'   `nrow(data)`.
+#'   `nrow(data)`. Missing values never match a regular `count` value,
+#'   so an all-`NA` row counts `0` unless `special` targets missing
+#'   values. If the selection resolves to zero usable columns, a
+#'   classed warning (`spicy_no_selection`) is emitted and `NA` is
+#'   returned for all rows, as in [mean_n()] and [sum_n()].
 #'
 #' @details
 #' # Strict matching (`allow_coercion = FALSE`)
@@ -141,43 +150,32 @@ count_n <- function(
   regex = FALSE,
   verbose = FALSE
 ) {
+  select_quo <- rlang::enquo(select)
+  select_was_missing <- missing(select)
+
   if (is.null(data)) {
     data <- dplyr::pick(tidyselect::everything())
   }
 
   data <- as.data.frame(data)
 
-  col_names <- if (regex) {
-    if (missing(select)) {
-      select <- ".*"
-    }
-    if (!is.character(select) || length(select) != 1L || is.na(select)) {
-      spicy_abort(
-        "When `regex = TRUE`, `select` must be a single character pattern.",
-        class = "spicy_invalid_input"
-      )
-    }
-    grep(select, names(data), value = TRUE)
-  } else {
-    sel_quo <- rlang::enquo(select)
-    sel_val <- tryCatch(
-      rlang::eval_tidy(sel_quo, env = rlang::quo_get_env(sel_quo)),
-      error = function(e) NULL
-    )
-    if (is.character(sel_val)) {
-      sel_val
-    } else {
-      names(tidyselect::eval_select(sel_quo, data))
-    }
-  }
-
-  if (!is.null(exclude)) {
-    col_names <- setdiff(col_names, exclude)
-  }
+  # Shared resolver keeps the select / exclude / regex contract
+  # identical across the row-wise family (character selections are
+  # validated via all_of(), `exclude` accepts names or positions);
+  # numeric_only = FALSE because counting works on any column type.
+  data <- .resolve_row_n_data(
+    data = data,
+    select_quo = select_quo,
+    select_was_missing = select_was_missing,
+    exclude = exclude,
+    regex = regex,
+    verbose = verbose,
+    fn_label = "count_n",
+    numeric_only = FALSE
+  )
 
   base_count_n(
     data = data,
-    select = col_names,
     count = count,
     special = special,
     allow_coercion = allow_coercion,
@@ -213,14 +211,33 @@ base_count_n <- function(
     has_na <- vapply(count, is.na, logical(1))
     if (any(has_na)) {
       spicy_warn(
-        "NA values in `count` are ignored. Use `special = \"NA\"` to count missing values.", class = "spicy_ignored_arg")
+        "NA values in `count` are ignored. Use `special = \"NA\"` to count missing values.",
+        class = "spicy_ignored_arg"
+      )
       count <- count[!has_na]
     }
   }
 
   if (!is.null(special) && !is.null(count)) {
     spicy_warn(
-      "Both `special` and `count` supplied; `count` is ignored.", class = "spicy_ignored_arg")
+      "Both `special` and `count` supplied; `count` is ignored.",
+      class = "spicy_ignored_arg"
+    )
+  }
+
+  if (!is.null(special)) {
+    allowed <- c("NA", "NaN", "Inf", "-Inf")
+    # Validate every entry before expanding "all": expansion first
+    # would silently discard invalid values supplied alongside it.
+    if (!all(special %in% c(allowed, "all"))) {
+      spicy_abort(
+        "Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.",
+        class = "spicy_invalid_input"
+      )
+    }
+    if ("all" %in% special) {
+      special <- allowed
+    }
   }
 
   data <- data[, select, drop = FALSE]
@@ -234,22 +251,15 @@ base_count_n <- function(
 
   n_rows <- nrow(data)
 
+  if (ncol(data) == 0L) {
+    spicy_warn(
+      "count_n(): No usable columns selected; returning NA for all rows.",
+      class = "spicy_no_selection"
+    )
+    return(rep(NA_real_, n_rows))
+  }
+
   if (!is.null(special)) {
-    allowed <- c("NA", "NaN", "Inf", "-Inf")
-    if ("all" %in% special) {
-      special <- allowed
-    }
-    if (!all(special %in% allowed)) {
-      spicy_abort(
-        "Invalid `special`. Use 'NA', 'NaN', 'Inf', '-Inf', or 'all'.",
-        class = "spicy_invalid_input"
-      )
-    }
-
-    if (ncol(data) == 0) {
-      return(rep(0L, n_rows))
-    }
-
     checkers <- list(
       "NA" = is.na,
       "NaN" = function(x) {
@@ -320,7 +330,14 @@ base_count_n <- function(
   }
 
   if (length(results) == 0) {
-    return(rep(0L, nrow(data)))
+    spicy_warn(
+      paste0(
+        "count_n(): No selected column could be compared with `count`; ",
+        "returning NA for all rows."
+      ),
+      class = "spicy_no_selection"
+    )
+    return(rep(NA_real_, n_rows))
   }
 
   result <- rowSums(as.data.frame(results), na.rm = TRUE)

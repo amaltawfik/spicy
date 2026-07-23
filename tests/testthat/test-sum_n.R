@@ -137,6 +137,13 @@ test_that("sum_n() rejects non-integer / out-of-bounds `min_valid` (0.11.0)", {
   expect_silent(sum_n(df, min_valid = 2L))
 })
 
+test_that("sum_n masks all-NA rows to NA even with min_valid = 0 (0.13.0)", {
+  df <- tibble::tibble(a = c(1, NA, 3), b = c(2, NA, NA))
+  res <- sum_n(df, min_valid = 0)
+  # the raw rowSums identity (0) must not leak through
+  expect_equal(res, c(3, NA, 3))
+})
+
 test_that("sum_n() rejects non-integer `digits` (0.11.0)", {
   df <- tibble::tibble(a = c(1, 2), b = c(3, 4))
   expect_error(sum_n(df, digits = 1.5), "non-negative integer")

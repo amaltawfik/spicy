@@ -155,6 +155,14 @@ test_that("mean_n() rejects non-integer / out-of-bounds `min_valid` (0.11.0)", {
   expect_silent(mean_n(df, min_valid = 3L))
 })
 
+test_that("mean_n masks all-NA rows to NA even with min_valid = 0 (0.13.0)", {
+  df <- tibble::tibble(a = c(1, NA, 3), b = c(2, NA, NA))
+  res <- mean_n(df, min_valid = 0)
+  expect_equal(res, c(1.5, NA, 3))
+  # the raw rowMeans identity (NaN) must not leak through
+  expect_false(any(is.nan(res)))
+})
+
 test_that("mean_n() rejects non-integer `digits` (matches cross_tab / freq 0.11.0)", {
   df <- tibble::tibble(a = c(1, 2), b = c(3, 4))
   expect_error(mean_n(df, digits = 1.5), "non-negative integer")

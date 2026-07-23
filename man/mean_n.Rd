@@ -36,7 +36,12 @@ numeric columns.
 }
 
 Non-integer values \verb{>= 1} (e.g. \code{1.5}) and counts greater than
-\code{ncol(x)} raise an actionable error.}
+\code{ncol(x)} raise an actionable error.
+
+Rows with zero valid values always return \code{NA}, even when
+\code{min_valid = 0}: an empty row-wise summary is undefined, so the
+raw \code{rowMeans()} / \code{rowSums()} identities (\code{NaN} / \code{0}) are never
+returned.}
 
 \item{digits}{Optional non-negative integer giving the number of
 decimal places to round the result to. Defaults to \code{NULL} (no
@@ -55,8 +60,10 @@ A numeric vector of row-wise means.
 Computes row-wise means across selected numeric columns of a
 \code{data.frame} or \code{matrix}. Missing values are handled per row via
 \code{min_valid} (an integer count or proportion of non-\code{NA} values
-required); rows that fail the rule return \code{NA}. Non-numeric
-columns are dropped silently (set \code{verbose = TRUE} to see which).
+required); rows that fail the rule return \code{NA}, and rows with no
+valid values at all return \code{NA} even when \code{min_valid = 0}.
+Non-numeric columns are dropped silently (set \code{verbose = TRUE} to
+see which).
 Designed to flow inside \code{dplyr::mutate()}: when called without
 an explicit \code{data} argument, the current data context is used.
 }

@@ -131,6 +131,26 @@ test_that("count_n handles selection and exclusion", {
   )
 })
 
+test_that("count_n select/exclude semantics match mean_n (shared resolver)", {
+  df <- tibble::tibble(a = c(1, 2), b = c(1, 3), c = c("x", "y"))
+
+  # unknown names in a character `select` raise a classed error, not a
+  # base subscript error
+  expect_error(
+    count_n(df, count = 1, select = c("a", "nope")),
+    class = "rlang_error"
+  )
+  expect_error(mean_n(df, select = c("a", "nope")), class = "rlang_error")
+
+  # a character `select` from a variable works as in mean_n
+  items <- c("a", "b")
+  expect_equal(count_n(df, count = 1, select = items), c(2, 0))
+
+  # numeric `exclude` drops by position, as in mean_n
+  expect_equal(count_n(df, count = 1, exclude = 1), c(1, 0))
+  expect_equal(mean_n(df, select = c(a, b), exclude = 1), c(1, 3))
+})
+
 test_that("count_n works with regex selection", {
   df <- tibble::tibble(a_1 = "a", a_2 = "b", b_1 = "b")
   expect_equal(count_n(df, count = "b", select = "^a_", regex = TRUE), 1)
@@ -177,26 +197,39 @@ test_that("count_n verbose reports list columns", {
   )
 })
 
-test_that("count_n returns 0 for empty or incompatible selection", {
+test_that("count_n returns 0 when columns are valid but the value is absent", {
   df <- tibble::tibble(x = 1:3, y = letters[1:3])
   expect_equal(count_n(df, count = "z", select = "x"), c(0, 0, 0))
-  expect_equal(
-    count_n(df, count = "z", select = starts_with("not_here")),
-    c(0, 0, 0)
-  )
 })
 
-test_that("count_n special branch returns nrow zeros when no usable columns remain", {
+test_that("count_n warns spicy_no_selection and returns NA on empty selection", {
+  df <- tibble::tibble(x = 1:3, y = letters[1:3])
+  expect_warning(
+    res <- count_n(df, count = "z", select = starts_with("not_here")),
+    class = "spicy_no_selection"
+  )
+  expect_identical(res, rep(NA_real_, 3))
+})
+
+test_that("count_n special branch warns spicy_no_selection when no usable columns remain", {
   df <- tibble::tibble(lst = list(1, 2, 3))
-  expect_equal(count_n(df, special = "NA"), c(0, 0, 0))
-  expect_equal(count_n(df, special = "all"), c(0, 0, 0))
-  expect_equal(count_n(df, special = c("NaN", "Inf")), c(0, 0, 0))
+  expect_warning(
+    res1 <- count_n(df, special = "NA"),
+    class = "spicy_no_selection"
+  )
+  expect_identical(res1, rep(NA_real_, 3))
+  expect_warning(
+    res2 <- count_n(df, special = "all"),
+    class = "spicy_no_selection"
+  )
+  expect_identical(res2, rep(NA_real_, 3))
 
   df2 <- tibble::tibble(x = 1:3, y = letters[1:3])
-  expect_equal(
-    count_n(df2, special = "NA", select = starts_with("not_here")),
-    c(0, 0, 0)
+  expect_warning(
+    res3 <- count_n(df2, special = "NA", select = starts_with("not_here")),
+    class = "spicy_no_selection"
   )
+  expect_identical(res3, rep(NA_real_, 3))
 })
 
 test_that("count_n throws error if neither count nor special is specified", {
@@ -219,6 +252,21 @@ test_that("count_n throws error when count = NA", {
 test_that("count_n throws error for invalid special values", {
   df <- tibble::tibble(x = c(1, 2, 3))
   expect_error(count_n(df, special = "bogus"), "Invalid `special`")
+})
+
+test_that("count_n validates special entries before expanding 'all'", {
+  df <- tibble::tibble(x = c(1, NA, 3))
+  expect_error(
+    count_n(df, special = c("all", "banana")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    count_n(df, special = c("NA", "all", "bogus")),
+    class = "spicy_invalid_input"
+  )
+  # valid combinations with "all" keep working
+  expect_equal(count_n(df, special = "all"), c(0, 1, 0))
+  expect_equal(count_n(df, special = c("NA", "all")), c(0, 1, 0))
 })
 
 test_that("count_n warns and strips NA from count vector", {
