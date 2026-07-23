@@ -1012,9 +1012,21 @@ cross_tab <- function(
       na_parts <- c(na_parts, sprintf("%s (%d)", y_name, n_na_y))
     }
     if (length(na_parts) > 0L) {
+      # With NAs on BOTH variables the per-variable counts overlap
+      # (a row missing both is counted in each), so a reader summing
+      # them overstates the loss. Disclose the deduplicated row count
+      # once -- the SPSS Case Processing Summary convention. With a
+      # single affected variable, values = rows and the suffix would
+      # be noise.
+      na_suffix <- ""
+      if (n_na_x > 0L && n_na_y > 0L) {
+        n_rows_na <- sum(is.na(x_val) | is.na(y_val))
+        na_suffix <- sprintf("; %d rows in total", n_rows_na)
+      }
       na_text <- paste0(
         "Missing values removed: ",
         paste(na_parts, collapse = ", "),
+        na_suffix,
         "."
       )
       if (is.null(note) || note == "") {

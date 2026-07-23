@@ -929,7 +929,13 @@ test_that("cross_tab discloses NA rows dropped from x and y", {
   )
   res <- cross_tab(df, x, y)
   note <- attr(res, "note")
-  expect_match(note, "Missing values removed: x (2), y (1).", fixed = TRUE)
+  # Rows 3 and 6 carry NAs (row 6 on both variables): the per-variable
+  # counts overlap, so the note discloses the deduplicated row total.
+  expect_match(
+    note,
+    "Missing values removed: x (2), y (1); 2 rows in total.",
+    fixed = TRUE
+  )
   # The disclosure does not change the tabulation itself: counts still
   # cover the complete cases only.
   expect_equal(attr(res, "n_total"), sum(stats::complete.cases(df)))
