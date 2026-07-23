@@ -297,7 +297,7 @@ test_that("flextable output adds the note footer and HTML note div", {
   expect_match(html, "Adjusted for age, sex (proportional).", fixed = TRUE)
 })
 
-test_that("flextable output without a note keeps the plain class", {
+test_that("flextable output without a note is wrapped, note attr absent", {
   skip_if_not_installed("flextable")
   ft <- table_continuous_lm(
     sochealth,
@@ -305,7 +305,10 @@ test_that("flextable output without a note keeps the plain class", {
     by = physical_activity,
     output = "flextable"
   )
-  expect_false(inherits(ft, "spicy_flextable"))
+  # Since the pandoc xmlns workaround the wrapper class is
+  # unconditional (knit_print must reach every flextable, note or
+  # not); only the spicy_note attribute is note-dependent.
+  expect_true(inherits(ft, "spicy_flextable"))
   expect_null(attr(ft, "spicy_note"))
   # No footer row was added.
   expect_identical(flextable::nrow_part(ft, part = "footer"), 0L)
