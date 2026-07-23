@@ -372,9 +372,11 @@ rendering an empty column.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   now discloses excluded missing values in the table note
-  (`Missing values removed: x (2), y (1)`; with `by`, also
-  `Rows with missing g removed: 2.`) instead of silently dropping the NA
-  rows from the tabulation.
+  (`Missing values removed: x (2), y (1); 2 rows in total.`; with `by`,
+  also `Rows with missing g removed: 2.`) instead of silently dropping
+  the NA rows from the tabulation. The deduplicated row total appears
+  when both variables lost values, so overlapping per-variable counts
+  cannot be misread as a sum.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   accepts logical weights, coerced to 1/0 like
