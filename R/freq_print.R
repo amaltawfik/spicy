@@ -41,7 +41,13 @@ print.spicy_freq_table <- function(x, ...) {
   valid_block <- df[!is_missing_row, , drop = FALSE]
   missing_block <- df[is_missing_row, , drop = FALSE]
 
-  show_valid_col <- nrow(missing_block) > 0
+  # Valid Percent (and Cum. Valid Percent) columns appear only when
+  # valid percentages were actually computed: with `valid = FALSE`
+  # (or a table with zero valid observations) `valid_prop` is an
+  # all-NA placeholder, and printing an NA column whose Total row
+  # asserts 100.0 would claim a computation that never happened.
+  has_valid_pct <- !is.null(df$valid_prop) && any(!is.na(df$valid_prop))
+  show_valid_col <- nrow(missing_block) > 0 && has_valid_pct
 
   # Use the shared `format_number()` helper from R/table_helpers.R for
   # locale-aware decimal-mark support, matching cross_tab() and the

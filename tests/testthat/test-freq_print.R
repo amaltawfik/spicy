@@ -106,3 +106,15 @@ test_that("print.spicy_freq_table invisibly returns `x` itself, not the display 
   expect_false(ret$visible)
   expect_identical(ret$value, f)
 })
+
+test_that("valid = FALSE drops the Valid Percent column entirely", {
+  out <- capture.output(freq(c(1, 2, 2, NA), valid = FALSE))
+  # no NA column with a 100.0 total for a computation that never ran
+  expect_false(any(grepl("Valid Percent", out)))
+  out_cum <- capture.output(freq(c(1, 2, 2, NA), valid = FALSE, cum = TRUE))
+  expect_false(any(grepl("Valid Percent", out_cum)))
+  expect_true(any(grepl("Cum. Percent", out_cum, fixed = TRUE)))
+  # valid = TRUE with missing present keeps the column and its total
+  out_valid <- capture.output(freq(c(1, 2, 2, NA)))
+  expect_true(any(grepl("Valid Percent", out_valid)))
+})

@@ -6,6 +6,10 @@
 
 * `varlist()`, `vl()`, and `code_book()` count columns are now internally coherent for labelled data: `N_distinct` uses the same missing definition as `N_valid` / `NAs` (declared missing values and `NA` elements of list and `POSIXlt` columns no longer count as distinct valid values), `na_range` codes observed in the data are listed in `Values` like `na_values` codes instead of vanishing, and value labels attached to tagged NAs (e.g. `Refused = tagged_na("a")`) now appear in `Values`.
 
+* `cross_tab()` now tabulates observations at an explicit `NA` factor level (`addNA()`, `factor(exclude = NULL)`, `forcats::fct_na_value_to_level()`) as a regular `NA` category row or column instead of silently dropping them: an explicit level is the analyst's choice to show missing as a category, so totals, percentages, and the chi-squared statistic now include it, matching `freq()` and base `table()` on the same input. Numbers change for tables built from such factors.
+
+* `freq()` on a factor with an explicit `NA` level now excludes those observations from the valid-percent denominator (and the `n_valid` attribute), matching the Missing classification its own printed table gives them and the SPSS convention; the Valid Percent column previously summed to less than the `100.0` printed in its Total row.
+
 * `build_ascii_table()` is no longer exported. It has always been
   documented as internal plumbing; use `spicy_print_table()` for
   console rendering from code.
@@ -557,6 +561,18 @@ rendering an empty column.
   performed; `ci_method = "profile"` with a robust `vcov` defers to
   the `vcov` and warns; the singular-fit note states the fact and
   leaves the advice to a build-time warning.
+
+* `count_n()` raises a classed error (`spicy_invalid_input`) when `count` is zero-length or contains only missing values, instead of silently returning a plausible-looking all-zero count; and rejecting `count = NaN` now points to `special = "NaN"` (the exact counterpart) instead of describing the input as `count = NA` and hinting at `special = "NA"`, which counts NA and NaN together.
+
+* `cross_tab()` weighted count tables (`percent = "none"`) compute the Total row and grand total from the unrounded weighted table, rounded once for display, instead of summing the already-rounded cells: with fractional weights the printed margins could contradict both the true weighted totals and the N row the percent tables derive from the same data, and under `rescale = TRUE` the Total row did not even sum to its own printed grand total.
+
+* `cross_tab()` titles and the weight footer no longer present a data value plucked out of an inline expression as a variable name (e.g. a title ending in `x "g2"`, or `Weight: 1` for a literal weight vector): when no name can be derived structurally, a neutral `x` / `y` / `weights` placeholder is used.
+
+* `freq()` warns (class `spicy_caveat`) when `labelled_levels = "labels"` merges distinct codes that share the same label text, naming the merged codes: the pooling is forced by factor semantics, but SPSS keeps one row per value, so the silently changed partition is now disclosed.
+
+* `freq(valid = FALSE)` with missing values present no longer prints a Valid Percent column of `NA` values whose Total row asserts `100.0`; the column (and `Cum. Valid Percent` with `cum = TRUE`) is dropped whenever valid percentages were not computed.
+
+* `freq()`, `cross_tab()`, `mean_n()`, and `sum_n()` reject `bit64::integer64` input (tabulated variables, weights, and selected columns) with a classed error (`spicy_invalid_data`) naming the fix: integer64 passes `is.numeric()` but stores raw 64-bit integer bit patterns that base R numeric code silently misreads as garbage counts near `1e-323` -- a realistic hazard for BIGINT columns imported via DBI or `data.table::fread()`. Convert with `as.numeric()` or `bit64::as.double()` first; `count_n()` compares values without numeric aggregation and continues to work.
 
 # spicy 0.12.0
 

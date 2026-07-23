@@ -41,9 +41,13 @@
 #' @param digits Number of decimals for cell values: a single
 #'   non-negative integer. Defaults to `NULL`, which is resolved to
 #'   `1` when `percent != "none"` and `0` when `percent = "none"`
-#'   (counts are always integers). Same role as `digits` in [freq()],
-#'   which formats percentages only and therefore uses a fixed
-#'   default of `1`.
+#'   (counts are integers unless fractional weights are used; raise
+#'   `digits` to display fractional weighted counts exactly). Same
+#'   role as `digits` in [freq()], which formats percentages only and
+#'   therefore uses a fixed default of `1`. Displayed values round
+#'   ties half to even (the R / IEC 60559 convention, shared with
+#'   Stata), so an exact tie like 6.25 prints as `6.2` where SPSS
+#'   would print `6.3`.
 #' @param output Output format. `"default"` (the default) returns a
 #'   `spicy_cross_table` object (for formatted printing);
 #'   `"data.frame"` returns a plain `data.frame`. The values match the
@@ -327,10 +331,19 @@ cross_tab <- function(
     digits <- if (percent == "none") 0 else 1
   }
 
-  # Capture original expressions to retrieve variable names
-  get_var_name <- function(expr) {
+  # Capture original expressions to retrieve variable names.
+  # Structural inspection only: symbols, `$` / `[[` / `[` column
+  # references, and a recursive scan of call arguments (so
+  # `factor(df$x)` yields "x"). When no name can be derived (inline
+  # literal vectors like `factor(c("g1", "g2"))`), `get_var_name()`
+  # falls back to a NEUTRAL placeholder ("x", "y", "weights", "by")
+  # instead of deparsing: the previous terminal deparse could pluck a
+  # DATA VALUE out of the expression and present it as the variable
+  # name in titles and footers.
+  find_var_name <- function(expr) {
     if (is.symbol(expr)) {
-      return(as.character(expr))
+      nm <- as.character(expr)
+      return(if (nzchar(nm)) nm else NULL)
     }
 
     if (is.call(expr)) {
@@ -350,10 +363,19 @@ cross_tab <- function(
         }
       }
 
+      # `df[, "col"]` / `df["col"]`: the last argument names the
+      # column when it is a string literal.
+      if (identical(fn, as.name("[")) && length(expr) >= 3) {
+        idx <- expr[[length(expr)]]
+        if (is.character(idx) && length(idx) == 1L) {
+          return(idx)
+        }
+      }
+
       args <- as.list(expr)[-1]
       if (length(args) > 0) {
         for (arg in rev(args)) {
-          nm <- get_var_name(arg)
+          nm <- find_var_name(arg)
           if (!is.null(nm) && nzchar(nm)) {
             return(nm)
           }
@@ -361,7 +383,11 @@ cross_tab <- function(
       }
     }
 
-    rlang::as_label(expr)
+    NULL
+  }
+
+  get_var_name <- function(expr, fallback = "x") {
+    find_var_name(expr) %||% fallback
   }
 
   parse_by_name <- function(expr_txt, fallback_expr = NULL) {
@@ -373,7 +399,7 @@ cross_tab <- function(
       parts <- trimws(gsub(".*\\$", "", parts))
       paste(parts, collapse = " x ")
     } else if (!is.null(fallback_expr)) {
-      get_var_name(fallback_expr)
+      get_var_name(fallback_expr, "by")
     } else {
       trimws(gsub(".*\\$", "", expr_txt))
     }
@@ -475,8 +501,8 @@ cross_tab <- function(
     }
     w_expr <- rlang::new_quosure(rlang::sym("w_tmp"))
 
-    x_name <- get_var_name(call_data)
-    y_name <- get_var_name(call_x)
+    x_name <- get_var_name(call_data, "x")
+    y_name <- get_var_name(call_x, "y")
 
     if (!missing(by) && !identical(call_by, quote(NULL))) {
       by_name <- parse_by_name(deparse(call_by), fallback_expr = call_by)
@@ -490,10 +516,10 @@ cross_tab <- function(
     w_expr <- rlang::enquo(weights)
 
     x_name <- tryCatch(rlang::as_name(x_expr), error = function(e) {
-      get_var_name(rlang::get_expr(x_expr))
+      get_var_name(rlang::get_expr(x_expr), "x")
     })
     y_name <- tryCatch(rlang::as_name(y_expr), error = function(e) {
-      get_var_name(rlang::get_expr(y_expr))
+      get_var_name(rlang::get_expr(y_expr), "y")
     })
 
     if (!rlang::quo_is_null(by_expr)) {
@@ -505,6 +531,10 @@ cross_tab <- function(
 
   if (!rlang::quo_is_null(w_expr)) {
     w <- rlang::eval_tidy(w_expr, data)
+    # integer64 weights would pass the is.numeric() guard below and
+    # then be bit-reinterpreted by xtabs() into denormal garbage;
+    # reject them before the numeric check. Matches freq().
+    .check_integer64(w, "`weights`")
     # Logical weights coerce naturally to 1/0 -- a common shorthand
     # for "include / exclude" weighting. Matches freq().
     if (is.logical(w)) {
@@ -573,8 +603,42 @@ cross_tab <- function(
     if (isTRUE(user_na)) .user_na_to_na(v) else .user_na_zap(v)
   }
 
-  full_x_levels <- make_levels(resolve_user_na(rlang::eval_tidy(x_expr, data)))
-  full_y_levels <- make_levels(resolve_user_na(rlang::eval_tidy(y_expr, data)))
+  # Explicit NA levels (addNA(), factor(exclude = NULL),
+  # forcats::fct_na_value_to_level()) are declared categories: the
+  # analyst chose to tabulate missing as a level. Rename the NA level
+  # to the literal "NA" label (the display freq() uses for the same
+  # rows) so factor(levels = ...) and xtabs() keep those observations
+  # as a table category instead of silently dropping them. If a
+  # genuine "NA" string level already exists (pathological), pick the
+  # first free "NA_<i>" so no two levels collide.
+  promote_na_level <- function(v) {
+    if (!is.factor(v)) {
+      return(v)
+    }
+    lv <- levels(v)
+    if (!anyNA(lv)) {
+      return(v)
+    }
+    label <- "NA"
+    i <- 0L
+    while (label %in% lv) {
+      i <- i + 1L
+      label <- paste0("NA_", i)
+    }
+    lv[is.na(lv)] <- label
+    levels(v) <- lv
+    v
+  }
+
+  x_all_raw <- rlang::eval_tidy(x_expr, data)
+  y_all_raw <- rlang::eval_tidy(y_expr, data)
+  # bit64::integer64 passes is.numeric() but its payload is raw int64
+  # bit patterns: make_levels() / xtabs() would silently tabulate
+  # garbage. Reject loudly with the conversion named.
+  .check_integer64(x_all_raw, "`x`")
+  .check_integer64(y_all_raw, "`y`")
+  full_x_levels <- make_levels(promote_na_level(resolve_user_na(x_all_raw)))
+  full_y_levels <- make_levels(promote_na_level(resolve_user_na(y_all_raw)))
 
   make_named_row <- function(template_df, values) {
     row <- as.list(rep(NA, ncol(template_df)))
@@ -624,8 +688,8 @@ cross_tab <- function(
     } else {
       logical(length(y_val_raw))
     }
-    x_val <- resolve_user_na(x_val_raw)
-    y_val <- resolve_user_na(y_val_raw)
+    x_val <- promote_na_level(resolve_user_na(x_val_raw))
+    y_val <- promote_na_level(resolve_user_na(y_val_raw))
     w_val <- df$`..spicy_w`
 
     df_sub <- data.frame(
@@ -800,12 +864,19 @@ cross_tab <- function(
 
         df_out <- append_rows(df_out, total_row)
       } else {
+        # Margins come from the UNROUNDED weighted table and are
+        # rounded once at display time (round-of-sum). Summing the
+        # already-rounded cells instead (sum-of-rounds, the previous
+        # behavior) printed fractional-weight margins that
+        # contradicted both the true totals and the N row the percent
+        # tables derive from the same data.
         df_out[[total_col]] <- as.numeric(rowSums(tab_full, na.rm = TRUE))
         grand_total <- make_named_row(
           df_out,
           c(
             stats::setNames(list("Total"), identifier_col),
-            as.list(colSums(df_out[, -1, drop = FALSE], na.rm = TRUE))
+            as.list(colSums(tab_full, na.rm = TRUE)),
+            stats::setNames(list(sum(tab_full)), total_col)
           )
         )
         df_out <- append_rows(df_out, grand_total)
@@ -1020,7 +1091,7 @@ cross_tab <- function(
 
     # Add weighting information to the note when applicable
     if (!rlang::quo_is_null(w_expr) && !isTRUE(all(w == 1))) {
-      w_name <- get_var_name(call_weights)
+      w_name <- get_var_name(call_weights, "weights")
       w_text <- paste0("Weight: ", w_name)
       if (isTRUE(rescale)) {
         w_text <- paste0(w_text, " (rescaled)")

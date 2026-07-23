@@ -41,7 +41,9 @@ warning; see \code{Details}.}
 \item{digits}{Number of decimal digits to display for percentages
 (default: \code{1}). Same role as \code{digits} in \code{\link[=cross_tab]{cross_tab()}}, where the
 \code{NULL} default resolves to the same \code{1} decimal whenever
-percentages are shown.}
+percentages are shown. Displayed values round ties half to even
+(the R / IEC 60559 convention, shared with Stata), so an exact
+tie like 6.25 prints as \code{6.2} where SPSS would print \code{6.3}.}
 
 \item{valid}{Logical. If \code{TRUE} (default), display valid percentages
 (excluding missing values).}

@@ -302,3 +302,40 @@ test_that("count_n special = character(0) errors cleanly", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("count_n rejects a zero-length count instead of silent zeros", {
+  df <- data.frame(x = c(1, 2), y = c(2, 2))
+  expect_error(
+    count_n(df, count = numeric(0)),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    count_n(df, count = character(0)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("count_n count = NaN points to special = 'NaN'", {
+  df <- data.frame(x = c(1, NaN))
+  expect_error(
+    count_n(df, count = NaN),
+    'special = "NaN"',
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  # plain NA keeps the NA-specific hint
+  expect_error(
+    count_n(df, count = NA),
+    'special = "NA"',
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("count_n rejects an all-NA count vector instead of silent zeros", {
+  df <- data.frame(x = c(1, 2), y = c(2, 2))
+  expect_error(
+    count_n(df, count = c(NA, NA)),
+    class = "spicy_invalid_input"
+  )
+})

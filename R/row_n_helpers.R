@@ -143,6 +143,32 @@
         paste(ignored, collapse = ", ")
       )
     }
+
+    # bit64::integer64 columns pass the is.numeric() filter above, but
+    # `as.matrix()` downstream strips the class and rowSums / rowMeans
+    # read the raw int64 bit patterns as denormal doubles (garbage
+    # near 1e-323). Reject loudly with the conversion named; count_n()
+    # (numeric_only = FALSE) compares values without as.matrix() and
+    # is unaffected. Same contract as `.check_integer64()` in freq() /
+    # cross_tab(), phrased for a column selection.
+    int64_cols <- names(data)[
+      vapply(data, inherits, logical(1), "integer64")
+    ]
+    if (length(int64_cols) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "%s(): selected column%s %s %s bit64::integer64, which base R numeric code silently misreads as garbage values near 1e-323.",
+            fn_label,
+            if (length(int64_cols) > 1L) "s" else "",
+            paste0("`", int64_cols, "`", collapse = ", "),
+            if (length(int64_cols) > 1L) "are" else "is"
+          ),
+          "i" = "Convert first with `as.numeric()` (or `bit64::as.double()`)."
+        ),
+        class = "spicy_invalid_data"
+      )
+    }
   }
 
   data

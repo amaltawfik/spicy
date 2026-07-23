@@ -150,3 +150,12 @@ test_that("sum_n() rejects non-integer `digits` (0.11.0)", {
   expect_error(sum_n(df, digits = NA_real_), "non-negative integer")
   expect_silent(sum_n(df, digits = 0L))
 })
+
+test_that("sum_n() rejects bit64::integer64 columns with a classed error", {
+  df <- data.frame(a = c(1, 2))
+  df$b <- structure(c(9.9e-324, 1.5e-323), class = "integer64")
+  expect_error(sum_n(df), class = "spicy_invalid_data")
+  expect_error(sum_n(df), "integer64")
+  # excluding the integer64 column restores normal computation
+  expect_equal(sum_n(df, select = a), c(1, 2))
+})

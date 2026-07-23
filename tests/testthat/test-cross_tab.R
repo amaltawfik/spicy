@@ -1156,3 +1156,104 @@ test_that("cross_tab validates `digits` like freq()", {
     "data.frame"
   )
 })
+
+test_that("cross_tab() rejects bit64::integer64 x, y, and weights", {
+  # Manually classed vector: inherits() is all the guard needs, and
+  # this is exactly the shape a bare integer64 column has when bit64
+  # is not loaded (raw int64 bit patterns in a double payload).
+  i64 <- structure(c(9.9e-324, 1.5e-323, 9.9e-324), class = "integer64")
+  f <- factor(c("a", "b", "a"))
+  g <- factor(c("u", "u", "v"))
+  expect_error(cross_tab(i64, g), class = "spicy_invalid_data")
+  expect_error(cross_tab(f, i64), class = "spicy_invalid_data")
+  expect_error(cross_tab(f, g, weights = i64), class = "spicy_invalid_data")
+  df <- data.frame(x = f, y = g)
+  df$w <- i64
+  expect_error(cross_tab(df, x, y, weights = w), class = "spicy_invalid_data")
+})
+
+test_that("cross_tab() tabulates an explicit NA factor level as a category", {
+  d <- data.frame(
+    x = addNA(factor(c("a", "a", "b", NA, NA))),
+    y = factor(c("u", "v", "u", "v", "u"))
+  )
+  ct <- cross_tab(d, x, y, include_stats = FALSE)
+  # nothing is dropped: all 5 observations tabulate, no removal note
+  expect_equal(attr(ct, "n_total"), 5)
+  expect_null(attr(ct, "note"))
+  vals <- ct$Values
+  expect_true("NA" %in% vals)
+  na_row <- ct[vals == "NA", , drop = FALSE]
+  expect_equal(unname(unlist(na_row[c("u", "v")])), c(1, 1))
+  # y-side explicit NA level becomes a column
+  d2 <- data.frame(
+    x2 = factor(c("a", "a", "b", "b", "a")),
+    y2 = addNA(factor(c("u", NA, "u", "v", NA)))
+  )
+  ct2 <- cross_tab(d2, x2, y2, include_stats = FALSE)
+  expect_true("NA" %in% names(ct2))
+  expect_equal(attr(ct2, "n_total"), 5)
+})
+
+test_that("cross_tab() explicit NA level dodges a genuine 'NA' string level", {
+  f <- addNA(factor(c("NA", "a", NA)))
+  ct <- cross_tab(f, factor(c("u", "u", "v")), include_stats = FALSE)
+  expect_setequal(ct$Values[1:3], c("a", "NA", "NA_1"))
+  expect_equal(attr(ct, "n_total"), 3)
+})
+
+test_that("cross_tab() weighted count margins are round-of-sum, not sum-of-rounds", {
+  x <- factor(c("a", "a", "b", "b", "b"))
+  y <- factor(c("u", "v", "u", "v", "u"))
+  w <- c(0.5, 1.5, 2.25, 0.25, 1.0)
+  ct <- cross_tab(x, y, weights = w, include_stats = FALSE)
+  total_row <- ct[nrow(ct), ]
+  # stored margins are the exact weighted marginals, rounded only at
+  # display time: column margins 3.75 / 1.75, grand total 5.5
+  expect_equal(
+    unname(unlist(total_row[c("u", "v", "Total")])),
+    c(3.75, 1.75, 5.5)
+  )
+  # row margins stay exact too (row b: 3.25 + 0.25 = 3.5)
+  expect_equal(ct$Total[ct$Values == "b"], 3.5)
+  # printed Total row: round(3.75) = 4, round(1.75) = 2, round(5.5) = 6
+  out <- capture.output(print(ct))
+  expect_true(any(grepl("Total\\s+\u2502\\s+4\\s+2\\s+\u2502\\s+6", out)))
+})
+
+test_that("cross_tab() rescaled count margins agree with their own grand total", {
+  x <- factor(c("a", "a", "b", "b", "b"))
+  y <- factor(c("u", "v", "u", "v", "u"))
+  w <- c(0.5, 1.5, 2.25, 0.25, 1.0)
+  ct <- cross_tab(x, y, weights = w, rescale = TRUE, include_stats = FALSE)
+  total_row <- ct[nrow(ct), ]
+  expect_equal(
+    sum(unname(unlist(total_row[c("u", "v")]))),
+    total_row$Total
+  )
+  expect_equal(total_row$Total, 5) # rescaled to raw N
+})
+
+test_that("cross_tab() falls back to neutral names for inline expressions", {
+  ct <- cross_tab(
+    factor(c("a", "a", "b", "b")),
+    factor(c("g1", "g1", "g2", "g2")),
+    include_stats = FALSE
+  )
+  # a data value ("g2") must never pose as the variable name
+  expect_identical(attr(ct, "title"), "Crosstable: x x y (N)")
+  ct2 <- cross_tab(
+    factor(c("a", "a", "b", "b", "b")),
+    factor(c("u", "v", "u", "v", "u")),
+    weights = c(2, 1, 1, 1, 3),
+    include_stats = FALSE
+  )
+  expect_match(attr(ct2, "note"), "Weight: weights", fixed = TRUE)
+  # symbol-derived names still win
+  aa <- factor(c("a", "b", "a"))
+  bb <- factor(c("u", "u", "v"))
+  expect_identical(
+    attr(cross_tab(aa, bb, include_stats = FALSE), "title"),
+    "Crosstable: aa x bb (N)"
+  )
+})

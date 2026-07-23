@@ -36,7 +36,10 @@ as accepted by \code{\link[tidyselect:any_of]{tidyselect::any_of()}}). Defaults 
 Multiple values are allowed (e.g., \code{count = c(1, 2, 3)} or \code{count = c("yes", "no")}).
 R automatically coerces all values in \code{count} to a common type (e.g., \code{c(2, "2")} becomes \code{c("2", "2")}),
 so all values are expected to be of the same final type.
-If \code{allow_coercion = FALSE}, matching is type-safe using \code{identical()}, and the type of \code{count} must match that of the values in the data.}
+If \code{allow_coercion = FALSE}, matching is type-safe using \code{identical()}, and the type of \code{count} must match that of the values in the data.
+A zero-length \code{count} (e.g. an upstream filter that emptied it) raises a
+classed error rather than silently counting nothing, and so does a
+\code{count} made only of missing values (use \code{special = "NA"} / \code{"NaN"}).}
 
 \item{special}{Character vector of special values to count: \code{"NA"}, \code{"NaN"}, \code{"Inf"}, \code{"-Inf"}, or \code{"all"}.
 Defaults to \code{NULL}.

@@ -24,6 +24,9 @@
 #'   R automatically coerces all values in `count` to a common type (e.g., `c(2, "2")` becomes `c("2", "2")`),
 #'   so all values are expected to be of the same final type.
 #'   If `allow_coercion = FALSE`, matching is type-safe using `identical()`, and the type of `count` must match that of the values in the data.
+#'   A zero-length `count` (e.g. an upstream filter that emptied it) raises a
+#'   classed error rather than silently counting nothing, and so does a
+#'   `count` made only of missing values (use `special = "NA"` / `"NaN"`).
 #' @param special Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`, `"-Inf"`, or `"all"`.
 #'   Defaults to `NULL`.
 #'   Every entry is validated, including alongside `"all"`: any other
@@ -226,13 +229,35 @@ base_count_n <- function(
   }
 
   if (!is.null(count)) {
-    if (length(count) == 1L && is.na(count)) {
+    # A zero-length `count` (e.g. an upstream intersect() / filter
+    # that emptied it) selects nothing: abort rather than silently
+    # returning a plausible-looking all-zero count, matching the
+    # empty-`special` contract below.
+    if (length(count) == 0L) {
+      spicy_abort(
+        c(
+          "`count` is empty (zero-length): there is no value to count.",
+          "i" = "Supply at least one value, or use `special` to count special values."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    has_na <- vapply(count, is.na, logical(1))
+    if (all(has_na)) {
+      # All-missing `count` (single NA / NaN, or c(NA, NA)): point to
+      # the exact `special` counterpart. `special = "NaN"` matches
+      # only NaN; `special = "NA"` counts NA and NaN together.
+      if (is.numeric(count) && all(is.nan(count))) {
+        spicy_abort(
+          "Use `special = \"NaN\"` to count NaN values, not `count = NaN` (`special = \"NA\"` would count NA and NaN together).",
+          class = "spicy_invalid_input"
+        )
+      }
       spicy_abort(
         "Use `special = \"NA\"` to count missing values, not `count = NA`.",
         class = "spicy_invalid_input"
       )
     }
-    has_na <- vapply(count, is.na, logical(1))
     if (any(has_na)) {
       spicy_warn(
         "NA values in `count` are ignored. Use `special = \"NA\"` to count missing values.",

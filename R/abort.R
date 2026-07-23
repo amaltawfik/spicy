@@ -160,6 +160,33 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 }
 
 
+# Internal: reject bit64::integer64 input before any numeric
+# computation. integer64 stores 64-bit integers in the bit pattern of
+# a double, so `is.numeric()` returns TRUE while `sum()`, `tapply()`,
+# `xtabs()`, `rowSums()` and friends silently read the raw bit
+# patterns as doubles and return garbage on the order of 1e-323.
+# spicy cannot convert safely itself (bit64 is not a dependency), so
+# the only safe response is a loud classed error naming the
+# conversion. `what` is the user-facing label of the offending input
+# (e.g. "`weights`", "`x`", "Column `id`").
+.check_integer64 <- function(x, what) {
+  if (inherits(x, "integer64")) {
+    spicy_abort(
+      c(
+        sprintf(
+          "%s is a bit64::integer64 vector, which base R numeric code silently misreads as garbage values near 1e-323.",
+          what
+        ),
+        "i" = "Convert it first with `as.numeric()` (or `bit64::as.double()`)."
+      ),
+      class = "spicy_invalid_data",
+      call = rlang::caller_env()
+    )
+  }
+  invisible(x)
+}
+
+
 # Internal indirection for `requireNamespace()`. Exists so the
 # missing-Suggests guards across the regression files can be
 # exercised in tests via `local_mocked_bindings(.package = "spicy")`

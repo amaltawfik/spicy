@@ -46,7 +46,9 @@
 #' @param digits Number of decimal digits to display for percentages
 #'   (default: `1`). Same role as `digits` in [cross_tab()], where the
 #'   `NULL` default resolves to the same `1` decimal whenever
-#'   percentages are shown.
+#'   percentages are shown. Displayed values round ties half to even
+#'   (the R / IEC 60559 convention, shared with Stata), so an exact
+#'   tie like 6.25 prints as `6.2` where SPSS would print `6.3`.
 #' @param valid Logical. If `TRUE` (default), display valid percentages
 #'   (excluding missing values).
 #' @param cum Logical. If `FALSE` (the default), cumulative percentages are omitted.
@@ -337,6 +339,11 @@ freq <- function(
     data_name <- var_name
   }
 
+  # bit64::integer64 passes is.numeric() but its payload is raw int64
+  # bit patterns: table() / tapply() / sum() would silently tabulate
+  # garbage. Reject loudly with the conversion named.
+  .check_integer64(x, "`x`")
+
   x_original <- x
 
   weight_name <- NULL
@@ -390,6 +397,10 @@ freq <- function(
   }
 
   if (!is.null(weights)) {
+    # integer64 weights would pass the is.numeric() guard below and
+    # then be bit-reinterpreted by sum() / tapply() into denormal
+    # garbage; reject them before the numeric check.
+    .check_integer64(weights, "`weights`")
     # Type guard up front: without it, a character weight vector
     # passes the comparisons via lexicographic coercion and only
     # crashes later at the `is.finite` check, with a misleading
@@ -507,6 +518,36 @@ freq <- function(
 
   x_is_labelled <- labelled::is.labelled(x)
   if (x_is_labelled) {
+    # With `labelled_levels = "labels"` the conversion below keys rows
+    # on the label text alone, so distinct codes sharing a label are
+    # pooled into a single row (factor levels must be unique; SPSS
+    # keeps one row per code). The merge cannot be avoided without
+    # mangling the labels -- disclose it loudly instead, naming the
+    # merged codes, once per variable.
+    if (labelled_levels == "labels") {
+      labs <- attr(x, "labels", exact = TRUE)
+      dup_labels <- unique(names(labs)[duplicated(names(labs))])
+      if (length(dup_labels) > 0L) {
+        merged <- vapply(
+          dup_labels,
+          function(nm) {
+            codes <- unname(unclass(labs))[names(labs) == nm]
+            sprintf("'%s' (codes %s)", nm, paste(codes, collapse = ", "))
+          },
+          character(1)
+        )
+        spicy_warn(
+          c(
+            sprintf(
+              "`labelled_levels = \"labels\"`: distinct codes sharing a label are merged into a single row: %s.",
+              paste(merged, collapse = "; ")
+            ),
+            "i" = "Use `labelled_levels = \"prefixed\"` (the default) to keep one row per code."
+          ),
+          class = "spicy_caveat"
+        )
+      }
+    }
     x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
   }
 
@@ -522,8 +563,24 @@ freq <- function(
     x <- factor(x)
   }
 
+  # Observations at an explicit NA level (addNA(), factor(exclude =
+  # NULL), forcats::fct_na_value_to_level()) sit at a level whose name
+  # is NA: is.na(x) is FALSE for them, but the printed table
+  # classifies those rows as Missing. as.character() maps the NA level
+  # back to NA, so the valid-percent denominator agrees with the
+  # display classification (and with SPSS, which excludes a missing
+  # category from Valid Percent).
+  missing_mask <- if (is.factor(x) && anyNA(levels(x))) {
+    is.na(as.character(x))
+  } else {
+    is.na(x)
+  }
   n_total <- if (is.null(weights)) length(x) else sum(weights)
-  n_missing <- if (is.null(weights)) sum(is.na(x)) else sum(weights[is.na(x)])
+  n_missing <- if (is.null(weights)) {
+    sum(missing_mask)
+  } else {
+    sum(weights[missing_mask])
+  }
   # Declared-missing observations removed above still belong to the
   # Total and Missing counts (SPSS-style bookkeeping: Valid excludes
   # them, Total does not).

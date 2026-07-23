@@ -1144,3 +1144,50 @@ test_that("freq() labelled_levels accepts p/l/v shortcuts via partial matching",
     c("1", "2", "3")
   )
 })
+
+test_that("freq() rejects bit64::integer64 x and weights with a classed error", {
+  # Manually classed vector: inherits() is all the guard needs, and
+  # this is exactly the shape a bare integer64 column has when bit64
+  # is not loaded (raw int64 bit patterns in a double payload).
+  i64 <- structure(c(9.9e-324, 1.5e-323, 9.9e-324), class = "integer64")
+  expect_error(freq(i64), class = "spicy_invalid_data")
+  df <- data.frame(x = factor(c("a", "b", "a")))
+  df$w <- i64
+  expect_error(freq(df, x, weights = w), class = "spicy_invalid_data")
+})
+
+test_that("freq() excludes an explicit NA level from the valid denominator", {
+  x <- addNA(factor(c("a", "a", "b", NA, NA)))
+  res <- freq(x, output = "data.frame")
+  # print classifies the NA-level row as Missing; the valid-percent
+  # denominator must agree (3 valid, not 5)
+  expect_equal(res$valid_prop, c(2 / 3, 1 / 3, NA))
+  expect_equal(res$prop, c(0.4, 0.2, 0.4))
+  f <- freq(x)
+  expect_equal(attr(f, "n_valid"), 3L)
+  expect_equal(attr(f, "n_total"), 5L)
+})
+
+test_that("freq() weighted explicit NA level counts its weights as missing", {
+  x <- addNA(factor(c("a", "a", "b", NA, NA)))
+  w <- c(1, 1, 2, 3, 1)
+  f <- freq(x, weights = w)
+  expect_equal(attr(f, "n_valid"), 4)
+  expect_equal(attr(f, "n_total"), 8)
+  res <- freq(x, weights = w, output = "data.frame")
+  expect_equal(res$valid_prop, c(2 / 4, 2 / 4, NA))
+})
+
+test_that("freq() warns when labelled_levels = 'labels' merges duplicate labels", {
+  skip_if_not_installed("labelled")
+  x <- labelled::labelled(c(1, 1, 2, 3), labels = c(Low = 1, Low = 2, High = 3))
+  expect_warning(
+    res <- freq(x, labelled_levels = "labels", output = "data.frame"),
+    class = "spicy_caveat"
+  )
+  expect_equal(res$value, c("Low", "High"))
+  expect_equal(res$n, c(3, 1))
+  # the default prefixed display keeps the codes apart, silently
+  expect_silent(res_p <- freq(x, output = "data.frame"))
+  expect_equal(nrow(res_p), 3L)
+})

@@ -74,9 +74,13 @@ Defaults to \code{2000}.}
 \item{digits}{Number of decimals for cell values: a single
 non-negative integer. Defaults to \code{NULL}, which is resolved to
 \code{1} when \code{percent != "none"} and \code{0} when \code{percent = "none"}
-(counts are always integers). Same role as \code{digits} in \code{\link[=freq]{freq()}},
-which formats percentages only and therefore uses a fixed
-default of \code{1}.}
+(counts are integers unless fractional weights are used; raise
+\code{digits} to display fractional weighted counts exactly). Same
+role as \code{digits} in \code{\link[=freq]{freq()}}, which formats percentages only and
+therefore uses a fixed default of \code{1}. Displayed values round
+ties half to even (the R / IEC 60559 convention, shared with
+Stata), so an exact tie like 6.25 prints as \code{6.2} where SPSS
+would print \code{6.3}.}
 
 \item{output}{Output format. \code{"default"} (the default) returns a
 \code{spicy_cross_table} object (for formatted printing);
