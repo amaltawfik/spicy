@@ -250,7 +250,9 @@
 #'   unquoted name or a character string.
 #' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
 #'   If `TRUE`, rescales weights so total weighted N matches raw N.
-#'   Passed to `spicy::cross_tab()`.
+#'   Passed to `spicy::cross_tab()`. When the argument is not supplied,
+#'   the default is read from `options(spicy.rescale)` (falling back to
+#'   `FALSE`), matching [cross_tab()].
 #' @param correct Logical. If `FALSE` (the default), no continuity correction is
 #'   applied. If `TRUE`, applies Yates correction in 2x2 chi-squared contexts.
 #'   Passed to `spicy::cross_tab()`.
@@ -345,7 +347,11 @@
 #' @param indent_text_excel_clipboard Stronger indentation used in Excel and
 #'   clipboard exports. Defaults to six non-breaking spaces.
 #' @param add_multilevel_header Logical. If `TRUE` (the default), merges top
-#'   headers in Excel export.
+#'   headers in Excel export. Only consulted for `output = "excel"` on a
+#'   grouped table (`by` supplied); like the other output-scoped
+#'   presentation arguments (`excel_sheet`, `clipboard_delim`, ...), it
+#'   is silently unused in every other output and in one-way tables,
+#'   which have a single header row to begin with.
 #' @param blank_na_wide Logical. If `FALSE` (the default), `NA` values are kept
 #'   as-is in wide raw output. If `TRUE`, replaces them with empty strings.
 #' @param excel_path Path for `output = "excel"`. Defaults to `NULL`.
@@ -609,6 +615,12 @@ table_categorical <- function(
   output <- match.arg(output)
   align <- match.arg(align)
 
+  # Global options (mirrors cross_tab()): an explicitly supplied
+  # argument always wins; the option only fills in the default.
+  if (missing(rescale)) {
+    rescale <- getOption("spicy.rescale", FALSE)
+  }
+
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
   }
@@ -757,7 +769,7 @@ table_categorical <- function(
   if (!identical(decimal_mark, ".") && !identical(decimal_mark, ",")) {
     spicy_abort("`decimal_mark` must be either '.' or ','.", class = "spicy_invalid_input")
   }
-  for (.dname in c("percent_digits", "p_digits", "v_digits")) {
+  for (.dname in c("percent_digits", "v_digits")) {
     .dval <- get(.dname)
     if (
       !is.numeric(.dval) || length(.dval) != 1L || is.na(.dval) || .dval < 0
@@ -765,6 +777,19 @@ table_categorical <- function(
       spicy_abort(
         paste0("`", .dname, "` must be a single non-negative number."), class = "spicy_invalid_input")
     }
+  }
+  # `p_digits` has a stricter floor than the other digits arguments:
+  # a 0-decimal p-value is meaningless, and `format_p_value()` would
+  # silently fall back to 3 decimals. Same classed check as
+  # table_continuous() / table_continuous_lm() / cross_tab().
+  if (
+    !is.numeric(p_digits) ||
+      length(p_digits) != 1L ||
+      is.na(p_digits) ||
+      p_digits < 1
+  ) {
+    spicy_abort(
+      "`p_digits` must be a single integer >= 1 (typically 2-4).", class = "spicy_invalid_input")
   }
   percent_digits <- as.integer(percent_digits)
   p_digits <- as.integer(p_digits)

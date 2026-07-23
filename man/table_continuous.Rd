@@ -10,6 +10,7 @@ table_continuous(
   by = NULL,
   exclude = NULL,
   regex = FALSE,
+  drop_na = TRUE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
@@ -52,6 +53,26 @@ character vectors of column names.}
 \item{regex}{Logical. If \code{FALSE} (the default), uses tidyselect
 helpers. If \code{TRUE}, the \code{select} argument is treated as a regular
 expression.}
+
+\item{drop_na}{Logical. Controls how missing values in the \code{by}
+column are handled -- the same argument as \code{\link[=table_categorical]{table_categorical()}},
+with one structural difference: a continuous summary has no
+\code{"(Missing)"} row for the summarized variable itself (a mean
+cannot include \code{NA}), so \code{NA}s in each summarized variable are
+always excluded from that variable's statistics and the exclusion
+is disclosed in a table note ("Missing values removed: ...")
+rather than silent. If \code{TRUE} (the default, preserving this
+function's historical behavior; \code{\link[=table_categorical]{table_categorical()}} defaults to
+\code{FALSE}), rows with \code{NA} in \code{by} are removed from the grouped
+summaries, with a warning and a dedicated note line ("Rows with
+missing ... removed"). If \code{FALSE}, rows with \code{NA} in \code{by} form a
+dedicated \code{"(Missing)"} group -- the field convention for
+descriptive tables (gtsummary's "Unknown" row; see the
+Epidemiologist R Handbook, Descriptive tables) -- while the
+group-comparison test and effect size are still computed on the
+observed groups only (show the missing, test the observed,
+matching \code{\link[=table_categorical]{table_categorical()}}). Ignored (with a warning) when
+\code{by} is not used.}
 
 \item{test}{Character. Statistical test to use when comparing groups.
 One of \code{"welch"} (default), \code{"student"}, or \code{"nonparametric"}.

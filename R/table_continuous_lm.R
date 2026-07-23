@@ -192,6 +192,9 @@
 #'   [clubSandwich::vcovCR()] directly on the fitted model for that case.
 #' @param boot_n Integer. Number of bootstrap replicates used when
 #'   `vcov = "bootstrap"`. Defaults to `1000`. Ignored otherwise.
+#'   Must be at least `50` (values below that floor raise an error:
+#'   fewer replicates make the variance estimate too noisy to use);
+#'   non-integer values are truncated (e.g. `500.9` becomes `500`).
 #'   Larger values reduce Monte-Carlo error in the bootstrap variance;
 #'   typical values for inference are `500`-`2000`.
 #' @param contrast Contrast display for categorical predictors. One of:
@@ -280,7 +283,10 @@
 #' @param ci_level Confidence level for coefficient and model-based mean
 #'   intervals (default: `0.95`). Must be between 0 and 1 exclusive.
 #' @param digits Number of decimal places for descriptive values, regression
-#'   coefficients, and test statistics (default: `2`).
+#'   coefficients, and test statistics (default: `2`). Must be a single
+#'   non-negative number; non-integer values are truncated (e.g. `2.9`
+#'   becomes `2`). Same constraint for `fit_digits` and
+#'   `effect_size_digits`.
 #' @param fit_digits Number of decimal places for model-fit columns (`\eqn{R^2}{R^2}` or
 #'   adjusted `\eqn{R^2}{R^2}`) in wide and rendered outputs (default: `2`).
 #' @param effect_size_digits Number of decimal places for the effect-size
@@ -294,7 +300,9 @@
 #'   `<.0001`; `p_digits = 2` prints `.05` and `<.01`. Useful for
 #'   genomics / GWAS contexts where adjusted *p*-values can be very
 #'   small, or for journals using a coarser convention. Leading zeros
-#'   are always stripped, following APA convention.
+#'   are always stripped, following APA convention. Values below `1`
+#'   raise an error; non-integer values are truncated (e.g. `3.7`
+#'   becomes `3`).
 #' @param decimal_mark Character used as decimal separator. Either `"."`
 #'   (default) or `","`.
 #' @param align Horizontal alignment of numeric columns in the printed

@@ -230,6 +230,9 @@ cluster vectors) is not supported; use \code{\link[sandwich:vcovCL]{sandwich::vc
 
 \item{boot_n}{Integer. Number of bootstrap replicates used when
 \code{vcov = "bootstrap"}. Defaults to \code{1000}. Ignored otherwise.
+Must be at least \code{50} (values below that floor raise an error:
+fewer replicates make the variance estimate too noisy to use);
+non-integer values are truncated (e.g. \code{500.9} becomes \code{500}).
 Larger values reduce Monte-Carlo error in the bootstrap variance;
 typical values for inference are \code{500}-\code{2000}.}
 
@@ -338,7 +341,10 @@ is used.}
 intervals (default: \code{0.95}). Must be between 0 and 1 exclusive.}
 
 \item{digits}{Number of decimal places for descriptive values, regression
-coefficients, and test statistics (default: \code{2}).}
+coefficients, and test statistics (default: \code{2}). Must be a single
+non-negative number; non-integer values are truncated (e.g. \code{2.9}
+becomes \code{2}). Same constraint for \code{fit_digits} and
+\code{effect_size_digits}.}
 
 \item{fit_digits}{Number of decimal places for model-fit columns (\verb{\eqn{R^2}{R^2}} or
 adjusted \verb{\eqn{R^2}{R^2}}) in wide and rendered outputs (default: \code{2}).}
@@ -355,7 +361,9 @@ prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
 \verb{<.0001}; \code{p_digits = 2} prints \code{.05} and \verb{<.01}. Useful for
 genomics / GWAS contexts where adjusted \emph{p}-values can be very
 small, or for journals using a coarser convention. Leading zeros
-are always stripped, following APA convention.}
+are always stripped, following APA convention. Values below \code{1}
+raise an error; non-integer values are truncated (e.g. \code{3.7}
+becomes \code{3}).}
 
 \item{decimal_mark}{Character used as decimal separator. Either \code{"."}
 (default) or \code{","}.}

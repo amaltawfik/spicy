@@ -39,6 +39,25 @@
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect
 #'   helpers. If `TRUE`, the `select` argument is treated as a regular
 #'   expression.
+#' @param drop_na Logical. Controls how missing values in the `by`
+#'   column are handled -- the same argument as [table_categorical()],
+#'   with one structural difference: a continuous summary has no
+#'   `"(Missing)"` row for the summarized variable itself (a mean
+#'   cannot include `NA`), so `NA`s in each summarized variable are
+#'   always excluded from that variable's statistics and the exclusion
+#'   is disclosed in a table note ("Missing values removed: ...")
+#'   rather than silent. If `TRUE` (the default, preserving this
+#'   function's historical behavior; [table_categorical()] defaults to
+#'   `FALSE`), rows with `NA` in `by` are removed from the grouped
+#'   summaries, with a warning and a dedicated note line ("Rows with
+#'   missing ... removed"). If `FALSE`, rows with `NA` in `by` form a
+#'   dedicated `"(Missing)"` group -- the field convention for
+#'   descriptive tables (gtsummary's "Unknown" row; see the
+#'   Epidemiologist R Handbook, Descriptive tables) -- while the
+#'   group-comparison test and effect size are still computed on the
+#'   observed groups only (show the missing, test the observed,
+#'   matching [table_categorical()]). Ignored (with a warning) when
+#'   `by` is not used.
 #' @param test Character. Statistical test to use when comparing groups.
 #'   One of `"welch"` (default), `"student"`, or `"nonparametric"`.
 #'   - `"welch"`: Welch *t*-test (2 groups) or Welch one-way ANOVA
@@ -403,6 +422,7 @@ table_continuous <- function(
   by = NULL,
   exclude = NULL,
   regex = FALSE,
+  drop_na = TRUE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
@@ -495,6 +515,7 @@ table_continuous <- function(
     "show_n",
     "ci",
     "regex",
+    "drop_na",
     "verbose"
   )) {
     .lval <- get(.lname)
@@ -562,13 +583,17 @@ table_continuous <- function(
       !effect_size_ci
   ) {
     spicy_warn(
-      "`test` is ignored when both `p_value` and `statistic` are FALSE.", class = "spicy_ignored_arg")
+      "`test` is ignored when `p_value`, `statistic`, `effect_size`, and `effect_size_ci` are all turned off.", class = "spicy_ignored_arg")
   }
   do_test <- (p_value || statistic) && has_group
 
   if ((has_es_request || effect_size_ci) && !has_group) {
     spicy_warn(
       "`effect_size` is ignored when `by` is not used.", class = "spicy_ignored_arg")
+  }
+  if (!drop_na && !has_group) {
+    spicy_warn(
+      "`drop_na = FALSE` is ignored when `by` is not used: a continuous summary has no \"(Missing)\" display row. NAs are always excluded from each variable's statistics and disclosed in the table note.", class = "spicy_ignored_arg")
   }
   if (effect_size_ci && !has_es_request) {
     spicy_warn(
@@ -634,6 +659,36 @@ table_continuous <- function(
     return(data.frame())
   }
 
+  # Truthfulness ledger (mirrors table_categorical()'s drop_na
+  # disclosure): per-variable NA counts excluded from the summaries,
+  # plus the count of rows removed for a missing `by` value when
+  # drop_na = TRUE. Surfaced as a "Missing values removed: ..." table
+  # note -- the READER must be able to see what left the table.
+  na_dropped <- integer(0)
+  for (.nm in numeric_cols) {
+    .nd <- sum(is.na(work[[.nm]]))
+    if (.nd > 0L) {
+      na_dropped[[.nm]] <- .nd
+    }
+  }
+  by_na_dropped <- 0L
+  build_missing_note <- function() {
+    parts <- character(0)
+    if (length(na_dropped)) {
+      parts <- c(parts, paste0(
+        "Missing values removed: ",
+        paste(sprintf("%s (%d)", names(na_dropped), na_dropped),
+              collapse = ", "),
+        "."
+      ))
+    }
+    if (by_na_dropped > 0L) {
+      parts <- c(parts, sprintf("Rows with missing %s removed: %d.",
+                                group_col_name, by_na_dropped))
+    }
+    if (length(parts)) paste(parts, collapse = " ") else NULL
+  }
+
   # --- label detection ---
   var_labels <- vapply(
     numeric_cols,
@@ -684,18 +739,39 @@ table_continuous <- function(
   if (has_group) {
     groups <- data[[group_col_name]]
     n_na_groups <- sum(is.na(groups))
-    if (n_na_groups > 0L) {
+    if (drop_na && n_na_groups > 0L) {
       spicy_warn(
         sprintf(
           "%d observation(s) with NA in `%s` were excluded.",
           n_na_groups,
           group_col_name
         ), class = "spicy_dropped_na")
+      by_na_dropped <- n_na_groups
     }
+    # NA-preserving copy for inference: the omnibus test and effect
+    # size always run on the observed groups only, whether missing
+    # `by` rows are removed (drop_na = TRUE) or displayed as a
+    # "(Missing)" group (drop_na = FALSE) -- show the missing, test
+    # the observed, matching table_categorical().
+    groups_obs <- groups
     group_levels <- if (is.factor(groups)) {
       levels(groups)
     } else {
       sort(unique(groups[!is.na(groups)]), method = "radix")
+    }
+    if (!drop_na && n_na_groups > 0L) {
+      # Display label for the missing-`by` group, guarded against a
+      # collision with a real group value (mirrors table_categorical()).
+      missing_label <- "(Missing)"
+      g_values <- unique(as.character(groups[!is.na(groups)]))
+      idx_lab <- 1L
+      while (missing_label %in% g_values) {
+        missing_label <- paste0("(Missing_", idx_lab, ")")
+        idx_lab <- idx_lab + 1L
+      }
+      group_levels <- c(as.character(group_levels), missing_label)
+      groups <- as.character(groups)
+      groups[is.na(groups)] <- missing_label
     }
     n_groups <- length(group_levels)
     rows <- list()
@@ -713,7 +789,7 @@ table_continuous <- function(
       )
       if (do_test) {
         xvec <- work[[nm]]
-        gvec <- groups
+        gvec <- groups_obs
         complete <- !is.na(xvec) & !is.na(gvec)
         xvec <- xvec[complete]
         gvec <- gvec[complete]
@@ -885,6 +961,10 @@ table_continuous <- function(
   }
 
   # --- return ---
+  # Disclosure note (default output only, mirroring
+  # table_categorical()): read lazily now that the ledger is filled;
+  # print() renders it under the table.
+  attr(result, "missing_note") <- build_missing_note()
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
   print(result)
   invisible(result)

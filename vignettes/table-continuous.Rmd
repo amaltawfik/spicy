@@ -187,6 +187,34 @@ table_continuous(
 )
 ```
 
+## Handling missing values
+
+Missing values can never enter a mean, so they are always excluded
+from each variable's statistics. The table discloses the exclusion in
+a note rather than staying silent:
+
+```{r missing}
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health)
+)
+```
+
+Missing values in `by` are removed by default (`drop_na = TRUE`),
+again disclosed in the note. Set `drop_na = FALSE` to display them
+as a dedicated "(Missing)" group instead. The group-comparison test
+and effect size still cover the observed groups only, matching
+`table_categorical()`:
+
+```{r missing-by}
+table_continuous(
+  sochealth,
+  select = bmi,
+  by = income_group,
+  drop_na = FALSE
+)
+```
+
 ## Labels and output formats
 
 Use `labels` to replace technical variable names with reporting labels:

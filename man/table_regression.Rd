@@ -615,8 +615,8 @@ up vertically (publication-style). For CI cells (\verb{[LL, UL]})
 the left bracket, the LL decimal point, the comma separator,
 the UL decimal point, and the right bracket are independently
 aligned across rows.
-\code{"center"}, \code{"right"}, or \code{"auto"} for legacy per-column
-alignment.}
+\code{"center"} and \code{"right"} apply the same alignment to every
+numeric column.}
 
 \item{padding}{Non-negative integer giving the extra characters
 added to each data column's auto-computed width when the

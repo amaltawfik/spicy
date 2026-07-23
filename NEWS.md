@@ -51,6 +51,10 @@
 * `table_categorical()` defaults to `drop_na = FALSE`: missing values
   display as a `"(Missing)"` level instead of being silently removed.
   With `drop_na = TRUE`, a table note now reports what was removed.
+* `table_categorical()` rejects `p_digits` below 1 with a classed
+  error, as its documentation always promised; such values were
+  silently rendered with 3 decimals. Matches `table_continuous()`,
+  `table_continuous_lm()`, and `cross_tab()`.
 * `standardized = "smart"` scales continuous inputs by 2 SD and leaves
   binary inputs (0/1 and factor dummies) unscaled, as Gelman (2008)
   defines it. The rule was applied inverted since 0.12.0, halving every
@@ -226,6 +230,16 @@ rendering an empty column.
   and reference levels, joint tests of a factor, ordinal predictors
   (scores vs dummies), successive-difference contrasts, and why
   continuous predictors should not be categorized.
+* `table_categorical()` reads `options(spicy.rescale)` like
+  `cross_tab()`; an explicitly supplied `rescale` argument still wins.
+* `table_continuous()` gains `drop_na`, mirroring
+  `table_categorical()`: the default `TRUE` keeps the historical
+  behavior (rows with a missing `by` value are removed), while
+  `FALSE` displays them as a `"(Missing)"` group with the
+  group-comparison test and effect size still computed on the
+  observed groups only. In both modes the default output now
+  discloses removed missing values in a table note ("Missing values
+  removed: ...") instead of dropping them silently.
 
 ## Row-wise summaries
 
@@ -260,6 +274,10 @@ rendering an empty column.
 * Placeholder cells decimal-align in the `gt` / `flextable` /
   `tinytable` / Word / Excel outputs; `"deviance"` prints at 1 decimal;
   the descriptive tables use a single font in Word outputs.
+* `table_continuous()`'s "`test` is ignored" warning states the full
+  trigger condition (`p_value`, `statistic`, `effect_size`, and
+  `effect_size_ci` all turned off) instead of naming only the first
+  two toggles.
 
 ## Bug fixes
 

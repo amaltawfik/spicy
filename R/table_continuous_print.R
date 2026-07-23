@@ -110,10 +110,14 @@ print.spicy_continuous_table <- function(x, ...) {
     padding <- 0L
   }
 
+  # drop_na disclosure ("Missing values removed: ...") set by
+  # table_continuous(); NULL when nothing was removed.
+  missing_note <- attr(x, "missing_note")
+
   spicy_print_table(
     display_df,
     title = title,
-    note = NULL,
+    note = missing_note,
     padding = padding,
     first_column_line = TRUE,
     row_total_line = FALSE,

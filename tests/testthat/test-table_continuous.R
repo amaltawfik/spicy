@@ -640,6 +640,35 @@ test_that("table_continuous warns when test is set without p_value/statistic", {
   )
 })
 
+test_that("the test-ignored warning states the full trigger condition", {
+  expect_warning(
+    table_continuous(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      test = "student",
+      p_value = FALSE,
+      statistic = FALSE,
+      output = "data.frame"
+    ),
+    "`p_value`, `statistic`, `effect_size`, and `effect_size_ci`",
+    class = "spicy_ignored_arg"
+  )
+  # An effect-size request keeps `test` active: no warning.
+  expect_no_warning(
+    table_continuous(
+      iris,
+      select = Sepal.Length,
+      by = Species,
+      test = "student",
+      p_value = FALSE,
+      statistic = FALSE,
+      effect_size = "eta_sq",
+      output = "data.frame"
+    )
+  )
+})
+
 test_that("table_continuous nonparametric statistic display uses W and H", {
   df2 <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
   out2 <- table_continuous(
@@ -876,6 +905,7 @@ test_that("table_continuous validates logical parameters", {
   expect_error(table_continuous(df, effect_size = NA), "effect_size")
   expect_error(table_continuous(df, effect_size_ci = NULL), "effect_size_ci")
   expect_error(table_continuous(df, regex = "TRUE"), "regex")
+  expect_error(table_continuous(df, drop_na = "yes"), "drop_na")
   expect_error(table_continuous(df, verbose = NA), "verbose")
 })
 
@@ -886,13 +916,90 @@ test_that("table_continuous warns when NA present in by column", {
   )
   expect_warning(
     table_continuous(df, select = "x", by = "g", output = "data.frame"),
-    "2 observation.*excluded"
+    class = "spicy_dropped_na"
   )
   out <- suppressWarnings(
     table_continuous(df, select = "x", by = "g", output = "data.frame")
   )
   # Only A and B groups should be present
   expect_equal(sort(unique(out$group)), c("A", "B"))
+})
+
+test_that("table_continuous discloses removed NAs in a table note", {
+  df <- data.frame(x = c(1:7, NA), y = c(NA, NA, 3:8))
+  out <- table_continuous(df, select = c("x", "y"))
+  expect_equal(
+    attr(out, "missing_note"),
+    "Missing values removed: x (1), y (2)."
+  )
+  printed <- paste(capture.output(print(out)), collapse = "\n")
+  expect_match(printed, "Missing values removed: x (1), y (2).", fixed = TRUE)
+  # No NAs -> no note.
+  clean <- table_continuous(data.frame(x = 1:5), select = "x")
+  expect_null(attr(clean, "missing_note"))
+})
+
+test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
+  df <- data.frame(
+    x = c(1:6, NA),
+    g = c("A", "A", "B", "B", NA, NA, "A")
+  )
+  out <- suppressWarnings(table_continuous(df, select = "x", by = "g"))
+  expect_equal(
+    attr(out, "missing_note"),
+    "Missing values removed: x (1). Rows with missing g removed: 2."
+  )
+})
+
+test_that("drop_na = FALSE displays a (Missing) group and tests the observed", {
+  df <- data.frame(
+    x = c(1, 2, 3, 4, 5, 6, 7, 8),
+    g = c("A", "A", "B", "B", "A", "B", NA, NA)
+  )
+  # No spicy_dropped_na warning: nothing is removed.
+  out <- table_continuous(
+    df,
+    select = "x",
+    by = "g",
+    drop_na = FALSE,
+    output = "data.frame"
+  )
+  expect_equal(unique(out$group), c("A", "B", "(Missing)"))
+  expect_equal(out$n[out$group == "(Missing)"], 2L)
+  # Show the missing, test the observed: same p as drop_na = TRUE.
+  ref <- suppressWarnings(
+    table_continuous(df, select = "x", by = "g", output = "data.frame")
+  )
+  expect_equal(out$p.value[1], ref$p.value[1])
+})
+
+test_that("drop_na = FALSE guards against a real (Missing) group value", {
+  df <- data.frame(
+    x = 1:6,
+    g = c("(Missing)", "(Missing)", "B", "B", NA, NA)
+  )
+  out <- table_continuous(
+    df,
+    select = "x",
+    by = "g",
+    drop_na = FALSE,
+    output = "data.frame"
+  )
+  expect_equal(unique(out$group), c("(Missing)", "B", "(Missing_1)"))
+})
+
+test_that("drop_na = FALSE without by warns spicy_ignored_arg", {
+  df <- data.frame(x = c(1:4, NA))
+  expect_warning(
+    table_continuous(df, select = "x", drop_na = FALSE, output = "data.frame"),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("table_continuous raw outputs carry no missing_note attribute", {
+  df <- data.frame(x = c(1:7, NA))
+  out <- table_continuous(df, select = "x", output = "data.frame")
+  expect_null(attr(out, "missing_note"))
 })
 
 test_that("fmt_p uses non-breaking space in display", {

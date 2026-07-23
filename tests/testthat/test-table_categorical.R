@@ -844,6 +844,49 @@ test_that("table_categorical warns when rescale = TRUE without weights", {
   )
 })
 
+test_that("table_categorical honors options(spicy.rescale)", {
+  df <- data.frame(v = rep(c("a", "b"), 5), w = rep(2, 10))
+  withr::local_options(spicy.rescale = TRUE)
+  out <- table_categorical(df, "v", weights = "w", output = "data.frame")
+  expect_equal(sum(out$n), 10)
+})
+
+test_that("explicit rescale overrides options(spicy.rescale)", {
+  df <- data.frame(v = rep(c("a", "b"), 5), w = rep(2, 10))
+  withr::local_options(spicy.rescale = TRUE)
+  out <- table_categorical(
+    df,
+    "v",
+    weights = "w",
+    rescale = FALSE,
+    output = "data.frame"
+  )
+  expect_equal(sum(out$n), 20)
+})
+
+test_that("table_categorical rejects p_digits < 1 with a classed error", {
+  df <- data.frame(g = c("A", "B"), v = c("x", "y"))
+  expect_error(
+    table_categorical(df, "v", "g", p_digits = 0, output = "long"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical(df, "v", "g", p_digits = 0, output = "long"),
+    "integer >= 1"
+  )
+  # percent_digits / v_digits keep their >= 0 bound: 0 is legitimate.
+  expect_silent(
+    table_categorical(
+      df,
+      "v",
+      "g",
+      percent_digits = 0,
+      v_digits = 0,
+      output = "long"
+    )
+  )
+})
+
 # Ã¢â€â‚¬Ã¢â€â‚¬ Multiple select Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 test_that("table_categorical handles multiple select in wide output", {

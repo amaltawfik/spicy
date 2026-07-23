@@ -87,7 +87,9 @@ unquoted name or a character string.}
 
 \item{rescale}{Logical. If \code{FALSE} (the default), weights are used as-is.
 If \code{TRUE}, rescales weights so total weighted N matches raw N.
-Passed to \code{spicy::cross_tab()}.}
+Passed to \code{spicy::cross_tab()}. When the argument is not supplied,
+the default is read from \code{options(spicy.rescale)} (falling back to
+\code{FALSE}), matching \code{\link[=cross_tab]{cross_tab()}}.}
 
 \item{correct}{Logical. If \code{FALSE} (the default), no continuity correction is
 applied. If \code{TRUE}, applies Yates correction in 2x2 chi-squared contexts.
@@ -201,7 +203,11 @@ Defaults to \code{"  "} (two spaces).}
 clipboard exports. Defaults to six non-breaking spaces.}
 
 \item{add_multilevel_header}{Logical. If \code{TRUE} (the default), merges top
-headers in Excel export.}
+headers in Excel export. Only consulted for \code{output = "excel"} on a
+grouped table (\code{by} supplied); like the other output-scoped
+presentation arguments (\code{excel_sheet}, \code{clipboard_delim}, ...), it
+is silently unused in every other output and in one-way tables,
+which have a single header row to begin with.}
 
 \item{blank_na_wide}{Logical. If \code{FALSE} (the default), \code{NA} values are kept
 as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}

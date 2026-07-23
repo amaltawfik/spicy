@@ -1027,8 +1027,8 @@
 #'   the left bracket, the LL decimal point, the comma separator,
 #'   the UL decimal point, and the right bracket are independently
 #'   aligned across rows.
-#'   `"center"`, `"right"`, or `"auto"` for legacy per-column
-#'   alignment.
+#'   `"center"` and `"right"` apply the same alignment to every
+#'   numeric column.
 #' @param padding Non-negative integer giving the extra characters
 #'   added to each data column's auto-computed width when the
 #'   default `print` method renders the table. Default `0L`
