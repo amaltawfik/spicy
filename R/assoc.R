@@ -149,7 +149,8 @@ print.spicy_assoc_detail <- function(
 
 # Internal: assemble the documented NA return shape, respecting `detail`,
 # `conf_level`. Used by the degenerate-table branches
-# of `cramer_v()`, `yule_q()`, `gamma_gk()`, `kendall_tau_b()` and
+# of `yule_q()`, `lambda_gk()`, `goodman_kruskal_tau()`,
+# `uncertainty_coef()`, `gamma_gk()`, `kendall_tau_b()` and
 # `somers_d()` so they keep returning the same shape as the happy path
 # instead of a bare length-1 named vector.
 .na_assoc_result <- function(detail, conf_level, digits) {
@@ -491,7 +492,9 @@ yule_q <- function(
 
   if (ad + bc == 0) {
     spicy_warn(
-      "Yule's Q is undefined when ad + bc = 0; returning NA.", class = "spicy_undefined_stat")
+      "Yule's Q is undefined when ad + bc = 0; returning NA.",
+      class = "spicy_undefined_stat"
+    )
     return(.na_assoc_result(detail, conf_level, digits))
   }
 
@@ -542,6 +545,14 @@ yule_q <- function(
 #' prediction). Lambda can equal zero even when variables
 #' are associated if the modal category dominates in every
 #' column (or row).
+#'
+#' The default `direction = "symmetric"` follows the SPSS and
+#' DescTools convention: symmetric lambda is a standard,
+#' well-defined variant with its own asymptotic standard error.
+#' [somers_d()] deliberately differs (its default is `"row"`)
+#' because its symmetric form is a derived quantity without an
+#' analytic SE; see its documentation.
+#'
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
@@ -894,6 +905,22 @@ goodman_kruskal_tau <- function(
 #'     \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
 #' }
 #'
+#' The default `direction = "symmetric"` follows the SPSS and
+#' DescTools convention: the symmetric coefficient is a standard,
+#' well-defined variant with its own asymptotic standard error.
+#' [somers_d()] deliberately differs (its default is `"row"`)
+#' because its symmetric form is a derived quantity without an
+#' analytic SE; see its documentation.
+#'
+#' When the marginal entropy in the denominator is zero (the
+#' predicted variable is constant, e.g. an unused factor level),
+#' the coefficient is the undefined form \eqn{0/0}: the function
+#' returns `NA` with a `spicy_undefined_stat` warning, like the
+#' other measures in the family. For `direction = "symmetric"`
+#' this happens only when both variables are constant; with a
+#' single constant variable the symmetric coefficient is a
+#' well-defined 0.
+#'
 #' The entropy terms use the standard mathematical convention
 #' \eqn{0 \log 0 = 0}, matching SPSS / PSPP `CROSSTABS` and the
 #' definition in Cover & Thomas (2006). Note that
@@ -937,11 +964,40 @@ uncertainty_coef <- function(
 
   mi <- H_x + H_y - H_xy # mutual information
 
+  # Defend the degenerate zero-entropy denominator (a constant
+  # variable has H = 0, making U the undefined form 0 / 0). Mirrors
+  # the warn-and-NA pattern of `lambda_gk()` and
+  # `goodman_kruskal_tau()`. When only ONE variable is constant, the
+  # symmetric form is a genuine 0 (`2 * 0 / (0 + H)`), so the
+  # symmetric guard triggers only when both variables are constant
+  # (every observation in a single cell).
+  h_denom <- switch(
+    direction,
+    row = H_x,
+    column = H_y,
+    symmetric = H_x + H_y
+  )
+  if (h_denom == 0) {
+    spicy_warn(
+      sprintf(
+        "The uncertainty coefficient is undefined for direction = \"%s\" on this table (%s); returning NA.",
+        direction,
+        if (direction == "symmetric") {
+          "both variables are constant"
+        } else {
+          "the predicted variable is constant"
+        }
+      ),
+      class = "spicy_undefined_stat"
+    )
+    return(.na_assoc_result(detail, conf_level, digits))
+  }
+
   U <- switch(
     direction,
-    row = if (H_x > 0) mi / H_x else 0,
-    column = if (H_y > 0) mi / H_y else 0,
-    symmetric = if (H_x + H_y > 0) 2 * mi / (H_x + H_y) else 0
+    row = mi / H_x,
+    column = mi / H_y,
+    symmetric = 2 * mi / (H_x + H_y)
   )
 
   if (!detail) {
@@ -1029,6 +1085,9 @@ uncertainty_coef <- function(
 #' \eqn{C} and \eqn{D} are the numbers of concordant and
 #' discordant pairs. It ignores tied pairs, making it appropriate
 #' for ordinal variables with many ties.
+#' When the asymptotic standard error is zero (e.g. a perfect
+#' association), the Wald z-test is undefined and the p-value is
+#' `NA`, matching the other measures in the family.
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
@@ -1053,7 +1112,10 @@ gamma_gk <- function(
   D <- cd$D
 
   if (C + D == 0) {
-    spicy_warn("No concordant or discordant pairs; returning NA.", class = "spicy_undefined_stat")
+    spicy_warn(
+      "No concordant or discordant pairs; returning NA.",
+      class = "spicy_undefined_stat"
+    )
     return(.na_assoc_result(detail, conf_level, digits))
   }
 
@@ -1067,7 +1129,14 @@ gamma_gk <- function(
   psi <- 2 * (D * cd$pi_c - C * cd$pi_d) / (C + D)^2
   se <- sqrt(sum(x * psi^2) - (sum(x * psi))^2)
 
-  p_value <- 2 * stats::pnorm(-abs(G / se))
+  # A zero SE makes the Wald z-test undefined -- report NA rather
+  # than 0 / NaN. Same gate as `lambda_gk()`, `goodman_kruskal_tau()`,
+  # `uncertainty_coef()` and `somers_d()`.
+  p_value <- if (!is.na(se) && se > 0) {
+    2 * stats::pnorm(-abs(G / se))
+  } else {
+    NA_real_
+  }
 
   .assoc_result(
     G,
@@ -1099,6 +1168,9 @@ gamma_gk <- function(
 #' pairs tied on the row variable, and \eqn{n_2} is the number
 #' tied on the column variable. Tau-b corrects for ties and is
 #' appropriate for square tables.
+#' When the asymptotic standard error is zero (e.g. a perfect
+#' association), the Wald z-test is undefined and the p-value is
+#' `NA`, matching the other measures in the family.
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
@@ -1131,7 +1203,10 @@ kendall_tau_b <- function(
 
   denom <- sqrt((n0 - n1) * (n0 - n2))
   if (denom == 0) {
-    spicy_warn("Tau-b is undefined for this table; returning NA.", class = "spicy_undefined_stat")
+    spicy_warn(
+      "Tau-b is undefined for this table; returning NA.",
+      class = "spicy_undefined_stat"
+    )
     return(.na_assoc_result(detail, conf_level, digits))
   }
 
@@ -1165,7 +1240,12 @@ kendall_tau_b <- function(
   }
   se <- sqrt(se_sq)
 
-  p_value <- 2 * stats::pnorm(-abs(tau_b / se))
+  # Zero-SE gate: see the comment in `gamma_gk()`.
+  p_value <- if (!is.na(se) && se > 0) {
+    2 * stats::pnorm(-abs(tau_b / se))
+  } else {
+    NA_real_
+  }
 
   .assoc_result(
     tau_b,
@@ -1197,6 +1277,9 @@ kendall_tau_b <- function(
 #' \eqn{m = \min(r, c)}. It is designed for rectangular tables;
 #' the estimate is bounded by \eqn{[-1, 1]} only when the table is
 #' square, and may fall outside that range otherwise.
+#' When the asymptotic standard error is zero (e.g. a perfect
+#' association), the Wald z-test is undefined and the p-value is
+#' `NA`, matching the other measures in the family.
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
@@ -1236,7 +1319,12 @@ kendall_tau_c <- function(
     (sum(x * (cd$pi_c - cd$pi_d)^2) - 4 * (C - D)^2 / n)
   se <- sqrt(max(0, sigma2))
 
-  p_value <- 2 * stats::pnorm(-abs(tau_c / se))
+  # Zero-SE gate: see the comment in `gamma_gk()`.
+  p_value <- if (!is.na(se) && se > 0) {
+    2 * stats::pnorm(-abs(tau_c / se))
+  } else {
+    NA_real_
+  }
 
   .assoc_result(
     tau_c,
@@ -1259,7 +1347,7 @@ kendall_tau_c <- function(
 #' @param direction Direction of prediction:
 #'   `"row"` (default, column predicts row),
 #'   `"column"` (row predicts column),
-#'   or `"symmetric"` (average of both directions).
+#'   or `"symmetric"` (harmonic mean of both directions).
 #'
 #' @return Same structure as [cramer_v()]: a scalar when
 #'   `detail = FALSE`, a named vector when `detail = TRUE`.
@@ -1276,6 +1364,15 @@ kendall_tau_c <- function(
 #' two quantities), although the two often agree to two
 #' decimals. No analytic SE / CI is reported for the symmetric
 #' form (DescTools follows the same convention).
+#'
+#' The default `direction = "row"` differs deliberately from
+#' [lambda_gk()] and [uncertainty_coef()] (which default to
+#' `"symmetric"`): Somers' D is intrinsically asymmetric, its
+#' symmetric form is a derived convention without inference, and
+#' the reference implementation (`DescTools::SomersDelta()`)
+#' offers only the two asymmetric directions, defaulting to
+#' `"row"`.
+#'
 #' Standard error formulas for the asymmetric directions follow
 #' the DescTools implementations (Signorell et al., 2024); see
 #' [cramer_v()] for full references.
@@ -1336,14 +1433,16 @@ somers_d <- function(
       p_value = NA_real_,
       ci_lower = NA_real_,
       ci_upper = NA_real_,
-        digits = digits
+      digits = digits
     ))
   }
 
   denom <- n0 - switch(direction, row = n2, column = n1)
   if (denom == 0) {
     spicy_warn(
-      "Somers' d is undefined for this table; returning NA.", class = "spicy_undefined_stat")
+      "Somers' d is undefined for this table; returning NA.",
+      class = "spicy_undefined_stat"
+    )
     return(.na_assoc_result(detail, conf_level, digits))
   }
   d_val <- (C - D) / denom
@@ -1432,6 +1531,13 @@ somers_d <- function(
 #'
 #' The ordinal family includes [gamma_gk()], [kendall_tau_b()],
 #' [kendall_tau_c()], and [somers_d()].
+#'
+#' Measures that are undefined on the given table appear as `NA`
+#' rows (printed as `--`). The classed warnings the individual
+#' functions raise (e.g. `spicy_undefined_stat`) are re-emitted
+#' once per distinct message after the table is assembled, so
+#' condition handlers and `suppressWarnings()` behave as they do
+#' for the individual functions.
 #'
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024).
@@ -1594,9 +1700,26 @@ assoc_measures <- function(
     if (field %in% names(res)) unname(res[[field]]) else NA_real_
   }
 
+  # Muffle warnings during computation (so a degenerate table does not
+  # spray one warning per direction), collect them, and re-emit each
+  # distinct message ONCE after the loop -- as the ORIGINAL condition
+  # object, so classed warnings (`spicy_undefined_stat`, ...) keep
+  # their classes and callers / tests can still catch or suppress
+  # them. Deduplication is by message: e.g. both Somers' D directions
+  # raise the same condition on an all-in-one-cell table.
+  collected <- list()
   rows <- lapply(names(fns), \(nm) {
     res <- tryCatch(
-      suppressWarnings(fns[[nm]](x)),
+      withCallingHandlers(
+        fns[[nm]](x),
+        warning = function(w) {
+          msg <- conditionMessage(w)
+          if (is.null(collected[[msg]])) {
+            collected[[msg]] <<- w
+          }
+          invokeRestart("muffleWarning")
+        }
+      ),
       error = \(e) c(estimate = NA_real_, p_value = NA_real_)
     )
     data.frame(
@@ -1612,6 +1735,9 @@ assoc_measures <- function(
   out <- do.call(rbind, rows)
   class(out) <- c("spicy_assoc_table", "data.frame")
   attr(out, "digits") <- digits
+  for (w in collected) {
+    rlang::cnd_signal(w)
+  }
   out
 }
 
@@ -1652,7 +1778,11 @@ print.spicy_assoc_table <- function(
     vapply(
       v,
       function(p) {
-        if (is.na(p)) "--" else format_p_value(p, decimal_mark = ".", digits = 3L)
+        if (is.na(p)) {
+          "--"
+        } else {
+          format_p_value(p, decimal_mark = ".", digits = 3L)
+        }
       },
       character(1)
     )

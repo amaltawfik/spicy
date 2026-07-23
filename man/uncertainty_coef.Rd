@@ -54,6 +54,22 @@ of the \strong{row} and \strong{column} variables respectively, and
 \eqn{U = 2 (H_X + H_Y - H_{XY}) / (H_X + H_Y)}.
 }
 
+The default \code{direction = "symmetric"} follows the SPSS and
+DescTools convention: the symmetric coefficient is a standard,
+well-defined variant with its own asymptotic standard error.
+\code{\link[=somers_d]{somers_d()}} deliberately differs (its default is \code{"row"})
+because its symmetric form is a derived quantity without an
+analytic SE; see its documentation.
+
+When the marginal entropy in the denominator is zero (the
+predicted variable is constant, e.g. an unused factor level),
+the coefficient is the undefined form \eqn{0/0}: the function
+returns \code{NA} with a \code{spicy_undefined_stat} warning, like the
+other measures in the family. For \code{direction = "symmetric"}
+this happens only when both variables are constant; with a
+single constant variable the symmetric coefficient is a
+well-defined 0.
+
 The entropy terms use the standard mathematical convention
 \eqn{0 \log 0 = 0}, matching SPSS / PSPP \code{CROSSTABS} and the
 definition in Cover & Thomas (2006). Note that

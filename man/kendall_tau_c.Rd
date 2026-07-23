@@ -36,6 +36,9 @@ Stuart's Tau-c is computed as
 \eqn{m = \min(r, c)}. It is designed for rectangular tables;
 the estimate is bounded by \eqn{[-1, 1]} only when the table is
 square, and may fall outside that range otherwise.
+When the asymptotic standard error is zero (e.g. a perfect
+association), the Wald z-test is undefined and the p-value is
+\code{NA}, matching the other measures in the family.
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }

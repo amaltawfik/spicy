@@ -46,6 +46,14 @@ variable. It ranges from 0 (no reduction) to 1 (perfect
 prediction). Lambda can equal zero even when variables
 are associated if the modal category dominates in every
 column (or row).
+
+The default \code{direction = "symmetric"} follows the SPSS and
+DescTools convention: symmetric lambda is a standard,
+well-defined variant with its own asymptotic standard error.
+\code{\link[=somers_d]{somers_d()}} deliberately differs (its default is \code{"row"})
+because its symmetric form is a derived quantity without an
+analytic SE; see its documentation.
+
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024); see \code{\link[=cramer_v]{cramer_v()}} for full references.
 }

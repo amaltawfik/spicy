@@ -14,6 +14,17 @@
   the standard error as an `se` element, and the internal-only
   `.include_se` argument is gone from every public signature.
 
+* `gamma_gk()`, `kendall_tau_b()`, and `kendall_tau_c()` report an
+  `NA` p-value when the asymptotic standard error is zero (e.g. a
+  perfect association), instead of a spurious `0` or `NaN` -- the
+  same zero-SE gate as the other association measures.
+
+* `uncertainty_coef()` returns `NA` with a `spicy_undefined_stat`
+  warning when the marginal entropy in the denominator is zero (a
+  constant variable, e.g. an unused factor level), instead of
+  silently returning 0 -- the same degenerate-table behavior as the
+  rest of the association family.
+
 * `table_regression(exponentiate = TRUE)` now errors on links whose
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, ...). Ratio links (logit, log, binomial / ordinal cloglog) are
@@ -223,6 +234,11 @@ rendering an empty column.
 
 ## Bug fixes
 
+* `assoc_measures()` no longer swallows the classed warnings its
+  measures raise on degenerate tables: each distinct warning (e.g.
+  `spicy_undefined_stat` for an undefined statistic) is re-emitted
+  once after the table is assembled, so `--` rows come with their
+  signal and condition handlers / `suppressWarnings()` keep working.
 * `gt` and `flextable` outputs now render in Quarto / R Markdown
   **Word**, PowerPoint, and PDF documents (they silently disappeared
   from non-HTML targets). A new `as_flextable()` method returns the

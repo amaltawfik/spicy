@@ -60,6 +60,13 @@ and (for 2x2 tables) \code{\link[=phi]{phi()}} and \code{\link[=yule_q]{yule_q()
 The ordinal family includes \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=kendall_tau_b]{kendall_tau_b()}},
 \code{\link[=kendall_tau_c]{kendall_tau_c()}}, and \code{\link[=somers_d]{somers_d()}}.
 
+Measures that are undefined on the given table appear as \code{NA}
+rows (printed as \verb{--}). The classed warnings the individual
+functions raise (e.g. \code{spicy_undefined_stat}) are re-emitted
+once per distinct message after the table is assembled, so
+condition handlers and \code{suppressWarnings()} behave as they do
+for the individual functions.
+
 Standard error formulas follow the DescTools implementations
 (Signorell et al., 2024).
 }

@@ -18,7 +18,7 @@ somers_d(
 \item{direction}{Direction of prediction:
 \code{"row"} (default, column predicts row),
 \code{"column"} (row predicts column),
-or \code{"symmetric"} (average of both directions).}
+or \code{"symmetric"} (harmonic mean of both directions).}
 
 \item{detail}{Logical. If \code{FALSE} (default), return the estimate
 as a numeric scalar. If \code{TRUE}, return a named numeric vector
@@ -51,6 +51,15 @@ Kendall's Tau-b (which is the \emph{geometric} mean of the same
 two quantities), although the two often agree to two
 decimals. No analytic SE / CI is reported for the symmetric
 form (DescTools follows the same convention).
+
+The default \code{direction = "row"} differs deliberately from
+\code{\link[=lambda_gk]{lambda_gk()}} and \code{\link[=uncertainty_coef]{uncertainty_coef()}} (which default to
+\code{"symmetric"}): Somers' D is intrinsically asymmetric, its
+symmetric form is a derived convention without inference, and
+the reference implementation (\code{DescTools::SomersDelta()})
+offers only the two asymmetric directions, defaulting to
+\code{"row"}.
+
 Standard error formulas for the asymmetric directions follow
 the DescTools implementations (Signorell et al., 2024); see
 \code{\link[=cramer_v]{cramer_v()}} for full references.

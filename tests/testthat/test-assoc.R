@@ -522,6 +522,132 @@ test_that("goodman_kruskal_tau warns + returns NA on rank-1 table", {
   expect_true(all(is.na(res_d)))
 })
 
+test_that("uncertainty_coef warns + returns NA when the predicted variable is constant", {
+  # F08: previously returned a silent, plausible-looking 0 for the
+  # undefined 0/0 form (zero marginal entropy, e.g. an unused
+  # factor level), while the rest of the family warned + NA.
+  rank1 <- matrix(c(4L, 0L, 6L, 0L), 2, 2)
+  class(rank1) <- "table"
+
+  expect_warning(
+    res <- uncertainty_coef(rank1, "row"),
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(res, NA_real_)
+
+  expect_warning(
+    res_d <- uncertainty_coef(rank1, "row", detail = TRUE),
+    class = "spicy_undefined_stat"
+  )
+  expect_s3_class(res_d, "spicy_assoc_detail")
+  expect_named(res_d, c("estimate", "se", "ci_lower", "ci_upper", "p_value"))
+  expect_true(all(is.na(res_d)))
+})
+
+test_that("uncertainty_coef column direction warns when the column variable is constant", {
+  rank1 <- matrix(c(4L, 6L, 0L, 0L), 2, 2)
+  class(rank1) <- "table"
+  expect_warning(
+    res <- uncertainty_coef(rank1, "column"),
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(res, NA_real_)
+})
+
+test_that("uncertainty_coef symmetric: genuine 0 with one constant variable, NA with two", {
+  # With a single constant variable the symmetric U = 2 * 0 / (0 + H)
+  # is a well-defined 0, not a guard case.
+  one_constant <- matrix(c(4L, 0L, 6L, 0L), 2, 2)
+  class(one_constant) <- "table"
+  expect_no_warning(sym <- uncertainty_coef(one_constant, "symmetric"))
+  expect_equal(sym, 0)
+
+  # Both variables constant (all observations in one cell): 0 / 0.
+  one_cell <- matrix(c(5L, 0L, 0L, 0L), 2, 2)
+  class(one_cell) <- "table"
+  expect_warning(
+    res <- uncertainty_coef(one_cell, "symmetric"),
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(res, NA_real_)
+})
+
+test_that("ordinal measures report NA p-value when the SE is zero", {
+  # F36: a perfect association has SE = 0, so the Wald z-test is
+  # undefined. gamma / tau-b previously reported p = 0 and tau-c
+  # could reach NaN; all three now gate like the rest of the family.
+  perfect <- matrix(c(5L, 0L, 0L, 5L), 2, 2)
+  class(perfect) <- "table"
+
+  for (fn in list(gamma_gk, kendall_tau_b, kendall_tau_c)) {
+    res <- fn(perfect, detail = TRUE)
+    expect_identical(res[["se"]], 0)
+    expect_true(is.na(res[["p_value"]]))
+    expect_false(is.nan(res[["p_value"]]))
+  }
+})
+
+test_that("kendall_tau_c zero-SE degenerate table gives NA p, not NaN", {
+  tab <- matrix(c(2L, 3L, 0L, 0L), 2, 2)
+  class(tab) <- "table"
+  res <- kendall_tau_c(tab, detail = TRUE)
+  expect_equal(res[["estimate"]], 0)
+  expect_true(is.na(res[["p_value"]]))
+  expect_false(is.nan(res[["p_value"]]))
+})
+
+test_that("assoc_measures re-emits classed warnings from undefined measures", {
+  # F15: `assoc_measures()` used to blanket-suppress the classed
+  # `spicy_undefined_stat` warnings its measures raise on degenerate
+  # tables, leaving silent `--` rows with no signal.
+  degen <- matrix(c(4L, 6L, 0L, 0L), 2, 2)
+  class(degen) <- "table"
+  suppressWarnings(
+    expect_warning(assoc_measures(degen), class = "spicy_undefined_stat")
+  )
+})
+
+test_that("assoc_measures deduplicates re-emitted warnings by message", {
+  one_cell <- matrix(c(5L, 0L, 0L, 0L), 2, 2)
+  class(one_cell) <- "table"
+  conds <- list()
+  withCallingHandlers(
+    res <- assoc_measures(one_cell),
+    warning = function(w) {
+      conds[[length(conds) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_s3_class(res, "spicy_assoc_table")
+  expect_true(length(conds) > 0)
+  expect_true(all(vapply(conds, inherits, logical(1), "spicy_undefined_stat")))
+  expect_true(all(vapply(conds, inherits, logical(1), "spicy_warning")))
+  msgs <- vapply(conds, conditionMessage, character(1))
+  expect_identical(anyDuplicated(msgs), 0L)
+  # Both Somers' D directions raise this identical message on the
+  # all-in-one-cell table; it must be re-emitted exactly once.
+  expect_identical(
+    sum(msgs == "Somers' d is undefined for this table; returning NA."),
+    1L
+  )
+})
+
+test_that("assoc_measures on a well-populated table emits no warnings", {
+  expect_no_warning(assoc_measures(tab_3x3()))
+})
+
+test_that("direction defaults follow the documented per-measure conventions", {
+  # F14 (audited, kept): somers_d defaults to "row" (intrinsically
+  # asymmetric, symmetric form has no analytic SE; DescTools offers
+  # no symmetric option), while lambda_gk / uncertainty_coef default
+  # to "symmetric" (standard variants with their own ASE).
+  tab <- tab_3x3()
+  expect_identical(somers_d(tab), somers_d(tab, "row"))
+  expect_identical(lambda_gk(tab), lambda_gk(tab, "symmetric"))
+  expect_identical(uncertainty_coef(tab), uncertainty_coef(tab, "symmetric"))
+  expect_identical(goodman_kruskal_tau(tab), goodman_kruskal_tau(tab, "row"))
+})
+
 test_that("kendall_tau_c warns on 1-row table", {
   tab <- matrix(c(5L, 3L), nrow = 1)
   class(tab) <- "table"
