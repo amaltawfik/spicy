@@ -753,10 +753,23 @@ test_that("cross_tab percent row default output", {
   expect_true(any(grepl("%", out)))
 })
 
-test_that("cross_tab invalid assoc_measure errors", {
-  # Plain base error from match.arg(); its message is locale-dependent,
-  # so no message or spicy_* class can be pinned here.
-  expect_error(cross_tab(mtcars, cyl, gear, assoc_measure = "invalid"))
+test_that("cross_tab invalid assoc_measure errors with a classed condition", {
+  expect_error(
+    cross_tab(mtcars, cyl, gear, assoc_measure = "invalid"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    cross_tab(mtcars, cyl, gear, percent = "bogus"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("print.spicy_cross_table validates digits", {
+  ct <- cross_tab(mtcars, cyl, am)
+  expect_error(print(ct, digits = -1), class = "spicy_invalid_input")
+  expect_error(print(ct, digits = 1.5), class = "spicy_invalid_input")
+  expect_error(print(ct, digits = c(1, 2)), class = "spicy_invalid_input")
+  expect_output(print(ct, digits = 2), "Crosstable")
 })
 
 test_that("cross_tab tryCatch fallback for complex x/y expressions", {

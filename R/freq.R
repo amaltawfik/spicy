@@ -213,7 +213,7 @@ freq <- function(
   }
   output <- match_tabulation_output(output, "freq")
 
-  labelled_levels <- match.arg(labelled_levels)
+  labelled_levels <- spicy_match_arg(labelled_levels)
   factor_levels <- match_varlist_factor_levels(factor_levels)
 
   # Global options (same hook as cross_tab(), so a single

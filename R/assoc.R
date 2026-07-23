@@ -277,6 +277,20 @@ cramer_v <- function(
   k <- min(nrow(x), ncol(x)) - 1L
   chi <- suppressWarnings(stats::chisq.test(x, correct = FALSE))
   chi2 <- as.numeric(chi$statistic)
+  # A zero row / column margin gives zero expected counts, so the
+  # chi-squared statistic is NaN (0/0). Without this guard the
+  # no-detail branch returns a silent NaN and the detail branch
+  # crashes at the `V > 0` CI condition. Same warn-and-NA policy as
+  # the degenerate branches of `lambda_gk()` and the ordinal
+  # measures; the message is shared by all three chi-squared-derived
+  # measures so `assoc_measures()` re-emits it once.
+  if (!is.finite(chi2)) {
+    spicy_warn(
+      "The chi-squared statistic is NaN on this table (zero row or column margin); returning NA.",
+      class = "spicy_undefined_stat"
+    )
+    return(.na_assoc_result(detail, conf_level, digits))
+  }
   V <- sqrt(chi2 / (n * k))
 
   if (!detail) {
@@ -352,6 +366,14 @@ phi <- function(
   n <- sum(x)
   chi <- suppressWarnings(stats::chisq.test(x, correct = FALSE))
   chi2 <- as.numeric(chi$statistic)
+  # Zero-margin guard; see the twin comment in `cramer_v()`.
+  if (!is.finite(chi2)) {
+    spicy_warn(
+      "The chi-squared statistic is NaN on this table (zero row or column margin); returning NA.",
+      class = "spicy_undefined_stat"
+    )
+    return(.na_assoc_result(detail, conf_level, digits))
+  }
   ph <- sqrt(chi2 / n)
 
   if (!detail) {
@@ -416,6 +438,14 @@ contingency_coef <- function(
   n <- sum(x)
   chi <- suppressWarnings(stats::chisq.test(x, correct = FALSE))
   chi2 <- as.numeric(chi$statistic)
+  # Zero-margin guard; see the twin comment in `cramer_v()`.
+  if (!is.finite(chi2)) {
+    spicy_warn(
+      "The chi-squared statistic is NaN on this table (zero row or column margin); returning NA.",
+      class = "spicy_undefined_stat"
+    )
+    return(.na_assoc_result(detail, conf_level, digits))
+  }
   C_val <- sqrt(chi2 / (chi2 + n))
 
   if (!detail) {
@@ -574,7 +604,7 @@ lambda_gk <- function(
   digits = 3L
 ) {
   .validate_table(x)
-  direction <- match.arg(direction)
+  direction <- spicy_match_arg(direction)
   n <- sum(x)
 
   nr <- nrow(x)
@@ -742,7 +772,7 @@ goodman_kruskal_tau <- function(
   digits = 3L
 ) {
   .validate_table(x)
-  direction <- match.arg(direction)
+  direction <- spicy_match_arg(direction)
   n <- sum(x)
   rsum <- rowSums(x)
   csum <- colSums(x)
@@ -948,7 +978,7 @@ uncertainty_coef <- function(
   digits = 3L
 ) {
   .validate_table(x)
-  direction <- match.arg(direction)
+  direction <- spicy_match_arg(direction)
   n <- sum(x)
 
   rsum <- rowSums(x)
@@ -1393,7 +1423,7 @@ somers_d <- function(
   digits = 3L
 ) {
   .validate_table(x)
-  direction <- match.arg(direction)
+  direction <- spicy_match_arg(direction)
   n <- sum(x)
   cd <- .concordance_counts(x)
   C <- cd$C
@@ -1566,7 +1596,7 @@ assoc_measures <- function(
   digits = 3L
 ) {
   .validate_table(x)
-  type <- match.arg(type)
+  type <- spicy_match_arg(type)
   is_2x2 <- nrow(x) == 2L && ncol(x) == 2L
 
   nominal_fns <- list()

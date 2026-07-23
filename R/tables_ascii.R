@@ -185,7 +185,12 @@ build_ascii_table <- function(
   display_labels = NULL,
   ...
 ) {
-  stopifnot(is.data.frame(x))
+  if (!is.data.frame(x)) {
+    spicy_abort(
+      "`x` must be a data.frame.",
+      class = "spicy_invalid_data"
+    )
+  }
   padding <- .validate_padding(padding)
   spanners <- .validate_spanners(spanners, ncol(x))
 
@@ -200,7 +205,16 @@ build_ascii_table <- function(
   # bare label ("95% CI", "p") in both blocks of a B + AME table
   # rather than the data-layer's deduplicated `"95% CI.2"` / `"p.2"`.
   if (!is.null(display_labels)) {
-    stopifnot(length(display_labels) == ncol(df))
+    if (length(display_labels) != ncol(df)) {
+      spicy_abort(
+        sprintf(
+          "`display_labels` must have one label per column of `x` (%d), not %d.",
+          ncol(df),
+          length(display_labels)
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
     names(df) <- as.character(display_labels)
   }
 
@@ -676,7 +690,12 @@ spicy_print_table <- function(
   fit_stats_start = NULL,
   ...
 ) {
-  stopifnot(is.data.frame(x))
+  if (!is.data.frame(x)) {
+    spicy_abort(
+      "`x` must be a data.frame.",
+      class = "spicy_invalid_data"
+    )
+  }
   padding <- .validate_padding(padding)
   spanners <- .validate_spanners(spanners, ncol(x))
 
@@ -703,7 +722,16 @@ spicy_print_table <- function(
   # (not name lookup), so the resulting duplicate names ("p", "p") are
   # harmless here.
   if (!is.null(display_labels)) {
-    stopifnot(length(display_labels) == ncol(x))
+    if (length(display_labels) != ncol(x)) {
+      spicy_abort(
+        sprintf(
+          "`display_labels` must have one label per column of `x` (%d), not %d.",
+          ncol(x),
+          length(display_labels)
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
     names(x) <- as.character(display_labels)
   }
 

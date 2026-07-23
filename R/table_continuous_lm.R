@@ -1038,7 +1038,7 @@ table_continuous_lm <- function(
       p_digits < 1
   ) {
     spicy_abort(
-      "`p_digits` must be a single positive integer (>= 1).", class = "spicy_invalid_input")
+      "`p_digits` must be a single integer >= 1 (typically 2-4).", class = "spicy_invalid_input")
   }
   p_digits <- as.integer(p_digits)
   if (
@@ -1073,13 +1073,13 @@ table_continuous_lm <- function(
     }
   }
 
-  output <- match.arg(output)
-  vcov <- match.arg(vcov)
-  contrast <- match.arg(contrast)
-  effect_size <- match.arg(effect_size)
-  r2 <- match.arg(r2)
-  align <- match.arg(align)
-  adjustment <- match.arg(adjustment)
+  output <- spicy_match_arg(output)
+  vcov <- spicy_match_arg(vcov)
+  contrast <- spicy_match_arg(contrast)
+  effect_size <- spicy_match_arg(effect_size)
+  r2 <- spicy_match_arg(r2)
+  align <- spicy_match_arg(align)
+  adjustment <- spicy_match_arg(adjustment)
 
   by_quo <- rlang::enquo(by)
   by_name <- resolve_single_column_selection(by_quo, data, "by")

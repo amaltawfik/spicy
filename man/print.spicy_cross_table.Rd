@@ -17,6 +17,9 @@ decimal mark. Defaults to the value stored in the object.}
 
 \item{...}{Additional arguments passed to internal formatting functions.}
 }
+\value{
+Invisibly returns \code{x}.
+}
 \description{
 Prints a formatted SPSS-like crosstable created by \code{\link[=cross_tab]{cross_tab()}}.
 }

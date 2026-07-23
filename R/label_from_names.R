@@ -56,8 +56,11 @@
 #' downstream constructor raise a cryptic one -- when the split
 #' produces:
 #' \itemize{
-#'   \item duplicate column names (two original names share the same
-#'     prefix before `sep`); or
+#'   \item duplicate column names that the renaming itself creates
+#'     (two original names share the same prefix before `sep`, or a
+#'     new name collides with an existing one). Names that were
+#'     already duplicated in the input (`check.names = FALSE` data)
+#'     are passed through untouched, not blamed on the split; or
 #'   \item an empty column name (the original name starts with `sep`
 #'     and has nothing before it).
 #' }
@@ -153,7 +156,17 @@ label_from_names <- function(df, sep = ". ") {
       class = "spicy_invalid_data"
     )
   }
+  # Only blame the split for duplicates it actually CREATED. Names
+  # that were already duplicated in the input (`check.names = FALSE`
+  # data) pass through untouched: the function's contract is to
+  # preserve what it does not rename, and the input was already in
+  # that state before the call.
   dup <- unique(new_names[duplicated(new_names)])
+  dup <- dup[vapply(
+    dup,
+    function(nm) sum(new_names == nm) > sum(old_names == nm),
+    logical(1)
+  )]
   if (length(dup) > 0L) {
     spicy_abort(
       sprintf(

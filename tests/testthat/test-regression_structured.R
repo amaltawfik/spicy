@@ -156,6 +156,28 @@ test_that("structured body: clean input produces no warning", {
   expect_silent(table_regression(m1, show_columns = c("b", "se", "ci", "p")))
 })
 
+test_that(".validate_structured warns with a classed spicy condition", {
+  fake_struct <- list(
+    body = data.frame(Variable = "a", B = 1.0),
+    reference_rows = integer(0),
+    factor_header_rows = integer(0),
+    fit_stat_rows = integer(0),
+    level_rows = integer(0),
+    outcome_row = integer(0),
+    col_meta = list(B = list(precision = 2L)),
+    spanners = NULL, ci_pairs = list(),
+    format_spec = list(decimal_mark = "x")
+  )
+  expect_warning(
+    spicy:::.validate_structured(fake_struct),
+    class = "spicy_internal_invariant"
+  )
+  expect_warning(
+    spicy:::.validate_structured(fake_struct),
+    class = "spicy_warning"
+  )
+})
+
 
 # ============================================================================
 # as_structured() public accessor

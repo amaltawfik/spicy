@@ -327,7 +327,8 @@ test_that("table_continuous_lm rejects deprecated contrast value", {
       contrast = "reference",
       output = "long"
     ),
-    "should be one of"
+    "`contrast` must be one of",
+    class = "spicy_invalid_input"
   )
 })
 
@@ -437,7 +438,8 @@ test_that("table_continuous_lm rejects deprecated wide output", {
       by = sex,
       output = "wide"
     ),
-    "should be one of"
+    "`output` must be one of",
+    class = "spicy_invalid_input"
   )
 })
 
@@ -1717,7 +1719,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = 0
     ),
-    "positive integer"
+    "integer >= 1"
   )
   expect_error(
     table_continuous_lm(
@@ -1726,7 +1728,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = -1
     ),
-    "positive integer"
+    "integer >= 1"
   )
   expect_error(
     table_continuous_lm(
@@ -1735,7 +1737,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = c(2, 3)
     ),
-    "positive integer"
+    "integer >= 1"
   )
   expect_error(
     table_continuous_lm(
@@ -1744,7 +1746,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = NA
     ),
-    "positive integer"
+    "integer >= 1"
   )
 })
 
@@ -1904,7 +1906,8 @@ test_that("align argument validates", {
       by = sex,
       align = "bogus"
     ),
-    "should be one of"
+    "`align` must be one of",
+    class = "spicy_invalid_input"
   )
 })
 

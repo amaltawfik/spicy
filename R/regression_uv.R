@@ -63,7 +63,10 @@
 #' @param family A [stats::family] object for `method = "glm"`.
 #'   Default `binomial()`. Refused for `method = "coxph"`, and
 #'   `gaussian()` with the identity link is refused too: use
-#'   `method = "lm"` for the linear screen.
+#'   `method = "lm"` for the linear screen. With `method = "lm"`,
+#'   any non-gaussian `family` is refused the same way (use
+#'   `method = "glm"`), and a supplied `gaussian()` is ignored with
+#'   a classed warning -- the linear screen already fits it.
 #' @param multivariable Logical, default `TRUE`: merge the full model
 #'   (all predictors together) as a second column group.
 #' @param complete_cases Logical, default `FALSE`. `TRUE` restricts
@@ -126,7 +129,7 @@ table_regression_uv <- function(data,
                                 title = NULL,
                                 ...) {
   family_supplied <- !missing(family)
-  method <- match.arg(method)
+  method <- spicy_match_arg(method)
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data frame.",
                 class = "spicy_invalid_input")
@@ -147,6 +150,31 @@ table_regression_uv <- function(data,
         "i" = "The Cox model has no family; drop the argument."),
       class = "spicy_invalid_input"
     )
+  }
+  # Mirror the coxph refusal for the linear screen: a non-gaussian
+  # `family` with `method = "lm"` is a contradiction, not a no-op.
+  # `gaussian()` with the identity link is exactly what lm fits -- and
+  # the glm-branch error below redirects that case to `method = "lm"`
+  # -- so it is ignored with a classed warning instead of trapping
+  # users who follow the redirect.
+  if (identical(method, "lm") && family_supplied) {
+    is_gaussian_identity <- inherits(family, "family") &&
+      identical(family$family, "gaussian") &&
+      identical(family$link, "identity")
+    if (is_gaussian_identity) {
+      spicy_warn(
+        paste0("`family = gaussian()` is ignored for `method = \"lm\"`: ",
+               "the linear screen already fits it."),
+        class = "spicy_ignored_arg"
+      )
+    } else {
+      spicy_abort(
+        c("`family` is not meaningful for `method = \"lm\"`.",
+          "i" = paste0("Use `method = \"glm\"` to fit that family, or ",
+                       "drop the argument for the linear screen.")),
+        class = "spicy_invalid_input"
+      )
+    }
   }
   # A gaussian/identity glm is lm by another name; in the screen the
   # right spelling exists as an argument, so point straight at it

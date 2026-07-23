@@ -420,7 +420,8 @@ test_that("fit_stats_layout enum validates + propagates to attr", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, fit_stats_layout = "bogus"),
-    "should be one of"
+    "`fit_stats_layout` must be one of",
+    class = "spicy_invalid_input"
   )
   r1 <- table_regression(fit)
   expect_identical(attr(r1, "fit_stats_layout"), "first_col")

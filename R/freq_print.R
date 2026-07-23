@@ -175,4 +175,9 @@ print.spicy_freq_table <- function(x, ...) {
     align_left_cols = c(1L, 2L),
     bottom_line = FALSE
   )
+
+  # The documented S3 print contract: return the object printed, not
+  # the internally rebuilt display frame `disp` that
+  # `spicy_print_table()` returns. Matches every sibling print method.
+  invisible(x)
 }

@@ -1319,10 +1319,12 @@ validate_token_vector <- function(x, valid, arg) {
 
 # ---- Phase D \u2013 argument value validation ----------------------------------
 
-# Steps 13-14: enum args. table_regression() invokes match.arg() directly
-# on `standardized`, `intercept_position`, `align`, `output`,
-# `reference_style` \u2013 match.arg() raises a clear base-R error on
-# invalid values. No spicy-specific helper needed.
+# Steps 13-14: enum args. table_regression() resolves `standardized`,
+# `intercept_position`, `align`, `output`, `reference_style`, ... via
+# spicy_match_arg() (R/abort.R): same matching semantics as
+# match.arg(), but an invalid value raises a classed
+# `spicy_invalid_input` naming the argument and its valid values, so
+# the documented `tryCatch(spicy_error = ...)` catch-all applies.
 
 # Phase 7c7d: validate the `re_columns` argument of table_regression().
 # Accepts a character vector with elements from c("est", "se", "ci");

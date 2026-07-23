@@ -151,3 +151,27 @@ test_that("a regex metacharacter as `sep` matches literally, not as a regex", {
   expect_equal(names(out), "abc")
   expect_equal(attr(out[["abc"]], "label"), "def.ghi")
 })
+
+test_that("pre-existing duplicate input names are not blamed on the split", {
+  df <- data.frame(x = 1:2, x = 3:4, check.names = FALSE)
+  out <- label_from_names(df)
+  expect_identical(names(out), c("x", "x"))
+
+  # Pre-existing duplicates alongside an unrelated clean split.
+  df2 <- data.frame(
+    q = 1, q = 2, "age. Age of respondent" = 3,
+    check.names = FALSE
+  )
+  out2 <- label_from_names(df2)
+  expect_identical(names(out2), c("q", "q", "age"))
+  expect_identical(attr(out2$age, "label"), "Age of respondent")
+})
+
+test_that("a split that collides with an existing name still errors", {
+  df <- data.frame(x = 1, "x. Label" = 2, check.names = FALSE)
+  expect_error(
+    label_from_names(df),
+    "duplicate column names.*x",
+    class = "spicy_invalid_data"
+  )
+})

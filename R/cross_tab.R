@@ -310,8 +310,8 @@ cross_tab <- function(
     percent <- getOption("spicy.percent", "none")
   }
 
-  percent <- match.arg(percent)
-  assoc_measure <- match.arg(assoc_measure)
+  percent <- spicy_match_arg(percent)
+  assoc_measure <- spicy_match_arg(assoc_measure)
   if (is.null(digits)) {
     digits <- if (percent == "none") 0 else 1
   }
@@ -828,8 +828,14 @@ cross_tab <- function(
           somers_d = "Somers' D",
           lambda = "Lambda"
         )
+        # No `suppressWarnings()` blanket here: the measures emit only
+        # classed spicy warnings (chisq.test noise is already muffled
+        # inside them), and those must reach the caller -- same policy
+        # as `assoc_measures()`. Hard errors (e.g. a measure that does
+        # not apply to this table shape) still degrade to "no
+        # association line" rather than failing the whole crosstab.
         assoc_out <- tryCatch(
-          suppressWarnings(switch(
+          switch(
             assoc_choice,
             cramer_v = cramer_v(tab_stats, detail = TRUE),
             phi = phi(tab_stats, detail = TRUE),
@@ -838,7 +844,7 @@ cross_tab <- function(
             tau_c = kendall_tau_c(tab_stats, detail = TRUE),
             somers_d = somers_d(tab_stats, "symmetric", detail = TRUE),
             lambda = lambda_gk(tab_stats, "symmetric", detail = TRUE)
-          )),
+          ),
           error = function(e) NULL
         )
         if (!is.null(assoc_out)) {
@@ -1263,6 +1269,8 @@ print.spicy_cross_table_list <- function(x, ...) {
 #'   decimal mark. Defaults to the value stored in the object.
 #' @param ... Additional arguments passed to internal formatting functions.
 #'
+#' @return Invisibly returns `x`.
+#'
 #' @keywords internal
 #' @export
 print.spicy_cross_table <- function(
@@ -1271,6 +1279,21 @@ print.spicy_cross_table <- function(
   decimal_mark = NULL,
   ...
 ) {
+  if (!is.null(digits)) {
+    if (
+      !is.numeric(digits) ||
+        length(digits) != 1L ||
+        !is.finite(digits) ||
+        digits < 0 ||
+        digits != as.integer(digits)
+    ) {
+      spicy_abort(
+        "`digits` must be a single non-negative integer.",
+        class = "spicy_invalid_input"
+      )
+    }
+    digits <- as.integer(digits)
+  }
   title <- attr(x, "title")
   digits_attr <- attr(x, "digits")
   decimal_mark_attr <- attr(x, "decimal_mark")

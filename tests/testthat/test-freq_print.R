@@ -99,3 +99,10 @@ test_that("print.spicy_freq_table tolerates pathological var_label values", {
   out <- capture.output(print.spicy_freq_table(ftab))
   expect_false(any(grepl("^Label:", out)))
 })
+
+test_that("print.spicy_freq_table invisibly returns `x` itself, not the display frame", {
+  capture.output(f <- freq(c(1, 2, 2, NA)))
+  capture.output(ret <- withVisible(print(f)))
+  expect_false(ret$visible)
+  expect_identical(ret$value, f)
+})

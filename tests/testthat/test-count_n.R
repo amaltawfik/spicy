@@ -293,3 +293,12 @@ test_that("count_n strict mode uses fast path for same-type atomics", {
   df2 <- tibble::tibble(x = c("a", "b"), y = c("b", "a"))
   expect_equal(count_n(df2, count = "b", allow_coercion = FALSE), c(1, 1))
 })
+
+test_that("count_n special = character(0) errors cleanly", {
+  df <- data.frame(x = c(1, NA), y = c(NA, 2))
+  expect_error(
+    count_n(df, special = character(0)),
+    "at least one of",
+    class = "spicy_invalid_input"
+  )
+})

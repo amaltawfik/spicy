@@ -519,10 +519,12 @@ build_structured_body <- function(aligned,
   }
 
   if (length(problems) > 0L) {
-    warning(
-      "Structured regression body failed invariant checks:\n  - ",
-      paste(problems, collapse = "\n  - "),
-      call. = FALSE
+    spicy_warn(
+      paste0(
+        "Structured regression body failed invariant checks:\n  - ",
+        paste(problems, collapse = "\n  - ")
+      ),
+      class = "spicy_internal_invariant"
     )
   }
   invisible(struct)

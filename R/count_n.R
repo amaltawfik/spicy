@@ -27,7 +27,8 @@
 #' @param special Character vector of special values to count: `"NA"`, `"NaN"`, `"Inf"`, `"-Inf"`, or `"all"`.
 #'   Defaults to `NULL`.
 #'   Every entry is validated, including alongside `"all"`: any other
-#'   value raises an error.
+#'   value raises an error, and so does an empty vector
+#'   (`special = character(0)` selects nothing to count).
 #'   `"NA"` uses `is.na()`, and therefore includes both `NA` and `NaN` values.
 #'   `"NaN"` uses `is.nan()` to match only actual NaN values.
 #' @param allow_coercion Logical. If `TRUE` (the default), values are compared after coercion.
@@ -227,6 +228,17 @@ base_count_n <- function(
 
   if (!is.null(special)) {
     allowed <- c("NA", "NaN", "Inf", "-Inf")
+    # An empty `special` selects nothing to count: treat it like the
+    # missing-argument case above rather than silently returning a
+    # plausible-looking all-zero count (it also crashes `Reduce()`
+    # downstream). Same loud-signal policy as the empty-selection
+    # `spicy_no_selection` convention of the row-wise family.
+    if (length(special) == 0L) {
+      spicy_abort(
+        "`special` must contain at least one of 'NA', 'NaN', 'Inf', '-Inf', or 'all'.",
+        class = "spicy_invalid_input"
+      )
+    }
     # Validate every entry before expanding "all": expansion first
     # would silently discard invalid values supplied alongside it.
     if (!all(special %in% c(allowed, "all"))) {

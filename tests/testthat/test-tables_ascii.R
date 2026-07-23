@@ -214,3 +214,20 @@ test_that("spicy_print_table splits wide tables into stacked panels", {
   expect_true(any(grepl("Count", output, fixed = TRUE)))
   expect_true(any(grepl("Percent", output, fixed = TRUE)))
 })
+
+test_that("build_ascii_table / spicy_print_table validate inputs with classed errors", {
+  expect_error(spicy:::build_ascii_table(1:3), class = "spicy_invalid_data")
+  expect_error(spicy_print_table(1:3), class = "spicy_invalid_data")
+
+  df <- data.frame(a = 1:2, b = 3:4)
+  expect_error(
+    spicy:::build_ascii_table(df, display_labels = "only one"),
+    "one label per column",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    spicy_print_table(df, display_labels = "only one"),
+    "one label per column",
+    class = "spicy_invalid_input"
+  )
+})

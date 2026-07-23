@@ -991,7 +991,7 @@ export_continuous_lm_table <- function(
       paste(r, collapse = clipboard_delim)
     })
     clipr::write_clip(paste(lines, collapse = "\n"))
-    message("Linear-model table copied to clipboard.")
+    spicy_inform("Linear-model table copied to clipboard.")
     return(invisible(display_df))
   }
 

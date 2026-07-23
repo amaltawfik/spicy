@@ -1388,7 +1388,8 @@ test_that("table_continuous clipboard with groups works", {
       by = Species,
       output = "clipboard"
     ),
-    "copied to clipboard"
+    "copied to clipboard",
+    class = "spicy_info"
   )
   expect_s3_class(out, "data.frame")
   expect_true("Group" %in% names(out))
@@ -2322,7 +2323,7 @@ test_that("effect_size mismatched explicit choice errors clearly", {
   )
 })
 
-test_that("effect_size invalid character value rejected by match.arg", {
+test_that("effect_size invalid character value rejected with a classed error", {
   expect_error(
     table_continuous(
       sleep,
@@ -2330,7 +2331,8 @@ test_that("effect_size invalid character value rejected by match.arg", {
       by = group,
       effect_size = "bogus_metric"
     ),
-    "should be one of"
+    "`effect_size` must be one of",
+    class = "spicy_invalid_input"
   )
 })
 
@@ -2386,7 +2388,8 @@ test_that("align argument validates and stores the choice", {
   }
   expect_error(
     table_continuous(sleep, select = extra, by = group, align = "bogus"),
-    "should be one of"
+    "`align` must be one of",
+    class = "spicy_invalid_input"
   )
 })
 

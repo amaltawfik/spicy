@@ -716,20 +716,21 @@ test_that("resolve_cluster_argument: nrow=1 single-string cluster ID still flows
   )
 })
 
-test_that("adjustment: invalid value rejected by match.arg", {
+test_that("adjustment: invalid value rejected with a classed error", {
   set.seed(108L)
   n <- 40
   df <- data.frame(
     bmi = rnorm(n, 25),
     sex = factor(rep(c("F", "M"), each = n / 2))
   )
-  # `match.arg()` is base R; its error message is "'arg' should be
-  # one of ...". This test confirms the rejection path activates.
+  # Classed enum validation (spicy_match_arg) names the argument and
+  # the valid values.
   expect_error(
     table_continuous_lm(
       df, select = bmi, by = sex,
       adjustment = "bogus"
     ),
-    "should be one of"
+    "`adjustment` must be one of",
+    class = "spicy_invalid_input"
   )
 })

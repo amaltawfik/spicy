@@ -65,8 +65,11 @@ The function raises an actionable error -- rather than letting the
 downstream constructor raise a cryptic one -- when the split
 produces:
 \itemize{
-\item duplicate column names (two original names share the same
-prefix before \code{sep}); or
+\item duplicate column names that the renaming itself creates
+(two original names share the same prefix before \code{sep}, or a
+new name collides with an existing one). Names that were
+already duplicated in the input (\code{check.names = FALSE} data)
+are passed through untouched, not blamed on the split; or
 \item an empty column name (the original name starts with \code{sep}
 and has nothing before it).
 }

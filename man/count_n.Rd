@@ -40,7 +40,8 @@ If \code{allow_coercion = FALSE}, matching is type-safe using \code{identical()}
 \item{special}{Character vector of special values to count: \code{"NA"}, \code{"NaN"}, \code{"Inf"}, \code{"-Inf"}, or \code{"all"}.
 Defaults to \code{NULL}.
 Every entry is validated, including alongside \code{"all"}: any other
-value raises an error.
+value raises an error, and so does an empty vector
+(\code{special = character(0)} selects nothing to count).
 \code{"NA"} uses \code{is.na()}, and therefore includes both \code{NA} and \code{NaN} values.
 \code{"NaN"} uses \code{is.nan()} to match only actual NaN values.}
 

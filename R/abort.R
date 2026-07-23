@@ -79,6 +79,12 @@ spicy_abort <- function(
 #                               collided with a spicy-internal name
 #                               and was auto-renamed to preserve the
 #                               data; emitted by cross_tab())
+#   |- spicy_internal_invariant (an internal consistency check on a
+#                               spicy-built object failed; the result
+#                               still renders so the user can see both
+#                               the output and the diagnostic --
+#                               emitted by the structured-body
+#                               validator of table_regression())
 spicy_warn <- function(message, class = NULL, ...) {
   rlang::warn(
     message = message,
@@ -101,6 +107,56 @@ spicy_inform <- function(message, class = NULL, ...) {
     class = c(class, "spicy_info"),
     ...
   )
+}
+
+
+# Classed drop-in replacement for `match.arg()` on USER-FACING enum
+# arguments. Same matching semantics -- returns the first choice when
+# the argument is still the full default vector, partial-matches a
+# single string otherwise -- but an invalid value raises a classed
+# `spicy_invalid_input` error naming the argument and listing the
+# valid values, instead of the locale-dependent base "'arg' should be
+# one of ..." error (which escapes the documented
+# `tryCatch(spicy_error = ...)` catch-all).
+#
+# Like `match.arg()`, `choices = NULL` reads the choices from the
+# calling function's formal default for `arg`, so call sites stay
+# single-source: `output <- spicy_match_arg(output)`.
+#
+# Internal helpers with controlled inputs keep plain `match.arg()`;
+# this wrapper is for arguments a user can reach directly.
+spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
+  if (is.null(arg_name)) {
+    arg_name <- deparse1(substitute(arg))
+  }
+  if (is.null(choices)) {
+    fn <- sys.function(sys.parent())
+    choices <- eval(formals(fn)[[arg_name]], envir = environment(fn))
+  }
+  if (identical(arg, choices)) {
+    return(choices[[1L]])
+  }
+  matched <- NULL
+  is_string <- is.character(arg) && length(arg) == 1L && !is.na(arg)
+  if (is_string) {
+    matched <- tryCatch(
+      match.arg(arg, choices = choices),
+      error = function(e) NULL
+    )
+  }
+  if (is.null(matched)) {
+    spicy_abort(
+      sprintf(
+        "`%s` must be one of %s%s.",
+        arg_name,
+        paste0('"', choices, '"', collapse = ", "),
+        if (is_string) sprintf(', not "%s"', arg) else ""
+      ),
+      class = "spicy_invalid_input",
+      call = rlang::caller_env()
+    )
+  }
+  matched
 }
 
 

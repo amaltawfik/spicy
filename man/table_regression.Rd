@@ -109,9 +109,12 @@ cluster-jackknife). Three accepted forms (see \emph{How to specify
 on the fly).
 }
 For multi-model use, pass a list of one form per model
-(mix-and-match allowed). Bare unquoted names
-(\code{cluster = region}) are NOT accepted -- use \code{~region} or
-\code{"region"}. Default \code{NULL} (no clustering).}
+(mix-and-match allowed). A bare unquoted name
+(\code{cluster = region}) is not column selection: it is evaluated
+as an ordinary variable (the vector form when \code{region} exists
+in the calling environment, a migration error pointing at
+\code{~region} / \code{"region"} otherwise). Default \code{NULL} (no
+clustering).}
 
 \item{ci_level}{Confidence level for all reported CIs (B, \eqn{\beta}{beta},
 AME, partial effect sizes). Default \code{0.95}.}
@@ -1039,10 +1042,15 @@ a \strong{different dataset} with matching row order, or is
 otherwise not a column of the model's \code{data}.
 }
 
-Bare unquoted names (\code{cluster = region}) are \strong{not} accepted --
-they would require non-standard evaluation magic that breaks
-under programmatic use (function wrapping, dynamic column
-choice, loops). Use \code{~region} or \code{"region"} instead.
+A bare unquoted name (\code{cluster = region}) is \strong{not} column
+selection: it is evaluated as an ordinary R variable. If an object
+\code{region} exists in the calling environment, its value is used as
+the \strong{vector} form above; if it does not (the typical "unquoted
+column name" intent), the call fails with a migration error
+pointing at \code{~region} / \code{"region"}. Bare-name column selection is
+deliberately unsupported -- it would require non-standard
+evaluation magic that breaks under programmatic use (function
+wrapping, dynamic column choice, loops).
 
 For multi-model use, mix forms freely:
 \code{cluster = list(~region, "region", df$region)}.

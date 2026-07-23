@@ -616,8 +616,8 @@ table_categorical <- function(
   word_path = NULL
 ) {
   select_missing <- missing(select)
-  output <- match.arg(output)
-  align <- match.arg(align)
+  output <- spicy_match_arg(output)
+  align <- spicy_match_arg(align)
 
   # Global options (mirrors cross_tab()): an explicitly supplied
   # argument always wins; the option only fills in the default.
@@ -1608,7 +1608,7 @@ table_categorical <- function(
       })
       txt <- paste(lines, collapse = "\n")
       clipr::write_clip(txt)
-      message("Categorical table copied to clipboard.")
+      spicy_inform("Categorical table copied to clipboard.")
       return(invisible(txt))
     }
   }
@@ -2751,7 +2751,7 @@ table_categorical <- function(
     })
     txt <- paste(lines, collapse = "\n")
     clipr::write_clip(txt)
-    message("Categorical table copied to clipboard.")
+    spicy_inform("Categorical table copied to clipboard.")
     return(invisible(txt))
   }
 }

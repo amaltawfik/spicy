@@ -535,7 +535,7 @@ table_continuous <- function(
     effect_size <- if (isTRUE(effect_size)) "auto" else "none"
   }
   effect_size_explicit <- !missing(effect_size)
-  effect_size <- match.arg(effect_size)
+  effect_size <- spicy_match_arg(effect_size)
 
   if (
     !is.null(p_value) &&
@@ -543,10 +543,10 @@ table_continuous <- function(
   ) {
     spicy_abort("`p_value` must be TRUE, FALSE, or NULL.", class = "spicy_invalid_input")
   }
-  output <- match.arg(output)
+  output <- spicy_match_arg(output)
   test_explicit <- !missing(test)
-  test <- match.arg(test)
-  align <- match.arg(align)
+  test <- spicy_match_arg(test)
+  align <- spicy_match_arg(align)
 
   # --- by (grouping) handling ---
   group_quo <- rlang::enquo(by)
@@ -2216,7 +2216,7 @@ export_desc_table <- function(
     })
     txt <- paste(lines, collapse = "\n")
     clipr::write_clip(txt)
-    message("Descriptive statistics copied to clipboard.")
+    spicy_inform("Descriptive statistics copied to clipboard.")
     return(invisible(display_df))
   }
 

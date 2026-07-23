@@ -772,3 +772,38 @@ test_that("lambda_gk column detail covers L_col_max branch", {
   res <- lambda_gk(tab, direction = "column", detail = TRUE)
   expect_s3_class(res, "spicy_assoc_detail")
 })
+
+test_that("chi-squared measures return NA with a classed warning on zero-margin tables", {
+  tab0 <- as.table(matrix(c(4, 6, 0, 0), nrow = 2))
+  for (fn in list(cramer_v, phi, contingency_coef)) {
+    expect_warning(
+      res <- fn(tab0),
+      class = "spicy_undefined_stat"
+    )
+    expect_identical(res, NA_real_)
+    expect_warning(
+      det <- fn(tab0, detail = TRUE),
+      class = "spicy_undefined_stat"
+    )
+    expect_s3_class(det, "spicy_assoc_detail")
+    expect_true(all(is.na(as.numeric(det))))
+  }
+})
+
+test_that("assoc_measures survives a zero-margin table and re-emits the chi-squared warning once", {
+  tab0 <- as.table(matrix(c(4, 6, 0, 0), nrow = 2))
+  warns <- list()
+  res <- withCallingHandlers(
+    assoc_measures(tab0),
+    warning = function(w) {
+      warns[[length(warns) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_s3_class(res, "spicy_assoc_table")
+  chi_rows <- res$measure %in% c("Phi", "Cramer's V", "Contingency Coefficient")
+  expect_true(all(is.na(res$estimate[chi_rows])))
+  msgs <- vapply(warns, conditionMessage, character(1))
+  expect_identical(sum(grepl("chi-squared statistic is NaN", msgs)), 1L)
+  expect_true(any(vapply(warns, inherits, logical(1), "spicy_undefined_stat")))
+})

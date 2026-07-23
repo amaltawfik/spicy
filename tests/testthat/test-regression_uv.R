@@ -433,3 +433,24 @@ test_that("the footer names the cluster column through the wrapper", {
   )), collapse = "\n")
   expect_match(out, "clusters by region", fixed = TRUE)
 })
+
+test_that("family with method = 'lm': non-gaussian refused, gaussian ignored with a warning", {
+  set.seed(42)
+  df <- data.frame(
+    y = rnorm(40),
+    age = rnorm(40, 50, 10),
+    sex = factor(rep(c("F", "M"), 20))
+  )
+  expect_error(
+    table_regression_uv(df, outcome = y, predictors = c(age, sex),
+                        method = "lm", family = binomial()),
+    "not meaningful",
+    class = "spicy_invalid_input"
+  )
+  expect_warning(
+    out <- table_regression_uv(df, outcome = y, predictors = c(age, sex),
+                               method = "lm", family = gaussian()),
+    class = "spicy_ignored_arg"
+  )
+  expect_s3_class(out, "spicy_regression_table")
+})

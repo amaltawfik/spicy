@@ -287,6 +287,9 @@ rendering an empty column.
   `"all"`, so a typo supplied alongside `"all"` (e.g.
   `special = c("all", "banana")`) errors instead of being silently
   discarded.
+* `count_n(special = character(0))` errors with a clear classed
+  message (an empty `special` selects nothing to count) instead of
+  crashing downstream with an obscure base error.
 
 ## Minor improvements
 
@@ -308,6 +311,27 @@ rendering an empty column.
   still silences everything at once. Its invisible return value is
   now documented as the object actually sent to the clipboard
   (reflecting a requested row-name promotion).
+
+* Invalid values for the enum arguments of the user-facing surface
+  (`output`, `align`, `percent`, `assoc_measure`, `direction`,
+  `method`, ...) now raise a classed `spicy_invalid_input` error
+  naming the argument and its valid values, instead of the
+  locale-dependent base `match.arg()` error that escaped the
+  `tryCatch(spicy_error = ...)` catch-all.
+* `print()` on `cross_tab()` tables validates its `digits` argument
+  (single non-negative integer) with a classed error.
+* `spicy_print_table()` raises classed errors (`spicy_invalid_data` /
+  `spicy_invalid_input`) when `x` is not a data frame or
+  `display_labels` does not have one label per column, replacing bare
+  `stopifnot()` failures.
+* `table_categorical()`, `table_continuous()`, and
+  `table_continuous_lm()` announce their clipboard export with a
+  classed message (`spicy_info`), so it can be muffled with
+  `withCallingHandlers(spicy_info = ...)` like every other spicy
+  signal.
+* `table_regression()`'s internal invariant check on the structured
+  body warns with a classed condition (`spicy_internal_invariant`)
+  instead of a bare `warning()`.
 * Wide multi-model tables split into stacked panels more cleanly:
   continuation panels carry no empty stub rows, and over-wide column
   spanners truncate with a visible ellipsis.
@@ -330,6 +354,24 @@ rendering an empty column.
   `spicy_undefined_stat` for an undefined statistic) is re-emitted
   once after the table is assembled, so `--` rows come with their
   signal and condition handlers / `suppressWarnings()` keep working.
+* `cramer_v()`, `phi()`, and `contingency_coef()` return `NA` with a
+  `spicy_undefined_stat` warning on tables with a zero row or column
+  margin (the chi-squared statistic is NaN there), instead of a
+  silent `NaN` (`detail = FALSE`) or a crash (`detail = TRUE`); their
+  `assoc_measures()` rows now carry that signal too.
+* `cross_tab()` no longer blanket-suppresses warnings while computing
+  the association measure for its note: classed warnings from the
+  measures reach the caller, as in `assoc_measures()`.
+* `print()` on `freq()` tables invisibly returns the table object
+  itself (as documented), not the internally rebuilt display frame.
+* `label_from_names()` no longer blames the split for duplicate
+  column names that already existed in the input
+  (`check.names = FALSE` data): pre-existing duplicates pass through
+  untouched, and only collisions created by the renaming error.
+* `table_regression_uv()` no longer silently ignores `family` with
+  `method = "lm"`: a non-gaussian family is refused with the same
+  actionable error as the `coxph` refusal, and a supplied
+  `gaussian()` is ignored with a classed warning.
 * `gt` and `flextable` outputs now render in Quarto / R Markdown
   **Word**, PowerPoint, and PDF documents (they silently disappeared
   from non-HTML targets). A new `as_flextable()` method returns the
