@@ -17,7 +17,7 @@ test_that("safe_glyph_width falls back to nchar() for zero-width elements", {
 # ---- freq.R line 477: cum = TRUE with valid = FALSE ------------------------
 
 test_that("freq(cum = TRUE, valid = FALSE) fills cum_valid_prop with NA", {
-  f <- freq(c(1, 1, 2, NA), cum = TRUE, valid = FALSE, styled = FALSE)
+  f <- freq(c(1, 1, 2, NA), cum = TRUE, valid = FALSE, output = "data.frame")
   expect_identical(f$value, c("1", "2", NA))
   expect_equal(f$n, c(2, 1, 1))
   expect_equal(f$prop, c(0.5, 0.25, 0.25))

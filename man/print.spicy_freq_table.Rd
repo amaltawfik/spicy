@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{x}{A \code{data.frame} of class \code{"spicy_freq_table"} as returned
-by \code{\link[=freq]{freq()}} (with the default \code{styled = TRUE}). Rendering
+by \code{\link[=freq]{freq()}} (with the default \code{output = "default"}). Rendering
 metadata is read from attributes set by \code{freq()}.}
 
 \item{...}{Additional arguments (currently ignored).}

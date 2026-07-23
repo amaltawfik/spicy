@@ -11,6 +11,10 @@
 #   |- spicy_missing_pkg   (Suggests dependency not installed)
 #   |- spicy_missing_column(column name not found)
 #   |- spicy_unsupported   (op not applicable to this input)
+#   |- spicy_defunct       (argument removed in a pre-1.0 hard break;
+#                           the message names the replacement. Emitted
+#                           together with spicy_invalid_input so
+#                           generic input handlers still catch it)
 #
 # `call` defaults to the immediate caller of `spicy_abort()`, which
 # is typically the validator. Passing `call = rlang::caller_env(2)`

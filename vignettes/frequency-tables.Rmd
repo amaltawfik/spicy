@@ -203,11 +203,13 @@ cross_tab(sochealth, smoking, education,
 
 ### Data frame output
 
-Set `styled = FALSE` to get a plain data frame for further processing:
+Set `output = "data.frame"` to get a plain data frame for further
+processing. The same argument works in `freq()`, and the values match
+the `output` argument of the `table_*()` family:
 
 ```{r cross-df}
 cross_tab(sochealth, smoking, education,
-          percent = "column", styled = FALSE)
+          percent = "column", output = "data.frame")
 ```
 
 ## Setting global defaults

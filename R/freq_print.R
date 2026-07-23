@@ -5,7 +5,7 @@
 #' table using [spicy_print_table()].
 #'
 #' @param x A `data.frame` of class `"spicy_freq_table"` as returned
-#'   by [freq()] (with the default `styled = TRUE`). Rendering
+#'   by [freq()] (with the default `output = "default"`). Rendering
 #'   metadata is read from attributes set by `freq()`.
 #' @param ... Additional arguments (currently ignored).
 #'

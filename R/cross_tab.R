@@ -41,9 +41,18 @@
 #' @param digits Number of decimals for cell values: a single
 #'   non-negative integer. Defaults to `NULL`, which is resolved to
 #'   `1` when `percent != "none"` and `0` when `percent = "none"`
-#'   (counts are always integers).
-#' @param styled Logical. If `TRUE` (the default), returns a `spicy_cross_table` object
-#'   (for formatted printing). If `FALSE`, returns a plain `data.frame`.
+#'   (counts are always integers). Same role as `digits` in [freq()],
+#'   which formats percentages only and therefore uses a fixed
+#'   default of `1`.
+#' @param output Output format. `"default"` (the default) returns a
+#'   `spicy_cross_table` object (for formatted printing);
+#'   `"data.frame"` returns a plain `data.frame`. The values match the
+#'   `output` argument of the `table_*()` family; the rendered engines
+#'   that family also accepts (`"tinytable"`, `"gt"`, `"flextable"`,
+#'   ...) are not available in `cross_tab()`.
+#' @param styled Defunct. `styled = TRUE` is now `output = "default"`
+#'   (the default) and `styled = FALSE` is now `output = "data.frame"`;
+#'   supplying `styled` is an error.
 #' @param show_n Logical. If `TRUE` (the default), adds marginal N totals when
 #'   `percent != "none"`.
 #' @param decimal_mark Character used as the decimal mark in printed
@@ -57,25 +66,26 @@
 #'   matches the `p_digits` argument of the `table_*()` family.
 #'
 #' @return
-#' Depends on `styled` and `by`:
+#' Depends on `output` and `by`:
 #' \itemize{
-#'   \item `styled = TRUE`, no `by`: a `spicy_cross_table` object
+#'   \item `output = "default"`, no `by`: a `spicy_cross_table` object
 #'     (a `data.frame` carrying rendering metadata as attributes:
 #'     `title`, `digits`, `decimal_mark`, `n_row_idx`, `n_col_name`,
 #'     and the inferential block when `include_stats = TRUE`).
 #'     Printing dispatches to [print.spicy_cross_table()].
-#'   \item `styled = TRUE`, `by` supplied: a `spicy_cross_table_list`,
-#'     i.e. a named list of `spicy_cross_table` objects (one element
-#'     per group level, named by that level). Printing dispatches to
+#'   \item `output = "default"`, `by` supplied: a
+#'     `spicy_cross_table_list`, i.e. a named list of
+#'     `spicy_cross_table` objects (one element per group level, named
+#'     by that level). Printing dispatches to
 #'     [print.spicy_cross_table_list()] which renders each table in
 #'     turn separated by a blank line.
-#'   \item `styled = FALSE`: the same payload returned as a plain
-#'     `data.frame` (or named list of `data.frame`s with `by`),
+#'   \item `output = "data.frame"`: the same payload returned as a
+#'     plain `data.frame` (or named list of `data.frame`s with `by`),
 #'     stripped of the `spicy_*` classes and of every metadata
 #'     attribute (`title`, `note`, `n_total`, `chi2`, `p_value`,
 #'     `assoc_*`, ...). For programmatic access to the statistics,
-#'     read the attributes of the default `styled = TRUE` object,
-#'     e.g. `attr(cross_tab(...), "p_value")`.
+#'     read the attributes of the default object, e.g.
+#'     `attr(cross_tab(...), "p_value")`.
 #' }
 #'
 #' Cell columns are the levels of `y`; rows are the levels of `x`.
@@ -165,11 +175,22 @@ cross_tab <- function(
   simulate_p = FALSE,
   simulate_B = 2000,
   digits = NULL,
-  styled = TRUE,
+  output = c("default", "data.frame"),
   show_n = TRUE,
   decimal_mark = ".",
-  p_digits = 3L
+  p_digits = 3L,
+  styled
 ) {
+  # Migration guard first, so old `styled =` calls get the actionable
+  # replacement message before any other validation can fire.
+  if (!missing(styled)) {
+    abort_styled_defunct("cross_tab")
+  }
+  output <- match_tabulation_output(output, "cross_tab")
+  # Internal shorthand: TRUE when the classed console object (margins,
+  # metadata attributes, print method) is requested.
+  console_output <- output == "default"
+
   if (missing(data)) {
     spicy_abort(
       "You must provide a dataset or a vector for `data`.",
@@ -612,9 +633,9 @@ cross_tab <- function(
     # Resolve unique internal column names BEFORE prepending the
     # row-identifier or appending margin columns. Three names are
     # spicy-internal: "Values" (the row-identifier column, always
-    # added), "Total" (the margin column, added when styled and
-    # percent != "none"), and "N" (the sample-size column, added
-    # only when styled, percent = "row" and show_n = TRUE). When a
+    # added), "Total" (the margin column, added to the console object
+    # only), and "N" (the sample-size column, added to the console
+    # object only when percent = "row" and show_n = TRUE). When a
     # y-variable level already occupies one of those names (e.g.
     # "N" from a Y/N answer coding, "Total" from a literal "Total"
     # category, "Values" from an unusual but possible y-level), the
@@ -632,7 +653,7 @@ cross_tab <- function(
       "Total",
       c(y_level_cols, identifier_col)
     )
-    n_col <- if (styled && percent == "row" && show_n) {
+    n_col <- if (console_output && percent == "row" && show_n) {
       make_unique_col_name(
         "N",
         c(y_level_cols, identifier_col, total_col)
@@ -656,14 +677,14 @@ cross_tab <- function(
         sprintf("\"Values\" (row identifier) -> \"%s\"", identifier_col)
       )
     }
-    if (styled && total_col != "Total") {
+    if (console_output && total_col != "Total") {
       renamed <- c(
         renamed,
         sprintf("\"Total\" (margin) -> \"%s\"", total_col)
       )
     }
     if (
-      styled &&
+      console_output &&
         percent == "row" &&
         show_n &&
         n_col != "N"
@@ -686,7 +707,7 @@ cross_tab <- function(
       )
     }
 
-    if (styled) {
+    if (console_output) {
       if (percent == "column") {
         total_values <- colSums(tab_perc, na.rm = TRUE)
         n_values <- colSums(tab_full, na.rm = TRUE)
@@ -1018,12 +1039,16 @@ cross_tab <- function(
     # Mark the N row / N column position robustly (string-matching on
     # `Values == "N"` would collide with a user-level literally named
     # "N", e.g. Yes/No factors).
-    attr(df_out, "n_row_idx") <- if (styled && percent == "column" && show_n) {
+    attr(df_out, "n_row_idx") <- if (
+      console_output && percent == "column" && show_n
+    ) {
       nrow(df_out)
     } else {
       NA_integer_
     }
-    attr(df_out, "n_col_name") <- if (styled && percent == "row" && show_n) {
+    attr(df_out, "n_col_name") <- if (
+      console_output && percent == "row" && show_n
+    ) {
       n_col
     } else {
       NA_character_
@@ -1031,8 +1056,8 @@ cross_tab <- function(
     # Tell `spicy_print_table()` exactly where the Total row sits so it
     # does not have to grep the formatted text (and therefore never
     # mis-fires when a user category is literally named "Total").
-    attr(df_out, "total_row_idx") <- if (styled) {
-      n_row_added <- styled && percent == "column" && show_n
+    attr(df_out, "total_row_idx") <- if (console_output) {
+      n_row_added <- console_output && percent == "column" && show_n
       total_idx <- nrow(df_out) - as.integer(n_row_added)
       if (total_idx >= 1L) total_idx else NULL # nocov
     } else {
@@ -1078,7 +1103,7 @@ cross_tab <- function(
     )
     names(tables) <- level_names
 
-    if (styled) {
+    if (console_output) {
       tables <- lapply(tables, function(tt) {
         class(tt) <- c("spicy_cross_table", "spicy_table", class(tt))
         tt
@@ -1092,7 +1117,7 @@ cross_tab <- function(
     out <- compute_ctab(data)
   }
 
-  if (styled) {
+  if (console_output) {
     class(out) <- c("spicy_cross_table", "spicy_table", class(out))
     out
   } else {
@@ -1102,10 +1127,11 @@ cross_tab <- function(
 
 
 # Internal: return `df` as a genuinely plain data.frame -- the
-# `styled = FALSE` contract. Drops every spicy metadata attribute
-# (title, note, n_total, chi2, p_value, assoc_*, ...) the same way
-# freq()'s plain branch never attaches them. Programmatic access to
-# the statistics goes through the attributes of the styled object.
+# `output = "data.frame"` contract. Drops every spicy metadata
+# attribute (title, note, n_total, chi2, p_value, assoc_*, ...) the
+# same way freq()'s plain branch never attaches them. Programmatic
+# access to the statistics goes through the attributes of the default
+# console object.
 strip_spicy_table_attrs <- function(df) {
   out <- as.data.frame(df, stringsAsFactors = FALSE)
   keep <- c("names", "row.names", "class")
@@ -1113,6 +1139,91 @@ strip_spicy_table_attrs <- function(df) {
     attr(out, a) <- NULL
   }
   out
+}
+
+
+# Internal: classed validation for the `output` argument shared by
+# freq() and cross_tab(). The two tabulators support the console
+# object ("default") and the plain-data.frame payload ("data.frame"),
+# named after the same values in the table_*() family so a single
+# `output` vocabulary covers the whole package. The rendered-engine
+# values the table_*() family also accepts (tinytable, gt, flextable,
+# ...) are recognized here only to produce a more specific error;
+# they may be wired up later but are refused today.
+match_tabulation_output <- function(output, fn_name) {
+  choices <- c("default", "data.frame")
+
+  # The unevaluated signature default (the full choices vector)
+  # resolves to its first element, exactly like match.arg().
+  if (identical(output, choices)) {
+    return(choices[[1L]])
+  }
+  if (
+    is.character(output) &&
+      length(output) == 1L &&
+      !is.na(output) &&
+      output %in% choices
+  ) {
+    return(output)
+  }
+
+  engine_values <- c(
+    "long",
+    "tinytable",
+    "gt",
+    "flextable",
+    "excel",
+    "clipboard",
+    "word"
+  )
+  engine_hint <- if (
+    is.character(output) &&
+      length(output) == 1L &&
+      !is.na(output) &&
+      output %in% engine_values
+  ) {
+    c(
+      "i" = sprintf(
+        "output = \"%s\" is only available in the table_*() functions (e.g. table_categorical()).",
+        output
+      )
+    )
+  } else {
+    NULL
+  }
+
+  spicy_abort(
+    c(
+      sprintf(
+        "`output` must be \"default\" or \"data.frame\" in `%s()`.",
+        fn_name
+      ),
+      "i" = "\"default\" returns the console table object (prints as ASCII).",
+      "i" = "\"data.frame\" returns a plain data.frame.",
+      engine_hint
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
+# Internal: hard migration error for the removed `styled` argument of
+# freq() and cross_tab() (replaced by `output` in spicy 0.13.0).
+# `styled` survives as a default-less formal in both signatures purely
+# so that old `styled =` calls land here and get the actionable
+# replacement message instead of R's bare "unused argument" error.
+abort_styled_defunct <- function(fn_name) {
+  spicy_abort(
+    c(
+      sprintf(
+        "The `styled` argument of `%s()` is defunct: use `output` instead.",
+        fn_name
+      ),
+      "i" = "Replace `styled = TRUE` with `output = \"default\"` (the default).",
+      "i" = "Replace `styled = FALSE` with `output = \"data.frame\"`."
+    ),
+    class = c("spicy_defunct", "spicy_invalid_input")
+  )
 }
 
 

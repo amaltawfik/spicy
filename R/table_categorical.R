@@ -1057,7 +1057,7 @@ table_categorical <- function(
           x,
           rescale = rescale,
           valid = FALSE,
-          styled = FALSE
+          output = "data.frame"
         )
       } else {
         spicy::freq(
@@ -1065,7 +1065,7 @@ table_categorical <- function(
           weights = w,
           rescale = rescale,
           valid = FALSE,
-          styled = FALSE
+          output = "data.frame"
         )
       }
       vals <- as.character(ft$value)

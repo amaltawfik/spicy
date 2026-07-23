@@ -17,7 +17,8 @@ freq(
   factor_levels = c("observed", "all"),
   rescale = FALSE,
   decimal_mark = ".",
-  styled = TRUE
+  output = c("default", "data.frame"),
+  styled
 )
 }
 \arguments{
@@ -36,7 +37,10 @@ environment), which always takes precedence over \code{data} lookup.
 Observations with \code{NA} weights are dropped from the table with a
 warning; see \code{Details}.}
 
-\item{digits}{Number of decimal digits to display for percentages (default: \code{1}).}
+\item{digits}{Number of decimal digits to display for percentages
+(default: \code{1}). Same role as \code{digits} in \code{\link[=cross_tab]{cross_tab()}}, where the
+\code{NULL} default resolves to the same \code{1} decimal whenever
+percentages are shown.}
 
 \item{valid}{Logical. If \code{TRUE} (default), display valid percentages
 (excluding missing values).}
@@ -93,13 +97,21 @@ percentages. Either \code{"."} (the default) or \code{","}. Matches the
 \verb{table_*()} helpers, so European-locale users get a consistent
 experience across the package.}
 
-\item{styled}{Logical. If \code{TRUE} (default), return a \code{spicy_freq_table}
-object that auto-prints as a formatted spicy table.
-If \code{FALSE}, return a plain \code{data.frame} with frequency values.}
+\item{output}{Output format. \code{"default"} (the default) returns a
+\code{spicy_freq_table} object that auto-prints as a formatted spicy
+table; \code{"data.frame"} returns a plain \code{data.frame} with frequency
+values. The values match the \code{output} argument of the \verb{table_*()}
+family; the rendered engines that family also accepts
+(\code{"tinytable"}, \code{"gt"}, \code{"flextable"}, ...) are not available in
+\code{freq()}.}
+
+\item{styled}{Defunct. \code{styled = TRUE} is now \code{output = "default"}
+(the default) and \code{styled = FALSE} is now \code{output = "data.frame"};
+supplying \code{styled} is an error.}
 }
 \value{
-With \code{styled = FALSE}, a plain \code{data.frame} with no extra attributes
-and columns:
+With \code{output = "data.frame"}, a plain \code{data.frame} with no extra
+attributes and columns:
 \itemize{
 \item \code{value} - unique values or factor levels
 \item \code{n} - frequency count (weighted if applicable)
@@ -108,7 +120,7 @@ and columns:
 \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if \code{cum = TRUE})
 }
 
-With \code{styled = TRUE} (default), a \code{spicy_freq_table} object: the same
+With \code{output = "default"} (the default), a \code{spicy_freq_table} object: the same
 \code{data.frame} carrying rendering metadata as attributes (\code{digits},
 \code{data_name}, \code{var_name}, \code{var_label}, \code{class_name}, \code{n_total},
 \code{n_valid}, \code{weighted}, \code{rescaled}, \code{weight_var}) used by
@@ -121,11 +133,11 @@ Creates a frequency table for a vector or variable from a data frame, with
 options for weighting, sorting, handling \emph{labelled} data, defining custom
 missing values, and displaying cumulative percentages.
 
-When \code{styled = TRUE} (the default), the function returns a
+With \code{output = "default"}, the function returns a
 \code{spicy_freq_table} object that auto-prints as a spicy-formatted ASCII
-table via \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} and \code{\link[=spicy_print_table]{spicy_print_table()}};
-otherwise, it returns a plain \code{data.frame} containing frequencies and
-proportions.
+table via \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} and \code{\link[=spicy_print_table]{spicy_print_table()}}; with
+\code{output = "data.frame"}, it returns a plain \code{data.frame} containing
+frequencies and proportions.
 }
 \details{
 Designed to mimic common frequency procedures from SPSS or Stata
@@ -203,8 +215,8 @@ df |> freq(sex, sort = "name-")
 # European decimal mark (matches `cross_tab()` and the `table_*()` family)
 freq(sochealth, education, decimal_mark = ",")
 
-# Non-styled return (for programmatic use)
-f <- freq(df, sex, styled = FALSE)
+# Plain data.frame return (for programmatic use)
+f <- freq(df, sex, output = "data.frame")
 head(f)
 
 }

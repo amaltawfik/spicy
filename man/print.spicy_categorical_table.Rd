@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{x}{A \code{data.frame} of class \code{"spicy_categorical_table"} as returned by
-\code{\link[=table_categorical]{table_categorical()}} with \code{output = "default"} and \code{styled = TRUE}.}
+\code{\link[=table_categorical]{table_categorical()}} with \code{output = "default"}.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

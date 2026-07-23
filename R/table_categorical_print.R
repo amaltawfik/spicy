@@ -5,7 +5,7 @@
 #' [spicy_print_table()].
 #'
 #' @param x A `data.frame` of class `"spicy_categorical_table"` as returned by
-#'   [table_categorical()] with `output = "default"` and `styled = TRUE`.
+#'   [table_categorical()] with `output = "default"`.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return Invisibly returns `x`.

@@ -4,7 +4,7 @@ on.exit(options(old_opts)) # restore previous user options after tests
 
 test_that("cross_tab basic two-way table works", {
   data <- mtcars
-  res <- cross_tab(data, cyl, gear, styled = FALSE)
+  res <- cross_tab(data, cyl, gear, output = "data.frame")
 
   expect_s3_class(res, "data.frame")
   expect_true("Values" %in% names(res))
@@ -19,7 +19,7 @@ test_that("cross_tab basic two-way table works", {
 
 test_that("cross_tab supports grouping with by", {
   data <- mtcars
-  res <- cross_tab(data, cyl, gear, by = am, styled = FALSE)
+  res <- cross_tab(data, cyl, gear, by = am, output = "data.frame")
 
   expect_type(res, "list")
   expect_length(res, length(unique(data$am)))
@@ -28,7 +28,13 @@ test_that("cross_tab supports grouping with by", {
 
 test_that("cross_tab supports interaction() in by", {
   data <- mtcars
-  res <- cross_tab(data, cyl, gear, by = interaction(vs, am), styled = FALSE)
+  res <- cross_tab(
+    data,
+    cyl,
+    gear,
+    by = interaction(vs, am),
+    output = "data.frame"
+  )
 
   expect_type(res, "list")
   expect_length(res, length(unique(interaction(data$vs, data$am))))
@@ -99,7 +105,7 @@ test_that("cross_tab respects global options spicy.simulate_p and spicy.rescale"
   options(old_opts)
 })
 
-test_that("cross_tab returns spicy_cross_table or list when styled = TRUE", {
+test_that("cross_tab returns spicy_cross_table or list with the default output", {
   data <- mtcars
   res1 <- cross_tab(data, cyl, gear)
   res2 <- cross_tab(data, cyl, gear, by = am)
@@ -144,14 +150,14 @@ test_that("cross_tab validates weights length in data.frame and vector modes", {
   )
 
   expect_error(
-    cross_tab(df, x, y, weights = c(1, 2), styled = FALSE),
+    cross_tab(df, x, y, weights = c(1, 2), output = "data.frame"),
     "`weights` must have the same length as the number of rows.",
     fixed = TRUE,
     class = "spicy_invalid_data"
   )
 
   expect_error(
-    cross_tab(df$x, df$y, weights = c(1, 2), styled = FALSE),
+    cross_tab(df$x, df$y, weights = c(1, 2), output = "data.frame"),
     "`weights` must have the same length as `x` and `y` in vector mode.",
     fixed = TRUE,
     class = "spicy_invalid_data"
@@ -166,7 +172,7 @@ test_that("cross_tab rejects rescale when weight sum is zero", {
   )
 
   expect_error(
-    cross_tab(df, x, y, weights = w, rescale = TRUE, styled = FALSE),
+    cross_tab(df, x, y, weights = w, rescale = TRUE, output = "data.frame"),
     "`rescale = TRUE` requires a strictly positive sum of weights.",
     fixed = TRUE,
     class = "spicy_invalid_input"
@@ -175,7 +181,7 @@ test_that("cross_tab rejects rescale when weight sum is zero", {
 
 test_that("cross_tab fails early when y is explicitly NULL", {
   expect_error(
-    cross_tab(mtcars, cyl, y = NULL, styled = FALSE),
+    cross_tab(mtcars, cyl, y = NULL, output = "data.frame"),
     "You must specify a `y` variable",
     fixed = TRUE,
     class = "spicy_invalid_input"
@@ -193,7 +199,7 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
   # warning; group B is 2x2 and gets Yates applied. The warning itself
   # is asserted in the dedicated test below.
   out <- suppressWarnings(
-    cross_tab(df, x, y, by = g, correct = TRUE, styled = TRUE)
+    cross_tab(df, x, y, by = g, correct = TRUE, output = "default")
   )
   note_b <- attr(out[["B"]], "note")
 
@@ -223,7 +229,7 @@ test_that("cross_tab warns when `correct = TRUE` is ignored on non-2x2 sub-table
     y = c("k", "l", "k", "l", "k", "l", "k", "k", "l", "l", "k", "k", "l", "l")
   )
   expect_warning(
-    cross_tab(df, x, y, by = g, correct = TRUE, styled = TRUE),
+    cross_tab(df, x, y, by = g, correct = TRUE, output = "default"),
     "Yates continuity correction only applies to 2x2 tables"
   )
 })
@@ -282,15 +288,15 @@ test_that("cross_tab column percent shows column percentages", {
   expect_identical(attr(res, "title"), "Crosstable: cyl x gear (Column %)")
 })
 
-test_that("cross_tab styled row percent includes Total and N rows", {
-  res <- cross_tab(mtcars, cyl, gear, percent = "row", styled = TRUE)
+test_that("cross_tab default row percent includes Total and N rows", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "row", output = "default")
   expect_true("N" %in% names(res))
   vals <- res$Values
   expect_true("Total" %in% vals)
 })
 
-test_that("cross_tab styled column percent includes Total and N rows", {
-  res <- cross_tab(mtcars, cyl, gear, percent = "column", styled = TRUE)
+test_that("cross_tab default column percent includes Total and N rows", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "column", output = "default")
   vals <- res$Values
   expect_true("Total" %in% vals)
   expect_true("N" %in% vals)
@@ -303,7 +309,7 @@ test_that("cross_tab show_n = FALSE omits N row/column", {
     gear,
     percent = "row",
     show_n = FALSE,
-    styled = TRUE
+    output = "default"
   )
   expect_false("N" %in% names(res))
   res2 <- cross_tab(
@@ -312,7 +318,7 @@ test_that("cross_tab show_n = FALSE omits N row/column", {
     gear,
     percent = "column",
     show_n = FALSE,
-    styled = TRUE
+    output = "default"
   )
   expect_false("N" %in% res2$Values)
 })
@@ -465,7 +471,7 @@ test_that("cross_tab warns when `weights` contain NA values", {
     w = c(1, 2, NA, NA, 1)
   )
   expect_warning(
-    cross_tab(df, x, y, weights = w, styled = FALSE),
+    cross_tab(df, x, y, weights = w, output = "data.frame"),
     "NA value.+in `weights`"
   )
   # The two NA-weighted rows are excluded -> n_total = 3
@@ -547,7 +553,7 @@ test_that("cross_tab marks N row via attribute (robust to user level 'N')", {
     x = c("Yes", "No", "Yes", "No", "Yes"),
     y = c("A", "B", "A", "B", "B")
   )
-  res <- cross_tab(df, x, y, percent = "column", styled = TRUE)
+  res <- cross_tab(df, x, y, percent = "column", output = "default")
   # The N row attribute should point to the LAST row (after Total)
   expect_equal(attr(res, "n_row_idx"), nrow(res))
   expect_identical(attr(res, "n_col_name"), NA_character_)
@@ -562,7 +568,7 @@ test_that("cross_tab marks N column via attribute in row-percent mode", {
     x = c("A", "B", "A", "B", "A"),
     y = c("X", "Y", "X", "Y", "Y")
   )
-  res <- cross_tab(df, x, y, percent = "row", styled = TRUE)
+  res <- cross_tab(df, x, y, percent = "row", output = "default")
   expect_identical(attr(res, "n_col_name"), "N")
   expect_true(is.na(attr(res, "n_row_idx")))
 })
@@ -578,7 +584,7 @@ test_that("cross_tab decimal_mark / p_digits round-trip through print method", {
     y,
     percent = "column",
     decimal_mark = ",",
-    styled = TRUE
+    output = "default"
   )
   out <- capture.output(print(res))
   expect_true(any(grepl(",", out)))
@@ -603,14 +609,14 @@ test_that("cross_tab vector input with by works", {
   x <- c("A", "B", "A", "B")
   y <- c("X", "Y", "X", "Y")
   by <- c("G1", "G1", "G2", "G2")
-  res <- cross_tab(x, y, by = by, styled = FALSE)
+  res <- cross_tab(x, y, by = by, output = "data.frame")
   expect_type(res, "list")
   expect_length(res, 2)
 })
 
 test_that("cross_tab vector input by length mismatch errors", {
   expect_error(
-    cross_tab(c("A", "B"), c("X", "Y"), by = c("G1"), styled = FALSE),
+    cross_tab(c("A", "B"), c("X", "Y"), by = c("G1"), output = "data.frame"),
     "same length",
     class = "spicy_invalid_data"
   )
@@ -618,7 +624,7 @@ test_that("cross_tab vector input by length mismatch errors", {
 
 test_that("cross_tab vector input x/y length mismatch errors", {
   expect_error(
-    cross_tab(c("A", "B", "C"), c("X", "Y"), styled = FALSE),
+    cross_tab(c("A", "B", "C"), c("X", "Y"), output = "data.frame"),
     "same length",
     class = "spicy_invalid_data"
   )
@@ -626,7 +632,7 @@ test_that("cross_tab vector input x/y length mismatch errors", {
 
 test_that("cross_tab rescale without weights warns", {
   expect_warning(
-    cross_tab(mtcars, cyl, gear, rescale = TRUE, styled = FALSE),
+    cross_tab(mtcars, cyl, gear, rescale = TRUE, output = "data.frame"),
     "no effect"
   )
 })
@@ -642,13 +648,13 @@ test_that("cross_tab percent = 'none' shows N in title", {
   expect_identical(attr(res, "title"), "Crosstable: cyl x gear (N)")
 })
 
-test_that("cross_tab styled percent = 'none' with digits", {
-  res <- cross_tab(mtcars, cyl, gear, percent = "none", styled = TRUE)
+test_that("cross_tab default percent = 'none' with digits", {
+  res <- cross_tab(mtcars, cyl, gear, percent = "none", output = "default")
   expect_output(print(res))
 })
 
 test_that("print.spicy_cross_table formats N row in column percent", {
-  res <- cross_tab(mtcars, cyl, gear, percent = "column", styled = TRUE)
+  res <- cross_tab(mtcars, cyl, gear, percent = "column", output = "default")
   out <- capture.output(print(res))
   # Pin the full N row (│ is the table's vertical rule); anchored
   # so a wrong label or wrong counts cannot slip through.
@@ -658,7 +664,7 @@ test_that("print.spicy_cross_table formats N row in column percent", {
 })
 
 test_that("print.spicy_cross_table formats N column in row percent", {
-  res <- cross_tab(mtcars, cyl, gear, percent = "row", styled = TRUE)
+  res <- cross_tab(mtcars, cyl, gear, percent = "row", output = "default")
   out <- capture.output(print(res))
   # Pin the full header row: the N column must sit after Total.
   header <- out[grepl("^ Values ", out)]
@@ -679,13 +685,13 @@ test_that("cross_tab vector mode with interaction by", {
   y <- c("X", "Y", "X", "Y", "X", "Y")
   g1 <- c("M", "M", "F", "F", "M", "F")
   g2 <- c("Y", "Y", "Y", "O", "O", "O")
-  res <- cross_tab(x, y, by = interaction(g1, g2), styled = FALSE)
+  res <- cross_tab(x, y, by = interaction(g1, g2), output = "data.frame")
   expect_type(res, "list")
 })
 
 test_that("cross_tab with [[ extraction preserves var name", {
   d <- data.frame(a = c("X", "Y", "X"), b = c("M", "F", "M"))
-  res <- cross_tab(d[["a"]], d[["b"]], styled = FALSE)
+  res <- cross_tab(d[["a"]], d[["b"]], output = "data.frame")
   expect_s3_class(res, "data.frame")
 })
 
@@ -711,7 +717,7 @@ test_that("cross_tab vector mode rejects mismatched by length", {
 
 test_that("cross_tab with $ accessor extracts var name", {
   d <- data.frame(aa = c("X", "Y", "X"), bb = c("M", "F", "M"))
-  res <- cross_tab(d$aa, d$bb, styled = FALSE)
+  res <- cross_tab(d$aa, d$bb, output = "data.frame")
   expect_s3_class(res, "data.frame")
 })
 
@@ -735,13 +741,13 @@ test_that("cross_tab weighted without stats shows weight note alone", {
   expect_true("Weight: w" %in% out)
 })
 
-test_that("cross_tab percent column styled output", {
+test_that("cross_tab percent column default output", {
   out <- capture.output(cross_tab(mtcars, cyl, gear, percent = "column"))
   expect_identical(out[1], "Crosstable: cyl x gear (Column %)")
   expect_true(any(grepl("%", out)))
 })
 
-test_that("cross_tab percent row styled output", {
+test_that("cross_tab percent row default output", {
   out <- capture.output(cross_tab(mtcars, cyl, gear, percent = "row"))
   expect_identical(out[1], "Crosstable: cyl x gear (Row %)")
   expect_true(any(grepl("%", out)))
@@ -755,13 +761,13 @@ test_that("cross_tab invalid assoc_measure errors", {
 
 test_that("cross_tab tryCatch fallback for complex x/y expressions", {
   d <- data.frame(a = c("X", "Y", "X"), b = c("M", "F", "M"))
-  res <- cross_tab(d, a, b, styled = FALSE)
+  res <- cross_tab(d, a, b, output = "data.frame")
   expect_s3_class(res, "data.frame")
 })
 
 test_that("cross_tab print without Values column", {
   d <- data.frame(x = c("A", "B"), y = c("X", "Y"))
-  res <- cross_tab(d, x, y, styled = FALSE)
+  res <- cross_tab(d, x, y, output = "data.frame")
   names(res)[names(res) == "Values"] <- "Category"
   class(res) <- c("spicy_cross_table", "spicy_table", "data.frame")
   attr(res, "title") <- "Test (N)"
@@ -771,7 +777,7 @@ test_that("cross_tab print without Values column", {
 
 test_that("cross_tab print uses digits=1 for percent titles", {
   d <- data.frame(x = c("A", "B", "A"), y = c("X", "Y", "X"))
-  res <- cross_tab(d, x, y, percent = "row", styled = FALSE)
+  res <- cross_tab(d, x, y, percent = "row", output = "data.frame")
   class(res) <- c("spicy_cross_table", "spicy_table", class(res))
   attr(res, "title") <- "Table (Row %)"
   attr(res, "digits") <- NULL
@@ -782,18 +788,18 @@ test_that("cross_tab print uses digits=1 for percent titles", {
 test_that("cross_tab vector mode with [[ symbol index extracts name", {
   d <- data.frame(aa = c("X", "Y", "X"), bb = c("M", "F", "M"))
   col <- "aa"
-  res <- cross_tab(d[[col]], d[["bb"]], styled = FALSE)
+  res <- cross_tab(d[[col]], d[["bb"]], output = "data.frame")
   expect_s3_class(res, "data.frame")
 })
 
 test_that("cross_tab vector mode with function-wrapped expression", {
   d <- data.frame(aa = c("x", "y", "x"), bb = c("M", "F", "M"))
-  res <- cross_tab(toupper(d$aa), d$bb, styled = FALSE)
+  res <- cross_tab(toupper(d$aa), d$bb, output = "data.frame")
   expect_s3_class(res, "data.frame")
 })
 
 test_that("cross_tab handles all-NA vector in make_levels", {
-  res <- cross_tab(c(NA, NA), c("A", "B"), styled = FALSE)
+  res <- cross_tab(c(NA, NA), c("A", "B"), output = "data.frame")
   expect_s3_class(res, "data.frame")
 })
 
@@ -803,15 +809,15 @@ test_that("cross_tab DF mode with complex x/y expressions triggers tryCatch fall
     b = c("M", "F", "M", "F"),
     c = c("P", "Q", "P", "Q")
   )
-  res <- cross_tab(d, interaction(a, b), c, styled = FALSE)
+  res <- cross_tab(d, interaction(a, b), c, output = "data.frame")
   expect_s3_class(res, "data.frame")
-  res2 <- cross_tab(d, c, interaction(a, b), styled = FALSE)
+  res2 <- cross_tab(d, c, interaction(a, b), output = "data.frame")
   expect_s3_class(res2, "data.frame")
 })
 
 test_that("cross_tab print uses digits=0 for count titles", {
   d <- data.frame(x = c("A", "B", "A"), y = c("X", "Y", "X"))
-  res <- cross_tab(d, x, y, styled = FALSE)
+  res <- cross_tab(d, x, y, output = "data.frame")
   class(res) <- c("spicy_cross_table", "spicy_table", class(res))
   attr(res, "title") <- "Table (N)"
   attr(res, "digits") <- NULL
@@ -974,13 +980,13 @@ test_that("cross_tab warns when a third positional argument is given in vector m
     z = c("u", "v", "u", "v")
   )
   expect_warning(
-    cross_tab(df$x, df$y, df$z, styled = FALSE),
+    cross_tab(df$x, df$y, df$z, output = "data.frame"),
     class = "spicy_ignored_arg"
   )
   # The result is the x-by-y table: `z` plays no role.
   expect_identical(
-    suppressWarnings(cross_tab(df$x, df$y, df$z, styled = FALSE)),
-    cross_tab(df$x, df$y, styled = FALSE)
+    suppressWarnings(cross_tab(df$x, df$y, df$z, output = "data.frame")),
+    cross_tab(df$x, df$y, output = "data.frame")
   )
 })
 
@@ -996,7 +1002,7 @@ test_that("cross_tab vector-mode `y` warning never forces the promise", {
         forced <- TRUE
         stop("never evaluated")
       },
-      styled = FALSE
+      output = "data.frame"
     )
   )
   expect_false(forced)
@@ -1005,10 +1011,15 @@ test_that("cross_tab vector-mode `y` warning never forces the promise", {
 
 test_that("cross_tab vector mode without a third argument stays silent", {
   expect_no_warning(
-    cross_tab(c("A", "B", "A"), c("X", "Y", "X"), styled = FALSE)
+    cross_tab(c("A", "B", "A"), c("X", "Y", "X"), output = "data.frame")
   )
   expect_no_warning(
-    cross_tab(c("A", "B", "A"), c("X", "Y", "X"), y = NULL, styled = FALSE)
+    cross_tab(
+      c("A", "B", "A"),
+      c("X", "Y", "X"),
+      y = NULL,
+      output = "data.frame"
+    )
   )
 })
 
@@ -1020,16 +1031,21 @@ test_that("cross_tab accepts logical weights in both modes (parity with freq)", 
   )
   df$keep_num <- as.numeric(df$keep)
 
-  res_lgl <- cross_tab(df, x, y, weights = keep, styled = FALSE)
-  res_num <- cross_tab(df, x, y, weights = keep_num, styled = FALSE)
+  res_lgl <- cross_tab(df, x, y, weights = keep, output = "data.frame")
+  res_num <- cross_tab(df, x, y, weights = keep_num, output = "data.frame")
   expect_identical(res_lgl, res_num)
 
-  res_vec <- cross_tab(df$x, df$y, weights = df$keep, styled = FALSE)
-  res_vec_num <- cross_tab(df$x, df$y, weights = df$keep_num, styled = FALSE)
+  res_vec <- cross_tab(df$x, df$y, weights = df$keep, output = "data.frame")
+  res_vec_num <- cross_tab(
+    df$x,
+    df$y,
+    weights = df$keep_num,
+    output = "data.frame"
+  )
   expect_identical(res_vec, res_vec_num)
 
   # Same weighted total as freq() on the margin.
-  f <- freq(df$x, weights = df$keep, styled = FALSE)
+  f <- freq(df$x, weights = df$keep, output = "data.frame")
   expect_equal(sum(f$n), sum(df$keep_num))
   expect_equal(
     attr(cross_tab(df, x, y, weights = keep), "n_total"),
@@ -1043,16 +1059,43 @@ test_that("cross_tab accepts logical weights in both modes (parity with freq)", 
   )
 })
 
-test_that("cross_tab styled = FALSE returns a genuinely plain payload", {
-  res <- cross_tab(mtcars, cyl, gear, styled = FALSE)
+test_that("cross_tab output = 'data.frame' returns a genuinely plain payload", {
+  res <- cross_tab(mtcars, cyl, gear, output = "data.frame")
   expect_setequal(names(attributes(res)), c("names", "row.names", "class"))
   expect_identical(class(res), "data.frame")
 
-  res_by <- cross_tab(mtcars, cyl, gear, by = am, styled = FALSE)
+  res_by <- cross_tab(mtcars, cyl, gear, by = am, output = "data.frame")
   for (el in res_by) {
     expect_setequal(names(attributes(el)), c("names", "row.names", "class"))
     expect_identical(class(el), "data.frame")
   }
+})
+
+test_that("cross_tab validates output with a classed error", {
+  expect_error(
+    cross_tab(mtcars, cyl, gear, output = "console"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    cross_tab(mtcars, cyl, gear, output = TRUE),
+    class = "spicy_invalid_input"
+  )
+  # table_*()-only rendered engines are refused, not silently mapped.
+  expect_error(
+    cross_tab(mtcars, cyl, gear, output = "flextable"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("cross_tab styled is defunct with a migration error", {
+  expect_error(
+    cross_tab(mtcars, cyl, gear, styled = TRUE),
+    class = "spicy_defunct"
+  )
+  expect_error(
+    cross_tab(mtcars, cyl, gear, styled = FALSE),
+    class = "spicy_defunct"
+  )
 })
 
 test_that("cross_tab validates `digits` like freq()", {
@@ -1066,11 +1109,18 @@ test_that("cross_tab validates `digits` like freq()", {
   }
   # NULL keeps the context-dependent default; valid integers pass.
   expect_s3_class(
-    cross_tab(mtcars, cyl, gear, digits = NULL, styled = FALSE),
+    cross_tab(mtcars, cyl, gear, digits = NULL, output = "data.frame"),
     "data.frame"
   )
   expect_s3_class(
-    cross_tab(mtcars, cyl, gear, digits = 2, percent = "row", styled = FALSE),
+    cross_tab(
+      mtcars,
+      cyl,
+      gear,
+      digits = 2,
+      percent = "row",
+      output = "data.frame"
+    ),
     "data.frame"
   )
 })

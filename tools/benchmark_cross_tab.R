@@ -75,7 +75,7 @@ results <- do.call(
         y,
         percent = "c",
         include_stats = TRUE,
-        styled = FALSE
+        output = "data.frame"
       )),
       quote(new_cross_tab(
         df,
@@ -83,7 +83,7 @@ results <- do.call(
         y,
         percent = "c",
         include_stats = TRUE,
-        styled = FALSE
+        output = "data.frame"
       ))
     ),
     bench_case(
@@ -96,7 +96,7 @@ results <- do.call(
         weights = w,
         percent = "c",
         include_stats = TRUE,
-        styled = FALSE
+        output = "data.frame"
       )),
       quote(new_cross_tab(
         df,
@@ -106,7 +106,7 @@ results <- do.call(
         weights = w,
         percent = "c",
         include_stats = TRUE,
-        styled = FALSE
+        output = "data.frame"
       ))
     ),
     bench_case(
@@ -117,7 +117,7 @@ results <- do.call(
         weights = df$w,
         percent = "c",
         include_stats = TRUE,
-        styled = FALSE
+        output = "data.frame"
       )),
       quote(new_cross_tab(
         df$x,
@@ -125,7 +125,7 @@ results <- do.call(
         weights = df$w,
         percent = "c",
         include_stats = TRUE,
-        styled = FALSE
+        output = "data.frame"
       ))
     )
   )

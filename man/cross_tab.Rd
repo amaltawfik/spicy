@@ -20,10 +20,11 @@ cross_tab(
   simulate_p = FALSE,
   simulate_B = 2000,
   digits = NULL,
-  styled = TRUE,
+  output = c("default", "data.frame"),
   show_n = TRUE,
   decimal_mark = ".",
-  p_digits = 3L
+  p_digits = 3L,
+  styled
 )
 }
 \arguments{
@@ -72,10 +73,16 @@ Defaults to \code{2000}.}
 \item{digits}{Number of decimals for cell values: a single
 non-negative integer. Defaults to \code{NULL}, which is resolved to
 \code{1} when \code{percent != "none"} and \code{0} when \code{percent = "none"}
-(counts are always integers).}
+(counts are always integers). Same role as \code{digits} in \code{\link[=freq]{freq()}},
+which formats percentages only and therefore uses a fixed
+default of \code{1}.}
 
-\item{styled}{Logical. If \code{TRUE} (the default), returns a \code{spicy_cross_table} object
-(for formatted printing). If \code{FALSE}, returns a plain \code{data.frame}.}
+\item{output}{Output format. \code{"default"} (the default) returns a
+\code{spicy_cross_table} object (for formatted printing);
+\code{"data.frame"} returns a plain \code{data.frame}. The values match the
+\code{output} argument of the \verb{table_*()} family; the rendered engines
+that family also accepts (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
+...) are not available in \code{cross_tab()}.}
 
 \item{show_n}{Logical. If \code{TRUE} (the default), adds marginal N totals when
 \code{percent != "none"}.}
@@ -90,27 +97,32 @@ formatting; matches the \code{decimal_mark} argument of the
 p-value (and to determine the small-\code{p} threshold below which
 \verb{< .001} notation is used). Defaults to \code{3} (the APA standard);
 matches the \code{p_digits} argument of the \verb{table_*()} family.}
+
+\item{styled}{Defunct. \code{styled = TRUE} is now \code{output = "default"}
+(the default) and \code{styled = FALSE} is now \code{output = "data.frame"};
+supplying \code{styled} is an error.}
 }
 \value{
-Depends on \code{styled} and \code{by}:
+Depends on \code{output} and \code{by}:
 \itemize{
-\item \code{styled = TRUE}, no \code{by}: a \code{spicy_cross_table} object
+\item \code{output = "default"}, no \code{by}: a \code{spicy_cross_table} object
 (a \code{data.frame} carrying rendering metadata as attributes:
 \code{title}, \code{digits}, \code{decimal_mark}, \code{n_row_idx}, \code{n_col_name},
 and the inferential block when \code{include_stats = TRUE}).
 Printing dispatches to \code{\link[=print.spicy_cross_table]{print.spicy_cross_table()}}.
-\item \code{styled = TRUE}, \code{by} supplied: a \code{spicy_cross_table_list},
-i.e. a named list of \code{spicy_cross_table} objects (one element
-per group level, named by that level). Printing dispatches to
+\item \code{output = "default"}, \code{by} supplied: a
+\code{spicy_cross_table_list}, i.e. a named list of
+\code{spicy_cross_table} objects (one element per group level, named
+by that level). Printing dispatches to
 \code{\link[=print.spicy_cross_table_list]{print.spicy_cross_table_list()}} which renders each table in
 turn separated by a blank line.
-\item \code{styled = FALSE}: the same payload returned as a plain
-\code{data.frame} (or named list of \code{data.frame}s with \code{by}),
+\item \code{output = "data.frame"}: the same payload returned as a
+plain \code{data.frame} (or named list of \code{data.frame}s with \code{by}),
 stripped of the \verb{spicy_*} classes and of every metadata
 attribute (\code{title}, \code{note}, \code{n_total}, \code{chi2}, \code{p_value},
 \verb{assoc_*}, ...). For programmatic access to the statistics,
-read the attributes of the default \code{styled = TRUE} object,
-e.g. \code{attr(cross_tab(...), "p_value")}.
+read the attributes of the default object, e.g.
+\code{attr(cross_tab(...), "p_value")}.
 }
 
 Cell columns are the levels of \code{y}; rows are the levels of \code{x}.

@@ -5,11 +5,11 @@
 #' options for weighting, sorting, handling *labelled* data, defining custom
 #' missing values, and displaying cumulative percentages.
 #'
-#' When `styled = TRUE` (the default), the function returns a
+#' With `output = "default"`, the function returns a
 #' `spicy_freq_table` object that auto-prints as a spicy-formatted ASCII
-#' table via [print.spicy_freq_table()] and [spicy_print_table()];
-#' otherwise, it returns a plain `data.frame` containing frequencies and
-#' proportions.
+#' table via [print.spicy_freq_table()] and [spicy_print_table()]; with
+#' `output = "data.frame"`, it returns a plain `data.frame` containing
+#' frequencies and proportions.
 #'
 #' @details
 #' Designed to mimic common frequency procedures from SPSS or Stata
@@ -43,7 +43,10 @@
 #'   environment), which always takes precedence over `data` lookup.
 #'   Observations with `NA` weights are dropped from the table with a
 #'   warning; see `Details`.
-#' @param digits Number of decimal digits to display for percentages (default: `1`).
+#' @param digits Number of decimal digits to display for percentages
+#'   (default: `1`). Same role as `digits` in [cross_tab()], where the
+#'   `NULL` default resolves to the same `1` decimal whenever
+#'   percentages are shown.
 #' @param valid Logical. If `TRUE` (default), display valid percentages
 #'   (excluding missing values).
 #' @param cum Logical. If `FALSE` (the default), cumulative percentages are omitted.
@@ -88,13 +91,20 @@
 #'   `decimal_mark` argument of [cross_tab()] and the three
 #'   `table_*()` helpers, so European-locale users get a consistent
 #'   experience across the package.
-#' @param styled Logical. If `TRUE` (default), return a `spicy_freq_table`
-#'   object that auto-prints as a formatted spicy table.
-#'   If `FALSE`, return a plain `data.frame` with frequency values.
+#' @param output Output format. `"default"` (the default) returns a
+#'   `spicy_freq_table` object that auto-prints as a formatted spicy
+#'   table; `"data.frame"` returns a plain `data.frame` with frequency
+#'   values. The values match the `output` argument of the `table_*()`
+#'   family; the rendered engines that family also accepts
+#'   (`"tinytable"`, `"gt"`, `"flextable"`, ...) are not available in
+#'   `freq()`.
+#' @param styled Defunct. `styled = TRUE` is now `output = "default"`
+#'   (the default) and `styled = FALSE` is now `output = "data.frame"`;
+#'   supplying `styled` is an error.
 #'
 #' @return
-#' With `styled = FALSE`, a plain `data.frame` with no extra attributes
-#' and columns:
+#' With `output = "data.frame"`, a plain `data.frame` with no extra
+#' attributes and columns:
 #' \itemize{
 #'   \item \code{value} - unique values or factor levels
 #'   \item \code{n} - frequency count (weighted if applicable)
@@ -103,7 +113,7 @@
 #'   \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if `cum = TRUE`)
 #' }
 #'
-#' With `styled = TRUE` (default), a `spicy_freq_table` object: the same
+#' With `output = "default"` (the default), a `spicy_freq_table` object: the same
 #' `data.frame` carrying rendering metadata as attributes (`digits`,
 #' `data_name`, `var_name`, `var_label`, `class_name`, `n_total`,
 #' `n_valid`, `weighted`, `rescaled`, `weight_var`) used by
@@ -167,8 +177,8 @@
 #' # European decimal mark (matches `cross_tab()` and the `table_*()` family)
 #' freq(sochealth, education, decimal_mark = ",")
 #'
-#' # Non-styled return (for programmatic use)
-#' f <- freq(df, sex, styled = FALSE)
+#' # Plain data.frame return (for programmatic use)
+#' f <- freq(df, sex, output = "data.frame")
 #' head(f)
 #'
 #' @seealso
@@ -193,8 +203,16 @@ freq <- function(
   factor_levels = c("observed", "all"),
   rescale = FALSE,
   decimal_mark = ".",
-  styled = TRUE
+  output = c("default", "data.frame"),
+  styled
 ) {
+  # Migration guard first, so old `styled =` calls get the actionable
+  # replacement message before any other validation can fire.
+  if (!missing(styled)) {
+    abort_styled_defunct("freq")
+  }
+  output <- match_tabulation_output(output, "freq")
+
   labelled_levels <- match.arg(labelled_levels)
   factor_levels <- match_varlist_factor_levels(factor_levels)
 
@@ -247,7 +265,6 @@ freq <- function(
   validate_varlist_logical(valid, "valid")
   validate_varlist_logical(cum, "cum")
   validate_varlist_logical(rescale, "rescale")
-  validate_varlist_logical(styled, "styled")
 
   is_df <- is.data.frame(data)
   if (is_df && missing(x)) {
@@ -498,10 +515,10 @@ freq <- function(
     }
   }
 
-  if (!styled) {
+  if (output == "data.frame") {
     # Return a genuinely plain data.frame: no spicy print-method attributes
-    # clinging to it. Users who want the metadata can keep `styled = TRUE`
-    # (default) and inspect the returned `spicy_freq_table`.
+    # clinging to it. Users who want the metadata can keep the default
+    # `output = "default"` and inspect the returned `spicy_freq_table`.
     return(df)
   }
 

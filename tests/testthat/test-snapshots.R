@@ -205,7 +205,7 @@ test_that("spicy warnings carry the documented class hierarchy", {
   )
   # spicy_dropped_na -- NA weights
   expect_warning(
-    freq(c(1, 2, 3), weights = c(1, NA, 1), styled = FALSE),
+    freq(c(1, 2, 3), weights = c(1, NA, 1), output = "data.frame"),
     class = "spicy_dropped_na"
   )
   # Every leaf also inherits from `spicy_warning`

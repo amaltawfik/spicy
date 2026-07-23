@@ -25,12 +25,22 @@
   silently returning 0 -- the same degenerate-table behavior as the
   rest of the association family.
 
-* `cross_tab(styled = FALSE)` now returns a genuinely plain
-  `data.frame` (and a list of plain data frames with `by`): the
-  metadata attributes (`title`, `note`, `n_total`, `chi2`,
-  `p_value`, `assoc_*`, ...) are stripped, as documented. For
-  programmatic access to the statistics, read the attributes of the
-  default styled object instead, e.g. `attr(cross_tab(...), "p_value")`.
+* `freq()` and `cross_tab()` replace the logical `styled` argument
+  with `output`, the same rendering argument the `table_*()` family
+  uses. Migration: `styled = TRUE` is now `output = "default"` (the
+  default) and `styled = FALSE` is now `output = "data.frame"`.
+  Passing `styled` raises a classed error (`spicy_defunct`) that
+  spells out the replacement. The rendered engines of the `table_*()`
+  family (`"tinytable"`, `"gt"`, `"flextable"`, ...) are not accepted
+  by the two tabulators.
+
+* `cross_tab(output = "data.frame")` (previously `styled = FALSE`)
+  now returns a genuinely plain `data.frame` (and a list of plain
+  data frames with `by`): the metadata attributes (`title`, `note`,
+  `n_total`, `chi2`, `p_value`, `assoc_*`, ...) are stripped, as
+  documented. For programmatic access to the statistics, read the
+  attributes of the default object instead, e.g.
+  `attr(cross_tab(...), "p_value")`.
 
 * `freq()` now defaults to `rescale = FALSE` (raw weighted counts),
   matching `cross_tab()`, and reads `options(spicy.rescale)` the
