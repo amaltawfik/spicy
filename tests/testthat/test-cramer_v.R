@@ -19,16 +19,16 @@ test_that("cramer_v with detail = TRUE returns 4-element vector", {
   data(mtcars)
   tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
   result <- suppressWarnings(cramer_v(tab, detail = TRUE))
-  expect_length(result, 4)
-  expect_named(result, c("estimate", "ci_lower", "ci_upper", "p_value"))
+  expect_length(result, 5)
+  expect_named(result, c("estimate", "se", "ci_lower", "ci_upper", "p_value"))
 })
 
 test_that("cramer_v with detail = TRUE, conf_level = NULL returns 2 elements", {
   data(mtcars)
   tab <- table(factor(mtcars$gear), factor(mtcars$cyl))
   result <- suppressWarnings(cramer_v(tab, detail = TRUE, conf_level = NULL))
-  expect_length(result, 2)
-  expect_named(result, c("estimate", "p_value"))
+  expect_length(result, 3)
+  expect_named(result, c("estimate", "se", "p_value"))
 })
 
 test_that("cramer_v fails gracefully with non-table input", {

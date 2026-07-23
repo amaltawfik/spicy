@@ -401,7 +401,7 @@ test_that("build_ascii_table skips a spanner over a zero-width column", {
   # is dropped rather than mis-drawn or erroring.
   df <- data.frame(a = c("x", "y"), b = c("", ""), stringsAsFactors = FALSE)
   names(df) <- c("a", "")
-  out <- build_ascii_table(df, padding = 0L, spanners = list(S = 2L))
+  out <- spicy:::build_ascii_table(df, padding = 0L, spanners = list(S = 2L))
   lines <- strsplit(out, "\n", fixed = TRUE)[[1]]
 
   # Spanner + underline rows are emitted but blank; the label never shows.
@@ -422,7 +422,7 @@ test_that("build_ascii_table truncates a spanner label wider than its span", {
   df <- data.frame(Variable = "a", B = "1.0", p = ".04",
                    stringsAsFactors = FALSE)
   lbl <- "An extremely long model label"
-  out <- build_ascii_table(df, spanners = setNames(list(2:3), lbl),
+  out <- spicy:::build_ascii_table(df, spanners = setNames(list(2:3), lbl),
                            align_left_cols = 1L)
   lines <- strsplit(out, "\n", fixed = TRUE)[[1]]
 

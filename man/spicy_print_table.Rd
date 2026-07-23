@@ -11,7 +11,6 @@ spicy_print_table(
   padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
-  column_total_line = TRUE,
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
@@ -43,10 +42,9 @@ the migration note from the pre-0.11.0 string enum.}
 \item{first_column_line}{Logical. If \code{TRUE} (the default), adds a vertical separator
 after the first column.}
 
-\item{row_total_line, column_total_line, bottom_line}{Logical flags controlling
-the presence of horizontal lines before total rows/columns or at the bottom
-of the table.
-Both \code{row_total_line} and \code{column_total_line} default to \code{TRUE};
+\item{row_total_line, bottom_line}{Logical flags controlling the
+horizontal line before a total row and the closing line at the
+bottom of the table. \code{row_total_line} defaults to \code{TRUE};
 \code{bottom_line} defaults to \code{FALSE}.}
 
 \item{lines_color}{Character. Color for table separators. Defaults to \code{"darkgrey"}.
@@ -124,6 +122,12 @@ on each panel. Unicode line-drawing characters are used by
 default; coloured separators are drawn when the terminal supports
 ANSI colour (\code{\link[crayon:has_color]{crayon::has_color()}}) and fall back to monochrome
 otherwise.
+
+The layout arguments \code{spanners}, \code{display_labels},
+\code{fit_stats_start}, \code{total_row_idx} and \code{group_sep_rows} are
+plumbing consumed by spicy's own print methods; they are
+documented for completeness and are rarely useful when calling
+this function directly.
 }
 \examples{
 # Simple demonstration

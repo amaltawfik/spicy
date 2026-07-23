@@ -56,15 +56,10 @@
   upper_bound = Inf,
   ci_lower = NULL,
   ci_upper = NULL,
-  .include_se = FALSE,
   digits = 3L
 ) {
   if (is.null(conf_level) || is.na(conf_level)) {
-    out <- if (.include_se) {
-      c(estimate = estimate, se = se, p_value = p_value)
-    } else {
-      c(estimate = estimate, p_value = p_value)
-    }
+    out <- c(estimate = estimate, se = se, p_value = p_value)
     class(out) <- "spicy_assoc_detail"
     attr(out, "digits") <- digits
     return(out)
@@ -74,22 +69,13 @@
     ci_lower <- max(lower_bound, estimate - z * se)
     ci_upper <- min(upper_bound, estimate + z * se)
   }
-  out <- if (.include_se) {
-    c(
-      estimate = estimate,
-      se = se,
-      ci_lower = ci_lower,
-      ci_upper = ci_upper,
-      p_value = p_value
-    )
-  } else {
-    c(
-      estimate = estimate,
-      ci_lower = ci_lower,
-      ci_upper = ci_upper,
-      p_value = p_value
-    )
-  }
+  out <- c(
+    estimate = estimate,
+    se = se,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper,
+    p_value = p_value
+  )
   class(out) <- "spicy_assoc_detail"
   attr(out, "digits") <- digits
   out
@@ -162,11 +148,11 @@ print.spicy_assoc_detail <- function(
 
 
 # Internal: assemble the documented NA return shape, respecting `detail`,
-# `conf_level` and `.include_se`. Used by the degenerate-table branches
+# `conf_level`. Used by the degenerate-table branches
 # of `cramer_v()`, `yule_q()`, `gamma_gk()`, `kendall_tau_b()` and
 # `somers_d()` so they keep returning the same shape as the happy path
 # instead of a bare length-1 named vector.
-.na_assoc_result <- function(detail, conf_level, .include_se, digits) {
+.na_assoc_result <- function(detail, conf_level, digits) {
   if (!detail) {
     return(NA_real_)
   }
@@ -177,7 +163,6 @@ print.spicy_assoc_detail <- function(
     p_value = NA_real_,
     ci_lower = NA_real_,
     ci_upper = NA_real_,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -242,7 +227,6 @@ print.spicy_assoc_detail <- function(
 #'   to `NULL` to omit the confidence interval.
 #' @param digits Number of decimal places used when printing the
 #'   result (default `3`). Only affects the `detail = TRUE` output.
-#' @param .include_se Internal parameter; do not use.
 #'
 #' @return When `detail = FALSE`: a single numeric value (the
 #'   estimate).
@@ -285,8 +269,7 @@ cramer_v <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   n <- sum(x)
@@ -315,7 +298,6 @@ cramer_v <- function(
     p_value = p_value,
     ci_lower = ci_lower,
     ci_upper = ci_upper,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -357,8 +339,7 @@ phi <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x, min_dim = c(2L, 2L))
   if (nrow(x) != 2L || ncol(x) != 2L) {
@@ -392,7 +373,6 @@ phi <- function(
     p_value = p_value,
     ci_lower = ci_lower,
     ci_upper = ci_upper,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -429,8 +409,7 @@ contingency_coef <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   n <- sum(x)
@@ -450,7 +429,6 @@ contingency_coef <- function(
     p_value = p_value,
     ci_lower = NA_real_,
     ci_upper = NA_real_,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -495,8 +473,7 @@ yule_q <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x, min_dim = c(2L, 2L))
   if (nrow(x) != 2L || ncol(x) != 2L) {
@@ -515,7 +492,7 @@ yule_q <- function(
   if (ad + bc == 0) {
     spicy_warn(
       "Yule's Q is undefined when ad + bc = 0; returning NA.", class = "spicy_undefined_stat")
-    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+    return(.na_assoc_result(detail, conf_level, digits))
   }
 
   Q <- (ad - bc) / (ad + bc)
@@ -539,7 +516,6 @@ yule_q <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -584,8 +560,7 @@ lambda_gk <- function(
   direction = c("symmetric", "row", "column"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   direction <- match.arg(direction)
@@ -624,7 +599,7 @@ lambda_gk <- function(
       ),
       class = "spicy_undefined_stat"
     )
-    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+    return(.na_assoc_result(detail, conf_level, digits))
   }
 
   est <- switch(
@@ -708,7 +683,6 @@ lambda_gk <- function(
     p_value = p_value,
     lower_bound = 0,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -754,8 +728,7 @@ goodman_kruskal_tau <- function(
   direction = c("row", "column"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   direction <- match.arg(direction)
@@ -781,7 +754,7 @@ goodman_kruskal_tau <- function(
       ),
       class = "spicy_undefined_stat"
     )
-    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+    return(.na_assoc_result(detail, conf_level, digits))
   }
 
   if (direction == "row") {
@@ -823,7 +796,6 @@ goodman_kruskal_tau <- function(
     p_value = unname(p_value),
     lower_bound = 0,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -946,8 +918,7 @@ uncertainty_coef <- function(
   direction = c("symmetric", "row", "column"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   direction <- match.arg(direction)
@@ -992,7 +963,6 @@ uncertainty_coef <- function(
     p_value = p_value,
     lower_bound = 0,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -1075,8 +1045,7 @@ gamma_gk <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   cd <- .concordance_counts(x)
@@ -1085,7 +1054,7 @@ gamma_gk <- function(
 
   if (C + D == 0) {
     spicy_warn("No concordant or discordant pairs; returning NA.", class = "spicy_undefined_stat")
-    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+    return(.na_assoc_result(detail, conf_level, digits))
   }
 
   G <- (C - D) / (C + D)
@@ -1107,7 +1076,6 @@ gamma_gk <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -1146,8 +1114,7 @@ kendall_tau_b <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   n <- sum(x)
@@ -1165,7 +1132,7 @@ kendall_tau_b <- function(
   denom <- sqrt((n0 - n1) * (n0 - n2))
   if (denom == 0) {
     spicy_warn("Tau-b is undefined for this table; returning NA.", class = "spicy_undefined_stat")
-    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+    return(.na_assoc_result(detail, conf_level, digits))
   }
 
   tau_b <- (C - D) / denom
@@ -1207,7 +1174,6 @@ kendall_tau_b <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -1246,8 +1212,7 @@ kendall_tau_c <- function(
   x,
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   n <- sum(x)
@@ -1280,7 +1245,6 @@ kendall_tau_c <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -1329,8 +1293,7 @@ somers_d <- function(
   direction = c("row", "column", "symmetric"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 ) {
   .validate_table(x)
   direction <- match.arg(direction)
@@ -1373,8 +1336,7 @@ somers_d <- function(
       p_value = NA_real_,
       ci_lower = NA_real_,
       ci_upper = NA_real_,
-      .include_se = .include_se,
-      digits = digits
+        digits = digits
     ))
   }
 
@@ -1382,7 +1344,7 @@ somers_d <- function(
   if (denom == 0) {
     spicy_warn(
       "Somers' d is undefined for this table; returning NA.", class = "spicy_undefined_stat")
-    return(.na_assoc_result(detail, conf_level, .include_se, digits))
+    return(.na_assoc_result(detail, conf_level, digits))
   }
   d_val <- (C - D) / denom
 
@@ -1419,7 +1381,6 @@ somers_d <- function(
     p_value = p_value,
     lower_bound = -1,
     upper_bound = 1,
-    .include_se = .include_se,
     digits = digits
   )
 }
@@ -1505,21 +1466,20 @@ assoc_measures <- function(
   nominal_fns <- list()
   if (is_2x2) {
     nominal_fns[["Phi"]] <- \(t) {
-      phi(t, detail = TRUE, conf_level = conf_level, .include_se = TRUE)
+      phi(t, detail = TRUE, conf_level = conf_level)
     }
     nominal_fns[["Yule's Q"]] <- \(t) {
-      yule_q(t, detail = TRUE, conf_level = conf_level, .include_se = TRUE)
+      yule_q(t, detail = TRUE, conf_level = conf_level)
     }
   }
   nominal_fns[["Cramer's V"]] <- \(t) {
-    cramer_v(t, detail = TRUE, conf_level = conf_level, .include_se = TRUE)
+    cramer_v(t, detail = TRUE, conf_level = conf_level)
   }
   nominal_fns[["Contingency Coefficient"]] <- \(t) {
     contingency_coef(
       t,
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Lambda symmetric"]] <- \(t) {
@@ -1527,8 +1487,7 @@ assoc_measures <- function(
       t,
       "symmetric",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Lambda R|C"]] <- \(t) {
@@ -1536,8 +1495,7 @@ assoc_measures <- function(
       t,
       "row",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Lambda C|R"]] <- \(t) {
@@ -1545,8 +1503,7 @@ assoc_measures <- function(
       t,
       "column",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Goodman-Kruskal's Tau R|C"]] <- \(t) {
@@ -1554,8 +1511,7 @@ assoc_measures <- function(
       t,
       "row",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Goodman-Kruskal's Tau C|R"]] <- \(t) {
@@ -1563,8 +1519,7 @@ assoc_measures <- function(
       t,
       "column",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Uncertainty Coefficient symmetric"]] <- \(t) {
@@ -1572,8 +1527,7 @@ assoc_measures <- function(
       t,
       "symmetric",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Uncertainty Coefficient R|C"]] <- \(t) {
@@ -1581,8 +1535,7 @@ assoc_measures <- function(
       t,
       "row",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
   nominal_fns[["Uncertainty Coefficient C|R"]] <- \(t) {
@@ -1590,29 +1543,26 @@ assoc_measures <- function(
       t,
       "column",
       detail = TRUE,
-      conf_level = conf_level,
-      .include_se = TRUE
+      conf_level = conf_level
     )
   }
 
   ordinal_fns <- list(
     "Goodman-Kruskal Gamma" = \(t) {
-      gamma_gk(t, detail = TRUE, conf_level = conf_level, .include_se = TRUE)
+      gamma_gk(t, detail = TRUE, conf_level = conf_level)
     },
     "Kendall's Tau-b" = \(t) {
       kendall_tau_b(
         t,
         detail = TRUE,
-        conf_level = conf_level,
-        .include_se = TRUE
+        conf_level = conf_level
       )
     },
     "Kendall's Tau-c" = \(t) {
       kendall_tau_c(
         t,
         detail = TRUE,
-        conf_level = conf_level,
-        .include_se = TRUE
+        conf_level = conf_level
       )
     },
     "Somers' D R|C" = \(t) {
@@ -1620,8 +1570,7 @@ assoc_measures <- function(
         t,
         "row",
         detail = TRUE,
-        conf_level = conf_level,
-        .include_se = TRUE
+        conf_level = conf_level
       )
     },
     "Somers' D C|R" = \(t) {
@@ -1629,8 +1578,7 @@ assoc_measures <- function(
         t,
         "column",
         detail = TRUE,
-        conf_level = conf_level,
-        .include_se = TRUE
+        conf_level = conf_level
       )
     }
   )

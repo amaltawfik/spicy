@@ -2,6 +2,18 @@
 
 ## Breaking changes
 
+* `build_ascii_table()` is no longer exported. It has always been
+  documented as internal plumbing; use `spicy_print_table()` for
+  console rendering from code.
+
+* The `column_total_line` argument of `build_ascii_table()` and
+  `spicy_print_table()` is removed. It was accepted and documented
+  but never had any effect.
+
+* Association measures: `detail = TRUE` vectors now always include
+  the standard error as an `se` element, and the internal-only
+  `.include_se` argument is gone from every public signature.
+
 * `table_regression(exponentiate = TRUE)` now errors on links whose
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, ...). Ratio links (logit, log, binomial / ordinal cloglog) are

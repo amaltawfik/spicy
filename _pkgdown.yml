@@ -165,7 +165,6 @@ reference:
       - sochealth
   - title: ASCII helpers
     contents:
-      - build_ascii_table
       - spicy_print_table
   - title: Advanced S3 methods
     desc: >

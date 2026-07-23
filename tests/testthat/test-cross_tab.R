@@ -238,7 +238,7 @@ test_that("cross_tab stores numeric attributes", {
   expect_true(is.numeric(attr(res, "p_value")))
   expect_equal(attr(res, "assoc_measure"), "Cramer's V")
   expect_true(is.numeric(attr(res, "assoc_value")))
-  expect_true(length(attr(res, "assoc_result")) == 4)
+  expect_true(length(attr(res, "assoc_result")) == 5)
 })
 
 test_that("cross_tab auto-detects ordinal variables", {

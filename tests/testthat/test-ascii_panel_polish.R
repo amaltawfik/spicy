@@ -86,7 +86,7 @@ test_that("a 1-character spanner truncates without ellipsis (no room)", {
   # span_width == 1: the visible-truncation rule ("cut + ellipsis")
   # needs 2 characters; with 1 the label is cut hard instead.
   m <- data.frame(A = "1", B = "2")
-  out <- build_ascii_table(m, padding = 0L,
+  out <- spicy:::build_ascii_table(m, padding = 0L,
                            spanners = list("Long label" = 2L))
   expect_match(strsplit(out, "\n", fixed = TRUE)[[1]][1], "L",
                fixed = TRUE)

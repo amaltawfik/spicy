@@ -109,8 +109,8 @@
 #'   instead. Passing a string raises an actionable error.
 #' @param first_column_line Logical. If `TRUE` (the default), a vertical separator
 #'   is drawn after the first column (useful for separating categories from data).
-#' @param row_total_line,column_total_line Logical. Control horizontal rules
-#'   before total rows or columns. Both default to `TRUE`.
+#' @param row_total_line Logical. Controls the horizontal rule drawn
+#'   before a total row. Defaults to `TRUE`.
 #' @param bottom_line Logical. If `FALSE` (the default), no closing line is drawn.
 #'   If `TRUE`, draws a closing line at the bottom of the table.
 #' @param lines_color Character. Color used for table separators. Defaults to `"darkgrey"`.
@@ -179,14 +179,12 @@
 #' [spicy_print_table()] for a user-facing wrapper that adds titles and notes.
 #'
 #' @keywords internal
-#' @export
 
 build_ascii_table <- function(
   x,
   padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
-  column_total_line = TRUE,
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = c(1L, 2L),
@@ -598,10 +596,16 @@ ascii_table_panels <- function(
 #'   the migration note from the pre-0.11.0 string enum.
 #' @param first_column_line Logical. If `TRUE` (the default), adds a vertical separator
 #'   after the first column.
-#' @param row_total_line,column_total_line,bottom_line Logical flags controlling
-#'   the presence of horizontal lines before total rows/columns or at the bottom
-#'   of the table.
-#'   Both `row_total_line` and `column_total_line` default to `TRUE`;
+#' @details
+#' The layout arguments `spanners`, `display_labels`,
+#' `fit_stats_start`, `total_row_idx` and `group_sep_rows` are
+#' plumbing consumed by spicy's own print methods; they are
+#' documented for completeness and are rarely useful when calling
+#' this function directly.
+#'
+#' @param row_total_line,bottom_line Logical flags controlling the
+#'   horizontal line before a total row and the closing line at the
+#'   bottom of the table. `row_total_line` defaults to `TRUE`;
 #'   `bottom_line` defaults to `FALSE`.
 #' @param lines_color Character. Color for table separators. Defaults to `"darkgrey"`.
 #'   Only applied if the output supports ANSI colors (see [crayon::has_color()]).
@@ -671,7 +675,6 @@ spicy_print_table <- function(
   padding = 2L,
   first_column_line = TRUE,
   row_total_line = TRUE,
-  column_total_line = TRUE,
   bottom_line = FALSE,
   lines_color = "darkgrey",
   align_left_cols = NULL,
@@ -801,7 +804,6 @@ spicy_print_table <- function(
         padding = padding,
         first_column_line = first_column_line,
         row_total_line = row_total_line,
-        column_total_line = column_total_line,
         bottom_line = bottom_line,
         lines_color = lines_color,
         align_left_cols = which(cols %in% align_left_cols),

@@ -79,7 +79,8 @@ tbl <- xtabs(~ smoking + education, data = sochealth)
 cramer_v(tbl)
 ```
 
-Pass `detail = TRUE` for the confidence interval and p-value. The
+Pass `detail = TRUE` for the standard error, confidence interval
+and p-value. The
 p-value tests the null hypothesis of no association using the Pearson
 chi-squared test.
 

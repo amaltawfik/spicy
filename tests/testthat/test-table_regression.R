@@ -963,19 +963,19 @@ test_that("spanner – multi-model print strips 'Label: ' prefix from headers", 
 test_that("spanner – .validate_spanners catches malformed input", {
   df <- data.frame(a = 1, b = 2, c = 3, d = 4)
   expect_error(
-    build_ascii_table(df, spanners = list(2:3)),     # unnamed
+    spicy:::build_ascii_table(df, spanners = list(2:3)),     # unnamed
     class = "spicy_invalid_input"
   )
   expect_error(
-    build_ascii_table(df, spanners = list(g = 5:6)), # out of range
+    spicy:::build_ascii_table(df, spanners = list(g = 5:6)), # out of range
     class = "spicy_invalid_input"
   )
   expect_error(
-    build_ascii_table(df, spanners = list(g = c(2, 4))),  # non-contiguous
+    spicy:::build_ascii_table(df, spanners = list(g = c(2, 4))),  # non-contiguous
     class = "spicy_invalid_input"
   )
   expect_error(
-    build_ascii_table(df, spanners = list(a = 2:3, b = 3:4)), # overlapping
+    spicy:::build_ascii_table(df, spanners = list(a = 2:3, b = 3:4)), # overlapping
     class = "spicy_invalid_input"
   )
 })

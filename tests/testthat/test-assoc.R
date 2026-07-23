@@ -36,16 +36,16 @@ test_that("all functions return scalar by default", {
 test_that("cramer_v returns correct estimate and 4-element vector", {
   res <- suppressWarnings(cramer_v(tab_3x3(), detail = TRUE))
   expect_type(res, "double")
-  expect_length(res, 4)
-  expect_named(res, c("estimate", "ci_lower", "ci_upper", "p_value"))
+  expect_length(res, 5)
+  expect_named(res, c("estimate", "se", "ci_lower", "ci_upper", "p_value"))
   expect_equal(res[["estimate"]], 0.5308655, tolerance = 1e-5)
   expect_true(res[["p_value"]] < 0.01)
 })
 
 test_that("cramer_v with detail = TRUE, conf_level = NULL returns 2 elements", {
   res <- suppressWarnings(cramer_v(tab_3x3(), detail = TRUE, conf_level = NULL))
-  expect_length(res, 2)
-  expect_named(res, c("estimate", "p_value"))
+  expect_length(res, 3)
+  expect_named(res, c("estimate", "se", "p_value"))
 })
 
 test_that("cramer_v rejects non-table input", {
@@ -123,7 +123,7 @@ test_that("uncertainty_coef returns sensible values", {
   expect_true(sym[["estimate"]] > 0 && sym[["estimate"]] < 1)
   expect_true(row[["estimate"]] > 0 && row[["estimate"]] < 1)
   expect_true(col[["estimate"]] > 0 && col[["estimate"]] < 1)
-  expect_length(sym, 4)
+  expect_length(sym, 5)
 })
 
 # ── gamma_gk ─────────────────────────────────────────────────────────────────
@@ -232,10 +232,10 @@ test_that("detail = TRUE returns spicy_assoc_detail class", {
   tab <- table(c("A", "B", "A", "B"), c("X", "X", "Y", "Y"))
   res <- cramer_v(tab, detail = TRUE)
   expect_s3_class(res, "spicy_assoc_detail")
-  expect_named(res, c("estimate", "ci_lower", "ci_upper", "p_value"))
+  expect_named(res, c("estimate", "se", "ci_lower", "ci_upper", "p_value"))
   res2 <- cramer_v(tab, detail = TRUE, conf_level = NULL)
   expect_s3_class(res2, "spicy_assoc_detail")
-  expect_named(res2, c("estimate", "p_value"))
+  expect_named(res2, c("estimate", "se", "p_value"))
 })
 
 test_that("print.spicy_assoc_detail formats output", {
@@ -358,11 +358,11 @@ test_that("NA degenerate-table return respects `detail` and `conf_level`", {
   expect_identical(scalar, NA_real_)
   detail <- suppressWarnings(yule_q(tab_yq, detail = TRUE))
   expect_s3_class(detail, "spicy_assoc_detail")
-  expect_named(detail, c("estimate", "ci_lower", "ci_upper", "p_value"))
+  expect_named(detail, c("estimate", "se", "ci_lower", "ci_upper", "p_value"))
   expect_true(all(is.na(detail)))
 
   no_ci <- suppressWarnings(yule_q(tab_yq, detail = TRUE, conf_level = NULL))
-  expect_named(no_ci, c("estimate", "p_value"))
+  expect_named(no_ci, c("estimate", "se", "p_value"))
 })
 
 test_that("gamma_gk NA path returns scalar by default and full shape with detail", {
@@ -371,7 +371,7 @@ test_that("gamma_gk NA path returns scalar by default and full shape with detail
   expect_identical(suppressWarnings(gamma_gk(tab)), NA_real_)
   d <- suppressWarnings(gamma_gk(tab, detail = TRUE))
   expect_s3_class(d, "spicy_assoc_detail")
-  expect_length(d, 4L)
+  expect_length(d, 5L)
 })
 
 
@@ -497,7 +497,7 @@ test_that("lambda_gk warns + returns NA on rank-1 (constant variable) table", {
   expect_true(all(is.na(res_d)))
   expect_named(
     res_d,
-    c("estimate", "ci_lower", "ci_upper", "p_value")
+    c("estimate", "se", "ci_lower", "ci_upper", "p_value")
   )
 })
 
@@ -582,25 +582,25 @@ test_that(".assoc_result detail = FALSE returns scalar", {
   expect_false(inherits(res, "spicy_assoc_detail"))
 })
 
-test_that(".assoc_result conf_level = NULL with .include_se = TRUE", {
+test_that(".assoc_result conf_level = NULL keeps se, omits CI", {
   tab <- tab_3x3()
-  res <- gamma_gk(tab, detail = TRUE, conf_level = NULL, .include_se = TRUE)
+  res <- gamma_gk(tab, detail = TRUE, conf_level = NULL)
   expect_s3_class(res, "spicy_assoc_detail")
   expect_true("se" %in% names(res))
   expect_true("p_value" %in% names(res))
   expect_false("ci_lower" %in% names(res))
 })
 
-test_that("cramer_v conf_level = NULL with .include_se = TRUE", {
+test_that("cramer_v conf_level = NULL keeps se", {
   tab <- tab_3x3()
-  res <- cramer_v(tab, detail = TRUE, conf_level = NULL, .include_se = TRUE)
+  res <- cramer_v(tab, detail = TRUE, conf_level = NULL)
   expect_s3_class(res, "spicy_assoc_detail")
   expect_true("se" %in% names(res))
 })
 
-test_that("phi conf_level = NULL with .include_se = TRUE", {
+test_that("phi conf_level = NULL keeps se", {
   tab <- tab_2x2()
-  res <- phi(tab, detail = TRUE, conf_level = NULL, .include_se = TRUE)
+  res <- phi(tab, detail = TRUE, conf_level = NULL)
   expect_s3_class(res, "spicy_assoc_detail")
   expect_true("se" %in% names(res))
 })
@@ -613,14 +613,9 @@ test_that("yule_q conf_level = NULL omits CI", {
   expect_false("ci_lower" %in% names(res))
 })
 
-test_that("contingency_coef conf_level = NULL with .include_se = TRUE", {
+test_that("contingency_coef conf_level = NULL keeps se", {
   tab <- tab_3x3()
-  res <- contingency_coef(
-    tab,
-    detail = TRUE,
-    conf_level = NULL,
-    .include_se = TRUE
-  )
+  res <- contingency_coef(tab, detail = TRUE, conf_level = NULL)
   expect_s3_class(res, "spicy_assoc_detail")
   expect_true("se" %in% names(res))
 })

@@ -9,8 +9,7 @@ somers_d(
   direction = c("row", "column", "symmetric"),
   detail = FALSE,
   conf_level = 0.95,
-  digits = 3L,
-  .include_se = FALSE
+  digits = 3L
 )
 }
 \arguments{
@@ -31,8 +30,6 @@ to \code{NULL} to omit the confidence interval.}
 
 \item{digits}{Number of decimal places used when printing the
 result (default \code{3}). Only affects the \code{detail = TRUE} output.}
-
-\item{.include_se}{Internal parameter; do not use.}
 }
 \value{
 Same structure as \code{\link[=cramer_v]{cramer_v()}}: a scalar when

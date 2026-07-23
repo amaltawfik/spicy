@@ -117,7 +117,6 @@ print.spicy_continuous_table <- function(x, ...) {
     padding = padding,
     first_column_line = TRUE,
     row_total_line = FALSE,
-    column_total_line = FALSE,
     bottom_line = FALSE,
     align_left_cols = align_left,
     align_center_cols = align_center,

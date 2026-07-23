@@ -322,6 +322,6 @@
     Code
       cramer_v(tab, detail = TRUE)
     Output
-      Estimate  CI lower  CI upper     p
-         0.154     0.000     0.340  .304
+      Estimate  SE  CI lower  CI upper     p
+         0.154  --     0.000     0.340  .304
 

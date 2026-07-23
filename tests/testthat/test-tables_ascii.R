@@ -1,11 +1,11 @@
 test_that("build_ascii_table produces aligned ASCII output", {
   df <- data.frame(A = 1:2, B = c("x", "yy"))
-  txt <- build_ascii_table(df)
+  txt <- spicy:::build_ascii_table(df)
 
   expect_type(txt, "character")
   expect_true(any(grepl("\u2502", txt))) # has vertical bars
   expect_true(any(grepl("\u2500", txt))) # has horizontal lines
-  expect_no_error(build_ascii_table(df))
+  expect_no_error(spicy:::build_ascii_table(df))
 })
 
 
@@ -35,9 +35,9 @@ test_that("spicy_print_table aligns Category and Values left", {
 
 test_that("build_ascii_table accepts a numeric `padding` of any non-negative value", {
   df <- data.frame(A = 1:2, B = c("x", "y"))
-  txt0 <- build_ascii_table(df, padding = 0L)
-  txt2 <- build_ascii_table(df, padding = 2L)
-  txt9 <- build_ascii_table(df, padding = 9L)
+  txt0 <- spicy:::build_ascii_table(df, padding = 0L)
+  txt2 <- spicy:::build_ascii_table(df, padding = 2L)
+  txt9 <- spicy:::build_ascii_table(df, padding = 9L)
   expect_type(txt0, "character")
   expect_type(txt2, "character")
   expect_type(txt9, "character")
@@ -52,15 +52,15 @@ test_that("build_ascii_table accepts a numeric `padding` of any non-negative val
 test_that("build_ascii_table rejects the legacy string `padding` choices with a migration error", {
   df <- data.frame(A = 1:2, B = c("x", "y"))
   expect_error(
-    build_ascii_table(df, padding = "compact"),
+    spicy:::build_ascii_table(df, padding = "compact"),
     "non-negative integer.+removed in spicy 0\\.11\\.0"
   )
   expect_error(
-    build_ascii_table(df, padding = "normal"),
+    spicy:::build_ascii_table(df, padding = "normal"),
     "non-negative integer.+removed in spicy 0\\.11\\.0"
   )
   expect_error(
-    build_ascii_table(df, padding = "wide"),
+    spicy:::build_ascii_table(df, padding = "wide"),
     "non-negative integer.+removed in spicy 0\\.11\\.0"
   )
 })
@@ -68,15 +68,15 @@ test_that("build_ascii_table rejects the legacy string `padding` choices with a 
 test_that("build_ascii_table rejects negative or non-finite `padding`", {
   df <- data.frame(A = 1:2, B = c("x", "y"))
   expect_error(
-    build_ascii_table(df, padding = -1L),
+    spicy:::build_ascii_table(df, padding = -1L),
     "non-negative integer"
   )
   expect_error(
-    build_ascii_table(df, padding = NA_integer_),
+    spicy:::build_ascii_table(df, padding = NA_integer_),
     "non-negative integer"
   )
   expect_error(
-    build_ascii_table(df, padding = c(2L, 3L)),
+    spicy:::build_ascii_table(df, padding = c(2L, 3L)),
     "non-negative integer"
   )
 })
@@ -93,7 +93,7 @@ test_that("spicy_print_table forwards the new `padding` semantics", {
 
 test_that("build_ascii_table supports bottom_line", {
   df <- data.frame(A = 1:2, B = c("x", "y"))
-  txt <- build_ascii_table(df, bottom_line = TRUE)
+  txt <- spicy:::build_ascii_table(df, bottom_line = TRUE)
   expect_true(grepl("\u2534", txt))
 })
 
@@ -141,7 +141,7 @@ test_that("build_ascii_table honours `total_row_idx` and supports `group_sep_row
     Count = c("10", "20", "5", "15")
   )
   # Explicit total_row_idx places the rule before row 4
-  txt <- build_ascii_table(
+  txt <- spicy:::build_ascii_table(
     df,
     padding = 0L,
     total_row_idx = 4L,
@@ -163,7 +163,7 @@ test_that("`total_row_idx = integer(0)` suppresses the regex fallback", {
     Item = c("Sub Total", "Real total here"),
     Count = c("5", "10")
   )
-  txt <- build_ascii_table(df, padding = 0L, total_row_idx = integer(0))
+  txt <- spicy:::build_ascii_table(df, padding = 0L, total_row_idx = integer(0))
   expect_type(txt, "character")
   # The output has the header rule but no body separator rules
   lines <- strsplit(txt, "\n", fixed = TRUE)[[1]]
@@ -185,7 +185,7 @@ test_that("spicy_print_table reads `total_row_idx` from the input attribute", {
 
 test_that("build_ascii_table handles single-column input", {
   df <- data.frame(Only = c("a", "b", "c"))
-  txt <- build_ascii_table(df)
+  txt <- spicy:::build_ascii_table(df)
   expect_type(txt, "character")
   expect_no_error(spicy_print_table(df))
 })
