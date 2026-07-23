@@ -39,6 +39,15 @@
 #'   If `TRUE`, interprets `select` as a regular expression pattern.
 #' @param verbose Logical. If `FALSE` (the default), messages are suppressed.
 #'   If `TRUE`, prints processing messages.
+#' @param user_na Logical. If `TRUE` (the default), `special = "NA"`
+#'   counts declared missing values together with regular `NA` (the
+#'   SPSS `MISSING` / `NMISS` convention). If `FALSE`, only genuine
+#'   `NA` / `NaN` count as missing. The `count =` path matches the
+#'   underlying codes in both modes, so explicitly listed declared
+#'   codes are always counted. See the "Declared missing values"
+#'   section of [freq()].
+#'
+#' @inheritSection freq Declared missing values
 #'
 #' @return A numeric vector of row-wise counts (unnamed), of length
 #'   `nrow(data)`. Missing values never match a regular `count` value,
@@ -149,16 +158,30 @@ count_n <- function(
   allow_coercion = TRUE,
   ignore_case = FALSE,
   regex = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  user_na = TRUE
 ) {
   select_quo <- rlang::enquo(select)
   select_was_missing <- missing(select)
+  validate_varlist_logical(user_na, "user_na")
 
   if (is.null(data)) {
     data <- dplyr::pick(tidyselect::everything())
   }
 
   data <- as.data.frame(data)
+
+  # Declared missing values (see the "Declared missing values" section
+  # of ?freq): with `user_na = TRUE` (the default), `special = "NA"`
+  # counts declared codes together with regular NA (the columns keep
+  # their labelled class, so haven's `is.na()` dispatch sees the
+  # declaration). With `user_na = FALSE` the declaration is dropped
+  # here, so only genuine NA / NaN are counted as missing. The
+  # `count =` path always compares against the underlying codes, so an
+  # explicitly listed declared code is counted in both modes.
+  if (!isTRUE(user_na)) {
+    data[] <- lapply(data, .user_na_zap)
+  }
 
   # Shared resolver keeps the select / exclude / regex contract
   # identical across the row-wise family (character selections are

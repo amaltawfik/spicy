@@ -12,6 +12,8 @@
 #'
 #' @inheritParams mean_n
 #'
+#' @inheritSection freq Declared missing values
+#'
 #' @return A numeric vector of row-wise sums.
 #'
 #' @examples
@@ -108,7 +110,8 @@ sum_n <- function(
   min_valid = NULL,
   digits = NULL,
   regex = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  user_na = TRUE
 ) {
   .row_apply_n(
     data = data,
@@ -120,6 +123,7 @@ sum_n <- function(
     regex = regex,
     verbose = verbose,
     fn = rowSums,
-    fn_label = "sum_n"
+    fn_label = "sum_n",
+    user_na = user_na
   )
 }

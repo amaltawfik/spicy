@@ -16,6 +16,7 @@ build (see `.Rbuildignore`).
 | `validate.R` | Multi-package R triangulation (DescTools, vcd, Hmisc) |
 | `compare_pspp.R` | Builds the spicy-vs-PSPP convergence matrix |
 | `spicy_vs_pspp.csv` | Flat snapshot of the comparison |
+| `usermissing.sps`, `usermissing_pspp.csv` | Frozen PSPP input / output for the declared-missing-value (`user_na`) semantics: FREQUENCIES valid percents and CROSSTABS chi-squared under `MISSING VALUES`; pinned in `tests/testthat/test-user_na.R` |
 
 The PSPP-derived oracle values are also pinned in
 `tests/testthat/test-assoc.R` under the four `test_that("PSPP oracle:

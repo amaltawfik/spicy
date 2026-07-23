@@ -64,6 +64,15 @@
 #'   p-value (and to determine the small-`p` threshold below which
 #'   `< .001` notation is used). Defaults to `3` (the APA standard);
 #'   matches the `p_digits` argument of the `table_*()` family.
+#' @param user_na Logical. If `TRUE` (the default), declared missing
+#'   values in `x`, `y`, or `by` are treated as missing: they are
+#'   excluded from the table and its statistics like `NA`, and the
+#'   exclusion is disclosed in the table note (`Declared missing
+#'   values removed: ...`). If `FALSE`, the declared codes tabulate
+#'   as categories (and, in `by`, define groups). See the "Declared
+#'   missing values" section of [freq()].
+#'
+#' @inheritSection freq Declared missing values
 #'
 #' @return
 #' Depends on `output` and `by`:
@@ -179,6 +188,7 @@ cross_tab <- function(
   show_n = TRUE,
   decimal_mark = ".",
   p_digits = 3L,
+  user_na = TRUE,
   styled
 ) {
   # Migration guard first, so old `styled =` calls get the actionable
@@ -214,6 +224,7 @@ cross_tab <- function(
       class = "spicy_invalid_input"
     )
   }
+  validate_varlist_logical(user_na, "user_na")
   if (
     !is.numeric(simulate_B) ||
       length(simulate_B) != 1L ||
@@ -552,8 +563,18 @@ cross_tab <- function(
   }
 
   data$`..spicy_w` <- w
-  full_x_levels <- make_levels(rlang::eval_tidy(x_expr, data))
-  full_y_levels <- make_levels(rlang::eval_tidy(y_expr, data))
+
+  # Declared missing values (see the "Declared missing values" section
+  # of ?freq): with `user_na = TRUE` declared codes become regular NA
+  # (so they are excluded from levels, cells, and statistics exactly
+  # like NA and disclosed in the note below); with `user_na = FALSE`
+  # the declaration is dropped and the codes tabulate as categories.
+  resolve_user_na <- function(v) {
+    if (isTRUE(user_na)) .user_na_to_na(v) else .user_na_zap(v)
+  }
+
+  full_x_levels <- make_levels(resolve_user_na(rlang::eval_tidy(x_expr, data)))
+  full_y_levels <- make_levels(resolve_user_na(rlang::eval_tidy(y_expr, data)))
 
   make_named_row <- function(template_df, values) {
     row <- as.list(rep(NA, ncol(template_df)))
@@ -588,8 +609,23 @@ cross_tab <- function(
   n_by_dropped <- 0L
 
   compute_ctab <- function(df, group_label = NULL) {
-    x_val <- rlang::eval_tidy(x_expr, df)
-    y_val <- rlang::eval_tidy(y_expr, df)
+    x_val_raw <- rlang::eval_tidy(x_expr, df)
+    y_val_raw <- rlang::eval_tidy(y_expr, df)
+    # Declared-missing masks BEFORE the user_na transform (needed for
+    # the disclosure note); all-FALSE when user_na = FALSE, where the
+    # declared codes stay in the table as categories.
+    mask_x <- if (user_na) {
+      .user_na_mask(x_val_raw)
+    } else {
+      logical(length(x_val_raw))
+    }
+    mask_y <- if (user_na) {
+      .user_na_mask(y_val_raw)
+    } else {
+      logical(length(y_val_raw))
+    }
+    x_val <- resolve_user_na(x_val_raw)
+    y_val <- resolve_user_na(y_val_raw)
     w_val <- df$`..spicy_w`
 
     df_sub <- data.frame(
@@ -1001,9 +1037,13 @@ cross_tab <- function(
     # NA disclosure: xtabs() silently excludes rows where x or y is NA.
     # Report the per-variable counts in the table note (same wording as
     # table_categorical()'s "Missing values removed" convention), naming
-    # only the variables that actually lost observations.
-    n_na_x <- sum(is.na(x_val))
-    n_na_y <- sum(is.na(y_val))
+    # only the variables that actually lost observations. Regular NA
+    # and declared missing values get separate lines so the reader can
+    # tell metadata-driven exclusions from plain missingness.
+    sys_na_x <- is.na(x_val) & !mask_x
+    sys_na_y <- is.na(y_val) & !mask_y
+    n_na_x <- sum(sys_na_x)
+    n_na_y <- sum(sys_na_y)
     na_parts <- character(0)
     if (n_na_x > 0L) {
       na_parts <- c(na_parts, sprintf("%s (%d)", x_name, n_na_x))
@@ -1020,7 +1060,7 @@ cross_tab <- function(
       # be noise.
       na_suffix <- ""
       if (n_na_x > 0L && n_na_y > 0L) {
-        n_rows_na <- sum(is.na(x_val) | is.na(y_val))
+        n_rows_na <- sum(sys_na_x | sys_na_y)
         na_suffix <- sprintf("; %d rows in total", n_rows_na)
       }
       na_text <- paste0(
@@ -1033,6 +1073,37 @@ cross_tab <- function(
         note <- na_text
       } else {
         note <- paste0(note, "\n", na_text)
+      }
+    }
+    # Declared-missing disclosure (user_na = TRUE): same grammar as the
+    # regular-NA line, one shared wording across the tabulators.
+    n_user_x <- sum(mask_x)
+    n_user_y <- sum(mask_y)
+    user_parts <- character(0)
+    if (n_user_x > 0L) {
+      user_parts <- c(user_parts, sprintf("%s (%d)", x_name, n_user_x))
+    }
+    if (n_user_y > 0L) {
+      user_parts <- c(user_parts, sprintf("%s (%d)", y_name, n_user_y))
+    }
+    if (length(user_parts) > 0L) {
+      user_suffix <- ""
+      if (n_user_x > 0L && n_user_y > 0L) {
+        user_suffix <- sprintf(
+          "; %d rows in total",
+          sum(mask_x | mask_y)
+        )
+      }
+      user_text <- paste0(
+        "Declared missing values removed: ",
+        paste(user_parts, collapse = ", "),
+        user_suffix,
+        "."
+      )
+      if (is.null(note) || note == "") {
+        note <- user_text
+      } else {
+        note <- paste0(note, "\n", user_text)
       }
     }
     if (n_by_dropped > 0L) {
@@ -1093,7 +1164,11 @@ cross_tab <- function(
   }
 
   if (!rlang::quo_is_null(by_expr)) {
-    by_vals <- rlang::eval_tidy(by_expr, data)
+    # Declared-missing group values follow the same `user_na` contract
+    # as x and y: with the default they are missing (no group is
+    # formed, rows counted in the removal note); with user_na = FALSE
+    # they define groups like any other value.
+    by_vals <- resolve_user_na(rlang::eval_tidy(by_expr, data))
     # split() drops NA-by rows from every group; disclose the loss in
     # each table's note (read by compute_ctab through its closure).
     n_by_dropped <- sum(is.na(by_vals))

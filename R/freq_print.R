@@ -30,8 +30,16 @@ print.spicy_freq_table <- function(x, ...) {
   var_name_clean <- sub("^.*\\$", "", var_name)
   data_name_clean <- sub("\\$.*$", "", data_name)
 
-  valid_block <- df[!is.na(df$value), , drop = FALSE]
-  missing_block <- df[is.na(df$value), , drop = FALSE]
+  # Declared-missing rows (user_na_rows attribute set by freq()) carry
+  # their value labels but belong to the Missing block, ahead of the
+  # system-NA row.
+  user_na_rows <- attr(df, "user_na_rows")
+  is_missing_row <- is.na(df$value)
+  if (length(user_na_rows) > 0L) {
+    is_missing_row[user_na_rows] <- TRUE
+  }
+  valid_block <- df[!is_missing_row, , drop = FALSE]
+  missing_block <- df[is_missing_row, , drop = FALSE]
 
   show_valid_col <- nrow(missing_block) > 0
 
@@ -54,14 +62,10 @@ print.spicy_freq_table <- function(x, ...) {
     if (!nrow(block)) {
       return(NULL)
     }
-    # Each block is homogeneous: `valid_block` has no NA in `value`, and
-    # `missing_block` has only NA. Branch once on the whole block instead
-    # of running a vectorized `ifelse` that is dead code on the valid path.
-    values <- if (anyNA(block$value)) {
-      rep("NA", nrow(block))
-    } else {
-      block$value
-    }
+    # `valid_block` has no NA in `value`; `missing_block` mixes
+    # declared-missing rows (labelled values) with the system-NA row,
+    # which displays as the literal "NA".
+    values <- ifelse(is.na(block$value), "NA", block$value)
     out <- data.frame(
       Category = c(category, rep("", nrow(block) - 1L)),
       Values = values,

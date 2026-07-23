@@ -13,7 +13,8 @@ count_n(
   allow_coercion = TRUE,
   ignore_case = FALSE,
   regex = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  user_na = TRUE
 )
 }
 \arguments{
@@ -56,6 +57,14 @@ If \code{TRUE}, interprets \code{select} as a regular expression pattern.}
 
 \item{verbose}{Logical. If \code{FALSE} (the default), messages are suppressed.
 If \code{TRUE}, prints processing messages.}
+
+\item{user_na}{Logical. If \code{TRUE} (the default), \code{special = "NA"}
+counts declared missing values together with regular \code{NA} (the
+SPSS \code{MISSING} / \code{NMISS} convention). If \code{FALSE}, only genuine
+\code{NA} / \code{NaN} count as missing. The \verb{count =} path matches the
+underlying codes in both modes, so explicitly listed declared
+codes are always counted. See the "Declared missing values"
+section of \code{\link[=freq]{freq()}}.}
 }
 \value{
 A numeric vector of row-wise counts (unnamed), of length
@@ -97,6 +106,37 @@ lowercase string equality, so \code{"b"} and \code{"B"} match even when
 \section{Coercion of \code{count} itself}{
 R coerces mixed-type vectors at construction time: \code{count = c(2, "2")} becomes \code{c("2", "2")} before the function ever sees it.
 To get type-sensitive matching, keep \code{count} homogeneous.
+}
+
+\section{Declared missing values}{
+
+
+Survey files imported with \strong{haven} often carry \emph{declared missing
+values}: codes such as \verb{8 = Don't know} or \code{9 = Refused} that the
+source file marks as missing while keeping them distinct from a
+plain \code{NA}. Two kinds of declaration exist: \code{na_values} / \code{na_range}
+metadata on \code{\link[haven:labelled_spss]{haven::labelled_spss()}} vectors, and tagged missing
+values created by \code{\link[haven:tagged_na]{haven::tagged_na()}} (the Stata \code{.a}, \code{.b}, ...
+convention).
+
+spicy honors the declaration by default (\code{user_na = TRUE}):
+declared missing values are excluded from every statistic exactly
+like \code{NA} -- valid percentages, means, chi-squared tests,
+association measures, row-wise summaries, and group definitions --
+but they are not erased from display. \code{\link[=freq]{freq()}} lists each observed
+declared value as its own row of the Missing block, with its value
+label; \code{\link[=cross_tab]{cross_tab()}}, \code{\link[=table_categorical]{table_categorical()}}, and
+\code{\link[=table_continuous]{table_continuous()}} disclose the exclusion in the table note
+(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} and
+\code{\link[=code_book]{code_book()}} count them as missing in \code{N_valid} / \code{NAs} /
+\code{N_distinct} while still listing the declared codes in \code{Values}.
+
+Every function involved offers the same escape hatch: set
+\code{user_na = FALSE} to ignore the declaration and treat the declared
+codes as valid values (the behavior of spicy before 0.13.0).
+Tagged missing values are genuine \code{NA}s either way; for them,
+\code{user_na = FALSE} only collapses the per-tag breakdown back into
+the regular \code{NA} count.
 }
 
 \examples{

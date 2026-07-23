@@ -162,9 +162,11 @@
   regex,
   verbose,
   fn,
-  fn_label
+  fn_label,
+  user_na = TRUE
 ) {
   digits <- .validate_row_n_digits(digits)
+  validate_varlist_logical(user_na, "user_na")
 
   if (is.matrix(data)) {
     data <- as.data.frame(data)
@@ -192,6 +194,17 @@
       class = "spicy_no_selection"
     )
     return(rep(NA_real_, nrow(data)))
+  }
+
+  # Declared missing values (see the "Declared missing values" section
+  # of ?freq): `as.matrix()` below strips the labelled class, so
+  # haven's `is.na()` dispatch cannot mark declared codes afterwards.
+  # Convert them to regular NA first (user_na = TRUE, the default) so
+  # they count as missing both in the summary and in the `min_valid`
+  # gate; with user_na = FALSE the declaration is dropped and the
+  # codes are summarized as ordinary numbers.
+  if (isTRUE(user_na)) {
+    data[] <- lapply(data, .user_na_to_na)
   }
 
   data_mat <- as.matrix(data)

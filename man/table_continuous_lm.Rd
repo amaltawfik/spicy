@@ -40,7 +40,8 @@ table_continuous_lm(
   excel_sheet = "Linear models",
   clipboard_delim = "\\t",
   word_path = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  user_na = TRUE
 )
 }
 \arguments{
@@ -417,6 +418,13 @@ format would require a separate refactor.}
 
 \item{verbose}{Logical. If \code{TRUE}, prints messages about ignored
 non-numeric selected outcomes (default: \code{FALSE}).}
+
+\item{user_na}{Logical. If \code{TRUE} (the default), declared missing
+values in the outcomes, in \code{by}, and in \code{covariates} are treated
+as missing and excluded from the fitted models (reflected in the
+per-group \code{n}). If \code{FALSE}, the declared codes enter the fits as
+ordinary values. See the "Declared missing values" section of
+\code{\link[=freq]{freq()}}.}
 }
 \value{
 Depends on \code{output}:
@@ -677,6 +685,37 @@ Optional output engines require the corresponding suggested packages:
 \item \pkg{openxlsx2} for \code{output = "excel"}
 \item \pkg{clipr} for \code{output = "clipboard"}
 }
+}
+
+\section{Declared missing values}{
+
+
+Survey files imported with \strong{haven} often carry \emph{declared missing
+values}: codes such as \verb{8 = Don't know} or \code{9 = Refused} that the
+source file marks as missing while keeping them distinct from a
+plain \code{NA}. Two kinds of declaration exist: \code{na_values} / \code{na_range}
+metadata on \code{\link[haven:labelled_spss]{haven::labelled_spss()}} vectors, and tagged missing
+values created by \code{\link[haven:tagged_na]{haven::tagged_na()}} (the Stata \code{.a}, \code{.b}, ...
+convention).
+
+spicy honors the declaration by default (\code{user_na = TRUE}):
+declared missing values are excluded from every statistic exactly
+like \code{NA} -- valid percentages, means, chi-squared tests,
+association measures, row-wise summaries, and group definitions --
+but they are not erased from display. \code{\link[=freq]{freq()}} lists each observed
+declared value as its own row of the Missing block, with its value
+label; \code{\link[=cross_tab]{cross_tab()}}, \code{\link[=table_categorical]{table_categorical()}}, and
+\code{\link[=table_continuous]{table_continuous()}} disclose the exclusion in the table note
+(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} and
+\code{\link[=code_book]{code_book()}} count them as missing in \code{N_valid} / \code{NAs} /
+\code{N_distinct} while still listing the declared codes in \code{Values}.
+
+Every function involved offers the same escape hatch: set
+\code{user_na = FALSE} to ignore the declaration and treat the declared
+codes as valid values (the behavior of spicy before 0.13.0).
+Tagged missing values are genuine \code{NA}s either way; for them,
+\code{user_na = FALSE} only collapses the per-tag breakdown back into
+the regular \code{NA} count.
 }
 
 \examples{

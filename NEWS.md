@@ -2,6 +2,10 @@
 
 ## Breaking changes
 
+* Declared missing values are now honored package-wide. Codes that survey files declare as missing (`na_values` / `na_range` metadata on haven-imported columns, and `haven::tagged_na()` values) are treated as missing by default in `freq()`, `cross_tab()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, `mean_n()`, `sum_n()`, `count_n()`, `varlist()`, `vl()`, and `code_book()`: they are excluded from statistics exactly like `NA` (valid percents, means, chi-squared tests and association measures, `min_valid` gates, group definitions), so numbers change for labelled survey data. Nothing disappears silently: `freq()` shows each declared value as its own labelled row in its Missing block (tagged NAs get per-tag rows with their labels), and the tabulation helpers disclose the exclusion in the table note ("Declared missing values removed: ..."). Migration: every function involved gains the same escape hatch, `user_na = FALSE`, which restores the previous behavior of treating declared codes as valid values. See the new "Declared missing values" section in `?freq`.
+
+* `varlist()`, `vl()`, and `code_book()` count columns are now internally coherent for labelled data: `N_distinct` uses the same missing definition as `N_valid` / `NAs` (declared missing values and `NA` elements of list and `POSIXlt` columns no longer count as distinct valid values), `na_range` codes observed in the data are listed in `Values` like `na_values` codes instead of vanishing, and value labels attached to tagged NAs (e.g. `Refused = tagged_na("a")`) now appear in `Values`.
+
 * `build_ascii_table()` is no longer exported. It has always been
   documented as internal plumbing; use `spicy_print_table()` for
   console rendering from code.

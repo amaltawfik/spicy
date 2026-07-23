@@ -98,9 +98,44 @@
 #'   family; the rendered engines that family also accepts
 #'   (`"tinytable"`, `"gt"`, `"flextable"`, ...) are not available in
 #'   `freq()`.
+#' @param user_na Logical. If `TRUE` (the default), declared missing
+#'   values are treated as missing: each observed declared value
+#'   becomes its own row of the Missing block (with its value label),
+#'   and valid percentages exclude those observations. If `FALSE`,
+#'   the declaration is ignored and the declared codes tabulate as
+#'   valid categories. See the "Declared missing values" section.
 #' @param styled Defunct. `styled = TRUE` is now `output = "default"`
 #'   (the default) and `styled = FALSE` is now `output = "data.frame"`;
 #'   supplying `styled` is an error.
+#'
+#' @section Declared missing values:
+#'
+#' Survey files imported with **haven** often carry *declared missing
+#' values*: codes such as `8 = Don't know` or `9 = Refused` that the
+#' source file marks as missing while keeping them distinct from a
+#' plain `NA`. Two kinds of declaration exist: `na_values` / `na_range`
+#' metadata on [haven::labelled_spss()] vectors, and tagged missing
+#' values created by [haven::tagged_na()] (the Stata `.a`, `.b`, ...
+#' convention).
+#'
+#' spicy honors the declaration by default (`user_na = TRUE`):
+#' declared missing values are excluded from every statistic exactly
+#' like `NA` -- valid percentages, means, chi-squared tests,
+#' association measures, row-wise summaries, and group definitions --
+#' but they are not erased from display. [freq()] lists each observed
+#' declared value as its own row of the Missing block, with its value
+#' label; [cross_tab()], [table_categorical()], and
+#' [table_continuous()] disclose the exclusion in the table note
+#' (`Declared missing values removed: x (2).`); [varlist()] and
+#' [code_book()] count them as missing in `N_valid` / `NAs` /
+#' `N_distinct` while still listing the declared codes in `Values`.
+#'
+#' Every function involved offers the same escape hatch: set
+#' `user_na = FALSE` to ignore the declaration and treat the declared
+#' codes as valid values (the behavior of spicy before 0.13.0).
+#' Tagged missing values are genuine `NA`s either way; for them,
+#' `user_na = FALSE` only collapses the per-tag breakdown back into
+#' the regular `NA` count.
 #'
 #' @return
 #' With `output = "data.frame"`, a plain `data.frame` with no extra
@@ -204,6 +239,7 @@ freq <- function(
   rescale = FALSE,
   decimal_mark = ".",
   output = c("default", "data.frame"),
+  user_na = TRUE,
   styled
 ) {
   # Migration guard first, so old `styled =` calls get the actionable
@@ -265,6 +301,7 @@ freq <- function(
   validate_varlist_logical(valid, "valid")
   validate_varlist_logical(cum, "cum")
   validate_varlist_logical(rescale, "rescale")
+  validate_varlist_logical(user_na, "user_na")
 
   is_df <- is.data.frame(data)
   if (is_df && missing(x)) {
@@ -421,10 +458,46 @@ freq <- function(
       x_values <- unclass(x)
       x[x_values %in% na_val] <- NA
     }
-
-    x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
   } else {
     if (!is.null(na_val)) x[x %in% na_val] <- NA
+  }
+
+  # Declared missing values (see the "Declared missing values"
+  # section): with `user_na = TRUE` the observations carrying declared
+  # codes / tagged NAs leave the valid table here and come back below
+  # as per-value rows of the Missing block; `n_user_total` re-enters
+  # the Total / Missing bookkeeping so the totals stay exact. With
+  # `user_na = FALSE`, the declaration is dropped and the codes
+  # tabulate as valid categories.
+  user_rows <- NULL
+  n_user_total <- 0L
+  if (user_na && .has_user_na(x)) {
+    user_mask <- .user_na_mask(x)
+    if (any(user_mask)) {
+      user_rows <- .user_na_info(
+        x[user_mask],
+        weights = weights[user_mask],
+        labelled_levels = labelled_levels
+      )
+      # Keep the unweighted totals integer (the historical attribute
+      # type); weighted totals are doubles either way.
+      n_user_total <- if (is.null(weights)) {
+        as.integer(sum(user_rows$n))
+      } else {
+        sum(user_rows$n)
+      }
+      x <- x[!user_mask]
+      if (!is.null(weights)) {
+        weights <- weights[!user_mask]
+      }
+    }
+    x <- .user_na_to_na(x)
+  } else if (!user_na) {
+    x <- .user_na_zap(x)
+  }
+
+  if (labelled::is.labelled(x)) {
+    x <- labelled::to_factor(x, levels = labelled_levels, nolabel_to_na = FALSE)
   }
 
   if (is.factor(x)) {
@@ -441,6 +514,11 @@ freq <- function(
 
   n_total <- if (is.null(weights)) length(x) else sum(weights)
   n_missing <- if (is.null(weights)) sum(is.na(x)) else sum(weights[is.na(x)])
+  # Declared-missing observations removed above still belong to the
+  # Total and Missing counts (SPSS-style bookkeeping: Valid excludes
+  # them, Total does not).
+  n_total <- n_total + n_user_total
+  n_missing <- n_missing + n_user_total
   n_valid <- n_total - n_missing
 
   if (n_total == 0) {
@@ -474,7 +552,9 @@ freq <- function(
     df$valid_prop <- df$n / n_valid
     df$valid_prop[is.na(df$value)] <- NA
   } else {
-    df$valid_prop <- NA
+    # `rep()` keeps the assignment valid when the table has zero valid
+    # rows (e.g. every observation is a declared missing value).
+    df$valid_prop <- rep(NA, nrow(df))
   }
 
   # --- Sort
@@ -500,6 +580,29 @@ freq <- function(
     rownames(df) <- NULL
   }
 
+  # Insert the declared-missing rows between the valid rows and the
+  # system-NA row: they belong to the Missing block (their labels stay
+  # visible, their valid percent is NA) and never participate in the
+  # user-requested `sort`, mirroring the fixed position of the NA row.
+  user_row_idx <- integer(0)
+  if (!is.null(user_rows) && nrow(user_rows) > 0L) {
+    user_df <- data.frame(
+      value = user_rows$value,
+      n = user_rows$n,
+      prop = user_rows$n / n_total,
+      valid_prop = NA_real_,
+      stringsAsFactors = FALSE
+    )
+    na_rows <- is.na(df$value)
+    df <- rbind(
+      df[!na_rows, , drop = FALSE],
+      user_df,
+      df[na_rows, , drop = FALSE]
+    )
+    rownames(df) <- NULL
+    user_row_idx <- sum(!na_rows) + seq_len(nrow(user_df))
+  }
+
   if (cum) {
     df$cum_prop <- cumsum(df$prop)
     if (valid) {
@@ -511,7 +614,7 @@ freq <- function(
       df$cum_valid_prop <- df$valid_prop
       df$cum_valid_prop[valid_idx] <- cumsum(df$valid_prop[valid_idx])
     } else {
-      df$cum_valid_prop <- NA
+      df$cum_valid_prop <- rep(NA, nrow(df))
     }
   }
 
@@ -530,6 +633,10 @@ freq <- function(
   attr(df, "class_name") <- paste(class(x_original), collapse = ", ")
   attr(df, "n_total") <- n_total
   attr(df, "n_valid") <- n_valid
+  # Row indices of the declared-missing rows (empty when none): read
+  # by print.spicy_freq_table() to route them into the Missing block
+  # even though their `value` labels are not NA.
+  attr(df, "user_na_rows") <- user_row_idx
   attr(df, "weighted") <- !is.null(weights)
   attr(df, "rescaled") <- rescale
   attr(df, "weight_var") <- weight_name

@@ -1,0 +1,39 @@
+Table: Statistiques
+,,y
+N,Valide,"44,0000000"
+,Manquant(e),"16,0000000"
+Moyenne,,"1,9090909"
+Écart-type,,",7414060"
+Minimum,,Agree
+Maximum,,Disagree
+
+Table: y
+,,Fréquence,%,Pourcentage valide,Pourcentage cumulé
+Valide,Agree,"14,0000000","23,3%","31,8%","31,8%"
+,Neutral,"20,0000000","33,3%","45,5%","77,3%"
+,Disagree,"10,0000000","16,7%","22,7%","100,0%"
+Manquant(e),.       ,"3,0000000","5,0%",,
+,DK,"6,0000000","10,0%",,
+,Refused,"7,0000000","11,7%",,
+Total,,"60,0000000","100,0%",,
+
+Table: Résumé
+,Observations,,,,,
+,Valide,,Manquant(e),,Total,
+,N,%,N,%,N,%
+y Ã— g,"44,0000000","73,3%","16,0000000","26,7%","60,0000000","100,0%"
+
+Table: y Ã— g
+,,,g,,Total
+,,,Low,High,
+y,Agree,Nombre,"10,0000000","4,0000000","14,0000000"
+,Neutral,Nombre,"8,0000000","12,0000000","20,0000000"
+,Disagree,Nombre,"3,0000000","7,0000000","10,0000000"
+Total,,Nombre,"21,0000000","23,0000000","44,0000000"
+
+Table: Tests de X²
+,Valeur,df,Sig. asymptotique (bi-variée)
+X² de Pearson,"4,8906241","2,0000000",",087"
+Rapport de vraisemblance,"5,0167103","2,0000000",",081"
+Association linéaire-par-linéaire,"4,2952062","1,0000000",",038"
+Nombre d’observations valides,"44,0000000",,

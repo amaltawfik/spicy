@@ -196,6 +196,14 @@
 #' @param word_path File path for `output = "word"`.
 #' @param verbose Logical. If `TRUE`, prints messages about excluded
 #'   non-numeric columns (default: `FALSE`).
+#' @param user_na Logical. If `TRUE` (the default), declared missing
+#'   values never reach the numeric summaries: they are excluded like
+#'   `NA` and disclosed in the table note (`Declared missing values
+#'   removed: ...`); declared-missing `by` values form no group. If
+#'   `FALSE`, the declared codes are summarized as ordinary numbers.
+#'   See the "Declared missing values" section of [freq()].
+#'
+#' @inheritSection freq Declared missing values
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -459,7 +467,8 @@ table_continuous <- function(
   excel_sheet = "Descriptives",
   clipboard_delim = "\t",
   word_path = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  user_na = TRUE
 ) {
   # --- validation ---
   if (!is.data.frame(data)) {
@@ -532,7 +541,8 @@ table_continuous <- function(
     "ci",
     "regex",
     "drop_na",
-    "verbose"
+    "verbose",
+    "user_na"
   )) {
     .lval <- get(.lname)
     if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
@@ -698,14 +708,32 @@ table_continuous <- function(
     return(data.frame())
   }
 
+  # Declared missing values (see the "Declared missing values" section
+  # of ?freq): with `user_na = TRUE` declared codes become regular NA
+  # before any summary is computed (they must never reach a mean);
+  # with `user_na = FALSE` the declaration is dropped and the codes
+  # are summarized as ordinary numbers.
+  resolve_user_na <- function(v) {
+    if (isTRUE(user_na)) .user_na_to_na(v) else .user_na_zap(v)
+  }
+
   # Truthfulness ledger (mirrors table_categorical()'s drop_na
-  # disclosure): per-variable NA counts excluded from the summaries,
-  # plus the count of rows removed for a missing `by` value when
+  # disclosure): per-variable NA counts excluded from the summaries
+  # (split between regular NA and declared missing values), plus the
+  # count of rows removed for a missing `by` value when
   # drop_na = TRUE. Surfaced as a "Missing values removed: ..." table
   # note -- the READER must be able to see what left the table.
   na_dropped <- integer(0)
+  user_na_dropped <- integer(0)
   for (.nm in numeric_cols) {
-    .nd <- sum(is.na(work[[.nm]]))
+    .col <- work[[.nm]]
+    .n_user <- if (user_na) sum(.user_na_mask(.col)) else 0L
+    .col <- resolve_user_na(.col)
+    work[[.nm]] <- .col
+    if (.n_user > 0L) {
+      user_na_dropped[[.nm]] <- .n_user
+    }
+    .nd <- sum(is.na(.col)) - .n_user
     if (.nd > 0L) {
       na_dropped[[.nm]] <- .nd
     }
@@ -720,6 +748,19 @@ table_continuous <- function(
           "Missing values removed: ",
           paste(
             sprintf("%s (%d)", names(na_dropped), na_dropped),
+            collapse = ", "
+          ),
+          "."
+        )
+      )
+    }
+    if (length(user_na_dropped)) {
+      parts <- c(
+        parts,
+        paste0(
+          "Declared missing values removed: ",
+          paste(
+            sprintf("%s (%d)", names(user_na_dropped), user_na_dropped),
             collapse = ", "
           ),
           "."
@@ -776,7 +817,10 @@ table_continuous <- function(
   }
 
   if (has_group) {
-    groups <- data[[group_col_name]]
+    # `by` follows the same `user_na` contract as the summarized
+    # variables: declared-missing group values are missing by default
+    # (no group is formed), valid group codes with user_na = FALSE.
+    groups <- resolve_user_na(data[[group_col_name]])
     n_na_groups <- sum(is.na(groups))
     if (drop_na && n_na_groups > 0L) {
       spicy_warn(

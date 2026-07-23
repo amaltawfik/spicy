@@ -33,7 +33,8 @@ table_categorical(
   excel_path = NULL,
   excel_sheet = "Categorical",
   clipboard_delim = "\\t",
-  word_path = NULL
+  word_path = NULL,
+  user_na = TRUE
 )
 }
 \arguments{
@@ -221,6 +222,14 @@ also wrote a \code{.docx} as a side effect; it is now used exclusively
 by \code{output = "word"} (the contract shared with the rest of the
 table family) and is ignored, with a warning, under
 \code{output = "flextable"}.}
+
+\item{user_na}{Logical. If \code{TRUE} (the default), declared missing
+values in the row variables and in \code{by} are treated as missing:
+they join the \code{"(Missing)"} level under \code{drop_na = FALSE}, and
+under \code{drop_na = TRUE} they are removed with a dedicated
+disclosure line (\verb{Declared missing values removed: ...}). If
+\code{FALSE}, the declared codes stay valid categories. See the
+"Declared missing values" section of \code{\link[=freq]{freq()}}.}
 }
 \value{
 Depends on \code{output}:
@@ -283,6 +292,37 @@ For descriptive (empirical) comparisons on continuous outcomes, see
 Decimal alignment, \emph{p}-value formatting, and required suggested
 packages per output engine are documented under \verb{@param align},
 \verb{@param p_digits}, and \verb{@param output} respectively.
+}
+
+\section{Declared missing values}{
+
+
+Survey files imported with \strong{haven} often carry \emph{declared missing
+values}: codes such as \verb{8 = Don't know} or \code{9 = Refused} that the
+source file marks as missing while keeping them distinct from a
+plain \code{NA}. Two kinds of declaration exist: \code{na_values} / \code{na_range}
+metadata on \code{\link[haven:labelled_spss]{haven::labelled_spss()}} vectors, and tagged missing
+values created by \code{\link[haven:tagged_na]{haven::tagged_na()}} (the Stata \code{.a}, \code{.b}, ...
+convention).
+
+spicy honors the declaration by default (\code{user_na = TRUE}):
+declared missing values are excluded from every statistic exactly
+like \code{NA} -- valid percentages, means, chi-squared tests,
+association measures, row-wise summaries, and group definitions --
+but they are not erased from display. \code{\link[=freq]{freq()}} lists each observed
+declared value as its own row of the Missing block, with its value
+label; \code{\link[=cross_tab]{cross_tab()}}, \code{\link[=table_categorical]{table_categorical()}}, and
+\code{\link[=table_continuous]{table_continuous()}} disclose the exclusion in the table note
+(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} and
+\code{\link[=code_book]{code_book()}} count them as missing in \code{N_valid} / \code{NAs} /
+\code{N_distinct} while still listing the declared codes in \code{Values}.
+
+Every function involved offers the same escape hatch: set
+\code{user_na = FALSE} to ignore the declaration and treat the declared
+codes as valid values (the behavior of spicy before 0.13.0).
+Tagged missing values are genuine \code{NA}s either way; for them,
+\code{user_na = FALSE} only collapses the per-tag breakdown back into
+the regular \code{NA} count.
 }
 
 \examples{

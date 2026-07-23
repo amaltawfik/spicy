@@ -62,9 +62,18 @@ summarize_values_minmax <- function(
 
   # Labelled vectors are converted to factor up front so the same
   # `factor_values()` path handles `factor_levels = "all"` uniformly
-  # for both `factor` and `labelled` inputs.
+  # for both `factor` and `labelled` inputs. The user-missing
+  # declaration is stripped first (`.user_na_zap()`) so declared codes
+  # of either declaration style stay visible in the codebook (with
+  # their labels when declared, as bare codes otherwise), and
+  # `explicit_tagged_na` surfaces tagged-NA value labels instead of
+  # collapsing them into NA.
   if (labelled::is.labelled(col)) {
-    col <- labelled::to_factor(col, levels = "prefixed")
+    col <- labelled::to_factor(
+      .user_na_zap(col),
+      levels = "prefixed",
+      explicit_tagged_na = is.double(col)
+    )
   }
 
   if (is.factor(col)) {
@@ -149,9 +158,15 @@ summarize_values_all <- function(
   # Same labelled-to-factor unification as in `summarize_values_minmax()`:
   # `factor_levels` is now honoured for labelled vectors, and the original
   # level order is preserved (sorting prefixed labels alphabetically would
-  # mis-order codes >= 10, e.g. `[10] X` before `[2] X`).
+  # mis-order codes >= 10, e.g. `[10] X` before `[2] X`). As there,
+  # `.user_na_zap()` keeps declared-missing codes visible and
+  # `explicit_tagged_na` surfaces tagged-NA value labels.
   if (labelled::is.labelled(col)) {
-    col <- labelled::to_factor(col, levels = "prefixed")
+    col <- labelled::to_factor(
+      .user_na_zap(col),
+      levels = "prefixed",
+      explicit_tagged_na = is.double(col)
+    )
   }
 
   if (is.factor(col)) {
@@ -245,7 +260,7 @@ summarize_varlist_list <- function(col, values = FALSE, include_na = FALSE) {
 }
 
 
-varlist_n_distinct <- function(col) {
+varlist_n_distinct <- function(col, user_na = TRUE) {
   if (varlist_is_array_column(col)) {
     rows <- varlist_array_rows(col)
     valid <- !varlist_array_missing_rows(col)
@@ -257,24 +272,38 @@ varlist_n_distinct <- function(col) {
     return(nrow(unique(rows[valid, , drop = FALSE])))
   }
 
-  length(unique(stats::na.omit(col)))
+  # `col[!is.na(col)]` (not `stats::na.omit()`) so the missing
+  # definition matches `varlist_n_valid()` / `varlist_n_missing()` on
+  # the same row: haven's `is.na()` dispatch treats declared missing
+  # values as missing (na.omit does not), and plain `is.na()` also
+  # covers list and POSIXlt columns, on which na.omit is a no-op.
+  if (!user_na) {
+    col <- .user_na_zap(col)
+  }
+  length(unique(col[!is.na(col)]))
 }
 
 
-varlist_n_valid <- function(col) {
+varlist_n_valid <- function(col, user_na = TRUE) {
   if (varlist_is_array_column(col)) {
     return(sum(!varlist_array_missing_rows(col)))
   }
 
+  if (!user_na) {
+    col <- .user_na_zap(col)
+  }
   sum(!is.na(col))
 }
 
 
-varlist_n_missing <- function(col) {
+varlist_n_missing <- function(col, user_na = TRUE) {
   if (varlist_is_array_column(col)) {
     return(sum(varlist_array_missing_rows(col)))
   }
 
+  if (!user_na) {
+    col <- .user_na_zap(col)
+  }
   sum(is.na(col))
 }
 

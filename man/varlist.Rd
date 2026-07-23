@@ -11,7 +11,8 @@ varlist(
   values = FALSE,
   tbl = FALSE,
   include_na = FALSE,
-  factor_levels = c("observed", "all")
+  factor_levels = c("observed", "all"),
+  user_na = TRUE
 )
 
 vl(
@@ -20,7 +21,8 @@ vl(
   values = FALSE,
   tbl = FALSE,
   include_na = FALSE,
-  factor_levels = c("observed", "all")
+  factor_levels = c("observed", "all"),
+  user_na = TRUE
 )
 }
 \arguments{
@@ -56,6 +58,14 @@ from \code{Values} but still counted in the \code{NAs} column.}
 in \code{Values}. \code{"observed"} (the default; \code{\link[=code_book]{code_book()}} uses \code{"all"})
 shows only levels present in the data, preserving factor level order.
 \code{"all"} shows all declared levels, including unused levels.}
+
+\item{user_na}{Logical. If \code{TRUE} (the default), declared missing
+values count as missing in \code{N_valid}, \code{NAs}, and \code{N_distinct}
+(all three columns share one missing definition). If \code{FALSE},
+they count as valid. Either way, the declared codes remain listed
+in \code{Values} (with their value labels when declared) -- a codebook
+documents the full coding scheme. See the "Declared missing
+values" section of \code{\link[=freq]{freq()}}.}
 }
 \value{
 A tibble with one row per selected variable, containing the following
@@ -114,6 +124,37 @@ in the data; \code{\link[=code_book]{code_book()}} defaults to \code{"all"} to d
 declared schema. See \verb{@param factor_levels} to override either
 default.
 }
+\section{Declared missing values}{
+
+
+Survey files imported with \strong{haven} often carry \emph{declared missing
+values}: codes such as \verb{8 = Don't know} or \code{9 = Refused} that the
+source file marks as missing while keeping them distinct from a
+plain \code{NA}. Two kinds of declaration exist: \code{na_values} / \code{na_range}
+metadata on \code{\link[haven:labelled_spss]{haven::labelled_spss()}} vectors, and tagged missing
+values created by \code{\link[haven:tagged_na]{haven::tagged_na()}} (the Stata \code{.a}, \code{.b}, ...
+convention).
+
+spicy honors the declaration by default (\code{user_na = TRUE}):
+declared missing values are excluded from every statistic exactly
+like \code{NA} -- valid percentages, means, chi-squared tests,
+association measures, row-wise summaries, and group definitions --
+but they are not erased from display. \code{\link[=freq]{freq()}} lists each observed
+declared value as its own row of the Missing block, with its value
+label; \code{\link[=cross_tab]{cross_tab()}}, \code{\link[=table_categorical]{table_categorical()}}, and
+\code{\link[=table_continuous]{table_continuous()}} disclose the exclusion in the table note
+(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} and
+\code{\link[=code_book]{code_book()}} count them as missing in \code{N_valid} / \code{NAs} /
+\code{N_distinct} while still listing the declared codes in \code{Values}.
+
+Every function involved offers the same escape hatch: set
+\code{user_na = FALSE} to ignore the declaration and treat the declared
+codes as valid values (the behavior of spicy before 0.13.0).
+Tagged missing values are genuine \code{NA}s either way; for them,
+\code{user_na = FALSE} only collapses the per-tag breakdown back into
+the regular \code{NA} count.
+}
+
 \examples{
 varlist(sochealth, tbl = TRUE)
 sochealth |> varlist(tbl = TRUE)

@@ -344,6 +344,14 @@
 #' @param word_path File path for `output = "word"`.
 #' @param verbose Logical. If `TRUE`, prints messages about ignored
 #'   non-numeric selected outcomes (default: `FALSE`).
+#' @param user_na Logical. If `TRUE` (the default), declared missing
+#'   values in the outcomes, in `by`, and in `covariates` are treated
+#'   as missing and excluded from the fitted models (reflected in the
+#'   per-group `n`). If `FALSE`, the declared codes enter the fits as
+#'   ordinary values. See the "Declared missing values" section of
+#'   [freq()].
+#'
+#' @inheritSection freq Declared missing values
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -999,7 +1007,8 @@ table_continuous_lm <- function(
   excel_sheet = "Linear models",
   clipboard_delim = "\t",
   word_path = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  user_na = TRUE
 ) {
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
@@ -1096,7 +1105,8 @@ table_continuous_lm <- function(
     "show_n",
     "show_weighted_n",
     "ci",
-    "effect_size_ci"
+    "effect_size_ci",
+    "user_na"
   )) {
     .val <- get(.arg)
     if (!is.logical(.val) || length(.val) != 1L || is.na(.val)) {
@@ -1115,9 +1125,19 @@ table_continuous_lm <- function(
   align <- spicy_match_arg(align)
   adjustment <- spicy_match_arg(adjustment)
 
+  # Declared missing values (see the "Declared missing values" section
+  # of ?freq): with `user_na = TRUE` declared codes become regular NA
+  # before any model is fitted -- `complete.cases()` and `lm()` do not
+  # dispatch haven's `is.na()`, so the conversion must happen up
+  # front. With `user_na = FALSE` the declaration is dropped and the
+  # codes enter the fits as ordinary values.
+  resolve_user_na <- function(v) {
+    if (isTRUE(user_na)) .user_na_to_na(v) else .user_na_zap(v)
+  }
+
   by_quo <- rlang::enquo(by)
   by_name <- resolve_single_column_selection(by_quo, data, "by")
-  by_vector <- data[[by_name]]
+  by_vector <- resolve_user_na(data[[by_name]])
   if (!is_supported_lm_predictor(by_vector)) {
     spicy_abort(
       "`by` must be numeric, logical, character, or factor.",
@@ -1346,7 +1366,9 @@ table_continuous_lm <- function(
   }
 
   covariates_df <- if (length(covariates_names) > 0L) {
-    data[, covariates_names, drop = FALSE]
+    cdf <- data[, covariates_names, drop = FALSE]
+    cdf[] <- lapply(cdf, resolve_user_na)
+    cdf
   } else {
     NULL
   }
@@ -1358,7 +1380,7 @@ table_continuous_lm <- function(
     seq_along(numeric_outcomes),
     function(i) {
       fit_outcome_lm_rows(
-        y = data[[numeric_outcomes[i]]],
+        y = resolve_user_na(data[[numeric_outcomes[i]]]),
         predictor = by_vector,
         covariates = covariates_df,
         weights = weights_vec,

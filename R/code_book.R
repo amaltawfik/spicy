@@ -36,6 +36,8 @@
 #' @return
 #' A `DT::datatable` object.
 #'
+#' @inheritSection freq Declared missing values
+#'
 #' @section Dependencies:
 #' Requires the following package:
 #' - **DT**
@@ -78,7 +80,8 @@ code_book <- function(
   include_na = FALSE,
   title = "Codebook",
   filename = NULL,
-  factor_levels = c("all", "observed")
+  factor_levels = c("all", "observed"),
+  user_na = TRUE
 ) {
   if (!is.data.frame(x)) {
     spicy_abort(
@@ -91,6 +94,7 @@ code_book <- function(
   validate_code_book_control_dots(dots)
   validate_varlist_logical(values, "values")
   validate_varlist_logical(include_na, "include_na")
+  validate_varlist_logical(user_na, "user_na")
   validate_code_book_title(title)
   validate_code_book_filename_arg(filename)
   filename <- code_book_filename(title, filename = filename)
@@ -109,6 +113,7 @@ code_book <- function(
     values = values,
     include_na = include_na,
     factor_levels = factor_levels,
+    user_na = user_na,
     tbl = TRUE
   )
 

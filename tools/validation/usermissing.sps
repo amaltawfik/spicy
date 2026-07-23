@@ -1,0 +1,23 @@
+SET FORMAT=F12.7.
+DATA LIST FREE / y g freq.
+BEGIN DATA
+1 1 10
+1 2 4
+2 1 8
+2 2 12
+3 1 3
+3 2 7
+8 1 4
+8 2 2
+9 1 5
+9 2 2
+. 1 2
+. 2 1
+END DATA.
+WEIGHT BY freq.
+VALUE LABELS y 1 'Agree' 2 'Neutral' 3 'Disagree' 8 'DK' 9 'Refused'
+ /g 1 'Low' 2 'High'.
+MISSING VALUES y (8, 9).
+FREQUENCIES /VARIABLES=y.
+CROSSTABS /TABLES=y BY g
+  /STATISTICS=CHISQ.

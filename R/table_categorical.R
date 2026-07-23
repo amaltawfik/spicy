@@ -378,6 +378,15 @@
 #'   by `output = "word"` (the contract shared with the rest of the
 #'   table family) and is ignored, with a warning, under
 #'   `output = "flextable"`.
+#' @param user_na Logical. If `TRUE` (the default), declared missing
+#'   values in the row variables and in `by` are treated as missing:
+#'   they join the `"(Missing)"` level under `drop_na = FALSE`, and
+#'   under `drop_na = TRUE` they are removed with a dedicated
+#'   disclosure line (`Declared missing values removed: ...`). If
+#'   `FALSE`, the declared codes stay valid categories. See the
+#'   "Declared missing values" section of [freq()].
+#'
+#' @inheritSection freq Declared missing values
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -629,7 +638,8 @@ table_categorical <- function(
   excel_path = NULL,
   excel_sheet = "Categorical",
   clipboard_delim = "\t",
-  word_path = NULL
+  word_path = NULL,
+  user_na = TRUE
 ) {
   select_missing <- missing(select)
   output <- spicy_match_arg(output)
@@ -771,11 +781,22 @@ table_categorical <- function(
   if (!is.logical(drop_na) || length(drop_na) != 1 || is.na(drop_na)) {
     spicy_abort("`drop_na` must be TRUE/FALSE.", class = "spicy_invalid_input")
   }
+  validate_varlist_logical(user_na, "user_na")
+  # Declared missing values (see the "Declared missing values" section
+  # of ?freq): with `user_na = TRUE` declared codes become regular NA
+  # up front, so they join the "(Missing)" level under drop_na = FALSE
+  # and the disclosed removal under drop_na = TRUE; with `user_na =
+  # FALSE` the declaration is dropped and the codes stay categories.
+  resolve_user_na <- function(v) {
+    if (isTRUE(user_na)) .user_na_to_na(v) else .user_na_zap(v)
+  }
   # Truthfulness ledger for drop_na = TRUE: per-variable NA counts (and
-  # the by-variable's, in grouped tables) removed before tabulation.
+  # the by-variable's, in grouped tables) removed before tabulation,
+  # split between regular NA and declared missing values.
   # Surfaced as a "Missing values removed: ..." table note -- dropping
   # is an analyst choice that the READER must be able to see.
   na_dropped <- integer(0)
+  user_na_dropped <- integer(0)
   by_na_dropped <- 0L
   # Disclosure note for drop_na = TRUE (NULL otherwise / when nothing
   # was dropped). Read lazily at assembly time, after the tabulation
@@ -793,6 +814,19 @@ table_categorical <- function(
           "Missing values removed: ",
           paste(
             sprintf("%s (%d)", names(na_dropped), na_dropped),
+            collapse = ", "
+          ),
+          "."
+        )
+      )
+    }
+    if (length(user_na_dropped)) {
+      parts <- c(
+        parts,
+        paste0(
+          "Declared missing values removed: ",
+          paste(
+            sprintf("%s (%d)", names(user_na_dropped), user_na_dropped),
             collapse = ", "
           ),
           "."
@@ -1134,7 +1168,9 @@ table_categorical <- function(
     all_level_order <- character(0)
 
     for (i in seq_along(select_names)) {
-      x <- data[[select_names[i]]]
+      x_raw <- data[[select_names[i]]]
+      n_user <- if (user_na) sum(.user_na_mask(x_raw)) else 0L
+      x <- resolve_user_na(x_raw)
       w <- weights_vec
 
       if (is.factor(x)) {
@@ -1145,7 +1181,13 @@ table_categorical <- function(
 
       keep <- if (drop_na) !is.na(x) else rep(TRUE, length(x))
       if (drop_na && sum(!keep) > 0L) {
-        na_dropped[[select_names[i]]] <- sum(!keep)
+        n_sys <- sum(!keep) - n_user
+        if (n_sys > 0L) {
+          na_dropped[[select_names[i]]] <- n_sys
+        }
+        if (n_user > 0L) {
+          user_na_dropped[[select_names[i]]] <- n_user
+        }
       }
       x <- x[keep]
       if (!is.null(w)) {
@@ -1696,7 +1738,7 @@ table_categorical <- function(
     }
   }
 
-  g0 <- data[[by_name]]
+  g0 <- resolve_user_na(data[[by_name]])
   # Resolve `assoc_measure` to a named character vector, one entry per
   # row variable (validates input shape, fills "auto" via the per-row
   # rule, errors on phi-on-non-2x2). The downstream loop reads from
@@ -1732,8 +1774,10 @@ table_categorical <- function(
   all_level_order <- character(0)
 
   for (i in seq_along(select_names)) {
-    x <- data[[select_names[i]]]
-    g <- data[[by_name]]
+    x_raw <- data[[select_names[i]]]
+    n_user <- if (user_na) sum(.user_na_mask(x_raw)) else 0L
+    x <- resolve_user_na(x_raw)
+    g <- g0
     w <- weights_vec
 
     # Capture original level order before any filtering/conversion
@@ -1746,9 +1790,12 @@ table_categorical <- function(
     keep <- rep(TRUE, length(x))
     if (drop_na) {
       keep <- !is.na(x) & !is.na(g)
-      nd_x <- sum(is.na(x))
+      nd_x <- sum(is.na(x)) - n_user
       if (nd_x > 0L) {
         na_dropped[[select_names[i]]] <- nd_x
+      }
+      if (n_user > 0L) {
+        user_na_dropped[[select_names[i]]] <- n_user
       }
       by_na_dropped <- max(by_na_dropped, sum(is.na(g)))
     }
