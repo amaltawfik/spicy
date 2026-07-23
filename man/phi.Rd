@@ -50,6 +50,9 @@ phi(tab)
 phi(tab, detail = TRUE)
 
 }
+\references{
+Liebetrau, A. M. (1983). \emph{Measures of Association}. Sage.
+}
 \seealso{
 \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=yule_q]{yule_q()}}, \code{\link[=assoc_measures]{assoc_measures()}}
 

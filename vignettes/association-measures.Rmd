@@ -279,3 +279,33 @@ precision without recalculating:
 res <- cramer_v(tbl, detail = TRUE)
 print(res, digits = 5)
 ```
+
+## See also
+
+- See `vignette("frequency-tables")` for `cross_tab()`, which reports
+  these measures inline through its `assoc_measure` argument.
+- See `vignette("table-categorical")` for association measures inside
+  APA-style categorical summary tables.
+
+## References
+
+* Agresti, A. (2002). *Categorical Data Analysis* (2nd ed.). Wiley.
+* Brown, M. B., &amp; Benedetti, J. K. (1977). Sampling behavior of tests
+  for correlation in two-way contingency tables. *Journal of the
+  American Statistical Association*, 72(358), 309–315.
+* Goodman, L. A., &amp; Kruskal, W. H. (1954). Measures of association
+  for cross classifications. *Journal of the American Statistical
+  Association*, 49(268), 732–764.
+* Kendall, M. G. (1938). A new measure of rank correlation.
+  *Biometrika*, 30(1–2), 81–93.
+* Liebetrau, A. M. (1983). *Measures of Association*. Sage.
+* Somers, R. H. (1962). A new asymmetric measure of association for
+  ordinal variables. *American Sociological Review*, 27(6), 799–811.
+* Stuart, A. (1953). The estimation and comparison of strengths of
+  association in contingency tables. *Biometrika*, 40(1–2), 105–110.
+* Theil, H. (1970). On the estimation of relationships involving
+  qualitative variables. *American Journal of Sociology*, 76(1),
+  103–154.
+* Yule, G. U. (1900). On the association of attributes in statistics.
+  *Philosophical Transactions of the Royal Society of London, Series
+  A*, 194, 257–319.

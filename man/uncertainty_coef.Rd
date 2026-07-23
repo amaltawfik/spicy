@@ -89,6 +89,11 @@ uncertainty_coef(tab)
 uncertainty_coef(tab, direction = "row", detail = TRUE)
 
 }
+\references{
+Theil, H. (1970). On the estimation of relationships involving
+qualitative variables. \emph{American Journal of Sociology}, 76(1),
+103-154. \doi{10.1086/224909}
+}
 \seealso{
 \code{\link[=lambda_gk]{lambda_gk()}}, \code{\link[=goodman_kruskal_tau]{goodman_kruskal_tau()}}, \code{\link[=assoc_measures]{assoc_measures()}}
 

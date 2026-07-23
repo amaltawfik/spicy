@@ -81,6 +81,16 @@ somers_d(tab, direction = "row")
 somers_d(tab, direction = "column", detail = TRUE)
 
 }
+\references{
+Somers, R. H. (1962). A new asymmetric measure of association
+for ordinal variables. \emph{American Sociological Review}, 27(6),
+799-811. \doi{10.2307/2090408}
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+tests for correlation in two-way contingency tables. \emph{Journal of
+the American Statistical Association}, 72(358), 309-315.
+\doi{10.1080/01621459.1977.10480995}
+}
 \seealso{
 \code{\link[=kendall_tau_b]{kendall_tau_b()}}, \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=assoc_measures]{assoc_measures()}}
 

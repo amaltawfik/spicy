@@ -53,6 +53,11 @@ tab <- table(sochealth$smoking, sochealth$sex)
 yule_q(tab)
 
 }
+\references{
+Yule, G. U. (1900). On the association of attributes in
+statistics. \emph{Philosophical Transactions of the Royal Society of
+London, Series A}, 194, 257-319. \doi{10.1098/rsta.1900.0019}
+}
 \seealso{
 \code{\link[=phi]{phi()}}, \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=assoc_measures]{assoc_measures()}}
 

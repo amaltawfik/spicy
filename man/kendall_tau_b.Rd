@@ -53,6 +53,15 @@ tab <- table(sochealth$education, sochealth$self_rated_health)
 kendall_tau_b(tab)
 
 }
+\references{
+Kendall, M. G. (1938). A new measure of rank correlation.
+\emph{Biometrika}, 30(1-2), 81-93. \doi{10.2307/2332226}
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+tests for correlation in two-way contingency tables. \emph{Journal of
+the American Statistical Association}, 72(358), 309-315.
+\doi{10.1080/01621459.1977.10480995}
+}
 \seealso{
 \code{\link[=kendall_tau_c]{kendall_tau_c()}}, \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=somers_d]{somers_d()}},
 \code{\link[=assoc_measures]{assoc_measures()}}

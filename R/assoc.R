@@ -298,6 +298,7 @@ print.spicy_assoc_detail <- function(
 #' Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
 #' tests for correlation in two-way contingency tables. *Journal of
 #' the American Statistical Association*, 72(358), 309-315.
+#' \doi{10.1080/01621459.1977.10480995}
 #'
 #' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 #'
@@ -390,6 +391,9 @@ cramer_v <- function(
 #' The confidence interval uses the Fisher z-transformation on
 #' \eqn{\phi}; see [cramer_v()] for the formula and full references.
 #'
+#' @references
+#' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
+#'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$sex)
 #' phi(tab)
@@ -470,6 +474,9 @@ phi <- function(
 #' the table dimensions. No standard asymptotic standard error exists,
 #' so the confidence interval is not computed.
 #'
+#' @references
+#' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
+#'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
 #' contingency_coef(tab)
@@ -542,6 +549,11 @@ contingency_coef <- function(
 #'
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
+#'
+#' @references
+#' Yule, G. U. (1900). On the association of attributes in
+#' statistics. *Philosophical Transactions of the Royal Society of
+#' London, Series A*, 194, 257-319. \doi{10.1098/rsta.1900.0019}
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$sex)
@@ -636,6 +648,11 @@ yule_q <- function(
 #'
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
+#'
+#' @references
+#' Goodman, L. A., & Kruskal, W. H. (1954). Measures of association
+#' for cross classifications. *Journal of the American Statistical
+#' Association*, 49(268), 732-764. \doi{10.2307/2281536}
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
@@ -807,6 +824,11 @@ lambda_gk <- function(
 #'
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
+#'
+#' @references
+#' Goodman, L. A., & Kruskal, W. H. (1954). Measures of association
+#' for cross classifications. *Journal of the American Statistical
+#' Association*, 49(268), 732-764. \doi{10.2307/2281536}
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
@@ -1015,6 +1037,11 @@ goodman_kruskal_tau <- function(
 #' here. The asymptotic standard errors follow the DescTools delta
 #' method; see [cramer_v()] for full references.
 #'
+#' @references
+#' Theil, H. (1970). On the estimation of relationships involving
+#' qualitative variables. *American Journal of Sociology*, 76(1),
+#' 103-154. \doi{10.1086/224909}
+#'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
 #' uncertainty_coef(tab)
@@ -1175,6 +1202,16 @@ uncertainty_coef <- function(
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
+#' @references
+#' Goodman, L. A., & Kruskal, W. H. (1954). Measures of association
+#' for cross classifications. *Journal of the American Statistical
+#' Association*, 49(268), 732-764. \doi{10.2307/2281536}
+#'
+#' Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+#' tests for correlation in two-way contingency tables. *Journal of
+#' the American Statistical Association*, 72(358), 309-315.
+#' \doi{10.1080/01621459.1977.10480995}
+#'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)
 #' gamma_gk(tab)
@@ -1262,6 +1299,15 @@ gamma_gk <- function(
 #' diverges from `DescTools::KendallTauB()`, whose implementation
 #' mis-scales one margin term of the gradient; see [cramer_v()]
 #' for full references.
+#'
+#' @references
+#' Kendall, M. G. (1938). A new measure of rank correlation.
+#' *Biometrika*, 30(1-2), 81-93. \doi{10.2307/2332226}
+#'
+#' Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+#' tests for correlation in two-way contingency tables. *Journal of
+#' the American Statistical Association*, 72(358), 309-315.
+#' \doi{10.1080/01621459.1977.10480995}
 #'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)
@@ -1389,6 +1435,16 @@ kendall_tau_b <- function(
 #' Standard error formulas follow the DescTools implementations
 #' (Signorell et al., 2024); see [cramer_v()] for full references.
 #'
+#' @references
+#' Stuart, A. (1953). The estimation and comparison of strengths of
+#' association in contingency tables. *Biometrika*, 40(1-2),
+#' 105-110. \doi{10.2307/2333101}
+#'
+#' Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+#' tests for correlation in two-way contingency tables. *Journal of
+#' the American Statistical Association*, 72(358), 309-315.
+#' \doi{10.1080/01621459.1977.10480995}
+#'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)
 #' kendall_tau_c(tab)
@@ -1511,6 +1567,16 @@ kendall_tau_c <- function(
 #' Standard error formulas for the asymmetric directions follow
 #' the DescTools implementations (Signorell et al., 2024); see
 #' [cramer_v()] for full references.
+#'
+#' @references
+#' Somers, R. H. (1962). A new asymmetric measure of association
+#' for ordinal variables. *American Sociological Review*, 27(6),
+#' 799-811. \doi{10.2307/2090408}
+#'
+#' Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+#' tests for correlation in two-way contingency tables. *Journal of
+#' the American Statistical Association*, 72(358), 309-315.
+#' \doi{10.1080/01621459.1977.10480995}
 #'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)
@@ -1703,6 +1769,7 @@ somers_d <- function(
 #' Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
 #' tests for correlation in two-way contingency tables. *Journal of
 #' the American Statistical Association*, 72(358), 309-315.
+#' \doi{10.1080/01621459.1977.10480995}
 #'
 #' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 #'

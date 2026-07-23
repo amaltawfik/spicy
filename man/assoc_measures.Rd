@@ -87,6 +87,7 @@ Agresti, A. (2002). \emph{Categorical Data Analysis} (2nd ed.). Wiley.
 Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
 tests for correlation in two-way contingency tables. \emph{Journal of
 the American Statistical Association}, 72(358), 309-315.
+\doi{10.1080/01621459.1977.10480995}
 
 Liebetrau, A. M. (1983). \emph{Measures of Association}. Sage.
 

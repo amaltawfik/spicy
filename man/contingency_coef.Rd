@@ -45,6 +45,9 @@ tab <- table(sochealth$smoking, sochealth$education)
 contingency_coef(tab)
 
 }
+\references{
+Liebetrau, A. M. (1983). \emph{Measures of Association}. Sage.
+}
 \seealso{
 \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=assoc_measures]{assoc_measures()}}
 

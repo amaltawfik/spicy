@@ -48,6 +48,16 @@ gamma_gk(tab)
 gamma_gk(tab, detail = TRUE)
 
 }
+\references{
+Goodman, L. A., & Kruskal, W. H. (1954). Measures of association
+for cross classifications. \emph{Journal of the American Statistical
+Association}, 49(268), 732-764. \doi{10.2307/2281536}
+
+Brown, M. B., & Benedetti, J. K. (1977). Sampling behavior of
+tests for correlation in two-way contingency tables. \emph{Journal of
+the American Statistical Association}, 72(358), 309-315.
+\doi{10.1080/01621459.1977.10480995}
+}
 \seealso{
 \code{\link[=kendall_tau_b]{kendall_tau_b()}}, \code{\link[=kendall_tau_c]{kendall_tau_c()}}, \code{\link[=somers_d]{somers_d()}},
 \code{\link[=assoc_measures]{assoc_measures()}}
