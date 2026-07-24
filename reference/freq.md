@@ -62,7 +62,9 @@ freq(
   Same role as `digits` in
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
   where the `NULL` default resolves to the same `1` decimal whenever
-  percentages are shown.
+  percentages are shown. Displayed values round ties half to even (the R
+  / IEC 60559 convention, shared with Stata), so an exact tie like 6.25
+  prints as `6.2` where SPSS would print `6.3`.
 
 - valid:
 
@@ -87,6 +89,12 @@ freq(
   - `"name+"` - alphabetical A-Z
 
   - `"name-"` - alphabetical Z-A
+
+  For labelled variables displayed with their codes (`labelled_levels`
+  `"prefixed"` or `"values"`), `"name+"` / `"name-"` sort by the
+  underlying code (so `[10]` follows `[2]`, as in SPSS), not by the
+  display string. With `labelled_levels = "labels"`, labels sort
+  alphabetically.
 
 - na_val:
 

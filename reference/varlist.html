@@ -157,7 +157,9 @@ from <code>Values</code> but still counted in the <code>NAs</code> column.</p></
 <dd><p>Character. Controls how factor values are displayed
 in <code>Values</code>. <code>"observed"</code> (the default; <code><a href="code_book.html">code_book()</a></code> uses <code>"all"</code>)
 shows only levels present in the data, preserving factor level order.
-<code>"all"</code> shows all declared levels, including unused levels.</p></dd>
+<code>"all"</code> shows all declared levels, including unused levels. An
+explicit <code>NA</code> level (e.g. from <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">addNA()</a></code>) is displayed as <code>&lt;NA&gt;</code>
+among the declared levels.</p></dd>
 
 
 <dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>
@@ -183,6 +185,8 @@ displayed. For labelled variables, <strong>prefixed labels</strong> are displaye
 <code>labelled::to_factor(levels = "prefixed")</code>.
 For factors, levels are displayed according to <code>factor_levels</code>.
 Matrix and array columns are summarized by their dimensions.
+<code>difftime</code> values are annotated with their units, e.g.
+<code>1.5, 2.5 (hours)</code>.
 Missing value markers (<code>&lt;NA&gt;</code>, <code>&lt;NaN&gt;</code>) are optionally appended at the
 end (controlled via <code>include_na</code>). Literal strings <code>"NA"</code>, <code>"NaN"</code>, and
 <code>""</code> are quoted to distinguish them from missing markers.</p></li>

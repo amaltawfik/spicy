@@ -130,7 +130,10 @@ as accepted by <code><a href="https://tidyselect.r-lib.org/reference/all_of.html
 Multiple values are allowed (e.g., <code>count = c(1, 2, 3)</code> or <code>count = c("yes", "no")</code>).
 R automatically coerces all values in <code>count</code> to a common type (e.g., <code>c(2, "2")</code> becomes <code>c("2", "2")</code>),
 so all values are expected to be of the same final type.
-If <code>allow_coercion = FALSE</code>, matching is type-safe using <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code>, and the type of <code>count</code> must match that of the values in the data.</p></dd>
+If <code>allow_coercion = FALSE</code>, matching is type-safe using <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code>, and the type of <code>count</code> must match that of the values in the data.
+A zero-length <code>count</code> (e.g. an upstream filter that emptied it) raises a
+classed error rather than silently counting nothing, and so does a
+<code>count</code> made only of missing values (use <code>special = "NA"</code> / <code>"NaN"</code>).</p></dd>
 
 
 <dt id="arg-special">special<a class="anchor" aria-label="anchor" href="#arg-special"></a></dt>

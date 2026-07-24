@@ -92,7 +92,12 @@ table_categorical(
 - levels_keep:
 
   Optional character vector of levels to keep/order for row modalities.
-  If `NULL`, all observed levels are kept.
+  If `NULL`, all observed levels are kept. Entries must match the level
+  strings the table displays (for labelled columns these are the raw
+  codes, or `"[code] label"` under `drop_na = TRUE`, not the bare label
+  text). When nothing matches for a selected variable, that variable is
+  dropped from the table with a classed warning (`spicy_no_selection`)
+  listing the available level strings.
 
 - include_total:
 

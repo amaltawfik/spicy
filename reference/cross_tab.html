@@ -188,9 +188,13 @@ Defaults to <code>2000</code>.</p></dd>
 <dd><p>Number of decimals for cell values: a single
 non-negative integer. Defaults to <code>NULL</code>, which is resolved to
 <code>1</code> when <code>percent != "none"</code> and <code>0</code> when <code>percent = "none"</code>
-(counts are always integers). Same role as <code>digits</code> in <code><a href="freq.html">freq()</a></code>,
-which formats percentages only and therefore uses a fixed
-default of <code>1</code>.</p></dd>
+(counts are integers unless fractional weights are used; raise
+<code>digits</code> to display fractional weighted counts exactly). Same
+role as <code>digits</code> in <code><a href="freq.html">freq()</a></code>, which formats percentages only and
+therefore uses a fixed default of <code>1</code>. Displayed values round
+ties half to even (the R / IEC 60559 convention, shared with
+Stata), so an exact tie like 6.25 prints as <code>6.2</code> where SPSS
+would print <code>6.3</code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
@@ -362,7 +366,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  No       <span style="color: #9E9E9E;">│</span>               176                419         325 <span style="color: #9E9E9E;">│</span>     921 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Yes      <span style="color: #9E9E9E;">│</span>                79                115          60 <span style="color: #9E9E9E;">│</span>     254 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               255                534         385 <span style="color: #9E9E9E;">│</span>    1175 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               256                534         386 <span style="color: #9E9E9E;">│</span>    1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.4, p &lt;.001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>

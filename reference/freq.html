@@ -141,7 +141,9 @@ warning; see <code>Details</code>.</p></dd>
 <dd><p>Number of decimal digits to display for percentages
 (default: <code>1</code>). Same role as <code>digits</code> in <code><a href="cross_tab.html">cross_tab()</a></code>, where the
 <code>NULL</code> default resolves to the same <code>1</code> decimal whenever
-percentages are shown.</p></dd>
+percentages are shown. Displayed values round ties half to even
+(the R / IEC 60559 convention, shared with Stata), so an exact
+tie like 6.25 prints as <code>6.2</code> where SPSS would print <code>6.3</code>.</p></dd>
 
 
 <dt id="arg-valid">valid<a class="anchor" aria-label="anchor" href="#arg-valid"></a></dt>
@@ -160,7 +162,11 @@ If <code>TRUE</code>, adds cumulative percentages.</p></dd>
 <li><p><code>"-"</code> - decreasing frequency</p></li>
 <li><p><code>"name+"</code> - alphabetical A-Z</p></li>
 <li><p><code>"name-"</code> - alphabetical Z-A</p></li>
-</ul></dd>
+</ul><p>For labelled variables displayed with their codes
+(<code>labelled_levels</code> <code>"prefixed"</code> or <code>"values"</code>), <code>"name+"</code> /
+<code>"name-"</code> sort by the underlying code (so <code>[10]</code> follows <code>[2]</code>,
+as in SPSS), not by the display string. With
+<code>labelled_levels = "labels"</code>, labels sort alphabetically.</p></dd>
 
 
 <dt id="arg-na-val">na_val<a class="anchor" aria-label="anchor" href="#arg-na-val"></a></dt>

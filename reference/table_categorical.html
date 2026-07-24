@@ -175,7 +175,13 @@ accepted before 0.13.0, now raise an error.</p></dd>
 
 <dt id="arg-levels-keep">levels_keep<a class="anchor" aria-label="anchor" href="#arg-levels-keep"></a></dt>
 <dd><p>Optional character vector of levels to keep/order for row
-modalities. If <code>NULL</code>, all observed levels are kept.</p></dd>
+modalities. If <code>NULL</code>, all observed levels are kept. Entries must
+match the level strings the table displays (for labelled columns
+these are the raw codes, or <code>"[code] label"</code> under
+<code>drop_na = TRUE</code>, not the bare label text). When nothing matches
+for a selected variable, that variable is dropped from the table
+with a classed warning (<code>spicy_no_selection</code>) listing the
+available level strings.</p></dd>
 
 
 <dt id="arg-include-total">include_total<a class="anchor" aria-label="anchor" href="#arg-include-total"></a></dt>

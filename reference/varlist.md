@@ -79,7 +79,9 @@ vl(
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   uses `"all"`) shows only levels present in the data, preserving factor
   level order. `"all"` shows all declared levels, including unused
-  levels.
+  levels. An explicit `NA` level (e.g. from
+  [`addNA()`](https://rdrr.io/r/base/factor.html)) is displayed as
+  `<NA>` among the declared levels.
 
 - user_na:
 
@@ -107,7 +109,8 @@ columns:
   values are displayed. For labelled variables, **prefixed labels** are
   displayed using `labelled::to_factor(levels = "prefixed")`. For
   factors, levels are displayed according to `factor_levels`. Matrix and
-  array columns are summarized by their dimensions. Missing value
+  array columns are summarized by their dimensions. `difftime` values
+  are annotated with their units, e.g. `1.5, 2.5 (hours)`. Missing value
   markers (`<NA>`, `<NaN>`) are optionally appended at the end
   (controlled via `include_na`). Literal strings `"NA"`, `"NaN"`, and
   `""` are quoted to distinguish them from missing markers.

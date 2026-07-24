@@ -45,6 +45,26 @@
   instead of vanishing, and value labels attached to tagged NAs
   (e.g. `Refused = tagged_na("a")`) now appear in `Values`.
 
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  now tabulates observations at an explicit `NA` factor level
+  ([`addNA()`](https://rdrr.io/r/base/factor.html),
+  `factor(exclude = NULL)`,
+  [`forcats::fct_na_value_to_level()`](https://forcats.tidyverse.org/reference/fct_na_value_to_level.html))
+  as a regular `NA` category row or column instead of silently dropping
+  them: an explicit level is the analyst’s choice to show missing as a
+  category, so totals, percentages, and the chi-squared statistic now
+  include it, matching
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  base [`table()`](https://rdrr.io/r/base/table.html) on the same input.
+  Numbers change for tables built from such factors.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) on a
+  factor with an explicit `NA` level now excludes those observations
+  from the valid-percent denominator (and the `n_valid` attribute),
+  matching the Missing classification its own printed table gives them
+  and the SPSS convention; the Valid Percent column previously summed to
+  less than the `100.0` printed in its Total row.
+
 - [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
   is no longer exported. It has always been documented as internal
   plumbing; use
@@ -515,6 +535,20 @@ rendering an empty column.
   (`p_value`, `statistic`, `effect_size`, and `effect_size_ci` all
   turned off) instead of naming only the first two toggles.
 
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md), and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  annotate `difftime` values with their units in `Values`
+  (e.g. `1.5, 2.5 (hours)`); the bare numbers were ambiguous between
+  hours and days.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  return tibble columns without stray names attributes (the variable
+  names leaked onto 5 of the 7 columns), so element-wise
+  [`identical()`](https://rdrr.io/r/base/identical.html) and snapshot
+  comparisons behave the same for every column.
+
 ### Bug fixes
 
 - The asymptotic standard error of
@@ -531,12 +565,14 @@ rendering an empty column.
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   and the default ordered-by-ordered association line of
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
+
 - `somers_d(direction = "symmetric")` returns the correct 0 instead of a
   silent `NA` when concordant and discordant pairs are exactly equal
   (e.g. an independence-pattern table), matching SPSS / PSPP; the
   association line requested from
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   no longer silently disappears on such tables.
+
 - [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   no longer swallows the classed warnings its measures raise on
   degenerate tables: each distinct warning (e.g. `spicy_undefined_stat`
@@ -544,6 +580,7 @@ rendering an empty column.
   assembled, so `--` rows come with their signal and condition handlers
   / [`suppressWarnings()`](https://rdrr.io/r/base/warning.html) keep
   working.
+
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),
   [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md), and
   [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)
@@ -553,33 +590,74 @@ rendering an empty column.
   (`detail = TRUE`); their
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   rows now carry that signal too.
+
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   no longer blanket-suppresses warnings while computing the association
   measure for its note: classed warnings from the measures reach the
   caller, as in
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md).
+
 - [`print()`](https://rdrr.io/r/base/print.html) on
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   tables invisibly returns the table object itself (as documented), not
   the internally rebuilt display frame.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) keeps
+  the variable label footer when observations with `NA` weights are
+  dropped; base subsetting used to strip the `label` attribute from
+  plain vectors that carry a variable label without value labels (the
+  haven pattern), silently losing the footer.
+
+- `freq(sort = "name+")` / `"name-"` on labelled variables sorts by the
+  underlying code whenever the code is displayed (`labelled_levels`
+  `"prefixed"` or `"values"`), matching the SPSS by-value convention;
+  string collation used to rank `[10]` ahead of `[2]`. With
+  `labelled_levels = "labels"` the alphabetical label sort is unchanged.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  warns (class `spicy_no_selection`) and lists the available level
+  strings when `levels_keep` matches nothing for a selected variable,
+  instead of silently dropping the variable from the table. For labelled
+  columns the matching strings are the raw codes (or `"[code] label"`
+  under `drop_na = TRUE`), never the bare label text.
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md), and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  render `POSIXlt` columns as datetime values under `values = TRUE`, as
+  the compact summary already did, instead of a list-column summary
+  (`List(3): list`).
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+  [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md), and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  show an explicit `NA` factor level (e.g. from
+  [`addNA()`](https://rdrr.io/r/base/factor.html)) as `<NA>` in `Values`
+  instead of silently dropping it, so `Values` and `N_distinct` agree on
+  the declared levels.
+
 - [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
   no longer blames the split for duplicate column names that already
   existed in the input (`check.names = FALSE` data): pre-existing
   duplicates pass through untouched, and only collisions created by the
   renaming error.
+
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   no longer silently ignores `family` with `method = "lm"`: a
   non-gaussian family is refused with the same actionable error as the
   `coxph` refusal, and a supplied
   [`gaussian()`](https://rdrr.io/r/stats/family.html) is ignored with a
   classed warning.
+
 - `gt` and `flextable` outputs now render in Quarto / R Markdown
   **Word**, PowerPoint, and PDF documents (they silently disappeared
   from non-HTML targets). A new `as_flextable()` method returns the
   underlying flextable for manual composition.
+
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   now discloses robust and resampling SEs in its table note, carries its
   notes into every rich output, and accepts `cluster = ~region`.
+
 - The RMST and risk-difference columns extend to parametric survival
   models
   ([`survival::survreg`](https://rdrr.io/pkg/survival/man/survreg.html)):
@@ -588,44 +666,53 @@ rendering an empty column.
   [`flexsurv::standsurv()`](http://chjackson.github.io/flexsurv-dev/reference/standsurv.md)
   (exact) and the closed-form exponential RMST (machine precision).
   Stratified `survreg` fits (per-stratum scale) are refused.
+
 - The univariable screen (`table_regression_uv(method = "coxph")`)
   accepts the RMST and risk-difference columns: unadjusted per-predictor
   estimands next to the covariate-adjusted ones of the multivariable
   column, all at one shared horizon (`tau = "minmax"` is refused there –
   per-fit horizons would not be comparable).
+
 - The RMST and risk-difference columns now support stratified Cox models
   ([`strata()`](https://rdrr.io/pkg/survival/man/strata.html)):
   g-computation keeps each subject’s own stratum baseline, and the table
   note says so. The strata variable itself gets no contrast row.
   Cross-validated against `adjustedCurves::adjusted_rmst()` (exact).
+
 - [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fits gain
   opt-in dispersion fit-stat rows: `show_fit_stats` tokens `"theta"`
   (the NB2 dispersion) and `"alpha"` (its reciprocal, the Stata
   convention). Refused with a clear error for other families.
+
 - `betareg` fits gain the matching opt-in precision row: the
   `show_fit_stats` token `"phi"`, back-transformed from the precision
   link (`y ~ x | 1` reports the same phi as `y ~ x`). Refused for other
   families and when the precision has covariates (`y ~ x | z`), so phi
   is not a single number.
+
 - [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) fits
   now report McFadden’s and Nagelkerke’s pseudo-R² (as the other
   categorical families do). The tokens were silently dropped from
   `show_fit_stats` before, and a weighted fit’s null log-likelihood
   ignored the weights.
+
 - Bayesian tables get their fit statistics: `"r2_bayes"` (the
   posterior-median Bayesian R², now in the all-Bayesian default block)
   and the opt-in `"elpd_loo"` / `"looic"` / `"waic"` tokens (PSIS-LOO /
   Watanabe-Akaike; the footer discloses the elpd standard error).
   Refused for frequentist fits; Bayes factors stay out by design.
+
 - All-Bayesian tables drop the p column from the defaults (a dash column
   carries no information), refuse an explicit `"p"` / `"t"` request,
   expand the `"all_b*"` presets without them, and label the interval
   header `95% CrI`. Mixed frequentist + Bayesian tables keep the shared
   `95% CI` label and dash the Bayesian p cells.
+
 - Bayesian tables gain the `"pd"` column (`show_columns`): the posterior
   probability of direction, the reporting-guideline-aligned reading of
   “is there an effect” – computed at extraction since 0.12 but never
   exposed. Refused for frequentist fits.
+
 - Bayesian tables tighten up. `stan_glmer` / multilevel `brm` fits
   report their random effects as a proper block (posterior median SD,
   credible interval from the draws) instead of one flat row per group
@@ -635,35 +722,43 @@ rendering an empty column.
   errors for all-Bayesian tables – both were silent no-ops – and the
   class-aware defaults report `n` only. Mixed frequentist + Bayesian
   tables keep the frequentist columns filled.
+
 - Factors under non-default contrast codings (successive differences,
   sum-to-zero, Helmert, custom matrices) now group under their parent
   variable like treatment and polynomial codings, labelled by the
   contrast-matrix column names. No reference row is shown – none exists
   under those codings.
+
 - `ordinal::clm(scale = ~)` fits now render their scale (dispersion)
   coefficients as a `Scale effects` block. They were silently absent
   from the table: an estimated component of the model went unreported.
   The rows stay on the log scale under `exponentiate = TRUE` (their
   exponential is a ratio of latent standard deviations, not an odds
   ratio) and the footer says so.
+
 - [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
   gains an `outcome_level` column naming the response category of
   per-category rows (ordinal and multinomial average marginal effects).
   Those rows were previously indistinguishable – four `age` AME rows
   sharing one term, with nothing to identify the category.
+
 - The random-effects LR test no longer prints a negative statistic
   (`-0.00`) on singular fits: the statistic is clamped at zero and the
   boundary p-value is now 1 – half the chi-bar-squared null distribution
   is a point mass at zero, so a zero statistic carries no evidence (it
   printed 0.500, the ceiling of the halved-chi-squared formula).
+
 - `ci_level` now reaches the random-effect variance-component CIs; all
   three mixed engines hardcoded 95% for those rows.
+
 - Large mixed fits no longer spend minutes on variance-component SEs:
   above `options("spicy.re_se_max_n")` (default 1000) those cells are
   omitted, with a note and a warning giving the override.
+
 - `nested = TRUE` now works for `multinom` (LR chi-square rows) and
   defaults to LRT rows for Cox comparisons (`lm`’s R² / F-change rows
   are undefined for a partial likelihood).
+
 - Quantile regression
   ([`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html)) gets its
   own `vcov` estimator family: the default is now the
@@ -678,45 +773,55 @@ rendering an empty column.
   `nested = TRUE` compares nested `rq` fits through `anova.rq`’s
   Wald-type F (all fits at one tau; mixing taus or model classes is
   refused with the reason).
+
 - AME columns that silently rendered empty are now populated (`fixest`,
   `estimatr`, `quantreg`,
   [`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html), `rms`, `pscl`)
   or refused with a pointer to
   [`?table_regression_models`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
   (classes with no AME backend).
+
 - The statistic column header follows each model’s actual reference
   distribution (`z` or `t`); it was hardcoded to `t`.
+
 - Factor coefficient and AME rows follow
   [`levels()`](https://rdrr.io/r/base/levels.html) order (was
   alphabetical); ordered factors with AME columns show a reference row;
   `ame_ci` / `ame_p` / `ame_se` populate without the bare `"ame"` token;
   stars anchor on B (and AME), never on beta.
+
 - Bootstrap / jackknife and `standardized = "refit"` refits no longer
   leak the caller’s environment and now work on
   [`factor()`](https://rdrr.io/r/base/factor.html) /
   [`log()`](https://rdrr.io/r/base/Log.html) /
   [`poly()`](https://rdrr.io/r/stats/poly.html) formulas; a failed refit
   falls back with a warning instead of silently changing method.
+
 - Standardized beta rows on mixed fits inherit B’s reference
   distribution (they showed a second p-value for the same test); the
   standardized-coefficient table note states the interaction convention
   and is fallback-aware.
+
 - Titles: binomial mixed / survey fits are link-aware (a probit fit is
   no longer titled “Logistic”); Tobit titles name the response; ordinal
   titles name the shared-slopes assumption by its link; proper nouns
   keep their capitals in multi-model titles.
+
 - Mixed fits with [`cbind()`](https://rdrr.io/r/base/cbind.html)
   responses get their LR test against the no-random-effects model;
   `labels` accepts coefficient-level keys on mixed fits; `polr` / `clm`
   detect non-uniform prior weights.
+
 - `flexsurv`: probit-scale splines and ancillary-parameter covariates
   refuse `exponentiate = TRUE`; factor predictors group under their
   parent variable with a reference row.
+
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   and the rich output engines match the console body exactly (blank vs
   en-dash reference cells, the multi-outcome `Outcome` row); the
   structured schema gains `reference_models_by_row` and
   `outcome_labels_by_col`.
+
 - `table_regression(m1, m2)` without
   [`list()`](https://rdrr.io/r/base/list.html) errors with a helpful
   message; colliding model labels no longer break `output = "gt"`; the
@@ -724,6 +829,59 @@ rendering an empty column.
   `ci_method = "profile"` with a robust `vcov` defers to the `vcov` and
   warns; the singular-fit note states the fact and leaves the advice to
   a build-time warning.
+
+- [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  raises a classed error (`spicy_invalid_input`) when `count` is
+  zero-length or contains only missing values, instead of silently
+  returning a plausible-looking all-zero count; and rejecting
+  `count = NaN` now points to `special = "NaN"` (the exact counterpart)
+  instead of describing the input as `count = NA` and hinting at
+  `special = "NA"`, which counts NA and NaN together.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  weighted count tables (`percent = "none"`) compute the Total row and
+  grand total from the unrounded weighted table, rounded once for
+  display, instead of summing the already-rounded cells: with fractional
+  weights the printed margins could contradict both the true weighted
+  totals and the N row the percent tables derive from the same data, and
+  under `rescale = TRUE` the Total row did not even sum to its own
+  printed grand total.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  titles and the weight footer no longer present a data value plucked
+  out of an inline expression as a variable name (e.g. a title ending in
+  `x "g2"`, or `Weight: 1` for a literal weight vector): when no name
+  can be derived structurally, a neutral `x` / `y` / `weights`
+  placeholder is used.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) warns
+  (class `spicy_caveat`) when `labelled_levels = "labels"` merges
+  distinct codes that share the same label text, naming the merged
+  codes: the pooling is forced by factor semantics, but SPSS keeps one
+  row per value, so the silently changed partition is now disclosed.
+
+- `freq(valid = FALSE)` with missing values present no longer prints a
+  Valid Percent column of `NA` values whose Total row asserts `100.0`;
+  the column (and `Cum. Valid Percent` with `cum = TRUE`) is dropped
+  whenever valid percentages were not computed.
+
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  reject
+  [`bit64::integer64`](https://bit64.r-lib.org/reference/bit64-package.html)
+  input (tabulated variables, weights, and selected columns) with a
+  classed error (`spicy_invalid_data`) naming the fix: integer64 passes
+  [`is.numeric()`](https://rdrr.io/r/base/numeric.html) but stores raw
+  64-bit integer bit patterns that base R numeric code silently misreads
+  as garbage counts near `1e-323` – a realistic hazard for BIGINT
+  columns imported via DBI or
+  [`data.table::fread()`](https://rdrr.io/pkg/data.table/man/fread.html).
+  Convert with [`as.numeric()`](https://rdrr.io/r/base/numeric.html) or
+  `bit64::as.double()` first;
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  compares values without numeric aggregation and continues to work.
 
 ## spicy 0.12.0
 

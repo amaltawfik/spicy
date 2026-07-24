@@ -111,11 +111,14 @@ cross_tab(
 
   Number of decimals for cell values: a single non-negative integer.
   Defaults to `NULL`, which is resolved to `1` when `percent != "none"`
-  and `0` when `percent = "none"` (counts are always integers). Same
-  role as `digits` in
+  and `0` when `percent = "none"` (counts are integers unless fractional
+  weights are used; raise `digits` to display fractional weighted counts
+  exactly). Same role as `digits` in
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
   which formats percentages only and therefore uses a fixed default of
-  `1`.
+  `1`. Displayed values round ties half to even (the R / IEC 60559
+  convention, shared with Stata), so an exact tie like 6.25 prints as
+  `6.2` where SPSS would print `6.3`.
 
 - output:
 
@@ -302,7 +305,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #>  No       │               176                419         325 │     921 
 #>  Yes      │                79                115          60 │     254 
 #> ──────────┼──────────────────────────────────────────────────┼─────────
-#>  Total    │               255                534         385 │    1175 
+#>  Total    │               256                534         386 │    1175 
 #> 
 #> Chi-2(2) = 21.4, p <.001
 #> Cramer's V = 0.13

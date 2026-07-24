@@ -62,7 +62,10 @@ count_n(
   all values are expected to be of the same final type. If
   `allow_coercion = FALSE`, matching is type-safe using
   [`identical()`](https://rdrr.io/r/base/identical.html), and the type
-  of `count` must match that of the values in the data.
+  of `count` must match that of the values in the data. A zero-length
+  `count` (e.g. an upstream filter that emptied it) raises a classed
+  error rather than silently counting nothing, and so does a `count`
+  made only of missing values (use `special = "NA"` / `"NaN"`).
 
 - special:
 
