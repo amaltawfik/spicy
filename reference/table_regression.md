@@ -1001,7 +1001,7 @@ model_id key.
 
 - `"CR0"` to `"CR3"` – cluster-robust with Satterthwaite-corrected df
   (via
-  [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)).
+  [`clubSandwich::vcovCR()`](https://rdrr.io/pkg/clubSandwich/man/vcovCR.html)).
   Requires `cluster`.
 
 - `"bootstrap"` – nonparametric or cluster bootstrap (`boot_n`
@@ -1022,9 +1022,9 @@ Inferential regimes for `lm` / `glm` (B and AME share the same regime):
 - `bootstrap`, `jackknife` -\> z asymptotic.
 
 - `CR0`-`CR3` -\> t with **Satterthwaite-corrected df** (B via
-  [`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md);
+  [`clubSandwich::coef_test()`](https://rdrr.io/pkg/clubSandwich/man/coef_test.html);
   AME via
-  [`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md);
+  [`clubSandwich::linear_contrast()`](https://rdrr.io/pkg/clubSandwich/man/linear_contrast.html);
   Pustejovsky & Tipton 2018). Under non-linear terms
   ([`poly()`](https://rdrr.io/r/stats/poly.html),
   [`I()`](https://rdrr.io/r/base/AsIs.html),
@@ -1121,7 +1121,7 @@ Three accepted forms, in order of preference:
     name, composable for multi-way clustering, consistent with
     [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)
     /
-    [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md).
+    [`clubSandwich::vcovCR()`](https://rdrr.io/pkg/clubSandwich/man/vcovCR.html).
 
 2.  **String** – `cluster = "region"`. A single column name resolved the
     same way as the formula. Convenient but cannot express interactions.

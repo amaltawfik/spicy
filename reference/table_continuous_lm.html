@@ -319,8 +319,8 @@ Satterthwaite degrees of freedom for inference; the
 fractional df is reported in the <code>df2</code> column and in the
 <code>t(df)</code> / <code>F(df1, df2)</code> test header. <code>"CR1"</code> corresponds to
 Stata's <code>, vce(cluster id)</code> default. Cluster-robust variants
-are dispatched to <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> and inference uses
-<code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> / <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code>;
+are dispatched to <code><a href="https://rdrr.io/pkg/clubSandwich/man/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> and inference uses
+<code><a href="https://rdrr.io/pkg/clubSandwich/man/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> / <code><a href="https://rdrr.io/pkg/clubSandwich/man/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code>;
 install <code>clubSandwich</code> to use them.</p></li>
 <li><p><code>"bootstrap"</code>: nonparametric (resampling cases) or cluster
 bootstrap variance, depending on whether <code>cluster</code> is supplied
@@ -355,7 +355,7 @@ for each outcome (alongside rows with <code>NA</code> in <code>y</code>, <code>b
 <code>weights</code>). At least two distinct non-missing cluster values are
 required. Multi-way clustering (a list / data.frame of multiple
 cluster vectors) is not supported; use <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> or
-<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> directly on the fitted model for that case.</p></dd>
+<code><a href="https://rdrr.io/pkg/clubSandwich/man/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> directly on the fitted model for that case.</p></dd>
 
 
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
@@ -720,9 +720,9 @@ individual, students nested in classes, patients in hospitals,
 country-year panels), classical and <code>HC*</code> standard errors are biased
 downward. Use the <code>CR*</code> variants together with <code>cluster = id_var</code> to
 get cluster-robust inference (Liang and Zeger 1986). The
-implementation dispatches to <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> for the
-variance and to <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> (single-coefficient,
-Satterthwaite <em>t</em>) and <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code> (multi-coefficient
+implementation dispatches to <code><a href="https://rdrr.io/pkg/clubSandwich/man/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> for the
+variance and to <code><a href="https://rdrr.io/pkg/clubSandwich/man/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> (single-coefficient,
+Satterthwaite <em>t</em>) and <code><a href="https://rdrr.io/pkg/clubSandwich/man/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code> (multi-coefficient
 Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
 <code>"CR2"</code> (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018) is the
 modern recommended default; it generally produces fractional
@@ -932,8 +932,8 @@ Econometric computing with HC and HAC covariance matrix estimators.
 For broader workflows on the same statistical building blocks:
 <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (the canonical R implementation of the <code>HC*</code>
 sandwich estimators, used internally for <code>vcov = "HC*"</code>);
-<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>, <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> and
-<code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code> (the canonical R implementation of
+<code><a href="https://rdrr.io/pkg/clubSandwich/man/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>, <code><a href="https://rdrr.io/pkg/clubSandwich/man/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> and
+<code><a href="https://rdrr.io/pkg/clubSandwich/man/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code> (the canonical R implementation of
 cluster-robust variance and Satterthwaite-style inference, used
 internally for <code>vcov = "CR*"</code>); <code><a href="https://easystats.github.io/effectsize/reference/cohens_d.html" class="external-link">effectsize::cohens_d()</a></code>,
 <code><a href="https://easystats.github.io/effectsize/reference/cohens_d.html" class="external-link">effectsize::hedges_g()</a></code>, and <code><a href="https://easystats.github.io/effectsize/reference/eta_squared.html" class="external-link">effectsize::omega_squared()</a></code>

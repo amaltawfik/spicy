@@ -456,7 +456,7 @@ models</em> section below works out a logistic-regression example.</li>
 and respects the chosen variance estimator. Under cluster-robust
 variance (covered in <em>Robust variance</em>), the AME inference shares
 the coefficient’s t-distribution and Satterthwaite-corrected degrees of
-freedom via <code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so
+freedom via <code><a href="https://rdrr.io/pkg/clubSandwich/man/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so
 <code>B</code> and AME are reported on the same inferential footing in
 the same table. <code>marginaleffects</code> is a Suggests dependency
 with two distinct failure modes: requesting AME columns <em>without the
@@ -718,7 +718,7 @@ tracks <code>ci_level</code>.</p>
 <p>For clustered observations (repeated measures on the same person,
 students within schools, observations within regions),
 <code>vcov = "CR*"</code> requests cluster-robust variance via
-[<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>][clubSandwich::vcovCR], with the
+[<code><a href="https://rdrr.io/pkg/clubSandwich/man/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>][clubSandwich::vcovCR], with the
 cluster identifier supplied through <code>cluster</code>. Three forms
 are accepted:</p>
 <ul>
@@ -779,10 +779,10 @@ dynamic column choice).</p>
 <p><code>CR2</code> (the Bell-McCaffrey adjustment) is the recommended
 default under few clusters (Pustejovsky and Tipton 2018; Imbens and
 Kolesár 2016). Coefficient inference uses
-[<code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code>][clubSandwich::coef_test] with
+[<code><a href="https://rdrr.io/pkg/clubSandwich/man/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code>][clubSandwich::coef_test] with
 Satterthwaite-corrected degrees of freedom. When AME columns are
 requested, the same Satterthwaite framework is applied to the AME
-contrast via <code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so
+contrast via <code><a href="https://rdrr.io/pkg/clubSandwich/man/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so
 <code>B</code> and AME share the same t-distribution with the same df —
 visible in the footer.</p>
 </div>

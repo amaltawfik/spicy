@@ -1056,7 +1056,7 @@ internal model_id key.</p>
 <li><p><code>"HC0"</code> to <code>"HC5"</code> – heteroskedasticity-consistent
 (via <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
 <li><p><code>"CR0"</code> to <code>"CR3"</code> – cluster-robust with
-Satterthwaite-corrected df (via <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>).
+Satterthwaite-corrected df (via <code><a href="https://rdrr.io/pkg/clubSandwich/man/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>).
 Requires <code>cluster</code>.</p></li>
 <li><p><code>"bootstrap"</code> – nonparametric or cluster bootstrap
 (<code>boot_n</code> replicates).</p></li>
@@ -1070,8 +1070,8 @@ regime):</p><ul><li><p><code>classical</code>, <code>HC*</code> -&gt; t with <co
 z-asymptotic (<code>glm</code>).</p></li>
 <li><p><code>bootstrap</code>, <code>jackknife</code> -&gt; z asymptotic.</p></li>
 <li><p><code>CR0</code>-<code>CR3</code> -&gt; t with <strong>Satterthwaite-corrected df</strong> (B
-via <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code>; AME via
-<code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>; Pustejovsky &amp; Tipton
+via <code><a href="https://rdrr.io/pkg/clubSandwich/man/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code>; AME via
+<code><a href="https://rdrr.io/pkg/clubSandwich/man/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>; Pustejovsky &amp; Tipton
 2018). Under non-linear terms (<code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>,
 <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code>), AME falls back to z-asymptotic with a
 <code>spicy_fallback</code> warning.</p></li>
@@ -1163,7 +1163,7 @@ variables). The variables are looked up in
 argument captured by the fit. <strong>Recommended</strong>: independent
 of the dataset's name, composable for multi-way clustering,
 consistent with <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
-<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>.</p></li>
+<code><a href="https://rdrr.io/pkg/clubSandwich/man/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>.</p></li>
 <li><p><strong>String</strong> – <code>cluster = "region"</code>. A single column
 name resolved the same way as the formula. Convenient but
 cannot express interactions.</p></li>

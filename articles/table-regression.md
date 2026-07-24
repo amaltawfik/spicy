@@ -349,7 +349,7 @@ and respects the chosen variance estimator. Under cluster-robust
 variance (covered in *Robust variance*), the AME inference shares the
 coefficient’s t-distribution and Satterthwaite-corrected degrees of
 freedom via
-[`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md),
+[`clubSandwich::linear_contrast()`](https://rdrr.io/pkg/clubSandwich/man/linear_contrast.html),
 so `B` and AME are reported on the same inferential footing in the same
 table. `marginaleffects` is a Suggests dependency with two distinct
 failure modes: requesting AME columns *without the package installed* is
@@ -618,7 +618,7 @@ column header for the confidence interval automatically tracks
 For clustered observations (repeated measures on the same person,
 students within schools, observations within regions), `vcov = "CR*"`
 requests cluster-robust variance via
-\[[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)\]\[clubSandwich::vcovCR\],
+\[[`clubSandwich::vcovCR()`](https://rdrr.io/pkg/clubSandwich/man/vcovCR.html)\]\[clubSandwich::vcovCR\],
 with the cluster identifier supplied through `cluster`. Three forms are
 accepted:
 
@@ -676,11 +676,11 @@ table_regression(
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
 few clusters (Pustejovsky and Tipton 2018; Imbens and Kolesár 2016).
 Coefficient inference uses
-\[[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)\]\[clubSandwich::coef_test\]
+\[[`clubSandwich::coef_test()`](https://rdrr.io/pkg/clubSandwich/man/coef_test.html)\]\[clubSandwich::coef_test\]
 with Satterthwaite-corrected degrees of freedom. When AME columns are
 requested, the same Satterthwaite framework is applied to the AME
 contrast via
-[`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md),
+[`clubSandwich::linear_contrast()`](https://rdrr.io/pkg/clubSandwich/man/linear_contrast.html),
 so `B` and AME share the same t-distribution with the same df — visible
 in the footer.
 

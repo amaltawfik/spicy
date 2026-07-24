@@ -65,7 +65,8 @@ row-wise summaries.
 - **Variable inspection** with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
-  names, labels, values, classes, and missing data.
+  names, labels, values, classes, distinct values (`N_distinct`), valid
+  observations (`N_valid`), and missing data.
 - **Codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
   interactive and exportable, for labelled and survey-style datasets.
