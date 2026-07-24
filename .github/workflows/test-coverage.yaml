@@ -24,6 +24,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          cache-version: 2
           extra-packages: any::covr, any::xml2, any::gt, any::tinytable, any::flextable, any::openxlsx2, any::clipr, any::officer
           needs: coverage
 
