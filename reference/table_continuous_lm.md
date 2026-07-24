@@ -248,11 +248,11 @@ table_continuous_lm(
     the `df2` column and in the `t(df)` / `F(df1, df2)` test header.
     `"CR1"` corresponds to Stata's `, vce(cluster id)` default.
     Cluster-robust variants are dispatched to
-    [`clubSandwich::vcovCR()`](https://rdrr.io/pkg/clubSandwich/man/vcovCR.html)
+    [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
     and inference uses
-    [`clubSandwich::coef_test()`](https://rdrr.io/pkg/clubSandwich/man/coef_test.html)
+    [`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
     /
-    [`clubSandwich::Wald_test()`](https://rdrr.io/pkg/clubSandwich/man/Wald_test.html);
+    [`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md);
     install `clubSandwich` to use them.
 
   - `"bootstrap"`: nonparametric (resampling cases) or cluster bootstrap
@@ -302,7 +302,7 @@ table_continuous_lm(
   supported; use
   [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)
   or
-  [`clubSandwich::vcovCR()`](https://rdrr.io/pkg/clubSandwich/man/vcovCR.html)
+  [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
   directly on the fitted model for that case.
 
 - boot_n:
@@ -732,11 +732,11 @@ country-year panels), classical and `HC*` standard errors are biased
 downward. Use the `CR*` variants together with `cluster = id_var` to get
 cluster-robust inference (Liang and Zeger 1986). The implementation
 dispatches to
-[`clubSandwich::vcovCR()`](https://rdrr.io/pkg/clubSandwich/man/vcovCR.html)
+[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
 for the variance and to
-[`clubSandwich::coef_test()`](https://rdrr.io/pkg/clubSandwich/man/coef_test.html)
+[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
 (single-coefficient, Satterthwaite *t*) and
-[`clubSandwich::Wald_test()`](https://rdrr.io/pkg/clubSandwich/man/Wald_test.html)
+[`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md)
 (multi-coefficient Hotelling-T-squared with Satterthwaite df, "HTZ") for
 inference. `"CR2"` (Bell and McCaffrey 2002; Pustejovsky and Tipton
 2018) is the modern recommended default; it generally produces
@@ -973,10 +973,10 @@ For broader workflows on the same statistical building blocks:
 [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
 (the canonical R implementation of the `HC*` sandwich estimators, used
 internally for `vcov = "HC*"`);
-[`clubSandwich::vcovCR()`](https://rdrr.io/pkg/clubSandwich/man/vcovCR.html),
-[`clubSandwich::coef_test()`](https://rdrr.io/pkg/clubSandwich/man/coef_test.html)
+[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md),
+[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
 and
-[`clubSandwich::Wald_test()`](https://rdrr.io/pkg/clubSandwich/man/Wald_test.html)
+[`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md)
 (the canonical R implementation of cluster-robust variance and
 Satterthwaite-style inference, used internally for `vcov = "CR*"`);
 [`effectsize::cohens_d()`](https://easystats.github.io/effectsize/reference/cohens_d.html),

@@ -551,6 +551,16 @@ rendering an empty column.
 
 ### Bug fixes
 
+- The flextable outputs of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  carry the same `spicy_flextable` wrapper as
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  so notes and knit-time rendering behave identically across the four
+  functions.
+
 - The asymptotic standard error of
   [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
   mis-scaled one margin term of its gradient, so every SE, confidence
