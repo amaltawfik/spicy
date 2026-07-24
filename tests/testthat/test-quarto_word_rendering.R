@@ -132,12 +132,11 @@ test_that("end-to-end: rmarkdown -> Word document contains the table", {
     utils::unzip(docx, files = "word/document.xml", exdir = exdir)
     readChar(file.path(exdir, "word", "document.xml"), 5e6, useBytes = TRUE)
   })
-  # A REAL native Word table, not a plain-text fallback: text-only
-  # renderings still contain ">wt<" inside <w:t> runs, so cell text
-  # alone proves nothing (this assertion was too weak before
-  # 2026-07-24 and masked pandoc 3.1.x dropping xmlns-prefixed raw
-  # openxml blocks).
-  expect_match(xml, "<w:tbl>", fixed = TRUE)
+  # A REAL native Word table node, with or without attributes on the
+  # opening tag (flextable's fragment carries xmlns declarations, so
+  # matching the literal "<w:tbl>" alone would miss it -- the exact
+  # measurement mistake behind the retracted pandoc#11772 report).
+  expect_match(xml, "<w:tbl[ >]")
   # Table content present (predictor rows + a fitted value).
   expect_match(xml, ">wt<", fixed = TRUE)
   expect_match(xml, ">hp<", fixed = TRUE)

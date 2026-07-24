@@ -375,6 +375,11 @@ rendering an empty column.
 
 ## Bug fixes
 
+* The flextable outputs of `table_categorical()`,
+  `table_continuous()` and `table_continuous_lm()` carry the same
+  `spicy_flextable` wrapper as `table_regression()`, so notes and
+  knit-time rendering behave identically across the four functions.
+
 * The asymptotic standard error of `kendall_tau_b()` mis-scaled one
   margin term of its gradient, so every SE, confidence interval, and
   Wald p-value it reported was wrong -- typically by under 1% on
