@@ -67,7 +67,8 @@ row-wise summaries.
   one-predictor-at-a-time models merged with the multivariable fit,
   per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
 - **Variable inspection** with `varlist()` and `vl()`: names, labels,
-  values, classes, and missing data.
+  values, classes, distinct values (`N_distinct`), valid observations
+  (`N_valid`), and missing data.
 - **Codebooks** with `code_book()`: interactive and exportable, for
   labelled and survey-style datasets.
 - **Label extraction** with `label_from_names()`, including
