@@ -50,7 +50,10 @@ input or output.
 # To run code
 Rscript -e "devtools::load_all(); code"
 
-# To run all tests
+# To run all tests. For a FULL-SUITE gate (before commit/push),
+# use the canonical runner instead -- it writes the verdict and
+# the per-test table to files, so no console piping can lose it:
+#   Rscript tools/run_suite.R
 Rscript -e "devtools::test()"
 
 # To run tests matching a function or file prefix

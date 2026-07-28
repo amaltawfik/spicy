@@ -30,3 +30,5 @@ dev/*_retriage.md
 dev/*.pdf
 dev/*.epub
 dev/_source/
+/*.tar.gz
+tools/suite_results.csv
