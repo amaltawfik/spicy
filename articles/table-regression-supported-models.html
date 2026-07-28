@@ -282,6 +282,14 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">-</td>
 </tr>
 <tr class="odd">
+<td align="left">Population-averaged (GEE)</td>
+<td align="left"><code>geeglm</code></td>
+<td align="left"><code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code></td>
+<td align="left">yes</td>
+<td align="left">OR / IRR / RR (link)</td>
+<td align="left">-</td>
+</tr>
+<tr class="even">
 <td align="left">Ordinal</td>
 <td align="left"><code>polr</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code></td>
@@ -289,7 +297,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR (logit)</td>
 <td align="left">Thresholds</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"></td>
 <td align="left"><code>clm</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td>
@@ -297,7 +305,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR (logit)</td>
 <td align="left">Thresholds; Non-proportional effects</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Categorical</td>
 <td align="left"><code>multinom</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code></td>
@@ -305,7 +313,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR</td>
 <td align="left">per-outcome blocks</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"></td>
 <td align="left"><code>mlogit</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code></td>
@@ -313,7 +321,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR</td>
 <td align="left">per-alternative rows</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Counts, two-part</td>
 <td align="left"><code>zeroinfl</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code></td>
@@ -321,7 +329,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">IRR (count) + OR (logit zero part)</td>
 <td align="left">Zero-inflation</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"></td>
 <td align="left"><code>hurdle</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code></td>
@@ -329,7 +337,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">IRR (count) + OR (logit zero part)</td>
 <td align="left">Zero hurdle</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Survival</td>
 <td align="left"><code>coxph</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td>
@@ -337,7 +345,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">HR</td>
 <td align="left">-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"></td>
 <td align="left"><code>survreg</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td>
@@ -345,7 +353,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">TR (log-scale distributions)</td>
 <td align="left">-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"></td>
 <td align="left"><code>cph</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code></td>
@@ -353,7 +361,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">HR</td>
 <td align="left">-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"></td>
 <td align="left"><code>flexsurvreg</code></td>
 <td align="left"><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td>
@@ -361,7 +369,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">TR / HR (dist)</td>
 <td align="left">distribution parameters</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Survey-weighted</td>
 <td align="left"><code>svyglm</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code></td>
@@ -369,7 +377,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR / IRR</td>
 <td align="left">-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Additive, proportions, selection</td>
 <td align="left"><code>gam</code></td>
 <td align="left">
@@ -379,7 +387,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR / IRR (link)</td>
 <td align="left">-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"></td>
 <td align="left"><code>betareg</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code></td>
@@ -387,7 +395,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR (mean link)</td>
 <td align="left">-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"></td>
 <td align="left"><code>selection</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code></td>
@@ -395,7 +403,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">-</td>
 <td align="left">selection component</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">rms</td>
 <td align="left"><code>ols</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols()</a></code></td>
@@ -403,7 +411,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">-</td>
 <td align="left">-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"></td>
 <td align="left"><code>lrm</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code></td>
@@ -411,7 +419,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">OR</td>
 <td align="left">-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"></td>
 <td align="left"><code>Glm</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm()</a></code></td>
@@ -419,7 +427,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">link-dependent</td>
 <td align="left">-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Bayesian</td>
 <td align="left"><code>stanreg</code></td>
 <td align="left">
@@ -430,7 +438,7 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">link-dependent</td>
 <td align="left">Random effects (if multilevel)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"></td>
 <td align="left"><code>brmsfit</code></td>
 <td align="left"><code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code></td>
@@ -512,11 +520,16 @@ and <code>fixest</code> fits keep the estimator they were computed with
 (the footer carries fixest’s own label – IID, clustered, Newey-West, … –
 and spicy’s <code>HC*</code> / <code>CR*</code> tokens are refused for
 them); <code>svyglm</code> is design-based by default and additionally
-accepts design-aware <code>CR0</code>–<code>CR3</code>. Bayesian fits
-refuse <code>vcov</code> – nothing standard plays the sandwich role for
-a posterior. Whatever the backend, the footer names the estimator
-actually applied, and a robust vcov also flows into the AME
-uncertainty.</p>
+accepts design-aware <code>CR0</code>–<code>CR3</code>. GEE fits
+(<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code>) are robust by construction: the sandwich
+SEs the fit computed over its own <code>id =</code> clusters are the
+displayed inference, so spicy’s <code>HC*</code> / <code>CR*</code>
+tokens and <code>cluster</code> argument are refused – change the
+estimator by refitting with geeglm’s <code>std.err =</code> option.
+Bayesian fits refuse <code>vcov</code> – nothing standard plays the
+sandwich role for a posterior. Whatever the backend, the footer names
+the estimator actually applied, and a robust vcov also flows into the
+AME uncertainty.</p>
 <p><strong>Standardized coefficients</strong>
 (<code>standardized</code>). Available for <code>lm</code>,
 <code>glm</code> (including <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), the mixed
@@ -577,6 +590,14 @@ correlations, residual – deliberately without per-row p-values; the
 footer carries the boundary-correct chi-bar-squared test, and
 <code>re_test = "lrt"</code> / <code>"rlrt"</code> adds per-term tests.
 See <code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code>.</p>
+<p><strong>Population-averaged (GEE).</strong>
+<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code>: marginal (population-averaged)
+coefficients with the fit’s own sandwich SEs as the default inference,
+the working correlation structure disclosed in the footer (with its
+estimated alpha), cluster-structure fit statistics, and opt-in QIC /
+QICu. The population-averaged section of
+<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> contrasts GEE with
+subject-specific mixed models.</p>
 <p><strong>Ordinal.</strong> <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code> and
 <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code>: proportional odds ratios, a
 <code>Thresholds</code> block for the cut-points (log-odds scale, never
@@ -646,15 +667,15 @@ plain data frame – convenient to filter, join, or cite:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression_models.html">table_regression_models</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">family</span> <span class="op">==</span> <span class="st">"Survival"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      family       class                  engine                    ame                 exponentiate</span></span>
-<span><span class="co">#&gt; 23 Survival       coxph       survival::coxph()       RMST / risk diff                           HR</span></span>
-<span><span class="co">#&gt; 24 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)</span></span>
-<span><span class="co">#&gt; 25 Survival         cph              rms::cph()                     no                           HR</span></span>
-<span><span class="co">#&gt; 26 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)</span></span>
+<span><span class="co">#&gt; 24 Survival       coxph       survival::coxph()       RMST / risk diff                           HR</span></span>
+<span><span class="co">#&gt; 25 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)</span></span>
+<span><span class="co">#&gt; 26 Survival         cph              rms::cph()                     no                           HR</span></span>
+<span><span class="co">#&gt; 27 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)</span></span>
 <span><span class="co">#&gt;                     blocks</span></span>
-<span><span class="co">#&gt; 23                       -</span></span>
 <span><span class="co">#&gt; 24                       -</span></span>
 <span><span class="co">#&gt; 25                       -</span></span>
-<span><span class="co">#&gt; 26 distribution parameters</span></span></code></pre></div>
+<span><span class="co">#&gt; 26                       -</span></span>
+<span><span class="co">#&gt; 27 distribution parameters</span></span></code></pre></div>
 <p>The per-family reference sections live on its help page:
 <code><a href="../reference/table_regression_models.html">?table_regression_models</a></code> (also reachable as
 <code><a href="../reference/table_regression_models.html">?table_regression_mixed</a></code>,

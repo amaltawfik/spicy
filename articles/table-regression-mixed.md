@@ -1131,6 +1131,101 @@ table_regression(lfit)
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
 ```
 
+## Population-averaged alternatives: GEE
+
+A mixed model answers a **subject-specific** (conditional) question:
+what happens to *this* subject’s outcome when their predictor changes,
+holding their random effect fixed. Generalized estimating equations
+([`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html))
+answer the **population-averaged** (marginal) question instead: how does
+the *average* outcome in the population differ between groups that
+differ in the predictor — the natural estimand for policy and
+epidemiology. For a linear model the two coincide; on a logit link they
+do not — the conditional odds ratio is farther from 1 than the marginal
+one, and the gap grows with the between-subject variance.
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+reads a `geeglm` fit on its own terms: the fit’s sandwich standard
+errors (clustered on its `id =`) are the displayed inference — GEE is
+robust by construction, so spicy’s `vcov` and `cluster` arguments are
+refused — and the footer discloses the working correlation structure,
+which is model-defining the same way the random-effects block is for a
+mixed model. There is no likelihood, so no AIC or R-squared: the
+quasi-likelihood criteria `"qic"` / `"qicu"` are the comparison tools.
+
+``` r
+
+data(respiratory, package = "geepack")
+respiratory$outcome <- as.integer(respiratory$outcome)
+respiratory$subject <- interaction(respiratory$center, respiratory$id)
+# Placebo as the reference level, so the displayed row is the
+# active-treatment odds ratio.
+respiratory$treat <- relevel(respiratory$treat, ref = "P")
+
+gee_fit  <- geepack::geeglm(
+  outcome ~ treat + baseline, id = subject, data = respiratory,
+  family = binomial, corstr = "exchangeable"
+)
+glmm_fit <- lme4::glmer(
+  outcome ~ treat + baseline + (1 | subject), data = respiratory,
+  family = binomial
+)
+table_regression(
+  list("Population-averaged" = gee_fit, "Subject-specific" = glmm_fit),
+  exponentiate = TRUE, show_columns = c("b", "ci", "p")
+)
+#> Regression comparison: outcome
+#> 
+#>                                Population-averaged         Subject-specific    
+#>                            ────────────────────────────  ───────────────────── 
+#>  Variable                │   OR       95% CI        p      OR       95% CI     
+#> ─────────────────────────┼─────────────────────────────────────────────────────
+#>  (Intercept)             │   0.31  [0.17,  0.55]  <.001    0.14  [0.05,  0.34] 
+#>  treat:                  │                                                     
+#>    P (ref.)              │    –          –         –        –          –       
+#>    A                     │   3.48  [1.83,  6.62]  <.001    7.79  [2.74, 22.14] 
+#>  baseline                │   7.31  [3.89, 13.75]  <.001   26.57  [8.40, 84.05] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:         │                                                     
+#>    σ subject (Intercept) │                                 1.98  [1.45,  2.39] 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │ 444                           444                   
+#>  N (subject)             │ 111                           111                   
+#>  ICC                     │                                 0.54                
+#>  R² (marginal)           │                                 0.34                
+#>  R² (conditional)        │                                 0.70                
+#>  AIC                     │                               447.7                 
+#>  BIC                     │                               464.1                 
+#>  Max cluster size        │   4                                                 
+#> 
+#>                            Subj… 
+#>                            ───── 
+#>  Variable                │   p   
+#> ─────────────────────────┼───────
+#>  (Intercept)             │ <.001 
+#>  treat:                  │       
+#>    P (ref.)              │  –    
+#>    A                     │ <.001 
+#>  baseline                │ <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  Random effects:         │       
+#>    σ subject (Intercept) │  –    
+#> 
+#> Note. Model 1: population-averaged logistic regression (GEE); Model 2: logistic mixed-effects regression.
+#> Std. errors:
+#>   Model 1: Robust sandwich (GEE), clusters by subject
+#>   Model 2: Wald asymptotic (z)
+#> p-values: Wald-z asymptotic (lme4).
+#> GEE working correlation: exchangeable (alpha = 0.36).
+#> Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.14, p < .001.
+#> OR = odds ratio.
+#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+```
+
+The active-treatment odds ratio is the same effect asked two ways: the
+marginal column compares treated and untreated *populations*; the
+conditional column compares each subject with themselves, and is
+accordingly farther from 1.
+
 ## Cluster-robust and other variance estimators
 
 Mixed fits honour the cluster-robust family (`"CR0"`–`"CR3"`) through

@@ -44,6 +44,7 @@ to get it as a data frame.
 |  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes | link-dependent (IRR for count families) | Random effects; Zero-inflation; Dispersion |
 |  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 |  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
+| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR (link) | \- |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
 |  | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
 | Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
@@ -122,10 +123,15 @@ own robust SEs, and `fixest` fits keep the estimator they were computed
 with (the footer carries fixest’s own label – IID, clustered,
 Newey-West, … – and spicy’s `HC*` / `CR*` tokens are refused for them);
 `svyglm` is design-based by default and additionally accepts
-design-aware `CR0`–`CR3`. Bayesian fits refuse `vcov` – nothing standard
-plays the sandwich role for a posterior. Whatever the backend, the
-footer names the estimator actually applied, and a robust vcov also
-flows into the AME uncertainty.
+design-aware `CR0`–`CR3`. GEE fits
+([`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html)) are
+robust by construction: the sandwich SEs the fit computed over its own
+`id =` clusters are the displayed inference, so spicy’s `HC*` / `CR*`
+tokens and `cluster` argument are refused – change the estimator by
+refitting with geeglm’s `std.err =` option. Bayesian fits refuse `vcov`
+– nothing standard plays the sandwich role for a posterior. Whatever the
+backend, the footer names the estimator actually applied, and a robust
+vcov also flows into the AME uncertainty.
 
 **Standardized coefficients** (`standardized`). Available for `lm`,
 `glm` (including
@@ -189,6 +195,16 @@ per-row p-values; the footer carries the boundary-correct
 chi-bar-squared test, and `re_test = "lrt"` / `"rlrt"` adds per-term
 tests. See
 [`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
+
+**Population-averaged (GEE).**
+[`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html):
+marginal (population-averaged) coefficients with the fit’s own sandwich
+SEs as the default inference, the working correlation structure
+disclosed in the footer (with its estimated alpha), cluster-structure
+fit statistics, and opt-in QIC / QICu. The population-averaged section
+of
+[`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+contrasts GEE with subject-specific mixed models.
 
 **Ordinal.** [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) and
 [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html): proportional
@@ -274,15 +290,15 @@ or cite:
 
 subset(table_regression_models(), family == "Survival")
 #>      family       class                  engine                    ame                 exponentiate
-#> 23 Survival       coxph       survival::coxph()       RMST / risk diff                           HR
-#> 24 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)
-#> 25 Survival         cph              rms::cph()                     no                           HR
-#> 26 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)
+#> 24 Survival       coxph       survival::coxph()       RMST / risk diff                           HR
+#> 25 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)
+#> 26 Survival         cph              rms::cph()                     no                           HR
+#> 27 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)
 #>                     blocks
-#> 23                       -
 #> 24                       -
 #> 25                       -
-#> 26 distribution parameters
+#> 26                       -
+#> 27 distribution parameters
 ```
 
 The per-family reference sections live on its help page:

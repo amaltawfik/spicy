@@ -1197,6 +1197,99 @@ t-test</strong> native to <code>nlme</code>, and the footer says so:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="population-averaged-alternatives-gee">Population-averaged alternatives: GEE<a class="anchor" aria-label="anchor" href="#population-averaged-alternatives-gee"></a>
+</h2>
+<p>A mixed model answers a <strong>subject-specific</strong>
+(conditional) question: what happens to <em>this</em> subject’s outcome
+when their predictor changes, holding their random effect fixed.
+Generalized estimating equations (<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code>) answer
+the <strong>population-averaged</strong> (marginal) question instead:
+how does the <em>average</em> outcome in the population differ between
+groups that differ in the predictor — the natural estimand for policy
+and epidemiology. For a linear model the two coincide; on a logit link
+they do not — the conditional odds ratio is farther from 1 than the
+marginal one, and the gap grows with the between-subject variance.
+<code><a href="../reference/table_regression.html">table_regression()</a></code> reads a <code>geeglm</code> fit on its
+own terms: the fit’s sandwich standard errors (clustered on its
+<code>id =</code>) are the displayed inference — GEE is robust by
+construction, so spicy’s <code>vcov</code> and <code>cluster</code>
+arguments are refused — and the footer discloses the working correlation
+structure, which is model-defining the same way the random-effects block
+is for a mixed model. There is no likelihood, so no AIC or R-squared:
+the quasi-likelihood criteria <code>"qic"</code> / <code>"qicu"</code>
+are the comparison tools.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">respiratory</span>, package <span class="op">=</span> <span class="st">"geepack"</span><span class="op">)</span></span>
+<span><span class="va">respiratory</span><span class="op">$</span><span class="va">outcome</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">respiratory</span><span class="op">$</span><span class="va">outcome</span><span class="op">)</span></span>
+<span><span class="va">respiratory</span><span class="op">$</span><span class="va">subject</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">respiratory</span><span class="op">$</span><span class="va">center</span>, <span class="va">respiratory</span><span class="op">$</span><span class="va">id</span><span class="op">)</span></span>
+<span><span class="co"># Placebo as the reference level, so the displayed row is the</span></span>
+<span><span class="co"># active-treatment odds ratio.</span></span>
+<span><span class="va">respiratory</span><span class="op">$</span><span class="va">treat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html" class="external-link">relevel</a></span><span class="op">(</span><span class="va">respiratory</span><span class="op">$</span><span class="va">treat</span>, ref <span class="op">=</span> <span class="st">"P"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gee_fit</span>  <span class="op">&lt;-</span> <span class="fu">geepack</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geeglm</a></span><span class="op">(</span></span>
+<span>  <span class="va">outcome</span> <span class="op">~</span> <span class="va">treat</span> <span class="op">+</span> <span class="va">baseline</span>, id <span class="op">=</span> <span class="va">subject</span>, data <span class="op">=</span> <span class="va">respiratory</span>,</span>
+<span>  family <span class="op">=</span> <span class="va">binomial</span>, corstr <span class="op">=</span> <span class="st">"exchangeable"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">glmm_fit</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">glmer</a></span><span class="op">(</span></span>
+<span>  <span class="va">outcome</span> <span class="op">~</span> <span class="va">treat</span> <span class="op">+</span> <span class="va">baseline</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">respiratory</span>,</span>
+<span>  family <span class="op">=</span> <span class="va">binomial</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Population-averaged"</span> <span class="op">=</span> <span class="va">gee_fit</span>, <span class="st">"Subject-specific"</span> <span class="op">=</span> <span class="va">glmm_fit</span><span class="op">)</span>,</span>
+<span>  exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression comparison: outcome</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                                Population-averaged         Subject-specific    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ────────────────────────────  ───────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>   OR       95% CI        p      OR       95% CI     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼─────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>   0.31  [0.17,  0.55]  &lt;.001    0.14  [0.05,  0.34] </span></span>
+<span><span class="co">#&gt;  treat:                  <span style="color: #9E9E9E;">│</span>                                                     </span></span>
+<span><span class="co">#&gt;    P (ref.)              <span style="color: #9E9E9E;">│</span>    –          –         –        –          –       </span></span>
+<span><span class="co">#&gt;    A                     <span style="color: #9E9E9E;">│</span>   3.48  [1.83,  6.62]  &lt;.001    7.79  [2.74, 22.14] </span></span>
+<span><span class="co">#&gt;  baseline                <span style="color: #9E9E9E;">│</span>   7.31  [3.89, 13.75]  &lt;.001   26.57  [8.40, 84.05] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:         <span style="color: #9E9E9E;">│</span>                                                     </span></span>
+<span><span class="co">#&gt;    σ subject (Intercept) <span style="color: #9E9E9E;">│</span>                                 1.98  [1.45,  2.39] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span> 444                           444                   </span></span>
+<span><span class="co">#&gt;  N (subject)             <span style="color: #9E9E9E;">│</span> 111                           111                   </span></span>
+<span><span class="co">#&gt;  ICC                     <span style="color: #9E9E9E;">│</span>                                 0.54                </span></span>
+<span><span class="co">#&gt;  R² (marginal)           <span style="color: #9E9E9E;">│</span>                                 0.34                </span></span>
+<span><span class="co">#&gt;  R² (conditional)        <span style="color: #9E9E9E;">│</span>                                 0.70                </span></span>
+<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span>                               447.7                 </span></span>
+<span><span class="co">#&gt;  BIC                     <span style="color: #9E9E9E;">│</span>                               464.1                 </span></span>
+<span><span class="co">#&gt;  Max cluster size        <span style="color: #9E9E9E;">│</span>   4                                                 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                            Subj… </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ───── </span></span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>   p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼───────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
+<span><span class="co">#&gt;  treat:                  <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;    P (ref.)              <span style="color: #9E9E9E;">│</span>  –    </span></span>
+<span><span class="co">#&gt;    A                     <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
+<span><span class="co">#&gt;  baseline                <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:         <span style="color: #9E9E9E;">│</span>       </span></span>
+<span><span class="co">#&gt;    σ subject (Intercept) <span style="color: #9E9E9E;">│</span>  –    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: population-averaged logistic regression (GEE); Model 2: logistic mixed-effects regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 1: Robust sandwich (GEE), clusters by subject</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Wald asymptotic (z)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Wald-z asymptotic (lme4).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; GEE working correlation: exchangeable (alpha = 0.36).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.14, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span></span></code></pre></div>
+<p>The active-treatment odds ratio is the same effect asked two ways:
+the marginal column compares treated and untreated <em>populations</em>;
+the conditional column compares each subject with themselves, and is
+accordingly farther from 1.</p>
+</div>
+<div class="section level2">
 <h2 id="cluster-robust-and-other-variance-estimators">Cluster-robust and other variance estimators<a class="anchor" aria-label="anchor" href="#cluster-robust-and-other-variance-estimators"></a>
 </h2>
 <p>Mixed fits honour the cluster-robust family
@@ -1206,7 +1299,7 @@ freedom computed from the robust covariance — the footer attributes them
 accordingly. Reach for <code>CR*</code> when you suspect the
 random-effects structure does not fully capture the within-group
 dependence:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_ri</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1249,7 +1342,7 @@ well-posed approach, since the marginal SD(y) has no unique
 decomposition across levels. The β rows inherit the same Satterthwaite
 reference distribution as their unstandardized counterparts, so B and β
 carry one consistent p per term:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"beta"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1292,7 +1385,7 @@ renders as a raw data frame, a long broom-style tibble, or — with the
 corresponding Suggests package — a rich <code>gt</code>,
 <code>flextable</code>, <code>tinytable</code>, Excel, or Word table;
 the random-effects block carries through to every format.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span>, <span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                          Variable       B   SE           95% CI     p</span></span>
 <span><span class="co">#&gt; 1                     (Intercept)  251.41 6.82 [237.01, 265.80] &lt;.001</span></span>
@@ -1303,7 +1396,7 @@ the random-effects block carries through to every format.</p>
 <span><span class="co">#&gt; 6   ρ Subject ((Intercept), Days)    0.07 0.33 [ -0.57,   0.70]  –   </span></span>
 <span><span class="co">#&gt; 7                    σ (Residual)   25.59 1.51 [ 22.44,  28.39]  –   </span></span>
 <span><span class="co">#&gt; 8                               n  180</span></span></code></pre></div>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="ijvoequvti" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#ijvoequvti table { font-family: system-ui, ‘Segoe UI’,
@@ -1756,7 +1849,7 @@ BIC
 variance-component rows are marked <code>estimate_type = "vc"</code> and
 their terms are prefixed <code>re::</code> (correlations carry a
 <code>::cor</code> suffix), so they filter cleanly:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span><span class="va">td</span><span class="op">$</span><span class="va">estimate_type</span> <span class="op">==</span> <span class="st">"vc"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span>, <span class="st">"std.error"</span>, <span class="st">"conf.low"</span>, <span class="st">"conf.high"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 5</span></span></span>

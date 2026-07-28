@@ -997,6 +997,23 @@ back-transformed from its link, so <code>y ~ x | 1</code> reports the
 same \(\phi\) as <code>y ~ x</code>. Refused for other families
 and when the precision has covariates (<code>y ~ x | z</code>), so it is
 not a single number.</p></li>
+<li><p>GEE (<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code> only): <code>"qic"</code> and <code>"qicu"</code> – the
+quasi-likelihood information criteria (Pan 2001; QIC for
+working-correlation choice, QICu for covariate choice) via
+<code><a href="https://rdrr.io/pkg/geepack/man/QIC.html" class="external-link">geepack::QIC()</a></code>, computed only when requested (QIC silently
+refits the independence working model); <code>"scale"</code> – the
+estimated scale (dispersion) parameter, shown only when the
+fit estimated it (blank under <code>scale.fix = TRUE</code>, matching
+geepack's own summary); <code>"max_cluster_size"</code> – the largest
+cluster in the estimation sample (on by default with
+<code>"n_groups"</code>, which renders the <code>N (&lt;id&gt;)</code> cluster count).
+Cluster statistics count the clusters geepack itself used
+(<code>geese$clusz</code>, consecutive runs of <code>id =</code> values), so they
+always describe the displayed sandwich inference.
+Refused when no model in the table is a geeglm fit; the
+likelihood-based tokens (<code>"aic"</code>, pseudo-\(R^2\), ...)
+are refused in return for all-GEE tables – quasi-likelihood
+has no likelihood.</p></li>
 <li><p>fixest absorbed fixed effects (<code>fixest</code> only, both on by
 default for fixest tables): <code>"fixed_effects"</code> renders a
 <code>Fixed effects:</code> block at the top of the fit statistics –
@@ -1023,7 +1040,9 @@ comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
 <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")</code>;
 mixed lm + glm sets union both groups (the renderer per-row
 en-dashes the inappropriate cell); Cox fits get
-<code>c("nobs", "n_events", "aic")</code>. When <code>nested = TRUE</code>, the
+<code>c("nobs", "n_events", "aic")</code>; GEE fits get
+<code>c("nobs", "n_groups", "max_cluster_size")</code> (the cluster
+structure, Stata <code>xtgee</code>-header style). When <code>nested = TRUE</code>, the
 class-aware default is extended with change tokens
 (<code>c("r2_change", "f_change", "p_change")</code> for lm,
 <code>c("lrt_change", "p_change")</code> for glm). The order of tokens in
@@ -1130,6 +1149,14 @@ nominal (partial-PO) component is <code>classical</code> only.
 <code>multinom</code> needs <span class="pkg">sandwich</span> &gt;= 3.1-2 (which added its
 <code>estfun()</code> method); its <code>cluster</code> is one entry per
 observation.</p></dd>
+
+<dt><code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code></dt>
+<dd><p>no spicy-side estimator at all: GEE
+inference is robust by construction, so the fit's own sandwich
+(or jackknife) standard errors – chosen by geeglm's
+<code>std.err =</code> option, clustered on its <code>id =</code> – are the
+displayed inference. <code>HC*</code> / <code>CR*</code> and <code>cluster</code> are refused
+with a pointer to those fit options.</p></dd>
 
 <dt>Other classes (<code>glmer</code>,
 <code>rstanarm</code>/<code>brms</code>, ...)</dt>

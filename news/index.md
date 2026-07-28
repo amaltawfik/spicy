@@ -329,6 +329,21 @@ rendering an empty column.
 
 ### New features
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  supports GEE fits from
+  [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html)
+  (population-averaged models). The fit’s own sandwich standard errors –
+  clustered on its `id =`, or the jackknife variants chosen via geeglm’s
+  `std.err =` – are the displayed inference (Wald z), and the footer
+  discloses the working correlation structure with its estimated alpha.
+  Default fit statistics report the cluster structure (n, `N (<id>)`,
+  largest cluster); `"qic"`, `"qicu"`, and `"scale"` are opt-in
+  `show_fit_stats` tokens. AME columns and the usual `exponentiate`
+  gates (OR / IRR / RR by link) work as for `glm`. Requests GEE cannot
+  honour are refused with actionable messages: spicy’s `vcov` /
+  `cluster` (inference is already robust by construction; clustering
+  belongs to `id =`), `standardized`, `nested = TRUE`, and
+  likelihood-based fit statistics (compare working models with QIC).
 - New `show_columns` token families `"rmst"` and `"risk_diff"` for
   `coxph` fits: covariate-adjusted differences in restricted mean
   survival time over `[0, tau]` and in cumulative incidence at

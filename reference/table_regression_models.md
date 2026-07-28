@@ -51,6 +51,7 @@ A data frame with one row per supported engine and columns `family`,
 | Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes | link-dependent (IRR for count families) | Random effects; Zero-inflation; Dispersion |
 | Mixed effects | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 | Mixed effects | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
+| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR (link) | \- |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
 | Ordinal | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
 | Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
@@ -107,6 +108,25 @@ chi-bar-squared LR test of the whole random part, and `re_test = "lrt"`
 and `ICC` are fit-stat rows; Nakagawa marginal / conditional R-squared
 are the default R-squared family. `CR*` robust via clubSandwich
 (glmmTMB: conditional part only, disclosed).
+
+## Population-averaged (GEE) models
+
+[`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) fits
+are read on their own terms: the sandwich standard errors the fit
+computed (its `std.err =` option, clustered on its `id =`) are the
+displayed inference – GEE is robust by construction, so spicy's `vcov` /
+`cluster` arguments are refused with a pointer to the fit options.
+Coefficients are population-averaged (marginal) effects; the footer
+discloses the working correlation structure with its estimated alpha.
+Wald z inference; `exponentiate` follows the usual link gates (OR / IRR
+/ RR). Default fit statistics report the cluster structure (n,
+`N (<id>)`, largest cluster); the quasi-likelihood information criteria
+`"qic"` / `"qicu"` (Pan 2001) and the `"scale"` (dispersion) parameter
+are opt-in – there is no likelihood, so AIC, pseudo-R-squared,
+`nested = TRUE`, and `standardized` are refused. See the
+population-averaged section of
+[`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+for the contrast with subject-specific mixed models.
 
 ## Ordinal models
 
@@ -238,25 +258,26 @@ table_regression_models()
 #> 14                    Mixed effects     glmmTMB
 #> 15                    Mixed effects         lme
 #> 16                    Mixed effects         gls
-#> 17                          Ordinal        polr
-#> 18                          Ordinal         clm
-#> 19                      Categorical    multinom
-#> 20                      Categorical      mlogit
-#> 21                 Counts, two-part    zeroinfl
-#> 22                 Counts, two-part      hurdle
-#> 23                         Survival       coxph
-#> 24                         Survival     survreg
-#> 25                         Survival         cph
-#> 26                         Survival flexsurvreg
-#> 27                  Survey-weighted      svyglm
-#> 28 Additive, proportions, selection         gam
-#> 29 Additive, proportions, selection     betareg
-#> 30 Additive, proportions, selection   selection
-#> 31                              rms         ols
-#> 32                              rms         lrm
-#> 33                              rms         Glm
-#> 34                         Bayesian     stanreg
-#> 35                         Bayesian     brmsfit
+#> 17        Population-averaged (GEE)      geeglm
+#> 18                          Ordinal        polr
+#> 19                          Ordinal         clm
+#> 20                      Categorical    multinom
+#> 21                      Categorical      mlogit
+#> 22                 Counts, two-part    zeroinfl
+#> 23                 Counts, two-part      hurdle
+#> 24                         Survival       coxph
+#> 25                         Survival     survreg
+#> 26                         Survival         cph
+#> 27                         Survival flexsurvreg
+#> 28                  Survey-weighted      svyglm
+#> 29 Additive, proportions, selection         gam
+#> 30 Additive, proportions, selection     betareg
+#> 31 Additive, proportions, selection   selection
+#> 32                              rms         ols
+#> 33                              rms         lrm
+#> 34                              rms         Glm
+#> 35                         Bayesian     stanreg
+#> 36                         Bayesian     brmsfit
 #>                                                                    engine
 #> 1                                                             stats::lm()
 #> 2                                                            stats::glm()
@@ -274,25 +295,26 @@ table_regression_models()
 #> 14                                                     glmmTMB::glmmTMB()
 #> 15                                                            nlme::lme()
 #> 16                                                            nlme::gls()
-#> 17                                                           MASS::polr()
-#> 18                                                         ordinal::clm()
-#> 19                                                       nnet::multinom()
-#> 20                                                       mlogit::mlogit()
-#> 21                                                       pscl::zeroinfl()
-#> 22                                                         pscl::hurdle()
-#> 23                                                      survival::coxph()
-#> 24                                                    survival::survreg()
-#> 25                                                             rms::cph()
-#> 26                                                flexsurv::flexsurvreg()
-#> 27                                                       survey::svyglm()
-#> 28                                               mgcv::gam(), mgcv::bam()
-#> 29                                                     betareg::betareg()
-#> 30                                           sampleSelection::selection()
-#> 31                                                             rms::ols()
-#> 32                                                             rms::lrm()
-#> 33                                                             rms::Glm()
-#> 34                           rstanarm::stan_glm(), rstanarm::stan_glmer()
-#> 35                                                            brms::brm()
+#> 17                                                      geepack::geeglm()
+#> 18                                                           MASS::polr()
+#> 19                                                         ordinal::clm()
+#> 20                                                       nnet::multinom()
+#> 21                                                       mlogit::mlogit()
+#> 22                                                       pscl::zeroinfl()
+#> 23                                                         pscl::hurdle()
+#> 24                                                      survival::coxph()
+#> 25                                                    survival::survreg()
+#> 26                                                             rms::cph()
+#> 27                                                flexsurv::flexsurvreg()
+#> 28                                                       survey::svyglm()
+#> 29                                               mgcv::gam(), mgcv::bam()
+#> 30                                                     betareg::betareg()
+#> 31                                           sampleSelection::selection()
+#> 32                                                             rms::ols()
+#> 33                                                             rms::lrm()
+#> 34                                                             rms::Glm()
+#> 35                           rstanarm::stan_glm(), rstanarm::stan_glmer()
+#> 36                                                            brms::brm()
 #>                        ame                            exponentiate
 #> 1                      yes                                       -
 #> 2                      yes                    OR / IRR / RR (link)
@@ -310,25 +332,26 @@ table_regression_models()
 #> 14                     yes link-dependent (IRR for count families)
 #> 15                     yes                                       -
 #> 16                     yes                                       -
-#> 17            per category                              OR (logit)
+#> 17                     yes                    OR / IRR / RR (link)
 #> 18            per category                              OR (logit)
-#> 19             per outcome                                      OR
-#> 20                      no                                      OR
-#> 21 yes (combined response)      IRR (count) + OR (logit zero part)
+#> 19            per category                              OR (logit)
+#> 20             per outcome                                      OR
+#> 21                      no                                      OR
 #> 22 yes (combined response)      IRR (count) + OR (logit zero part)
-#> 23        RMST / risk diff                                      HR
-#> 24  yes + RMST / risk diff            TR (log-scale distributions)
-#> 25                      no                                      HR
-#> 26                      no                          TR / HR (dist)
-#> 27      yes (design-based)                                OR / IRR
-#> 28                     yes                         OR / IRR (link)
-#> 29                     yes                          OR (mean link)
-#> 30                      no                                       -
-#> 31                     yes                                       -
-#> 32                     yes                                      OR
-#> 33                     yes                          link-dependent
-#> 34             yes (draws)                          link-dependent
+#> 23 yes (combined response)      IRR (count) + OR (logit zero part)
+#> 24        RMST / risk diff                                      HR
+#> 25  yes + RMST / risk diff            TR (log-scale distributions)
+#> 26                      no                                      HR
+#> 27                      no                          TR / HR (dist)
+#> 28      yes (design-based)                                OR / IRR
+#> 29                     yes                         OR / IRR (link)
+#> 30                     yes                          OR (mean link)
+#> 31                      no                                       -
+#> 32                     yes                                       -
+#> 33                     yes                                      OR
+#> 34                     yes                          link-dependent
 #> 35             yes (draws)                          link-dependent
+#> 36             yes (draws)                          link-dependent
 #>                                        blocks
 #> 1                                           -
 #> 2                                           -
@@ -346,25 +369,26 @@ table_regression_models()
 #> 14 Random effects; Zero-inflation; Dispersion
 #> 15                             Random effects
 #> 16                                          -
-#> 17                                 Thresholds
-#> 18       Thresholds; Non-proportional effects
-#> 19                         per-outcome blocks
-#> 20                       per-alternative rows
-#> 21                             Zero-inflation
-#> 22                                Zero hurdle
-#> 23                                          -
+#> 17                                          -
+#> 18                                 Thresholds
+#> 19       Thresholds; Non-proportional effects
+#> 20                         per-outcome blocks
+#> 21                       per-alternative rows
+#> 22                             Zero-inflation
+#> 23                                Zero hurdle
 #> 24                                          -
 #> 25                                          -
-#> 26                    distribution parameters
-#> 27                                          -
+#> 26                                          -
+#> 27                    distribution parameters
 #> 28                                          -
 #> 29                                          -
-#> 30                        selection component
-#> 31                                          -
+#> 30                                          -
+#> 31                        selection component
 #> 32                                          -
 #> 33                                          -
-#> 34             Random effects (if multilevel)
+#> 34                                          -
 #> 35             Random effects (if multilevel)
+#> 36             Random effects (if multilevel)
 
 # All engines of one family:
 subset(table_regression_models(), family == "Mixed effects")
