@@ -183,6 +183,31 @@ test_that("geeglm: empty factor levels of id are not counted as clusters", {
   expect_lt(unname(fr$info$n_groups), nlevels(fit$id))
 })
 
+test_that("geeglm: weighted fits carry weighted_nobs like a glm", {
+  # glm-convention prior weights: the "weighted_nobs" token and the
+  # footer weighted-n must not be silently blank next to a glm's
+  # "Weighted n" (2026-07 GEE review follow-up).
+  skip_if_not_installed("geepack")
+  set.seed(5)
+  d <- data.frame(id = rep(1:25, each = 4), x = rnorm(100))
+  d$y <- d$x + rnorm(100)
+  d$w <- sample(1:3, 100, replace = TRUE)
+  fit_w <- geepack::geeglm(
+    y ~ x,
+    id = id,
+    data = d,
+    family = gaussian,
+    weights = w
+  )
+  fr <- as_regression_frame(fit_w, model_id = "M1")
+  expect_identical(fr$info$weights_kind, "case")
+  expect_identical(fr$info$fit_stats$weighted_nobs, sum(d$w))
+  expect_identical(fr$info$extras$weighted_n, sum(d$w))
+  # Unweighted fits keep the NA (no spurious row).
+  fr0 <- as_regression_frame(.fit_gee_gaussian(), model_id = "M1")
+  expect_true(is.na(fr0$info$fit_stats$weighted_nobs))
+})
+
 test_that("geeglm: scale is blank when the fit fixed it (scale.fix)", {
   # geepack's own summary prints "Scale is fixed." and refuses to
   # show gamma; displaying the internal value would read as an

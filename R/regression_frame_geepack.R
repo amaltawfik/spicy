@@ -380,6 +380,18 @@ as_regression_frame.gee <- function(fit, ...) {
   cluster_sizes <- .geeglm_cluster_sizes(fit)
   n_clusters <- length(cluster_sizes)
 
+  # Prior weights, glm-convention (stats::weights() on the glm
+  # inheritance returns prior weights): the "weighted_nobs" token and
+  # the footer weighted-n disclosure behave exactly as for a weighted
+  # glm (2026-07 GEE review follow-up: the blank cell next to a glm's
+  # "Weighted n" read as an omission).
+  wk <- .weights_kind_from_fit(fit)
+  w_n <- if (identical(wk, "none")) {
+    NA_real_
+  } else {
+    sum(stats::weights(fit))
+  }
+
   # Quasi-likelihood information criteria (Pan 2001) -- computed ONLY
   # when the table actually shows them: geepack::QIC() re-evaluates
   # the fit's call with corstr = "independence", i.e. a full silent
@@ -420,6 +432,7 @@ as_regression_frame.gee <- function(fit, ...) {
   # to qic / qicu.
   fit_stats <- list(
     nobs = as.integer(stats::nobs(fit)),
+    weighted_nobs = w_n,
     max_cluster_size = if (n_clusters > 0L) {
       as.integer(max(cluster_sizes))
     } else {
@@ -468,8 +481,8 @@ as_regression_frame.gee <- function(fit, ...) {
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = !identical(.weights_kind_from_fit(fit), "none"),
-    weighted_n = NA_real_,
+    has_weights = !identical(wk, "none"),
+    weighted_n = w_n,
     title_prefix = title_prefix,
     exp_applied = FALSE,
     exp_header = NA_character_,
@@ -486,7 +499,7 @@ as_regression_frame.gee <- function(fit, ...) {
     dv_label = dv_label,
     n_obs = as.integer(stats::nobs(fit)),
     n_groups = stats::setNames(n_clusters, id_name),
-    weights_kind = .weights_kind_from_fit(fit),
+    weights_kind = wk,
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
@@ -501,9 +514,12 @@ as_regression_frame.gee <- function(fit, ...) {
 
 
 # Family label for the title, link-aware for binomial (a probit GEE is
-# not a logistic regression -- the svyglm precedent).
+# not a logistic regression -- the svyglm precedent). No quasi
+# entries: geeglm hard-rejects the quasi families ("variance
+# invalid"), so mapping them here would be unreachable code (2026-07
+# GEE review, verified against geepack 1.3.13).
 .geeglm_family_title <- function(fam) {
-  if (fam$family %in% c("binomial", "quasibinomial")) {
+  if (identical(fam$family, "binomial")) {
     return(switch(
       fam$link,
       "logit" = "logistic",
@@ -515,7 +531,6 @@ as_regression_frame.gee <- function(fit, ...) {
   }
   switch(
     fam$family,
-    quasipoisson = "Poisson",
     poisson = "Poisson",
     Gamma = "Gamma",
     inverse.gaussian = "inverse-Gaussian",
