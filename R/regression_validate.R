@@ -101,6 +101,13 @@
     # Beta-regression precision (betareg only): phi (Ferrari &
     # Cribari-Neto 2004; Var(y) = mu(1-mu)/(1+phi)).
     "phi",
+    # GEE (geepack::geeglm) only: quasi-likelihood information
+    # criteria (Pan 2001), the estimated scale (dispersion)
+    # parameter, and the largest cluster in the estimation sample.
+    "qic",
+    "qicu",
+    "scale",
+    "max_cluster_size",
     # fixest only: the absorbed-fixed-effects Yes/No disclosure block
     # (one row per factor) and the within (FE-partialled) R-squared.
     "fixed_effects",
@@ -377,6 +384,28 @@ validate_nested_alignment <- function(models, nested) {
     return(invisible(NULL))
   }
 
+  # GEE fits have no likelihood, so none of the change statistics
+  # (Delta R-squared, partial F, LRT, Delta AIC) is defined; the glm
+  # pair path they would inherit reads logLik / anova(test = "LRT"),
+  # which geeglm does not provide. Refuse with the QIC alternative.
+  if (any(vapply(models, inherits, logical(1), "geeglm"))) {
+    spicy_abort(
+      c(
+        "`nested = TRUE` is not available for GEE fits (`geeglm`).",
+        "i" = paste0(
+          "GEE is estimated by quasi-likelihood: there is no ",
+          "likelihood-ratio change test."
+        ),
+        "i" = paste0(
+          "Compare working models with QIC ",
+          "(`show_fit_stats = c(\"nobs\", \"qic\")`), or use ",
+          "`geepack::anova.geeglm()` Wald tests outside the table."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
   # Quantile regression pairs compare through anova.rq()'s Wald-type F
   # (compute_one_pair_rq). Two guards keep the comparison meaningful:
   # rq cannot mix with other classes (different loss functions -- the
@@ -631,6 +660,13 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           class = "spicy_unsupported_vcov"
         )
       }
+      # GEE fits are refused on principle too: the sandwich IS the
+      # fit's own default inference, so spicy's HC* / CR* tokens have
+      # nothing to add -- the estimator choice lives on the fit
+      # (geeglm's `std.err =`), not in the table call.
+      if (inherits(models[[i]], "geeglm")) {
+        .gee_refuse_vcov(vt)
+      }
       spicy_abort(
         c(
           sprintf(
@@ -683,6 +719,15 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   for (i in seq_len(n_models)) {
     v_i <- vcov_per[[i]]
     c_i <- cluster_per[[i]]
+
+    # GEE: clustering is defined by the model's own `id =` argument
+    # (the sandwich over those clusters is already the default
+    # inference), so a spicy-side `cluster` is refused outright --
+    # the generic "set vcov to CR0-CR3" hint below would be wrong
+    # guidance.
+    if (inherits(models[[i]], "geeglm") && !is.null(c_i)) {
+      .gee_refuse_cluster(model_index = i)
+    }
 
     # quantreg::rq has no analytic cluster-robust estimator; its one
     # defensible cluster route is the wild gradient cluster bootstrap
@@ -849,7 +894,12 @@ validate_class_appropriate_tokens <- function(
   # 2026-07 FE-lot review caught the default glm + fixest table
   # hard-erroring. Mixed sets render class-inappropriate cells blank,
   # which is the intended behaviour; only homogeneous sets refuse.
-  glm_flags <- vapply(models, inherits, logical(1), "glm")
+  # geeglm inherits from glm but is quasi-likelihood: it gets its own
+  # gate below (no likelihood -> no pseudo-R^2 / IC / partial LRT),
+  # so it must not be claimed by the glm bucket -- the glm messages
+  # would suggest substitutes GEE cannot compute.
+  gee_flags <- vapply(models, inherits, logical(1), "geeglm")
+  glm_flags <- vapply(models, inherits, logical(1), "glm") & !gee_flags
   lm_only_flags <- vapply(
     models,
     function(f) {
@@ -1224,6 +1274,103 @@ validate_class_appropriate_tokens <- function(
             "'fixed_effects' discloses the absorbed fixed effects ",
             "(one Yes/No row per factor) and 'within_r2' is the ",
             "FE-partialled R-squared; other classes have neither."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # GEE fit-stat tokens. ANY-gate like the fixest disclosure tokens:
+  # in a mixed glm + GEE table, QIC next to the glm's AIC is exactly
+  # the comparison the table is for -- non-GEE columns render blank.
+  gee_tokens <- intersect(
+    show_fit_stats,
+    c("qic", "qicu", "scale", "max_cluster_size")
+  )
+  if (length(gee_tokens) > 0L) {
+    any_gee <- length(models) > 0L && any(gee_flags)
+    if (!any_gee) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are defined only for GEE fits (`geepack::geeglm`).",
+            paste(shQuote(gee_tokens), collapse = ", ")
+          ),
+          "i" = paste0(
+            "'qic' / 'qicu' are the quasi-likelihood information ",
+            "criteria (Pan 2001), 'scale' the estimated scale ",
+            "(dispersion) parameter, and 'max_cluster_size' the ",
+            "largest cluster in the estimation sample."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # GEE is quasi-likelihood: no likelihood, so no (pseudo-)R-squared,
+  # no likelihood-based information criteria, and no partial LRT /
+  # variance-explained columns. Reject only when ALL models are GEE
+  # (a mixed table renders the GEE cells blank for the glm's stats).
+  all_gee <- length(models) > 0L && all(gee_flags)
+  if (all_gee) {
+    bad_fit <- intersect(
+      show_fit_stats,
+      c(
+        "r2",
+        "adj_r2",
+        "omega2",
+        "f2",
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "pseudo_r2_tjur",
+        "aic",
+        "aicc",
+        "bic",
+        "deviance"
+      )
+    )
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not defined for GEE fits (`geeglm`).",
+            paste(shQuote(bad_fit), collapse = ", ")
+          ),
+          "i" = paste0(
+            "GEE is estimated by quasi-likelihood: no likelihood, so ",
+            "no (pseudo-)R-squared and no likelihood-based ",
+            "information criteria."
+          ),
+          "i" = "Use `\"qic\"` / `\"qicu\"` (Pan 2001) instead."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    bad_cols <- intersect(
+      show_columns,
+      c(
+        "partial_chi2",
+        "partial_f2",
+        "partial_f2_ci",
+        "partial_eta2",
+        "partial_eta2_ci",
+        "partial_omega2",
+        "partial_omega2_ci"
+      )
+    )
+    if (length(bad_cols) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not defined for GEE fits (`geeglm`).",
+            paste(shQuote(bad_cols), collapse = ", ")
+          ),
+          "i" = paste0(
+            "The partial likelihood-ratio chi-square and the ",
+            "variance-explained partials need a true likelihood or ",
+            "an OLS variance partition; GEE has neither."
           )
         ),
         class = "spicy_invalid_input"

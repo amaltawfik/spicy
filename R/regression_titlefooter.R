@@ -96,6 +96,7 @@ build_regression_footer_from_frames <- function(
     build_vcov_footer_block_from_frames(frames),
     build_ci_method_footer_block_from_frames(frames, show_columns),
     build_mixed_inference_footer_block_from_frames(frames),
+    build_gee_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(
       frames,
       show_re = show_re,
@@ -768,6 +769,74 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
     character(1)
   )
   paste(lines, collapse = "\n")
+}
+
+
+# GEE working-correlation disclosure. The structure is model-defining
+# (the RE-block philosophy for mixed models): two GEE fits with the
+# same formula but different corstr are different models, so the
+# footer states the structure -- with the estimated alpha when the
+# structure has one:
+#   exchangeable / ar1:  "GEE working correlation: exchangeable
+#                         (alpha = 0.77)."
+#   independence:        "GEE working correlation: independence."
+#   unstructured:        "GEE working correlation: unstructured
+#                         (10 correlation parameters)."
+build_gee_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+
+  per_model <- lapply(seq_along(frames), function(i) {
+    f <- frames[[i]]
+    txt <- .format_gee_for_frame(f)
+    if (is.null(txt)) NULL else list(idx = i, text = txt)
+  })
+  per_model <- Filter(Negate(is.null), per_model)
+  if (length(per_model) == 0L) {
+    return(NULL)
+  }
+
+  if (length(per_model) == 1L) {
+    return(per_model[[1L]]$text)
+  }
+  lines <- vapply(
+    per_model,
+    function(pm) {
+      sprintf("Model %d: %s", pm$idx, pm$text)
+    },
+    character(1)
+  )
+  paste(lines, collapse = "\n")
+}
+
+
+.format_gee_for_frame <- function(frame) {
+  cls <- frame$info$class %||% ""
+  if (!identical(cls, "geeglm")) {
+    return(NULL)
+  }
+  corstr <- frame$info$extras$gee_corstr %||% NA_character_
+  if (is.na(corstr) || !nzchar(corstr)) {
+    return(NULL) # nocov -- a valid geeglm always carries corstr
+  }
+  alpha <- frame$info$extras$gee_alpha
+  alpha <- alpha[is.finite(alpha)]
+  if (length(alpha) == 1L) {
+    return(sprintf(
+      "GEE working correlation: %s (alpha = %s).",
+      corstr,
+      formatC(alpha, format = "f", digits = 2)
+    ))
+  }
+  if (length(alpha) > 1L) {
+    return(sprintf(
+      "GEE working correlation: %s (%d correlation parameters).",
+      corstr,
+      length(alpha)
+    ))
+  }
+  sprintf("GEE working correlation: %s.", corstr)
 }
 
 

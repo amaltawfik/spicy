@@ -24,10 +24,13 @@ test_that("the registry matches the as_regression_frame dispatch methods", {
   # umbrella/inherited entries not listed separately)
   umbrella <- c(
     "lmerModLmerTest", # inherits the lmerMod row
-    "spicy_uv_screen"
-  ) # internal bundle built by
-  # table_regression_uv(), not a
-  # user-fitted model class
+    "spicy_uv_screen", # internal bundle built by
+    # table_regression_uv(), not a
+    # user-fitted model class
+    "gee" # refusal stub: gee::gee fits inherit glm and would
+    # otherwise silently get naive SEs; the method points at
+    # geepack::geeglm (the supported, registry-listed engine)
+  )
   expect_true(
     all(reg$class %in% dispatched),
     info = paste(

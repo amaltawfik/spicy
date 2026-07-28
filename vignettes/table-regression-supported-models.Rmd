@@ -122,7 +122,12 @@ fits keep the estimator they were computed with (the footer carries
 fixest's own label -- IID, clustered, Newey-West, ... -- and
 spicy's `HC*` / `CR*` tokens are refused for them);
 `svyglm` is design-based by default and additionally accepts
-design-aware `CR0`--`CR3`. Bayesian fits refuse `vcov` -- nothing
+design-aware `CR0`--`CR3`. GEE fits (`geepack::geeglm`) are robust by
+construction: the sandwich SEs the fit computed over its own `id =`
+clusters are the displayed inference, so spicy's `HC*` / `CR*` tokens
+and `cluster` argument are refused -- change the estimator by
+refitting with geeglm's `std.err =` option. Bayesian fits refuse
+`vcov` -- nothing
 standard plays the sandwich role for a posterior. Whatever the
 backend, the footer names the estimator actually applied, and a
 robust vcov also flows into the AME uncertainty.
@@ -178,6 +183,14 @@ residual -- deliberately without per-row p-values; the footer
 carries the boundary-correct chi-bar-squared test, and
 `re_test = "lrt"` / `"rlrt"` adds per-term tests. See
 `vignette("table-regression-mixed")`.
+
+**Population-averaged (GEE).** `geepack::geeglm()`: marginal
+(population-averaged) coefficients with the fit's own sandwich SEs
+as the default inference, the working correlation structure disclosed
+in the footer (with its estimated alpha), cluster-structure fit
+statistics, and opt-in QIC / QICu. The population-averaged section of
+`vignette("table-regression-mixed")` contrasts GEE with
+subject-specific mixed models.
 
 **Ordinal.** `MASS::polr` and `ordinal::clm`: proportional odds
 ratios, a `Thresholds` block for the cut-points (log-odds scale,

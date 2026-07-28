@@ -859,6 +859,23 @@ back-transformed from its link, so \code{y ~ x | 1} reports the
 same \eqn{\phi}{phi} as \code{y ~ x}. Refused for other families
 and when the precision has covariates (\code{y ~ x | z}), so it is
 not a single number.
+\item GEE (\code{geepack::geeglm} only): \code{"qic"} and \code{"qicu"} -- the
+quasi-likelihood information criteria (Pan 2001; QIC for
+working-correlation choice, QICu for covariate choice) via
+\code{\link[geepack:QIC]{geepack::QIC()}}, computed only when requested (QIC silently
+refits the independence working model); \code{"scale"} -- the
+estimated scale (dispersion) parameter, shown only when the
+fit estimated it (blank under \code{scale.fix = TRUE}, matching
+geepack's own summary); \code{"max_cluster_size"} -- the largest
+cluster in the estimation sample (on by default with
+\code{"n_groups"}, which renders the \verb{N (<id>)} cluster count).
+Cluster statistics count the clusters geepack itself used
+(\code{geese$clusz}, consecutive runs of \verb{id =} values), so they
+always describe the displayed sandwich inference.
+Refused when no model in the table is a geeglm fit; the
+likelihood-based tokens (\code{"aic"}, pseudo-\eqn{R^2}{R^2}, ...)
+are refused in return for all-GEE tables -- quasi-likelihood
+has no likelihood.
 \item fixest absorbed fixed effects (\code{fixest} only, both on by
 default for fixest tables): \code{"fixed_effects"} renders a
 \verb{Fixed effects:} block at the top of the fit statistics --
@@ -887,7 +904,9 @@ Default (resolved when \code{NULL}) is class-aware: lm fits get
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")};
 mixed lm + glm sets union both groups (the renderer per-row
 en-dashes the inappropriate cell); Cox fits get
-\code{c("nobs", "n_events", "aic")}. When \code{nested = TRUE}, the
+\code{c("nobs", "n_events", "aic")}; GEE fits get
+\code{c("nobs", "n_groups", "max_cluster_size")} (the cluster
+structure, Stata \code{xtgee}-header style). When \code{nested = TRUE}, the
 class-aware default is extended with change tokens
 (\code{c("r2_change", "f_change", "p_change")} for lm,
 \code{c("lrt_change", "p_change")} for glm). The order of tokens in
@@ -999,6 +1018,12 @@ nominal (partial-PO) component is \code{classical} only.
 \code{multinom} needs \pkg{sandwich} >= 3.1-2 (which added its
 \code{estfun()} method); its \code{cluster} is one entry per
 observation.}
+\item{\code{geepack::geeglm}}{no spicy-side estimator at all: GEE
+inference is robust by construction, so the fit's own sandwich
+(or jackknife) standard errors -- chosen by geeglm's
+\verb{std.err =} option, clustered on its \verb{id =} -- are the
+displayed inference. \verb{HC*} / \verb{CR*} and \code{cluster} are refused
+with a pointer to those fit options.}
 \item{Other classes (\code{glmer},
 \code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only.}
 }

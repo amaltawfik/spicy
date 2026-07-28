@@ -54,6 +54,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes \tab link-dependent (IRR for count families) \tab Random effects; Zero-inflation; Dispersion \cr
    Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \cr
+   Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR (link) \tab - \cr
    Ordinal \tab \code{polr} \tab \code{MASS::polr()} \tab per category \tab OR (logit) \tab Thresholds \cr
    Ordinal \tab \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \cr
    Categorical \tab \code{multinom} \tab \code{nnet::multinom()} \tab per outcome \tab OR \tab per-outcome blocks \cr
@@ -110,6 +111,26 @@ chi-bar-squared LR test of the whole random part, and
 test. \code{N (groups)} and \code{ICC} are fit-stat rows; Nakagawa marginal /
 conditional R-squared are the default R-squared family. \verb{CR*} robust via
 \pkg{clubSandwich} (glmmTMB: conditional part only, disclosed).
+}
+
+\section{Population-averaged (GEE) models}{
+
+\code{geepack::geeglm()} fits are read on their own terms: the sandwich
+standard errors the fit computed (its \verb{std.err =} option, clustered
+on its \verb{id =}) are the displayed inference -- GEE is robust by
+construction, so spicy's \code{vcov} / \code{cluster} arguments are refused
+with a pointer to the fit options. Coefficients are
+population-averaged (marginal) effects; the footer discloses the
+working correlation structure with its estimated alpha. Wald z
+inference; \code{exponentiate} follows the usual link gates (OR / IRR /
+RR). Default fit statistics report the cluster structure (n,
+\verb{N (<id>)}, largest cluster); the quasi-likelihood information
+criteria \code{"qic"} / \code{"qicu"} (Pan 2001) and the \code{"scale"}
+(dispersion) parameter are opt-in -- there is no likelihood, so
+AIC, pseudo-R-squared, \code{nested = TRUE}, and \code{standardized} are
+refused. See the population-averaged section of
+\code{vignette("table-regression-mixed")} for the contrast with
+subject-specific mixed models.
 }
 
 \section{Ordinal models}{

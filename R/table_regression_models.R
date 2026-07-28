@@ -86,6 +86,14 @@
     c("Mixed effects", "lme", "nlme::lme()", "yes", "-", "Random effects"),
     c("Mixed effects", "gls", "nlme::gls()", "yes", "-", "-"),
     c(
+      "Population-averaged (GEE)",
+      "geeglm",
+      "geepack::geeglm()",
+      "yes",
+      "OR / IRR / RR (link)",
+      "-"
+    ),
+    c(
       "Ordinal",
       "polr",
       "MASS::polr()",
@@ -295,6 +303,24 @@
 #' test. `N (groups)` and `ICC` are fit-stat rows; Nakagawa marginal /
 #' conditional R-squared are the default R-squared family. `CR*` robust via
 #' \pkg{clubSandwich} (glmmTMB: conditional part only, disclosed).
+#'
+#' @section Population-averaged (GEE) models:
+#' `geepack::geeglm()` fits are read on their own terms: the sandwich
+#' standard errors the fit computed (its `std.err =` option, clustered
+#' on its `id =`) are the displayed inference -- GEE is robust by
+#' construction, so spicy's `vcov` / `cluster` arguments are refused
+#' with a pointer to the fit options. Coefficients are
+#' population-averaged (marginal) effects; the footer discloses the
+#' working correlation structure with its estimated alpha. Wald z
+#' inference; `exponentiate` follows the usual link gates (OR / IRR /
+#' RR). Default fit statistics report the cluster structure (n,
+#' `N (<id>)`, largest cluster); the quasi-likelihood information
+#' criteria `"qic"` / `"qicu"` (Pan 2001) and the `"scale"`
+#' (dispersion) parameter are opt-in -- there is no likelihood, so
+#' AIC, pseudo-R-squared, `nested = TRUE`, and `standardized` are
+#' refused. See the population-averaged section of
+#' `vignette("table-regression-mixed")` for the contrast with
+#' subject-specific mixed models.
 #'
 #' @section Ordinal models:
 #' Cut-points render as a `Thresholds` block (log-odds scale, never

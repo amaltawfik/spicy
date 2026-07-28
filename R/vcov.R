@@ -871,6 +871,12 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # refused (deterministic leave-one-out is inconsistent for
     # non-smooth estimators; Efron 1982, Shao & Wu 1989).
     rq = c("classical", "nid", "iid", "ker", "rank", "bootstrap"),
+    # geepack::geeglm: the fit's own sandwich ("san.se", clustered on
+    # its `id =`) IS the default inference -- robust by construction.
+    # spicy's HC* / CR* tokens are refused with a GEE-specific message
+    # (validate_vcov_cluster_lists / .gee_refuse_vcov); the estimator
+    # choice lives on the fit (geeglm's `std.err =` option).
+    geeglm = "classical",
     # Univariable screen bundle: the request is forwarded to every
     # underlying fit, so the capability is theirs (homogeneous lm/glm).
     spicy_uv_screen = .robust_vcov_support(fit$fits[[1L]]),

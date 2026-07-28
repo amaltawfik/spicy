@@ -35,6 +35,7 @@ have_rlrsim  <- have_mixed && requireNamespace("RLRsim", quietly = TRUE)
 have_clubsw  <- have_mixed && requireNamespace("clubSandwich", quietly = TRUE)
 have_broom   <- have_mixed && requireNamespace("broom", quietly = TRUE)
 have_margins <- have_mixed && requireNamespace("marginaleffects", quietly = TRUE)
+have_geepack <- have_mixed && requireNamespace("geepack", quietly = TRUE)
 source("_pkgdown-helpers.R")
 ```
 
@@ -699,6 +700,53 @@ lfit <- nlme::lme(Reaction ~ Days, random = ~ 1 | Subject,
                   data = sleepstudy)
 table_regression(lfit)
 ```
+
+## Population-averaged alternatives: GEE
+
+A mixed model answers a **subject-specific** (conditional) question:
+what happens to *this* subject's outcome when their predictor changes,
+holding their random effect fixed. Generalized estimating equations
+(`geepack::geeglm()`) answer the **population-averaged** (marginal)
+question instead: how does the *average* outcome in the population
+differ between groups that differ in the predictor — the natural
+estimand for policy and epidemiology. For a linear model the two
+coincide; on a logit link they do not — the conditional odds ratio is
+farther from 1 than the marginal one, and the gap grows with the
+between-subject variance. `table_regression()` reads a `geeglm` fit
+on its own terms: the fit's sandwich standard errors (clustered on
+its `id =`) are the displayed inference — GEE is robust by
+construction, so spicy's `vcov` and `cluster` arguments are refused —
+and the footer discloses the working correlation structure, which is
+model-defining the same way the random-effects block is for a mixed
+model. There is no likelihood, so no AIC or R-squared: the
+quasi-likelihood criteria `"qic"` / `"qicu"` are the comparison tools.
+
+```{r gee, eval = have_geepack, warning = FALSE}
+data(respiratory, package = "geepack")
+respiratory$outcome <- as.integer(respiratory$outcome)
+respiratory$subject <- interaction(respiratory$center, respiratory$id)
+# Placebo as the reference level, so the displayed row is the
+# active-treatment odds ratio.
+respiratory$treat <- relevel(respiratory$treat, ref = "P")
+
+gee_fit  <- geepack::geeglm(
+  outcome ~ treat + baseline, id = subject, data = respiratory,
+  family = binomial, corstr = "exchangeable"
+)
+glmm_fit <- lme4::glmer(
+  outcome ~ treat + baseline + (1 | subject), data = respiratory,
+  family = binomial
+)
+table_regression(
+  list("Population-averaged" = gee_fit, "Subject-specific" = glmm_fit),
+  exponentiate = TRUE, show_columns = c("b", "ci", "p")
+)
+```
+
+The active-treatment odds ratio is the same effect asked two ways:
+the marginal column compares treated and untreated *populations*; the
+conditional column compares each subject with themselves, and is
+accordingly farther from 1.
 
 ## Cluster-robust and other variance estimators
 

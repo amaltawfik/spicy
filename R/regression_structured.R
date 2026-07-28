@@ -844,7 +844,12 @@ build_structured_body <- function(
   ic_digits,
   p_digits
 ) {
-  is_int <- token %in% c("nobs", "weighted_nobs", "n_groups")
+  # n_events included: the console path (format_fit_stat_value) has
+  # always formatted it as an integer, but this structured-path bucket
+  # missed it, so rich outputs rendered "165.00" (caught in the GEE
+  # pass, 2026-07).
+  is_int <- token %in%
+    c("nobs", "weighted_nobs", "n_groups", "n_events", "max_cluster_size")
   is_fit <- token %in%
     c(
       "r2",
@@ -859,6 +864,7 @@ build_structured_body <- function(
       "theta",
       "alpha",
       "phi",
+      "scale",
       "within_r2",
       "r2_bayes",
       "r2_marginal",
@@ -877,6 +883,8 @@ build_structured_body <- function(
       "elpd_loo",
       "looic",
       "waic",
+      "qic",
+      "qicu",
       "aic_change",
       "aicc_change",
       "bic_change"

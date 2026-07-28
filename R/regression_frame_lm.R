@@ -390,6 +390,12 @@ as_regression_frame.glm <- function(fit, ...) {
     elpd_loo = .scalar_or_na(fs$elpd_loo),
     looic = .scalar_or_na(fs$looic),
     waic = .scalar_or_na(fs$waic),
+    # GEE (geepack::geeglm): quasi-likelihood information criteria,
+    # scale (dispersion) parameter, largest cluster.
+    qic = .scalar_or_na(fs$qic),
+    qicu = .scalar_or_na(fs$qicu),
+    scale = .scalar_or_na(fs$scale),
+    max_cluster_size = .scalar_or_na(fs$max_cluster_size),
     pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
     pseudo_r2_tjur = .scalar_or_na(fs$pseudo_r2_tjur),
     # fixest within (FE-partialled) R-squared, stashed in the
