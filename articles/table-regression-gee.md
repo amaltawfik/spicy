@@ -48,7 +48,13 @@ those two targets. As Fitzmaurice, Laird and Ware (2011, p. 342) put it,
 the choice “cannot be made through any automatic procedure. Rather, the
 choice must be made on subject-matter grounds.” State the scientific
 question, and the estimand – hence the model family – follows (Hubbard
-et al., 2010).
+et al., 2010). Their own shorthand for the contrast: a physician
+weighing a treatment for the patient in front of them wants the
+subject-specific effect; a public-health researcher weighing the same
+treatment for a population wants the population-averaged one. And when
+both questions matter, “there is no contradiction in reporting estimates
+of both” (Fitzmaurice et al., 2011) – which is precisely what a
+side-by-side table does.
 
 For a linear model the two coincide, so the stakes are low. On a logit
 link they do not: with a random-intercept variance \\\sigma^2\\, the
@@ -56,8 +62,13 @@ population-averaged coefficient is attenuated by approximately
 \\1/\sqrt{1 + 0.346\\\sigma^2}\\ relative to the subject-specific one
 (Zeger et al., 1988; the constant is \\c^2\\ with \\c =
 16\sqrt{3}/(15\pi)\\), so the conditional odds ratio is always farther
-from 1. Neither is “biased” – they answer different questions. The
-side-by-side table in the [mixed-effects
+from 1. The magnitudes are worth knowing: at \\\sigma^2 = 3.5\\ the
+subject-specific coefficient is about 1.5 times the marginal one, at
+\\\sigma^2 = 9\\ about twice (Fitzmaurice et al., 2011). The log link is
+the notable exception – with a random intercept, every coefficient
+except the intercept coincides, so conditional and marginal rate ratios
+are directly comparable. Neither estimand is “biased”: they answer
+different questions. The side-by-side table in the [mixed-effects
 vignette](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 shows the gap on real data.
 
@@ -68,13 +79,15 @@ there is no convenient analogue of the multivariate normal – a full
 joint distribution for ten binary repeated measures involves over a
 thousand association parameters (Fitzmaurice et al., 2011) – and GEE
 sidesteps the problem by modelling only the mean, the variance function,
-and the pairwise association. Second, the coefficient estimates are
-consistent even when the assumed within-cluster correlation structure is
-wrong (Liang & Zeger, 1986). Third, the standard errors come from a
-cluster-robust sandwich estimator *by construction* – robustness is not
-an option bolted on after the fact, it is the method. A mixed model, by
-contrast, leans on an assumed random-effects distribution that the data
-cannot verify (Hubbard et al., 2010).
+and the pairwise association – while remaining, in many longitudinal
+designs, nearly as efficient as maximum likelihood (Fitzmaurice et al.,
+2011). Second, the coefficient estimates are consistent even when the
+assumed within-cluster correlation structure is wrong (Liang & Zeger,
+1986). Third, the standard errors come from a cluster-robust sandwich
+estimator *by construction* – robustness is not an option bolted on
+after the fact, it is the method. A mixed model, by contrast, leans on
+an assumed random-effects distribution that the data cannot verify
+(Hubbard et al., 2010).
 
 **What GEE costs – the criteria that argue against it.** Three
 conditions are worth checking before committing. *Efficiency*: with a
@@ -82,15 +95,15 @@ badly misspecified working correlation, coefficient estimation can lose
 substantial efficiency relative to the correct structure (Pan, 2001) –
 the QIC section below is the remedy. *Missing data*: GEE estimates are
 consistent only when missingness is completely at random (MCAR, in
-Rubin’s 1976 sense; Halekoh, Højsgaard & Yan, 2006); when dropout
-depends on the observed history, likelihood-based mixed models or
-weighted GEE are the appropriate tools. *Clusters*: the sandwich is
-asymptotic in the number of clusters – see the jackknife section below
-for the small-\\K\\ remedy. Finally, marginal models assume the current
-response depends only on current covariates; a time-varying covariate
-that responds to earlier outcomes (exercise adjusted after a bad glucose
-reading) violates that assumption and calls for greater care
-(Fitzmaurice et al., 2011).
+Rubin’s 1976 sense; Halekoh, Højsgaard & Yan, 2006; Fitzmaurice et al.,
+2011); when dropout depends on the observed history (MAR), the remedies
+are inverse-probability-weighted GEE or a likelihood-based mixed model.
+*Clusters*: the sandwich is asymptotic in the number of clusters – see
+the jackknife section below for the small-\\K\\ remedy. Finally,
+marginal models assume the current response depends only on current
+covariates; a time-varying covariate that responds to earlier outcomes
+(exercise adjusted after a bad glucose reading) violates that assumption
+and calls for greater care (Fitzmaurice et al., 2011).
 
 ## A first table
 
@@ -290,14 +303,15 @@ table_regression(fit_sorted, show_fit_stats = c("nobs", "n_groups", "max_cluster
 ## Few clusters: the jackknife variants
 
 The sandwich estimator is asymptotic in the number of clusters: with few
-clusters (\\K \le 30\\ is the threshold the geepack authors cite,
-following Paik, 1988) it is biased, and the jackknife variance
-estimators are the recommended alternative (Halekoh et al., 2006).
-`geeglm` offers three (`std.err = "jack"`, `"j1s"`, `"fij"`); the
-approximate and one-step versions are far cheaper than the fully
-iterated one and agree well with it in simulations (Halekoh et al.,
-2006). The estimator choice lives on the fit, and the table reads and
-names whatever the fit computed:
+clusters it is biased *downward* – the nominal standard errors are too
+small, and the estimator itself becomes unstable (Fitzmaurice et al.,
+2011). At \\K \le 30\\ (the threshold the geepack authors cite,
+following Paik, 1988) the jackknife variance estimators are the
+recommended alternative (Halekoh et al., 2006). `geeglm` offers three
+(`std.err = "jack"`, `"j1s"`, `"fij"`); the approximate and one-step
+versions are far cheaper than the fully iterated one and agree well with
+it in simulations (Halekoh et al., 2006). The estimator choice lives on
+the fit, and the table reads and names whatever the fit computed:
 
 ``` r
 
@@ -492,7 +506,7 @@ table_regression(
 | Max cluster size |   4      |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-dbad6084 quarto-disable-processing="true"}
+.cl-896ddb5c quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:
@@ -502,8 +516,9 @@ and displayed as OR; CI bounds exponentiated.
 ## References
 
 - Fitzmaurice, G. M., Laird, N. M., & Ware, J. H. (2011). *Applied
-  Longitudinal Analysis* (2nd ed.). Wiley. (Chapter 12, Marginal models:
-  Introduction and overview.)
+  Longitudinal Analysis* (2nd ed.). Wiley. (Chapters 12, 13, and 16:
+  marginal models, GEE estimation, and the contrast with mixed effects
+  models.)
 - Halekoh, U., Højsgaard, S., & Yan, J. (2006). The R package geepack
   for generalized estimating equations. *Journal of Statistical
   Software*, 15(2), 1–11.
