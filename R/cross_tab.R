@@ -931,7 +931,9 @@ cross_tab <- function(
           phi = "Phi",
           gamma = "Goodman-Kruskal Gamma",
           tau_b = "Kendall's Tau-b",
-          tau_c = "Kendall's Tau-c",
+          # "Stuart's Tau-c" is the PSPP / SPSS label; it matches the
+          # table_categorical() column header.
+          tau_c = "Stuart's Tau-c",
           somers_d = "Somers' D",
           lambda = "Lambda"
         )

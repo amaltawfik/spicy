@@ -246,13 +246,19 @@ tidy.spicy_categorical_table <- function(x, ...) {
   }
   has_group <- "group" %in% names(long)
 
-  # Drop the synthetic "Total" group (added by `cross_tab(include_total
-  # = TRUE)`, the default). It is a marginal aggregate, not a real
-  # group level, and including it would mean `tidy()` reports each
-  # observation twice. Users who need the marginal can derive it via
-  # `dplyr::summarise()` on the tidy output.
+  # Drop the synthetic margin group (added under `include_total =
+  # TRUE`, the default). It is a marginal aggregate, not a real group
+  # level, and including it would mean `tidy()` reports each
+  # observation twice. Its key is carried by the `total_group`
+  # attribute ("Total", or the auto-renamed "Total_<i>" when a `by`
+  # level is literally called "Total"), so a user group named "Total"
+  # is never mistaken for the margin. Users who need the marginal can
+  # derive it via `dplyr::summarise()` on the tidy output.
   if (has_group) {
-    long <- long[long$group != "Total", , drop = FALSE]
+    margin_key <- attr(x, "total_group", exact = TRUE)
+    if (!is.null(margin_key)) {
+      long <- long[long$group != margin_key, , drop = FALSE]
+    }
   }
 
   pct_col <- if ("pct" %in% names(long)) {
@@ -270,7 +276,10 @@ tidy.spicy_categorical_table <- function(x, ...) {
   if (has_group) {
     cols$group <- long$group
   }
-  cols$n <- as.integer(long$n)
+  # Unweighted counts stay integer; weighted counts keep their exact
+  # fractional values (they are only rounded at display time).
+  int_like <- all(is.na(long$n) | abs(long$n - round(long$n)) < 1e-8)
+  cols$n <- if (int_like) as.integer(round(long$n)) else long$n
   cols$proportion <- pct_col / 100
 
   result <- do.call(
@@ -329,17 +338,20 @@ glance.spicy_categorical_table <- function(x, ...) {
 
   by_var <- split(long, long$variable, drop = FALSE)
   outcomes <- names(by_var)
+  # In a cross-tab with `include_total = TRUE` (the default), the
+  # long format also stores a synthetic margin group whose `n` are
+  # already the sum across the real groups. Its key comes from the
+  # `total_group` attribute ("Total", or the auto-renamed
+  # "Total_<i>" when a `by` level is literally called "Total");
+  # excluding those rows before summing avoids double-counting.
+  glance_margin <- attr(x, "total_group", exact = TRUE)
   n_total <- vapply(
     by_var,
     function(b) {
-      # In a cross-tab with `include_total = TRUE` (the default),
-      # the long format also stores a synthetic "Total" group whose
-      # `n` are already the sum across the real groups. Excluding
-      # those rows before summing avoids double-counting.
-      if ("group" %in% names(b)) {
-        b <- b[b$group != "Total", , drop = FALSE]
+      if ("group" %in% names(b) && !is.null(glance_margin)) {
+        b <- b[b$group != glance_margin, , drop = FALSE]
       }
-      as.integer(sum(b$n, na.rm = TRUE))
+      as.integer(round(sum(b$n, na.rm = TRUE)))
     },
     integer(1)
   )

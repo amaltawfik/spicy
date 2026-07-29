@@ -343,7 +343,9 @@ test_that("cross_tab assoc_measure = 'tau_c' works", {
   mt$cyl <- ordered(mt$cyl)
   mt$gear <- ordered(mt$gear)
   res <- cross_tab(mt, cyl, gear, assoc_measure = "tau_c")
-  expect_equal(attr(res, "assoc_measure"), "Kendall's Tau-c")
+  # "Stuart's Tau-c" is the PSPP / SPSS label, shared with the
+  # table_categorical() column header.
+  expect_equal(attr(res, "assoc_measure"), "Stuart's Tau-c")
 })
 
 test_that("cross_tab assoc_measure = 'somers_d' works", {

@@ -330,7 +330,7 @@ test_that("table_categorical() folds declared missing into (Missing)", {
     na_values = c(8, 9)
   )
   tc <- table_categorical(d, select = y, output = "data.frame")
-  expect_equal(tc$Level, c("1", "2", "(Missing)"))
+  expect_equal(tc$Level, c("[1] Agree", "[2] Neutral", "(Missing)"))
   expect_equal(tc$n, c(1, 2, 5))
 
   tc_off <- table_categorical(
@@ -339,7 +339,10 @@ test_that("table_categorical() folds declared missing into (Missing)", {
     user_na = FALSE,
     output = "data.frame"
   )
-  expect_equal(tc_off$Level, c("1", "2", "8", "9", "(Missing)"))
+  expect_equal(
+    tc_off$Level,
+    c("[1] Agree", "[2] Neutral", "[8] DK", "[9] Refused", "(Missing)")
+  )
   expect_equal(tc_off$n, c(1, 2, 2, 2, 1))
 })
 

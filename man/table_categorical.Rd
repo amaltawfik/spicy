@@ -66,8 +66,8 @@ accepted before 0.13.0, now raise an error.}
 \item{levels_keep}{Optional character vector of levels to keep/order for row
 modalities. If \code{NULL}, all observed levels are kept. Entries must
 match the level strings the table displays (for labelled columns
-these are the raw codes, or \code{"[code] label"} under
-\code{drop_na = TRUE}, not the bare label text). When nothing matches
+these are the \code{"[code] label"} strings, not the bare label
+text). When nothing matches
 for a selected variable, that variable is dropped from the table
 with a classed warning (\code{spicy_no_selection}) listing the
 available level strings.}
@@ -251,8 +251,8 @@ pair of \code{n} / \verb{\\\%} columns per group level (plus \code{Total} when
 association measure column.
 When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
 \item \code{"long"}: a long \code{data.frame} with columns \code{variable},
-\code{level}, \code{group}, \code{n}, \code{percent} (and \code{chi2}, \code{df}, \code{p},
-association measure columns when \code{by} is used).
+\code{level}, \code{n}, \code{pct} (plus \code{group}, \code{chi2}, \code{df}, \code{p}, and the
+association measure column when \code{by} is used).
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
@@ -298,6 +298,13 @@ For descriptive (empirical) comparisons on continuous outcomes, see
 Decimal alignment, \emph{p}-value formatting, and required suggested
 packages per output engine are documented under \verb{@param align},
 \verb{@param p_digits}, and \verb{@param output} respectively.
+
+Counts are displayed as integers: weighted counts are rounded
+(ties half to even, the R convention) at display time only, in
+cells and margins alike -- the SPSS Crosstabs convention -- so
+displayed cells and their \code{Total} agree. The machine outputs
+(\code{"data.frame"}, \code{"long"}) carry the exact weighted counts and
+full-precision percentages.
 }
 
 \section{Declared missing values}{

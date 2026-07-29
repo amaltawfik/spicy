@@ -20,14 +20,46 @@
   )
 }
 
+# Coerce a column selected for tabulation to the factor that flows
+# through freq() / cross_tab() untouched. The factor is built BEFORE
+# tabulation so the declared level order survives end-to-end: the
+# pre-0.13.0 as.character() round-trip under `drop_na = FALSE` let
+# cross_tab() re-sort the levels alphabetically, silently corrupting
+# every order-sensitive association measure (tau-b, tau-c, gamma,
+# Somers' d) and stripping haven value labels down to raw codes.
+# * factors (ordered or not) pass through verbatim;
+# * labelled vectors use the same conversion as freq():
+#   "[code] label" levels in code order;
+# * anything else becomes a factor in order of first appearance.
+.tab_factor <- function(x) {
+  if (is.factor(x)) {
+    return(x)
+  }
+  if (labelled::is.labelled(x)) {
+    return(labelled::to_factor(x, levels = "prefixed", nolabel_to_na = FALSE))
+  }
+  factor(x, levels = unique(x[!is.na(x)]))
+}
+
+# Append the "(Missing)" display level -- always LAST -- and recode the
+# NA observations to it, without leaving factor territory.
+.add_missing_level <- function(f, missing_label) {
+  f <- factor(
+    f,
+    levels = c(levels(f), missing_label),
+    ordered = is.ordered(f)
+  )
+  f[is.na(f)] <- missing_label
+  f
+}
+
 # Loud guard for `levels_keep`: when the supplied levels match nothing
 # for a selected variable, that variable would silently vanish from
 # the table. The mismatch is systematic for labelled columns, whose
-# internal level strings are raw codes under `drop_na = FALSE` and
-# "[code] label" under `drop_na = TRUE` -- never the bare label text a
-# user naturally supplies. Warn with the exact strings that WOULD
-# match; the caller then skips the variable (partial matches keep
-# their usual intersect semantics).
+# internal level strings are the "[code] label" display form -- never
+# the bare label text a user naturally supplies. Warn with the exact
+# strings that WOULD match; the caller then skips the variable
+# (partial matches keep their usual intersect semantics).
 .warn_levels_keep_no_match <- function(var_name, available) {
   available <- available[!is.na(available)]
   listed <- if (length(available) == 0L) {
@@ -282,8 +314,8 @@
 #' @param levels_keep Optional character vector of levels to keep/order for row
 #'   modalities. If `NULL`, all observed levels are kept. Entries must
 #'   match the level strings the table displays (for labelled columns
-#'   these are the raw codes, or `"[code] label"` under
-#'   `drop_na = TRUE`, not the bare label text). When nothing matches
+#'   these are the `"[code] label"` strings, not the bare label
+#'   text). When nothing matches
 #'   for a selected variable, that variable is dropped from the table
 #'   with a classed warning (`spicy_no_selection`) listing the
 #'   available level strings.
@@ -439,8 +471,8 @@
 #'     association measure column.
 #'     When `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
 #'   \item `"long"`: a long `data.frame` with columns `variable`,
-#'     `level`, `group`, `n`, `percent` (and `chi2`, `df`, `p`,
-#'     association measure columns when `by` is used).
+#'     `level`, `n`, `pct` (plus `group`, `chi2`, `df`, `p`, and the
+#'     association measure column when `by` is used).
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.
@@ -473,6 +505,13 @@
 #' Decimal alignment, *p*-value formatting, and required suggested
 #' packages per output engine are documented under `@param align`,
 #' `@param p_digits`, and `@param output` respectively.
+#'
+#' Counts are displayed as integers: weighted counts are rounded
+#' (ties half to even, the R convention) at display time only, in
+#' cells and margins alike -- the SPSS Crosstabs convention -- so
+#' displayed cells and their `Total` agree. The machine outputs
+#' (`"data.frame"`, `"long"`) carry the exact weighted counts and
+#' full-precision percentages.
 #'
 #' @family spicy tables
 #' @seealso [table_continuous()] for empirical comparisons on
@@ -1077,7 +1116,7 @@ table_categorical <- function(
     vm <- regmatches(
       txt,
       regexec(
-        "(?:Cramer's V|Phi|Goodman-Kruskal(?:'s)? (?:Gamma|Tau)|Kendall's Tau-b|Kendall's Tau-c|Somers' D|Lambda)\\s*=\\s*([0-9.eE+-]+)",
+        "(?:Cramer's V|Phi|Goodman-Kruskal(?:'s)? (?:Gamma|Tau)|Kendall's Tau-b|Stuart's Tau-c|Somers' D|Lambda)\\s*=\\s*([0-9.eE+-]+)",
         txt,
         perl = TRUE
       )
@@ -1112,19 +1151,16 @@ table_categorical <- function(
     out
   }
 
+  # Counts DISPLAY as integers -- weighted counts included (rounded
+  # ties half to even, matching round()), in cells and margins alike,
+  # so displayed cells and their Total agree: the SPSS Crosstabs
+  # convention. The machine outputs keep the exact fractional counts;
+  # rounding happens here, at display time only.
   fmt_n <- function(x, na = "") {
     out <- rep(na, length(x))
     ok <- !is.na(x)
     if (any(ok)) {
-      xi <- x[ok]
-      int_like <- abs(xi - round(xi)) < 1e-8
-      tmp <- character(length(xi))
-      tmp[int_like] <- as.character(as.integer(round(xi[int_like])))
-      tmp[!int_like] <- formatC(xi[!int_like], format = "f", digits = 1)
-      if (decimal_mark != ".") {
-        tmp <- sub("\\.", decimal_mark, tmp)
-      }
-      out[ok] <- tmp
+      out[ok] <- formatC(round(x[ok], 0), format = "f", digits = 0)
     }
     out
   }
@@ -1208,14 +1244,13 @@ table_categorical <- function(
     for (i in seq_along(select_names)) {
       x_raw <- data[[select_names[i]]]
       n_user <- if (user_na) sum(.user_na_mask(x_raw)) else 0L
-      x <- resolve_user_na(x_raw)
+      # Factor built BEFORE tabulation (see .tab_factor): declared
+      # level order and haven value labels survive end-to-end; the
+      # data never round-trips through as.character().
+      x <- .tab_factor(resolve_user_na(x_raw))
       w <- weights_vec
 
-      if (is.factor(x)) {
-        var_level_order <- levels(x)
-      } else {
-        var_level_order <- unique(as.character(x[!is.na(x)]))
-      }
+      var_level_order <- levels(x)
 
       keep <- if (drop_na) !is.na(x) else rep(TRUE, length(x))
       if (drop_na && sum(!keep) > 0L) {
@@ -1234,9 +1269,8 @@ table_categorical <- function(
       if (!length(x)) {
         next
       }
-      if (!drop_na) {
-        x <- as.character(x)
-        x[is.na(x)] <- missing_label
+      if (!drop_na && anyNA(x)) {
+        x <- .add_missing_level(x, missing_label)
       }
 
       ft <- if (is.null(w)) {
@@ -1802,11 +1836,63 @@ table_categorical <- function(
     unique(as.character(g0[!is.na(g0)]))
   }
   group_levels <- as.character(group_levels)
+  # Pin the group-level ORDER on a factor built once, here, so the
+  # internal cross_tab() calls can never re-sort it (the pre-0.13.0
+  # as.character() round-trip alphabetized ordered `by` factors and
+  # corrupted the ordinal association measures). Naming keeps the
+  # family convention for `by`: factor levels and character values
+  # verbatim, raw codes for labelled vectors.
+  g_fac <- if (is.factor(g0)) {
+    g0
+  } else {
+    factor(as.character(g0), levels = group_levels)
+  }
   if (!drop_na && any(is.na(g0))) {
     group_levels <- unique(c(group_levels, missing_label))
   }
+  # Internal key for the margin column: "Total" unless the by-variable
+  # has a level literally named "Total", in which case the first free
+  # "Total_<i>" is used -- mirroring cross_tab()'s own margin
+  # auto-rename -- so the user's group keeps its name and position
+  # among the group columns while the true margin is always present
+  # and unambiguous. (Before 0.13.0 the margin silently vanished and
+  # the user's "Total" group posed as it.)
+  margin_key <- "Total"
+  if (margin_key %in% group_levels) {
+    idx <- 1L
+    repeat {
+      candidate <- paste0("Total_", idx)
+      if (!(candidate %in% group_levels)) {
+        margin_key <- candidate
+        break
+      }
+      idx <- idx + 1L
+    }
+  }
   if (include_total) {
-    group_levels <- unique(c(group_levels, "Total"))
+    if (!identical(margin_key, "Total")) {
+      spicy_warn(
+        c(
+          sprintf(
+            "`%s` has a group level literally named \"Total\", which collides with the margin column; the margin is displayed as \"%s\".",
+            by_name,
+            margin_key
+          ),
+          "i" = "Rename the conflicting `by` level to restore the default margin label."
+        ),
+        class = "spicy_renamed_column"
+      )
+    }
+    group_levels <- c(group_levels, margin_key)
+  }
+  # The margin collision is disclosed once, above; the identical
+  # per-call disclosures the internal cross_tab() calls would emit
+  # (three per variable) are muffled as redundant noise.
+  quiet_margin <- function(expr) {
+    withCallingHandlers(
+      expr,
+      spicy_renamed_column = function(w) invokeRestart("muffleWarning")
+    )
   }
 
   # ---------------- LONG RAW ----------------
@@ -1818,16 +1904,17 @@ table_categorical <- function(
   for (i in seq_along(select_names)) {
     x_raw <- data[[select_names[i]]]
     n_user <- if (user_na) sum(.user_na_mask(x_raw)) else 0L
-    x <- resolve_user_na(x_raw)
-    g <- g0
+    # Factor built BEFORE tabulation (see .tab_factor): declared level
+    # order and haven value labels survive end-to-end, so cross_tab()
+    # computes the ordinal association measures on the table in the
+    # declared ordinal order. The data never round-trips through
+    # as.character().
+    x <- .tab_factor(resolve_user_na(x_raw))
+    g <- g_fac
     w <- weights_vec
 
-    # Capture original level order before any filtering/conversion
-    if (is.factor(x)) {
-      var_level_order <- levels(x)
-    } else {
-      var_level_order <- unique(as.character(x[!is.na(x)]))
-    }
+    # Original level order, BEFORE the "(Missing)" level is appended.
+    var_level_order <- levels(x)
 
     keep <- rep(TRUE, length(x))
     if (drop_na) {
@@ -1851,10 +1938,17 @@ table_categorical <- function(
       next
     }
     if (!drop_na) {
-      x <- as.character(x)
-      g <- as.character(g)
-      x[is.na(x)] <- missing_label
-      g[is.na(g)] <- missing_label
+      x_has_na <- anyNA(x)
+      g_has_na <- anyNA(g)
+      if (x_has_na) {
+        x <- .add_missing_level(x, missing_label)
+      }
+      if (g_has_na) {
+        g <- .add_missing_level(g, missing_label)
+      }
+    } else {
+      x_has_na <- FALSE
+      g_has_na <- FALSE
     }
 
     this_measure <- assoc_measures_per_row[[select_names[i]]]
@@ -1864,9 +1958,16 @@ table_categorical <- function(
     # observed). When a "(Missing)" level is present, the displayed
     # counts / percents keep it while the statistics come from a
     # separate complete-case pass.
-    has_missing_level <- !drop_na &&
-      (missing_label %in% x || missing_label %in% g)
-    ct_pct <- spicy::cross_tab(
+    has_missing_level <- !drop_na && (x_has_na || g_has_na)
+    # Full precision end-to-end: `digits = 15` makes cross_tab()'s
+    # cell rounding a no-op (round(x, 15) is the identity within
+    # double precision), so the machine outputs carry the exact
+    # values and rounding happens once, at display time. Statistics
+    # come only from the call that actually feeds them
+    # (`include_stats` is FALSE on the others), so disclosures such
+    # as the ignored-Yates warning fire once, with the dimensions of
+    # the table actually tested.
+    ct_pct <- quiet_margin(spicy::cross_tab(
       x,
       g,
       percent = "c",
@@ -1875,22 +1976,22 @@ table_categorical <- function(
       correct = correct,
       simulate_p = simulate_p,
       simulate_B = simulate_B,
-      assoc_measure = if (has_missing_level) "none" else this_measure,
+      digits = 15L,
+      include_stats = !has_missing_level,
+      assoc_measure = this_measure,
       assoc_ci = assoc_ci
-    )
-    ct_n <- spicy::cross_tab(
+    ))
+    ct_n <- quiet_margin(spicy::cross_tab(
       x,
       g,
       weights = w,
       rescale = rescale,
-      correct = correct,
-      simulate_p = simulate_p,
-      simulate_B = simulate_B,
-      assoc_measure = "none"
-    )
+      digits = 15L,
+      include_stats = FALSE
+    ))
     st <- if (has_missing_level) {
       cc <- x != missing_label & g != missing_label
-      ct_stats <- spicy::cross_tab(
+      ct_stats <- quiet_margin(spicy::cross_tab(
         x[cc],
         g[cc],
         percent = "c",
@@ -1901,22 +2002,26 @@ table_categorical <- function(
         simulate_B = simulate_B,
         assoc_measure = this_measure,
         assoc_ci = assoc_ci
-      )
+      ))
       parse_stats(ct_stats)
     } else {
       parse_stats(ct_pct)
     }
 
-    groups_present <- setdiff(names(ct_n), "Values")
-    groups_use <- intersect(group_levels, groups_present)
-    if (!include_total) {
-      groups_use <- setdiff(groups_use, "Total")
-    }
+    # The console cross_tab object is read structurally: column 1 is
+    # the row identifier and the LAST column is the margin (either may
+    # have been auto-renamed on collision with a user level), and the
+    # margin row sits at the attribute-flagged index. Positions and
+    # attributes, never reserved names, so user levels literally named
+    # "Values", "Total", or "N" survive intact.
+    groups_present <- names(ct_n)[-c(1L, ncol(ct_n))]
+    groups_use <- intersect(group_levels, c(groups_present, margin_key))
 
-    vals_n <- as.character(ct_n$Values)
-    vals_p <- as.character(ct_pct$Values)
+    vals_n <- as.character(ct_n[[1L]])
+    vals_p <- as.character(ct_pct[[1L]])
 
-    raw_levels <- setdiff(unique(vals_n), c("Total", "N"))
+    margin_rows_n <- attr(ct_n, "total_row_idx")
+    raw_levels <- unique(vals_n[setdiff(seq_along(vals_n), margin_rows_n)])
     lv_use <- if (is.null(levels_keep)) {
       # Reorder to match original factor/occurrence order
       known <- intersect(var_level_order, raw_levels)
@@ -1940,12 +2045,25 @@ table_categorical <- function(
       }
 
       for (gr in groups_use) {
+        # The margin is read positionally (last column): its name may
+        # have been auto-renamed by cross_tab() when a `by` level is
+        # literally called "Total".
+        n_val <- if (identical(gr, margin_key)) {
+          ct_n[in_n, ncol(ct_n)]
+        } else {
+          ct_n[in_n, gr]
+        }
+        pct_val <- if (identical(gr, margin_key)) {
+          ct_pct[in_p, ncol(ct_pct)]
+        } else {
+          ct_pct[in_p, gr]
+        }
         row_df <- data.frame(
           variable = labels[i],
           level = lv,
           group = gr,
-          n = suppressWarnings(as.numeric(ct_n[in_n, gr])),
-          pct = suppressWarnings(as.numeric(ct_pct[in_p, gr])),
+          n = suppressWarnings(as.numeric(n_val)),
+          pct = suppressWarnings(as.numeric(pct_val)),
           chi2 = st$chi2 %||% NA_real_,
           df = st$df %||% NA_real_,
           p = st$p,
@@ -2053,6 +2171,8 @@ table_categorical <- function(
       "Variable",
       "Level",
       as.vector(rbind(paste0(group_levels, " n"), paste0(group_levels, " %"))),
+      "Chi2",
+      "df",
       "p"
     )
     if (show_assoc) {
@@ -2087,6 +2207,8 @@ table_categorical <- function(
         r[[paste0(gr, " %")]] <- if (nrow(s)) s$pct[1] else NA_real_
       }
 
+      r$Chi2 <- if (nrow(sv)) sv$chi2[1] else NA_real_
+      r$df <- if (nrow(sv)) sv$df[1] else NA_real_
       r$p <- if (nrow(sv)) sv$p[1] else NA_real_
       if (show_assoc) {
         r[[measure_col]] <- if (nrow(sv)) sv[[measure_col]][1] else NA_real_
@@ -2251,6 +2373,13 @@ table_categorical <- function(
     attr(out, "decimal_mark") <- decimal_mark
     attr(out, "long_data") <- long_raw
     attr(out, "assoc_note") <- assoc_note_text
+    if (include_total) {
+      # The internal key of the margin group in `long_data` ("Total",
+      # or the auto-renamed "Total_<i>" when a `by` level collides).
+      # Read by tidy() / glance() to drop the margin without ever
+      # mistaking a user group named "Total" for it.
+      attr(out, "total_group") <- margin_key
+    }
     class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
     print(out)
     return(invisible(out))

@@ -735,9 +735,10 @@ test_that("table_categorical levels_keep with (Missing)", {
 })
 
 test_that("table_categorical levels_keep no-match warns and names the levels", {
-  # Labelled column: internal level strings are the raw codes, so the
-  # bare label text can never match -- the variable used to vanish
-  # silently (audit finding levels-keep-labelled-silent-empty).
+  # Labelled column: internal level strings are the "[code] label"
+  # display form, so the bare label text can never match -- the
+  # variable used to vanish silently (audit finding
+  # levels-keep-labelled-silent-empty).
   d <- data.frame(i = 1:20)
   d$smoke <- labelled::labelled(
     rep(c(1, 2), 10),
@@ -754,7 +755,11 @@ test_that("table_categorical levels_keep no-match warns and names the levels", {
   )
   expect_s3_class(cnd, "spicy_no_selection")
   expect_match(conditionMessage(cnd), "smoke", fixed = TRUE)
-  expect_match(conditionMessage(cnd), "\"1\", \"2\"", fixed = TRUE)
+  expect_match(
+    conditionMessage(cnd),
+    "\"[1] Smoker\", \"[2] Non-smoker\"",
+    fixed = TRUE
+  )
 })
 
 test_that("table_categorical levels_keep no-match keeps the matching variable", {
@@ -2539,4 +2544,284 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
     output = "default"
   )
   expect_null(attr(out_full, "missing_note"))
+})
+
+# ---- audit Phase 2: level order, labels, margins, full precision ----------
+
+test_that("ordinal measures respect the declared order under default drop_na", {
+  # PSPP 2.0 oracle (CROSSTABS /STATISTICS=BTAU on education x
+  # self_rated_health): tau-b = .2045524, chi2 = 73.2444141. The
+  # pre-fix as.character() round-trip re-sorted both ordered factors
+  # alphabetically and returned 0.0200 for the same table.
+  out <- table_categorical(
+    sochealth,
+    select = education,
+    by = self_rated_health,
+    output = "long"
+  )
+  expect_equal(unique(out[["Kendall's Tau-b"]]), 0.2045524108, tolerance = 1e-9)
+  expect_equal(unique(out$chi2), 73.2444140723, tolerance = 1e-9)
+})
+
+test_that("ordinal measures are drop_na-invariant on NA-free ordered data", {
+  # Ordinal order != alphabetical order in BOTH variables; with no NA
+  # anywhere, drop_na = FALSE and drop_na = TRUE tabulate the same
+  # cells, so all four order-sensitive measures must agree exactly.
+  d <- data.frame(
+    xo = factor(
+      rep(c("Low", "Low", "Mid", "Mid", "High", "High"), 5),
+      levels = c("Low", "Mid", "High"),
+      ordered = TRUE
+    ),
+    yo = factor(
+      rep(c("Worse", "Same", "Same", "Better", "Better", "Better"), 5),
+      levels = c("Worse", "Same", "Better"),
+      ordered = TRUE
+    )
+  )
+  for (m in c("tau_b", "tau_c", "gamma", "somers_d")) {
+    l_show <- table_categorical(
+      d,
+      select = xo,
+      by = yo,
+      assoc_measure = m,
+      output = "long"
+    )
+    l_drop <- table_categorical(
+      d,
+      select = xo,
+      by = yo,
+      assoc_measure = m,
+      drop_na = TRUE,
+      output = "long"
+    )
+    col <- setdiff(
+      names(l_show),
+      c("variable", "level", "group", "n", "pct", "chi2", "df", "p")
+    )
+    expect_identical(unique(l_show[[col]]), unique(l_drop[[col]]))
+  }
+  # And the auto tau-b matches the integer-rank oracle.
+  l_auto <- table_categorical(d, select = xo, by = yo, output = "long")
+  expect_equal(
+    unique(l_auto[["Kendall's Tau-b"]]),
+    stats::cor(as.integer(d$xo), as.integer(d$yo), method = "kendall"),
+    tolerance = 1e-12
+  )
+})
+
+test_that("wide data.frame output carries Chi2 and df matching long/glance", {
+  wd <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    output = "data.frame"
+  )
+  lg <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    output = "long"
+  )
+  expect_true(all(c("Chi2", "df") %in% names(wd)))
+  expect_equal(unique(wd$Chi2), unique(lg$chi2))
+  expect_equal(unique(wd$df), unique(lg$df))
+  # Complete-case oracle: chisq.test on the observed 2x3 table.
+  oracle <- suppressWarnings(stats::chisq.test(
+    table(sochealth$smoking, sochealth$education),
+    correct = FALSE
+  ))
+  expect_equal(unique(wd$Chi2), as.numeric(oracle$statistic), tolerance = 1e-9)
+  expect_equal(unique(wd$df), as.numeric(oracle$parameter))
+})
+
+test_that("ignored `correct` warns once, with the tested-table dimensions", {
+  # smoking has NAs, so the internal display passes see a 3x3 table
+  # with the (Missing) column; the warning must fire once, from the
+  # complete-case stats pass, with the 3x2 dimensions actually tested.
+  cnds <- list()
+  withCallingHandlers(
+    invisible(table_categorical(
+      sochealth,
+      select = education,
+      by = smoking,
+      correct = TRUE,
+      output = "data.frame"
+    )),
+    spicy_ignored_arg = function(w) {
+      cnds[[length(cnds) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(cnds, 1L)
+  expect_s3_class(cnds[[1L]], "spicy_ignored_arg")
+  expect_match(conditionMessage(cnds[[1L]]), "3x2", fixed = TRUE)
+})
+
+test_that("weighted grouped table is exact in machine outputs, coherent on display", {
+  d <- data.frame(
+    x = factor(c("A", "A", "B", "C", NA, NA, "C", "A")),
+    g = factor(c("g1", "g1", "g2", "g2", "g1", NA, "g2", "g1")),
+    w = c(1.5, 2, 0.5, 1, 2, 1, 3, 0.25)
+  )
+  lg <- table_categorical(d, select = x, by = g, weights = w, output = "long")
+  # Exact weighted counts (oracle xtabs), Total included.
+  a <- lg[lg$level == "A", ]
+  expect_identical(a$n[a$group == "g1"], 3.75)
+  expect_identical(a$n[a$group == "Total"], 3.75)
+  expect_equal(
+    a$pct[a$group == "g1"],
+    3.75 / 5.75 * 100,
+    tolerance = 1e-12
+  )
+  b <- lg[lg$level == "B", ]
+  expect_identical(b$n[b$group == "g2"], 0.5)
+  # Display: the SPSS convention -- integers everywhere, cells and
+  # Total from the same fmt_n, so displayed rows sum.
+  out <- table_categorical(d, select = x, by = g, weights = w)
+  disp <- attr(out, "display_df")
+  ra <- disp[trimws(disp$Variable) == "A", ]
+  expect_identical(ra[["g1 n"]], "4")
+  expect_identical(ra[["Total n"]], "4")
+  rb <- disp[trimws(disp$Variable) == "B", ]
+  expect_identical(rb[["g2 n"]], "0")
+  expect_identical(rb[["Total n"]], "0")
+})
+
+test_that("weighted real-data counts match the xtabs oracle exactly", {
+  lg <- table_categorical(
+    sochealth,
+    select = education,
+    by = sex,
+    weights = weight,
+    output = "long"
+  )
+  oracle <- stats::xtabs(weight ~ education + sex, data = sochealth)
+  low_f <- lg$n[lg$level == "Lower secondary" & lg$group == "Female"]
+  low_m <- lg$n[lg$level == "Lower secondary" & lg$group == "Male"]
+  low_t <- lg$n[lg$level == "Lower secondary" & lg$group == "Total"]
+  expect_equal(
+    low_f,
+    oracle["Lower secondary", "Female"],
+    tolerance = 1e-9,
+    ignore_attr = TRUE
+  )
+  expect_equal(
+    low_m,
+    oracle["Lower secondary", "Male"],
+    tolerance = 1e-9,
+    ignore_attr = TRUE
+  )
+  expect_equal(low_t, low_f + low_m, tolerance = 1e-12)
+  # Full-precision column percent (oracle prop.table), not 1-decimal.
+  pct_f <- lg$pct[lg$level == "Lower secondary" & lg$group == "Female"]
+  expect_equal(
+    pct_f,
+    100 * prop.table(oracle, 2)["Lower secondary", "Female"],
+    tolerance = 1e-9,
+    ignore_attr = TRUE
+  )
+})
+
+test_that("labelled columns display value labels under the drop_na default", {
+  skip_if_not_installed("haven")
+  d <- data.frame(id = 1:10)
+  d$xl <- haven::labelled_spss(
+    c(1, 2, 1, 3, 9, 9, 2, 1, NA, 8),
+    labels = c(Agree = 1, Neutral = 2, Disagree = 3, DK = 8, Refusal = 9),
+    na_values = c(8, 9)
+  )
+  lg <- table_categorical(d, select = xl, output = "long")
+  expect_identical(
+    lg$level,
+    c("[1] Agree", "[2] Neutral", "[3] Disagree", "(Missing)")
+  )
+  expect_identical(lg$n, c(3, 2, 1, 4))
+  # Same rendering with a grouping variable.
+  d$g <- factor(rep(c("a", "b"), 5))
+  lg2 <- table_categorical(d, select = xl, by = g, output = "long")
+  expect_identical(
+    unique(lg2$level),
+    c("[1] Agree", "[2] Neutral", "[3] Disagree", "(Missing)")
+  )
+})
+
+test_that("a by-level literally named 'Total' keeps both group and margin", {
+  d1 <- data.frame(
+    x = factor(c("A", "B", "A", "B", "A")),
+    g = factor(c("Total", "Total", "g2", "g2", "Total"))
+  )
+  cnds <- list()
+  lg <- withCallingHandlers(
+    table_categorical(d1, select = x, by = g, output = "long"),
+    spicy_renamed_column = function(w) {
+      cnds[[length(cnds) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(cnds, 1L)
+  # The user's "Total" group survives with its own counts...
+  expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 2)
+  expect_identical(lg$n[lg$level == "B" & lg$group == "Total"], 1)
+  # ...and the true margin is always present, under the renamed key.
+  expect_identical(lg$n[lg$level == "A" & lg$group == "Total_1"], 3)
+  expect_identical(lg$n[lg$level == "B" & lg$group == "Total_1"], 2)
+  wd <- suppressWarnings(
+    table_categorical(d1, select = x, by = g, output = "data.frame")
+  )
+  expect_true(all(c("Total n", "Total_1 n") %in% names(wd)))
+  expect_identical(wd[["Total_1 n"]], c(3, 2))
+})
+
+test_that("include_total = FALSE keeps a user group named 'Total'", {
+  d1 <- data.frame(
+    x = factor(c("A", "B", "A", "B", "A")),
+    g = factor(c("Total", "Total", "g2", "g2", "Total"))
+  )
+  cnds <- list()
+  lg <- withCallingHandlers(
+    table_categorical(
+      d1,
+      select = x,
+      by = g,
+      include_total = FALSE,
+      output = "long"
+    ),
+    spicy_renamed_column = function(w) {
+      cnds[[length(cnds) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  # No margin displayed -> no rename to disclose.
+  expect_length(cnds, 0L)
+  expect_setequal(unique(lg$group), c("g2", "Total"))
+  expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 2)
+})
+
+test_that("tidy() drops the margin, not a user group named 'Total'", {
+  d1 <- data.frame(
+    x = factor(c("A", "B", "A", "B", "A")),
+    g = factor(c("Total", "Total", "g2", "g2", "Total"))
+  )
+  suppressWarnings(capture.output(
+    out <- table_categorical(d1, select = x, by = g)
+  ))
+  td <- broom::tidy(out)
+  expect_setequal(unique(td$group), c("g2", "Total"))
+  expect_identical(sum(td$n), 5L)
+  gl <- broom::glance(out)
+  expect_identical(gl$n_total, 5L)
+})
+
+test_that("percent_digits >= 2 renders true decimals with by", {
+  d <- data.frame(
+    x = factor(c("A", "A", "B", "C", NA, NA, "C", "A")),
+    g = factor(c("g1", "g1", "g2", "g2", "g1", NA, "g2", "g1"))
+  )
+  out <- table_categorical(d, select = x, by = g, percent_digits = 2)
+  disp <- attr(out, "display_df")
+  rb <- disp[trimws(disp$Variable) == "B", ]
+  rc <- disp[trimws(disp$Variable) == "C", ]
+  expect_identical(rb[["g2 %"]], "33.33")
+  expect_identical(rc[["g2 %"]], "66.67")
 })
