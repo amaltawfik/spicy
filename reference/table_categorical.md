@@ -93,11 +93,11 @@ table_categorical(
 
   Optional character vector of levels to keep/order for row modalities.
   If `NULL`, all observed levels are kept. Entries must match the level
-  strings the table displays (for labelled columns these are the raw
-  codes, or `"[code] label"` under `drop_na = TRUE`, not the bare label
-  text). When nothing matches for a selected variable, that variable is
-  dropped from the table with a classed warning (`spicy_no_selection`)
-  listing the available level strings.
+  strings the table displays (for labelled columns these are the
+  `"[code] label"` strings, not the bare label text). When nothing
+  matches for a selected variable, that variable is dropped from the
+  table with a classed warning (`spicy_no_selection`) listing the
+  available level strings.
 
 - include_total:
 
@@ -336,9 +336,9 @@ Depends on `output`:
   association measure column. When `by = NULL`, the columns are
   `Variable`, `Level`, `n`, `\%`.
 
-- `"long"`: a long `data.frame` with columns `variable`, `level`,
-  `group`, `n`, `percent` (and `chi2`, `df`, `p`, association measure
-  columns when `by` is used).
+- `"long"`: a long `data.frame` with columns `variable`, `level`, `n`,
+  `pct` (plus `group`, `chi2`, `df`, `p`, and the association measure
+  column when `by` is used).
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -376,6 +376,12 @@ For descriptive (empirical) comparisons on continuous outcomes, see
 Decimal alignment, *p*-value formatting, and required suggested packages
 per output engine are documented under `@param align`,
 `@param p_digits`, and `@param output` respectively.
+
+Counts are displayed as integers: weighted counts are rounded (ties half
+to even, the R convention) at display time only, in cells and margins
+alike – the SPSS Crosstabs convention – so displayed cells and their
+`Total` agree. The machine outputs (`"data.frame"`, `"long"`) carry the
+exact weighted counts and full-precision percentages.
 
 ## Declared missing values
 
@@ -563,13 +569,13 @@ table_categorical(
 #>  Variable                  │ Tertiary %  Total n  Total %    p    Cramer's V 
 #> ───────────────────────────┼─────────────────────────────────────────────────
 #>  Current smoker            │                               <.001     .13     
-#>    No                      │    82.2      919.3    76.6                      
-#>    Yes                     │    15.2      253.7    21.1                      
-#>    (Missing)               │     2.6       27.0     2.2                      
+#>    No                      │    82.2       919     76.6                      
+#>    Yes                     │    15.2       254     21.1                      
+#>    (Missing)               │     2.6        27      2.2                      
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                               <.001     .19     
-#>    No                      │    41.9      654.8    54.6                      
-#>    Yes                     │    58.1      545.2    45.4                      
+#>    No                      │    41.9       655     54.6                      
+#>    Yes                     │    58.1       545     45.4                      
 
 # Confidence interval for the association measure.
 table_categorical(
@@ -744,18 +750,18 @@ table_categorical(
   by = sex,
   output = "data.frame"
 )
-#>                    Variable     Level Female n Female % Male n Male % Total n
-#> 1            Current smoker        No      475     76.6    451   77.8     926
-#> 2            Current smoker       Yes      131     21.1    118   20.3     249
-#> 3            Current smoker (Missing)       14      2.3     11    1.9      25
-#> 4 Regular physical activity        No      334     53.9    316   54.5     650
-#> 5 Regular physical activity       Yes      286     46.1    264   45.5     550
-#>   Total %         p         Phi
-#> 1    77.2 0.7125196 0.010749501
-#> 2    20.8 0.7125196 0.010749501
-#> 3     2.1 0.7125196 0.010749501
-#> 4    54.2 0.8316763 0.006135851
-#> 5    45.8 0.8316763 0.006135851
+#>                    Variable     Level Female n  Female % Male n    Male %
+#> 1            Current smoker        No      475 76.612903    451 77.758621
+#> 2            Current smoker       Yes      131 21.129032    118 20.344828
+#> 3            Current smoker (Missing)       14  2.258065     11  1.896552
+#> 4 Regular physical activity        No      334 53.870968    316 54.482759
+#> 5 Regular physical activity       Yes      286 46.129032    264 45.517241
+#>   Total n   Total %      Chi2 df         p         Phi
+#> 1     926 77.166667 0.1357733  1 0.7125196 0.010749501
+#> 2     249 20.750000 0.1357733  1 0.7125196 0.010749501
+#> 3      25  2.083333 0.1357733  1 0.7125196 0.010749501
+#> 4     650 54.166667 0.0451784  1 0.8316763 0.006135851
+#> 5     550 45.833333 0.0451784  1 0.8316763 0.006135851
 
 # Long data.frame (one row per (modality x group)).
 table_categorical(
@@ -764,38 +770,38 @@ table_categorical(
   by = sex,
   output = "long"
 )
-#>                     variable     level  group   n  pct      chi2 df         p
-#> 1             Current smoker        No Female 475 76.6 0.1357733  1 0.7125196
-#> 2             Current smoker        No   Male 451 77.8 0.1357733  1 0.7125196
-#> 3             Current smoker        No  Total 926 77.2 0.1357733  1 0.7125196
-#> 4             Current smoker       Yes Female 131 21.1 0.1357733  1 0.7125196
-#> 5             Current smoker       Yes   Male 118 20.3 0.1357733  1 0.7125196
-#> 6             Current smoker       Yes  Total 249 20.8 0.1357733  1 0.7125196
-#> 7             Current smoker (Missing) Female  14  2.3 0.1357733  1 0.7125196
-#> 8             Current smoker (Missing)   Male  11  1.9 0.1357733  1 0.7125196
-#> 9             Current smoker (Missing)  Total  25  2.1 0.1357733  1 0.7125196
-#> 10 Regular physical activity        No Female 334 53.9 0.0451784  1 0.8316763
-#> 11 Regular physical activity        No   Male 316 54.5 0.0451784  1 0.8316763
-#> 12 Regular physical activity        No  Total 650 54.2 0.0451784  1 0.8316763
-#> 13 Regular physical activity       Yes Female 286 46.1 0.0451784  1 0.8316763
-#> 14 Regular physical activity       Yes   Male 264 45.5 0.0451784  1 0.8316763
-#> 15 Regular physical activity       Yes  Total 550 45.8 0.0451784  1 0.8316763
-#>            Phi
-#> 1  0.010749501
-#> 2  0.010749501
-#> 3  0.010749501
-#> 4  0.010749501
-#> 5  0.010749501
-#> 6  0.010749501
-#> 7  0.010749501
-#> 8  0.010749501
-#> 9  0.010749501
-#> 10 0.006135851
-#> 11 0.006135851
-#> 12 0.006135851
-#> 13 0.006135851
-#> 14 0.006135851
-#> 15 0.006135851
+#>                     variable     level  group   n       pct      chi2 df
+#> 1             Current smoker        No Female 475 76.612903 0.1357733  1
+#> 2             Current smoker        No   Male 451 77.758621 0.1357733  1
+#> 3             Current smoker        No  Total 926 77.166667 0.1357733  1
+#> 4             Current smoker       Yes Female 131 21.129032 0.1357733  1
+#> 5             Current smoker       Yes   Male 118 20.344828 0.1357733  1
+#> 6             Current smoker       Yes  Total 249 20.750000 0.1357733  1
+#> 7             Current smoker (Missing) Female  14  2.258065 0.1357733  1
+#> 8             Current smoker (Missing)   Male  11  1.896552 0.1357733  1
+#> 9             Current smoker (Missing)  Total  25  2.083333 0.1357733  1
+#> 10 Regular physical activity        No Female 334 53.870968 0.0451784  1
+#> 11 Regular physical activity        No   Male 316 54.482759 0.0451784  1
+#> 12 Regular physical activity        No  Total 650 54.166667 0.0451784  1
+#> 13 Regular physical activity       Yes Female 286 46.129032 0.0451784  1
+#> 14 Regular physical activity       Yes   Male 264 45.517241 0.0451784  1
+#> 15 Regular physical activity       Yes  Total 550 45.833333 0.0451784  1
+#>            p         Phi
+#> 1  0.7125196 0.010749501
+#> 2  0.7125196 0.010749501
+#> 3  0.7125196 0.010749501
+#> 4  0.7125196 0.010749501
+#> 5  0.7125196 0.010749501
+#> 6  0.7125196 0.010749501
+#> 7  0.7125196 0.010749501
+#> 8  0.7125196 0.010749501
+#> 9  0.7125196 0.010749501
+#> 10 0.8316763 0.006135851
+#> 11 0.8316763 0.006135851
+#> 12 0.8316763 0.006135851
+#> 13 0.8316763 0.006135851
+#> 14 0.8316763 0.006135851
+#> 15 0.8316763 0.006135851
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

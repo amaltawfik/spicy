@@ -195,7 +195,13 @@ single character column name. The predictor can be:</p><ul><li><p><strong>numeri
 table reports the slope of <code>by</code> and its CI from <code>lm(y ~ by, ...)</code>.</p></li>
 <li><p><strong>factor</strong> or <strong>ordered factor</strong>: treated as categorical. Level order
 is preserved as declared; the <strong>first level</strong> is the reference for
-the displayed contrast (R's default treatment-contrast convention).</p></li>
+the displayed contrast (R's default treatment-contrast convention).
+An ordered factor is refit as an unordered factor with the same
+level order, so the model uses treatment contrasts – not the
+polynomial contrasts (<code>contr.poly</code>) <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> would apply by default.
+The ordering only determines the display order and the reference
+level; per-level means, the displayed difference, and its CI are
+identical to those of an unordered factor with the same levels.</p></li>
 <li><p><strong>character</strong>: coerced to factor with <code>factor(by)</code>, which orders the
 levels alphabetically. To control the reference level, supply <code>by</code>
 as an explicit factor with the desired level ordering (e.g. via
@@ -203,6 +209,12 @@ as an explicit factor with the desired level ordering (e.g. via
 <li><p><strong>logical</strong>: coerced to factor with levels <code>"FALSE"</code>, <code>"TRUE"</code> (in
 that order, since <code>FALSE &lt; TRUE</code>). The reference level is <code>"FALSE"</code>,
 so a binary contrast displays as <code>Delta (TRUE - FALSE)</code>.</p></li>
+<li><p><strong>haven labelled with value labels</strong> (an SPSS / Stata import):
+treated as categorical over the raw codes, in ascending code order
+– the same grouping <code><a href="table_continuous.html">table_continuous()</a></code> and <code><a href="table_categorical.html">table_categorical()</a></code>
+apply to the same column. A labelled vector without value labels is
+treated as a continuous regressor. Declared missing values follow
+<code>user_na</code> as usual.</p></li>
 </ul><p>Rows with <code>NA</code> in <code>by</code> are excluded from the analytic sample for each
 outcome (NAs in <code>y</code> and <code>weights</code> are also excluded; see Details).</p></dd>
 
@@ -1073,13 +1085,13 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Lower secondary)  M (Upper secondary) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>        67.68                81.56        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>        26.17                23.55        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>        57.22                68.97        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>        28.09                26.02        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)    p     R²    ω²    n   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    66.10      &lt;.001  0.21  0.21  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>    26.35      &lt;.001  0.13  0.13  1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    76.85      &lt;.001  0.21  0.21  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>    24.39      &lt;.001  0.13  0.13  1188 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Robust SE for a numeric predictor ----------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1161,8 +1173,8 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   69.93      73.59          3.65        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.04      25.62          0.58        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   65.90      69.56          3.65        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   25.89      26.46          0.58        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL    p     R²    n   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span>

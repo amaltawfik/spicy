@@ -179,15 +179,15 @@ table_continuous_lm(
 #> 
 #>  Variable                       │ M (Lower secondary)  M (Upper secondary) 
 #> ────────────────────────────────┼──────────────────────────────────────────
-#>  Body mass index                │        25.96                23.39        
-#>  WHO-5 wellbeing index (0-100)  │        67.55                80.88        
-#>  Satisfaction with health (1-5) │         3.45                 4.39        
+#>  Body mass index                │        27.85                25.79        
+#>  WHO-5 wellbeing index (0-100)  │        57.71                68.39        
+#>  Satisfaction with health (1-5) │         2.75                 3.50        
 #> 
 #>  Variable                       │ M (Tertiary)    p     R²    n   
 #> ────────────────────────────────┼─────────────────────────────────
-#>  Body mass index                │    26.16      <.001  0.13  1188 
-#>  WHO-5 wellbeing index (0-100)  │    66.52      <.001  0.19  1200 
-#>  Satisfaction with health (1-5) │     3.39      <.001  0.15  1192
+#>  Body mass index                │    24.23      <.001  0.13  1188 
+#>  WHO-5 wellbeing index (0-100)  │    76.55      <.001  0.19  1200 
+#>  Satisfaction with health (1-5) │     4.09      <.001  0.15  1192
 ```
 
 The same argument pattern is used in all three cases:

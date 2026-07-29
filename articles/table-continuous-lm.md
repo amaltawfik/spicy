@@ -155,13 +155,13 @@ table_continuous_lm(
 #> 
 #>  Variable                      │ M (Lower secondary)  M (Upper secondary) 
 #> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │        67.55                80.88        
-#>  Body mass index               │        25.96                23.39        
+#>  WHO-5 wellbeing index (0-100) │        57.71                68.39        
+#>  Body mass index               │        27.85                25.79        
 #> 
 #>  Variable                      │ M (Tertiary)    p     R²    n    Weighted n 
 #> ───────────────────────────────┼─────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │    66.52      <.001  0.19  1200   1196.47   
-#>  Body mass index               │    26.16      <.001  0.13  1188   1183.32
+#>  WHO-5 wellbeing index (0-100) │    76.55      <.001  0.19  1200   1196.47   
+#>  Body mass index               │    24.23      <.001  0.13  1188   1183.32
 ```
 
 This is often the most natural summary-table function when your
@@ -288,8 +288,8 @@ table_continuous_lm(
 #> 
 #>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
 #> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   69.93      73.59          3.65        
-#>  Body mass index               │   25.04      25.62          0.58        
+#>  WHO-5 wellbeing index (0-100) │   65.90      69.56          3.65        
+#>  Body mass index               │   25.89      26.46          0.58        
 #> 
 #>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
 #> ───────────────────────────────┼─────────────────────────────────────────
@@ -408,13 +408,13 @@ table_continuous_lm(
 #> 
 #>  Variable                      │ M (Lower secondary)  M (Upper secondary) 
 #> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │        67.68                81.56        
-#>  Body mass index               │        26.17                23.55        
+#>  WHO-5 wellbeing index (0-100) │        57.22                68.97        
+#>  Body mass index               │        28.09                26.02        
 #> 
 #>  Variable                      │ M (Tertiary)    p     R²    ω²    n   
 #> ───────────────────────────────┼───────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │    66.10      <.001  0.21  0.21  1200 
-#>  Body mass index               │    26.35      <.001  0.13  0.13  1188
+#>  WHO-5 wellbeing index (0-100) │    76.85      <.001  0.21  0.21  1200 
+#>  Body mass index               │    24.39      <.001  0.13  0.13  1188
 ```
 
 Cohen’s `f²` (= `R² / (1 - R²)`) is the effect size familiar from

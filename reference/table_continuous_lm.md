@@ -93,7 +93,13 @@ table_continuous_lm(
   - **factor** or **ordered factor**: treated as categorical. Level
     order is preserved as declared; the **first level** is the reference
     for the displayed contrast (R's default treatment-contrast
-    convention).
+    convention). An ordered factor is refit as an unordered factor with
+    the same level order, so the model uses treatment contrasts – not
+    the polynomial contrasts (`contr.poly`)
+    [`lm()`](https://rdrr.io/r/stats/lm.html) would apply by default.
+    The ordering only determines the display order and the reference
+    level; per-level means, the displayed difference, and its CI are
+    identical to those of an unordered factor with the same levels.
 
   - **character**: coerced to factor with `factor(by)`, which orders the
     levels alphabetically. To control the reference level, supply `by`
@@ -104,6 +110,16 @@ table_continuous_lm(
   - **logical**: coerced to factor with levels `"FALSE"`, `"TRUE"` (in
     that order, since `FALSE < TRUE`). The reference level is `"FALSE"`,
     so a binary contrast displays as `Delta (TRUE - FALSE)`.
+
+  - **haven labelled with value labels** (an SPSS / Stata import):
+    treated as categorical over the raw codes, in ascending code order –
+    the same grouping
+    [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+    and
+    [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+    apply to the same column. A labelled vector without value labels is
+    treated as a continuous regressor. Declared missing values follow
+    `user_na` as usual.
 
   Rows with `NA` in `by` are excluded from the analytic sample for each
   outcome (NAs in `y` and `weights` are also excluded; see Details).
@@ -1119,13 +1135,13 @@ table_continuous_lm(
 #> 
 #>  Variable                      │ M (Lower secondary)  M (Upper secondary) 
 #> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │        67.68                81.56        
-#>  Body mass index               │        26.17                23.55        
+#>  WHO-5 wellbeing index (0-100) │        57.22                68.97        
+#>  Body mass index               │        28.09                26.02        
 #> 
 #>  Variable                      │ M (Tertiary)    p     R²    ω²    n   
 #> ───────────────────────────────┼───────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │    66.10      <.001  0.21  0.21  1200 
-#>  Body mass index               │    26.35      <.001  0.13  0.13  1188 
+#>  WHO-5 wellbeing index (0-100) │    76.85      <.001  0.21  0.21  1200 
+#>  Body mass index               │    24.39      <.001  0.13  0.13  1188 
 
 # --- Robust SE for a numeric predictor ----------------------------------
 
@@ -1207,8 +1223,8 @@ table_continuous_lm(
 #> 
 #>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
 #> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   69.93      73.59          3.65        
-#>  Body mass index               │   25.04      25.62          0.58        
+#>  WHO-5 wellbeing index (0-100) │   65.90      69.56          3.65        
+#>  Body mass index               │   25.89      26.46          0.58        
 #> 
 #>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
 #> ───────────────────────────────┼─────────────────────────────────────────
