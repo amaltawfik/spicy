@@ -64,6 +64,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
@@ -2188,7 +2189,7 @@ Satterthwaite df flows through verbatim:</p>
 <p>The long format is the right entry point when the table is one step
 in a larger pipeline — saving to disk for the manuscript appendix,
 faceting by subgroup, or feeding a downstream post-estimation analysis.
-The <code>tidy()</code> output keeps the <code>estimate_type</code>
+The <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code> output keeps the <code>estimate_type</code>
 column so the same data frame can hold rows for B, β, AME, and
 per-coefficient effect-size estimates without ambiguity.</p>
 </div>

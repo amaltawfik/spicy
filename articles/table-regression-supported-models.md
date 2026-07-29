@@ -201,10 +201,11 @@ tests. See
 marginal (population-averaged) coefficients with the fit’s own sandwich
 SEs as the default inference, the working correlation structure
 disclosed in the footer (with its estimated alpha), cluster-structure
-fit statistics, and opt-in QIC / QICu. The population-averaged section
-of
+fit statistics, and opt-in QIC / QICu. See
+[`vignette("table-regression-gee")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+for the full workflow;
 [`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
-contrasts GEE with subject-specific mixed models.
+contrasts GEE with subject-specific mixed models in a single table.
 
 **Ordinal.** [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) and
 [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html): proportional

@@ -202,7 +202,8 @@
 - Multi-model `show_columns = "all_b"` / `"all_ame"` auto-compact (CIs
   dropped); request atomic tokens to keep them.
 
-- `tidy()` labels AME rows `estimate_type = "ame"` (was `"AME"`).
+- [`tidy()`](https://generics.r-lib.org/reference/tidy.html) labels AME
+  rows `estimate_type = "ame"` (was `"AME"`).
 
 - The `show_fit_stats` information criteria are lowercase tokens like
   everything else: `"aic"`, `"aicc"`, `"bic"` (was `"AIC"` / `"AICc"` /
@@ -320,7 +321,8 @@ rendering an empty column.
   fits; `complete_cases = TRUE` forces the common sample. Intercepts are
   hidden by default and `p_adjust` treats the whole screen as one
   family. `exponentiate`, `vcov` / `cluster` (the footer names the
-  cluster column), `labels`, the output engines, and `tidy()` work as in
+  cluster column), `labels`, the output engines, and
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) work as in
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md):
   the machine-readable registry of supported model classes (family,
@@ -421,12 +423,12 @@ rendering an empty column.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
   An explicit `select` is still taken verbatim, so numeric-coded
   categorical variables can be tabulated by naming them.
-- Six new vignettes: *Mixed-effects*, *Multinomial*, *Count and
-  two-part*, *Survival*, and *Ordinal regression tables*, plus
-  *Categorical predictors* — a cross-cutting guide to dummy coding and
-  reference levels, joint tests of a factor, ordinal predictors (scores
-  vs dummies), successive-difference contrasts, and why continuous
-  predictors should not be categorized.
+- Seven new vignettes: *Mixed-effects*, *GEE (population-averaged)*,
+  *Multinomial*, *Count and two-part*, *Survival*, and *Ordinal
+  regression tables*, plus *Categorical predictors* — a cross-cutting
+  guide to dummy coding and reference levels, joint tests of a factor,
+  ordinal predictors (scores vs dummies), successive-difference
+  contrasts, and why continuous predictors should not be categorized.
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   reads `options(spicy.rescale)` like
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md);

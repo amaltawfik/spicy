@@ -36,6 +36,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
@@ -88,6 +89,8 @@
         <dd><p>The model classes <code><a href="../reference/table_regression.html">table_regression()</a></code> supports, in one table: linear and generalized linear models, robust and IV estimators, mixed effects, ordinal and multinomial outcomes, two-part count models, survival models, survey-weighted and Bayesian fits – with each family’s marginal-effects estimand, exponentiate semantics, robust-variance backends, and standardized-coefficient support.</p>
         </dd><dt><a href="table-regression-mixed.html">Mixed-effects regression tables</a></dt>
         <dd><p>Publication-ready tables for mixed-effects (multilevel) regression in R with <code><a href="../reference/table_regression.html">table_regression()</a></code>: the textbook model-building sequence on the High School &amp; Beyond data (ICC, contextual effects, random slopes, cross-level interactions), random effects as table rows, the boundary-corrected chi-bar-squared test, opt-in per-term LRT / RLRT, Nakagawa R-squared, Satterthwaite inference, three-level and crossed designs, and the <code>lme4</code>, <code>glmmTMB</code>, and <code>nlme</code> engines.</p>
+        </dd><dt><a href="table-regression-gee.html">GEE regression tables (population-averaged models)</a></dt>
+        <dd><p>Publication-ready tables for generalized estimating equations in R with <code><a href="../reference/table_regression.html">table_regression()</a></code>: population-averaged coefficients with the fit’s own cluster-robust sandwich inference, the working correlation structure disclosed in the footer, QIC-based comparison of working correlations, jackknife variants for few clusters, odds ratios with event counts, and population-averaged marginal effects.</p>
         </dd><dt><a href="table-regression-counts.html">Count and two-part regression tables</a></dt>
         <dd><p>Publication-ready tables for count regression in R with <code><a href="../reference/table_regression.html">table_regression()</a></code>: Poisson and negative-binomial rate ratios, zero-inflated and hurdle models with their zero component as a labelled block, per-block exponentiation, combined average marginal effects, cluster-robust variance across both components, and zero-inflated mixed models with <code>glmmTMB</code>.</p>
         </dd><dt><a href="table-regression-survival.html">Survival regression tables</a></dt>

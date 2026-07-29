@@ -1692,9 +1692,9 @@ broom::glance(out)
 The long format is the right entry point when the table is one step in a
 larger pipeline — saving to disk for the manuscript appendix, faceting
 by subgroup, or feeding a downstream post-estimation analysis. The
-`tidy()` output keeps the `estimate_type` column so the same data frame
-can hold rows for B, β, AME, and per-coefficient effect-size estimates
-without ambiguity.
+[`tidy()`](https://generics.r-lib.org/reference/tidy.html) output keeps
+the `estimate_type` column so the same data frame can hold rows for B,
+β, AME, and per-coefficient effect-size estimates without ambiguity.
 
 ## See also
 

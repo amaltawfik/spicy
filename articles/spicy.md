@@ -512,6 +512,9 @@ sochealth |>
 - [`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
   — mixed-effects (multilevel) models, random effects as table rows,
   ICC.
+- [`vignette("table-regression-gee")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+  — GEE (population-averaged) models, working-correlation choice via
+  QIC, sandwich inference.
 - [`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
   — Poisson, negative-binomial, zero-inflated and hurdle models.
 - [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)

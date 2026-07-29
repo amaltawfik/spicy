@@ -64,6 +64,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
@@ -595,9 +596,9 @@ See <code><a href="../articles/table-regression-mixed.html">vignette("table-regr
 coefficients with the fit’s own sandwich SEs as the default inference,
 the working correlation structure disclosed in the footer (with its
 estimated alpha), cluster-structure fit statistics, and opt-in QIC /
-QICu. The population-averaged section of
-<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> contrasts GEE with
-subject-specific mixed models.</p>
+QICu. See <code><a href="../articles/table-regression-gee.html">vignette("table-regression-gee")</a></code> for the full
+workflow; <code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> contrasts GEE
+with subject-specific mixed models in a single table.</p>
 <p><strong>Ordinal.</strong> <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code> and
 <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code>: proportional odds ratios, a
 <code>Thresholds</code> block for the cut-points (log-odds scale, never
