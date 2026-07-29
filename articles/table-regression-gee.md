@@ -19,34 +19,78 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 shows the population-averaged and subject-specific answers side by side
 in a single table.
 
-## When GEE: the population-averaged question
+## Why these models, and on what grounds
 
-Clustered data can be modelled to answer two different questions. A
-mixed model answers the **subject-specific** (conditional) one: what
+**The statistical trigger is the design.** Repeated measures on the same
+subjects, patients within clinics, residents within neighbourhoods:
+observations within a cluster are correlated, and an ordinary GLM that
+assumes independence gets its coefficients roughly right but their
+*variances* wrong – the casualty is every standard error, confidence
+interval, and p-value in the table (Hubbard et al., 2010). Whenever the
+data are clustered and the within-cluster association is non-negligible,
+*some* cluster-aware model is required. That much a statistic can tell
+you.
+
+**The choice among cluster-aware models is not a statistical test.**
+Once clustering is acknowledged, two families answer two different
+questions. A mixed model is **subject-specific** (conditional): what
 happens to *this* subject’s outcome when their predictor changes,
-holding their random effect fixed. GEE answers the
-**population-averaged** (marginal) one: how does the *average* outcome
-differ between populations that differ in the predictor (Zeger, Liang &
-Albert, 1988). The marginal estimand is the natural one for policy and
-epidemiology – a treatment’s effect on a population’s risk, not on one
-patient’s odds (Hubbard et al., 2010).
+holding their random effect fixed. GEE fits a marginal model and is
+**population-averaged**: how does the *average* outcome differ between
+populations that differ in the predictor (Zeger, Liang & Albert, 1988).
+Zeger and colleagues’ own example makes the contrast concrete: with
+smoking as the exposure and respiratory infection as the outcome, the
+population-averaged model estimates the difference in infection *rates*
+between smokers and non-smokers, while the subject-specific model
+estimates the change in an *individual’s* probability of infection if
+they took up smoking. No index computed from the data arbitrates between
+those two targets. As Fitzmaurice, Laird and Ware (2011, p. 342) put it,
+the choice “cannot be made through any automatic procedure. Rather, the
+choice must be made on subject-matter grounds.” State the scientific
+question, and the estimand – hence the model family – follows (Hubbard
+et al., 2010).
 
-For a linear model the two coincide. On a logit link they do not: with a
-random-intercept variance \\\sigma^2\\, the population-averaged
-coefficient is attenuated by approximately \\1/\sqrt{1 +
-0.346\\\sigma^2}\\ relative to the subject-specific one (Zeger et al.,
-1988), so the conditional odds ratio is always farther from 1. Neither
-is “biased” – they answer different questions. The side-by-side table in
-the [mixed-effects
+For a linear model the two coincide, so the stakes are low. On a logit
+link they do not: with a random-intercept variance \\\sigma^2\\, the
+population-averaged coefficient is attenuated by approximately
+\\1/\sqrt{1 + 0.346\\\sigma^2}\\ relative to the subject-specific one
+(Zeger et al., 1988; the constant is \\c^2\\ with \\c =
+16\sqrt{3}/(15\pi)\\), so the conditional odds ratio is always farther
+from 1. Neither is “biased” – they answer different questions. The
+side-by-side table in the [mixed-effects
 vignette](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 shows the gap on real data.
 
-Two properties make GEE attractive when the marginal question is the
-right one. The coefficients stay consistent even if the assumed
-within-cluster correlation is wrong, and the standard errors are
-computed with a cluster-robust sandwich estimator *by construction* –
-robustness is not an option added after the fact, it is the method
-(Liang & Zeger, 1986).
+**What GEE buys.** When the marginal question is the right one, GEE has
+three properties that likelihood-based alternatives cannot match. First,
+it needs no distributional assumptions: for discrete longitudinal data
+there is no convenient analogue of the multivariate normal – a full
+joint distribution for ten binary repeated measures involves over a
+thousand association parameters (Fitzmaurice et al., 2011) – and GEE
+sidesteps the problem by modelling only the mean, the variance function,
+and the pairwise association. Second, the coefficient estimates are
+consistent even when the assumed within-cluster correlation structure is
+wrong (Liang & Zeger, 1986). Third, the standard errors come from a
+cluster-robust sandwich estimator *by construction* – robustness is not
+an option bolted on after the fact, it is the method. A mixed model, by
+contrast, leans on an assumed random-effects distribution that the data
+cannot verify (Hubbard et al., 2010).
+
+**What GEE costs – the criteria that argue against it.** Three
+conditions are worth checking before committing. *Efficiency*: with a
+badly misspecified working correlation, coefficient estimation can lose
+substantial efficiency relative to the correct structure (Pan, 2001) –
+the QIC section below is the remedy. *Missing data*: GEE estimates are
+consistent only when missingness is completely at random (MCAR, in
+Rubin’s 1976 sense; Halekoh, Højsgaard & Yan, 2006); when dropout
+depends on the observed history, likelihood-based mixed models or
+weighted GEE are the appropriate tools. *Clusters*: the sandwich is
+asymptotic in the number of clusters – see the jackknife section below
+for the small-\\K\\ remedy. Finally, marginal models assume the current
+response depends only on current covariates; a time-varying covariate
+that responds to earlier outcomes (exercise adjusted after a bad glucose
+reading) violates that assumption and calls for greater care
+(Fitzmaurice et al., 2011).
 
 ## A first table
 
@@ -161,12 +205,15 @@ table_regression(
 #> Model 3: GEE working correlation: ar1 (alpha = 0.94).
 ```
 
-Lower QIC is better for choosing the working correlation; QICu is the
-variant for comparing mean models under a fixed structure (Pan, 2001).
-The footer discloses each model’s structure on its own line. Note that
-the estimates barely move across columns – that is the GEE consistency
-property at work – while the standard errors differ, which is exactly
-what the working correlation is for.
+The division of labour between the two criteria is Pan’s (2001): pick
+the working correlation by the smallest **QIC**; use **QICu** only for
+comparing *mean models* (covariate sets) under a fixed structure – it
+cannot select the correlation. The stake is efficiency, not consistency:
+the estimates barely move across columns (consistency holds under any
+structure), but a badly chosen structure can cost a substantial share of
+the precision the data could deliver (Pan, 2001), which is what the
+differing standard errors show. The footer discloses each model’s
+structure on its own line.
 
 `qic` and `qicu` are computed only when you ask for them:
 [`geepack::QIC()`](https://rdrr.io/pkg/geepack/man/QIC.html) silently
@@ -212,8 +259,12 @@ deliberately reads the cluster structure from the fit (`geese$clusz`,
 what [`summary()`](https://rdrr.io/r/base/summary.html) reports as
 *Number of clusters*) rather than counting unique `id` values, so the
 table *diagnoses* the mistake instead of papering over it. The remedy is
-to sort by `id` before fitting (and to use geeglm’s `waves =` argument
-when series are incomplete):
+to sort by `id` before fitting – and, when series are incomplete or
+unequally spaced, to pass geeglm’s `waves =` argument so that
+time-dependent structures such as `"ar1"` know each observation’s
+position (Halekoh et al., 2006). Incomplete series also raise the
+missing-data question from the first section: GEE remains valid only
+when the missing observations are MCAR.
 
 ``` r
 
@@ -238,11 +289,15 @@ table_regression(fit_sorted, show_fit_stats = c("nobs", "n_groups", "max_cluster
 
 ## Few clusters: the jackknife variants
 
-The sandwich estimator is asymptotic in the number of clusters; with
-only a few dozen, it tends to be anti-conservative. `geeglm` offers
-jackknife approximations as alternatives (`std.err = "jack"`, `"j1s"`,
-`"fij"`; Halekoh et al., 2006). The estimator choice lives on the fit,
-and the table reads and names whatever the fit computed:
+The sandwich estimator is asymptotic in the number of clusters: with few
+clusters (\\K \le 30\\ is the threshold the geepack authors cite,
+following Paik, 1988) it is biased, and the jackknife variance
+estimators are the recommended alternative (Halekoh et al., 2006).
+`geeglm` offers three (`std.err = "jack"`, `"j1s"`, `"fij"`); the
+approximate and one-step versions are far cheaper than the fully
+iterated one and agree well with it in simulations (Halekoh et al.,
+2006). The estimator choice lives on the fit, and the table reads and
+names whatever the fit computed:
 
 ``` r
 
@@ -437,7 +492,7 @@ table_regression(
 | Max cluster size |   4      |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-403d88b0 quarto-disable-processing="true"}
+.cl-dbad6084 quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:
@@ -446,6 +501,9 @@ and displayed as OR; CI bounds exponentiated.
 
 ## References
 
+- Fitzmaurice, G. M., Laird, N. M., & Ware, J. H. (2011). *Applied
+  Longitudinal Analysis* (2nd ed.). Wiley. (Chapter 12, Marginal models:
+  Introduction and overview.)
 - Halekoh, U., Højsgaard, S., & Yan, J. (2006). The R package geepack
   for generalized estimating equations. *Journal of Statistical
   Software*, 15(2), 1–11.
@@ -456,8 +514,13 @@ and displayed as OR; CI bounds exponentiated.
   health. *Epidemiology*, 21(4), 467–474.
 - Liang, K.-Y., & Zeger, S. L. (1986). Longitudinal data analysis using
   generalized linear models. *Biometrika*, 73(1), 13–22.
+- Paik, M. C. (1988). Repeated measurement analysis for nonnormal data
+  in small samples. *Communications in Statistics — Simulation and
+  Computation*, 17(4), 1155–1171.
 - Pan, W. (2001). Akaike’s information criterion in generalized
   estimating equations. *Biometrics*, 57(1), 120–125.
+- Rubin, D. B. (1976). Inference and missing data. *Biometrika*, 63(3),
+  581–592.
 - Zeger, S. L., Liang, K.-Y., & Albert, P. S. (1988). Models for
   longitudinal data: A generalized estimating equation approach.
   *Biometrics*, 44(4), 1049–1060.

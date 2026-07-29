@@ -99,11 +99,11 @@
   Publication-ready tables for generalized estimating equations in R
   with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  population-averaged coefficients with the fit’s own cluster-robust
-  sandwich inference, the working correlation structure disclosed in the
-  footer, QIC-based comparison of working correlations, jackknife
-  variants for few clusters, odds ratios with event counts, and
-  population-averaged marginal effects.
+  when the population-averaged estimand is the right one, coefficients
+  with the fit’s own cluster-robust sandwich inference, the working
+  correlation structure disclosed in the footer, QIC-based comparison of
+  working correlations, jackknife variants for few clusters, odds ratios
+  with event counts, and population-averaged marginal effects.
 
 - [Count and two-part regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md):
