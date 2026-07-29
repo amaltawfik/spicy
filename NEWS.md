@@ -296,8 +296,9 @@ rendering an empty column.
   `table_continuous_lm()`. An explicit `select` is still taken
   verbatim, so numeric-coded categorical variables can be tabulated
   by naming them.
-* Six new vignettes: *Mixed-effects*, *Multinomial*, *Count and
-  two-part*, *Survival*, and *Ordinal regression tables*, plus
+* Seven new vignettes: *Mixed-effects*, *GEE (population-averaged)*,
+  *Multinomial*, *Count and two-part*, *Survival*, and *Ordinal
+  regression tables*, plus
   *Categorical predictors* — a cross-cutting guide to dummy coding
   and reference levels, joint tests of a factor, ordinal predictors
   (scores vs dummies), successive-difference contrasts, and why

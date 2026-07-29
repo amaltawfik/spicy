@@ -69,6 +69,8 @@ navbar:
           href: articles/table-regression-supported-models.html
         - text: Mixed-effects regression tables
           href: articles/table-regression-mixed.html
+        - text: GEE regression tables (population-averaged)
+          href: articles/table-regression-gee.html
         - text: Count and two-part regression tables
           href: articles/table-regression-counts.html
         - text: Survival regression tables
@@ -102,6 +104,7 @@ articles:
       - table-regression
       - table-regression-supported-models
       - table-regression-mixed
+      - table-regression-gee
       - table-regression-counts
       - table-regression-survival
       - table-regression-ordinal

@@ -1,0 +1,322 @@
+---
+title: "GEE regression tables (population-averaged models)"
+description: >
+  Publication-ready tables for generalized estimating equations in R
+  with `table_regression()`: population-averaged coefficients with
+  the fit's own cluster-robust sandwich inference, the working
+  correlation structure disclosed in the footer, QIC-based comparison
+  of working correlations, jackknife variants for few clusters,
+  odds ratios with event counts, and population-averaged marginal
+  effects.
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{GEE regression tables (population-averaged models)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+have_geepack <- requireNamespace("geepack", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = have_geepack
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+have_me <- have_geepack && requireNamespace("marginaleffects", quietly = TRUE)
+have_ft <- have_geepack && requireNamespace("flextable", quietly = TRUE)
+source("_pkgdown-helpers.R")
+```
+
+```{r setup, message = FALSE}
+library(spicy)
+library(geepack) # geeglm()
+```
+
+This vignette covers **generalized estimating equations** (GEE) --
+marginal models for clustered and longitudinal data, fitted with
+`geepack::geeglm()` (Liang & Zeger, 1986; Halekoh, Højsgaard & Yan,
+2006). The companion vignette [*Publication-ready regression
+tables*](table-regression.html) covers the shared mechanics (output
+engines, labels, `tidy()`); [*Mixed-effects regression
+tables*](table-regression-mixed.html) shows the population-averaged
+and subject-specific answers side by side in a single table.
+
+## When GEE: the population-averaged question
+
+Clustered data can be modelled to answer two different questions.
+A mixed model answers the **subject-specific** (conditional) one:
+what happens to *this* subject's outcome when their predictor
+changes, holding their random effect fixed. GEE answers the
+**population-averaged** (marginal) one: how does the *average*
+outcome differ between populations that differ in the predictor
+(Zeger, Liang & Albert, 1988). The marginal estimand is the natural
+one for policy and epidemiology -- a treatment's effect on a
+population's risk, not on one patient's odds (Hubbard et al., 2010).
+
+For a linear model the two coincide. On a logit link they do not:
+with a random-intercept variance $\sigma^2$, the population-averaged
+coefficient is attenuated by approximately
+$1/\sqrt{1 + 0.346\,\sigma^2}$ relative to the subject-specific one
+(Zeger et al., 1988), so the conditional odds ratio is always
+farther from 1. Neither is "biased" -- they answer different
+questions. The side-by-side table in the
+[mixed-effects vignette](table-regression-mixed.html) shows the gap
+on real data.
+
+Two properties make GEE attractive when the marginal question is the
+right one. The coefficients stay consistent even if the assumed
+within-cluster correlation is wrong, and the standard errors are
+computed with a cluster-robust sandwich estimator *by construction*
+-- robustness is not an option added after the fact, it is the
+method (Liang & Zeger, 1986).
+
+## A first table
+
+`geepack`'s `dietox` data follow the weight of 72 pigs over 12
+weeks. A gaussian GEE with an exchangeable working correlation:
+
+```{r first-table}
+data(dietox, package = "geepack")
+
+fit <- geeglm(
+  Weight ~ Time + Cu,
+  id     = Pig,
+  data   = dietox,
+  family = gaussian,
+  corstr = "exchangeable"
+)
+table_regression(fit)
+```
+
+Three things to read off this table:
+
+* **The title** says *Population-averaged linear regression (GEE)* --
+  the estimand is named, not implied.
+* **The fit statistics** describe the sample the way the GEE
+  literature (and Stata's `xtgee` header) does: the number of
+  observations, the number of clusters (`N (Pig)`), and the largest
+  cluster. These are the clusters the sandwich variance is actually
+  computed over -- see the section on unsorted data below.
+* **The footer** carries two disclosures. `Std. errors: Robust
+  sandwich (GEE), clusters by Pig` names the inference: the fit's own
+  sandwich estimator, clustered on its `id =` variable. `GEE working
+  correlation: exchangeable (alpha = ...)` names the working
+  correlation structure with its estimated parameter -- two GEE fits
+  with the same formula but different structures are different
+  models, so the structure is model-defining and always disclosed.
+
+## Choosing the working correlation
+
+The working correlation encodes how observations within a cluster
+are assumed to correlate: `"independence"` (none), `"exchangeable"`
+(all pairs equally), `"ar1"` (decaying with distance), or
+`"unstructured"`. Point estimates are consistent under any of them;
+the choice affects efficiency. Because GEE has no likelihood, AIC is
+undefined -- the comparison tool is Pan's (2001) quasi-likelihood
+information criterion, available as opt-in fit statistics:
+
+```{r qic}
+fit_ind <- update(fit, corstr = "independence")
+fit_ar1 <- update(fit, corstr = "ar1")
+
+table_regression(
+  list(
+    Independence = fit_ind,
+    Exchangeable = fit,
+    "AR(1)"      = fit_ar1
+  ),
+  show_fit_stats = c("nobs", "n_groups", "qic", "qicu")
+)
+```
+
+Lower QIC is better for choosing the working correlation; QICu is
+the variant for comparing mean models under a fixed structure (Pan,
+2001). The footer discloses each model's structure on its own line.
+Note that the estimates barely move across columns -- that is the
+GEE consistency property at work -- while the standard errors
+differ, which is exactly what the working correlation is for.
+
+`qic` and `qicu` are computed only when you ask for them:
+`geepack::QIC()` silently refits the independence model, and the
+default table should not pay that cost for a number it does not
+display.
+
+## The displayed clusters are the clusters of the inference
+
+`geepack` defines clusters as **consecutive runs** of identical
+`id =` values. If the data are not sorted by `id`, a subject whose
+rows are scattered becomes many small "clusters", and the sandwich
+variance is computed over those fragments -- a classic and silent
+GEE pitfall:
+
+```{r footgun}
+set.seed(3)
+panel <- data.frame(id = rep(1:30, each = 4), x = rnorm(120))
+panel$y <- panel$x + rep(rnorm(30), each = 4) + rnorm(120)
+shuffled <- panel[sample(nrow(panel)), ]
+
+fit_shuffled <- geeglm(y ~ x, id = id, data = shuffled, family = gaussian)
+table_regression(fit_shuffled, show_fit_stats = c("nobs", "n_groups", "max_cluster_size"))
+```
+
+The table reports well over a hundred clusters for what the analyst
+knows to be 30 subjects -- because that is what the model actually
+used. `table_regression()` deliberately reads the cluster structure
+from the fit (`geese$clusz`, what `summary()` reports as *Number of
+clusters*) rather than counting unique `id` values, so the table
+*diagnoses* the mistake instead of papering over it. The remedy is
+to sort by `id` before fitting (and to use geeglm's `waves =`
+argument when series are incomplete):
+
+```{r footgun-fixed}
+sorted <- shuffled[order(shuffled$id), ]
+fit_sorted <- geeglm(y ~ x, id = id, data = sorted, family = gaussian)
+table_regression(fit_sorted, show_fit_stats = c("nobs", "n_groups", "max_cluster_size"))
+```
+
+## Few clusters: the jackknife variants
+
+The sandwich estimator is asymptotic in the number of clusters; with
+only a few dozen, it tends to be anti-conservative. `geeglm` offers
+jackknife approximations as alternatives (`std.err = "jack"`,
+`"j1s"`, `"fij"`; Halekoh et al., 2006). The estimator choice lives
+on the fit, and the table reads and names whatever the fit computed:
+
+```{r jackknife}
+fit_j1s <- geeglm(
+  Weight ~ Time + Cu,
+  id      = Pig,
+  data    = dietox,
+  family  = gaussian,
+  corstr  = "exchangeable",
+  std.err = "j1s"
+)
+table_regression(fit_j1s)
+```
+
+The footer now reads *One-step jackknife (GEE), clusters by Pig* --
+the displayed uncertainty is always the fit's own, never a spicy
+recomputation.
+
+## A binomial GEE end to end
+
+The `respiratory` trial (111 patients, four visits) illustrates the
+full workflow for a binary outcome. `exponentiate = TRUE` displays
+population-averaged odds ratios, and the opt-in `"n_events"` column
+adds events/N per group -- computed on the estimation sample:
+
+```{r binomial}
+data(respiratory, package = "geepack")
+respiratory$outcome <- as.integer(respiratory$outcome)
+respiratory$subject <- interaction(respiratory$center, respiratory$id)
+# Placebo as the reference level, so the displayed row is the
+# active-treatment odds ratio.
+respiratory$treat <- relevel(respiratory$treat, ref = "P")
+
+fit_resp <- geeglm(
+  outcome ~ treat + age + baseline,
+  id     = subject,
+  data   = respiratory,
+  family = binomial,
+  corstr = "exchangeable"
+)
+table_regression(
+  fit_resp,
+  exponentiate = TRUE,
+  show_columns = c("n_events", "b", "ci", "p")
+)
+```
+
+This odds ratio is marginal: it compares the odds of a positive
+outcome between the treated and untreated *populations*. The
+subject-specific odds ratio from the matching mixed model is larger
+-- the attenuation of the first section -- and the
+[mixed-effects vignette](table-regression-mixed.html) shows the two
+side by side.
+
+Average marginal effects translate the odds ratio onto the
+probability scale, and for a GEE fit their uncertainty inherits the
+sandwich covariance automatically:
+
+```{r ame, eval = have_me}
+table_regression(
+  fit_resp,
+  show_columns = c("b", "p", "ame", "ame_ci")
+)
+```
+
+The AME column reads as percentage-point differences in the
+population-averaged probability of a positive outcome -- for the
+treatment row, between the treated and placebo populations.
+
+## What spicy refuses for GEE, and why
+
+`table_regression()` treats requests that GEE cannot honour as hard,
+explained errors rather than silent approximations:
+
+* **`vcov = "HC1"` / `"CR2"` and `cluster =`.** GEE inference is
+  robust by construction: the sandwich, clustered on the model's own
+  `id =`, *is* the default display. There is nothing for spicy's
+  robust-variance machinery to add; to change the estimator, refit
+  with geeglm's `std.err =` option, and to change the clustering,
+  refit with a different `id =`.
+* **`standardized`.** There is no established convention for
+  standardizing population-averaged coefficients: the response SD
+  mixes within- and between-cluster variance. Standardize predictors
+  before fitting if magnitudes must be compared.
+* **`nested = TRUE` and likelihood-based statistics.** GEE is
+  estimated by quasi-likelihood: there is no likelihood, hence no
+  likelihood-ratio change test, no AIC and no pseudo-R². Compare
+  working models with QIC, or use `geepack`'s `anova()` Wald tests
+  outside the table.
+
+Each refusal names its reason and its remedy in the error message --
+in a table meant for publication, a wrong convention silently
+applied is worse than an error.
+
+```{r refusal, error = TRUE}
+table_regression(fit, vcov = "HC3")
+```
+
+## Presentation-ready output
+
+Everything above renders identically through the rich output
+engines. A final example with `flextable`, ready for a Word
+manuscript:
+
+```{r rich, eval = build_rich_tables && have_ft}
+table_regression(
+  fit_resp,
+  exponentiate = TRUE,
+  show_columns = c("n_events", "b", "ci", "p"),
+  output = "flextable"
+)
+```
+
+```{r rich-fallback, eval = !build_rich_tables, echo = FALSE}
+# Console fallback so the vignette stays self-contained outside
+# pkgdown builds.
+```
+
+## References
+
+* Halekoh, U., Højsgaard, S., & Yan, J. (2006). The R package
+  geepack for generalized estimating equations. *Journal of
+  Statistical Software*, 15(2), 1–11.
+* Hubbard, A. E., Ahern, J., Fleischer, N. L., Van der Laan, M.,
+  Lippman, S. A., Jewell, N., Bruckner, T., & Satariano, W. A.
+  (2010). To GEE or not to GEE: Comparing population average and
+  mixed models for estimating the associations between neighborhood
+  risk factors and health. *Epidemiology*, 21(4), 467–474.
+* Liang, K.-Y., & Zeger, S. L. (1986). Longitudinal data analysis
+  using generalized linear models. *Biometrika*, 73(1), 13–22.
+* Pan, W. (2001). Akaike's information criterion in generalized
+  estimating equations. *Biometrics*, 57(1), 120–125.
+* Zeger, S. L., Liang, K.-Y., & Albert, P. S. (1988). Models for
+  longitudinal data: A generalized estimating equation approach.
+  *Biometrics*, 44(4), 1049–1060.

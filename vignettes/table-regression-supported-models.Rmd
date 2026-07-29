@@ -188,9 +188,10 @@ carries the boundary-correct chi-bar-squared test, and
 (population-averaged) coefficients with the fit's own sandwich SEs
 as the default inference, the working correlation structure disclosed
 in the footer (with its estimated alpha), cluster-structure fit
-statistics, and opt-in QIC / QICu. The population-averaged section of
+statistics, and opt-in QIC / QICu. See
+`vignette("table-regression-gee")` for the full workflow;
 `vignette("table-regression-mixed")` contrasts GEE with
-subject-specific mixed models.
+subject-specific mixed models in a single table.
 
 **Ordinal.** `MASS::polr` and `ordinal::clm`: proportional odds
 ratios, a `Thresholds` block for the cut-points (log-odds scale,

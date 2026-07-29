@@ -712,14 +712,12 @@ differ between groups that differ in the predictor — the natural
 estimand for policy and epidemiology. For a linear model the two
 coincide; on a logit link they do not — the conditional odds ratio is
 farther from 1 than the marginal one, and the gap grows with the
-between-subject variance. `table_regression()` reads a `geeglm` fit
-on its own terms: the fit's sandwich standard errors (clustered on
-its `id =`) are the displayed inference — GEE is robust by
-construction, so spicy's `vcov` and `cluster` arguments are refused —
-and the footer discloses the working correlation structure, which is
-model-defining the same way the random-effects block is for a mixed
-model. There is no likelihood, so no AIC or R-squared: the
-quasi-likelihood criteria `"qic"` / `"qicu"` are the comparison tools.
+between-subject variance. The full GEE workflow — working-correlation
+choice via QIC, jackknife variants for few clusters, event counts,
+population-averaged marginal effects, and why spicy's `vcov` /
+`cluster` arguments are refused for these fits — is the dedicated
+[*GEE regression tables*](table-regression-gee.html) vignette; here
+is the contrast itself, in one table:
 
 ```{r gee, eval = have_geepack, warning = FALSE}
 data(respiratory, package = "geepack")
