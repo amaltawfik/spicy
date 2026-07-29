@@ -407,6 +407,37 @@ compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   c(ncp_lo, ncp_hi) / denom
 }
 
+# Internal: reorder prediction-design columns to the fitted
+# coefficient vector BY NAME before any `design %*% coef` product.
+# A silent positional product is exactly the failure mode behind the
+# ordered-factor audit findings (contr.poly coefficients multiplied
+# against treatment-coded columns: same length, different meanings).
+# Aborts loudly on any column-set mismatch instead of recycling or
+# reordering silently. The mismatch arm is reachable from user input:
+# a factor covariate with a declared-but-unobserved level makes
+# `lm()` drop the level at fit time (model.frame drops unused
+# levels) while the prediction design still expands it, so the
+# design gains a column the fit has no coefficient for.
+align_design_to_coef <- function(design, cf) {
+  cf_names <- names(cf)
+  if (
+    is.null(cf_names) ||
+      is.null(colnames(design)) ||
+      anyDuplicated(cf_names) > 0L ||
+      !setequal(colnames(design), cf_names)
+  ) {
+    spicy_abort(
+      c(
+        "The prediction design does not match the fitted coefficients (column-set mismatch).",
+        "i" = "This can happen when a factor covariate declares levels that never occur in the data. Drop the empty levels first, e.g. `data$cov <- droplevels(data$cov)`.",
+        "i" = "If all covariate levels are observed, this is a bug in spicy: please report it at https://github.com/amaltawfik/spicy/issues."
+      ),
+      class = "spicy_internal_invariant"
+    )
+  }
+  design[, cf_names, drop = FALSE]
+}
+
 # Internal: build the "average design row" used to compute a single
 # covariate-adjusted estimated marginal mean (emmean). Both supported
 # methods reduce to the same linear-contrast formula
@@ -493,13 +524,18 @@ build_emmean_avg_row <- function(
           list(stringsAsFactors = FALSE, KEEP.OUT.ATTRS = FALSE)
         )
       )
-      # Restore original factor encoding so `model.matrix()`
-      # produces the same contrast columns as the fitted model.
+      # Restore the original factor encoding -- INCLUDING the
+      # `ordered` class -- so `model.matrix()` produces the same
+      # contrast columns as the fitted model. Dropping the ordered
+      # class here rebuilt an ordered covariate with treatment
+      # columns against contr.poly coefficients (audit phase 2,
+      # finding 21).
       for (nm in names(factor_covs)) {
         if (is.factor(covariates_observed[[nm]])) {
           grid[[nm]] <- factor(
             grid[[nm]],
-            levels = levels(covariates_observed[[nm]])
+            levels = levels(covariates_observed[[nm]]),
+            ordered = is.ordered(covariates_observed[[nm]])
           )
         }
       }
@@ -516,10 +552,16 @@ build_emmean_avg_row <- function(
     newdata <- grid
   }
 
+  # `contrasts.arg = fit$contrasts` pins the prediction grid to the
+  # coding the model was actually fitted with (treatment, poly, or a
+  # user-supplied contrast matrix), and the columns are then aligned
+  # to the coefficient vector BY NAME before the caller multiplies.
   design <- stats::model.matrix(
     stats::delete.response(stats::terms(fit)),
-    newdata
+    newdata,
+    contrasts.arg = fit$contrasts
   )
+  design <- align_design_to_coef(design, stats::coef(fit))
   colMeans(design)
 }
 

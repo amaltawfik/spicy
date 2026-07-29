@@ -3773,3 +3773,292 @@ test_that("export_continuous_lm_table errors when required Suggests packages are
     )
   }
 })
+
+# ---- ordered and labelled by (audit phase 2: findings 11/19/20/21/25/26) ----
+
+test_that("ordered by: emmeans are the group means and match an unordered-fit oracle", {
+  # sochealth$education / $age_group are ordered factors. The fit used
+  # to keep contr.poly while the prediction grid was rebuilt as a plain
+  # factor, silently multiplying treatment-coded columns against
+  # .L / .Q coefficients (findings 11 / 19).
+  cc <- !is.na(sochealth$bmi) & !is.na(sochealth$education)
+  out <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = education,
+    output = "long"
+  )
+  expect_identical(out$level, levels(sochealth$education))
+  # Without covariates the emmean at each level IS the group mean.
+  expect_equal(
+    out$emmean,
+    as.vector(tapply(sochealth$bmi[cc], sochealth$education[cc], mean)),
+    tolerance = 1e-12
+  )
+  # SE, CI, and omnibus F match the same model fitted on an unordered
+  # factor (the documented treatment-contrast convention).
+  d_or <- data.frame(
+    y = sochealth$bmi[cc],
+    g = factor(
+      as.character(sochealth$education[cc]),
+      levels = levels(sochealth$education)
+    )
+  )
+  fit <- stats::lm(y ~ g, data = d_or)
+  pr <- stats::predict(
+    fit,
+    newdata = data.frame(g = factor(levels(d_or$g), levels = levels(d_or$g))),
+    se.fit = TRUE
+  )
+  expect_equal(out$emmean, unname(pr$fit), tolerance = 1e-12)
+  expect_equal(out$emmean_se, unname(pr$se.fit), tolerance = 1e-12)
+  expect_equal(
+    out$p.value[1],
+    stats::anova(fit)[["Pr(>F)"]][1],
+    tolerance = 1e-12
+  )
+
+  # Second real ordered predictor: age_group.
+  cc2 <- !is.na(sochealth$bmi) & !is.na(sochealth$age_group)
+  out2 <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = age_group,
+    output = "long"
+  )
+  expect_equal(
+    out2$emmean,
+    as.vector(tapply(sochealth$bmi[cc2], sochealth$age_group[cc2], mean)),
+    tolerance = 1e-12
+  )
+})
+
+test_that("ordered by with weights: emmeans are the weighted group means (vignette oracle)", {
+  cc <- !is.na(sochealth$bmi) &
+    !is.na(sochealth$education) &
+    !is.na(sochealth$weight)
+  out <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = education,
+    weights = weight,
+    output = "long"
+  )
+  w <- sochealth$weight[cc]
+  y <- sochealth$bmi[cc]
+  g <- sochealth$education[cc]
+  oracle <- vapply(
+    levels(g),
+    function(l) sum(w[g == l] * y[g == l]) / sum(w[g == l]),
+    numeric(1)
+  )
+  expect_equal(out$emmean, unname(oracle), tolerance = 1e-12)
+  # The values published by the vignette and the Rd example.
+  expect_equal(round(out$emmean, 3), c(27.852, 25.791, 24.225))
+})
+
+test_that("2-level ordered by: displayed difference is the full mean difference (lm oracle)", {
+  # A 2-level ordered factor used to display the contr.poly .L
+  # coefficient as the difference: exactly Delta_true / sqrt(2), with
+  # the CI shrunk by the same factor but an exact p (finding 20).
+  sh <- sochealth
+  sh$edu2 <- factor(
+    ifelse(sh$education == "Tertiary", "Tertiary", "Below"),
+    levels = c("Below", "Tertiary"),
+    ordered = TRUE
+  )
+  out <- table_continuous_lm(sh, select = bmi, by = edu2, output = "long")
+  cc <- !is.na(sh$bmi) & !is.na(sh$edu2)
+  d_un <- data.frame(
+    y = sh$bmi[cc],
+    g = factor(as.character(sh$edu2[cc]), levels = c("Below", "Tertiary"))
+  )
+  fit <- stats::lm(y ~ g, data = d_un)
+  expect_equal(out$estimate[2], unname(stats::coef(fit)[2]), tolerance = 1e-12)
+  expect_equal(
+    out$estimate_se[2],
+    summary(fit)$coefficients[2, 2],
+    tolerance = 1e-12
+  )
+  expect_equal(
+    c(out$estimate_ci_lower[2], out$estimate_ci_upper[2]),
+    unname(stats::confint(fit)[2, ]),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    out$p.value[2],
+    summary(fit)$coefficients[2, 4],
+    tolerance = 1e-12
+  )
+
+  # Covariate-adjusted variant: same contract on the adjusted fit.
+  out_adj <- table_continuous_lm(
+    sh,
+    select = bmi,
+    by = edu2,
+    covariates = age,
+    output = "long"
+  )
+  cc2 <- cc & !is.na(sh$age)
+  d_adj <- data.frame(
+    y = sh$bmi[cc2],
+    g = factor(as.character(sh$edu2[cc2]), levels = c("Below", "Tertiary")),
+    age = sh$age[cc2]
+  )
+  fit2 <- stats::lm(y ~ g + age, data = d_adj)
+  expect_equal(
+    out_adj$estimate[2],
+    unname(stats::coef(fit2)[2]),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    c(out_adj$estimate_ci_lower[2], out_adj$estimate_ci_upper[2]),
+    unname(stats::confint(fit2)[2, ]),
+    tolerance = 1e-12
+  )
+})
+
+test_that("ordered by with covariates: proportional emmeans match the G-computation oracle", {
+  cc <- stats::complete.cases(
+    sochealth[, c("bmi", "education", "age", "sex")]
+  )
+  out <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = education,
+    covariates = c(age, sex),
+    output = "long"
+  )
+  d_cc <- data.frame(
+    y = sochealth$bmi[cc],
+    x = factor(
+      as.character(sochealth$education[cc]),
+      levels = levels(sochealth$education)
+    ),
+    age = sochealth$age[cc],
+    sex = sochealth$sex[cc]
+  )
+  fit <- stats::lm(y ~ x + age + sex, data = d_cc)
+  oracle <- vapply(
+    levels(d_cc$x),
+    function(l) {
+      nd <- d_cc
+      nd$x <- factor(l, levels = levels(d_cc$x))
+      mean(stats::predict(fit, nd))
+    },
+    numeric(1)
+  )
+  expect_equal(out$emmean, unname(oracle), tolerance = 1e-10)
+})
+
+test_that("balanced adjustment with an ordered factor covariate matches emmeans exactly", {
+  # The balanced grid used to rebuild the ordered covariate as a plain
+  # factor: treatment columns against contr.poly coefficients
+  # (finding 21). emmeans::emmeans() is the external oracle for the
+  # equal-weight estimand.
+  skip_if_not_installed("emmeans")
+  out <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = sex,
+    covariates = c(age, education),
+    adjustment = "balanced",
+    output = "long"
+  )
+  cc <- stats::complete.cases(
+    sochealth[, c("wellbeing_score", "sex", "age", "education")]
+  )
+  fit <- stats::lm(
+    wellbeing_score ~ sex + age + education,
+    data = sochealth[cc, ]
+  )
+  emm <- as.data.frame(emmeans::emmeans(fit, "sex"))
+  expect_equal(out$emmean, emm$emmean, tolerance = 1e-10)
+  expect_equal(out$emmean_se, emm$SE, tolerance = 1e-10)
+  expect_equal(out$emmean_ci_lower, emm$lower.CL, tolerance = 1e-10)
+  expect_equal(out$emmean_ci_upper, emm$upper.CL, tolerance = 1e-10)
+})
+
+test_that("labelled by with value labels dispatches to the categorical path", {
+  # A haven labelled numeric with value labels used to pass
+  # is.numeric() and silently produce a slope on the codes
+  # (findings 25 / 26): non-significant slope vs a highly significant
+  # 3-group ANOVA on the same data.
+  skip_if_not_installed("haven")
+  d <- data.frame(y = c(10, 12, 11, 13, 20, 22, 21, 23, 12, 14, 13, 15))
+  d$gl3 <- haven::labelled(
+    rep(c(1, 2, 3), each = 4),
+    labels = c(Low = 1, Mid = 2, High = 3)
+  )
+  out <- table_continuous_lm(d, select = y, by = gl3, output = "long")
+  expect_identical(out$predictor_type, rep("categorical", 3L))
+  expect_identical(out$level, c("1", "2", "3"))
+  expect_equal(out$emmean, c(11.5, 21.5, 13.5), tolerance = 1e-12)
+  fit <- stats::lm(d$y ~ factor(rep(c(1, 2, 3), each = 4)))
+  expect_equal(
+    out$p.value[1],
+    stats::anova(fit)[["Pr(>F)"]][1],
+    tolerance = 1e-10
+  )
+})
+
+test_that("labelled_spss by with value labels forms groups and honors user_na", {
+  skip_if_not_installed("haven")
+  d <- data.frame(y = c(5, 6, 7, 10, 11, 12, 100, 200))
+  d$grp <- haven::labelled_spss(
+    c(1, 1, 1, 2, 2, 2, 9, 9),
+    na_values = 9,
+    labels = c(Low = 1, High = 2, Refused = 9)
+  )
+  out <- table_continuous_lm(d, select = y, by = grp, output = "long")
+  expect_identical(out$predictor_type, rep("categorical", 2L))
+  expect_identical(out$level, c("1", "2"))
+  expect_equal(out$emmean, c(6, 11), tolerance = 1e-12)
+  expect_equal(out$estimate[2], 5, tolerance = 1e-12)
+  expect_identical(out$n, rep(6L, 2L))
+  # user_na = FALSE keeps the declared 9s as a third group.
+  out_keep <- table_continuous_lm(
+    d,
+    select = y,
+    by = grp,
+    user_na = FALSE,
+    output = "long"
+  )
+  expect_identical(out_keep$level, c("1", "2", "9"))
+  expect_identical(out_keep$n, rep(8L, 3L))
+})
+
+test_that("labelled by without value labels stays a continuous regressor", {
+  skip_if_not_installed("haven")
+  d <- data.frame(y = c(10, 12, 11, 13, 20, 22, 21, 23, 12, 14, 13, 15))
+  d$gn <- haven::labelled(rep(c(1, 2, 3), each = 4))
+  out <- table_continuous_lm(d, select = y, by = gn, output = "long")
+  expect_identical(out$predictor_type, "continuous")
+  expect_identical(out$estimate_type, "slope")
+  fit <- stats::lm(d$y ~ rep(c(1, 2, 3), each = 4))
+  expect_equal(out$estimate, unname(stats::coef(fit)[2]), tolerance = 1e-12)
+})
+
+test_that("a factor covariate with a declared-but-empty level aborts with a classed error", {
+  # Audit phase 2, finding 22 (interim contract): the fit drops the
+  # unused covariate level while the prediction grid still expands it.
+  # The name-aligned design product now refuses loudly with a classed,
+  # actionable error instead of a recycling warning followed by a
+  # cryptic base-R crash. The full fix (dropping empty covariate
+  # levels at fit entry) is tracked separately.
+  sh <- sochealth
+  sh$edu_empty <- factor(
+    as.character(sh$education),
+    levels = c(levels(sh$education), "PhD")
+  )
+  expect_error(
+    table_continuous_lm(
+      sh,
+      select = wellbeing_score,
+      by = sex,
+      covariates = edu_empty,
+      output = "long"
+    ),
+    class = "spicy_internal_invariant"
+  )
+})

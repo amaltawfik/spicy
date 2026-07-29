@@ -38,6 +38,12 @@
 #'   - **factor** or **ordered factor**: treated as categorical. Level order
 #'     is preserved as declared; the **first level** is the reference for
 #'     the displayed contrast (R's default treatment-contrast convention).
+#'     An ordered factor is refit as an unordered factor with the same
+#'     level order, so the model uses treatment contrasts -- not the
+#'     polynomial contrasts (`contr.poly`) `lm()` would apply by default.
+#'     The ordering only determines the display order and the reference
+#'     level; per-level means, the displayed difference, and its CI are
+#'     identical to those of an unordered factor with the same levels.
 #'   - **character**: coerced to factor with `factor(by)`, which orders the
 #'     levels alphabetically. To control the reference level, supply `by`
 #'     as an explicit factor with the desired level ordering (e.g. via
@@ -45,6 +51,12 @@
 #'   - **logical**: coerced to factor with levels `"FALSE"`, `"TRUE"` (in
 #'     that order, since `FALSE < TRUE`). The reference level is `"FALSE"`,
 #'     so a binary contrast displays as `Delta (TRUE - FALSE)`.
+#'   - **haven labelled with value labels** (an SPSS / Stata import):
+#'     treated as categorical over the raw codes, in ascending code order
+#'     -- the same grouping [table_continuous()] and [table_categorical()]
+#'     apply to the same column. A labelled vector without value labels is
+#'     treated as a continuous regressor. Declared missing values follow
+#'     `user_na` as usual.
 #'
 #'   Rows with `NA` in `by` are excluded from the analytic sample for each
 #'   outcome (NAs in `y` and `weights` are also excluded; see Details).
@@ -1138,6 +1150,23 @@ table_continuous_lm <- function(
   by_quo <- rlang::enquo(by)
   by_name <- resolve_single_column_selection(by_quo, data, "by")
   by_vector <- resolve_user_na(data[[by_name]])
+  # A haven labelled vector with value labels is the categorical
+  # signal of an SPSS / Stata import, and the sibling tables
+  # (table_continuous(), table_categorical()) already group by such
+  # columns. Convert it to a factor over the raw codes (ascending
+  # order -- the family convention) so it takes the categorical path
+  # instead of silently fitting a slope on the codes. A labelled
+  # vector without value labels stays continuous. `resolve_user_na()`
+  # has already applied the `user_na` contract, so declared-missing
+  # codes are NA (default) or ordinary values (user_na = FALSE) here.
+  if (
+    inherits(by_vector, "haven_labelled") &&
+      length(attr(by_vector, "labels", exact = TRUE)) > 0L
+  ) {
+    by_codes <- unclass(by_vector)
+    attributes(by_codes) <- NULL
+    by_vector <- factor(by_codes)
+  }
   if (!is_supported_lm_predictor(by_vector)) {
     spicy_abort(
       "`by` must be numeric, logical, character, or factor.",
@@ -1691,6 +1720,19 @@ fit_categorical_predictor_lm_rows <- function(
 ) {
   adjustment <- match.arg(adjustment)
   x <- droplevels(coerce_lm_factor(x))
+  # The documented contract for categorical `by` is R's default
+  # treatment-contrast convention: first level = reference, per-level
+  # means, and Delta = level - reference. An ordered factor would
+  # instead be fitted with polynomial contrasts (contr.poly), while
+  # the prediction grids below rebuild `x` as a plain factor --
+  # design columns and coefficients would silently diverge (audit
+  # phase 2, findings 11/19/20). Refit as an unordered factor with
+  # the same level order so the fit itself matches the documented
+  # convention in both the covariate-free and the covariate-adjusted
+  # branches.
+  if (is.ordered(x)) {
+    x <- factor(x, levels = levels(x), ordered = FALSE)
+  }
   if (length(y) < 2L || nlevels(x) < 2L) {
     return(make_empty_lm_rows(
       outcome_name,
@@ -1753,10 +1795,16 @@ fit_categorical_predictor_lm_rows <- function(
   levs <- levels(x)
   if (!has_covs) {
     newdata <- data.frame(x = factor(levs, levels = levs))
+    # `contrasts.arg = fit$contrasts` pins the grid to the coding the
+    # model was actually fitted with, and the columns are then aligned
+    # to the coefficient vector BY NAME -- a positional product would
+    # silently mismatch if the codings ever diverged (audit phase 2).
     design <- stats::model.matrix(
       stats::delete.response(stats::terms(fit)),
-      newdata
+      newdata,
+      contrasts.arg = fit$contrasts
     )
+    design <- align_design_to_coef(design, cf)
     emmean <- as.vector(design %*% cf)
     emmean_se <- sqrt(rowSums((design %*% vc) * design))
   } else {
@@ -1856,9 +1904,29 @@ fit_categorical_predictor_lm_rows <- function(
   if (isTRUE(show_reference)) {
     # Per-level contrast (binary case): use the same single-coef
     # inference helper as for numeric predictors so CR mode picks
-    # up Satterthwaite df automatically.
+    # up Satterthwaite df automatically. Under treatment coding the
+    # focal dummies are named "x<level>"; look each coefficient up
+    # BY NAME -- positional indexing is exactly the silent
+    # misalignment behind the ordered-`by` audit findings (a
+    # contr.poly ".L" coefficient read as the displayed difference).
     for (i in seq_len(nlevels(x) - 1L)) {
-      coef_idx <- i + 1L
+      coef_idx <- match(paste0("x", levs[i + 1L]), names(cf))
+      if (is.na(coef_idx)) {
+        # nocov start: defensive. `x` is an unordered factor by
+        # construction above, so the fit always names its dummies
+        # "x<level>" under treatment coding.
+        spicy_abort(
+          c(
+            sprintf(
+              "Internal invariant failed: coefficient `%s` not found in the fitted model.",
+              paste0("x", levs[i + 1L])
+            ),
+            "i" = "Please report this at https://github.com/amaltawfik/spicy/issues."
+          ),
+          class = "spicy_internal_invariant"
+        )
+        # nocov end
+      }
       row_idx <- i + 1L
       inf <- compute_coef_inference(
         fit,

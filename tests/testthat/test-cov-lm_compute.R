@@ -423,3 +423,63 @@ test_that("balanced avg row reproduces the emmeans estimate and SE", {
     tolerance = 1e-10
   )
 })
+
+test_that("balanced avg row keeps the ordered class and fit contrasts of an ordered covariate", {
+  # An ordered covariate is fitted with contr.poly; the balanced grid
+  # must reproduce those columns instead of rebuilding the covariate
+  # as a plain treatment-coded factor (audit phase 2, finding 21).
+  # emmeans::emmeans() is the external oracle for the equal-weight
+  # estimand.
+  skip_if_not_installed("emmeans")
+  set.seed(2)
+  n <- 90
+  d <- data.frame(
+    y = stats::rnorm(n) + rep(c(0, 0.5, 1.5), length.out = n),
+    x = factor(rep(c("a", "b"), length.out = n)),
+    ord = factor(
+      rep(c("low", "mid", "high"), length.out = n),
+      levels = c("low", "mid", "high"),
+      ordered = TRUE
+    )
+  )
+  fit <- stats::lm(y ~ x + ord, data = d)
+  covobs <- data.frame(ord = d$ord)
+  row <- spicy:::build_emmean_avg_row(
+    fit,
+    x_focal_level = "a",
+    x_levels = c("a", "b"),
+    covariates_observed = covobs,
+    method = "balanced"
+  )
+  # The averaged row carries the fit's contr.poly column names (ord.L,
+  # ord.Q), aligned to coef() order by name.
+  expect_identical(names(row), names(stats::coef(fit)))
+  emm <- as.data.frame(emmeans::emmeans(fit, "x"))
+  expect_equal(
+    sum(row * stats::coef(fit)),
+    emm$emmean[emm$x == "a"],
+    tolerance = 1e-10
+  )
+  expect_equal(
+    sqrt(drop(t(row) %*% stats::vcov(fit) %*% row)),
+    emm$SE[emm$x == "a"],
+    tolerance = 1e-10
+  )
+})
+
+test_that("align_design_to_coef reorders by name and aborts on a column-set mismatch", {
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  # Reordered columns come back in coef() order.
+  ok <- spicy:::align_design_to_coef(
+    stats::model.matrix(fit)[, c(2, 1)],
+    stats::coef(fit)
+  )
+  expect_identical(colnames(ok), names(stats::coef(fit)))
+  # A design column the fit has no coefficient for aborts loudly.
+  bad <- stats::model.matrix(fit)
+  colnames(bad)[2] <- "not_wt"
+  expect_error(
+    spicy:::align_design_to_coef(bad, stats::coef(fit)),
+    class = "spicy_internal_invariant"
+  )
+})

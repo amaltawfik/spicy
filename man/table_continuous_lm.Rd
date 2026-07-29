@@ -60,6 +60,12 @@ table reports the slope of \code{by} and its CI from \code{lm(y ~ by, ...)}.
 \item \strong{factor} or \strong{ordered factor}: treated as categorical. Level order
 is preserved as declared; the \strong{first level} is the reference for
 the displayed contrast (R's default treatment-contrast convention).
+An ordered factor is refit as an unordered factor with the same
+level order, so the model uses treatment contrasts -- not the
+polynomial contrasts (\code{contr.poly}) \code{lm()} would apply by default.
+The ordering only determines the display order and the reference
+level; per-level means, the displayed difference, and its CI are
+identical to those of an unordered factor with the same levels.
 \item \strong{character}: coerced to factor with \code{factor(by)}, which orders the
 levels alphabetically. To control the reference level, supply \code{by}
 as an explicit factor with the desired level ordering (e.g. via
@@ -67,6 +73,12 @@ as an explicit factor with the desired level ordering (e.g. via
 \item \strong{logical}: coerced to factor with levels \code{"FALSE"}, \code{"TRUE"} (in
 that order, since \code{FALSE < TRUE}). The reference level is \code{"FALSE"},
 so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
+\item \strong{haven labelled with value labels} (an SPSS / Stata import):
+treated as categorical over the raw codes, in ascending code order
+-- the same grouping \code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_categorical]{table_categorical()}}
+apply to the same column. A labelled vector without value labels is
+treated as a continuous regressor. Declared missing values follow
+\code{user_na} as usual.
 }
 
 Rows with \code{NA} in \code{by} are excluded from the analytic sample for each

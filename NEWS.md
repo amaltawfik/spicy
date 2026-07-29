@@ -447,6 +447,10 @@ rendering an empty column.
 * `table_continuous_lm()` now discloses robust and resampling SEs in
   its table note, carries its notes into every rich output, and
   accepts `cluster = ~region`.
+* `table_continuous_lm()` reports correct estimated means, SEs, CIs, and the displayed binary difference when `by` is an ordered factor. The model was fitted with polynomial contrasts while the prediction grid assumed treatment coding, so every `M` column was wrong (and the 2-level difference was shrunk by exactly 1/sqrt(2)) while the F statistic and p-value stayed correct, masking the error. An ordered `by` is now refit with treatment contrasts, matching the documented convention: the ordering determines level order and the reference level only.
+* `table_continuous_lm(adjustment = "balanced")` computes correct adjusted means when a covariate is an ordered factor: the synthetic grid keeps the covariate's ordered coding (`contr.poly`) instead of silently rebuilding it with treatment columns against polynomial coefficients. `adjustment = "proportional"` was not affected.
+* `table_continuous_lm()` treats a haven labelled `by` with value labels as a categorical predictor -- groups over the raw codes, the same dispatch as `table_continuous()` and `table_categorical()` -- instead of silently fitting a continuous slope on the codes. A labelled `by` without value labels is still treated as continuous.
+* `table_continuous_lm()` raises a classed, actionable error when a factor covariate declares a level that never occurs in the data, instead of a recycling warning followed by a cryptic base-R crash.
 * The RMST and risk-difference columns extend to parametric survival
   models (`survival::survreg`): the AFT curves are closed-form, so
   the standardized survival is exact up to numerical integration.
