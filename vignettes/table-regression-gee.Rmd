@@ -76,7 +76,13 @@ Laird and Ware (2011, p. 342) put it, the choice "cannot be made
 through any automatic procedure. Rather, the choice must be made on
 subject-matter grounds." State the scientific question, and the
 estimand -- hence the model family -- follows (Hubbard et al.,
-2010).
+2010). Their own shorthand for the contrast: a physician weighing a
+treatment for the patient in front of them wants the
+subject-specific effect; a public-health researcher weighing the
+same treatment for a population wants the population-averaged one.
+And when both questions matter, "there is no contradiction in
+reporting estimates of both" (Fitzmaurice et al., 2011) -- which is
+precisely what a side-by-side table does.
 
 For a linear model the two coincide, so the stakes are low. On a
 logit link they do not: with a random-intercept variance
@@ -84,8 +90,14 @@ $\sigma^2$, the population-averaged coefficient is attenuated by
 approximately $1/\sqrt{1 + 0.346\,\sigma^2}$ relative to the
 subject-specific one (Zeger et al., 1988; the constant is
 $c^2$ with $c = 16\sqrt{3}/(15\pi)$), so the conditional odds ratio is always
-farther from 1. Neither is "biased" -- they answer different
-questions. The side-by-side table in the
+farther from 1. The magnitudes are worth knowing: at
+$\sigma^2 = 3.5$ the subject-specific coefficient is about 1.5 times
+the marginal one, at $\sigma^2 = 9$ about twice (Fitzmaurice et al.,
+2011). The log link is the notable exception -- with a random
+intercept, every coefficient except the intercept coincides, so
+conditional and marginal rate ratios are directly comparable.
+Neither estimand is "biased": they answer different questions. The
+side-by-side table in the
 [mixed-effects vignette](table-regression-mixed.html) shows the gap
 on real data.
 
@@ -97,7 +109,9 @@ multivariate normal -- a full joint distribution for ten binary
 repeated measures involves over a thousand association parameters
 (Fitzmaurice et al., 2011) -- and GEE sidesteps the problem by
 modelling only the mean, the variance function, and the pairwise
-association. Second, the coefficient estimates are consistent even
+association -- while remaining, in many longitudinal designs,
+nearly as efficient as maximum likelihood (Fitzmaurice et al.,
+2011). Second, the coefficient estimates are consistent even
 when the assumed within-cluster correlation structure is wrong
 (Liang & Zeger, 1986). Third, the standard errors come from a
 cluster-robust sandwich estimator *by construction* -- robustness is
@@ -112,8 +126,9 @@ lose substantial efficiency relative to the correct structure (Pan,
 2001) -- the QIC section below is the remedy. *Missing data*: GEE
 estimates are consistent only when missingness is completely at
 random (MCAR, in Rubin's 1976 sense; Halekoh, Højsgaard & Yan,
-2006); when dropout depends on the observed history, likelihood-based
-mixed models or weighted GEE are the appropriate tools. *Clusters*:
+2006; Fitzmaurice et al., 2011); when dropout depends on the
+observed history (MAR), the remedies are inverse-probability-weighted
+GEE or a likelihood-based mixed model. *Clusters*:
 the sandwich is asymptotic in the number of clusters -- see the
 jackknife section below for the small-$K$ remedy. Finally, marginal
 models assume the current response depends only on current
@@ -237,8 +252,10 @@ table_regression(fit_sorted, show_fit_stats = c("nobs", "n_groups", "max_cluster
 ## Few clusters: the jackknife variants
 
 The sandwich estimator is asymptotic in the number of clusters: with
-few clusters ($K \le 30$ is the threshold the geepack authors cite,
-following Paik, 1988) it is biased, and the jackknife variance
+few clusters it is biased *downward* -- the nominal standard errors
+are too small, and the estimator itself becomes unstable
+(Fitzmaurice et al., 2011). At $K \le 30$ (the threshold the geepack
+authors cite, following Paik, 1988) the jackknife variance
 estimators are the recommended alternative (Halekoh et al., 2006).
 `geeglm` offers three (`std.err = "jack"`, `"j1s"`, `"fij"`); the
 approximate and one-step versions are far cheaper than the fully
@@ -365,8 +382,9 @@ table_regression(
 ## References
 
 * Fitzmaurice, G. M., Laird, N. M., & Ware, J. H. (2011). *Applied
-  Longitudinal Analysis* (2nd ed.). Wiley. (Chapter 12, Marginal
-  models: Introduction and overview.)
+  Longitudinal Analysis* (2nd ed.). Wiley. (Chapters 12, 13, and 16:
+  marginal models, GEE estimation, and the contrast with mixed
+  effects models.)
 * Halekoh, U., Højsgaard, S., & Yan, J. (2006). The R package
   geepack for generalized estimating equations. *Journal of
   Statistical Software*, 15(2), 1–11.
