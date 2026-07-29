@@ -110,6 +110,7 @@ family:
 | Counts, two-part models | `pscl::hurdle()`, `pscl::zeroinfl()`, `glmmTMB::glmmTMB()` (zero-inflation and dispersion components) |
 | Survival | `survival::coxph()`, `survival::survreg()`, `rms::cph()`, `flexsurv::flexsurvreg()` |
 | Survey-weighted | `survey::svyglm()` (design-based SEs) |
+| Population-averaged (GEE) | `geepack::geeglm()` (native sandwich SEs, working correlation disclosed) |
 | Additive, proportions, selection | `mgcv::gam()`, `mgcv::bam()`, `betareg::betareg()`, `sampleSelection::selection()` |
 | rms | `rms::ols()`, `rms::lrm()`, `rms::Glm()` |
 | Bayesian | `rstanarm::stan_glm()`, `rstanarm::stan_glmer()`, `brms::brm()` (posterior median, credible intervals, no p-values) |
