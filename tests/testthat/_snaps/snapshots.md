@@ -313,7 +313,7 @@
       Uncertainty Coefficient C|R           0.012  0.015     0.000     0.042  .429 
       Goodman-Kruskal Gamma                 0.082  0.172    -0.255     0.419  .634 
       Kendall's Tau-b                       0.045  0.096    -0.142     0.233  .635 
-      Kendall's Tau-c                       0.050  0.105    -0.156     0.256  .635 
+      Stuart's Tau-c                        0.050  0.105    -0.156     0.256  .635 
       Somers' D R|C                         0.041  0.087    -0.129     0.212  .635 
       Somers' D C|R                         0.050  0.105    -0.156     0.256  .635 
 

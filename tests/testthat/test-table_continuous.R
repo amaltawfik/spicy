@@ -341,10 +341,45 @@ test_that("table_continuous grouped with multiple variables", {
   )
 })
 
-test_that("table_continuous grouped with character group_var sorts levels", {
+test_that("table_continuous non-factor by groups in order of appearance", {
+  # Audit phase 2, finding 17: the family convention (locked for
+  # table_categorical()) is order of first appearance for a
+  # non-factor `by`; table_continuous() used to sort.
   df <- data.frame(g = c("Z", "A", "Z", "A"), x = c(1, 2, 3, 4))
   out <- table_continuous(df, by = g, output = "data.frame")
-  expect_equal(out$group, c("A", "Z"))
+  expect_equal(out$group, c("Z", "A"))
+
+  # Numeric by, same convention, matching table_categorical().
+  set.seed(7)
+  dn <- data.frame(gnum = sample(c(1, 2, 3), 60, TRUE), xx = rnorm(60))
+  tc <- table_continuous(dn, select = xx, by = gnum, output = "long")
+  dcat <- data.frame(yy = factor(rep(c("u", "v"), 30)), gnum = dn$gnum)
+  tcat <- table_categorical(dcat, select = yy, by = gnum, output = "long")
+  expect_equal(
+    unique(tc$group),
+    setdiff(unique(tcat$group), "Total")
+  )
+})
+
+test_that("the test direction follows the displayed group order", {
+  # Companion to finding 17: the formula interface of t.test() would
+  # re-sort a bare character `by`; the statistic's sign must match
+  # the displayed first-minus-second convention.
+  df <- data.frame(
+    g = c("Z", "A", "Z", "A", "Z", "A"),
+    x = c(1, 2, 3, 4, 5, 6)
+  )
+  out <- table_continuous(
+    df,
+    by = g,
+    p_value = TRUE,
+    statistic = TRUE,
+    output = "long"
+  )
+  expect_equal(unique(out$group), c("Z", "A"))
+  tt <- stats::t.test(df$x[df$g == "Z"], df$x[df$g == "A"])
+  expect_equal(out$statistic[1], unname(tt$statistic), tolerance = 1e-12)
+  expect_equal(out$p.value[1], tt$p.value, tolerance = 1e-12)
 })
 
 # ---- p_value / statistic ----
@@ -2929,4 +2964,86 @@ test_that("output = 'word' errors when officer is not installed even if flextabl
     ),
     "Install package 'officer'"
   )
+})
+
+test_that("a constant column reports exact SD 0 and a degenerate CI", {
+  # Audit phase 2, finding 16: pins the documented behavior -- the
+  # numbers are exact, "--" is reserved for undefined statistics.
+  out <- table_continuous(
+    data.frame(k = rep(5, 4)),
+    select = k,
+    output = "data.frame"
+  )
+  expect_equal(out$mean, 5)
+  expect_equal(out$sd, 0)
+  expect_equal(out$ci_lower, 5)
+  expect_equal(out$ci_upper, 5)
+  # n = 1: SD / CI undefined -> NA (rendered as "--").
+  one <- table_continuous(
+    data.frame(k = 5),
+    select = k,
+    output = "data.frame"
+  )
+  expect_true(is.na(one$sd))
+  expect_true(is.na(one$ci_lower))
+})
+
+test_that("a degenerate variable degrades per-variable, others survive", {
+  # Audit phase 2, finding 27: t.test()'s "data are essentially
+  # constant" error used to kill the whole multi-variable table.
+  d <- data.frame(
+    cst = c(5, 5, 5, 5, 7, 7, 7, 7),
+    ok = c(1.2, 2.3, 1.8, 2.9, 5.4, 6.1, 5.8, 6.3),
+    g = factor(rep(c("m", "f"), each = 4))
+  )
+  expect_warning(
+    out <- table_continuous(d, select = c(cst, ok), by = g, output = "long"),
+    class = "spicy_undefined_stat"
+  )
+  cst_rows <- out[out$variable == "cst", ]
+  ok_rows <- out[out$variable == "ok", ]
+  # Descriptives stay exact for the degenerate variable.
+  expect_equal(sort(cst_rows$mean), c(5, 7))
+  expect_true(all(is.na(cst_rows$p.value)))
+  expect_true(all(is.na(cst_rows$test_type)))
+  # The healthy variable keeps its test.
+  tt <- stats::t.test(ok ~ g, data = d)
+  expect_equal(ok_rows$p.value[1], tt$p.value, tolerance = 1e-12)
+  # The nonparametric route still works on the same data.
+  wp <- suppressWarnings(stats::wilcox.test(cst ~ g, data = d))$p.value
+  np <- table_continuous(
+    d,
+    select = cst,
+    by = g,
+    test = "nonparametric",
+    output = "long"
+  )
+  expect_equal(np$p.value[1], wp, tolerance = 1e-12)
+})
+
+test_that("an undefined effect size degrades to NA with a classed warning", {
+  # Companion to finding 27: a zero pooled SD makes Hedges' g
+  # non-finite; the cell must be NA, never a printed Inf.
+  d <- data.frame(
+    cst = c(5, 5, 5, 5, 7, 7, 7, 7),
+    g = factor(rep(c("m", "f"), each = 4))
+  )
+  warns <- character(0)
+  out <- withCallingHandlers(
+    table_continuous(
+      d,
+      select = cst,
+      by = g,
+      effect_size = "hedges_g",
+      p_value = FALSE,
+      output = "long"
+    ),
+    spicy_undefined_stat = function(w) {
+      warns <<- c(warns, class(w)[1])
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_true(length(warns) >= 1L)
+  expect_true(all(is.na(out$es_value)))
+  expect_false(any(is.infinite(out$es_value)))
 })

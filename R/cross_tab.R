@@ -940,9 +940,13 @@ cross_tab <- function(
         # No `suppressWarnings()` blanket here: the measures emit only
         # classed spicy warnings (chisq.test noise is already muffled
         # inside them), and those must reach the caller -- same policy
-        # as `assoc_measures()`. Hard errors (e.g. a measure that does
-        # not apply to this table shape) still degrade to "no
-        # association line" rather than failing the whole crosstab.
+        # as `assoc_measures()`. Classed spicy errors are the
+        # measures' documented contract (e.g. `phi()` refuses a
+        # non-2x2 table) and must surface too: swallowing them used to
+        # leave a silent all-NA association column (audit phase 2,
+        # finding 31; pre-1.0 doctrine prefers a hard error over a
+        # silent NA). Only unclassed errors degrade to "no
+        # association line".
         assoc_out <- tryCatch(
           switch(
             assoc_choice,
@@ -954,7 +958,12 @@ cross_tab <- function(
             somers_d = somers_d(tab_stats, "symmetric", detail = TRUE),
             lambda = lambda_gk(tab_stats, "symmetric", detail = TRUE)
           ),
-          error = function(e) NULL
+          error = function(e) {
+            if (inherits(e, "spicy_error")) {
+              stop(e)
+            }
+            NULL
+          }
         )
         if (!is.null(assoc_out)) {
           assoc_result <- assoc_out

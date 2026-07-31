@@ -46,7 +46,14 @@ expression pattern (character string).}
 \item{by}{Optional grouping column. Accepts an unquoted column name
 or a single character column name. Coerced to factor for
 grouping; non-numeric grouping columns (factor, character,
-logical) are supported as-is.}
+logical) are supported as-is. Factor levels keep their declared
+order; any other \code{by} (character, numeric, haven labelled) forms
+groups in order of first appearance in the data -- the same
+convention as \code{\link[=table_categorical]{table_categorical()}}. For a haven labelled \code{by},
+the group headers are the raw codes (value labels are not used
+for grouping headers -- the family convention shared with
+\code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared
+missing values follow \code{user_na} as usual.}
 
 \item{exclude}{Columns to exclude. Supports tidyselect syntax and
 character vectors of column names.}
@@ -344,7 +351,9 @@ packages per output engine are documented under \verb{@param align},
 
 Non-numeric columns are silently dropped (set \code{verbose = TRUE} to
 see which columns were excluded). When a constant column is
-passed, SD and CI are shown as \code{"--"} in the ASCII table.
+passed, its statistics are reported exactly: SD is \code{0.00} and the
+CI degenerates to \verb{[m, m]}. \code{"--"} cells appear only when a
+statistic is undefined (fewer than two valid observations).
 }
 
 \section{Declared missing values}{

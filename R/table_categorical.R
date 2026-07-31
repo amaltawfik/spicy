@@ -100,11 +100,19 @@
 # The strict per-row validation (e.g. phi requires a 2x2 table) lives
 # here so the user gets a clear, early error instead of a silent NA in
 # the cell.
+#
+# `user_na` must be the same flag the tabulation uses: haven's
+# `is.na()` treats declared-missing codes as NA, so counting levels on
+# the raw column under `user_na = FALSE` would see fewer levels than
+# the table actually has -- the dispatch then picks/validates a
+# measure (e.g. phi on a "2x2") that the real 3x2 table refuses
+# (audit phase 2, finding 31).
 .resolve_assoc_measures <- function(
   assoc_measure,
   select_names,
   data,
-  by_name
+  by_name,
+  user_na = TRUE
 ) {
   valid <- c(
     "auto",
@@ -200,9 +208,15 @@
     per_row[] <- as.character(assoc_measure)
   }
 
-  # Resolve each remaining "auto" based on the variable / by-variable type
+  # Resolve each remaining "auto" based on the variable / by-variable
+  # type. Level counts must mirror the tabulation's `user_na` regime
+  # (see the roxygen comment above).
+  .count_levels <- function(v) {
+    v <- if (isTRUE(user_na)) .user_na_to_na(v) else .user_na_zap(v)
+    length(unique(v[!is.na(v)]))
+  }
   by_var <- data[[by_name]]
-  by_n_levels <- length(unique(by_var[!is.na(by_var)]))
+  by_n_levels <- .count_levels(by_var)
   by_ordered <- is.ordered(by_var)
 
   for (i in seq_along(per_row)) {
@@ -210,7 +224,7 @@
       next
     }
     var <- data[[select_names[i]]]
-    var_n_levels <- length(unique(var[!is.na(var)]))
+    var_n_levels <- .count_levels(var)
     var_ordered <- is.ordered(var)
     per_row[i] <- if (var_n_levels == 2L && by_n_levels == 2L) {
       "phi"
@@ -227,7 +241,7 @@
       next
     }
     var <- data[[select_names[i]]]
-    var_n_levels <- length(unique(var[!is.na(var)]))
+    var_n_levels <- .count_levels(var)
     if (var_n_levels != 2L || by_n_levels != 2L) {
       spicy_abort(
         sprintf(
@@ -301,7 +315,15 @@
 #'   numeric-coded categorical variables can still be tabulated by
 #'   naming them.
 #' @param by Optional grouping column used for columns/groups. Accepts an
-#'   unquoted column name or a single character column name.
+#'   unquoted column name or a single character column name. Factor
+#'   levels keep their declared order; any other `by` (character,
+#'   numeric, haven labelled) forms group columns in order of first
+#'   appearance in the data -- the same convention as
+#'   [table_continuous()]. For a haven labelled `by`, the group
+#'   headers are the raw codes (value labels are not used for group
+#'   headers -- the family convention shared with [table_continuous()]
+#'   and [table_continuous_lm()]); declared missing values follow
+#'   `user_na` as usual.
 #' @param labels An optional **named character vector** of variable
 #'   labels whose names match column names in `data` (e.g.
 #'   `c(smoking = "Current smoker")`) -- the same contract as
@@ -1824,7 +1846,8 @@ table_categorical <- function(
     assoc_measure,
     select_names = select_names,
     data = data,
-    by_name = by_name
+    by_name = by_name,
+    user_na = user_na
   )
   show_assoc <- any(assoc_measures_per_row != "none")
   if (!show_assoc) {
@@ -2015,7 +2038,14 @@ table_categorical <- function(
     # attributes, never reserved names, so user levels literally named
     # "Values", "Total", or "N" survive intact.
     groups_present <- names(ct_n)[-c(1L, ncol(ct_n))]
-    groups_use <- intersect(group_levels, c(groups_present, margin_key))
+    # A `by` level declared but never observed is a real group with
+    # zero observations: keep it so the wide and long outputs agree on
+    # an explicit zero column (0 n, 0.0 %) instead of NA cells in wide
+    # and a missing group in long (audit phase 2, finding 29).
+    groups_use <- intersect(
+      group_levels,
+      c(groups_present, margin_key, levels(g_fac))
+    )
 
     vals_n <- as.character(ct_n[[1L]])
     vals_p <- as.character(ct_pct[[1L]])
@@ -2050,13 +2080,18 @@ table_categorical <- function(
         # literally called "Total".
         n_val <- if (identical(gr, margin_key)) {
           ct_n[in_n, ncol(ct_n)]
-        } else {
+        } else if (gr %in% names(ct_n)) {
           ct_n[in_n, gr]
+        } else {
+          # Declared-but-unobserved group: zero count, zero percent.
+          0
         }
         pct_val <- if (identical(gr, margin_key)) {
           ct_pct[in_p, ncol(ct_pct)]
-        } else {
+        } else if (gr %in% names(ct_pct)) {
           ct_pct[in_p, gr]
+        } else {
+          0
         }
         row_df <- data.frame(
           variable = labels[i],

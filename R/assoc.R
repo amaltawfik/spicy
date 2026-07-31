@@ -1885,7 +1885,9 @@ assoc_measures <- function(
         conf_level = conf_level
       )
     },
-    "Kendall's Tau-c" = \(t) {
+    # "Stuart's Tau-c" is the SPSS / PSPP label, shared with the
+    # cross_tab() note and the table_categorical() column header.
+    "Stuart's Tau-c" = \(t) {
       kendall_tau_c(
         t,
         detail = TRUE,

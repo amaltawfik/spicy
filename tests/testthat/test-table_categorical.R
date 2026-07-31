@@ -2825,3 +2825,93 @@ test_that("percent_digits >= 2 renders true decimals with by", {
   expect_identical(rb[["g2 %"]], "33.33")
   expect_identical(rc[["g2 %"]], "66.67")
 })
+
+test_that("a declared-but-unobserved by level is a zero column in wide and long", {
+  # Audit phase 2, finding 29: the wide output used to carry NA cells
+  # under the empty group's columns while the long output omitted the
+  # group entirely.
+  d <- data.frame(
+    x = factor(c("a", "b", "a", "a", "b", "b", "a", "b", "a", "b")),
+    g = factor(rep(c("m", "f"), 5), levels = c("m", "f", "ghost"))
+  )
+  wide <- table_categorical(d, select = x, by = g, output = "data.frame")
+  expect_equal(wide[["ghost n"]], c(0, 0))
+  expect_equal(wide[["ghost %"]], c(0, 0))
+  long <- table_categorical(d, select = x, by = g, output = "long")
+  ghost <- long[long$group == "ghost", ]
+  expect_equal(nrow(ghost), 2L)
+  expect_equal(ghost$n, c(0, 0))
+  expect_equal(ghost$pct, c(0, 0))
+  # Observed cells and the margin are unchanged (oracle table()).
+  expect_equal(
+    long$n[long$group == "m" & long$level == "a"],
+    unname(table(d$x, d$g)["a", "m"])
+  )
+  expect_equal(long$n[long$group == "Total" & long$level == "a"], 5)
+  # Same contract under drop_na = TRUE.
+  wide_dn <- table_categorical(
+    d,
+    select = x,
+    by = g,
+    drop_na = TRUE,
+    output = "data.frame"
+  )
+  expect_equal(wide_dn[["ghost n"]], c(0, 0))
+})
+
+test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
+  # Audit phase 2, finding 31: with declared na_values kept as valid
+  # codes, the table is 3x2; phi's documented spicy_unsupported error
+  # used to be swallowed into an all-NA column.
+  skip_if_not_installed("haven")
+  d <- data.frame(g = factor(rep(c("u", "v"), 5)))
+  d$xs <- haven::labelled_spss(
+    c(1, 2, 1, 9, 1, 2, 2, 1, 9, 2),
+    labels = c(Low = 1, High = 2, Refused = 9),
+    na_values = 9
+  )
+  expect_error(
+    table_categorical(
+      d,
+      select = xs,
+      by = g,
+      user_na = FALSE,
+      assoc_measure = "phi",
+      output = "long"
+    ),
+    class = "spicy_unsupported"
+  )
+  # auto now dispatches on the levels the table actually has (3x2 ->
+  # Cramer's V), instead of choosing phi from the 2 non-declared codes.
+  auto <- table_categorical(
+    d,
+    select = xs,
+    by = g,
+    user_na = FALSE,
+    output = "long"
+  )
+  expect_true("Cramer's V" %in% names(auto))
+  expect_false(any(is.na(auto[["Cramer's V"]])))
+  # With user_na = TRUE the table is a true 2x2: phi works and is
+  # exact against the chi-squared oracle.
+  ok <- table_categorical(
+    d,
+    select = xs,
+    by = g,
+    assoc_measure = "phi",
+    output = "long"
+  )
+  codes <- as.numeric(unclass(d$xs))
+  keep <- codes != 9
+  chi <- suppressWarnings(
+    stats::chisq.test(
+      table(codes[keep], as.character(d$g)[keep]),
+      correct = FALSE
+    )
+  )
+  expect_equal(
+    ok$Phi[1],
+    unname(sqrt(chi$statistic / sum(keep))),
+    tolerance = 1e-10
+  )
+})

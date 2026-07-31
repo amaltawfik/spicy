@@ -3591,23 +3591,28 @@ test_that("table_continuous_lm: numeric predictor + weights exercises weighted l
 })
 
 test_that("fit_categorical_predictor_lm_rows handles df_resid <= 0 (perfect fit)", {
-  # Perfect fit: 3 observations, 3 levels => df.residual = 0; the qnorm
-  # fallback at line 1382 fires. Use vcov = "classical" to avoid CR
-  # complications; the function still returns rows without erroring.
-  out <- spicy:::fit_categorical_predictor_lm_rows(
-    y = c(1, 2, 3),
-    x = factor(c("a", "b", "c")),
-    weights = NULL,
-    outcome_name = "y",
-    outcome_label = "y",
-    predictor_label = "g",
-    vcov_type = "classical",
-    contrast = "treatment",
-    ci_level = 0.95,
-    effect_size = "none"
+  # Perfect fit: 3 observations, 3 levels => df.residual = 0. The
+  # saturated-fit degradation (audit phase 2, finding 32) warns with a
+  # classed condition and blanks the inferential columns to NA; the
+  # function still returns rows without erroring.
+  expect_warning(
+    out <- spicy:::fit_categorical_predictor_lm_rows(
+      y = c(1, 2, 3),
+      x = factor(c("a", "b", "c")),
+      weights = NULL,
+      outcome_name = "y",
+      outcome_label = "y",
+      predictor_label = "g",
+      vcov_type = "classical",
+      contrast = "treatment",
+      ci_level = 0.95,
+      effect_size = "none"
+    ),
+    class = "spicy_undefined_stat"
   )
   expect_s3_class(out, "data.frame")
   expect_equal(nrow(out), 3L)
+  expect_true(all(is.na(out$emmean_se)))
 })
 
 test_that("compute_model_vcov HC fallback returns the classical vcov after warning", {
@@ -4039,26 +4044,286 @@ test_that("labelled by without value labels stays a continuous regressor", {
   expect_equal(out$estimate, unname(stats::coef(fit)[2]), tolerance = 1e-12)
 })
 
-test_that("a factor covariate with a declared-but-empty level aborts with a classed error", {
-  # Audit phase 2, finding 22 (interim contract): the fit drops the
-  # unused covariate level while the prediction grid still expands it.
-  # The name-aligned design product now refuses loudly with a classed,
-  # actionable error instead of a recycling warning followed by a
-  # cryptic base-R crash. The full fix (dropping empty covariate
-  # levels at fit entry) is tracked separately.
+test_that("a factor covariate with a declared-but-empty level fits cleanly", {
+  # Audit phase 2, finding 22 (real fix): empty declared covariate
+  # levels are dropped at fit entry, so the table comes out correct
+  # with no error. Oracle: the same lm() on droplevels()-ed data.
+  # The align_design_to_coef() guard stays as a last resort (unit
+  # test in test-cov-lm_compute.R).
   sh <- sochealth
   sh$edu_empty <- factor(
     as.character(sh$education),
     levels = c(levels(sh$education), "PhD")
   )
+  out <- table_continuous_lm(
+    sh,
+    select = wellbeing_score,
+    by = sex,
+    covariates = edu_empty,
+    output = "long"
+  )
+  fit <- stats::lm(
+    wellbeing_score ~ sex + droplevels(edu_empty),
+    data = sh
+  )
+  d_f <- sh
+  d_f$sex <- factor("Female", levels = levels(sh$sex))
+  d_m <- sh
+  d_m$sex <- factor("Male", levels = levels(sh$sex))
+  oracle <- c(
+    mean(stats::predict(fit, d_f)),
+    mean(stats::predict(fit, d_m))
+  )
+  expect_equal(out$emmean, oracle, tolerance = 1e-10)
+  expect_equal(
+    out$estimate[2],
+    unname(stats::coef(fit)[["sexMale"]]),
+    tolerance = 1e-12
+  )
+
+  # Balanced adjustment: oracle emmeans on the droplevels()-ed fit.
+  skip_if_not_installed("emmeans")
+  out_bal <- table_continuous_lm(
+    sh,
+    select = wellbeing_score,
+    by = sex,
+    covariates = edu_empty,
+    adjustment = "balanced",
+    output = "long"
+  )
+  sh2 <- sh
+  sh2$edu_empty <- droplevels(sh2$edu_empty)
+  fit2 <- stats::lm(wellbeing_score ~ sex + edu_empty, data = sh2)
+  emm <- as.data.frame(emmeans::emmeans(fit2, "sex"))
+  expect_equal(out_bal$emmean, emm$emmean, tolerance = 1e-8)
+})
+
+test_that("NA weights are excluded from the analytic sample as documented", {
+  # Audit phase 2, finding 14: `weights` with NA used to hit the
+  # finiteness gate (`!is.finite(NA)` is TRUE) and raise a hard error,
+  # making the documented row-exclusion contract unreachable.
+  d <- data.frame(
+    y = c(1, 2, 3, NA, 5, 6, 7, 8),
+    grp = factor(c("a", "a", NA, "b", "b", "b", "a", "b")),
+    w = c(1, 2, 1, 1, NA, 2, 1, 3)
+  )
+  out <- table_continuous_lm(
+    d,
+    select = y,
+    by = grp,
+    weights = w,
+    output = "long"
+  )
+  cc <- stats::complete.cases(d$y, d$grp, d$w)
+  fit <- stats::lm(y ~ grp, data = d[cc, ], weights = d$w[cc])
+  expect_equal(out$n, rep(sum(cc), 2L))
+  expect_equal(out$weighted_n, rep(sum(d$w[cc]), 2L))
+  expect_equal(
+    out$emmean,
+    unname(c(coef(fit)[1], coef(fit)[1] + coef(fit)[2])),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    out$estimate[2],
+    unname(coef(fit)[2]),
+    tolerance = 1e-12
+  )
+  # Truly non-finite weights still error.
+  d_inf <- d
+  d_inf$w[5] <- Inf
+  expect_error(
+    table_continuous_lm(d_inf, select = y, by = grp, weights = w),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("rows dropped for missing by / weights are disclosed in the note", {
+  # Audit phase 2, findings 14 + 32: the family ledger convention.
+  d <- data.frame(
+    y = c(1, 2, 3, 4, 5, 6, 7, 8),
+    grp = factor(c("a", "a", NA, "b", "b", "b", "a", "b")),
+    w = c(1, 2, 1, 1, NA, 2, 1, 3)
+  )
+  out <- table_continuous_lm(d, select = y, by = grp, weights = w)
+  expect_equal(
+    attr(out, "missing_note"),
+    "Rows with missing grp removed: 1. Rows with missing w removed: 1."
+  )
+  printed <- paste(utils::capture.output(print(out)), collapse = "\n")
+  expect_match(printed, "Rows with missing grp removed: 1.", fixed = TRUE)
+  expect_match(printed, "Rows with missing w removed: 1.", fixed = TRUE)
+  # No missing by / weights -> no ledger line.
+  clean <- table_continuous_lm(
+    data.frame(y = rnorm(10), g = factor(rep(c("a", "b"), 5))),
+    select = y,
+    by = g
+  )
+  expect_null(attr(clean, "missing_note"))
+})
+
+test_that("proportional emmeans use the case weights (Stata margins)", {
+  # Audit phase 2, finding 23: the G-computation aggregation now
+  # weights the averaged predictions by the fit weights. Oracle:
+  # manual weighted mean of predictions, pinned at 1e-8.
+  set.seed(11)
+  n <- 80
+  d <- data.frame(
+    y = rnorm(n),
+    g = factor(rep(c("A", "B"), n / 2)),
+    age = rnorm(n, 50, 8),
+    edu = factor(sample(c("lo", "hi"), n, TRUE, prob = c(0.7, 0.3))),
+    w = runif(n, 0.2, 3)
+  )
+  d$y <- d$y + 0.5 * (d$g == "B") + 0.03 * d$age + 0.4 * (d$edu == "hi")
+  out <- table_continuous_lm(
+    d,
+    select = y,
+    by = g,
+    covariates = c(age, edu),
+    weights = w,
+    output = "long"
+  )
+  fit <- stats::lm(y ~ g + age + edu, data = d, weights = d$w)
+  d_a <- transform(d, g = factor("A", levels = c("A", "B")))
+  d_b <- transform(d, g = factor("B", levels = c("A", "B")))
+  oracle <- c(
+    stats::weighted.mean(stats::predict(fit, d_a), d$w),
+    stats::weighted.mean(stats::predict(fit, d_b), d$w)
+  )
+  expect_equal(out$emmean, oracle, tolerance = 1e-8)
+  # Unweighted proportional is unchanged (plain mean of predictions).
+  out_uw <- table_continuous_lm(
+    d,
+    select = y,
+    by = g,
+    covariates = c(age, edu),
+    output = "long"
+  )
+  fit_uw <- stats::lm(y ~ g + age + edu, data = d)
+  oracle_uw <- c(
+    mean(stats::predict(fit_uw, d_a)),
+    mean(stats::predict(fit_uw, d_b))
+  )
+  expect_equal(out_uw$emmean, oracle_uw, tolerance = 1e-10)
+})
+
+test_that("adjusted omega2 CI matches effectsize's partial omega2 CI", {
+  # Audit phase 2, finding 24: the partial omega^2 CI used to be the
+  # partial eta^2 CI (inversion at the raw F). Oracle: the
+  # effectsize::omega_squared(partial = TRUE) recipe -- inversion at
+  # the F-equivalent of the omega^2 point estimate, bounds mapped
+  # through ncp / (ncp + df2) via effectsize::F_to_eta2.
+  skip_if_not_installed("effectsize")
+  set.seed(7)
+  n <- 200
+  d <- data.frame(
+    y = rnorm(n),
+    x = factor(rep(c("A", "B"), n / 2)),
+    age = rnorm(n, 50, 10),
+    edu = factor(sample(c("lo", "mid", "hi"), n, TRUE))
+  )
+  d$y <- d$y + 0.4 * (d$x == "B") + 0.02 * d$age
+  out <- table_continuous_lm(
+    d,
+    select = y,
+    by = x,
+    covariates = c(age, edu),
+    effect_size = "omega2",
+    effect_size_ci = TRUE,
+    output = "long"
+  )
+  fit <- stats::lm(y ~ x + age + edu, data = d)
+  d1 <- stats::drop1(fit, scope = ~x, test = "F")
+  f_obs <- d1[["F value"]][2]
+  df1 <- d1[["Df"]][2]
+  df2 <- stats::df.residual(fit)
+  mse <- stats::deviance(fit) / df2
+  ss_focal <- f_obs * df1 * mse
+  om_p <- max(
+    0,
+    (ss_focal - df1 * mse) / (ss_focal + (stats::nobs(fit) - df1) * mse)
+  )
+  f_om <- (om_p / df1) / ((1 - om_p) / df2)
+  oracle_ci <- effectsize::F_to_eta2(
+    f_om,
+    df1,
+    df2,
+    ci = 0.95,
+    alternative = "two.sided"
+  )
+  expect_equal(out$es_value[1], om_p, tolerance = 1e-10)
+  # The two implementations solve the same noncentrality inversion
+  # with different root-finders (uniroot tol 1e-8 vs optim abstol
+  # 1e-9), so the bounds agree to ~1e-8 absolute, not machine
+  # precision.
+  expect_equal(out$es_ci_lower[1], oracle_ci$CI_low, tolerance = 1e-4)
+  expect_equal(out$es_ci_upper[1], oracle_ci$CI_high, tolerance = 1e-4)
+  # Pinned values (seed 7): guard against silent oracle drift.
+  expect_equal(out$es_value[1], 0.04367544, tolerance = 1e-6)
+  expect_equal(out$es_ci_lower[1], 0.00507754, tolerance = 1e-5)
+  expect_equal(out$es_ci_upper[1], 0.11213591, tolerance = 1e-5)
+})
+
+test_that("non-syntactic covariate names survive formula construction", {
+  # Audit phase 2, finding 28: covariate names like "co var" used to
+  # raise a raw parse error from reformulate().
+  set.seed(3)
+  d <- data.frame(
+    a = rnorm(20),
+    b = factor(rep(c("x", "y"), 10)),
+    cv = rnorm(20)
+  )
+  names(d) <- c("out come", "grp!", "co var")
+  out <- table_continuous_lm(
+    d,
+    select = `out come`,
+    by = `grp!`,
+    covariates = "co var",
+    output = "long"
+  )
+  d2 <- d
+  names(d2) <- c("y", "g", "cv")
+  fit <- stats::lm(y ~ g + cv, data = d2)
+  expect_equal(out$estimate[2], unname(coef(fit)[2]), tolerance = 1e-12)
+})
+
+test_that("a single-level by raises a classed, actionable error", {
+  # Audit phase 2, finding 32: an all-NA row used to be printed
+  # silently.
   expect_error(
     table_continuous_lm(
-      sh,
-      select = wellbeing_score,
-      by = sex,
-      covariates = edu_empty,
+      data.frame(y = rnorm(8), g = factor(rep("only", 8))),
+      select = y,
+      by = g,
       output = "long"
     ),
-    class = "spicy_internal_invariant"
+    class = "spicy_invalid_data"
   )
+  # One observed level after NA removal counts as single-level too.
+  expect_error(
+    table_continuous_lm(
+      data.frame(y = rnorm(4), g = factor(c("a", "a", NA, NA))),
+      select = y,
+      by = g,
+      output = "long"
+    ),
+    class = "spicy_invalid_data"
+  )
+})
+
+test_that("a saturated fit reports NA inference with a classed warning", {
+  # Audit phase 2, finding 32: one observation per group used to
+  # display NaN SEs and a misleading "z" test label.
+  d <- data.frame(y = c(3.1, 7.2), g = factor(c("m", "f")))
+  expect_warning(
+    out <- table_continuous_lm(d, select = y, by = g, output = "long"),
+    class = "spicy_undefined_stat"
+  )
+  expect_equal(out$emmean, c(7.2, 3.1))
+  expect_equal(out$estimate[2], -4.1, tolerance = 1e-12)
+  expect_true(all(is.na(out$emmean_se)))
+  expect_true(all(is.na(out$statistic)))
+  expect_true(all(is.na(out$p.value)))
+  expect_true(all(is.na(out$test_type)))
+  expect_false(any(vapply(out, function(col) any(is.nan(col)), logical(1))))
 })

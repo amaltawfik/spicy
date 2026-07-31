@@ -168,6 +168,13 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
+  # Missing-data disclosure (rows dropped for a missing `by` value or
+  # a missing weight), assembled by table_continuous_lm() -- the same
+  # ledger convention as table_continuous() / table_categorical().
+  missing_note <- attr(x, "missing_note")
+  if (!is.null(missing_note)) {
+    lines <- c(lines, missing_note)
+  }
   if (length(lines) == 0L) {
     return(NULL)
   }

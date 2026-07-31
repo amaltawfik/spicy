@@ -360,30 +360,50 @@ extract_lm_focal_f_stat <- function(fit, focal_term = NULL) {
   )
 }
 
-# CI for eta^2 / omega^2 via noncentral-F inversion (Steiger 2004). Two
+# CI for omega^2 via noncentral-F inversion (Steiger 2004). Two
 # regimes, switched by `focal_term`:
-#   * `focal_term = NULL` (model-level R^2): bounds = ncp / (ncp + N)
-#     where N = df1 + df2 + 1; this matches the global-F partition
-#     SS_total = SS_model + SS_resid, with df_total = N - 1.
-#   * `focal_term != NULL` (partial eta^2): bounds = ncp / (ncp + df2);
-#     this matches the partial-eta^2 definition
-#     eta^2_p = SS_effect / (SS_effect + SS_error) (Smithson 2003;
-#     used by `effectsize::eta_squared(partial = TRUE)`).
-# In a covariate-adjusted model the two formulas diverge -- the
-# partial form is the correct one for individual-term inference.
+#   * `focal_term = NULL` (model-level Hays omega^2): bounds =
+#     ncp / (ncp + N) where N = df1 + df2 + 1; this matches the
+#     global-F partition SS_total = SS_model + SS_resid, with
+#     df_total = N - 1.
+#   * `focal_term != NULL` (partial omega^2): the
+#     `effectsize::omega_squared(partial = TRUE)` convention. The
+#     noncentrality inversion runs at the F-value EQUIVALENT of the
+#     omega^2 point estimate, F_om = (omega^2_p / df1) /
+#     ((1 - omega^2_p) / df2) -- the F that would produce a partial
+#     eta^2 equal to omega^2_p -- and the ncp bounds map through the
+#     partial transform ncp / (ncp + df2). Inverting at the RAW
+#     partial F would reproduce the partial-eta^2 CI (Smithson 2003),
+#     which is systematically wider to the right than the omega^2 CI
+#     because omega^2 shrinks the point estimate (audit phase 2,
+#     finding 24).
 compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
   fs <- extract_lm_focal_f_stat(fit, focal_term)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
     return(c(NA_real_, NA_real_))
   }
   alpha <- 1 - ci_level
-  ncp_lo <- find_ncp_f_lm(fs$f_obs, fs$df1, fs$df2, 1 - alpha / 2)
-  ncp_hi <- find_ncp_f_lm(fs$f_obs, fs$df1, fs$df2, alpha / 2)
+  if (is.null(focal_term)) {
+    ncp_lo <- find_ncp_f_lm(fs$f_obs, fs$df1, fs$df2, 1 - alpha / 2)
+    ncp_hi <- find_ncp_f_lm(fs$f_obs, fs$df1, fs$df2, alpha / 2)
+    if (anyNA(c(ncp_lo, ncp_hi))) {
+      return(c(NA_real_, NA_real_))
+    }
+    denom <- fs$df1 + fs$df2 + 1L
+    bounds <- c(ncp_lo, ncp_hi) / (c(ncp_lo, ncp_hi) + denom)
+    return(pmax(0, bounds))
+  }
+  omega2_p <- compute_lm_partial_omega2(fit, fs)
+  if (!is.finite(omega2_p) || omega2_p >= 1) {
+    return(c(NA_real_, NA_real_))
+  }
+  f_om <- (omega2_p / fs$df1) / ((1 - omega2_p) / fs$df2)
+  ncp_lo <- find_ncp_f_lm(f_om, fs$df1, fs$df2, 1 - alpha / 2)
+  ncp_hi <- find_ncp_f_lm(f_om, fs$df1, fs$df2, alpha / 2)
   if (anyNA(c(ncp_lo, ncp_hi))) {
     return(c(NA_real_, NA_real_))
   }
-  denom <- if (is.null(focal_term)) fs$df1 + fs$df2 + 1L else fs$df2
-  bounds <- c(ncp_lo, ncp_hi) / (c(ncp_lo, ncp_hi) + denom)
+  bounds <- c(ncp_lo, ncp_hi) / (c(ncp_lo, ncp_hi) + fs$df2)
   pmax(0, bounds)
 }
 
@@ -562,6 +582,20 @@ build_emmean_avg_row <- function(
     contrasts.arg = fit$contrasts
   )
   design <- align_design_to_coef(design, stats::coef(fit))
+  # Weighted fit + "proportional": Stata `margins` after a weighted
+  # regression averages the predictions with the case weights -- the
+  # empirical covariate distribution being standardized over is the
+  # weighted one (matches marginaleffects::avg_predictions(wts = )).
+  # The observed rows and the fit rows are the same complete-case
+  # sample, so weights(fit) aligns row by row. The "balanced" grid
+  # stays equal-weight by construction (emmeans / SPSS EMMEANS
+  # convention).
+  if (identical(method, "proportional") && has_covs) {
+    w <- stats::weights(fit)
+    if (!is.null(w)) {
+      return(colSums(design * w) / sum(w))
+    }
+  }
   colMeans(design)
 }
 

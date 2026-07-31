@@ -286,16 +286,19 @@ test_that("model-level omega2/f2 CI bounds satisfy the Steiger defining equation
   expect_equal(fci, oci / (1 - oci), tolerance = 1e-12)
 })
 
-test_that("partial omega2 CI matches the effectsize partial eta2 CI", {
-  # With a focal term the bounds use the partial mapping b = ncp / (ncp + df2)
-  # (Smithson 2003) -- the same convention as effectsize's ncp-based CI for
-  # partial eta^2. `hp` is the last term so anova() Type-I F == drop1()
-  # partial F. 1e-5 absorbs effectsize's optim-based ncp search (~1e-7
-  # absolute agreement observed).
+test_that("partial omega2 CI matches effectsize's partial omega2 CI", {
+  # Audit phase 2, finding 24: the partial bounds used to be the
+  # partial eta^2 CI (inversion at the raw partial F). The corrected
+  # convention is effectsize::omega_squared(partial = TRUE): the
+  # inversion runs at the F-equivalent of the omega^2 point estimate,
+  # bounds mapped through ncp / (ncp + df2). `hp` is the last term so
+  # anova() Type-I F == drop1() partial F. 1e-4 absorbs effectsize's
+  # optim-based ncp search vs our uniroot (~1e-8 absolute agreement
+  # observed).
   skip_if_not_installed("effectsize")
   m <- stats::lm(mpg ~ wt + hp, data = mtcars)
   oci <- spicy:::compute_omega2_ci_lm(m, ci_level = 0.95, focal_term = "hp")
-  ee <- effectsize::eta_squared(
+  oo <- effectsize::omega_squared(
     stats::anova(m),
     partial = TRUE,
     ci = 0.95,
@@ -304,27 +307,39 @@ test_that("partial omega2 CI matches the effectsize partial eta2 CI", {
   )
   expect_equal(
     oci,
-    c(ee$CI_low[ee$Parameter == "hp"], ee$CI_high[ee$Parameter == "hp"]),
-    tolerance = 1e-5
+    c(oo$CI_low[oo$Parameter == "hp"], oo$CI_high[oo$Parameter == "hp"]),
+    tolerance = 1e-4
   )
   # And the exact defining-equation oracle, independent of effectsize:
-  # invert b -> ncp = b * df2 / (1 - b), plug back into pf().
-  d1 <- stats::drop1(m, scope = ~hp, test = "F")
-  f_obs <- d1[["F value"]][2]
+  # the inversion runs at f_om (the F whose partial eta^2 equals the
+  # omega^2 point estimate); invert b -> ncp = b * df2 / (1 - b) and
+  # plug back into pf() at f_om.
+  fs <- spicy:::extract_lm_focal_f_stat(m, "hp")
+  om_p <- spicy:::compute_lm_partial_omega2(m, fs)
   df2 <- stats::df.residual(m)
+  f_om <- (om_p / fs$df1) / ((1 - om_p) / df2)
   expect_equal(
-    stats::pf(f_obs, 1, df2, ncp = oci[1] * df2 / (1 - oci[1])),
+    stats::pf(f_om, 1, df2, ncp = oci[1] * df2 / (1 - oci[1])),
     0.975,
     tolerance = 1e-6
   )
   expect_equal(
-    stats::pf(f_obs, 1, df2, ncp = oci[2] * df2 / (1 - oci[2])),
+    stats::pf(f_om, 1, df2, ncp = oci[2] * df2 / (1 - oci[2])),
     0.025,
     tolerance = 1e-6
   )
-  # Partial f^2 bounds: same exact b / (1 - b) mapping as the model level.
+  # Partial f^2 bounds are unchanged: raw-F inversion, exact
+  # b / (1 - b) mapping of the partial eta^2 CI.
+  eci <- effectsize::eta_squared(
+    stats::anova(m),
+    partial = TRUE,
+    ci = 0.95,
+    alternative = "two.sided",
+    verbose = FALSE
+  )
+  eb <- c(eci$CI_low[eci$Parameter == "hp"], eci$CI_high[eci$Parameter == "hp"])
   fci <- spicy:::compute_f2_ci_lm(m, ci_level = 0.95, focal_term = "hp")
-  expect_equal(fci, oci / (1 - oci), tolerance = 1e-12)
+  expect_equal(fci, eb / (1 - eb), tolerance = 1e-4)
 })
 
 

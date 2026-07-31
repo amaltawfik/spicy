@@ -3,7 +3,20 @@
 # - a single character column name (`by = "grp"`)
 # - a character scalar stored in an external object (`by = by_col`)
 # - a tidyselect expression (`by = all_of(by_col)`)
+#
+# Data-first precedence (the tidyselect / dplyr convention): a bare
+# symbol that names a column in `data` always selects that column,
+# even when a same-named variable exists in the calling environment.
+# Without this shortcut, `g <- "sex"; table_continuous(d, y, by = g)`
+# silently grouped by `sex` while the user asked for column `g`
+# (audit phase 2, finding 15). The environment lookup only applies to
+# symbols that are NOT columns (`by = by_col` holding a column name).
 resolve_single_column_selection <- function(quo, data, arg) {
+  expr <- rlang::quo_get_expr(quo)
+  if (rlang::is_symbol(expr) && rlang::as_string(expr) %in% names(data)) {
+    return(rlang::as_string(expr))
+  }
+
   val <- tryCatch(
     rlang::eval_tidy(quo, env = rlang::quo_get_env(quo)),
     error = function(e) NULL
@@ -47,6 +60,14 @@ resolve_single_column_selection <- function(quo, data, arg) {
 resolve_multi_column_selection <- function(quo, data, arg) {
   if (rlang::quo_is_null(quo)) {
     return(character())
+  }
+
+  # Data-first precedence for a bare symbol naming a column, exactly
+  # as in resolve_single_column_selection() above: the column wins
+  # over a same-named environment variable.
+  expr <- rlang::quo_get_expr(quo)
+  if (rlang::is_symbol(expr) && rlang::as_string(expr) %in% names(data)) {
+    return(rlang::as_string(expr))
   }
 
   sentinel <- new.env(parent = emptyenv())

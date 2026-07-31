@@ -33,7 +33,14 @@
 #' @param by Optional grouping column. Accepts an unquoted column name
 #'   or a single character column name. Coerced to factor for
 #'   grouping; non-numeric grouping columns (factor, character,
-#'   logical) are supported as-is.
+#'   logical) are supported as-is. Factor levels keep their declared
+#'   order; any other `by` (character, numeric, haven labelled) forms
+#'   groups in order of first appearance in the data -- the same
+#'   convention as [table_categorical()]. For a haven labelled `by`,
+#'   the group headers are the raw codes (value labels are not used
+#'   for grouping headers -- the family convention shared with
+#'   [table_categorical()] and [table_continuous_lm()]); declared
+#'   missing values follow `user_na` as usual.
 #' @param exclude Columns to exclude. Supports tidyselect syntax and
 #'   character vectors of column names.
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect
@@ -278,7 +285,9 @@
 #'
 #' Non-numeric columns are silently dropped (set `verbose = TRUE` to
 #' see which columns were excluded). When a constant column is
-#' passed, SD and CI are shown as `"--"` in the ASCII table.
+#' passed, its statistics are reported exactly: SD is `0.00` and the
+#' CI degenerates to `[m, m]`. `"--"` cells appear only when a
+#' statistic is undefined (fewer than two valid observations).
 #'
 #' @family spicy tables
 #' @seealso [table_continuous_lm()] for the model-based companion
@@ -842,7 +851,11 @@ table_continuous <- function(
     group_levels <- if (is.factor(groups)) {
       levels(groups)
     } else {
-      sort(unique(groups[!is.na(groups)]), method = "radix")
+      # Non-factor `by` (character, numeric, haven labelled): groups
+      # in order of first appearance -- the family convention shared
+      # with table_categorical() / cross_tab() (audit phase 2,
+      # finding 17). Factors keep their declared level order above.
+      unique(groups[!is.na(groups)])
     }
     if (!drop_na && n_na_groups > 0L) {
       # Display label for the missing-`by` group, guarded against a
@@ -880,13 +893,44 @@ table_continuous <- function(
         gvec <- gvec[complete]
         if (is.factor(gvec)) {
           gvec <- droplevels(gvec)
+        } else {
+          # Pin the test's group order to the displayed order
+          # (appearance): the formula interface of t.test() /
+          # wilcox.test() would otherwise re-sort a bare character /
+          # numeric `by` and flip the sign convention of the displayed
+          # statistic relative to the table rows.
+          gvec <- droplevels(
+            factor(as.character(gvec), levels = as.character(group_levels))
+          )
         }
         n_valid_groups <- length(unique(gvec))
         # Need at least 2 groups with >=2 obs each for a test
         grp_n <- table(gvec)
         testable <- n_valid_groups >= 2L && all(grp_n >= 2L)
         if (testable) {
-          test_row <- run_group_test(xvec, gvec, n_valid_groups, test)
+          # Per-variable degradation: a test that errors on degenerate
+          # data (e.g. t.test()'s "data are essentially constant" on a
+          # within-group-constant variable) must not kill the whole
+          # multi-variable table. The row keeps NA test columns, the
+          # warning says which variable failed and why, and the other
+          # variables are unaffected (audit phase 2, finding 27).
+          test_row <- tryCatch(
+            run_group_test(xvec, gvec, n_valid_groups, test),
+            error = function(e) {
+              spicy_warn(
+                c(
+                  sprintf(
+                    "The group-comparison test failed for `%s` (%s); its test columns are NA.",
+                    nm,
+                    conditionMessage(e)
+                  ),
+                  "i" = "Other selected variables are unaffected. For near-constant data, `test = \"nonparametric\"` may still be defined, or set `p_value = FALSE`."
+                ),
+                class = "spicy_undefined_stat"
+              )
+              test_row
+            }
+          )
         }
       }
 
@@ -907,14 +951,44 @@ table_continuous <- function(
             explicit = effect_size_explicit
           )
           if (!identical(chosen_es, "none")) {
-            es_row <- compute_effect_size(
-              xvec,
-              gvec,
-              n_valid_groups,
-              test,
-              ci_level,
-              type = chosen_es
+            # Same per-variable degradation as the test above: an
+            # effect size that errors or is undefined (e.g. Hedges' g
+            # with a zero pooled SD) becomes an NA cell with a classed
+            # warning instead of a crash or a printed Inf.
+            es_row <- tryCatch(
+              compute_effect_size(
+                xvec,
+                gvec,
+                n_valid_groups,
+                test,
+                ci_level,
+                type = chosen_es
+              ),
+              error = function(e) {
+                spicy_warn(
+                  sprintf(
+                    "The effect size failed for `%s` (%s); its cells are NA.",
+                    nm,
+                    conditionMessage(e)
+                  ),
+                  class = "spicy_undefined_stat"
+                )
+                es_row
+              }
             )
+            if (!is.na(es_row$es_value) && !is.finite(es_row$es_value)) {
+              spicy_warn(
+                sprintf(
+                  "The %s effect size is undefined for `%s` (non-finite value); its cells are NA.",
+                  chosen_es,
+                  nm
+                ),
+                class = "spicy_undefined_stat"
+              )
+              es_row$es_value <- NA_real_
+              es_row$es_ci_lower <- NA_real_
+              es_row$es_ci_upper <- NA_real_
+            }
           }
         }
       }

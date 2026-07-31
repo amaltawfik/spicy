@@ -51,7 +51,15 @@ numeric-coded categorical variables can still be tabulated by
 naming them.}
 
 \item{by}{Optional grouping column used for columns/groups. Accepts an
-unquoted column name or a single character column name.}
+unquoted column name or a single character column name. Factor
+levels keep their declared order; any other \code{by} (character,
+numeric, haven labelled) forms group columns in order of first
+appearance in the data -- the same convention as
+\code{\link[=table_continuous]{table_continuous()}}. For a haven labelled \code{by}, the group
+headers are the raw codes (value labels are not used for group
+headers -- the family convention shared with \code{\link[=table_continuous]{table_continuous()}}
+and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared missing values follow
+\code{user_na} as usual.}
 
 \item{labels}{An optional \strong{named character vector} of variable
 labels whose names match column names in \code{data} (e.g.

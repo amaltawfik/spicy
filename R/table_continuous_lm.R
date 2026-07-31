@@ -101,8 +101,13 @@
 #'     (covariates kept at their observed values), and the
 #'     predictions are averaged. Population-weighted by construction
 #'     -- the empirical joint distribution of covariates is the
-#'     reference. Best when the goal is "what is the predicted
-#'     mean in *this* population if everyone had `by = lvl`".
+#'     reference. Under `weights`, the averaging uses the case
+#'     weights (the Stata `margins` convention after a weighted
+#'     regression; equivalent to
+#'     `marginaleffects::avg_predictions(wts = )`), so the reference
+#'     distribution is the weighted one. Best when the goal is "what
+#'     is the predicted mean in *this* population if everyone had
+#'     `by = lvl`".
 #'   - `"balanced"` (matches [emmeans::emmeans()] default and the
 #'     SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
 #'     grid of factor-covariate level combinations x numeric
@@ -481,9 +486,17 @@
 #'     samples. For Hedges' *g* the bounds inherit the *J* small-sample
 #'     correction.
 #'   \item `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004).
-#'     Bounds are converted from the noncentrality parameter using
+#'     Without covariates (model-level effect sizes), bounds are
+#'     converted from the noncentrality parameter using
 #'     `omega^2 = ncp / (ncp + N)` and `\eqn{f^2}{f^2} = ncp / N` respectively, with
-#'     `N = df1 + df2 + 1` (total sample size).
+#'     `N = df1 + df2 + 1` (total sample size). Under covariate
+#'     adjustment (partial effect sizes), the bounds use the partial
+#'     transforms instead: partial `\eqn{f^2}{f^2} = ncp / df2`, and for partial
+#'     `omega^2` the inversion runs at the *F*-value equivalent of the
+#'     omega-squared point estimate with bounds `ncp / (ncp + df2)` --
+#'     the [effectsize::omega_squared()] `partial = TRUE` convention,
+#'     which is narrower than the partial eta-squared CI because
+#'     omega-squared shrinks the point estimate.
 #' }
 #' For the weighted case, the CI uses raw (unweighted) group counts and
 #' `df.residual(fit) = n - p`, consistent with the WLS reporting convention
@@ -1173,6 +1186,27 @@ table_continuous_lm <- function(
       class = "spicy_invalid_input"
     )
   }
+  # A categorical `by` needs at least two observed groups: with a
+  # single observed level there is nothing to compare and every fit
+  # would degenerate to an all-NA row. Fail up front with the reason
+  # instead of printing that row silently (audit phase 2, finding 32).
+  if (!is.numeric(by_vector)) {
+    n_observed_by <- length(unique(by_vector[!is.na(by_vector)]))
+    if (n_observed_by < 2L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "`by` (`%s`) has %d observed non-missing level%s; a group comparison needs at least two.",
+            by_name,
+            n_observed_by,
+            if (n_observed_by == 1L) "" else "s"
+          ),
+          "i" = "Check the grouping column, or use a `by` with at least two observed groups."
+        ),
+        class = "spicy_invalid_data"
+      )
+    }
+  }
 
   if (effect_size %in% c("d", "g")) {
     is_two_level <- !is.numeric(by_vector) &&
@@ -1203,7 +1237,13 @@ table_continuous_lm <- function(
   weights_name <- detect_weights_column_name(weights_quo, data)
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
   if (!is.null(weights_vec)) {
-    if (any(!is.finite(weights_vec), na.rm = TRUE)) {
+    # NA weights are legal: the documented contract excludes those
+    # rows from the analytic sample (alongside NA in `y` / `by`) and
+    # discloses them in the table note. Only genuinely non-finite
+    # values (Inf, -Inf, NaN) are rejected -- `!is.finite(NA)` is TRUE,
+    # so the finiteness check must not sweep NA along with them
+    # (audit phase 2, finding 14).
+    if (any(is.infinite(weights_vec) | is.nan(weights_vec))) {
       spicy_abort(
         "`weights` must contain only finite values.",
         class = "spicy_invalid_input"
@@ -1459,6 +1499,36 @@ table_continuous_lm <- function(
   attr(result, "show_ci") <- ci
   attr(result, "align") <- align
 
+  # Truthfulness ledger (the family convention of table_continuous()
+  # / table_categorical()): rows dropped for a missing `by` value or a
+  # missing weight are disclosed in the table note -- the reader must
+  # be able to see what left the analytic sample. Per-outcome NA in
+  # `y` / covariates is already visible through the `n` column.
+  missing_parts <- character(0)
+  n_na_by <- sum(is.na(by_vector))
+  if (n_na_by > 0L) {
+    missing_parts <- c(
+      missing_parts,
+      sprintf("Rows with missing %s removed: %d.", by_name, n_na_by)
+    )
+  }
+  if (!is.null(weights_vec)) {
+    n_na_weights <- sum(is.na(weights_vec))
+    if (n_na_weights > 0L) {
+      missing_parts <- c(
+        missing_parts,
+        sprintf(
+          "Rows with missing %s removed: %d.",
+          weights_name %||% "weights",
+          n_na_weights
+        )
+      )
+    }
+  }
+  if (length(missing_parts) > 0L) {
+    attr(result, "missing_note") <- paste(missing_parts, collapse = " ")
+  }
+
   if (identical(output, "long")) {
     return(result)
   }
@@ -1558,6 +1628,19 @@ fit_outcome_lm_rows <- function(
   } else {
     covariates[keep, , drop = FALSE]
   }
+  if (!is.null(covariates) && ncol(covariates) > 0L) {
+    # Drop declared-but-unobserved factor levels BEFORE the fit:
+    # lm() drops them from the coefficients anyway (model.frame's
+    # drop.unused.levels), but the emmean prediction grids expand
+    # the original level set, so the design would gain columns the
+    # fit has no coefficients for (audit phase 2, finding 22). The
+    # `ordered` class survives droplevels(), so contrast coding is
+    # unaffected. align_design_to_coef() remains the last-resort
+    # guard for any residual mismatch.
+    covariates[] <- lapply(covariates, function(col) {
+      if (is.factor(col)) droplevels(col) else col
+    })
+  }
 
   if (is.numeric(predictor)) {
     return(
@@ -1596,6 +1679,63 @@ fit_outcome_lm_rows <- function(
   )
 }
 
+# Internal: quote non-syntactic covariate names for
+# stats::reformulate() so a column like "co var" survives formula
+# construction instead of raising a raw parse error (audit phase 2,
+# finding 28). Syntactic names pass through unquoted, so coefficient
+# names are unchanged for them.
+backtick_nonsyntactic <- function(nms) {
+  needs <- make.names(nms) != nms
+  nms[needs] <- sprintf("`%s`", nms[needs])
+  nms
+}
+
+# Internal: a saturated fit (zero residual df, e.g. one observation
+# per group) has no residual variance: every SE, CI, test statistic
+# and p-value is NaN, and the t/z fallback used to label the row with
+# a misleading "z" test. Blank the inferential columns to NA -- the
+# point estimates (means, differences, slopes) are still exact and
+# stay -- and disclose why with a classed warning (audit phase 2,
+# finding 32). NaN must never be displayed as if it were a computed
+# result.
+degrade_saturated_lm_rows <- function(out, fit, outcome_name) {
+  df_resid <- stats::df.residual(fit)
+  if (is.finite(df_resid) && df_resid > 0) {
+    return(out)
+  }
+  spicy_warn(
+    c(
+      sprintf(
+        "The model for `%s` has zero residual degrees of freedom (too few observations per group); SEs, CIs, test statistics, and p-values are NA.",
+        outcome_name
+      ),
+      "i" = "Inference needs at least one residual degree of freedom (e.g. two observations in some group)."
+    ),
+    class = "spicy_undefined_stat"
+  )
+  na_cols <- c(
+    "emmean_se",
+    "emmean_ci_lower",
+    "emmean_ci_upper",
+    "estimate_se",
+    "estimate_ci_lower",
+    "estimate_ci_upper",
+    "statistic",
+    "df2",
+    "p.value",
+    "es_value",
+    "es_ci_lower",
+    "es_ci_upper",
+    "adj_r2"
+  )
+  for (nm in na_cols) {
+    out[[nm]] <- NA_real_
+  }
+  out$test_type <- NA_character_
+  out$df1 <- NA_integer_
+  out
+}
+
 fit_numeric_predictor_lm_rows <- function(
   y,
   x,
@@ -1625,7 +1765,11 @@ fit_numeric_predictor_lm_rows <- function(
   } else {
     data.frame(y = y, x = x)
   }
-  rhs_terms <- if (has_covs) c("x", names(covariates)) else "x"
+  rhs_terms <- if (has_covs) {
+    c("x", backtick_nonsyntactic(names(covariates)))
+  } else {
+    "x"
+  }
   formula <- stats::reformulate(rhs_terms, response = "y")
 
   fit <- if (is.null(weights)) {
@@ -1665,7 +1809,7 @@ fit_numeric_predictor_lm_rows <- function(
 
   es_ci <- compute_es_ci_lm(fit, effect_size, ci_level, focal_term = focal_term)
 
-  data.frame(
+  out <- data.frame(
     variable = outcome_name,
     label = outcome_label,
     predictor_type = "continuous",
@@ -1700,6 +1844,7 @@ fit_numeric_predictor_lm_rows <- function(
     boot_n_valid = as.integer(attr(vc, "boot_n_valid") %||% NA_integer_),
     stringsAsFactors = FALSE
   )
+  degrade_saturated_lm_rows(out, fit, outcome_name)
 }
 
 fit_categorical_predictor_lm_rows <- function(
@@ -1748,7 +1893,11 @@ fit_categorical_predictor_lm_rows <- function(
   } else {
     data.frame(y = y, x = x)
   }
-  rhs_terms <- if (has_covs) c("x", names(covariates)) else "x"
+  rhs_terms <- if (has_covs) {
+    c("x", backtick_nonsyntactic(names(covariates)))
+  } else {
+    "x"
+  }
   formula <- stats::reformulate(rhs_terms, response = "y")
 
   fit <- if (is.null(weights)) {
@@ -1949,7 +2098,7 @@ fit_categorical_predictor_lm_rows <- function(
     }
   }
 
-  out
+  degrade_saturated_lm_rows(out, fit, outcome_name)
 }
 
 make_empty_lm_rows <- function(

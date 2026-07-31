@@ -127,8 +127,13 @@ predicts at every observation with \code{by} set to that level
 (covariates kept at their observed values), and the
 predictions are averaged. Population-weighted by construction
 -- the empirical joint distribution of covariates is the
-reference. Best when the goal is "what is the predicted
-mean in \emph{this} population if everyone had \code{by = lvl}".
+reference. Under \code{weights}, the averaging uses the case
+weights (the Stata \code{margins} convention after a weighted
+regression; equivalent to
+\code{marginaleffects::avg_predictions(wts = )}), so the reference
+distribution is the weighted one. Best when the goal is "what
+is the predicted mean in \emph{this} population if everyone had
+\code{by = lvl}".
 \item \code{"balanced"} (matches \code{\link[emmeans:emmeans]{emmeans::emmeans()}} default and the
 SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
 grid of factor-covariate level combinations x numeric
@@ -578,9 +583,17 @@ older Hedges-Olkin normal approximation which is biased for small
 samples. For Hedges' \emph{g} the bounds inherit the \emph{J} small-sample
 correction.
 \item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004).
-Bounds are converted from the noncentrality parameter using
+Without covariates (model-level effect sizes), bounds are
+converted from the noncentrality parameter using
 \code{omega^2 = ncp / (ncp + N)} and \verb{\eqn{f^2}{f^2} = ncp / N} respectively, with
-\code{N = df1 + df2 + 1} (total sample size).
+\code{N = df1 + df2 + 1} (total sample size). Under covariate
+adjustment (partial effect sizes), the bounds use the partial
+transforms instead: partial \verb{\eqn{f^2}{f^2} = ncp / df2}, and for partial
+\code{omega^2} the inversion runs at the \emph{F}-value equivalent of the
+omega-squared point estimate with bounds \code{ncp / (ncp + df2)} --
+the \code{\link[effectsize:omega_squared]{effectsize::omega_squared()}} \code{partial = TRUE} convention,
+which is narrower than the partial eta-squared CI because
+omega-squared shrinks the point estimate.
 }
 For the weighted case, the CI uses raw (unweighted) group counts and
 \code{df.residual(fit) = n - p}, consistent with the WLS reporting convention

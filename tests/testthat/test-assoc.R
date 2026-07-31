@@ -798,7 +798,7 @@ test_that("assoc_measures reports the degenerate tau-c as an NA row", {
   # tau-c row among 16 undefined "--" rows on this table.
   one_cell <- as.table(matrix(c(100, 0, 0, 0), 2))
   res <- suppressWarnings(assoc_measures(one_cell))
-  tauc_row <- res[res$measure == "Kendall's Tau-c", ]
+  tauc_row <- res[res$measure == "Stuart's Tau-c", ]
   expect_true(is.na(tauc_row$estimate))
   expect_true(is.na(tauc_row$se))
   expect_true(is.na(tauc_row$ci_lower))
