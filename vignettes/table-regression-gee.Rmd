@@ -200,11 +200,12 @@ The division of labour between the two criteria is Pan's (2001):
 pick the working correlation by the smallest **QIC**; use **QICu**
 only for comparing *mean models* (covariate sets) under a fixed
 structure -- it cannot select the correlation. The stake is
-efficiency, not consistency: the estimates barely move across
-columns (consistency holds under any structure), but a badly chosen
-structure can cost a substantial share of the precision the data
-could deliver (Pan, 2001), which is what the differing standard
-errors show. The footer discloses each model's structure on its own
+efficiency, not consistency: all three columns estimate the same
+population quantity and converge to it under any structure, but in a
+finite sample the weighting differs -- compare the `Cu` rows under
+AR(1) with the other two columns -- and a badly chosen structure can
+cost a substantial share of the precision the data could deliver
+(Pan, 2001). The footer discloses each model's structure on its own
 line.
 
 `qic` and `qicu` are computed only when you ask for them:
@@ -322,13 +323,14 @@ sandwich covariance automatically:
 ```{r ame, eval = have_me}
 table_regression(
   fit_resp,
-  show_columns = c("b", "p", "ame", "ame_ci")
+  show_columns = c("b", "ame", "ame_ci", "ame_p")
 )
 ```
 
-The AME column reads as percentage-point differences in the
-population-averaged probability of a positive outcome -- for the
-treatment row, between the treated and placebo populations.
+The AME column reads on the probability scale: 0.24 for the
+treatment row means a 24-percentage-point higher population-averaged
+probability of a positive outcome in the treated population than
+under placebo.
 
 ## What spicy refuses for GEE, and why
 
@@ -372,11 +374,6 @@ table_regression(
   show_columns = c("n_events", "b", "ci", "p"),
   output = "flextable"
 )
-```
-
-```{r rich-fallback, eval = !build_rich_tables, echo = FALSE}
-# Console fallback so the vignette stays self-contained outside
-# pkgdown builds.
 ```
 
 ## References
