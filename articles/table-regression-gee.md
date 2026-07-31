@@ -222,10 +222,11 @@ The division of labour between the two criteria is Pan’s (2001): pick
 the working correlation by the smallest **QIC**; use **QICu** only for
 comparing *mean models* (covariate sets) under a fixed structure – it
 cannot select the correlation. The stake is efficiency, not consistency:
-the estimates barely move across columns (consistency holds under any
-structure), but a badly chosen structure can cost a substantial share of
-the precision the data could deliver (Pan, 2001), which is what the
-differing standard errors show. The footer discloses each model’s
+all three columns estimate the same population quantity and converge to
+it under any structure, but in a finite sample the weighting differs –
+compare the `Cu` rows under AR(1) with the other two columns – and a
+badly chosen structure can cost a substantial share of the precision the
+data could deliver (Pan, 2001). The footer discloses each model’s
 structure on its own line.
 
 `qic` and `qicu` are computed only when you ask for them:
@@ -413,20 +414,18 @@ covariance automatically:
 
 table_regression(
   fit_resp,
-  show_columns = c("b", "p", "ame", "ame_ci")
+  show_columns = c("b", "ame", "ame_ci", "ame_p")
 )
-#> Warning: `"ame"` and `"p"` shown without `"ame_p"`: the `p` column is for B (or beta), not the AME. They can differ under non-linear links or interactions.
-#> ℹ Add `"ame_p"` to display the AME-specific p-value.
 #> Population-averaged logistic regression (GEE): outcome
 #> 
-#>  Variable         │   B       p     AME      95% CI     
+#>  Variable         │   B      AME      95% CI        p   
 #> ──────────────────┼─────────────────────────────────────
-#>  (Intercept)      │  -0.80   .080                       
+#>  (Intercept)      │  -0.80                              
 #>  treat:           │                                     
-#>    P (ref.)       │    –     –       –          –       
-#>    A              │   1.23  <.001   0.24  [ 0.12, 0.36] 
-#>  age              │  -0.01   .338  -0.00  [-0.01, 0.00] 
-#>  baseline         │   1.98  <.001   0.41  [ 0.30, 0.53] 
+#>    P (ref.)       │    –      –          –         –    
+#>    A              │   1.23   0.24  [ 0.12, 0.36]  <.001 
+#>  age              │  -0.01  -0.00  [-0.01, 0.00]   .332 
+#>  baseline         │   1.98   0.41  [ 0.30, 0.53]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                │ 444                                 
 #>  N (subject)      │ 111                                 
@@ -438,9 +437,9 @@ table_regression(
 #> AME = average marginal effect.
 ```
 
-The AME column reads as percentage-point differences in the
-population-averaged probability of a positive outcome – for the
-treatment row, between the treated and placebo populations.
+The AME column reads on the probability scale: 0.24 for the treatment
+row means a 24-percentage-point higher population-averaged probability
+of a positive outcome in the treated population than under placebo.
 
 ## What spicy refuses for GEE, and why
 
@@ -506,7 +505,7 @@ table_regression(
 | Max cluster size |   4      |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-bcff8ee6 quarto-disable-processing="true"}
+.cl-49c63ff6 quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:
