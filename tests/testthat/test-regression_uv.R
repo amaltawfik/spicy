@@ -23,6 +23,7 @@ test_that("univariable rows reproduce the per-predictor glm fits exactly", {
   t_uv <- table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi, sex),
     exponentiate = TRUE,
     multivariable = FALSE
@@ -83,6 +84,7 @@ test_that("the multivariable column equals the full fit exactly", {
   t_uv <- table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi, sex)
   )
   td <- broom::tidy(t_uv)
@@ -108,7 +110,12 @@ test_that("per-predictor N is shown and the differing-N note fires", {
   d <- .uv_soc()
   out <- paste(
     capture.output(print(
-      table_regression_uv(d, outcome = smoking, predictors = c(age, bmi, sex))
+      table_regression_uv(
+        d,
+        outcome = smoking,
+        method = "glm",
+        predictors = c(age, bmi, sex)
+      )
     )),
     collapse = "\n"
   )
@@ -123,7 +130,12 @@ test_that("equal Ns produce no disclosure note", {
   d <- .uv_soc()
   out <- paste(
     capture.output(print(
-      table_regression_uv(d, outcome = smoking, predictors = c(age, sex))
+      table_regression_uv(
+        d,
+        outcome = smoking,
+        method = "glm",
+        predictors = c(age, sex)
+      )
     )),
     collapse = "\n"
   )
@@ -137,6 +149,7 @@ test_that("complete_cases = TRUE forces the common sample and says so", {
   t_cc <- table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi),
     complete_cases = TRUE,
     multivariable = FALSE
@@ -168,6 +181,7 @@ test_that("screen-only tables carry no empty fit-stat rows", {
       table_regression_uv(
         d,
         outcome = smoking,
+        method = "glm",
         predictors = c(age, bmi),
         multivariable = FALSE
       )
@@ -178,7 +192,12 @@ test_that("screen-only tables carry no empty fit-stat rows", {
   # With the multivariable merge the fit stats come back (its own n/AIC).
   out2 <- paste(
     capture.output(print(
-      table_regression_uv(d, outcome = smoking, predictors = c(age, bmi))
+      table_regression_uv(
+        d,
+        outcome = smoking,
+        method = "glm",
+        predictors = c(age, bmi)
+      )
     )),
     collapse = "\n"
   )
@@ -192,12 +211,14 @@ test_that("intercepts are hidden by default; show_intercept shows only
   td <- broom::tidy(table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, sex)
   ))
   expect_false(any(td$is_intercept))
   td2 <- broom::tidy(table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, sex),
     show_intercept = TRUE
   ))
@@ -216,6 +237,7 @@ test_that("labels pass through to the row stubs", {
       table_regression_uv(
         d,
         outcome = smoking,
+        method = "glm",
         predictors = c(age, sex),
         labels = c(age = "Age (years)"),
         multivariable = FALSE
@@ -235,6 +257,7 @@ test_that("rank-deficient predictors stay visible as dropped rows", {
       table_regression_uv(
         d,
         outcome = smoking,
+        method = "glm",
         predictors = c(age, const),
         multivariable = FALSE
       )
@@ -254,11 +277,13 @@ test_that("p_adjust adjusts within the screen family and within the
   raw <- broom::tidy(table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi, sex)
   ))
   adj <- broom::tidy(table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi, sex),
     p_adjust = "holm"
   ))
@@ -277,6 +302,7 @@ test_that("HC3 flows through to every univariable fit", {
   t_hc <- table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi),
     vcov = "HC3",
     multivariable = FALSE
@@ -296,6 +322,7 @@ test_that("CR2 clusters align to each fit's own sample (differing Ns)", {
   t_cr <- table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi),
     vcov = "CR2",
     cluster = d$region
@@ -336,6 +363,7 @@ test_that("cluster contract: one value per row of `data`", {
     table_regression_uv(
       d,
       outcome = smoking,
+      method = "glm",
       predictors = age,
       vcov = "CR2",
       cluster = d$region[1:100]
@@ -346,6 +374,7 @@ test_that("cluster contract: one value per row of `data`", {
     table_regression_uv(
       d,
       outcome = smoking,
+      method = "glm",
       predictors = age,
       vcov = "CR2",
       cluster = list(d$region)
@@ -357,6 +386,7 @@ test_that("cluster contract: one value per row of `data`", {
   t_cc <- table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = c(age, bmi),
     vcov = "CR2",
     cluster = d$region,
@@ -400,6 +430,7 @@ test_that("default titles follow the family; custom title wins", {
       table_regression_uv(
         d,
         outcome = smoking,
+        method = "glm",
         predictors = age,
         multivariable = FALSE
       )
@@ -416,6 +447,7 @@ test_that("default titles follow the family; custom title wins", {
       table_regression_uv(
         d,
         outcome = smoking,
+        method = "glm",
         predictors = age,
         family = stats::binomial("probit")
       )
@@ -432,6 +464,7 @@ test_that("default titles follow the family; custom title wins", {
       table_regression_uv(
         d,
         outcome = smoking,
+        method = "glm",
         predictors = age,
         title = "Table 2. Smoking correlates"
       )
@@ -495,13 +528,19 @@ test_that("default titles follow the family; custom title wins", {
 test_that("invalid inputs are refused with clear errors", {
   d <- .uv_soc()
   expect_error(
-    table_regression_uv(1:5, outcome = smoking, predictors = age),
+    table_regression_uv(
+      1:5,
+      outcome = smoking,
+      method = "glm",
+      predictors = age
+    ),
     class = "spicy_invalid_input"
   )
   expect_error(
     table_regression_uv(
       d,
       outcome = smoking,
+      method = "glm",
       predictors = age,
       multivariable = NA
     ),
@@ -511,6 +550,7 @@ test_that("invalid inputs are refused with clear errors", {
     table_regression_uv(
       d,
       outcome = smoking,
+      method = "glm",
       predictors = age,
       complete_cases = "yes"
     ),
@@ -518,11 +558,22 @@ test_that("invalid inputs are refused with clear errors", {
   )
   # The outcome is dropped from the predictor selection -> nothing left.
   expect_error(
-    table_regression_uv(d, outcome = smoking, predictors = smoking),
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      method = "glm",
+      predictors = smoking
+    ),
     class = "spicy_invalid_input"
   )
   expect_error(
-    table_regression_uv(d, outcome = smoking, predictors = age, nested = TRUE),
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      method = "glm",
+      predictors = age,
+      nested = TRUE
+    ),
     class = "spicy_invalid_input"
   )
 })
@@ -535,6 +586,7 @@ test_that("a failing univariable fit is reported with the predictor name", {
     table_regression_uv(
       d,
       outcome = smoking,
+      method = "glm",
       predictors = c(age, broken),
       multivariable = FALSE
     ),
@@ -553,7 +605,12 @@ test_that("a failing multivariable fit is reported as such", {
   d$x1[seq_len(floor(n / 2))] <- NA
   d$x2[seq(floor(n / 2) + 1L, n)] <- NA
   expect_error(
-    table_regression_uv(d, outcome = smoking, predictors = c(x1, x2)),
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(x1, x2)
+    ),
     class = "spicy_invalid_data"
   )
 })
@@ -564,6 +621,7 @@ test_that("the outcome is auto-dropped from tidyselect predictors", {
   td <- broom::tidy(table_regression_uv(
     d,
     outcome = smoking,
+    method = "glm",
     predictors = dplyr::everything(),
     multivariable = FALSE
   ))
@@ -584,6 +642,7 @@ test_that("console snapshot: screen + multivariable merge", {
     table_regression_uv(
       d,
       outcome = smoking,
+      method = "glm",
       predictors = c(age, bmi, sex),
       exponentiate = TRUE
     )
@@ -599,6 +658,7 @@ test_that("the footer names the cluster column through the wrapper", {
       table_regression_uv(
         d,
         outcome = smoking,
+        method = "glm",
         predictors = c(age, bmi),
         vcov = "CR2",
         cluster = d$region
@@ -638,4 +698,94 @@ test_that("family with method = 'lm': non-gaussian refused, gaussian ignored wit
     class = "spicy_ignored_arg"
   )
   expect_s3_class(out, "spicy_regression_table")
+})
+
+
+# ---- 9. The 0.13 default: linear screen (Mood-aligned) --------------------
+
+test_that("default method is the linear screen on a continuous outcome", {
+  d <- sochealth[1:300, ]
+  t_lin <- expect_no_warning(
+    table_regression_uv(
+      d,
+      outcome = wellbeing_score,
+      predictors = c(age, sex),
+      multivariable = FALSE
+    )
+  )
+  td <- broom::tidy(t_lin)
+  f_age <- stats::lm(wellbeing_score ~ age, data = d)
+  expect_equal(
+    td$estimate[td$term == "age"][1],
+    unname(stats::coef(f_age)[["age"]]),
+    tolerance = 1e-10
+  )
+  expect_match(attr(t_lin, "title"), "linear regression screen", fixed = TRUE)
+})
+
+test_that("binary outcome under the default warns (LPM) and fits lm", {
+  d <- sochealth[1:300, ]
+  expect_warning(
+    t_lpm <- table_regression_uv(
+      d,
+      outcome = smoking,
+      predictors = age,
+      multivariable = FALSE
+    ),
+    class = "spicy_model_choice"
+  )
+  td <- broom::tidy(t_lpm)
+  f <- stats::lm(as.integer(smoking == "Yes") ~ age, data = d)
+  expect_equal(
+    abs(td$estimate[td$term == "age"][1]),
+    abs(unname(stats::coef(f)[["age"]])),
+    tolerance = 1e-10
+  )
+})
+
+test_that("explicit method = 'lm' on a binary outcome stays silent", {
+  d <- sochealth[1:300, ]
+  expect_no_warning(
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      predictors = age,
+      method = "lm",
+      multivariable = FALSE
+    )
+  )
+})
+
+test_that("family without method selects the glm screen (0.12 calls intact)", {
+  d <- sochealth[1:300, ]
+  t_fam <- expect_no_warning(
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      predictors = age,
+      family = stats::binomial(),
+      multivariable = FALSE
+    )
+  )
+  t_glm <- table_regression_uv(
+    d,
+    outcome = smoking,
+    predictors = age,
+    method = "glm",
+    multivariable = FALSE
+  )
+  expect_equal(broom::tidy(t_fam)$estimate, broom::tidy(t_glm)$estimate)
+  expect_match(attr(t_fam, "title"), "logistic", ignore.case = TRUE)
+})
+
+test_that("a >2-level outcome under the default is refused with guidance", {
+  expect_error(
+    table_regression_uv(
+      sochealth[1:200, ],
+      outcome = education,
+      predictors = age,
+      multivariable = FALSE
+    ),
+    class = "spicy_invalid_data"
+  )
 })

@@ -2,6 +2,18 @@
 
 ## Breaking changes
 
+* `table_regression_uv()` now defaults to the linear screen
+  (`method = "lm"`) instead of the logistic one. Calls that passed
+  `family = binomial()` (or any family) explicitly keep their glm
+  screen unchanged -- a supplied `family` selects `method = "glm"`
+  automatically. Only calls that relied on the implicit binomial
+  default change behavior: a binary-looking outcome under the new
+  default proceeds as a linear probability model and says so in a
+  classed warning pointing to `vcov = "HC3"` and to
+  `method = "glm"` for the logistic screen. See the new
+  "Why the default screen is linear" section in
+  `?table_regression_uv`.
+
 * Declared missing values are now honored package-wide. Codes that survey files declare as missing (`na_values` / `na_range` metadata on haven-imported columns, and `haven::tagged_na()` values) are treated as missing by default in `freq()`, `cross_tab()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, `mean_n()`, `sum_n()`, `count_n()`, `varlist()`, `vl()`, and `code_book()`: they are excluded from statistics exactly like `NA` (valid percents, means, chi-squared tests and association measures, `min_valid` gates, group definitions), so numbers change for labelled survey data. Nothing disappears silently: `freq()` shows each declared value as its own labelled row in its Missing block (tagged NAs get per-tag rows with their labels), and the tabulation helpers disclose the exclusion in the table note ("Declared missing values removed: ..."). Migration: every function involved gains the same escape hatch, `user_na = FALSE`, which restores the previous behavior of treating declared codes as valid values. See the new "Declared missing values" section in `?freq`.
 
 * `varlist()`, `vl()`, and `code_book()` count columns are now internally coherent for labelled data: `N_distinct` uses the same missing definition as `N_valid` / `NAs` (declared missing values and `NA` elements of list and `POSIXlt` columns no longer count as distinct valid values), `na_range` codes observed in the data are listed in `Values` like `na_values` codes instead of vanishing, and value labels attached to tagged NAs (e.g. `Refused = tagged_na("a")`) now appear in `Values`.

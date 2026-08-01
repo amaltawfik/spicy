@@ -1,7 +1,7 @@
 # console snapshot: screen + multivariable merge
 
     Code
-      print(table_regression_uv(d, outcome = smoking, predictors = c(age, bmi, sex), exponentiate = TRUE))
+      print(table_regression_uv(d, outcome = smoking, method = "glm", predictors = c(age, bmi, sex), exponentiate = TRUE))
     Output
       Univariable and multivariable logistic regression: smoking
       

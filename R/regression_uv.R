@@ -43,6 +43,24 @@
 #' together); the multivariable model is its own family, as in any
 #' multi-model table.
 #'
+#' # Why the default screen is linear
+#' The default `method = "lm"` fits the linear screen: R's canonical
+#' model, and -- when the outcome is continuous -- the estimand with
+#' the most direct reading. If the outcome looks binary under this
+#' default, the screen proceeds as a linear probability model and
+#' says so in a classed warning: LPM coefficients are probability
+#' differences, comparable across models and samples in a way that
+#' odds ratios are not (Mood, 2010), but the model's built-in
+#' heteroskedasticity calls for `vcov = "HC3"`. A two-level factor
+#' (or logical) outcome is coded 0/1 on its second level -- the glm
+#' convention -- and the warning names the modeled probability; an
+#' outcome with more observed levels is refused (a multinomial
+#' outcome has no linear screen). The classical
+#' epidemiological screen is one argument away: `method = "glm"`
+#' (with the default `family = binomial()`) gives the logistic
+#' screen, and supplying any `family` selects the glm screen
+#' directly.
+#'
 #' # Intercepts
 #' Hidden by default on both sides (each univariable fit has its own
 #' nuisance intercept), matching `gtsummary::tbl_regression()`'s
@@ -56,11 +74,14 @@
 #' @param predictors Candidate predictor columns (tidyselect, e.g.
 #'   `c(age, sex, education)` or `where(is.numeric)`). The outcome
 #'   column(s) are dropped from the selection automatically.
-#' @param method `"glm"` (default), `"lm"`, or `"coxph"` (requires
+#' @param method `"lm"` (default), `"glm"`, or `"coxph"` (requires
 #'   the `survival` package; estimates render as HRs with
 #'   `exponentiate = TRUE`).
 #' @param family A [stats::family] object for `method = "glm"`.
-#'   Default `binomial()`. Refused for `method = "coxph"`, and
+#'   Default `binomial()`, so `method = "glm"` alone is the logistic
+#'   screen; supplying `family` without `method` selects the glm
+#'   screen directly (a family can only mean that). Refused for
+#'   `method = "coxph"`, and
 #'   `gaussian()` with the identity link is refused too: use
 #'   `method = "lm"` for the linear screen. With `method = "lm"`,
 #'   any non-gaussian `family` is refused the same way (use
@@ -102,6 +123,10 @@
 #' Univariate and multivariable regression.
 #' <https://epirhandbook.com/en/new_pages/regression.html>
 #'
+#' Mood, C. (2010). Logistic regression: Why we cannot do what we
+#' think we can do, and what we can do about it. *European
+#' Sociological Review*, 26(1), 67-82. \doi{10.1093/esr/jcp006}
+#'
 #' Sjoberg, D.D., Whiting, K., Curry, M., Lavery, J.A., &
 #' Larmarange, J. (2021). Reproducible summary tables with the
 #' gtsummary package. *The R Journal*, 13(1), 570-580.
@@ -121,7 +146,7 @@ table_regression_uv <- function(
   data,
   outcome,
   predictors,
-  method = c("glm", "lm", "coxph"),
+  method = c("lm", "glm", "coxph"),
   family = stats::binomial(),
   multivariable = TRUE,
   complete_cases = FALSE,
@@ -130,6 +155,14 @@ table_regression_uv <- function(
   ...
 ) {
   family_supplied <- !missing(family)
+  method_supplied <- !missing(method)
+  # A `family` without a `method` can only mean the glm screen (family
+  # is meaningless for lm and coxph, both refused below), so the intent
+  # is honoured: every pre-0.13 call that passed `family = binomial()`
+  # keeps its logistic screen unchanged.
+  if (family_supplied && !method_supplied) {
+    method <- "glm"
+  }
   method <- spicy_match_arg(method)
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data frame.", class = "spicy_invalid_input")
@@ -364,6 +397,72 @@ table_regression_uv <- function(
     cc <- stats::complete.cases(data[, c(outcome_vars, pred_names)])
     data <- data[cc, , drop = FALSE]
     if (!is.null(dots$cluster)) dots$cluster <- dots$cluster[cc]
+  }
+
+  # Linear screen on a categorical outcome: lm() cannot model a
+  # factor response. A two-level outcome is coded 0/1 on its second
+  # level -- the glm convention -- so the linear screen is a linear
+  # probability model for P(outcome = second level). Under the
+  # DEFAULTED method the choice is disclosed in a classed warning
+  # (LPM coefficients are probability differences, comparable across
+  # models; Mood 2010); explicit `method = "lm"` is an informed
+  # choice and stays silent. More than two observed levels are
+  # refused: a multinomial outcome has no linear screen.
+  if (identical(method, "lm")) {
+    y <- data[[outcome_name]]
+    lpm_level <- NULL
+    if (is.factor(y) || is.character(y) || is.logical(y)) {
+      y_fac <- if (is.logical(y)) {
+        factor(y, levels = c(FALSE, TRUE))
+      } else {
+        droplevels(as.factor(y))
+      }
+      if (nlevels(y_fac) == 2L) {
+        lpm_level <- levels(y_fac)[2L]
+        data[[outcome_name]] <- as.integer(y_fac) - 1L
+      } else {
+        spicy_abort(
+          c(
+            sprintf(
+              "The linear screen needs a numeric or two-level outcome; `%s` has %d observed levels.",
+              outcome_name,
+              nlevels(y_fac)
+            ),
+            "i" = paste0(
+              "Multinomial outcomes have no univariable screen: fit ",
+              "`nnet::multinom()` models and pass them to ",
+              "`table_regression()`."
+            )
+          ),
+          class = "spicy_invalid_data"
+        )
+      }
+    } else if (all(y[!is.na(y)] %in% c(0, 1)) && any(!is.na(y))) {
+      lpm_level <- "1"
+    }
+    if (!is.null(lpm_level) && !method_supplied) {
+      spicy_warn(
+        c(
+          sprintf(
+            "`%s` is binary: the default linear screen fits a linear probability model for P(%s = %s).",
+            outcome_name,
+            outcome_name,
+            lpm_level
+          ),
+          "i" = paste0(
+            "Its coefficients are probability differences ",
+            "(comparable across models; Mood 2010). Consider ",
+            "`vcov = \"HC3\"` for the model's built-in ",
+            "heteroskedasticity."
+          ),
+          "i" = paste0(
+            "For the logistic screen, use `method = \"glm\"` ",
+            "(odds ratios with `exponentiate = TRUE`)."
+          )
+        ),
+        class = "spicy_model_choice"
+      )
+    }
   }
 
   bt <- function(x) paste0("`", x, "`")

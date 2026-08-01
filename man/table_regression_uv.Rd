@@ -8,7 +8,7 @@ table_regression_uv(
   data,
   outcome,
   predictors,
-  method = c("glm", "lm", "coxph"),
+  method = c("lm", "glm", "coxph"),
   family = stats::binomial(),
   multivariable = TRUE,
   complete_cases = FALSE,
@@ -28,12 +28,15 @@ in \code{data} (the \code{tbl_uvregression} convention).}
 \code{c(age, sex, education)} or \code{where(is.numeric)}). The outcome
 column(s) are dropped from the selection automatically.}
 
-\item{method}{\code{"glm"} (default), \code{"lm"}, or \code{"coxph"} (requires
+\item{method}{\code{"lm"} (default), \code{"glm"}, or \code{"coxph"} (requires
 the \code{survival} package; estimates render as HRs with
 \code{exponentiate = TRUE}).}
 
 \item{family}{A \link[stats:family]{stats::family} object for \code{method = "glm"}.
-Default \code{binomial()}. Refused for \code{method = "coxph"}, and
+Default \code{binomial()}, so \code{method = "glm"} alone is the logistic
+screen; supplying \code{family} without \code{method} selects the glm
+screen directly (a family can only mean that). Refused for
+\code{method = "coxph"}, and
 \code{gaussian()} with the identity link is refused too: use
 \code{method = "lm"} for the linear screen. With \code{method = "lm"},
 any non-gaussian \code{family} is refused the same way (use
@@ -103,6 +106,25 @@ together); the multivariable model is its own family, as in any
 multi-model table.
 }
 
+\section{Why the default screen is linear}{
+The default \code{method = "lm"} fits the linear screen: R's canonical
+model, and -- when the outcome is continuous -- the estimand with
+the most direct reading. If the outcome looks binary under this
+default, the screen proceeds as a linear probability model and
+says so in a classed warning: LPM coefficients are probability
+differences, comparable across models and samples in a way that
+odds ratios are not (Mood, 2010), but the model's built-in
+heteroskedasticity calls for \code{vcov = "HC3"}. A two-level factor
+(or logical) outcome is coded 0/1 on its second level -- the glm
+convention -- and the warning names the modeled probability; an
+outcome with more observed levels is refused (a multinomial
+outcome has no linear screen). The classical
+epidemiological screen is one argument away: \code{method = "glm"}
+(with the default \code{family = binomial()}) gives the logistic
+screen, and supplying any \code{family} selects the glm screen
+directly.
+}
+
 \section{Intercepts}{
 Hidden by default on both sides (each univariable fit has its own
 nuisance intercept), matching \code{gtsummary::tbl_regression()}'s
@@ -125,6 +147,10 @@ table_regression_uv(
 Batra, N. et al. (Eds.) (2021). \emph{The Epidemiologist R Handbook},
 Univariate and multivariable regression.
 \url{https://epirhandbook.com/en/new_pages/regression.html}
+
+Mood, C. (2010). Logistic regression: Why we cannot do what we
+think we can do, and what we can do about it. \emph{European
+Sociological Review}, 26(1), 67-82. \doi{10.1093/esr/jcp006}
 
 Sjoberg, D.D., Whiting, K., Curry, M., Lavery, J.A., &
 Larmarange, J. (2021). Reproducible summary tables with the
