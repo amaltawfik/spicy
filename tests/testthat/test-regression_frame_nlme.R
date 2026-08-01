@@ -438,16 +438,9 @@ test_that("gls coefs match parameters::model_parameters() (oracle)", {
 test_that("gls AME columns are populated (registry: AME yes)", {
   skip_if_not_installed("nlme")
   skip_if_not_installed("marginaleffects")
-  # FIXME matrix: rd-vcov-classes:registry-gls -- the registry and
-  # man/table_regression_models.Rd promise AME for nlme::gls, and
-  # .gls_info() advertises supports$ame = TRUE, but
-  # as_regression_frame.gls() never calls .attach_ame_to_frame_coefs()
-  # (show_columns is swallowed by `...`), so
-  # table_regression(gls_fit, show_columns = c("b", "ame")) renders an
-  # EMPTY AME column with no warning -- while
-  # marginaleffects::avg_slopes(fit) computes fine on the same fit.
-  # Un-skip once the gls frame attaches AME the way lme does.
-  skip("FIXME matrix: rd-vcov-classes:registry-gls (gls AME silently empty)")
+  # The registry and man/table_regression_models.Rd promise AME for
+  # nlme::gls (.gls_info() advertises supports$ame = TRUE):
+  # as_regression_frame.gls() attaches the AME rows the way lme does.
   set.seed(7)
   d <- data.frame(x1 = rnorm(150), x2 = rnorm(150))
   d$y <- 1 + 0.5 * d$x1 - 0.2 * d$x2 + rnorm(150)

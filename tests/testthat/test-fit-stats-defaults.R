@@ -107,15 +107,26 @@ test_that("mixed lm + glm default is the union of both class defaults", {
 })
 
 test_that("mixed lm + glm alien fit-stat cells render an en-dash", {
-  # FIXME matrix: rd-core:fit-stats-default-mixed-union –
-  # man/table_regression.Rd 386-389 / 905-906 says the renderer
-  # "en-dashes per cell the stat not defined for a given model class",
-  # but the displayed cells are BLANK (empty strings), not en-dash
-  # (repro: table_regression(list(lm(mpg ~ wt, mtcars), glm(am ~ mpg,
-  # mtcars, family = binomial))) – the R² cell of the glm column and
-  # the McFadden cell of the lm column are ""). Doc-vs-code discordance
-  # recorded in the Phase 3 audit.
-  skip(
-    "rd-core:fit-stats-default-mixed-union – alien cells render blank, not en-dash"
-  )
+  # rd-core:fit-stats-default-mixed-union (per-cell en-dash contract):
+  # the renderer "en-dashes per cell the stat not defined for a given
+  # model class" (man/table_regression.Rd).
+  m_lm <- lm(mpg ~ wt, data = mtcars)
+  m_glm <- glm(am ~ mpg, data = mtcars, family = binomial)
+  out <- table_regression(list(OLS = m_lm, Logit = m_glm))
+  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  vars <- trimws(d$Variable)
+  # First (display) sub-column of each model carries the fit stats.
+  ols_col <- grep("^OLS", names(d), value = TRUE)[1L]
+  logit_col <- grep("^Logit", names(d), value = TRUE)[1L]
+  dash <- "–"
+  expect_identical(trimws(d[[logit_col]][vars == "R²"]), dash)
+  expect_identical(trimws(d[[logit_col]][vars == "Adj.R²"]), dash)
+  expect_identical(trimws(d[[ols_col]][vars == "R² (McFadden)"]), dash)
+  expect_identical(trimws(d[[ols_col]][vars == "R² (Nagelkerke)"]), dash)
+  # A stat BOTH classes define keeps its two values (no dash).
+  expect_false(dash %in% trimws(d[[ols_col]][vars == "AIC"]))
+  expect_false(dash %in% trimws(d[[logit_col]][vars == "AIC"]))
+  # The body's absent-term cells stay BLANK (dash is a fit-stat signal,
+  # not a term-absence one).
+  expect_identical(trimws(d[[logit_col]][vars == "wt"]), "")
 })

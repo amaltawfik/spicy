@@ -85,6 +85,27 @@ dispatch_regression_output <- function(
 output_default <- function(rendered, aligned) {
   attr(rendered, "spicy_long") <- aligned$coefs_aligned
   attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_aligned
+  # Provenance attributes promised by the \value section: the model ids
+  # in table order, and each model's outcome variable (lifted from the
+  # per-row values already carried in `spicy_long`).
+  cf <- aligned$coefs_aligned
+  model_ids <- aligned$model_ids %||% unique(cf$model_id)
+  outcome <- vapply(
+    model_ids,
+    function(m) {
+      o <- if (!is.null(cf) && "outcome" %in% names(cf)) {
+        cf$outcome[cf$model_id == m]
+      } else {
+        character(0)
+      }
+      o <- o[!is.na(o)]
+      if (length(o) > 0L) o[1L] else NA_character_
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  attr(rendered, "model_ids") <- model_ids
+  attr(rendered, "outcome") <- outcome
   class(rendered) <- c("spicy_regression_table", "spicy_table", "data.frame")
   rendered
 }

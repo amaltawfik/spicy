@@ -315,6 +315,16 @@ align_frames <- function(
     }
   }
 
+  # Models whose fit-stat NAs are display blanks by design (multinom
+  # categories-as-columns pseudo-models after the first; the
+  # univariable-screen bundle): the renderers keep those cells empty
+  # instead of the mixed-table per-cell en-dash.
+  blank_fit_stats_models <- model_ids[vapply(
+    frames,
+    function(f) isTRUE(f$info$extras$fit_stats_display_blank),
+    logical(1)
+  )]
+
   list(
     coefs_aligned = coefs_long,
     fit_stats_aligned = fit_stats,
@@ -327,7 +337,8 @@ align_frames <- function(
     n_models = length(frames),
     n_groups_by_model = n_groups_by_model,
     fixef_by_model = fixef_by_model,
-    estimand_horizons = estimand_horizons
+    estimand_horizons = estimand_horizons,
+    blank_fit_stats_models = blank_fit_stats_models
   )
 }
 

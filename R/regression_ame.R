@@ -322,7 +322,7 @@ build_numeric_ame_contrast <- function(fit, v) {
   data_h <- data
   data_h[[v]] <- data_h[[v]] + 1
   mm_h <- stats::model.matrix(stats::formula(fit), data_h)
-  colMeans(mm_h - mm_at)
+  .ame_contrast_row_average(mm_h - mm_at, fit)
 }
 
 # Factor predictor at level `lvl` (vs reference): contrast =
@@ -337,7 +337,59 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
   data_lvl[[v]] <- factor(lvl, levels = levels(data[[v]]))
   mm_ref <- stats::model.matrix(stats::formula(fit), data_ref)
   mm_lvl <- stats::model.matrix(stats::formula(fit), data_lvl)
-  colMeans(mm_lvl - mm_ref)
+  .ame_contrast_row_average(mm_lvl - mm_ref, fit)
+}
+
+# Row-averaging step of the closed-form contrasts: weighted by the
+# fit's prior weights when present, so Path A matches the wts-weighted
+# avg_slopes() average of Path B on weighted fits; plain colMeans()
+# otherwise.
+.ame_contrast_row_average <- function(m, fit) {
+  w <- .spicy_ame_fit_wts(fit)
+  if (is.null(w) || length(w) != nrow(m)) {
+    return(colMeans(m))
+  }
+  colSums(m * w) / sum(w)
+}
+
+
+# ---- Fit weights for the AME averaging step -------------------------------
+
+# man/table_regression.Rd (Weights section): the fit's prior weights
+# are extracted automatically for all downstream computations, AME
+# included. marginaleffects only weights the avg_slopes() averaging
+# step when `wts` is supplied (its default is equal weights), so every
+# extractor routes the fit's weights through this helper.
+#
+# Returns the prior-weights vector (stats::weights(fit), aligned on the
+# estimation rows) or NULL when:
+#   * the fit is a svyglm / svrepglm: marginaleffects reads the survey
+#     design natively, so passing wts on top would interfere with the
+#     design-based mechanics;
+#   * the fit carries no weights, or non-numeric / non-finite ones
+#     (nlme's varFunc "weights" are a structure, not case weights);
+#   * the weights are constant (a constant-weight average equals the
+#     unweighted average).
+.spicy_ame_fit_wts <- function(fit) {
+  if (inherits(fit, c("svyglm", "svrepglm"))) {
+    return(NULL)
+  }
+  w <- tryCatch(stats::weights(fit), error = function(e) NULL)
+  if (!is.numeric(w) || length(w) == 0L || !all(is.finite(w))) {
+    return(NULL)
+  }
+  if (all(w == w[1L])) {
+    return(NULL)
+  }
+  as.numeric(w)
+}
+
+
+# levels() analogue for the AME term-id reconstruction: a logical
+# predictor enters the design matrix as a two-level FALSE/TRUE factor
+# (single dummy `<var>TRUE`), but levels() on a logical returns NULL.
+.spicy_cat_levels <- function(x) {
+  if (is.logical(x)) c("FALSE", "TRUE") else levels(x)
 }
 
 
@@ -375,7 +427,10 @@ extract_ame_marginaleffects <- function(
       fit,
       vcov = vc,
       conf_level = ci_level,
-      df = df_arg
+      df = df_arg,
+      # Weighted fit: the AME is the weighted average of the unit-level
+      # slopes (Rd Weights section); equal weights otherwise.
+      wts = .spicy_ame_fit_wts(fit) %||% FALSE
     ),
     error = function(e) {
       spicy_warn(
@@ -426,12 +481,15 @@ extract_ame_marginaleffects <- function(
       if (length(cand) > 0L) cand[1L] else var_name
     }
 
-    # Reconstruct coef-style term_id ONLY for true factor variables.
+    # Reconstruct coef-style term_id ONLY for true factor (or logical:
+    # dummy `<var>TRUE`, grouped like a two-level factor) variables.
     # marginaleffects' `contrast` is "lvl - ref" for factors AND
     # for binary numerics like am in {0, 1} (it returns "1 - 0"),
     # which would produce `am1` and de-align with the B coef row
     # named `am`. Anchor on the model-frame class to disambiguate.
-    is_factor_var <- col_name %in% mf_names && is.factor(mf[[col_name]])
+    is_factor_var <- col_name %in%
+      mf_names &&
+      (is.factor(mf[[col_name]]) || is.logical(mf[[col_name]]))
     term_id <- if (
       is_factor_var &&
         !is.na(contrast_str) &&
@@ -461,7 +519,7 @@ extract_ame_marginaleffects <- function(
     if (is_factor_var) {
       if (!is.na(contrast_str) && grepl(" - ", contrast_str)) {
         lvl_str <- sub(" - .*$", "", contrast_str)
-        lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
+        lvl_pos <- match(lvl_str, .spicy_cat_levels(mf[[col_name]]))
       }
     }
     ft_fallback <- if (is_factor_var) col_name else NA_character_
@@ -562,7 +620,10 @@ extract_ame_glm <- function(
       fit,
       vcov = vc,
       conf_level = ci_level,
-      df = Inf
+      df = Inf,
+      # Weighted fit: the AME is the weighted average of the unit-level
+      # slopes (Rd Weights section); equal weights otherwise.
+      wts = .spicy_ame_fit_wts(fit) %||% FALSE
     ),
     error = function(e) {
       spicy_warn(
@@ -617,8 +678,11 @@ extract_ame_glm <- function(
       if (length(cand) > 0L) cand[1L] else var_name # nocov
     }
 
-    # Reconstruct coef-style term_id only for true factor variables.
-    is_factor_var <- col_name %in% mf_names && is.factor(mf[[col_name]])
+    # Reconstruct coef-style term_id only for true factor (or logical:
+    # dummy `<var>TRUE`, grouped like a two-level factor) variables.
+    is_factor_var <- col_name %in%
+      mf_names &&
+      (is.factor(mf[[col_name]]) || is.logical(mf[[col_name]]))
     term_id <- if (
       is_factor_var &&
         !is.na(contrast_str) &&
@@ -665,7 +729,7 @@ extract_ame_glm <- function(
     if (is_factor_var) {
       if (!is.na(contrast_str) && grepl(" - ", contrast_str)) {
         lvl_str <- sub(" - .*$", "", contrast_str)
-        lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
+        lvl_pos <- match(lvl_str, .spicy_cat_levels(mf[[col_name]]))
       }
     }
     ft_fallback <- if (is_factor_var) col_name else NA_character_
@@ -770,7 +834,11 @@ extract_ame_glm <- function(
           fit,
           conf_level = ci_level,
           df = Inf,
-          vcov = vcarg
+          vcov = vcarg,
+          # Weighted fit: the AME is the weighted average of the
+          # unit-level slopes (Rd Weights section). NULL (equal
+          # weights) for svyglm, whose design weighting is native.
+          wts = .spicy_ame_fit_wts(fit) %||% FALSE
         )
       ))
     }
@@ -854,10 +922,13 @@ extract_ame_glm <- function(
       # a bare model-frame column or matches a wrapped one via the grep.
       if (length(cand) > 0L) cand[1L] else var_name # nocov
     }
-    is_factor_var <- col_name %in% mf_names && is.factor(mf[[col_name]])
+    is_factor_var <- col_name %in%
+      mf_names &&
+      (is.factor(mf[[col_name]]) || is.logical(mf[[col_name]]))
 
-    # Reconstruct a coef-style term id for factor rows so the renderer
-    # groups them under the parent factor header. For numeric / logical
+    # Reconstruct a coef-style term id for factor and logical rows so
+    # the renderer groups them under the parent header (a logical is a
+    # two-level FALSE/TRUE factor in the design matrix). For numeric
     # predictors the term IS the variable name.
     term_id <- if (
       is_factor_var && !is.na(contrast_str) && grepl(" - ", contrast_str)
@@ -875,7 +946,7 @@ extract_ame_glm <- function(
     lvl_pos <- NA_integer_
     if (is_factor_var && !is.na(contrast_str) && grepl(" - ", contrast_str)) {
       lvl_str <- sub(" - .*$", "", contrast_str)
-      lvl_pos <- match(lvl_str, levels(mf[[col_name]]))
+      lvl_pos <- match(lvl_str, .spicy_cat_levels(mf[[col_name]]))
     }
 
     parent_var <- fmeta$factor_term %||%

@@ -208,6 +208,32 @@ test_that("geeglm: weighted fits carry weighted_nobs like a glm", {
   expect_true(is.na(fr0$info$fit_stats$weighted_nobs))
 })
 
+test_that("geeglm: AME honours the fit's prior weights", {
+  # rd-core:weights-from-fit extended to the frame path: the AME is the
+  # weighted average of the unit slopes, oracle avg_slopes(wts = ).
+  skip_if_not_installed("geepack")
+  skip_if_not_installed("marginaleffects")
+  set.seed(11)
+  d <- data.frame(id = rep(1:30, each = 4), x = rnorm(120), z = rnorm(120))
+  d$y <- rbinom(120, 1, plogis(0.5 * d$x - 0.3 * d$z))
+  d$w <- ifelse(d$x > 0, 4, 1)
+  fit <- geepack::geeglm(
+    y ~ x + z,
+    id = id,
+    data = d,
+    family = binomial,
+    weights = w
+  )
+  fr <- as_regression_frame(fit, show_columns = c("b", "ame"))
+  a <- fr$coefs[fr$coefs$estimate_type == "ame", , drop = FALSE]
+  orc <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(fit, wts = stats::weights(fit), df = Inf)
+  ))
+  idx <- match(a$term, orc$term)
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+})
+
 test_that("geeglm: scale is blank when the fit fixed it (scale.fix)", {
   # geepack's own summary prints "Scale is fixed." and refuses to
   # show gamma; displaying the internal value would read as an

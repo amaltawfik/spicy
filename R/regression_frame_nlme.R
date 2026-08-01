@@ -97,12 +97,26 @@ as_regression_frame.gls <- function(
   vcov_label = NULL,
   ci_level = 0.95,
   ci_method = NULL,
+  show_columns = character(0),
   model_id = "M1",
   ...
 ) {
   .check_nlme_available()
 
   coefs <- .gls_coefs(fit, ci_level = ci_level)
+  # AME rows when requested: the registry advertises supports$ame for
+  # gls, and avg_slopes() reads the fit's own vcov (the correlation /
+  # variance structure is baked into it). Without this attach the AME
+  # column rendered silently empty (show_columns was swallowed by
+  # `...`).
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov,
+    cluster = NULL
+  )
   info <- .gls_info(
     fit,
     vcov_kind = vcov,

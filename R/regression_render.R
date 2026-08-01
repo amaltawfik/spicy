@@ -395,7 +395,8 @@ render_regression_table <- function(
       p_digits = p_digits,
       decimal_mark = decimal_mark,
       n_groups_by_model = aligned$n_groups_by_model,
-      fixef_by_model = aligned$fixef_by_model
+      fixef_by_model = aligned$fixef_by_model,
+      blank_models = aligned$blank_fit_stats_models
     )
     if (length(fit_rows) > 0L) {
       group_sep <- nrow(body) + 1L
@@ -1317,7 +1318,8 @@ build_fit_stats_rows <- function(
   decimal_mark,
   p_digits = 3L,
   n_groups_by_model = NULL,
-  fixef_by_model = NULL
+  fixef_by_model = NULL,
+  blank_models = NULL
 ) {
   if (length(show_fit_stats) == 0L || length(col_spec) == 0L) {
     return(list())
@@ -1428,6 +1430,12 @@ build_fit_stats_rows <- function(
     }
     cells <- blank_cells(fit_stat_label(tk))
     for (m_id in model_ids) {
+      # Display-blank models (multinom category pseudo-columns, the
+      # univariable-screen bundle): their NA means "value printed
+      # elsewhere by design", so the cell stays empty, not en-dashed.
+      if (m_id %in% blank_models) {
+        next
+      }
       target_col <- first_col_per_model[[m_id]]
       if (is.na(target_col)) {
         next
@@ -1556,10 +1564,11 @@ format_fit_stat_value <- function(
   p_digits = 3L,
   decimal_mark = "."
 ) {
-  # Change tokens render an en-dash on NA -- typically the first
-  # model's column (no previous to compare to). Absolute fit stats
-  # render an empty string (e.g. R\u00b2 is NA for a glm row in a mixed
-  # table, which the user reads as "not applicable").
+  # NA renders an en-dash: for change tokens that is typically the
+  # first model's column (no previous to compare to); for absolute fit
+  # stats it marks a stat not defined for that model's class in a
+  # mixed table (e.g. R\u00b2 on a glm column), per the documented
+  # "en-dashes per cell" contract of `show_fit_stats`.
   is_change <- token %in%
     c(
       "r2_change",
@@ -1574,7 +1583,14 @@ format_fit_stat_value <- function(
       "p_change"
     )
   if (is.null(val) || is.na(val)) {
-    return(if (is_change) "\u2013" else "")
+    # Structural per-class counts keep the blank convention of the
+    # n_groups / fixed_effects block family: an em-dashed "N events"
+    # would read as a missing value on a class where the count is
+    # simply not a concept (documented Cox-only row).
+    if (identical(token, "n_events")) {
+      return("")
+    }
+    return("\u2013")
   }
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {

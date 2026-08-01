@@ -771,8 +771,10 @@ as_regression_frame.spicy_uv_screen <- function(
   # Model-level statistics are undefined for a screen (one fit per
   # block): blank them so the fit-stat rows print nothing under the
   # Univariable group -- the per-predictor N column carries the sample
-  # information instead.
+  # information instead. The display-blank marker keeps the renderers
+  # from en-dashing these cells like a mixed-table class mismatch.
   info$fit_stats <- .blank_fit_stats(info$fit_stats)
+  info$extras$fit_stats_display_blank <- TRUE
   # Disclosure line (footer theme below). Silence when nothing needs
   # saying: equal Ns without complete_cases is self-evident.
   info$extras$uv_disclosure <- if (isTRUE(bundle$complete_cases)) {

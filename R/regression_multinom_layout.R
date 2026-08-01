@@ -107,6 +107,11 @@
     pk$info$model_id <- cat_k
     if (k > 1L) {
       pk$info$fit_stats <- .blank_fit_stats(pk$info$fit_stats)
+      # Display-blank marker: these NAs mean "the model-level value is
+      # printed once, under the first category group", NOT "stat
+      # undefined for this class" -- the renderers keep the cells
+      # blank instead of the mixed-table per-cell en-dash.
+      pk$info$extras$fit_stats_display_blank <- TRUE
     }
     pseudo[[k]] <- pk
   }

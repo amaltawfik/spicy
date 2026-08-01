@@ -389,7 +389,8 @@ build_structured_body <- function(
       ic_digits = ic_digits,
       p_digits = p_digits,
       n_groups_by_model = aligned$n_groups_by_model,
-      fixef_by_model = aligned$fixef_by_model
+      fixef_by_model = aligned$fixef_by_model,
+      blank_models = aligned$blank_fit_stats_models
     )
     for (fr in fit_rows) {
       rows[[length(rows) + 1L]] <- fr$row
@@ -677,7 +678,8 @@ build_structured_body <- function(
   ic_digits,
   p_digits,
   n_groups_by_model = NULL,
-  fixef_by_model = NULL
+  fixef_by_model = NULL,
+  blank_models = NULL
 ) {
   # Each fit-stat row puts the value in the FIRST structured sub-column
   # of each model (i.e., the col_name of the first col_spec entry per
@@ -805,6 +807,13 @@ build_structured_body <- function(
     is_change_p <- identical(tk, "p_change")
 
     for (m_id in model_ids) {
+      # Display-blank models (multinom category pseudo-columns, the
+      # univariable-screen bundle): leave the cell NA WITHOUT a
+      # fit-stat override, so the string formatter renders the blank
+      # instead of the mixed-table en-dash.
+      if (m_id %in% blank_models) {
+        next
+      }
       target_col <- first_struct_col_per_model[[m_id]]
       if (is.na(target_col)) {
         next
@@ -1051,6 +1060,18 @@ build_structured_body <- function(
   }
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
   if (is.na(val)) {
+    # Fit-stat cells en-dash on NA (a stat not defined for that model's
+    # class in a mixed table; the change tokens' first-model column) --
+    # the documented "en-dashes per cell" contract, mirroring the
+    # console renderer's format_fit_stat_value(). The two block-shaped
+    # disclosures keep their own console conventions: blank for a
+    # non-fixest model's "FE:" cell and for an "N (<factor>)" cell of a
+    # model without that grouping factor. Body cells stay blank (term
+    # absent from the model).
+    fs <- cfmt$fit_stat
+    if (!is.null(fs) && !fs %in% c("fixed_effects", "n_groups", "n_events")) {
+      return("\u2013")
+    }
     return("")
   }
   # Fixed-effects disclosure cells are numeric-encoded in the

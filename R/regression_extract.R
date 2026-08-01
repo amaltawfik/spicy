@@ -685,14 +685,67 @@ detect_factor_term_meta <- function(fit) {
 
 # ---- Polymorphic accessors for fit metadata -------------------------------
 
-# Return the xlevels list for a fitted model. S3 models (lm, glm) expose
-# this directly at `fit$xlevels`. S4 models (lmerMod, glmerMod from
-# lme4) do not; we reconstruct it from the model frame via
-# `stats::.getXlevels()`. Bayesian fits (brmsfit, stanreg) need a
-# class-specific path because `formula(fit)` may return a wrapper
-# (brmsformula) and `model.frame(fit)` may not be implemented. Returns
-# NULL if no factor predictor exists or the helpers fail.
+# Return the xlevels list for a fitted model, extended with logical
+# predictors. A logical enters the design matrix exactly like a
+# two-level factor (single dummy `<var>TRUE`, reference level FALSE)
+# but never appears in a fit's xlevels; appending it here (levels
+# "FALSE" / "TRUE") gives logical predictors the same grouped header /
+# indent / reference-row layout as character and factor predictors
+# (the `factor_layout` documentation covers all three).
 .spicy_get_xlevels <- function(fit) {
+  .augment_xlevels_with_logicals(fit, .spicy_get_xlevels_base(fit))
+}
+
+.augment_xlevels_with_logicals <- function(fit, xlev) {
+  trms <- tryCatch(
+    attr(.spicy_get_terms(fit), "term.labels"),
+    error = function(e) NULL
+  )
+  if (is.null(trms) || length(trms) == 0L) {
+    return(xlev)
+  }
+  d <- tryCatch(
+    {
+      if (inherits(fit, c("lme", "gls"))) {
+        nlme::getData(fit)
+      } else if (inherits(fit, c("brmsfit", "stanreg"))) {
+        fit$data
+      } else {
+        stats::model.frame(fit)
+      }
+    },
+    error = function(e) NULL
+  )
+  if (!is.data.frame(d) || ncol(d) == 0L) {
+    return(xlev)
+  }
+  main_trms <- trms[!grepl(":", trms, fixed = TRUE)]
+  lgl_vars <- intersect(main_trms, names(d))
+  lgl_vars <- lgl_vars[vapply(
+    lgl_vars,
+    function(v) is.logical(d[[v]]),
+    logical(1)
+  )]
+  if (length(lgl_vars) == 0L) {
+    return(xlev)
+  }
+  xlev <- xlev %||% list()
+  for (v in lgl_vars) {
+    if (is.null(xlev[[v]])) {
+      xlev[[v]] <- c("FALSE", "TRUE")
+    }
+  }
+  xlev
+}
+
+# Base xlevels accessor. S3 models (lm, glm) expose xlevels directly at
+# `fit$xlevels`. S4 models (lmerMod, glmerMod from lme4) do not; we
+# reconstruct it from the model frame via `stats::.getXlevels()`.
+# Bayesian fits (brmsfit, stanreg) need a class-specific path because
+# `formula(fit)` may return a wrapper (brmsformula) and
+# `model.frame(fit)` may not be implemented. Returns NULL if no factor
+# predictor exists or the helpers fail.
+.spicy_get_xlevels_base <- function(fit) {
   # Fast path: S3 fits store xlevels as a named list attribute.
   xlev <- tryCatch(fit$xlevels, error = function(e) NULL)
   if (!is.null(xlev)) {

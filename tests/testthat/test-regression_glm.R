@@ -3046,14 +3046,27 @@ test_that("pseudo_r2_tjur: binomial oracle value; no row for other families", {
     oracle,
     tolerance = 1e-10
   )
-  # Non-binomial family: Tjur is undefined, no value is ever displayed.
-  # (Current contract: the requested row is dropped without a signal --
-  # flagged in the Phase 3 audit as quieter than the theta/alpha
-  # precedent, which hard-errors.)
+  # Non-binomial set: Tjur is undefined, and an explicit request is
+  # refused up front (the theta/alpha precedent) -- no model in the set
+  # can carry the statistic, so silently dropping the row would hide
+  # the request.
   pfit <- glm(carb ~ wt, data = mtcars, family = poisson)
-  outp <- table_regression(pfit, show_fit_stats = c("nobs", "pseudo_r2_tjur"))
-  vars <- trimws(as.data.frame(outp, stringsAsFactors = FALSE)$Variable)
-  expect_false("R² (Tjur)" %in% vars)
+  expect_error(
+    table_regression(pfit, show_fit_stats = c("nobs", "pseudo_r2_tjur")),
+    class = "spicy_invalid_input"
+  )
+  # Mixed set with at least one binomial glm: the request is honoured,
+  # and the non-binomial column renders the per-cell en-dash.
+  outm <- table_regression(
+    list(bin = gfit, pois = pfit),
+    show_fit_stats = c("nobs", "pseudo_r2_tjur")
+  )
+  dm <- as.data.frame(outm, stringsAsFactors = FALSE)
+  varsm <- trimws(dm$Variable)
+  bin_col <- grep("^bin", names(dm), value = TRUE)[1L]
+  pois_col <- grep("^pois", names(dm), value = TRUE)[1L]
+  expect_match(trimws(dm[[bin_col]][varsm == "R² (Tjur)"]), "^[0-9.]+$")
+  expect_identical(trimws(dm[[pois_col]][varsm == "R² (Tjur)"]), "–")
 })
 
 test_that("partial_chi2 renders as 'value (df)' and is refused for lm", {

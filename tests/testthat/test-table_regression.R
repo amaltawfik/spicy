@@ -1718,14 +1718,19 @@ test_that("default output – documented class vector and rendering attributes",
 })
 
 test_that("provenance attributes outcome / model_ids are carried", {
-  # FIXME matrix: rd-core:return-class-attributes – man/table_regression.Rd
-  # \value promises provenance attributes `outcome` and `model_ids` on the
-  # default return, but the object carries neither (both NULL); provenance
-  # only exists per-row inside attr(out, "spicy_long"). Doc-vs-code
-  # discordance recorded in the Phase 3 audit – do not assert until decided.
-  skip(
-    "rd-core:return-class-attributes – attr 'outcome'/'model_ids' absent from the return"
-  )
+  # rd-core:return-class-attributes (provenance half)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  expect_identical(attr(out, "outcome"), "mpg")
+  expect_identical(attr(out, "model_ids"), "M1")
+  # Multi-model: one id and one outcome per model, in table order.
+  fit2 <- lm(hp ~ wt, data = mt)
+  out2 <- table_regression(list(A = fit, B = fit2))
+  expect_identical(attr(out2, "model_ids"), c("A", "B"))
+  expect_identical(attr(out2, "outcome"), c("mpg", "hp"))
+  # The attributes agree with the per-row provenance in spicy_long.
+  long <- attr(out2, "spicy_long")
+  expect_identical(attr(out2, "model_ids"), unique(long$model_id))
 })
 
 test_that("title and note attributes are post-processable before printing", {
@@ -1756,14 +1761,28 @@ test_that("factor_layout grouped applies to character predictors", {
 })
 
 test_that("factor_layout grouped applies to logical predictors", {
-  # FIXME matrix: rd-core:factor-layout-scope – man/table_regression.Rd
-  # 323-326 promises the grouped header/indent layout for logical
-  # predictors too, but lm(mpg ~ wt + am_lgl) renders the flat
-  # `am_lglTRUE` row with no header, no indent, and no reference row.
-  # Doc-vs-code discordance recorded in the Phase 3 audit.
-  skip(
-    "rd-core:factor-layout-scope – logical predictors render flat, not grouped"
-  )
+  # rd-core:factor-layout-scope (logical half)
+  df <- mtcars
+  df$am_lgl <- df$am == 1
+  fit <- lm(mpg ~ wt + am_lgl, data = df)
+  out <- table_regression(fit)
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  expect_true("am_lgl:" %in% vars)
+  expect_true(any(grepl("^  TRUE$", vars)))
+  ref_idx <- grep("\\(ref\\.\\)", vars)
+  expect_length(ref_idx, 1L)
+  expect_match(vars[ref_idx], "^  FALSE \\(ref\\.\\)$")
+  # No flat `am_lglTRUE` row survives alongside the grouped layout.
+  expect_false("am_lglTRUE" %in% vars)
+  # AME rows align on the same grouped rows (no orphan `am_lgl` row).
+  skip_if_not_installed("marginaleffects")
+  out_ame <- table_regression(fit, show_columns = c("b", "ame"))
+  d <- as.data.frame(out_ame, stringsAsFactors = FALSE)
+  expect_false("am_lgl" %in% trimws(d$Variable))
+  true_row <- d[trimws(d$Variable) == "TRUE", ]
+  expect_identical(nrow(true_row), 1L)
+  expect_true(nzchar(trimws(true_row$B)))
+  expect_true(nzchar(trimws(true_row$AME)))
 })
 
 test_that("reference_label defaults to '(ref.)' and only acts in row mode", {
@@ -1873,13 +1892,52 @@ test_that("weights come from the fit – no weights argument", {
 })
 
 test_that("AME extraction honours the fit's weights", {
-  # FIXME matrix: rd-core:weights-from-fit – man/table_regression.Rd
-  # (Weights section) promises the fit's weights are used automatically
-  # in the AME, but extract_ame_glm() calls marginaleffects::avg_slopes()
-  # without `wts`: for a weighted glm the spicy AME equals the UNWEIGHTED
-  # avg_slopes() average, not avg_slopes(fit, wts = weights(fit)).
-  # Repro: set.seed(7); df$w <- ifelse(df$x > 0, 5, 1); spicy AME
-  # 0.2517548 = unweighted, weighted oracle 0.2919022. Doc-vs-code
-  # discordance recorded in the Phase 3 audit.
-  skip("rd-core:weights-from-fit – AME ignores the fit's weights")
+  # rd-core:weights-from-fit (AME half)
+  skip_if_not_installed("marginaleffects")
+  set.seed(7)
+  df <- data.frame(x = rnorm(120), z = rnorm(120))
+  df$y <- rbinom(120, 1, plogis(0.4 * df$x - 0.2 * df$z))
+  df$w <- ifelse(df$x > 0, 5, 1)
+  # glm: response-scale AME = weighted average of the unit slopes.
+  gfit <- glm(y ~ x + z, data = df, family = binomial, weights = w)
+  s <- as_structured(table_regression(gfit, show_columns = c("b", "ame")))
+  orc <- as.data.frame(
+    marginaleffects::avg_slopes(gfit, wts = weights(gfit), df = Inf)
+  )
+  idx <- match(c("x", "z"), s$body$Variable)
+  expect_equal(
+    s$body$AME[idx],
+    orc$estimate[match(c("x", "z"), orc$term)],
+    tolerance = 1e-8
+  )
+  # SE / CI / p of the AME follow the same weighted computation.
+  long <- table_regression(
+    gfit,
+    show_columns = c("b", "ame", "ame_se"),
+    output = "long"
+  )
+  ame_long <- long[long$estimate_type == "ame", ]
+  expect_equal(
+    ame_long$std.error[match(c("x", "z"), ame_long$term)],
+    orc$std.error[match(c("x", "z"), orc$term)],
+    tolerance = 1e-8
+  )
+  # The weighted AME differs from the unweighted average, so the
+  # oracle above is discriminating.
+  orc_u <- as.data.frame(marginaleffects::avg_slopes(gfit, df = Inf))
+  expect_gt(
+    abs(orc$estimate[orc$term == "x"] - orc_u$estimate[orc_u$term == "x"]),
+    1e-6
+  )
+  # lm: same contract on the linear path.
+  lfit <- lm(y ~ x + z, data = df, weights = w)
+  s2 <- as_structured(table_regression(lfit, show_columns = c("b", "ame")))
+  orc2 <- as.data.frame(
+    marginaleffects::avg_slopes(lfit, wts = weights(lfit))
+  )
+  expect_equal(
+    s2$body$AME[match(c("x", "z"), s2$body$Variable)],
+    orc2$estimate[match(c("x", "z"), orc2$term)],
+    tolerance = 1e-8
+  )
 })

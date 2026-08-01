@@ -1483,6 +1483,49 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
+  # Tjur's R^2 is defined only for binary outcomes (binomial-family glm;
+  # Tjur 2009 "coefficient of discrimination"). ANY-gate, aligned on the
+  # theta / alpha dispersion precedent: when NO model in the set can
+  # carry the statistic, an explicit request is refused up front --
+  # silently dropping the row (the pre-2026-08 behaviour) hid the
+  # request. A mixed set with at least one binomial glm passes: the
+  # non-binomial columns render the per-cell en-dash. Runs AFTER the
+  # family gates above so homogeneous non-glm sets (all-lm, all-GEE,
+  # all-mixed, all-Bayesian) keep their more specific refusal wording.
+  if ("pseudo_r2_tjur" %in% show_fit_stats) {
+    is_binom_glm <- glm_flags &
+      !vapply(models, inherits, logical(1), c("stanreg", "brmsfit")) &
+      vapply(
+        models,
+        function(m) {
+          fam <- tryCatch(
+            stats::family(m)$family,
+            error = function(e) NA_character_
+          )
+          identical(fam, "binomial")
+        },
+        logical(1)
+      )
+    if (!any(is_binom_glm)) {
+      spicy_abort(
+        c(
+          paste0(
+            "Token 'pseudo_r2_tjur' in `show_fit_stats` is defined only ",
+            "for binomial models (binary outcomes), and no model in the ",
+            "set is a binomial-family `glm`."
+          ),
+          "i" = paste0(
+            "Tjur's R\u00B2 (2009) is mean(fitted | y = 1) - ",
+            "mean(fitted | y = 0), which needs a binary 0/1 response. ",
+            "Use `\"pseudo_r2_mcfadden\"` or `\"pseudo_r2_nagelkerke\"` ",
+            "for other families."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
   # AME is not computable for mlogit: marginaleffects supports predictions()
   # but NOT slopes() for its one-row-per-choice data structure, so avg_slopes()
   # errors. Reject "ame" tokens up front (when ALL models are mlogit) instead of

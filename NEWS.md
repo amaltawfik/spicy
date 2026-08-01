@@ -616,6 +616,42 @@ rendering an empty column.
   the `vcov` and warns; the singular-fit note states the fact and
   leaves the advice to a build-time warning.
 
+* Average marginal effects now use the fit's prior weights, as the
+  Weights section always promised: for a weighted `lm` / `glm` /
+  `geeglm` fit the AME (and its SE / CI / p) is the weighted average
+  of the unit-level slopes, matching
+  `marginaleffects::avg_slopes(fit, wts = weights(fit))`. AME values
+  change for weighted fits (they matched the unweighted average
+  before); `svyglm` is unaffected -- its design weights were already
+  applied natively.
+
+* `nlme::gls` fits populate the AME columns
+  (`show_columns = c("b", "ame")`); the column rendered silently
+  empty even though the model registry advertises AME support for
+  `gls`.
+
+* Logical predictors get the grouped factor layout the documentation
+  promises: an `is_smoker:` header with indented `FALSE (ref.)` /
+  `TRUE` rows (and aligned AME cells), instead of a flat
+  `is_smokerTRUE` row with no reference level.
+
+* In mixed-class tables, a fit statistic not defined for a model's
+  class renders an en-dash in that model's cell (console and rich
+  outputs), as documented; the cell was blank, indistinguishable
+  from "not requested". The first-column dash of the nested change
+  statistics is unchanged.
+
+* `show_fit_stats = "pseudo_r2_tjur"` is refused with a classed
+  error (`spicy_invalid_input`) when no model in the set is a
+  binomial-family `glm` -- Tjur's R² needs a binary outcome; the
+  requested row was silently dropped before. With at least one
+  binomial model in the set, the non-binomial cells render the
+  per-cell en-dash.
+
+* `table_regression()` returns carry the documented provenance
+  attributes `outcome` and `model_ids` (one entry per model, in
+  table order).
+
 * `count_n()` raises a classed error (`spicy_invalid_input`) when `count` is zero-length or contains only missing values, instead of silently returning a plausible-looking all-zero count; and rejecting `count = NaN` now points to `special = "NaN"` (the exact counterpart) instead of describing the input as `count = NA` and hinting at `special = "NA"`, which counts NA and NaN together.
 
 * `cross_tab()` weighted count tables (`percent = "none"`) compute the Total row and grand total from the unrounded weighted table, rounded once for display, instead of summing the already-rounded cells: with fractional weights the printed margins could contradict both the true weighted totals and the N row the percent tables derive from the same data, and under `rescale = TRUE` the Total row did not even sum to its own printed grand total.
