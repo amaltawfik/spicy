@@ -299,6 +299,41 @@ test_that("diagnostic columns render and the convergence guard fires", {
   )
 })
 
+# Phase 3 matrix – rd-core:bayes-diagnostics-guard (clean-fit half)
+test_that("a clean Bayesian fit adds neither guard footer nor warning", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  # Well-sampled easy posterior: 2 chains x 1000 iter -> 1000 retained
+  # draws, R-hat ~ 1.00, ESS >> 400, no divergences.
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    mpg ~ wt,
+    data = mtcars,
+    family = gaussian(),
+    iter = 1000,
+    chains = 2,
+    refresh = 0,
+    seed = 1234
+  ))
+  # Guard thresholds are genuinely passed (not silently skipped)
+  sm <- posterior::summarise_draws(
+    posterior::as_draws_array(fit),
+    "rhat",
+    "ess_bulk",
+    "ess_tail"
+  )
+  expect_true(all(sm$rhat < 1.01))
+  expect_true(all(c(sm$ess_bulk, sm$ess_tail) >= 400))
+  out <- NULL
+  expect_no_warning(
+    out <- paste(
+      capture.output(print(table_regression(fit))),
+      collapse = "\n"
+    ),
+    class = "spicy_bayes_diagnostics"
+  )
+  expect_false(grepl("Sampler diagnostics:", out, fixed = TRUE))
+})
+
 
 # ---- 2026-07 expert-audit lot ----------------------------------------------
 

@@ -414,6 +414,55 @@ test_that("output = 'word' errors when the template file does not exist", {
   )
 })
 
+# Phase 3 matrix – rd-core:word-template-honoured
+test_that("word template page setup is honoured and caption is style-tagged", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  tmpl <- tempfile(fileext = ".docx")
+  out_path <- tempfile(fileext = ".docx")
+  on.exit(unlink(c(tmpl, out_path)), add = TRUE)
+  # Template with a distinctive page setup: landscape 13 x 8 in.
+  doc <- officer::read_docx()
+  doc <- officer::body_set_default_section(
+    doc,
+    officer::prop_section(
+      page_size = officer::page_size(
+        width = 13,
+        height = 8,
+        orient = "landscape"
+      )
+    )
+  )
+  print(doc, target = tmpl)
+  tmpl_xml <- paste(
+    readLines(unz(tmpl, "word/document.xml"), warn = FALSE, encoding = "UTF-8"),
+    collapse = ""
+  )
+  tmpl_pgsz <- regmatches(tmpl_xml, regexpr("<w:pgSz[^/]*/>", tmpl_xml))
+  expect_match(tmpl_pgsz, "landscape", fixed = TRUE)
+  table_regression(
+    fit,
+    output = "word",
+    word_path = out_path,
+    word_template = tmpl
+  )
+  out_xml <- paste(
+    readLines(
+      unz(out_path, "word/document.xml"),
+      warn = FALSE,
+      encoding = "UTF-8"
+    ),
+    collapse = ""
+  )
+  # The produced document keeps the template's page size verbatim.
+  out_pgsz <- regmatches(out_xml, regexpr("<w:pgSz[^/]*/>", out_xml))
+  expect_identical(out_pgsz, tmpl_pgsz)
+  # The caption paragraph is tagged with the Word named style
+  # "Table Caption", so its look follows the template's definition.
+  expect_match(out_xml, 'w:pStyle w:val="TableCaption"', fixed = TRUE)
+})
+
 
 # ============================================================================
 # as_structured() guards

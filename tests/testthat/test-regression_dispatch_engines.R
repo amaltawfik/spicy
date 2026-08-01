@@ -583,3 +583,238 @@ test_that("Excel: vertical borders are NOT applied (only top/bottom rules)", {
   )
   expect_false(any(full_borders))
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-core: output engines and fit-stat layouts
+# ============================================================================
+
+test_that("excel_sheet defaults to 'Regression' and renames on request", {
+  # rd-core:excel-sheet-default
+  skip_if_not_installed("openxlsx2")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  p1 <- tempfile(fileext = ".xlsx")
+  p2 <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(c(p1, p2)), add = TRUE)
+  table_regression(fit, output = "excel", excel_path = p1)
+  expect_identical(
+    unname(openxlsx2::wb_get_sheet_names(openxlsx2::wb_load(p1))),
+    "Regression"
+  )
+  table_regression(fit, output = "excel", excel_path = p2, excel_sheet = "Tab1")
+  expect_identical(
+    unname(openxlsx2::wb_get_sheet_names(openxlsx2::wb_load(p2))),
+    "Tab1"
+  )
+})
+
+test_that("clipboard payload mirrors the Excel layout, tab-separated", {
+  # rd-core:clipboard-delim-payload
+  skip_if_not_installed("clipr")
+  captured <- NULL
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(content, ...) {
+      captured <<- content
+      invisible(content)
+    },
+    .package = "clipr"
+  )
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(
+    list(A = m1, B = m2),
+    output = "clipboard",
+    clipboard_delim = "\t"
+  )
+  lines <- strsplit(paste(captured, collapse = "\n"), "\n", fixed = TRUE)[[1]]
+  # Row order: title, spanner, header, body ..., note lines.
+  expect_match(lines[1], "^Linear regression comparison: mpg\t")
+  expect_identical(lines[2], "\tA\tA\tA\tB\tB\tB")
+  expect_identical(lines[3], "Variable\tB\tSE\tp\tB\tSE\tp")
+  expect_match(lines[4], "^\\(Intercept\\)\t")
+  expect_match(lines[5], "^wt\t")
+  note_idx <- grep("^Note\\. ", lines)
+  expect_length(note_idx, 1L)
+  expect_gt(note_idx, 5L)
+  # Every row carries the same number of tab delimiters
+  expect_length(unique(nchar(gsub("[^\t]", "", lines))), 1L)
+  # No ASCII rules / merged cells / indentation artifacts
+  expect_false(any(grepl("─|│|╌", lines)))
+})
+
+test_that("every optional output engine aborts spicy_missing_pkg when absent", {
+  # rd-core:output-values (missing Suggests -> actionable classed error)
+  fit <- lm(mpg ~ wt, data = mt)
+  args_by_engine <- list(
+    tinytable = list(),
+    gt = list(),
+    flextable = list(),
+    excel = list(excel_path = tempfile(fileext = ".xlsx")),
+    word = list(word_path = tempfile(fileext = ".docx")),
+    clipboard = list()
+  )
+  for (eng in names(args_by_engine)) {
+    err <- tryCatch(
+      testthat::with_mocked_bindings(
+        do.call(
+          table_regression,
+          c(list(fit, output = eng), args_by_engine[[eng]])
+        ),
+        spicy_pkg_available = function(pkg) FALSE,
+        .package = "spicy"
+      ),
+      error = function(e) e
+    )
+    expect_s3_class(err, "spicy_missing_pkg")
+    # Actionable: the message names an install command
+    expect_match(conditionMessage(err), "install.packages", fixed = TRUE)
+  }
+})
+
+test_that("output = 'clipboard' returns the rendered table invisibly", {
+  # rd-core:return-class-attributes (invisible(x) for side-effect outputs)
+  skip_if_not_installed("clipr")
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(content, ...) invisible(content),
+    .package = "clipr"
+  )
+  fit <- lm(mpg ~ wt, data = mt)
+  v <- withVisible(table_regression(fit, output = "clipboard"))
+  expect_false(v$visible)
+  expect_true(inherits(v$value, "data.frame"))
+})
+
+test_that("fit_stats_layout = 'first_col' puts values in B, siblings empty", {
+  # rd-core:fit-stats-layout-first-col
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, show_fit_stats = c("r2", "nobs"))
+  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  r2_row <- d[trimws(d$Variable) == "R²", ]
+  expect_match(trimws(r2_row$B), "^0\\.[0-9]{2}$")
+  expect_identical(trimws(r2_row$SE), "")
+  expect_identical(trimws(r2_row$`95% CI`), "")
+  expect_identical(trimws(r2_row$p), "")
+  # Structured view: value carried by the first numeric sub-column
+  s <- as_structured(out)
+  b <- s$body
+  expect_equal(
+    b$B[b$Variable == "R²"],
+    summary(fit)$r.squared,
+    tolerance = 1e-10
+  )
+  expect_true(all(is.na(unlist(
+    b[b$Variable == "R²", c("SE", "95% CI: LL", "95% CI: UL", "p")]
+  ))))
+})
+
+test_that("'merged' console render is identical to 'first_col'", {
+  # rd-core:fit-stats-layout-merged-support (default output ignores merge)
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  o_first <- table_regression(list(m1, m2), fit_stats_layout = "first_col")
+  o_merged <- table_regression(list(m1, m2), fit_stats_layout = "merged")
+  expect_identical(
+    capture.output(print(o_first)),
+    capture.output(print(o_merged))
+  )
+})
+
+test_that("word honours fit_stats_layout = 'merged' via merged cells", {
+  # rd-core:fit-stats-layout-merged-support (word merge support)
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  p_merged <- tempfile(fileext = ".docx")
+  p_first <- tempfile(fileext = ".docx")
+  on.exit(unlink(c(p_merged, p_first)), add = TRUE)
+  table_regression(
+    list(m1, m2),
+    fit_stats_layout = "merged",
+    output = "word",
+    word_path = p_merged
+  )
+  xml <- paste(
+    readLines(
+      unz(p_merged, "word/document.xml"),
+      warn = FALSE,
+      encoding = "UTF-8"
+    ),
+    collapse = ""
+  )
+  expect_match(xml, "gridSpan", fixed = TRUE)
+})
+
+test_that("decimal alignment holds on fit-stat rows in both layout modes", {
+  # rd-core:fit-stats-layout-decimal-align
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  dot_positions <- function(cells) {
+    cells <- cells[grepl(".", cells, fixed = TRUE)]
+    vapply(
+      cells,
+      function(x) as.integer(regexpr(".", x, fixed = TRUE)),
+      integer(1)
+    )
+  }
+  for (layout in c("first_col", "merged")) {
+    out <- table_regression(
+      list(m1, m2),
+      fit_stats_layout = layout,
+      show_fit_stats = c("r2", "aic", "nobs")
+    )
+    d <- as.data.frame(out, stringsAsFactors = FALSE)
+    # B sub-column of each model: decimal marks line up across
+    # coefficient rows AND fit-stat rows (R² 0.xx, AIC xxx.x).
+    for (col in c("Model 1: B", "Model 2: B")) {
+      expect_length(unique(dot_positions(d[[col]])), 1L)
+    }
+  }
+})
+
+test_that("title/note suppression leaves nested change rows + spanners intact", {
+  # rd-core:title-note-scope-limit
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(
+    list(m1, m2),
+    nested = TRUE,
+    title = FALSE,
+    note = FALSE
+  )
+  expect_null(attr(out, "title"))
+  expect_null(attr(out, "note"))
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  expect_true(all(c("ΔR²", "F-change", "p (change)") %in% vars))
+  s <- as_structured(out)
+  expect_identical(names(s$spanners), c("Model 1", "Model 2"))
+})
+
+test_that("word output carries SEQ caption, header repeat, cant-split, Note.", {
+  # rd-core:word-features
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  path <- tempfile(fileext = ".docx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(fit, output = "word", word_path = path)
+  xml <- paste(
+    readLines(unz(path, "word/document.xml"), warn = FALSE, encoding = "UTF-8"),
+    collapse = ""
+  )
+  # Auto-numbered caption: Word SEQ field + "Table Caption" named style
+  expect_match(xml, "SEQ", fixed = TRUE)
+  expect_match(xml, 'w:pStyle w:val="TableCaption"', fixed = TRUE)
+  # Header row re-printed on each page break
+  expect_match(xml, "tblHeader", fixed = TRUE)
+  # Row split prevention + keep-with-caption
+  expect_match(xml, "cantSplit", fixed = TRUE)
+  expect_match(xml, "keepNext", fixed = TRUE)
+  # APA italic Note. line: the footer run near "Note." is italic
+  note_at <- as.integer(regexpr("Note.", xml, fixed = TRUE))
+  expect_gt(note_at, 0L)
+  seg <- substr(xml, max(1L, note_at - 700L), note_at + 100L)
+  expect_match(seg, "<w:i(\\s+w:val=\"true\")?/>")
+})

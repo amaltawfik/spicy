@@ -241,3 +241,69 @@ test_that("glm.nb AME matches marginaleffects::avg_slopes (numeric + factor term
   expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
   expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-core:vcov-matrix-lm-glm-all (glm.nb half)
+# ============================================================================
+
+test_that("glm.nb supports classical / HC* / CR* with exact oracles", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("sandwich")
+  set.seed(2610)
+  n <- 80
+  d <- data.frame(x = rnorm(n), g = factor(sample(letters[1:8], n, TRUE)))
+  d$y <- MASS::rnegbin(n, mu = exp(0.6 + 0.3 * d$x), theta = 2)
+  fit <- MASS::glm.nb(y ~ x, data = d)
+  nm <- names(coef(fit))
+  se_of <- function(out) {
+    s <- as_structured(out)
+    s$body$SE[match(nm, s$body$Variable)]
+  }
+  # classical = summary() model-based SEs
+  expect_equal(
+    se_of(table_regression(fit)),
+    unname(summary(fit)$coefficients[, 2]),
+    tolerance = 1e-8
+  )
+  # HC*: sandwich::vcovHC oracle, per variant
+  for (hc in paste0("HC", 0:3)) {
+    expect_equal(
+      se_of(table_regression(fit, vcov = hc)),
+      unname(sqrt(diag(sandwich::vcovHC(fit, type = hc)))),
+      tolerance = 1e-8,
+      info = hc
+    )
+  }
+  # CR2: clubSandwich oracle
+  skip_if_not_installed("clubSandwich")
+  expect_equal(
+    se_of(table_regression(fit, vcov = "CR2", cluster = d$g)),
+    unname(sqrt(diag(as.matrix(
+      clubSandwich::vcovCR(fit, cluster = d$g, type = "CR2")
+    )))),
+    tolerance = 1e-8
+  )
+})
+
+test_that("glm.nb supports bootstrap and jackknife resampling", {
+  # rd-core:vcov-matrix-lm-glm-all – the resamplers accept glm.nb and
+  # return finite SEs. (That each bootstrap replicate holds theta at
+  # the full-sample estimate is the lot-T2 instrumentation test.)
+  skip_if_not_installed("MASS")
+  set.seed(2611)
+  n <- 80
+  d <- data.frame(x = rnorm(n))
+  d$y <- MASS::rnegbin(n, mu = exp(0.6 + 0.3 * d$x), theta = 2)
+  fit <- MASS::glm.nb(y ~ x, data = d)
+  nm <- names(coef(fit))
+  set.seed(77)
+  o_boot <- table_regression(fit, vcov = "bootstrap", boot_n = 25L)
+  sb <- as_structured(o_boot)
+  expect_true(all(is.finite(sb$body$SE[match(nm, sb$body$Variable)])))
+  expect_match(attr(o_boot, "note"), "bootstrap", ignore.case = TRUE)
+  o_jack <- table_regression(fit, vcov = "jackknife")
+  sj <- as_structured(o_jack)
+  expect_true(all(is.finite(sj$body$SE[match(nm, sj$body$Variable)])))
+  expect_match(attr(o_jack, "note"), "jackknife", ignore.case = TRUE)
+})

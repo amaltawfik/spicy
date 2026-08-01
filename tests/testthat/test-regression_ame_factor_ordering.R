@@ -120,6 +120,39 @@ test_that("ordered factor WITHOUT AME: no synthetic reference row", {
   expect_false(any(grepl("Lower secondary \\(ref\\.\\)", vars)))
 })
 
+# Phase 3 matrix – rd-core:reference-ordered-ame-synthetic-row
+test_that("annotation mode marks the first AME row, never the poly rows", {
+  skip_if_no_marginaleffects()
+  df <- mtcars
+  df$gear_o <- factor(df$gear, ordered = TRUE)
+  fit <- lm(mpg ~ wt + gear_o, data = df)
+  # Flat layout: the inline `[vs <ref>]` marker skips the .L / .Q
+  # polynomial-trend rows (orthogonal trends, no baseline semantics)
+  # and lands on the FIRST per-level AME row.
+  out <- suppressMessages(table_regression(
+    fit,
+    show_columns = c("b", "ame"),
+    reference_style = "annotation",
+    factor_layout = "flat"
+  ))
+  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  expect_true("gear_o.L" %in% vars)
+  expect_true("gear_o.Q" %in% vars)
+  expect_true("gear_o4 [vs 3]" %in% vars)
+  # Only the first AME row carries the marker
+  expect_identical(sum(grepl("[vs 3]", vars, fixed = TRUE)), 1L)
+  expect_true("gear_o5" %in% vars)
+  # Grouped layout: the reference moves to the factor header instead.
+  out_g <- suppressMessages(table_regression(
+    fit,
+    show_columns = c("b", "ame"),
+    reference_style = "annotation"
+  ))
+  vars_g <- trimws(as.data.frame(out_g, stringsAsFactors = FALSE)$Variable)
+  expect_true("gear_o: [ref: 3]" %in% vars_g)
+  expect_false(any(grepl("[vs 3]", vars_g, fixed = TRUE)))
+})
+
 
 # ============================================================================
 # Edge case: 2-level ordered factor + AME (poly produces only .L)

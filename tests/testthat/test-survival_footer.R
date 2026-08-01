@@ -63,6 +63,28 @@ test_that("table_regression() coxph: events as fit-stat row, C in footer", {
   expect_false(grepl("Events: 165 of 228", combined, fixed = TRUE))
 })
 
+# Phase 3 matrix – rd-core:fit-stats-nevents-cox-blank
+test_that("n_events fit-stat: Cox event count, blank for non-Cox columns", {
+  skip_if_not_installed("survival")
+  lung2 <- survival::lung
+  cx <- survival::coxph(survival::Surv(time, status) ~ age, data = lung2)
+  ols <- lm(time ~ age, data = lung2)
+  out <- table_regression(
+    list(Cox = cx, OLS = ols),
+    show_fit_stats = c("nobs", "n_events")
+  )
+  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  ev_row <- d[trimws(d$Variable) == "N events", , drop = FALSE]
+  expect_identical(nrow(ev_row), 1L)
+  # Cox column carries the event count ...
+  expect_match(trimws(ev_row[["Cox: B"]]), "^165$")
+  # ... every cell of the lm column group stays blank on that row
+  ols_cols <- grep("^OLS: ", names(d), value = TRUE)
+  expect_true(all(trimws(unlist(ev_row[, ols_cols])) == ""))
+  s <- as_structured(out)
+  expect_true(is.na(s$body[["OLS: B"]][s$body$Variable == "N events"]))
+})
+
 
 # ---- 2. cph: events surface as the n_events fit-stat --------------------
 

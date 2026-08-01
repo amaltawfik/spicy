@@ -161,6 +161,35 @@ test_that("re_columns default (all three) shows estimate + SE + CI on RE rows", 
   expect_true(.re_cell_has_num(df, ci_col))
 })
 
+# Phase 3 matrix – rd-core:re-columns-display-only
+test_that("re_columns deselection is display-only: tidy/as_structured keep SE + CI", {
+  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("broom")
+  fit <- .fit_lmer_api()
+  out <- table_regression(
+    fit,
+    show_columns = c("b", "se", "ci"),
+    re_columns = "est"
+  )
+  # Display: en-dash on the RE SE / CI cells (covered above); the
+  # analytic accessors still carry the full inferential columns.
+  td <- broom::tidy(out)
+  vc_rows <- td[td$estimate_type == "vc" & !grepl("Residual", td$term), ]
+  expect_gt(nrow(vc_rows), 0L)
+  expect_true(all(is.finite(vc_rows$std.error)))
+  expect_true(all(is.finite(vc_rows$conf.low)))
+  expect_true(all(is.finite(vc_rows$conf.high)))
+  s <- as_structured(out)
+  b <- s$body
+  re_rows <- grep("σ Subject", b$Variable, fixed = TRUE)
+  expect_gt(length(re_rows), 0L)
+  expect_true(all(is.finite(b$SE[re_rows])))
+  ci_ll <- grep("CI: LL$", names(b), value = TRUE)[1]
+  ci_ul <- grep("CI: UL$", names(b), value = TRUE)[1]
+  expect_true(all(is.finite(b[[ci_ll]][re_rows])))
+  expect_true(all(is.finite(b[[ci_ul]][re_rows])))
+})
+
 
 # ---- 4. re_columns must include "est" -----------------------------------
 

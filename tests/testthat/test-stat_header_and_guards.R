@@ -74,6 +74,47 @@ test_that("vcov validation still accepts strings and string lists", {
   )
 })
 
+# Phase 3 matrix – rd-core:vcov-scalar-recycled-list-mixed
+test_that("scalar vcov recycles to all models; a list mixes estimators", {
+  skip_if_not_installed("sandwich")
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt + hp, data = mtcars)
+  se_by_model <- function(out) {
+    s <- as_structured(out)
+    b <- s$body
+    list(
+      m1 = b[["Model 1: SE"]][match(c("(Intercept)", "wt"), b$Variable)],
+      m2 = b[["Model 2: SE"]][match(c("(Intercept)", "wt", "hp"), b$Variable)]
+    )
+  }
+  # Scalar "HC3" applies to BOTH models – per-model sandwich oracle
+  se_hc3 <- se_by_model(table_regression(list(m1, m2), vcov = "HC3"))
+  expect_equal(
+    se_hc3$m1,
+    unname(sqrt(diag(sandwich::vcovHC(m1, type = "HC3")))),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    se_hc3$m2,
+    unname(sqrt(diag(sandwich::vcovHC(m2, type = "HC3")))),
+    tolerance = 1e-10
+  )
+  # list("classical", "HC3"): model-specific estimators
+  se_mix <- se_by_model(
+    table_regression(list(m1, m2), vcov = list("classical", "HC3"))
+  )
+  expect_equal(
+    se_mix$m1,
+    unname(sqrt(diag(vcov(m1)))),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    se_mix$m2,
+    unname(sqrt(diag(sandwich::vcovHC(m2, type = "HC3")))),
+    tolerance = 1e-10
+  )
+})
+
 test_that("AME request on an incapable class is refused, not an empty column", {
   skip_if_not_installed("survival")
   # coxph has its own earlier class-specific refusal (kept).

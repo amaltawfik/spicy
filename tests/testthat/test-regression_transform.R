@@ -260,3 +260,43 @@ test_that("table_regression – keep / drop validation: empty / NA / non-charact
   )
   expect_error(table_regression(fit, keep = 1L), class = "spicy_invalid_input")
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-core:p-adjust-methods-default
+# ============================================================================
+
+test_that("every p_adjust method equals stats::p.adjust over the slope family", {
+  # rd-core:p-adjust-methods-default. The family is the non-intercept,
+  # non-reference coefficient rows; the intercept keeps its raw p.
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  raw_p <- summary(fit)$coefficients[, 4]
+  slope_terms <- c("wt", "6", "8")
+  for (m in c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr")) {
+    out <- table_regression(fit, p_adjust = m)
+    s <- as_structured(out)
+    b <- s$body
+    shown <- b$p[match(slope_terms, trimws(b$Variable))]
+    expect_equal(
+      shown,
+      unname(stats::p.adjust(raw_p[-1], method = if (m == "fdr") "BH" else m)),
+      tolerance = 1e-12,
+      info = m
+    )
+    # Intercept is outside the family: raw p preserved
+    expect_equal(
+      b$p[trimws(b$Variable) == "(Intercept)"],
+      unname(raw_p[1]),
+      tolerance = 1e-12,
+      info = m
+    )
+  }
+  # "none" is the formals default and leaves every p untouched
+  expect_identical(formals(table_regression)$p_adjust, "none")
+  s0 <- as_structured(table_regression(fit))
+  expect_equal(
+    s0$body$p[match(slope_terms, trimws(s0$body$Variable))],
+    unname(raw_p[-1]),
+    tolerance = 1e-12
+  )
+})

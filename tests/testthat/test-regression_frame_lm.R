@@ -430,3 +430,83 @@ test_that("a non-lm class falls through to the default error", {
     class = "spicy_unsupported_class"
   )
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-core:vcov-matrix-lm-glm-all (lm half)
+# ============================================================================
+
+test_that("lm supports every HC* estimator with the sandwich oracle", {
+  skip_if_not_installed("sandwich")
+  fit <- lm(mpg ~ wt + hp, data = mtcars)
+  nm <- names(coef(fit))
+  for (hc in paste0("HC", 0:5)) {
+    out <- table_regression(fit, vcov = hc)
+    s <- as_structured(out)
+    rows <- match(nm, s$body$Variable)
+    expect_false(anyNA(rows), info = hc)
+    oracle <- sqrt(diag(sandwich::vcovHC(fit, type = hc)))
+    expect_equal(
+      s$body$SE[rows],
+      unname(oracle[nm]),
+      tolerance = 1e-10,
+      info = hc
+    )
+  }
+})
+
+test_that("lm supports every CR* estimator with the clubSandwich oracle", {
+  skip_if_not_installed("clubSandwich")
+  d <- sochealth
+  fit <- lm(wellbeing_score ~ age, data = d)
+  cl <- d$region
+  nm <- names(coef(fit))
+  for (cr in paste0("CR", 0:3)) {
+    out <- table_regression(fit, vcov = cr, cluster = cl)
+    s <- as_structured(out)
+    rows <- match(nm, s$body$Variable)
+    expect_false(anyNA(rows), info = cr)
+    oracle <- sqrt(diag(as.matrix(
+      clubSandwich::vcovCR(fit, cluster = cl, type = cr)
+    )))
+    expect_equal(
+      s$body$SE[rows],
+      unname(oracle[seq_along(nm)]),
+      tolerance = 1e-8,
+      info = cr
+    )
+  }
+})
+
+test_that("lm jackknife matches the manual leave-one-out oracle", {
+  mt2 <- mtcars
+  mt2$cyl <- factor(mt2$cyl)
+  fit <- lm(mpg ~ wt + cyl, data = mt2)
+  out <- table_regression(fit, vcov = "jackknife")
+  s <- as_structured(out)
+  rows <- match(c("(Intercept)", "wt", "6", "8"), trimws(s$body$Variable))
+  # Independent oracle: n leave-one-out lm() refits, Tukey scaling
+  n <- nrow(mt2)
+  beta_loo <- t(vapply(
+    seq_len(n),
+    function(i) coef(lm(mpg ~ wt + cyl, data = mt2[-i, ])),
+    numeric(length(coef(fit)))
+  ))
+  centered <- sweep(beta_loo, 2L, colMeans(beta_loo))
+  vc <- (n - 1L) / n * crossprod(centered)
+  expect_equal(
+    s$body$SE[rows],
+    unname(sqrt(diag(vc))),
+    tolerance = 1e-8
+  )
+})
+
+test_that("lm bootstrap runs and reports finite resampled SEs", {
+  fit <- lm(mpg ~ wt + hp, data = mtcars)
+  set.seed(20260801)
+  out <- table_regression(fit, vcov = "bootstrap", boot_n = 40L)
+  s <- as_structured(out)
+  rows <- match(names(coef(fit)), s$body$Variable)
+  expect_true(all(is.finite(s$body$SE[rows])))
+  expect_match(attr(out, "note"), "bootstrap", ignore.case = TRUE)
+})

@@ -2421,6 +2421,64 @@ test_that("table_regression: padding = 0L produces the most compact output", {
   expect_equal(attr(out_0, "padding"), 0L)
 })
 
+# Phase 3 matrix – rd-core:padding-default-headers-centered
+test_that("padding widens every column by exactly N; negative rejected", {
+  fit <- lm(mpg ~ wt + cyl, data = mtcars)
+  seg_widths <- function(lines) {
+    rule <- lines[grepl("┼", lines, fixed = TRUE)][1]
+    nchar(strsplit(rule, "┼", fixed = TRUE)[[1]])
+  }
+  l0 <- capture.output(print(table_regression(fit, padding = 0L)))
+  l4 <- capture.output(print(table_regression(fit, padding = 4L)))
+  w0 <- seg_widths(l0)
+  w4 <- seg_widths(l4)
+  # Variable segment +4; stat segment +4 per data column (B, SE, CI, p)
+  expect_identical(w4[1] - w0[1], 4L)
+  expect_identical(w4[2] - w0[2], 16L)
+  expect_error(
+    table_regression(fit, padding = -1L),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("headers stay centered above the data region regardless of padding", {
+  # Single stat column so the data region is unambiguous: the header
+  # label's midpoint tracks the midpoint of the widest data value.
+  fit <- lm(mpg ~ wt + cyl, data = mtcars)
+  header_center <- function(lines) {
+    hdr <- lines[grepl("│", lines, fixed = TRUE)][1]
+    cell <- strsplit(hdr, "│", fixed = TRUE)[[1]][2]
+    at <- as.integer(regexpr("B", cell, fixed = TRUE))
+    at
+  }
+  data_center <- function(lines) {
+    body <- lines[grepl("│", lines, fixed = TRUE)][-1]
+    cells <- vapply(
+      body,
+      function(x) strsplit(x, "│", fixed = TRUE)[[1]][2],
+      character(1)
+    )
+    cells <- cells[grepl("[0-9]", cells)]
+    starts <- vapply(
+      cells,
+      function(x) as.integer(regexpr("[^ ]", x)),
+      integer(1)
+    )
+    ends <- vapply(
+      cells,
+      function(x) max(which(strsplit(x, "")[[1]] != " ")),
+      integer(1)
+    )
+    (min(starts) + max(ends)) / 2
+  }
+  for (pad in c(0L, 8L)) {
+    lines <- capture.output(print(
+      table_regression(fit, show_columns = "b", padding = pad)
+    ))
+    expect_lt(abs(header_center(lines) - data_center(lines)), 1.5)
+  }
+})
+
 
 # ============================================================================
 # Coverage push: lm standardize_*_lm() algebraic-method helpers were
@@ -2938,5 +2996,95 @@ test_that("cluster - local variable with the same name as a column still works (
     attr(out, "note"),
     "Std. errors: cluster-robust (CR2), clusters by my_cluster.",
     fixed = TRUE
+  )
+})
+
+
+# ============================================================================
+# Phase 3 matrix – rd-core: glm family coverage, Tjur scope, chi2 format
+# ============================================================================
+
+test_that("every documented glm family renders with summary()-oracle SEs", {
+  # rd-core:description-glm-families
+  fits <- list(
+    binomial = glm(am ~ mpg, data = mtcars, family = binomial),
+    poisson = glm(carb ~ wt, data = mtcars, family = poisson),
+    gamma_log = glm(mpg ~ wt, data = mtcars, family = Gamma(link = "log")),
+    inverse_gaussian_log = glm(
+      mpg ~ wt,
+      data = mtcars,
+      family = inverse.gaussian(link = "log")
+    ),
+    quasipoisson = glm(carb ~ wt, data = mtcars, family = quasipoisson),
+    quasibinomial = glm(am ~ mpg, data = mtcars, family = quasibinomial)
+  )
+  for (nm in names(fits)) {
+    fit <- fits[[nm]]
+    out <- table_regression(fit)
+    s <- as_structured(out)
+    coef_rows <- match(rownames(summary(fit)$coefficients), s$body$Variable)
+    expect_false(anyNA(coef_rows), info = nm)
+    expect_equal(
+      s$body$SE[coef_rows],
+      unname(summary(fit)$coefficients[, 2]),
+      tolerance = 1e-10,
+      info = nm
+    )
+  }
+})
+
+test_that("pseudo_r2_tjur: binomial oracle value; no row for other families", {
+  # rd-core:fit-stats-tjur-binomial-only
+  gfit <- glm(am ~ mpg + factor(cyl), data = mtcars, family = binomial)
+  out <- table_regression(gfit, show_fit_stats = "pseudo_r2_tjur")
+  s <- as_structured(out)
+  pi_hat <- fitted(gfit)
+  y <- mtcars$am
+  oracle <- mean(pi_hat[y == 1]) - mean(pi_hat[y == 0])
+  expect_equal(
+    s$body$B[s$body$Variable == "R² (Tjur)"],
+    oracle,
+    tolerance = 1e-10
+  )
+  # Non-binomial family: Tjur is undefined, no value is ever displayed.
+  # (Current contract: the requested row is dropped without a signal --
+  # flagged in the Phase 3 audit as quieter than the theta/alpha
+  # precedent, which hard-errors.)
+  pfit <- glm(carb ~ wt, data = mtcars, family = poisson)
+  outp <- table_regression(pfit, show_fit_stats = c("nobs", "pseudo_r2_tjur"))
+  vars <- trimws(as.data.frame(outp, stringsAsFactors = FALSE)$Variable)
+  expect_false("R² (Tjur)" %in% vars)
+})
+
+test_that("partial_chi2 renders as 'value (df)' and is refused for lm", {
+  # rd-core:show-columns-partial-chi2-glm-format
+  gfit <- glm(am ~ mpg + factor(cyl), data = mtcars, family = binomial)
+  out <- table_regression(gfit, show_columns = c("b", "partial_chi2"))
+  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  chi_col <- d[["χ²"]]
+  mpg_cell <- trimws(chi_col[trimws(d$Variable) == "mpg"])
+  # Display format: value (df) – numeric term = 1 df
+  expect_match(mpg_cell, "^[0-9]+\\.[0-9]{2} \\(1\\)$")
+  # Values match the drop1(test = 'LRT') oracle
+  dr <- drop1(gfit, test = "LRT")
+  expect_identical(
+    mpg_cell,
+    sprintf("%.2f (%d)", dr["mpg", "LRT"], as.integer(dr["mpg", "Df"]))
+  )
+  # Factor term: k-1 df shared across its dummies
+  lvl_cells <- trimws(chi_col[trimws(d$Variable) %in% c("6", "8")])
+  expect_identical(
+    unique(lvl_cells),
+    sprintf(
+      "%.2f (%d)",
+      dr["factor(cyl)", "LRT"],
+      as.integer(dr["factor(cyl)", "Df"])
+    )
+  )
+  # lm refusal with the variance-explained pointer
+  lfit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
+  expect_error(
+    table_regression(lfit, show_columns = c("b", "partial_chi2")),
+    class = "spicy_invalid_input"
   )
 })

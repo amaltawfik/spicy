@@ -75,3 +75,47 @@ test_that("an explicit show_fit_stats still overrides the fallback", {
   expect_false(any(v0 == "AIC"))
   expect_false(any(v0 == "n"))
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-core:fit-stats-default-mixed-union
+# ============================================================================
+
+test_that("mixed lm + glm default is the union of both class defaults", {
+  m_lm <- lm(mpg ~ wt, data = mtcars)
+  m_glm <- glm(am ~ mpg, data = mtcars, family = binomial)
+  out <- table_regression(list(OLS = m_lm, Logit = m_glm))
+  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  vars <- trimws(d$Variable)
+  # Union of lm (n, R2, adj_R2) and glm (n, McFadden, Nagelkerke, AIC)
+  expect_true(all(
+    c("n", "R²", "Adj.R²", "R² (McFadden)", "R² (Nagelkerke)", "AIC") %in% vars
+  ))
+  s <- as_structured(out)
+  b <- s$body
+  # Each stat is populated under its own class's column ...
+  expect_equal(
+    b[["OLS: B"]][b$Variable == "R²"],
+    summary(m_lm)$r.squared,
+    tolerance = 1e-10
+  )
+  expect_false(is.na(b[["Logit: B"]][b$Variable == "R² (McFadden)"]))
+  expect_false(is.na(b[["OLS: B"]][b$Variable == "AIC"]))
+  # ... and stays empty (NA) under the class where it is undefined
+  expect_true(is.na(b[["Logit: B"]][b$Variable == "R²"]))
+  expect_true(is.na(b[["OLS: B"]][b$Variable == "R² (McFadden)"]))
+})
+
+test_that("mixed lm + glm alien fit-stat cells render an en-dash", {
+  # FIXME matrix: rd-core:fit-stats-default-mixed-union –
+  # man/table_regression.Rd 386-389 / 905-906 says the renderer
+  # "en-dashes per cell the stat not defined for a given model class",
+  # but the displayed cells are BLANK (empty strings), not en-dash
+  # (repro: table_regression(list(lm(mpg ~ wt, mtcars), glm(am ~ mpg,
+  # mtcars, family = binomial))) – the R² cell of the glm column and
+  # the McFadden cell of the lm column are ""). Doc-vs-code discordance
+  # recorded in the Phase 3 audit.
+  skip(
+    "rd-core:fit-stats-default-mixed-union – alien cells render blank, not en-dash"
+  )
+})

@@ -158,3 +158,23 @@ test_that("stars never land on variance-component rows", {
   # while the fixed-effect rows do get stars
   expect_true(any(grepl("[*]", df[[b_col]][df$Variable == "Days"])))
 })
+
+# Phase 3 matrix – rd-core:re-test-never-corr-residual
+test_that("the whole-block footer LR test is unaffected by re_test", {
+  fit <- .rt_lmer_int()
+  note_none <- attr(table_regression(fit, re_test = "none"), "note")
+  note_lrt <- attr(table_regression(fit, re_test = "lrt"), "note")
+  block_line <- function(note) {
+    lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
+    grep("LR test vs linear regression", lines, value = TRUE)
+  }
+  # The block-level chi-bar-squared footer line exists in both modes
+  # and is byte-identical: re_test only adds per-term p-values.
+  l_none <- block_line(note_none)
+  l_lrt <- block_line(note_lrt)
+  expect_length(l_none, 1L)
+  expect_identical(l_lrt, l_none)
+  # The per-term disclosure line is the only addition under 'lrt'.
+  expect_match(note_lrt, "Random-effect p-values", fixed = TRUE)
+  expect_no_match(note_none, "Random-effect p-values", fixed = TRUE)
+})

@@ -1332,3 +1332,554 @@ test_that("factor_layout = \"grouped\" (default) inserts factor header + indents
   expect_true(any(grepl("^  6$", vars)))
   expect_true(any(grepl("^  8$", vars)))
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-core: documented promises of table_regression()
+# ============================================================================
+
+test_that("show_columns – group tokens expand to their documented fixed vectors", {
+  # rd-core:show-columns-group-token-expansions
+  expected <- list(
+    all_b = c("b", "se", "ci", "p"),
+    all_b_compact = c("b", "se", "p"),
+    all_b_full = c("b", "se", "ci", "t", "p"),
+    all_beta = c("b", "beta", "se", "ci", "p"),
+    all_ame = c("ame", "ame_se", "ame_ci", "ame_p"),
+    all_ame_compact = c("ame", "ame_p"),
+    all_f2 = c("partial_f2", "partial_f2_ci"),
+    all_eta2 = c("partial_eta2", "partial_eta2_ci"),
+    all_omega2 = c("partial_omega2", "partial_omega2_ci")
+  )
+  expect_identical(spicy:::.show_columns_groups, expected)
+  for (g in names(expected)) {
+    expect_identical(spicy:::expand_show_columns(g), expected[[g]])
+  }
+})
+
+test_that("show_columns – each preset table equals its atomic-token table", {
+  # rd-core:show-columns-group-token-expansions (end-to-end column sets)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  pairs <- list(
+    list(preset = "all_b_full", atoms = c("b", "se", "ci", "t", "p")),
+    list(preset = "all_f2", atoms = c("partial_f2", "partial_f2_ci")),
+    list(preset = "all_eta2", atoms = c("partial_eta2", "partial_eta2_ci")),
+    list(
+      preset = "all_omega2",
+      atoms = c("partial_omega2", "partial_omega2_ci")
+    )
+  )
+  for (p in pairs) {
+    o1 <- table_regression(fit, show_columns = p$preset)
+    o2 <- table_regression(fit, show_columns = p$atoms)
+    expect_identical(names(o1), names(o2))
+    expect_identical(
+      as.data.frame(o1, stringsAsFactors = FALSE),
+      as.data.frame(o2, stringsAsFactors = FALSE)
+    )
+  }
+  # all_beta requires a standardisation method
+  o1 <- table_regression(fit, show_columns = "all_beta", standardized = "refit")
+  o2 <- table_regression(
+    fit,
+    show_columns = c("b", "beta", "se", "ci", "p"),
+    standardized = "refit"
+  )
+  expect_identical(names(o1), names(o2))
+})
+
+test_that("show_columns – AME presets equal their atomic-token tables", {
+  # rd-core:show-columns-group-token-expansions (all_ame / all_ame_compact)
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  for (p in list(
+    list(preset = "all_ame", atoms = c("ame", "ame_se", "ame_ci", "ame_p")),
+    list(preset = "all_ame_compact", atoms = c("ame", "ame_p"))
+  )) {
+    o1 <- table_regression(fit, show_columns = p$preset)
+    o2 <- table_regression(fit, show_columns = p$atoms)
+    expect_identical(names(o1), names(o2))
+  }
+})
+
+test_that("show_columns – token order controls displayed column order", {
+  # rd-core:show-columns-dedup-order
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, show_columns = c("p", "b"))
+  expect_identical(names(out), c("Variable", "p", "B"))
+  # Duplicate after group expansion is deduplicated to a single column.
+  out2 <- table_regression(fit, show_columns = c("all_b", "se"))
+  expect_identical(sum(names(out2) == "SE"), 1L)
+})
+
+test_that("show_columns – beta is auto-injected directly after b", {
+  # rd-core:show-columns-beta-autoinject
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(
+    fit,
+    standardized = "refit",
+    show_columns = c("b", "p")
+  )
+  expect_identical(names(out), c("Variable", "B", "β", "p"))
+})
+
+test_that("show_columns – 'p' carries the B p-values, never the AME ones", {
+  # rd-core:show-columns-p-is-b-p
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, show_columns = c("b", "ame", "p", "ame_p"))
+  s <- as_structured(out)
+  toks <- vapply(s$col_meta, function(m) m$token, character(1))
+  p_col <- names(toks)[toks == "p"]
+  amep_col <- names(toks)[toks == "ame_p"]
+  expect_length(p_col, 1L)
+  expect_length(amep_col, 1L)
+  oracle <- summary(fit)$coefficients[, 4]
+  rows <- match(c("(Intercept)", "wt"), s$body$Variable)
+  expect_equal(
+    s$body[[p_col]][rows],
+    unname(oracle[c("(Intercept)", "wt")]),
+    tolerance = 1e-12
+  )
+  # The AME p of the intercept row is NA (no AME for the intercept),
+  # while the B p is not – the two columns are distinct quantities.
+  expect_true(is.na(s$body[[amep_col]][rows[1]]))
+  expect_false(isTRUE(all.equal(
+    s$body[[p_col]][rows[2]],
+    s$body[[amep_col]][rows[2]],
+    tolerance = 1e-12
+  )))
+})
+
+test_that("show_columns – every base atomic token adds exactly one column", {
+  # rd-core:show-columns-atomic-tokens (incl. the never-tested bare 't')
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  headers <- c(b = "B", se = "SE", ci = "95% CI", t = "t", p = "p")
+  for (tok in names(headers)) {
+    out <- table_regression(fit, show_columns = tok)
+    expect_identical(names(out), c("Variable", headers[[tok]]))
+  }
+  # t values match the summary() oracle
+  out_t <- table_regression(fit, show_columns = c("b", "t"))
+  s <- as_structured(out_t)
+  rows <- match(c("(Intercept)", "wt"), s$body$Variable)
+  expect_equal(
+    s$body$t[rows],
+    unname(summary(fit)$coefficients[c("(Intercept)", "wt"), 3]),
+    tolerance = 1e-10
+  )
+})
+
+test_that("boot_n – formals default is 1000L; degenerate values rejected", {
+  # rd-core:boot-n-default
+  expect_identical(formals(table_regression)$boot_n, 1000L)
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, vcov = "bootstrap", boot_n = 0),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, vcov = "bootstrap", boot_n = c(10, 20)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("ci_method = 'profile' with lm raises spicy_invalid_input", {
+  # rd-core:ci-method-profile-lm-refused
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, ci_method = "profile"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("raw formula input is refused – fit-only API", {
+  # rd-core:models-fit-only-api
+  expect_error(table_regression(mpg ~ wt), class = "spicy_unsupported")
+})
+
+test_that("ci_level moves B, beta, AME and partial CI bounds together", {
+  # rd-core:ci-level-default-scope
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("broom")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  cols <- c("b", "ci", "ame", "ame_ci", "partial_eta2", "partial_eta2_ci")
+  o90 <- table_regression(
+    fit,
+    ci_level = 0.90,
+    standardized = "refit",
+    show_columns = cols
+  )
+  o95 <- table_regression(
+    fit,
+    ci_level = 0.95,
+    standardized = "refit",
+    show_columns = cols
+  )
+  expect_true("90% CI" %in% names(o90))
+  s90 <- as_structured(o90)
+  s95 <- as_structured(o95)
+  wt90 <- s90$body[s90$body$Variable == "wt", ]
+  wt95 <- s95$body[s95$body$Variable == "wt", ]
+  # B CI matches the confint() oracle at each level
+  expect_equal(
+    unname(unlist(wt90[, c("90% CI: LL", "90% CI: UL")])),
+    unname(confint(fit, level = 0.90)["wt", ]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    unname(unlist(wt95[, c("95% CI: LL", "95% CI: UL")])),
+    unname(confint(fit, level = 0.95)["wt", ]),
+    tolerance = 1e-10
+  )
+  # AME + partial eta2 CI bounds move with the level too
+  ame_ll90 <- wt90[[grep("CI\\.2: LL$", names(s90$body), value = TRUE)]]
+  ame_ll95 <- wt95[[grep("CI\\.2: LL$", names(s95$body), value = TRUE)]]
+  expect_gt(ame_ll90, ame_ll95)
+  eta_ll90 <- wt90[["η² 90% CI: LL"]]
+  eta_ll95 <- wt95[["η² 95% CI: LL"]]
+  expect_gt(eta_ll90, eta_ll95)
+  # beta CI (carried by tidy) narrows at 90%
+  td90 <- broom::tidy(o90)
+  td95 <- broom::tidy(o95)
+  b90 <- td90[td90$estimate_type == "beta" & td90$term == "wt", ]
+  b95 <- td95[td95$estimate_type == "beta" & td95$term == "wt", ]
+  expect_gt(b90$conf.low, b95$conf.low)
+  expect_lt(b90$conf.high, b95$conf.high)
+})
+
+test_that("'n' column is dropped for a plain multivariable fit", {
+  # rd-core:show-columns-n-uv-populated (no per-row N data -> no column)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, show_columns = c("b", "n"))
+  expect_identical(names(out), c("Variable", "B"))
+})
+
+test_that("partial_f2 / partial_eta2 / partial_omega2 are refused for glm", {
+  # rd-core:show-columns-partial-lm-only
+  gfit <- glm(am ~ mpg + cyl, data = mt, family = binomial)
+  for (tok in c("partial_f2", "partial_eta2", "partial_omega2")) {
+    expect_error(
+      table_regression(gfit, show_columns = c("b", tok)),
+      class = "spicy_invalid_input"
+    )
+  }
+})
+
+test_that("r2 / adj_r2 – lm oracle values; lm-only tokens refused on all-glm", {
+  # rd-core:fit-stats-r2-lm-only
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit, show_fit_stats = c("r2", "adj_r2"))
+  s <- as_structured(out)
+  b <- s$body
+  expect_equal(
+    b$B[b$Variable == "R²"],
+    summary(fit)$r.squared,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    b$B[b$Variable == "Adj.R²"],
+    summary(fit)$adj.r.squared,
+    tolerance = 1e-10
+  )
+  gfit <- glm(am ~ mpg, data = mt, family = binomial)
+  for (tok in c("r2", "adj_r2", "omega2")) {
+    expect_error(
+      table_regression(gfit, show_fit_stats = c("nobs", tok)),
+      class = "spicy_invalid_input"
+    )
+  }
+})
+
+test_that("change tokens render under nested = TRUE and are inert without it", {
+  # rd-core:fit-stats-change-tokens-nested-only
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  o_nested <- table_regression(
+    list(m1, m2),
+    nested = TRUE,
+    show_fit_stats = c("r2", "r2_change")
+  )
+  vars_nested <- trimws(
+    as.data.frame(o_nested, stringsAsFactors = FALSE)$Variable
+  )
+  expect_true("ΔR²" %in% vars_nested)
+  # Same request without nested = TRUE: the change row is simply absent
+  # (inert), the table still renders.
+  o_flat <- table_regression(
+    list(m1, m2),
+    show_fit_stats = c("r2", "r2_change")
+  )
+  vars_flat <- trimws(as.data.frame(o_flat, stringsAsFactors = FALSE)$Variable)
+  expect_false("ΔR²" %in% vars_flat)
+  expect_true("R²" %in% vars_flat)
+})
+
+test_that("digits controls B/SE/CI/t decimals; p and AIC are untouched", {
+  # rd-core:digits-scope-default
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  o3 <- table_regression(
+    fit,
+    digits = 3L,
+    show_columns = c("b", "se", "ci", "t", "p"),
+    show_fit_stats = c("aic")
+  )
+  d3 <- as.data.frame(o3, stringsAsFactors = FALSE)
+  wt_row <- d3[trimws(d3$Variable) == "wt", ]
+  expect_match(trimws(wt_row$B), "^-?[0-9]+\\.[0-9]{3}$")
+  expect_match(trimws(wt_row$SE), "^[0-9]+\\.[0-9]{3}$")
+  expect_match(trimws(wt_row$t), "^-?[0-9]+\\.[0-9]{3}$")
+  expect_match(
+    trimws(wt_row$`95% CI`),
+    "^\\[-?[0-9]+\\.[0-9]{3}, *-?[0-9]+\\.[0-9]{3}\\]$"
+  )
+  # p keeps p_digits (3 by default), AIC keeps ic_digits (1)
+  expect_identical(trimws(wt_row$p), "<.001")
+  aic_cell <- trimws(d3$B[trimws(d3$Variable) == "AIC"])
+  expect_match(aic_cell, "^[0-9]+\\.[0-9]$")
+})
+
+test_that("p_digits formats rendered p cells APA-strict at any width", {
+  # rd-core:p-digits-apa
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  d3 <- as.data.frame(table_regression(fit), stringsAsFactors = FALSE)
+  d4 <- as.data.frame(
+    table_regression(fit, p_digits = 4L),
+    stringsAsFactors = FALSE
+  )
+  keep <- c("(Intercept)", "wt", "6", "8")
+  p3 <- trimws(d3$p[trimws(d3$Variable) %in% keep])
+  p4 <- trimws(d4$p[trimws(d4$Variable) %in% keep])
+  # p_digits = 3 (default): wt is 2.13e-4 -> below threshold
+  expect_identical(p3, c("<.001", "<.001", ".005", "<.001"))
+  # p_digits = 4: threshold scales to <.0001, wt becomes .0002
+  expect_identical(p4, c("<.0001", ".0002", ".0047", ".0010"))
+  # APA: no leading zero anywhere
+  expect_false(any(startsWith(c(p3, p4), "0.")))
+})
+
+test_that("fit_digits controls R² decimals while AIC keeps ic_digits", {
+  # rd-core:fit-digits
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(
+    fit,
+    show_fit_stats = c("r2", "aic"),
+    fit_digits = 4L
+  )
+  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  r2_cell <- trimws(d$B[trimws(d$Variable) == "R²"])
+  aic_cell <- trimws(d$B[trimws(d$Variable) == "AIC"])
+  expect_identical(
+    r2_cell,
+    format(round(summary(fit)$r.squared, 4), nsmall = 4)
+  )
+  expect_match(aic_cell, "^[0-9]+\\.[0-9]$")
+  # default fit_digits = 2L
+  expect_identical(formals(table_regression)$fit_digits, 2L)
+  d2 <- as.data.frame(
+    table_regression(fit, show_fit_stats = "r2"),
+    stringsAsFactors = FALSE
+  )
+  expect_match(trimws(d2$B[trimws(d2$Variable) == "R²"]), "^0\\.[0-9]{2}$")
+})
+
+test_that("effect_size_digits scopes partial_f2 only (B keeps digits)", {
+  # rd-core:effect-size-digits
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  expect_identical(formals(table_regression)$effect_size_digits, 2L)
+  o2 <- table_regression(fit, show_columns = c("b", "partial_f2"))
+  d2 <- as.data.frame(o2, stringsAsFactors = FALSE)
+  wt2 <- d2[trimws(d2$Variable) == "wt", ]
+  expect_match(trimws(wt2$`f²`), "^[0-9]+\\.[0-9]{2}$")
+  o3 <- table_regression(
+    fit,
+    show_columns = c("b", "partial_f2"),
+    effect_size_digits = 3L
+  )
+  d3 <- as.data.frame(o3, stringsAsFactors = FALSE)
+  wt3 <- d3[trimws(d3$Variable) == "wt", ]
+  expect_match(trimws(wt3$`f²`), "^[0-9]+\\.[0-9]{3}$")
+  # B keeps the default 2-decimal `digits`
+  expect_match(trimws(wt3$B), "^-?[0-9]+\\.[0-9]{2}$")
+})
+
+test_that("default output – documented class vector and rendering attributes", {
+  # rd-core:return-class-attributes
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  expect_identical(
+    class(out),
+    c("spicy_regression_table", "spicy_table", "data.frame")
+  )
+  expect_type(attr(out, "title"), "character")
+  expect_type(attr(out, "note"), "character")
+  expect_identical(attr(out, "align"), "decimal")
+  expect_identical(attr(out, "padding"), 0L)
+})
+
+test_that("provenance attributes outcome / model_ids are carried", {
+  # FIXME matrix: rd-core:return-class-attributes – man/table_regression.Rd
+  # \value promises provenance attributes `outcome` and `model_ids` on the
+  # default return, but the object carries neither (both NULL); provenance
+  # only exists per-row inside attr(out, "spicy_long"). Doc-vs-code
+  # discordance recorded in the Phase 3 audit – do not assert until decided.
+  skip(
+    "rd-core:return-class-attributes – attr 'outcome'/'model_ids' absent from the return"
+  )
+})
+
+test_that("title and note attributes are post-processable before printing", {
+  # rd-core:i18n-attrs-postprocessable
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  expect_type(attr(out, "title"), "character")
+  expect_type(attr(out, "note"), "character")
+  attr(out, "title") <- "Titre personnalise"
+  attr(out, "note") <- "Note. Remarque personnalisee."
+  lines <- capture.output(print(out))
+  expect_identical(lines[1], "Titre personnalise")
+  expect_true("Note. Remarque personnalisee." %in% lines)
+})
+
+test_that("factor_layout grouped applies to character predictors", {
+  # rd-core:factor-layout-scope (character half)
+  df <- mtcars
+  df$gear_chr <- as.character(df$gear)
+  fit <- lm(mpg ~ wt + gear_chr, data = df)
+  out <- table_regression(fit)
+  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  expect_true("gear_chr:" %in% vars)
+  expect_true(any(grepl("^  4$", vars)))
+  ref_idx <- grep("\\(ref\\.\\)", vars)
+  expect_length(ref_idx, 1L)
+  expect_match(vars[ref_idx], "^  3 \\(ref\\.\\)$")
+})
+
+test_that("factor_layout grouped applies to logical predictors", {
+  # FIXME matrix: rd-core:factor-layout-scope – man/table_regression.Rd
+  # 323-326 promises the grouped header/indent layout for logical
+  # predictors too, but lm(mpg ~ wt + am_lgl) renders the flat
+  # `am_lglTRUE` row with no header, no indent, and no reference row.
+  # Doc-vs-code discordance recorded in the Phase 3 audit.
+  skip(
+    "rd-core:factor-layout-scope – logical predictors render flat, not grouped"
+  )
+})
+
+test_that("reference_label defaults to '(ref.)' and only acts in row mode", {
+  # rd-core:reference-label-default
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  expect_identical(formals(table_regression)$reference_label, "(ref.)")
+  o_row <- table_regression(fit, reference_label = "(base)")
+  expect_true(any(grepl(
+    "(base)",
+    as.data.frame(o_row, stringsAsFactors = FALSE)$Variable,
+    fixed = TRUE
+  )))
+  # annotation / footer / none ignore the argument entirely: same
+  # output as with the default label.
+  for (style in c("annotation", "footer", "none")) {
+    o_custom <- suppressMessages(table_regression(
+      fit,
+      reference_style = style,
+      reference_label = "(base)"
+    ))
+    o_default <- suppressMessages(table_regression(
+      fit,
+      reference_style = style
+    ))
+    expect_identical(
+      as.data.frame(o_custom, stringsAsFactors = FALSE),
+      as.data.frame(o_default, stringsAsFactors = FALSE)
+    )
+    expect_identical(attr(o_custom, "note"), attr(o_default, "note"))
+    expect_false(any(grepl(
+      "(base)",
+      as.data.frame(o_custom, stringsAsFactors = FALSE)$Variable,
+      fixed = TRUE
+    )))
+  }
+})
+
+test_that("align – CI anchors are each column-aligned in decimal mode", {
+  # rd-core:align-decimal-ci-anchors (per-anchor positions)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  ci <- as.data.frame(out, stringsAsFactors = FALSE)$`95% CI`
+  ci <- ci[grepl("[0-9]", ci)]
+  anchor_pos <- function(cells, pattern, which_match = 1L) {
+    vapply(
+      cells,
+      function(x) {
+        hits <- gregexpr(pattern, x, fixed = TRUE)[[1]]
+        as.integer(hits[which_match])
+      },
+      integer(1)
+    )
+  }
+  # Left bracket, LL decimal point, comma, UL decimal point, right
+  # bracket: each independently at a fixed character position.
+  expect_length(unique(anchor_pos(ci, "[")), 1L)
+  expect_length(unique(anchor_pos(ci, ".", 1L)), 1L)
+  expect_length(unique(anchor_pos(ci, ",")), 1L)
+  expect_length(unique(anchor_pos(ci, ".", 2L)), 1L)
+  expect_length(unique(anchor_pos(ci, "]")), 1L)
+})
+
+test_that("align – 'right' right-justifies, 'center' centres, in print", {
+  # rd-core:align-decimal-ci-anchors ('center' / 'right' behaviour)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  stats <- c("r2", "aic", "nobs")
+  last_nonspace <- function(line) max(which(strsplit(line, "")[[1]] != " "))
+  first_value_char <- function(line) {
+    stat_side <- sub("^[^│]*│", "", line)
+    as.integer(regexpr("[^ ]", stat_side))
+  }
+  fit_stat_lines <- function(o) {
+    lines <- capture.output(print(o))
+    lines[grepl("^ (R²|AIC|n) ", lines)]
+  }
+  o_right <- table_regression(fit, align = "right", show_fit_stats = stats)
+  o_dec <- table_regression(fit, align = "decimal", show_fit_stats = stats)
+  o_ctr <- table_regression(fit, align = "center", show_fit_stats = stats)
+  r_lines <- fit_stat_lines(o_right)
+  d_lines <- fit_stat_lines(o_dec)
+  c_lines <- fit_stat_lines(o_ctr)
+  expect_length(r_lines, 3L)
+  # right: 0.84 / 156.6 / 32 all end at the same column
+  expect_length(unique(vapply(r_lines, last_nonspace, 1L)), 1L)
+  # decimal: they align on the decimal mark, so the right edges differ
+  expect_gt(length(unique(vapply(d_lines, last_nonspace, 1L))), 1L)
+  # center: the narrow 'n' value starts further left than under 'right'
+  n_right <- r_lines[grepl("^ n ", r_lines)]
+  n_ctr <- c_lines[grepl("^ n ", c_lines)]
+  expect_lt(first_value_char(n_ctr), first_value_char(n_right))
+})
+
+test_that("weights come from the fit – no weights argument", {
+  # rd-core:weights-from-fit (formals half)
+  expect_false("weights" %in% names(formals(table_regression)))
+  # weighted_nobs = sum of the fit's weights for a weighted lm
+  df <- mtcars
+  df$w <- seq_len(nrow(df)) / 10
+  wfit <- lm(mpg ~ wt, data = df, weights = w)
+  out <- table_regression(wfit, show_fit_stats = c("nobs", "weighted_nobs"))
+  s <- as_structured(out)
+  expect_equal(
+    s$body$B[s$body$Variable == "Weighted n"],
+    sum(df$w),
+    tolerance = 1e-8
+  )
+})
+
+test_that("AME extraction honours the fit's weights", {
+  # FIXME matrix: rd-core:weights-from-fit – man/table_regression.Rd
+  # (Weights section) promises the fit's weights are used automatically
+  # in the AME, but extract_ame_glm() calls marginaleffects::avg_slopes()
+  # without `wts`: for a weighted glm the spicy AME equals the UNWEIGHTED
+  # avg_slopes() average, not avg_slopes(fit, wts = weights(fit)).
+  # Repro: set.seed(7); df$w <- ifelse(df$x > 0, 5, 1); spicy AME
+  # 0.2517548 = unweighted, weighted oracle 0.2919022. Doc-vs-code
+  # discordance recorded in the Phase 3 audit.
+  skip("rd-core:weights-from-fit – AME ignores the fit's weights")
+})

@@ -359,3 +359,33 @@ test_that("differing reference outcomes get per-model footer lines", {
   expect_match(out, "Model 1: Reference outcome: Employed.", fixed = TRUE)
   expect_match(out, "Model 2: Reference outcome: Student.", fixed = TRUE)
 })
+
+# Phase 3 matrix – rd-core:multinom-tidy-long-structured-wide
+test_that("as_structured mirrors the columns layout: one column set per category", {
+  fit <- .fit_multinom_soc()
+  out <- table_regression(fit)
+  s <- as_structured(out)
+  cats <- c("Student", "Unemployed", "Inactive")
+  # Body: one B/SE/p set per non-reference category, none for Employed
+  for (cat in cats) {
+    for (col in c("B", "SE", "p")) {
+      expect_true(paste0(cat, ": ", col) %in% names(s$body))
+    }
+  }
+  expect_false(any(grepl("^Employed: ", names(s$body))))
+  # Spanners: one per category, covering that category's columns
+  expect_identical(names(s$spanners), cats)
+  # Rows are bare predictors (display form), not '<category>: <term>'
+  expect_true("age" %in% s$body$Variable)
+  expect_false(any(grepl("Student: ", s$body$Variable, fixed = TRUE)))
+  # The structured numbers mirror the displayed table's oracle
+  b <- summary(fit)$coefficients
+  expect_equal(
+    s$body[["Student: B"]][s$body$Variable == "age"],
+    unname(b["Student", "age"]),
+    tolerance = 1e-10
+  )
+  # tidy() keeps the long '<category>: <term>' form whatever the display
+  td <- broom::tidy(out)
+  expect_true(all(grepl("^(Student|Unemployed|Inactive): ", td$term)))
+})
