@@ -53,8 +53,7 @@
 #' @param ... Currently ignored. Present for compatibility with the
 #'   [broom::tidy()] / [broom::glance()] generics.
 #'
-#' @return A `tbl_df` (when `tibble` is installed) or a plain
-#'   `data.frame`.
+#' @return A `tbl_df`.
 #'
 #' @seealso [as.data.frame.spicy_regression_table()] for the wide
 #'   raw view.
@@ -147,12 +146,15 @@ glance.spicy_regression_table <- function(x, ...) {
 #' Convert a `spicy_regression_table` to a plain data.frame / tibble
 #'
 #' Strips the `spicy_regression_table` / `spicy_table` classes and
-#' the `col_spec` rendering metadata, returning the wide character
-#' display as a plain `data.frame` (or `tbl_df` via `as_tibble()`).
-#' The `title` and `note` attributes are preserved.
+#' the internal analytic attributes (`spicy_long`, `spicy_fit_stats`),
+#' returning the wide character display as a plain `data.frame` (or
+#' `tbl_df` via `as_tibble()`). The `title`, `note`, provenance
+#' (`model_ids`, `outcome`), and rendering (`col_spec`) attributes are
+#' preserved.
 #'
-#' Equivalent to passing `output = "data.frame"` to
-#' [table_regression()].
+#' `as.data.frame()` is equivalent to passing `output = "data.frame"`
+#' to [table_regression()]: the two paths return identical objects
+#' (same cells, classes, and attributes).
 #'
 #' @param x A `spicy_regression_table` returned by
 #'   [table_regression()].
@@ -199,7 +201,9 @@ unclass_spicy_regression_table <- function(x) {
   attr(out, "note") <- attr(x, "note")
   attr(out, "spicy_long") <- NULL
   attr(out, "spicy_fit_stats") <- NULL
-  attr(out, "col_spec") <- NULL
+  # `col_spec` (and the other rendering attributes) are kept so the
+  # result is identical to `output = "data.frame"`, which carries them
+  # too -- the documented equivalence between the two paths.
   class(out) <- "data.frame"
   out
 }

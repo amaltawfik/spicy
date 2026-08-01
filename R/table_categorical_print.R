@@ -220,8 +220,7 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' @param ... Currently ignored. Present for compatibility with the
 #'   [broom::tidy()] / [broom::glance()] generics.
 #'
-#' @return A `tbl_df` (when `tibble` is installed) or a plain
-#'   `data.frame`.
+#' @return A `tbl_df`.
 #'
 #' @seealso [as.data.frame.spicy_categorical_table()] for the raw
 #'   wide-format access; [tidy.spicy_continuous_table()] for the

@@ -132,7 +132,9 @@ directly.
 Hidden by default on both sides (each univariable fit has its own
 nuisance intercept), matching \code{gtsummary::tbl_regression()}'s
 \code{intercept = FALSE} default. Pass \code{show_intercept = TRUE} to
-display them.
+display them: each univariable block then opens with its own fit's
+\code{(Intercept)} row, and the multivariable model shows its intercept
+as in any \code{\link[=table_regression]{table_regression()}} table.
 }
 
 \examples{

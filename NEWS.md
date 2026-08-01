@@ -2,18 +2,6 @@
 
 ## Breaking changes
 
-* `table_regression_uv()` now defaults to the linear screen
-  (`method = "lm"`) instead of the logistic one. Calls that passed
-  `family = binomial()` (or any family) explicitly keep their glm
-  screen unchanged -- a supplied `family` selects `method = "glm"`
-  automatically. Only calls that relied on the implicit binomial
-  default change behavior: a binary-looking outcome under the new
-  default proceeds as a linear probability model and says so in a
-  classed warning pointing to `vcov = "HC3"` and to
-  `method = "glm"` for the logistic screen. See the new
-  "Why the default screen is linear" section in
-  `?table_regression_uv`.
-
 * Declared missing values are now honored package-wide. Codes that survey files declare as missing (`na_values` / `na_range` metadata on haven-imported columns, and `haven::tagged_na()` values) are treated as missing by default in `freq()`, `cross_tab()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, `mean_n()`, `sum_n()`, `count_n()`, `varlist()`, `vl()`, and `code_book()`: they are excluded from statistics exactly like `NA` (valid percents, means, chi-squared tests and association measures, `min_valid` gates, group definitions), so numbers change for labelled survey data. Nothing disappears silently: `freq()` shows each declared value as its own labelled row in its Missing block (tagged NAs get per-tag rows with their labels), and the tabulation helpers disclose the exclusion in the table note ("Declared missing values removed: ..."). Migration: every function involved gains the same escape hatch, `user_na = FALSE`, which restores the previous behavior of treating declared codes as valid values. See the new "Declared missing values" section in `?freq`.
 
 * `varlist()`, `vl()`, and `code_book()` count columns are now internally coherent for labelled data: `N_distinct` uses the same missing definition as `N_valid` / `NAs` (declared missing values and `NA` elements of list and `POSIXlt` columns no longer count as distinct valid values), `na_range` codes observed in the data are listed in `Values` like `na_values` codes instead of vanishing, and value labels attached to tagged NAs (e.g. `Refused = tagged_na("a")`) now appear in `Values`.
@@ -211,13 +199,19 @@ rendering an empty column.
   predictor and merged side by side with the multivariable model.
   Supports `lm` (the default linear screen), `glm` (selected
   automatically when a `family` is supplied), and `coxph`
-  (`outcome = Surv(time, status)`). A per-predictor `N` column is shown
-  by default and a note discloses when Ns differ across fits;
-  `complete_cases = TRUE` forces the common sample. Intercepts are
-  hidden by default and `p_adjust` treats the whole screen as one
-  family. `exponentiate`, `vcov` / `cluster` (the footer names the
-  cluster column), `labels`, the output engines, and `tidy()` work
-  as in `table_regression()`.
+  (`outcome = Surv(time, status)`). Under the linear default, a
+  binary-looking outcome proceeds as a linear probability model and
+  says so in a classed warning pointing to `vcov = "HC3"` and to
+  `method = "glm"` for the logistic screen (see "Why the default
+  screen is linear" in `?table_regression_uv`). A per-predictor `N`
+  column is shown by default and a note discloses when Ns differ
+  across fits; `complete_cases = TRUE` forces the common sample.
+  Intercepts are hidden by default; `show_intercept = TRUE` displays
+  each univariable fit's own intercept at the top of its block along
+  with the multivariable one. `p_adjust` treats the whole screen as
+  one family. `exponentiate`, `vcov` / `cluster` (the footer names
+  the cluster column), `labels`, the output engines, and `tidy()`
+  work as in `table_regression()`.
 * `table_regression_models()`: the machine-readable registry of
   supported model classes (family, engine, AME, exponentiate
   semantics); its help page is the per-family reference.
@@ -651,7 +645,14 @@ rendering an empty column.
 
 * `table_regression()` returns carry the documented provenance
   attributes `outcome` and `model_ids` (one entry per model, in
-  table order).
+  table order). `output = "data.frame"` carries the same pair, and
+  `as.data.frame()` no longer drops `col_spec`, so the two documented
+  equivalents now return identical objects (same cells, classes, and
+  attributes).
+
+* `table_regression(output = "long")` returns the long-format tibble
+  (`tbl_df`) its documentation always promised; it used to return a
+  plain `data.frame`.
 
 * `count_n()` raises a classed error (`spicy_invalid_input`) when `count` is zero-length or contains only missing values, instead of silently returning a plausible-looking all-zero count; and rejecting `count = NaN` now points to `special = "NaN"` (the exact counterpart) instead of describing the input as `count = NA` and hinting at `special = "NA"`, which counts NA and NaN together.
 

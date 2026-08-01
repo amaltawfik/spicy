@@ -24,13 +24,16 @@ A plain \code{data.frame} (for \code{as.data.frame()}) or a
 }
 \description{
 Strips the \code{spicy_regression_table} / \code{spicy_table} classes and
-the \code{col_spec} rendering metadata, returning the wide character
-display as a plain \code{data.frame} (or \code{tbl_df} via \code{as_tibble()}).
-The \code{title} and \code{note} attributes are preserved.
+the internal analytic attributes (\code{spicy_long}, \code{spicy_fit_stats}),
+returning the wide character display as a plain \code{data.frame} (or
+\code{tbl_df} via \code{as_tibble()}). The \code{title}, \code{note}, provenance
+(\code{model_ids}, \code{outcome}), and rendering (\code{col_spec}) attributes are
+preserved.
 }
 \details{
-Equivalent to passing \code{output = "data.frame"} to
-\code{\link[=table_regression]{table_regression()}}.
+\code{as.data.frame()} is equivalent to passing \code{output = "data.frame"}
+to \code{\link[=table_regression]{table_regression()}}: the two paths return identical objects
+(same cells, classes, and attributes).
 }
 \seealso{
 \code{\link[=tidy.spicy_regression_table]{tidy.spicy_regression_table()}},

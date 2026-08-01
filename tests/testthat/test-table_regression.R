@@ -1971,15 +1971,15 @@ test_that("output = 'word' returns the table invisibly", {
 })
 
 test_that("output = 'long' returns the documented tbl_df", {
-  # FIXME matrix: rd-methods:output-class-mapping –
-  # man/table_regression.Rd \value (and the `output` argument docs)
-  # promise a long-format tibble (`tbl_df`) for output = "long", but
-  # output_long() returns the aligned long extract as a plain
-  # data.frame (class "data.frame" only). Doc-vs-code discordance
-  # recorded in the Phase 3 audit.
-  skip(
-    "rd-methods:output-class-mapping – output = 'long' returns a plain data.frame, not a tbl_df"
-  )
+  # rd-methods:output-class-mapping (long half): the Rd \value and the
+  # `output` argument docs promise a long-format tibble.
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  lo <- table_regression(fit, output = "long")
+  expect_s3_class(lo, "tbl_df")
+  expect_true(all(
+    c("model_id", "term", "estimate_type", "estimate", "std.error") %in%
+      names(lo)
+  ))
 })
 
 test_that("output = 'flextable' carries the spicy_flextable tag", {

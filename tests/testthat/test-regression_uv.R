@@ -205,8 +205,8 @@ test_that("screen-only tables carry no empty fit-stat rows", {
 })
 
 
-test_that("intercepts are hidden by default; show_intercept shows only
-           the multivariable one", {
+test_that("intercepts are hidden by default; show_intercept shows both
+           sides", {
   d <- .uv_soc()
   td <- broom::tidy(table_regression_uv(
     d,
@@ -223,10 +223,11 @@ test_that("intercepts are hidden by default; show_intercept shows only
     show_intercept = TRUE
   ))
   ic <- td2[td2$is_intercept, ]
-  # The univariable blocks keep only their own predictor's rows, so the
-  # nuisance intercepts of the screen never enter the table.
-  expect_identical(nrow(ic), 1L)
-  expect_identical(ic$model_id, "Multivariable")
+  # One intercept per univariable block (unique per-block terms) plus
+  # the multivariable model's own.
+  expect_identical(nrow(ic), 3L)
+  expect_identical(sum(ic$model_id == "Univariable"), 2L)
+  expect_identical(sum(ic$model_id == "Multivariable"), 1L)
 })
 
 
@@ -977,18 +978,45 @@ test_that("tidyselect helpers work and the outcome is dropped from them", {
 })
 
 test_that("show_intercept = TRUE shows the univariable intercepts too", {
-  # FIXME matrix: rd-uv-estimands:show-intercept-default-false –
-  # man/table_regression_uv.Rd (Intercepts section) says intercepts are
-  # "hidden by default on both sides" and that show_intercept = TRUE
-  # displays "them", but the screen can only ever display the
-  # multivariable intercept: the univariable blocks are filtered to
-  # parent_var == predictor, so their intercept rows never render (the
-  # existing test above pins exactly one intercept row under
-  # show_intercept = TRUE). Doc-vs-code discordance recorded in the
-  # Phase 3 audit.
-  skip(
-    "rd-uv-estimands:show-intercept-default-false – univariable intercepts never display under show_intercept = TRUE"
+  # rd-uv-estimands:show-intercept-default-false – the Rd Intercepts
+  # section promises both sides under show_intercept = TRUE: each
+  # univariable block opens with its own fit's intercept, rendered
+  # under the standard "(Intercept)" label.
+  d <- .uv_soc()
+  scr <- table_regression_uv(
+    d,
+    outcome = smoking,
+    method = "glm",
+    predictors = c(age, bmi),
+    show_intercept = TRUE
   )
+  # Body: one "(Intercept)" stub per univariable block + one for the
+  # multivariable model.
+  expect_identical(sum(trimws(scr$Variable) == "(Intercept)"), 3L)
+  td <- broom::tidy(scr)
+  ic <- td[td$is_intercept & td$model_id == "Univariable", ]
+  expect_identical(nrow(ic), 2L)
+  # Each univariable intercept equals its own fit's intercept, under
+  # its per-block term.
+  f_age <- stats::glm(
+    smoking ~ age,
+    data = d[stats::complete.cases(d[, c("smoking", "age")]), ],
+    family = stats::binomial()
+  )
+  expect_equal(
+    ic$estimate[ic$term == "age: (Intercept)"],
+    unname(stats::coef(f_age)["(Intercept)"]),
+    tolerance = 1e-10
+  )
+  # The default (FALSE) keeps the historical layout: no intercept row
+  # anywhere.
+  scr0 <- table_regression_uv(
+    d,
+    outcome = smoking,
+    method = "glm",
+    predictors = c(age, bmi)
+  )
+  expect_identical(sum(trimws(scr0$Variable) == "(Intercept)"), 0L)
 })
 
 test_that("the documented example runs and yields the OR screen", {

@@ -23,7 +23,7 @@ mt$cyl <- factor(mt$cyl)
 test_that("output = 'long' renames to broom columns and drops order_idx", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   lo <- table_regression(fit, output = "long")
-  expect_s3_class(lo, "data.frame")
+  expect_s3_class(lo, "tbl_df")
   # broom-canonical names present, internal names renamed away
   expect_true(all(
     c("std.error", "conf.low", "conf.high", "p.value") %in%
@@ -34,16 +34,21 @@ test_that("output = 'long' renames to broom columns and drops order_idx", {
   expect_gt(nrow(lo), 0L)
 })
 
-test_that("output_long returns the input unchanged for empty / NULL coefs", {
-  # NULL coefs_aligned -> returned as-is (NULL)
-  expect_null(spicy:::output_long(list(coefs_aligned = NULL)))
-  # zero-row coefs_aligned -> returned unchanged (0 rows), not renamed
+test_that("output_long returns a tbl_df for empty / NULL coefs too", {
+  # NULL coefs_aligned -> 0-row broom-named tibble
+  out_null <- spicy:::output_long(list(coefs_aligned = NULL))
+  expect_s3_class(out_null, "tbl_df")
+  expect_identical(nrow(out_null), 0L)
+  expect_true("std.error" %in% names(out_null))
+  # zero-row coefs_aligned -> 0-row tibble, renamed like the full path
   fit <- lm(mpg ~ wt, data = mt)
   tbl <- table_regression(fit)
   long_full <- attr(tbl, "spicy_long")
   empty <- long_full[0, , drop = FALSE]
   out <- spicy:::output_long(list(coefs_aligned = empty))
+  expect_s3_class(out, "tbl_df")
   expect_identical(nrow(out), 0L)
+  expect_false("se" %in% names(out))
 })
 
 

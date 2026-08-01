@@ -65,7 +65,9 @@
 #' Hidden by default on both sides (each univariable fit has its own
 #' nuisance intercept), matching `gtsummary::tbl_regression()`'s
 #' `intercept = FALSE` default. Pass `show_intercept = TRUE` to
-#' display them.
+#' display them: each univariable block then opens with its own fit's
+#' `(Intercept)` row, and the multivariable model shows its intercept
+#' as in any [table_regression()] table.
 #'
 #' @param data A data frame.
 #' @param outcome The outcome column (unquoted name, tidyselect). For
@@ -748,6 +750,27 @@ as_regression_frame.spicy_uv_screen <- function(
     n_k <- .uv_fit_n(bundle$fits[[k]])
     block$n_obs <- NA_real_
     block$n_obs[1L] <- as.numeric(n_k)
+    block$is_intercept <- block$term == "(Intercept)"
+    # Each fit's own nuisance intercept opens its block, so
+    # `show_intercept = TRUE` displays it as the Rd promises (hidden
+    # by default: align_frames() drops is_intercept rows). The term /
+    # parent_var get a per-block unique key -- k identical
+    # "(Intercept)" terms in one composite frame would collapse into
+    # a single body row at alignment -- while `label` stays
+    # "(Intercept)": the display stub renders the standard intercept
+    # label off `is_intercept`, and the p_adjust family mask excludes
+    # the row by that label, exactly like the component-block
+    # intercepts. The N cell stays on the first predictor row, which
+    # survives the default show_intercept = FALSE.
+    ic <- cf[cf$term == "(Intercept)", , drop = FALSE]
+    if (nrow(ic) > 0L) {
+      key <- sprintf("%s: (Intercept)", pred)
+      ic$term <- key
+      ic$parent_var <- key
+      ic$n_obs <- NA_real_
+      ic$is_intercept <- TRUE
+      block <- rbind(ic, block)
+    }
     ns <- c(ns, n_k)
     blocks[[length(blocks) + 1L]] <- block
     # Pool the estimand disclosure across the per-predictor bootstraps:

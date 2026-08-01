@@ -60,7 +60,7 @@ dispatch_regression_output <- function(
   switch(
     output,
     default = output_default(rendered, aligned),
-    data.frame = output_data_frame(rendered),
+    data.frame = output_data_frame(rendered, aligned),
     long = output_long(aligned),
     tinytable = output_tinytable(rendered),
     gt = output_gt(rendered),
@@ -80,14 +80,12 @@ dispatch_regression_output <- function(
 
 # ---- default: printable spicy_regression_table ---------------------------
 
-# Carries the analytic data as attributes so broom methods (tidy,
-# glance) can read them without re-running the pipeline.
-output_default <- function(rendered, aligned) {
-  attr(rendered, "spicy_long") <- aligned$coefs_aligned
-  attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_aligned
-  # Provenance attributes promised by the \value section: the model ids
-  # in table order, and each model's outcome variable (lifted from the
-  # per-row values already carried in `spicy_long`).
+# Provenance attributes promised by the \value section: the model ids
+# in table order, and each model's outcome variable (lifted from the
+# per-row values carried in the aligned long frame). Shared by the
+# default and data.frame outputs so `as.data.frame()` on the default
+# object and `output = "data.frame"` carry the same attribute set.
+.regression_provenance <- function(aligned) {
   cf <- aligned$coefs_aligned
   model_ids <- aligned$model_ids %||% unique(cf$model_id)
   outcome <- vapply(
@@ -104,32 +102,48 @@ output_default <- function(rendered, aligned) {
     character(1),
     USE.NAMES = FALSE
   )
-  attr(rendered, "model_ids") <- model_ids
-  attr(rendered, "outcome") <- outcome
+  list(model_ids = model_ids, outcome = outcome)
+}
+
+# Carries the analytic data as attributes so broom methods (tidy,
+# glance) can read them without re-running the pipeline.
+output_default <- function(rendered, aligned) {
+  attr(rendered, "spicy_long") <- aligned$coefs_aligned
+  attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_aligned
+  prov <- .regression_provenance(aligned)
+  attr(rendered, "model_ids") <- prov$model_ids
+  attr(rendered, "outcome") <- prov$outcome
   class(rendered) <- c("spicy_regression_table", "spicy_table", "data.frame")
   rendered
 }
 
 # ---- data.frame: plain wide ----------------------------------------------
 
-output_data_frame <- function(rendered) {
+output_data_frame <- function(rendered, aligned) {
   out <- as.data.frame(rendered, stringsAsFactors = FALSE)
   attr(out, "title") <- attr(rendered, "title")
   attr(out, "note") <- attr(rendered, "note")
+  # Same provenance pair as the default output, so this path and
+  # `as.data.frame()` on the default object return identical objects
+  # (the documented equivalence in ?as.data.frame.spicy_regression_table).
+  prov <- .regression_provenance(aligned)
+  attr(out, "model_ids") <- prov$model_ids
+  attr(out, "outcome") <- prov$outcome
   out
 }
 
 # ---- long: broom-style long format ---------------------------------------
 
-# Returns the aligned long extract with broom-canonical column names.
-# Columns:
+# Returns the aligned long extract with broom-canonical column names,
+# as the long-format tibble (`tbl_df`) documented in the \value
+# section. Columns:
 #   model_id, term, estimate_type, estimate, std.error, conf.low,
 #   conf.high, statistic, df, p.value, test_type, is_singular,
 #   is_intercept, is_reference, factor_term, factor_level
 output_long <- function(aligned) {
   long <- aligned$coefs_aligned
-  if (is.null(long) || nrow(long) == 0L) {
-    return(long)
+  if (is.null(long)) {
+    long <- empty_coefs_aligned()
   }
   # Rename to broom convention
   ren <- c(
@@ -144,7 +158,7 @@ output_long <- function(aligned) {
     }
   }
   long$order_idx <- NULL
-  long
+  maybe_as_tibble(long)
 }
 
 # ---- spanner helpers (shared by rich-output dispatchers) -----------------

@@ -181,7 +181,10 @@ test_that("as.data.frame – strips internal spicy_long / spicy_fit_stats attrs"
   df <- as.data.frame(out)
   expect_null(attr(df, "spicy_long"))
   expect_null(attr(df, "spicy_fit_stats"))
-  expect_null(attr(df, "col_spec"))
+  # `col_spec` is kept: the documented equivalence with
+  # `output = "data.frame"` requires both paths to carry the same
+  # attribute set (rd-methods:asdf-roundtrip-output-dataframe).
+  expect_identical(attr(df, "col_spec"), attr(out, "col_spec"))
 })
 
 test_that("as_tibble – returns tbl_df", {
@@ -480,15 +483,19 @@ test_that("as.data.frame equals output = 'data.frame' cell-for-cell", {
 })
 
 test_that("as.data.frame and output = 'data.frame' are attribute-identical", {
-  # FIXME matrix: rd-methods:asdf-roundtrip-output-dataframe –
-  # man/as.data.frame.spicy_regression_table.Rd (Details) says the two
-  # paths are equivalent, but identical() fails on the housekeeping
-  # attributes: as.data.frame() keeps `model_ids` / `outcome` and nulls
-  # `col_spec`, while output = "data.frame" keeps `col_spec` and never
-  # carries the provenance pair. Cells, classes, title and note DO
-  # match (pinned above). Doc-vs-code discordance recorded in the
-  # Phase 3 audit.
-  skip(
-    "rd-methods:asdf-roundtrip-output-dataframe – attribute sets diverge (col_spec vs model_ids/outcome)"
-  )
+  # rd-methods:asdf-roundtrip-output-dataframe (strict half): the Rd
+  # Details say the two paths are equivalent -- identical objects,
+  # attributes included. Both carry the provenance pair
+  # (model_ids / outcome) and the rendering attributes (col_spec,
+  # structured, ...); neither carries spicy_long / spicy_fit_stats.
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  d1 <- as.data.frame(table_regression(fit))
+  d2 <- table_regression(fit, output = "data.frame")
+  expect_identical(d1, d2)
+  # Multi-model path too (provenance pair has one entry per model).
+  fit2 <- lm(mpg ~ wt + hp, data = mt)
+  e1 <- as.data.frame(table_regression(list(A = fit, B = fit2)))
+  e2 <- table_regression(list(A = fit, B = fit2), output = "data.frame")
+  expect_identical(e1, e2)
+  expect_identical(attr(e1, "model_ids"), c("A", "B"))
 })

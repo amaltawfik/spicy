@@ -16,8 +16,7 @@
 \code{\link[broom:tidy]{broom::tidy()}} / \code{\link[broom:glance]{broom::glance()}} generics.}
 }
 \value{
-A \code{tbl_df} (when \code{tibble} is installed) or a plain
-\code{data.frame}.
+A \code{tbl_df}.
 }
 \description{
 Standard \code{\link[broom:tidy]{broom::tidy()}} and \code{\link[broom:glance]{broom::glance()}} interfaces for an

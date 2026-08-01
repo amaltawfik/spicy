@@ -26,7 +26,11 @@ compute_canonical_term_order_from_frames <- function(frames) {
 #        ci_low           <- ci_lower
 #        ci_high          <- ci_upper
 #        is_reference     <- is_ref
-#        is_intercept     <- derived: term == "(Intercept)"
+#        is_intercept     <- cf$is_intercept when the frame carries it
+#                            (univariable-screen blocks tag their own
+#                            fit's intercept under a per-block unique
+#                            term); derived term == "(Intercept)"
+#                            otherwise
 #        is_singular      <- derived: term %in% info$extras$singular_terms
 #        factor_term      <- NA when parent_var == term, else parent_var
 #        factor_level     <- NA when label      == term, else label
@@ -110,7 +114,11 @@ align_frames <- function(
         events = events_col,
         events_n = events_n_col,
         is_singular = cf$term %in% singular_terms,
-        is_intercept = cf$term == "(Intercept)",
+        is_intercept = if (!is.null(cf$is_intercept)) {
+          as.logical(cf$is_intercept)
+        } else {
+          cf$term == "(Intercept)"
+        },
         is_reference = cf$is_ref,
         factor_term = ifelse(
           cf$parent_var == cf$term,
@@ -190,8 +198,14 @@ align_frames <- function(
   term_order <- compute_canonical_term_order_from_frames(frames)
 
   if (!isTRUE(show_intercept)) {
-    term_order <- term_order[term_order != "(Intercept)"]
-    coefs_long <- coefs_long[coefs_long$term != "(Intercept)", , drop = FALSE]
+    # Filter on is_intercept, not the literal "(Intercept)" term: the
+    # univariable-screen blocks carry their own fits' intercepts under
+    # per-block unique terms ("<pred>: (Intercept)"), tagged by the
+    # frame's own is_intercept column. Component-block intercepts
+    # (zero-inflation / dispersion) are NOT tagged and stay.
+    intercept_terms <- unique(coefs_long$term[coefs_long$is_intercept])
+    term_order <- setdiff(term_order, intercept_terms)
+    coefs_long <- coefs_long[!coefs_long$is_intercept, , drop = FALSE]
   } else if (
     identical(intercept_position, "last") &&
       "(Intercept)" %in% term_order
