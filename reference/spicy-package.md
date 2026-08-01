@@ -185,6 +185,10 @@ parent class plus a leaf class describing the specific cause:
     [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
     fits to a binary outcome under the default `method`).
 
+  - `spicy_passthrough` – a third-party warning captured during an
+    operation (e.g., the clipboard copy) and re-emitted under the spicy
+    taxonomy.
+
   - `spicy_summary_failed` –
     [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
     could not summarise one column; the rest of the table is fine.

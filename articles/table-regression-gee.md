@@ -219,16 +219,16 @@ table_regression(
 #> Model 3: GEE working correlation: ar1 (alpha = 0.94).
 ```
 
-The division of labour between the two criteria is Pan’s (2001): pick
-the working correlation by the smallest **QIC**; use **QICu** only for
+The division of labor between the two criteria is Pan’s (2001): pick the
+working correlation by the smallest **QIC**; use **QICu** only for
 comparing *mean models* (covariate sets) under a fixed structure – it
 cannot select the correlation. Read the rule against the table honestly:
 here QIC rejects AR(1) decisively but scores independence and
 exchangeable a tenth of a point apart – a meaningless margin. A near-tie
 means the data cannot distinguish the structures, and the choice falls
-back on substantive grounds (repeated weighings of the same pig are
-exchangeable-shaped); the rule earns its keep on the decisions it *can*
-make, like ruling out AR(1) here. The stake is efficiency, not
+back on substantive grounds (repeated weight measurements of the same
+pig are exchangeable-shaped); the rule earns its keep on the decisions
+it *can* make, like ruling out AR(1) here. The stake is efficiency, not
 consistency: all three columns estimate the same population quantity and
 converge to it under any structure, but in a finite sample the weighting
 differs – compare the `Cu` rows under AR(1) with the other two columns –
@@ -313,7 +313,7 @@ table_regression(fit_sorted, show_fit_stats = c("nobs", "n_groups", "max_cluster
 The sandwich estimator is asymptotic in the number of clusters: with few
 clusters it is biased *downward* – the nominal standard errors are too
 small, and the estimator itself becomes unstable (Fitzmaurice et al.,
-2011). At \\K \le 30\\ (the threshold the geepack authors cite,
+2011). At 30 clusters or fewer (the threshold the geepack authors cite,
 following Paik, 1988) the jackknife variance estimators are the
 recommended alternative (Halekoh et al., 2006). `geeglm` offers three
 (`std.err = "jack"`, `"j1s"`, `"fij"`); the approximate and one-step
@@ -512,7 +512,7 @@ table_regression(
 | Max cluster size |   4      |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-3a1a03a2 quarto-disable-processing="true"}
+.cl-52835a4c quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:
