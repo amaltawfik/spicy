@@ -606,32 +606,56 @@ test_that("table_continuous_lm reports ignored non-numeric outcomes in verbose m
 })
 
 test_that("table_continuous_lm helper functions cover empty-model cases", {
-  num_empty <- spicy:::fit_numeric_predictor_lm_rows(
-    y = c(1, 2),
-    x = c(1, 1),
-    weights = NULL,
-    outcome_name = "y",
-    outcome_label = "Y",
-    predictor_label = "X",
-    vcov_type = "classical",
-    ci_level = 0.95
+  expect_warning(
+    num_empty <- spicy:::fit_numeric_predictor_lm_rows(
+      y = c(1, 2),
+      x = c(1, 1),
+      weights = NULL,
+      outcome_name = "y",
+      outcome_label = "Y",
+      predictor_label = "X",
+      vcov_type = "classical",
+      ci_level = 0.95
+    ),
+    class = "spicy_undefined_stat"
   )
-  cat_empty <- spicy:::fit_categorical_predictor_lm_rows(
-    y = c(1, 2),
-    x = factor(c("A", "A")),
-    weights = NULL,
-    outcome_name = "y",
-    outcome_label = "Y",
-    predictor_label = "G",
-    vcov_type = "classical",
-    contrast = "auto",
-    ci_level = 0.95
+  expect_warning(
+    cat_empty <- spicy:::fit_categorical_predictor_lm_rows(
+      y = c(1, 2),
+      x = factor(c("A", "A")),
+      weights = NULL,
+      outcome_name = "y",
+      outcome_label = "Y",
+      predictor_label = "G",
+      vcov_type = "classical",
+      contrast = "auto",
+      ci_level = 0.95
+    ),
+    class = "spicy_undefined_stat"
+  )
+  # Zero observations: the level template falls back to one NA row.
+  expect_warning(
+    cat_zero <- spicy:::fit_categorical_predictor_lm_rows(
+      y = numeric(0),
+      x = factor(character(0)),
+      weights = NULL,
+      outcome_name = "y",
+      outcome_label = "Y",
+      predictor_label = "G",
+      vcov_type = "classical",
+      contrast = "auto",
+      ci_level = 0.95
+    ),
+    class = "spicy_undefined_stat"
   )
 
   expect_true(all(is.na(num_empty$estimate)))
   expect_equal(num_empty$predictor_type, "continuous")
   expect_true(all(is.na(cat_empty$emmean)))
   expect_equal(cat_empty$predictor_type, "categorical")
+  expect_identical(cat_empty$level, "A")
+  expect_identical(nrow(cat_zero), 1L)
+  expect_true(is.na(cat_zero$level))
 })
 
 test_that("table_continuous_lm helper functions handle coercion and weights detection", {
@@ -1400,11 +1424,14 @@ test_that("degenerate models still preserve the predictor label", {
   )
   attr(df$g, "label") <- "Group label"
 
-  out <- table_continuous_lm(
-    df,
-    select = c(y_ok, y_bad),
-    by = g,
-    output = "long"
+  expect_warning(
+    out <- table_continuous_lm(
+      df,
+      select = c(y_ok, y_bad),
+      by = g,
+      output = "long"
+    ),
+    class = "spicy_undefined_stat"
   )
 
   expect_true(all(out$predictor_label == "Group label"))
@@ -3403,12 +3430,15 @@ test_that("table_continuous_lm renders empty cells when n / weighted_n are NA", 
     y_short = c(1, NA, NA, NA, NA, NA),
     g = factor(rep(c("a", "b"), 3))
   )
-  out <- table_continuous_lm(
-    df,
-    select = y_short,
-    by = g,
-    output = "data.frame",
-    show_weighted_n = FALSE
+  expect_warning(
+    out <- table_continuous_lm(
+      df,
+      select = y_short,
+      by = g,
+      output = "data.frame",
+      show_weighted_n = FALSE
+    ),
+    class = "spicy_undefined_stat"
   )
   expect_s3_class(out, "data.frame")
   # n column for empty row is "" rather than a number
@@ -3421,13 +3451,16 @@ test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighte
     g = factor(rep(c("a", "b"), 3)),
     w = c(1, 1, 1, 1, 1, 1)
   )
-  out <- table_continuous_lm(
-    df,
-    select = y_short,
-    by = g,
-    weights = w,
-    output = "data.frame",
-    show_weighted_n = TRUE
+  expect_warning(
+    out <- table_continuous_lm(
+      df,
+      select = y_short,
+      by = g,
+      weights = w,
+      output = "data.frame",
+      show_weighted_n = TRUE
+    ),
+    class = "spicy_undefined_stat"
   )
   expect_s3_class(out, "data.frame")
   expect_true("Weighted n" %in% names(out))
@@ -4309,6 +4342,100 @@ test_that("a single-level by raises a classed, actionable error", {
     ),
     class = "spicy_invalid_data"
   )
+})
+
+test_that("global options(contrasts=) does not alter categorical-by results", {
+  # Audit phase 2 delta, R1/R10: afex-style sessions set
+  # options(contrasts = c("contr.sum", "contr.poly")), which used to
+  # rename the lm() dummies ("x1" instead of "xb") and abort a binary
+  # `by` with a misleading internal-invariant error. The fit now pins
+  # explicit treatment contrasts on the focal factor.
+  d2 <- data.frame(
+    y = c(1, 2, 3, 10, 11, 12),
+    g = factor(rep(c("a", "b"), each = 3))
+  )
+  d3 <- data.frame(
+    y = c(1, 2, 3, 10, 11, 12, 20, 21, 22),
+    g = factor(rep(c("a", "b", "c"), each = 3))
+  )
+  withr::with_options(
+    list(contrasts = c("contr.sum", "contr.poly")),
+    {
+      out2 <- table_continuous_lm(d2, select = y, by = g, output = "long")
+      out3 <- table_continuous_lm(d3, select = y, by = g, output = "long")
+    }
+  )
+  expect_equal(
+    out2$emmean,
+    as.vector(tapply(d2$y, d2$g, mean)),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    out2$estimate[2],
+    as.vector(diff(tapply(d2$y, d2$g, mean))),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    out3$emmean,
+    as.vector(tapply(d3$y, d3$g, mean)),
+    tolerance = 1e-12
+  )
+})
+
+test_that("an outcome left with one observed group degrades loudly", {
+  # Audit phase 2 delta, R4: per-outcome complete-case filtering that
+  # leaves a single observed group used to emit a silent all-NA row
+  # whose `level = NA` grew a spurious `M (NA)` column in the wide
+  # header of ALL outcomes.
+  d <- data.frame(
+    y1 = 1:5,
+    y2 = c(1, 2, 3, NA, NA),
+    g = factor(c("a", "a", "a", "b", "b"))
+  )
+  expect_warning(
+    out <- table_continuous_lm(d, select = c(y1, y2), by = g, output = "long"),
+    regexp = "y2",
+    class = "spicy_undefined_stat"
+  )
+  y2_rows <- out[out$variable == "y2", ]
+  expect_identical(y2_rows$level, c("a", "b"))
+  expect_true(all(is.na(y2_rows$emmean)))
+  expect_true(all(is.na(y2_rows$n)))
+  expect_false(anyNA(out$level))
+  expect_equal(out$emmean[out$variable == "y1"], c(2, 4.5))
+  wide <- suppressWarnings(
+    table_continuous_lm(d, select = c(y1, y2), by = g, output = "data.frame")
+  )
+  expect_true(all(c("M (a)", "M (b)") %in% names(wide)))
+  expect_false("M (NA)" %in% names(wide))
+})
+
+test_that("a degenerate numeric by degrades loudly per outcome", {
+  # Companion to the categorical branch of R4: a slope needs variance
+  # in `by` and at least two complete observations.
+  d <- data.frame(y = c(1.2, 3.4, 2.8, 4.1), x = rep(2, 4))
+  expect_warning(
+    out <- table_continuous_lm(d, select = y, by = x, output = "long"),
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(out$estimate)))
+  d2 <- data.frame(
+    y1 = c(1.2, 3.4, 2.8, 4.1),
+    y2 = c(1.5, NA, NA, NA),
+    x = c(1, 2, 3, 4)
+  )
+  expect_warning(
+    out2 <- table_continuous_lm(
+      d2,
+      select = c(y1, y2),
+      by = x,
+      output = "long"
+    ),
+    regexp = "y2",
+    class = "spicy_undefined_stat"
+  )
+  expect_true(is.na(out2$estimate[out2$variable == "y2"]))
+  expect_false(is.na(out2$estimate[out2$variable == "y1"]))
 })
 
 test_that("a saturated fit reports NA inference with a classed warning", {

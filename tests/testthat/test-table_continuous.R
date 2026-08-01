@@ -1023,6 +1023,27 @@ test_that("drop_na = FALSE guards against a real (Missing) group value", {
   expect_equal(unique(out$group), c("(Missing)", "B", "(Missing_1)"))
 })
 
+test_that("drop_na = FALSE guards against a declared-only (Missing) level", {
+  # Audit phase 2 delta (sibling of R2/R3/R8): the collision guard
+  # scanned only observed values, so a factor `by` DECLARING an
+  # unobserved "(Missing)" level plus real NAs used to display the
+  # missing-`by` group twice under the same duplicated label.
+  df <- data.frame(
+    y = c(1, 2, 3, 4, 5, 6),
+    g = factor(c("u", "u", "v", "v", NA, NA), levels = c("u", "v", "(Missing)"))
+  )
+  out <- table_continuous(
+    df,
+    select = "y",
+    by = "g",
+    drop_na = FALSE,
+    output = "data.frame"
+  )
+  expect_equal(unique(out$group), c("u", "v", "(Missing)", "(Missing_1)"))
+  expect_identical(out$n[out$group == "(Missing)"], 0L)
+  expect_identical(out$n[out$group == "(Missing_1)"], 2L)
+})
+
 test_that("drop_na = FALSE without by warns spicy_ignored_arg", {
   df <- data.frame(x = c(1:4, NA))
   expect_warning(
@@ -3046,4 +3067,31 @@ test_that("an undefined effect size degrades to NA with a classed warning", {
   expect_true(length(warns) >= 1L)
   expect_true(all(is.na(out$es_value)))
   expect_false(any(is.infinite(out$es_value)))
+})
+
+test_that("a NaN effect size is blanked with a classed warning", {
+  # Audit phase 2 delta, R9: is.na(NaN) is TRUE, so the NA-first
+  # non-finite guard used to let a 0/0 Hedges' g (equal group means
+  # with zero pooled SD) reach the long output as NaN, unannounced.
+  d <- data.frame(cst = rep(5, 8), g = factor(rep(c("m", "f"), each = 4)))
+  msgs <- character(0)
+  out <- withCallingHandlers(
+    table_continuous(
+      d,
+      select = cst,
+      by = g,
+      effect_size = "hedges_g",
+      p_value = FALSE,
+      output = "long"
+    ),
+    spicy_undefined_stat = function(w) {
+      msgs <<- c(msgs, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_true(any(grepl("effect size", msgs)))
+  expect_false(any(is.nan(out$es_value)))
+  expect_true(all(is.na(out$es_value)))
+  expect_false(any(is.nan(out$es_ci_lower)))
+  expect_false(any(is.nan(out$es_ci_upper)))
 })

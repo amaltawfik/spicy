@@ -309,10 +309,12 @@ packages per output engine are documented under \verb{@param align},
 
 Counts are displayed as integers: weighted counts are rounded
 (ties half to even, the R convention) at display time only, in
-cells and margins alike -- the SPSS Crosstabs convention -- so
-displayed cells and their \code{Total} agree. The machine outputs
-(\code{"data.frame"}, \code{"long"}) carry the exact weighted counts and
-full-precision percentages.
+cells and margins alike -- the SPSS Crosstabs convention. Cells
+and margins are rounded independently, so small display
+discrepancies are possible (e.g. two cells of exactly 0.5 each
+display as \code{0} while their \code{Total} of 1.0 displays as \code{1}). The
+machine outputs (\code{"data.frame"}, \code{"long"}) carry the exact
+weighted counts and full-precision percentages.
 }
 
 \section{Declared missing values}{

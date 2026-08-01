@@ -74,11 +74,14 @@ as an explicit factor with the desired level ordering (e.g. via
 that order, since \code{FALSE < TRUE}). The reference level is \code{"FALSE"},
 so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
 \item \strong{haven labelled with value labels} (an SPSS / Stata import):
-treated as categorical over the raw codes, in ascending code order
--- the same grouping \code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_categorical]{table_categorical()}}
-apply to the same column. A labelled vector without value labels is
-treated as a continuous regressor. Declared missing values follow
-\code{user_na} as usual.
+treated as categorical over the raw codes, in ascending code
+order (the reference level is the lowest code; the model needs
+a fixed level order). \code{\link[=table_continuous]{table_continuous()}} and
+\code{\link[=table_categorical]{table_categorical()}} form the same groups from such a column
+but display them in order of first appearance in the data, so
+the group ORDER can differ between the sibling tables. A
+labelled vector without value labels is treated as a continuous
+regressor. Declared missing values follow \code{user_na} as usual.
 }
 
 Rows with \code{NA} in \code{by} are excluded from the analytic sample for each

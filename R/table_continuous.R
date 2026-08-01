@@ -860,8 +860,14 @@ table_continuous <- function(
     if (!drop_na && n_na_groups > 0L) {
       # Display label for the missing-`by` group, guarded against a
       # collision with a real group value (mirrors table_categorical()).
+      # The scan covers DECLARED factor levels as well as observed
+      # values: a declared-but-unobserved level literally named
+      # "(Missing)" would otherwise duplicate the group.
       missing_label <- "(Missing)"
-      g_values <- unique(as.character(groups[!is.na(groups)]))
+      g_values <- unique(c(
+        as.character(groups[!is.na(groups)]),
+        as.character(group_levels)
+      ))
       idx_lab <- 1L
       while (missing_label %in% g_values) {
         missing_label <- paste0("(Missing_", idx_lab, ")")
@@ -976,7 +982,15 @@ table_continuous <- function(
                 es_row
               }
             )
-            if (!is.na(es_row$es_value) && !is.finite(es_row$es_value)) {
+            # `is.na(NaN)` is TRUE, so an NA-first guard would let a
+            # 0/0 NaN (equal group means with zero pooled SD) slip
+            # into the machine outputs unblanked and unannounced;
+            # test NaN explicitly alongside the +/-Inf case. A plain
+            # NA (effect size absent or already degraded above) stays
+            # silent.
+            undefined_es <- is.nan(es_row$es_value) ||
+              (!is.na(es_row$es_value) && !is.finite(es_row$es_value))
+            if (undefined_es) {
               spicy_warn(
                 sprintf(
                   "The %s effect size is undefined for `%s` (non-finite value); its cells are NA.",

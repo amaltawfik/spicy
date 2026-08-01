@@ -530,10 +530,12 @@
 #'
 #' Counts are displayed as integers: weighted counts are rounded
 #' (ties half to even, the R convention) at display time only, in
-#' cells and margins alike -- the SPSS Crosstabs convention -- so
-#' displayed cells and their `Total` agree. The machine outputs
-#' (`"data.frame"`, `"long"`) carry the exact weighted counts and
-#' full-precision percentages.
+#' cells and margins alike -- the SPSS Crosstabs convention. Cells
+#' and margins are rounded independently, so small display
+#' discrepancies are possible (e.g. two cells of exactly 0.5 each
+#' display as `0` while their `Total` of 1.0 displays as `1`). The
+#' machine outputs (`"data.frame"`, `"long"`) carry the exact
+#' weighted counts and full-precision percentages.
 #'
 #' @family spicy tables
 #' @seealso [table_continuous()] for empirical comparisons on
@@ -1065,8 +1067,16 @@ table_categorical <- function(
     rescale <- FALSE
   }
 
+  # Scan DECLARED factor levels as well as observed values: a level
+  # literally named "(Missing)" that is declared but never observed
+  # would otherwise slip past the guard, and .add_missing_level()
+  # would then build factor(levels = c(..., "(Missing)", "(Missing)"))
+  # -- a raw "factor level is duplicated" crash.
   all_values <- unique(unlist(
-    lapply(c(select_names, by_name), function(nm) as.character(data[[nm]])),
+    lapply(c(select_names, by_name), function(nm) {
+      col <- data[[nm]]
+      c(as.character(col), levels(col))
+    }),
     use.names = FALSE
   ))
   missing_label <- "(Missing)"
@@ -1174,10 +1184,12 @@ table_categorical <- function(
   }
 
   # Counts DISPLAY as integers -- weighted counts included (rounded
-  # ties half to even, matching round()), in cells and margins alike,
-  # so displayed cells and their Total agree: the SPSS Crosstabs
-  # convention. The machine outputs keep the exact fractional counts;
-  # rounding happens here, at display time only.
+  # ties half to even, matching round()), in cells and margins alike:
+  # the SPSS Crosstabs convention. Cells and margins are rounded
+  # independently, so a displayed Total may differ slightly from the
+  # sum of the displayed cells (SPSS behaves the same way). The
+  # machine outputs keep the exact fractional counts; rounding
+  # happens here, at display time only.
   fmt_n <- function(x, na = "") {
     out <- rep(na, length(x))
     ok <- !is.na(x)
@@ -2077,10 +2089,15 @@ table_categorical <- function(
       for (gr in groups_use) {
         # The margin is read positionally (last column): its name may
         # have been auto-renamed by cross_tab() when a `by` level is
-        # literally called "Total".
+        # literally called "Total". User groups are looked up by name
+        # among the INTERIOR columns only (`groups_present`): cross_tab
+        # renames its margin on an OBSERVED collision, so a
+        # declared-but-unobserved level named "Total" leaves the margin
+        # column literally called "Total" -- a whole-table name lookup
+        # would hand the margin counts to that zero-observation group.
         n_val <- if (identical(gr, margin_key)) {
           ct_n[in_n, ncol(ct_n)]
-        } else if (gr %in% names(ct_n)) {
+        } else if (gr %in% groups_present) {
           ct_n[in_n, gr]
         } else {
           # Declared-but-unobserved group: zero count, zero percent.
@@ -2088,7 +2105,7 @@ table_categorical <- function(
         }
         pct_val <- if (identical(gr, margin_key)) {
           ct_pct[in_p, ncol(ct_pct)]
-        } else if (gr %in% names(ct_pct)) {
+        } else if (gr %in% groups_present) {
           ct_pct[in_p, gr]
         } else {
           0

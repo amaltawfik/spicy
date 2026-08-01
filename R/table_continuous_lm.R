@@ -52,11 +52,14 @@
 #'     that order, since `FALSE < TRUE`). The reference level is `"FALSE"`,
 #'     so a binary contrast displays as `Delta (TRUE - FALSE)`.
 #'   - **haven labelled with value labels** (an SPSS / Stata import):
-#'     treated as categorical over the raw codes, in ascending code order
-#'     -- the same grouping [table_continuous()] and [table_categorical()]
-#'     apply to the same column. A labelled vector without value labels is
-#'     treated as a continuous regressor. Declared missing values follow
-#'     `user_na` as usual.
+#'     treated as categorical over the raw codes, in ascending code
+#'     order (the reference level is the lowest code; the model needs
+#'     a fixed level order). [table_continuous()] and
+#'     [table_categorical()] form the same groups from such a column
+#'     but display them in order of first appearance in the data, so
+#'     the group ORDER can differ between the sibling tables. A
+#'     labelled vector without value labels is treated as a continuous
+#'     regressor. Declared missing values follow `user_na` as usual.
 #'
 #'   Rows with `NA` in `by` are excluded from the analytic sample for each
 #'   outcome (NAs in `y` and `weights` are also excluded; see Details).
@@ -1166,12 +1169,16 @@ table_continuous_lm <- function(
   # A haven labelled vector with value labels is the categorical
   # signal of an SPSS / Stata import, and the sibling tables
   # (table_continuous(), table_categorical()) already group by such
-  # columns. Convert it to a factor over the raw codes (ascending
-  # order -- the family convention) so it takes the categorical path
-  # instead of silently fitting a slope on the codes. A labelled
-  # vector without value labels stays continuous. `resolve_user_na()`
-  # has already applied the `user_na` contract, so declared-missing
-  # codes are NA (default) or ordinary values (user_na = FALSE) here.
+  # columns. Convert it to a factor over the raw codes so it takes
+  # the categorical path instead of silently fitting a slope on the
+  # codes. Levels are in ascending CODE order (factor() default; the
+  # model needs a fixed order and the lowest code is the natural
+  # reference), whereas the sibling tables display the same groups in
+  # order of first appearance -- same grouping, potentially different
+  # display order. A labelled vector without value labels stays
+  # continuous. `resolve_user_na()` has already applied the `user_na`
+  # contract, so declared-missing codes are NA (default) or ordinary
+  # values (user_na = FALSE) here.
   if (
     inherits(by_vector, "haven_labelled") &&
       length(attr(by_vector, "labels", exact = TRUE)) > 0L
@@ -1608,6 +1615,16 @@ fit_outcome_lm_rows <- function(
   adjustment = c("proportional", "balanced")
 ) {
   adjustment <- match.arg(adjustment)
+  # Level template for a categorical predictor, captured BEFORE the
+  # per-outcome complete-case filtering: when filtering leaves fewer
+  # than two observed groups for one outcome, its all-NA rows reuse
+  # these levels so the wide `M (<level>)` header matches the other
+  # outcomes (no spurious `M (NA)` column).
+  by_levels <- if (is.numeric(predictor)) {
+    NULL
+  } else {
+    levels(droplevels(coerce_lm_factor(predictor)))
+  }
   keep <- !is.na(y) & !is.na(predictor)
   if (!is.null(weights)) {
     keep <- keep & !is.na(weights)
@@ -1675,7 +1692,8 @@ fit_outcome_lm_rows <- function(
     ci_level = ci_level,
     effect_size = effect_size,
     boot_n = boot_n,
-    adjustment = adjustment
+    adjustment = adjustment,
+    by_levels = by_levels
   )
 }
 
@@ -1751,6 +1769,25 @@ fit_numeric_predictor_lm_rows <- function(
   boot_n = 1000L
 ) {
   if (length(y) < 2L || stats::sd(x, na.rm = TRUE) == 0) {
+    # Per-outcome degradation (mirrors the categorical branch): a
+    # slope cannot be estimated for THIS outcome, so return an all-NA
+    # row with a classed warning naming the outcome instead of a
+    # silent blank line (audit phase 2, finding 32).
+    spicy_warn(
+      c(
+        sprintf(
+          "The model for `%s` could not be fit: %s after removing incomplete rows; its cells are NA.",
+          outcome_name,
+          if (length(y) < 2L) {
+            "fewer than two complete observations remain"
+          } else {
+            "`by` is constant on the remaining observations"
+          }
+        ),
+        "i" = "Rows with missing values in the outcome, `by`, `weights`, `cluster`, or covariates are excluded per outcome."
+      ),
+      class = "spicy_undefined_stat"
+    )
     return(make_empty_lm_rows(
       outcome_name,
       outcome_label,
@@ -1861,7 +1898,8 @@ fit_categorical_predictor_lm_rows <- function(
   ci_level,
   effect_size = "none",
   boot_n = 1000L,
-  adjustment = c("proportional", "balanced")
+  adjustment = c("proportional", "balanced"),
+  by_levels = NULL
 ) {
   adjustment <- match.arg(adjustment)
   x <- droplevels(coerce_lm_factor(x))
@@ -1879,11 +1917,36 @@ fit_categorical_predictor_lm_rows <- function(
     x <- factor(x, levels = levels(x), ordered = FALSE)
   }
   if (length(y) < 2L || nlevels(x) < 2L) {
+    # Per-outcome degradation: table_continuous_lm() already rejects a
+    # `by` with fewer than two observed levels overall, so reaching
+    # this branch means THIS outcome's complete-case filtering (NA in
+    # y, weights, cluster, or covariates) removed every observation of
+    # all but (at most) one group. Degrade loudly -- a classed warning
+    # naming the outcome -- and return all-NA rows keyed to the
+    # regular `by` levels so the wide header stays clean (audit phase
+    # 2, finding 32).
+    spicy_warn(
+      c(
+        sprintf(
+          "The model for `%s` could not be fit: %d observed non-missing group%s left after removing incomplete rows, and a group comparison needs at least two; its cells are NA.",
+          outcome_name,
+          nlevels(x),
+          if (nlevels(x) == 1L) " is" else "s are"
+        ),
+        "i" = "Rows with missing values in the outcome, `by`, `weights`, `cluster`, or covariates are excluded per outcome."
+      ),
+      class = "spicy_undefined_stat"
+    )
+    empty_levels <- by_levels %||% levels(x)
+    if (length(empty_levels) == 0L) {
+      empty_levels <- NA_character_
+    }
     return(make_empty_lm_rows(
       outcome_name,
       outcome_label,
       "categorical",
-      predictor_label = predictor_label
+      predictor_label = predictor_label,
+      levels = empty_levels
     ))
   }
 
@@ -1900,10 +1963,31 @@ fit_categorical_predictor_lm_rows <- function(
   }
   formula <- stats::reformulate(rhs_terms, response = "y")
 
+  # Pin the focal factor to EXPLICIT treatment contrasts. lm() takes
+  # the coding of an unordered factor from the session-wide
+  # `options(contrasts = )`, so an afex-style session
+  # (`options(contrasts = c("contr.sum", "contr.poly"))`) would
+  # silently fit sum-coded dummies named "x1", "x2", ... -- breaking
+  # the by-name coefficient lookup below and the documented
+  # treatment-contrast convention (reference = first level). The
+  # local `contrasts` argument guarantees dummies named "x<level>"
+  # whatever the session options are. Covariate factors keep the
+  # session coding: the reported quantities (emmeans, focal Wald F,
+  # R^2) are invariant to covariate coding, and the prediction grids
+  # reuse `fit$contrasts` so design and coefficients always agree.
   fit <- if (is.null(weights)) {
-    stats::lm(formula, data = model_df)
+    stats::lm(
+      formula,
+      data = model_df,
+      contrasts = list(x = "contr.treatment")
+    )
   } else {
-    stats::lm(formula, data = model_df, weights = weights)
+    stats::lm(
+      formula,
+      data = model_df,
+      weights = weights,
+      contrasts = list(x = "contr.treatment")
+    )
   }
 
   vc <- compute_model_vcov(
@@ -2061,9 +2145,12 @@ fit_categorical_predictor_lm_rows <- function(
     for (i in seq_len(nlevels(x) - 1L)) {
       coef_idx <- match(paste0("x", levs[i + 1L]), names(cf))
       if (is.na(coef_idx)) {
-        # nocov start: defensive. `x` is an unordered factor by
-        # construction above, so the fit always names its dummies
-        # "x<level>" under treatment coding.
+        # nocov start: defensive. The fit is constructed with an
+        # explicit `contrasts = list(x = "contr.treatment")` above,
+        # so its dummies are named "x<level>" regardless of the
+        # session's global `options(contrasts = )` (being an
+        # unordered factor alone would NOT suffice: lm() reads the
+        # global option for unordered factors too).
         spicy_abort(
           c(
             sprintf(
@@ -2101,19 +2188,26 @@ fit_categorical_predictor_lm_rows <- function(
   degrade_saturated_lm_rows(out, fit, outcome_name)
 }
 
+# `levels`: the display levels of a categorical `by` (one all-NA row
+# per level). They keep the degenerate outcome's rows aligned with the
+# `M (<level>)` columns the other outcomes render -- a single
+# `level = NA` row would grow a spurious `M (NA)` column in the wide
+# header. The default single NA row is for continuous predictors,
+# whose wide layout has no per-level columns.
 make_empty_lm_rows <- function(
   outcome_name,
   outcome_label,
   predictor_type,
-  predictor_label = NA_character_
+  predictor_label = NA_character_,
+  levels = NA_character_
 ) {
   data.frame(
     variable = outcome_name,
     label = outcome_label,
     predictor_type = predictor_type,
     predictor_label = predictor_label,
-    level = NA_character_,
-    reference = NA_character_,
+    level = as.character(levels),
+    reference = if (anyNA(levels)) NA_character_ else levels[[1L]],
     estimate_type = NA_character_,
     emmean = NA_real_,
     emmean_se = NA_real_,

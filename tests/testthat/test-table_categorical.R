@@ -188,6 +188,39 @@ test_that("table_categorical renames generated missing labels when needed", {
   expect_true("(Missing_1)" %in% out$level)
 })
 
+test_that("a declared-but-unobserved '(Missing)' level does not crash", {
+  # Audit phase 2 delta, R2/R3/R8: the collision guard scanned only
+  # observed values, so a factor DECLARING a "(Missing)" level with no
+  # observations plus a real NA used to kill the whole table with a
+  # raw "factor level [4] is duplicated" error.
+  dx <- data.frame(
+    x = factor(c("A", "B", NA), levels = c("A", "B", "(Missing)"))
+  )
+  lg <- table_categorical(dx, select = x, output = "long")
+  expect_identical(lg$level, c("A", "B", "(Missing_1)"))
+  expect_identical(lg$n[lg$level == "(Missing_1)"], 1)
+  lg2 <- table_categorical(dx, select = x, drop_na = TRUE, output = "long")
+  expect_identical(lg2$level, c("A", "B"))
+
+  # Same declaration on the `by` side.
+  db <- data.frame(
+    x = factor(c("A", "B", "A", "B")),
+    g = factor(c("u", "v", NA, "u"), levels = c("u", "v", "(Missing)"))
+  )
+  lgb <- table_categorical(db, select = x, by = g, output = "long")
+  expect_identical(lgb$n[lgb$level == "A" & lgb$group == "(Missing_1)"], 1)
+  # The declared-but-unobserved "(Missing)" level stays a zero group.
+  expect_identical(lgb$n[lgb$level == "A" & lgb$group == "(Missing)"], 0)
+  lgb2 <- table_categorical(
+    db,
+    select = x,
+    by = g,
+    drop_na = TRUE,
+    output = "long"
+  )
+  expect_false("(Missing_1)" %in% lgb2$group)
+})
+
 test_that("table_categorical handles one-way empty results after dropping missing", {
   df <- data.frame(v1 = c(NA, NA))
 
@@ -2771,6 +2804,57 @@ test_that("a by-level literally named 'Total' keeps both group and margin", {
   )
   expect_true(all(c("Total n", "Total_1 n") %in% names(wd)))
   expect_identical(wd[["Total_1 n"]], c(3, 2))
+})
+
+test_that("a declared-but-unobserved 'Total' by level keeps a real margin", {
+  # Audit phase 2 delta, R7: cross_tab() renames its margin only on an
+  # OBSERVED collision, so with a declared-only "Total" level the last
+  # column is literally named "Total" and the name-based group read
+  # used to hand the margin counts to the user's zero-observation
+  # group -- the margin appeared twice, once under each key.
+  d1 <- data.frame(
+    x = factor(c("A", "B", "A", "B", "A")),
+    g = factor(c("g1", "g1", "g2", "g2", "g1"), levels = c("g1", "g2", "Total"))
+  )
+  cnds <- list()
+  lg <- withCallingHandlers(
+    table_categorical(d1, select = x, by = g, output = "long"),
+    spicy_renamed_column = function(w) {
+      cnds[[length(cnds) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(cnds, 1L)
+  # The declared-but-unobserved user group is a zero group...
+  expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 0)
+  expect_identical(lg$n[lg$level == "B" & lg$group == "Total"], 0)
+  # ...and the true margin lives under the renamed key only.
+  expect_identical(lg$n[lg$level == "A" & lg$group == "Total_1"], 3)
+  expect_identical(lg$n[lg$level == "B" & lg$group == "Total_1"], 2)
+  wd <- suppressWarnings(
+    table_categorical(d1, select = x, by = g, output = "data.frame")
+  )
+  expect_true(all(c("Total n", "Total_1 n") %in% names(wd)))
+  expect_identical(wd[["Total n"]], c(0, 0))
+  expect_identical(wd[["Total_1 n"]], c(3, 2))
+  # No margin displayed -> no rename to disclose, zero group intact.
+  cnds2 <- list()
+  lg2 <- withCallingHandlers(
+    table_categorical(
+      d1,
+      select = x,
+      by = g,
+      include_total = FALSE,
+      output = "long"
+    ),
+    spicy_renamed_column = function(w) {
+      cnds2[[length(cnds2) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(cnds2, 0L)
+  expect_setequal(unique(lg2$group), c("g1", "g2", "Total"))
+  expect_identical(lg2$n[lg2$level == "A" & lg2$group == "Total"], 0)
 })
 
 test_that("include_total = FALSE keeps a user group named 'Total'", {
