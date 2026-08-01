@@ -216,3 +216,199 @@ test_that("tidy ⇄ raw long: per-coef estimates round-trip", {
     expect_equal(td$std.error[i], raw_row$std.error, tolerance = 1e-12)
   }
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-methods: broom / data.frame method promises
+# ============================================================================
+
+test_that("tidy / glance – extra dots are ignored (broom-generic compat)", {
+  # rd-methods:tidy-glance-dots-ignored
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  expect_identical(
+    broom::tidy(out),
+    broom::tidy(out, conf.int = FALSE, foo = 1)
+  )
+  expect_identical(broom::glance(out), broom::glance(out, bar = 2))
+})
+
+test_that("tidy – exact documented column vector and tbl_df return", {
+  # rd-methods:tidy-column-contract
+  # rd-methods:tidy-glance-return-type (tibble sits in Imports, so the
+  # documented tbl_df branch is the only reachable one)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  td <- broom::tidy(out)
+  expect_identical(
+    names(td),
+    c(
+      "model_id",
+      "outcome",
+      "outcome_level",
+      "term",
+      "estimate_type",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "statistic",
+      "df",
+      "p.value",
+      "test_type",
+      "is_intercept",
+      "factor_term",
+      "factor_level"
+    )
+  )
+  expect_s3_class(td, "tbl_df")
+  expect_s3_class(broom::glance(out), "tbl_df")
+})
+
+test_that("glance – exact documented column vector on a fitted model", {
+  # rd-methods:glance-column-contract (the empty branch is pinned in
+  # test-cov-regression_broom.R; this pins the fitted-model branch)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  gl <- broom::glance(table_regression(fit))
+  expect_identical(
+    names(gl),
+    c(
+      "model_id",
+      "outcome",
+      "nobs",
+      "weighted_nobs",
+      "r.squared",
+      "adj.r.squared",
+      "omega2",
+      "sigma",
+      "rmse",
+      "f2",
+      "AIC",
+      "AICc",
+      "BIC",
+      "deviance",
+      "df.residual"
+    )
+  )
+})
+
+test_that("tidy – a truly aliased coefficient is dropped (no NA estimates)", {
+  # rd-methods:tidy-drops-reference-and-singular (aliased half; the
+  # reference half is pinned in "tidy – drops reference rows" above)
+  mt2 <- mt
+  mt2$wt2 <- mt2$wt * 2
+  fal <- lm(mpg ~ wt + wt2 + cyl, data = mt2)
+  expect_true(anyNA(coef(fal))) # wt2 is aliased by construction
+  td <- broom::tidy(table_regression(fal))
+  expect_false("wt2" %in% td$term)
+  expect_false(any(is.na(td$estimate)))
+})
+
+test_that("tidy – estimate_type stays in the documented domain", {
+  # rd-methods:tidy-estimate-type-domain
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(
+    fit,
+    standardized = "refit",
+    show_columns = c(
+      "b",
+      "beta",
+      "ame",
+      "partial_f2",
+      "partial_eta2",
+      "partial_omega2"
+    )
+  )
+  td <- broom::tidy(out)
+  domain <- c(
+    "B",
+    "beta",
+    "ame",
+    "partial_f2",
+    "partial_eta2",
+    "partial_omega2"
+  )
+  expect_true(all(td$estimate_type %in% domain))
+  # Every documented value is exercised, so the domain check bites.
+  expect_setequal(unique(td$estimate_type), domain)
+})
+
+test_that("tidy – one row per (model_id, term, estimate_type, outcome_level)", {
+  # rd-methods:tidy-row-grain
+  skip_if_not_installed("marginaleffects")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(
+    list(A = m1, B = m2),
+    standardized = "refit",
+    show_columns = c("b", "beta", "ame", "p")
+  )
+  td <- broom::tidy(out)
+  keys <- td[, c("model_id", "term", "estimate_type", "outcome_level")]
+  expect_false(any(duplicated(keys)))
+  expect_gt(nrow(td), 6L)
+})
+
+test_that("as.data.frame – row.names and optional are ignored", {
+  # rd-methods:asdf-rownames-optional-ignored
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  expect_identical(
+    as.data.frame(out),
+    as.data.frame(
+      out,
+      row.names = letters[seq_len(nrow(out))],
+      optional = TRUE
+    )
+  )
+})
+
+test_that("as_tibble – keeps title/note and the data.frame cells", {
+  # rd-methods:asdf-preserves-title-note (as_tibble half)
+  # rd-methods:astibble-returns-tbldf (cell-equality half)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  tb <- tibble::as_tibble(out)
+  expect_s3_class(tb, "tbl_df")
+  expect_identical(attr(tb, "title"), attr(out, "title"))
+  expect_identical(attr(tb, "note"), attr(out, "note"))
+  strip <- function(d) {
+    attributes(d) <- attributes(d)[c("names", "row.names", "class")]
+    class(d) <- "data.frame"
+    d
+  }
+  expect_identical(strip(as.data.frame(tb)), strip(as.data.frame(out)))
+})
+
+test_that("as.data.frame equals output = 'data.frame' cell-for-cell", {
+  # rd-methods:asdf-roundtrip-output-dataframe (content contract; the
+  # strict attribute-identity half is the FIXME below)
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  d1 <- as.data.frame(table_regression(fit))
+  d2 <- table_regression(fit, output = "data.frame")
+  expect_identical(class(d1), "data.frame")
+  expect_identical(class(d2), "data.frame")
+  strip <- function(d) {
+    attributes(d) <- attributes(d)[c("names", "row.names", "class")]
+    class(d) <- "data.frame"
+    d
+  }
+  expect_identical(strip(d1), strip(d2))
+  expect_identical(attr(d1, "title"), attr(d2, "title"))
+  expect_identical(attr(d1, "note"), attr(d2, "note"))
+})
+
+test_that("as.data.frame and output = 'data.frame' are attribute-identical", {
+  # FIXME matrix: rd-methods:asdf-roundtrip-output-dataframe –
+  # man/as.data.frame.spicy_regression_table.Rd (Details) says the two
+  # paths are equivalent, but identical() fails on the housekeeping
+  # attributes: as.data.frame() keeps `model_ids` / `outcome` and nulls
+  # `col_spec`, while output = "data.frame" keeps `col_spec` and never
+  # carries the provenance pair. Cells, classes, title and note DO
+  # match (pinned above). Doc-vs-code discordance recorded in the
+  # Phase 3 audit.
+  skip(
+    "rd-methods:asdf-roundtrip-output-dataframe – attribute sets diverge (col_spec vs model_ids/outcome)"
+  )
+})

@@ -1941,3 +1941,116 @@ test_that("AME extraction honours the fit's weights", {
     tolerance = 1e-8
   )
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-methods / rd-uv-estimands: output contract (lot T3)
+# ============================================================================
+
+test_that("side-effect outputs return the table invisibly", {
+  # rd-methods:output-class-mapping (invisible(x) half; the gt /
+  # flextable / tinytable / data.frame class halves are pinned in the
+  # per-output tests above)
+  fit <- lm(mpg ~ wt, data = mt)
+  skip_if_not_installed("openxlsx2")
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  expect_invisible(table_regression(fit, output = "excel", excel_path = path))
+  expect_true(file.exists(path))
+})
+
+test_that("output = 'word' returns the table invisibly", {
+  # rd-methods:output-class-mapping (invisible(x), word engine)
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  fit <- lm(mpg ~ wt, data = mt)
+  path <- tempfile(fileext = ".docx")
+  on.exit(unlink(path), add = TRUE)
+  expect_invisible(table_regression(fit, output = "word", word_path = path))
+  expect_true(file.exists(path))
+})
+
+test_that("output = 'long' returns the documented tbl_df", {
+  # FIXME matrix: rd-methods:output-class-mapping –
+  # man/table_regression.Rd \value (and the `output` argument docs)
+  # promise a long-format tibble (`tbl_df`) for output = "long", but
+  # output_long() returns the aligned long extract as a plain
+  # data.frame (class "data.frame" only). Doc-vs-code discordance
+  # recorded in the Phase 3 audit.
+  skip(
+    "rd-methods:output-class-mapping – output = 'long' returns a plain data.frame, not a tbl_df"
+  )
+})
+
+test_that("output = 'flextable' carries the spicy_flextable tag", {
+  # rd-methods:flextable-output-tagged-class (table_regression half;
+  # the table_continuous_lm half is pinned in test-tclm_notes.R)
+  skip_if_not_installed("flextable")
+  fit <- lm(mpg ~ wt, data = mt)
+  ft <- table_regression(fit, output = "flextable")
+  expect_identical(class(ft), c("spicy_flextable", "flextable"))
+})
+
+test_that("console shows bare deduped labels; data.frame keeps unique names", {
+  # rd-methods:print-header-display-labels-deduped
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt + hp, data = mt)
+  out <- table_regression(
+    fit,
+    show_columns = c("b", "ci", "p", "ame", "ame_ci", "ame_p")
+  )
+  con <- paste(capture.output(print(out)), collapse = "\n")
+  expect_false(grepl("CI.2", con, fixed = TRUE))
+  expect_false(grepl("p.2", con, fixed = TRUE))
+  nms <- names(as.data.frame(out, stringsAsFactors = FALSE))
+  expect_true("95% CI.2" %in% nms)
+  expect_true("p.2" %in% nms)
+  expect_identical(sum(nms == "95% CI.2"), 1L)
+})
+
+test_that("print honours the padding attr unless overridden at print time", {
+  # rd-methods:print-honors-padding-attr
+  fit <- lm(mpg ~ wt, data = mt)
+  t0 <- table_regression(fit, padding = 0L)
+  t4 <- table_regression(fit, padding = 4L)
+  expect_lt(
+    max(nchar(capture.output(print(t0)))),
+    max(nchar(capture.output(print(t4))))
+  )
+  # print(x, padding = ) overrides the stored call-site attribute.
+  expect_identical(
+    capture.output(print(t0, padding = 4L)),
+    capture.output(print(t4))
+  )
+})
+
+test_that("boot_n – full validation domain and the 1000-replicate default", {
+  # rd-uv-estimands:boot-n-default-1000-validated (complements
+  # rd-core:boot-n-default above: -1 / 2.5 refusals, the resolved
+  # default replicate count, and the boot_n = 50 vs 1000 difference)
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, vcov = "bootstrap", boot_n = -1),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, vcov = "bootstrap", boot_n = 2.5),
+    class = "spicy_invalid_input"
+  )
+  set.seed(4)
+  b50a <- table_regression(fit, vcov = "bootstrap", boot_n = 50)
+  set.seed(4)
+  b50b <- table_regression(fit, vcov = "bootstrap", boot_n = 50)
+  # Same seed, same boot_n: reproducible SEs; the footer discloses the
+  # replicate count actually used.
+  expect_identical(as_structured(b50a)$body$SE, as_structured(b50b)$body$SE)
+  expect_match(attr(b50a, "note"), "50 replicates", fixed = TRUE)
+  # Default boot_n resolves to 1000 replicates end-to-end.
+  set.seed(4)
+  b1000 <- table_regression(fit, vcov = "bootstrap")
+  expect_match(attr(b1000, "note"), "1000 replicates", fixed = TRUE)
+  expect_false(isTRUE(all.equal(
+    as_structured(b50a)$body$SE,
+    as_structured(b1000)$body$SE
+  )))
+})

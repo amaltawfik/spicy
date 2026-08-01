@@ -254,3 +254,47 @@ test_that("cluster vector aligns through the Cox screen (Lin-Wei)", {
     tolerance = 1e-9
   )
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-uv-estimands: coxph screen promises
+# ============================================================================
+
+test_that("method = 'coxph' needs the survival package (actionable error)", {
+  # rd-uv-estimands:coxph-requires-survival-renders-hr (requires half;
+  # the HR side is pinned by the per-predictor oracle and the "HR =
+  # hazard ratio" note tests above)
+  skip_if_not_installed("survival")
+  d <- .uv_lung()
+  testthat::with_mocked_bindings(
+    expect_error(
+      table_regression_uv(
+        d,
+        outcome = survival::Surv(time, status),
+        predictors = c(age),
+        method = "coxph"
+      ),
+      regexp = "install.packages",
+      fixed = TRUE,
+      class = "spicy_missing_pkg"
+    ),
+    spicy_pkg_available = function(pkg) !identical(pkg, "survival"),
+    .package = "spicy"
+  )
+})
+
+test_that("everything() drops both Surv components from the Cox screen", {
+  # rd-uv-estimands:predictors-outcome-autodropped (Surv half)
+  skip_if_not_installed("survival")
+  d <- .uv_lung()[, c("time", "status", "age", "sex")]
+  out <- table_regression_uv(
+    d,
+    outcome = survival::Surv(time, status),
+    predictors = dplyr::everything(),
+    method = "coxph",
+    output = "long"
+  )
+  # No row block for time or status (both Surv components dropped),
+  # no outcome-on-outcome fit; the true predictors all screen.
+  expect_setequal(unique(out$term), c("age", "sexMale", "sexFemale"))
+})

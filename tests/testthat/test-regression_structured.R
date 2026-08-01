@@ -240,3 +240,170 @@ test_that("as_structured() rejects non-`spicy_regression_table` inputs", {
   expect_error(as_structured(mtcars), class = "spicy_invalid_input")
   expect_error(as_structured(list(a = 1)), class = "spicy_invalid_input")
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-methods: as_structured() schema promises
+# ============================================================================
+
+test_that("as_structured – col_meta carries token/model_id/precision per column", {
+  # rd-methods:as-structured-col-meta-fields
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  s <- as_structured(table_regression(m1))
+  expect_false(is.null(s$col_meta$B))
+  expect_true(all(names(s$col_meta) %in% setdiff(names(s$body), "Variable")))
+  for (m in s$col_meta) {
+    expect_true(is.character(m$token) && nzchar(m$token))
+    expect_true(is.character(m$model_id) && nzchar(m$model_id))
+    expect_true(is.integer(m$precision) && m$precision >= 0L)
+  }
+  # CI columns carry the pair / role / label trio.
+  ll <- s$col_meta[["95% CI: LL"]]
+  expect_identical(ll$ci_role, "LL")
+  expect_identical(ll$ci_pair, "95% CI: UL")
+  expect_identical(ll$ci_label, "95% CI")
+  ul <- s$col_meta[["95% CI: UL"]]
+  expect_identical(ul$ci_role, "UL")
+  expect_identical(ul$ci_pair, "95% CI: LL")
+  # p column: APA style + below-threshold marker at 10^-p_digits.
+  expect_identical(s$col_meta$p$p_style, "apa")
+  expect_equal(s$col_meta$p$threshold, 1e-3)
+})
+
+test_that("as_structured – format_spec carries the global format defaults", {
+  # rd-methods:as-structured-format-spec
+  m1 <- lm(mpg ~ wt, data = mt)
+  s <- as_structured(table_regression(m1))
+  expect_true(all(
+    c(
+      "decimal_mark",
+      "digits",
+      "p_digits",
+      "effect_size_digits",
+      "fit_digits",
+      "ic_digits",
+      "p_style",
+      "p_threshold",
+      "ci_level"
+    ) %in%
+      names(s$format_spec)
+  ))
+  expect_identical(s$format_spec$digits, 2L)
+  expect_identical(s$format_spec$ci_level, 0.95)
+  # Non-default digits / ci_level propagate.
+  s2 <- as_structured(table_regression(m1, digits = 3L, ci_level = 0.9))
+  expect_identical(s2$format_spec$digits, 3L)
+  expect_identical(s2$format_spec$ci_level, 0.9)
+})
+
+test_that("as_structured – the missing-attr refusal names >= 0.12.0", {
+  # rd-methods:as-structured-missing-attr-refused (message half; the
+  # class half is pinned in test-cov-regression_dispatch.R)
+  m1 <- lm(mpg ~ wt, data = mt)
+  tbl <- table_regression(m1)
+  attr(tbl, "structured") <- NULL
+  expect_error(
+    as_structured(tbl),
+    regexp = "0\\.12\\.0",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("as_structured – no-value cells are NA in body", {
+  # rd-methods:as-structured-na-for-nonapplicable
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  m2 <- lm(mpg ~ wt, data = mt)
+  s <- as_structured(table_regression(list(WithCyl = m1, NoCyl = m2)))
+  num <- s$body[, setdiff(names(s$body), "Variable"), drop = FALSE]
+  expect_gt(length(s$reference_rows), 0L)
+  expect_gt(length(s$factor_header_rows), 0L)
+  expect_true(all(is.na(unlist(num[s$reference_rows, ]))))
+  expect_true(all(is.na(unlist(num[s$factor_header_rows, ]))))
+  # Model without the factor: its columns stay NA on the level rows.
+  nocyl_cols <- grep("^NoCyl", names(s$body), value = TRUE)
+  expect_gt(length(s$level_rows), 0L)
+  expect_true(all(is.na(unlist(s$body[s$level_rows, nocyl_cols]))))
+})
+
+test_that("as_structured – outcome_labels_by_col keyed by first structured column", {
+  # rd-methods:as-structured-outcome-labels-by-col
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(hp ~ wt, data = mt)
+  s <- as_structured(
+    table_regression(list(M_a = m1, M_b = m2), outcome_labels = c("A", "B"))
+  )
+  expect_identical(unname(unlist(s$outcome_labels_by_col)), c("A", "B"))
+  expect_identical(names(s$outcome_labels_by_col), c("M_a: B", "M_b: B"))
+  expect_identical(s$body$Variable[s$outcome_row], "Outcome")
+})
+
+test_that("as_structured – reference_models_by_row keys and model ids", {
+  # rd-methods:as-structured-reference-models-by-row
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  m2 <- lm(mpg ~ wt, data = mt)
+  s <- as_structured(table_regression(list(WithCyl = m1, NoCyl = m2)))
+  expect_identical(
+    names(s$reference_models_by_row),
+    as.character(s$reference_rows)
+  )
+  # Only the model that actually contains the factor is listed.
+  expect_identical(unique(unlist(s$reference_models_by_row)), "WithCyl")
+})
+
+test_that("as_structured – row-index components are valid integer indices", {
+  # rd-methods:as-structured-row-indices-integer
+  m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
+  m2 <- lm(hp ~ wt, data = mt)
+  s <- as_structured(
+    table_regression(list(A = m1, B = m2), outcome_labels = c("mpg", "hp"))
+  )
+  n <- nrow(s$body)
+  comps <- list(
+    reference_rows = s$reference_rows,
+    factor_header_rows = s$factor_header_rows,
+    fit_stat_rows = s$fit_stat_rows,
+    level_rows = s$level_rows,
+    outcome_row = s$outcome_row
+  )
+  for (nm in names(comps)) {
+    expect_true(is.integer(comps[[nm]]), info = nm)
+    expect_true(all(comps[[nm]] %in% seq_len(n)), info = nm)
+    # This table exercises every component, so each check bites.
+    expect_gt(length(comps[[nm]]), 0L)
+  }
+})
+
+test_that("as_structured – engines see the same values (excel + gt parity)", {
+  # rd-methods:as-structured-engine-contract-shared
+  skip_if_not_installed("openxlsx2")
+  skip_if_not_installed("gt")
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  s <- as_structured(table_regression(m1))
+  # Excel: the workbook's raw numeric cells equal the structured body.
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(m1, output = "excel", excel_path = path)
+  wb <- openxlsx2::wb_to_df(path, sheet = 1, col_names = FALSE)
+  for (v in c("(Intercept)", "wt", "cyl")) {
+    row_x <- which(trimws(wb[[1L]]) == v)
+    row_s <- which(trimws(s$body$Variable) == v)
+    expect_length(row_x, 1L)
+    expect_equal(
+      as.numeric(wb[[2L]][row_x]),
+      s$body$B[row_s],
+      tolerance = 1e-10
+    )
+  }
+  # gt: the rendered body strings equal the structured values at the
+  # displayed precision.
+  g <- table_regression(m1, output = "gt")
+  gb <- as.data.frame(g[["_data"]], stringsAsFactors = FALSE)
+  for (v in c("(Intercept)", "wt", "cyl")) {
+    row_g <- which(trimws(gb$Variable) == v)
+    row_s <- which(trimws(s$body$Variable) == v)
+    expect_identical(
+      trimws(gb$B[row_g]),
+      formatC(s$body$B[row_s], format = "f", digits = 2)
+    )
+  }
+})

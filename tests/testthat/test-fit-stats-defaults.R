@@ -130,3 +130,50 @@ test_that("mixed lm + glm alien fit-stat cells render an en-dash", {
   # not a term-absence one).
   expect_identical(trimws(d[[logit_col]][vars == "wt"]), "")
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-uv-estimands:n-events-fit-stat-cox-default
+# ============================================================================
+
+test_that("n_events fills for Cox and stays blank for glm in a mixed table", {
+  # rd-uv-estimands:n-events-fit-stat-cox-default (mixed-table half:
+  # the documented blank cell for other classes, a structural count
+  # row, NOT the mixed-table en-dash)
+  skip_if_not_installed("survival")
+  set.seed(21)
+  n <- 160
+  d <- data.frame(x = rnorm(n), time = rexp(n), status = rbinom(n, 1, 0.7))
+  cx <- survival::coxph(survival::Surv(time, status) ~ x, data = d)
+  gl <- glm(status ~ x, data = d, family = binomial)
+  out <- table_regression(
+    list(Cox = cx, Logit = gl),
+    show_fit_stats = c("nobs", "n_events", "aic")
+  )
+  dd <- as.data.frame(out, stringsAsFactors = FALSE)
+  vars <- trimws(dd$Variable)
+  cox_col <- grep("^Cox", names(dd), value = TRUE)[1L]
+  logit_col <- grep("^Logit", names(dd), value = TRUE)[1L]
+  expect_identical(
+    trimws(dd[[cox_col]][vars == "N events"]),
+    as.character(cx$nevent)
+  )
+  expect_identical(trimws(dd[[logit_col]][vars == "N events"]), "")
+  s <- as_structured(out)
+  b <- s$body
+  expect_equal(
+    b[["Cox: B"]][trimws(b$Variable) == "N events"],
+    as.numeric(cx$nevent)
+  )
+  expect_true(is.na(b[["Logit: B"]][trimws(b$Variable) == "N events"]))
+  # The class-aware Cox default resolves to the documented triple.
+  out_def <- table_regression(cx)
+  v <- trimws(as.data.frame(out_def, stringsAsFactors = FALSE)$Variable)
+  k <- length(v)
+  expect_identical(v[(k - 2):k], c("n", "N events", "AIC"))
+  s_def <- as_structured(out_def)
+  expect_equal(
+    s_def$body[[2L]][trimws(s_def$body$Variable) == "N events"],
+    as.numeric(cx$nevent)
+  )
+})

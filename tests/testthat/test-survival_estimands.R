@@ -264,3 +264,72 @@ test_that("a bootstrap that mostly fails raises spicy_resampling_failed", {
     class = "spicy_resampling_failed"
   )
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-uv-estimands:estimand-token-families-accepted
+# ============================================================================
+
+test_that("the eight estimand tokens render in token order; variants error", {
+  skip_if_not_installed("survival")
+  d <- .est_lung()
+  fit <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = d)
+  # The three never-exercised tokens (rmst_se, risk_diff_se,
+  # risk_diff_p), interleaved across families: the display order is
+  # the token order, with naked SE / p sub-column headers.
+  set.seed(13)
+  tr <- table_regression(
+    fit,
+    show_columns = c("risk_diff_se", "rmst", "rmst_se", "risk_diff_p"),
+    tau = 365,
+    at_time = 365,
+    boot_n = 25
+  )
+  expect_identical(names(tr), c("Variable", "SE", "dRMST (365)", "SE.2", "p"))
+  s <- as_structured(tr)
+  toks <- vapply(s$col_meta, function(m) m$token, character(1))
+  expect_identical(
+    unname(toks),
+    c("risk_diff_se", "rmst", "rmst_se", "risk_diff_p")
+  )
+  # All eight tokens together: each family renders its anchor + SE +
+  # CI + p, and the SE columns are the bootstrap SDs backing the CIs.
+  set.seed(13)
+  tr8 <- table_regression(
+    fit,
+    show_columns = c(
+      "rmst",
+      "rmst_se",
+      "rmst_ci",
+      "rmst_p",
+      "risk_diff",
+      "risk_diff_se",
+      "risk_diff_ci",
+      "risk_diff_p"
+    ),
+    tau = 365,
+    at_time = 365,
+    boot_n = 25
+  )
+  expect_true(all(c("dRMST (365)", "dRisk (365)") %in% names(tr8)))
+  td <- broom::tidy(tr8)
+  z <- stats::qnorm(0.975)
+  r <- td[td$estimate_type == "rmst" & td$term == "sexFemale", ]
+  expect_equal(r$conf.high - r$conf.low, 2 * z * r$std.error, tolerance = 1e-10)
+  rd <- td[td$estimate_type == "risk_diff" & td$term == "sexFemale", ]
+  expect_equal(
+    rd$conf.high - rd$conf.low,
+    2 * z * rd$std.error,
+    tolerance = 1e-10
+  )
+  expect_true(rd$p.value >= 0 && rd$p.value <= 1)
+  # Unknown variants of the estimand families are refused.
+  expect_error(
+    table_regression(fit, show_columns = c("b", "rmst_foo"), tau = 365),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, show_columns = c("b", "risk_diff_cl"), at_time = 365),
+    class = "spicy_invalid_input"
+  )
+})

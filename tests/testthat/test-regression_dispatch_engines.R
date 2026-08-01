@@ -818,3 +818,40 @@ test_that("word output carries SEQ caption, header repeat, cant-split, Note.", {
   seg <- substr(xml, max(1L, note_at - 700L), note_at + 100L)
   expect_match(seg, "<w:i(\\s+w:val=\"true\")?/>")
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-methods:flextable-verbs-work-on-tagged
+# ============================================================================
+
+test_that("flextable verbs operate directly on the tagged object", {
+  # rd-methods:flextable-verbs-work-on-tagged –
+  # man/as_flextable.spicy_flextable.Rd: "Every flextable verb already
+  # works on the tagged object". Apply real verbs to the
+  # spicy_flextable WITHOUT converting first and check the effect in
+  # the flextable structure.
+  skip_if_not_installed("flextable")
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  ft <- table_regression(fit, output = "flextable")
+  expect_identical(class(ft), c("spicy_flextable", "flextable"))
+  # bold(): the header text styles flip to bold (default is non-bold).
+  expect_false(any(ft$header$styles$text$bold$data))
+  ftb <- flextable::bold(ft, part = "header")
+  expect_true(all(ftb$header$styles$text$bold$data))
+  # The verb returns the tagged object, so chaining keeps working.
+  expect_identical(class(ftb), c("spicy_flextable", "flextable"))
+  # bg(): every body cell carries the requested fill.
+  ftg <- flextable::bg(ft, bg = "#FFDD00", part = "body")
+  expect_true(all(ftg$body$styles$cells$background.color$data == "#FFDD00"))
+  # width() + autofit(): the explicit width sticks, then autofit
+  # re-derives content-based widths.
+  ftw <- flextable::width(ft, width = 2)
+  expect_true(all(abs(ftw$body$colwidths - 2) < 1e-8))
+  fta <- flextable::autofit(ftw)
+  expect_false(isTRUE(all.equal(fta$body$colwidths, ftw$body$colwidths)))
+  expect_true(all(is.finite(fta$body$colwidths) & fta$body$colwidths > 0))
+  # fontsize() runs cleanly on all parts.
+  expect_s3_class(flextable::fontsize(ft, size = 9, part = "all"), "flextable")
+  # as_flextable() hands back the untagged flextable.
+  expect_identical(class(flextable::as_flextable(ft)), "flextable")
+})

@@ -827,3 +827,236 @@ test_that("a >2-level outcome under the default is refused with guidance", {
     class = "spicy_invalid_data"
   )
 })
+
+
+# ============================================================================
+# Phase 3 matrix – rd-uv-estimands: family gates, LPM coding, contract
+# ============================================================================
+
+test_that("gaussian identity is refused for the glm screen in all three forms", {
+  # rd-uv-estimands:gaussian-identity-refused-glm
+  d <- .uv_soc()
+  for (ff in list(stats::gaussian(), "gaussian", stats::gaussian)) {
+    expect_error(
+      table_regression_uv(
+        d,
+        outcome = wellbeing_score,
+        predictors = c(age, bmi),
+        method = "glm",
+        family = ff
+      ),
+      regexp = 'method = "lm"',
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
+  # A non-identity gaussian link is NOT caught by this gate.
+  set.seed(41)
+  dpos <- data.frame(y = rexp(60) + 1, x = rnorm(60))
+  out <- table_regression_uv(
+    dpos,
+    outcome = y,
+    predictors = c(x),
+    method = "glm",
+    family = stats::gaussian("log"),
+    output = "long"
+  )
+  expect_true("x" %in% out$term)
+})
+
+test_that("method = 'lm' + non-gaussian family points at the glm screen", {
+  # rd-uv-estimands:lm-nongaussian-family-refused (message half; the
+  # class half is pinned in "family with method = 'lm'" above)
+  d <- .uv_soc()
+  expect_error(
+    table_regression_uv(
+      d,
+      outcome = wellbeing_score,
+      predictors = c(age),
+      method = "lm",
+      family = stats::binomial()
+    ),
+    regexp = 'method = "glm"',
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("a 3-level factor with two observed levels passes the linear screen", {
+  # rd-uv-estimands:lm-multilevel-outcome-refused ('observed levels'
+  # nuance; the >2-observed refusal is pinned above)
+  set.seed(31)
+  n <- 80
+  d <- data.frame(
+    y = factor(sample(c("a", "b"), n, TRUE), levels = c("a", "b", "c")),
+    x = rnorm(n)
+  )
+  out <- NULL
+  expect_warning(
+    out <- table_regression_uv(
+      d,
+      outcome = y,
+      predictors = c(x),
+      output = "long"
+    ),
+    class = "spicy_model_choice"
+  )
+  # The screen fit an LPM on the second OBSERVED level ("b").
+  expect_equal(
+    out$estimate[out$term == "x" & out$model_id == "Univariable"],
+    unname(coef(lm(as.integer(y == "b") ~ x, data = d))["x"]),
+    tolerance = 1e-10
+  )
+})
+
+test_that("LPM codes 0/1 on the second level and the warning names it", {
+  # rd-uv-estimands:lpm-01-coding-second-level-named
+  set.seed(32)
+  n <- 100
+  d <- data.frame(
+    yn = factor(sample(c("no", "yes"), n, TRUE)),
+    x = rnorm(n)
+  )
+  wmsg <- NULL
+  out <- withCallingHandlers(
+    table_regression_uv(d, outcome = yn, predictors = c(x), output = "long"),
+    spicy_model_choice = function(w) {
+      wmsg <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    }
+  )
+  # The warning names the modeled probability (second factor level).
+  expect_match(wmsg, "P(yn = yes)", fixed = TRUE)
+  # SIGNED equality against the explicit 0/1 recode: the coding
+  # direction (second level = 1), not just the magnitude.
+  expect_equal(
+    out$estimate[out$model_id == "Univariable" & out$term == "x"],
+    unname(coef(lm(as.integer(yn == "yes") ~ x, data = d))["x"]),
+    tolerance = 1e-10
+  )
+  # Logical outcome: TRUE is the modeled level.
+  d$lg <- d$yn == "yes"
+  wmsg2 <- NULL
+  out2 <- withCallingHandlers(
+    table_regression_uv(d, outcome = lg, predictors = c(x), output = "long"),
+    spicy_model_choice = function(w) {
+      wmsg2 <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_match(wmsg2, "P(lg = TRUE)", fixed = TRUE)
+  expect_equal(
+    out2$estimate[out2$model_id == "Univariable" & out2$term == "x"],
+    unname(coef(lm(as.integer(lg) ~ x, data = d))["x"]),
+    tolerance = 1e-10
+  )
+})
+
+test_that("tidyselect helpers work and the outcome is dropped from them", {
+  # rd-uv-estimands:predictors-outcome-autodropped (where() half; the
+  # everything() half is pinned above, the Surv half in the coxph file)
+  set.seed(33)
+  n <- 90
+  d <- data.frame(
+    y = rbinom(n, 1, 0.4),
+    a = rnorm(n),
+    b = rnorm(n),
+    f = factor(sample(c("u", "v"), n, TRUE))
+  )
+  out <- table_regression_uv(
+    d,
+    outcome = y,
+    predictors = where(is.numeric),
+    method = "glm",
+    output = "long"
+  )
+  # The numeric outcome sat inside the helper selection: no
+  # outcome-on-outcome fit, no row block for it, and the non-numeric
+  # column stays outside the selection.
+  expect_setequal(unique(out$term), c("a", "b"))
+})
+
+test_that("show_intercept = TRUE shows the univariable intercepts too", {
+  # FIXME matrix: rd-uv-estimands:show-intercept-default-false –
+  # man/table_regression_uv.Rd (Intercepts section) says intercepts are
+  # "hidden by default on both sides" and that show_intercept = TRUE
+  # displays "them", but the screen can only ever display the
+  # multivariable intercept: the univariable blocks are filtered to
+  # parent_var == predictor, so their intercept rows never render (the
+  # existing test above pins exactly one intercept row under
+  # show_intercept = TRUE). Doc-vs-code discordance recorded in the
+  # Phase 3 audit.
+  skip(
+    "rd-uv-estimands:show-intercept-default-false – univariable intercepts never display under show_intercept = TRUE"
+  )
+})
+
+test_that("the documented example runs and yields the OR screen", {
+  # rd-uv-estimands:example-runs (the \donttest body, verbatim
+  # arguments)
+  out <- table_regression_uv(
+    sochealth,
+    outcome = smoking,
+    predictors = c(age, sex, education),
+    family = binomial(),
+    exponentiate = TRUE
+  )
+  expect_s3_class(out, "spicy_regression_table")
+  expect_true(all(
+    c("Univariable: OR", "Multivariable: OR") %in% names(out)
+  ))
+  expect_match(
+    attr(out, "title"),
+    "Univariable and multivariable logistic regression: smoking",
+    fixed = TRUE
+  )
+})
+
+test_that("the screen honours the table_regression output contract", {
+  # rd-uv-estimands:value-same-output-contract
+  d <- .uv_soc()
+  scr <- table_regression_uv(
+    d,
+    outcome = smoking,
+    predictors = c(age, bmi),
+    method = "glm"
+  )
+  expect_identical(
+    class(scr),
+    c("spicy_regression_table", "spicy_table", "data.frame")
+  )
+  s <- as_structured(scr)
+  expect_true(is.data.frame(s$body))
+  expect_true("Univariable: B" %in% names(s$body))
+  dd <- as.data.frame(scr)
+  expect_identical(class(dd), "data.frame")
+  td <- broom::tidy(scr)
+  expect_s3_class(td, "tbl_df")
+  expect_true(all(c("Univariable", "Multivariable") %in% td$model_id))
+  expect_no_error(invisible(capture.output(knitr::knit_print(scr))))
+})
+
+test_that("the screen renders through the rich engines", {
+  # rd-uv-estimands:value-same-output-contract (engine half)
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("flextable")
+  d <- .uv_soc()
+  tt <- table_regression_uv(
+    d,
+    outcome = smoking,
+    predictors = c(age, bmi),
+    method = "glm",
+    output = "tinytable"
+  )
+  # tinytable mixes S3 and S4 across versions; inherits() works for both.
+  expect_true(inherits(tt, "tinytable"))
+  ft <- table_regression_uv(
+    d,
+    outcome = smoking,
+    predictors = c(age, bmi),
+    method = "glm",
+    output = "flextable"
+  )
+  expect_s3_class(ft, "spicy_flextable")
+  expect_s3_class(ft, "flextable")
+})
