@@ -103,8 +103,10 @@ parent class plus a leaf class describing the specific cause:
 
   - `spicy_invalid_input` – bad argument value or type.
 
-  - `spicy_invalid_data` – bad data shape (not a data.frame, NA cells
-    where forbidden, length mismatch).
+  - `spicy_invalid_data` – bad data shape or content (not a data.frame,
+    length mismatch,
+    [`bit64::integer64`](https://bit64.r-lib.org/reference/bit64-package.html)
+    columns, degenerate grouping).
 
   - `spicy_missing_pkg` – a Suggests dependency is required by the
     requested operation but not installed.
@@ -113,6 +115,41 @@ parent class plus a leaf class describing the specific cause:
 
   - `spicy_unsupported` – the operation is not applicable to this input
     (e.g., Phi requested on a non-2x2 table).
+
+  - `spicy_ame_satt_unsupported_formula` – signaled together with
+    `spicy_unsupported` when AME Satterthwaite degrees of freedom are
+    unavailable for the model's formula structure; normally caught
+    internally and surfaced as a `spicy_fallback` warning.
+
+  - `spicy_unsupported_class` – the model class has no regression-frame
+    method, so
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+    cannot render it.
+
+  - `spicy_unsupported_vcov` – the requested `vcov` mode is not
+    available for this model class.
+
+  - `spicy_unsupported_standardized` – the requested `standardized` mode
+    is not available for this model class.
+
+  - `spicy_invalid_frame` – an object failed the structural validation
+    of the internal regression-frame contract behind
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
+  - `spicy_resampling_failed` – bootstrap / jackknife resampling
+    produced too few valid replicates to estimate the requested
+    statistic.
+
+  - `spicy_defunct` – an argument removed in a pre-1.0 hard break; the
+    message names the replacement. Signaled together with
+    `spicy_invalid_input` so generic input handlers still catch it.
+
+  - `spicy_internal` – an internal precondition failed; this is a bug in
+    spicy, please report it.
+
+  - `spicy_internal_invariant` – an internal consistency check on a
+    spicy-built object failed and the result cannot be trusted (see the
+    warning leaf of the same name for the renderable case).
 
 - `spicy_warning`:
 
@@ -134,6 +171,20 @@ parent class plus a leaf class describing the specific cause:
   - `spicy_fallback` – the requested computation failed; a simpler
     estimator was used instead.
 
+  - `spicy_caveat` – the computation succeeded but its interpretation
+    carries a non-trivial methodological caveat (e.g., standardized
+    coefficients on non-additive terms).
+
+  - `spicy_bayes_diagnostics` – signaled together with `spicy_caveat`
+    when a Bayesian fit's sampler or predictive-accuracy diagnostics
+    miss their targets (R-hat, ESS, divergences, E-BFMI, Pareto k,
+    p_waic).
+
+  - `spicy_model_choice` – a defaulted modeling choice was made on the
+    user's behalf and is disclosed (e.g., the linear probability model
+    [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+    fits to a binary outcome under the default `method`).
+
   - `spicy_summary_failed` –
     [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
     could not summarise one column; the rest of the table is fine.
@@ -142,6 +193,20 @@ parent class plus a leaf class describing the specific cause:
     with a spicy-internal name and was auto-renamed to preserve the data
     (emitted by
     [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)).
+
+  - `spicy_internal_invariant` – an internal consistency check on a
+    spicy-built object failed but the output still renders, so the user
+    sees both the table and the diagnostic.
+
+- `spicy_info`:
+
+  Parent for informational messages (emitted via
+  [`rlang::inform()`](https://rlang.r-lib.org/reference/abort.html);
+  muffle with `withCallingHandlers(spicy_info = ...)`). Leaf:
+  `spicy_silent_reference` – reference levels are displayed nowhere
+  under `reference_style = "none"` with `factor_layout = "flat"`. The
+  once-per-session hint on ordered-factor polynomial contrasts carries
+  its own class, `spicy_polynomial_contrasts_info`.
 
 ## See also
 

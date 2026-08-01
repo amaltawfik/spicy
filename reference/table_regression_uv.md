@@ -50,8 +50,11 @@ table_regression_uv(
 
 - family:
 
-  A [stats::family](https://rdrr.io/r/stats/family.html) object for
-  `method = "glm"`. Default
+  A [stats::family](https://rdrr.io/r/stats/family.html) for
+  `method = "glm"`, in any of the three forms
+  [`stats::glm()`](https://rdrr.io/r/stats/glm.html) accepts: a family
+  object ([`binomial()`](https://rdrr.io/r/stats/family.html)), its name
+  (`"binomial"`), or the bare constructor (`binomial`). Default
   [`binomial()`](https://rdrr.io/r/stats/family.html), so
   `method = "glm"` alone is the logistic screen; supplying `family`
   without `method` selects the glm screen directly (a family can only

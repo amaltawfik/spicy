@@ -1093,20 +1093,39 @@ rendering an empty column.
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
   [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
-  and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   reject
   [`bit64::integer64`](https://bit64.r-lib.org/reference/bit64-package.html)
-  input (tabulated variables, weights, and selected columns) with a
-  classed error (`spicy_invalid_data`) naming the fix: integer64 passes
+  input (tabulated variables, weights, selected columns, `by` groups,
+  and covariates) with a classed error (`spicy_invalid_data`) naming the
+  fix: integer64 passes
   [`is.numeric()`](https://rdrr.io/r/base/numeric.html) but stores raw
   64-bit integer bit patterns that base R numeric code silently misreads
-  as garbage counts near `1e-323` – a realistic hazard for BIGINT
-  columns imported via DBI or
+  as garbage counts near `1e-323` – a summary table showed `M = 0.00`
+  for every integer64 column, and group labels printed as denormal
+  doubles unless the bit64 namespace happened to be loaded – a realistic
+  hazard for BIGINT columns imported via DBI or
   [`data.table::fread()`](https://rdrr.io/pkg/data.table/man/fread.html).
-  Convert with [`as.numeric()`](https://rdrr.io/r/base/numeric.html) or
-  `bit64::as.double()` first;
+  Convert with [`as.integer()`](https://rdrr.io/r/base/integer.html) /
+  [`as.numeric()`](https://rdrr.io/r/base/numeric.html) (or
+  [`as.character()`](https://rdrr.io/r/base/character.html) for codes
+  wider than 2^53) first;
   [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   compares values without numeric aggregation and continues to work.
+
+- [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  accepts `family` in the three forms
+  [`stats::glm()`](https://rdrr.io/r/stats/glm.html) accepts – a family
+  object ([`binomial()`](https://rdrr.io/r/stats/family.html)), its name
+  (`"binomial"`), or the bare constructor function (`binomial`) – and
+  refuses anything else up front with a classed error
+  (`spicy_invalid_input`); a name or bare constructor previously failed
+  with a raw `$ operator is invalid for atomic vectors` error before any
+  model was fitted.
 
 ## spicy 0.12.0
 

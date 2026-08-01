@@ -157,8 +157,9 @@ specific cause:</p>
 <dl><dt><code>spicy_error</code></dt>
 <dd><p>Catch-all parent for every error
 raised by spicy. Leaves:</p><ul><li><p><code>spicy_invalid_input</code> – bad argument value or type.</p></li>
-<li><p><code>spicy_invalid_data</code> – bad data shape (not a
-data.frame, NA cells where forbidden, length mismatch).</p></li>
+<li><p><code>spicy_invalid_data</code> – bad data shape or content
+(not a data.frame, length mismatch, <code><a href="https://bit64.r-lib.org/reference/bit64-package.html" class="external-link">bit64::integer64</a></code>
+columns, degenerate grouping).</p></li>
 <li><p><code>spicy_missing_pkg</code> – a Suggests dependency
 is required by the requested operation but not installed.</p></li>
 <li><p><code>spicy_missing_column</code> – a referenced column
@@ -166,6 +167,34 @@ is not in <code>data</code>.</p></li>
 <li><p><code>spicy_unsupported</code> – the operation is not
 applicable to this input (e.g., Phi requested on a
 non-2x2 table).</p></li>
+<li><p><code>spicy_ame_satt_unsupported_formula</code> – signaled
+together with <code>spicy_unsupported</code> when AME
+Satterthwaite degrees of freedom are unavailable for the
+model's formula structure; normally caught internally and
+surfaced as a <code>spicy_fallback</code> warning.</p></li>
+<li><p><code>spicy_unsupported_class</code> – the model class has
+no regression-frame method, so <code><a href="table_regression.html">table_regression()</a></code>
+cannot render it.</p></li>
+<li><p><code>spicy_unsupported_vcov</code> – the requested <code>vcov</code>
+mode is not available for this model class.</p></li>
+<li><p><code>spicy_unsupported_standardized</code> – the requested
+<code>standardized</code> mode is not available for this model class.</p></li>
+<li><p><code>spicy_invalid_frame</code> – an object failed the
+structural validation of the internal regression-frame
+contract behind <code><a href="table_regression.html">table_regression()</a></code>.</p></li>
+<li><p><code>spicy_resampling_failed</code> – bootstrap /
+jackknife resampling produced too few valid replicates to
+estimate the requested statistic.</p></li>
+<li><p><code>spicy_defunct</code> – an argument removed in a
+pre-1.0 hard break; the message names the replacement.
+Signaled together with <code>spicy_invalid_input</code> so
+generic input handlers still catch it.</p></li>
+<li><p><code>spicy_internal</code> – an internal precondition
+failed; this is a bug in spicy, please report it.</p></li>
+<li><p><code>spicy_internal_invariant</code> – an internal
+consistency check on a spicy-built object failed and the
+result cannot be trusted (see the warning leaf of the
+same name for the renderable case).</p></li>
 </ul></dd>
 
 <dt><code>spicy_warning</code></dt>
@@ -184,13 +213,40 @@ produced an empty set; an empty result is returned
 rather than erroring.</p></li>
 <li><p><code>spicy_fallback</code> – the requested computation
 failed; a simpler estimator was used instead.</p></li>
+<li><p><code>spicy_caveat</code> – the computation succeeded but
+its interpretation carries a non-trivial methodological
+caveat (e.g., standardized coefficients on non-additive
+terms).</p></li>
+<li><p><code>spicy_bayes_diagnostics</code> – signaled together
+with <code>spicy_caveat</code> when a Bayesian fit's sampler or
+predictive-accuracy diagnostics miss their targets
+(R-hat, ESS, divergences, E-BFMI, Pareto k, p_waic).</p></li>
+<li><p><code>spicy_model_choice</code> – a defaulted modeling
+choice was made on the user's behalf and is disclosed
+(e.g., the linear probability model
+<code><a href="table_regression_uv.html">table_regression_uv()</a></code> fits to a binary outcome under
+the default <code>method</code>).</p></li>
 <li><p><code>spicy_summary_failed</code> – <code><a href="varlist.html">varlist()</a></code> could not
 summarise one column; the rest of the table is fine.</p></li>
 <li><p><code>spicy_renamed_column</code> – a user data column or
 factor level collided with a spicy-internal name and was
 auto-renamed to preserve the data (emitted by
 <code><a href="cross_tab.html">cross_tab()</a></code>).</p></li>
+<li><p><code>spicy_internal_invariant</code> – an internal
+consistency check on a spicy-built object failed but the
+output still renders, so the user sees both the table and
+the diagnostic.</p></li>
 </ul></dd>
+
+<dt><code>spicy_info</code></dt>
+<dd><p>Parent for informational messages
+(emitted via <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::inform()</a></code>; muffle with
+<code>withCallingHandlers(spicy_info = ...)</code>). Leaf:
+<code>spicy_silent_reference</code> – reference levels are
+displayed nowhere under <code>reference_style = "none"</code> with
+<code>factor_layout = "flat"</code>. The once-per-session hint on
+ordered-factor polynomial contrasts carries its own class,
+<code>spicy_polynomial_contrasts_info</code>.</p></dd>
 
 
 </dl></div>

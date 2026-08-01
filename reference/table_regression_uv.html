@@ -132,7 +132,10 @@ the <code>survival</code> package; estimates render as HRs with
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
-<dd><p>A <a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family</a> object for <code>method = "glm"</code>.
+<dd><p>A <a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family</a> for <code>method = "glm"</code>, in any of
+the three forms <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code> accepts: a family object
+(<code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>), its name (<code>"binomial"</code>), or the bare constructor
+(<code>binomial</code>).
 Default <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>, so <code>method = "glm"</code> alone is the logistic
 screen; supplying <code>family</code> without <code>method</code> selects the glm
 screen directly (a family can only mean that). Refused for

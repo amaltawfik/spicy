@@ -512,7 +512,7 @@ table_regression(
 | Max cluster size |   4      |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-04cc98be quarto-disable-processing="true"}
+.cl-3a1a03a2 quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:
