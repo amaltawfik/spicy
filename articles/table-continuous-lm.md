@@ -363,7 +363,9 @@ table_continuous_lm(
 #>  Variable                      │ 95% CI UL   p     R²     d     n   
 #> ───────────────────────────────┼────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
-#>  Body mass index               │   0.49     .905  0.00  -0.01  1163
+#>  Body mass index               │   0.49     .905  0.00  -0.01  1163 
+#> 
+#> Note. Rows with missing smoking removed: 25.
 ```
 
 Hedges’ *g* applies the small-sample correction
@@ -388,7 +390,9 @@ table_continuous_lm(
 #>  Variable                      │ 95% CI UL   p     R²     g     n   
 #> ───────────────────────────────┼────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
-#>  Body mass index               │   0.49     .905  0.00  -0.01  1163
+#>  Body mass index               │   0.49     .905  0.00  -0.01  1163 
+#> 
+#> Note. Rows with missing smoking removed: 25.
 ```
 
 For categorical predictors with three or more levels (or numeric
@@ -485,7 +489,9 @@ table_continuous_lm(
 #>  Variable                      │  n   
 #> ───────────────────────────────┼──────
 #>  WHO-5 wellbeing index (0-100) │ 1175 
-#>  Body mass index               │ 1163
+#>  Body mass index               │ 1163 
+#> 
+#> Note. Rows with missing smoking removed: 25.
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic

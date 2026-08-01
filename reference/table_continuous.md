@@ -80,6 +80,17 @@ table_continuous(
   Optional grouping column. Accepts an unquoted column name or a single
   character column name. Coerced to factor for grouping; non-numeric
   grouping columns (factor, character, logical) are supported as-is.
+  Factor levels keep their declared order; any other `by` (character,
+  numeric, haven labelled) forms groups in order of first appearance in
+  the data – the same convention as
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  For a haven labelled `by`, the group headers are the raw codes (value
+  labels are not used for grouping headers – the family convention
+  shared with
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md));
+  declared missing values follow `user_na` as usual.
 
 - exclude:
 
@@ -417,8 +428,10 @@ per output engine are documented under `@param align`,
 `@param p_digits`, and `@param output` respectively.
 
 Non-numeric columns are silently dropped (set `verbose = TRUE` to see
-which columns were excluded). When a constant column is passed, SD and
-CI are shown as `"--"` in the ASCII table.
+which columns were excluded). When a constant column is passed, its
+statistics are reported exactly: SD is `0.00` and the CI degenerates to
+`[m, m]`. `"--"` cells appear only when a statistic is undefined (fewer
+than two valid observations).
 
 ## Declared missing values
 

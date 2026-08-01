@@ -32,6 +32,8 @@ mixed-effects fits add below the fixed effects (`lmer`, `glmer`,
 that applies these mechanics to its own estimands:
 [`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 for mixed-effects models,
+[`vignette("table-regression-gee")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+for population-averaged (GEE) models,
 [`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
 for Poisson, negative-binomial, and two-part models,
 [`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
@@ -219,13 +221,13 @@ table_regression(
 #>  Variable                 │    B       p     η²    η² 95% CI     ω²  
 #> ──────────────────────────┼──────────────────────────────────────────
 #>  (Intercept)              │   53.96  <.001                           
-#>  age                      │    0.03   .344  0.00  [0.00, 0.01]  0.00 
+#>  age                      │    0.03   .344  0.00  [0.00, 0.00]  0.00 
 #>  sex:                     │                                          
 #>    Female (ref.)          │     –     –                              
-#>    Male                   │    3.57  <.001  0.02  [0.01, 0.03]  0.02 
+#>    Male                   │    3.57  <.001  0.02  [0.00, 0.03]  0.02 
 #>  smoking:                 │                                          
 #>    No (ref.)              │     –     –                              
-#>    Yes                    │    0.68   .496  0.00  [0.00, 0.01]  0.00 
+#>    Yes                    │    0.68   .496  0.00  [0.00, 0.00]  0.00 
 #>  education:               │                                          
 #>    Lower secondary (ref.) │     –     –                              
 #>    Upper secondary        │   11.89  <.001  0.21  [0.17, 0.25]  0.21 
@@ -238,13 +240,13 @@ table_regression(
 #>  Variable                 │  ω² 95% CI   
 #> ──────────────────────────┼──────────────
 #>  (Intercept)              │              
-#>  age                      │ [0.00, 0.01] 
+#>  age                      │ [0.00, 0.00] 
 #>  sex:                     │              
 #>    Female (ref.)          │              
-#>    Male                   │ [0.01, 0.03] 
+#>    Male                   │ [0.00, 0.03] 
 #>  smoking:                 │              
 #>    No (ref.)              │              
-#>    Yes                    │ [0.00, 0.01] 
+#>    Yes                    │ [0.00, 0.00] 
 #>  education:               │              
 #>    Lower secondary (ref.) │              
 #>    Upper secondary        │ [0.17, 0.25] 
@@ -1712,6 +1714,10 @@ Model-family vignettes build on the mechanics shown here:
   for mixed-effects (multilevel) models: random effects as table rows,
   ICC, the boundary-corrected chi-bar-squared test, and opt-in per-term
   LRT / RLRT.
+- [`vignette("table-regression-gee", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+  for population-averaged (GEE) models: the fit’s own sandwich
+  inference, working-correlation choice via QIC, and jackknife variants
+  for few clusters.
 - [`vignette("table-regression-counts", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
   for count and two-part models: Poisson and negative-binomial rate
   ratios, offsets, and zero-inflated / hurdle components as labelled

@@ -134,7 +134,9 @@ mixed-effects fits add below the fixed effects (<code>lmer</code>,
 further model family has a dedicated vignette that applies these
 mechanics to its own estimands:
 <code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> for mixed-effects
-models, <code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code> for Poisson,
+models, <code><a href="../articles/table-regression-gee.html">vignette("table-regression-gee")</a></code> for
+population-averaged (GEE) models,
+<code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code> for Poisson,
 negative-binomial, and two-part models,
 <code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal")</a></code> for ordinal models
 (<code>polr</code>, <code>clm</code>),
@@ -328,13 +330,13 @@ reuse this copy throughout the vignette:</p>
 <span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B       p     η²    η² 95% CI     ω²  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   53.96  &lt;.001                           </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.03   .344  0.00  [0.00, 0.01]  0.00 </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.03   .344  0.00  [0.00, 0.00]  0.00 </span></span>
 <span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                          </span></span>
 <span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –                              </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    3.57  &lt;.001  0.02  [0.01, 0.03]  0.02 </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>    3.57  &lt;.001  0.02  [0.00, 0.03]  0.02 </span></span>
 <span><span class="co">#&gt;  smoking:                 <span style="color: #9E9E9E;">│</span>                                          </span></span>
 <span><span class="co">#&gt;    No (ref.)              <span style="color: #9E9E9E;">│</span>     –     –                              </span></span>
-<span><span class="co">#&gt;    Yes                    <span style="color: #9E9E9E;">│</span>    0.68   .496  0.00  [0.00, 0.01]  0.00 </span></span>
+<span><span class="co">#&gt;    Yes                    <span style="color: #9E9E9E;">│</span>    0.68   .496  0.00  [0.00, 0.00]  0.00 </span></span>
 <span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                          </span></span>
 <span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –     –                              </span></span>
 <span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   11.89  &lt;.001  0.21  [0.17, 0.25]  0.21 </span></span>
@@ -347,13 +349,13 @@ reuse this copy throughout the vignette:</p>
 <span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>  ω² 95% CI   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>              </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span> [0.00, 0.01] </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span> [0.00, 0.00] </span></span>
 <span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>              </span></span>
 <span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>              </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span> [0.01, 0.03] </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span> [0.00, 0.03] </span></span>
 <span><span class="co">#&gt;  smoking:                 <span style="color: #9E9E9E;">│</span>              </span></span>
 <span><span class="co">#&gt;    No (ref.)              <span style="color: #9E9E9E;">│</span>              </span></span>
-<span><span class="co">#&gt;    Yes                    <span style="color: #9E9E9E;">│</span> [0.00, 0.01] </span></span>
+<span><span class="co">#&gt;    Yes                    <span style="color: #9E9E9E;">│</span> [0.00, 0.00] </span></span>
 <span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>              </span></span>
 <span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>              </span></span>
 <span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> [0.17, 0.25] </span></span>
@@ -2214,6 +2216,11 @@ dummies), and the categorization trap.</li>
 for mixed-effects (multilevel) models: random effects as table rows,
 ICC, the boundary-corrected chi-bar-squared test, and opt-in per-term
 LRT / RLRT.</li>
+<li>
+<code><a href="../articles/table-regression-gee.html">vignette("table-regression-gee", package = "spicy")</a></code> for
+population-averaged (GEE) models: the fit’s own sandwich inference,
+working-correlation choice via QIC, and jackknife variants for few
+clusters.</li>
 <li>
 <code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts", package = "spicy")</a></code>
 for count and two-part models: Poisson and negative-binomial rate

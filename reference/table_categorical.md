@@ -73,7 +73,18 @@ table_categorical(
 - by:
 
   Optional grouping column used for columns/groups. Accepts an unquoted
-  column name or a single character column name.
+  column name or a single character column name. Factor levels keep
+  their declared order; any other `by` (character, numeric, haven
+  labelled) forms group columns in order of first appearance in the data
+  – the same convention as
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  For a haven labelled `by`, the group headers are the raw codes (value
+  labels are not used for group headers – the family convention shared
+  with
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md));
+  declared missing values follow `user_na` as usual.
 
 - labels:
 
@@ -379,9 +390,11 @@ per output engine are documented under `@param align`,
 
 Counts are displayed as integers: weighted counts are rounded (ties half
 to even, the R convention) at display time only, in cells and margins
-alike – the SPSS Crosstabs convention – so displayed cells and their
-`Total` agree. The machine outputs (`"data.frame"`, `"long"`) carry the
-exact weighted counts and full-precision percentages.
+alike – the SPSS Crosstabs convention. Cells and margins are rounded
+independently, so small display discrepancies are possible (e.g. two
+cells of exactly 0.5 each display as `0` while their `Total` of 1.0
+displays as `1`). The machine outputs (`"data.frame"`, `"long"`) carry
+the exact weighted counts and full-precision percentages.
 
 ## Declared missing values
 

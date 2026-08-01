@@ -230,7 +230,7 @@ assoc_measures(tbl)
 #> Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016   .021 
 #> Goodman-Kruskal Gamma                -0.268  0.056    -0.378    -0.158  <.001 
 #> Kendall's Tau-b                      -0.126  0.027    -0.180    -0.073  <.001 
-#> Kendall's Tau-c                      -0.117  0.026    -0.167    -0.067  <.001 
+#> Stuart's Tau-c                       -0.117  0.026    -0.167    -0.067  <.001 
 #> Somers' D R|C                        -0.091  0.020    -0.131    -0.052  <.001 
 #> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  <.001
 ```

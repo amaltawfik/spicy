@@ -181,7 +181,14 @@ expression pattern (character string).</p></dd>
 <dd><p>Optional grouping column. Accepts an unquoted column name
 or a single character column name. Coerced to factor for
 grouping; non-numeric grouping columns (factor, character,
-logical) are supported as-is.</p></dd>
+logical) are supported as-is. Factor levels keep their declared
+order; any other <code>by</code> (character, numeric, haven labelled) forms
+groups in order of first appearance in the data – the same
+convention as <code><a href="table_categorical.html">table_categorical()</a></code>. For a haven labelled <code>by</code>,
+the group headers are the raw codes (value labels are not used
+for grouping headers – the family convention shared with
+<code><a href="table_categorical.html">table_categorical()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>); declared
+missing values follow <code>user_na</code> as usual.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
@@ -481,7 +488,9 @@ packages per output engine are documented under <code>@param align</code>,
 <code>@param p_digits</code>, and <code>@param output</code> respectively.</p>
 <p>Non-numeric columns are silently dropped (set <code>verbose = TRUE</code> to
 see which columns were excluded). When a constant column is
-passed, SD and CI are shown as <code>"--"</code> in the ASCII table.</p>
+passed, its statistics are reported exactly: SD is <code>0.00</code> and the
+CI degenerates to <code>[m, m]</code>. <code>"--"</code> cells appear only when a
+statistic is undefined (fewer than two valid observations).</p>
     </div>
     <div class="section level2">
     <h2 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a></h2>

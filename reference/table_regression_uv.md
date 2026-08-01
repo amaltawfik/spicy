@@ -15,7 +15,7 @@ table_regression_uv(
   data,
   outcome,
   predictors,
-  method = c("glm", "lm", "coxph"),
+  method = c("lm", "glm", "coxph"),
   family = stats::binomial(),
   multivariable = TRUE,
   complete_cases = FALSE,
@@ -45,15 +45,17 @@ table_regression_uv(
 
 - method:
 
-  `"glm"` (default), `"lm"`, or `"coxph"` (requires the `survival`
+  `"lm"` (default), `"glm"`, or `"coxph"` (requires the `survival`
   package; estimates render as HRs with `exponentiate = TRUE`).
 
 - family:
 
   A [stats::family](https://rdrr.io/r/stats/family.html) object for
   `method = "glm"`. Default
-  [`binomial()`](https://rdrr.io/r/stats/family.html). Refused for
-  `method = "coxph"`, and
+  [`binomial()`](https://rdrr.io/r/stats/family.html), so
+  `method = "glm"` alone is the logistic screen; supplying `family`
+  without `method` selects the glm screen directly (a family can only
+  mean that). Refused for `method = "coxph"`, and
   [`gaussian()`](https://rdrr.io/r/stats/family.html) with the identity
   link is refused too: use `method = "lm"` for the linear screen. With
   `method = "lm"`, any non-gaussian `family` is refused the same way
@@ -128,6 +130,23 @@ treats the whole univariable screen as ONE family (all screened
 coefficients together); the multivariable model is its own family, as in
 any multi-model table.
 
+## Why the default screen is linear
+
+The default `method = "lm"` fits the linear screen: R's canonical model,
+and – when the outcome is continuous – the estimand with the most direct
+reading. If the outcome looks binary under this default, the screen
+proceeds as a linear probability model and says so in a classed warning:
+LPM coefficients are probability differences, comparable across models
+and samples in a way that odds ratios are not (Mood, 2010), but the
+model's built-in heteroskedasticity calls for `vcov = "HC3"`. A
+two-level factor (or logical) outcome is coded 0/1 on its second level –
+the glm convention – and the warning names the modeled probability; an
+outcome with more observed levels is refused (a multinomial outcome has
+no linear screen). The classical epidemiological screen is one argument
+away: `method = "glm"` (with the default `family = binomial()`) gives
+the logistic screen, and supplying any `family` selects the glm screen
+directly.
+
 ## Intercepts
 
 Hidden by default on both sides (each univariable fit has its own
@@ -140,6 +159,11 @@ them.
 Batra, N. et al. (Eds.) (2021). *The Epidemiologist R Handbook*,
 Univariate and multivariable regression.
 <https://epirhandbook.com/en/new_pages/regression.html>
+
+Mood, C. (2010). Logistic regression: Why we cannot do what we think we
+can do, and what we can do about it. *European Sociological Review*,
+26(1), 67-82.
+[doi:10.1093/esr/jcp006](https://doi.org/10.1093/esr/jcp006)
 
 Sjoberg, D.D., Whiting, K., Curry, M., Lavery, J.A., & Larmarange, J.
 (2021). Reproducible summary tables with the gtsummary package. *The R

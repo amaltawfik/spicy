@@ -21,7 +21,7 @@ The table below summarizes the recommended measures by variable type.
 | Nominal x Nominal | Contingency Coefficient | [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md) |
 | Nominal x Nominal (2x2) | Phi | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md) |
 | Ordinal x Ordinal | Kendall’s Tau-b | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md) |
-| Ordinal x Ordinal (rectangular) | Kendall’s Tau-c | [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md) |
+| Ordinal x Ordinal (rectangular) | Stuart’s Tau-c | [`kendall_tau_c()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_c.md) |
 | Ordinal x Ordinal | Goodman-Kruskal Gamma | [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md) |
 | Ordinal x Ordinal (asymmetric) | Somers’ D | [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md) |
 | Nominal (asymmetric, PRE) | Lambda | [`lambda_gk()`](https://amaltawfik.github.io/spicy/reference/lambda_gk.md) |
@@ -58,7 +58,7 @@ assoc_measures(tbl)
 #> Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016   .021 
 #> Goodman-Kruskal Gamma                -0.268  0.056    -0.378    -0.158  <.001 
 #> Kendall's Tau-b                      -0.126  0.027    -0.180    -0.073  <.001 
-#> Kendall's Tau-c                      -0.117  0.026    -0.167    -0.067  <.001 
+#> Stuart's Tau-c                       -0.117  0.026    -0.167    -0.067  <.001 
 #> Somers' D R|C                        -0.091  0.020    -0.131    -0.052  <.001 
 #> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  <.001
 ```
@@ -159,11 +159,12 @@ kendall_tau_b(tbl_ord, detail = TRUE)
 #>    0.205  0.025     0.155     0.254  <.001
 ```
 
-### Kendall’s Tau-c
+### Stuart’s Tau-c
 
-Tau-c is similar to Tau-b but adjusts for rectangular tables where the
-number of rows and columns differ. The p-value tests H0: Tau-c = 0 (Wald
-z-test).
+Stuart’s Tau-c (also known as Kendall’s Tau-c; spicy uses the SPSS /
+PSPP label) is similar to Tau-b but adjusts for rectangular tables where
+the number of rows and columns differ. The p-value tests H0: Tau-c = 0
+(Wald z-test).
 
 ``` r
 
@@ -372,7 +373,7 @@ assoc_measures(tbl, digits = 2)
 #> Uncertainty Coefficient C|R            0.03  0.01      0.02      0.04  <.001 
 #> Goodman-Kruskal Gamma                  0.31  0.04      0.24      0.38  <.001 
 #> Kendall's Tau-b                        0.20  0.03      0.16      0.25  <.001 
-#> Kendall's Tau-c                        0.20  0.02      0.15      0.25  <.001 
+#> Stuart's Tau-c                         0.20  0.02      0.15      0.25  <.001 
 #> Somers' D R|C                          0.21  0.03      0.16      0.26  <.001 
 #> Somers' D C|R                          0.20  0.02      0.15      0.25  <.001
 ```

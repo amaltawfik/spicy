@@ -156,7 +156,7 @@ type.</p>
 </tr>
 <tr class="odd">
 <td>Ordinal x Ordinal (rectangular)</td>
-<td>Kendall’s Tau-c</td>
+<td>Stuart’s Tau-c</td>
 <td><code><a href="../reference/kendall_tau_c.html">kendall_tau_c()</a></code></td>
 </tr>
 <tr class="even">
@@ -217,7 +217,7 @@ once:</p>
 <span><span class="co">#&gt; Uncertainty Coefficient C|R           0.009  0.004     0.001     0.016   .021 </span></span>
 <span><span class="co">#&gt; Goodman-Kruskal Gamma                -0.268  0.056    -0.378    -0.158  &lt;.001 </span></span>
 <span><span class="co">#&gt; Kendall's Tau-b                      -0.126  0.027    -0.180    -0.073  &lt;.001 </span></span>
-<span><span class="co">#&gt; Kendall's Tau-c                      -0.117  0.026    -0.167    -0.067  &lt;.001 </span></span>
+<span><span class="co">#&gt; Stuart's Tau-c                       -0.117  0.026    -0.167    -0.067  &lt;.001 </span></span>
 <span><span class="co">#&gt; Somers' D R|C                        -0.091  0.020    -0.131    -0.052  &lt;.001 </span></span>
 <span><span class="co">#&gt; Somers' D C|R                        -0.175  0.038    -0.249    -0.101  &lt;.001</span></span></code></pre></div>
 <p>This is useful for exploratory analysis. For reporting, pick the
@@ -306,9 +306,10 @@ H0: Tau-b = 0 (Wald z-test).</p>
 <span><span class="co">#&gt;    0.205  0.025     0.155     0.254  &lt;.001</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="kendalls-tau-c">Kendall’s Tau-c<a class="anchor" aria-label="anchor" href="#kendalls-tau-c"></a>
+<h3 id="stuarts-tau-c">Stuart’s Tau-c<a class="anchor" aria-label="anchor" href="#stuarts-tau-c"></a>
 </h3>
-<p>Tau-c is similar to Tau-b but adjusts for rectangular tables where
+<p>Stuart’s Tau-c (also known as Kendall’s Tau-c; spicy uses the SPSS /
+PSPP label) is similar to Tau-b but adjusts for rectangular tables where
 the number of rows and columns differ. The p-value tests H0: Tau-c = 0
 (Wald z-test).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -492,7 +493,7 @@ places with the leading zero stripped (<code>.045</code>) or
 <span><span class="co">#&gt; Uncertainty Coefficient C|R            0.03  0.01      0.02      0.04  &lt;.001 </span></span>
 <span><span class="co">#&gt; Goodman-Kruskal Gamma                  0.31  0.04      0.24      0.38  &lt;.001 </span></span>
 <span><span class="co">#&gt; Kendall's Tau-b                        0.20  0.03      0.16      0.25  &lt;.001 </span></span>
-<span><span class="co">#&gt; Kendall's Tau-c                        0.20  0.02      0.15      0.25  &lt;.001 </span></span>
+<span><span class="co">#&gt; Stuart's Tau-c                         0.20  0.02      0.15      0.25  &lt;.001 </span></span>
 <span><span class="co">#&gt; Somers' D R|C                          0.21  0.03      0.16      0.26  &lt;.001 </span></span>
 <span><span class="co">#&gt; Somers' D C|R                          0.20  0.02      0.15      0.25  &lt;.001</span></span></code></pre></div>
 <p>You can also store a result and re-display it with a different

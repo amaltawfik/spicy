@@ -17,7 +17,8 @@ covers the shared mechanics (output engines, labels,
 [*Mixed-effects regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 shows the population-averaged and subject-specific answers side by side
-in a single table.
+in a single table; the class-by-class map is [*Supported
+models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md).
 
 ## Why these models, and on what grounds
 
@@ -48,13 +49,13 @@ those two targets. As Fitzmaurice, Laird and Ware (2011, p. 342) put it,
 the choice “cannot be made through any automatic procedure. Rather, the
 choice must be made on subject-matter grounds.” State the scientific
 question, and the estimand – hence the model family – follows (Hubbard
-et al., 2010). Their own shorthand for the contrast: a physician
-weighing a treatment for the patient in front of them wants the
-subject-specific effect; a public-health researcher weighing the same
-treatment for a population wants the population-averaged one. And when
-both questions matter, “there is no contradiction in reporting estimates
-of both” (Fitzmaurice et al., 2011) – which is precisely what a
-side-by-side table does.
+et al., 2010). Fitzmaurice and colleagues’ own shorthand for the
+contrast: a physician weighing a treatment for the patient in front of
+them wants the subject-specific effect; a public-health researcher
+weighing the same treatment for a population wants the
+population-averaged one. And when both questions matter, “there is no
+contradiction in reporting estimates of both” (Fitzmaurice et al., 2011,
+Ch. 16) – which is precisely what a side-by-side table does.
 
 For a linear model the two coincide, so the stakes are low. On a logit
 link they do not: with a random-intercept variance \\\sigma^2\\, the
@@ -221,13 +222,19 @@ table_regression(
 The division of labour between the two criteria is Pan’s (2001): pick
 the working correlation by the smallest **QIC**; use **QICu** only for
 comparing *mean models* (covariate sets) under a fixed structure – it
-cannot select the correlation. The stake is efficiency, not consistency:
-all three columns estimate the same population quantity and converge to
-it under any structure, but in a finite sample the weighting differs –
-compare the `Cu` rows under AR(1) with the other two columns – and a
-badly chosen structure can cost a substantial share of the precision the
-data could deliver (Pan, 2001). The footer discloses each model’s
-structure on its own line.
+cannot select the correlation. Read the rule against the table honestly:
+here QIC rejects AR(1) decisively but scores independence and
+exchangeable a tenth of a point apart – a meaningless margin. A near-tie
+means the data cannot distinguish the structures, and the choice falls
+back on substantive grounds (repeated weighings of the same pig are
+exchangeable-shaped); the rule earns its keep on the decisions it *can*
+make, like ruling out AR(1) here. The stake is efficiency, not
+consistency: all three columns estimate the same population quantity and
+converge to it under any structure, but in a finite sample the weighting
+differs – compare the `Cu` rows under AR(1) with the other two columns –
+and a badly chosen structure can cost a substantial share of the
+precision the data could deliver (Pan, 2001). The footer discloses each
+model’s structure on its own line.
 
 `qic` and `qicu` are computed only when you ask for them:
 [`geepack::QIC()`](https://rdrr.io/pkg/geepack/man/QIC.html) silently
@@ -505,7 +512,7 @@ table_regression(
 | Max cluster size |   4      |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-49c63ff6 quarto-disable-processing="true"}
+.cl-04cc98be quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:

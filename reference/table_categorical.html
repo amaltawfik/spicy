@@ -159,7 +159,15 @@ naming them.</p></dd>
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
 <dd><p>Optional grouping column used for columns/groups. Accepts an
-unquoted column name or a single character column name.</p></dd>
+unquoted column name or a single character column name. Factor
+levels keep their declared order; any other <code>by</code> (character,
+numeric, haven labelled) forms group columns in order of first
+appearance in the data – the same convention as
+<code><a href="table_continuous.html">table_continuous()</a></code>. For a haven labelled <code>by</code>, the group
+headers are the raw codes (value labels are not used for group
+headers – the family convention shared with <code><a href="table_continuous.html">table_continuous()</a></code>
+and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>); declared missing values follow
+<code>user_na</code> as usual.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -433,10 +441,12 @@ packages per output engine are documented under <code>@param align</code>,
 <code>@param p_digits</code>, and <code>@param output</code> respectively.</p>
 <p>Counts are displayed as integers: weighted counts are rounded
 (ties half to even, the R convention) at display time only, in
-cells and margins alike – the SPSS Crosstabs convention – so
-displayed cells and their <code>Total</code> agree. The machine outputs
-(<code>"data.frame"</code>, <code>"long"</code>) carry the exact weighted counts and
-full-precision percentages.</p>
+cells and margins alike – the SPSS Crosstabs convention. Cells
+and margins are rounded independently, so small display
+discrepancies are possible (e.g. two cells of exactly 0.5 each
+display as <code>0</code> while their <code>Total</code> of 1.0 displays as <code>1</code>). The
+machine outputs (<code>"data.frame"</code>, <code>"long"</code>) carry the exact
+weighted counts and full-precision percentages.</p>
     </div>
     <div class="section level2">
     <h2 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a></h2>

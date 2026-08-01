@@ -95,7 +95,7 @@ presentation of applied epidemiology (the
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">outcome</span>,</span>
 <span>  <span class="va">predictors</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"glm"</span>, <span class="st">"lm"</span>, <span class="st">"coxph"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lm"</span>, <span class="st">"glm"</span>, <span class="st">"coxph"</span><span class="op">)</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  multivariable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  complete_cases <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -126,14 +126,17 @@ column(s) are dropped from the selection automatically.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p><code>"glm"</code> (default), <code>"lm"</code>, or <code>"coxph"</code> (requires
+<dd><p><code>"lm"</code> (default), <code>"glm"</code>, or <code>"coxph"</code> (requires
 the <code>survival</code> package; estimates render as HRs with
 <code>exponentiate = TRUE</code>).</p></dd>
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
 <dd><p>A <a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family</a> object for <code>method = "glm"</code>.
-Default <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>. Refused for <code>method = "coxph"</code>, and
+Default <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial()</a></code>, so <code>method = "glm"</code> alone is the logistic
+screen; supplying <code>family</code> without <code>method</code> selects the glm
+screen directly (a family can only mean that). Refused for
+<code>method = "coxph"</code>, and
 <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian()</a></code> with the identity link is refused too: use
 <code>method = "lm"</code> for the linear screen. With <code>method = "lm"</code>,
 any non-gaussian <code>family</code> is refused the same way (use
@@ -207,6 +210,25 @@ together); the multivariable model is its own family, as in any
 multi-model table.</p>
     </div>
     <div class="section level2">
+    <h2 id="why-the-default-screen-is-linear">Why the default screen is linear<a class="anchor" aria-label="anchor" href="#why-the-default-screen-is-linear"></a></h2>
+    <p>The default <code>method = "lm"</code> fits the linear screen: R's canonical
+model, and – when the outcome is continuous – the estimand with
+the most direct reading. If the outcome looks binary under this
+default, the screen proceeds as a linear probability model and
+says so in a classed warning: LPM coefficients are probability
+differences, comparable across models and samples in a way that
+odds ratios are not (Mood, 2010), but the model's built-in
+heteroskedasticity calls for <code>vcov = "HC3"</code>. A two-level factor
+(or logical) outcome is coded 0/1 on its second level – the glm
+convention – and the warning names the modeled probability; an
+outcome with more observed levels is refused (a multinomial
+outcome has no linear screen). The classical
+epidemiological screen is one argument away: <code>method = "glm"</code>
+(with the default <code>family = binomial()</code>) gives the logistic
+screen, and supplying any <code>family</code> selects the glm screen
+directly.</p>
+    </div>
+    <div class="section level2">
     <h2 id="intercepts">Intercepts<a class="anchor" aria-label="anchor" href="#intercepts"></a></h2>
     <p>Hidden by default on both sides (each univariable fit has its own
 nuisance intercept), matching <code>gtsummary::tbl_regression()</code>'s
@@ -218,6 +240,9 @@ display them.</p>
     <p>Batra, N. et al. (Eds.) (2021). <em>The Epidemiologist R Handbook</em>,
 Univariate and multivariable regression.
 <a href="https://epirhandbook.com/en/new_pages/regression.html" class="external-link">https://epirhandbook.com/en/new_pages/regression.html</a></p>
+<p>Mood, C. (2010). Logistic regression: Why we cannot do what we
+think we can do, and what we can do about it. <em>European
+Sociological Review</em>, 26(1), 67-82. <a href="https://doi.org/10.1093/esr/jcp006" class="external-link">doi:10.1093/esr/jcp006</a></p>
 <p>Sjoberg, D.D., Whiting, K., Curry, M., Lavery, J.A., &amp;
 Larmarange, J. (2021). Reproducible summary tables with the
 gtsummary package. <em>The R Journal</em>, 13(1), 570-580.</p>

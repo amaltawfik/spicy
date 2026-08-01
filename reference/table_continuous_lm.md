@@ -112,12 +112,15 @@ table_continuous_lm(
     so a binary contrast displays as `Delta (TRUE - FALSE)`.
 
   - **haven labelled with value labels** (an SPSS / Stata import):
-    treated as categorical over the raw codes, in ascending code order –
-    the same grouping
+    treated as categorical over the raw codes, in ascending code order
+    (the reference level is the lowest code; the model needs a fixed
+    level order).
     [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
     and
     [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-    apply to the same column. A labelled vector without value labels is
+    form the same groups from such a column but display them in order of
+    first appearance in the data, so the group ORDER can differ between
+    the sibling tables. A labelled vector without value labels is
     treated as a continuous regressor. Declared missing values follow
     `user_na` as usual.
 
@@ -170,9 +173,12 @@ table_continuous_lm(
     the model predicts at every observation with `by` set to that level
     (covariates kept at their observed values), and the predictions are
     averaged. Population-weighted by construction – the empirical joint
-    distribution of covariates is the reference. Best when the goal is
-    "what is the predicted mean in *this* population if everyone had
-    `by = lvl`".
+    distribution of covariates is the reference. Under `weights`, the
+    averaging uses the case weights (the Stata `margins` convention
+    after a weighted regression; equivalent to
+    `marginaleffects::avg_predictions(wts = )`), so the reference
+    distribution is the weighted one. Best when the goal is "what is the
+    predicted mean in *this* population if everyone had `by = lvl`".
 
   - `"balanced"` (matches
     [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
@@ -708,10 +714,18 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
   approximation which is biased for small samples. For Hedges' *g* the
   bounds inherit the *J* small-sample correction.
 
-- `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004). Bounds
-  are converted from the noncentrality parameter using
-  `omega^2 = ncp / (ncp + N)` and `\eqn{f^2}{f^2} = ncp / N`
-  respectively, with `N = df1 + df2 + 1` (total sample size).
+- `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004). Without
+  covariates (model-level effect sizes), bounds are converted from the
+  noncentrality parameter using `omega^2 = ncp / (ncp + N)` and
+  `\eqn{f^2}{f^2} = ncp / N` respectively, with `N = df1 + df2 + 1`
+  (total sample size). Under covariate adjustment (partial effect
+  sizes), the bounds use the partial transforms instead: partial
+  `\eqn{f^2}{f^2} = ncp / df2`, and for partial `omega^2` the inversion
+  runs at the *F*-value equivalent of the omega-squared point estimate
+  with bounds `ncp / (ncp + df2)` – the
+  [`effectsize::omega_squared()`](https://easystats.github.io/effectsize/reference/eta_squared.html)
+  `partial = TRUE` convention, which is narrower than the partial
+  eta-squared CI because omega-squared shrinks the point estimate.
 
 For the weighted case, the CI uses raw (unweighted) group counts and
 `df.residual(fit) = n - p`, consistent with the WLS reporting convention

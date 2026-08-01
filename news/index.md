@@ -4,6 +4,18 @@
 
 ### Breaking changes
 
+- [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  now defaults to the linear screen (`method = "lm"`) instead of the
+  logistic one. Calls that passed `family = binomial()` (or any family)
+  explicitly keep their glm screen unchanged – a supplied `family`
+  selects `method = "glm"` automatically. Only calls that relied on the
+  implicit binomial default change behavior: a binary-looking outcome
+  under the new default proceeds as a linear probability model and says
+  so in a classed warning pointing to `vcov = "HC3"` and to
+  `method = "glm"` for the logistic screen. See the new “Why the default
+  screen is linear” section in
+  [`?table_regression_uv`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md).
+
 - Declared missing values are now honored package-wide. Codes that
   survey files declare as missing (`na_values` / `na_range` metadata on
   haven-imported columns, and
@@ -624,16 +636,45 @@ rendering an empty column.
   caller, as in
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md).
 
-- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   and
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
   label the `tau_c` association measure `"Stuart's Tau-c"` (the SPSS /
   PSPP name) everywhere: the
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  note and `assoc_measure` attribute used to say `"Kendall's Tau-c"`
-  while the
+  note, its `assoc_measure` attribute, and the
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  summary row used to say `"Kendall's Tau-c"` while the
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   column header said `"Stuart's Tau-c"`.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  no longer swallow the classed error an association measure raises when
+  it does not apply to the tabulated table (e.g. `phi` on a labelled
+  column whose declared missing codes are kept as valid values by
+  `user_na = FALSE`, making the table 3x2): the documented hard error
+  surfaces instead of a silent all-NA association column.
+  `assoc_measure = "auto"` now counts levels under the same `user_na`
+  regime as the table, so it picks a measure that matches the table
+  actually tested.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  resolve `by` data-first, like tidyselect: a column always wins over a
+  same-named variable in the calling environment. An environment
+  variable holding another column’s name used to silently redirect the
+  grouping to that other column.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  keeps a `by` factor level that is declared but never observed as an
+  explicit zero column (`0` n, `0.0` %) in the wide and long outputs;
+  the wide output used to carry blank `NA` cells under that group’s
+  columns while the long output omitted the group entirely.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   computes the ordinal association measures (`tau_b`, `tau_c`, `gamma`,
@@ -677,9 +718,11 @@ rendering an empty column.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   displays counts as integers everywhere: weighted cells and their
-  `Total` margin are rounded by the same display rule, so displayed rows
-  sum (the SPSS convention). A weighted row used to mix integer cells
-  with a fractional margin they did not sum to.
+  `Total` margin are rounded by the same display rule (round half to
+  even, at display time only – the SPSS Crosstabs convention). A
+  weighted row used to mix integer cells with a fractional margin. Cells
+  and margins are rounded independently, so small display discrepancies
+  remain possible; the machine outputs carry the exact weighted counts.
 
 - `table_categorical(correct = TRUE)` on a non-2x2 table warns once that
   Yates’ correction is ignored, with the dimensions of the table
@@ -758,15 +801,36 @@ rendering an empty column.
   polynomial contrasts while the prediction grid assumed treatment
   coding, so every `M` column was wrong (and the 2-level difference was
   shrunk by exactly 1/sqrt(2)) while the F statistic and p-value stayed
-  correct, masking the error. An ordered `by` is now refit with
-  treatment contrasts, matching the documented convention: the ordering
-  determines level order and the reference level only.
+  correct, masking the error. A categorical `by` is now fitted with
+  explicit treatment contrasts, matching the documented convention
+  whatever the session sets: an ordered `by` no longer picks up
+  polynomial coding, and a session-wide
+  `options(contrasts = c("contr.sum", "contr.poly"))` (common in ANOVA
+  workflows) no longer alters the results or aborts a binary `by`.
 
 - `table_continuous_lm(adjustment = "balanced")` computes correct
   adjusted means when a covariate is an ordered factor: the synthetic
   grid keeps the covariate’s ordered coding (`contr.poly`) instead of
   silently rebuilding it with treatment columns against polynomial
   coefficients. `adjustment = "proportional"` was not affected.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  forms groups from a non-factor `by` (character, numeric, haven
+  labelled) in order of first appearance, matching
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
+  they used to be re-sorted, so the two sibling tables could show the
+  same groups in different orders. The group-comparison test and effect
+  size follow the displayed order, so the sign of a two-group statistic
+  matches the first-minus-second convention of the table rows.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  degrades per variable when a group-comparison test or effect size
+  fails or is undefined on degenerate data
+  (e.g. [`t.test()`](https://rdrr.io/r/stats/t.test.html)‘s “data are
+  essentially constant”, or a zero pooled SD making Hedges’ *g*
+  non-finite): the affected cells become `NA` with a classed warning
+  naming the variable, and the other selected variables keep their
+  results. The raw error used to kill the whole multi-variable table.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   treats a haven labelled `by` with value labels as a categorical
@@ -778,9 +842,46 @@ rendering an empty column.
   labelled `by` without value labels is still treated as continuous.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  raises a classed, actionable error when a factor covariate declares a
-  level that never occurs in the data, instead of a recycling warning
-  followed by a cryptic base-R crash.
+  fits cleanly when a factor covariate declares a level that never
+  occurs in the data: empty covariate levels are dropped at fit entry,
+  so the table matches the same model on
+  [`droplevels()`](https://rdrr.io/r/base/droplevels.html)-ed data
+  instead of crashing.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  excludes rows with `NA` in `weights` from the analytic sample, as its
+  documentation always promised; such rows used to raise a hard “must
+  contain only finite values” error. Rows dropped for a missing `by`
+  value or a missing weight are now disclosed in the table note, like
+  the rest of the family.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  accepts covariates with non-syntactic names (e.g. `"co var"`); they
+  used to raise a raw formula parse error.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  errors with a classed, actionable message when `by` has a single
+  observed level (nothing to compare; an all-NA row used to print
+  silently), and reports `NA` SEs, CIs, tests, and *p*-values with a
+  classed warning when the fit is saturated (one observation per group);
+  `NaN` cells with a misleading `"z"` test label used to be displayed.
+  When missing values leave a single outcome with fewer than two
+  observed groups (or too few observations for a slope), that outcome
+  degrades with a classed warning naming it, and its `NA` row keeps the
+  regular group columns instead of growing a spurious `M (NA)` column;
+  the other outcomes are unaffected.
+
+- `table_continuous_lm(adjustment = "proportional")` averages the
+  G-computation predictions with the case weights when `weights` is
+  supplied (the Stata `margins` convention, equivalent to
+  `marginaleffects::avg_predictions(wts = )`); the aggregation used to
+  ignore the weights, contradicting the documented Stata equivalence.
+
+- `table_continuous_lm(effect_size = "omega2", effect_size_ci = TRUE)`
+  reports the correct confidence interval for the covariate-adjusted
+  partial omega-squared, matching
+  `effectsize::omega_squared(partial = TRUE)`; the bounds used to be
+  those of the partial eta-squared.
 
 - The RMST and risk-difference columns extend to parametric survival
   models

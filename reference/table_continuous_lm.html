@@ -210,11 +210,14 @@ as an explicit factor with the desired level ordering (e.g. via
 that order, since <code>FALSE &lt; TRUE</code>). The reference level is <code>"FALSE"</code>,
 so a binary contrast displays as <code>Delta (TRUE - FALSE)</code>.</p></li>
 <li><p><strong>haven labelled with value labels</strong> (an SPSS / Stata import):
-treated as categorical over the raw codes, in ascending code order
-– the same grouping <code><a href="table_continuous.html">table_continuous()</a></code> and <code><a href="table_categorical.html">table_categorical()</a></code>
-apply to the same column. A labelled vector without value labels is
-treated as a continuous regressor. Declared missing values follow
-<code>user_na</code> as usual.</p></li>
+treated as categorical over the raw codes, in ascending code
+order (the reference level is the lowest code; the model needs
+a fixed level order). <code><a href="table_continuous.html">table_continuous()</a></code> and
+<code><a href="table_categorical.html">table_categorical()</a></code> form the same groups from such a column
+but display them in order of first appearance in the data, so
+the group ORDER can differ between the sibling tables. A
+labelled vector without value labels is treated as a continuous
+regressor. Declared missing values follow <code>user_na</code> as usual.</p></li>
 </ul><p>Rows with <code>NA</code> in <code>by</code> are excluded from the analytic sample for each
 outcome (NAs in <code>y</code> and <code>weights</code> are also excluded; see Details).</p></dd>
 
@@ -260,8 +263,13 @@ predicts at every observation with <code>by</code> set to that level
 (covariates kept at their observed values), and the
 predictions are averaged. Population-weighted by construction
 – the empirical joint distribution of covariates is the
-reference. Best when the goal is "what is the predicted
-mean in <em>this</em> population if everyone had <code>by = lvl</code>".</p></li>
+reference. Under <code>weights</code>, the averaging uses the case
+weights (the Stata <code>margins</code> convention after a weighted
+regression; equivalent to
+<code>marginaleffects::avg_predictions(wts = )</code>), so the reference
+distribution is the weighted one. Best when the goal is "what
+is the predicted mean in <em>this</em> population if everyone had
+<code>by = lvl</code>".</p></li>
 <li><p><code>"balanced"</code> (matches <code><a href="https://rvlenth.github.io/emmeans/reference/emmeans.html" class="external-link">emmeans::emmeans()</a></code> default and the
 SPSS UNIANOVA EMMEANS / SAS LSMEANS conventions): synthetic
 grid of factor-covariate level combinations x numeric
@@ -702,9 +710,17 @@ older Hedges-Olkin normal approximation which is biased for small
 samples. For Hedges' <em>g</em> the bounds inherit the <em>J</em> small-sample
 correction.</p></li>
 <li><p><code>"omega2"</code>, <code>"f2"</code>: noncentral <em>F</em> inversion (Steiger 2004).
-Bounds are converted from the noncentrality parameter using
+Without covariates (model-level effect sizes), bounds are
+converted from the noncentrality parameter using
 <code>omega^2 = ncp / (ncp + N)</code> and <code>\eqn{f^2}{f^2} = ncp / N</code> respectively, with
-<code>N = df1 + df2 + 1</code> (total sample size).</p></li>
+<code>N = df1 + df2 + 1</code> (total sample size). Under covariate
+adjustment (partial effect sizes), the bounds use the partial
+transforms instead: partial <code>\eqn{f^2}{f^2} = ncp / df2</code>, and for partial
+<code>omega^2</code> the inversion runs at the <em>F</em>-value equivalent of the
+omega-squared point estimate with bounds <code>ncp / (ncp + df2)</code> –
+the <code><a href="https://easystats.github.io/effectsize/reference/eta_squared.html" class="external-link">effectsize::omega_squared()</a></code> <code>partial = TRUE</code> convention,
+which is narrower than the partial eta-squared CI because
+omega-squared shrinks the point estimate.</p></li>
 </ul><p>For the weighted case, the CI uses raw (unweighted) group counts and
 <code>df.residual(fit) = n - p</code>, consistent with the WLS reporting convention
 (DuMouchel and Duncan 1983). For propensity-score balance assessment or
