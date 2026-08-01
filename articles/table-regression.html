@@ -63,6 +63,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
+    <li><a class="dropdown-item" href="../articles/as-structured.html">The structured view (programmatic access)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
@@ -366,9 +367,15 @@ reuse this copy throughout the vignette:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; η² = partial eta-squared; ω² = bias-corrected partial omega-squared.</span></span></span></code></pre></div>
 <p>Methodology notes:</p>
 <ul>
-<li>The partial F-test is computed on a Type-II ANOVA reference
-(<code><a href="https://rdrr.io/pkg/car/man/Anova.html" class="external-link">car::Anova</a></code>), which respects the principle of marginality
-and is the SAS / SPSS default for unbalanced designs.</li>
+<li>The partial F-test compares the full model against the model with
+the term’s columns removed, all other columns held. For models without
+interaction terms this is exactly the Type-II ANOVA reference
+(<code><a href="https://rdrr.io/pkg/car/man/Anova.html" class="external-link">car::Anova</a></code>), the SAS / SPSS default for unbalanced
+designs. When the model contains interactions, the test for a main
+effect holds the interaction columns fixed (it follows the fitted
+parameterization rather than the marginality-respecting Type-II scheme),
+so effect sizes for lower-order terms of an interaction model should be
+interpreted with care.</li>
 <li>The <code>ω²</code> point estimate is bias-corrected via the Olejnik
 and Algina (2003) formula
 <code>((F − 1) × df1) / (F × df1 + N − df1)</code>, yielding a
@@ -1708,7 +1715,9 @@ same content is available as a plain <code>data.frame</code>
 <span><span class="co">#&gt;   .. ..$ p_threshold       : num 0.001</span></span>
 <span><span class="co">#&gt;   .. ..$ ci_level          : num 0.95</span></span>
 <span><span class="co">#&gt;  - attr(*, "padding")= int 0</span></span>
-<span><span class="co">#&gt;  - attr(*, "fit_stats_layout")= chr "first_col"</span></span></code></pre></div>
+<span><span class="co">#&gt;  - attr(*, "fit_stats_layout")= chr "first_col"</span></span>
+<span><span class="co">#&gt;  - attr(*, "model_ids")= chr "M1"</span></span>
+<span><span class="co">#&gt;  - attr(*, "outcome")= chr "wellbeing_score"</span></span></code></pre></div>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
@@ -1716,13 +1725,15 @@ same content is available as a plain <code>data.frame</code>
 <span><span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model_id"</span>, <span class="st">"term"</span>, <span class="st">"estimate_type"</span>, <span class="st">"estimate"</span>,</span>
 <span>        <span class="st">"std.error"</span>, <span class="st">"p.value"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;   model_id        term estimate_type    estimate  std.error       p.value</span></span>
-<span><span class="co">#&gt; 1       M1 (Intercept)             B 65.20085505 1.65670747 1.591088e-216</span></span>
-<span><span class="co">#&gt; 2       M1         age             B  0.04649213 0.03069709  1.301575e-01</span></span>
-<span><span class="co">#&gt; 3       M1   sexFemale             B          NA         NA            NA</span></span>
-<span><span class="co">#&gt; 4       M1     sexMale             B  3.85579323 0.90528970  2.216170e-05</span></span>
-<span><span class="co">#&gt; 5       M1   smokingNo             B          NA         NA            NA</span></span>
-<span><span class="co">#&gt; 6       M1  smokingYes             B -1.71871310 1.10751281  1.209641e-01</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">#&gt;   model_id term        estimate_type estimate std.error    p.value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> M1       (Intercept) B              65.2       1.66    1.59<span style="color: #949494;">e</span><span style="color: #BB0000;">-216</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> M1       age         B               0.046<span style="text-decoration: underline;">5</span>    0.030<span style="text-decoration: underline;">7</span>  1.30<span style="color: #949494;">e</span><span style="color: #BB0000;">-  1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> M1       sexFemale   B              <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>   <span style="color: #949494;"> </span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> M1       sexMale     B               3.86      0.905   2.22<span style="color: #949494;">e</span><span style="color: #BB0000;">-  5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> M1       smokingNo   B              <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>   <span style="color: #949494;"> </span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> M1       smokingYes  B              -<span style="color: #BB0000;">1.72</span>      1.11    1.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-  1</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>

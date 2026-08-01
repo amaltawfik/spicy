@@ -35,7 +35,7 @@ glance(x, ...)
 
 ## Value
 
-A `tbl_df` (when `tibble` is installed) or a plain `data.frame`.
+A `tbl_df`.
 
 ## Details
 

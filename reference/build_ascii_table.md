@@ -99,8 +99,9 @@ build_ascii_table(
   7 §7.13). Names are spanner labels; values are integer vectors of
   1-based column indices the label spans (must be contiguous). A thin
   underline rule is drawn below each spanner across its span. Used by
-  `print.spicy_regression_table()` to display the model name above each
-  model's block of sub-columns. Defaults to `NULL` (no spanner row).
+  [`print.spicy_regression_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.md)
+  to display the model name above each model's block of sub-columns.
+  Defaults to `NULL` (no spanner row).
 
 - group_sep_rows:
 
@@ -125,10 +126,11 @@ build_ascii_table(
   Optional character vector of length `ncol(x)` used to override
   `colnames(x)` for the rendered header row only. The data.frame's
   actual names are kept for indexing; only the visual header is swapped.
-  Used by `print.spicy_regression_table()` so a `B + AME` table shows
-  the bare label (`95% CI`, `p`) in both blocks rather than R's
-  deduplicated `95% CI.2` / `p.2`. Defaults to `NULL` (use `colnames(x)`
-  verbatim).
+  Used by
+  [`print.spicy_regression_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.md)
+  so a `B + AME` table shows the bare label (`95% CI`, `p`) in both
+  blocks rather than R's deduplicated `95% CI.2` / `p.2`. Defaults to
+  `NULL` (use `colnames(x)` verbatim).
 
 - ...:
 

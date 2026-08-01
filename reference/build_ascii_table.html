@@ -43,6 +43,7 @@ per-column alignment."><meta property="og:image" content="https://amaltawfik.git
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
+    <li><a class="dropdown-item" href="../articles/as-structured.html">The structured view (programmatic access)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
@@ -179,7 +180,7 @@ convention; APA Manual 7 §7.13).
 Names are spanner labels; values are integer vectors of 1-based
 column indices the label spans (must be contiguous). A thin
 underline rule is drawn below each spanner across its span.
-Used by <code>print.spicy_regression_table()</code> to display the model
+Used by <code><a href="print.spicy_regression_table.html">print.spicy_regression_table()</a></code> to display the model
 name above each model's block of sub-columns. Defaults to
 <code>NULL</code> (no spanner row).</p></dd>
 
@@ -204,7 +205,7 @@ the print methods are immune to that false positive.</p></dd>
 <dd><p>Optional character vector of length <code>ncol(x)</code>
 used to override <code>colnames(x)</code> for the rendered header row only.
 The data.frame's actual names are kept for indexing; only the
-visual header is swapped. Used by <code>print.spicy_regression_table()</code>
+visual header is swapped. Used by <code><a href="print.spicy_regression_table.html">print.spicy_regression_table()</a></code>
 so a <code>B + AME</code> table shows the bare label (<code>95% CI</code>, <code>p</code>) in both
 blocks rather than R's deduplicated <code>95% CI.2</code> / <code>p.2</code>. Defaults
 to <code>NULL</code> (use <code>colnames(x)</code> verbatim).</p></dd>

@@ -155,7 +155,10 @@ directly.
 Hidden by default on both sides (each univariable fit has its own
 nuisance intercept), matching `gtsummary::tbl_regression()`'s
 `intercept = FALSE` default. Pass `show_intercept = TRUE` to display
-them.
+them: each univariable block then opens with its own fit's `(Intercept)`
+row, and the multivariable model shows its intercept as in any
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+table.
 
 ## References
 

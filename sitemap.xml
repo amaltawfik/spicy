@@ -2,6 +2,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/404.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/LICENSE-text.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/LICENSE.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/articles/as-structured.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/association-measures.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/categorical-predictors.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/frequency-tables.html</loc></url>
@@ -55,7 +56,11 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_continuous_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table_list.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_flextable.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_gt.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_regression_frame.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/sochealth.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/somers_d.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/spicy-package.html</loc></url>
@@ -68,6 +73,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_models.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_uv.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/terms.spicy_uv_screen.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_table.html</loc></url>

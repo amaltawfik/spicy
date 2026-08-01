@@ -509,6 +509,9 @@ sochealth |>
   ([`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
 - [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
   — the class-by-class capability map (some thirty model classes).
+- [`vignette("as-structured")`](https://amaltawfik.github.io/spicy/articles/as-structured.md)
+  — the typed view behind every regression table: filter, aggregate, or
+  build a custom renderer.
 - [`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
   — mixed-effects (multilevel) models, random effects as table rows,
   ICC.

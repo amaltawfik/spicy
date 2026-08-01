@@ -4,18 +4,6 @@
 
 ### Breaking changes
 
-- [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
-  now defaults to the linear screen (`method = "lm"`) instead of the
-  logistic one. Calls that passed `family = binomial()` (or any family)
-  explicitly keep their glm screen unchanged – a supplied `family`
-  selects `method = "glm"` automatically. Only calls that relied on the
-  implicit binomial default change behavior: a binary-looking outcome
-  under the new default proceeds as a linear probability model and says
-  so in a classed warning pointing to `vcov = "HC3"` and to
-  `method = "glm"` for the logistic screen. See the new “Why the default
-  screen is linear” section in
-  [`?table_regression_uv`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md).
-
 - Declared missing values are now honored package-wide. Codes that
   survey files declare as missing (`na_values` / `na_range` metadata on
   haven-imported columns, and
@@ -327,13 +315,21 @@ rendering an empty column.
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
   univariable screening tables. One fit per candidate predictor,
   rendered as one table with a row block per predictor and merged side
-  by side with the multivariable model. Supports `glm` (default), `lm`,
-  and `coxph` (`outcome = Surv(time, status)`). A per-predictor `N`
-  column is shown by default and a note discloses when Ns differ across
-  fits; `complete_cases = TRUE` forces the common sample. Intercepts are
-  hidden by default and `p_adjust` treats the whole screen as one
-  family. `exponentiate`, `vcov` / `cluster` (the footer names the
-  cluster column), `labels`, the output engines, and
+  by side with the multivariable model. Supports `lm` (the default
+  linear screen), `glm` (selected automatically when a `family` is
+  supplied), and `coxph` (`outcome = Surv(time, status)`). Under the
+  linear default, a binary-looking outcome proceeds as a linear
+  probability model and says so in a classed warning pointing to
+  `vcov = "HC3"` and to `method = "glm"` for the logistic screen (see
+  “Why the default screen is linear” in
+  [`?table_regression_uv`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
+  A per-predictor `N` column is shown by default and a note discloses
+  when Ns differ across fits; `complete_cases = TRUE` forces the common
+  sample. Intercepts are hidden by default; `show_intercept = TRUE`
+  displays each univariable fit’s own intercept at the top of its block
+  along with the multivariable one. `p_adjust` treats the whole screen
+  as one family. `exponentiate`, `vcov` / `cluster` (the footer names
+  the cluster column), `labels`, the output engines, and
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) work as in
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md):
@@ -1089,6 +1085,14 @@ rendering an empty column.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   returns carry the documented provenance attributes `outcome` and
   `model_ids` (one entry per model, in table order).
+  `output = "data.frame"` carries the same pair, and
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) no
+  longer drops `col_spec`, so the two documented equivalents now return
+  identical objects (same cells, classes, and attributes).
+
+- `table_regression(output = "long")` returns the long-format tibble
+  (`tbl_df`) its documentation always promised; it used to return a
+  plain `data.frame`.
 
 - [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   raises a classed error (`spicy_invalid_input`) when `count` is

@@ -1,9 +1,11 @@
 # Convert a `spicy_regression_table` to a plain data.frame / tibble
 
 Strips the `spicy_regression_table` / `spicy_table` classes and the
-`col_spec` rendering metadata, returning the wide character display as a
-plain `data.frame` (or `tbl_df` via `as_tibble()`). The `title` and
-`note` attributes are preserved.
+internal analytic attributes (`spicy_long`, `spicy_fit_stats`),
+returning the wide character display as a plain `data.frame` (or
+`tbl_df` via `as_tibble()`). The `title`, `note`, provenance
+(`model_ids`, `outcome`), and rendering (`col_spec`) attributes are
+preserved.
 
 ## Usage
 
@@ -40,8 +42,11 @@ A plain `data.frame` (for
 
 ## Details
 
-Equivalent to passing `output = "data.frame"` to
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) is
+equivalent to passing `output = "data.frame"` to
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+the two paths return identical objects (same cells, classes, and
+attributes).
 
 ## See also
 

@@ -9,17 +9,21 @@
 inspection, and tabulation workflows: frequency tables,
 cross-tabulations with chi-squared tests and effect sizes,
 association measures for contingency tables, categorical and
-continuous summary tables, model-based linear-regression tables
-with optional additive covariate adjustment, row-wise
-descriptive summaries, interactive codebooks, variable-label
-extraction, and clipboard export."><meta property="og:description" content="spicy provides tools for descriptive data analysis, variable
+continuous summary tables, regression coefficient tables for one
+or several fits side by side (thirty-plus supported model
+classes), model-based linear-regression tables with optional
+additive covariate adjustment, row-wise descriptive summaries,
+interactive codebooks, variable-label extraction, and clipboard
+export."><meta property="og:description" content="spicy provides tools for descriptive data analysis, variable
 inspection, and tabulation workflows: frequency tables,
 cross-tabulations with chi-squared tests and effect sizes,
 association measures for contingency tables, categorical and
-continuous summary tables, model-based linear-regression tables
-with optional additive covariate adjustment, row-wise
-descriptive summaries, interactive codebooks, variable-label
-extraction, and clipboard export."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+continuous summary tables, regression coefficient tables for one
+or several fits side by side (thirty-plus supported model
+classes), model-based linear-regression tables with optional
+additive covariate adjustment, row-wise descriptive summaries,
+interactive codebooks, variable-label extraction, and clipboard
+export."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -49,6 +53,7 @@ extraction, and clipboard export."><meta property="og:image" content="https://am
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
+    <li><a class="dropdown-item" href="../articles/as-structured.html">The structured view (programmatic access)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
@@ -86,10 +91,12 @@ extraction, and clipboard export."><meta property="og:image" content="https://am
 inspection, and tabulation workflows: frequency tables,
 cross-tabulations with chi-squared tests and effect sizes,
 association measures for contingency tables, categorical and
-continuous summary tables, model-based linear-regression tables
-with optional additive covariate adjustment, row-wise
-descriptive summaries, interactive codebooks, variable-label
-extraction, and clipboard export.</p>
+continuous summary tables, regression coefficient tables for one
+or several fits side by side (thirty-plus supported model
+classes), model-based linear-regression tables with optional
+additive covariate adjustment, row-wise descriptive summaries,
+interactive codebooks, variable-label extraction, and clipboard
+export.</p>
     </div>
 
 
@@ -118,10 +125,13 @@ documented CIs): <code><a href="cramer_v.html">cramer_v()</a></code>, <code><a h
 before 1.0 with a <code>NEWS.md</code> entry, but no silent behavioural
 changes):</p><ul><li><p>Summary table builders: <code><a href="table_categorical.html">table_categorical()</a></code>,
 <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code></p></li>
+<li><p>Regression tables: <code><a href="table_regression.html">table_regression()</a></code>,
+<code><a href="table_regression_uv.html">table_regression_uv()</a></code>, <code><a href="table_regression_models.html">table_regression_models()</a></code>,
+<code><a href="as_structured.html">as_structured()</a></code></p></li>
 <li><p>Omnibus association overview: <code><a href="assoc_measures.html">assoc_measures()</a></code></p></li>
 </ul><p><strong>Internal API</strong> (not part of the public surface; can change
-without notice – avoid calling directly from downstream code):</p><ul><li><p>ASCII rendering primitives: <code><a href="build_ascii_table.html">build_ascii_table()</a></code>,
-<code><a href="spicy_print_table.html">spicy_print_table()</a></code></p></li>
+without notice – avoid calling directly from downstream code):</p><ul><li><p>ASCII rendering primitive: <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
+(<code><a href="build_ascii_table.html">build_ascii_table()</a></code> is no longer exported)</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="broom-output-shape">broom output shape<a class="anchor" aria-label="anchor" href="#broom-output-shape"></a></h2>
@@ -138,11 +148,16 @@ considered <strong>stabilising</strong>: existing columns will not be silently
 renamed or have their semantics changed within <code>0.y.z</code>, and any
 breaking change is announced in <code>NEWS.md</code>. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking
-change. Numeric columns are always returned with the type
-downstream broom-consumers expect: <code>df</code> integer, <code>df.residual</code>
-numeric (so Satterthwaite-corrected degrees of freedom from
-cluster-robust variance modes are preserved verbatim, matching
-<code>lmerTest::glance()</code> and the <code>afex</code> output convention).</p>
+change. Numeric columns keep the types downstream
+broom-consumers expect: test degrees of freedom that are integer
+by construction (chi-squared, factor-comparison F tests) stay
+integer, while every degrees-of-freedom column that can be
+fractional – <code>df.residual</code>, the regression method's
+per-coefficient <code>df</code>, and Welch-corrected test <code>df</code> – is
+numeric double, so Satterthwaite-corrected degrees of freedom
+from cluster-robust variance modes are preserved verbatim
+(matching <code>lmerTest::glance()</code> and the <code>afex</code> output
+convention).</p>
     </div>
     <div class="section level2">
     <h2 id="classed-conditions">Classed conditions<a class="anchor" aria-label="anchor" href="#classed-conditions"></a></h2>

@@ -134,12 +134,27 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [`print(`*`<spicy_cross_table_list>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_cross_table_list.md)
   : Internal print method for lists of cross-tab tables
 
+- [`print(`*`<spicy_flextable>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_flextable.md)
+  : Print method for spicy-tagged flextables
+
 - [`print(`*`<spicy_freq_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.md)
   :
 
   Print method for
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   tables
+
+- [`print(`*`<spicy_gt>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_gt.md)
+  : Print method for spicy-tagged gt tables
+
+- [`print(`*`<spicy_regression_frame>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_regression_frame.md)
+  : Print method for internal regression frames
+
+- [`print(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.md)
+  : Print method for regression tables
+
+- [`terms(`*`<spicy_uv_screen>`*`)`](https://amaltawfik.github.io/spicy/reference/terms.spicy_uv_screen.md)
+  : Terms method for univariable screen bundles
 
 - [`as.data.frame(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_table.md)
   [`as_tibble(`*`<spicy_categorical_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_table.md)

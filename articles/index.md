@@ -80,6 +80,18 @@
   semantics, robust-variance backends, and standardized-coefficient
   support.
 
+- [The structured view: programmatic access to regression
+  tables](https://amaltawfik.github.io/spicy/articles/as-structured.md):
+
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  exposes the typed representation behind every
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  output: a numeric body with split CI columns, per-column metadata,
+  row-role indices, and the format specification – the same contract
+  spicy’s own Excel, gt, tinytable, flextable, and clipboard engines
+  consume. Filter coefficients programmatically, aggregate raw values,
+  or build a custom renderer.
+
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
 

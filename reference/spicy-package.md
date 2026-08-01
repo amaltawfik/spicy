@@ -3,10 +3,11 @@
 spicy provides tools for descriptive data analysis, variable inspection,
 and tabulation workflows: frequency tables, cross-tabulations with
 chi-squared tests and effect sizes, association measures for contingency
-tables, categorical and continuous summary tables, model-based
-linear-regression tables with optional additive covariate adjustment,
-row-wise descriptive summaries, interactive codebooks, variable-label
-extraction, and clipboard export.
+tables, categorical and continuous summary tables, regression
+coefficient tables for one or several fits side by side (thirty-plus
+supported model classes), model-based linear-regression tables with
+optional additive covariate adjustment, row-wise descriptive summaries,
+interactive codebooks, variable-label extraction, and clipboard export.
 
 ## API stability
 
@@ -58,15 +59,22 @@ on the **stable** surface.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 
+- Regression tables:
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
+  [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+
 - Omnibus association overview:
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
 
 **Internal API** (not part of the public surface; can change without
 notice – avoid calling directly from downstream code):
 
-- ASCII rendering primitives:
-  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md),
+- ASCII rendering primitive:
   [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
+  ([`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
+  is no longer exported)
 
 ## broom output shape
 
@@ -82,11 +90,15 @@ columns produced by each method is considered **stabilising**: existing
 columns will not be silently renamed or have their semantics changed
 within `0.y.z`, and any breaking change is announced in `NEWS.md`.
 Adding optional new columns (e.g. covariate-adjustment metadata) is not
-a breaking change. Numeric columns are always returned with the type
-downstream broom-consumers expect: `df` integer, `df.residual` numeric
-(so Satterthwaite-corrected degrees of freedom from cluster-robust
-variance modes are preserved verbatim, matching `lmerTest::glance()` and
-the `afex` output convention).
+a breaking change. Numeric columns keep the types downstream
+broom-consumers expect: test degrees of freedom that are integer by
+construction (chi-squared, factor-comparison F tests) stay integer,
+while every degrees-of-freedom column that can be fractional –
+`df.residual`, the regression method's per-coefficient `df`, and
+Welch-corrected test `df` – is numeric double, so
+Satterthwaite-corrected degrees of freedom from cluster-robust variance
+modes are preserved verbatim (matching `lmerTest::glance()` and the
+`afex` output convention).
 
 ## Classed conditions
 

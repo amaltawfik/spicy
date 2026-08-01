@@ -259,10 +259,16 @@ table_regression(
 
 Methodology notes:
 
-- The partial F-test is computed on a Type-II ANOVA reference
-  ([`car::Anova`](https://rdrr.io/pkg/car/man/Anova.html)), which
-  respects the principle of marginality and is the SAS / SPSS default
-  for unbalanced designs.
+- The partial F-test compares the full model against the model with the
+  term’s columns removed, all other columns held. For models without
+  interaction terms this is exactly the Type-II ANOVA reference
+  ([`car::Anova`](https://rdrr.io/pkg/car/man/Anova.html)), the SAS /
+  SPSS default for unbalanced designs. When the model contains
+  interactions, the test for a main effect holds the interaction columns
+  fixed (it follows the fitted parameterization rather than the
+  marginality-respecting Type-II scheme), so effect sizes for
+  lower-order terms of an interaction model should be interpreted with
+  care.
 - The `ω²` point estimate is bias-corrected via the Olejnik and
   Algina (2003) formula `((F − 1) × df1) / (F × df1 + N − df1)`,
   yielding a less-biased small-sample estimator than partial `η²`.
@@ -1618,6 +1624,8 @@ str(out)
 #>   .. ..$ ci_level          : num 0.95
 #>  - attr(*, "padding")= int 0
 #>  - attr(*, "fit_stats_layout")= chr "first_col"
+#>  - attr(*, "model_ids")= chr "M1"
+#>  - attr(*, "outcome")= chr "wellbeing_score"
 ```
 
 ``` r
@@ -1628,13 +1636,15 @@ out <- table_regression(
 )
 out[, c("model_id", "term", "estimate_type", "estimate",
         "std.error", "p.value")]
-#>   model_id        term estimate_type    estimate  std.error       p.value
-#> 1       M1 (Intercept)             B 65.20085505 1.65670747 1.591088e-216
-#> 2       M1         age             B  0.04649213 0.03069709  1.301575e-01
-#> 3       M1   sexFemale             B          NA         NA            NA
-#> 4       M1     sexMale             B  3.85579323 0.90528970  2.216170e-05
-#> 5       M1   smokingNo             B          NA         NA            NA
-#> 6       M1  smokingYes             B -1.71871310 1.10751281  1.209641e-01
+#> # A tibble: 6 × 6
+#>   model_id term        estimate_type estimate std.error    p.value
+#>   <chr>    <chr>       <chr>            <dbl>     <dbl>      <dbl>
+#> 1 M1       (Intercept) B              65.2       1.66    1.59e-216
+#> 2 M1       age         B               0.0465    0.0307  1.30e-  1
+#> 3 M1       sexFemale   B              NA        NA      NA        
+#> 4 M1       sexMale     B               3.86      0.905   2.22e-  5
+#> 5 M1       smokingNo   B              NA        NA      NA        
+#> 6 M1       smokingYes  B              -1.72      1.11    1.21e-  1
 ```
 
 ``` r

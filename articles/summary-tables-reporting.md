@@ -18,16 +18,19 @@ sequence used in empirical articles:
   robust SE, weights, or covariate adjustment;
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   builds **Table 3** (the coefficient table) from one or several fitted
-  [`lm()`](https://rdrr.io/r/stats/lm.html) /
-  [`glm()`](https://rdrr.io/r/stats/glm.html) models.
+  models — [`lm()`](https://rdrr.io/r/stats/lm.html) /
+  [`glm()`](https://rdrr.io/r/stats/glm.html) through some thirty
+  supported classes.
 
 The four functions share the same output grammar — the same `output`
 formats (`gt`, `tinytable`, `flextable`, `word`, `excel`, `clipboard`),
-the same `decimal_mark`, `digits`, `p_digits`, `labels`, and `align`
-arguments — so a single reporting workflow can move smoothly from
-descriptive to inferential without juggling different APIs. This
-vignette focuses on that shared logic; the function-specific articles
-cover the methodological options in depth.
+the same `decimal_mark`, `p_digits`, `labels`, and `align` arguments,
+and the same `digits` control for numeric cells (the categorical table’s
+cells are percentages, so it spells the argument `percent_digits`) — so
+a single reporting workflow can move smoothly from descriptive to
+inferential without juggling different APIs. This vignette focuses on
+that shared logic; the function-specific articles cover the
+methodological options in depth.
 
 ## Choose the right function
 
@@ -65,11 +68,11 @@ The first three functions live inside a `select` / `by` data-frame
 grammar;
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 is **fit-first** — you build the model the usual R way
-([`lm()`](https://rdrr.io/r/stats/lm.html) or
-[`glm()`](https://rdrr.io/r/stats/glm.html)) and hand the object in. All
-four share the post-construction grammar (`output`, `labels`, `digits`,
-`decimal_mark`, `align`), so swapping functions never breaks your
-rendering pipeline.
+([`lm()`](https://rdrr.io/r/stats/lm.html),
+[`glm()`](https://rdrr.io/r/stats/glm.html), or any other supported
+engine) and hand the object in. All four share the post-construction
+grammar (`output`, `labels`, `decimal_mark`, `align`, and the digits
+controls), so swapping functions never breaks your rendering pipeline.
 
 ## A shared interface
 

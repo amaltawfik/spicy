@@ -63,6 +63,7 @@
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
+    <li><a class="dropdown-item" href="../articles/as-structured.html">The structured view (programmatic access)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
@@ -125,18 +126,21 @@ linear-model regime when group means need robust SE, weights, or
 covariate adjustment;</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code> builds <strong>Table 3</strong> (the
-coefficient table) from one or several fitted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> /
-<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> models.</li>
+coefficient table) from one or several fitted models — <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>
+/ <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> through some thirty supported classes.</li>
 </ul>
 <p>The four functions share the same output grammar — the same
 <code>output</code> formats (<code>gt</code>, <code>tinytable</code>,
 <code>flextable</code>, <code>word</code>, <code>excel</code>,
 <code>clipboard</code>), the same <code>decimal_mark</code>,
-<code>digits</code>, <code>p_digits</code>, <code>labels</code>, and
-<code>align</code> arguments — so a single reporting workflow can move
-smoothly from descriptive to inferential without juggling different
-APIs. This vignette focuses on that shared logic; the function-specific
-articles cover the methodological options in depth.</p>
+<code>p_digits</code>, <code>labels</code>, and <code>align</code>
+arguments, and the same <code>digits</code> control for numeric cells
+(the categorical table’s cells are percentages, so it spells the
+argument <code>percent_digits</code>) — so a single reporting workflow
+can move smoothly from descriptive to inferential without juggling
+different APIs. This vignette focuses on that shared logic; the
+function-specific articles cover the methodological options in
+depth.</p>
 <div class="section level2">
 <h2 id="choose-the-right-function">Choose the right function<a class="anchor" aria-label="anchor" href="#choose-the-right-function"></a>
 </h2>
@@ -219,11 +223,11 @@ effects, or nested model comparisons.</li>
 <p>The first three functions live inside a <code>select</code> /
 <code>by</code> data-frame grammar; <code><a href="../reference/table_regression.html">table_regression()</a></code> is
 <strong>fit-first</strong> — you build the model the usual R way
-(<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> or <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>) and hand the object in. All
-four share the post-construction grammar (<code>output</code>,
-<code>labels</code>, <code>digits</code>, <code>decimal_mark</code>,
-<code>align</code>), so swapping functions never breaks your rendering
-pipeline.</p>
+(<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>, or any other supported engine)
+and hand the object in. All four share the post-construction grammar
+(<code>output</code>, <code>labels</code>, <code>decimal_mark</code>,
+<code>align</code>, and the digits controls), so swapping functions
+never breaks your rendering pipeline.</p>
 </div>
 <div class="section level2">
 <h2 id="a-shared-interface">A shared interface<a class="anchor" aria-label="anchor" href="#a-shared-interface"></a>
