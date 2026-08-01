@@ -384,3 +384,69 @@ test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
     expect_equal(unname(b_r$std_error), unname(orc), tolerance = 1e-7)
   }
 })
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:cr-only-class-set
+# The classes not yet covered by a per-class refusal test: lme, glmmTMB,
+# polr, clm, betareg, svyglm, survreg. Each supports classical + CR* ONLY:
+# HC* and the lm/glm-refitting resamplers are refused up front, while
+# CR2 + cluster computes.
+test_that("cr-only classes refuse HC* / bootstrap and accept CR2 + cluster", {
+  # First glmmTMB namespace load may emit an advisory TMB-version warning
+  # on some local toolchains; absorb it before the skip guard loads it.
+  suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("ordinal")
+  skip_if_not_installed("betareg")
+  skip_if_not_installed("survey")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("sandwich")
+  set.seed(7)
+  n <- 200
+  d <- data.frame(
+    x1 = rnorm(n),
+    g = factor(sample(10, n, TRUE))
+  )
+  d$y <- 1 + 0.5 * d$x1 + rnorm(n)
+  d$yo <- factor(sample(1:3, n, TRUE), ordered = TRUE)
+  d$yp <- pmin(pmax(plogis(0.3 * d$x1 + rnorm(n)), 1e-3), 1 - 1e-3)
+  d$time <- rexp(n, exp(-0.2 * d$x1))
+  d$status <- rbinom(n, 1, 0.7)
+  des <- suppressWarnings(survey::svydesign(id = ~1, data = d))
+  fits <- list(
+    lme = nlme::lme(y ~ x1, random = ~ 1 | g, data = d),
+    # suppressWarnings: absorbs the advisory TMB-version warning some
+    # local toolchains emit on the first glmmTMB namespace load.
+    glmmTMB = suppressWarnings(glmmTMB::glmmTMB(y ~ x1 + (1 | g), data = d)),
+    polr = MASS::polr(yo ~ x1, data = d, Hess = TRUE),
+    clm = ordinal::clm(yo ~ x1, data = d),
+    betareg = betareg::betareg(yp ~ x1, data = d),
+    svyglm = survey::svyglm(y ~ x1, design = des),
+    survreg = survival::survreg(survival::Surv(time, status) ~ x1, data = d)
+  )
+  for (nm in names(fits)) {
+    for (v in c("HC3", "bootstrap")) {
+      expect_error(
+        suppressWarnings(table_regression(
+          fits[[nm]],
+          vcov = v,
+          output = "data.frame"
+        )),
+        class = "spicy_unsupported_vcov",
+        info = paste(nm, v)
+      )
+    }
+    out <- suppressWarnings(table_regression(
+      fits[[nm]],
+      vcov = "CR2",
+      cluster = d$g,
+      output = "data.frame"
+    ))
+    expect_s3_class(out, "data.frame")
+    expect_gt(nrow(out), 0L)
+  }
+})

@@ -338,3 +338,47 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
     )
   }
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:registry-brmsfit
+# Local-only like every brms fixture (skip_on_ci inside the fit helpers):
+# Stan compilation is unreliable on CI runners.
+test_that("brmsfit: multilevel fits render an RE block, single-level fits do not", {
+  fit_plain <- .fit_brms_basic()
+  out_plain <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit_plain)))),
+    collapse = "\n"
+  )
+  expect_false(grepl("Random effects:", out_plain, fixed = TRUE))
+  # AME is draws-native per the registry: the capability is advertised.
+  expect_true(isTRUE(
+    suppressWarnings(as_regression_frame(fit_plain))$info$supports$ame
+  ))
+
+  skip_on_ci()
+  skip_if_not_installed("brms")
+  skip_if_not_installed("posterior")
+  skip_if_not_installed("lme4")
+  set.seed(5)
+  fit_re <- brms::brm(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy,
+    chains = 1,
+    iter = 400,
+    refresh = 0,
+    silent = 2,
+    backend = "rstan"
+  )
+  out_re <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit_re)))),
+    collapse = "\n"
+  )
+  expect_match(out_re, "Random effects:", fixed = TRUE)
+  expect_match(out_re, "Subject (Intercept)", fixed = TRUE)
+  expect_match(out_re, "Random effects (MCMC).", fixed = TRUE)
+  expect_true(isTRUE(
+    suppressWarnings(as_regression_frame(fit_re))$info$supports$ame
+  ))
+})

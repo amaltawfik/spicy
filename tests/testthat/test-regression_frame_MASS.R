@@ -206,3 +206,38 @@ test_that("rlm coefs match parameters::model_parameters() (oracle)", {
     expect_equal(spicy_row$std_error, oracle_row$SE, tolerance = 1e-6)
   }
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:registry-negbin
+test_that("glm.nb AME matches marginaleffects::avg_slopes (numeric + factor terms)", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("marginaleffects")
+  set.seed(7)
+  d <- data.frame(x1 = rnorm(200), f = factor(sample(c("a", "b"), 200, TRUE)))
+  d$y <- stats::rnbinom(200, mu = exp(0.3 + 0.3 * d$x1), size = 1.5)
+  fit <- suppressWarnings(MASS::glm.nb(y ~ x1 + f, data = d))
+  fr <- suppressWarnings(as_regression_frame(fit, show_columns = c("b", "ame")))
+  expect_true(isTRUE(fr$info$supports$ame))
+  a <- fr$coefs[
+    fr$coefs$estimate_type == "ame" & !(fr$coefs$is_ref %in% TRUE),
+    ,
+    drop = FALSE
+  ]
+  orc <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(fit, df = Inf)
+  ))
+  # Coef-style term id for the oracle rows ("<var><level>" for factor
+  # contrasts, bare name for numerics).
+  okey <- ifelse(
+    !is.na(orc$contrast) & grepl(" - ", orc$contrast, fixed = TRUE),
+    paste0(orc$term, sub(" - .*$", "", orc$contrast)),
+    orc$term
+  )
+  expect_identical(nrow(a), nrow(orc))
+  expect_setequal(a$term, okey)
+  idx <- match(a$term, okey)
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+})

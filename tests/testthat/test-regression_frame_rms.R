@@ -240,3 +240,146 @@ test_that("rms: info$extras$rms_stats is a list (the fit$stats summary)", {
   expect_true(is.list(fr$info$extras$rms_stats))
   expect_true("R2" %in% names(fr$info$extras$rms_stats))
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:registry-ols
+test_that("ols AME matches avg_slopes; exponentiate on identity is a warned no-op", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("marginaleffects")
+  set.seed(3)
+  d <- data.frame(x1 = rnorm(150), x2 = rnorm(150))
+  d$y <- 1 + 0.5 * d$x1 - 0.2 * d$x2 + rnorm(150)
+  fit <- rms::ols(y ~ x1 + x2, data = d, x = TRUE, y = TRUE)
+  fr <- suppressWarnings(as_regression_frame(fit, show_columns = c("b", "ame")))
+  expect_true(isTRUE(fr$info$supports$ame))
+  a <- fr$coefs[
+    fr$coefs$estimate_type == "ame" & !(fr$coefs$is_ref %in% TRUE),
+    ,
+    drop = FALSE
+  ]
+  orc <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(fit, df = Inf)
+  ))
+  expect_identical(nrow(a), nrow(orc))
+  idx <- match(a$term, orc$term)
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+  # exponentiate = TRUE on the identity link: loud no-op.
+  expect_warning(
+    table_regression(fit, exponentiate = TRUE, output = "data.frame"),
+    class = "spicy_ignored_arg"
+  )
+  t_exp <- suppressWarnings(
+    table_regression(fit, exponentiate = TRUE, output = "data.frame")
+  )
+  expect_identical(t_exp, table_regression(fit, output = "data.frame"))
+})
+
+# Phase 3 matrix: rd-vcov-classes:registry-lrm
+test_that("lrm exponentiates to OR and its AME matches avg_slopes", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("marginaleffects")
+  set.seed(3)
+  d <- data.frame(x1 = rnorm(150), x2 = rnorm(150))
+  d$yb <- rbinom(150, 1, plogis(d$x1))
+  fit <- rms::lrm(yb ~ x1 + x2, data = d, x = TRUE, y = TRUE)
+  # Rendered header: the B column is relabelled OR.
+  t_or <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
+  expect_true("OR" %in% names(t_or))
+  # exp applied once: OR rows equal exp(raw B).
+  fr_raw <- as_regression_frame(fit)
+  e <- spicy:::.apply_exp_to_frame(fr_raw$coefs, fr_raw$info, TRUE)
+  expect_identical(e$info$extras$exp_header, "OR")
+  expect_equal(
+    e$coefs$estimate[e$coefs$estimate_type == "B"],
+    exp(fr_raw$coefs$estimate[fr_raw$coefs$estimate_type == "B"]),
+    tolerance = 1e-10
+  )
+  fr <- suppressWarnings(as_regression_frame(fit, show_columns = c("b", "ame")))
+  expect_true(isTRUE(fr$info$supports$ame))
+  a <- fr$coefs[
+    fr$coefs$estimate_type == "ame" & !(fr$coefs$is_ref %in% TRUE),
+    ,
+    drop = FALSE
+  ]
+  orc <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(fit, df = Inf)
+  ))
+  expect_identical(nrow(a), nrow(orc))
+  idx <- match(a$term, orc$term)
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+})
+
+# Phase 3 matrix: rd-vcov-classes:registry-Glm
+test_that("Glm poisson exponentiates to IRR; AME matches the glm-equivalent oracle", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("marginaleffects")
+  set.seed(3)
+  d <- data.frame(x1 = rnorm(150), x2 = rnorm(150))
+  d$cnt <- stats::rpois(150, exp(0.3 + 0.3 * d$x1))
+  fit <- rms::Glm(
+    cnt ~ x1 + x2,
+    data = d,
+    family = poisson(),
+    x = TRUE,
+    y = TRUE
+  )
+  t_irr <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
+  expect_true("IRR" %in% names(t_irr))
+  fr_raw <- as_regression_frame(fit)
+  e <- spicy:::.apply_exp_to_frame(fr_raw$coefs, fr_raw$info, TRUE)
+  expect_identical(e$info$extras$exp_header, "IRR")
+  # AME rides the class-stripped glm path: marginaleffects cannot read the
+  # rms Glm directly, so the oracle is avg_slopes() on the identical
+  # stats::glm() fit.
+  fr <- suppressWarnings(as_regression_frame(fit, show_columns = c("b", "ame")))
+  expect_true(isTRUE(fr$info$supports$ame))
+  a <- fr$coefs[
+    fr$coefs$estimate_type == "ame" & !(fr$coefs$is_ref %in% TRUE),
+    ,
+    drop = FALSE
+  ]
+  glm_twin <- stats::glm(cnt ~ x1 + x2, data = d, family = poisson())
+  orc <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(glm_twin, df = Inf)
+  ))
+  expect_identical(nrow(a), nrow(orc))
+  idx <- match(a$term, orc$term)
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+})
+
+# Phase 3 matrix: rd-vcov-classes:registry-cph
+test_that("cph exponentiates to HR and refuses the ame column", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("survival")
+  set.seed(3)
+  d <- data.frame(x1 = rnorm(150), x2 = rnorm(150))
+  d$time <- rexp(150, exp(-0.2 * d$x1))
+  d$status <- rbinom(150, 1, 0.7)
+  fit <- rms::cph(
+    survival::Surv(time, status) ~ x1 + x2,
+    data = d,
+    x = TRUE,
+    y = TRUE
+  )
+  fr_raw <- as_regression_frame(fit)
+  fr_exp <- as_regression_frame(fit, exponentiate = TRUE)
+  e <- spicy:::.apply_exp_to_frame(fr_exp$coefs, fr_exp$info, TRUE)
+  expect_identical(e$info$extras$exp_header, "HR")
+  expect_true(isTRUE(e$info$extras$exp_applied))
+  expect_equal(
+    e$coefs$estimate[e$coefs$estimate_type == "B"],
+    exp(fr_raw$coefs$estimate[fr_raw$coefs$estimate_type == "B"]),
+    tolerance = 1e-10
+  )
+  # AME is refused for Cox-family fits (ambiguous hazard scale).
+  expect_false(isTRUE(fr_raw$info$supports$ame))
+  expect_error(
+    table_regression(fit, show_columns = c("b", "ame"), output = "data.frame"),
+    class = "spicy_invalid_input"
+  )
+})

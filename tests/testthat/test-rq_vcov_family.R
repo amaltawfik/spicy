@@ -351,3 +351,71 @@ test_that("penalized / external-method rq fits are refused", {
     class = "spicy_unsupported"
   )
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:rq-vcov-dimnames
+test_that("rq vcov matrix is named by coef names and built with hs = TRUE", {
+  skip_if_not_installed("quantreg")
+  fit <- .rq_engel()
+  V <- spicy:::compute_model_vcov(fit, "classical")
+  expect_identical(rownames(V), names(stats::coef(fit)))
+  expect_identical(colnames(V), names(stats::coef(fit)))
+  # The matrix is summary.rq's nid covariance computed with hs = TRUE
+  # (Hall-Sheather bandwidth) and covariance = TRUE ...
+  o_hs <- summary(fit, se = "nid", hs = TRUE, covariance = TRUE)$cov
+  expect_equal(unname(V[,]), unname(as.matrix(o_hs)), tolerance = 1e-12)
+  # ... and hs = TRUE is load-bearing: the Bofinger-bandwidth matrix
+  # differs.
+  o_bo <- summary(fit, se = "nid", hs = FALSE, covariance = TRUE)$cov
+  expect_false(isTRUE(all.equal(unname(V[,]), unname(as.matrix(o_bo)))))
+})
+
+# Phase 3 matrix: rd-vcov-classes:rq-nid-token-accepted
+test_that("rq accepts the explicit 'nid' token, identical to 'classical'", {
+  skip_if_not_installed("quantreg")
+  fit <- .rq_engel()
+  t_cl <- table_regression(fit, output = "data.frame")
+  t_nid <- table_regression(fit, vcov = "nid", output = "data.frame")
+  expect_identical(t_nid, t_cl)
+  expect_identical(
+    attr(table_regression(fit, vcov = "nid"), "note"),
+    attr(table_regression(fit), "note")
+  )
+})
+
+# Phase 3 matrix: rd-vcov-classes:rq-footer-names-estimator
+test_that("rq footer names the estimator: nid by default, bootstrap on request", {
+  skip_if_not_installed("quantreg")
+  fit <- .rq_engel()
+  note_default <- attr(table_regression(fit), "note")
+  expect_match(note_default, "nid", fixed = TRUE)
+  set.seed(1)
+  note_boot <- attr(
+    suppressWarnings(table_regression(fit, vcov = "bootstrap", boot_n = 50)),
+    "note"
+  )
+  expect_match(note_boot, "bootstrap", fixed = TRUE)
+  expect_match(note_boot, "R = 50", fixed = TRUE)
+  note_iid <- attr(table_regression(fit, vcov = "iid"), "note")
+  expect_match(note_iid, "iid", fixed = TRUE)
+})
+
+# Phase 3 matrix: rd-vcov-classes:rq-rank-no-vcov-matrix-abort
+test_that("rq rank + a vcov-matrix request aborts with the nid/bootstrap hint", {
+  skip_if_not_installed("quantreg")
+  fit <- .rq_engel()
+  err <- tryCatch(
+    spicy:::compute_model_vcov(fit, type = "rank"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_unsupported_vcov")
+  expect_match(
+    conditionMessage(err),
+    "no variance-covariance matrix exists",
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(err), "nid", fixed = TRUE)
+  expect_match(conditionMessage(err), "bootstrap", fixed = TRUE)
+})

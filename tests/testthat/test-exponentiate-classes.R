@@ -132,3 +132,28 @@ test_that("exponentiate: identity-link fit warns spicy_ignored_arg (post-extract
     class = "spicy_ignored_arg"
   )
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:registry-mlogit
+test_that("exponentiate: mlogit (multinomial logit) -> OR", {
+  skip_if_not_installed("mlogit")
+  data("Fishing", package = "mlogit", envir = environment())
+  Fishing <- get("Fishing", envir = environment())
+  fd <- mlogit::mlogit.data(
+    Fishing,
+    varying = 2:9,
+    shape = "wide",
+    choice = "mode"
+  )
+  fit <- mlogit::mlogit(mode ~ price + catch, data = fd)
+  e <- .exp_frame(fit)
+  expect_true(isTRUE(e$info$extras$exp_applied))
+  expect_identical(e$info$extras$exp_header, "OR")
+  expect_equal(
+    .b_estimates(e$coefs),
+    exp(.b_estimates(e$raw)),
+    tolerance = 1e-6
+  )
+})

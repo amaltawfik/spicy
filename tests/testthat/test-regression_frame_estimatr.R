@@ -277,3 +277,33 @@ test_that("lm_robust coefs match parameters::model_parameters() (oracle)", {
     )
   }
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:registry-lm-robust
+# Phase 3 matrix: rd-vcov-classes:registry-iv-robust
+test_that("lm_robust and iv_robust AME match marginaleffects::avg_slopes", {
+  skip_if_not_installed("estimatr")
+  skip_if_not_installed("marginaleffects")
+  for (fit in list(.fit_lm_robust_basic(), .fit_iv_robust_basic())) {
+    fr <- suppressWarnings(as_regression_frame(
+      fit,
+      show_columns = c("b", "ame")
+    ))
+    expect_true(isTRUE(fr$info$supports$ame))
+    a <- fr$coefs[
+      fr$coefs$estimate_type == "ame" & !(fr$coefs$is_ref %in% TRUE),
+      ,
+      drop = FALSE
+    ]
+    orc <- as.data.frame(suppressWarnings(
+      marginaleffects::avg_slopes(fit, df = Inf)
+    ))
+    expect_identical(nrow(a), nrow(orc))
+    idx <- match(a$term, orc$term)
+    expect_false(anyNA(idx))
+    expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+    expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+  }
+})

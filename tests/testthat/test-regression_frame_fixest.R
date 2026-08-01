@@ -271,3 +271,28 @@ test_that("feols coefs match parameters::model_parameters() (oracle)", {
     )
   }
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:registry-fixest
+test_that("feols AME matches marginaleffects::avg_slopes", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("marginaleffects")
+  fit <- .fit_feols_basic()
+  fr <- as_regression_frame(fit, show_columns = c("b", "ame"))
+  expect_true(isTRUE(fr$info$supports$ame))
+  a <- fr$coefs[
+    fr$coefs$estimate_type == "ame" & !(fr$coefs$is_ref %in% TRUE),
+    ,
+    drop = FALSE
+  ]
+  orc <- as.data.frame(suppressWarnings(suppressMessages(
+    marginaleffects::avg_slopes(fit, df = Inf)
+  )))
+  expect_identical(nrow(a), nrow(orc))
+  idx <- match(a$term, orc$term)
+  expect_false(anyNA(idx))
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+})

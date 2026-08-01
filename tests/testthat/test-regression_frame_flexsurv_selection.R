@@ -223,3 +223,43 @@ test_that("table_regression() body shows separate selection vs outcome rows", {
   expect_match(combined, "selection: educ", fixed = TRUE)
   expect_match(combined, "outcome: educ", fixed = TRUE)
 })
+
+
+## ---- Phase 3 matrix (lot T2) ----------------------------------------------
+
+# Phase 3 matrix: rd-vcov-classes:registry-flexsurvreg
+test_that("flexsurvreg surfaces its distribution parameters in the footer", {
+  skip_if_not_installed("flexsurv")
+  skip_if_not_installed("survival")
+  lung2 <- stats::na.omit(survival::lung[, c("time", "status", "age", "sex")])
+  fit <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = lung2,
+    dist = "weibull"
+  )
+  note <- attr(table_regression(fit), "note")
+  expect_match(note, "Distribution: Weibull", fixed = TRUE)
+  expect_match(note, "shape = ", fixed = TRUE)
+  expect_match(note, "scale = ", fixed = TRUE)
+  # The footer values are the fit's own auxiliary parameters.
+  fr <- as_regression_frame(fit)
+  aux <- fr$info$extras$aux_parameters
+  expect_true(all(c("shape", "scale") %in% names(aux)))
+  expect_match(note, sprintf("shape = %.2f", aux[["shape"]]), fixed = TRUE)
+  expect_match(note, sprintf("scale = %.2f", aux[["scale"]]), fixed = TRUE)
+})
+
+# Phase 3 matrix: rd-vcov-classes:registry-selection
+test_that("selection advertises no AME and refuses the ame column", {
+  skip_if_not_installed("sampleSelection")
+  set.seed(11)
+  d <- data.frame(z = rnorm(300), x = rnorm(300))
+  d$sel <- rbinom(300, 1, plogis(0.5 + d$z)) == 1
+  d$w <- ifelse(d$sel, 1 + 0.5 * d$x + rnorm(300), NA)
+  fit <- sampleSelection::selection(sel ~ z, w ~ x, data = d)
+  expect_false(isTRUE(as_regression_frame(fit)$info$supports$ame))
+  expect_error(
+    table_regression(fit, show_columns = c("b", "ame"), output = "data.frame"),
+    class = "spicy_invalid_input"
+  )
+})
