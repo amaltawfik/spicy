@@ -199,7 +199,7 @@ table_regression(
 )
 ```
 
-The division of labour between the two criteria is Pan's (2001):
+The division of labor between the two criteria is Pan's (2001):
 pick the working correlation by the smallest **QIC**; use **QICu**
 only for comparing *mean models* (covariate sets) under a fixed
 structure -- it cannot select the correlation. Read the rule against
@@ -207,7 +207,8 @@ the table honestly: here QIC rejects AR(1) decisively but scores
 independence and exchangeable a tenth of a point apart -- a
 meaningless margin. A near-tie means the data cannot distinguish
 the structures, and the choice falls back on substantive grounds
-(repeated weighings of the same pig are exchangeable-shaped); the
+(repeated weight measurements of the same pig are
+exchangeable-shaped); the
 rule earns its keep on the decisions it *can* make, like ruling out
 AR(1) here. The stake is
 efficiency, not consistency: all three columns estimate the same
@@ -265,9 +266,10 @@ table_regression(fit_sorted, show_fit_stats = c("nobs", "n_groups", "max_cluster
 The sandwich estimator is asymptotic in the number of clusters: with
 few clusters it is biased *downward* -- the nominal standard errors
 are too small, and the estimator itself becomes unstable
-(Fitzmaurice et al., 2011). At $K \le 30$ (the threshold the geepack
-authors cite, following Paik, 1988) the jackknife variance
-estimators are the recommended alternative (Halekoh et al., 2006).
+(Fitzmaurice et al., 2011). At 30 clusters or fewer (the threshold
+the geepack authors cite, following Paik, 1988) the jackknife
+variance estimators are the recommended alternative (Halekoh et al.,
+2006).
 `geeglm` offers three (`std.err = "jack"`, `"j1s"`, `"fij"`); the
 approximate and one-step versions are far cheaper than the fully
 iterated one and agree well with it in simulations (Halekoh et al.,

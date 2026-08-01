@@ -117,6 +117,7 @@ test_that("the uv screen shows per-fit counts on both column groups", {
         d,
         outcome = smoking,
         predictors = c(age, bmi),
+        method = "glm",
         show_columns = c("n", "n_events", "b", "ci", "p")
       )
     )),

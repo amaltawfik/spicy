@@ -16,24 +16,30 @@ out_dir <- if (length(args) >= 1L) args[[1L]] else "tools"
 res <- as.data.frame(devtools::test(reporter = "silent"))
 csv <- file.path(out_dir, "suite_results.csv")
 utils::write.csv(
-  res[, c("file", "test", "passed", "failed", "warning", "skipped")],
+  res[, c("file", "test", "passed", "failed", "error", "warning", "skipped")],
   csv,
   row.names = FALSE
 )
 
+# `failed` counts expectation failures; a test that ERRORS before its
+# first expectation lands in the logical `error` column instead. The
+# 2026-08 CI red slipped through precisely because this script only
+# summed `failed` -- both must gate the verdict.
 n_fail <- sum(res$failed)
+n_err <- sum(res$error)
 cat(sprintf(
-  "FAIL: %d WARN: %d SKIP: %d PASS: %d (table: %s)\n",
+  "FAIL: %d ERR: %d WARN: %d SKIP: %d PASS: %d (table: %s)\n",
   n_fail,
+  n_err,
   sum(res$warning),
   sum(res$skipped),
   sum(res$passed),
   csv
 ))
-bad <- res[res$failed > 0L, c("file", "test")]
+bad <- res[res$failed > 0L | res$error, c("file", "test")]
 if (nrow(bad) > 0L) {
   for (i in seq_len(nrow(bad))) {
-    cat(sprintf("FAILED: %s -- %s\n", bad$file[i], bad$test[i]))
+    cat(sprintf("BROKEN: %s -- %s\n", bad$file[i], bad$test[i]))
   }
 }
-quit(status = if (n_fail > 0L) 1L else 0L)
+quit(status = if (n_fail > 0L || n_err > 0L) 1L else 0L)
