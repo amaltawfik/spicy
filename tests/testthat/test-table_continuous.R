@@ -3095,3 +3095,26 @@ test_that("a NaN effect size is blanked with a classed warning", {
   expect_false(any(is.nan(out$es_ci_lower)))
   expect_false(any(is.nan(out$es_ci_upper)))
 })
+
+test_that("table_continuous() rejects bit64::integer64 columns", {
+  i64 <- structure(
+    c(4.94e-324, 9.88e-324, 1.48e-323, 1.98e-323),
+    class = "integer64"
+  )
+  d <- data.frame(y = c(1.5, 2.5, 3.5, 4.5), g = factor(c("a", "a", "b", "b")))
+  d$score <- i64
+  expect_error(
+    table_continuous(d, select = score),
+    "integer64",
+    class = "spicy_invalid_data"
+  )
+  # The default select sweeps integer64 in (it passes is.numeric()).
+  expect_error(table_continuous(d), class = "spicy_invalid_data")
+  expect_error(
+    table_continuous(d, select = y, by = score),
+    class = "spicy_invalid_data"
+  )
+  # Excluding the integer64 column restores normal computation.
+  res <- table_continuous(d, exclude = score, output = "data.frame")
+  expect_s3_class(res, "data.frame")
+})

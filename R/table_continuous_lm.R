@@ -1165,6 +1165,11 @@ table_continuous_lm <- function(
 
   by_quo <- rlang::enquo(by)
   by_name <- resolve_single_column_selection(by_quo, data, "by")
+  # bit64::integer64 passes is_supported_lm_predictor() (is.numeric()
+  # is TRUE on the raw int64 payload) but lm() then fits garbage
+  # denormal doubles and every estimate row comes back blank. Refuse
+  # loudly before any model sees it.
+  .check_integer64_columns(data, by_name, "table_continuous_lm")
   by_vector <- resolve_user_na(data[[by_name]])
   # A haven labelled vector with value labels is the categorical
   # signal of an SPSS / Stata import, and the sibling tables
@@ -1416,6 +1421,14 @@ table_continuous_lm <- function(
     by_name = by_name
   )
   numeric_outcomes <- setdiff(numeric_outcomes, covariates_names)
+
+  # Same integer64 contract as the `by` guard above, applied to the
+  # outcome and covariate columns entering the fits.
+  .check_integer64_columns(
+    data,
+    c(numeric_outcomes, covariates_names),
+    "table_continuous_lm"
+  )
 
   # Cohen's d / Hedges' g are undefined under covariate adjustment.
   # Reject up front so the user gets a clean error rather than a

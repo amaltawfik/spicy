@@ -702,6 +702,14 @@ table_continuous <- function(
   work <- dplyr::select(work, tidyselect::where(is.numeric))
   numeric_cols <- names(work)
 
+  # bit64::integer64 passes the is.numeric() filter above, but every
+  # statistic downstream reads its raw int64 bit patterns as garbage
+  # near 1e-323 (M = 0.00, Min = Max = 0.00); an integer64 `by` shows
+  # denormal-double group labels unless the bit64 namespace happens
+  # to be loaded. Refuse both loudly, listing the offenders.
+  .check_integer64_columns(work, numeric_cols, "table_continuous")
+  .check_integer64_columns(data, group_col_name, "table_continuous")
+
   ignored <- setdiff(all_cols, numeric_cols)
   if (verbose && length(ignored) > 0L) {
     rlang::inform(

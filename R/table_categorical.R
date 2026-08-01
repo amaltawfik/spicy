@@ -835,6 +835,16 @@ table_categorical <- function(
       return(data.frame())
     }
   }
+  # bit64::integer64 columns tabulate as raw denormal doubles
+  # ("9.88e-324" levels) unless the bit64 namespace happens to be
+  # loaded; the select-less default already excludes them via the
+  # eligibility filter above, so this fires only for explicitly
+  # named columns and `by`.
+  .check_integer64_columns(
+    data,
+    c(select_names, by_name),
+    "table_categorical"
+  )
   # `labels` must be a NAMED character vector keyed by column name in
   # `data` (the contract shared with the continuous companions). Only
   # listed columns are relabelled; the rest fall back to the column's

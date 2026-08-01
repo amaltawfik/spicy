@@ -32,7 +32,10 @@ column(s) are dropped from the selection automatically.}
 the \code{survival} package; estimates render as HRs with
 \code{exponentiate = TRUE}).}
 
-\item{family}{A \link[stats:family]{stats::family} object for \code{method = "glm"}.
+\item{family}{A \link[stats:family]{stats::family} for \code{method = "glm"}, in any of
+the three forms \code{\link[stats:glm]{stats::glm()}} accepts: a family object
+(\code{binomial()}), its name (\code{"binomial"}), or the bare constructor
+(\code{binomial}).
 Default \code{binomial()}, so \code{method = "glm"} alone is the logistic
 screen; supplying \code{family} without \code{method} selects the glm
 screen directly (a family can only mean that). Refused for

@@ -778,6 +778,44 @@ test_that("family without method selects the glm screen (0.12 calls intact)", {
   expect_match(attr(t_fam, "title"), "logistic", ignore.case = TRUE)
 })
 
+test_that("family is normalised like stats::glm(): object, name, constructor", {
+  d <- sochealth[1:300, ]
+  fit_with <- function(fam) {
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      predictors = age,
+      family = fam,
+      multivariable = FALSE
+    )
+  }
+  t_obj <- fit_with(stats::binomial())
+  t_str <- fit_with("binomial")
+  t_fun <- fit_with(stats::binomial)
+  expect_equal(broom::tidy(t_str)$estimate, broom::tidy(t_obj)$estimate)
+  expect_equal(broom::tidy(t_fun)$estimate, broom::tidy(t_obj)$estimate)
+  # all three forms route the screen to glm, so the title is logistic
+  expect_match(attr(t_str, "title"), "logistic", ignore.case = TRUE)
+  expect_match(attr(t_fun, "title"), "logistic", ignore.case = TRUE)
+})
+
+test_that("an invalid family is refused up front with a classed error", {
+  d <- sochealth[1:100, ]
+  for (bad in list("not_a_family", 42, list(family = "binomial"), mean)) {
+    expect_error(
+      table_regression_uv(
+        d,
+        outcome = smoking,
+        predictors = age,
+        family = bad,
+        multivariable = FALSE
+      ),
+      "must be a stats::family",
+      class = "spicy_invalid_input"
+    )
+  }
+})
+
 test_that("a >2-level outcome under the default is refused with guidance", {
   expect_error(
     table_regression_uv(

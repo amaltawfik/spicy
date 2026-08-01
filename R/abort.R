@@ -187,6 +187,43 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 }
 
 
+# Internal: column-selection sibling of `.check_integer64()` for the
+# summary-table family (table_categorical / table_continuous /
+# table_continuous_lm). Checks the named columns of `data` and
+# refuses when any is bit64::integer64, listing every offender at
+# once. Even the paths that LOOK right with the bit64 namespace
+# loaded (categorical levels, group labels via as.character dispatch)
+# print raw denormal doubles ("9.88e-324") as soon as it is not, and
+# every numeric statistic reads the int64 bit patterns as garbage
+# near 1e-323 -- so the whole family shares one loud contract, the
+# same as freq() / cross_tab() / mean_n(). The hint names both
+# conversions because the right one depends on use and magnitude.
+# `cols` may contain names not in `data` (they are ignored) and
+# NULLs are dropped by c(), so callers can pass optional arguments
+# unconditionally.
+.check_integer64_columns <- function(data, cols, fn) {
+  cols <- intersect(cols, names(data))
+  bad <- cols[vapply(data[cols], inherits, logical(1), "integer64")]
+  if (length(bad) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "%s(): column%s %s %s bit64::integer64, which base R code silently misreads as garbage values near 1e-323.",
+          fn,
+          if (length(bad) > 1L) "s" else "",
+          paste0("`", bad, "`", collapse = ", "),
+          if (length(bad) > 1L) "are" else "is"
+        ),
+        "i" = "Convert explicitly first: `as.integer()` / `as.numeric()` for values in numeric range, or `as.character()` for codes wider than 2^53."
+      ),
+      class = "spicy_invalid_data",
+      call = rlang::caller_env()
+    )
+  }
+  invisible(data)
+}
+
+
 # Internal indirection for `requireNamespace()`. Exists so the
 # missing-Suggests guards across the regression files can be
 # exercised in tests via `local_mocked_bindings(.package = "spicy")`

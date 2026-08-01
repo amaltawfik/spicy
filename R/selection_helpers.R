@@ -144,6 +144,11 @@ resolve_weights_argument <- function(quo, data, arg = "weights") {
     val <- data[[val]]
   }
 
+  # bit64::integer64 passes the is.numeric() gate below but its
+  # payload is raw int64 bit patterns: weighted counts would be
+  # garbage near 1e-323. Same contract as freq() / cross_tab().
+  .check_integer64(val, sprintf("`%s`", arg))
+
   if (!is.numeric(val)) {
     spicy_abort(
       sprintf(

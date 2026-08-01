@@ -626,7 +626,9 @@ rendering an empty column.
 
 * `freq(valid = FALSE)` with missing values present no longer prints a Valid Percent column of `NA` values whose Total row asserts `100.0`; the column (and `Cum. Valid Percent` with `cum = TRUE`) is dropped whenever valid percentages were not computed.
 
-* `freq()`, `cross_tab()`, `mean_n()`, and `sum_n()` reject `bit64::integer64` input (tabulated variables, weights, and selected columns) with a classed error (`spicy_invalid_data`) naming the fix: integer64 passes `is.numeric()` but stores raw 64-bit integer bit patterns that base R numeric code silently misreads as garbage counts near `1e-323` -- a realistic hazard for BIGINT columns imported via DBI or `data.table::fread()`. Convert with `as.numeric()` or `bit64::as.double()` first; `count_n()` compares values without numeric aggregation and continues to work.
+* `freq()`, `cross_tab()`, `mean_n()`, `sum_n()`, `table_categorical()`, `table_continuous()`, and `table_continuous_lm()` reject `bit64::integer64` input (tabulated variables, weights, selected columns, `by` groups, and covariates) with a classed error (`spicy_invalid_data`) naming the fix: integer64 passes `is.numeric()` but stores raw 64-bit integer bit patterns that base R numeric code silently misreads as garbage counts near `1e-323` -- a summary table showed `M = 0.00` for every integer64 column, and group labels printed as denormal doubles unless the bit64 namespace happened to be loaded -- a realistic hazard for BIGINT columns imported via DBI or `data.table::fread()`. Convert with `as.integer()` / `as.numeric()` (or `as.character()` for codes wider than 2^53) first; `count_n()` compares values without numeric aggregation and continues to work.
+
+* `table_regression_uv()` accepts `family` in the three forms `stats::glm()` accepts -- a family object (`binomial()`), its name (`"binomial"`), or the bare constructor function (`binomial`) -- and refuses anything else up front with a classed error (`spicy_invalid_input`); a name or bare constructor previously failed with a raw `$ operator is invalid for atomic vectors` error before any model was fitted.
 
 # spicy 0.12.0
 

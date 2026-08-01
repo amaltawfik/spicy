@@ -77,7 +77,10 @@
 #' @param method `"lm"` (default), `"glm"`, or `"coxph"` (requires
 #'   the `survival` package; estimates render as HRs with
 #'   `exponentiate = TRUE`).
-#' @param family A [stats::family] object for `method = "glm"`.
+#' @param family A [stats::family] for `method = "glm"`, in any of
+#'   the three forms [stats::glm()] accepts: a family object
+#'   (`binomial()`), its name (`"binomial"`), or the bare constructor
+#'   (`binomial`).
 #'   Default `binomial()`, so `method = "glm"` alone is the logistic
 #'   screen; supplying `family` without `method` selects the glm
 #'   screen directly (a family can only mean that). Refused for
@@ -192,6 +195,36 @@ table_regression_uv <- function(
       c(
         "`family` is not meaningful for `method = \"coxph\"`.",
         "i" = "The Cox model has no family; drop the argument."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  # Normalise `family` the way stats::glm() itself does -- the name
+  # ("binomial") or the bare constructor (binomial) becomes the family
+  # object -- so every check below can read `family$family` safely
+  # instead of erroring on `$` for atomic vectors / closures. The
+  # method routing above keys on whether `family` was SUPPLIED, never
+  # on its form, so normalisation cannot change the route.
+  if (is.character(family) && length(family) == 1L && !is.na(family)) {
+    family <- tryCatch(
+      get(family, mode = "function", envir = parent.frame()),
+      error = function(e) family
+    )
+  }
+  if (is.function(family)) {
+    family <- tryCatch(family(), error = function(e) family)
+  }
+  if (!inherits(family, "family")) {
+    spicy_abort(
+      c(
+        paste0(
+          "`family` must be a stats::family object, its name, or ",
+          "its constructor function."
+        ),
+        "i" = paste0(
+          "E.g. `family = binomial()`, `family = \"binomial\"`, ",
+          "or `family = binomial`."
+        )
       ),
       class = "spicy_invalid_input"
     )

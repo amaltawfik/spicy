@@ -90,8 +90,9 @@ specific cause:
 raised by spicy. Leaves:
 \itemize{
 \item \code{spicy_invalid_input} -- bad argument value or type.
-\item \code{spicy_invalid_data} -- bad data shape (not a
-data.frame, NA cells where forbidden, length mismatch).
+\item \code{spicy_invalid_data} -- bad data shape or content
+(not a data.frame, length mismatch, \code{bit64::integer64}
+columns, degenerate grouping).
 \item \code{spicy_missing_pkg} -- a Suggests dependency
 is required by the requested operation but not installed.
 \item \code{spicy_missing_column} -- a referenced column
@@ -99,6 +100,34 @@ is not in \code{data}.
 \item \code{spicy_unsupported} -- the operation is not
 applicable to this input (e.g., Phi requested on a
 non-2x2 table).
+\item \code{spicy_ame_satt_unsupported_formula} -- signaled
+together with \code{spicy_unsupported} when AME
+Satterthwaite degrees of freedom are unavailable for the
+model's formula structure; normally caught internally and
+surfaced as a \code{spicy_fallback} warning.
+\item \code{spicy_unsupported_class} -- the model class has
+no regression-frame method, so \code{\link[=table_regression]{table_regression()}}
+cannot render it.
+\item \code{spicy_unsupported_vcov} -- the requested \code{vcov}
+mode is not available for this model class.
+\item \code{spicy_unsupported_standardized} -- the requested
+\code{standardized} mode is not available for this model class.
+\item \code{spicy_invalid_frame} -- an object failed the
+structural validation of the internal regression-frame
+contract behind \code{\link[=table_regression]{table_regression()}}.
+\item \code{spicy_resampling_failed} -- bootstrap /
+jackknife resampling produced too few valid replicates to
+estimate the requested statistic.
+\item \code{spicy_defunct} -- an argument removed in a
+pre-1.0 hard break; the message names the replacement.
+Signaled together with \code{spicy_invalid_input} so
+generic input handlers still catch it.
+\item \code{spicy_internal} -- an internal precondition
+failed; this is a bug in spicy, please report it.
+\item \code{spicy_internal_invariant} -- an internal
+consistency check on a spicy-built object failed and the
+result cannot be trusted (see the warning leaf of the
+same name for the renderable case).
 }
 }
 \item{\code{spicy_warning}}{Catch-all parent for every warning.
@@ -118,13 +147,39 @@ produced an empty set; an empty result is returned
 rather than erroring.
 \item \code{spicy_fallback} -- the requested computation
 failed; a simpler estimator was used instead.
+\item \code{spicy_caveat} -- the computation succeeded but
+its interpretation carries a non-trivial methodological
+caveat (e.g., standardized coefficients on non-additive
+terms).
+\item \code{spicy_bayes_diagnostics} -- signaled together
+with \code{spicy_caveat} when a Bayesian fit's sampler or
+predictive-accuracy diagnostics miss their targets
+(R-hat, ESS, divergences, E-BFMI, Pareto k, p_waic).
+\item \code{spicy_model_choice} -- a defaulted modeling
+choice was made on the user's behalf and is disclosed
+(e.g., the linear probability model
+\code{\link[=table_regression_uv]{table_regression_uv()}} fits to a binary outcome under
+the default \code{method}).
 \item \code{spicy_summary_failed} -- \code{\link[=varlist]{varlist()}} could not
 summarise one column; the rest of the table is fine.
 \item \code{spicy_renamed_column} -- a user data column or
 factor level collided with a spicy-internal name and was
 auto-renamed to preserve the data (emitted by
 \code{\link[=cross_tab]{cross_tab()}}).
+\item \code{spicy_internal_invariant} -- an internal
+consistency check on a spicy-built object failed but the
+output still renders, so the user sees both the table and
+the diagnostic.
 }
+}
+\item{\code{spicy_info}}{Parent for informational messages
+(emitted via \code{rlang::inform()}; muffle with
+\code{withCallingHandlers(spicy_info = ...)}). Leaf:
+\code{spicy_silent_reference} -- reference levels are
+displayed nowhere under \code{reference_style = "none"} with
+\code{factor_layout = "flat"}. The once-per-session hint on
+ordered-factor polynomial contrasts carries its own class,
+\code{spicy_polynomial_contrasts_info}.
 }
 }
 }

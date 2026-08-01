@@ -2999,3 +2999,33 @@ test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
     tolerance = 1e-10
   )
 })
+
+test_that("table_categorical() rejects bit64::integer64 columns", {
+  # Manually classed vector: inherits() is all the guard needs, and
+  # this is the shape a bare integer64 column has when bit64 is not
+  # loaded (raw int64 bit patterns in a double payload).
+  i64 <- structure(
+    c(4.94e-324, 9.88e-324, 1.48e-323, 1.98e-323),
+    class = "integer64"
+  )
+  d <- data.frame(g = factor(c("a", "b", "a", "b")))
+  d$code <- i64
+  expect_error(
+    table_categorical(d, select = code),
+    "integer64",
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    table_categorical(d, select = g, by = code),
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    table_categorical(d, select = g, weights = code),
+    class = "spicy_invalid_data"
+  )
+  # The select-less default excludes integer64 columns via the
+  # categorical-eligibility filter, so the call still works.
+  res <- table_categorical(d, output = "data.frame")
+  expect_s3_class(res, "data.frame")
+  expect_false(any(grepl("code", res$Variable, fixed = TRUE)))
+})

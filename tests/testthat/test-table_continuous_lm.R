@@ -4454,3 +4454,34 @@ test_that("a saturated fit reports NA inference with a classed warning", {
   expect_true(all(is.na(out$test_type)))
   expect_false(any(vapply(out, function(col) any(is.nan(col)), logical(1))))
 })
+
+test_that("table_continuous_lm() rejects bit64::integer64 columns", {
+  i64 <- structure(
+    rep(c(4.94e-324, 9.88e-324), 10),
+    class = "integer64"
+  )
+  set.seed(7)
+  d <- data.frame(
+    y = rnorm(20),
+    g = factor(rep(c("a", "b"), 10)),
+    x = rnorm(20)
+  )
+  d$code <- i64
+  expect_error(
+    table_continuous_lm(d, y, by = code),
+    "integer64",
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    table_continuous_lm(d, code, by = g),
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    table_continuous_lm(d, y, by = g, covariates = code),
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    table_continuous_lm(d, y, by = g, weights = code),
+    class = "spicy_invalid_data"
+  )
+})
