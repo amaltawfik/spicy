@@ -1822,6 +1822,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                  
 #>  N (Subject)                     │   18                  
+#>  ICC                             │     –                 
 #>  R² (marginal)                   │    0.29               
 #>  R² (conditional)                │    0.79               
 #>  AIC                             │ 1763.9                

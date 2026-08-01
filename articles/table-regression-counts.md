@@ -371,8 +371,8 @@ table_regression(
 #>    ment          │             0.88              0.54 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │  915      915      915      915    
-#>  R² (McFadden)   │    0.05              0.03          
-#>  R² (Nagelkerke) │    0.19              0.11          
+#>  R² (McFadden)   │    0.05      –       0.03      –   
+#>  R² (Nagelkerke) │    0.19      –       0.11      –   
 #>  AIC             │ 3312.3   3225.5   3134.1   3122.5  
 #> 
 #> Note. Model 1: Poisson regression; Model 2: Poisson zero-inflated regression; Model 3: negative-binomial regression; Model 4: negative-binomial zero-inflated regression.

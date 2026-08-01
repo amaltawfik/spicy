@@ -420,10 +420,10 @@ table_regression(list("ML (glm)" = gf, "Bayes (stan_glm)" = fit),
 #>    Tertiary               │   -0.91  [-1.29, -0.52]    -0.91  [-1.31, -0.56] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                     1175                    
-#>  R² (McFadden)            │    0.02                                          
-#>  R² (Nagelkerke)          │    0.03                                          
-#>  AIC                      │ 1200.9                                           
-#>  R² (Bayes)               │                             0.02                 
+#>  R² (McFadden)            │    0.02                      –                   
+#>  R² (Nagelkerke)          │    0.03                      –                   
+#>  AIC                      │ 1200.9                       –                   
+#>  R² (Bayes)               │     –                       0.02                 
 #> 
 #> Note. Model 1: logistic regression; Model 2: Bayesian logistic regression (stanreg).
 #> Std. errors:
