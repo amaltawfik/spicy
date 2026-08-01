@@ -1,0 +1,205 @@
+---
+title: "The structured view: programmatic access to regression tables"
+description: >
+  `as_structured()` exposes the typed representation behind every
+  `table_regression()` output: a numeric body with split CI columns,
+  per-column metadata, row-role indices, and the format
+  specification -- the same contract spicy's own Excel, gt,
+  tinytable, flextable, and clipboard engines consume. Filter
+  coefficients programmatically, aggregate raw values, or build a
+  custom renderer.
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{The structured view: programmatic access to regression tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+source("_pkgdown-helpers.R")
+```
+
+```{r setup}
+library(spicy)
+```
+
+`table_regression()` returns a *display* representation: a character
+table with `(ref.)` annotations, en-dashes, bracketed `[LL, UL]`
+intervals, and APA-formatted p-values. That is the right thing to
+print and the right thing to publish -- and the wrong thing to
+compute on. The companion accessor `as_structured()` returns the
+*typed* view underneath: a fully numeric body, confidence intervals
+pre-split into their own columns, `NA` where a cell is structurally
+empty, plus the metadata a renderer needs to reconstruct the
+display. It is the same contract spicy's own output engines (Excel,
+gt, tinytable, flextable, clipboard) consume internally -- nothing
+about it is second-class.
+
+Two sibling tools serve different needs, and choosing well saves
+work. `broom::tidy()` returns the *statistical* long form -- one row
+per coefficient with `estimate`, `std.error`, `conf.low`, `p.value`
+-- and is the right input for meta-analysis, further computation on
+estimates, or ggplot. `as_structured()` returns the *display
+geometry* -- rows and columns exactly as the rendered table lays
+them out, factor headers and fit statistics included -- and is the
+right input for filtering what a reader will see, post-processing
+numbers in table shape, or rendering the table with an engine spicy
+does not ship. This vignette covers the second tool. The shared
+mechanics of `table_regression()` are in
+[*Publication-ready regression
+tables*](table-regression.html); the class-by-class map is
+[*Supported models*](table-regression-supported-models.html).
+
+## The schema on one model
+
+```{r schema}
+fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
+tbl <- table_regression(fit)
+s <- as_structured(tbl)
+names(s)
+```
+
+The centrepiece is `body`: a data frame with the `Variable` column
+and one numeric column per displayed statistic. The confidence
+interval that prints as one bracketed column arrives split into
+`LL` / `UL`:
+
+```{r body}
+s$body
+```
+
+Read it against the printed table and the structure becomes
+obvious: factor header rows (`sex:`, `smoking:`) and reference
+rows carry `NA` across the statistics -- structurally empty, not
+missing data -- and the fit-statistics rows (`n`, `R²`, ...) put
+their value in the first numeric column. The row-role indices name
+each of these regions so you never have to guess from the text:
+
+```{r indices}
+s$reference_rows
+s$factor_header_rows
+s$fit_stat_rows
+s$level_rows
+```
+
+`col_meta` describes each column: which token produced it, which
+model it belongs to, its display precision, and -- for p-value
+columns -- the APA style and below-threshold rule. `format_spec`
+carries the global defaults (decimal mark, digits, CI level):
+
+```{r meta}
+s$col_meta$B
+s$format_spec$ci_level
+```
+
+## Filtering and aggregating
+
+Because the body is numeric, ordinary data-frame idioms work. Keep
+the coefficient rows a reader would call significant:
+
+```{r filter}
+s$body[which(s$body$p < 0.05), c("Variable", "B", "p")]
+```
+
+Note the `which()`: the structurally empty rows are `NA`, and
+`which()` drops them where a bare logical index would keep them as
+`NA` rows. To restrict attention to coefficient rows before any
+filter, exclude the structural regions:
+
+```{r coefrows}
+structural <- c(s$reference_rows, s$factor_header_rows, s$fit_stat_rows)
+coef_rows <- setdiff(seq_len(nrow(s$body)), structural)
+s$body[coef_rows, c("Variable", "B", "95% CI: LL", "95% CI: UL")]
+```
+
+Aggregation is just as direct -- the mean absolute coefficient, the
+range of CI widths:
+
+```{r aggregate}
+mean(abs(s$body$B[coef_rows]))
+range(s$body[coef_rows, "95% CI: UL"] - s$body[coef_rows, "95% CI: LL"])
+```
+
+## Multi-model tables: spanners and per-model columns
+
+With several models, columns are prefixed by the model label and
+two more components become useful. `spanners` maps each model label
+to its column indices in `body`; `reference_models_by_row` records,
+for each reference row, which models actually contain the factor --
+the rule renderers use to decide where the reference en-dash
+belongs:
+
+```{r multi}
+fit2 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth)
+s2 <- as_structured(table_regression(list(Base = fit, Extended = fit2)))
+s2$spanners
+names(s2$body)
+```
+
+Model-wise extraction follows from the spanner map:
+
+```{r modelwise}
+s2$body[, c(1, s2$spanners$Extended)]
+```
+
+## Building your own renderer
+
+The structured view carries everything a renderer needs. A compact
+`knitr::kable()` rendering, using the display precision from
+`col_meta` and marking the structural rows, takes a few lines:
+
+```{r kable}
+render_kable <- function(tbl) {
+  s <- as_structured(tbl)
+  out <- s$body
+  for (nm in names(out)[-1]) {
+    prec <- s$col_meta[[nm]]$precision
+    if (is.null(prec)) prec <- s$format_spec$digits
+    out[[nm]] <- ifelse(
+      is.na(out[[nm]]),
+      "",
+      formatC(out[[nm]], format = "f", digits = prec)
+    )
+  }
+  knitr::kable(out, align = c("l", rep("r", ncol(out) - 1)))
+}
+render_kable(tbl)
+```
+
+Anything more ambitious -- a `DT::datatable()` with significant
+rows highlighted, a LaTeX booktabs layout, an HTML widget --
+follows the same pattern: `body` for the cells, `col_meta` for
+per-column formatting, the row indices for styling regions, and
+`format_spec` for the global conventions. The note and title stay
+available on the original object (`attr(tbl, "note")`,
+`attr(tbl, "title")`), so a custom renderer can reproduce spicy's
+self-documenting footer verbatim.
+
+## The contract
+
+Three properties make the structured view safe to build on:
+
+* **Engine parity.** The built-in engines consume this exact
+  structure: what you read in `body` is, cell for cell, what the
+  Excel workbook contains and what the gt table displays at its
+  precision. This parity is pinned by tests.
+* **Stability tier.** `as_structured()` sits in the *stabilising*
+  tier of the API (see `?spicy`, section *API stability*):
+  components will not be silently renamed or change semantics
+  within `0.y.z`, and additions are announced in `NEWS.md`.
+* **Version guard.** Objects built by a spicy version before the
+  structured contract existed are refused with an actionable
+  message rather than mis-read.
+
+For the statistical long form -- estimates with standard errors and
+unformatted p-values, one row per term across models -- reach for
+`broom::tidy()` on the same object; for one-line model summaries,
+`broom::glance()`. The three views are built from the same frames,
+so their numbers always agree.

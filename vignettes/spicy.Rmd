@@ -219,6 +219,8 @@ sochealth |>
   univariable screen (`table_regression_uv()`).
 - `vignette("table-regression-supported-models")` — the
   class-by-class capability map (some thirty model classes).
+- `vignette("as-structured")` — the typed view behind every
+  regression table: filter, aggregate, or build a custom renderer.
 - `vignette("table-regression-mixed")` — mixed-effects (multilevel)
   models, random effects as table rows, ICC.
 - `vignette("table-regression-gee")` — GEE (population-averaged)

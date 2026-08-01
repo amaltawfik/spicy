@@ -67,6 +67,8 @@ navbar:
           href: articles/table-regression.html
         - text: Supported models
           href: articles/table-regression-supported-models.html
+        - text: "The structured view (programmatic access)"
+          href: articles/as-structured.html
         - text: Mixed-effects regression tables
           href: articles/table-regression-mixed.html
         - text: GEE regression tables (population-averaged)
@@ -103,6 +105,7 @@ articles:
       - table-continuous-lm
       - table-regression
       - table-regression-supported-models
+      - as-structured
       - table-regression-mixed
       - table-regression-gee
       - table-regression-counts
