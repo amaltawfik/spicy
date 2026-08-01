@@ -80,7 +80,7 @@ extract_partial_effect_rows <- function(
   # Cache: one partial-effect computation per unique non-intercept term.
   # Factor coefs (k-1 dummies) and interaction coefs (multi-df) all
   # share the same partial F-test, so caching by term avoids duplicate
-  # drop1() + uniroot() work.
+  # nested-refit + uniroot() work.
   unique_term_idx <- unique(assign_idx[assign_idx != 0L])
   cache <- setNames(
     vector("list", length(unique_term_idx)),
@@ -106,7 +106,7 @@ extract_partial_effect_rows <- function(
     eff <- cache[[as.character(term_idx)]]
     if (is.null(eff)) {
       next
-    } # drop1 failed -- renderer en-dashes
+    } # focal F unavailable -- renderer en-dashes
 
     nm <- cf_names[i]
     fmeta <- factor_meta[[nm]]
@@ -143,10 +143,10 @@ extract_partial_effect_rows <- function(
 
 # ---- Per-term computation -------------------------------------------------
 
-# Compute the partial F + the three effect-size estimands and their
-# CIs for one model term. Returns NULL on any failure (drop1 failure,
-# non-finite F, etc.) -- the caller skips the term and the renderer
-# en-dashes the corresponding cells.
+# Compute the Type-II partial F + the three effect-size estimands and
+# their CIs for one model term. Returns NULL on any failure (nested
+# refit failure, non-finite F, etc.) -- the caller skips the term and
+# the renderer en-dashes the corresponding cells.
 compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
   fs <- extract_lm_focal_f_stat(fit, term_label)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs < 0) {
@@ -207,7 +207,7 @@ compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
 }
 
 
-# ---- glm path: term-level partial chi^2 via drop1 LRT -----------------------
+# ---- glm path: term-level partial chi^2 via the Type-II nested LRT ----------
 
 # Build the partial_chi2 rows for one glm fit. One row per non-intercept
 # coef; factor terms emit one row per non-reference dummy, all sharing

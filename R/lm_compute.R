@@ -323,40 +323,121 @@ extract_lm_f_stat <- function(fit) {
   )
 }
 
-# Internal: F-stat restricted to a single focal term (partial F via
-# `drop1`). When `focal_term = NULL`, returns the model-level F via
+# Internal: model.matrix column masks for the Type-II nested pair of
+# one focal term. Type II (Fox 2016 ch. 8; Fox & Weisberg 2019;
+# `car::Anova(type = 2)`) tests a term T by comparing the two nested
+# models { all terms that do NOT contain T } vs { those terms + T }:
+# BOTH models exclude every higher-order relative of T (A:B is out of
+# both sides when T = A), which respects the principle of marginality
+# and makes the test invariant to the factor coding (treatment / sum /
+# Helmert / polynomial). A term S "contains" T when every variable of
+# T also appears in S (car's `is.relative()`). Shared by the lm partial
+# F (`compute_lm_type2_f_stat`) and the glm partial LRT
+# (`compute_glm_type2_lrt` in R/glm_compute.R). Returns NULL when
+# `focal_term` is not a term label of `trm`.
+type2_nested_column_masks <- function(trm, asgn, focal_term) {
+  term_labels <- attr(trm, "term.labels")
+  k <- match(focal_term, term_labels)
+  if (is.na(k)) {
+    return(NULL)
+  }
+  fac <- attr(trm, "factors")
+  contains_focal <- vapply(
+    seq_along(term_labels),
+    function(j) j != k && all(fac[, k] == 0 | fac[, j] != 0),
+    logical(1)
+  )
+  excluded <- c(k, which(contains_focal))
+  keep_base <- !(asgn %in% excluded)
+  list(
+    keep_base = keep_base,
+    keep_with = keep_base | asgn == k,
+    has_relatives = any(contains_focal)
+  )
+}
+
+# Internal: F-stat restricted to a single focal term. When
+# `focal_term = NULL`, returns the model-level F via
 # `extract_lm_f_stat()`, which for a bivariate `y ~ x` model coincides
-# with the focal-term F. With covariates (`y ~ x + cov1 + cov2`),
-# `focal_term = "x"` returns the partial F restricted to x -- the
-# correct quantity for partial f^2 / partial omega^2 CI inversion under
-# adjustment.
+# with the focal-term F. With a focal term, returns the
+# marginality-respecting Type-II partial F (`compute_lm_type2_f_stat`):
+# for additive models this is the classic partial F -- SS(term | all
+# other terms) over the full-model MSE, identical to `drop1` -- and
+# with interactions the main-effect test excludes the higher-order
+# terms from BOTH nested models instead of holding their columns fixed
+# (a forced-scope `drop1`, i.e. a contrast-dependent Type-III-style
+# test).
 extract_lm_focal_f_stat <- function(fit, focal_term = NULL) {
   if (is.null(focal_term)) {
     return(extract_lm_f_stat(fit))
   }
-  d1 <- tryCatch(
-    suppressWarnings(
-      stats::drop1(fit, scope = stats::reformulate(focal_term), test = "F")
-    ),
+  tryCatch(
+    suppressWarnings(compute_lm_type2_f_stat(fit, focal_term)),
     error = function(e) NULL
   )
-  if (
-    is.null(d1) ||
-      nrow(d1) < 2L ||
-      !"F value" %in% names(d1) ||
-      !"Df" %in% names(d1)
-  ) {
+}
+
+# Internal: Type-II partial F for `focal_term` by nested refits on the
+# fitted estimation sample. Mirrors the `stats::drop1.lm` internals --
+# column subsets of the fitted model.matrix refit via lm.fit / lm.wfit
+# with the fit's own response, weights, and offset, so the user's
+# `data` expression is never re-evaluated and the additive-case values
+# are bit-identical to the previous drop1-based ones. df1 is the
+# difference of effective ranks (not a naive column count), so aliased
+# collinear columns are handled. The error term is the FULL model's
+# MSE (`car::Anova(type = 2)` convention), so for the highest-order
+# term Type II coincides with drop1 exactly.
+compute_lm_type2_f_stat <- function(fit, focal_term) {
+  x <- stats::model.matrix(fit)
+  asgn <- attr(x, "assign")
+  if (is.null(asgn) || length(asgn) != ncol(x)) {
     return(NULL)
   }
-  f_obs <- d1[["F value"]][2]
-  df1 <- d1[["Df"]][2]
-  if (!is.finite(f_obs) || !is.finite(df1) || df1 < 1L) {
+  masks <- type2_nested_column_masks(stats::terms(fit), asgn, focal_term)
+  if (is.null(masks)) {
+    return(NULL)
+  }
+  y <- fit$residuals + fit$fitted.values
+  wt <- fit$weights
+  off <- fit$offset
+  rss_rank <- function(keep) {
+    if (!any(keep)) {
+      # Empty base model (no-intercept fit whose only term is the
+      # focal): the offset-adjusted response is the residual.
+      r <- if (is.null(off)) y else y - off
+      rss <- if (is.null(wt)) sum(r^2) else sum(wt * r^2)
+      return(list(rss = rss, rank = 0L))
+    }
+    z <- if (is.null(wt)) {
+      stats::lm.fit(x[, keep, drop = FALSE], y, offset = off)
+    } else {
+      stats::lm.wfit(x[, keep, drop = FALSE], y, wt, offset = off)
+    }
+    rss <- if (is.null(wt)) sum(z$residuals^2) else sum(wt * z$residuals^2)
+    list(rss = rss, rank = z$rank)
+  }
+  base <- rss_rank(masks$keep_base)
+  augmented <- if (masks$has_relatives) {
+    rss_rank(masks$keep_with)
+  } else {
+    # No higher-order relative contains the focal term: the augmented
+    # model IS the fitted model, so reuse its deviance and rank.
+    list(rss = stats::deviance(fit), rank = fit$rank)
+  }
+  df1 <- augmented$rank - base$rank
+  df2 <- stats::df.residual(fit)
+  if (!is.finite(df1) || df1 < 1L || !is.finite(df2) || df2 <= 0) {
+    return(NULL)
+  }
+  f_obs <- (max(0, base$rss - augmented$rss) / df1) /
+    (stats::deviance(fit) / df2)
+  if (!is.finite(f_obs)) {
     return(NULL)
   }
   list(
     f_obs = f_obs,
     df1 = df1,
-    df2 = stats::df.residual(fit)
+    df2 = df2
   )
 }
 

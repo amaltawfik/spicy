@@ -774,10 +774,11 @@ p-value; for the AME-specific p-value use \code{"ame_p"}.
 \code{"partial_eta2"}, \code{"partial_omega2"}, each with a paired
 \verb{_ci} companion (\code{"partial_f2_ci"}, ...).
 \item Partial effect size -- \code{glm} only: \code{"partial_chi2"}
-(likelihood-ratio chi-square via \code{drop1(test = "LRT")};
-SAS PROC LOGISTIC \code{TYPE3}; Long & Freese 2014 Section 3.5).
-Rendered as \code{value (df)} to disambiguate factor terms
-(k-1 df) from numeric terms (1 df).
+(Type-II partial likelihood-ratio chi-square: each term is
+tested against the nested pair of models that both exclude
+any higher-order interaction containing it; Long & Freese
+2014 Section 3.5). Rendered as \code{value (df)} to disambiguate
+factor terms (k-1 df) from numeric terms (1 df).
 \item Sample columns: \code{"n"} -- per-row N, populated by
 \code{\link[=table_regression_uv]{table_regression_uv()}} screens (each predictor block is its
 own fit); models without per-row N data drop the column.

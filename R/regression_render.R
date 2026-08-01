@@ -978,9 +978,9 @@ format_cell_value <- function(
   digits_to_use <- if (is_es) effect_size_digits else digits
 
   # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) \u2013
-  # SAS PROC LOGISTIC TYPE3 / car::Anova(type = 3) convention. Df sits
-  # in parens to disambiguate factor terms (k-1 df) from numeric terms
-  # (1 df) without burning an extra column.
+  # the `car::Anova` display convention. Df sits in parens to
+  # disambiguate factor terms (k-1 df) from numeric terms (1 df)
+  # without burning an extra column.
   if (
     length(cs$fields) == 2L &&
       identical(cs$fields, c("estimate", "df"))

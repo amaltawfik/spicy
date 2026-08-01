@@ -263,7 +263,9 @@
 #'
 #'   **Under covariate adjustment** (`covariates` non-empty):
 #'   - `"f2"` and `"omega2"` become the **partial** *\eqn{f^2}{f^2}* / partial *\eqn{\omega^2}{omega^2}*,
-#'     derived from the partial *F* of `by` via [stats::drop1()] --
+#'     derived from the partial *F* of `by` (the Type-II test of `by`
+#'     after all covariates, equal to [stats::drop1()] in this
+#'     additive setting) --
 #'     the correctly-defined effect size when the model is adjusted.
 #'     For numeric `by`, partial *\eqn{f^2}{f^2}* equals the squared partial
 #'     correlation of `by` with the outcome, divided by `(1 - r^2_partial)`.
@@ -469,8 +471,9 @@
 #'
 #' **Under covariate adjustment** (`covariates` non-empty), `"f2"` and
 #' `"omega2"` become the partial *\eqn{f^2}{f^2}* / partial *\eqn{\omega^2}{omega^2}* of `by`, derived
-#' from the partial *F* via [stats::drop1()] restricted to the focal
-#' term. `"d"` and `"g"` raise a `spicy_unsupported` error: the pooled
+#' from the partial *F* restricted to the focal term (the Type-II
+#' test of `by` after all covariates, equal to [stats::drop1()] in
+#' this additive setting). `"d"` and `"g"` raise a `spicy_unsupported` error: the pooled
 #' standard deviation has no canonical extension under adjustment, so
 #' Cohen's *d* and Hedges' *g* are undefined for adjusted models. See
 #' `effect_size` for the full dispatch.
@@ -856,7 +859,7 @@
 #' )
 #'
 #' # Effect sizes adjust automatically: f2 / omega2 become partial
-#' # effect sizes via partial F (drop1) restricted to the focal `by`.
+#' # effect sizes via the partial F restricted to the focal `by`.
 #' # d / g are undefined under adjustment and raise spicy_unsupported.
 #' table_continuous_lm(
 #'   sochealth,

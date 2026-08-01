@@ -313,7 +313,9 @@ affected by \code{vcov}.
 \strong{Under covariate adjustment} (\code{covariates} non-empty):
 \itemize{
 \item \code{"f2"} and \code{"omega2"} become the \strong{partial} \emph{\eqn{f^2}{f^2}} / partial \emph{\eqn{\omega^2}{omega^2}},
-derived from the partial \emph{F} of \code{by} via \code{\link[stats:drop1]{stats::drop1()}} --
+derived from the partial \emph{F} of \code{by} (the Type-II test of \code{by}
+after all covariates, equal to \code{\link[stats:drop1]{stats::drop1()}} in this
+additive setting) --
 the correctly-defined effect size when the model is adjusted.
 For numeric \code{by}, partial \emph{\eqn{f^2}{f^2}} equals the squared partial
 correlation of \code{by} with the outcome, divided by \verb{(1 - r^2_partial)}.
@@ -566,8 +568,9 @@ itself.
 
 \strong{Under covariate adjustment} (\code{covariates} non-empty), \code{"f2"} and
 \code{"omega2"} become the partial \emph{\eqn{f^2}{f^2}} / partial \emph{\eqn{\omega^2}{omega^2}} of \code{by}, derived
-from the partial \emph{F} via \code{\link[stats:drop1]{stats::drop1()}} restricted to the focal
-term. \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: the pooled
+from the partial \emph{F} restricted to the focal term (the Type-II
+test of \code{by} after all covariates, equal to \code{\link[stats:drop1]{stats::drop1()}} in
+this additive setting). \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: the pooled
 standard deviation has no canonical extension under adjustment, so
 Cohen's \emph{d} and Hedges' \emph{g} are undefined for adjusted models. See
 \code{effect_size} for the full dispatch.
@@ -848,7 +851,7 @@ table_continuous_lm(
 )
 
 # Effect sizes adjust automatically: f2 / omega2 become partial
-# effect sizes via partial F (drop1) restricted to the focal `by`.
+# effect sizes via the partial F restricted to the focal `by`.
 # d / g are undefined under adjustment and raise spicy_unsupported.
 table_continuous_lm(
   sochealth,

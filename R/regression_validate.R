@@ -878,8 +878,8 @@ validate_show_columns <- function(show_columns, standardized) {
 # Substitution policy (closest analog per discipline convention):
 #   * lm  -> no  partial_chi2          (use partial_f2 / \u03B7\u00B2 / \u03C9\u00B2)
 #   * lm  -> no  pseudo_r2_*           (use r2 / adj_r2 / omega2)
-#   * glm -> no  partial_f2 / \u03B7\u00B2 / \u03C9\u00B2  (use partial_chi2; Long & Freese
-#                                      2014 \u00A73.5; Allison "TYPE3")
+#   * glm -> no  partial_f2 / \u03B7\u00B2 / \u03C9\u00B2  (use partial_chi2; Type-II LRT;
+#                                      Long & Freese 2014 \u00A73.5)
 #   * glm -> no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
 #                                      1974 / Nagelkerke 1991 / Tjur 2009)
 validate_class_appropriate_tokens <- function(
@@ -935,9 +935,9 @@ validate_class_appropriate_tokens <- function(
           "i" = paste0(
             "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
             "does not apply outside the least-squares framework. The ",
-            "`glm`-appropriate analog is `partial_chi2` (partial ",
-            "likelihood-ratio chi-square via `drop1(test = \"LRT\")`; ",
-            "Long & Freese 2014 \u00A73.5; Allison \"TYPE3\")."
+            "`glm`-appropriate analog is `partial_chi2` (Type-II ",
+            "partial likelihood-ratio chi-square; ",
+            "Long & Freese 2014 \u00A73.5)."
           ),
           "i" = "Replace with `\"partial_chi2\"` or drop the token."
         ),

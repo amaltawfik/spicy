@@ -4,7 +4,7 @@
 #   * Per-coef inference: z-asymptotic Wald, with CR* Satterthwaite
 #     branch via clubSandwich
 #   * Pseudo-R^2 family: McFadden, Nagelkerke, Tjur
-#   * Term-level partial chi-square via drop1(test = "LRT")
+#   * Term-level partial chi-square via the Type-II nested LRT
 #   * apply_exponentiate_to_coefs(): exp() transform on coefs +
 #     CIs + delta-method SE
 
@@ -566,22 +566,27 @@ apply_exponentiate_to_frame_coefs <- function(coefs) {
 
 # ---- Partial likelihood-ratio chi-square ---------------------------------
 
-# Term-level partial chi^2 via drop1(test = "LRT") -- the glm analog
-# of the partial F-test in lm. For each model term, refit without that
-# term and compare via likelihood ratio:
+# Term-level partial chi^2 -- the glm analog of the Type-II partial
+# F-test in lm. For each model term T, compare by likelihood ratio the
+# two nested models { all terms that do NOT contain T } vs { those
+# terms + T } (Type II; Fox & Weisberg 2019; `car::Anova(type = 2,
+# test.statistic = "LR")`):
 #
-#   LR = 2 * (LL_full - LL_reduced)  ~  chi^2(df = #params dropped)
+#   LR = 2 * (LL_with - LL_without)  ~  chi^2(df = rank difference)
 #
-# Convention follows SAS PROC LOGISTIC `TYPE3`, Stata `test, accumulate`,
-# Allison "TYPE3", Long & Freese 2014 Section 3.5. For factor terms with k
-# levels, the test is joint over all k-1 dummies and df = k-1
-# (matching how `car::Anova(type = 3)` reports it for glm).
+# Both nested models exclude every higher-order relative of T, so the
+# main-effect test under interactions respects marginality and is
+# invariant to the factor coding. For additive models (and for the
+# highest-order term of any model) this equals `drop1(test = "LRT")`.
+# For factor terms with k levels, the test is joint over all k-1
+# dummies and df = k-1. Long & Freese 2014 Section 3.5 discuss the
+# term-level LRT itself.
 #
-# Returns NULL on any failure (drop1 error, non-finite chi-square, etc.)
-# so the caller can skip the term and the renderer en-dashes the cells.
-# Quasi families (quasibinomial / quasipoisson / quasi) have no proper
-# log-likelihood, so the LRT is undefined; we return NULL -- consistent
-# with how the pseudo-R^2 family handles them.
+# Returns NULL on any failure (refit error, non-finite chi-square,
+# etc.) so the caller can skip the term and the renderer en-dashes the
+# cells. Quasi families (quasibinomial / quasipoisson / quasi) have no
+# proper log-likelihood, so the LRT is undefined; we return NULL --
+# consistent with how the pseudo-R^2 family handles them.
 compute_partial_chi2_for_term <- function(fit, term_label) {
   if (!inherits(fit, "glm")) {
     return(NULL)
@@ -589,29 +594,84 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
   if (grepl("^quasi", stats::family(fit)$family)) {
     return(NULL)
   }
-  d1 <- tryCatch(
-    suppressWarnings(
-      stats::drop1(fit, scope = stats::reformulate(term_label), test = "LRT")
-    ),
+  out <- tryCatch(
+    suppressWarnings(compute_glm_type2_lrt(fit, term_label)),
     error = function(e) NULL
   )
-  if (is.null(d1) || nrow(d1) < 2L) {
+  if (is.null(out)) {
     return(NULL)
   }
-  # Column names vary by R version: "LRT" (modern) vs "scaled dev." vs
-  # "Deviance" depending on dispersion handling. The chi-square value
-  # is in whichever of these is present; we look for them in order.
-  chi2_col <- intersect(c("LRT", "scaled dev.", "Deviance"), names(d1))
-  # nocov: drop1(test = "LRT") on a glm always returns a "Df" column and
-  # one of "LRT"/"scaled dev."/"Deviance"; an empty match is unreachable.
-  if (length(chi2_col) == 0L || !"Df" %in% names(d1)) {
-    return(NULL)
-  } # nocov
-  chi2 <- d1[[chi2_col[1L]]][2L]
-  df1 <- d1[["Df"]][2L]
+  chi2 <- out$chi2
+  df1 <- out$df
   if (!is.finite(chi2) || !is.finite(df1) || df1 < 1L || chi2 < 0) {
     return(NULL)
   }
   p_value <- stats::pchisq(chi2, df = df1, lower.tail = FALSE)
   list(chi2 = chi2, df = as.integer(df1), p_value = p_value)
+}
+
+# Internal: Type-II nested LRT for one glm term by refits on the
+# fitted estimation sample. Mirrors the `stats::drop1.glm` internals --
+# column subsets of the fitted model.matrix refit via glm.fit with the
+# fit's own response, prior weights, offset, family, and control, so
+# the user's `data` expression is never re-evaluated and the
+# additive-case values are identical to the previous drop1-based ones.
+# The statistic scaling follows drop1(test = "LRT") / stat.anova: raw
+# deviance difference when the dispersion is fixed at 1 (binomial /
+# poisson), the profile-likelihood form n * log(RSS ratio) for
+# gaussian, and the dispersion-scaled deviance difference for the
+# other estimated-dispersion families (Gamma, inverse.gaussian). df is
+# the difference of effective ranks (collinearity-safe).
+compute_glm_type2_lrt <- function(fit, term_label) {
+  x <- stats::model.matrix(fit)
+  asgn <- attr(x, "assign")
+  if (is.null(asgn) || length(asgn) != ncol(x)) {
+    return(NULL)
+  }
+  masks <- type2_nested_column_masks(stats::terms(fit), asgn, term_label)
+  if (is.null(masks)) {
+    return(NULL)
+  }
+  n <- nrow(x)
+  y <- fit$y
+  if (is.null(y)) {
+    y <- stats::model.response(stats::model.frame(fit))
+    if (!is.factor(y)) {
+      storage.mode(y) <- "double"
+    }
+  }
+  wt <- fit$prior.weights
+  if (is.null(wt)) {
+    wt <- rep.int(1, n)
+  }
+  dev_rank <- function(keep) {
+    z <- stats::glm.fit(
+      x[, keep, drop = FALSE],
+      y,
+      weights = wt,
+      offset = fit$offset,
+      family = fit$family,
+      control = fit$control
+    )
+    list(dev = z$deviance, rank = z$rank)
+  }
+  base <- dev_rank(masks$keep_base)
+  augmented <- if (masks$has_relatives) {
+    dev_rank(masks$keep_with)
+  } else {
+    # No higher-order relative contains the term: the augmented model
+    # IS the fitted model, so reuse its deviance and rank.
+    list(dev = fit$deviance, rank = fit$rank)
+  }
+  df1 <- augmented$rank - base$rank
+  if (!is.finite(df1) || df1 < 1L) {
+    return(NULL)
+  }
+  chi2 <- if (identical(fit$family$family, "gaussian")) {
+    n * log(base$dev / n) - n * log(augmented$dev / n)
+  } else {
+    dispersion <- summary(fit, dispersion = NULL)$dispersion
+    (base$dev - augmented$dev) / dispersion
+  }
+  list(chi2 = max(0, chi2), df = df1)
 }
