@@ -216,6 +216,21 @@ test_that("glmmTMB title prefix covers binomial links and family arms", {
 })
 
 
+# Phase 3 matrix – vignettes-news:titles-polish (lme4 probit half) (lot T4)
+
+test_that("a probit glmer is titled Probit, not Logistic", {
+  skip_if_not_installed("lme4")
+  fit <- suppressWarnings(lme4::glmer(
+    cbind(incidence, size - incidence) ~ period + (1 | herd),
+    data = lme4::cbpp,
+    family = binomial("probit")
+  ))
+  tbl <- suppressWarnings(table_regression(fit))
+  expect_match(attr(tbl, "title"), "^Probit mixed-effects regression")
+  expect_false(grepl("Logistic", attr(tbl, "title"), fixed = TRUE))
+})
+
+
 # ---- 7. glmmTMB: vc guards when confint() has no theta rows ---------------
 
 test_that("glmmTMB vc helpers pass through / NA out without theta rows", {

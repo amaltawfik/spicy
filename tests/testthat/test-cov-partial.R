@@ -228,3 +228,90 @@ test_that("as_regression_frame(lm, partial_f2) emits one value per term", {
   cyl_rows <- pf[grepl("^factor\\(cyl\\)", pf$term), ]
   expect_length(unique(cyl_rows$estimate), 1L)
 })
+
+
+# Phase 3 matrix – vignettes-news:effect-size-type2-anova (lot T4)
+
+.t2_unbalanced <- function() {
+  set.seed(7)
+  n <- 60
+  d <- data.frame(
+    A = factor(sample(c("a", "b", "c"), n, TRUE, prob = c(.5, .3, .2))),
+    B = factor(sample(c("u", "v"), n, TRUE, prob = c(.6, .4)))
+  )
+  d$y <- rnorm(n) + as.numeric(d$A) + 0.5 * (d$B == "v")
+  d
+}
+
+test_that("partial F equals the Type-II ANOVA reference on an unbalanced additive lm", {
+  # Manual Type-II oracle (== car::Anova(fit, type = 2) for a model
+  # without interactions): SS(term | all other terms) over the full
+  # model's MSE. Dependency-free, and discriminating against Type I
+  # (the sequential F for A differs on unbalanced data).
+  d <- .t2_unbalanced()
+  fit <- lm(y ~ A + B, data = d)
+  rows <- spicy:::extract_partial_effect_rows(
+    fit,
+    ci_level = 0.95,
+    show_columns = "partial_eta2",
+    model_id = "M1",
+    outcome = "y"
+  )
+  rss <- function(f) sum(resid(f)^2)
+  mse <- rss(fit) / df.residual(fit)
+  f_A <- ((rss(lm(y ~ B, data = d)) - rss(fit)) / 2) / mse
+  f_B <- ((rss(lm(y ~ A, data = d)) - rss(fit)) / 1) / mse
+  expect_equal(
+    unique(rows$statistic[grepl("^A", rows$term)]),
+    f_A,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    unique(rows$statistic[grepl("^B", rows$term)]),
+    f_B,
+    tolerance = 1e-10
+  )
+  # Discriminating: the Type-I sequential F for A is different here.
+  f_A_type1 <- anova(fit)[["F value"]][1L]
+  expect_gt(abs(f_A - f_A_type1), 1e-4)
+  # And the eta2 point estimate is the closed-form of that same F.
+  eta_A <- (f_A * 2) / (f_A * 2 + df.residual(fit))
+  expect_equal(
+    unique(rows$estimate[grepl("^A", rows$term)]),
+    eta_A,
+    tolerance = 1e-10
+  )
+})
+
+test_that("FIXME: with an interaction, the main-effect partial F is NOT the Type-II reference", {
+  # DISCORDANCE (Phase 3, lot T4): the vignette used to claim the
+  # partial F is computed 'on a Type-II ANOVA reference (car::Anova),
+  # which respects the principle of marginality'. The implementation
+  # (drop1 with a forced scope) drops a main effect while KEEPING its
+  # interaction columns -- a Type-III-style, contrast-dependent test.
+  # The vignette text now describes the actual behavior; this skip
+  # documents what a marginality-respecting Type-II implementation
+  # would return, should the design decision ever be revisited.
+  skip(
+    "FIXME: main-effect partial F under interactions is Type-III-style, not Type II"
+  )
+  d <- .t2_unbalanced()
+  fit <- lm(y ~ A * B, data = d)
+  rows <- spicy:::extract_partial_effect_rows(
+    fit,
+    ci_level = 0.95,
+    show_columns = "partial_eta2",
+    model_id = "M1",
+    outcome = "y"
+  )
+  rss <- function(f) sum(resid(f)^2)
+  mse <- rss(fit) / df.residual(fit)
+  # Type II: SS(A | B), interaction ignored in the comparison pair.
+  f_A_type2 <- ((rss(lm(y ~ B, data = d)) - rss(lm(y ~ A + B, data = d))) / 2) /
+    mse
+  expect_equal(
+    unique(rows$statistic[rows$term %in% c("Ab", "Ac")]),
+    f_A_type2,
+    tolerance = 1e-10
+  )
+})

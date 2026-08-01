@@ -186,6 +186,30 @@ test_that("feols clustered: vcov_label includes 'Clustered'", {
 })
 
 
+# Phase 3 matrix – vignettes-news:fixest-keep-own-vcov (lot T4)
+
+test_that("fixest fits keep their own estimator: spicy HC*/CR* tokens are refused", {
+  fit <- .fit_feols_basic()
+  expect_error(
+    table_regression(fit, vcov = "HC3", output = "data.frame"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(
+      fit,
+      vcov = "CR2",
+      cluster = seq_len(stats::nobs(fit)),
+      output = "data.frame"
+    ),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(fit, vcov = "bootstrap", output = "data.frame"),
+    class = "spicy_unsupported_vcov"
+  )
+})
+
+
 # ---- 8. feols: factor predictor reference row ---------------------------
 
 test_that("feols: factor predictor synthesises a reference row", {

@@ -182,3 +182,33 @@ test_that("every vignette appears in the _pkgdown.yml articles index", {
     )
   )
 })
+
+
+# Phase 3 matrix – vignettes-news:vignettes-exist (lot T4)
+
+test_that("the vignettes NEWS names are all present in vignettes/", {
+  vignettes_dir <- test_path("..", "..", "vignettes")
+  skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
+  # The NEWS 'Seven new vignettes' bullet: mixed, GEE, multinomial,
+  # counts, survival, ordinal, categorical-predictors -- plus the
+  # supported-models map it points at.
+  named <- c(
+    "table-regression-mixed",
+    "table-regression-gee",
+    "table-regression-multinomial",
+    "table-regression-counts",
+    "table-regression-survival",
+    "table-regression-ordinal",
+    "categorical-predictors",
+    "table-regression-supported-models"
+  )
+  present <- .vignette_names(vignettes_dir)
+  missing <- setdiff(named, present)
+  expect(
+    length(missing) == 0L,
+    sprintf(
+      "Vignette(s) promised in NEWS.md are missing from vignettes/: %s.",
+      paste(missing, collapse = ", ")
+    )
+  )
+})

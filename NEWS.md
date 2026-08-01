@@ -209,7 +209,8 @@ rendering an empty column.
 * `table_regression_uv()`: univariable screening tables. One fit per
   candidate predictor, rendered as one table with a row block per
   predictor and merged side by side with the multivariable model.
-  Supports `glm` (default), `lm`, and `coxph`
+  Supports `lm` (the default linear screen), `glm` (selected
+  automatically when a `family` is supplied), and `coxph`
   (`outcome = Surv(time, status)`). A per-predictor `N` column is shown
   by default and a note discloses when Ns differ across fits;
   `complete_cases = TRUE` forces the common sample. Intercepts are

@@ -83,6 +83,41 @@ test_that("polr CR* matches sandwich::vcovCL on the slope block", {
   expect_false(isTRUE(all.equal(thr$std_error, thr0$std_error)))
 })
 
+# Phase 3 matrix – vignettes-news:ordinal-cluster-consistent (lot T4)
+
+test_that("polr and clm refuse HC* and the resamplers with spicy_unsupported_vcov", {
+  skip_if_not_installed("MASS")
+  set.seed(2)
+  d <- data.frame(
+    y = factor(sample(1:3, 150, TRUE), ordered = TRUE),
+    x1 = rnorm(150)
+  )
+  m <- MASS::polr(y ~ x1, data = d, Hess = TRUE)
+  expect_error(
+    table_regression(m, vcov = "HC3", output = "data.frame"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(m, vcov = "bootstrap", output = "data.frame"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(m, vcov = "jackknife", output = "data.frame"),
+    class = "spicy_unsupported_vcov"
+  )
+  skip_if_not_installed("ordinal")
+  mc <- ordinal::clm(y ~ x1, data = d)
+  expect_error(
+    table_regression(mc, vcov = "HC0", output = "data.frame"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(mc, vcov = "bootstrap", output = "data.frame"),
+    class = "spicy_unsupported_vcov"
+  )
+})
+
+
 ## ---- clm ------------------------------------------------------------------
 
 test_that("clm CR* matches sandwich::vcovCL (thresholds before slopes)", {

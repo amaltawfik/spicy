@@ -143,3 +143,27 @@ test_that("end-to-end: rmarkdown -> Word document contains the table", {
   # The note survived into the Word body via the native footer.
   expect_match(xml, "Std. errors", fixed = TRUE)
 })
+
+
+# Phase 3 matrix – vignettes-news:rich-outputs-word-ppt-pdf (lot T4)
+
+test_that("pptx target: spicy_flextable delegates to native openxml", {
+  skip_if_not_installed("flextable")
+  ft <- table_regression(.fit_qw(), output = "flextable")
+  out <- .with_pandoc_to("pptx", knitr::knit_print(ft))
+  s <- paste(as.character(out), collapse = "")
+  # flextable's PowerPoint path emits a raw openxml graphic frame --
+  # what pandoc embeds in a pptx slide -- not the HTML fallback.
+  expect_match(s, "{=openxml}", fixed = TRUE)
+  expect_match(s, "graphicFrame", fixed = TRUE)
+  expect_false(grepl("spicy-ft-note", s, fixed = TRUE))
+})
+
+test_that("latex target: spicy_flextable delegates to native LaTeX", {
+  skip_if_not_installed("flextable")
+  ft <- table_regression(.fit_qw(), output = "flextable")
+  out <- suppressWarnings(.with_pandoc_to("latex", knitr::knit_print(ft)))
+  s <- paste(as.character(out), collapse = "")
+  expect_match(s, "{=latex}", fixed = TRUE)
+  expect_false(grepl("spicy-ft-note", s, fixed = TRUE))
+})

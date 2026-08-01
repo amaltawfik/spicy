@@ -1496,3 +1496,55 @@ test_that("multilevel and non-GLM stanreg fits refuse standardized", {
     class = "spicy_unsupported_standardized"
   )
 })
+
+
+# Phase 3 matrix – vignettes-news:bayes-diagnostics-guard (clean half)
+# and vignettes-news:bayes-tidy-na-p (lot T4)
+
+test_that("a converged fit prints no diagnostics footer and fires no guard warning", {
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    mpg ~ wt,
+    data = mtcars,
+    iter = 1000,
+    chains = 2,
+    refresh = 0,
+    seed = 123
+  ))
+  warned <- FALSE
+  tbl <- withCallingHandlers(
+    table_regression(fit),
+    spicy_bayes_diagnostics = function(w) {
+      warned <<- TRUE
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_false(warned)
+  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  expect_false(grepl("Sampler diagnostics", out, fixed = TRUE))
+
+  # tidy() on the same table: estimate = posterior median, std.error =
+  # MAD SD, credible bounds; p.value, statistic, and df are all NA.
+  skip_if_not_installed("broom")
+  td <- broom::tidy(tbl)
+  expect_true(all(is.na(td$p.value)))
+  expect_true(all(is.na(td$statistic)))
+  expect_true(all(is.na(td$df)))
+  dr <- as.matrix(fit)
+  expect_equal(
+    td$estimate[td$term == "wt"],
+    median(dr[, "wt"]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    td$std.error[td$term == "wt"],
+    stats::mad(dr[, "wt"]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    td$conf.low[td$term == "wt"],
+    unname(stats::quantile(dr[, "wt"], 0.025)),
+    tolerance = 1e-10
+  )
+})

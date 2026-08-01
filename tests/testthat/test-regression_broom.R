@@ -197,6 +197,86 @@ test_that("as_tibble – returns tbl_df", {
 # Round-trip identity: tidy + glance preserve the analytic content
 # ============================================================================
 
+# ============================================================================
+# Phase 3 matrix – critic:pkgrd-broom-columns-stabilising and
+# critic:pkgrd-broom-df-types (lot T4)
+# ============================================================================
+
+test_that("tidy/glance column sets are frozen (stabilising contract)", {
+  # expect_identical on the FULL name vector: any silent rename,
+  # removal, or reorder of an existing column is a contract break
+  # (?spicy, section 'broom output shape'). Adding optional new
+  # columns is allowed -- append them HERE with a NEWS entry.
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  out <- table_regression(fit)
+  expect_identical(
+    names(broom::tidy(out)),
+    c(
+      "model_id",
+      "outcome",
+      "outcome_level",
+      "term",
+      "estimate_type",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "statistic",
+      "df",
+      "p.value",
+      "test_type",
+      "is_intercept",
+      "factor_term",
+      "factor_level"
+    )
+  )
+  expect_identical(
+    names(broom::glance(out)),
+    c(
+      "model_id",
+      "outcome",
+      "nobs",
+      "weighted_nobs",
+      "r.squared",
+      "adj.r.squared",
+      "omega2",
+      "sigma",
+      "rmse",
+      "f2",
+      "AIC",
+      "AICc",
+      "BIC",
+      "deviance",
+      "df.residual"
+    )
+  )
+})
+
+test_that("tidy df is numeric double and carries fractional Satterthwaite df verbatim", {
+  skip_if_not_installed("clubSandwich")
+  fit <- lm(mpg ~ wt, data = mtcars)
+  # Classical: double-typed even when the values are whole numbers.
+  td0 <- broom::tidy(table_regression(fit))
+  expect_type(td0$df, "double")
+  # CR2: the per-coefficient Satterthwaite df must arrive verbatim in
+  # tidy() -- fractional, matching clubSandwich::coef_test().
+  out <- table_regression(fit, vcov = "CR2", cluster = mtcars$cyl)
+  td <- broom::tidy(out)
+  ct <- clubSandwich::coef_test(fit, vcov = "CR2", cluster = mtcars$cyl)
+  expect_type(td$df, "double")
+  for (nm in c("(Intercept)", "wt")) {
+    expect_equal(
+      td$df[td$term == nm],
+      ct$df_Satt[ct$Coef == nm],
+      tolerance = 1e-8
+    )
+  }
+  expect_false(all(td$df == round(td$df)))
+  # glance keeps df.residual double alongside.
+  expect_type(broom::glance(out)$df.residual, "double")
+})
+
+
 test_that("tidy ⇄ raw long: per-coef estimates round-trip", {
   fit <- lm(mpg ~ wt + cyl + am, data = mt)
   out <- table_regression(fit)

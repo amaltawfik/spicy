@@ -184,7 +184,12 @@ reference:
       - print.spicy_continuous_table
       - print.spicy_cross_table
       - print.spicy_cross_table_list
+      - print.spicy_flextable
       - print.spicy_freq_table
+      - print.spicy_gt
+      - print.spicy_regression_frame
+      - print.spicy_regression_table
+      - terms.spicy_uv_screen
       - as.data.frame.spicy_categorical_table
       - as.data.frame.spicy_continuous_lm_table
       - as.data.frame.spicy_continuous_table

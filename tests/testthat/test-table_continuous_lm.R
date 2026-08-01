@@ -4485,3 +4485,55 @@ test_that("table_continuous_lm() rejects bit64::integer64 columns", {
     class = "spicy_invalid_data"
   )
 })
+
+
+# Phase 3 matrix – vignettes-news:align-auto-removed and
+# critic:pkgrd-broom-columns-stabilising (lot T4)
+
+test_that("align = 'auto' is removed from table_continuous_lm", {
+  expect_error(
+    table_continuous_lm(mtcars, select = "mpg", by = "am", align = "auto"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("tidy/glance column sets are frozen (stabilising contract)", {
+  skip_if_not_installed("broom")
+  out <- table_continuous_lm(mtcars, select = "mpg", by = "am")
+  expect_identical(
+    names(broom::tidy(out)),
+    c(
+      "outcome",
+      "label",
+      "term",
+      "estimate_type",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "statistic",
+      "p.value"
+    )
+  )
+  expect_identical(
+    names(broom::glance(out)),
+    c(
+      "outcome",
+      "label",
+      "predictor_type",
+      "test_type",
+      "statistic",
+      "df",
+      "df.residual",
+      "p.value",
+      "r.squared",
+      "adj.r.squared",
+      "es_type",
+      "es_value",
+      "es_ci_lower",
+      "es_ci_upper",
+      "nobs",
+      "weighted_n"
+    )
+  )
+})

@@ -99,6 +99,22 @@ new_regression_frame <- function(coefs, info, fit) {
   )
 }
 
+#' Print method for internal regression frames
+#'
+#' @description
+#' Prints a compact one-glance summary of a `spicy_regression_frame`
+#' (the internal intermediate representation behind
+#' [table_regression()]): model class, sample size, coefficient
+#' dimensions, family / link, CI method, and the capability flags the
+#' frame advertises.
+#'
+#' @param x A `spicy_regression_frame` object.
+#' @param ... Additional arguments (currently ignored).
+#'
+#' @return Invisibly returns `x`.
+#'
+#' @seealso [table_regression()]
+#' @keywords internal
 #' @export
 print.spicy_regression_frame <- function(x, ...) {
   info <- x$info

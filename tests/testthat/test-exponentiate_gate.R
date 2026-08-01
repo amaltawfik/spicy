@@ -231,3 +231,63 @@ test_that("flexsurv factor predictors group with a reference row (xlevels fix)",
   expect_identical(con$parent_var, "sex")
   expect_identical(con$label, "Female")
 })
+
+
+# Phase 3 matrix – vignettes-news:ordinal-exponentiate-links (lot T4)
+
+test_that("ordinal exponentiate: cloglog reads HR, probit is refused, thresholds stay log-scale", {
+  skip_if_not_installed("MASS")
+  hh <- MASS::housing
+  # cloglog link: the cumulative model is the grouped-time
+  # proportional-hazards model, so the header reads HR.
+  f_cll <- suppressMessages(MASS::polr(
+    Sat ~ Infl,
+    weights = Freq,
+    data = hh,
+    method = "cloglog",
+    Hess = TRUE
+  ))
+  tbl <- table_regression(f_cll, exponentiate = TRUE)
+  expect_true("HR" %in% names(tbl))
+  # Thresholds rows are never exponentiated, and the footer flags the
+  # scale under exponentiation.
+  expect_match(
+    paste(attr(tbl, "note"), collapse = "\n"),
+    "not exponentiated",
+    fixed = TRUE
+  )
+  s <- as_structured(tbl)
+  thr <- s$body[grepl("|", s$body$Variable, fixed = TRUE), , drop = FALSE]
+  expect_gt(nrow(thr), 0L)
+  expect_equal(
+    sort(thr$HR),
+    sort(unname(f_cll$zeta)),
+    tolerance = 1e-6
+  )
+  # probit link: refused with the classed gate error.
+  f_pro <- suppressMessages(MASS::polr(
+    Sat ~ Infl,
+    weights = Freq,
+    data = hh,
+    method = "probit",
+    Hess = TRUE
+  ))
+  expect_error(
+    table_regression(f_pro, exponentiate = TRUE),
+    class = "spicy_invalid_input"
+  )
+  # clm probit: same refusal through the ordinal package's engine.
+  skip_if_not_installed("ordinal")
+  d <- data.frame(
+    y = MASS::housing$Sat[rep(
+      seq_len(nrow(hh)),
+      hh$Freq
+    )]
+  )
+  d$x <- rnorm(nrow(d))
+  f_clm <- ordinal::clm(y ~ x, data = d, link = "probit")
+  expect_error(
+    table_regression(f_clm, exponentiate = TRUE),
+    class = "spicy_invalid_input"
+  )
+})

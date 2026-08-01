@@ -375,3 +375,32 @@ test_that("frame-path AME emits reference placeholders (en-dash cells)", {
   expect_identical(nrow(ref_o), 3L)
   expect_setequal(ref_o$outcome_level, c("lo", "mid", "hi"))
 })
+
+
+# Phase 3 matrix – vignettes-news:ordinal-ame-matrix (lot T4)
+
+test_that("ordinal AME matrix: per-term category effects sum to zero, footer states the scale", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("broom")
+  d <- make_d()
+  fit <- MASS::polr(yc ~ x1 + f, data = d, Hess = TRUE)
+  tbl <- table_regression(fit, show_columns = c("b", "ame"))
+  td <- broom::tidy(tbl)
+  am <- td[td$estimate_type == "ame" & !is.na(td$estimate), ]
+  # One AME per (term, category): probabilities are exhaustive, so the
+  # per-term effects across categories sum to zero.
+  sums <- tapply(am$estimate, am$term, sum)
+  expect_true(all(abs(sums) < 1e-10))
+  # One AME column per response category in the display.
+  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  for (cat in levels(d$yc)) {
+    expect_match(out, paste("AME", cat), fixed = TRUE)
+  }
+  # The footer states the probability scale.
+  expect_match(
+    paste(attr(tbl, "note"), collapse = "\n"),
+    "response-category probability",
+    fixed = TRUE
+  )
+})

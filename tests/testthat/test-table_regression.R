@@ -2054,3 +2054,78 @@ test_that("boot_n – full validation domain and the 1000-replicate default", {
     as_structured(b1000)$body$SE
   )))
 })
+
+
+# Phase 3 matrix – vignettes-news:align-auto-removed (lot T4)
+
+test_that("align = 'auto' is removed: classed error, not a silent default", {
+  fit <- lm(mpg ~ wt, data = mtcars)
+  expect_error(
+    table_regression(fit, align = "auto"),
+    class = "spicy_invalid_input"
+  )
+})
+
+
+# Phase 3 matrix – vignettes-news:ci-header-tracks-level (lot T4)
+
+test_that("ci_level relabels the CI header and widens the bounds", {
+  fit <- lm(mpg ~ wt + hp, data = mtcars)
+  tbl <- table_regression(fit, ci_level = 0.99)
+  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  expect_match(out, "99% CI", fixed = TRUE)
+  expect_false(grepl("95% CI", out, fixed = TRUE))
+  # Bounds are the level-0.99 confint, not the default 0.95 ones.
+  td <- broom::tidy(tbl)
+  ci99 <- confint(fit, level = 0.99)
+  expect_equal(td$conf.low[td$term == "wt"], ci99["wt", 1], tolerance = 1e-10)
+  expect_equal(td$conf.high[td$term == "wt"], ci99["wt", 2], tolerance = 1e-10)
+  ci95 <- confint(fit, level = 0.95)
+  expect_gt(ci95["wt", 1] - ci99["wt", 1], 0)
+})
+
+
+# Phase 3 matrix – vignettes-news:eta2-omega2-shared-steiger-ci and
+# vignettes-news:effect-size-broadcast-factors (lot T4)
+
+test_that("eta2 and omega2 CI cells are identical; reference row stays blank", {
+  set.seed(7)
+  n <- 60
+  d <- data.frame(
+    A = factor(sample(c("a", "b", "c"), n, TRUE, prob = c(.5, .3, .2))),
+    B = factor(sample(c("u", "v"), n, TRUE, prob = c(.6, .4)))
+  )
+  d$y <- rnorm(n) + as.numeric(d$A) + 0.5 * (d$B == "v")
+  fit <- lm(y ~ A + B, data = d)
+  tbl <- table_regression(
+    fit,
+    show_columns = c(
+      "b",
+      "partial_eta2",
+      "partial_eta2_ci",
+      "partial_omega2",
+      "partial_omega2_ci"
+    )
+  )
+  df <- as.data.frame(tbl)
+  eta_ci_col <- grep("η² .*CI", names(df))
+  om_ci_col <- grep("ω² .*CI", names(df))
+  expect_length(eta_ci_col, 1L)
+  expect_length(om_ci_col, 1L)
+  # Single Steiger noncentral-F interval shared by both estimands
+  # (MBESS convention): the rendered cells are identical row by row.
+  expect_identical(df[[eta_ci_col]], df[[om_ci_col]])
+  # The k-1 non-reference dummies of A broadcast one joint value.
+  eta_col <- setdiff(grep("η²", names(df)), eta_ci_col)
+  rows_b <- which(trimws(df$Variable) == "b")
+  rows_c <- which(trimws(df$Variable) == "c")
+  expect_identical(df[[eta_col]][rows_b], df[[eta_col]][rows_c])
+  expect_match(df[[eta_col]][rows_b], "[0-9]")
+  # Reference rows leave every effect-size cell blank (the B cell
+  # carries the reference dash).
+  ref_rows <- grep("(ref.)", df$Variable, fixed = TRUE)
+  expect_length(ref_rows, 2L)
+  for (cl in c(eta_ci_col, om_ci_col, eta_col)) {
+    expect_false(any(grepl("[0-9]", df[[cl]][ref_rows])))
+  }
+})

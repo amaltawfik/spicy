@@ -297,6 +297,24 @@ test_that("svyglm gaussian coefs match parameters::model_parameters() (oracle)",
   }
 })
 
+# Phase 3 matrix – vignettes-news:titles-polish (survey probit half) (lot T4)
+
+test_that("a probit svyglm is titled probit, not logistic", {
+  d <- .svy_design()
+  fit <- survey::svyglm(
+    I(api00 > mean(api00)) ~ ell,
+    design = d,
+    family = quasibinomial("probit")
+  )
+  tbl <- table_regression(fit)
+  expect_match(
+    attr(tbl, "title"),
+    "^Survey-weighted probit regression"
+  )
+  expect_false(grepl("logistic", attr(tbl, "title"), fixed = TRUE))
+})
+
+
 test_that("svyglm logit coefs match parameters::model_parameters() (oracle)", {
   skip_if_not_installed("parameters")
   fit <- .fit_svyglm_logit()

@@ -5,10 +5,12 @@
 #' inspection, and tabulation workflows: frequency tables,
 #' cross-tabulations with chi-squared tests and effect sizes,
 #' association measures for contingency tables, categorical and
-#' continuous summary tables, model-based linear-regression tables
-#' with optional additive covariate adjustment, row-wise
-#' descriptive summaries, interactive codebooks, variable-label
-#' extraction, and clipboard export.
+#' continuous summary tables, regression coefficient tables for one
+#' or several fits side by side (thirty-plus supported model
+#' classes), model-based linear-regression tables with optional
+#' additive covariate adjustment, row-wise descriptive summaries,
+#' interactive codebooks, variable-label extraction, and clipboard
+#' export.
 #'
 #' @section API stability:
 #' spicy is in active pre-1.0 development. Breaking changes are
@@ -39,14 +41,17 @@
 #' \itemize{
 #'   \item Summary table builders: [table_categorical()],
 #'         [table_continuous()], [table_continuous_lm()]
+#'   \item Regression tables: [table_regression()],
+#'         [table_regression_uv()], [table_regression_models()],
+#'         [as_structured()]
 #'   \item Omnibus association overview: [assoc_measures()]
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change
 #' without notice -- avoid calling directly from downstream code):
 #' \itemize{
-#'   \item ASCII rendering primitives: [build_ascii_table()],
-#'         [spicy_print_table()]
+#'   \item ASCII rendering primitive: [spicy_print_table()]
+#'         (`build_ascii_table()` is no longer exported)
 #' }
 #'
 #' @section broom output shape:
@@ -61,11 +66,16 @@
 #' renamed or have their semantics changed within `0.y.z`, and any
 #' breaking change is announced in `NEWS.md`. Adding optional new
 #' columns (e.g. covariate-adjustment metadata) is not a breaking
-#' change. Numeric columns are always returned with the type
-#' downstream broom-consumers expect: `df` integer, `df.residual`
-#' numeric (so Satterthwaite-corrected degrees of freedom from
-#' cluster-robust variance modes are preserved verbatim, matching
-#' `lmerTest::glance()` and the `afex` output convention).
+#' change. Numeric columns keep the types downstream
+#' broom-consumers expect: test degrees of freedom that are integer
+#' by construction (chi-squared, factor-comparison F tests) stay
+#' integer, while every degrees-of-freedom column that can be
+#' fractional -- `df.residual`, the regression method's
+#' per-coefficient `df`, and Welch-corrected test `df` -- is
+#' numeric double, so Satterthwaite-corrected degrees of freedom
+#' from cluster-robust variance modes are preserved verbatim
+#' (matching `lmerTest::glance()` and the `afex` output
+#' convention).
 #'
 #' @section Classed conditions:
 #' All errors and warnings emitted by the stable / stabilising

@@ -123,3 +123,30 @@ test_that("non-fallback refit keeps the refit footer wording", {
   expect_match(note, "after refit on z-scored data", fixed = TRUE)
   expect_false(grepl("refit\" failed", note, fixed = TRUE))
 })
+
+
+# Phase 3 matrix – vignettes-news:standardized-caveat-interactions (lot T4)
+
+test_that("standardization over interactions warns with the spicy_caveat class", {
+  d <- .si_data()
+  fit <- lm(y ~ x * z, data = d)
+  expect_warning(
+    table_regression(
+      fit,
+      standardized = "refit",
+      show_columns = c("b", "beta", "p")
+    ),
+    class = "spicy_caveat"
+  )
+  # Catchable through the generic warning parent too, and the table
+  # still renders (warning, not error).
+  out <- withCallingHandlers(
+    table_regression(
+      fit,
+      standardized = "refit",
+      show_columns = c("b", "beta", "p")
+    ),
+    spicy_warning = function(c) invokeRestart("muffleWarning")
+  )
+  expect_s3_class(out, "spicy_regression_table")
+})

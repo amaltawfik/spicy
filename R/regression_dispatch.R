@@ -1244,6 +1244,22 @@ output_gt <- function(rendered) {
   html_str
 }
 
+#' Print method for spicy-tagged gt tables
+#'
+#' @description
+#' Prints a `spicy_gt` object -- the [gt::gt()] table returned by
+#' `output = "gt"`, tagged so the table note keeps its styling in
+#' interactive HTML display. Every gt verb works on the tagged object
+#' directly; printing delegates to gt's own rendering.
+#'
+#' @param x A `spicy_gt` object.
+#' @param ... Additional arguments (currently ignored).
+#'
+#' @return Invisibly returns `NULL` (HTML display path) or the result
+#'   of gt's own print method.
+#'
+#' @seealso [table_regression()]
+#' @keywords internal
 #' @exportS3Method print spicy_gt
 print.spicy_gt <- function(x, ...) {
   note <- attr(x, "spicy_note")
@@ -1784,6 +1800,24 @@ output_flextable <- function(rendered) {
   html_str
 }
 
+#' Print method for spicy-tagged flextables
+#'
+#' @description
+#' Prints a `spicy_flextable` object -- the [flextable::flextable()]
+#' returned by `output = "flextable"`, tagged so the table note keeps
+#' its styling in interactive HTML display. Every flextable verb works
+#' on the tagged object directly; printing delegates to flextable's
+#' own rendering ([as_flextable.spicy_flextable()] returns the
+#' untagged object).
+#'
+#' @param x A `spicy_flextable` object.
+#' @param ... Additional arguments (currently ignored).
+#'
+#' @return Invisibly returns `NULL` (HTML display path) or the result
+#'   of flextable's own print method.
+#'
+#' @seealso [table_regression()], [as_flextable.spicy_flextable()]
+#' @keywords internal
 #' @exportS3Method print spicy_flextable
 print.spicy_flextable <- function(x, ...) {
   note <- attr(x, "spicy_note")
@@ -2676,6 +2710,22 @@ as_structured <- function(x) {
 
 # ---- print method --------------------------------------------------------
 
+#' Print method for regression tables
+#'
+#' @description
+#' Formats and prints a `spicy_regression_table` object as a styled
+#' ASCII table: title banner, spanner row for multi-model tables,
+#' decimal-aligned body with factor grouping and reference rows,
+#' fit-statistics block, and footer note.
+#'
+#' @param x A `data.frame` of class `"spicy_regression_table"` as
+#'   returned by [table_regression()] with `output = "default"`.
+#' @param ... Additional arguments (currently ignored).
+#'
+#' @return Invisibly returns `x`.
+#'
+#' @seealso [table_regression()], [spicy_print_table()]
+#' @keywords internal
 #' @export
 print.spicy_regression_table <- function(x, ...) {
   group_sep <- attr(x, "group_sep_rows")

@@ -192,6 +192,40 @@ test_that(".validate_structured warns with a classed spicy condition", {
 })
 
 
+# Phase 3 matrix – critic:pkgrd-cond-internal-invariant-dual (lot T4)
+
+test_that("an invariant WARNING renders through: the user sees the table and the diagnostic", {
+  # ?spicy: the warning leaf of spicy_internal_invariant means 'the
+  # output still renders, so the user sees both the table and the
+  # diagnostic'. Force the structured validator to warn and assert the
+  # build completes and prints.
+  fit <- lm(mpg ~ wt, data = mtcars)
+  warned <- FALSE
+  tbl <- withCallingHandlers(
+    testthat::with_mocked_bindings(
+      table_regression(fit),
+      .validate_structured = function(struct) {
+        spicy:::spicy_warn(
+          "Synthetic invariant failure.",
+          class = "spicy_internal_invariant"
+        )
+        invisible(NULL)
+      },
+      .package = "spicy"
+    ),
+    spicy_internal_invariant = function(w) {
+      warned <<- TRUE
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_true(warned)
+  expect_s3_class(tbl, "spicy_regression_table")
+  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  expect_match(out, "wt", fixed = TRUE)
+  expect_match(out, "Linear regression", fixed = TRUE)
+})
+
+
 # ============================================================================
 # as_structured() public accessor
 # ============================================================================

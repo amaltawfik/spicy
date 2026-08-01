@@ -744,6 +744,17 @@ test_that("freq() styled is defunct with a migration error", {
   expect_error(freq(c(1, 2), styled = NULL), class = "spicy_defunct")
 })
 
+# Phase 3 matrix – critic:pkgrd-cond-defunct-contract (lot T4)
+
+test_that("the defunct error names the replacement and co-signals spicy_invalid_input", {
+  # ?spicy: 'the message names the replacement. Signaled together with
+  # spicy_invalid_input so generic input handlers still catch it.'
+  expect_error(freq(c(1, 2), styled = TRUE), class = "spicy_invalid_input")
+  err <- tryCatch(freq(c(1, 2), styled = TRUE), error = function(e) e)
+  expect_s3_class(err, "spicy_defunct")
+  expect_match(conditionMessage(err), "output", fixed = TRUE)
+})
+
 test_that("freq() validates sort early", {
   expect_error(
     freq(c(1, 2), sort = "bad"),

@@ -633,6 +633,25 @@ table_regression_uv <- function(
 # The label validator (validate_predictor_labels) reads term labels
 # off every model via stats::terms(); the screen's terms are simply
 # outcome ~ all screened predictors.
+
+#' Terms method for univariable screen bundles
+#'
+#' @description
+#' Returns the [stats::terms()] object of the formula
+#' `outcome ~ predictor_1 + ... + predictor_k` spanning every
+#' predictor screened by [table_regression_uv()]. Non-syntactic
+#' column names are backtick-quoted, so the terms are valid whatever
+#' the input names. Used internally by the label validator, which
+#' reads term labels off every model in a table.
+#'
+#' @param x A `spicy_uv_screen` bundle (the internal object wrapping
+#'   the univariable fits of [table_regression_uv()]).
+#' @param ... Additional arguments (currently ignored).
+#'
+#' @return A `terms` object for `outcome ~ all screened predictors`.
+#'
+#' @seealso [table_regression_uv()]
+#' @keywords internal
 #' @export
 terms.spicy_uv_screen <- function(x, ...) {
   bt <- function(v) paste0("`", v, "`")

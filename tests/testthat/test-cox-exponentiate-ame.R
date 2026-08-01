@@ -104,3 +104,23 @@ test_that("Cox frames advertise supports$ame = FALSE", {
     spicy:::as_regression_frame(fit, model_id = "M1")$info$supports$ame
   )
 })
+
+
+# Phase 3 matrix – vignettes-news:cox-ame-refused (rms::cph half) (lot T4)
+
+test_that("rms::cph gets the same AME refusal as coxph", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("survival")
+  fit <- rms::cph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    x = TRUE,
+    y = TRUE
+  )
+  err <- tryCatch(
+    table_regression(fit, show_columns = c("b", "ame")),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "Cox", fixed = TRUE)
+})

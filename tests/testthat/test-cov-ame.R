@@ -353,3 +353,21 @@ test_that(".attach_ame_to_frame_coefs pads coefs-only columns with NA on AME row
   expect_true(all(is.na(res$legacy_col[res$estimate_type == "ame"])))
   expect_identical(colnames(res), colnames(coefs))
 })
+
+
+# Phase 3 matrix – vignettes-news:ame-missing-pkg-vs-fallback (lot T4)
+
+test_that("requesting AME without marginaleffects is a hard spicy_missing_pkg error", {
+  fit <- glm(am ~ wt, data = mtcars, family = binomial)
+  err <- tryCatch(
+    testthat::with_mocked_bindings(
+      table_regression(fit, show_columns = c("b", "ame")),
+      spicy_pkg_available = function(pkg) !identical(pkg, "marginaleffects"),
+      .package = "spicy"
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_missing_pkg")
+  expect_match(conditionMessage(err), "marginaleffects", fixed = TRUE)
+  expect_match(conditionMessage(err), "install.packages", fixed = TRUE)
+})

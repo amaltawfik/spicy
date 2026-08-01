@@ -1132,6 +1132,21 @@ test_that("cross_tab styled is defunct with a migration error", {
   )
 })
 
+# Phase 3 matrix – critic:pkgrd-cond-defunct-contract (lot T4)
+
+test_that("cross_tab's defunct error names the replacement and co-signals spicy_invalid_input", {
+  expect_error(
+    cross_tab(mtcars, cyl, gear, styled = TRUE),
+    class = "spicy_invalid_input"
+  )
+  err <- tryCatch(
+    cross_tab(mtcars, cyl, gear, styled = TRUE),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_defunct")
+  expect_match(conditionMessage(err), "output", fixed = TRUE)
+})
+
 test_that("cross_tab validates `digits` like freq()", {
   for (bad in list(-1, 1.5, "a", c(1, 2), NA, NaN, Inf)) {
     expect_error(

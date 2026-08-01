@@ -3101,3 +3101,26 @@ test_that("partial_chi2 renders as 'value (df)' and is refused for lm", {
     class = "spicy_invalid_input"
   )
 })
+
+
+# Phase 3 matrix – vignettes-news:counts-offset-silent (lot T4)
+
+test_that("an offset term is absorbed silently: no coefficient row appears", {
+  set.seed(11)
+  d <- data.frame(
+    y = rpois(80, 3),
+    x = rnorm(80),
+    exposure = runif(80, 1, 5)
+  )
+  fit <- glm(y ~ x + offset(log(exposure)), family = poisson, data = d)
+  tbl <- table_regression(fit)
+  td <- broom::tidy(tbl)
+  expect_false(any(grepl("offset", td$term, fixed = TRUE)))
+  expect_false(any(grepl("exposure", td$term, fixed = TRUE)))
+  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  expect_false(grepl("offset", out, fixed = TRUE))
+  # The offset is still part of the model: the intercept differs from
+  # the same fit without it.
+  fit0 <- glm(y ~ x, family = poisson, data = d)
+  expect_gt(abs(coef(fit)[1] - coef(fit0)[1]), 1e-6)
+})

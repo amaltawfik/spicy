@@ -245,6 +245,52 @@ test_that("structural gates: class, start-stop, uv screen", {
 })
 
 
+# Phase 3 matrix – vignettes-news:cox-ame-refused (estimand-gate half)
+# (lot T4)
+
+test_that("rms::cph and flexsurvreg support neither rmst nor risk_diff", {
+  skip_if_not_installed("survival")
+  d <- .est_lung()
+  skip_if_not_installed("rms")
+  fit_cph <- rms::cph(
+    survival::Surv(time, status) ~ age + sex,
+    data = d,
+    x = TRUE,
+    y = TRUE
+  )
+  expect_error(
+    table_regression(fit_cph, show_columns = c("b", "rmst"), tau = 365),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(
+      fit_cph,
+      show_columns = c("b", "risk_diff"),
+      at_time = 365
+    ),
+    class = "spicy_invalid_input"
+  )
+  skip_if_not_installed("flexsurv")
+  fit_fs <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age,
+    data = d,
+    dist = "weibull"
+  )
+  expect_error(
+    table_regression(fit_fs, show_columns = c("b", "rmst"), tau = 365),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(
+      fit_fs,
+      show_columns = c("b", "risk_diff"),
+      at_time = 365
+    ),
+    class = "spicy_invalid_input"
+  )
+})
+
+
 test_that("a bootstrap that mostly fails raises spicy_resampling_failed", {
   skip_if_not_installed("survival")
   d <- .est_lung()

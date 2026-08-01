@@ -855,3 +855,34 @@ test_that("flextable verbs operate directly on the tagged object", {
   # as_flextable() hands back the untagged flextable.
   expect_identical(class(flextable::as_flextable(ft)), "flextable")
 })
+
+
+# Phase 3 matrix – critic:vig-postprocess-native-objects (lot T4)
+
+test_that("native engine verbs keep working on the spicy-returned objects", {
+  # The reporting vignette pipes spicy tables through gt::tab_style,
+  # tinytable::style_tt, and flextable theme/autofit/fontsize chains.
+  # The spicy_gt / spicy_flextable class tags must not break them.
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  skip_if_not_installed("gt")
+  g <- table_regression(fit, output = "gt")
+  styled_g <- gt::tab_style(
+    g,
+    style = gt::cell_text(weight = "bold"),
+    locations = gt::cells_column_labels()
+  )
+  expect_s3_class(styled_g, "gt_tbl")
+  expect_s3_class(styled_g, "spicy_gt")
+
+  skip_if_not_installed("tinytable")
+  tt <- table_regression(fit, output = "tinytable")
+  expect_no_error(tinytable::style_tt(tt, i = 1, bold = TRUE))
+
+  skip_if_not_installed("flextable")
+  ftb <- table_regression(fit, output = "flextable")
+  chained <- flextable::fontsize(
+    flextable::autofit(flextable::theme_booktabs(ftb)),
+    size = 9
+  )
+  expect_s3_class(chained, "flextable")
+})

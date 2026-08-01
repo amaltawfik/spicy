@@ -1060,3 +1060,49 @@ test_that("the screen renders through the rich engines", {
   expect_s3_class(ft, "spicy_flextable")
   expect_s3_class(ft, "flextable")
 })
+
+
+# Phase 3 matrix – vignettes-news:uv-default-linear-screen (warning
+# content half) (lot T4)
+
+test_that("the LPM disclosure points at vcov = 'HC3' and method = 'glm'", {
+  w <- NULL
+  withCallingHandlers(
+    table_regression_uv(
+      sochealth,
+      outcome = smoking,
+      predictors = c(age, sex),
+      multivariable = FALSE
+    ),
+    spicy_model_choice = function(c) {
+      w <<- c
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_s3_class(w, "spicy_model_choice")
+  msg <- conditionMessage(w)
+  expect_match(msg, "linear probability model", fixed = TRUE)
+  expect_match(msg, "HC3", fixed = TRUE)
+  expect_match(msg, "method = \"glm\"", fixed = TRUE)
+})
+
+
+# Phase 3 matrix – critic:s3-undoc-terms-uv-screen (lot T4)
+
+test_that("terms.spicy_uv_screen returns outcome ~ all predictors, backtick-safe", {
+  scr <- structure(
+    list(
+      fits = list(),
+      outcome = "well being",
+      predictors = c("age years", "sex")
+    ),
+    class = "spicy_uv_screen"
+  )
+  tt <- stats::terms(scr)
+  expect_s3_class(tt, "terms")
+  expect_identical(
+    deparse(formula(tt)),
+    "`well being` ~ `age years` + sex"
+  )
+  expect_identical(attr(tt, "term.labels"), c("`age years`", "sex"))
+})

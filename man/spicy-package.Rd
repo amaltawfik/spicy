@@ -10,10 +10,12 @@ spicy provides tools for descriptive data analysis, variable
 inspection, and tabulation workflows: frequency tables,
 cross-tabulations with chi-squared tests and effect sizes,
 association measures for contingency tables, categorical and
-continuous summary tables, model-based linear-regression tables
-with optional additive covariate adjustment, row-wise
-descriptive summaries, interactive codebooks, variable-label
-extraction, and clipboard export.
+continuous summary tables, regression coefficient tables for one
+or several fits side by side (thirty-plus supported model
+classes), model-based linear-regression tables with optional
+additive covariate adjustment, row-wise descriptive summaries,
+interactive codebooks, variable-label extraction, and clipboard
+export.
 }
 \section{API stability}{
 
@@ -45,14 +47,17 @@ changes):
 \itemize{
 \item Summary table builders: \code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}}
+\item Regression tables: \code{\link[=table_regression]{table_regression()}},
+\code{\link[=table_regression_uv]{table_regression_uv()}}, \code{\link[=table_regression_models]{table_regression_models()}},
+\code{\link[=as_structured]{as_structured()}}
 \item Omnibus association overview: \code{\link[=assoc_measures]{assoc_measures()}}
 }
 
 \strong{Internal API} (not part of the public surface; can change
 without notice -- avoid calling directly from downstream code):
 \itemize{
-\item ASCII rendering primitives: \code{\link[=build_ascii_table]{build_ascii_table()}},
-\code{\link[=spicy_print_table]{spicy_print_table()}}
+\item ASCII rendering primitive: \code{\link[=spicy_print_table]{spicy_print_table()}}
+(\code{build_ascii_table()} is no longer exported)
 }
 }
 
@@ -69,11 +74,16 @@ considered \strong{stabilising}: existing columns will not be silently
 renamed or have their semantics changed within \verb{0.y.z}, and any
 breaking change is announced in \code{NEWS.md}. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking
-change. Numeric columns are always returned with the type
-downstream broom-consumers expect: \code{df} integer, \code{df.residual}
-numeric (so Satterthwaite-corrected degrees of freedom from
-cluster-robust variance modes are preserved verbatim, matching
-\code{lmerTest::glance()} and the \code{afex} output convention).
+change. Numeric columns keep the types downstream
+broom-consumers expect: test degrees of freedom that are integer
+by construction (chi-squared, factor-comparison F tests) stay
+integer, while every degrees-of-freedom column that can be
+fractional -- \code{df.residual}, the regression method's
+per-coefficient \code{df}, and Welch-corrected test \code{df} -- is
+numeric double, so Satterthwaite-corrected degrees of freedom
+from cluster-robust variance modes are preserved verbatim
+(matching \code{lmerTest::glance()} and the \code{afex} output
+convention).
 }
 
 \section{Classed conditions}{

@@ -288,3 +288,56 @@ test_that("p_adjust footer m matches the family actually adjusted (component int
   # Family: 4 count slopes + 1 zero slope; both intercepts excluded.
   expect_match(note, "m = 5 coefficient(s) per model", fixed = TRUE)
 })
+
+
+# Phase 3 matrix – vignettes-news:multimodel-empty-blocks (lot T4)
+
+test_that("mixed multi-model table: the zero block stays blank for the model without one", {
+  skip_if_not_installed("pscl")
+  data("bioChemists", package = "pscl", envir = environment())
+  fp <- glm(art ~ fem + ment, family = poisson, data = bioChemists)
+  fz <- pscl::zeroinfl(art ~ fem + ment | ment, data = bioChemists)
+  df <- table_regression(
+    list(Poisson = fp, ZIP = fz),
+    output = "data.frame"
+  )
+  v <- trimws(df$Variable)
+  zi_header <- which(grepl("Zero-inflation", v, fixed = TRUE))
+  expect_length(zi_header, 1L)
+  # The block's coefficient rows: from the header to the next
+  # non-indented section (here the fit stats start at "n").
+  zi_rows <- which(v %in% c("(Intercept)", "ment"))
+  zi_rows <- zi_rows[zi_rows > zi_header]
+  expect_length(zi_rows, 2L)
+  pois_cols <- grep("^Poisson: ", names(df), value = TRUE)
+  zip_cols <- grep("^ZIP: ", names(df), value = TRUE)
+  for (cl in pois_cols) {
+    expect_false(any(grepl("[0-9]", df[[cl]][zi_rows])))
+  }
+  # Discriminating: the same rows are populated under the ZIP model.
+  zip_b <- df[[zip_cols[1L]]][zi_rows]
+  expect_true(all(grepl("[0-9]", zip_b)))
+})
+
+
+# Phase 3 matrix – vignettes-news:two-part-combined-ame (lot T4)
+
+test_that("two-part AME: zero-component rows carry no AME of their own", {
+  skip_if_not_installed("pscl")
+  skip_if_not_installed("marginaleffects")
+  data("bioChemists", package = "pscl", envir = environment())
+  m <- pscl::zeroinfl(art ~ fem + ment | ment, data = bioChemists)
+  df <- table_regression(m, show_columns = c("b", "ame"), output = "data.frame")
+  v <- trimws(df$Variable)
+  ame_col <- grep("AME", names(df), value = TRUE)[1L]
+  zi_header <- which(grepl("Zero-inflation", v, fixed = TRUE))
+  zi_rows <- which(v %in% c("(Intercept)", "ment"))
+  zi_rows <- zi_rows[zi_rows > zi_header]
+  expect_length(zi_rows, 2L)
+  # No AME on the zero rows: the AME is the combined effect on E(Y),
+  # reported on the count rows only.
+  expect_false(any(grepl("[0-9]", df[[ame_col]][zi_rows])))
+  count_ment <- which(v == "ment")
+  count_ment <- count_ment[count_ment < zi_header]
+  expect_true(all(grepl("[0-9]", df[[ame_col]][count_ment])))
+})

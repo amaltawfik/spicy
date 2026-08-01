@@ -3029,3 +3029,38 @@ test_that("table_categorical() rejects bit64::integer64 columns", {
   expect_s3_class(res, "data.frame")
   expect_false(any(grepl("code", res$Variable, fixed = TRUE)))
 })
+
+
+# Phase 3 matrix – vignettes-news:align-auto-removed and
+# critic:pkgrd-broom-columns-stabilising (lot T4)
+
+test_that("align = 'auto' is removed from table_categorical", {
+  expect_error(
+    table_categorical(mtcars, select = "cyl", align = "auto"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("tidy/glance column sets are frozen (stabilising contract)", {
+  skip_if_not_installed("broom")
+  out <- table_categorical(mtcars, select = "cyl", by = "am")
+  expect_identical(
+    names(broom::tidy(out)),
+    c("outcome", "level", "group", "n", "proportion")
+  )
+  expect_identical(
+    names(broom::glance(out)),
+    c(
+      "outcome",
+      "test_type",
+      "statistic",
+      "df",
+      "p.value",
+      "assoc_type",
+      "assoc_value",
+      "assoc_ci_lower",
+      "assoc_ci_upper",
+      "n_total"
+    )
+  )
+})
