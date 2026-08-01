@@ -2077,7 +2077,10 @@ inform_polynomial_pedagogy <- function() {
         "\"contr.treatment\"))`."
       )
     ),
-    class = "spicy_polynomial_contrasts_info",
+    # rlang::inform is called directly (spicy_inform has no
+    # .frequency passthrough); the spicy_info parent is attached
+    # by hand so the spicy_inform() contract holds regardless.
+    class = c("spicy_polynomial_contrasts_info", "spicy_info"),
     .frequency = "once",
     .frequency_id = "spicy_polynomial_contrasts_info"
   )

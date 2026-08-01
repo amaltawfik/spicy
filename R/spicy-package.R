@@ -150,6 +150,9 @@
 #'         (e.g., the linear probability model
 #'         [table_regression_uv()] fits to a binary outcome under
 #'         the default `method`).
+#'       \item \code{spicy_passthrough} -- a third-party warning
+#'         captured during an operation (e.g., the clipboard copy)
+#'         and re-emitted under the spicy taxonomy.
 #'       \item \code{spicy_summary_failed} -- [varlist()] could not
 #'         summarise one column; the rest of the table is fine.
 #'       \item \code{spicy_renamed_column} -- a user data column or

@@ -241,7 +241,10 @@ copy_clipboard <- function(
       spicy_inform(sub("\n+$", "", msg))
     }
     for (warn in warns_captured) {
-      spicy_warn(warn)
+      # Third-party warnings captured during the copy, re-emitted
+      # under the spicy taxonomy so downstream handlers can filter
+      # them without string-matching.
+      spicy_warn(warn, class = "spicy_passthrough")
     }
     if (needs_warning) {
       spicy_warn(warn_msg, class = "spicy_ignored_arg")
