@@ -56,7 +56,8 @@ fits add below the fixed effects (`lmer`, `glmer`, `glmmTMB`,
 `lme`). Each further model family has a dedicated vignette that
 applies these mechanics to its own estimands:
 `vignette("table-regression-mixed")` for mixed-effects models,
-`vignette("table-regression-counts")` for Poisson,
+`vignette("table-regression-gee")` for population-averaged (GEE)
+models, `vignette("table-regression-counts")` for Poisson,
 negative-binomial, and two-part models,
 `vignette("table-regression-ordinal")` for ordinal models
 (`polr`, `clm`), `vignette("table-regression-multinomial")` for
@@ -975,6 +976,10 @@ Model-family vignettes build on the mechanics shown here:
   mixed-effects (multilevel) models: random effects as table
   rows, ICC, the boundary-corrected chi-bar-squared test, and
   opt-in per-term LRT / RLRT.
+- `vignette("table-regression-gee", package = "spicy")` for
+  population-averaged (GEE) models: the fit's own sandwich
+  inference, working-correlation choice via QIC, and jackknife
+  variants for few clusters.
 - `vignette("table-regression-counts", package = "spicy")` for
   count and two-part models: Poisson and negative-binomial rate
   ratios, offsets, and zero-inflated / hurdle components as
