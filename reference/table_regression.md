@@ -848,10 +848,12 @@ Each token = one displayed column.
   `"partial_omega2"`, each with a paired `_ci` companion
   (`"partial_f2_ci"`, ...).
 
-- Partial effect size – `glm` only: `"partial_chi2"` (likelihood-ratio
-  chi-square via `drop1(test = "LRT")`; SAS PROC LOGISTIC `TYPE3`; Long
-  & Freese 2014 Section 3.5). Rendered as `value (df)` to disambiguate
-  factor terms (k-1 df) from numeric terms (1 df).
+- Partial effect size – `glm` only: `"partial_chi2"` (Type-II partial
+  likelihood-ratio chi-square: each term is tested against the nested
+  pair of models that both exclude any higher-order interaction
+  containing it; Long & Freese 2014 Section 3.5). Rendered as
+  `value (df)` to disambiguate factor terms (k-1 df) from numeric terms
+  (1 df).
 
 - Sample columns: `"n"` – per-row N, populated by
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)

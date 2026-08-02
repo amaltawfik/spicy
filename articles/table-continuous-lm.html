@@ -400,9 +400,11 @@ covariate proportions are skewed in the observed data.</p>
 <li>
 <code>effect_size = "f2"</code> and <code>"omega2"</code> are
 reported as <strong>partial</strong> <em>f²</em> / partial <em>ω²</em>
-via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> restricted to the focal term — the
-correct generalisation of the bivariate effect size to a
-covariate-adjusted model.</li>
+via the partial <em>F</em> restricted to the focal term (the Type-II
+test of <code>by</code> after all covariates, equal to
+<code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> in this additive setting) — the correct
+generalisation of the bivariate effect size to a covariate-adjusted
+model.</li>
 <li>
 <code>effect_size = "d"</code> and <code>"g"</code> raise
 <code>spicy_unsupported</code>: Cohen’s <em>d</em> and Hedges’

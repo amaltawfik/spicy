@@ -879,6 +879,18 @@ rendering an empty column.
   `effectsize::omega_squared(partial = TRUE)`; the bounds used to be
   those of the partial eta-squared.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  partial effect sizes are now true Type-II tests in models with
+  interactions. The focal F behind `partial_f2` / `partial_eta2` /
+  `partial_omega2` (and their CIs), and the `partial_chi2`
+  likelihood-ratio chi-square for `glm`, test each term by comparing the
+  two nested models that both exclude every higher-order interaction
+  containing it (the `car::Anova(type = 2)` convention), so main-effect
+  values respect marginality and no longer change with the factor coding
+  (treatment, sum, Helmert). Values change only for models with
+  interaction terms; additive models and the interaction terms
+  themselves are unchanged.
+
 - The RMST and risk-difference columns extend to parametric survival
   models
   ([`survival::survreg`](https://rdrr.io/pkg/survival/man/survreg.html)):

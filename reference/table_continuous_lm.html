@@ -448,7 +448,9 @@ with the weighted contrast and its CI shown in the table. All effect
 sizes are point estimates derived from the OLS/WLS fit and are <strong>not</strong>
 affected by <code>vcov</code>.</p>
 <p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty):</p><ul><li><p><code>"f2"</code> and <code>"omega2"</code> become the <strong>partial</strong> <em>\(f^2\)</em> / partial <em>\(\omega^2\)</em>,
-derived from the partial <em>F</em> of <code>by</code> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> –
+derived from the partial <em>F</em> of <code>by</code> (the Type-II test of <code>by</code>
+after all covariates, equal to <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> in this
+additive setting) –
 the correctly-defined effect size when the model is adjusted.
 For numeric <code>by</code>, partial <em>\(f^2\)</em> equals the squared partial
 correlation of <code>by</code> with the outcome, divided by <code>(1 - r^2_partial)</code>.</p></li>
@@ -694,8 +696,9 @@ test statistic of the contrast but not the standardized magnitude
 itself.</p>
 <p><strong>Under covariate adjustment</strong> (<code>covariates</code> non-empty), <code>"f2"</code> and
 <code>"omega2"</code> become the partial <em>\(f^2\)</em> / partial <em>\(\omega^2\)</em> of <code>by</code>, derived
-from the partial <em>F</em> via <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> restricted to the focal
-term. <code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: the pooled
+from the partial <em>F</em> restricted to the focal term (the Type-II
+test of <code>by</code> after all covariates, equal to <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> in
+this additive setting). <code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: the pooled
 standard deviation has no canonical extension under adjustment, so
 Cohen's <em>d</em> and Hedges' <em>g</em> are undefined for adjusted models. See
 <code>effect_size</code> for the full dispatch.</p>
@@ -1202,7 +1205,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: heteroskedasticity-robust (HC3).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Effect sizes adjust automatically: f2 / omega2 become partial</span></span></span>
-<span class="r-in"><span><span class="co"># effect sizes via partial F (drop1) restricted to the focal `by`.</span></span></span>
+<span class="r-in"><span><span class="co"># effect sizes via the partial F restricted to the focal `by`.</span></span></span>
 <span class="r-in"><span><span class="co"># d / g are undefined under adjustment and raise spicy_unsupported.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>

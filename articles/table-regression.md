@@ -259,16 +259,15 @@ table_regression(
 
 Methodology notes:
 
-- The partial F-test compares the full model against the model with the
-  term’s columns removed, all other columns held. For models without
-  interaction terms this is exactly the Type-II ANOVA reference
-  ([`car::Anova`](https://rdrr.io/pkg/car/man/Anova.html)), the SAS /
-  SPSS default for unbalanced designs. When the model contains
-  interactions, the test for a main effect holds the interaction columns
-  fixed (it follows the fitted parameterization rather than the
-  marginality-respecting Type-II scheme), so effect sizes for
-  lower-order terms of an interaction model should be interpreted with
-  care.
+- The partial F-test is a Type-II test (marginality-respecting,
+  contrast-invariant; Fox 2016; Fox and Weisberg 2019): the focal term
+  is tested by comparing the two nested models that both exclude every
+  higher-order term containing it — `A` in `y ~ A * B` is `SS(A | B)`,
+  with `A:B` left out of both sides — over the full model’s mean squared
+  error. This matches `car::Anova(type = 2)`. For additive models it
+  reduces to the classic “each term after all the others” partial F, and
+  the result does not depend on the factor coding (treatment, sum,
+  Helmert, polynomial).
 - The `ω²` point estimate is bias-corrected via the Olejnik and
   Algina (2003) formula `((F − 1) × df1) / (F × df1 + N − df1)`,
   yielding a less-biased small-sample estimator than partial `η²`.
@@ -1084,10 +1083,13 @@ silently empty column.
 ### Term-level partial chi-square
 
 `partial_chi2` is the glm analog of `partial_f2`: for each model term,
-the partial likelihood-ratio chi-square via `drop1(test = "LRT")` (SAS
-PROC GENMOD `TYPE3` likelihood-ratio analysis; Long & Freese 2014
-§3.2.2, §3.2.4). Rendered as `value (df)` so factor terms (`k − 1` df)
-and numeric terms (1 df) read at a glance:
+the partial likelihood-ratio chi-square from the same Type-II nested
+comparison — both models exclude any higher-order term containing the
+tested one, so the test respects marginality and is contrast-invariant
+(Fox and Weisberg 2019; equal to `drop1(test = "LRT")` for additive
+models; on the LRT itself see Long & Freese 2014 §3.2.2, §3.2.4).
+Rendered as `value (df)` so factor terms (`k − 1` df) and numeric terms
+(1 df) read at a glance:
 
 ``` r
 
@@ -1772,6 +1774,12 @@ American Psychological Association* (7th ed.). Section 6.46.
 Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003). *Applied
 Multiple Regression / Correlation Analysis for the Behavioral Sciences*
 (3rd ed.). Lawrence Erlbaum.
+
+Fox, J. (2016). *Applied Regression Analysis and Generalized Linear
+Models* (3rd ed.). Sage.
+
+Fox, J., and Weisberg, S. (2019). *An R Companion to Applied Regression*
+(3rd ed.). Sage.
 
 Gelman, A. (2008). Scaling regression inputs by dividing by two standard
 deviations. *Statistics in Medicine*, 27(15), 2865–2873.

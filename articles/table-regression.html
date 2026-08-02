@@ -367,15 +367,16 @@ reuse this copy throughout the vignette:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; η² = partial eta-squared; ω² = bias-corrected partial omega-squared.</span></span></span></code></pre></div>
 <p>Methodology notes:</p>
 <ul>
-<li>The partial F-test compares the full model against the model with
-the term’s columns removed, all other columns held. For models without
-interaction terms this is exactly the Type-II ANOVA reference
-(<code><a href="https://rdrr.io/pkg/car/man/Anova.html" class="external-link">car::Anova</a></code>), the SAS / SPSS default for unbalanced
-designs. When the model contains interactions, the test for a main
-effect holds the interaction columns fixed (it follows the fitted
-parameterization rather than the marginality-respecting Type-II scheme),
-so effect sizes for lower-order terms of an interaction model should be
-interpreted with care.</li>
+<li>The partial F-test is a Type-II test (marginality-respecting,
+contrast-invariant; Fox 2016; Fox and Weisberg 2019): the focal term is
+tested by comparing the two nested models that both exclude every
+higher-order term containing it — <code>A</code> in
+<code>y ~ A * B</code> is <code>SS(A | B)</code>, with <code>A:B</code>
+left out of both sides — over the full model’s mean squared error. This
+matches <code>car::Anova(type = 2)</code>. For additive models it
+reduces to the classic “each term after all the others” partial F, and
+the result does not depend on the factor coding (treatment, sum,
+Helmert, polynomial).</li>
 <li>The <code>ω²</code> point estimate is bias-corrected via the Olejnik
 and Algina (2003) formula
 <code>((F − 1) × df1) / (F × df1 + N − df1)</code>, yielding a
@@ -1180,11 +1181,13 @@ column.</p>
 </h3>
 <p><code>partial_chi2</code> is the glm analog of
 <code>partial_f2</code>: for each model term, the partial
-likelihood-ratio chi-square via <code>drop1(test = "LRT")</code> (SAS
-PROC GENMOD <code>TYPE3</code> likelihood-ratio analysis; Long &amp;
-Freese 2014 §3.2.2, §3.2.4). Rendered as <code>value (df)</code> so
-factor terms (<code>k − 1</code> df) and numeric terms (1 df) read at a
-glance:</p>
+likelihood-ratio chi-square from the same Type-II nested comparison —
+both models exclude any higher-order term containing the tested one, so
+the test respects marginality and is contrast-invariant (Fox and
+Weisberg 2019; equal to <code>drop1(test = "LRT")</code> for additive
+models; on the LRT itself see Long &amp; Freese 2014 §3.2.2, §3.2.4).
+Rendered as <code>value (df)</code> so factor terms (<code>k − 1</code>
+df) and numeric terms (1 df) read at a glance:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit2</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"partial_chi2"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
@@ -2285,6 +2288,10 @@ the American Psychological Association</em> (7th ed.). Section 6.46.</p>
 <p>Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003).
 <em>Applied Multiple Regression / Correlation Analysis for the
 Behavioral Sciences</em> (3rd ed.). Lawrence Erlbaum.</p>
+<p>Fox, J. (2016). <em>Applied Regression Analysis and Generalized
+Linear Models</em> (3rd ed.). Sage.</p>
+<p>Fox, J., and Weisberg, S. (2019). <em>An R Companion to Applied
+Regression</em> (3rd ed.). Sage.</p>
 <p>Gelman, A. (2008). Scaling regression inputs by dividing by two
 standard deviations. <em>Statistics in Medicine</em>, 27(15),
 2865–2873.</p>

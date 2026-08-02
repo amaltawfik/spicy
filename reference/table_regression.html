@@ -921,10 +921,11 @@ p-value; for the AME-specific p-value use <code>"ame_p"</code>.</p></li>
 <code>"partial_eta2"</code>, <code>"partial_omega2"</code>, each with a paired
 <code>_ci</code> companion (<code>"partial_f2_ci"</code>, ...).</p></li>
 <li><p>Partial effect size – <code>glm</code> only: <code>"partial_chi2"</code>
-(likelihood-ratio chi-square via <code>drop1(test = "LRT")</code>;
-SAS PROC LOGISTIC <code>TYPE3</code>; Long &amp; Freese 2014 Section 3.5).
-Rendered as <code>value (df)</code> to disambiguate factor terms
-(k-1 df) from numeric terms (1 df).</p></li>
+(Type-II partial likelihood-ratio chi-square: each term is
+tested against the nested pair of models that both exclude
+any higher-order interaction containing it; Long &amp; Freese
+2014 Section 3.5). Rendered as <code>value (df)</code> to disambiguate
+factor terms (k-1 df) from numeric terms (1 df).</p></li>
 <li><p>Sample columns: <code>"n"</code> – per-row N, populated by
 <code><a href="table_regression_uv.html">table_regression_uv()</a></code> screens (each predictor block is its
 own fit); models without per-row N data drop the column.

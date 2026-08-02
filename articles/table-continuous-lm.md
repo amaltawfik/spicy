@@ -305,9 +305,11 @@ table_continuous_lm(
 Adding covariates changes which effect sizes remain meaningful:
 
 - `effect_size = "f2"` and `"omega2"` are reported as **partial** *f²* /
-  partial *ω²* via [`stats::drop1()`](https://rdrr.io/r/stats/add1.html)
-  restricted to the focal term — the correct generalisation of the
-  bivariate effect size to a covariate-adjusted model.
+  partial *ω²* via the partial *F* restricted to the focal term (the
+  Type-II test of `by` after all covariates, equal to
+  [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) in this additive
+  setting) — the correct generalisation of the bivariate effect size to
+  a covariate-adjusted model.
 - `effect_size = "d"` and `"g"` raise `spicy_unsupported`: Cohen’s *d*
   and Hedges’ *g* have no defined extension under adjustment (the pooled
   SD has no canonical analogue). The error message points to `f2` /
