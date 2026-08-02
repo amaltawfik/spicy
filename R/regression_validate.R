@@ -983,7 +983,7 @@ validate_class_appropriate_tokens <- function(
     if (length(bad) > 0L) {
       spicy_abort(
         c(
-          "Token \"partial_chi2\" in `show_columns` is for `glm` models only.",
+          "Token \"partial_chi2\" in `show_columns` is not defined for `lm` models.",
           "i" = paste0(
             "For `lm`, use `\"partial_f2\"`, `\"partial_eta2\"`, or ",
             "`\"partial_omega2\"` \u2013 the variance-explained analogs."
@@ -1419,8 +1419,8 @@ validate_class_appropriate_tokens <- function(
         class = "spicy_invalid_input"
       )
     }
-    # partial_chi2 (LRT-based, drop1 test = "LRT") IS defined for mixed fits, so
-    # it is deliberately NOT rejected here -- only the variance-explained
+    # partial_chi2 (the Type-II Wald chi-square for mixed fits) IS defined
+    # here, so it is deliberately NOT rejected -- only the variance-explained
     # (least-squares) partials are undefined for mixed models.
     bad_cols <- intersect(
       show_columns,

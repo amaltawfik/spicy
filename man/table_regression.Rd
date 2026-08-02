@@ -773,12 +773,20 @@ p-value; for the AME-specific p-value use \code{"ame_p"}.
 \item Partial effect sizes -- \code{lm} only: \code{"partial_f2"},
 \code{"partial_eta2"}, \code{"partial_omega2"}, each with a paired
 \verb{_ci} companion (\code{"partial_f2_ci"}, ...).
-\item Partial effect size -- \code{glm} only: \code{"partial_chi2"}
-(Type-II partial likelihood-ratio chi-square: each term is
-tested against the nested pair of models that both exclude
-any higher-order interaction containing it; Long & Freese
-2014 Section 3.5). Rendered as \code{value (df)} to disambiguate
-factor terms (k-1 df) from numeric terms (1 df).
+\item Partial effect size -- \code{glm} and mixed-effects models:
+\code{"partial_chi2"}, the term-level Type-II partial chi-square.
+Each term is tested under the marginality-respecting
+hypothesis that excludes any higher-order interaction
+containing it (the \code{car::Anova(type = 2)} convention), so
+the value does not depend on the factor coding. For \code{glm}
+the statistic is the likelihood-ratio chi-square (Long &
+Freese 2014 Section 3.5); for \code{lmer} / \code{glmer} / \code{glmmTMB} /
+\code{nlme::lme} it is the Wald chi-square built from the same
+Type-II hypothesis -- a deliberate departure from the
+Type-III default of SAS PROC MIXED and \code{lmerTest} (the two
+conventions coincide for models without interactions).
+Rendered as \code{value (df)} to disambiguate factor terms (k-1
+df) from numeric terms (1 df).
 \item Sample columns: \code{"n"} -- per-row N, populated by
 \code{\link[=table_regression_uv]{table_regression_uv()}} screens (each predictor block is its
 own fit); models without per-row N data drop the column.

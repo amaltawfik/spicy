@@ -605,7 +605,7 @@ test_that("glm: partial_chi2 - factor term shares term-level chi2 across dummies
   expect_equal(cyl_rows$estimate[1], d1["cyl", "LRT"], tolerance = 1e-12)
 })
 
-test_that("glm: partial_chi2 cell renders 'value (df)' format - SAS TYPE3", {
+test_that("glm: partial_chi2 cell renders 'value (df)' format", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
   body <- as.data.frame(out, stringsAsFactors = FALSE)

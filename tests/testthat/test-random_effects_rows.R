@@ -114,7 +114,7 @@ test_that("m4: lm-only fit-stat tokens on a mixed fit are rejected with a pointe
     table_regression(fit, show_fit_stats = c("r2"), output = "data.frame"),
     class = "spicy_invalid_input"
   )
-  # the LRT-based partial_chi2 is NOT rejected (it is defined for mixed fits)
+  # partial_chi2 (Type-II Wald) is NOT rejected (it is defined for mixed fits)
   expect_error(
     table_regression(
       fit,

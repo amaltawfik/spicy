@@ -1,9 +1,11 @@
 # ---------------------------------------------------------------------------
-# Phase 7c18 tests: Type-3 Wald chi^2 tests for fixed effects on mixed-
-# effects fits. Matches the SAS PROC MIXED / SPSS GENLINMIXED / Stata
-# `mixed, testparm` convention -- one joint test per term, with df equal
-# to the number of coefficients spanned (k for a k-level factor's k-1
-# dummies, 1 for a numeric predictor).
+# Phase 7c18 tests: term-level Wald chi^2 tests for fixed effects on
+# mixed-effects fits -- one joint test per term, with df equal to the
+# number of coefficients spanned (k-1 for a k-level factor's dummies,
+# 1 for a numeric predictor). The hypothesis is the marginality-
+# respecting Type II of car::Anova(type = 2), a deliberate departure
+# from the Type-III default of SAS PROC MIXED / lmerTest; for additive
+# models and highest-order terms the two coincide (block Wald).
 # ---------------------------------------------------------------------------
 
 # ---- Fixtures -------------------------------------------------------------
@@ -235,4 +237,206 @@ test_that("lme partial_chi2 rows have finite chi^2 + p-value", {
   pchi <- fr$coefs[fr$coefs$estimate_type == "partial_chi2", ]
   expect_true(all(is.finite(pchi$estimate)))
   expect_true(all(is.finite(pchi$p_value)))
+})
+
+
+# ---- 7. Type-II under interactions: car oracle + contrast invariance ----
+
+# Term-level (chi2, df, p) from the coefficient-level rows, keyed by
+# the fixed-formula assign map (robust to the dummy naming, which
+# changes across contrast codings). suppressWarnings absorbs the
+# one-time lme4 "nobars moved to reformulas" deprecation notice.
+.pchi_by_term <- function(fit) {
+  rows <- suppressWarnings(spicy:::.compute_partial_chi2_rows_for_mixed(fit))
+  is_lme <- inherits(fit, "lme")
+  ff <- if (is_lme) {
+    stats::formula(fit)
+  } else {
+    suppressWarnings(lme4::nobars(stats::formula(fit)))
+  }
+  mm <- if (is_lme) {
+    stats::model.matrix(ff, data = nlme::getData(fit))
+  } else {
+    stats::model.matrix(fit)
+  }
+  asgn <- attr(mm, "assign")
+  labs <- attr(stats::terms(ff), "term.labels")
+  out <- lapply(seq_along(labs), function(k) {
+    sub <- rows[rows$term %in% colnames(mm)[asgn == k], ]
+    list(
+      chi2 = unique(sub$estimate),
+      df = unique(sub$df),
+      p = unique(sub$p_value)
+    )
+  })
+  setNames(out, labs)
+}
+
+.pchi_inter_lmer_data <- function() {
+  set.seed(42)
+  d <- lme4::sleepstudy
+  d$A <- factor(sample(c("a", "b", "c"), nrow(d), TRUE, prob = c(.5, .3, .2)))
+  d$B <- factor(sample(c("u", "v"), nrow(d), TRUE, prob = c(.6, .4)))
+  d
+}
+
+.fit_lmer_inter_pchi <- function(d = .pchi_inter_lmer_data()) {
+  skip_if_not_installed("lme4")
+  lme4::lmer(Reaction ~ Days + A * B + (1 | Subject), data = d)
+}
+
+.pchi_inter_glmer_data <- function() {
+  set.seed(2)
+  n <- 500
+  g <- factor(rep(1:25, length.out = n))
+  x <- rnorm(n)
+  A <- factor(sample(c("a", "b", "c"), n, TRUE, prob = c(.5, .3, .2)))
+  eta <- 0.4 +
+    0.8 * x +
+    0.3 * (A == "b") -
+    0.5 * (A == "c") +
+    0.4 * x * (A == "b") +
+    rnorm(25)[g]
+  data.frame(y = rbinom(n, 1, plogis(eta)), x = x, A = A, g = g)
+}
+
+.fit_glmer_inter_pchi <- function(d = .pchi_inter_glmer_data()) {
+  skip_if_not_installed("lme4")
+  lme4::glmer(y ~ x * A + (1 | g), family = binomial, data = d)
+}
+
+test_that("lmer with interaction, unbalanced: chi2/df/p match car::Anova(type = 2)", {
+  skip_if_not_installed("car")
+  fit <- .fit_lmer_inter_pchi()
+  ours <- .pchi_by_term(fit)
+  ca <- car::Anova(fit, type = 2) # Type II Wald chisquare tests
+  for (term in rownames(ca)) {
+    expect_equal(ours[[term]]$chi2, ca[term, "Chisq"], tolerance = 1e-8)
+    expect_equal(ours[[term]]$df, as.numeric(ca[term, "Df"]))
+    expect_equal(ours[[term]]$p, ca[term, "Pr(>Chisq)"], tolerance = 1e-8)
+  }
+  # Discriminating: the old Type-III coefficient-block drop gives a
+  # DIFFERENT main-effect value under treatment coding.
+  b <- lme4::fixef(fit)
+  V <- as.matrix(stats::vcov(fit))
+  asgn <- attr(stats::model.matrix(fit), "assign")
+  idx <- which(asgn == 2L) # term A
+  block <- as.numeric(t(b[idx]) %*% solve(V[idx, idx]) %*% b[idx])
+  expect_gt(abs(ours[["A"]]$chi2 - block), 1e-4)
+})
+
+test_that("glmer with interaction, unbalanced: chi2/df match car::Anova(type = 2)", {
+  skip_if_not_installed("car")
+  fit <- .fit_glmer_inter_pchi()
+  ours <- .pchi_by_term(fit)
+  ca <- car::Anova(fit, type = 2)
+  for (term in rownames(ca)) {
+    expect_equal(ours[[term]]$chi2, ca[term, "Chisq"], tolerance = 1e-8)
+    expect_equal(ours[[term]]$df, as.numeric(ca[term, "Df"]))
+    expect_equal(ours[[term]]$p, ca[term, "Pr(>Chisq)"], tolerance = 1e-8)
+  }
+})
+
+test_that("lme with interaction: chi2/df match car::Anova(type = 2)", {
+  skip_if_not_installed("car")
+  skip_if_not_installed("nlme")
+  fit <- nlme::lme(
+    distance ~ age * Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
+  ours <- .pchi_by_term(fit)
+  ca <- car::Anova(fit, type = 2)
+  for (term in rownames(ca)) {
+    expect_equal(ours[[term]]$chi2, ca[term, "Chisq"], tolerance = 1e-8)
+    expect_equal(ours[[term]]$df, as.numeric(ca[term, "Df"]))
+  }
+})
+
+test_that("highest-order term keeps the coefficient-block Wald chi^2 exactly", {
+  fit <- .fit_lmer_inter_pchi()
+  b <- lme4::fixef(fit)
+  V <- as.matrix(stats::vcov(fit))
+  idx <- grep(":", names(b))
+  block <- as.numeric(t(b[idx]) %*% solve(V[idx, idx]) %*% b[idx])
+  expect_equal(.pchi_by_term(fit)[["A:B"]]$chi2, block, tolerance = 1e-12)
+})
+
+test_that("additive lmer: every term keeps the coefficient-block Wald exactly", {
+  # For additive models no term has a higher-order relative, so the
+  # Type-II hypothesis matrix is the identity block and the statistic
+  # must be bit-identical to the pre-Type-II block Wald.
+  fit <- .fit_lmer_factor_pchi()
+  b <- lme4::fixef(fit)
+  V <- as.matrix(stats::vcov(fit))
+  asgn <- attr(stats::model.matrix(fit), "assign")
+  ours <- .pchi_by_term(fit)
+  for (k in seq_along(ours)) {
+    idx <- which(asgn == k)
+    block <- as.numeric(t(b[idx]) %*% solve(V[idx, idx]) %*% b[idx])
+    expect_identical(ours[[k]]$chi2, block)
+  }
+})
+
+test_that("lmer partial_chi2 is contrast-invariant under interactions", {
+  skip_if_not_installed("lme4")
+  d <- .pchi_inter_lmer_data()
+  fit_treat <- lme4::lmer(Reaction ~ Days + A * B + (1 | Subject), data = d)
+  fit_sum <- withr::with_options(
+    list(contrasts = c("contr.sum", "contr.poly")),
+    lme4::lmer(Reaction ~ Days + A * B + (1 | Subject), data = d)
+  )
+  # For lmer the fixed effects are profiled out exactly given theta, so
+  # the refit under a different coding reproduces the same model to
+  # numerical precision and the Type-II statistic is invariant to 1e-8.
+  ours_treat <- .pchi_by_term(fit_treat)
+  ours_sum <- .pchi_by_term(fit_sum)
+  for (term in names(ours_treat)) {
+    expect_equal(
+      ours_treat[[term]]$chi2,
+      ours_sum[[term]]$chi2,
+      tolerance = 1e-8
+    )
+    expect_identical(ours_treat[[term]]$df, ours_sum[[term]]$df)
+    expect_equal(ours_treat[[term]]$p, ours_sum[[term]]$p, tolerance = 1e-8)
+  }
+})
+
+test_that("glmer partial_chi2 is contrast-invariant under interactions", {
+  skip_if_not_installed("lme4")
+  d <- .pchi_inter_glmer_data()
+  fit_treat <- lme4::glmer(y ~ x * A + (1 | g), family = binomial, data = d)
+  fit_sum <- withr::with_options(
+    list(contrasts = c("contr.sum", "contr.poly")),
+    lme4::glmer(y ~ x * A + (1 | g), family = binomial, data = d)
+  )
+  # glmer re-optimizes (beta, theta) jointly under the new basis, so
+  # the refit agrees only to optimizer precision (~1e-5 relative here;
+  # cf. the 1e-6 IRLS bound in the glm invariance test). The exact
+  # structural invariance is pinned by the car::Anova oracle above,
+  # which this construction matches under BOTH codings.
+  ours_treat <- .pchi_by_term(fit_treat)
+  ours_sum <- .pchi_by_term(fit_sum)
+  for (term in names(ours_treat)) {
+    expect_equal(
+      ours_treat[[term]]$chi2,
+      ours_sum[[term]]$chi2,
+      tolerance = 1e-3
+    )
+    expect_identical(ours_treat[[term]]$df, ours_sum[[term]]$df)
+  }
+})
+
+test_that("glmer sum-coded refit still matches car::Anova(type = 2) exactly", {
+  skip_if_not_installed("car")
+  d <- .pchi_inter_glmer_data()
+  fit_sum <- withr::with_options(
+    list(contrasts = c("contr.sum", "contr.poly")),
+    lme4::glmer(y ~ x * A + (1 | g), family = binomial, data = d)
+  )
+  ours <- .pchi_by_term(fit_sum)
+  ca <- car::Anova(fit_sum, type = 2)
+  for (term in rownames(ca)) {
+    expect_equal(ours[[term]]$chi2, ca[term, "Chisq"], tolerance = 1e-8)
+  }
 })

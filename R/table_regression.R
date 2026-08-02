@@ -35,12 +35,20 @@
 #'   \item Partial effect sizes -- `lm` only: `"partial_f2"`,
 #'     `"partial_eta2"`, `"partial_omega2"`, each with a paired
 #'     `_ci` companion (`"partial_f2_ci"`, ...).
-#'   \item Partial effect size -- `glm` only: `"partial_chi2"`
-#'     (Type-II partial likelihood-ratio chi-square: each term is
-#'     tested against the nested pair of models that both exclude
-#'     any higher-order interaction containing it; Long & Freese
-#'     2014 Section 3.5). Rendered as `value (df)` to disambiguate
-#'     factor terms (k-1 df) from numeric terms (1 df).
+#'   \item Partial effect size -- `glm` and mixed-effects models:
+#'     `"partial_chi2"`, the term-level Type-II partial chi-square.
+#'     Each term is tested under the marginality-respecting
+#'     hypothesis that excludes any higher-order interaction
+#'     containing it (the `car::Anova(type = 2)` convention), so
+#'     the value does not depend on the factor coding. For `glm`
+#'     the statistic is the likelihood-ratio chi-square (Long &
+#'     Freese 2014 Section 3.5); for `lmer` / `glmer` / `glmmTMB` /
+#'     `nlme::lme` it is the Wald chi-square built from the same
+#'     Type-II hypothesis -- a deliberate departure from the
+#'     Type-III default of SAS PROC MIXED and `lmerTest` (the two
+#'     conventions coincide for models without interactions).
+#'     Rendered as `value (df)` to disambiguate factor terms (k-1
+#'     df) from numeric terms (1 df).
 #'   \item Sample columns: `"n"` -- per-row N, populated by
 #'     [table_regression_uv()] screens (each predictor block is its
 #'     own fit); models without per-row N data drop the column.

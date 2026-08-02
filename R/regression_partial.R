@@ -280,19 +280,33 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
 }
 
 
-# ---- Phase 7c18: Type-3 Wald chi^2 for mixed-effects fits ---------------
+# ---- Phase 7c18: Type-II Wald chi^2 for mixed-effects fits --------------
 #
 # For each non-intercept term (numeric or factor), compute the joint
-# Wald chi^2 test H0: beta[term] = 0 against H1: beta[term] != 0 in the
-# fixed-effect coefficient vector. The statistic is
+# Wald chi^2 test of the term's fixed-effect coefficients under the
+# marginality-respecting Type-II hypothesis of `car::Anova(type = 2)`
+# (car's `Anova_II_mer` mechanics): the tested rows span the
+# V-orthogonal complement of any higher-order relative of the focal
+# term (A:B is projected out when testing A), so main effects under
+# interactions are invariant to the factor coding (treatment / sum /
+# Helmert). When no relative contains the term -- additive models and
+# highest-order terms -- the hypothesis matrix reduces to the identity
+# block of the term's own coefficients and the statistic is the plain
+# block Wald
 #
 #     chi^2(k) = beta_hat[term]' * V[term, term]^{-1} * beta_hat[term]
 #
 # where k is the number of coefficients spanned by the term (1 for a
 # numeric / Boolean, k-1 for a k-level factor) and V is the model-based
-# vcov. This is the "Type 3 Tests of Fixed Effects" line every SAS
-# PROC MIXED / SPSS GENLINMIXED / Stata `mixed, testparm` output ships
-# by default.
+# vcov.
+#
+# Convention note: SAS PROC MIXED / SPSS GENLINMIXED / Stata `mixed,
+# testparm` and `lmerTest::anova()` report Type-III tests by default.
+# spicy deliberately follows the Type-II convention instead, for
+# coherence with the lm partial F and the glm partial LRT (see
+# `type2_nested_column_masks()` in R/lm_compute.R for the shared
+# containment logic). The two conventions coincide for models without
+# interactions, so those outputs match this column there.
 #
 # Engine support:
 #   * lmer / glmer / glmmTMB: standard `model.matrix(fit)` + `vcov(fit)`.
@@ -303,6 +317,34 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
 #
 # Returns a frame-schema data.frame ready to rbind onto coefs (same
 # columns as the AME helper's output) with estimate_type = "partial_chi2".
+
+# Internal: Type-II Wald hypothesis matrix for one focal term,
+# replicating car's `Anova_II_mer` / `ConjComp` mechanics. `rel_cols`
+# indexes the coefficients of the higher-order relatives, `focal_cols`
+# those of the focal term, in a length-`p` coefficient vector with
+# covariance `V`. Without relatives the matrix is the identity block of
+# the focal coefficients (the plain block Wald). With relatives, the
+# rows form a basis of the V-orthogonal complement of the relatives'
+# identity rows within the span of { relatives + focal } rows; the
+# quadratic form is invariant to the basis choice, so the statistic
+# matches `car::Anova(type = 2)` for any factor coding.
+type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
+  I_p <- diag(p)
+  L2 <- I_p[c(rel_cols, focal_cols), , drop = FALSE]
+  if (length(rel_cols) == 0L) {
+    return(L2)
+  }
+  L1 <- I_p[rel_cols, , drop = FALSE]
+  # car:::ConjComp(t(L1), t(L2), V): QR of L2 %*% V %*% t(L1).
+  xq <- qr(L2 %*% V %*% t(L1))
+  L <- if (xq$rank == 0L) {
+    L2 # nocov: identity rows of distinct coefficients are never rank-0
+  } else {
+    t(t(L2) %*% qr.Q(xq, complete = TRUE)[, -seq_len(xq$rank), drop = FALSE])
+  }
+  L[!apply(L, 1L, function(x) all(x == 0)), , drop = FALSE]
+}
+
 .compute_partial_chi2_rows_for_mixed <- function(fit) {
   fixed_form <- tryCatch(
     if (inherits(fit, "glmmTMB")) {
@@ -373,7 +415,8 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
   } # nocov
 
   assign_idx <- attr(mm, "assign")
-  term_labels <- attr(stats::terms(fixed_form), "term.labels")
+  trm <- stats::terms(fixed_form)
+  term_labels <- attr(trm, "term.labels")
   if (
     is.null(assign_idx) || is.null(term_labels) || length(term_labels) == 0L
   ) {
@@ -388,17 +431,28 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
   chi2_cache <- list()
   for (k in unique_terms) {
     cols <- which(assign_idx == k)
-    b_sub <- bhat[cols]
-    V_sub <- V[cols, cols, drop = FALSE]
-    chi2_val <- tryCatch(
+    # Higher-order relatives of the focal term, via the shared Type-II
+    # containment logic. `masks` is non-NULL by construction (the label
+    # comes from `trm` itself; `which(!NULL)` would still yield
+    # integer(0)); relative columns are the ones excluded from BOTH
+    # nested models of the Type-II comparison.
+    masks <- type2_nested_column_masks(trm, assign_idx, term_labels[k])
+    rel_cols <- which(!masks$keep_with)
+    res <- tryCatch(
       {
-        Vinv <- solve(V_sub)
-        as.numeric(t(b_sub) %*% Vinv %*% b_sub)
+        L <- type2_wald_hypothesis_matrix(length(bhat), rel_cols, cols, V)
+        Lb <- as.numeric(L %*% bhat)
+        M <- L %*% V %*% t(L)
+        list(
+          chi2 = as.numeric(t(Lb) %*% solve(M) %*% Lb),
+          df = nrow(L)
+        )
       },
-      error = function(e) NA_real_
+      error = function(e) list(chi2 = NA_real_, df = length(cols))
     )
-    df_val <- length(cols)
-    if (!is.finite(chi2_val) || chi2_val < 0) {
+    chi2_val <- res$chi2
+    df_val <- res$df
+    if (!is.finite(chi2_val) || chi2_val < 0 || df_val < 1L) {
       # nocov start
       chi2_cache[[as.character(k)]] <- NULL
       next

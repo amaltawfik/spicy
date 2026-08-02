@@ -42,6 +42,7 @@ Imports:
 Suggests:
     boot,
     broom,
+    car,
     clipr,
     clubSandwich,
     DT,
