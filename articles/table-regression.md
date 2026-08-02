@@ -267,7 +267,10 @@ Methodology notes:
   error. This matches `car::Anova(type = 2)`. For additive models it
   reduces to the classic “each term after all the others” partial F, and
   the result does not depend on the factor coding (treatment, sum,
-  Helmert, polynomial).
+  Helmert, polynomial). Readers coming from SPSS `UNIANOVA` or SAS
+  `PROC GLM`, whose default is Type III, should note the difference is a
+  deliberate convention choice, not an oversight; the two conventions
+  coincide for models without interactions.
 - The `ω²` point estimate is bias-corrected via the Olejnik and
   Algina (2003) formula `((F − 1) × df1) / (F × df1 + N − df1)`,
   yielding a less-biased small-sample estimator than partial `η²`.
@@ -1126,6 +1129,14 @@ likelihood-ratio tests of the same joint hypothesis are asymptotically
 equivalent but differ in finite samples; many statisticians prefer the
 likelihood-ratio form when both are available (Long & Freese 2014
 §3.2.2), which is what `partial_chi2` computes.
+
+The same token extends to mixed-effects models (`lmer`, `glmer`,
+`glmmTMB`, [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)), where
+the term-level test is the Wald chi-square built from the same
+marginality-respecting Type-II hypothesis, matching
+`car::Anova(type = 2)`. This is a deliberate departure from SAS PROC
+MIXED and `lmerTest`, which report Type-III tests by default; the two
+conventions coincide for models without interactions.
 
 ### Standardised coefficients: `refit` and `pseudo`
 

@@ -889,7 +889,10 @@ rendering an empty column.
   values respect marginality and no longer change with the factor coding
   (treatment, sum, Helmert). Values change only for models with
   interaction terms; additive models and the interaction terms
-  themselves are unchanged.
+  themselves are unchanged. The same convention now governs the
+  term-level Wald chi-square that `partial_chi2` reports for
+  mixed-effects models (`lmer` / `glmer` / `glmmTMB` /
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)).
 
 - The RMST and risk-difference columns extend to parametric survival
   models

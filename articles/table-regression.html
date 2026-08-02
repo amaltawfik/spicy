@@ -376,7 +376,10 @@ left out of both sides — over the full model’s mean squared error. This
 matches <code>car::Anova(type = 2)</code>. For additive models it
 reduces to the classic “each term after all the others” partial F, and
 the result does not depend on the factor coding (treatment, sum,
-Helmert, polynomial).</li>
+Helmert, polynomial). Readers coming from SPSS <code>UNIANOVA</code> or
+SAS <code>PROC GLM</code>, whose default is Type III, should note the
+difference is a deliberate convention choice, not an oversight; the two
+conventions coincide for models without interactions.</li>
 <li>The <code>ω²</code> point estimate is bias-corrected via the Olejnik
 and Algina (2003) formula
 <code>((F − 1) × df1) / (F × df1 + N − df1)</code>, yielding a
@@ -1221,6 +1224,14 @@ the same joint hypothesis are asymptotically equivalent but differ in
 finite samples; many statisticians prefer the likelihood-ratio form when
 both are available (Long &amp; Freese 2014 §3.2.2), which is what
 <code>partial_chi2</code> computes.</p>
+<p>The same token extends to mixed-effects models (<code>lmer</code>,
+<code>glmer</code>, <code>glmmTMB</code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>), where
+the term-level test is the Wald chi-square built from the same
+marginality-respecting Type-II hypothesis, matching
+<code>car::Anova(type = 2)</code>. This is a deliberate departure from
+SAS PROC MIXED and <code>lmerTest</code>, which report Type-III tests by
+default; the two conventions coincide for models without
+interactions.</p>
 </div>
 <div class="section level3">
 <h3 id="standardised-coefficients-refit-and-pseudo">Standardised coefficients: <code>refit</code> and
