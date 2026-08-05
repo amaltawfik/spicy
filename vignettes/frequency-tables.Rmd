@@ -106,22 +106,35 @@ freq(sh, smoking_lbl, labelled_levels = "values")
 
 ### Custom missing values
 
-Treat specific values as missing with `na_val`:
+Raw data files often store nonresponse as an ordinary level -- a
+"Refused" or "Don't know" answer sitting next to the substantive
+categories. `na_val` reclassifies such a value as missing: it moves
+to the Missing block and valid percentages are computed without it.
 
 ```{r freq-naval}
-freq(sochealth, income_group, na_val = "High")
+# Simulate a raw file where nonresponse was typed as a level
+sh$income_raw <- as.character(sochealth$income_group)
+sh$income_raw[is.na(sh$income_raw)] <- "Refused"
+
+# "Refused" counts as a valid answer...
+freq(sh, income_raw)
+
+# ...until na_val reclassifies it as missing
+freq(sh, income_raw, na_val = "Refused")
 ```
 
 ### Declared missing values
 
 Survey files imported with haven often declare codes as missing at
 the source -- `8 = Refused`, `9 = Don't know` -- through
-`na_values`/`na_range` (SPSS-style) or tagged NAs (Stata-style). In
-R these codes are *not* `NA`, so most packages silently treat them
-as valid answers. spicy honors the declaration by default: the codes
-are excluded from valid percentages and statistics, and `freq()`
-shows them as labelled rows of its Missing block instead of erasing
-them.
+`na_values`/`na_range` (SPSS-style) or tagged NAs (Stata-style).
+The two behave differently in R. SPSS-style codes are *not* `NA`,
+so most packages silently treat them as valid answers. Stata-style
+tagged NAs are genuine `NA`s, but most packages collapse them into
+a single undifferentiated `NA` count. spicy honors both
+declarations by default: the codes are excluded from valid
+percentages and statistics, and `freq()` shows them as labelled
+rows of its Missing block instead of erasing them.
 
 ```{r freq-user-na}
 sh2 <- sochealth
@@ -133,12 +146,20 @@ sh2$trust <- labelled::labelled_spss(
 freq(sh2, trust)
 ```
 
-Set `user_na = FALSE` to treat the declared codes as ordinary
-categories instead. The same argument, with the same default, exists
-in `cross_tab()`, the `table_*()` helpers, and the row-wise
-functions -- and the exclusions are always disclosed in the table
-note. See the "Declared missing values" section of `?freq` for the
-full contract.
+Set `user_na = FALSE` to treat SPSS-style declared codes as
+ordinary categories instead; tagged NAs are genuine `NA`s either
+way, so for them it only collapses the per-tag breakdown into the
+regular `NA` count. The same argument, with the same default,
+exists in `cross_tab()`, the descriptive helpers
+`table_categorical()`, `table_continuous()` and
+`table_continuous_lm()`, and the row-wise functions `mean_n()`,
+`sum_n()` and `count_n()`. (`table_regression()` takes a fitted
+model, not raw data, so the argument does not apply there.)
+`cross_tab()` and the descriptive helpers disclose the exclusion in
+the table note; the row-wise functions return bare numeric vectors,
+so they count the declared codes as missing without any note. See
+the "Declared missing values" section of `?freq` for the full
+contract.
 
 ## Cross-tabulations with cross_tab()
 
@@ -222,18 +243,34 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 
 ### Monte Carlo simulation
 
-When expected cell counts are small, use simulated p-values:
+The chi-squared test relies on an asymptotic approximation that
+degrades when expected cell counts are small. `cross_tab()` checks
+Cochran's rule and warns when a table is too sparse -- as in this
+student subsample:
+
+```{r cross-sparse}
+students <- subset(sochealth, employment_status == "Student")
+cross_tab(students, self_rated_health, education)
+```
+
+The warning itself names the remedy: `simulate_p = TRUE` replaces
+the asymptotic p-value with one estimated by Monte Carlo simulation
+(`simulate_B` random tables). A simulated test has no degrees of
+freedom, which is why the statistic prints as `Chi-2(NA)`:
 
 ```{r cross-simulate}
-cross_tab(sochealth, smoking, education,
+cross_tab(students, self_rated_health, education,
           simulate_p = TRUE, simulate_B = 5000)
 ```
 
 ### Data frame output
 
 Set `output = "data.frame"` to get a plain data frame for further
-processing. The same argument works in `freq()`, and the values match
-the `output` argument of the `table_*()` family:
+processing. The same argument works in `freq()`, and its two values
+("default", "data.frame") are shared with the `output` argument of
+the `table_*()` family -- but the rendered engines that family also
+accepts ("tinytable", "gt", "flextable", ...) are not available
+here:
 
 ```{r cross-df}
 cross_tab(sochealth, smoking, education,
@@ -243,9 +280,9 @@ cross_tab(sochealth, smoking, education,
 ## Setting global defaults
 
 You can set tabulation defaults with `options()` so you don't have
-to repeat arguments. `spicy.rescale` is read by both `cross_tab()`
-and `freq()`; `spicy.percent` and `spicy.simulate_p` are read by
-`cross_tab()`:
+to repeat arguments. `spicy.rescale` is read by `cross_tab()`,
+`freq()`, and `table_categorical()`; `spicy.percent` and
+`spicy.simulate_p` are read by `cross_tab()`:
 
 ```{r options, eval = FALSE}
 options(

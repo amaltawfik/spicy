@@ -47,7 +47,8 @@ table_continuous(
 ```
 
 If you omit `select`, `table_continuous()` scans the data frame and
-keeps numeric columns:
+keeps numeric columns. Non-numeric columns are dropped silently; set
+`verbose = TRUE` to list them in a message:
 
 ```{r default-select}
 table_continuous(sochealth)
@@ -111,11 +112,11 @@ table_continuous(
   by = education,
   test = "nonparametric",
   statistic = TRUE,
-  effect_size = TRUE
+  effect_size = "auto"
 )
 ```
 
-`effect_size = TRUE` auto-selects the canonical measure for the
+`effect_size = "auto"` selects the canonical measure for the
 chosen `test` and number of groups: Hedges' *g* (parametric, 2
 groups), eta-squared (parametric, 3+ groups), rank-biserial *r*
 (nonparametric, 2 groups), or epsilon-squared (nonparametric, 3+
@@ -146,7 +147,7 @@ table_continuous(
   select = c(bmi, wellbeing_score),
   by = education,
   statistic = TRUE,
-  effect_size = TRUE,
+  effect_size = "auto",
   output = "data.frame"
 )
 ```
@@ -201,10 +202,20 @@ table_continuous(
 ```
 
 Missing values in `by` are removed by default (`drop_na = TRUE`),
-again disclosed in the note. Set `drop_na = FALSE` to display them
-as a dedicated "(Missing)" group instead. The group-comparison test
-and effect size still cover the observed groups only, matching
-`table_categorical()`:
+and the removal is again disclosed rather than silent -- here in the
+note ("Rows with missing income_group removed") and in a warning:
+
+```{r missing-by-default}
+table_continuous(
+  sochealth,
+  select = bmi,
+  by = income_group
+)
+```
+
+Set `drop_na = FALSE` to display those rows as a dedicated
+"(Missing)" group instead. The group-comparison test and effect size
+still cover the observed groups only, matching `table_categorical()`:
 
 ```{r missing-by}
 table_continuous(
@@ -215,85 +226,38 @@ table_continuous(
 )
 ```
 
-## Labels and output formats
+## Custom labels
 
-Use `labels` to replace technical variable names with reporting labels:
+By default, `table_continuous()` labels each variable with its label
+attribute when one is present (e.g. data imported with `haven`), and
+with the column name otherwise -- that is why the tables above read
+"Body mass index" rather than `bmi`. Use the `labels` argument, a
+named character vector keyed by column name, to override either. Only
+the listed columns are relabelled; the others keep their attribute
+label or column name:
 
-```{r labels, eval = build_rich_tables}
-pkgdown_dark_gt(
-  table_continuous(
-    sochealth,
-    select = c(bmi, wellbeing_score, life_sat_health),
-    by = education,
-    labels = c(
-      bmi = "Body mass index",
-      wellbeing_score = "Well-being score",
-      life_sat_health = "Satisfaction with health"
-    ),
-    output = "gt"
-  )
-)
-```
-
-`table_continuous()` supports the same reporting-oriented outputs as
-`table_categorical()`:
-
-| `output` value | Returned object |
-|:--|:--|
-| `"default"` | Styled ASCII console table |
-| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
-| `"tinytable"` | Formatted tinytable |
-| `"gt"` | Formatted gt table |
-| `"flextable"` | Formatted flextable |
-| `"excel"` | Written `.xlsx` file |
-| `"clipboard"` | Copied text table |
-| `"word"` | Written `.docx` file |
-
-For example, `tinytable` works well in Quarto and R Markdown documents:
-
-```{r tinytable, eval = build_rich_tables}
+```{r labels}
 table_continuous(
   sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  output = "tinytable"
-)
-```
-
-## Export to Excel or Word
-
-Use the same function to export the table directly:
-
-```{r export, eval = FALSE}
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  output = "excel",
-  excel_path = "table_continuous.xlsx"
-)
-
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  output = "word",
-  word_path = "table_continuous.docx"
+  select = c(wellbeing_score, life_sat_health),
+  by = sex,
+  labels = c(wellbeing_score = "Well-being score (0-100)")
 )
 ```
 
 ## Display options
 
 The printed ASCII table and every rendered output share the same
-formatting vocabulary as `table_continuous_lm()` and
-`table_categorical()`:
+formatting vocabulary as `table_continuous_lm()`; `align`, `p_digits`,
+and `decimal_mark` are also shared with `table_categorical()`:
 
 - `align = "decimal"` (default) aligns numeric columns on the
   decimal mark, matching SPSS / SAS / LaTeX `siunitx` conventions.
   `"center"` and `"right"` are the alternatives.
 - `p_digits = 3` (default, the APA standard) drives both the
-  displayed precision of the `p` column and the small-*p* threshold
-  (`p_digits = 4` -> `.0451` and `<.0001`).
+  displayed precision of the `p` column and the small-*p* threshold:
+  with `p_digits = 4`, the chunk below shows `.0176` for BMI and
+  `<.0001` for the well-being score.
 - `show_n = FALSE` and `ci = FALSE` drop the corresponding columns
   (and the CI spanner / borders) structurally from every output;
   the underlying `n` and `ci_lower` / `ci_upper` are always present
@@ -302,7 +266,7 @@ formatting vocabulary as `table_continuous_lm()` and
 ```{r display-opts}
 table_continuous(
   sochealth,
-  select = wellbeing_score,
+  select = c(bmi, wellbeing_score),
   by = sex,
   ci = FALSE,
   show_n = FALSE,
@@ -336,6 +300,78 @@ broom::glance(out)
 
 # Or just unbox to a plain data.frame (long-format underlying data)
 head(as.data.frame(out))
+```
+
+## Output formats
+
+`table_continuous()` supports the same reporting-oriented outputs as
+`table_categorical()`:
+
+| `output` value | Returned object |
+|:--|:--|
+| `"default"` | Styled ASCII console table |
+| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
+| `"tinytable"` | Formatted tinytable |
+| `"gt"` | Formatted gt table |
+| `"flextable"` | Formatted flextable |
+| `"excel"` | Written `.xlsx` file |
+| `"clipboard"` | Copied text table |
+| `"word"` | Written `.docx` file |
+
+`output = "gt"` produces a formatted gt table with APA-style borders
+and column spanners:
+
+```{r gt, eval = FALSE}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "gt"
+)
+```
+
+```{r gt-render, echo = FALSE, eval = build_rich_tables}
+pkgdown_dark_gt(
+  table_continuous(
+    sochealth,
+    select = c(bmi, wellbeing_score, life_sat_health),
+    by = education,
+    output = "gt"
+  )
+)
+```
+
+`output = "tinytable"` works well in Quarto and R Markdown documents:
+
+```{r tinytable, eval = build_rich_tables}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "tinytable"
+)
+```
+
+## Export to Excel or Word
+
+Use the same function to export the table directly:
+
+```{r export, eval = FALSE}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "excel",
+  excel_path = "table_continuous.xlsx"
+)
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "word",
+  word_path = "table_continuous.docx"
+)
 ```
 
 ## See also

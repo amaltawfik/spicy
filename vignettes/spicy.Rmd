@@ -22,8 +22,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
-build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
 ```
 
 ```{r setup}
@@ -36,18 +34,18 @@ variable inspection, frequency tables, cross-tabulations with
 chi-squared tests and effect sizes, and publication-ready summary
 tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
-workflow using the bundled [`sochealth`](../reference/sochealth.html)
-dataset, a simulated social-health survey with 1200 respondents and
-24 variables.
+workflow using the bundled `sochealth` dataset, a simulated
+social-health survey with 1200 respondents and 24 variables.
 
 ## Inspect your data
 
 `varlist()` (or its shortcut `vl()`) gives a compact overview of every
 variable in a data frame: name, label, representative values, class,
 number of distinct values, valid observations, and missing values.
-In RStudio or Positron, calling `varlist()` without arguments opens an
-interactive viewer - this is the most common usage in practice. Here we
-use `tbl = TRUE` to produce static output for the vignette:
+In RStudio or Positron, calling `varlist(mydata)` with the default
+`tbl = FALSE` opens an interactive viewer - this is the most common
+usage in practice. Here we use `tbl = TRUE` to produce static output
+for the vignette:
 
 ```{r varlist}
 varlist(sochealth, tbl = TRUE)
@@ -61,8 +59,9 @@ varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 
 ## Frequency tables
 
-`freq()` produces frequency tables with counts, percentages, and
-(optionally) valid and cumulative percentages.
+`freq()` produces frequency tables with counts, percentages, valid
+percentages (shown by default whenever missing values are present),
+and optionally cumulative percentages.
 
 ```{r freq}
 freq(sochealth, education)
@@ -126,7 +125,7 @@ cramer_v(tbl, detail = TRUE)
 `table_categorical()` covers grouped or one-way summary tables for
 categorical variables:
 
-```{r table-categorical-tt}
+```{r table-categorical}
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity, dentist_12m),
@@ -134,9 +133,9 @@ table_categorical(
 )
 ```
 
-`table_continuous()` summarizes continuous variables, either overall or
-by a categorical `by` variable, and can also add group-comparison
-tests:
+`table_continuous()` summarizes continuous variables, either overall
+or by a categorical `by` variable; when `by` is supplied it also
+reports a group-comparison test (a Welch test by default):
 
 ```{r table-continuous}
 table_continuous(
@@ -160,10 +159,17 @@ table_continuous_lm(
 )
 ```
 
+For detailed guidance, see the dedicated articles on
+`table_categorical()`, `table_continuous()`, and
+`table_continuous_lm()`, and the final reporting overview for
+APA-style summary tables.
+
+## Regression tables
+
 `table_regression()` reports the full coefficient table for one or
-several fitted models — some thirty classes, from `lm()` / `glm()`
-to mixed-effects, ordinal, survival and Bayesian engines (the full
-map is `vignette("table-regression-supported-models")`) — with
+several fitted models — more than thirty classes, from `lm()` /
+`glm()` to mixed-effects, ordinal, survival and Bayesian engines (the
+full map is `vignette("table-regression-supported-models")`) — with
 APA-aligned formatting, factor grouping with reference rows, robust
 variance, standardised coefficients, average marginal effects,
 hierarchical comparisons, and side-by-side multi-model layouts:
@@ -173,25 +179,32 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit)
 ```
 
-For detailed guidance, see the dedicated articles on
-`table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
-`table_regression()`, and the final reporting overview for APA-style
-summary tables.
+For detailed guidance, start with the core `table_regression()`
+article; the Learn more section below lists the companion articles by
+model family.
 
 ## Row-wise summaries
 
 `mean_n()`, `sum_n()`, and `count_n()` compute row-wise statistics
-across selected columns, with automatic handling of missing values.
+across selected columns, with explicit control over missing values.
+By default, a row mean or sum requires every selected value to be
+valid; `min_valid` relaxes this to a minimum count (or proportion) of
+valid values. The rows selected below include respondents with missing
+satisfaction items so the difference is visible: `mean_sat` (no
+`min_valid`) turns `NA` as soon as one item is missing, `sum_sat` is
+computed from the valid items as long as at least three are present
+(and turns `NA` in the last row, which has only two), and
+`count_n(special = "NA")` counts the missing items themselves:
 
 ```{r mean-n}
 sochealth |>
   dplyr::mutate(
     mean_sat  = mean_n(select = starts_with("life_sat")),
-    sum_sat   = sum_n(select = starts_with("life_sat"), min_valid = 2),
+    sum_sat   = sum_n(select = starts_with("life_sat"), min_valid = 3),
     n_missing = count_n(select = starts_with("life_sat"), special = "NA")
   ) |>
   dplyr::select(starts_with("life_sat"), mean_sat, sum_sat, n_missing) |>
-  head() |>
+  dplyr::slice(c(1, 2, 43, 82, 455)) |>
   as.data.frame()
 ```
 
@@ -218,7 +231,7 @@ sochealth |>
 - `vignette("table-regression")` — the core guide, including the
   univariable screen (`table_regression_uv()`).
 - `vignette("table-regression-supported-models")` — the
-  class-by-class capability map (some thirty model classes).
+  class-by-class capability map (more than thirty model classes).
 - `vignette("as-structured")` — the typed view behind every
   regression table: filter, aggregate, or build a custom renderer.
 - `vignette("table-regression-mixed")` — mixed-effects (multilevel)

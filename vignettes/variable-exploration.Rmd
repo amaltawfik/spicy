@@ -109,18 +109,31 @@ varlist(sochealth, tbl = TRUE)
 ```
 
 If you want the `Values` column to include explicit missing values, use
-`include_na = TRUE`:
+`include_na = TRUE`. Selecting a few variables and keeping only the
+relevant columns lets the `Values` strings print in full, so the added
+`<NA>` entry is actually visible:
 
 ```{r varlist-include-na}
-head(subset(varlist(sochealth, include_na = TRUE, tbl = TRUE), NAs > 0))
+varlist(sochealth, smoking, income_group, self_rated_health,
+  include_na = TRUE, tbl = TRUE
+)[, c("Variable", "Values", "NAs")]
 ```
 
-If you want to display all unique non-missing values in the `Values`
-column, use `values = TRUE`. This is especially useful for variables
-with a small number of distinct values:
+By default, the `Values` column elides longer value lists with `...`.
+If you want to display all unique non-missing values instead, use
+`values = TRUE`. This is especially useful for variables with a small
+number of distinct values, where the full list fits on one line.
+Compare the default display with the `values = TRUE` display for the
+same two variables:
 
 ```{r varlist-values}
-head(subset(varlist(sochealth, values = TRUE, tbl = TRUE), N_distinct <= 5))
+varlist(sochealth, life_sat_health, social_class,
+  tbl = TRUE
+)[, c("Variable", "Values", "N_distinct")]
+
+varlist(sochealth, life_sat_health, social_class,
+  values = TRUE, tbl = TRUE
+)[, c("Variable", "Values", "N_distinct")]
 ```
 
 For a focused inspection, select only the variables you want to review:
@@ -208,7 +221,10 @@ for review or export.
 
 The two tools share their column structure but differ in one default:
 `varlist()` shows only the **observed** factor levels in the
-`Values` column (Stata `tab` style), whereas `code_book()` shows
-**all declared** levels including unused ones (SPSS `FREQUENCIES`
-style, appropriate for schema documentation). Pass `factor_levels =`
-explicitly to either function to override the default.
+`Values` column (the convention of Stata `tab` and of the SPSS
+`FREQUENCIES` default, which both list only values present in the
+data), whereas `code_book()` shows **all declared** levels including
+unused ones -- the full coding scheme, as a data dictionary or SPSS
+`CTABLES` would report it, which is appropriate for schema
+documentation. Pass `factor_levels =` explicitly to either function
+to override the default.

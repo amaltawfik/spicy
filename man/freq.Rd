@@ -87,10 +87,10 @@ values are displayed:
 
 \item{factor_levels}{Character. Controls how factor and labelled values
 are displayed in the frequency table. \code{"observed"} (the default;
-matches Stata's \code{tab}) shows only levels present in the data.
-\code{"all"} (matches SPSS \code{FREQUENCIES} and \code{\link[=code_book]{code_book()}}'s default)
-keeps every declared level, including unused ones, which appear
-with \code{n = 0}.}
+matches Stata's \code{tab} and SPSS \code{FREQUENCIES}, which both list
+only values present in the data) shows only levels present in
+the data. \code{"all"} (\code{\link[=code_book]{code_book()}}'s default) keeps every declared
+level, including unused ones, which appear with \code{n = 0}.}
 
 \item{rescale}{Logical. If \code{FALSE} (the default), weights are used
 as-is. If \code{TRUE}, rescale weights so that their total equals the
@@ -236,8 +236,9 @@ freq(x_lbl, labelled_levels = "labels", cum = TRUE)
 # Display values only, sorted descending
 freq(x_lbl, labelled_levels = "values", sort = "-")
 
-# Show all declared factor levels, including unused ones (SPSS-style).
-# The default "observed" mirrors Stata's `tab` and drops unused levels.
+# Show all declared factor levels, including unused ones (n = 0).
+# The default "observed" mirrors Stata's `tab` and SPSS FREQUENCIES,
+# which both drop unused levels.
 f <- factor(c("Yes", "No", "Yes"), levels = c("Yes", "No", "Maybe"))
 freq(f, factor_levels = "all")
 
