@@ -55,8 +55,10 @@ as_regression_frame.glmmTMB <- function(
   .check_glmmTMB_available()
 
   coefs <- .glmmTMB_coefs(fit, ci_level = ci_level)
-  # CR* via clubSandwich::vcovCR; coef_test()'s Satterthwaite path is
-  # unsupported for glmmTMB, so inference falls back to z (test = "z").
+  # vcov can only be "model"/"classical" here: CR* is refused for
+  # glmmTMB (no clubSandwich backend -- vcovCR.default is numerically
+  # invalid) by both the validate gate and compute_model_vcov(). The
+  # shared applier is kept for its no-op classical path.
   coefs <- .apply_robust_vcov_to_coefs(
     coefs,
     fit,

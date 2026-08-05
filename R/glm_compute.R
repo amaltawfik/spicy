@@ -490,7 +490,17 @@ apply_exponentiate_to_coefs <- function(coefs) {
 # AME rows pass through unchanged: marginaleffects already returns the
 # response-scale effect, so exponentiating again would be wrong (and
 # the "OR" / "IRR" / ... label only applies to B / beta rows).
-apply_exponentiate_to_frame_coefs <- function(coefs) {
+#
+# `negate = TRUE` (cumulative cloglog only): the model is parametrised
+# cloglog P(Y <= j) = zeta_j - xB, so the grouped-time proportional-
+# hazards ratio (Prentice & Gloeckler 1978; McCullagh 1980) is
+# exp(-B), NOT exp(B) -- exp(B) would be its reciprocal. Verified
+# against a person-period discrete-time cloglog GLM oracle (true
+# HR = 2 recovered as exp(-B) = 1.99; exp(B) = 0.50), 2026-08-05.
+# Under g(x) = exp(-x): the CI endpoints swap ([exp(-U), exp(-L)]),
+# |g'(x)| = exp(-x) so SE = exp(-B) x SE_link, and the H0: B = 0
+# statistic and p-value stay invariant.
+apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
   if (is.null(coefs) || nrow(coefs) == 0L) {
     return(coefs)
   }
@@ -506,10 +516,18 @@ apply_exponentiate_to_frame_coefs <- function(coefs) {
   est_orig <- coefs$estimate[rows]
   se_orig <- coefs$std_error[rows]
 
-  exp_est <- exp(est_orig)
+  if (isTRUE(negate)) {
+    exp_est <- exp(-est_orig)
+    ci_lo <- exp(-coefs$ci_upper[rows])
+    ci_hi <- exp(-coefs$ci_lower[rows])
+  } else {
+    exp_est <- exp(est_orig)
+    ci_lo <- exp(coefs$ci_lower[rows])
+    ci_hi <- exp(coefs$ci_upper[rows])
+  }
   coefs$estimate[rows] <- exp_est
-  coefs$ci_lower[rows] <- exp(coefs$ci_lower[rows])
-  coefs$ci_upper[rows] <- exp(coefs$ci_upper[rows])
+  coefs$ci_lower[rows] <- ci_lo
+  coefs$ci_upper[rows] <- ci_hi
   coefs$std_error[rows] <- exp_est * se_orig # Delta-method.
   # Statistic and p-value invariant under exp(): leave as-is.
   coefs
@@ -556,8 +574,42 @@ apply_exponentiate_to_frame_coefs <- function(coefs) {
     info$family$link,
     model_id = coefs$model_id[1L]
   )
-  coefs <- apply_exponentiate_to_frame_coefs(coefs)
+  # Cumulative cloglog: the HR of the grouped-time proportional-hazards
+  # reading is exp(-B) under the zeta_j - xB parametrisation (see
+  # apply_exponentiate_to_frame_coefs); the footer discloses the sign.
+  negate_hr <- identical(info$family$family, "cumulative") &&
+    identical(info$family$link, "cloglog")
+  if (negate_hr) {
+    # Nominal (partial-PO) rows sit on the THRESHOLD side of the
+    # parametrisation: their exponential is a cut-specific baseline
+    # cumulative-hazard ratio, not a covariate hazard ratio. One column
+    # cannot honestly mix exp(-B) HRs with exp(+a) baseline ratios, so
+    # the exotic combination is refused rather than mislabelled.
+    pv <- coefs$parent_var %||% rep(NA_character_, nrow(coefs))
+    if (any(pv %in% "Non-proportional effects")) {
+      spicy_abort(
+        c(
+          paste0(
+            "`exponentiate = TRUE` is not available for a cloglog ",
+            "cumulative model with `nominal =` terms."
+          ),
+          "i" = paste0(
+            "Proportional coefficients exponentiate to hazard ",
+            "ratios as exp(-B), but nominal (threshold-side) ",
+            "coefficients would exponentiate to cut-specific ",
+            "baseline ratios -- one column cannot mix the two."
+          ),
+          "i" = "Report the link-scale coefficients instead."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  coefs <- apply_exponentiate_to_frame_coefs(coefs, negate = negate_hr)
   info$extras$exp_applied <- TRUE
+  if (negate_hr) {
+    info$extras$exp_hr_negated <- TRUE
+  }
   info$extras$exp_header <- spicy_glm_exp_header(
     info$family$family,
     info$family$link

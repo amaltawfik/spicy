@@ -291,3 +291,102 @@ test_that("ordinal exponentiate: cloglog reads HR, probit is refused, thresholds
     class = "spicy_invalid_input"
   )
 })
+
+# Vignette-excellence campaign (wave 1): the cumulative-cloglog HR is the
+# grouped-time proportional-hazards ratio exp(-B), NOT exp(B). Under the
+# polr / clm parametrisation cloglog P(Y <= j) = zeta_j - xB the hazard
+# sits on -B; exp(B) is the reciprocal of the HR. Direction pinned against
+# a person-period discrete-time cloglog GLM oracle (2026-08-05).
+
+test_that("cumulative cloglog HR is exp(-B): direction, delta SE, swapped CI", {
+  skip_if_not_installed("MASS")
+  # Grouped survival with known hazard ratio 2 for x = 1: the displayed
+  # HR must land near 2 (the pre-fix exp(B) printed ~0.5).
+  set.seed(7)
+  n <- 4000
+  x <- rbinom(n, 1, 0.5)
+  tcont <- rexp(n, rate = 0.1 * exp(log(2) * x))
+  d <- data.frame(
+    y = cut(tcont, c(0, 3, 6, 10, 15, Inf), ordered_result = TRUE),
+    x = x
+  )
+  fit <- suppressMessages(
+    MASS::polr(y ~ x, data = d, method = "cloglog", Hess = TRUE)
+  )
+  t_exp <- broom::tidy(table_regression(fit, exponentiate = TRUE))
+  t_raw <- broom::tidy(table_regression(fit))
+  bx <- t_exp[t_exp$term == "x" & t_exp$estimate_type == "B", ]
+  br <- t_raw[t_raw$term == "x" & t_raw$estimate_type == "B", ]
+  # Point estimate: exp(-B), near the true HR of 2.
+  expect_equal(bx$estimate, exp(-br$estimate), tolerance = 1e-10)
+  expect_gt(bx$estimate, 1.5)
+  # Delta-method SE on the displayed scale; CI endpoints negated + swapped.
+  expect_equal(bx$std.error, exp(-br$estimate) * br$std.error, tolerance = 1e-10)
+  expect_equal(bx$conf.low, exp(-br$conf.high), tolerance = 1e-10)
+  expect_equal(bx$conf.high, exp(-br$conf.low), tolerance = 1e-10)
+  # p-value invariant under the monotone transform.
+  expect_equal(bx$p.value, br$p.value, tolerance = 1e-12)
+  # The footer discloses the sign convention next to the HR definition.
+  note <- paste(
+    attr(table_regression(fit, exponentiate = TRUE), "note"),
+    collapse = "\n"
+  )
+  expect_match(note, "exp(-B)", fixed = TRUE)
+  expect_match(note, "Prentice", fixed = TRUE)
+})
+
+test_that("clm cloglog negates too; logit and binomial cloglog stay exp(+B)", {
+  skip_if_not_installed("ordinal")
+  fit_cll <- ordinal::clm(
+    self_rated_health ~ age + smoking,
+    data = sochealth,
+    link = "cloglog"
+  )
+  t_exp <- broom::tidy(table_regression(fit_cll, exponentiate = TRUE))
+  # coef(clm) includes the alpha thresholds (raw, never exponentiated);
+  # the negation check targets the true beta terms only.
+  bb <- t_exp[
+    t_exp$estimate_type == "B" & t_exp$term %in% names(fit_cll$beta),
+  ]
+  expect_equal(
+    bb$estimate,
+    unname(exp(-fit_cll$beta[bb$term])),
+    tolerance = 1e-10
+  )
+  # Regression guards: the negation is cloglog-cumulative ONLY.
+  fit_logit <- ordinal::clm(self_rated_health ~ age, data = sochealth)
+  t_or <- broom::tidy(table_regression(fit_logit, exponentiate = TRUE))
+  b_or <- t_or[t_or$term == "age" & t_or$estimate_type == "B", ]
+  expect_equal(
+    b_or$estimate,
+    unname(exp(coef(fit_logit)["age"])),
+    tolerance = 1e-10
+  )
+  # Binomial cloglog (person-period style): exp(+B) IS the HR, unchanged.
+  fit_glm <- glm(am ~ mpg, data = mtcars, family = binomial("cloglog"))
+  t_glm <- broom::tidy(table_regression(fit_glm, exponentiate = TRUE))
+  b_glm <- t_glm[t_glm$term == "mpg" & t_glm$estimate_type == "B", ]
+  expect_equal(
+    b_glm$estimate,
+    unname(exp(coef(fit_glm)["mpg"])),
+    tolerance = 1e-10
+  )
+  no_note <- paste(
+    attr(table_regression(fit_glm, exponentiate = TRUE), "note"),
+    collapse = "\n"
+  )
+  expect_false(grepl("exp(-B)", no_note, fixed = TRUE))
+})
+
+test_that("cloglog clm with nominal terms refuses exponentiate", {
+  skip_if_not_installed("ordinal")
+  fit <- ordinal::clm(
+    self_rated_health ~ age,
+    nominal = ~smoking,
+    data = sochealth,
+    link = "cloglog"
+  )
+  err <- .gate_err(table_regression(fit, exponentiate = TRUE))
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "nominal", fixed = TRUE)
+})

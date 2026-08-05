@@ -208,7 +208,16 @@ the SE (delta method: \verb{SE_OR = OR x SE_log-odds}) are
 logit (\code{OR}), log (\code{IRR} / \code{RR} / \code{MR} per family, generic
 \code{exp(B)} for other log-link families -- a genuine ratio of
 means), and binomial / ordinal cloglog (\code{HR}; grouped-time
-proportional hazards, Prentice & Gloeckler 1978). The statistic
+proportional hazards, Prentice & Gloeckler 1978). For the
+\emph{ordinal} (cumulative) cloglog model the displayed \code{HR} is
+\code{exp(-B)}, not \code{exp(B)}: the cumulative parametrisation
+\verb{cloglog P(Y <= j) = zeta_j - xB} places the hazard of the
+grouped event on \code{-B}, so \code{exp(B)} would be the reciprocal of
+the hazard ratio (the CI endpoints are negated and swapped
+accordingly, and the table note discloses the convention; a
+cloglog \code{clm} with \verb{nominal =} terms refuses \code{exponentiate}
+because threshold-side coefficients have no covariate-HR
+reading). The statistic
 and p-value stay on the link scale (invariant under monotone
 transformation). Identity-link fits are left untouched (a
 \code{spicy_ignored_arg} warning fires when no model in the table
@@ -1017,9 +1026,9 @@ the class cannot honour fails fast with \code{spicy_unsupported_vcov}
 choice-situation level) -- \code{sandwich::vcovHC()} mis-scales the
 sandwich for mlogit's per-choice-situation scores, so \verb{HC*} is
 refused.}
-\item{\code{lmer}, \code{lme}, \code{glmmTMB}, \code{coxph}, \code{survreg},
+\item{\code{lmer}, \code{lme}, \code{coxph}, \code{survreg},
 \code{mgcv::gam}/\code{bam}, \code{polr}, \code{clm}, \code{betareg},
-\code{survey::svyglm}, \code{nnet::multinom},
+\code{nnet::multinom},
 \code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical}
 + \verb{CR*} only -- \verb{HC*} and the resamplers (which refit
 \code{lm}/\code{glm}) are not defined for these. \code{clm} with a scale /
@@ -1033,18 +1042,24 @@ inference is robust by construction, so the fit's own sandwich
 \verb{std.err =} option, clustered on its \verb{id =} -- are the
 displayed inference. \verb{HC*} / \verb{CR*} and \code{cluster} are refused
 with a pointer to those fit options.}
-\item{Other classes (\code{glmer},
-\code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only.}
+\item{\code{survey::svyglm}}{\code{classical} only, on principle: the
+design-based Taylor / replicate variance is already the robust
+variance for the declared design, and clustering belongs in
+the design itself (\code{survey::svydesign(ids = )}), not in the
+table call.}
+\item{Other classes (\code{glmer}, \code{glmmTMB},
+\code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only
+(\pkg{clubSandwich} has no working backend for \code{glmer} /
+\code{glmmTMB}).}
 }
 
 Cluster-robust backends differ by class but are each cross-validated
-to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme}/\code{glmmTMB} use
+to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
 \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
 \code{lm}/\code{lme}/\code{lmer}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
 sandwich (identical to \code{coxph(..., cluster=)});
 \code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} use
-\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}; \code{svyglm} uses the design-aware
-\pkg{clubSandwich} estimator; \code{rms} fits use \code{\link[rms:robcov]{rms::robcov()}} (which
+\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}; \code{rms} fits use \code{\link[rms:robcov]{rms::robcov()}} (which
 needs the fit's \verb{x = TRUE, y = TRUE}). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
 \verb{CR*} maps to the one available estimator. \code{cluster} length is one

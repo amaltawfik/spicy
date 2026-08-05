@@ -4,9 +4,10 @@
 # Targets the residual uncovered branches of the frame-aware footer builders:
 #   * bootstrap vcov label without a valid replicate count + the cluster
 #     bootstrap / cluster jackknife wordings (public API where feasible),
-#   * the glmmTMB cluster-robust inference annotation,
+#   * the glmmTMB inference annotation (asymptotic even on a malformed
+#     CR-tagged frame -- the validate gate refuses CR* for glmmTMB),
 #   * component-blocks footer: duplicate-label dedup + the robust-SE
-#     disclosure for glmmTMB CR* fits,
+#     disclosure,
 #   * .append_component_rows / .append_random_effects_rows entry guards and
 #     the no-is_correlation-column / no-is_re-column initialisation paths,
 #   * the re_se_skipped footer's multi-model consolidation branches,
@@ -102,15 +103,19 @@ test_that("cluster jackknife footer says leave-one-cluster-out + cluster", {
 })
 
 
-# ---- Mixed-inference annotation: glmmTMB under a CR* vcov -----------------
+# ---- Mixed-inference annotation: glmmTMB never reaches a CR* frame --------
 
-test_that("glmmTMB + CR* inference label credits clubSandwich with Wald-z", {
+test_that("glmmTMB frame labels Wald-z asymptotic even if vcov_kind lies", {
+  # The validate gate refuses CR* for glmmTMB (no clubSandwich backend),
+  # so a glmmTMB frame can only carry model-based inference; the label
+  # function must not credit clubSandwich for this class even on a
+  # malformed frame.
   fr <- list(
     info = list(class = "glmmTMB", ci_method = "wald", vcov_kind = "CR2")
   )
   expect_identical(
     spicy:::.mixed_inference_label_for_frame(fr),
-    "p-values: Wald-z, cluster-robust (clubSandwich)."
+    "p-values: Wald-z asymptotic (glmmTMB)."
   )
 })
 
@@ -173,9 +178,12 @@ test_that("component-blocks footer adds the robust-SE scope disclosure", {
 # End-to-end proof of the two branches above plus the glmmTMB Wald-z
 # cluster-robust annotation, through table_regression().
 
-test_that("ZI glmmTMB + CR2: footer carries Wald-z + robust-scope lines", {
+test_that("ZI glmmTMB refuses CR2; classical footer dedups the ZI gloss", {
+  # CR* is refused for glmmTMB (no clubSandwich backend); the
+  # robust-scope disclosure wording stays pinned by the synthetic
+  # .mk_cb_frame unit test above.
+  suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
   skip_if_not_installed("glmmTMB")
-  skip_if_not_installed("clubSandwich")
   set.seed(99)
   g <- factor(rep(1:12, each = 10))
   re <- rnorm(12, 0, 0.4)
@@ -191,20 +199,9 @@ test_that("ZI glmmTMB + CR2: footer carries Wald-z + robust-scope lines", {
       data = d
     )
   )
-  out <- suppressWarnings(table_regression(fit, vcov = "CR2", cluster = d$g))
-  note <- paste(attr(out, "note"), collapse = "\n")
-  expect_match(
-    note,
-    "p-values: Wald-z, cluster-robust (clubSandwich).",
-    fixed = TRUE
-  )
-  expect_match(
-    note,
-    paste0(
-      "Robust SEs apply to the conditional component; ",
-      "zero-inflation / dispersion SEs are model-based."
-    ),
-    fixed = TRUE
+  expect_error(
+    suppressWarnings(table_regression(fit, vcov = "CR2", cluster = d$g)),
+    class = "spicy_unsupported_vcov"
   )
 
   # Same model twice: the shared Zero-inflation gloss must appear ONCE.

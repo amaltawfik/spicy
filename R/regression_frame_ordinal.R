@@ -25,8 +25,12 @@
 #     where link is "logit" / "probit" / "cloglog" / "loglog" /
 #     "cauchit" depending on the engine slot (polr: fit$method,
 #     clm: fit$link).
-#   * Exponentiation gives odds ratios for the logit link, hazard
-#     ratios for cloglog, etc. -- supports$exponentiate = TRUE.
+#   * Exponentiation (supports$exponentiate = TRUE) gives odds ratios
+#     for the logit link and hazard ratios for cloglog. The cloglog HR
+#     is exp(-B): the cumulative parametrisation
+#     cloglog P(Y <= j) = zeta_j - xB places the grouped-event hazard
+#     on -B (Prentice & Gloeckler 1978), so the central
+#     .apply_exp_to_frame() negates before exponentiating.
 # ---------------------------------------------------------------------------
 
 #' `as_regression_frame()` method for `polr` fits (MASS::polr()).

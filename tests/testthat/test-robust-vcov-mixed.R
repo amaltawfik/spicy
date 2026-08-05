@@ -54,22 +54,25 @@ test_that("nlme::lme CR2 SE matches clubSandwich", {
   expect_equal(unname(.mixed_b_se(fr)), unname(ct$SE), tolerance = 1e-6)
 })
 
-test_that("glmmTMB CR2 uses the CR matrix with z inference (no Satterthwaite)", {
+test_that("glmmTMB CR* is refused (no clubSandwich backend, default is invalid)", {
+  # clubSandwich has no vcovCR.glmmTMB: the call silently dispatches to
+  # vcovCR.default, whose result is numerically invalid for glmmTMB
+  # (~360x-deflated SEs on a Poisson random-intercept check, 2026-08-05).
+  # Refuse up front, exactly like glmer -- never serve those numbers.
+  suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
   skip_if_not_installed("glmmTMB")
-  skip_if_not_installed("clubSandwich")
-  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), lme4::sleepstudy)
-  cl <- lme4::sleepstudy$Subject
-  fr <- as_regression_frame(
-    fit,
-    vcov = "CR2",
-    cluster = cl,
-    cluster_name = "Subject"
+  fit <- suppressWarnings(
+    glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), lme4::sleepstudy)
   )
-  b <- fr$coefs[fr$coefs$estimate_type == "B", ]
-  oracle <- sqrt(diag(clubSandwich::vcovCR(fit, type = "CR2", cluster = cl)))
-  expect_equal(unname(b$std_error), unname(oracle), tolerance = 1e-6)
-  expect_true(all(b$test_type == "z")) # coef_test Satterthwaite unsupported
-  expect_true(all(is.infinite(b$df)))
+  expect_error(
+    table_regression(
+      fit,
+      vcov = "CR2",
+      cluster = ~Subject,
+      output = "data.frame"
+    ),
+    class = "spicy_unsupported_vcov"
+  )
 })
 
 test_that("classical (default) mixed SEs are untouched by the robust path", {

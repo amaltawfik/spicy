@@ -667,6 +667,31 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       if (inherits(models[[i]], "geeglm")) {
         .gee_refuse_vcov(vt)
       }
+      # Survey fits are refused on the same principle: the design-based
+      # Taylor / replicate variance IS the robust variance, and clustering
+      # belongs in the design (clubSandwich has no vcovCR.svyglm; the call
+      # would silently dispatch to vcovCR.glm, ignoring strata, FPC and
+      # calibration).
+      if (inherits(models[[i]], "svyglm")) {
+        spicy_abort(
+          c(
+            sprintf(
+              "`vcov = \"%s\"` is not available for `svyglm` models.",
+              vt
+            ),
+            "i" = paste0(
+              "The fit's own design-based (Taylor / replicate) ",
+              "variance is already the robust variance for the ",
+              "declared design."
+            ),
+            "i" = paste0(
+              "To account for clustering, declare it in the design: ",
+              "survey::svydesign(ids = ~cluster, ...), then refit."
+            )
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
       spicy_abort(
         c(
           sprintf(

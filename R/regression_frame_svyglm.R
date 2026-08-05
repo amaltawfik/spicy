@@ -39,8 +39,11 @@ as_regression_frame.svyglm <- function(
   .check_survey_available()
 
   coefs <- .svyglm_coefs(fit, ci_level = ci_level)
-  # CR* -> clubSandwich design-aware vcovCR (Wald z); a no-op for the
-  # design-based default ("classical" / "survey-Taylor").
+  # vcov can only be "model"/"classical" here (the design-based
+  # Taylor / replicate variance): CR* is refused for svyglm by both the
+  # validate gate and compute_model_vcov() -- clubSandwich has no
+  # vcovCR.svyglm, so the call would silently dispatch to vcovCR.glm
+  # and ignore the design. The shared applier is a no-op on this path.
   coefs <- .apply_robust_vcov_to_coefs(
     coefs,
     fit,

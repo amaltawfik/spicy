@@ -1134,16 +1134,14 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   vk <- frame$info$vcov_kind %||% "model"
   # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
   # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
-  # the footer must attribute the df source truthfully (t for the
-  # t-referenced engines, z for glmmTMB whose robust path is Wald-z).
+  # the footer must attribute the df source truthfully. (glmmTMB can
+  # no longer reach a CR* frame: clubSandwich has no glmmTMB backend,
+  # so the validate gate refuses the request up front.)
   if (startsWith(vk, "CR") && cls %in% c("lmerMod", "lme")) {
     return(paste0(
       "p-values: Satterthwaite t-test, cluster-robust df ",
       "(clubSandwich)."
     ))
-  }
-  if (startsWith(vk, "CR") && cls == "glmmTMB") {
-    return("p-values: Wald-z, cluster-robust (clubSandwich).")
   }
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
     return("p-values: Satterthwaite t-test (lmerTest).")
@@ -1846,45 +1844,68 @@ build_exponentiate_footer_block_from_frames <- function(
     "CI bounds exponentiated"
   }
 
+  # Cumulative-cloglog frames print the grouped-time proportional-
+  # hazards ratio exp(-B) (the parametrisation puts hazards on -B);
+  # the sign convention must be disclosed next to the HR definition.
+  hr_negated <- any(vapply(
+    frames[applied],
+    function(f) isTRUE(f$info$extras$exp_hr_negated),
+    logical(1)
+  ))
+  negation_note <- if (hr_negated) {
+    paste0(
+      " HR is the grouped-time proportional-hazards ratio exp(-B): ",
+      "the cumulative parametrisation cloglog P(Y <= j) = zeta_j - xB ",
+      "places the hazard on -B (Prentice & Gloeckler 1978; ",
+      "McCullagh 1980)."
+    )
+  } else {
+    ""
+  }
+
   if ("se" %in% show_columns) {
     if (length(hdrs) == 1L) {
       return(sprintf(
         paste0(
           "%s exponentiated and displayed as %s; SE on the %s scale ",
-          "(%s); %s (asymmetric)."
+          "(%s); %s (asymmetric).%s"
         ),
         scope,
         hdrs[1L],
         hdrs[1L],
         se_gloss,
-        ci_gloss
+        ci_gloss,
+        negation_note
       ))
     }
     return(sprintf(
       paste0(
         "%s exponentiated and displayed as %s (per family); SE on ",
-        "the displayed ratio scale (%s); %s (asymmetric)."
+        "the displayed ratio scale (%s); %s (asymmetric).%s"
       ),
       scope,
       paste(hdrs, collapse = " / "),
       se_gloss,
-      ci_gloss
+      ci_gloss,
+      negation_note
     ))
   }
 
   if (length(hdrs) == 1L) {
     return(sprintf(
-      "%s exponentiated and displayed as %s; %s.",
+      "%s exponentiated and displayed as %s; %s.%s",
       scope,
       hdrs[1L],
-      ci_gloss
+      ci_gloss,
+      negation_note
     ))
   }
   sprintf(
-    "%s exponentiated and displayed as %s (per family); %s.",
+    "%s exponentiated and displayed as %s (per family); %s.%s",
     scope,
     paste(hdrs, collapse = " / "),
-    ci_gloss
+    ci_gloss,
+    negation_note
   )
 }
 

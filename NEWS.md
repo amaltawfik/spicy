@@ -185,7 +185,11 @@ per-family behaviour, and the new vignettes for walk-throughs.
   `mlogit` uses a two-segment alternative-specific layout; ordinal
   thresholds render as a labelled block (`show_thresholds = FALSE` to
   opt out), and partial-proportional-odds `clm` fits render their
-  non-proportional terms as their own block.
+  non-proportional terms as their own block. Under
+  `exponentiate = TRUE`, a cloglog ordinal model reports the
+  grouped-time hazard ratio as `exp(-B)` -- the cumulative
+  parametrisation places the hazard on `-B`, so `exp(B)` would be its
+  reciprocal -- with the sign convention disclosed in the table note.
 * Survey (`survey::svyglm`); robust / IV / panel (`estimatr`,
   `AER::ivreg`, `fixest`); beta, Tobit, and two-part counts
   (`betareg`, `AER::tobit`, `pscl::zeroinfl` / `hurdle`); plus
@@ -267,7 +271,11 @@ rendering an empty column.
   classes. Resampling footers report the valid replicate count, and a
   bootstrap / jackknife whose replicates nearly all fail raises
   `spicy_resampling_failed` instead of silently reporting classical
-  SEs.
+  SEs. `glmmTMB` and `survey::svyglm` are classical-only: clubSandwich
+  has no backend for either, so a `CR*` request is refused with a
+  clear error instead of silently returning invalid (`glmmTMB`) or
+  design-ignoring (`svyglm`) matrices -- for survey fits, declare the
+  clustering in `svydesign(ids = )` where it belongs.
 * Cluster-robust `vcov` (`"CR0"`-`"CR3"`) for `nnet::multinom`,
   including its AME columns (needs sandwich >= 3.1-2, which added the
   `estfun()` method). `HC*` stays refused: a multi-equation model has

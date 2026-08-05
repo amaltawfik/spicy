@@ -114,7 +114,7 @@ compute_model_vcov <- function(
     #     (Huber-White; Lin-Wei for cph). Requires the fit's x = TRUE, y = TRUE.
     #   * survreg / gam / polr / clm / betareg / mlogit -> sandwich::vcovCL
     #     (clubSandwich has no usable method for these classes).
-    #   * lm / glm / lmer / lme / glmmTMB -> clubSandwich bias-reduced CR*.
+    #   * lm / glm / lmer / lme -> clubSandwich bias-reduced CR*.
     # rms first: cph inherits "coxph", but robcov() == the Lin-Wei sandwich and
     # gives a clearer x/y error, so route the whole rms family through it.
     if (inherits(fit, c("ols", "lrm", "cph", "Glm"))) {
@@ -141,6 +141,21 @@ compute_model_vcov <- function(
       )
     ) {
       return(sandwich::vcovCL(fit, cluster = cluster))
+    }
+    # No clubSandwich backend: glmmTMB silently dispatches to
+    # vcovCR.default (numerically invalid SEs) and svyglm to vcovCR.glm
+    # (ignores the survey design). The validate gate refuses these up
+    # front; guard here too so a direct as_regression_frame() or
+    # internal caller can never reach those matrices.
+    if (inherits(fit, c("glmmTMB", "svyglm"))) {
+      spicy_abort(
+        sprintf(
+          "`vcov = \"%s\"` is not available for `%s` models.",
+          type,
+          class(fit)[1L]
+        ),
+        class = "spicy_unsupported_vcov"
+      )
     }
     if (!requireNamespace("clubSandwich", quietly = TRUE)) {
       spicy_abort(
@@ -811,27 +826,30 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     glm = full,
     negbin = full, # MASS::glm.nb delegates to the glm path
     # Mixed-effects: cluster-robust via clubSandwich (Inc 2). lmer / lme get
-    # Satterthwaite df; glmmTMB gets the CR matrix with z inference (its
-    # coef_test() Satterthwaite path is unsupported). glmer is NOT granted:
-    # clubSandwich::vcovCR() errors on glmerMod, so it would fall back to
-    # model-based -- better to refuse cleanly until a working backend exists.
+    # Satterthwaite df. glmer and glmmTMB are NOT granted: clubSandwich has
+    # no vcovCR method for either -- glmerMod errors outright, while glmmTMB
+    # silently dispatches to vcovCR.default and returns numerically invalid
+    # SEs (~360x deflated on a Poisson random-intercept check, 2026-08-05).
+    # Refuse cleanly until a working backend exists.
     lmerMod = cr_only,
     lmerModLmerTest = cr_only,
     lme = cr_only,
-    glmmTMB = cr_only,
     # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
     coxph = cr_only,
     survreg = cr_only,
-    # Inc 4: cluster sandwich via sandwich::vcovCL. svyglm uses clubSandwich
-    # design-aware CR*. clm is structure-aware: scale/nominal (partial-PO) fits
-    # have no sandwich estfun method, so CR* is refused for them
-    # (-> spicy_unsupported_vcov up front).
+    # Inc 4: cluster sandwich via sandwich::vcovCL. clm is structure-aware:
+    # scale/nominal (partial-PO) fits have no sandwich estfun method, so CR*
+    # is refused for them (-> spicy_unsupported_vcov up front).
+    # svyglm is NOT granted: clubSandwich has no vcovCR.svyglm, so the call
+    # silently dispatches to vcovCR.glm, which ignores the survey design
+    # (strata, FPC, calibration). Clustering belongs in the design itself
+    # (svydesign(ids = ...)); the fit's own Taylor/replicate variance IS the
+    # design-based robust variance (refusal message in the validate gate).
     gam = cr_only,
     bam = cr_only,
     polr = cr_only,
     clm = .clm_robust_vcov_support(fit, cr_only),
     betareg = cr_only,
-    svyglm = cr_only,
     # mlogit: CR* only. vcovHC() is NUMERICALLY WRONG for mlogit -- its meat
     # divides by nobs() (long-format rows, n x J) while estfun() has one row
     # per choice situation (n), deflating SEs by ~sqrt(J); and without a

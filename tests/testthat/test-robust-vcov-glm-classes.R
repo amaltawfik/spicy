@@ -7,7 +7,7 @@
 #   * betareg                 -> sandwich::vcovCL (mean component; phi in extras)
 #   * mlogit                  -> sandwich::vcovCL (CR*); HC* refused (vcovHC
 #                                 mis-scales the per-choice-situation meat)
-#   * svyglm (survey)         -> clubSandwich design-aware vcovCR
+#   * svyglm (survey)         -> classical only (design-native variance)
 # Each is cross-validated against its oracle to ~machine precision; HC* / the
 # lm/glm resamplers are refused for the cr_only classes.
 
@@ -313,27 +313,26 @@ test_that("mlogit cluster at the wrong (long-format) length errors clearly", {
 
 ## ---- svyglm ---------------------------------------------------------------
 
-test_that("svyglm CR* matches clubSandwich design-aware vcovCR", {
+test_that("svyglm CR* is refused with the design-native message", {
+  # clubSandwich has no vcovCR.svyglm: the call silently dispatches to
+  # vcovCR.glm, which ignores the survey design (strata, FPC, calibration).
+  # The design-based Taylor variance IS the robust variance; clustering
+  # belongs in svydesign(ids = ...), so CR* is refused up front.
   skip_if_not_installed("survey")
-  skip_if_not_installed("clubSandwich")
   data("api", package = "survey", envir = environment())
   apiclus1 <- get("apiclus1", envir = environment())
   dclus <- survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1)
   m <- survey::svyglm(api00 ~ ell + meals, design = dclus)
-  fr <- as_regression_frame(
-    m,
-    vcov = "CR2",
-    cluster = apiclus1$dnum,
-    cluster_name = "dnum"
+  err <- expect_error(
+    table_regression(
+      m,
+      vcov = "CR2",
+      cluster = apiclus1$dnum,
+      output = "data.frame"
+    ),
+    class = "spicy_unsupported_vcov"
   )
-  b <- b_rows(fr)
-  orc <- sqrt(diag(clubSandwich::vcovCR(
-    m,
-    type = "CR2",
-    cluster = apiclus1$dnum
-  )))[b$term]
-  expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-5)
-  expect_identical(fr$info$vcov_label, "cluster-robust (CR2), clusters by dnum")
+  expect_match(conditionMessage(err), "svydesign", fixed = TRUE)
 })
 
 test_that("svyglm default (survey-Taylor) is the design-based SE, untouched", {
@@ -423,20 +422,16 @@ test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
 ## ---- Phase 3 matrix (lot T2) ----------------------------------------------
 
 # Phase 3 matrix: rd-vcov-classes:cr-only-class-set
-# The classes not yet covered by a per-class refusal test: lme, glmmTMB,
-# polr, clm, betareg, svyglm, survreg. Each supports classical + CR* ONLY:
-# HC* and the lm/glm-refitting resamplers are refused up front, while
-# CR2 + cluster computes.
+# The classes not yet covered by a per-class refusal test: lme, polr,
+# clm, betareg, survreg. Each supports classical + CR* ONLY: HC* and the
+# lm/glm-refitting resamplers are refused up front, while CR2 + cluster
+# computes. glmmTMB and svyglm are classical-only (no valid clubSandwich
+# backend; design-native variance) -- every robust token is refused.
 test_that("cr-only classes refuse HC* / bootstrap and accept CR2 + cluster", {
-  # First glmmTMB namespace load may emit an advisory TMB-version warning
-  # on some local toolchains; absorb it before the skip guard loads it.
-  suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
   skip_if_not_installed("nlme")
-  skip_if_not_installed("glmmTMB")
   skip_if_not_installed("MASS")
   skip_if_not_installed("ordinal")
   skip_if_not_installed("betareg")
-  skip_if_not_installed("survey")
   skip_if_not_installed("survival")
   skip_if_not_installed("clubSandwich")
   skip_if_not_installed("sandwich")
@@ -451,16 +446,11 @@ test_that("cr-only classes refuse HC* / bootstrap and accept CR2 + cluster", {
   d$yp <- pmin(pmax(plogis(0.3 * d$x1 + rnorm(n)), 1e-3), 1 - 1e-3)
   d$time <- rexp(n, exp(-0.2 * d$x1))
   d$status <- rbinom(n, 1, 0.7)
-  des <- suppressWarnings(survey::svydesign(id = ~1, data = d))
   fits <- list(
     lme = nlme::lme(y ~ x1, random = ~ 1 | g, data = d),
-    # suppressWarnings: absorbs the advisory TMB-version warning some
-    # local toolchains emit on the first glmmTMB namespace load.
-    glmmTMB = suppressWarnings(glmmTMB::glmmTMB(y ~ x1 + (1 | g), data = d)),
     polr = MASS::polr(yo ~ x1, data = d, Hess = TRUE),
     clm = ordinal::clm(yo ~ x1, data = d),
     betareg = betareg::betareg(yp ~ x1, data = d),
-    svyglm = survey::svyglm(y ~ x1, design = des),
     survreg = survival::survreg(survival::Surv(time, status) ~ x1, data = d)
   )
   for (nm in names(fits)) {
@@ -483,5 +473,36 @@ test_that("cr-only classes refuse HC* / bootstrap and accept CR2 + cluster", {
     ))
     expect_s3_class(out, "data.frame")
     expect_gt(nrow(out), 0L)
+  }
+})
+
+test_that("glmmTMB and svyglm refuse every robust token including CR*", {
+  # suppressWarnings: absorbs the advisory TMB-version warning some
+  # local toolchains emit on the first glmmTMB namespace load.
+  suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("survey")
+  set.seed(7)
+  n <- 200
+  d <- data.frame(x1 = rnorm(n), g = factor(sample(10, n, TRUE)))
+  d$y <- 1 + 0.5 * d$x1 + rnorm(n)
+  des <- suppressWarnings(survey::svydesign(id = ~1, data = d))
+  fits <- list(
+    glmmTMB = suppressWarnings(glmmTMB::glmmTMB(y ~ x1 + (1 | g), data = d)),
+    svyglm = survey::svyglm(y ~ x1, design = des)
+  )
+  for (nm in names(fits)) {
+    for (v in c("HC3", "CR2", "bootstrap")) {
+      expect_error(
+        suppressWarnings(table_regression(
+          fits[[nm]],
+          vcov = v,
+          cluster = if (grepl("^CR", v)) d$g else NULL,
+          output = "data.frame"
+        )),
+        class = "spicy_unsupported_vcov",
+        info = paste(nm, v)
+      )
+    }
   }
 })

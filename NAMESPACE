@@ -103,5 +103,7 @@ export(varlist)
 export(vl)
 export(yule_q)
 importFrom(rlang,`%||%`)
-importFrom(stats,complete.cases)
-importFrom(stats,setNames)
+importFrom(stats,
+  complete.cases,
+  setNames
+)
