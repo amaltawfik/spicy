@@ -59,8 +59,12 @@ as_regression_frame.stanreg <- function(
   fam <- .stan_family(fit)
   use_hdi <- identical(ci_method, "hdi")
   # Draws-native exponentiation (self-applied, like the merMod /
-  # survival frames): the central delta-method path understates the
-  # ratio-scale spread severalfold when the draws are at hand. Same
+  # survival frames): with the draws at hand, summarising exp(draws)
+  # is exact, so the delta approximation has no business here. (Its
+  # direction of error depends on the summary: vs the posterior SD it
+  # understates severalfold for wide posteriors; vs the robust MAD SD
+  # spicy displays -- which discounts the heavy right tail -- it
+  # typically OVERSTATES. Checked by simulation, 2026-08-06.) Same
   # link gate as .apply_exp_to_frame(), which then no-ops on
   # exp_applied = TRUE.
   exp_self <- isTRUE(exponentiate) && !identical(fam$link, "identity")
@@ -850,9 +854,11 @@ as_regression_frame.brmsfit <- function(
     # the equal-tailed quantile bounds (strictly monotone), so those
     # are transformed directly; the HDI is NOT transformation-
     # invariant and is recomputed on the exponentiated draws; the
-    # MAD SD is computed on the exponentiated draws -- the delta-
-    # method ratio (exp(B) x SE) understates the posterior spread
-    # severalfold for wide posteriors.
+    # MAD SD is computed on the exponentiated draws -- exact, where
+    # the delta ratio (exp(B) x SE) is only a narrow-posterior
+    # approximation (vs the posterior SD it understates severalfold
+    # for wide posteriors; vs the displayed MAD SD, which discounts
+    # the heavy right tail, it typically overstates).
     drm_exp <- exp(drm)
     est <- exp(est)
     se <- apply(drm_exp, 2, stats::mad)

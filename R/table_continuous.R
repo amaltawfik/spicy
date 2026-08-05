@@ -271,7 +271,10 @@
 #' noncentral *F* inversion for \eqn{\eta^2}, the Hedges-Olkin
 #' normal approximation for *g*, the Fisher *z*-transform for *r*,
 #' and percentile bootstrap (2,000 replicates) for
-#' \eqn{\varepsilon^2}.
+#' \eqn{\varepsilon^2}. The bootstrap bounds depend on the random
+#' number generator state: call `set.seed()` before the table for
+#' reproducible \eqn{\varepsilon^2} intervals (the other three CIs
+#' are closed-form and deterministic).
 #'
 #' For Cohen's *d*, Hays' \eqn{\omega^2}, and Cohen's *f*\eqn{^2}
 #' (derived from a fitted, possibly weighted `lm()`), use the

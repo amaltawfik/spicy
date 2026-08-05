@@ -337,7 +337,10 @@ Confidence intervals (enabled with \code{effect_size_ci = TRUE}) use
 noncentral \emph{F} inversion for \eqn{\eta^2}, the Hedges-Olkin
 normal approximation for \emph{g}, the Fisher \emph{z}-transform for \emph{r},
 and percentile bootstrap (2,000 replicates) for
-\eqn{\varepsilon^2}.
+\eqn{\varepsilon^2}. The bootstrap bounds depend on the random
+number generator state: call \code{set.seed()} before the table for
+reproducible \eqn{\varepsilon^2} intervals (the other three CIs
+are closed-form and deterministic).
 
 For Cohen's \emph{d}, Hays' \eqn{\omega^2}, and Cohen's \emph{f}\eqn{^2}
 (derived from a fitted, possibly weighted \code{lm()}), use the
