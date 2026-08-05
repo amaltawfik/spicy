@@ -26,7 +26,7 @@
       "glm",
       "stats::glm()",
       "yes",
-      "OR / IRR / RR (link)",
+      "OR / IRR / RR / MR / HR (link)",
       "-"
     ),
     c(
@@ -90,7 +90,7 @@
       "geeglm",
       "geepack::geeglm()",
       "yes",
-      "OR / IRR / RR (link)",
+      "OR / IRR / RR / MR / HR (link)",
       "-"
     ),
     c(

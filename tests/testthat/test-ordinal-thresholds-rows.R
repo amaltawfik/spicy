@@ -225,3 +225,31 @@ test_that("ordinal pseudo-R2 survives a refit-hostile scope (update() would fail
   mcf <- trimws(df[grepl("McFadden", df$Variable), 2])
   expect_true(length(mcf) == 1L && nzchar(mcf) && mcf != "NA")
 })
+
+test_that("exp gloss names the true cut-point scale per link", {
+  skip_if_not_installed("MASS")
+  d <- make_ord()
+  f_or <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
+  n_or <- paste(
+    attr(table_regression(f_or, exponentiate = TRUE), "note"),
+    collapse = "\n"
+  )
+  expect_match(n_or, "log-odds scale, not exponentiated", fixed = TRUE)
+  # cloglog thresholds are baseline log cumulative hazards, not log-odds.
+  f_hr <- MASS::polr(
+    yc ~ x1 + smoke,
+    data = d,
+    method = "cloglog",
+    Hess = TRUE
+  )
+  n_hr <- paste(
+    attr(table_regression(f_hr, exponentiate = TRUE), "note"),
+    collapse = "\n"
+  )
+  expect_match(
+    n_hr,
+    "log-cumulative-hazard scale, not exponentiated",
+    fixed = TRUE
+  )
+  expect_false(grepl("log-odds scale", n_hr, fixed = TRUE))
+})

@@ -39,7 +39,7 @@ supported set. Feature requests are welcome on the issue tracker.
 \tabular{llllll}{
    Family \tab Class \tab Engine \tab AME \tab Exponentiate \tab Blocks \cr
    Linear and generalized linear \tab \code{lm} \tab \code{stats::lm()} \tab yes \tab - \tab - \cr
-   Linear and generalized linear \tab \code{glm} \tab \code{stats::glm()} \tab yes \tab OR / IRR / RR (link) \tab - \cr
+   Linear and generalized linear \tab \code{glm} \tab \code{stats::glm()} \tab yes \tab OR / IRR / RR / MR / HR (link) \tab - \cr
    Linear and generalized linear \tab \code{negbin} \tab \code{MASS::glm.nb()} \tab yes \tab IRR \tab - \cr
    Linear and generalized linear \tab \code{rlm} \tab \code{MASS::rlm()} \tab yes \tab - \tab - \cr
    Linear and generalized linear \tab \code{nls} \tab \code{stats::nls()} \tab no \tab - \tab - \cr
@@ -54,7 +54,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes \tab link-dependent (IRR for count families) \tab Random effects; Zero-inflation; Dispersion \cr
    Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \cr
-   Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR (link) \tab - \cr
+   Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR / MR / HR (link) \tab - \cr
    Ordinal \tab \code{polr} \tab \code{MASS::polr()} \tab per category \tab OR (logit) \tab Thresholds \cr
    Ordinal \tab \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \cr
    Categorical \tab \code{multinom} \tab \code{nnet::multinom()} \tab per outcome \tab OR \tab per-outcome blocks \cr

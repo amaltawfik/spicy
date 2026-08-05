@@ -479,7 +479,7 @@ head(table_regression(fit, exponentiate = TRUE, output = "data.frame"))
 ```
 
 ```{r outputs-gt, eval = build_rich_tables && have_nnet}
-table_regression(fit, show_columns = c("b", "ame"), output = "gt")
+pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt"))
 ```
 
 [`broom::tidy()`](https://broom.tidymodels.org) always returns the

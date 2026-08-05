@@ -271,7 +271,11 @@ as_regression_frame.svyglm <- function(
     sigma = tryCatch(suppressWarnings(stats::sigma(fit)), error = function(e) {
       NA_real_
     }),
-    nobs = as.integer(stats::nobs(fit))
+    nobs = as.integer(stats::nobs(fit)),
+    # Sum of design weights: makes the "weighted_nobs" token render
+    # (it was silently swallowed -- extras carried the value but the
+    # fit-stats materialiser only reads fit_stats).
+    weighted_nobs = .svyglm_weighted_n(fit)
   )
 
   if (is.null(ci_method)) {

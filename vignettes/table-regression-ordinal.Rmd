@@ -63,7 +63,9 @@ is a plain (unordered) factor, or when the levels sit in the wrong
 order. Data read from text files is particularly exposed: `factor()`
 defaults to alphabetical levels (here `Fair, Good, Poor, Very good`),
 which would silently fit a nonsensical scale. And reversing the order
-negates every coefficient and marginal effect. Every interpretation
+negates every coefficient and threshold; the per-category marginal
+effects keep their values, but the category columns — and every
+directional reading built on them — reverse. Every interpretation
 below hinges on knowing the direction of the scale — here worst to
 best (Long &amp; Freese 2014).
 
@@ -136,10 +138,15 @@ On the logit scale a coefficient is a log cumulative-odds ratio.
 `exponentiate = TRUE` reports **odds ratios** instead, exponentiating
 the estimate and its CI bounds and relabelling the column header
 accordingly. This is link-specific: under `method = "cloglog"` the
-exponentiated coefficient is a **hazard ratio** (the grouped-time
-proportional-hazards reading) and the header and footer relabel to HR;
-under probit or cauchit the exponential has no ratio interpretation,
-and `exponentiate = TRUE` is refused with a clear error.
+table reports a **hazard ratio** (the grouped-time
+proportional-hazards reading of Prentice &amp; Gloeckler 1978), and the
+sign convention matters — `polr` and `clm` parametrise the model as
+`cloglog P(Y ≤ j) = ζ_j − xB`, which places the hazard of the grouped
+event on `−B`, so the HR the table displays is `exp(−B)`, not
+`exp(B)` (a table note discloses this next to the HR definition, and
+the CI bounds are transformed accordingly). Under probit or cauchit
+the exponential has no ratio interpretation, and
+`exponentiate = TRUE` is refused with a clear error.
 
 ```{r or}
 table_regression(fit, exponentiate = TRUE)
@@ -206,8 +213,12 @@ marginaleffects::avg_predictions(fit, by = "smoking")
 
 Smokers' expected distribution sits lower on the scale than
 non-smokers' — `Very good` 20.9% versus 25.8%, `Fair` 26.1% versus
-21.9% — and the smoking AME row above is exactly the difference between
-these two profiles. For predicted-probability curves along a continuous
+21.9% — and the smoking AME row above closely tracks the gap between
+these two profiles. The two are not the same estimand: the AME
+averages the Yes-versus-No contrast over the *whole* sample, while
+these profiles average within each observed group, each with its own
+covariate mix — here they agree to three decimals and diverge in the
+fourth. For predicted-probability curves along a continuous
 predictor, `marginaleffects::plot_predictions()` plots the same
 quantities.
 
@@ -244,10 +255,12 @@ The clustering is applied *consistently*: the `Thresholds` rows and
 the AME columns are reweighted from the same `vcovCL` matrix as the
 slopes, so no row of the table quietly keeps model-based standard
 errors under a cluster-robust footer.
-Heteroskedasticity-consistent (`HC*`) estimators and the `bootstrap` /
-`jackknife` resamplers are *not* defined for ordinal fits and are
-refused with a clear `spicy_unsupported_vcov` error rather than a
-silent fallback.
+Heteroskedasticity-consistent (`HC*`) estimators are refused —
+`HC2` / `HC3` need hat values that an ordinal MLE does not have, and
+the plain `HC0`-type sandwich is deliberately not offered without
+clustering — and the `bootstrap` / `jackknife` resamplers are not yet
+wired for ordinal fits. Both refusals raise a clear
+`spicy_unsupported_vcov` error rather than a silent fallback.
 
 ## Standard errors and confidence intervals
 
@@ -431,8 +444,10 @@ was never plausible.
   [multinomial vignette](table-regression-multinomial.html).
 * For asymmetric responses and grouped survival times, the **cloglog**
   link (`method = "cloglog"` in `polr`, `link = "cloglog"` in `clm`)
-  replaces the odds-ratio reading with a hazard-ratio one, connecting
-  the link menu above to a modelling rationale.
+  replaces the odds-ratio reading with a hazard-ratio one — displayed
+  as `exp(−B)` under the cumulative parametrisation, as explained in
+  the exponentiate section above — connecting the link menu to a
+  modelling rationale.
 
 ## Several models side by side
 
@@ -461,7 +476,7 @@ head(table_regression(fit, show_columns = c("b", "ame"), output = "data.frame"))
 ```
 
 ```{r outputs-gt, eval = build_rich_tables}
-table_regression(fit, show_columns = c("b", "ame"), output = "gt")
+pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt"))
 ```
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,

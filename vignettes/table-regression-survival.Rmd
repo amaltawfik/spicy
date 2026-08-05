@@ -422,7 +422,7 @@ table_regression(cx, exponentiate = TRUE, output = "data.frame")
 ```
 
 ```{r outputs-gt, eval = build_rich_tables && have_survival}
-table_regression(cx, exponentiate = TRUE, output = "gt")
+pkgdown_dark_gt(table_regression(cx, exponentiate = TRUE, output = "gt"))
 ```
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long

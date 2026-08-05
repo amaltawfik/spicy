@@ -5,8 +5,9 @@ description: >
   linear and generalized linear models, robust and IV estimators,
   mixed effects, ordinal and multinomial outcomes, two-part count
   models, survival models, survey-weighted and Bayesian fits -- with
-  each family's marginal-effects estimand, exponentiate semantics,
-  robust-variance backends, and standardized-coefficient support.
+  each family's marginal-effects estimand, exponentiate semantics
+  and row blocks, plus the robust-variance backends and
+  standardized-coefficient support each family takes.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -98,17 +99,19 @@ field-standard backend -- or a clear refusal.
 `lm` and `glm` take `HC0`--`HC5` (`sandwich`) and cluster-robust
 `CR0`--`CR3` (`clubSandwich`, bias-reduced with Satterthwaite df),
 plus `"bootstrap"` / `"jackknife"` resampling estimators. Among the
-mixed engines, `lmer`, `nlme::lme` and `glmmTMB` take `CR*` via
-`clubSandwich` (for `glmmTMB` the sandwich covers the conditional
-part only, and the footer says so); `glmer` and `gls` are
-model-based only -- `clubSandwich` has no working backend for them.
+mixed engines, `lmer` and `nlme::lme` take `CR*` via
+`clubSandwich`; `glmer`, `glmmTMB` and `gls` are model-based only
+-- `clubSandwich` has no working backend for `glmer` or `glmmTMB`,
+and its `gls` backend is not yet wired and validated in spicy.
 Ordinal models take `CR0`--`CR3` but no `HC*`, and the cut-point
 thresholds are reweighted from the same clustered vcov (a `clm`
 with a scale or nominal partial-proportional-odds component is
 model-based only). `multinom` takes `CR*` (one cluster value per
 observation) and `mlogit` takes `CR*` (one per choice situation) --
-both refuse `HC*`, which has no valid working-residual form for
-multi-equation models. Quantile regression (`rq`) uses its own
+both refuse `HC*`: `multinom` has no working-residual form for a
+multi-equation model, and for `mlogit`, `sandwich::vcovHC()`
+computes a result but silently mis-scales the meat for its
+per-chooser score structure. Quantile regression (`rq`) uses its own
 estimator family -- `"classical"` resolves to the robust `nid`
 sandwich, `iid` / `ker` / `rank` are opt-ins, and clustering goes
 through its native wild gradient bootstrap (`vcov = "bootstrap"` +
@@ -119,10 +122,13 @@ with `x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and `betareg`
 take `CR*` via `sandwich::vcovCL()`; `pscl` two-part fits cluster
 both components. `estimatr` fits keep their own robust SEs, and `fixest`
 fits keep the estimator they were computed with (the footer carries
-fixest's own label -- IID, clustered, Newey-West, ... -- and
+fixest's own label -- clustered, Newey-West, Conley, ...; fixest's
+"IID" is normalised to "Classical" -- and
 spicy's `HC*` / `CR*` tokens are refused for them);
-`svyglm` is design-based by default and additionally accepts
-design-aware `CR0`--`CR3`. GEE fits (`geepack::geeglm`) are robust by
+`svyglm` is design-based (Taylor / replicate) and refuses `HC*` /
+`CR*` -- the design variance is already the robust variance, and
+clustering belongs in the design itself
+(`survey::svydesign(ids = )`). GEE fits (`geepack::geeglm`) are robust by
 construction: the sandwich SEs the fit computed over its own `id =`
 clusters are the displayed inference, so spicy's `HC*` / `CR*` tokens
 and `cluster` argument are refused -- change the estimator by
@@ -137,10 +143,11 @@ robust vcov also flows into the AME uncertainty.
 `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects Bayesian fits
 -- `stan_glm`-style models and standard-formula `brm()` models --
 where `"posthoc"`, `"basic"` and `"smart"` are exact affine
-rescales of the posterior draws. Other classes -- including
-multilevel Bayesian fits and brms formulas with distributional or
-special terms -- refuse with a hint to standardize predictors
-before fitting.
+rescales of the posterior draws. Other classes refuse: the
+Bayesian refusals (multilevel fits, brms formulas with
+distributional or special terms) hint to standardize predictors
+before fitting, and the frequentist ones point to the AME columns
+instead.
 
 **Confidence intervals** (`ci_method`). Wald everywhere by default;
 `"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
@@ -215,8 +222,9 @@ combined-response AME. See `vignette("table-regression-counts")`.
 RMST and risk differences by g-computation for `coxph` and
 `survreg` fits. See `vignette("table-regression-survival")`.
 
-**Survey-weighted.** `survey::svyglm()`: design-based inference,
-weighted and unweighted n.
+**Survey-weighted.** `survey::svyglm()`: design-based inference;
+the unweighted n is a default fit statistic and the sum of design
+weights is available as `show_fit_stats = "weighted_nobs"`.
 
 **Additive, proportions, selection.** `mgcv::gam()` / `bam()`,
 `betareg::betareg()` (odds ratios on the logit mean link under

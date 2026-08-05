@@ -404,7 +404,7 @@ table_regression(fit_zip, output = "data.frame")
 ```
 
 ```{r outputs-gt, eval = build_rich_tables && have_counts}
-table_regression(fit_zip, exponentiate = TRUE, output = "gt")
+pkgdown_dark_gt(table_regression(fit_zip, exponentiate = TRUE, output = "gt"))
 ```
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the zero-component

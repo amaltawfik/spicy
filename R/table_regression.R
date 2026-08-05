@@ -1238,9 +1238,9 @@
 #' # with `(ref.)` and shows an en dash in the statistic columns.
 #' table_regression(fit)
 #'
-#' # Standardised coefficients (beta) injected next to B. Four
-#' # methods available; "refit" is the SPSS / Stata regress, beta
-#' # gold standard.
+#' # Standardised coefficients (beta) injected next to B. "refit"
+#' # is the Cohen et al. (2003) refit-on-z-scores convention;
+#' # "basic" reproduces the SPSS / Stata regress, beta definition.
 #' table_regression(fit, standardized = "refit")
 #'
 #' # Custom column set: B + AME + AME-specific p-value. Note that

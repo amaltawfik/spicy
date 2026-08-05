@@ -733,16 +733,28 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
     logical(1)
   ))
   if (isTRUE(rows_mode)) {
-    exp_any <- any(vapply(
-      frames,
-      function(f) {
-        isTRUE(f$info$extras$exp_applied)
-      },
-      logical(1)
-    ))
+    exp_frames <- Filter(
+      function(f) isTRUE(f$info$extras$exp_applied),
+      frames
+    )
     gloss <- "Thresholds: latent-scale category cut-points"
-    if (isTRUE(exp_any)) {
-      gloss <- paste0(gloss, " (log-odds scale, not exponentiated)")
+    if (length(exp_frames) > 0L) {
+      # The cut-point scale is the LINK scale, which is not log-odds
+      # for every exponentiating link: cumulative cloglog thresholds
+      # are baseline log cumulative hazards.
+      links <- unique(vapply(
+        exp_frames,
+        function(f) f$info$family$link %||% "",
+        character(1)
+      ))
+      scale_lbl <- if (identical(links, "logit")) {
+        "log-odds scale"
+      } else if (identical(links, "cloglog")) {
+        "log-cumulative-hazard scale"
+      } else {
+        "link scale"
+      }
+      gloss <- paste0(gloss, " (", scale_lbl, ", not exponentiated)")
     }
     return(paste0(gloss, "."))
   }

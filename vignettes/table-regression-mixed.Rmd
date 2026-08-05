@@ -27,6 +27,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   eval = have_mixed
 )
+options(width = 110)
 
 build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
 have_glmmTMB <- have_mixed && requireNamespace("glmmTMB", quietly = TRUE)
@@ -119,7 +120,9 @@ Reading the table, top to bottom:
   explained by the fixed effects alone versus fixed and random
   together (Nakagawa & Schielzeth 2013). The gap between the two
   (0.28 vs 0.80 here) is itself a summary of how much the grouping
-  structure matters.
+  structure matters. AIC and BIC complete the block — read them
+  under the REML/ML rule explained in the model-building sequence
+  below.
 * The footer closes with the **likelihood-ratio test of the whole
   random part** against the same model without random effects,
   referred to a **chi-bar-squared** mixture distribution.
@@ -503,7 +506,8 @@ chi-bar-squared line answers one question only: *does this model need
 its random part at all?* — the fit against a plain linear regression.
 Neither footer compares the two columns to each other. That comparison
 — *does the slope earn its place on top of the intercept?* — is the
-per-term test of the previous section: `re_test = "lrt"` on the slope
+per-term test of *Testing individual components* above:
+`re_test = "lrt"` on the slope
 model refits exactly the intercept-only model of column 1 and refers
 the REML deviance difference (42.8) to the 50:50 mixture of χ²(1) and
 χ²(2), p ≈ 3 × 10⁻¹⁰ — the textbook procedure for retaining a random
@@ -624,8 +628,10 @@ the **response scale**:
   log-odds;
 * `glmer` / `glmmTMB` Poisson: **count scale** (units of the outcome),
   not log-rate;
-* Gaussian fits (identity link): the AME equals the `B` coefficient —
-  the column is filled but redundant.
+* Gaussian fits (identity link): for additive terms the AME equals
+  the `B` coefficient — the column is filled but redundant. Under
+  interactions or inline transforms it becomes the average total
+  derivative and the two differ.
 
 ```{r mixed-ame, eval = have_margins}
 set.seed(1)
@@ -748,7 +754,8 @@ accordingly farther from 1.
 
 ## Cluster-robust and other variance estimators
 
-Mixed fits honour the cluster-robust family (`"CR0"`–`"CR3"`) through
+`lmer` and `nlme::lme` fits honour the cluster-robust family
+(`"CR0"`–`"CR3"`) through
 `clubSandwich`, with Satterthwaite small-sample degrees of freedom
 computed from the robust covariance — the footer attributes them
 accordingly. Reach for `CR*` when you suspect the random-effects
@@ -761,9 +768,9 @@ table_regression(fit_ri, vcov = "CR2", cluster = ~Subject)
 Requests that have no valid backend are refused with a clear error
 rather than silently ignored: `HC*` (a single-level estimator whose sandwich
 assumes independent observations — the very dependence the random
-effects exist to model; use `CR*` instead), `CR*` on `glmer` (no `clubSandwich` method), and the
-resampling estimators. For `glmmTMB`, `CR*` covers the conditional
-component only, and the footer discloses it.
+effects exist to model; use `CR*` instead), `CR*` on `glmer` or
+`glmmTMB` (no `clubSandwich` method for either), and the
+resampling estimators.
 
 ## Standardized coefficients
 
@@ -797,7 +804,7 @@ head(table_regression(fit, output = "data.frame"), 8)
 ```
 
 ```{r outputs-gt, eval = build_rich_tables && have_mixed}
-table_regression(fit, output = "gt")
+pkgdown_dark_gt(table_regression(fit, output = "gt"))
 ```
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the
