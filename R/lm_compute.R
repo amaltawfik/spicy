@@ -591,17 +591,19 @@ build_emmean_avg_row <- function(
       levels = x_levels
     )
   } else {
-    # `"balanced"`: factor / character covariates expanded over their
-    # observed level cross-product; numeric / logical covariates
-    # fixed at the sample mean. R's `lm()` treats logical as numeric
-    # (TRUE -> 1, FALSE -> 0), so we DO NOT expand them as factors:
-    # their mean is the proportion of TRUE in the observed data,
-    # which matches what `model.matrix()` would produce for a single
-    # representative row. This means a logical covariate behaves
-    # identically under "proportional" and "balanced".
+    # `"balanced"`: factor / character / logical covariates expanded
+    # over their observed level cross-product; numeric covariates
+    # fixed at the sample mean. Logicals are two-level factors to
+    # `lm()` (model.matrix encodes a `<name>TRUE` dummy and registers
+    # contr.treatment in fit$contrasts), so they must be expanded like
+    # factors -- both for the estimand (balanced = equal FALSE/TRUE
+    # weight, the emmeans convention) and mechanically: freezing the
+    # column at its numeric mean made model.matrix(contrasts.arg =
+    # fit$contrasts) error with "contrasts can be applied only to
+    # factors" (wave-2 vignette review, 2026-08-05).
     factor_idx <- vapply(
       covariates_observed,
-      function(z) is.factor(z) || is.character(z),
+      function(z) is.factor(z) || is.character(z) || is.logical(z),
       logical(1)
     )
     factor_covs <- covariates_observed[, factor_idx, drop = FALSE]
@@ -638,6 +640,10 @@ build_emmean_avg_row <- function(
             levels = levels(covariates_observed[[nm]]),
             ordered = is.ordered(covariates_observed[[nm]])
           )
+        } else if (is.logical(covariates_observed[[nm]])) {
+          # Back to logical so model.matrix() re-derives the same
+          # `<name>TRUE` dummy the fit was built with.
+          grid[[nm]] <- as.logical(grid[[nm]])
         }
       }
     }

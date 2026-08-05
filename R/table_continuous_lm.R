@@ -171,8 +171,11 @@
 #'     (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
 #'     Satterthwaite degrees of freedom for inference; the
 #'     fractional df is reported in the `df2` column and in the
-#'     `t(df)` / `F(df1, df2)` test header. `"CR1"` corresponds to
-#'     Stata's `, vce(cluster id)` default. Cluster-robust variants
+#'     `t(df)` / `F(df1, df2)` test header. `"CR1"` applies the
+#'     G/(G-1) correction only; Stata's `, vce(cluster id)` uses the
+#'     larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
+#'     (clubSandwich's `"CR1S"`, not exposed here), so `"CR1"` does
+#'     not reproduce Stata. Cluster-robust variants
 #'     are dispatched to [clubSandwich::vcovCR()] and inference uses
 #'     [clubSandwich::coef_test()] / [clubSandwich::Wald_test()];
 #'     install `clubSandwich` to use them.
@@ -544,7 +547,10 @@
 #' modern recommended default; it generally produces fractional
 #' Satterthwaite degrees of freedom in `df2`, which the displayed
 #' `t(df)` / `F(df1, df2)` header renders to one decimal. `"CR1"`
-#' matches Stata's `, vce(cluster id)`. Effect sizes remain invariant
+#' applies the G/(G-1) correction only -- Stata's `, vce(cluster id)`
+#' uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
+#' (clubSandwich's `"CR1S"`, not exposed here), so `"CR1"` does not
+#' reproduce Stata. Effect sizes remain invariant
 #' to `vcov` (including `CR*`); only the SE, CI, test statistic, and
 #' `df2` of the contrast change.
 #'

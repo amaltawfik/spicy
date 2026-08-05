@@ -384,7 +384,10 @@ cramer_v <- function(
 #' value of the Pearson correlation between the two binary
 #' variables -- spicy returns only the magnitude (always
 #' non-negative), matching the DescTools (Signorell et al., 2024)
-#' and SPSS conventions. To recover the signed direction of the
+#' and PSPP conventions. SPSS itself SIGNS phi on 2x2 tables (its
+#' CROSSTABS algorithm sets the sign to that of the Pearson
+#' correlation), so SPSS output can show a negative value of the
+#' same magnitude. To recover the signed direction of the
 #' 2x2 association, compute the Pearson correlation directly
 #' (e.g. `cor(x, y)` after coding both variables 0/1).
 #'
@@ -1885,8 +1888,10 @@ assoc_measures <- function(
         conf_level = conf_level
       )
     },
-    # "Stuart's Tau-c" is the SPSS / PSPP label, shared with the
-    # cross_tab() note and the table_categorical() column header.
+    # "Stuart's Tau-c" is the SAS PROC FREQ label (honouring Stuart,
+    # 1953); SPSS and PSPP print "Kendall's tau-c" for the same
+    # statistic. Shared with the cross_tab() note and the
+    # table_categorical() column header.
     "Stuart's Tau-c" = \(t) {
       kendall_tau_c(
         t,

@@ -205,8 +205,11 @@ estimators for non-independent observations (Liang and Zeger
 (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
 Satterthwaite degrees of freedom for inference; the
 fractional df is reported in the \code{df2} column and in the
-\code{t(df)} / \code{F(df1, df2)} test header. \code{"CR1"} corresponds to
-Stata's \verb{, vce(cluster id)} default. Cluster-robust variants
+\code{t(df)} / \code{F(df1, df2)} test header. \code{"CR1"} applies the
+G/(G-1) correction only; Stata's \verb{, vce(cluster id)} uses the
+larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
+(clubSandwich's \code{"CR1S"}, not exposed here), so \code{"CR1"} does
+not reproduce Stata. Cluster-robust variants
 are dispatched to \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} and inference uses
 \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}} / \code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}};
 install \code{clubSandwich} to use them.
@@ -641,7 +644,10 @@ Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
 modern recommended default; it generally produces fractional
 Satterthwaite degrees of freedom in \code{df2}, which the displayed
 \code{t(df)} / \code{F(df1, df2)} header renders to one decimal. \code{"CR1"}
-matches Stata's \verb{, vce(cluster id)}. Effect sizes remain invariant
+applies the G/(G-1) correction only -- Stata's \verb{, vce(cluster id)}
+uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
+(clubSandwich's \code{"CR1S"}, not exposed here), so \code{"CR1"} does not
+reproduce Stata. Effect sizes remain invariant
 to \code{vcov} (including \verb{CR*}); only the SE, CI, test statistic, and
 \code{df2} of the contrast change.
 

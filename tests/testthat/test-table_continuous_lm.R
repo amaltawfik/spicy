@@ -4537,3 +4537,31 @@ test_that("tidy/glance column sets are frozen (stabilising contract)", {
     )
   )
 })
+
+test_that("balanced adjustment expands logical covariates like factors (no crash)", {
+  # Wave-2 review: a logical covariate under adjustment = "balanced"
+  # crashed with base R's "contrasts can be applied only to factors" --
+  # the column was frozen at its numeric mean while lm() had encoded it
+  # as a two-level factor (a `<name>TRUE` dummy in fit$contrasts).
+  # Balanced now expands FALSE/TRUE with equal weight, the emmeans
+  # convention.
+  skip_if_not_installed("emmeans")
+  d <- sochealth
+  d$active <- d$physical_activity == "Yes"
+  out <- table_continuous_lm(
+    d,
+    select = wellbeing_score,
+    by = education,
+    covariates = c(age, active),
+    adjustment = "balanced",
+    output = "data.frame"
+  )
+  expect_s3_class(out, "data.frame")
+  fit <- stats::lm(wellbeing_score ~ education + age + active, d)
+  em <- summary(emmeans::emmeans(fit, ~education))
+  got <- as.numeric(out[
+    1L,
+    c("M (Lower secondary)", "M (Upper secondary)", "M (Tertiary)")
+  ])
+  expect_equal(got, em$emmean, tolerance = 1e-6)
+})
