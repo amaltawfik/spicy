@@ -134,7 +134,15 @@ table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
 
 The `F-change` row is the joint 3-df test: F = 3.13, p = .025 —
 employment status improves the model, driven by the unemployed
-contrast. For `glm` fits, the `partial_chi2` column reports the same
+contrast. It is not a spicy invention: base R's `anova()` on the
+same two fits prints the identical canonical nested F-test, to the
+digit (F = 3.13 on 3 and 1195 df, p = .025):
+
+```{r joint-anova}
+anova(m0, m1)
+```
+
+For `glm` fits, the `partial_chi2` column reports the same
 joint question per term as a likelihood-ratio chi-square with its df,
 without needing a second model (see the main vignette's *Term-level
 partial chi-square*).
@@ -145,13 +153,13 @@ The rule cuts the other way too:
 d_r <- sochealth[complete.cases(
   sochealth[, c("wellbeing_score", "age", "region")]
 ), ]
-anova(lm(wellbeing_score ~ age,          data = d_r),
-      lm(wellbeing_score ~ age + region, data = d_r))
+r0 <- lm(wellbeing_score ~ age, data = d_r)
+r1 <- lm(wellbeing_score ~ age + region, data = d_r)
+table_regression(list(r0, r1), nested = TRUE, show_columns = c("b", "p"))
 ```
 
-For `region`, the joint test gives F(5, 1193) = 0.89, p = .48 — no
-evidence that region matters at all (`anova()` on two nested fits is
-the same F-change test the table reports). Fitting the factor anyway
+For `region`, the joint test gives F(5, 1193) = 0.89, p = .485 — no
+evidence that region matters at all. Fitting the factor anyway
 and scanning its five per-level p-values for a "significant" contrast
 to report alone would be a multiplicity artifact — "if the overall
 test is not significant, it can be dangerous to rely on individual
