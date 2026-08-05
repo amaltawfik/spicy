@@ -44,9 +44,11 @@ about it is second-class.
 
 Two sibling tools serve different needs, and choosing well saves
 work. `broom::tidy()` returns the *statistical* long form -- one row
-per coefficient with `estimate`, `std.error`, `conf.low`, `p.value`
--- and is the right input for meta-analysis, further computation on
-estimates, or ggplot. `as_structured()` returns the *display
+per term and estimate type per model, with `estimate`, `std.error`,
+`conf.low`, `p.value`. A default table carries a single estimate
+type, so that is one row per coefficient; requesting standardized
+betas or AMEs adds a row per term for each. It is the right input
+for meta-analysis, further computation on estimates, or ggplot. `as_structured()` returns the *display
 geometry* -- rows and columns exactly as the rendered table lays
 them out, factor headers and fit statistics included -- and is the
 right input for filtering what a reader will see, post-processing
@@ -59,9 +61,21 @@ tables*](table-regression.html); the class-by-class map is
 
 ## The schema on one model
 
+Start from the display view, so the typed view has something to be
+compared against:
+
 ```{r schema}
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 tbl <- table_regression(fit)
+tbl
+```
+
+Every display trait named above is visible here: `(ref.)` markers
+and en-dashes on the reference rows, blank factor header rows, one
+bracketed `[LL, UL]` column, APA p-values (`<.001`, no leading
+zero). The typed view underneath:
+
+```{r components}
 s <- as_structured(tbl)
 names(s)
 ```
@@ -91,13 +105,25 @@ s$level_rows
 
 `col_meta` describes each column: which token produced it, which
 model it belongs to, its display precision, and -- for p-value
-columns -- the APA style and below-threshold rule. `format_spec`
-carries the global defaults (decimal mark, digits, CI level):
+columns -- the APA style and below-threshold rule, plus per-row
+`fit_stat_overrides` where a fit-statistic row departs from the
+column's precision (put to work in the renderer below).
+`format_spec` carries the global defaults (decimal mark, digits,
+CI level):
 
 ```{r meta}
 s$col_meta$B
 s$format_spec$ci_level
 ```
+
+That is seven of the twelve components; `spanners` and
+`reference_models_by_row` follow in the multi-model section below.
+Of the remaining three, `ci_pairs` records which `LL`/`UL`
+columns form a confidence-interval pair (here, columns 4 and 5
+under the label `95% CI`), while `outcome_row` and
+`outcome_labels_by_col` locate and label the optional outcome
+header row of multi-outcome tables and are empty here. The
+complete schema, component by component, is in `?as_structured`.
 
 ## Filtering and aggregating
 
@@ -134,14 +160,26 @@ two more components become useful. `spanners` maps each model label
 to its column indices in `body`; `reference_models_by_row` records,
 for each reference row, which models actually contain the factor --
 the rule renderers use to decide where the reference en-dash
-belongs:
+belongs. To see it discriminate, the `Minimal` model below omits
+`smoking`:
 
 ```{r multi}
 fit2 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth)
-s2 <- as_structured(table_regression(list(Base = fit, Extended = fit2)))
+fit0 <- lm(wellbeing_score ~ age + sex, data = sochealth)
+s2 <- as_structured(
+  table_regression(list(Minimal = fit0, Base = fit, Extended = fit2))
+)
 s2$spanners
 names(s2$body)
+s2$reference_models_by_row
 ```
+
+Rows 4 and 7 are the two reference rows (`Female (ref.)`,
+`No (ref.)`). All three models contain `sex`, so row 4 lists all
+three; only `Base` and `Extended` contain `smoking`, so row 7
+lists those two -- a renderer draws the reference en-dash in
+exactly those models' columns and leaves the `Minimal` cells
+blank.
 
 Model-wise extraction follows from the spanner map:
 
@@ -154,7 +192,7 @@ s2$body[, c(1, s2$spanners$Extended)]
 The structured view carries everything a renderer needs. A compact
 `knitr::kable()` rendering takes a few lines: each column formats at
 its `col_meta` precision, and the `fit_stat_overrides` seen earlier
-supply the per-row exceptions — that is what renders the `n` row as
+supply the per-row exceptions -- that is what renders the `n` row as
 `1175` rather than `1175.00`:
 
 ```{r kable}
@@ -212,7 +250,7 @@ Three properties make the structured view safe to build on:
   message rather than mis-read.
 
 For the statistical long form -- estimates with standard errors and
-unformatted p-values, one row per term across models -- reach for
-`broom::tidy()` on the same object; for one-line model summaries,
+unformatted p-values, one row per term and estimate type across
+models -- reach for `broom::tidy()` on the same object; for one-line model summaries,
 `broom::glance()`. The three views are built from the same frames,
 so their numbers always agree.

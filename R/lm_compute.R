@@ -562,9 +562,12 @@ align_design_to_coef <- function(design, cf) {
 #
 # Behaviour collapses to the bivariate fast path (just `x = focal`)
 # when there are no covariates -- both methods coincide trivially.
-# When all covariates are numeric / logical (no factor levels to
-# expand over), the two methods also coincide because the mean of a
-# numeric / logical column is the same regardless of weighting.
+# When all covariates are numeric (no levels to expand over), the
+# two methods also coincide because the mean of a numeric column is
+# the same regardless of weighting. Logical covariates are levels:
+# lm() encodes them as two-level factors, so "balanced" weights
+# FALSE/TRUE equally and the methods diverge whenever the observed
+# proportion is not 50/50.
 #
 # The user-facing argument in `table_continuous_lm()` is
 # `adjustment`, which dispatches to this helper's `method`. The

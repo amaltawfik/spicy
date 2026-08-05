@@ -26,9 +26,9 @@ result (default \code{3}). Only affects the \code{detail = TRUE} output.}
 When \code{detail = FALSE}: a single numeric value (the
 estimate).
 When \code{detail = TRUE} and \code{conf_level} is non-\code{NULL}:
-\code{c(estimate, ci_lower, ci_upper, p_value)}.
+\code{c(estimate, se, ci_lower, ci_upper, p_value)}.
 When \code{detail = TRUE} and \code{conf_level = NULL}:
-\code{c(estimate, p_value)}.
+\code{c(estimate, se, p_value)}.
 The p-value tests the null hypothesis of no association
 (Pearson chi-squared test).
 }

@@ -28,7 +28,10 @@ per-cell markers and a format specification.
 This is the right entry point for users who want to:
 \itemize{
 \item \strong{Filter coefficients programmatically}, e.g.
-\code{as_structured(tbl)$body[as_structured(tbl)$body$p < 0.05, ]}.
+\code{as_structured(tbl)$body[which(as_structured(tbl)$body$p < 0.05), ]}
+(\code{which()} drops the structurally empty rows -- factor headers,
+reference levels -- whose \code{p} is \code{NA}; a bare logical index
+would keep them as all-\code{NA} rows).
 \item \strong{Aggregate raw values across rows}, e.g.
 \code{mean(as_structured(tbl)$body[["B"]], na.rm = TRUE)}.
 \item \strong{Build a custom downstream renderer} that consumes the same
@@ -70,7 +73,8 @@ fit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
 tbl <- table_regression(fit)
 s <- as_structured(tbl)
 s$body                               # raw numeric body
-s$body[s$body$p < 0.05, ]            # filter significant rows
+s$body[which(s$body$p < 0.05), ]     # filter significant rows
+# which() drops the structural NA rows (headers, reference levels)
 s$col_meta$B                         # column metadata for B
 
 }

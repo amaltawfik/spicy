@@ -151,10 +151,12 @@ Both methods reduce to the same linear-contrast formula
 \code{emmean = avg_row \%*\% beta} and inherit the spicy variance
 pipeline (HC* / CR* / bootstrap / jackknife). They give the
 same answer when there are no covariates, and also when all
-covariates are numeric / logical (no factor levels to expand
-over). The two estimands diverge only when at least one
-factor / character covariate has non-uniform observed
-proportions.}
+covariates are numeric (fixed at their means either way). The
+two estimands diverge when a factor, character, or logical
+covariate has non-uniform observed proportions: those are
+levels to balance, and \code{"balanced"} weights them equally
+(a logical is a two-level factor to \code{lm()}, balanced
+FALSE/TRUE -- the \code{emmeans} convention).}
 
 \item{exclude}{Columns to exclude from \code{select}. Supports tidyselect syntax
 and character vectors of column names.}

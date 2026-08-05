@@ -25,8 +25,8 @@ knitr::opts_chunk$set(
 library(spicy)
 ```
 
-spicy provides a full suite of effect size and association measures for
-contingency tables, covering both nominal and ordinal variables. This
+spicy provides a coherent set of effect size and association measures
+for contingency tables, covering nominal and ordinal variables. This
 vignette explains which measure to use depending on the measurement
 level of your variables, and how to obtain confidence intervals and
 p-values for chi-squared-based and rank-based statistics.
@@ -52,6 +52,11 @@ The table below summarizes the recommended measures by variable type.
 PRE = Proportional Reduction in Error. These measures quantify how much
 knowing one variable reduces prediction error for the other.
 
+Cramer's V and the contingency coefficient are defined for tables of
+any dimension. For a nominal-by-ordinal pair they are the standard
+choice: the ordering is simply ignored, because the rank-based measures
+require both variables to be ordinal.
+
 All functions accept a contingency table (class `table`, typically from
 `xtabs()` or `table()`).
 
@@ -64,14 +69,26 @@ tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 ```
 
-This is useful for exploratory analysis. For reporting, pick the measure
-that matches your variable types.
+Directional variants are labelled `R|C` (the row variable is treated
+as dependent, i.e. predicted from the column variable) and `C|R` (the
+reverse); `symmetric` variants single out no dependent variable.
+
+`assoc_measures()` computes every measure the table dimensions allow,
+regardless of measurement level: the ordinal rows above treat the
+factor level order of `smoking` (No < Yes) as a substantive ordering.
+This is useful for exploratory analysis, but read only the rows that
+match your variable types. For reporting, pick the measure that
+matches them.
 
 ## Nominal variables
 
+Chi-squared-based measures ignore any ordering of the categories, which
+makes them the reference choice when at least one of the two variables
+is nominal.
+
 ### Cramer's V
 
-Cramer's V measures the strength of association between two nominal
+Cramer's V measures the strength of association between two categorical
 variables. It ranges from 0 (no association) to 1 (perfect association).
 
 ```{r cramer}
@@ -79,10 +96,18 @@ tbl <- xtabs(~ smoking + education, data = sochealth)
 cramer_v(tbl)
 ```
 
-Pass `detail = TRUE` for the standard error, confidence interval
-and p-value. The
+In this pair, `smoking` is nominal and `education` is ordinal: Cramer's
+V treats `education` as an unordered set of categories, which is the
+standard treatment for a nominal-by-ordinal pair. When *both* variables
+are ordinal, the rank-based measures presented below use more of the
+information in the data.
+
+Pass `detail = TRUE` for the confidence interval and p-value. The
 p-value tests the null hypothesis of no association using the Pearson
-chi-squared test.
+chi-squared test. The chi-squared-based measures (Cramer's V, Phi, the
+contingency coefficient) have no standard asymptotic standard error, so
+the `SE` column prints `--` for them; the rank-based measures later in
+this vignette report their asymptotic SE in that column.
 
 ```{r cramer-detail}
 cramer_v(tbl, detail = TRUE)
@@ -91,12 +116,15 @@ cramer_v(tbl, detail = TRUE)
 ### Phi coefficient
 
 For 2x2 tables, Phi is equivalent to Cramer's V. spicy implements Phi
-as \(\sqrt{\chi^2 / n}\), matching the DescTools and SPSS conventions
+as \(\sqrt{\chi^2 / n}\), matching the DescTools and PSPP conventions
 -- the value is always non-negative and reports only the *strength*
-of association, not its direction. To recover the signed direction,
-compute the Pearson correlation between the two binary variables
-explicitly (e.g., `cor(x, y)` after coding both 0/1). The p-value
-tests H0: no association (Pearson chi-squared test).
+of association, not its direction. SPSS itself signs Phi on 2x2
+tables (there it equals the Pearson correlation between the two
+variables coded 0/1), so SPSS output can show a negative value of the
+same magnitude. To recover the signed direction, compute the Pearson
+correlation between the two binary variables explicitly (e.g.,
+`cor(x, y)` after coding both 0/1). The p-value tests H0: no
+association (Pearson chi-squared test).
 
 ```{r phi}
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
@@ -117,13 +145,20 @@ contingency_coef(tbl, detail = TRUE)
 ## Ordinal variables
 
 When both variables are ordinal (ordered factors), measures that account
-for the ordering are more appropriate than Cramer's V.
+for the ordering are more appropriate than Cramer's V. Note that these
+measures are not on a common scale: on the health-by-education table
+used throughout this section, Cramer's V is 0.176, Tau-b is 0.205 and
+Gamma is 0.310 for the very same association. Compare magnitudes within
+a measure, never across measures.
 
 ### Goodman-Kruskal Gamma
 
-Gamma ranges from -1 to +1. It ignores tied pairs, which makes it
-sensitive to the direction of association but tends to overestimate
-strength when there are many ties.
+Gamma ranges from -1 to +1. It ignores tied pairs, which tends to
+overestimate the strength of association when there are many ties: on
+any table, |Gamma| is at least as large as |Tau-b|. Like the other
+measures built on the difference between concordant and discordant
+pairs (Tau-b, Tau-c, Somers' D), its sign carries the direction of
+association.
 
 ```{r gamma}
 tbl_ord <- xtabs(~ self_rated_health + education, data = sochealth)
@@ -146,10 +181,11 @@ kendall_tau_b(tbl_ord, detail = TRUE)
 
 ### Stuart's Tau-c
 
-Stuart's Tau-c (also known as Kendall's Tau-c; spicy uses the SPSS /
-PSPP label) is similar to Tau-b but adjusts for rectangular tables
-where the number of rows and columns differ. The p-value tests H0:
-Tau-c = 0 (Wald z-test).
+Stuart's Tau-c -- the label spicy shares with SAS, after Stuart
+(1953) -- is also known as Kendall's Tau-c, the name SPSS and PSPP
+print for the same statistic. It is similar to Tau-b but adjusts for
+rectangular tables where the number of rows and columns differ. The
+p-value tests H0: Tau-c = 0 (Wald z-test).
 
 ```{r tau-c}
 kendall_tau_c(tbl_ord, detail = TRUE)
@@ -160,51 +196,87 @@ kendall_tau_c(tbl_ord, detail = TRUE)
 Somers' D is an asymmetric measure: it distinguishes between a dependent
 and an independent variable. By default, the row variable is treated as
 dependent (D(R|C)). The p-value tests H0: D = 0 (Wald z-test). One
-disclosure worth knowing: the association column of `cross_tab()`
-reports the *symmetric* variant of Somers' D, while the standalone
-`somers_d()` defaults to the row-dependent D(R|C) — the two values
-differ by construction.
+disclosure worth knowing: the association line printed below the table
+by `cross_tab()` reports the *symmetric* variant of Somers' D, while
+the standalone `somers_d()` defaults to the row-dependent D(R|C) — the
+two values differ by construction.
 
 ```{r somers}
 somers_d(tbl_ord, detail = TRUE)
 ```
 
+### How the p-values compare with SPSS and PSPP
+
+spicy's Wald z-tests divide each estimate by the displayed asymptotic
+standard error, which is estimated *without* assuming independence.
+SPSS and PSPP test the ordinal measures differently: they use the
+standard error computed *under* the independence hypothesis (which is
+why their "Approx. T" column shows the same value for Gamma, Tau-b,
+Tau-c and Somers' D), and SPSS refers Goodman-Kruskal's Tau to a
+chi-squared distribution rather than a z-test. Estimates and standard
+errors match SPSS and PSPP; the p-values can differ, especially near
+the null. For the non-negative PRE measures below (Lambda,
+Goodman-Kruskal's Tau, the uncertainty coefficient) the Wald z-test is
+approximate in a further way: H0 places the parameter on the boundary
+of its range, so read those p-values as indicative rather than exact.
+
 ## Asymmetric (PRE) measures
 
 These measures answer a specific question: how much does knowing the
 column variable reduce our error in predicting the row variable (or vice
-versa)?
+versa)? Each function takes a `direction` argument. `lambda_gk()` and
+`uncertainty_coef()` default to `direction = "symmetric"`, which
+combines the two prediction directions rather than singling out a
+dependent variable; `goodman_kruskal_tau()` defaults to
+`direction = "row"` (the column variable predicts the row variable).
+Pass `direction = "row"` or `direction = "column"` explicitly when your
+question is directional.
 
 ### Lambda
 
-Lambda measures the proportional reduction in classification error. It
-can equal zero even when the variables are associated, if the modal
-category does not change across columns. The p-value tests H0:
-Lambda = 0 (Wald z-test).
+Lambda measures the proportional reduction in classification error. The
+default is the symmetric variant; here we also show the row-dependent
+variant, where education (the column variable) predicts self-rated
+health (the row variable):
 
 ```{r lambda}
-tbl <- xtabs(~ self_rated_health + education, data = sochealth)
-lambda_gk(tbl, detail = TRUE)
+lambda_gk(tbl_ord, detail = TRUE)
+lambda_gk(tbl_ord, direction = "row", detail = TRUE)
 ```
+
+The row-dependent result illustrates a well-known caveat: Lambda can
+equal zero even when the variables are associated, if the modal
+category of the dependent variable does not change across the
+categories of the predictor. That is exactly what happens here --
+"Good" is the modal health category at every education level, so the
+row-dependent Lambda is exactly 0 even though the same table shows a
+clear association (Cramer's V = 0.176, chi-squared p < .001). When the
+estimate is zero its asymptotic SE is zero as well, and no test is
+printed (`--`). Otherwise the p-value tests H0: Lambda = 0 (Wald
+z-test).
 
 ### Goodman-Kruskal Tau
 
 Tau measures the proportional reduction in error when predicting the row
 variable from the column variable, using the full distribution (not just
-the mode). The p-value tests H0: Tau = 0 (Wald z-test).
+the mode). This matches its default `direction = "row"`; pass
+`direction = "column"` for the reverse prediction. The p-value tests
+H0: Tau = 0 (Wald z-test).
 
 ```{r gk-tau}
-goodman_kruskal_tau(tbl, detail = TRUE)
+goodman_kruskal_tau(tbl_ord, detail = TRUE)
 ```
 
 ### Uncertainty coefficient
 
 The uncertainty coefficient (Theil's U) is based on entropy. It measures
-how much knowing one variable reduces uncertainty about the other. The
-p-value tests H0: U = 0 (Wald z-test).
+how much knowing one variable reduces uncertainty about the other. By
+default it reports the symmetric coefficient; pass
+`direction = "row"` or `direction = "column"` for the asymmetric
+variants. The p-value tests H0: U = 0 (Wald z-test).
 
 ```{r uncertainty}
-uncertainty_coef(tbl, detail = TRUE)
+uncertainty_coef(tbl_ord, detail = TRUE)
 ```
 
 ## Yule's Q
@@ -240,14 +312,22 @@ cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 
 ## Confidence intervals
 
-All functions support confidence intervals via `detail = TRUE`. The
-confidence level defaults to 95% and can be changed with `conf_level`:
+Most functions report a confidence interval via `detail = TRUE`, with
+two exceptions: `contingency_coef()` never reports one (no standard
+asymptotic SE exists for the contingency coefficient), and
+`somers_d(direction = "symmetric")` reports the estimate only. Cramer's
+V and Phi also omit the interval silently in degenerate cases (estimate
+exactly 0, or n <= 3). The confidence level defaults to 95% and can be
+changed with `conf_level` -- here both levels on the
+smoking-by-education table from the beginning of the vignette:
 
 ```{r ci-level}
+cramer_v(tbl, detail = TRUE)
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
 ```
 
-To get only the estimate and p-value (no CI), pass `conf_level = NULL`:
+To drop the confidence interval, pass `conf_level = NULL`; the result
+keeps the estimate, the SE column, and the p-value:
 
 ```{r ci-null}
 cramer_v(tbl, detail = TRUE, conf_level = NULL)

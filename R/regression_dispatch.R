@@ -2672,7 +2672,10 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' This is the right entry point for users who want to:
 #'
 #' * **Filter coefficients programmatically**, e.g.
-#'   `as_structured(tbl)$body[as_structured(tbl)$body$p < 0.05, ]`.
+#'   `as_structured(tbl)$body[which(as_structured(tbl)$body$p < 0.05), ]`
+#'   (`which()` drops the structurally empty rows -- factor headers,
+#'   reference levels -- whose `p` is `NA`; a bare logical index
+#'   would keep them as all-`NA` rows).
 #' * **Aggregate raw values across rows**, e.g.
 #'   `mean(as_structured(tbl)$body[["B"]], na.rm = TRUE)`.
 #' * **Build a custom downstream renderer** that consumes the same
@@ -2717,7 +2720,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' tbl <- table_regression(fit)
 #' s <- as_structured(tbl)
 #' s$body                               # raw numeric body
-#' s$body[s$body$p < 0.05, ]            # filter significant rows
+#' s$body[which(s$body$p < 0.05), ]     # filter significant rows
+#' # which() drops the structural NA rows (headers, reference levels)
 #' s$col_meta$B                         # column metadata for B
 #'
 #' @export

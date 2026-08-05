@@ -124,10 +124,12 @@
 #'   `emmean = avg_row %*% beta` and inherit the spicy variance
 #'   pipeline (HC* / CR* / bootstrap / jackknife). They give the
 #'   same answer when there are no covariates, and also when all
-#'   covariates are numeric / logical (no factor levels to expand
-#'   over). The two estimands diverge only when at least one
-#'   factor / character covariate has non-uniform observed
-#'   proportions.
+#'   covariates are numeric (fixed at their means either way). The
+#'   two estimands diverge when a factor, character, or logical
+#'   covariate has non-uniform observed proportions: those are
+#'   levels to balance, and `"balanced"` weights them equally
+#'   (a logical is a two-level factor to `lm()`, balanced
+#'   FALSE/TRUE -- the `emmeans` convention).
 #' @param exclude Columns to exclude from `select`. Supports tidyselect syntax
 #'   and character vectors of column names.
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect helpers. If
