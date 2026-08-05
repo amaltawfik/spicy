@@ -98,7 +98,7 @@ Each IRR multiplies the expected article count, holding the other
 predictors constant: the expected count for women is about 20% lower
 than for otherwise-similar men (IRR 0.80), and each additional mentor
 publication raises a student's expected count by 2.6% (IRR 1.03 as
-displayed; exp(0.0256) = 1.026). Inference is Wald-z on the link
+displayed; exp(0.0258) = 1.026). Inference is Wald-z on the link
 scale; the footer records the SE and CI conventions.
 
 One remark for rate data: the observation window here is a fixed three
@@ -140,11 +140,23 @@ table_regression(fit_nb, exponentiate = TRUE,
 The dispersion estimate sits in the table itself: the opt-in
 `θ (dispersion)` row shows $\hat\theta$ = 2.26, and `α (= 1/θ)` its
 reciprocal 0.44 — the parameterization Stata's `nbreg` reports, so
-readers of either tradition find their number. The
-likelihood-ratio test of the Poisson restriction — a boundary test, so
-its p-value is halved — rejects decisively (LR = 180.3, p < .001).
+readers of either tradition find their number.
 `glmmTMB::nbinom2`, used in the mixed-model section below, is the same
 NB2 parameterization.
+
+The likelihood-ratio test of the Poisson restriction rejects
+decisively. The Poisson sits on the *boundary* of the negative
+binomial's parameter space ($\theta = \infty$), so the usual
+$\chi^2_1$ p-value is halved:
+
+```{r lrt-poisson}
+lr <- as.numeric(2 * (logLik(fit_nb) - logLik(fit_pois)))
+lr
+pchisq(lr, df = 1, lower.tail = FALSE) / 2
+```
+
+LR = 180.3; even halved, the p-value is far below any conventional
+threshold.
 
 The IRRs barely move, but the inference does: the evidence for
 marriage weakens (p = .013 under Poisson, p = .072 here) — the Poisson
@@ -177,11 +189,17 @@ component's logit coefficients become odds ratios. (For a single
 number on the E(Y) scale, see the combined AME below.)
 
 In the two-part formula the segment after `|` specifies the zero
-model. Here all four covariates drive how much publishers publish,
-while only the mentor's productivity governs membership in the
-never-publishing class — a deliberate restriction of the full
-inflation equation (Zeileis et al. 2008). The inflation equation is a
-substantive hypothesis to specify, not a default to accept.
+model — restricted here to `ment` alone, a deliberate restriction of
+the full zero equation (Zeileis et al. 2008). What each side means
+differs by model, exactly as in the bullets above. In the `zeroinfl`
+fit, the four covariates drive the count rate among units *outside*
+the structural-zero class — a class that still produces sampling
+zeros — while the mentor's productivity alone governs membership in
+the never-publishing class (the inflation equation). In the `hurdle`
+fit, the same right-hand side drives the truncated count rate *among
+those who published*, while the mentor's productivity alone governs
+clearing the hurdle. Either way, the zero equation is a substantive
+hypothesis to specify, not a default to accept.
 
 ```{r zeroinfl}
 fit_zip <- zeroinfl(art ~ fem + mar + kid5 + ment | ment,
@@ -275,8 +293,10 @@ inference and the account of the zeros.
 A last comparison shape worth knowing: a *univariable screen* of
 candidate predictors — one Poisson IRR per candidate, set against
 the multivariable model — is one call away with
-`table_regression_uv(..., family = poisson())`; the layout is
-introduced in the *Univariable screening* section of
+`table_regression_uv(..., family = poisson(), exponentiate = TRUE)`
+(`family` switches the engine to Poisson; `exponentiate` is still
+needed to display IRRs rather than log-scale coefficients); the
+layout is introduced in the *Univariable screening* section of
 `vignette("table-regression")`.
 
 ## One number per predictor: the combined AME
@@ -321,9 +341,18 @@ table_regression(fit_zip, vcov = "CR0", cluster = bioChemists$lab,
 Do not read the shift here as the effect of clustering. The labs are
 assigned at random, so they carry no real dependence: most of the
 movement in marriage (p = .041 → .147) comes from the sandwich
-estimator no longer trusting the ZIP's model-based variance —
-unclustered robust SEs give p ≈ .11 — and the rest is noise in the
-synthetic labels. What the example demonstrates is mechanical: both
+estimator no longer trusting the ZIP's model-based variance. An
+*unclustered* sandwich already moves that p-value most of the way,
+to .11:
+
+```{r robust-unclustered, eval = have_sandwich}
+V <- sandwich::sandwich(fit_zip)
+z <- coef(fit_zip)["count_marMarried"] / sqrt(diag(V))["count_marMarried"]
+2 * pnorm(-abs(z))
+```
+
+The rest of the movement is noise in the synthetic labels. What the
+example demonstrates is mechanical: both
 components shift together under one `CL` estimator. With genuinely
 clustered data, positive within-cluster dependence widens the
 intervals further, and borderline effects are typically the first
@@ -336,10 +365,16 @@ When counts are also grouped, `glmmTMB` (Brooks et al. 2017) combines
 everything above with random effects: the zero-inflation block, the random-effects block,
 and per-block exponentiation appear in one table — here salamander
 counts in mined and unmined streams (Price et al. 2016). One scope
-note: under cluster-robust variance (`vcov = "CR0"`–`"CR3"`) the
-sandwich covers the *conditional* (count) component only — the
-zero-inflation and dispersion rows keep their model-based standard
-errors, and the footer discloses it:
+note: `glmmTMB` tables are **model-based only**. A cluster-robust
+request (`vcov = "CR0"`–`"CR3"`) is refused with a clear error,
+because `clubSandwich` has no working `glmmTMB` backend — it would
+silently fall through to a default method and return numerically
+invalid standard errors, and `table_regression()` refuses to print
+numbers it cannot stand behind. Express the clustering in the
+random-effects structure itself, as the `(1 | site)` term below does;
+the same convention is documented in the companion
+[*Mixed-effects regression tables*](table-regression-mixed.html)
+vignette:
 
 ```{r glmmtmb, eval = have_glmmTMB}
 data("Salamanders", package = "glmmTMB")
@@ -355,9 +390,21 @@ Among streams not in the structural-zero state, unmined ones host
 salamanders at over four times the rate of mined ones (IRR 4.34); they
 are also far less likely to be structural zeros in the first place
 (OR 0.10). Because the two components compound, the overall abundance
-gap is larger than either alone — the model-implied expected count is
-about 8.7 times higher in unmined streams — one coherent ecological
-story told in two parts. The random-effects block
+gap is larger than either alone. The model-implied expected count
+E(Y) is the count rate times the probability of *not* being a
+structural zero, so the two pieces multiply — and because the count
+model is log-linear and the zero model has no random effect, the
+site intercept cancels and the ratio holds at any given site:
+
+```{r ey-ratio, eval = have_glmmTMB}
+fe <- glmmTMB::fixef(fit_mix)
+unname(exp(fe$cond["minedno"]) *         # count-rate ratio (IRR 4.34)
+  (1 - plogis(sum(fe$zi))) /             # P(not structural zero), unmined
+  (1 - plogis(fe$zi[["(Intercept)"]])))  # P(not structural zero), mined
+```
+
+The expected count is about 8.7 times higher in unmined streams —
+one coherent ecological story told in two parts. The random-effects block
 and its conventions are covered in the companion vignette
 [*Mixed-effects regression tables*](table-regression-mixed.html).
 
@@ -381,23 +428,57 @@ table_regression(fp, exponentiate = TRUE)
 
 Distance cuts trade hard: the IRR of 0.22 says a one-log-unit
 increase in distance multiplies expected flows by 0.22, origin and
-destination effects absorbed. Two reading notes. PPML deliberately
-applies the Poisson *estimator* to a continuous outcome (here Euros)
-— the coefficients are consistent under the gravity model's
-assumptions even though the outcome is no count, which is also why
-the likelihood-based AIC is astronomically large and best ignored in
-favor of the pseudo-R². And `fixest`'s absorbed factors are *fixed*
-effects in the econometric sense — compare the `glmmTMB` section
-above, where the grouping structure is modelled as random effects
-with variance components instead; `fenegbin()` runs the same layout
-for the negative binomial.
+destination effects absorbed. Three reading notes.
+
+First, PPML deliberately applies the Poisson *estimator* to a
+continuous outcome (here Euros): it is a quasi-maximum-likelihood
+estimator, so the coefficients are consistent whenever the
+conditional mean is correctly specified, even though the outcome is
+no count (Santos Silva & Tenreyro 2006). The price of that bargain
+is the variance: the Poisson assumption $V(Y \mid x) = \mu$ is
+exactly what QMLE gives up, and on trade data it is violated by
+orders of magnitude — which is why the model-based interval above
+collapses to a degenerate [0.22, 0.22]. Those standard errors are
+not usable; PPML inference must be heteroskedasticity-robust and, in
+gravity practice, clustered. `table_regression()` reports the
+variance the fit itself carries (`HC*`/`CR*` requests are refused
+for `fixest` with a clear error), so ask `fixest` for the robust
+variance at fit time and the table, footer included, follows:
+
+```{r fepois-cluster, eval = requireNamespace("fixest", quietly = TRUE)}
+fp_cl <- fixest::fepois(Euros ~ log(dist_km) | Origin + Destination,
+                        data = tr, vcov = ~Origin)
+table_regression(fp_cl, exponentiate = TRUE)
+```
+
+Same coefficient, honest interval: [0.18, 0.28] under clustering by
+origin, in place of the degenerate model-based one.
+
+Second, ignore the AIC's magnitude. The Poisson log-likelihood is
+evaluated at the raw outcome values — trade flows in the millions
+and billions of Euros enter through the $y \log \mu$ and $\log y!$
+terms — so the astronomical AIC is a scale artefact, not evidence
+about fit: refitting with the outcome rounded to whole Euros (a
+genuine count of the same magnitude) reproduces it exactly, while
+dividing the outcome by a million shrinks it by orders of magnitude
+without changing the distance coefficient at all. It remains
+comparable only across specifications of the *same* outcome. The
+McFadden pseudo-R² is a ratio of log-likelihoods on the same data,
+so the scale-driven terms largely cancel and it stays readable.
+
+Third, `fixest`'s absorbed factors are *fixed* effects in the
+econometric sense — compare the `glmmTMB` section above, where the
+grouping structure is modelled as random effects with variance
+components instead; `fenegbin()` runs the same layout for the
+negative binomial.
 
 ## Output formats
 
 Everything above used the default console output. The same structure —
-zero block included, as the last rows below — carries to a raw data
-frame, a long broom-style tibble, and the rich `gt`, `flextable`,
-`tinytable`, Excel, or Word targets:
+zero block included, as the last coefficient rows just above the fit
+statistics below — carries to a raw data frame, a long broom-style
+tibble, and the rich `gt`, `flextable`, `tinytable`, Excel, or Word
+targets:
 
 ```{r outputs-df}
 table_regression(fit_zip, output = "data.frame")

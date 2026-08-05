@@ -307,30 +307,29 @@ test_that("mlogit advertises no AME (marginaleffects has no slopes() for it)", {
   )
 })
 
-test_that("glmmTMB AME falls back to model-based under a robust vcov (no blank)", {
+test_that("glmmTMB AME is model-based and pinned; CR* is refused up front", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("marginaleffects")
   d <- make_d()
   d$g <- factor(sample(14, nrow(d), TRUE))
   fit <- glmmTMB::glmmTMB(y ~ x1 + f + (1 | g), data = d)
   am <- ame_rows(as_regression_frame(fit, show_columns = "ame"))
-  ar <- suppressWarnings(
-    ame_rows(as_regression_frame(
+  # CR* no longer reaches the AME path at all: clubSandwich has no
+  # glmmTMB backend, so compute_model_vcov() refuses before any
+  # fallback could happen (the old graceful model-based fallback is
+  # unreachable).
+  expect_error(
+    as_regression_frame(
       fit,
       vcov = "CR2",
       cluster = d$g,
       show_columns = "ame"
-    ))
+    ),
+    class = "spicy_unsupported_vcov"
   )
-  # avg_slopes() accepts only TRUE/FALSE/"HC0" for glmmTMB (not a custom vcov
-  # matrix), so the AME gracefully falls back to the model-based vcov rather
-  # than rendering blank. Estimates + (model-based) SEs are unchanged.
-  expect_identical(nrow(ar), nrow(am))
-  expect_gt(nrow(ar), 0L)
-  expect_equal(ar$estimate, am$estimate, tolerance = 1e-9)
-  expect_equal(ar$std_error, am$std_error, tolerance = 1e-9)
-  # And the model-based values themselves are pinned to avg_slopes(),
+  # The model-based values themselves stay pinned to avg_slopes(),
   # matched by term id (x1 + both factor levels).
+  expect_gt(nrow(am), 0L)
   orc <- oracle_slopes(fit)
   okey <- oracle_term_id(orc)
   expect_setequal(am$term, okey)
