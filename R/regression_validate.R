@@ -667,6 +667,73 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       if (inherits(models[[i]], "geeglm")) {
         .gee_refuse_vcov(vt)
       }
+      # clm with a scale / nominal component: the restriction is
+      # STRUCTURAL, not class-wide. The generic message below would
+      # read "clm supports: classical", wrongly implying every clm is
+      # classical-only when a plain proportional-odds clm takes CR*.
+      if (
+        inherits(models[[i]], "clm") &&
+          (!is.null(models[[i]]$S.terms) ||
+            !is.null(models[[i]]$nom.terms))
+      ) {
+        spicy_abort(
+          c(
+            sprintf(
+              paste0(
+                "`vcov = \"%s\"` is not available for a `clm` fit ",
+                "with a scale or nominal component."
+              ),
+              vt
+            ),
+            "i" = paste0(
+              "`ordinal` provides no estimating functions for the ",
+              "scale / nominal parts, so no sandwich can be built. ",
+              "A plain proportional-odds `clm` supports ",
+              "\"CR0\"-\"CR3\" with `cluster`."
+            ),
+            "i" = paste0(
+              "Use the model-based default, or refit without ",
+              "`scale` / `nominal`."
+            )
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
+      # multinom / mlogit HC*: name the reason instead of a bare
+      # supported-types list -- the refusal is statistical, not a
+      # not-yet-wired gap.
+      if (
+        inherits(models[[i]], c("multinom", "mlogit")) &&
+          grepl("^HC", vt)
+      ) {
+        why_hc <- if (inherits(models[[i]], "multinom")) {
+          paste0(
+            "A multi-equation model has no working residuals or ",
+            "hat values, so the HC* meat cannot be formed."
+          )
+        } else {
+          paste0(
+            "sandwich::vcovHC() computes a result for mlogit but ",
+            "silently mis-scales the meat for its per-chooser ",
+            "score structure."
+          )
+        }
+        spicy_abort(
+          c(
+            sprintf(
+              "`vcov = \"%s\"` is not available for `%s` models.",
+              vt,
+              class(models[[i]])[1L]
+            ),
+            "i" = why_hc,
+            "i" = paste0(
+              "Cluster-robust \"CR0\"-\"CR3\" with `cluster` is ",
+              "supported for this class."
+            )
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
       # Survey fits are refused on the same principle: the design-based
       # Taylor / replicate variance IS the robust variance, and clustering
       # belongs in the design (clubSandwich has no vcovCR.svyglm; the call

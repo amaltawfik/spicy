@@ -506,3 +506,41 @@ test_that("glmmTMB and svyglm refuse every robust token including CR*", {
     }
   }
 })
+
+test_that("structure-aware refusal messages: clm scale/nominal, multinom/mlogit HC*", {
+  skip_if_not_installed("ordinal")
+  skip_if_not_installed("nnet")
+  # clm with nominal: the message names the structural reason and does
+  # NOT imply the whole class is classical-only.
+  f_ppo <- ordinal::clm(
+    self_rated_health ~ age,
+    nominal = ~smoking,
+    data = sochealth
+  )
+  err <- expect_error(
+    table_regression(f_ppo, vcov = "CR2", cluster = ~region),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(conditionMessage(err), "scale or nominal", fixed = TRUE)
+  expect_match(conditionMessage(err), "proportional-odds", fixed = TRUE)
+  # Plain PO clm still computes CR2 (the restriction is structural).
+  f_po <- ordinal::clm(self_rated_health ~ age, data = sochealth)
+  out <- table_regression(
+    f_po,
+    vcov = "CR2",
+    cluster = ~region,
+    output = "data.frame"
+  )
+  expect_s3_class(out, "data.frame")
+  # multinom HC*: the reason is named (no working residuals).
+  f_mn <- nnet::multinom(
+    employment_status ~ age,
+    data = sochealth,
+    trace = FALSE
+  )
+  err2 <- expect_error(
+    table_regression(f_mn, vcov = "HC3"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(conditionMessage(err2), "working residuals", fixed = TRUE)
+})
