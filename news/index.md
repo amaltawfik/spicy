@@ -155,6 +155,14 @@
   sqrt, …). Ratio links (logit, log, binomial / ordinal cloglog) are
   unchanged; identity links keep the warn-and-skip.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  exempt intercept rows from `keep` / `drop`: the patterns select
+  predictors, and `show_intercept` alone controls the intercept. With
+  the default `show_intercept = TRUE`, `keep = "wt"` now retains the
+  intercept row; pass `show_intercept = FALSE` to hide it.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   defaults to `drop_na = FALSE`: missing values display as a
   `"(Missing)"` level instead of being silently removed. With
@@ -1073,7 +1081,12 @@ rendering an empty column.
   `marginaleffects::avg_slopes(fit, wts = weights(fit))`. AME values
   change for weighted fits (they matched the unweighted average before);
   `svyglm` is unaffected – its design weights were already applied
-  natively.
+  natively. The weights reach every path: fits under
+  `na.action = na.exclude` (the NA-padded weights vector no longer
+  silently disabled the weighting),
+  [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) frequency
+  weights (recovered from the model frame), and the draws-native
+  Bayesian AME of `stanreg` / `brmsfit` fits.
 
 - [`nlme::gls`](https://rdrr.io/pkg/nlme/man/gls.html) fits populate the
   AME columns (`show_columns = c("b", "ame")`); the column rendered
@@ -1084,6 +1097,21 @@ rendering an empty column.
   promises: an `is_smoker:` header with indented `FALSE (ref.)` / `TRUE`
   rows (and aligned AME cells), instead of a flat `is_smokerTRUE` row
   with no reference level.
+
+- Character predictors align their AME rows with the grouped factor
+  levels, exactly like the same variable wrapped in
+  [`factor()`](https://rdrr.io/r/base/factor.html); the AME column used
+  to show one stray unlabeled row holding the first contrast and drop
+  the remaining levels’ AMEs.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  reports correct `partial_chi2` values for `glm` fits created with
+  `y = FALSE` and a matrix `cbind(successes, failures)` response: the
+  internal refit multiplied the binomial totals into the weights a
+  second time, inflating every chi-square.
+  ([`stats::drop1()`](https://rdrr.io/r/stats/add1.html) reconstructs
+  such fits the same way and shares the defect, so it is deliberately
+  not mirrored on this input.)
 
 - In mixed-class tables, a fit statistic not defined for a model’s class
   renders an en-dash in that model’s cell (console and rich outputs), as
@@ -1315,7 +1343,7 @@ CRAN release: 2026-05-04
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html);
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonisation across the table family

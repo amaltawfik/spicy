@@ -697,7 +697,7 @@ are also available via <code>vcov = "bootstrap"</code> /
 <p>When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set
 <code>vcov = "HC*"</code> for sandwich-style standard errors via
-[<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>][sandwich::vcovHC]. The valid types are
+[<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>][sandwich::vcovHC]. The valid types are
 <code>HC0</code> through <code>HC5</code>; <code>HC3</code> is the
 small-sample-friendly default (Long and Ervin 2000):</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -892,16 +892,17 @@ Multiple patterns combine with logical OR.</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"^smoking"</span>, <span class="st">"^bmi$"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>    B      SE      95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking:    <span style="color: #9E9E9E;">│</span>                                     </span></span>
-<span><span class="co">#&gt;    No (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –         –    </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>    0.79  1.00  [-1.17, 2.75]   .428 </span></span>
-<span><span class="co">#&gt;  bmi         <span style="color: #9E9E9E;">│</span>    0.10  0.12  [-0.14, 0.33]   .418 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n           <span style="color: #9E9E9E;">│</span> 1163                                </span></span>
-<span><span class="co">#&gt;  R²          <span style="color: #9E9E9E;">│</span>    0.23                             </span></span>
-<span><span class="co">#&gt;  Adj.R²      <span style="color: #9E9E9E;">│</span>    0.22                             </span></span>
+<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept) <span style="color: #9E9E9E;">│</span>   51.41  3.52  [44.50, 58.32]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:    <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>    0.79  1.00  [-1.17,  2.75]   .428 </span></span>
+<span><span class="co">#&gt;  bmi         <span style="color: #9E9E9E;">│</span>    0.10  0.12  [-0.14,  0.33]   .418 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n           <span style="color: #9E9E9E;">│</span> 1163                                 </span></span>
+<span><span class="co">#&gt;  R²          <span style="color: #9E9E9E;">│</span>    0.23                              </span></span>
+<span><span class="co">#&gt;  Adj.R²      <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>

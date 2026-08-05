@@ -291,9 +291,10 @@ s2$body[, c(1, s2$spanners$Extended)]
 ## Building your own renderer
 
 The structured view carries everything a renderer needs. A compact
-[`knitr::kable()`](https://rdrr.io/pkg/knitr/man/kable.html) rendering,
-using the display precision from `col_meta` and marking the structural
-rows, takes a few lines:
+[`knitr::kable()`](https://rdrr.io/pkg/knitr/man/kable.html) rendering
+takes a few lines: each column formats at its `col_meta` precision, and
+the `fit_stat_overrides` seen earlier supply the per-row exceptions —
+that is what renders the `n` row as `1175` rather than `1175.00`:
 
 ``` r
 
@@ -301,12 +302,23 @@ render_kable <- function(tbl) {
   s <- as_structured(tbl)
   out <- s$body
   for (nm in names(out)[-1]) {
-    prec <- s$col_meta[[nm]]$precision
+    meta <- s$col_meta[[nm]]
+    prec <- meta$precision
     if (is.null(prec)) prec <- s$format_spec$digits
-    out[[nm]] <- ifelse(
-      is.na(out[[nm]]),
-      "",
-      formatC(out[[nm]], format = "f", digits = prec)
+    row_prec <- rep(prec, nrow(out))
+    for (ov in meta$fit_stat_overrides) {
+      if (!is.null(ov$precision)) row_prec[ov$row] <- ov$precision
+    }
+    out[[nm]] <- vapply(
+      seq_len(nrow(out)),
+      function(i) {
+        if (is.na(out[[nm]][i])) {
+          ""
+        } else {
+          formatC(out[[nm]][i], format = "f", digits = row_prec[i])
+        }
+      },
+      character(1)
     )
   }
   knitr::kable(out, align = c("l", rep("r", ncol(out) - 1)))
@@ -314,19 +326,19 @@ render_kable <- function(tbl) {
 render_kable(tbl)
 ```
 
-| Variable      |       B |   SE | 95% CI: LL | 95% CI: UL |     p |
-|:--------------|--------:|-----:|-----------:|-----------:|------:|
-| (Intercept)   |   65.20 | 1.66 |      61.95 |      68.45 | 0.000 |
-| age           |    0.05 | 0.03 |      -0.01 |       0.11 | 0.130 |
-| sex:          |         |      |            |            |       |
-| Female (ref.) |         |      |            |            |       |
-| Male          |    3.86 | 0.91 |       2.08 |       5.63 | 0.000 |
-| smoking:      |         |      |            |            |       |
-| No (ref.)     |         |      |            |            |       |
-| Yes           |   -1.72 | 1.11 |      -3.89 |       0.45 | 0.121 |
-| n             | 1175.00 |      |            |            |       |
-| R²            |    0.02 |      |            |            |       |
-| Adj.R²        |    0.02 |      |            |            |       |
+| Variable      |     B |   SE | 95% CI: LL | 95% CI: UL |     p |
+|:--------------|------:|-----:|-----------:|-----------:|------:|
+| (Intercept)   | 65.20 | 1.66 |      61.95 |      68.45 | 0.000 |
+| age           |  0.05 | 0.03 |      -0.01 |       0.11 | 0.130 |
+| sex:          |       |      |            |            |       |
+| Female (ref.) |       |      |            |            |       |
+| Male          |  3.86 | 0.91 |       2.08 |       5.63 | 0.000 |
+| smoking:      |       |      |            |            |       |
+| No (ref.)     |       |      |            |            |       |
+| Yes           | -1.72 | 1.11 |      -3.89 |       0.45 | 0.121 |
+| n             |  1175 |      |            |            |       |
+| R²            |  0.02 |      |            |            |       |
+| Adj.R²        |  0.02 |      |            |            |       |
 
 Anything more ambitious – a
 [`DT::datatable()`](https://rdrr.io/pkg/DT/man/datatable.html) with

@@ -854,7 +854,7 @@ Each token = one displayed column.
   any higher-order interaction containing it (the `car::Anova(type = 2)`
   convention), so the value does not depend on the factor coding. For
   `glm` the statistic is the likelihood-ratio chi-square (Long & Freese
-  2014 Section 3.5); for `lmer` / `glmer` / `glmmTMB` /
+  2014 Sections 3.2.2, 3.2.4); for `lmer` / `glmer` / `glmmTMB` /
   [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) it is the Wald
   chi-square built from the same Type-II hypothesis – a deliberate
   departure from the Type-III default of SAS PROC MIXED and `lmerTest`
@@ -1025,7 +1025,7 @@ model_id key.
 - `"classical"` – OLS (lm) / Fisher information (glm).
 
 - `"HC0"` to `"HC5"` – heteroskedasticity-consistent (via
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)).
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)).
 
 - `"CR0"` to `"CR3"` – cluster-robust with Satterthwaite-corrected df
   (via
@@ -1102,7 +1102,7 @@ silent model-based result under a robust label:
 - `mlogit`:
 
   `classical` + `CR*` only (cluster at the choice-situation level) –
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
   mis-scales the sandwich for mlogit's per-choice-situation scores, so
   `HC*` is refused.
 
@@ -1137,7 +1137,7 @@ clubSandwich (CR2 = Bell-McCaffrey, with Satterthwaite df for
 `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 sandwich (identical to `coxph(..., cluster=)`);
 `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` use
-[`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html);
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
 `svyglm` uses the design-aware clubSandwich estimator; `rms` fits use
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (which needs
 the fit's `x = TRUE, y = TRUE`). These single cluster sandwiches have no
@@ -1155,7 +1155,7 @@ Three accepted forms, in order of preference:
     `model.frame(fit)` first, then in the original `data` argument
     captured by the fit. **Recommended**: independent of the dataset's
     name, composable for multi-way clustering, consistent with
-    [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)
+    [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
     /
     [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md).
 
@@ -1250,7 +1250,7 @@ Default change tokens auto-injected when `show_fit_stats` is `NULL`:
   regression standard.
 
 - All-glm: `c("lrt_change", "p_change")` – Hosmer & Lemeshow Section
-  3.5; Long & Freese 2014 Section 3.6.
+  3.5; Long & Freese 2014 Section 3.2.4.
 
 To customise, pass the change tokens directly to `show_fit_stats`.
 Variance-explained change tokens on an all-glm hierarchy raise

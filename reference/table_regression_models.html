@@ -207,7 +207,7 @@ nonzero count – the opposite direction, hence the distinct label), and a
 coefficients join the <code>p_adjust</code> family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). <code>CR*</code> for <code>pscl</code> fits covers both components
-via <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. Opt out with <code>show_components = FALSE</code>.</p>
+via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. Opt out with <code>show_components = FALSE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="categorical-outcomes">Categorical outcomes<a class="anchor" aria-label="anchor" href="#categorical-outcomes"></a></h2>
@@ -227,7 +227,7 @@ model has no working residuals.
 per-alternative rows; AME is refused (no <code>slopes()</code> method exists for
 its data format). <code>CR*</code> is available with one cluster value per choice
 situation, and <code>n</code> counts choice situations; <code>HC*</code> is refused
-(<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the meat for mlogit's per-chooser
+(<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the meat for mlogit's per-chooser
 score structure).</p>
     </div>
     <div class="section level2">

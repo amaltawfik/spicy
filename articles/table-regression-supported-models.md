@@ -117,7 +117,7 @@ models use the Lin-Wei grouped-dfbeta sandwich, and the `rms` fits take
 `CR*` via [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html)
 (refit with `x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and
 `betareg` take `CR*` via
-[`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html);
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
 `pscl` two-part fits cluster both components. `estimatr` fits keep their
 own robust SEs, and `fixest` fits keep the estimator they were computed
 with (the footer carries fixest’s own label – IID, clustered,

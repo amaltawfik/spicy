@@ -927,7 +927,7 @@ hypothesis that excludes any higher-order interaction
 containing it (the <code>car::Anova(type = 2)</code> convention), so
 the value does not depend on the factor coding. For <code>glm</code>
 the statistic is the likelihood-ratio chi-square (Long &amp;
-Freese 2014 Section 3.5); for <code>lmer</code> / <code>glmer</code> / <code>glmmTMB</code> /
+Freese 2014 Sections 3.2.2, 3.2.4); for <code>lmer</code> / <code>glmer</code> / <code>glmmTMB</code> /
 <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> it is the Wald chi-square built from the same
 Type-II hypothesis – a deliberate departure from the
 Type-III default of SAS PROC MIXED and <code>lmerTest</code> (the two
@@ -1084,7 +1084,7 @@ internal model_id key.</p>
     <p><code>vcov</code> selects the variance-covariance estimator:</p>
 <ul><li><p><code>"classical"</code> – OLS (lm) / Fisher information (glm).</p></li>
 <li><p><code>"HC0"</code> to <code>"HC5"</code> – heteroskedasticity-consistent
-(via <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
+(via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
 <li><p><code>"CR0"</code> to <code>"CR3"</code> – cluster-robust with
 Satterthwaite-corrected df (via <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>).
 Requires <code>cluster</code>.</p></li>
@@ -1145,7 +1145,7 @@ the class cannot honour fails fast with <code>spicy_unsupported_vcov</code>
 
 <dt><code>mlogit</code></dt>
 <dd><p><code>classical</code> + <code>CR*</code> only (cluster at the
-choice-situation level) – <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
+choice-situation level) – <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
 sandwich for mlogit's per-choice-situation scores, so <code>HC*</code> is
 refused.</p></dd>
 
@@ -1180,7 +1180,7 @@ to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>
 <code>lm</code>/<code>lme</code>/<code>lmer</code>); <code>coxph</code>/<code>cph</code> use the Lin-Wei grouped-dfbeta
 sandwich (identical to <code>coxph(..., cluster=)</code>);
 <code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code>/<code>multinom</code> use
-<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>svyglm</code> uses the design-aware
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>svyglm</code> uses the design-aware
 <span class="pkg">clubSandwich</span> estimator; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
 needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
@@ -1200,7 +1200,7 @@ variables). The variables are looked up in
 <code>model.frame(fit)</code> first, then in the original <code>data</code>
 argument captured by the fit. <strong>Recommended</strong>: independent
 of the dataset's name, composable for multi-way clustering,
-consistent with <code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
+consistent with <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>.</p></li>
 <li><p><strong>String</strong> – <code>cluster = "region"</code>. A single column
 name resolved the same way as the formula. Convenient but
@@ -1295,7 +1295,7 @@ across all models.</p>
 <code>NULL</code>:</p><ul><li><p>All-lm: <code>c("r2_change", "f_change", "p_change")</code> –
 APA hierarchical regression standard.</p></li>
 <li><p>All-glm: <code>c("lrt_change", "p_change")</code> – Hosmer &amp;
-Lemeshow Section 3.5; Long &amp; Freese 2014 Section 3.6.</p></li>
+Lemeshow Section 3.5; Long &amp; Freese 2014 Section 3.2.4.</p></li>
 </ul><p>To customise, pass the change tokens directly to
 <code>show_fit_stats</code>. Variance-explained change tokens on an
 all-glm hierarchy raise <code>spicy_invalid_input</code> (the

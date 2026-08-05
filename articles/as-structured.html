@@ -368,20 +368,33 @@ decide where the reference en-dash belongs:</p>
 <h2 id="building-your-own-renderer">Building your own renderer<a class="anchor" aria-label="anchor" href="#building-your-own-renderer"></a>
 </h2>
 <p>The structured view carries everything a renderer needs. A compact
-<code><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">knitr::kable()</a></code> rendering, using the display precision from
-<code>col_meta</code> and marking the structural rows, takes a few
-lines:</p>
+<code><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">knitr::kable()</a></code> rendering takes a few lines: each column
+formats at its <code>col_meta</code> precision, and the
+<code>fit_stat_overrides</code> seen earlier supply the per-row
+exceptions — that is what renders the <code>n</code> row as
+<code>1175</code> rather than <code>1175.00</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">render_kable</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">body</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">nm</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">prec</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">col_meta</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">precision</span></span>
+<span>    <span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">col_meta</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">prec</span> <span class="op">&lt;-</span> <span class="va">meta</span><span class="op">$</span><span class="va">precision</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">prec</span><span class="op">)</span><span class="op">)</span> <span class="va">prec</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">format_spec</span><span class="op">$</span><span class="va">digits</span></span>
-<span>    <span class="va">out</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">out</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>      <span class="st">""</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/formatc.html" class="external-link">formatC</a></span><span class="op">(</span><span class="va">out</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span>, format <span class="op">=</span> <span class="st">"f"</span>, digits <span class="op">=</span> <span class="va">prec</span><span class="op">)</span></span>
+<span>    <span class="va">row_prec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">prec</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">ov</span> <span class="kw">in</span> <span class="va">meta</span><span class="op">$</span><span class="va">fit_stat_overrides</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">ov</span><span class="op">$</span><span class="va">precision</span><span class="op">)</span><span class="op">)</span> <span class="va">row_prec</span><span class="op">[</span><span class="va">ov</span><span class="op">$</span><span class="va">row</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">ov</span><span class="op">$</span><span class="va">precision</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">out</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">out</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>          <span class="st">""</span></span>
+<span>        <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/formatc.html" class="external-link">formatC</a></span><span class="op">(</span><span class="va">out</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, format <span class="op">=</span> <span class="st">"f"</span>, digits <span class="op">=</span> <span class="va">row_prec</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
+<span>      <span class="op">}</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">out</span>, align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"l"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"r"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -463,7 +476,7 @@ lines:</p>
 </tr>
 <tr class="odd">
 <td align="left">n</td>
-<td align="right">1175.00</td>
+<td align="right">1175</td>
 <td align="right"></td>
 <td align="right"></td>
 <td align="right"></td>

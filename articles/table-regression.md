@@ -590,7 +590,7 @@ available via `vcov = "bootstrap"` / `"jackknife"`.
 When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set `vcov = "HC*"` for
 sandwich-style standard errors via
-\[[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)\]\[sandwich::vcovHC\].
+\[[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)\]\[sandwich::vcovHC\].
 The valid types are `HC0` through `HC5`; `HC3` is the
 small-sample-friendly default (Long and Ervin 2000):
 
@@ -783,16 +783,17 @@ fit <- lm(wellbeing_score ~ age + sex + smoking + bmi + education,
 table_regression(fit, keep = c("^smoking", "^bmi$"))
 #> Linear regression: wellbeing_score
 #> 
-#>  Variable    │    B      SE      95% CI        p   
-#> ─────────────┼─────────────────────────────────────
-#>  smoking:    │                                     
-#>    No (ref.) │     –     –          –         –    
-#>    Yes       │    0.79  1.00  [-1.17, 2.75]   .428 
-#>  bmi         │    0.10  0.12  [-0.14, 0.33]   .418 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n           │ 1163                                
-#>  R²          │    0.23                             
-#>  Adj.R²      │    0.22                             
+#>  Variable    │    B      SE       95% CI        p   
+#> ─────────────┼──────────────────────────────────────
+#>  (Intercept) │   51.41  3.52  [44.50, 58.32]  <.001 
+#>  smoking:    │                                      
+#>    No (ref.) │     –     –          –          –    
+#>    Yes       │    0.79  1.00  [-1.17,  2.75]   .428 
+#>  bmi         │    0.10  0.12  [-0.14,  0.33]   .418 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │ 1163                                 
+#>  R²          │    0.23                              
+#>  Adj.R²      │    0.22                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).

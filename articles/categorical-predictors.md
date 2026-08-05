@@ -88,17 +88,18 @@ c(AIC(fit), AIC(fit_u))
 table_regression(fit_u, keep = "employment_status")
 #> Linear regression: wellbeing_score
 #> 
-#>  Variable            │    B      SE      95% CI       p   
-#> ─────────────────────┼────────────────────────────────────
-#>  employment_status:  │                                    
-#>    Unemployed (ref.) │     –     –         –         –    
-#>    Employed          │    3.60  1.31  [1.03, 6.17]   .006 
-#>    Student           │    4.70  1.76  [1.25, 8.15]   .008 
-#>    Inactive          │    3.88  1.84  [0.27, 7.50]   .035 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                   │ 1200                               
-#>  R²                  │    0.01                            
-#>  Adj.R²              │    0.01                            
+#>  Variable            │    B      SE       95% CI        p   
+#> ─────────────────────┼──────────────────────────────────────
+#>  (Intercept)         │   63.78  1.90  [60.05, 67.51]  <.001 
+#>  employment_status:  │                                      
+#>    Unemployed (ref.) │     –     –          –          –    
+#>    Employed          │    3.60  1.31  [ 1.03,  6.17]   .006 
+#>    Student           │    4.70  1.76  [ 1.25,  8.15]   .008 
+#>    Inactive          │    3.88  1.84  [ 0.27,  7.50]   .035 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                   │ 1200                                 
+#>  R²                  │    0.01                              
+#>  Adj.R²              │    0.01                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -107,11 +108,14 @@ table_regression(fit_u, keep = "employment_status")
 Every group now sits 3.6 to 4.7 points *above* the unemployed — the same
 fit read from the other end. Two practical rules:
 
-- **Do not let alphabetical order decide.**
-  [`factor()`](https://rdrr.io/r/base/factor.html) sorts levels
-  alphabetically by default, so the reference is whichever category
-  happens to sort first — rarely the one you would have chosen, and a
-  silent source of confusing signs when data come from text files.
+- **Do not let sort order decide.**
+  [`factor()`](https://rdrr.io/r/base/factor.html) builds its default
+  levels with `sort(unique(x))` on the *original* vector: character
+  input — the typical case when data come from text files — sorts
+  alphabetically (in the locale’s collation order), numeric codes sort
+  numerically. Either way the reference is whichever category happens to
+  sort first — rarely the one you would have chosen, and a silent source
+  of confusing signs.
 - **Choose a reference that makes every displayed contrast readable**:
   the largest category (stable comparisons), an unexposed / control
   category (epidemiology), or the substantively natural baseline. A rare
@@ -412,16 +416,17 @@ table_regression(
 )
 #> Linear regression: wellbeing_score
 #> 
-#>  Variable  │    B      SE       95% CI        p   
-#> ───────────┼──────────────────────────────────────
-#>  srh_sdif: │                                      
-#>    2-1     │   14.97  1.80  [11.44, 18.51]  <.001 
-#>    3-2     │   13.04  0.95  [11.18, 14.89]  <.001 
-#>    4-3     │    7.12  0.91  [ 5.33,  8.91]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n         │ 1180                                 
-#>  R²        │    0.35                              
-#>  Adj.R²    │    0.34                              
+#>  Variable    │    B      SE       95% CI        p   
+#> ─────────────┼──────────────────────────────────────
+#>  (Intercept) │   60.57  1.34  [57.94, 63.20]  <.001 
+#>  srh_sdif:   │                                      
+#>    2-1       │   14.97  1.80  [11.44, 18.51]  <.001 
+#>    3-2       │   13.04  0.95  [11.18, 14.89]  <.001 
+#>    4-3       │    7.12  0.91  [ 5.33,  8.91]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │ 1180                                 
+#>  R²          │    0.35                              
+#>  Adj.R²      │    0.34                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -489,14 +494,50 @@ spline — not bins:
 
 ``` r
 
-AIC(b_cont, update(b_cont, . ~ . + I(bmi^2)))
-#>                                  df      AIC
-#> b_cont                            3 9884.236
-#> update(b_cont, . ~ . + I(bmi^2))  4 9885.893
+table_regression(
+  list(Linear = b_cont, Quadratic = update(b_cont, . ~ . + I(bmi^2))),
+  nested = TRUE,
+  show_fit_stats = c("nobs", "aic", "aic_change")
+)
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>                       Linear               Quadratic       
+#>                ────────────────────  ───────────────────── 
+#>  Variable    │    B      SE     p       B      SE      p   
+#> ─────────────┼─────────────────────────────────────────────
+#>  (Intercept) │   84.48  3.16  <.001    75.64  15.45  <.001 
+#>  bmi         │   -0.60  0.12  <.001     0.10   1.20   .934 
+#>  I(bmi^2)    │                         -0.01   0.02   .559 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │ 1188                  1188                  
+#>  AIC         │ 9884.2                9885.9                
+#>  ΔAIC        │     –                   +1.7                
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
 ```
 
-The quadratic term adds nothing (AIC 9885.9 against 9884.2 for the
-linear fit), so the linear fit stands.
+Read the `ΔAIC` row with the standard interpretive scale (Burnham and
+Anderson 2004): a difference of about 2 or less means the data cannot
+tell the models apart — and ties go to the simpler model — while a
+difference above 10 means the poorer model has essentially no support.
+In between, read the difference continuously as a relative likelihood,
+`exp(-Δ/2)`: a ΔAIC of 5 makes the better model about 12 times more
+likely, a ΔAIC of 7 about 33 times — real evidence that weakens the
+poorer model without dismissing it, where substantive grounds should
+complete the decision. Here the quadratic costs +1.8: indistinguishable
+from the linear fit, and its own coefficient is indistinguishable from
+zero, so the linear fit stands by parsimony. Now carry the same scale
+back to the previous table: the binned model’s AIC of 9898.1 sits **13.9
+above** the linear fit — past the no-support threshold. The two tables
+together close the argument: the flexible-fit remedy costs one degree of
+freedom and loses nothing, while the bins cost more and threw the
+within-interval information away. For genuinely curved effects, the same
+workflow extends to a restricted cubic spline (Harrell 2015, §2.4) in
+place of the polynomial. (`"aic_change"` is one of the change tokens
+`nested = TRUE` unlocks, alongside the default `ΔR²` / F-change rows;
+see
+[`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md).)
 
 Cut-points chosen *after looking at the outcome* do more damage still:
 p-values and CIs for “optimal” cut-points are invalid without special
@@ -557,6 +598,9 @@ table_regression(
 
 - Agresti, A. (2007). *An Introduction to Categorical Data Analysis*
   (2nd ed.). Wiley.
+- Burnham, K. P., & Anderson, D. R. (2004). Multimodel inference:
+  Understanding AIC and BIC in model selection. *Sociological Methods &
+  Research*, 33(2), 261-304.
 - Gelman, A., Hill, J., & Vehtari, A. (2020). *Regression and Other
   Stories*. Cambridge University Press.
 - Grambsch, P. M., & O’Brien, P. C. (1991). The effects of

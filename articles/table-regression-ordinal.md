@@ -345,7 +345,7 @@ than two categories.
 
 Ordinal fits honour the cluster-robust `vcov` family (`"CR0"`–`"CR3"`)
 via
-[`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html).
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 Pass the cluster as a formula, a column name, or a vector (see the main
 vignette, *How to specify `cluster`*):
 

@@ -516,7 +516,7 @@ Cox models use the Lin-Wei grouped-dfbeta sandwich, and the
 <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (refit with <code>x = TRUE, y = TRUE</code>);
 <code>survreg</code>, <code>gam</code> / <code>bam</code> and
 <code>betareg</code> take <code>CR*</code> via
-<code><a href="https://sandwich.R-Forge.R-project.org/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>pscl</code> two-part fits cluster
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>pscl</code> two-part fits cluster
 both components. <code>estimatr</code> fits keep their own robust SEs,
 and <code>fixest</code> fits keep the estimator they were computed with
 (the footer carries fixest’s own label – IID, clustered, Newey-West, … –

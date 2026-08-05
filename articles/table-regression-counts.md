@@ -460,7 +460,7 @@ with `datagrid()`.
 
 Students cluster in labs, cohorts, mentor groups. The `CR*` family
 covers **both components with one estimator** —
-[`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
 on the full score matrix, so the count and zero rows shift together. For
 two-part models every `CR*` variant maps to that same estimator, and the
 footer records it as `CL`:
