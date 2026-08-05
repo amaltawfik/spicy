@@ -381,3 +381,21 @@ test_that("polynomial legend passes non-canonical suffixes through as-is", {
   expect_match(out, "^x = ^x", fixed = TRUE) # non-integer caret arm
   expect_match(out, ".b = .b", fixed = TRUE) # non-poly dot suffix arm
 })
+
+test_that("beta abbreviation names the standardisation method and dummy convention", {
+  fit <- lm(wellbeing_score ~ age + sex, data = sochealth)
+  for (m in c("refit", "posthoc", "basic", "smart")) {
+    note <- paste(
+      attr(table_regression(fit, standardized = m), "note"),
+      collapse = "\n"
+    )
+    expect_match(note, sprintf('\u03B2 = standardised coefficient ("%s"', m), fixed = TRUE)
+    expect_match(note, "dummies", fixed = TRUE)
+  }
+  gfit <- glm(smoking ~ age + sex, data = sochealth, family = binomial)
+  note_p <- paste(
+    attr(table_regression(gfit, standardized = "pseudo"), "note"),
+    collapse = "\n"
+  )
+  expect_match(note_p, '"pseudo": latent-scale', fixed = TRUE)
+})

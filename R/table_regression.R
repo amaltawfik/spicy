@@ -272,7 +272,16 @@
 #'
 #' \describe{
 #'   \item{`lm`, `glm`, `MASS::glm.nb`}{all of `classical`, `HC*`,
-#'     `CR*`, `bootstrap`, `jackknife`.}
+#'     `CR*`, `bootstrap`, `jackknife`. `lm` additionally takes
+#'     `"CR1S"` -- the full Stata `regress, vce(cluster)`
+#'     convention: the CR1S small-sample scaling (equal to
+#'     [sandwich::vcovCL()] with `type = "HC1"`) with `t(G - 1)`
+#'     inference, `G` the number of clusters. Use it to reproduce
+#'     Stata tables; `"CR2"` (Bell-McCaffrey, Satterthwaite df)
+#'     remains the recommended modern choice. `"CR1S"` is refused
+#'     for `glm` with an explanation: Stata's ML commands use a
+#'     different convention (`G/(G-1)` scaling, z), so the label
+#'     would not match Stata output there.}
 #'   \item{`mlogit`}{`classical` + `CR*` only (cluster at the
 #'     choice-situation level) -- `sandwich::vcovHC()` mis-scales the
 #'     sandwich for mlogit's per-choice-situation scores, so `HC*` is

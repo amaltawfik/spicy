@@ -592,6 +592,30 @@ compute_coef_inference <- function(
     ))
   }
 
+  # "CR1S" (lm only): the full Stata `regress, vce(cluster)` convention --
+  # CR1S small-sample scaling (equal to sandwich::vcovCL(type = "HC1"),
+  # pinned by tests) with t(G - 1) inference, G = number of clusters.
+  # Satterthwaite df here would silently break the Stata correspondence
+  # that is this token's whole purpose, so the branch runs BEFORE the
+  # generic CR* Satterthwaite path below.
+  if (identical(vcov_type, "CR1S") && !is.null(cluster)) {
+    se_est <- .se_at(vc)
+    df <- length(unique(cluster[!is.na(cluster)])) - 1
+    stat <- estimate / se_est
+    crit <- stats::qt(1 - (1 - ci_level) / 2, df = df)
+    pval <- 2 * stats::pt(abs(stat), df = df, lower.tail = FALSE)
+    return(list(
+      estimate = estimate,
+      se = unname(se_est),
+      statistic = unname(stat),
+      df = as.double(df),
+      p.value = unname(pval),
+      ci_lower = estimate - crit * unname(se_est),
+      ci_upper = estimate + crit * unname(se_est),
+      test_type = "t"
+    ))
+  }
+
   if (startsWith(vcov_type, "CR") && !is.null(cluster)) {
     ct <- tryCatch(
       clubSandwich::coef_test(
@@ -822,7 +846,11 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   cr_only <- c("classical", paste0("CR", 0:3))
   switch(
     class(fit)[1L],
-    lm = full,
+    # lm additionally takes "CR1S" -- the full Stata
+    # `regress, vce(cluster)` convention (CR1S scaling + t(G-1)).
+    # NOT granted to glm: Stata's ML commands scale by G/(G-1) and
+    # report z, so a glm "CR1S" would carry a false Stata label.
+    lm = c(full, "CR1S"),
     glm = full,
     negbin = full, # MASS::glm.nb delegates to the glm path
     # Mixed-effects: cluster-robust via clubSandwich (Inc 2). lmer / lme get
@@ -1107,6 +1135,14 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
       "cluster vector supplied"
     } else {
       sprintf("clusters by %s", cluster_name)
+    }
+    if (identical(vcov_type, "CR1S")) {
+      # The Stata-correspondence token names its convention: the
+      # footer must let a reader match the table to Stata output.
+      return(sprintf(
+        "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), %s",
+        cl
+      ))
     }
     return(sprintf("cluster-robust (%s), %s", estimator %||% vcov_type, cl))
   }

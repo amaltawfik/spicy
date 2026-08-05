@@ -270,6 +270,14 @@ format_vcov_label_from_frame <- function(frame) {
     } else {
       sprintf("clusters by %s", cn)
     }
+    if (identical(vt, "CR1S")) {
+      # The Stata-correspondence token names its convention so a
+      # reader can match the table to Stata output.
+      return(sprintf(
+        "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), %s",
+        cluster_part
+      ))
+    }
     return(sprintf("cluster-robust (%s), %s", vt, cluster_part))
   }
   # Resampling estimators name the scheme and -- for the bootstrap -- the
@@ -453,7 +461,43 @@ build_abbreviations_footer_block_from_frames <- function(
   }
 
   if (!identical(standardized, "none")) {
-    defs <- c(defs, "\u03B2 = standardised coefficient")
+    # Self-documentation: five methods produce visibly different betas
+    # (a dummy's refit beta is 0.247 where its basic beta is 0.123 on
+    # the same fit), so the note names the method and its dummy
+    # convention -- the axis on which the methods differ. Same status
+    # as naming the variance estimator: no opt-out.
+    gloss <- switch(
+      standardized,
+      refit = paste0(
+        "\"refit\": outcome and numeric predictors z-scored, ",
+        "factor dummies on 0/1"
+      ),
+      posthoc = paste0(
+        "\"posthoc\": B \u00D7 SD(X)/SD(Y) for numeric predictors, ",
+        "B/SD(Y) for factor dummies"
+      ),
+      basic = paste0(
+        "\"basic\": every design column scaled by its SD, dummies ",
+        "included (SPSS / Stata Beta)"
+      ),
+      smart = paste0(
+        "\"smart\": numeric predictors \u00F7 2 SD (Gelman 2008), ",
+        "binaries and dummies on 0/1"
+      ),
+      pseudo = paste0(
+        "\"pseudo\": latent-scale SD(X)/SD(Y*) for numeric ",
+        "predictors, 1/SD(Y*) for factor dummies"
+      ),
+      NULL
+    )
+    defs <- c(
+      defs,
+      if (is.null(gloss)) {
+        "\u03B2 = standardised coefficient"
+      } else {
+        sprintf("\u03B2 = standardised coefficient (%s)", gloss)
+      }
+    )
   }
 
   if (is.list(frames) && length(frames) > 0L) {

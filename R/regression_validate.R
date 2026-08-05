@@ -550,6 +550,11 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     "classical",
     paste0("HC", 0:5),
     paste0("CR", 0:3),
+    # Stata `regress, vce(cluster)` convention: CR1S scaling with
+    # t(G - 1) inference. lm only (Stata's ML commands use a
+    # DIFFERENT convention -- G/(G-1) scaling with z -- so claiming
+    # the Stata name for glm would be a misattribution).
+    "CR1S",
     "bootstrap",
     "jackknife",
     # quantreg::rq estimator family (refused for every
@@ -666,6 +671,30 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       # (geeglm's `std.err =`), not in the table call.
       if (inherits(models[[i]], "geeglm")) {
         .gee_refuse_vcov(vt)
+      }
+      # glm + "CR1S": refuse with the reason. Stata's ML commands
+      # (logit, poisson, ...) use a DIFFERENT vce(cluster) convention
+      # -- G/(G-1) scaling with z inference -- so a glm "CR1S" would
+      # print numbers under a Stata label that Stata itself does not
+      # produce.
+      if (identical(vt, "CR1S") && inherits(models[[i]], "glm")) {
+        spicy_abort(
+          c(
+            "`vcov = \"CR1S\"` is available for `lm` fits only.",
+            "i" = paste0(
+              "\"CR1S\" reproduces Stata's `regress, vce(cluster)` ",
+              "(CR1S scaling, t(G-1)). Stata's ML commands use a ",
+              "different convention (G/(G-1) scaling, z), so the ",
+              "label would not match Stata output for a glm."
+            ),
+            "i" = paste0(
+              "Use `vcov = \"CR2\"` (Bell-McCaffrey with ",
+              "Satterthwaite df, the recommended default) or ",
+              "\"CR0\"-\"CR3\" with `cluster`."
+            )
+          ),
+          class = "spicy_unsupported_vcov"
+        )
       }
       # clm with a scale / nominal component: the restriction is
       # STRUCTURAL, not class-wide. The generic message below would

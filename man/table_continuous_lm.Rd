@@ -210,7 +210,8 @@ fractional df is reported in the \code{df2} column and in the
 \code{t(df)} / \code{F(df1, df2)} test header. \code{"CR1"} applies the
 G/(G-1) correction only; Stata's \verb{, vce(cluster id)} uses the
 larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-(clubSandwich's \code{"CR1S"}, not exposed here), so \code{"CR1"} does
+(clubSandwich's \code{"CR1S"}; exposed for \code{lm} fits in
+\code{\link[=table_regression]{table_regression()}}, not here), so \code{"CR1"} does
 not reproduce Stata. Cluster-robust variants
 are dispatched to \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} and inference uses
 \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}} / \code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}};
@@ -648,7 +649,8 @@ Satterthwaite degrees of freedom in \code{df2}, which the displayed
 \code{t(df)} / \code{F(df1, df2)} header renders to one decimal. \code{"CR1"}
 applies the G/(G-1) correction only -- Stata's \verb{, vce(cluster id)}
 uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-(clubSandwich's \code{"CR1S"}, not exposed here), so \code{"CR1"} does not
+(clubSandwich's \code{"CR1S"}; exposed for \code{lm} fits in
+\code{\link[=table_regression]{table_regression()}}, not here), so \code{"CR1"} does not
 reproduce Stata. Effect sizes remain invariant
 to \code{vcov} (including \verb{CR*}); only the SE, CI, test statistic, and
 \code{df2} of the contrast change.

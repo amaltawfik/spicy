@@ -1021,7 +1021,16 @@ the class cannot honour fails fast with \code{spicy_unsupported_vcov}
 
 \describe{
 \item{\code{lm}, \code{glm}, \code{MASS::glm.nb}}{all of \code{classical}, \verb{HC*},
-\verb{CR*}, \code{bootstrap}, \code{jackknife}.}
+\verb{CR*}, \code{bootstrap}, \code{jackknife}. \code{lm} additionally takes
+\code{"CR1S"} -- the full Stata \verb{regress, vce(cluster)}
+convention: the CR1S small-sample scaling (equal to
+\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} with \code{type = "HC1"}) with \code{t(G - 1)}
+inference, \code{G} the number of clusters. Use it to reproduce
+Stata tables; \code{"CR2"} (Bell-McCaffrey, Satterthwaite df)
+remains the recommended modern choice. \code{"CR1S"} is refused
+for \code{glm} with an explanation: Stata's ML commands use a
+different convention (\code{G/(G-1)} scaling, z), so the label
+would not match Stata output there.}
 \item{\code{mlogit}}{\code{classical} + \verb{CR*} only (cluster at the
 choice-situation level) -- \code{sandwich::vcovHC()} mis-scales the
 sandwich for mlogit's per-choice-situation scores, so \verb{HC*} is

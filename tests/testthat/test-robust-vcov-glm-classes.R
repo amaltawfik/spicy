@@ -544,3 +544,60 @@ test_that("structure-aware refusal messages: clm scale/nominal, multinom/mlogit 
   )
   expect_match(conditionMessage(err2), "working residuals", fixed = TRUE)
 })
+
+test_that("CR1S reproduces Stata regress vce(cluster): vcovCL(HC1) SE + t(G-1)", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("sandwich")
+  set.seed(21)
+  n <- 180
+  d <- data.frame(
+    x1 = rnorm(n),
+    x2 = rnorm(n),
+    g = factor(sample(12, n, TRUE))
+  )
+  d$y <- 1 + 0.4 * d$x1 - 0.2 * d$x2 + rnorm(n)
+  fit <- lm(y ~ x1 + x2, data = d)
+  fr <- as_regression_frame(
+    fit,
+    vcov = "CR1S",
+    cluster = d$g,
+    cluster_name = "g"
+  )
+  b <- fr$coefs[fr$coefs$estimate_type == "B", ]
+  # SE oracle: sandwich's Stata-equivalent cluster sandwich.
+  orc <- sqrt(diag(sandwich::vcovCL(fit, cluster = d$g, type = "HC1")))
+  expect_equal(unname(b$std_error), unname(orc[b$term]), tolerance = 1e-10)
+  # Inference: t on G - 1 df (12 clusters -> 11), Stata's reference.
+  expect_true(all(b$df == 11))
+  expect_true(all(b$test_type == "t"))
+  expect_equal(
+    b$p_value,
+    2 * stats::pt(abs(b$estimate / b$std_error), df = 11, lower.tail = FALSE),
+    tolerance = 1e-12
+  )
+  crit <- stats::qt(0.975, df = 11)
+  expect_equal(b$ci_upper - b$estimate, crit * b$std_error, tolerance = 1e-10)
+  # Footer names the convention (the lm path formats the label at
+  # footer time from vcov_kind, not in the frame).
+  note <- paste(
+    attr(table_regression(fit, vcov = "CR1S", cluster = ~g), "note"),
+    collapse = "\n"
+  )
+  expect_match(
+    note,
+    "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), clusters by g",
+    fixed = TRUE
+  )
+  # glm is refused with the Stata-ML explanation.
+  gfit <- glm(I(y > 1) ~ x1, data = d, family = binomial)
+  err <- expect_error(
+    table_regression(gfit, vcov = "CR1S", cluster = d$g),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(conditionMessage(err), "ML commands", fixed = TRUE)
+  # Without cluster: the CR-requires-cluster gate fires.
+  expect_error(
+    table_regression(fit, vcov = "CR1S"),
+    class = "spicy_invalid_input"
+  )
+})

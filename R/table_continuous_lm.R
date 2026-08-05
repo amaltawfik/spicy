@@ -176,7 +176,8 @@
 #'     `t(df)` / `F(df1, df2)` test header. `"CR1"` applies the
 #'     G/(G-1) correction only; Stata's `, vce(cluster id)` uses the
 #'     larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-#'     (clubSandwich's `"CR1S"`, not exposed here), so `"CR1"` does
+#'     (clubSandwich's `"CR1S"`; exposed for `lm` fits in
+#'     [table_regression()], not here), so `"CR1"` does
 #'     not reproduce Stata. Cluster-robust variants
 #'     are dispatched to [clubSandwich::vcovCR()] and inference uses
 #'     [clubSandwich::coef_test()] / [clubSandwich::Wald_test()];
@@ -551,7 +552,8 @@
 #' `t(df)` / `F(df1, df2)` header renders to one decimal. `"CR1"`
 #' applies the G/(G-1) correction only -- Stata's `, vce(cluster id)`
 #' uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-#' (clubSandwich's `"CR1S"`, not exposed here), so `"CR1"` does not
+#' (clubSandwich's `"CR1S"`; exposed for `lm` fits in
+#' [table_regression()], not here), so `"CR1"` does not
 #' reproduce Stata. Effect sizes remain invariant
 #' to `vcov` (including `CR*`); only the SE, CI, test statistic, and
 #' `df2` of the contrast change.
