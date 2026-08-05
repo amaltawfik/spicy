@@ -112,9 +112,9 @@ result (default <code>3</code>). Only affects the <code>detail = TRUE</code> out
     <p>When <code>detail = FALSE</code>: a single numeric value (the
 estimate).
 When <code>detail = TRUE</code> and <code>conf_level</code> is non-<code>NULL</code>:
-<code>c(estimate, ci_lower, ci_upper, p_value)</code>.
+<code>c(estimate, se, ci_lower, ci_upper, p_value)</code>.
 When <code>detail = TRUE</code> and <code>conf_level = NULL</code>:
-<code>c(estimate, p_value)</code>.
+<code>c(estimate, se, p_value)</code>.
 The p-value tests the null hypothesis of no association
 (Pearson chi-squared test).</p>
     </div>

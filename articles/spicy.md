@@ -11,10 +11,8 @@ variable inspection, frequency tables, cross-tabulations with
 chi-squared tests and effect sizes, and publication-ready summary
 tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
-workflow using the bundled
-[`sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md)
-dataset, a simulated social-health survey with 1200 respondents and 24
-variables.
+workflow using the bundled `sochealth` dataset, a simulated
+social-health survey with 1200 respondents and 24 variables.
 
 ## Inspect your data
 
@@ -24,10 +22,9 @@ variables.
 a compact overview of every variable in a data frame: name, label,
 representative values, class, number of distinct values, valid
 observations, and missing values. In RStudio or Positron, calling
-[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-without arguments opens an interactive viewer - this is the most common
-usage in practice. Here we use `tbl = TRUE` to produce static output for
-the vignette:
+`varlist(mydata)` with the default `tbl = FALSE` opens an interactive
+viewer - this is the most common usage in practice. Here we use
+`tbl = TRUE` to produce static output for the vignette:
 
 ``` r
 
@@ -65,8 +62,9 @@ varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 ## Frequency tables
 
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
-produces frequency tables with counts, percentages, and (optionally)
-valid and cumulative percentages.
+produces frequency tables with counts, percentages, valid percentages
+(shown by default whenever missing values are present), and optionally
+cumulative percentages.
 
 ``` r
 
@@ -327,7 +325,8 @@ table_categorical(
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 summarizes continuous variables, either overall or by a categorical `by`
-variable, and can also add group-comparison tests:
+variable; when `by` is supplied it also reports a group-comparison test
+(a Welch test by default):
 
 ``` r
 
@@ -399,10 +398,19 @@ table_continuous_lm(
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
+For detailed guidance, see the dedicated articles on
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+and
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+and the final reporting overview for APA-style summary tables.
+
+## Regression tables
+
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 reports the full coefficient table for one or several fitted models —
-some thirty classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) /
-[`glm()`](https://rdrr.io/r/stats/glm.html) to mixed-effects, ordinal,
+more than thirty classes, from [`lm()`](https://rdrr.io/r/stats/lm.html)
+/ [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed-effects, ordinal,
 survival and Bayesian engines (the full map is
 [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md))
 — with APA-aligned formatting, factor grouping with reference rows,
@@ -434,46 +442,49 @@ table_regression(fit)
 #> Std. errors: classical (OLS).
 ```
 
-For detailed guidance, see the dedicated articles on
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
-and the final reporting overview for APA-style summary tables.
+For detailed guidance, start with the core
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+article; the Learn more section below lists the companion articles by
+model family.
 
 ## Row-wise summaries
 
 [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
 [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md), and
 [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
-compute row-wise statistics across selected columns, with automatic
-handling of missing values.
+compute row-wise statistics across selected columns, with explicit
+control over missing values. By default, a row mean or sum requires
+every selected value to be valid; `min_valid` relaxes this to a minimum
+count (or proportion) of valid values. The rows selected below include
+respondents with missing satisfaction items so the difference is
+visible: `mean_sat` (no `min_valid`) turns `NA` as soon as one item is
+missing, `sum_sat` is computed from the valid items as long as at least
+three are present (and turns `NA` in the last row, which has only two),
+and `count_n(special = "NA")` counts the missing items themselves:
 
 ``` r
 
 sochealth |>
   dplyr::mutate(
     mean_sat  = mean_n(select = starts_with("life_sat")),
-    sum_sat   = sum_n(select = starts_with("life_sat"), min_valid = 2),
+    sum_sat   = sum_n(select = starts_with("life_sat"), min_valid = 3),
     n_missing = count_n(select = starts_with("life_sat"), special = "NA")
   ) |>
   dplyr::select(starts_with("life_sat"), mean_sat, sum_sat, n_missing) |>
-  head() |>
+  dplyr::slice(c(1, 2, 43, 82, 455)) |>
   as.data.frame()
 #>   life_sat_health life_sat_work life_sat_relationships life_sat_standard
 #> 1               5             3                      5                 5
 #> 2               4             4                      5                 5
-#> 3               3             2                      5                 3
-#> 4               3             4                      3                 2
-#> 5               4             5                      4                 4
-#> 6               5             5                      5                 3
+#> 3               2            NA                      3                 4
+#> 4               1            NA                      2                 2
+#> 5               5            NA                      4                NA
 #>   mean_sat sum_sat n_missing
-#> 1     4.50      18         0
-#> 2     4.50      18         0
-#> 3     3.25      13         0
-#> 4     3.00      12         0
-#> 5     4.25      17         0
-#> 6     4.50      18         0
+#> 1      4.5      18         0
+#> 2      4.5      18         0
+#> 3       NA       9         1
+#> 4       NA       5         1
+#> 5       NA      NA         2
 ```
 
 ## Learn more
@@ -508,7 +519,7 @@ sochealth |>
   — the core guide, including the univariable screen
   ([`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
 - [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
-  — the class-by-class capability map (some thirty model classes).
+  — the class-by-class capability map (more than thirty model classes).
 - [`vignette("as-structured")`](https://amaltawfik.github.io/spicy/articles/as-structured.md)
   — the typed view behind every regression table: filter, aggregate, or
   build a custom renderer.

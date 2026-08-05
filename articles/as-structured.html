@@ -126,25 +126,55 @@ contract spicy’s own output engines (Excel, gt, tinytable, flextable,
 clipboard) consume internally – nothing about it is second-class.</p>
 <p>Two sibling tools serve different needs, and choosing well saves
 work. <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns the <em>statistical</em> long
-form – one row per coefficient with <code>estimate</code>,
-<code>std.error</code>, <code>conf.low</code>, <code>p.value</code> –
-and is the right input for meta-analysis, further computation on
-estimates, or ggplot. <code><a href="../reference/as_structured.html">as_structured()</a></code> returns the
-<em>display geometry</em> – rows and columns exactly as the rendered
-table lays them out, factor headers and fit statistics included – and is
-the right input for filtering what a reader will see, post-processing
-numbers in table shape, or rendering the table with an engine spicy does
-not ship. This vignette covers the second tool. The shared mechanics of
+form – one row per term and estimate type per model, with
+<code>estimate</code>, <code>std.error</code>, <code>conf.low</code>,
+<code>p.value</code>. A default table carries a single estimate type, so
+that is one row per coefficient; requesting standardized betas or AMEs
+adds a row per term for each. It is the right input for meta-analysis,
+further computation on estimates, or ggplot.
+<code><a href="../reference/as_structured.html">as_structured()</a></code> returns the <em>display geometry</em> –
+rows and columns exactly as the rendered table lays them out, factor
+headers and fit statistics included – and is the right input for
+filtering what a reader will see, post-processing numbers in table
+shape, or rendering the table with an engine spicy does not ship. This
+vignette covers the second tool. The shared mechanics of
 <code><a href="../reference/table_regression.html">table_regression()</a></code> are in <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a>; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
 models</em></a>.</p>
 <div class="section level2">
 <h2 id="the-schema-on-one-model">The schema on one model<a class="anchor" aria-label="anchor" href="#the-schema-on-one-model"></a>
 </h2>
+<p>Start from the display view, so the typed view has something to be
+compared against:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
+<span><span class="va">tbl</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  [61.95, 68.45]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.11]   .130 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.86  0.91  [ 2.08,  5.63]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.72  1.11  [-3.89,  0.45]   .121 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
+<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<p>Every display trait named above is visible here: <code>(ref.)</code>
+markers and en-dashes on the reference rows, blank factor header rows,
+one bracketed <code>[LL, UL]</code> column, APA p-values
+(<code>&lt;.001</code>, no leading zero). The typed view underneath:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "body"                    "reference_rows"         </span></span>
 <span><span class="co">#&gt;  [3] "reference_models_by_row" "outcome_labels_by_col"  </span></span>
@@ -156,7 +186,7 @@ models</em></a>.</p>
 <code>Variable</code> column and one numeric column per displayed
 statistic. The confidence interval that prints as one bracketed column
 arrives split into <code>LL</code> / <code>UL</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span></span>
 <span><span class="co">#&gt;           Variable             B         SE  95% CI: LL 95% CI: UL</span></span>
 <span><span class="co">#&gt; 1      (Intercept)   65.20085505 1.65670747 61.95040841 68.4513017</span></span>
@@ -189,7 +219,7 @@ structurally empty, not missing data – and the fit-statistics rows
 (<code>n</code>, <code>R²</code>, …) put their value in the first
 numeric column. The row-role indices name each of these regions so you
 never have to guess from the text:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">reference_rows</span></span>
 <span><span class="co">#&gt; [1] 4 7</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="va">factor_header_rows</span></span>
@@ -200,10 +230,12 @@ never have to guess from the text:</p>
 <span><span class="co">#&gt; [1] 4 5 7 8</span></span></code></pre></div>
 <p><code>col_meta</code> describes each column: which token produced it,
 which model it belongs to, its display precision, and – for p-value
-columns – the APA style and below-threshold rule.
+columns – the APA style and below-threshold rule, plus per-row
+<code>fit_stat_overrides</code> where a fit-statistic row departs from
+the column’s precision (put to work in the renderer below).
 <code>format_spec</code> carries the global defaults (decimal mark,
 digits, CI level):</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">col_meta</span><span class="op">$</span><span class="va">B</span></span>
 <span><span class="co">#&gt; $token</span></span>
 <span><span class="co">#&gt; [1] "b"</span></span>
@@ -293,13 +325,22 @@ digits, CI level):</p>
 <span><span class="co">#&gt; [1] 11</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="va">format_spec</span><span class="op">$</span><span class="va">ci_level</span></span>
 <span><span class="co">#&gt; [1] 0.95</span></span></code></pre></div>
+<p>That is seven of the twelve components; <code>spanners</code> and
+<code>reference_models_by_row</code> follow in the multi-model section
+below. Of the remaining three, <code>ci_pairs</code> records which
+<code>LL</code>/<code>UL</code> columns form a confidence-interval pair
+(here, columns 4 and 5 under the label <code>95% CI</code>), while
+<code>outcome_row</code> and <code>outcome_labels_by_col</code> locate
+and label the optional outcome header row of multi-outcome tables and
+are empty here. The complete schema, component by component, is in
+<code><a href="../reference/as_structured.html">?as_structured</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="filtering-and-aggregating">Filtering and aggregating<a class="anchor" aria-label="anchor" href="#filtering-and-aggregating"></a>
 </h2>
 <p>Because the body is numeric, ordinary data-frame idioms work. Keep
 the coefficient rows a reader would call significant:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">p</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"B"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;      Variable         B             p</span></span>
 <span><span class="co">#&gt; 1 (Intercept) 65.200855 1.591088e-216</span></span>
@@ -309,7 +350,7 @@ the coefficient rows a reader would call significant:</p>
 logical index would keep them as <code>NA</code> rows. To restrict
 attention to coefficient rows before any filter, exclude the structural
 regions:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">structural</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">reference_rows</span>, <span class="va">s</span><span class="op">$</span><span class="va">factor_header_rows</span>, <span class="va">s</span><span class="op">$</span><span class="va">fit_stat_rows</span><span class="op">)</span></span>
 <span><span class="va">coef_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">)</span><span class="op">)</span>, <span class="va">structural</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">coef_rows</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"B"</span>, <span class="st">"95% CI: LL"</span>, <span class="st">"95% CI: UL"</span><span class="op">)</span><span class="op">]</span></span>
@@ -320,7 +361,7 @@ regions:</p>
 <span><span class="co">#&gt; 8         Yes -1.71871310 -3.89164426  0.4542181</span></span></code></pre></div>
 <p>Aggregation is just as direct – the mean absolute coefficient, the
 range of CI widths:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">B</span><span class="op">[</span><span class="va">coef_rows</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 17.70546</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">coef_rows</span>, <span class="st">"95% CI: UL"</span><span class="op">]</span> <span class="op">-</span> <span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">coef_rows</span>, <span class="st">"95% CI: LL"</span><span class="op">]</span><span class="op">)</span></span>
@@ -334,21 +375,40 @@ more components become useful. <code>spanners</code> maps each model
 label to its column indices in <code>body</code>;
 <code>reference_models_by_row</code> records, for each reference row,
 which models actually contain the factor – the rule renderers use to
-decide where the reference en-dash belongs:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+decide where the reference en-dash belongs. To see it discriminate, the
+<code>Minimal</code> model below omits <code>smoking</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">bmi</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
-<span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Base <span class="op">=</span> <span class="va">fit</span>, Extended <span class="op">=</span> <span class="va">fit2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">fit0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Minimal <span class="op">=</span> <span class="va">fit0</span>, Base <span class="op">=</span> <span class="va">fit</span>, Extended <span class="op">=</span> <span class="va">fit2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">s2</span><span class="op">$</span><span class="va">spanners</span></span>
-<span><span class="co">#&gt; $Base</span></span>
+<span><span class="co">#&gt; $Minimal</span></span>
 <span><span class="co">#&gt; [1] 2 3 4</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Extended</span></span>
+<span><span class="co">#&gt; $Base</span></span>
 <span><span class="co">#&gt; [1] 5 6 7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Extended</span></span>
+<span><span class="co">#&gt; [1]  8  9 10</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s2</span><span class="op">$</span><span class="va">body</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Variable"     "Base: B"      "Base: SE"     "Base: p"      "Extended: B" </span></span>
-<span><span class="co">#&gt; [6] "Extended: SE" "Extended: p"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "Variable"     "Minimal: B"   "Minimal: SE"  "Minimal: p"   "Base: B"     </span></span>
+<span><span class="co">#&gt;  [6] "Base: SE"     "Base: p"      "Extended: B"  "Extended: SE" "Extended: p"</span></span>
+<span><span class="va">s2</span><span class="op">$</span><span class="va">reference_models_by_row</span></span>
+<span><span class="co">#&gt; $`4`</span></span>
+<span><span class="co">#&gt; [1] "Base"     "Extended" "Minimal" </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`7`</span></span>
+<span><span class="co">#&gt; [1] "Base"     "Extended"</span></span></code></pre></div>
+<p>Rows 4 and 7 are the two reference rows (<code>Female (ref.)</code>,
+<code>No (ref.)</code>). All three models contain <code>sex</code>, so
+row 4 lists all three; only <code>Base</code> and <code>Extended</code>
+contain <code>smoking</code>, so row 7 lists those two – a renderer
+draws the reference en-dash in exactly those models’ columns and leaves
+the <code>Minimal</code> cells blank.</p>
 <p>Model-wise extraction follows from the spanner map:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s2</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">s2</span><span class="op">$</span><span class="va">spanners</span><span class="op">$</span><span class="va">Extended</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;           Variable   Extended: B Extended: SE   Extended: p</span></span>
 <span><span class="co">#&gt; 1      (Intercept)   80.57147725   3.36672527 3.650589e-103</span></span>
@@ -371,9 +431,9 @@ decide where the reference en-dash belongs:</p>
 <code><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">knitr::kable()</a></code> rendering takes a few lines: each column
 formats at its <code>col_meta</code> precision, and the
 <code>fit_stat_overrides</code> seen earlier supply the per-row
-exceptions — that is what renders the <code>n</code> row as
+exceptions – that is what renders the <code>n</code> row as
 <code>1175</code> rather than <code>1175.00</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">render_kable</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">body</span></span>
@@ -532,10 +592,10 @@ before the structured contract existed are refused with an actionable
 message rather than mis-read.</li>
 </ul>
 <p>For the statistical long form – estimates with standard errors and
-unformatted p-values, one row per term across models – reach for
-<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> on the same object; for one-line model
-summaries, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>. The three views are built from
-the same frames, so their numbers always agree.</p>
+unformatted p-values, one row per term and estimate type across models –
+reach for <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> on the same object; for one-line
+model summaries, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>. The three views are built
+from the same frames, so their numbers always agree.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -113,9 +113,9 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span></code></pre></div>
-<p>spicy provides a full suite of effect size and association measures
-for contingency tables, covering both nominal and ordinal variables.
-This vignette explains which measure to use depending on the measurement
+<p>spicy provides a coherent set of effect size and association measures
+for contingency tables, covering nominal and ordinal variables. This
+vignette explains which measure to use depending on the measurement
 level of your variables, and how to obtain confidence intervals and
 p-values for chi-squared-based and rank-based statistics.</p>
 <div class="section level2">
@@ -194,6 +194,10 @@ type.</p>
 </table>
 <p>PRE = Proportional Reduction in Error. These measures quantify how
 much knowing one variable reduces prediction error for the other.</p>
+<p>Cramer’s V and the contingency coefficient are defined for tables of
+any dimension. For a nominal-by-ordinal pair they are the standard
+choice: the ordering is simply ignored, because the rank-based measures
+require both variables to be ordinal.</p>
 <p>All functions accept a contingency table (class <code>table</code>,
 typically from <code><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs()</a></code> or <code><a href="https://rdrr.io/r/base/table.html" class="external-link">table()</a></code>).</p>
 </div>
@@ -221,25 +225,46 @@ once:</p>
 <span><span class="co">#&gt; Stuart's Tau-c                       -0.117  0.026    -0.167    -0.067  &lt;.001 </span></span>
 <span><span class="co">#&gt; Somers' D R|C                        -0.091  0.020    -0.131    -0.052  &lt;.001 </span></span>
 <span><span class="co">#&gt; Somers' D C|R                        -0.175  0.038    -0.249    -0.101  &lt;.001</span></span></code></pre></div>
-<p>This is useful for exploratory analysis. For reporting, pick the
-measure that matches your variable types.</p>
+<p>Directional variants are labelled <code>R|C</code> (the row variable
+is treated as dependent, i.e. predicted from the column variable) and
+<code>C|R</code> (the reverse); <code>symmetric</code> variants single
+out no dependent variable.</p>
+<p><code><a href="../reference/assoc_measures.html">assoc_measures()</a></code> computes every measure the table
+dimensions allow, regardless of measurement level: the ordinal rows
+above treat the factor level order of <code>smoking</code> (No &lt; Yes)
+as a substantive ordering. This is useful for exploratory analysis, but
+read only the rows that match your variable types. For reporting, pick
+the measure that matches them.</p>
 </div>
 <div class="section level2">
 <h2 id="nominal-variables">Nominal variables<a class="anchor" aria-label="anchor" href="#nominal-variables"></a>
 </h2>
+<p>Chi-squared-based measures ignore any ordering of the categories,
+which makes them the reference choice when at least one of the two
+variables is nominal.</p>
 <div class="section level3">
 <h3 id="cramers-v">Cramer’s V<a class="anchor" aria-label="anchor" href="#cramers-v"></a>
 </h3>
-<p>Cramer’s V measures the strength of association between two nominal
-variables. It ranges from 0 (no association) to 1 (perfect
+<p>Cramer’s V measures the strength of association between two
+categorical variables. It ranges from 0 (no association) to 1 (perfect
 association).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.1356677</span></span></code></pre></div>
-<p>Pass <code>detail = TRUE</code> for the standard error, confidence
-interval and p-value. The p-value tests the null hypothesis of no
-association using the Pearson chi-squared test.</p>
+<p>In this pair, <code>smoking</code> is nominal and
+<code>education</code> is ordinal: Cramer’s V treats
+<code>education</code> as an unordered set of categories, which is the
+standard treatment for a nominal-by-ordinal pair. When <em>both</em>
+variables are ordinal, the rank-based measures presented below use more
+of the information in the data.</p>
+<p>Pass <code>detail = TRUE</code> for the confidence interval and
+p-value. The p-value tests the null hypothesis of no association using
+the Pearson chi-squared test. The chi-squared-based measures (Cramer’s
+V, Phi, the contingency coefficient) have no standard asymptotic
+standard error, so the <code>SE</code> column prints <code>--</code> for
+them; the rank-based measures later in this vignette report their
+asymptotic SE in that column.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
@@ -250,12 +275,15 @@ association using the Pearson chi-squared test.</p>
 </h3>
 <p>For 2x2 tables, Phi is equivalent to Cramer’s V. spicy implements Phi
 as <span class="math inline">\(\sqrt{\chi^2 / n}\)</span>, matching the
-DescTools and SPSS conventions – the value is always non-negative and
-reports only the <em>strength</em> of association, not its direction. To
-recover the signed direction, compute the Pearson correlation between
-the two binary variables explicitly (e.g., <code>cor(x, y)</code> after
-coding both 0/1). The p-value tests H0: no association (Pearson
-chi-squared test).</p>
+DescTools and PSPP conventions – the value is always non-negative and
+reports only the <em>strength</em> of association, not its direction.
+SPSS itself signs Phi on 2x2 tables (there it equals the Pearson
+correlation between the two variables coded 0/1), so SPSS output can
+show a negative value of the same magnitude. To recover the signed
+direction, compute the Pearson correlation between the two binary
+variables explicitly (e.g., <code>cor(x, y)</code> after coding both
+0/1). The p-value tests H0: no association (Pearson chi-squared
+test).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_22</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/phi.html">phi</a></span><span class="op">(</span><span class="va">tbl_22</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -279,13 +307,20 @@ association (Pearson chi-squared test).</p>
 <h2 id="ordinal-variables">Ordinal variables<a class="anchor" aria-label="anchor" href="#ordinal-variables"></a>
 </h2>
 <p>When both variables are ordinal (ordered factors), measures that
-account for the ordering are more appropriate than Cramer’s V.</p>
+account for the ordering are more appropriate than Cramer’s V. Note that
+these measures are not on a common scale: on the health-by-education
+table used throughout this section, Cramer’s V is 0.176, Tau-b is 0.205
+and Gamma is 0.310 for the very same association. Compare magnitudes
+within a measure, never across measures.</p>
 <div class="section level3">
 <h3 id="goodman-kruskal-gamma">Goodman-Kruskal Gamma<a class="anchor" aria-label="anchor" href="#goodman-kruskal-gamma"></a>
 </h3>
-<p>Gamma ranges from -1 to +1. It ignores tied pairs, which makes it
-sensitive to the direction of association but tends to overestimate
-strength when there are many ties.</p>
+<p>Gamma ranges from -1 to +1. It ignores tied pairs, which tends to
+overestimate the strength of association when there are many ties: on
+any table, |Gamma| is at least as large as |Tau-b|. Like the other
+measures built on the difference between concordant and discordant pairs
+(Tau-b, Tau-c, Somers’ D), its sign carries the direction of
+association.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_ord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">self_rated_health</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/gamma_gk.html">gamma_gk</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -309,10 +344,11 @@ H0: Tau-b = 0 (Wald z-test).</p>
 <div class="section level3">
 <h3 id="stuarts-tau-c">Stuart’s Tau-c<a class="anchor" aria-label="anchor" href="#stuarts-tau-c"></a>
 </h3>
-<p>Stuart’s Tau-c (also known as Kendall’s Tau-c; spicy uses the SPSS /
-PSPP label) is similar to Tau-b but adjusts for rectangular tables where
-the number of rows and columns differ. The p-value tests H0: Tau-c = 0
-(Wald z-test).</p>
+<p>Stuart’s Tau-c – the label spicy shares with SAS, after Stuart (1953)
+– is also known as Kendall’s Tau-c, the name SPSS and PSPP print for the
+same statistic. It is similar to Tau-b but adjusts for rectangular
+tables where the number of rows and columns differ. The p-value tests
+H0: Tau-c = 0 (Wald z-test).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/kendall_tau_c.html">kendall_tau_c</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate     SE  CI lower  CI upper      p</span></span>
@@ -324,14 +360,32 @@ the number of rows and columns differ. The p-value tests H0: Tau-c = 0
 <p>Somers’ D is an asymmetric measure: it distinguishes between a
 dependent and an independent variable. By default, the row variable is
 treated as dependent (D(R|C)). The p-value tests H0: D = 0 (Wald
-z-test). One disclosure worth knowing: the association column of
-<code><a href="../reference/cross_tab.html">cross_tab()</a></code> reports the <em>symmetric</em> variant of
-Somers’ D, while the standalone <code><a href="../reference/somers_d.html">somers_d()</a></code> defaults to the
-row-dependent D(R|C) — the two values differ by construction.</p>
+z-test). One disclosure worth knowing: the association line printed
+below the table by <code><a href="../reference/cross_tab.html">cross_tab()</a></code> reports the
+<em>symmetric</em> variant of Somers’ D, while the standalone
+<code><a href="../reference/somers_d.html">somers_d()</a></code> defaults to the row-dependent D(R|C) — the two
+values differ by construction.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/somers_d.html">somers_d</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate     SE  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.208  0.026     0.157     0.258  &lt;.001</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="how-the-p-values-compare-with-spss-and-pspp">How the p-values compare with SPSS and PSPP<a class="anchor" aria-label="anchor" href="#how-the-p-values-compare-with-spss-and-pspp"></a>
+</h3>
+<p>spicy’s Wald z-tests divide each estimate by the displayed asymptotic
+standard error, which is estimated <em>without</em> assuming
+independence. SPSS and PSPP test the ordinal measures differently: they
+use the standard error computed <em>under</em> the independence
+hypothesis (which is why their “Approx. T” column shows the same value
+for Gamma, Tau-b, Tau-c and Somers’ D), and SPSS refers
+Goodman-Kruskal’s Tau to a chi-squared distribution rather than a
+z-test. Estimates and standard errors match SPSS and PSPP; the p-values
+can differ, especially near the null. For the non-negative PRE measures
+below (Lambda, Goodman-Kruskal’s Tau, the uncertainty coefficient) the
+Wald z-test is approximate in a further way: H0 places the parameter on
+the boundary of its range, so read those p-values as indicative rather
+than exact.</p>
 </div>
 </div>
 <div class="section level2">
@@ -339,28 +393,49 @@ row-dependent D(R|C) — the two values differ by construction.</p>
 </h2>
 <p>These measures answer a specific question: how much does knowing the
 column variable reduce our error in predicting the row variable (or vice
-versa)?</p>
+versa)? Each function takes a <code>direction</code> argument.
+<code><a href="../reference/lambda_gk.html">lambda_gk()</a></code> and <code><a href="../reference/uncertainty_coef.html">uncertainty_coef()</a></code> default to
+<code>direction = "symmetric"</code>, which combines the two prediction
+directions rather than singling out a dependent variable;
+<code><a href="../reference/goodman_kruskal_tau.html">goodman_kruskal_tau()</a></code> defaults to
+<code>direction = "row"</code> (the column variable predicts the row
+variable). Pass <code>direction = "row"</code> or
+<code>direction = "column"</code> explicitly when your question is
+directional.</p>
 <div class="section level3">
 <h3 id="lambda">Lambda<a class="anchor" aria-label="anchor" href="#lambda"></a>
 </h3>
 <p>Lambda measures the proportional reduction in classification error.
-It can equal zero even when the variables are associated, if the modal
-category does not change across columns. The p-value tests H0: Lambda =
-0 (Wald z-test).</p>
+The default is the symmetric variant; here we also show the
+row-dependent variant, where education (the column variable) predicts
+self-rated health (the row variable):</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">self_rated_health</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/lambda_gk.html">lambda_gk</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/lambda_gk.html">lambda_gk</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate     SE  CI lower  CI upper     p</span></span>
-<span><span class="co">#&gt;    0.012  0.014     0.000     0.039  .389</span></span></code></pre></div>
+<span><span class="co">#&gt;    0.012  0.014     0.000     0.039  .389</span></span>
+<span><span class="fu"><a href="../reference/lambda_gk.html">lambda_gk</a></span><span class="op">(</span><span class="va">tbl_ord</span>, direction <span class="op">=</span> <span class="st">"row"</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Estimate     SE  CI lower  CI upper   p</span></span>
+<span><span class="co">#&gt;    0.000  0.000     0.000     0.000  --</span></span></code></pre></div>
+<p>The row-dependent result illustrates a well-known caveat: Lambda can
+equal zero even when the variables are associated, if the modal category
+of the dependent variable does not change across the categories of the
+predictor. That is exactly what happens here – “Good” is the modal
+health category at every education level, so the row-dependent Lambda is
+exactly 0 even though the same table shows a clear association (Cramer’s
+V = 0.176, chi-squared p &lt; .001). When the estimate is zero its
+asymptotic SE is zero as well, and no test is printed (<code>--</code>).
+Otherwise the p-value tests H0: Lambda = 0 (Wald z-test).</p>
 </div>
 <div class="section level3">
 <h3 id="goodman-kruskal-tau">Goodman-Kruskal Tau<a class="anchor" aria-label="anchor" href="#goodman-kruskal-tau"></a>
 </h3>
 <p>Tau measures the proportional reduction in error when predicting the
 row variable from the column variable, using the full distribution (not
-just the mode). The p-value tests H0: Tau = 0 (Wald z-test).</p>
+just the mode). This matches its default <code>direction = "row"</code>;
+pass <code>direction = "column"</code> for the reverse prediction. The
+p-value tests H0: Tau = 0 (Wald z-test).</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/goodman_kruskal_tau.html">goodman_kruskal_tau</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/goodman_kruskal_tau.html">goodman_kruskal_tau</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate     SE  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.017  0.005     0.008     0.026  &lt;.001</span></span></code></pre></div>
 </div>
@@ -369,9 +444,11 @@ just the mode). The p-value tests H0: Tau = 0 (Wald z-test).</p>
 </h3>
 <p>The uncertainty coefficient (Theil’s U) is based on entropy. It
 measures how much knowing one variable reduces uncertainty about the
-other. The p-value tests H0: U = 0 (Wald z-test).</p>
+other. By default it reports the symmetric coefficient; pass
+<code>direction = "row"</code> or <code>direction = "column"</code> for
+the asymmetric variants. The p-value tests H0: U = 0 (Wald z-test).</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/uncertainty_coef.html">uncertainty_coef</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/uncertainty_coef.html">uncertainty_coef</a></span><span class="op">(</span><span class="va">tbl_ord</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate     SE  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.028  0.006     0.016     0.040  &lt;.001</span></span></code></pre></div>
 </div>
@@ -448,19 +525,29 @@ uses Cramer’s V.</p>
 <div class="section level2">
 <h2 id="confidence-intervals">Confidence intervals<a class="anchor" aria-label="anchor" href="#confidence-intervals"></a>
 </h2>
-<p>All functions support confidence intervals via
-<code>detail = TRUE</code>. The confidence level defaults to 95% and can
-be changed with <code>conf_level</code>:</p>
+<p>Most functions report a confidence interval via
+<code>detail = TRUE</code>, with two exceptions:
+<code><a href="../reference/contingency_coef.html">contingency_coef()</a></code> never reports one (no standard
+asymptotic SE exists for the contingency coefficient), and
+<code>somers_d(direction = "symmetric")</code> reports the estimate
+only. Cramer’s V and Phi also omit the interval silently in degenerate
+cases (estimate exactly 0, or n &lt;= 3). The confidence level defaults
+to 95% and can be changed with <code>conf_level</code> – here both
+levels on the smoking-by-education table from the beginning of the
+vignette:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="fl">0.99</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;    0.176  --     0.103     0.248  &lt;.001</span></span></code></pre></div>
-<p>To get only the estimate and p-value (no CI), pass
-<code>conf_level = NULL</code>:</p>
+<span><span class="co">#&gt;    0.136  --     0.079     0.191  &lt;.001</span></span>
+<span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="fl">0.99</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
+<span><span class="co">#&gt;    0.136  --     0.061     0.209  &lt;.001</span></span></code></pre></div>
+<p>To drop the confidence interval, pass <code>conf_level = NULL</code>;
+the result keeps the estimate, the SE column, and the p-value:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE      p</span></span>
-<span><span class="co">#&gt;    0.176  --  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;    0.136  --  &lt;.001</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="controlling-decimal-places">Controlling decimal places<a class="anchor" aria-label="anchor" href="#controlling-decimal-places"></a>
@@ -476,34 +563,34 @@ places with the leading zero stripped (<code>.045</code>) or
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;   0.1762  --    0.1203    0.2309  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;   0.1357  --    0.0791    0.1914  &lt;.001</span></span></code></pre></div>
 <p>The same <code>digits</code> argument works for
 <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code>:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Measure                            Estimate    SE  CI lower  CI upper      p </span></span>
-<span><span class="co">#&gt; Cramer's V                             0.18    --      0.12      0.23  &lt;.001 </span></span>
-<span><span class="co">#&gt; Contingency Coefficient                0.24    --        --        --  &lt;.001 </span></span>
-<span><span class="co">#&gt; Lambda symmetric                       0.01  0.01      0.00      0.04   .389 </span></span>
+<span><span class="co">#&gt; Cramer's V                             0.14    --      0.08      0.19  &lt;.001 </span></span>
+<span><span class="co">#&gt; Contingency Coefficient                0.13    --        --        --  &lt;.001 </span></span>
+<span><span class="co">#&gt; Lambda symmetric                       0.00  0.00      0.00      0.00     -- </span></span>
 <span><span class="co">#&gt; Lambda R|C                             0.00  0.00      0.00      0.00     -- </span></span>
-<span><span class="co">#&gt; Lambda C|R                             0.02  0.03      0.00      0.07   .386 </span></span>
-<span><span class="co">#&gt; Goodman-Kruskal's Tau R|C              0.02  0.00      0.01      0.03  &lt;.001 </span></span>
-<span><span class="co">#&gt; Goodman-Kruskal's Tau C|R              0.03  0.01      0.01      0.04  &lt;.001 </span></span>
-<span><span class="co">#&gt; Uncertainty Coefficient symmetric      0.03  0.01      0.02      0.04  &lt;.001 </span></span>
-<span><span class="co">#&gt; Uncertainty Coefficient R|C            0.03  0.01      0.01      0.04  &lt;.001 </span></span>
-<span><span class="co">#&gt; Uncertainty Coefficient C|R            0.03  0.01      0.02      0.04  &lt;.001 </span></span>
-<span><span class="co">#&gt; Goodman-Kruskal Gamma                  0.31  0.04      0.24      0.38  &lt;.001 </span></span>
-<span><span class="co">#&gt; Kendall's Tau-b                        0.20  0.03      0.16      0.25  &lt;.001 </span></span>
-<span><span class="co">#&gt; Stuart's Tau-c                         0.20  0.02      0.15      0.25  &lt;.001 </span></span>
-<span><span class="co">#&gt; Somers' D R|C                          0.21  0.03      0.16      0.26  &lt;.001 </span></span>
-<span><span class="co">#&gt; Somers' D C|R                          0.20  0.02      0.15      0.25  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt; Lambda C|R                             0.00  0.00      0.00      0.00     -- </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal's Tau R|C              0.02  0.01      0.00      0.03   .023 </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal's Tau C|R              0.01  0.00      0.00      0.01   .022 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient symmetric      0.01  0.00      0.00      0.02   .021 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient R|C            0.02  0.01      0.00      0.03   .021 </span></span>
+<span><span class="co">#&gt; Uncertainty Coefficient C|R            0.01  0.00      0.00      0.02   .021 </span></span>
+<span><span class="co">#&gt; Goodman-Kruskal Gamma                 -0.27  0.06     -0.38     -0.16  &lt;.001 </span></span>
+<span><span class="co">#&gt; Kendall's Tau-b                       -0.13  0.03     -0.18     -0.07  &lt;.001 </span></span>
+<span><span class="co">#&gt; Stuart's Tau-c                        -0.12  0.03     -0.17     -0.07  &lt;.001 </span></span>
+<span><span class="co">#&gt; Somers' D R|C                         -0.09  0.02     -0.13     -0.05  &lt;.001 </span></span>
+<span><span class="co">#&gt; Somers' D C|R                         -0.18  0.04     -0.25     -0.10  &lt;.001</span></span></code></pre></div>
 <p>You can also store a result and re-display it with a different
 precision without recalculating:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, digits <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;  0.17617  --   0.12031   0.23092  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;  0.13567  --   0.07909   0.19137  &lt;.001</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

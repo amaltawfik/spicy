@@ -31,7 +31,10 @@ A list with the structured view (see Details for the schema).
 This is the right entry point for users who want to:
 
 - **Filter coefficients programmatically**, e.g.
-  `as_structured(tbl)$body[as_structured(tbl)$body$p < 0.05, ]`.
+  `as_structured(tbl)$body[which(as_structured(tbl)$body$p < 0.05), ]`
+  ([`which()`](https://rdrr.io/r/base/which.html) drops the structurally
+  empty rows – factor headers, reference levels – whose `p` is `NA`; a
+  bare logical index would keep them as all-`NA` rows).
 
 - **Aggregate raw values across rows**, e.g.
   `mean(as_structured(tbl)$body[["B"]], na.rm = TRUE)`.
@@ -95,17 +98,13 @@ s$body                               # raw numeric body
 #> 7            n 32.0000000        NA         NA         NA           NA
 #> 8           R²  0.8374325        NA         NA         NA           NA
 #> 9       Adj.R²  0.8200146        NA         NA         NA           NA
-s$body[s$body$p < 0.05, ]            # filter significant rows
-#>         Variable         B        SE 95% CI: LL 95% CI: UL            p
-#> 1    (Intercept) 33.990794 1.8877934  30.123824  37.857764 6.257246e-17
-#> 2             wt -3.205613 0.7538957  -4.749898  -1.661328 2.130435e-04
-#> NA          <NA>        NA        NA         NA         NA           NA
-#> NA.1        <NA>        NA        NA         NA         NA           NA
-#> 5              6 -4.255582 1.3860728  -7.094824  -1.416341 4.717834e-03
-#> 6              8 -6.070860 1.6522878  -9.455418  -2.686301 9.991893e-04
-#> NA.2        <NA>        NA        NA         NA         NA           NA
-#> NA.3        <NA>        NA        NA         NA         NA           NA
-#> NA.4        <NA>        NA        NA         NA         NA           NA
+s$body[which(s$body$p < 0.05), ]     # filter significant rows
+#>      Variable         B        SE 95% CI: LL 95% CI: UL            p
+#> 1 (Intercept) 33.990794 1.8877934  30.123824  37.857764 6.257246e-17
+#> 2          wt -3.205613 0.7538957  -4.749898  -1.661328 2.130435e-04
+#> 5           6 -4.255582 1.3860728  -7.094824  -1.416341 4.717834e-03
+#> 6           8 -6.070860 1.6522878  -9.455418  -2.686301 9.991893e-04
+# which() drops the structural NA rows (headers, reference levels)
 s$col_meta$B                         # column metadata for B
 #> $token
 #> [1] "b"

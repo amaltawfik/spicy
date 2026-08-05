@@ -553,7 +553,7 @@ substantively chosen covariate values — go back to the fitted model:
 </h2>
 <p>Students cluster in labs, cohorts, mentor groups. The
 <code>CR*</code> family covers <strong>both components with one
-estimator</strong> — <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> on the full score
+estimator</strong> — <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> on the full score
 matrix, so the count and zero rows shift together. For two-part models
 every <code>CR*</code> variant maps to that same estimator, and the
 footer records it as <code>CL</code>:</p>
@@ -593,7 +593,7 @@ no longer trusting the ZIP’s model-based variance. An
 <em>unclustered</em> sandwich already moves that p-value most of the
 way, to .11:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fu">sandwich</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/sandwich/man/sandwich.html" class="external-link">sandwich</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fu">sandwich</span><span class="fu">::</span><span class="fu"><a href="https://zeileis.codeberg.page/sandwich/reference/sandwich.html" class="external-link">sandwich</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span><span class="op">[</span><span class="st">"count_marMarried"</span><span class="op">]</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">V</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"count_marMarried"</span><span class="op">]</span></span>
 <span><span class="fl">2</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">pnorm</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; count_marMarried </span></span>

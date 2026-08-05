@@ -90,8 +90,17 @@ table_categorical(
 ```
 
 The default output is `"default"`, which prints a styled ASCII table to
-the console. Use `output = "data.frame"` to get a plain numeric data
-frame suitable for further processing.
+the console, folded into successive panels when it is wider than the
+console. Reading the table: each level of `by` gets a pair of columns,
+the count `n` and the **column percentage** computed within that group –
+percentages sum to 100 down each education group (for smoking within
+“Lower secondary”: 68.6 + 29.9 + 1.5 = 100.0) – and the `Total` pair is
+the margin over all groups combined. In the last panel, `p` is the
+*p*-value of the chi-squared test of association between the row
+variable and `by`, computed once per variable on its full cross-table,
+and the final column is the association measure – here Cramer’s V
+(covered below). Use `output = "data.frame"` for a plain data frame
+suitable for further processing.
 
 ## One-way tables
 
@@ -101,8 +110,7 @@ Omit `by` to build a frequency-style table for the selected variables:
 
 table_categorical(
   sochealth,
-  select = c(smoking, physical_activity),
-  output = "default"
+  select = c(smoking, physical_activity)
 )
 #> Categorical table
 #> 
@@ -133,65 +141,30 @@ variables can still be tabulated by naming them.
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 supports several output formats. The table below summarizes the options:
 
-| Format         | Description                                   |
-|----------------|-----------------------------------------------|
-| `"default"`    | Styled ASCII table in the console (default)   |
-| `"data.frame"` | Wide data frame, one row per modality         |
-| `"long"`       | Long data frame, one row per modality x group |
-| `"gt"`         | Formatted gt table                            |
-| `"tinytable"`  | Formatted tinytable                           |
-| `"flextable"`  | Formatted flextable                           |
-| `"excel"`      | Excel file (requires `excel_path`)            |
-| `"clipboard"`  | Copy to clipboard                             |
-| `"word"`       | Word document (requires `word_path`)          |
+| Format         | Description                                 |
+|----------------|---------------------------------------------|
+| `"default"`    | Styled ASCII table in the console (default) |
+| `"data.frame"` | Wide data frame, one row per level          |
+| `"long"`       | Long data frame, one row per level x group  |
+| `"gt"`         | Formatted gt table                          |
+| `"tinytable"`  | Formatted tinytable                         |
+| `"flextable"`  | Formatted flextable                         |
+| `"excel"`      | Excel file (requires `excel_path`)          |
+| `"clipboard"`  | Copy to clipboard                           |
+| `"word"`       | Word document (requires `word_path`)        |
 
-### gt output
-
-The `"gt"` format produces a table with APA-style borders, column
-spanners, and proper alignment:
-
-``` r
-
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = c(smoking, physical_activity, dentist_12m),
-    by = education,
-    output = "gt"
-  )
-)
-```
-
-[TABLE]
-
-### tinytable output
-
-``` r
-
-table_categorical(
-  sochealth,
-  select = c(smoking, physical_activity),
-  by = sex,
-  output = "tinytable"
-)
-```
-
-| Variable                  | Female |      | Male |      | Total |      | p    | Phi |
-|---------------------------|--------|------|------|------|-------|------|------|-----|
-|                           | n      | %    | n    | %    | n     | %    |      |     |
-| Current smoker            |        |      |      |      |       |      | .713 | .01 |
-|     No                    | 475    | 76.6 | 451  | 77.8 | 926   | 77.2 |      |     |
-|     Yes                   | 131    | 21.1 | 118  | 20.3 | 249   | 20.8 |      |     |
-|     (Missing)             |  14    |  2.3 |  11  |  1.9 |  25   |  2.1 |      |     |
-| Regular physical activity |        |      |      |      |       |      | .832 | .01 |
-|     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
-|     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
+The three rendered formats (`"gt"`, `"tinytable"`, `"flextable"`) are
+demonstrated in the final section, together with the file exports.
 
 ### Data frame output
 
-Use `output = "data.frame"` for a wide numeric data frame (one row per
-modality), or `output = "long"` for a long format (one row per modality
-x group):
+Use `output = "data.frame"` for a wide data frame with one row per
+level: two character identifier columns (`Variable`, `Level`), numeric
+columns carrying the counts and full-precision percentages, and the
+chi-squared statistic, `df`, *p*-value, and association measure repeated
+on every row of a variable’s block. Use `output = "long"` for a long
+format with one row per level x group, the `Total` margin included as a
+group:
 
 ``` r
 
@@ -292,8 +265,15 @@ When the chosen measures differ across rows, the column header collapses
 to `"Effect size"` and an APA-style `Note.` line documents which measure
 was used for each variable.
 
-Override with a single string for uniform application, or with a named
-vector to mix measures per row:
+Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
+`"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`;
+`assoc_measure = "none"` drops the column entirely. See
+[`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+for the dispatch details and
+[`vignette("association-measures", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
+for definitions and guidance on choosing among them. Override the
+automatic choice with a single string for uniform application, or with a
+named vector to mix measures per row:
 
 ``` r
 
@@ -328,21 +308,29 @@ table_categorical(
 #>    (Missing)    │
 ```
 
+A significant chi-squared *p*-value next to a lambda of exactly .00 is
+not a contradiction. Goodman-Kruskal lambda measures the proportional
+reduction in the error of predicting the row variable once the group is
+known, and it is exactly 0 whenever the modal category is the same in
+every group: here “No” is the most frequent answer at all three
+education levels (68.6%, 77.0%, 83.0%), so knowing education never
+changes the best single guess, even though the distributions clearly
+differ (hence the significant chi-squared test).
+
+In a named vector, variables you do not name keep the `"auto"` choice,
+so only the overrides need to be listed. Here `"auto"` would pick
+Cramer’s V for `smoking` (binary x ordered, not 2x2) and Kendall’s Tau-b
+for `self_rated_health` (ordered x ordered); the named vector keeps the
+former and replaces the latter with Goodman-Kruskal Gamma:
+
 ``` r
 
-# Per-row: pick the right measure for each variable.
-# `smoking` x `education` is 2x3 (binary x ordered) -> Cramer's V;
-# `self_rated_health` x `education` is ordered x ordered -> Tau-b.
-# The mixed result collapses the header to "Effect size" and adds an
-# APA `Note.` line documenting the per-row measure.
+# Named vector: override "auto" for one variable only
 table_categorical(
   sochealth,
   select = c(smoking, self_rated_health),
   by = education,
-  assoc_measure = c(
-    smoking           = "cramer_v",
-    self_rated_health = "tau_b"
-  )
+  assoc_measure = c(self_rated_health = "gamma")
 )
 #> Categorical table by education
 #> 
@@ -381,36 +369,29 @@ table_categorical(
 #>    Yes             │  20.8                       
 #>    (Missing)       │   2.1                       
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Self-rated health │          <.001      .20     
+#>  Self-rated health │          <.001      .31     
 #>    (Missing)       │   1.7                       
 #>    Poor            │   5.1                       
 #>    Fair            │  22.2                       
 #>    Good            │  46.5                       
 #>    Very good       │  24.6                       
 #> 
-#> Note. Cramer's V: Current smoker; Kendall's Tau-b: Self-rated health.
+#> Note. Cramer's V: Current smoker; Goodman-Kruskal Gamma: Self-rated health.
 ```
 
-Add confidence intervals with `assoc_ci = TRUE`. In rendered formats
-(`gt`, `tinytable`, `flextable`, `word`), the CI is shown inline:
+`smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
+switches from the automatic Tau-b (.20) to Gamma (.31) – Gamma is larger
+on the same table because it ignores tied pairs. Since the two measures
+differ, the header collapses to `"Effect size"` and the `Note.` line
+documents the per-row choice.
 
-``` r
-
-pkgdown_dark_gt(
-  table_categorical(
-    sochealth,
-    select = c(smoking, physical_activity),
-    by = education,
-    assoc_ci = TRUE,
-    output = "gt"
-  )
-)
-```
-
-[TABLE]
-
-In data formats (`"data.frame"`, `"long"`, `"excel"`, `"clipboard"`),
-separate `CI lower` and `CI upper` columns are added:
+Add confidence intervals with `assoc_ci = TRUE`. In the rendered formats
+(`gt`, `tinytable`, `flextable`, `word`) the CI is shown inline after
+the measure, e.g. `.14 [.08, .19]` (demonstrated in the final section).
+In the default console table and in the wide data formats
+(`"data.frame"`, `"excel"`, `"clipboard"`), separate `CI lower` and
+`CI upper` columns are added; in the long format (`"long"`) the bounds
+appear as `ci_lower` / `ci_upper`:
 
 ``` r
 
@@ -437,8 +418,13 @@ table_categorical(
 
 ## Weighted tables
 
-Pass survey weights with the `weights` argument. Use `rescale = TRUE` so
-the total weighted N matches the unweighted N:
+Pass survey weights with the `weights` argument. By default
+(`rescale = FALSE`) the weights are used as-is; `rescale = TRUE`
+rescales them so the total weighted N equals the number of observations
+(here 1200, against a raw weight sum of 1196.474). Displayed counts are
+weighted counts rounded to integers at display time – the SPSS Crosstabs
+convention – while the machine formats (`"data.frame"`, `"long"`) carry
+the exact fractional weighted counts:
 
 ``` r
 
@@ -489,8 +475,12 @@ table_categorical(
 
 By default, missing values are displayed as a “(Missing)” category
 (`drop_na = FALSE`), so the percentages sum over every observation. Set
-`drop_na = TRUE` to remove them — the table then discloses the listwise
-deletion in a note:
+`drop_na = TRUE` to remove them. The removal happens before each
+cross-tabulation, variable by variable: each row variable keeps its own
+complete cases (on itself and on `by`), so the total N can differ across
+variables within the same table – this is available-case analysis per
+cross-table, not listwise deletion over the whole selection. The removal
+is disclosed in a table note rather than silent:
 
 ``` r
 
@@ -529,11 +519,16 @@ table_categorical(
 #> Missing values removed: income_group (18).
 ```
 
+With several selected variables the note lists each variable’s removals
+separately: selecting `smoking` and `physical_activity` together under
+`drop_na = TRUE` keeps 1175 and 1200 complete cases respectively, in the
+same table.
+
 ## Filtering and reordering levels
 
-Use `levels_keep` to display only specific modalities. The order you
-specify controls the display order, which is useful for placing
-“(Missing)” first to highlight missingness:
+Use `levels_keep` to display only specific levels. The order you specify
+controls the display order, which is useful for placing “(Missing)”
+first to highlight missingness:
 
 ``` r
 
@@ -567,6 +562,16 @@ table_categorical(
 #>    Low                  │    11.2       247     20.6                           
 #>    High                 │    26.0       219     18.2
 ```
+
+`levels_keep` filters the display only: counts, percentages, the
+chi-squared test, and the association measure are all still computed on
+the full cross-table. That is why the displayed percentages no longer
+sum to 100 (within “Lower secondary”: 1.1 + 33.3 + 8.0 = 42.4 – the
+hidden “Lower middle” and “Upper middle” levels still count in the
+denominator), and why *p* and Tau-b are identical to the unfiltered
+table. To recompute the statistics on a subset of levels, filter the
+data before calling
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 ## Formatting options
 
@@ -617,14 +622,21 @@ and
 ## Decimal alignment
 
 By default (`align = "decimal"`) numeric columns are aligned on the
-decimal mark, the standard scientific-publication convention used by
-SPSS, SAS, LaTeX `siunitx`, and the native primitives of
-[`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
-and `tinytable::style_tt(align = "d")`. Engines without a native
-primitive (`flextable`, `word`, `clipboard`, ASCII print) get the
-alignment via leading / trailing space padding, then centring in the
-default body font — same single-font policy as
+decimal mark, the standard scientific-publication convention (SPSS, SAS,
+LaTeX `siunitx`). Numeric cells are pre-padded with figure-spaces
+(U+2007, spaces exactly one digit wide) so that every string in a column
+has the same width with the decimal mark at the same internal position;
+centring those uniform-width strings then stacks the decimal points
+vertically. The same pad-then-centre strategy is applied on every engine
+(`gt`, `tinytable`, `flextable`, `word`, `clipboard`, ASCII print) for a
+homogeneous rendering – same single-font policy as
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+The native
+[`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
+and `tinytable::style_tt(align = "d")` primitives are deliberately not
+used: the former renders visually right-aligned and the latter centres
+each cell on its own value rather than on the decimal mark, which would
+be inconsistent with the other engines.
 
 `"center"` and `"right"` apply literal alignment:
 
@@ -731,7 +743,67 @@ broom::glance(out)
 #> # ℹ 3 more variables: assoc_ci_lower <dbl>, assoc_ci_upper <dbl>, n_total <int>
 ```
 
-## Exporting to Excel, Word, or clipboard
+## Rendered outputs and export
+
+The rendered formats produce publication-ready tables for HTML and Word
+workflows. The `"gt"` format produces a table with APA-style borders,
+column spanners, and decimal alignment:
+
+``` r
+
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity, dentist_12m),
+    by = education,
+    output = "gt"
+  )
+)
+```
+
+[TABLE]
+
+The `"tinytable"` format applies the same layout conventions through the
+lightweight tinytable engine (here a two-group table by sex):
+
+``` r
+
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  output = "tinytable"
+)
+```
+
+| Variable                  | Female |      | Male |      | Total |      | p    | Phi |
+|---------------------------|--------|------|------|------|-------|------|------|-----|
+|                           | n      | %    | n    | %    | n     | %    |      |     |
+| Current smoker            |        |      |      |      |       |      | .713 | .01 |
+|     No                    | 475    | 76.6 | 451  | 77.8 | 926   | 77.2 |      |     |
+|     Yes                   | 131    | 21.1 | 118  | 20.3 | 249   | 20.8 |      |     |
+|     (Missing)             |  14    |  2.3 |  11  |  1.9 |  25   |  2.1 |      |     |
+| Regular physical activity |        |      |      |      |       |      | .832 | .01 |
+|     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
+|     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
+
+With `assoc_ci = TRUE`, the rendered formats show the confidence
+interval inline after the association measure:
+
+``` r
+
+pkgdown_dark_gt(
+  table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity),
+    by = education,
+    assoc_ci = TRUE,
+    output = "gt"
+  )
+)
+```
+
+[TABLE]
 
 For Excel export, provide a file path:
 

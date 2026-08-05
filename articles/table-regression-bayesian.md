@@ -25,8 +25,8 @@ supports two engines:
   ([`stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html),
   [`stan_lmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html),
   [`stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html))
-  — ships precompiled models, so fits run in seconds and every chunk in
-  this vignette executes live;
+  — ships precompiled models, so fits run in seconds and every
+  `rstanarm` chunk in this vignette executes live;
 - **`brms`** (`brm()`) — a wider model space, at the cost of compiling
   each model; shown at the end (the code is identical in spirit).
 
@@ -175,13 +175,13 @@ A frequentist table is wrong only if the model is wrong; a Bayesian
 table can additionally be wrong because the *sampler* has not converged
 — the draws then misrepresent the very posterior the columns summarize.
 spicy therefore checks every Bayesian fit before rendering: when any
-sampled parameter misses its target — R-hat at or above 1.01, effective
-sample size below 100 per chain (never less than 400, so fewer chains do
-not weaken the bar), any divergent transition, E-BFMI below 0.2 (Vehtari
-et al. 2021) — the table gains a `Sampler diagnostics:` footer line
-naming the failure and a warning fires (classed
-`spicy_bayes_diagnostics`, so scripts can catch or mute this guard
-selectively with
+sampled parameter misses its target — R-hat at or above 1.01 or
+effective sample size below 100 per chain, never less than 400, so fewer
+chains do not weaken the bar (Vehtari et al. 2021); any divergent
+transition (Stan guidance); E-BFMI below 0.2 (Betancourt 2017) — the
+table gains a `Sampler diagnostics:` footer line naming the failure and
+a warning fires (classed `spicy_bayes_diagnostics`, so scripts can catch
+or mute this guard selectively with
 [`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html)). A
 clean fit prints nothing: the publication table stays lean, and silence
 means the checks passed. The guard reads *all* sampled parameters —
@@ -256,15 +256,20 @@ posterior::summarise_draws(
 ```
 
 Read the output rather than glossing it. R-hat sits at 1.00 for every
-slope but prints 1.01 for the intercept — exactly the alert level, and
-exactly what a deliberately short two-chain run invites; a manuscript
-fit would simply use the defaults. Bulk effective sizes exceed the 1,000
-retained draws — legitimate, since Hamiltonian Monte Carlo can produce
-anticorrelated draws that beat independence — while the tail effective
-sizes, near 700–800, are what guard the 2.5% and 97.5% bounds the CI
-column reports: comfortable for two-decimal reporting. When these
-diagnostics genuinely fail, the remedy is more iterations or a
-reparameterized model — never a more optimistic reading of the table.
+slope but prints as 1.01 for the intercept in this
+three-significant-digit display — brushing the alert level, exactly what
+a deliberately short two-chain run invites. The exact value, 1.007
+(visible in the `R-hat` column of the spicy table above), still clears
+the guard’s at-or-above-1.01 bar — which is why no
+`Sampler diagnostics:` footer appears on any table of this fit; a
+manuscript fit would simply use the defaults. Bulk effective sizes
+exceed the 1,000 retained draws — legitimate, since Hamiltonian Monte
+Carlo can produce anticorrelated draws that beat independence — while
+the tail effective sizes, near 700–800, are what guard the 2.5% and
+97.5% bounds the CI column reports: comfortable for two-decimal
+reporting. When these diagnostics genuinely fail, the remedy is more
+iterations or a reparameterized model — never a more optimistic reading
+of the table.
 
 ## Priors are part of the model — disclose them
 
@@ -307,12 +312,17 @@ plausibly matter.
 The ratio scale works exactly as for `glm`, with one pleasant
 difference: every displayed quantity is computed from the exponentiated
 draws themselves, so all of them are exact posterior statements about
-the odds ratio — the credible bounds are the exponentiated quantiles,
-and the SE is the posterior MAD SD of `exp(draws)` rather than the
-delta-method approximation (SE_OR = OR × SE_log-odds), which understates
-the ratio-scale spread severalfold when the posterior is wide.
-Ratio-scale posteriors are right-tail-heavy, so the interval remains the
-primary uncertainty summary — never reconstruct one as B ± 2 SE:
+the odds ratio. The credible bounds are the exponentiated quantiles, and
+the SE is the posterior MAD SD of `exp(draws)` — the same robust pairing
+as the log-odds table, median + MAD SD, now applied to the OR posterior
+— rather than the delta-method approximation (SE_OR = OR × SE_log-odds),
+which is accurate only while the posterior is narrow (on this fit the
+two agree to the displayed precision). Ratio-scale posteriors are
+right-tail-heavy, and no single scale number summarizes a heavy right
+tail well: on a wide posterior the delta approximation understates the
+ratio-scale *SD* severalfold, while the MAD SD deliberately discounts
+the tail. So the interval remains the primary uncertainty summary —
+never reconstruct one as B ± 2 SE:
 
 ``` r
 
@@ -349,8 +359,9 @@ given model, priors, and data, that odds ratio lies between 0.27 and
 ## Marginal effects, from the draws
 
 Odds ratios answer on the odds scale; the **average marginal effect**
-answers on the probability scale — here, percentage points of
-P(smoking). For a posterior, the AME is computed *per draw*
+answers on the probability scale — here, changes in P(smoking),
+displayed as proportions. For a posterior, the AME is computed *per
+draw*
 ([`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)),
 and the table summarizes those draws under the same conventions as every
 other column: posterior median, MAD SD, and a credible interval that
@@ -382,13 +393,13 @@ table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
 ```
 
 Reading the `Tertiary` row: averaged over the sample, tertiary education
-shifts the probability of smoking by the displayed amount — given model,
-priors, and data, that shift lies in its credible interval with 95%
-probability, a statement no delta-method AME can make exactly. There is
-no `ame_p`, for the same reason there is no p column: the preset
-`"all_ame"` expands without it, the atomic token is refused, and in a
-mixed frequentist–Bayesian table the shared `ame_p` column dashes the
-Bayesian rows.
+shifts the probability of smoking by −0.15 — 15 percentage points lower
+— and, given model, priors, and data, that shift lies in \[−0.22,
+−0.09\] with 95% probability, a statement no delta-method AME can make
+exactly. There is no `ame_p`, for the same reason there is no p column:
+the preset `"all_ame"` expands without it, the atomic token is refused,
+and in a mixed frequentist–Bayesian table the shared `ame_p` column
+dashes the Bayesian rows.
 
 ## The frequentist twin, side by side
 
@@ -438,10 +449,12 @@ column’s CrI a probability statement about the parameter. The shared
 header stays `95% CI` here — the honest common label — and the footer
 discloses per model that the Bayesian column is an equal-tailed
 posterior credible interval (the all-Bayesian table above relabels the
-header itself, `95% CrI`). In the fit-statistics block, `n` and
-`R² (Bayes)` fill per model, but the likelihood-based rows — the two
-pseudo-R² and AIC — fill only the frequentist one, because a posterior
-has none of them. Which brings us to what the table refuses.
+header itself, `95% CrI`). In the fit-statistics block, `n` fills for
+both models; the remaining rows split by paradigm — `R² (Bayes)` fills
+only the Bayesian column, and the likelihood-based rows (the two
+pseudo-R² and AIC) only the frequentist one, because a posterior has
+none of them. Which brings us to the fit statistics a posterior does
+have — and to those it lacks.
 
 ## Fit statistics for a posterior
 
@@ -478,14 +491,34 @@ table_regression(fit, show_fit_stats = c("nobs", "r2_bayes",
 ```
 
 The `ELPD (LOO)` row is the expected log predictive density (Vehtari,
-Gelman & Gabry 2017), with its standard error disclosed in the footer —
-compare models with
+Gelman & Gabry 2017), with its standard error disclosed in the footer.
+Prefer the log scale: `"looic"` (its −2 twin) persists for historical
+reasons only (Gelman, Vehtari, McElreath et al. 2026, App. B), and
+`"waic"` exists with the same disclosures though PSIS-LOO is generally
+preferred.
+
+These predictive estimates come with their own reliability diagnostics,
+and spicy never mutes them: when PSIS-LOO flags observations with Pareto
+k above the sample-size-specific threshold — min(1 − 1/log10(S), 0.7),
+the same bound
+[`loo::loo()`](https://mc-stan.org/loo/reference/loo.html) itself prints
+(Vehtari et al. 2024) — or WAIC flags p_waic above 0.4, the footer says
+the estimate is unreliable and a `spicy_bayes_diagnostics` warning
+fires. The remediation ladder (Gelman, Vehtari, McElreath et al. 2026,
+ch. 24):
+[`loo::loo_moment_match()`](https://mc-stan.org/loo/reference/loo_moment_match.html)
+first, then refitting the flagged folds (`k_threshold = 0.7`, brms
+`reloo = TRUE`), then K-fold cross-validation.
+
+Model *comparison* belongs to
 [`loo::loo_compare()`](https://mc-stan.org/loo/reference/loo_compare.html)
-outside the table, and read differences against the SE of the
-*difference*. Prefer the log scale: `"looic"` (its −2 twin) persists for
-historical reasons only (Gelman, Vehtari, McElreath et al. 2026, App.
-B), and `"waic"` exists with the same disclosures though PSIS-LOO is
-generally preferred.
+outside the table: the comparison uncertainty is the standard error of
+the elpd *difference* — not the per-model SEs shown here — and
+differences smaller than about 4 carry no practical meaning (Gelman,
+Vehtari, McElreath et al. 2026, ch. 9). The canonical fit *check* is the
+graphical posterior predictive check (`pp_check(fit)`; Gelman et al.
+2013, ch. 6) — Bayes factors stay out by design (Gelman et al. 2013,
+§7.4).
 
 ## Standardized coefficients from the draws
 
@@ -536,29 +569,9 @@ silently wrong:
 
 - `p_adjust` — there are no p-values to adjust;
 - likelihood-based fit statistics (`"aic"`, `"bic"`, pseudo-R²) — a
-  posterior has no likelihood-based information criteria; the Bayesian
-  block of the *Fit statistics* section above replaces them. The
-  predictive estimates come with their own reliability diagnostics, and
-  spicy never mutes them: when PSIS-LOO flags observations with Pareto k
-  above the sample-size-specific threshold — min(1 − 1/log10(S), 0.7),
-  the same bound
-  [`loo::loo()`](https://mc-stan.org/loo/reference/loo.html) itself
-  prints (Vehtari et al. 2024) — or WAIC flags p_waic above 0.4, the
-  footer says the estimate is unreliable and a `spicy_bayes_diagnostics`
-  warning fires. The remediation ladder (Gelman, Vehtari, McElreath et
-  al. 2026, ch. 24):
-  [`loo::loo_moment_match()`](https://mc-stan.org/loo/reference/loo_moment_match.html)
-  first, then refitting the flagged folds (`k_threshold = 0.7`, brms
-  `reloo = TRUE`), then K-fold cross-validation. Model *comparison*
-  belongs to
-  [`loo::loo_compare()`](https://mc-stan.org/loo/reference/loo_compare.html)
-  outside the table: the comparison uncertainty is the standard error of
-  the elpd *difference* (not the per-model SEs shown here), and
-  differences smaller than about 4 carry no practical meaning (Gelman,
-  Vehtari, McElreath et al. 2026, ch. 9). The canonical fit *check* is
-  the graphical posterior predictive check (`pp_check(fit)`; Gelman et
-  al. 2013, ch. 6) — Bayes factors stay out by design (Gelman et
-  al. 2013, §7.4);
+  posterior has no likelihood-based information criteria; the *Fit
+  statistics* section above shows what replaces them (and the
+  reliability guards that come with the replacements);
 - robust / cluster-robust `vcov` — a sandwich estimator corrects a
   misspecified likelihood’s standard errors; nothing standard plays that
   role for a posterior (misspecification-robust Bayesian procedures
@@ -741,6 +754,8 @@ of the exponentiated draws); CI bounds exponentiated (asymmetric).
 
 ## References
 
+- Betancourt, M. (2017). A conceptual introduction to Hamiltonian Monte
+  Carlo. *arXiv preprint*, arXiv:1701.02434.
 - Gelman, A. (2008). Scaling regression inputs by dividing by two
   standard deviations. *Statistics in Medicine*, 27(15), 2865–2873.
 - Gelman, A., Hill, J., & Vehtari, A. (2020). *Regression and Other

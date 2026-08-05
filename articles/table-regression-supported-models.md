@@ -109,7 +109,7 @@ partial-proportional-odds component is model-based only). `multinom`
 takes `CR*` (one cluster value per observation) and `mlogit` takes `CR*`
 (one per choice situation) – both refuse `HC*`: `multinom` has no
 working-residual form for a multi-equation model, and for `mlogit`,
-[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
 computes a result but silently mis-scales the meat for its per-chooser
 score structure. Quantile regression (`rq`) uses its own estimator
 family – `"classical"` resolves to the robust `nid` sandwich, `iid` /
@@ -120,7 +120,7 @@ refused). Cox models use the Lin-Wei grouped-dfbeta sandwich, and the
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
 `x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and `betareg` take `CR*`
 via
-[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html);
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
 `pscl` two-part fits cluster both components. `estimatr` fits keep their
 own robust SEs, and `fixest` fits keep the estimator they were computed
 with (the footer carries fixest’s own label – clustered, Newey-West,

@@ -598,7 +598,7 @@ available via `vcov = "bootstrap"` / `"jackknife"`.
 When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set `vcov = "HC*"` for
 sandwich-style standard errors via
-[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html).
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html).
 The valid types are `HC0` through `HC5`; `HC3` is the
 small-sample-friendly default (Long and Ervin 2000):
 

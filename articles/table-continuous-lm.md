@@ -77,17 +77,23 @@ table_continuous_lm(
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
-The `HC*` family is computed via \[sandwich::vcovHC()\] and includes
-`"HC0"`, `"HC1"`, `"HC2"`, `"HC3"` (default for small / moderate
-samples), `"HC4"`, `"HC4m"`, and `"HC5"`.
+The `HC*` family is computed via
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+and includes `"HC0"`, `"HC1"`, `"HC2"`, `"HC3"` (the
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+default, recommended for small to moderate samples by Long and Ervin
+2000), `"HC4"`, `"HC4m"`, and `"HC5"`. spicy’s own default remains
+`vcov = "classical"`.
 
 ## Cluster-robust standard errors
 
 When observations are not independent (repeated measurements per
 individual, students nested in classes, panel data), classical and `HC*`
-standard errors are biased downward. Use the `CR*` family together with
-`cluster = id_var` to get cluster-robust inference, dispatched to
-`clubSandwich`:
+standard errors are typically biased downward — the direction holds
+under the positive intra-cluster correlation such designs usually
+induce; with negative intra-cluster correlation the bias reverses. Use
+the `CR*` family together with `cluster = id_var` to get cluster-robust
+inference, dispatched to `clubSandwich`:
 
 ``` r
 
@@ -109,9 +115,15 @@ table_continuous_lm(
 ```
 
 `"CR2"` is the recommended default (Bell & McCaffrey 2002; Pustejovsky &
-Tipton 2018). It produces fractional Satterthwaite degrees of freedom,
-rendered in the displayed test header as e.g. `t(8.7)` or `F(2, 12.4)`.
-`"CR1"` matches Stata’s `vce(cluster id)` default.
+Tipton 2018). It generally produces fractional Satterthwaite degrees of
+freedom, rendered in the displayed test header as e.g. `t(8.7)` or
+`F(2, 12.4)`; in the balanced `sleep` design above (10 subjects, 2
+observations each) the Satterthwaite df is exactly 9, hence the `t(9)`
+header. `"CR1"` applies the G/(G − 1) small-sample correction only.
+Stata’s `vce(cluster id)` uses the larger G(N − 1)/((G − 1)(N − p))
+factor with t(G − 1) inference — clubSandwich’s `"CR1S"`, which spicy
+does not expose — so no `CR*` option here reproduces Stata’s
+cluster-robust output.
 
 ## Bootstrap and jackknife
 
@@ -122,20 +134,34 @@ added):
 
 ``` r
 
+set.seed(2026)
 table_continuous_lm(
   sochealth,
   select = wellbeing_score,
   by = sex,
   vcov = "bootstrap",
-  boot_n = 1000  # default
+  boot_n = 1000,  # default
+  statistic = TRUE
 )
+#> Continuous outcomes by Sex
+#> 
+#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
+#> ───────────────────────────────┼─────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
+#> 
+#>  Variable                      │ 95% CI LL  95% CI UL   z      p     R²    n   
+#> ───────────────────────────────┼───────────────────────────────────────────────
+#>  WHO-5 wellbeing index (0-100) │   2.12       5.66     4.30  <.001  0.02  1200 
+#> 
+#> Note. Std. errors: nonparametric bootstrap (1000 replicates).
 ```
 
 When `cluster` is supplied, bootstrap switches to a cluster bootstrap
 (Cameron, Gelbach & Miller 2008) and jackknife to leave-one-cluster-out
-(Quenouille 1956). Both estimators use asymptotic inference: `z` for
-single-coefficient contrasts and `chi^2(q)` for the global Wald test on
-`k > 2` categorical predictors, rendered in the displayed test header.
+(Quenouille 1956; Tukey 1958). Both estimators use asymptotic inference:
+`z` for single-coefficient contrasts (the `z` header above, shown
+because `statistic = TRUE`) and `chi^2(q)` for the global Wald test of a
+categorical predictor with `k > 2` levels (`q = k - 1` restrictions).
 
 ## Case weights
 
@@ -246,8 +272,8 @@ covariate-adjusted per-group means displayed in the table (the
 `output = "long"` data frame) when `by` is categorical.
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 exposes the choice via `adjustment`; both are valid but produce
-different numerical answers when at least one factor covariate has
-non-uniform observed proportions.
+different numerical answers when at least one categorical covariate
+(factor, character, or logical) has non-uniform observed proportions.
 
 - `adjustment = "proportional"` (the **default**) — G-computation /
   population-weighted standardisation. For each focal level of `by`,
@@ -260,18 +286,24 @@ non-uniform observed proportions.
   counterfactual reporting.
 
 - `adjustment = "balanced"` — equal-weight averaging on a synthetic
-  grid. Factor-covariate level combinations are crossed and weighted
-  uniformly (`1 / k`); numeric covariates are fixed at their sample
-  mean. This is the convention of
+  grid. Categorical-covariate level combinations are crossed and
+  weighted uniformly (`1 / k`); numeric covariates are fixed at their
+  sample mean. Logical covariates count as categorical here:
+  [`lm()`](https://rdrr.io/r/stats/lm.html) encodes a logical as a
+  treatment-contrast `TRUE` dummy, so the grid crosses `FALSE` / `TRUE`
+  with equal weight. This is the convention of
   [`emmeans::emmeans()`](https://rvlenth.github.io/emmeans/reference/emmeans.html)
   (default), SPSS UNIANOVA EMMEANS, and SAS LSMEANS. Interpretation:
   *“What is the predicted mean assuming a balanced covariate design?”*.
   Best for descriptive / ANOVA-style APA reporting.
 
 The two methods coincide trivially when `covariates` is `NULL`, and also
-when all covariates are numeric or logical (no factor levels to expand
-over). They diverge only when categorical covariate proportions are
-skewed in the observed data.
+when all covariates are numeric: in a linear model, averaging
+predictions over the observed values of a numeric covariate equals
+predicting at its mean. They diverge whenever a categorical covariate —
+including a logical — has non-uniform observed proportions, because
+`"proportional"` weights its levels by their empirical frequencies while
+`"balanced"` weights them equally.
 
 ``` r
 
@@ -455,7 +487,8 @@ effect size. The implementation uses the modern noncentral-distribution
 inversion approach — the consensus standard in commercial statistical
 software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 `PROC GLM EFFECTSIZE`) and in mainstream R packages (`effectsize`,
-`MOTE`, `TOSTER`, `effsize`):
+`MOTE`, `TOSTER`; `effsize` offers it as an option via
+`noncentral = TRUE`, its default being the central-*t* approximation):
 
 - Noncentral *t* inversion for `"d"` and `"g"` (Steiger and Fouladi
   1997; Goulet-Pelletier and Cousineau 2018; Fitts 2021), which has
@@ -711,6 +744,9 @@ broom::glance(out)
 - Lakens, D. (2013). Calculating and reporting effect sizes to
   facilitate cumulative science: A practical primer for *t*-tests and
   ANOVAs. *Frontiers in Psychology*, 4, 863.
+- Long, J. S., & Ervin, L. H. (2000). Using heteroscedasticity
+  consistent standard errors in the linear regression model. *The
+  American Statistician*, 54(3), 217–224.
 - Olejnik, S., & Algina, J. (2003). Generalized eta and omega squared
   statistics: Measures of effect size for some common research designs.
   *Psychological Methods*, 8(4), 434–447.
@@ -728,3 +764,5 @@ broom::glance(out)
   estimation and the evaluation of statistical models. In L. L.
   Harlow, S. A. Mulaik, & J. H. Steiger (Eds.), *What if there were no
   significance tests?* (pp. 221–257). Lawrence Erlbaum.
+- Tukey, J. W. (1958). Bias and confidence in not-quite large samples
+  (Abstract). *The Annals of Mathematical Statistics*, 29(2), 614.

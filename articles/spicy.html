@@ -119,9 +119,8 @@ variable inspection, frequency tables, cross-tabulations with
 chi-squared tests and effect sizes, and publication-ready summary
 tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
-workflow using the bundled <a href="../reference/sochealth.html"><code>sochealth</code></a> dataset, a
-simulated social-health survey with 1200 respondents and 24
-variables.</p>
+workflow using the bundled <code>sochealth</code> dataset, a simulated
+social-health survey with 1200 respondents and 24 variables.</p>
 <div class="section level2">
 <h2 id="inspect-your-data">Inspect your data<a class="anchor" aria-label="anchor" href="#inspect-your-data"></a>
 </h2>
@@ -129,9 +128,10 @@ variables.</p>
 compact overview of every variable in a data frame: name, label,
 representative values, class, number of distinct values, valid
 observations, and missing values. In RStudio or Positron, calling
-<code><a href="../reference/varlist.html">varlist()</a></code> without arguments opens an interactive viewer -
-this is the most common usage in practice. Here we use
-<code>tbl = TRUE</code> to produce static output for the vignette:</p>
+<code>varlist(mydata)</code> with the default <code>tbl = FALSE</code>
+opens an interactive viewer - this is the most common usage in practice.
+Here we use <code>tbl = TRUE</code> to produce static output for the
+vignette:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 7</span></span></span>
@@ -163,7 +163,8 @@ this is the most common usage in practice. Here we use
 <h2 id="frequency-tables">Frequency tables<a class="anchor" aria-label="anchor" href="#frequency-tables"></a>
 </h2>
 <p><code><a href="../reference/freq.html">freq()</a></code> produces frequency tables with counts,
-percentages, and (optionally) valid and cumulative percentages.</p>
+percentages, valid percentages (shown by default whenever missing values
+are present), and optionally cumulative percentages.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: education</span></span></span>
@@ -388,8 +389,9 @@ tables for categorical variables:</p>
 <span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
 <span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
-either overall or by a categorical <code>by</code> variable, and can
-also add group-comparison tests:</p>
+either overall or by a categorical <code>by</code> variable; when
+<code>by</code> is supplied it also reports a group-comparison test (a
+Welch test by default):</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -453,8 +455,16 @@ covariate adjustment:</p>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93      .018  0.00  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<p>For detailed guidance, see the dedicated articles on
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, and
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the final reporting overview for
+APA-style summary tables.</p>
+</div>
+<div class="section level2">
+<h2 id="regression-tables">Regression tables<a class="anchor" aria-label="anchor" href="#regression-tables"></a>
+</h2>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> reports the full coefficient table
-for one or several fitted models — some thirty classes, from
+for one or several fitted models — more than thirty classes, from
 <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> / <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> to mixed-effects, ordinal,
 survival and Bayesian engines (the full map is
 <code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>) — with
@@ -483,41 +493,48 @@ hierarchical comparisons, and side-by-side multi-model layouts:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
-<p>For detailed guidance, see the dedicated articles on
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_regression.html">table_regression()</a></code>, and
-the final reporting overview for APA-style summary tables.</p>
+<p>For detailed guidance, start with the core
+<code><a href="../reference/table_regression.html">table_regression()</a></code> article; the Learn more section below
+lists the companion articles by model family.</p>
 </div>
 <div class="section level2">
 <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
 </h2>
 <p><code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code>, and
 <code><a href="../reference/count_n.html">count_n()</a></code> compute row-wise statistics across selected
-columns, with automatic handling of missing values.</p>
+columns, with explicit control over missing values. By default, a row
+mean or sum requires every selected value to be valid;
+<code>min_valid</code> relaxes this to a minimum count (or proportion)
+of valid values. The rows selected below include respondents with
+missing satisfaction items so the difference is visible:
+<code>mean_sat</code> (no <code>min_valid</code>) turns <code>NA</code>
+as soon as one item is missing, <code>sum_sat</code> is computed from
+the valid items as long as at least three are present (and turns
+<code>NA</code> in the last row, which has only two), and
+<code>count_n(special = "NA")</code> counts the missing items
+themselves:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sochealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    mean_sat  <span class="op">=</span> <span class="fu"><a href="../reference/mean_n.html">mean_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    sum_sat   <span class="op">=</span> <span class="fu"><a href="../reference/sum_n.html">sum_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>, min_valid <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    sum_sat   <span class="op">=</span> <span class="fu"><a href="../reference/sum_n.html">sum_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>, min_valid <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
 <span>    n_missing <span class="op">=</span> <span class="fu"><a href="../reference/count_n.html">count_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>, special <span class="op">=</span> <span class="st">"NA"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>, <span class="va">mean_sat</span>, <span class="va">sum_sat</span>, <span class="va">n_missing</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">43</span>, <span class="fl">82</span>, <span class="fl">455</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   life_sat_health life_sat_work life_sat_relationships life_sat_standard</span></span>
 <span><span class="co">#&gt; 1               5             3                      5                 5</span></span>
 <span><span class="co">#&gt; 2               4             4                      5                 5</span></span>
-<span><span class="co">#&gt; 3               3             2                      5                 3</span></span>
-<span><span class="co">#&gt; 4               3             4                      3                 2</span></span>
-<span><span class="co">#&gt; 5               4             5                      4                 4</span></span>
-<span><span class="co">#&gt; 6               5             5                      5                 3</span></span>
+<span><span class="co">#&gt; 3               2            NA                      3                 4</span></span>
+<span><span class="co">#&gt; 4               1            NA                      2                 2</span></span>
+<span><span class="co">#&gt; 5               5            NA                      4                NA</span></span>
 <span><span class="co">#&gt;   mean_sat sum_sat n_missing</span></span>
-<span><span class="co">#&gt; 1     4.50      18         0</span></span>
-<span><span class="co">#&gt; 2     4.50      18         0</span></span>
-<span><span class="co">#&gt; 3     3.25      13         0</span></span>
-<span><span class="co">#&gt; 4     3.00      12         0</span></span>
-<span><span class="co">#&gt; 5     4.25      17         0</span></span>
-<span><span class="co">#&gt; 6     4.50      18         0</span></span></code></pre></div>
+<span><span class="co">#&gt; 1      4.5      18         0</span></span>
+<span><span class="co">#&gt; 2      4.5      18         0</span></span>
+<span><span class="co">#&gt; 3       NA       9         1</span></span>
+<span><span class="co">#&gt; 4       NA       5         1</span></span>
+<span><span class="co">#&gt; 5       NA      NA         2</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
@@ -554,7 +571,7 @@ including the univariable screen
 (<code><a href="../reference/table_regression_uv.html">table_regression_uv()</a></code>).</li>
 <li>
 <code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code> — the
-class-by-class capability map (some thirty model classes).</li>
+class-by-class capability map (more than thirty model classes).</li>
 <li>
 <code><a href="../articles/as-structured.html">vignette("as-structured")</a></code> — the typed view behind every
 regression table: filter, aggregate, or build a custom renderer.</li>

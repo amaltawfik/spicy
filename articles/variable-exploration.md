@@ -122,38 +122,49 @@ varlist(sochealth, tbl = TRUE)
 ```
 
 If you want the `Values` column to include explicit missing values, use
-`include_na = TRUE`:
+`include_na = TRUE`. Selecting a few variables and keeping only the
+relevant columns lets the `Values` strings print in full, so the added
+`<NA>` entry is actually visible:
 
 ``` r
 
-head(subset(varlist(sochealth, include_na = TRUE, tbl = TRUE), NAs > 0))
-#> # A tibble: 6 × 7
-#>   Variable           Label                 Values Class N_distinct N_valid   NAs
-#>   <chr>              <chr>                 <chr>  <chr>      <int>   <int> <int>
-#> 1 income_group       Household income gro… Low, … orde…          4    1182    18
-#> 2 smoking            Current smoker        No, Y… fact…          2    1175    25
-#> 3 self_rated_health  Self-rated health     Poor,… orde…          4    1180    20
-#> 4 bmi                Body mass index       16, 1… nume…        177    1188    12
-#> 5 bmi_category       BMI category          Norma… orde…          3    1188    12
-#> 6 political_position Political position (… 0, 1,… nume…         11    1185    15
+varlist(sochealth, smoking, income_group, self_rated_health,
+  include_na = TRUE, tbl = TRUE
+)[, c("Variable", "Values", "NAs")]
+#> # A tibble: 3 × 3
+#>   Variable          Values                                        NAs
+#>   <chr>             <chr>                                       <int>
+#> 1 smoking           No, Yes, <NA>                                  25
+#> 2 income_group      Low, Lower middle, Upper middle, High, <NA>    18
+#> 3 self_rated_health Poor, Fair, Good, Very good, <NA>              20
 ```
 
-If you want to display all unique non-missing values in the `Values`
-column, use `values = TRUE`. This is especially useful for variables
-with a small number of distinct values:
+By default, the `Values` column elides longer value lists with `...`. If
+you want to display all unique non-missing values instead, use
+`values = TRUE`. This is especially useful for variables with a small
+number of distinct values, where the full list fits on one line. Compare
+the default display with the `values = TRUE` display for the same two
+variables:
 
 ``` r
 
-head(subset(varlist(sochealth, values = TRUE, tbl = TRUE), N_distinct <= 5))
-#> # A tibble: 6 × 7
-#>   Variable          Label                  Values Class N_distinct N_valid   NAs
-#>   <chr>             <chr>                  <chr>  <chr>      <int>   <int> <int>
-#> 1 sex               Sex                    Femal… fact…          2    1200     0
-#> 2 age_group         Age group              25-34… orde…          4    1200     0
-#> 3 education         Highest education lev… Lower… orde…          3    1200     0
-#> 4 social_class      Subjective social cla… Lower… orde…          5    1200     0
-#> 5 employment_status Employment status      Emplo… fact…          4    1200     0
-#> 6 income_group      Household income group Low, … orde…          4    1182    18
+varlist(sochealth, life_sat_health, social_class,
+  tbl = TRUE
+)[, c("Variable", "Values", "N_distinct")]
+#> # A tibble: 2 × 3
+#>   Variable        Values                                          N_distinct
+#>   <chr>           <chr>                                                <int>
+#> 1 life_sat_health 1, 2, 3, ..., 5                                          5
+#> 2 social_class    Lower, Working, Lower middle, ..., Upper middle          5
+
+varlist(sochealth, life_sat_health, social_class,
+  values = TRUE, tbl = TRUE
+)[, c("Variable", "Values", "N_distinct")]
+#> # A tibble: 2 × 3
+#>   Variable        Values                                             N_distinct
+#>   <chr>           <chr>                                                   <int>
+#> 1 life_sat_health 1, 2, 3, 4, 5                                               5
+#> 2 social_class    Lower, Working, Lower middle, Middle, Upper middle          5
 ```
 
 For a focused inspection, select only the variables you want to review:
@@ -287,9 +298,11 @@ when you want a searchable, interactive codebook for review or export.
 
 The two tools share their column structure but differ in one default:
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-shows only the **observed** factor levels in the `Values` column (Stata
-`tab` style), whereas
+shows only the **observed** factor levels in the `Values` column (the
+convention of Stata `tab` and of the SPSS `FREQUENCIES` default, which
+both list only values present in the data), whereas
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-shows **all declared** levels including unused ones (SPSS `FREQUENCIES`
-style, appropriate for schema documentation). Pass `factor_levels =`
-explicitly to either function to override the default.
+shows **all declared** levels including unused ones – the full coding
+scheme, as a data dictionary or SPSS `CTABLES` would report it, which is
+appropriate for schema documentation. Pass `factor_levels =` explicitly
+to either function to override the default.

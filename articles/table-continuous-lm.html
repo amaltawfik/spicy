@@ -178,20 +178,25 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93     2.38   .018  0.00  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
-<p>The <code>HC*</code> family is computed via [sandwich::vcovHC()] and
-includes <code>"HC0"</code>, <code>"HC1"</code>, <code>"HC2"</code>,
-<code>"HC3"</code> (default for small / moderate samples),
-<code>"HC4"</code>, <code>"HC4m"</code>, and <code>"HC5"</code>.</p>
+<p>The <code>HC*</code> family is computed via
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> and includes <code>"HC0"</code>,
+<code>"HC1"</code>, <code>"HC2"</code>, <code>"HC3"</code> (the
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> default, recommended for small to
+moderate samples by Long and Ervin 2000), <code>"HC4"</code>,
+<code>"HC4m"</code>, and <code>"HC5"</code>. spicy’s own default remains
+<code>vcov = "classical"</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="cluster-robust-standard-errors">Cluster-robust standard errors<a class="anchor" aria-label="anchor" href="#cluster-robust-standard-errors"></a>
 </h2>
 <p>When observations are not independent (repeated measurements per
 individual, students nested in classes, panel data), classical and
-<code>HC*</code> standard errors are biased downward. Use the
-<code>CR*</code> family together with <code>cluster = id_var</code> to
-get cluster-robust inference, dispatched to
-<code>clubSandwich</code>:</p>
+<code>HC*</code> standard errors are typically biased downward — the
+direction holds under the positive intra-cluster correlation such
+designs usually induce; with negative intra-cluster correlation the bias
+reverses. Use the <code>CR*</code> family together with
+<code>cluster = id_var</code> to get cluster-robust inference,
+dispatched to <code>clubSandwich</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sleep</span>,</span>
@@ -209,11 +214,17 @@ get cluster-robust inference, dispatched to
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: cluster-robust (CR2), clusters by ID.</span></span></span></code></pre></div>
 <p><code>"CR2"</code> is the recommended default (Bell &amp; McCaffrey
-2002; Pustejovsky &amp; Tipton 2018). It produces fractional
+2002; Pustejovsky &amp; Tipton 2018). It generally produces fractional
 Satterthwaite degrees of freedom, rendered in the displayed test header
-as e.g. <code>t(8.7)</code> or <code>F(2, 12.4)</code>.
-<code>"CR1"</code> matches Stata’s <code>vce(cluster id)</code>
-default.</p>
+as e.g. <code>t(8.7)</code> or <code>F(2, 12.4)</code>; in the balanced
+<code>sleep</code> design above (10 subjects, 2 observations each) the
+Satterthwaite df is exactly 9, hence the <code>t(9)</code> header.
+<code>"CR1"</code> applies the G/(G − 1) small-sample correction only.
+Stata’s <code>vce(cluster id)</code> uses the larger G(N − 1)/((G − 1)(N
+− p)) factor with t(G − 1) inference — clubSandwich’s
+<code>"CR1S"</code>, which spicy does not expose — so no
+<code>CR*</code> option here reproduces Stata’s cluster-robust
+output.</p>
 </div>
 <div class="section level2">
 <h2 id="bootstrap-and-jackknife">Bootstrap and jackknife<a class="anchor" aria-label="anchor" href="#bootstrap-and-jackknife"></a>
@@ -223,19 +234,34 @@ sample is small, <code>vcov = "bootstrap"</code> and
 <code>vcov = "jackknife"</code> provide resampling-based variance
 estimators in pure base R (no dependency added):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  vcov <span class="op">=</span> <span class="st">"bootstrap"</span>,</span>
-<span>  boot_n <span class="op">=</span> <span class="fl">1000</span>  <span class="co"># default</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span>  boot_n <span class="op">=</span> <span class="fl">1000</span>,  <span class="co"># default</span></span>
+<span>  statistic <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI LL  95% CI UL   z      p     R²    n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.66     4.30  &lt;.001  0.02  1200 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: nonparametric bootstrap (1000 replicates).</span></span></span></code></pre></div>
 <p>When <code>cluster</code> is supplied, bootstrap switches to a
 cluster bootstrap (Cameron, Gelbach &amp; Miller 2008) and jackknife to
-leave-one-cluster-out (Quenouille 1956). Both estimators use asymptotic
-inference: <code>z</code> for single-coefficient contrasts and
-<code>chi^2(q)</code> for the global Wald test on <code>k &gt; 2</code>
-categorical predictors, rendered in the displayed test header.</p>
+leave-one-cluster-out (Quenouille 1956; Tukey 1958). Both estimators use
+asymptotic inference: <code>z</code> for single-coefficient contrasts
+(the <code>z</code> header above, shown because
+<code>statistic = TRUE</code>) and <code>chi^2(q)</code> for the global
+Wald test of a categorical predictor with <code>k &gt; 2</code> levels
+(<code>q = k - 1</code> restrictions).</p>
 </div>
 <div class="section level2">
 <h2 id="case-weights">Case weights<a class="anchor" aria-label="anchor" href="#case-weights"></a>
@@ -341,8 +367,8 @@ covariate-adjusted per-group means displayed in the table (the
 the <code>output = "long"</code> data frame) when <code>by</code> is
 categorical. <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> exposes the choice via
 <code>adjustment</code>; both are valid but produce different numerical
-answers when at least one factor covariate has non-uniform observed
-proportions.</p>
+answers when at least one categorical covariate (factor, character, or
+logical) has non-uniform observed proportions.</p>
 <ul>
 <li><p><code>adjustment = "proportional"</code> (the
 <strong>default</strong>) — G-computation / population-weighted
@@ -355,18 +381,25 @@ Interpretation: <em>“What is the predicted mean in this population if
 everyone had <code>by = lvl</code>, holding their actual covariate
 profile?”</em>. Best for causal / counterfactual reporting.</p></li>
 <li><p><code>adjustment = "balanced"</code> — equal-weight averaging on
-a synthetic grid. Factor-covariate level combinations are crossed and
-weighted uniformly (<code>1 / k</code>); numeric covariates are fixed at
-their sample mean. This is the convention of
+a synthetic grid. Categorical-covariate level combinations are crossed
+and weighted uniformly (<code>1 / k</code>); numeric covariates are
+fixed at their sample mean. Logical covariates count as categorical
+here: <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> encodes a logical as a treatment-contrast
+<code>TRUE</code> dummy, so the grid crosses <code>FALSE</code> /
+<code>TRUE</code> with equal weight. This is the convention of
 <code><a href="https://rvlenth.github.io/emmeans/reference/emmeans.html" class="external-link">emmeans::emmeans()</a></code> (default), SPSS UNIANOVA EMMEANS, and
 SAS LSMEANS. Interpretation: <em>“What is the predicted mean assuming a
 balanced covariate design?”</em>. Best for descriptive / ANOVA-style APA
 reporting.</p></li>
 </ul>
 <p>The two methods coincide trivially when <code>covariates</code> is
-<code>NULL</code>, and also when all covariates are numeric or logical
-(no factor levels to expand over). They diverge only when categorical
-covariate proportions are skewed in the observed data.</p>
+<code>NULL</code>, and also when all covariates are numeric: in a linear
+model, averaging predictions over the observed values of a numeric
+covariate equals predicting at its mean. They diverge whenever a
+categorical covariate — including a logical — has non-uniform observed
+proportions, because <code>"proportional"</code> weights its levels by
+their empirical frequencies while <code>"balanced"</code> weights them
+equally.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Same model, balanced (emmeans-style) marginal means:</span></span>
 <span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
@@ -542,8 +575,10 @@ noncentral-distribution inversion approach — the consensus standard in
 commercial statistical software (Stata <code>esize</code> /
 <code>estat esize</code>, SAS <code>PROC TTEST</code> and
 <code>PROC GLM EFFECTSIZE</code>) and in mainstream R packages
-(<code>effectsize</code>, <code>MOTE</code>, <code>TOSTER</code>,
-<code>effsize</code>):</p>
+(<code>effectsize</code>, <code>MOTE</code>, <code>TOSTER</code>;
+<code>effsize</code> offers it as an option via
+<code>noncentral = TRUE</code>, its default being the central-<em>t</em>
+approximation):</p>
 <ul>
 <li>Noncentral <em>t</em> inversion for <code>"d"</code> and
 <code>"g"</code> (Steiger and Fouladi 1997; Goulet-Pelletier and
@@ -669,15 +704,15 @@ summary-table helpers, including <code>tinytable</code>,
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
+<div id="fsrstaogwf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<p><style>#fsrstaogwf table { font-family: system-ui, ‘Segoe UI’,
 Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
 Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
 antialiased; -moz-osx-font-smoothing: grayscale; }</p>
-<p>#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi
-tr, #mwlefoodfi td, #mwlefoodfi th { border-style: none; }</p>
-<p>#mwlefoodfi p { margin: 0; padding: 0; }</p>
-<p>#mwlefoodfi .gt_table { display: table; border-collapse: collapse;
+<p>#fsrstaogwf thead, #fsrstaogwf tbody, #fsrstaogwf tfoot, #fsrstaogwf
+tr, #fsrstaogwf td, #fsrstaogwf th { border-style: none; }</p>
+<p>#fsrstaogwf p { margin: 0; padding: 0; }</p>
+<p>#fsrstaogwf .gt_table { display: table; border-collapse: collapse;
 line-height: normal; margin-left: auto; margin-right: auto; color:
 #333333; font-size: 16px; font-weight: normal; font-style: normal;
 background-color: #FFFFFF; width: auto; border-top-style: solid;
@@ -686,49 +721,49 @@ none; border-right-width: 2px; border-right-color: #D3D3D3;
 border-bottom-style: solid; border-bottom-width: 0px;
 border-bottom-color: #A8A8A8; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_caption { padding-top: 4px; padding-bottom: 4px;
+<p>#fsrstaogwf .gt_caption { padding-top: 4px; padding-bottom: 4px;
 }</p>
-<p>#mwlefoodfi .gt_title { color: #333333; font-size: 125%; font-weight:
+<p>#fsrstaogwf .gt_title { color: #333333; font-size: 125%; font-weight:
 initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
 padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
 0; }</p>
-<p>#mwlefoodfi .gt_subtitle { color: #333333; font-size: 85%;
+<p>#fsrstaogwf .gt_subtitle { color: #333333; font-size: 85%;
 font-weight: initial; padding-top: 3px; padding-bottom: 5px;
 padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
 border-top-width: 0; }</p>
-<p>#mwlefoodfi .gt_heading { background-color: #FFFFFF; text-align:
+<p>#fsrstaogwf .gt_heading { background-color: #FFFFFF; text-align:
 center; border-bottom-color: #FFFFFF; border-left-style: none;
 border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_bottom_border { border-bottom-style: solid;
+<p>#fsrstaogwf .gt_bottom_border { border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_col_headings { border-top-style: solid;
+<p>#fsrstaogwf .gt_col_headings { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3;
 border-left-style: none; border-left-width: 1px; border-left-color:
 rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
 1px; border-right-color: rgba(255, 255, 255, 0); }</p>
-<p>#mwlefoodfi .gt_col_heading { color: #333333; background-color:
+<p>#fsrstaogwf .gt_col_heading { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
 padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
 hidden; }</p>
-<p>#mwlefoodfi .gt_column_spanner_outer { color: #333333;
+<p>#fsrstaogwf .gt_column_spanner_outer { color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: normal;
 text-transform: inherit; padding-top: 0; padding-bottom: 0;
 padding-left: 4px; padding-right: 4px; }</p>
-<p>#mwlefoodfi .gt_column_spanner_outer:first-child { padding-left: 0;
+<p>#fsrstaogwf .gt_column_spanner_outer:first-child { padding-left: 0;
 }</p>
-<p>#mwlefoodfi .gt_column_spanner_outer:last-child { padding-right: 0;
+<p>#fsrstaogwf .gt_column_spanner_outer:last-child { padding-right: 0;
 }</p>
-<p>#mwlefoodfi .gt_column_spanner { border-bottom-style: solid;
+<p>#fsrstaogwf .gt_column_spanner { border-bottom-style: solid;
 border-bottom-width: 0px; border-bottom-color: #D3D3D3; vertical-align:
 bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
 display: inline-block; width: 100%; }</p>
-<p>#mwlefoodfi .gt_spanner_row { border-bottom-style: hidden; }</p>
-<p>#mwlefoodfi .gt_group_heading { padding-top: 8px; padding-bottom:
+<p>#fsrstaogwf .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#fsrstaogwf .gt_group_heading { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 text-transform: inherit; border-top-style: solid; border-top-width: 2px;
@@ -738,90 +773,90 @@ border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
 }</p>
-<p>#mwlefoodfi .gt_empty_group_heading { padding: 0.5px; color: #333333;
+<p>#fsrstaogwf .gt_empty_group_heading { padding: 0.5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 border-top-style: solid; border-top-width: 2px; border-top-color:
 #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
-<p>#mwlefoodfi .gt_from_md &gt; :first-child { margin-top: 0; }</p>
-<p>#mwlefoodfi .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
-<p>#mwlefoodfi .gt_row { padding-top: 8px; padding-bottom: 8px;
+<p>#fsrstaogwf .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#fsrstaogwf .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#fsrstaogwf .gt_row { padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
 solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
 }</p>
-<p>#mwlefoodfi .gt_stub { color: #333333; background-color: #FFFFFF;
+<p>#fsrstaogwf .gt_stub { color: #333333; background-color: #FFFFFF;
 font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_stub_row_group { color: #333333; background-color:
+<p>#fsrstaogwf .gt_stub_row_group { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
 }</p>
-<p>#mwlefoodfi .gt_row_group_first td { border-top-width: 2px; }</p>
-<p>#mwlefoodfi .gt_row_group_first th { border-top-width: 2px; }</p>
-<p>#mwlefoodfi .gt_summary_row { color: #333333; background-color:
+<p>#fsrstaogwf .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#fsrstaogwf .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#fsrstaogwf .gt_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_first_summary_row { border-top-style: solid;
+<p>#fsrstaogwf .gt_first_summary_row { border-top-style: solid;
 border-top-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_first_summary_row.thick { border-top-width: 2px;
+<p>#fsrstaogwf .gt_first_summary_row.thick { border-top-width: 2px;
 }</p>
-<p>#mwlefoodfi .gt_last_summary_row { padding-top: 8px; padding-bottom:
+<p>#fsrstaogwf .gt_last_summary_row { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_grand_summary_row { color: #333333; background-color:
+<p>#fsrstaogwf .gt_grand_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_first_grand_summary_row { padding-top: 8px;
+<p>#fsrstaogwf .gt_first_grand_summary_row { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-top-style: double; border-top-width: 6px; border-top-color:
 #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_last_grand_summary_row_top { padding-top: 8px;
+<p>#fsrstaogwf .gt_last_grand_summary_row_top { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-bottom-style: double; border-bottom-width: 6px;
 border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_striped { background-color: rgba(128, 128, 128,
+<p>#fsrstaogwf .gt_striped { background-color: rgba(128, 128, 128,
 0.05); }</p>
-<p>#mwlefoodfi .gt_table_body { border-top-style: solid;
+<p>#fsrstaogwf .gt_table_body { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_footnotes { color: #333333; background-color:
+<p>#fsrstaogwf .gt_footnotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+<p>#fsrstaogwf .gt_footnote { margin: 0px; font-size: 90%; padding-top:
 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_sourcenotes { color: #333333; background-color:
+<p>#fsrstaogwf .gt_sourcenotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#mwlefoodfi .gt_sourcenote { font-size: 90%; padding-top: 4px;
+<p>#fsrstaogwf .gt_sourcenote { font-size: 90%; padding-top: 4px;
 padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#mwlefoodfi .gt_left { text-align: left; }</p>
-<p>#mwlefoodfi .gt_center { text-align: center; }</p>
-<p>#mwlefoodfi .gt_right { text-align: right; font-variant-numeric:
+<p>#fsrstaogwf .gt_left { text-align: left; }</p>
+<p>#fsrstaogwf .gt_center { text-align: center; }</p>
+<p>#fsrstaogwf .gt_right { text-align: right; font-variant-numeric:
 tabular-nums; }</p>
-<p>#mwlefoodfi .gt_font_normal { font-weight: normal; }</p>
-<p>#mwlefoodfi .gt_font_bold { font-weight: bold; }</p>
-<p>#mwlefoodfi .gt_font_italic { font-style: italic; }</p>
-<p>#mwlefoodfi .gt_super { font-size: 65%; }</p>
-<p>#mwlefoodfi .gt_footnote_marks { font-size: 75%; vertical-align:
+<p>#fsrstaogwf .gt_font_normal { font-weight: normal; }</p>
+<p>#fsrstaogwf .gt_font_bold { font-weight: bold; }</p>
+<p>#fsrstaogwf .gt_font_italic { font-style: italic; }</p>
+<p>#fsrstaogwf .gt_super { font-size: 65%; }</p>
+<p>#fsrstaogwf .gt_footnote_marks { font-size: 75%; vertical-align:
 0.4em; position: initial; }</p>
-<p>#mwlefoodfi .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
-<p>#mwlefoodfi .gt_indent_1 { text-indent: 5px; }</p>
-<p>#mwlefoodfi .gt_indent_2 { text-indent: 10px; }</p>
-<p>#mwlefoodfi .gt_indent_3 { text-indent: 15px; }</p>
-<p>#mwlefoodfi .gt_indent_4 { text-indent: 20px; }</p>
-<p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
-<p>#mwlefoodfi .katex-display { display: inline-flex !important;
+<p>#fsrstaogwf .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#fsrstaogwf .gt_indent_1 { text-indent: 5px; }</p>
+<p>#fsrstaogwf .gt_indent_2 { text-indent: 10px; }</p>
+<p>#fsrstaogwf .gt_indent_3 { text-indent: 15px; }</p>
+<p>#fsrstaogwf .gt_indent_4 { text-indent: 20px; }</p>
+<p>#fsrstaogwf .gt_indent_5 { text-indent: 25px; }</p>
+<p>#fsrstaogwf .katex-display { display: inline-flex !important;
 margin-bottom: 0.75em !important; }</p>
-<p>#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+<p>#fsrstaogwf div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
 div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
 !important; }</p>
 <p>.gt_table thead tr:first-child { border-top: 1px solid currentColor
@@ -1146,6 +1181,9 @@ Meta-Analysis</em>. Academic Press.</li>
 <li>Lakens, D. (2013). Calculating and reporting effect sizes to
 facilitate cumulative science: A practical primer for <em>t</em>-tests
 and ANOVAs. <em>Frontiers in Psychology</em>, 4, 863.</li>
+<li>Long, J. S., &amp; Ervin, L. H. (2000). Using heteroscedasticity
+consistent standard errors in the linear regression model. <em>The
+American Statistician</em>, 54(3), 217–224.</li>
 <li>Olejnik, S., &amp; Algina, J. (2003). Generalized eta and omega
 squared statistics: Measures of effect size for some common research
 designs. <em>Psychological Methods</em>, 8(4), 434–447.</li>
@@ -1164,6 +1202,9 @@ and contrast analysis. <em>Psychological Methods</em>, 9(2),
 estimation and the evaluation of statistical models. In L. L. Harlow, S.
 A. Mulaik, &amp; J. H. Steiger (Eds.), <em>What if there were no
 significance tests?</em> (pp. 221–257). Lawrence Erlbaum.</li>
+<li>Tukey, J. W. (1958). Bias and confidence in not-quite large samples
+(Abstract). <em>The Annals of Mathematical Statistics</em>, 29(2),
+614.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

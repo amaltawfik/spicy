@@ -312,23 +312,49 @@ with haven), <code><a href="../reference/freq.html">freq()</a></code> shows them
 <div class="section level3">
 <h3 id="custom-missing-values">Custom missing values<a class="anchor" aria-label="anchor" href="#custom-missing-values"></a>
 </h3>
-<p>Treat specific values as missing with <code>na_val</code>:</p>
+<p>Raw data files often store nonresponse as an ordinary level – a
+“Refused” or “Don’t know” answer sitting next to the substantive
+categories. <code>na_val</code> reclassifies such a value as missing: it
+moves to the Missing block and valid percentages are computed without
+it.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">income_group</span>, na_val <span class="op">=</span> <span class="st">"High"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: income_group</span></span></span>
+<code class="sourceCode R"><span><span class="co"># Simulate a raw file where nonresponse was typed as a level</span></span>
+<span><span class="va">sh</span><span class="op">$</span><span class="va">income_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">income_group</span><span class="op">)</span></span>
+<span><span class="va">sh</span><span class="op">$</span><span class="va">income_raw</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_raw</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"Refused"</span></span>
+<span></span>
+<span><span class="co"># "Refused" counts as a valid answer...</span></span>
+<span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sh</span>, <span class="va">income_raw</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: income_raw</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Category   <span style="color: #9E9E9E;">│</span> Values            Freq.    Percent </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Valid      <span style="color: #9E9E9E;">│</span> High                219       18.2 </span></span>
+<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Low                 247       20.6 </span></span>
+<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Lower middle        388       32.3 </span></span>
+<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Refused              18        1.5 </span></span>
+<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Upper middle        328       27.3 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Total      <span style="color: #9E9E9E;">│</span>                    1200      100.0 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Class: character</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Data: sh</span></span></span>
+<span></span>
+<span><span class="co"># ...until na_val reclassifies it as missing</span></span>
+<span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sh</span>, <span class="va">income_raw</span>, na_val <span class="op">=</span> <span class="st">"Refused"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: income_raw</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Category   <span style="color: #9E9E9E;">│</span> Values            Freq.    Percent    Valid Percent </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼─────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Valid      <span style="color: #9E9E9E;">│</span> Low                 247       20.6             25.6 </span></span>
-<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Lower middle        388       32.3             40.3 </span></span>
-<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Upper middle        328       27.3             34.1 </span></span>
-<span><span class="co">#&gt;  Missing    <span style="color: #9E9E9E;">│</span> NA                  237       19.8                  </span></span>
+<span><span class="co">#&gt;  Valid      <span style="color: #9E9E9E;">│</span> High                219       18.2             18.5 </span></span>
+<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Low                 247       20.6             20.9 </span></span>
+<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Lower middle        388       32.3             32.8 </span></span>
+<span><span class="co">#&gt;             <span style="color: #9E9E9E;">│</span> Upper middle        328       27.3             27.7 </span></span>
+<span><span class="co">#&gt;  Missing    <span style="color: #9E9E9E;">│</span> NA                   18        1.5                  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼─────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Total      <span style="color: #9E9E9E;">│</span>                    1200      100.0            100.0 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Label: Household income group</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Class: ordered, factor</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Data: sochealth</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Class: character</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Data: sh</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a>
@@ -336,11 +362,14 @@ with haven), <code><a href="../reference/freq.html">freq()</a></code> shows them
 <p>Survey files imported with haven often declare codes as missing at
 the source – <code>8 = Refused</code>, <code>9 = Don't know</code> –
 through <code>na_values</code>/<code>na_range</code> (SPSS-style) or
-tagged NAs (Stata-style). In R these codes are <em>not</em>
-<code>NA</code>, so most packages silently treat them as valid answers.
-spicy honors the declaration by default: the codes are excluded from
-valid percentages and statistics, and <code><a href="../reference/freq.html">freq()</a></code> shows them as
-labelled rows of its Missing block instead of erasing them.</p>
+tagged NAs (Stata-style). The two behave differently in R. SPSS-style
+codes are <em>not</em> <code>NA</code>, so most packages silently treat
+them as valid answers. Stata-style tagged NAs are genuine
+<code>NA</code>s, but most packages collapse them into a single
+undifferentiated <code>NA</code> count. spicy honors both declarations
+by default: the codes are excluded from valid percentages and
+statistics, and <code><a href="../reference/freq.html">freq()</a></code> shows them as labelled rows of its
+Missing block instead of erasing them.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sh2</span> <span class="op">&lt;-</span> <span class="va">sochealth</span></span>
 <span><span class="va">sh2</span><span class="op">$</span><span class="va">trust</span> <span class="op">&lt;-</span> <span class="fu">labelled</span><span class="fu">::</span><span class="fu"><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">labelled_spss</a></span><span class="op">(</span></span>
@@ -362,12 +391,20 @@ labelled rows of its Missing block instead of erasing them.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Class: haven_labelled_spss, haven_labelled, vctrs_vctr, double</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Data: sh2</span></span></span></code></pre></div>
-<p>Set <code>user_na = FALSE</code> to treat the declared codes as
-ordinary categories instead. The same argument, with the same default,
-exists in <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, the <code>table_*()</code> helpers,
-and the row-wise functions – and the exclusions are always disclosed in
-the table note. See the “Declared missing values” section of
-<code><a href="../reference/freq.html">?freq</a></code> for the full contract.</p>
+<p>Set <code>user_na = FALSE</code> to treat SPSS-style declared codes
+as ordinary categories instead; tagged NAs are genuine <code>NA</code>s
+either way, so for them it only collapses the per-tag breakdown into the
+regular <code>NA</code> count. The same argument, with the same default,
+exists in <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, the descriptive helpers
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the row-wise functions
+<code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code> and <code><a href="../reference/count_n.html">count_n()</a></code>.
+(<code><a href="../reference/table_regression.html">table_regression()</a></code> takes a fitted model, not raw data, so
+the argument does not apply there.) <code><a href="../reference/cross_tab.html">cross_tab()</a></code> and the
+descriptive helpers disclose the exclusion in the table note; the
+row-wise functions return bare numeric vectors, so they count the
+declared codes as missing without any note. See the “Declared missing
+values” section of <code><a href="../reference/freq.html">?freq</a></code> for the full contract.</p>
 </div>
 </div>
 <div class="section level2">
@@ -669,31 +706,61 @@ unweighted sample size:</p>
 <div class="section level3">
 <h3 id="monte-carlo-simulation">Monte Carlo simulation<a class="anchor" aria-label="anchor" href="#monte-carlo-simulation"></a>
 </h3>
-<p>When expected cell counts are small, use simulated p-values:</p>
+<p>The chi-squared test relies on an asymptotic approximation that
+degrades when expected cell counts are small. <code><a href="../reference/cross_tab.html">cross_tab()</a></code>
+checks Cochran’s rule and warns when a table is too sparse – as in this
+student subsample:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>,</span>
+<code class="sourceCode R"><span><span class="va">students</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">employment_status</span> <span class="op">==</span> <span class="st">"Student"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">students</span>, <span class="va">self_rated_health</span>, <span class="va">education</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: self_rated_health x education (N)</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Values      <span style="color: #9E9E9E;">│</span>   Lower secondary    Upper secondary    Tertiary <span style="color: #9E9E9E;">│</span>   Total </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
+<span><span class="co">#&gt;  Poor        <span style="color: #9E9E9E;">│</span>                 2                  3           0 <span style="color: #9E9E9E;">│</span>       5 </span></span>
+<span><span class="co">#&gt;  Fair        <span style="color: #9E9E9E;">│</span>                11                 14           4 <span style="color: #9E9E9E;">│</span>      29 </span></span>
+<span><span class="co">#&gt;  Good        <span style="color: #9E9E9E;">│</span>                 5                 43          28 <span style="color: #9E9E9E;">│</span>      76 </span></span>
+<span><span class="co">#&gt;  Very good   <span style="color: #9E9E9E;">│</span>                 4                 12          14 <span style="color: #9E9E9E;">│</span>      30 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
+<span><span class="co">#&gt;  Total       <span style="color: #9E9E9E;">│</span>                22                 72          46 <span style="color: #9E9E9E;">│</span>     140 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(6) = 23.4, p &lt;.001</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Kendall's Tau-b = 0.28</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Warning: 5 expected cells &lt; 5 (41.7%). 1 expected cell &lt; 1. Minimum expected = 0.79. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: self_rated_health (3).</span></span></span></code></pre></div>
+<p>The warning itself names the remedy: <code>simulate_p = TRUE</code>
+replaces the asymptotic p-value with one estimated by Monte Carlo
+simulation (<code>simulate_B</code> random tables). A simulated test has
+no degrees of freedom, which is why the statistic prints as
+<code>Chi-2(NA)</code>:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">students</span>, <span class="va">self_rated_health</span>, <span class="va">education</span>,</span>
 <span>          simulate_p <span class="op">=</span> <span class="cn">TRUE</span>, simulate_B <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: self_rated_health x education (N)</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Values   <span style="color: #9E9E9E;">│</span>   Lower secondary    Upper secondary    Tertiary <span style="color: #9E9E9E;">│</span>   Total </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
-<span><span class="co">#&gt;  No       <span style="color: #9E9E9E;">│</span>               179                415         332 <span style="color: #9E9E9E;">│</span>     926 </span></span>
-<span><span class="co">#&gt;  Yes      <span style="color: #9E9E9E;">│</span>                78                112          59 <span style="color: #9E9E9E;">│</span>     249 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
-<span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
+<span><span class="co">#&gt;  Values      <span style="color: #9E9E9E;">│</span>   Lower secondary    Upper secondary    Tertiary <span style="color: #9E9E9E;">│</span>   Total </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
+<span><span class="co">#&gt;  Poor        <span style="color: #9E9E9E;">│</span>                 2                  3           0 <span style="color: #9E9E9E;">│</span>       5 </span></span>
+<span><span class="co">#&gt;  Fair        <span style="color: #9E9E9E;">│</span>                11                 14           4 <span style="color: #9E9E9E;">│</span>      29 </span></span>
+<span><span class="co">#&gt;  Good        <span style="color: #9E9E9E;">│</span>                 5                 43          28 <span style="color: #9E9E9E;">│</span>      76 </span></span>
+<span><span class="co">#&gt;  Very good   <span style="color: #9E9E9E;">│</span>                 4                 12          14 <span style="color: #9E9E9E;">│</span>      30 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
+<span><span class="co">#&gt;  Total       <span style="color: #9E9E9E;">│</span>                22                 72          46 <span style="color: #9E9E9E;">│</span>     140 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(NA) = 21.6, p &lt;.001 (simulated)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(NA) = 23.4, p &lt;.001 (simulated)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Kendall's Tau-b = 0.28</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: self_rated_health (3).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="data-frame-output">Data frame output<a class="anchor" aria-label="anchor" href="#data-frame-output"></a>
 </h3>
 <p>Set <code>output = "data.frame"</code> to get a plain data frame for
 further processing. The same argument works in <code><a href="../reference/freq.html">freq()</a></code>, and
-the values match the <code>output</code> argument of the
-<code>table_*()</code> family:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+its two values (“default”, “data.frame”) are shared with the
+<code>output</code> argument of the <code>table_*()</code> family – but
+the rendered engines that family also accepts (“tinytable”, “gt”,
+“flextable”, …) are not available here:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>,</span>
 <span>          percent <span class="op">=</span> <span class="st">"column"</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Values Lower secondary Upper secondary Tertiary</span></span>
@@ -706,10 +773,10 @@ the values match the <code>output</code> argument of the
 </h2>
 <p>You can set tabulation defaults with <code><a href="https://rdrr.io/r/base/options.html" class="external-link">options()</a></code> so you
 don’t have to repeat arguments. <code>spicy.rescale</code> is read by
-both <code><a href="../reference/cross_tab.html">cross_tab()</a></code> and <code><a href="../reference/freq.html">freq()</a></code>;
-<code>spicy.percent</code> and <code>spicy.simulate_p</code> are read by
-<code><a href="../reference/cross_tab.html">cross_tab()</a></code>:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/freq.html">freq()</a></code>, and
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>; <code>spicy.percent</code> and
+<code>spicy.simulate_p</code> are read by <code><a href="../reference/cross_tab.html">cross_tab()</a></code>:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
 <span>  spicy.percent   <span class="op">=</span> <span class="st">"column"</span>,</span>
 <span>  spicy.simulate_p <span class="op">=</span> <span class="cn">TRUE</span>,</span>

@@ -150,7 +150,7 @@ coefficients join the `p_adjust` family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). `CR*` for `pscl` fits covers both
 components via
-[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 Opt out with `show_components = FALSE`.
 
 ## Categorical outcomes
@@ -168,7 +168,7 @@ working residuals. `mlogit` renders per-alternative rows; AME is refused
 (no `slopes()` method exists for its data format). `CR*` is available
 with one cluster value per choice situation, and `n` counts choice
 situations; `HC*` is refused
-([`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+([`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
 mis-scales the meat for mlogit's per-chooser score structure).
 
 ## Survival models

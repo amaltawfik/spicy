@@ -1093,7 +1093,7 @@ internal model_id key.</p>
     <p><code>vcov</code> selects the variance-covariance estimator:</p>
 <ul><li><p><code>"classical"</code> – OLS (lm) / Fisher information (glm).</p></li>
 <li><p><code>"HC0"</code> to <code>"HC5"</code> – heteroskedasticity-consistent
-(via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
+(via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
 <li><p><code>"CR0"</code> to <code>"CR3"</code> – cluster-robust with
 Satterthwaite-corrected df (via <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>).
 Requires <code>cluster</code>.</p></li>
@@ -1154,7 +1154,7 @@ the class cannot honour fails fast with <code>spicy_unsupported_vcov</code>
 
 <dt><code>mlogit</code></dt>
 <dd><p><code>classical</code> + <code>CR*</code> only (cluster at the
-choice-situation level) – <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
+choice-situation level) – <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
 sandwich for mlogit's per-choice-situation scores, so <code>HC*</code> is
 refused.</p></dd>
 
@@ -1198,7 +1198,7 @@ to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>
 <code>lm</code>/<code>lme</code>/<code>lmer</code>); <code>coxph</code>/<code>cph</code> use the Lin-Wei grouped-dfbeta
 sandwich (identical to <code>coxph(..., cluster=)</code>);
 <code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code>/<code>multinom</code> use
-<code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
 needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
 <code>CR*</code> maps to the one available estimator. <code>cluster</code> length is one
@@ -1217,7 +1217,7 @@ variables). The variables are looked up in
 <code>model.frame(fit)</code> first, then in the original <code>data</code>
 argument captured by the fit. <strong>Recommended</strong>: independent
 of the dataset's name, composable for multi-way clustering,
-consistent with <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
+consistent with <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>.</p></li>
 <li><p><strong>String</strong> – <code>cluster = "region"</code>. A single column
 name resolved the same way as the formula. Convenient but

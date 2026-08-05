@@ -191,10 +191,10 @@ values are displayed:</p><ul><li><p><code>"prefixed"</code> or <code>"p"</code> 
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
 <dd><p>Character. Controls how factor and labelled values
 are displayed in the frequency table. <code>"observed"</code> (the default;
-matches Stata's <code>tab</code>) shows only levels present in the data.
-<code>"all"</code> (matches SPSS <code>FREQUENCIES</code> and <code><a href="code_book.html">code_book()</a></code>'s default)
-keeps every declared level, including unused ones, which appear
-with <code>n = 0</code>.</p></dd>
+matches Stata's <code>tab</code> and SPSS <code>FREQUENCIES</code>, which both list
+only values present in the data) shows only levels present in
+the data. <code>"all"</code> (<code><a href="code_book.html">code_book()</a></code>'s default) keeps every declared
+level, including unused ones, which appear with <code>n = 0</code>.</p></dd>
 
 
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
@@ -449,8 +449,9 @@ tables; <code><a href="varlist.html">varlist()</a></code> / <code><a href="code_
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Class: haven_labelled, vctrs_vctr, double</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Data: x_lbl</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Show all declared factor levels, including unused ones (SPSS-style).</span></span></span>
-<span class="r-in"><span><span class="co"># The default "observed" mirrors Stata's `tab` and drops unused levels.</span></span></span>
+<span class="r-in"><span><span class="co"># Show all declared factor levels, including unused ones (n = 0).</span></span></span>
+<span class="r-in"><span><span class="co"># The default "observed" mirrors Stata's `tab` and SPSS FREQUENCIES,</span></span></span>
+<span class="r-in"><span><span class="co"># which both drop unused levels.</span></span></span>
 <span class="r-in"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Yes"</span>, <span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Yes"</span>, <span class="st">"No"</span>, <span class="st">"Maybe"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">freq</span><span class="op">(</span><span class="va">f</span>, factor_levels <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Frequency table: f</span></span>

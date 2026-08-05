@@ -123,10 +123,10 @@ freq(
 - factor_levels:
 
   Character. Controls how factor and labelled values are displayed in
-  the frequency table. `"observed"` (the default; matches Stata's `tab`)
-  shows only levels present in the data. `"all"` (matches SPSS
-  `FREQUENCIES` and
-  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)'s
+  the frequency table. `"observed"` (the default; matches Stata's `tab`
+  and SPSS `FREQUENCIES`, which both list only values present in the
+  data) shows only levels present in the data. `"all"`
+  ([`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)'s
   default) keeps every declared level, including unused ones, which
   appear with `n = 0`.
 
@@ -406,8 +406,9 @@ freq(x_lbl, labelled_levels = "values", sort = "-")
 #> Class: haven_labelled, vctrs_vctr, double
 #> Data: x_lbl
 
-# Show all declared factor levels, including unused ones (SPSS-style).
-# The default "observed" mirrors Stata's `tab` and drops unused levels.
+# Show all declared factor levels, including unused ones (n = 0).
+# The default "observed" mirrors Stata's `tab` and SPSS FREQUENCIES,
+# which both drop unused levels.
 f <- factor(c("Yes", "No", "Yes"), levels = c("Yes", "No", "Maybe"))
 freq(f, factor_levels = "all")
 #> Frequency table: f

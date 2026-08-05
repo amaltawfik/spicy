@@ -217,33 +217,44 @@ is a shortcut for <code><a href="../reference/varlist.html">varlist()</a></code>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> smoking           Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span></code></pre></div>
 <p>If you want the <code>Values</code> column to include explicit
-missing values, use <code>include_na = TRUE</code>:</p>
+missing values, use <code>include_na = TRUE</code>. Selecting a few
+variables and keeping only the relevant columns lets the
+<code>Values</code> strings print in full, so the added
+<code>&lt;NA&gt;</code> entry is actually visible:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, include_na <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="va">NAs</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;   Variable           Label                 Values Class N_distinct N_valid   NAs</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> income_group       Household income gro… Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> smoking            Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> self_rated_health  Self-rated health     Poor,… orde…          4    <span style="text-decoration: underline;">1</span>180    20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi                Body mass index       16, 1… nume…        177    <span style="text-decoration: underline;">1</span>188    12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi_category       BMI category          Norma… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> political_position Political position (… 0, 1,… nume…         11    <span style="text-decoration: underline;">1</span>185    15</span></span></code></pre></div>
-<p>If you want to display all unique non-missing values in the
-<code>Values</code> column, use <code>values = TRUE</code>. This is
-especially useful for variables with a small number of distinct
-values:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">income_group</span>, <span class="va">self_rated_health</span>,</span>
+<span>  include_na <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"Values"</span>, <span class="st">"NAs"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
+<span><span class="co">#&gt;   Variable          Values                                        NAs</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> smoking           No, Yes, &lt;NA&gt;                                  25</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> income_group      Low, Lower middle, Upper middle, High, &lt;NA&gt;    18</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> self_rated_health Poor, Fair, Good, Very good, &lt;NA&gt;              20</span></span></code></pre></div>
+<p>By default, the <code>Values</code> column elides longer value lists
+with <code>...</code>. If you want to display all unique non-missing
+values instead, use <code>values = TRUE</code>. This is especially
+useful for variables with a small number of distinct values, where the
+full list fits on one line. Compare the default display with the
+<code>values = TRUE</code> display for the same two variables:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="va">N_distinct</span> <span class="op">&lt;=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;   Variable          Label                  Values Class N_distinct N_valid   NAs</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sex               Sex                    Femal… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> age_group         Age group              25-34… orde…          4    <span style="text-decoration: underline;">1</span>200     0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> education         Highest education lev… Lower… orde…          3    <span style="text-decoration: underline;">1</span>200     0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> social_class      Subjective social cla… Lower… orde…          5    <span style="text-decoration: underline;">1</span>200     0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> employment_status Employment status      Emplo… fact…          4    <span style="text-decoration: underline;">1</span>200     0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> income_group      Household income group Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">life_sat_health</span>, <span class="va">social_class</span>,</span>
+<span>  tbl <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"Values"</span>, <span class="st">"N_distinct"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
+<span><span class="co">#&gt;   Variable        Values                                          N_distinct</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> life_sat_health 1, 2, 3, ..., 5                                          5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> social_class    Lower, Working, Lower middle, ..., Upper middle          5</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">life_sat_health</span>, <span class="va">social_class</span>,</span>
+<span>  values <span class="op">=</span> <span class="cn">TRUE</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"Values"</span>, <span class="st">"N_distinct"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
+<span><span class="co">#&gt;   Variable        Values                                             N_distinct</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> life_sat_health 1, 2, 3, 4, 5                                               5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> social_class    Lower, Working, Lower middle, Middle, Upper middle          5</span></span></code></pre></div>
 <p>For a focused inspection, select only the variables you want to
 review:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -346,11 +357,14 @@ call in interactive work.</p>
 codebook for review or export.</p>
 <p>The two tools share their column structure but differ in one default:
 <code><a href="../reference/varlist.html">varlist()</a></code> shows only the <strong>observed</strong> factor
-levels in the <code>Values</code> column (Stata <code>tab</code> style),
-whereas <code><a href="../reference/code_book.html">code_book()</a></code> shows <strong>all declared</strong>
-levels including unused ones (SPSS <code>FREQUENCIES</code> style,
-appropriate for schema documentation). Pass <code>factor_levels =</code>
-explicitly to either function to override the default.</p>
+levels in the <code>Values</code> column (the convention of Stata
+<code>tab</code> and of the SPSS <code>FREQUENCIES</code> default, which
+both list only values present in the data), whereas
+<code><a href="../reference/code_book.html">code_book()</a></code> shows <strong>all declared</strong> levels
+including unused ones – the full coding scheme, as a data dictionary or
+SPSS <code>CTABLES</code> would report it, which is appropriate for
+schema documentation. Pass <code>factor_levels =</code> explicitly to
+either function to override the default.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

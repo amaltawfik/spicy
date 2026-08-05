@@ -21,9 +21,12 @@ it is second-class.
 
 Two sibling tools serve different needs, and choosing well saves work.
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
-returns the *statistical* long form – one row per coefficient with
-`estimate`, `std.error`, `conf.low`, `p.value` – and is the right input
-for meta-analysis, further computation on estimates, or ggplot.
+returns the *statistical* long form – one row per term and estimate type
+per model, with `estimate`, `std.error`, `conf.low`, `p.value`. A
+default table carries a single estimate type, so that is one row per
+coefficient; requesting standardized betas or AMEs adds a row per term
+for each. It is the right input for meta-analysis, further computation
+on estimates, or ggplot.
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 returns the *display geometry* – rows and columns exactly as the
 rendered table lays them out, factor headers and fit statistics included
@@ -39,10 +42,42 @@ models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-
 
 ## The schema on one model
 
+Start from the display view, so the typed view has something to be
+compared against:
+
 ``` r
 
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 tbl <- table_regression(fit)
+tbl
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
+#>  sex:            │                                      
+#>    Female (ref.) │     –     –          –          –    
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     –     –          –          –    
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj.R²          │    0.02                              
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
+Every display trait named above is visible here: `(ref.)` markers and
+en-dashes on the reference rows, blank factor header rows, one bracketed
+`[LL, UL]` column, APA p-values (`<.001`, no leading zero). The typed
+view underneath:
+
+``` r
+
 s <- as_structured(tbl)
 names(s)
 #>  [1] "body"                    "reference_rows"         
@@ -107,8 +142,10 @@ s$level_rows
 
 `col_meta` describes each column: which token produced it, which model
 it belongs to, its display precision, and – for p-value columns – the
-APA style and below-threshold rule. `format_spec` carries the global
-defaults (decimal mark, digits, CI level):
+APA style and below-threshold rule, plus per-row `fit_stat_overrides`
+where a fit-statistic row departs from the column’s precision (put to
+work in the renderer below). `format_spec` carries the global defaults
+(decimal mark, digits, CI level):
 
 ``` r
 
@@ -203,6 +240,15 @@ s$format_spec$ci_level
 #> [1] 0.95
 ```
 
+That is seven of the twelve components; `spanners` and
+`reference_models_by_row` follow in the multi-model section below. Of
+the remaining three, `ci_pairs` records which `LL`/`UL` columns form a
+confidence-interval pair (here, columns 4 and 5 under the label
+`95% CI`), while `outcome_row` and `outcome_labels_by_col` locate and
+label the optional outcome header row of multi-outcome tables and are
+empty here. The complete schema, component by component, is in
+[`?as_structured`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
+
 ## Filtering and aggregating
 
 Because the body is numeric, ordinary data-frame idioms work. Keep the
@@ -251,22 +297,41 @@ With several models, columns are prefixed by the model label and two
 more components become useful. `spanners` maps each model label to its
 column indices in `body`; `reference_models_by_row` records, for each
 reference row, which models actually contain the factor – the rule
-renderers use to decide where the reference en-dash belongs:
+renderers use to decide where the reference en-dash belongs. To see it
+discriminate, the `Minimal` model below omits `smoking`:
 
 ``` r
 
 fit2 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth)
-s2 <- as_structured(table_regression(list(Base = fit, Extended = fit2)))
+fit0 <- lm(wellbeing_score ~ age + sex, data = sochealth)
+s2 <- as_structured(
+  table_regression(list(Minimal = fit0, Base = fit, Extended = fit2))
+)
 s2$spanners
-#> $Base
+#> $Minimal
 #> [1] 2 3 4
 #> 
-#> $Extended
+#> $Base
 #> [1] 5 6 7
+#> 
+#> $Extended
+#> [1]  8  9 10
 names(s2$body)
-#> [1] "Variable"     "Base: B"      "Base: SE"     "Base: p"      "Extended: B" 
-#> [6] "Extended: SE" "Extended: p"
+#>  [1] "Variable"     "Minimal: B"   "Minimal: SE"  "Minimal: p"   "Base: B"     
+#>  [6] "Base: SE"     "Base: p"      "Extended: B"  "Extended: SE" "Extended: p"
+s2$reference_models_by_row
+#> $`4`
+#> [1] "Base"     "Extended" "Minimal" 
+#> 
+#> $`7`
+#> [1] "Base"     "Extended"
 ```
+
+Rows 4 and 7 are the two reference rows (`Female (ref.)`, `No (ref.)`).
+All three models contain `sex`, so row 4 lists all three; only `Base`
+and `Extended` contain `smoking`, so row 7 lists those two – a renderer
+draws the reference en-dash in exactly those models’ columns and leaves
+the `Minimal` cells blank.
 
 Model-wise extraction follows from the spanner map:
 
@@ -293,7 +358,7 @@ s2$body[, c(1, s2$spanners$Extended)]
 The structured view carries everything a renderer needs. A compact
 [`knitr::kable()`](https://rdrr.io/pkg/knitr/man/kable.html) rendering
 takes a few lines: each column formats at its `col_meta` precision, and
-the `fit_stat_overrides` seen earlier supply the per-row exceptions —
+the `fit_stat_overrides` seen earlier supply the per-row exceptions –
 that is what renders the `n` row as `1175` rather than `1175.00`:
 
 ``` r
@@ -370,7 +435,8 @@ Three properties make the structured view safe to build on:
   rather than mis-read.
 
 For the statistical long form – estimates with standard errors and
-unformatted p-values, one row per term across models – reach for
+unformatted p-values, one row per term and estimate type across models –
+reach for
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) on the
 same object; for one-line model summaries,
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html).

@@ -283,10 +283,12 @@ comparison independent of the empirical covariate distribution.</p></li>
 <code>emmean = avg_row %*% beta</code> and inherit the spicy variance
 pipeline (HC* / CR* / bootstrap / jackknife). They give the
 same answer when there are no covariates, and also when all
-covariates are numeric / logical (no factor levels to expand
-over). The two estimands diverge only when at least one
-factor / character covariate has non-uniform observed
-proportions.</p></dd>
+covariates are numeric (fixed at their means either way). The
+two estimands diverge when a factor, character, or logical
+covariate has non-uniform observed proportions: those are
+levels to balance, and <code>"balanced"</code> weights them equally
+(a logical is a two-level factor to <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, balanced
+FALSE/TRUE – the <code>emmeans</code> convention).</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
@@ -339,8 +341,11 @@ estimators for non-independent observations (Liang and Zeger
 (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
 Satterthwaite degrees of freedom for inference; the
 fractional df is reported in the <code>df2</code> column and in the
-<code>t(df)</code> / <code>F(df1, df2)</code> test header. <code>"CR1"</code> corresponds to
-Stata's <code>, vce(cluster id)</code> default. Cluster-robust variants
+<code>t(df)</code> / <code>F(df1, df2)</code> test header. <code>"CR1"</code> applies the
+G/(G-1) correction only; Stata's <code>, vce(cluster id)</code> uses the
+larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
+(clubSandwich's <code>"CR1S"</code>, not exposed here), so <code>"CR1"</code> does
+not reproduce Stata. Cluster-robust variants
 are dispatched to <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> and inference uses
 <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> / <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code>;
 install <code>clubSandwich</code> to use them.</p></li>
@@ -353,7 +358,7 @@ Wald test); CIs are Wald-type around the point estimate.</p></li>
 <li><p><code>"jackknife"</code>: leave-one-out variance, or leave-one-cluster-out
 when <code>cluster</code> is supplied (Quenouille 1956; MacKinnon and White
 1985). Inference is asymptotic (<code>z</code> / <code>chi^2(q)</code>).</p></li>
-</ul><p>The <code>HC*</code> variants are computed via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>.
+</ul><p>The <code>HC*</code> variants are computed via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>.
 Coefficients (means, contrasts, slopes), <code>\eqn{R^2}{R^2}</code>, and the standardized
 effect sizes (<code>f2</code>, <code>d</code>, <code>g</code>, <code>omega2</code>) are point estimates from the
 OLS/WLS fit and are not affected by <code>vcov</code>; only their standard errors,
@@ -376,7 +381,7 @@ environment (factor, character, integer, etc.).</p></li>
 for each outcome (alongside rows with <code>NA</code> in <code>y</code>, <code>by</code>, or
 <code>weights</code>). At least two distinct non-missing cluster values are
 required. Multi-way clustering (a list / data.frame of multiple
-cluster vectors) is not supported; use <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> or
+cluster vectors) is not supported; use <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> or
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> directly on the fitted model for that case.</p></dd>
 
 
@@ -736,12 +741,12 @@ sizes) are more appropriate.</p>
     <h2 id="robust-standard-errors">Robust standard errors<a class="anchor" aria-label="anchor" href="#robust-standard-errors"></a></h2>
     <p>When <code>vcov</code> is one of the <code>HC*</code> variants, the standard errors, CIs, and
 Wald test statistics use a heteroskedasticity-consistent sandwich
-estimator computed via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (Zeileis 2004), the
+estimator computed via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (Zeileis 2004), the
 canonical R implementation. For a brief guide:</p><ul><li><p><code>"HC0"</code> is the original White (1980) form; <code>"HC1"</code> adds the
 <code>n / (n - p)</code> correction (MacKinnon and White 1985), Stata's
 <code>, robust</code> default.</p></li>
 <li><p><code>"HC2"</code> and <code>"HC3"</code> use leverage-based residual rescalings
-(MacKinnon and White 1985); <code>"HC3"</code> is the <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>
+(MacKinnon and White 1985); <code>"HC3"</code> is the <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>
 default for small to moderate samples (Long and Ervin 2000).</p></li>
 <li><p><code>"HC4"</code> adapts the leverage exponent for influential
 observations (Cribari-Neto 2004); <code>"HC4m"</code> is a modified-exponent
@@ -761,7 +766,10 @@ Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
 modern recommended default; it generally produces fractional
 Satterthwaite degrees of freedom in <code>df2</code>, which the displayed
 <code>t(df)</code> / <code>F(df1, df2)</code> header renders to one decimal. <code>"CR1"</code>
-matches Stata's <code>, vce(cluster id)</code>. Effect sizes remain invariant
+applies the G/(G-1) correction only – Stata's <code>, vce(cluster id)</code>
+uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
+(clubSandwich's <code>"CR1S"</code>, not exposed here), so <code>"CR1"</code> does not
+reproduce Stata. Effect sizes remain invariant
 to <code>vcov</code> (including <code>CR*</code>); only the SE, CI, test statistic, and
 <code>df2</code> of the contrast change.</p>
 <p>Two resampling-based estimators are also available without adding
@@ -963,7 +971,7 @@ Econometric computing with HC and HAC covariance matrix estimators.
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>.
 For broader workflows on the same statistical building blocks:
-<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (the canonical R implementation of the <code>HC*</code>
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> (the canonical R implementation of the <code>HC*</code>
 sandwich estimators, used internally for <code>vcov = "HC*"</code>);
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>, <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> and
 <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code> (the canonical R implementation of

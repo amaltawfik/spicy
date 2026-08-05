@@ -115,7 +115,10 @@ schema).</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This is the right entry point for users who want to:</p><ul><li><p><strong>Filter coefficients programmatically</strong>, e.g.
-<code>as_structured(tbl)$body[as_structured(tbl)$body$p &lt; 0.05, ]</code>.</p></li>
+<code>as_structured(tbl)$body[which(as_structured(tbl)$body$p &lt; 0.05), ]</code>
+(<code><a href="https://rdrr.io/r/base/which.html" class="external-link">which()</a></code> drops the structurally empty rows – factor headers,
+reference levels – whose <code>p</code> is <code>NA</code>; a bare logical index
+would keep them as all-<code>NA</code> rows).</p></li>
 <li><p><strong>Aggregate raw values across rows</strong>, e.g.
 <code>mean(as_structured(tbl)$body[["B"]], na.rm = TRUE)</code>.</p></li>
 <li><p><strong>Build a custom downstream renderer</strong> that consumes the same
@@ -171,17 +174,13 @@ p-style, CI level, etc.).</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 7            n 32.0000000        NA         NA         NA           NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8           R²  0.8374325        NA         NA         NA           NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9       Adj.R²  0.8200146        NA         NA         NA           NA</span>
-<span class="r-in"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">p</span> <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="op">]</span>            <span class="co"># filter significant rows</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Variable         B        SE 95% CI: LL 95% CI: UL            p</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    (Intercept) 33.990794 1.8877934  30.123824  37.857764 6.257246e-17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             wt -3.205613 0.7538957  -4.749898  -1.661328 2.130435e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NA          &lt;NA&gt;        NA        NA         NA         NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NA.1        &lt;NA&gt;        NA        NA         NA         NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5              6 -4.255582 1.3860728  -7.094824  -1.416341 4.717834e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6              8 -6.070860 1.6522878  -9.455418  -2.686301 9.991893e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NA.2        &lt;NA&gt;        NA        NA         NA         NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NA.3        &lt;NA&gt;        NA        NA         NA         NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NA.4        &lt;NA&gt;        NA        NA         NA         NA           NA</span>
+<span class="r-in"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">p</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span>, <span class="op">]</span>     <span class="co"># filter significant rows</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      Variable         B        SE 95% CI: LL 95% CI: UL            p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 (Intercept) 33.990794 1.8877934  30.123824  37.857764 6.257246e-17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          wt -3.205613 0.7538957  -4.749898  -1.661328 2.130435e-04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           6 -4.255582 1.3860728  -7.094824  -1.416341 4.717834e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6           8 -6.070860 1.6522878  -9.455418  -2.686301 9.991893e-04</span>
+<span class="r-in"><span><span class="co"># which() drops the structural NA rows (headers, reference levels)</span></span></span>
 <span class="r-in"><span><span class="va">s</span><span class="op">$</span><span class="va">col_meta</span><span class="op">$</span><span class="va">B</span>                         <span class="co"># column metadata for B</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $token</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "b"</span>

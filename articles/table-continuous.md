@@ -41,7 +41,8 @@ table_continuous(
 
 If you omit `select`,
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-scans the data frame and keeps numeric columns:
+scans the data frame and keeps numeric columns. Non-numeric columns are
+dropped silently; set `verbose = TRUE` to list them in a message:
 
 ``` r
 
@@ -272,7 +273,7 @@ table_continuous(
   by = education,
   test = "nonparametric",
   statistic = TRUE,
-  effect_size = TRUE
+  effect_size = "auto"
 )
 #> Descriptive statistics
 #> 
@@ -319,7 +320,7 @@ table_continuous(
 #> Missing values removed: bmi (12).
 ```
 
-`effect_size = TRUE` auto-selects the canonical measure for the chosen
+`effect_size = "auto"` selects the canonical measure for the chosen
 `test` and number of groups: Hedges’ *g* (parametric, 2 groups),
 eta-squared (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
 groups), or epsilon-squared (nonparametric, 3+ groups). To pick a
@@ -367,7 +368,7 @@ table_continuous(
   select = c(bmi, wellbeing_score),
   by = education,
   statistic = TRUE,
-  effect_size = TRUE,
+  effect_size = "auto",
   output = "data.frame"
 )
 #>          variable                         label           group     mean
@@ -568,10 +569,40 @@ table_continuous(
 #> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
-Missing values in `by` are removed by default (`drop_na = TRUE`), again
-disclosed in the note. Set `drop_na = FALSE` to display them as a
-dedicated “(Missing)” group instead. The group-comparison test and
-effect size still cover the observed groups only, matching
+Missing values in `by` are removed by default (`drop_na = TRUE`), and
+the removal is again disclosed rather than silent – here in the note
+(“Rows with missing income_group removed”) and in a warning:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = bmi,
+  by = income_group
+)
+#> Warning: 18 observation(s) with NA in `income_group` were excluded.
+#> Descriptive statistics
+#> 
+#>  Variable        │ Group           M     SD    Min    Max   95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  Body mass index │ Low           26.58  3.94  16.00  38.90    26.08   
+#>                  │ Lower middle  26.19  3.47  16.00  37.30    25.84   
+#>                  │ Upper middle  25.66  3.89  16.00  37.70    25.24   
+#>                  │ High          25.15  3.43  16.00  35.00    24.68   
+#> 
+#>  Variable        │ Group         95% CI UL   n     p   
+#> ─────────────────┼─────────────────────────────────────
+#>  Body mass index │ Low             27.07    246  <.001 
+#>                  │ Lower middle    26.53    385        
+#>                  │ Upper middle    26.09    325        
+#>                  │ High            25.61    214        
+#> 
+#> Missing values removed: bmi (12). Rows with missing income_group removed: 18.
+```
+
+Set `drop_na = FALSE` to display those rows as a dedicated “(Missing)”
+group instead. The group-comparison test and effect size still cover the
+observed groups only, matching
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
 
 ``` r
@@ -603,106 +634,61 @@ table_continuous(
 #> Missing values removed: bmi (12).
 ```
 
-## Labels and output formats
+## Custom labels
 
-Use `labels` to replace technical variable names with reporting labels:
-
-``` r
-
-pkgdown_dark_gt(
-  table_continuous(
-    sochealth,
-    select = c(bmi, wellbeing_score, life_sat_health),
-    by = education,
-    labels = c(
-      bmi = "Body mass index",
-      wellbeing_score = "Well-being score",
-      life_sat_health = "Satisfaction with health"
-    ),
-    output = "gt"
-  )
-)
-```
-
-[TABLE]
-
+By default,
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-supports the same reporting-oriented outputs as
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
-
-| `output` value | Returned object |
-|:---|:---|
-| `"default"` | Styled ASCII console table |
-| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
-| `"tinytable"` | Formatted tinytable |
-| `"gt"` | Formatted gt table |
-| `"flextable"` | Formatted flextable |
-| `"excel"` | Written `.xlsx` file |
-| `"clipboard"` | Copied text table |
-| `"word"` | Written `.docx` file |
-
-For example, `tinytable` works well in Quarto and R Markdown documents:
+labels each variable with its label attribute when one is present
+(e.g. data imported with `haven`), and with the column name otherwise –
+that is why the tables above read “Body mass index” rather than `bmi`.
+Use the `labels` argument, a named character vector keyed by column
+name, to override either. Only the listed columns are relabelled; the
+others keep their attribute label or column name:
 
 ``` r
 
 table_continuous(
   sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  output = "tinytable"
+  select = c(wellbeing_score, life_sat_health),
+  by = sex,
+  labels = c(wellbeing_score = "Well-being score (0-100)")
 )
-```
-
-| Variable | Group | M | SD | Min | Max | 95% CI |  | n | p |
-|----|----|----|----|----|----|----|----|----|----|
-|  |  |  |  |  |  | LL | UL |  |  |
-| Body mass index | Lower secondary | 28.09 |  3.47 | 18.20 |  38.90 | 27.66 | 28.51 | 260 | \<.001 |
-|  | Upper secondary | 26.02 |  3.43 | 16.00 |  37.10 | 25.73 | 26.31 | 534 |       |
-|  | Tertiary | 24.39 |  3.52 | 16.00 |  33.00 | 24.04 | 24.74 | 394 |       |
-| WHO-5 wellbeing index (0-100) | Lower secondary | 57.22 | 15.44 | 18.70 |  97.90 | 55.33 | 59.10 | 261 | \<.001 |
-|  | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82 | 70.12 | 539 |       |
-|  | Tertiary | 76.85 | 13.23 | 40.40 | 100.00 | 75.55 | 78.15 | 400 |       |
-| Satisfaction with health (1-5) | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
-|  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
-|  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
-
-## Export to Excel or Word
-
-Use the same function to export the table directly:
-
-``` r
-
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  output = "excel",
-  excel_path = "table_continuous.xlsx"
-)
-
-table_continuous(
-  sochealth,
-  select = c(bmi, wellbeing_score, life_sat_health),
-  by = education,
-  output = "word",
-  word_path = "table_continuous.docx"
-)
+#> Descriptive statistics
+#> 
+#>  Variable                       │ Group     M     SD     Min    Max   
+#> ────────────────────────────────┼─────────────────────────────────────
+#>  Well-being score (0-100)       │ Female  67.16  14.80  19.60  100.00 
+#>                                 │ Male    71.05  16.23  18.70  100.00 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Female   3.51   1.25   1.00    5.00 
+#>                                 │ Male     3.59   1.25   1.00    5.00 
+#> 
+#>  Variable                       │ Group   95% CI LL  95% CI UL   n     p   
+#> ────────────────────────────────┼──────────────────────────────────────────
+#>  Well-being score (0-100)       │ Female    65.99      68.33    620  <.001 
+#>                                 │ Male      69.73      72.37    580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Female     3.41       3.61    616   .267 
+#>                                 │ Male       3.49       3.69    576        
+#> 
+#> Missing values removed: life_sat_health (8).
 ```
 
 ## Display options
 
 The printed ASCII table and every rendered output share the same
 formatting vocabulary as
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-and
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md);
+`align`, `p_digits`, and `decimal_mark` are also shared with
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
 
 - `align = "decimal"` (default) aligns numeric columns on the decimal
   mark, matching SPSS / SAS / LaTeX `siunitx` conventions. `"center"`
   and `"right"` are the alternatives.
 - `p_digits = 3` (default, the APA standard) drives both the displayed
-  precision of the `p` column and the small-*p* threshold
-  (`p_digits = 4` -\> `.0451` and `<.0001`).
+  precision of the `p` column and the small-*p* threshold: with
+  `p_digits = 4`, the chunk below shows `.0176` for BMI and `<.0001` for
+  the well-being score.
 - `show_n = FALSE` and `ci = FALSE` drop the corresponding columns (and
   the CI spanner / borders) structurally from every output; the
   underlying `n` and `ci_lower` / `ci_upper` are always present in
@@ -712,7 +698,7 @@ and
 
 table_continuous(
   sochealth,
-  select = wellbeing_score,
+  select = c(bmi, wellbeing_score),
   by = sex,
   ci = FALSE,
   show_n = FALSE,
@@ -722,8 +708,13 @@ table_continuous(
 #> 
 #>  Variable                      │ Group     M     SD     Min    Max      p    
 #> ───────────────────────────────┼─────────────────────────────────────────────
+#>  Body mass index               │ Female  25.69   3.78  16.00   38.90   .0176 
+#>                                │ Male    26.20   3.64  16.00   37.70         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00  <.0001 
-#>                                │ Male    71.05  16.23  18.70  100.00
+#>                                │ Male    71.05  16.23  18.70  100.00         
+#> 
+#> Missing values removed: bmi (12).
 ```
 
 ## Tidying for downstream pipelines
@@ -798,6 +789,86 @@ head(as.data.frame(out))
 #> 2  37.7 25.89808 26.49563 572      <NA>        NA       NA  NA           NA
 #> 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05
 #> 4 100.0 69.72540 72.37219 580      <NA>        NA       NA  NA           NA
+```
+
+## Output formats
+
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+supports the same reporting-oriented outputs as
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+
+| `output` value | Returned object |
+|:---|:---|
+| `"default"` | Styled ASCII console table |
+| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
+| `"tinytable"` | Formatted tinytable |
+| `"gt"` | Formatted gt table |
+| `"flextable"` | Formatted flextable |
+| `"excel"` | Written `.xlsx` file |
+| `"clipboard"` | Copied text table |
+| `"word"` | Written `.docx` file |
+
+`output = "gt"` produces a formatted gt table with APA-style borders and
+column spanners:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "gt"
+)
+```
+
+[TABLE]
+
+`output = "tinytable"` works well in Quarto and R Markdown documents:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "tinytable"
+)
+```
+
+| Variable | Group | M | SD | Min | Max | 95% CI |  | n | p |
+|----|----|----|----|----|----|----|----|----|----|
+|  |  |  |  |  |  | LL | UL |  |  |
+| Body mass index | Lower secondary | 28.09 |  3.47 | 18.20 |  38.90 | 27.66 | 28.51 | 260 | \<.001 |
+|  | Upper secondary | 26.02 |  3.43 | 16.00 |  37.10 | 25.73 | 26.31 | 534 |       |
+|  | Tertiary | 24.39 |  3.52 | 16.00 |  33.00 | 24.04 | 24.74 | 394 |       |
+| WHO-5 wellbeing index (0-100) | Lower secondary | 57.22 | 15.44 | 18.70 |  97.90 | 55.33 | 59.10 | 261 | \<.001 |
+|  | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82 | 70.12 | 539 |       |
+|  | Tertiary | 76.85 | 13.23 | 40.40 | 100.00 | 75.55 | 78.15 | 400 |       |
+| Satisfaction with health (1-5) | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
+|  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
+|  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
+
+## Export to Excel or Word
+
+Use the same function to export the table directly:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "excel",
+  excel_path = "table_continuous.xlsx"
+)
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score, life_sat_health),
+  by = education,
+  output = "word",
+  word_path = "table_continuous.docx"
+)
 ```
 
 ## See also

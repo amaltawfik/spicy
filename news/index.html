@@ -323,7 +323,7 @@
 <code>vcov = "bootstrap"</code> (nonparametric or cluster) and <code>vcov = "jackknife"</code> (leave-one-out / leave-one-cluster-out) variance estimators in pure base R, controlled by <code>boot_n</code>.</li>
 <li>Three new <code>effect_size</code> choices alongside <code>"f2"</code>: Cohen’s <code>"d"</code>, Hedges’ <code>"g"</code> (two-group only), Hays’ <code>"omega2"</code>. New <code>effect_size_ci</code> adds noncentral <em>t</em> / <em>F</em> CIs rendered inline as <code>0.18 [0.07, 0.30]</code>.</li>
 <li>
-<code>HC*</code> estimators delegate to <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>; rank-deficient fits return a clean rank-by-rank covariance.</li>
+<code>HC*</code> estimators delegate to <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>; rank-deficient fits return a clean rank-by-rank covariance.</li>
 </ul></div>
 <div class="section level4">
 <h4 id="harmonisation-across-the-table-family-0-11-0">Harmonisation across the table family<a class="anchor" aria-label="anchor" href="#harmonisation-across-the-table-family-0-11-0"></a></h4>

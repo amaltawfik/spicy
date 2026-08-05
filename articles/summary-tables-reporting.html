@@ -122,25 +122,26 @@ build <strong>Table 1</strong> (sample characteristics) and
 <strong>Table 2</strong> (group comparisons);</li>
 <li>
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> extends Table 2 to the
-linear-model regime when group means need robust SE, weights, or
+linear-model regime when group means need robust SE, case weights, or
 covariate adjustment;</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code> builds <strong>Table 3</strong> (the
 coefficient table) from one or several fitted models — <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>
-/ <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> through some thirty supported classes.</li>
+/ <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> through the 36 supported classes listed by
+<code><a href="../reference/table_regression_models.html">table_regression_models()</a></code>.</li>
 </ul>
 <p>The four functions share the same output grammar — the same
-<code>output</code> formats (<code>gt</code>, <code>tinytable</code>,
-<code>flextable</code>, <code>word</code>, <code>excel</code>,
-<code>clipboard</code>), the same <code>decimal_mark</code>,
-<code>p_digits</code>, <code>labels</code>, and <code>align</code>
-arguments, and the same <code>digits</code> control for numeric cells
-(the categorical table’s cells are percentages, so it spells the
-argument <code>percent_digits</code>) — so a single reporting workflow
-can move smoothly from descriptive to inferential without juggling
-different APIs. This vignette focuses on that shared logic; the
-function-specific articles cover the methodological options in
-depth.</p>
+<code>output</code> formats (<code>default</code> console ASCII,
+<code>gt</code>, <code>tinytable</code>, <code>flextable</code>,
+<code>word</code>, <code>excel</code>, <code>clipboard</code>), the same
+<code>decimal_mark</code>, <code>p_digits</code>, <code>labels</code>,
+and <code>align</code> arguments, and the same <code>digits</code>
+control for numeric cells (the categorical table’s cells are
+percentages, so it spells the argument <code>percent_digits</code>) — so
+a single reporting workflow can move smoothly from descriptive to
+inferential without juggling different APIs. This vignette focuses on
+that shared logic; the function-specific articles cover the
+methodological options in depth.</p>
 <div class="section level2">
 <h2 id="choose-the-right-function">Choose the right function<a class="anchor" aria-label="anchor" href="#choose-the-right-function"></a>
 </h2>
@@ -187,14 +188,14 @@ outcome</td>
 <code>select</code>, <code>by</code> (single
 predictor)</td>
 <td align="left">Robust / cluster-robust / bootstrap / jackknife SE,
-case weights, additive covariate adjustment, four effect-size families
+case weights, additive covariate adjustment, four effect-size measures
 with noncentral CIs</td>
 </tr>
 <tr class="even">
 <td align="left"><code><a href="../reference/table_regression.html">table_regression()</a></code></td>
-<td align="left">One or several fitted models — some thirty classes,
-from <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> / <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> to mixed, ordinal, survival
-and Bayesian engines (see
+<td align="left">One or several fitted models — 36 classes, from
+<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> / <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> to mixed, ordinal, survival and
+Bayesian engines (see
 <code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>)</td>
 <td align="left">Fit-first: pass the model object(s) directly, no
 <code>select</code> / <code>by</code>
@@ -213,7 +214,7 @@ or activity — APA Table 1 categorical descriptors;</li>
 Table 1 continuous descriptors and Table 2 unadjusted group
 comparisons;</li>
 <li>switch to <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> when the same
-comparison must account for survey weights, robust SE, or covariate
+comparison must account for case weights, robust SE, or covariate
 adjustment;</li>
 <li>finish with <code><a href="../reference/table_regression.html">table_regression()</a></code> once the substantive
 model is fitted — APA Table 3 with all predictors, factor groupings,
@@ -232,6 +233,10 @@ never breaks your rendering pipeline.</p>
 <div class="section level2">
 <h2 id="a-shared-interface">A shared interface<a class="anchor" aria-label="anchor" href="#a-shared-interface"></a>
 </h2>
+<p>The examples below use <code>sochealth</code>, the dataset bundled
+with spicy: a simulated social-health survey of 1200 respondents and 24
+variables, every one of them carrying a variable label (see
+<code><a href="../reference/sochealth.html">?sochealth</a></code>).</p>
 <p>The three descriptive functions share the same core arguments:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
@@ -324,7 +329,8 @@ never breaks your rendering pipeline.</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
-<span>  weights <span class="op">=</span> <span class="va">weight</span></span>
+<span>  weights <span class="op">=</span> <span class="va">weight</span>,</span>
+<span>  vcov <span class="op">=</span> <span class="st">"HC3"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -338,7 +344,19 @@ never breaks your rendering pipeline.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>    24.23      &lt;.001  0.13  1188 </span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>    76.55      &lt;.001  0.19  1200 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>     4.09      &lt;.001  0.15  1192</span></span></code></pre></div>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>     4.09      &lt;.001  0.15  1192 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<p>Two words on the weighted example. <code>weights</code> supplies
+<strong>case weights</strong>, passed to <code>lm(weights = )</code> —
+appropriate for weighted article tables, but not a substitute for a full
+complex-survey design (strata, clusters, calibration), which is the
+<code>survey</code> package’s domain. And because
+<code>sochealth$weight</code> holds calibrated sampling weights, the
+example pairs them with a heteroskedasticity-robust variance
+(<code>vcov = "HC3"</code>): the default <code>"classical"</code> WLS
+variance would treat the weights as precision weights, which sampling
+weights are not.</p>
 <p>The same argument pattern is used in all three cases:</p>
 <ul>
 <li>
@@ -622,10 +640,14 @@ sits in the same reporting pipeline as the descriptive ones above:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
-<p>The default footer documents the variance estimator and any
-methodological choice that affected the rendered values (robust SE,
-standardisation method, multiplicity correction) so the inferential
-regime is visible without leaving the table.</p>
+<p>The default footer documents the variance estimator, flags
+standardised coefficients (<code>β = standardised coefficient</code>),
+and reports any multiplicity correction, so the inferential regime is
+visible without leaving the table. One thing it does not carry: the
+<em>name</em> of the standardisation method. Here
+<code>standardized = "refit"</code> produced the β column, but the
+footer would read the same under any of the five methods, so record the
+method in the table note or the text of the article.</p>
 <p>Side-by-side reporting of competing specifications (e.g., unadjusted
 vs. covariate-adjusted, or <code>lm</code> vs. <code>glm</code>) is
 supported by passing a list of fits:</p>
@@ -691,27 +713,25 @@ incidence rate ratios, etc.):</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit_glm</span>,</span>
 <span>  exponentiate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span><span class="op">)</span></span>
+<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `"ame"` and `"p"` shown without `"ame_p"`: the `p` column is for B (or beta), not the AME. They can differ under non-linear links or interactions.</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Add `"ame_p"` to display the AME-specific p-value.</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   OR        95% CI       p     AME      95% CI     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)        <span style="color: #9E9E9E;">│</span>    0.21  [0.13, 0.36]  &lt;.001                       </span></span>
-<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>    1.01  [1.00, 1.01]   .298   0.00  [-0.00, 0.00] </span></span>
-<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –         –         –       –          –       </span></span>
-<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    0.95  [0.72, 1.26]   .723  -0.01  [-0.06, 0.04] </span></span>
-<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –         –         –       –          –       </span></span>
-<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    1.02  [0.77, 1.35]   .883   0.00  [-0.04, 0.05] </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1175                                               </span></span>
-<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                            </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                            </span></span>
-<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 1220.5                                             </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   OR        95% CI       p     AME      95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼───────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)        <span style="color: #9E9E9E;">│</span>    0.21  [0.13, 0.36]  &lt;.001                              </span></span>
+<span><span class="co">#&gt;  age                <span style="color: #9E9E9E;">│</span>    1.01  [1.00, 1.01]   .298   0.00  [-0.00, 0.00]   .297 </span></span>
+<span><span class="co">#&gt;  sex:               <span style="color: #9E9E9E;">│</span>                                                           </span></span>
+<span><span class="co">#&gt;    Female (ref.)    <span style="color: #9E9E9E;">│</span>     –         –         –       –          –         –    </span></span>
+<span><span class="co">#&gt;    Male             <span style="color: #9E9E9E;">│</span>    0.95  [0.72, 1.26]   .723  -0.01  [-0.06, 0.04]   .723 </span></span>
+<span><span class="co">#&gt;  physical_activity: <span style="color: #9E9E9E;">│</span>                                                           </span></span>
+<span><span class="co">#&gt;    No (ref.)        <span style="color: #9E9E9E;">│</span>     –         –         –       –          –         –    </span></span>
+<span><span class="co">#&gt;    Yes              <span style="color: #9E9E9E;">│</span>    1.02  [0.77, 1.35]   .883   0.00  [-0.04, 0.05]   .883 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1175                                                      </span></span>
+<span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                                   </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                                   </span></span>
+<span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 1220.5                                                    </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
@@ -719,7 +739,13 @@ incidence rate ratios, etc.):</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span></span></code></pre></div>
 <p>Average marginal effects (<code>ame</code>) are useful next to the
 odds ratio because they report a probability-scale change for each
-predictor — the quantity most reviewers want to interpret directly.</p>
+predictor — the quantity most reviewers want to interpret directly. Note
+the two <code>p</code> columns: the first tests the coefficient (the log
+odds ratio), <code>ame_p</code> tests the average marginal effect
+itself. The two can differ under non-linear links or interactions, which
+is why <code><a href="../reference/table_regression.html">table_regression()</a></code> warns if you request
+<code>ame</code> alongside <code>p</code> without also requesting
+<code>ame_p</code>.</p>
 <p>For the epidemiological variant of Table 2 — a univariable screen of
 every candidate predictor set against the multivariable model —
 <code><a href="../reference/table_regression_uv.html">table_regression_uv()</a></code> builds the whole two-part layout in
@@ -1673,13 +1699,14 @@ statistics, parametric and nonparametric tests, and effect sizes.</li>
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers estimated marginal means
 or slopes from linear models, robust / cluster-robust / bootstrap /
 jackknife variance, case weights, additive covariate adjustment
-(G-computation or equal-weight), and four effect-size families with
+(G-computation or equal-weight), and four effect-size measures with
 noncentral CIs.</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code> covers single- and multi-model
-coefficient tables across some thirty model classes (the map is
-<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>), four
-standardisation methods, partial effect sizes with noncentral-F CIs,
+coefficient tables across 36 model classes (the map is
+<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>), five
+standardisation methods (four for linear models, plus the glm-only
+pseudo-standardisation), partial effect sizes with noncentral-F CIs,
 average marginal effects, hierarchical (<code>nested = TRUE</code>)
 comparisons, multiplicity correction, and response-scale reporting for
 GLMs.</li>

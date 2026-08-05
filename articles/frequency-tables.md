@@ -220,35 +220,62 @@ freq(sh, smoking_lbl, labelled_levels = "values")
 
 ### Custom missing values
 
-Treat specific values as missing with `na_val`:
+Raw data files often store nonresponse as an ordinary level – a
+“Refused” or “Don’t know” answer sitting next to the substantive
+categories. `na_val` reclassifies such a value as missing: it moves to
+the Missing block and valid percentages are computed without it.
 
 ``` r
 
-freq(sochealth, income_group, na_val = "High")
-#> Frequency table: income_group
+# Simulate a raw file where nonresponse was typed as a level
+sh$income_raw <- as.character(sochealth$income_group)
+sh$income_raw[is.na(sh$income_raw)] <- "Refused"
+
+# "Refused" counts as a valid answer...
+freq(sh, income_raw)
+#> Frequency table: income_raw
+#> 
+#>  Category   │ Values            Freq.    Percent 
+#> ────────────┼────────────────────────────────────
+#>  Valid      │ High                219       18.2 
+#>             │ Low                 247       20.6 
+#>             │ Lower middle        388       32.3 
+#>             │ Refused              18        1.5 
+#>             │ Upper middle        328       27.3 
+#> ────────────┼────────────────────────────────────
+#>  Total      │                    1200      100.0 
+#> 
+#> Class: character
+#> Data: sh
+
+# ...until na_val reclassifies it as missing
+freq(sh, income_raw, na_val = "Refused")
+#> Frequency table: income_raw
 #> 
 #>  Category   │ Values            Freq.    Percent    Valid Percent 
 #> ────────────┼─────────────────────────────────────────────────────
-#>  Valid      │ Low                 247       20.6             25.6 
-#>             │ Lower middle        388       32.3             40.3 
-#>             │ Upper middle        328       27.3             34.1 
-#>  Missing    │ NA                  237       19.8                  
+#>  Valid      │ High                219       18.2             18.5 
+#>             │ Low                 247       20.6             20.9 
+#>             │ Lower middle        388       32.3             32.8 
+#>             │ Upper middle        328       27.3             27.7 
+#>  Missing    │ NA                   18        1.5                  
 #> ────────────┼─────────────────────────────────────────────────────
 #>  Total      │                    1200      100.0            100.0 
 #> 
-#> Label: Household income group
-#> Class: ordered, factor
-#> Data: sochealth
+#> Class: character
+#> Data: sh
 ```
 
 ### Declared missing values
 
 Survey files imported with haven often declare codes as missing at the
 source – `8 = Refused`, `9 = Don't know` – through
-`na_values`/`na_range` (SPSS-style) or tagged NAs (Stata-style). In R
-these codes are *not* `NA`, so most packages silently treat them as
-valid answers. spicy honors the declaration by default: the codes are
-excluded from valid percentages and statistics, and
+`na_values`/`na_range` (SPSS-style) or tagged NAs (Stata-style). The two
+behave differently in R. SPSS-style codes are *not* `NA`, so most
+packages silently treat them as valid answers. Stata-style tagged NAs
+are genuine `NA`s, but most packages collapse them into a single
+undifferentiated `NA` count. spicy honors both declarations by default:
+the codes are excluded from valid percentages and statistics, and
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) shows
 them as labelled rows of its Missing block instead of erasing them.
 
@@ -276,11 +303,27 @@ freq(sh2, trust)
 #> Data: sh2
 ```
 
-Set `user_na = FALSE` to treat the declared codes as ordinary categories
-instead. The same argument, with the same default, exists in
+Set `user_na = FALSE` to treat SPSS-style declared codes as ordinary
+categories instead; tagged NAs are genuine `NA`s either way, so for them
+it only collapses the per-tag breakdown into the regular `NA` count. The
+same argument, with the same default, exists in
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
-the `table_*()` helpers, and the row-wise functions – and the exclusions
-are always disclosed in the table note. See the “Declared missing
+the descriptive helpers
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+and the row-wise functions
+[`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+[`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) and
+[`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md).
+([`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+takes a fitted model, not raw data, so the argument does not apply
+there.)
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+and the descriptive helpers disclose the exclusion in the table note;
+the row-wise functions return bare numeric vectors, so they count the
+declared codes as missing without any note. See the “Declared missing
 values” section of
 [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md) for the
 full contract.
@@ -610,24 +653,56 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 
 ### Monte Carlo simulation
 
-When expected cell counts are small, use simulated p-values:
+The chi-squared test relies on an asymptotic approximation that degrades
+when expected cell counts are small.
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+checks Cochran’s rule and warns when a table is too sparse – as in this
+student subsample:
 
 ``` r
 
-cross_tab(sochealth, smoking, education,
+students <- subset(sochealth, employment_status == "Student")
+cross_tab(students, self_rated_health, education)
+#> Crosstable: self_rated_health x education (N)
+#> 
+#>  Values      │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ─────────────┼──────────────────────────────────────────────────┼─────────
+#>  Poor        │                 2                  3           0 │       5 
+#>  Fair        │                11                 14           4 │      29 
+#>  Good        │                 5                 43          28 │      76 
+#>  Very good   │                 4                 12          14 │      30 
+#> ─────────────┼──────────────────────────────────────────────────┼─────────
+#>  Total       │                22                 72          46 │     140 
+#> 
+#> Chi-2(6) = 23.4, p <.001
+#> Kendall's Tau-b = 0.28
+#> Warning: 5 expected cells < 5 (41.7%). 1 expected cell < 1. Minimum expected = 0.79. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
+#> Missing values removed: self_rated_health (3).
+```
+
+The warning itself names the remedy: `simulate_p = TRUE` replaces the
+asymptotic p-value with one estimated by Monte Carlo simulation
+(`simulate_B` random tables). A simulated test has no degrees of
+freedom, which is why the statistic prints as `Chi-2(NA)`:
+
+``` r
+
+cross_tab(students, self_rated_health, education,
           simulate_p = TRUE, simulate_B = 5000)
-#> Crosstable: smoking x education (N)
+#> Crosstable: self_rated_health x education (N)
 #> 
-#>  Values   │   Lower secondary    Upper secondary    Tertiary │   Total 
-#> ──────────┼──────────────────────────────────────────────────┼─────────
-#>  No       │               179                415         332 │     926 
-#>  Yes      │                78                112          59 │     249 
-#> ──────────┼──────────────────────────────────────────────────┼─────────
-#>  Total    │               257                527         391 │    1175 
+#>  Values      │   Lower secondary    Upper secondary    Tertiary │   Total 
+#> ─────────────┼──────────────────────────────────────────────────┼─────────
+#>  Poor        │                 2                  3           0 │       5 
+#>  Fair        │                11                 14           4 │      29 
+#>  Good        │                 5                 43          28 │      76 
+#>  Very good   │                 4                 12          14 │      30 
+#> ─────────────┼──────────────────────────────────────────────────┼─────────
+#>  Total       │                22                 72          46 │     140 
 #> 
-#> Chi-2(NA) = 21.6, p <.001 (simulated)
-#> Cramer's V = 0.14
-#> Missing values removed: smoking (25).
+#> Chi-2(NA) = 23.4, p <.001 (simulated)
+#> Kendall's Tau-b = 0.28
+#> Missing values removed: self_rated_health (3).
 ```
 
 ### Data frame output
@@ -635,7 +710,10 @@ cross_tab(sochealth, smoking, education,
 Set `output = "data.frame"` to get a plain data frame for further
 processing. The same argument works in
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
-the values match the `output` argument of the `table_*()` family:
+its two values (“default”, “data.frame”) are shared with the `output`
+argument of the `table_*()` family – but the rendered engines that
+family also accepts (“tinytable”, “gt”, “flextable”, …) are not
+available here:
 
 ``` r
 
@@ -650,9 +728,10 @@ cross_tab(sochealth, smoking, education,
 
 You can set tabulation defaults with
 [`options()`](https://rdrr.io/r/base/options.html) so you don’t have to
-repeat arguments. `spicy.rescale` is read by both
-[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md);
+repeat arguments. `spicy.rescale` is read by
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
 `spicy.percent` and `spicy.simulate_p` are read by
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
 
