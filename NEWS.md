@@ -85,11 +85,11 @@
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, ...). Ratio links (logit, log, binomial / ordinal cloglog) are
   unchanged; identity links keep the warn-and-skip.
-* `table_regression()` and `table_regression_uv()` exempt intercept
-  rows from `keep` / `drop`: the patterns select predictors, and
-  `show_intercept` alone controls the intercept. With the default
-  `show_intercept = TRUE`, `keep = "wt"` now retains the intercept
-  row; pass `show_intercept = FALSE` to hide it.
+* `table_regression()` exempts intercept rows from `keep` / `drop`:
+  the patterns select predictors, and `show_intercept` alone controls
+  the intercept. With the default `show_intercept = TRUE`,
+  `keep = "wt"` now retains the intercept row; pass
+  `show_intercept = FALSE` to hide it.
 * `table_categorical()` defaults to `drop_na = FALSE`: missing values
   display as a `"(Missing)"` level instead of being silently removed.
   With `drop_na = TRUE`, a table note now reports what was removed.

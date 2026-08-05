@@ -70,6 +70,6 @@
       
       Note. Linear regression.
       Std. errors: classical (OLS).
-      β = standardised coefficient.
+      β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
       *** p < .001, ** p < .01, * p < .05.
 
