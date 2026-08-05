@@ -556,7 +556,7 @@ test_that("apply_exponentiate_to_coefs – singular and reference rows untouched
 
 # ============================================================================
 # Step 3: partial_chi2 token via drop1(test = "LRT") - the glm analog
-# of partial F (Long & Freese 2014 §3.5; Allison "TYPE3"; SAS PROC LOGISTIC).
+# of partial F (Long & Freese 2014 §3.2.2; Allison "TYPE3"; SAS PROC LOGISTIC).
 # ============================================================================
 
 test_that("glm: partial_chi2 matches drop1(test = 'LRT') to machine precision", {
@@ -603,6 +603,66 @@ test_that("glm: partial_chi2 - factor term shares term-level chi2 across dummies
   # Joint chi2 from drop1
   d1 <- drop1(fit, test = "LRT")
   expect_equal(cyl_rows$estimate[1], d1["cyl", "LRT"], tolerance = 1e-12)
+})
+
+test_that("glm: partial_chi2 with y = FALSE + matrix response matches y stored", {
+  # Regression (delta review D1): with `glm(..., y = FALSE)` and a
+  # `cbind(successes, failures)` response, the refit fallback fed the
+  # raw matrix to glm.fit() with the POST-initialize prior.weights
+  # (which already carry the row totals), so initialize multiplied the
+  # totals in again (effective weights = tot^2) and inflated every
+  # chi-square.
+  set.seed(42)
+  n <- 60
+  d <- data.frame(
+    A = factor(sample(c("a", "b", "c"), n, TRUE)),
+    B = rnorm(n),
+    tot = sample(3:8, n, TRUE)
+  )
+  eta <- 0.8 * (d$A == "b") - 1.1 * (d$A == "c") + 0.5 * d$B
+  d$succ <- rbinom(n, size = d$tot, prob = plogis(eta))
+  fit_y <- glm(cbind(succ, tot - succ) ~ A + B, family = binomial, data = d)
+  fit_no <- glm(
+    cbind(succ, tot - succ) ~ A + B,
+    family = binomial,
+    data = d,
+    y = FALSE
+  )
+  for (tm in c("A", "B")) {
+    r_y <- spicy:::compute_partial_chi2_for_term(fit_y, tm)
+    r_no <- spicy:::compute_partial_chi2_for_term(fit_no, tm)
+    expect_equal(r_no$chi2, r_y$chi2, tolerance = 1e-10)
+    expect_identical(r_no$df, r_y$df)
+    expect_equal(r_no$p_value, r_y$p_value, tolerance = 1e-10)
+  }
+  # Additive-case oracle: drop1(test = "LRT") on the stored-y fit.
+  d1 <- drop1(fit_y, test = "LRT")
+  expect_equal(
+    spicy:::compute_partial_chi2_for_term(fit_no, "A")$chi2,
+    d1["A", "LRT"],
+    tolerance = 1e-10
+  )
+  expect_equal(
+    spicy:::compute_partial_chi2_for_term(fit_no, "B")$chi2,
+    d1["B", "LRT"],
+    tolerance = 1e-10
+  )
+  # Interaction variant: the Type-II main-effect test agrees too.
+  fit_int_y <- glm(
+    cbind(succ, tot - succ) ~ A * B,
+    family = binomial,
+    data = d
+  )
+  fit_int_no <- glm(
+    cbind(succ, tot - succ) ~ A * B,
+    family = binomial,
+    data = d,
+    y = FALSE
+  )
+  ry <- spicy:::compute_partial_chi2_for_term(fit_int_y, "A")
+  rn <- spicy:::compute_partial_chi2_for_term(fit_int_no, "A")
+  expect_equal(rn$chi2, ry$chi2, tolerance = 1e-10)
+  expect_equal(rn$p_value, ry$p_value, tolerance = 1e-10)
 })
 
 test_that("glm: partial_chi2 cell renders 'value (df)' format", {
@@ -1583,8 +1643,9 @@ test_that("AUDIT: spicy_caveat conditions inherit from spicy_warning", {
 test_that("AUDIT B3: pseudo_r2_* preserve offset in null model refit", {
   # Bug: compute_intercept_only_loglik_glm dropped the offset, so the
   # null model under-modelled the rate baseline and pseudo-R^2 went
-  # negative for offset glms (Long & Freese 2014 sec. 3.6: the null
-  # model must carry the same offset as the full model).
+  # negative for offset glms (the null model must carry the same
+  # offset as the full model -- the Stata convention; on offsets see
+  # Long & Freese 2014 sec. 9.2.6).
   set.seed(1)
   n <- 50L
   d <- data.frame(y = rpois(n, 3), x = rnorm(n), exposure = runif(n, 1, 10))

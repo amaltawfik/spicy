@@ -42,7 +42,7 @@
 #'     containing it (the `car::Anova(type = 2)` convention), so
 #'     the value does not depend on the factor coding. For `glm`
 #'     the statistic is the likelihood-ratio chi-square (Long &
-#'     Freese 2014 Section 3.5); for `lmer` / `glmer` / `glmmTMB` /
+#'     Freese 2014 Sections 3.2.2, 3.2.4); for `lmer` / `glmer` / `glmmTMB` /
 #'     `nlme::lme` it is the Wald chi-square built from the same
 #'     Type-II hypothesis -- a deliberate departure from the
 #'     Type-III default of SAS PROC MIXED and `lmerTest` (the two
@@ -423,7 +423,7 @@
 #'   \item All-lm: `c("r2_change", "f_change", "p_change")` --
 #'     APA hierarchical regression standard.
 #'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer &
-#'     Lemeshow Section 3.5; Long & Freese 2014 Section 3.6.
+#'     Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
 #' }
 #' To customise, pass the change tokens directly to
 #' `show_fit_stats`. Variance-explained change tokens on an

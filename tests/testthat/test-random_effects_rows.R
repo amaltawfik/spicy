@@ -178,7 +178,8 @@ test_that("keep/drop never mutilates the Random effects block", {
   # the whole block survives a keep that matches only one predictor
   expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE)))
   expect_true(any(grepl("(Residual)", v, fixed = TRUE)))
-  expect_false(any(v == "(Intercept)")) # the fixed intercept IS filtered
+  # the fixed intercept is exempt from keep/drop (show_intercept governs)
+  expect_true(any(v == "(Intercept)"))
 })
 
 test_that("flat layout renders display labels, not internal re:: keys", {

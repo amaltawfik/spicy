@@ -1019,6 +1019,33 @@ test_that("show_intercept = TRUE shows the univariable intercepts too", {
   expect_identical(sum(trimws(scr0$Variable) == "(Intercept)"), 0L)
 })
 
+test_that("keep on a predictor name spares BOTH intercepts (uv + multivariable)", {
+  # Regression (delta review D7): the uv intercepts are keyed
+  # "<pred>: (Intercept)", so `keep = "age"` used to retain the age
+  # block's intercept while filtering the multivariable "(Intercept)"
+  # -- an asymmetric, layout-dependent result. Intercept rows are now
+  # exempt from keep/drop; `show_intercept` alone governs them.
+  d <- .uv_soc()
+  scr <- table_regression_uv(
+    d,
+    outcome = smoking,
+    method = "glm",
+    predictors = c(age, bmi),
+    show_intercept = TRUE,
+    keep = "age"
+  )
+  td <- broom::tidy(scr)
+  ic <- td[td$is_intercept, ]
+  # One uv intercept (the surviving age block) + the multivariable one.
+  expect_identical(sort(unique(ic$model_id)), c("Multivariable", "Univariable"))
+  expect_true("age: (Intercept)" %in% ic$term)
+  expect_true("(Intercept)" %in% ic$term)
+  # The bmi block is gone -- including its own intercept (no orphan).
+  expect_false(any(td$term == "bmi"))
+  expect_false("bmi: (Intercept)" %in% ic$term)
+  expect_true(any(td$term == "age" | grepl("^age", td$term)))
+})
+
 test_that("the documented example runs and yields the OR screen", {
   # rd-uv-estimands:example-runs (the \donttest body, verbatim
   # arguments)

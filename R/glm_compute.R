@@ -368,9 +368,11 @@ compute_pseudo_r2_nagelkerke <- function(fit, ll_null = NULL) {
 # inner symbol). It also drops the offset by default -- and an
 # intercept-only fit without the offset over-attributes outcome
 # variation to the intercept, producing pseudo-R^2 < 0 when the
-# full model includes a real-rate offset (Long & Freese 2014 Section 3.6
-# explicitly: the null model must carry the same offset as the full
-# model, otherwise pseudo-R^2 is not a valid 0-1 statistic).
+# full model includes a real-rate offset: the null model must carry
+# the same offset as the full model (the Stata convention -- its
+# reported pseudo-R^2 keeps the offset in the null fit; on offsets
+# see Long & Freese 2014 Section 9.2.6), otherwise pseudo-R^2 is
+# not a valid 0-1 statistic.
 #
 # Workaround: extract the *evaluated* response, weights, and
 # offset from the model frame and refit on a fresh data.frame.
@@ -579,8 +581,8 @@ apply_exponentiate_to_frame_coefs <- function(coefs) {
 # invariant to the factor coding. For additive models (and for the
 # highest-order term of any model) this equals `drop1(test = "LRT")`.
 # For factor terms with k levels, the test is joint over all k-1
-# dummies and df = k-1. Long & Freese 2014 Section 3.5 discuss the
-# term-level LRT itself.
+# dummies and df = k-1. Long & Freese 2014 Sections 3.2.2 (Wald vs
+# LR tests) and 3.2.4 (LR tests with lrtest) discuss the LRT itself.
 #
 # Returns NULL on any failure (refit error, non-finite chi-square,
 # etc.) so the caller can skip the term and the renderer en-dashes the
@@ -634,13 +636,36 @@ compute_glm_type2_lrt <- function(fit, term_label) {
   }
   n <- nrow(x)
   y <- fit$y
+  wt <- fit$prior.weights
   if (is.null(y)) {
     y <- stats::model.response(stats::model.frame(fit))
     if (!is.factor(y)) {
       storage.mode(y) <- "double"
     }
+    # `glm(..., y = FALSE)` + a two-column `cbind(successes, failures)`
+    # response: `fit$prior.weights` stores the POST-initialize weights
+    # (original weights times the row totals -- the binomial
+    # `initialize` multiplies them in), while `model.response()` gives
+    # back the raw matrix. Feeding the matrix to `glm.fit()` with those
+    # weights would run `initialize` again and square the totals
+    # (effective weights = tot^2), inflating every chi-square. Rebuild
+    # the stored-y representation instead -- y = successes / total with
+    # the post-initialize weights unchanged -- so this fallback is
+    # identical to the `fit$y` path. (`stats::drop1.glm()` has the same
+    # naive reconstruction and the same defect on this input, so it is
+    # NOT mirrored here.)
+    if (
+      is.matrix(y) &&
+        ncol(y) == 2L &&
+        fit$family$family %in% c("binomial", "quasibinomial")
+    ) {
+      tot <- y[, 1L] + y[, 2L]
+      y <- ifelse(tot == 0, 0, y[, 1L] / tot)
+      if (is.null(wt)) {
+        wt <- tot # nocov -- glm always stores prior.weights
+      }
+    }
   }
-  wt <- fit$prior.weights
   if (is.null(wt)) {
     wt <- rep.int(1, n)
   }

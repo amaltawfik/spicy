@@ -1942,6 +1942,103 @@ test_that("AME extraction honours the fit's weights", {
   )
 })
 
+test_that("weighted AME identical under na.omit and na.exclude", {
+  # Regression (delta review D2): stats::weights() returns the
+  # naresid-PADDED vector under na.exclude (NA at dropped rows), which
+  # tripped the finite-weights guard and silently reverted the AME to
+  # the unweighted average. The helper now strips the padding.
+  skip_if_not_installed("marginaleffects")
+  df <- mtcars
+  set.seed(7)
+  df$w <- runif(nrow(df), 0.5, 2)
+  df$wt[5] <- NA
+  # suppressWarnings: continuous weights trigger the expected
+  # "non-integer #successes" binomial fit warning.
+  fit_om <- suppressWarnings(glm(
+    am ~ wt + hp,
+    data = df,
+    family = binomial,
+    weights = w,
+    na.action = na.omit
+  ))
+  fit_ex <- suppressWarnings(glm(
+    am ~ wt + hp,
+    data = df,
+    family = binomial,
+    weights = w,
+    na.action = na.exclude
+  ))
+  w_ex <- spicy:::.spicy_ame_fit_wts(fit_ex)
+  expect_identical(w_ex, spicy:::.spicy_ame_fit_wts(fit_om))
+  expect_length(w_ex, nrow(df) - 1L)
+  s_om <- as_structured(table_regression(fit_om, show_columns = c("b", "ame")))
+  s_ex <- as_structured(table_regression(fit_ex, show_columns = c("b", "ame")))
+  idx <- match(c("wt", "hp"), s_om$body$Variable)
+  expect_equal(s_ex$body$AME[idx], s_om$body$AME[idx], tolerance = 1e-10)
+  # The shared value IS the weighted average (discriminating oracle).
+  orc <- as.data.frame(
+    marginaleffects::avg_slopes(fit_om, wts = stats::weights(fit_om), df = Inf)
+  )
+  expect_equal(
+    s_ex$body$AME[idx],
+    orc$estimate[match(c("wt", "hp"), orc$term)],
+    tolerance = 1e-8
+  )
+})
+
+test_that("polr frequency weights reach the per-category AME", {
+  # Regression (delta review D4): MASS::polr stores no weights
+  # component, so stats::weights() is empty and the per-category AME
+  # averaged with equal weights while B / SE were weight-aware. The
+  # helper now recovers the frequency weights from the model frame.
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("marginaleffects")
+  # Hess = TRUE avoids the "Re-fitting to get Hessian" warning when
+  # the AME path queries the vcov.
+  fit <- MASS::polr(
+    Sat ~ Infl + Cont,
+    weights = Freq,
+    data = MASS::housing,
+    Hess = TRUE
+  )
+  w <- spicy:::.spicy_ame_fit_wts(fit)
+  expect_equal(w, as.numeric(MASS::housing$Freq))
+  ame <- spicy:::.compute_ame_rows_for_frame(fit, ci_level = 0.95)
+  orc <- as.data.frame(
+    marginaleffects::avg_slopes(fit, wts = MASS::housing$Freq)
+  )
+  key_ame <- paste(ame$term, ame$outcome_level)
+  key_orc <- paste(
+    paste0(orc$term, sub(" - .*$", "", orc$contrast)),
+    orc$group
+  )
+  expect_setequal(key_ame, key_orc)
+  expect_equal(
+    ame$estimate[match(key_orc, key_ame)],
+    orc$estimate,
+    tolerance = 1e-8
+  )
+  # Pinned on the audit evidence: the weighted average, not the
+  # unweighted one.
+  expect_equal(
+    ame$estimate[key_ame == "InflHigh Low"],
+    -0.266416,
+    tolerance = 1e-4
+  )
+  orc_u <- as.data.frame(marginaleffects::avg_slopes(fit))
+  expect_gt(
+    abs(
+      ame$estimate[key_ame == "InflHigh Low"] -
+        orc_u$estimate[
+          orc_u$term == "Infl" &
+            orc_u$contrast == "High - Low" &
+            orc_u$group == "Low"
+        ]
+    ),
+    1e-4
+  )
+})
+
 
 # ============================================================================
 # Phase 3 matrix – rd-methods / rd-uv-estimands: output contract (lot T3)

@@ -125,14 +125,19 @@ test_that("apply_keep_drop_filter – NULL/NULL returns input unchanged", {
 test_that("apply_keep_drop_filter – keep regex whitelists matching terms", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned, keep = "^wt$")
-  expect_setequal(unique(out$coefs_aligned$term), "wt")
-  expect_equal(out$term_order, "wt")
+  # The intercept is exempt from keep/drop (governed by show_intercept
+  # alone), so it survives alongside the kept predictor.
+  expect_setequal(unique(out$coefs_aligned$term), c("(Intercept)", "wt"))
+  expect_setequal(out$term_order, c("(Intercept)", "wt"))
 })
 
 test_that("apply_keep_drop_filter – keep with multiple patterns combines OR", {
   aligned <- mk_aligned_for_filter()
   out <- spicy:::apply_keep_drop_filter(aligned, keep = c("^wt$", "^hp$"))
-  expect_setequal(unique(out$coefs_aligned$term), c("wt", "hp"))
+  expect_setequal(
+    unique(out$coefs_aligned$term),
+    c("(Intercept)", "wt", "hp")
+  )
 })
 
 test_that("apply_keep_drop_filter – keep '^cyl' grabs the whole factor group", {
@@ -152,13 +157,21 @@ test_that("apply_keep_drop_filter – drop regex removes matching terms", {
   expect_true("(Intercept)" %in% surviving)
 })
 
-test_that("apply_keep_drop_filter – drop '(Intercept)' hides the intercept", {
+test_that("apply_keep_drop_filter – intercept rows are exempt from keep/drop", {
   aligned <- mk_aligned_for_filter()
+  # Intercepts are shown/hidden by `show_intercept` alone: a drop
+  # pattern cannot remove them, and a keep pattern that matches a
+  # predictor name never captures a univariable-screen intercept keyed
+  # "<pred>: (Intercept)".
   out <- spicy:::apply_keep_drop_filter(
     aligned,
     drop = "^\\(Intercept\\)$"
   )
-  expect_false("(Intercept)" %in% out$coefs_aligned$term)
+  expect_true("(Intercept)" %in% out$coefs_aligned$term)
+  expect_setequal(
+    setdiff(unique(aligned$coefs_aligned$term), "(Intercept)"),
+    setdiff(unique(out$coefs_aligned$term), "(Intercept)")
+  )
 })
 
 test_that("apply_keep_drop_filter – factor_ref_levels cleaned when factor fully dropped", {
@@ -209,8 +222,11 @@ test_that("table_regression – keep filter shows only matching coefs", {
   fit <- lm(mpg ~ wt + cyl + am + hp, data = mt)
   out <- table_regression(fit, keep = "^wt$")
   surviving_terms <- broom::tidy(out)$term
-  expect_setequal(surviving_terms, "wt")
+  # The intercept is exempt from keep/drop (show_intercept governs it).
+  expect_setequal(surviving_terms, c("(Intercept)", "wt"))
   expect_false(any(grepl("cyl|am|hp", out$Variable)))
+  out_noint <- table_regression(fit, keep = "^wt$", show_intercept = FALSE)
+  expect_setequal(broom::tidy(out_noint)$term, "wt")
 })
 
 test_that("table_regression – drop filter hides matching coefs", {
@@ -234,7 +250,7 @@ test_that("table_regression – p_adjust runs BEFORE keep filter (full family)",
   fit <- lm(mpg ~ wt + cyl + am, data = mt)
   out <- table_regression(fit, p_adjust = "bonferroni", keep = "^wt$")
   td <- broom::tidy(out)
-  expect_equal(unique(td$term), "wt")
+  expect_setequal(unique(td$term), c("(Intercept)", "wt"))
   raw <- table_regression(fit)
   td_raw <- broom::tidy(raw)
   raw_p_wt <- td_raw$p.value[
@@ -242,7 +258,7 @@ test_that("table_regression – p_adjust runs BEFORE keep filter (full family)",
       td_raw$estimate_type == "B"
   ]
   expect_equal(
-    td$p.value[td$estimate_type == "B"],
+    td$p.value[td$estimate_type == "B" & td$term == "wt"],
     pmin(1, raw_p_wt * 4),
     tolerance = 1e-12
   )

@@ -195,8 +195,15 @@ test_that("tidy() and output='long' keep the long prefixed form", {
   lg <- table_regression(fit, output = "long")
   expect_true(any(grepl("Student: ", lg$term, fixed = TRUE)))
   # keep/drop reaches the long payload identically in both layouts.
+  # (Intercept rows are exempt from keep/drop; exclude them here. The
+  # exploded per-category intercepts are matched by term because the
+  # payload does not flag them via is_intercept.)
   lg_keep <- table_regression(fit, output = "long", keep = "age")
-  expect_true(all(grepl("age", lg_keep$term)))
+  non_int <- lg_keep$term[
+    !grepl("(Intercept)", lg_keep$term, fixed = TRUE)
+  ]
+  expect_true(length(non_int) > 0L)
+  expect_true(all(grepl("age", non_int)))
 })
 
 

@@ -175,7 +175,7 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
 
 # Per-pair statistics for nested glm models. Uses the LRT chi-square
 # from anova(test = "LRT") (Hosmer & Lemeshow Section 3.5; Long & Freese
-# 2014 Section 3.6) -- the canonical hierarchical-logistic test, mirroring
+# 2014 Section 3.2.4) -- the canonical hierarchical-logistic test, mirroring
 # the role of partial F in lm. Variance-explained tokens (r2_change,
 # adj_r2_change, f_change, f2_change) are NA for glm: the residual-
 # sum-of-squares partition does not apply outside the least-squares

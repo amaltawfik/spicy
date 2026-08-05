@@ -404,3 +404,43 @@ test_that("ordinal AME matrix: per-term category effects sum to zero, footer sta
     fixed = TRUE
   )
 })
+
+
+# Delta review D5: character predictors group like factors in the AME view
+
+test_that("character predictor AME aligns level rows exactly like factor()", {
+  # Regression: the is_factor_var predicates tested only
+  # is.factor || is.logical, so a character column (kept as character
+  # by model.frame) produced a stray flat AME row holding the first
+  # contrast and dropped the other per-level AMEs.
+  skip_if_not_installed("marginaleffects")
+  d <- mtcars
+  d$g_ch <- as.character(d$gear)
+  d$g_f <- factor(d$g_ch)
+  fit_ch <- lm(mpg ~ wt + g_ch, data = d)
+  fit_f <- lm(mpg ~ wt + g_f, data = d)
+  df_ch <- table_regression(
+    fit_ch,
+    show_columns = c("b", "ame"),
+    output = "data.frame"
+  )
+  df_f <- table_regression(
+    fit_f,
+    show_columns = c("b", "ame"),
+    output = "data.frame"
+  )
+  # Same geometry: same rows (modulo the variable name in the header).
+  expect_identical(nrow(df_ch), nrow(df_f))
+  v_ch <- sub("^g_ch", "g", trimws(df_ch$Variable))
+  v_f <- sub("^g_f", "g", trimws(df_f$Variable))
+  expect_identical(v_ch, v_f)
+  # Cell-for-cell equality of B and AME (identical design matrices).
+  expect_identical(df_ch$B, df_f$B)
+  expect_identical(df_ch$AME, df_f$AME)
+  # No stray bare row for the character variable, and both level AMEs
+  # land on their level rows.
+  expect_false("g_ch" %in% trimws(df_ch$Variable))
+  lvl_rows <- match(c("4", "5"), trimws(df_ch$Variable))
+  expect_false(any(is.na(df_ch$AME[lvl_rows])))
+  expect_false(any(df_ch$AME[lvl_rows] == ""))
+})

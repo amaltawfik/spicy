@@ -382,3 +382,53 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
     suppressWarnings(as_regression_frame(fit_re))$info$supports$ame
   ))
 })
+
+
+## ---- Delta review D3: draws-native AME honours the fit's prior weights ----
+
+# Local-only like the fixtures above (skip_on_ci): Stan sampling is
+# unreliable on CI runners.
+test_that("stanreg: weighted fit's AME equals avg_slopes(wts = ) (draws path)", {
+  skip_on_ci()
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("posterior")
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("collapse")
+  d <- mtcars
+  set.seed(11)
+  d$w <- runif(nrow(d), 0.5, 2)
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    am ~ wt + hp,
+    data = d,
+    family = binomial(),
+    weights = d$w,
+    seed = 11,
+    chains = 1,
+    iter = 500,
+    refresh = 0
+  ))
+  # The helper extracts the prior weights for stanreg fits...
+  expect_equal(spicy:::.spicy_ame_fit_wts(fit), d$w, tolerance = 1e-12)
+  # ...and the draws-native AME table now passes them through, so the
+  # point estimate equals the wts-weighted avg_slopes() median exactly.
+  ame <- spicy:::.compute_bayes_ame_table(fit, ci_level = 0.95)
+  orc <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(fit, conf_level = 0.95, wts = d$w)
+  ))
+  idx <- match(c("wt", "hp"), ame$term)
+  expect_equal(
+    ame$estimate[idx],
+    orc$estimate[match(c("wt", "hp"), orc$term)],
+    tolerance = 1e-8
+  )
+  # Discriminating: the weighted average differs from the unweighted one.
+  orc_u <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(fit, conf_level = 0.95)
+  ))
+  expect_gt(
+    abs(
+      orc$estimate[orc$term == "wt"] - orc_u$estimate[orc_u$term == "wt"]
+    ),
+    1e-6
+  )
+})

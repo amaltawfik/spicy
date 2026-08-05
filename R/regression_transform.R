@@ -111,6 +111,28 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
     ) |
     (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
   final_mask <- final_mask | subordinate
+  # Intercepts are exempt from keep / drop matching: `show_intercept`
+  # alone decides their visibility. Without the exemption the
+  # univariable-screen intercepts (keyed "<pred>: (Intercept)") would
+  # match any pattern containing the predictor name while the
+  # multivariable "(Intercept)" would not -- an asymmetric, layout-
+  # dependent filter no regex on predictors should trigger. A uv
+  # intercept still FOLLOWS its own block: it survives exactly when a
+  # non-intercept row of its predictor's fit does, so a dropped block
+  # never leaves an orphan intercept behind.
+  is_int <- if (!is.null(ca$is_intercept)) {
+    ca$is_intercept %in% TRUE
+  } else {
+    rep(FALSE, nrow(ca))
+  }
+  if (any(is_int)) {
+    owner <- ifelse(is.na(ca$factor_term), ca$term, ca$factor_term)
+    surviving_owners <- unique(owner[final_mask & !is_int])
+    uv_int <- is_int & grepl(": \\(Intercept\\)$", ca$term)
+    uv_pred <- sub(": \\(Intercept\\)$", "", ca$term)
+    final_mask[is_int] <- !uv_int[is_int] |
+      (uv_pred[is_int] %in% surviving_owners)
+  }
 
   aligned$coefs_aligned <- aligned$coefs_aligned[final_mask, , drop = FALSE]
   rownames(aligned$coefs_aligned) <- NULL

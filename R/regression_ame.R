@@ -361,8 +361,8 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 # step when `wts` is supplied (its default is equal weights), so every
 # extractor routes the fit's weights through this helper.
 #
-# Returns the prior-weights vector (stats::weights(fit), aligned on the
-# estimation rows) or NULL when:
+# Returns the prior-weights vector (aligned on the estimation rows)
+# or NULL when:
 #   * the fit is a svyglm / svrepglm: marginaleffects reads the survey
 #     design natively, so passing wts on top would interfere with the
 #     design-based mechanics;
@@ -370,11 +370,38 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 #     (nlme's varFunc "weights" are a structure, not case weights);
 #   * the weights are constant (a constant-weight average equals the
 #     unweighted average).
+#
+# Two alignment quirks are handled here so the vector always matches
+# the estimation rows:
+#   * under `na.action = na.exclude`, stats::weights() returns the
+#     naresid-PADDED vector (NA at each dropped row); the padding is
+#     stripped via the fit's na.action so na.omit and na.exclude give
+#     the same weighted AME;
+#   * MASS::polr stores no weights component (stats::weights() is
+#     empty), so the frequency/case weights are recovered from the
+#     model frame's "(weights)" column, which is already
+#     estimation-row aligned.
 .spicy_ame_fit_wts <- function(fit) {
   if (inherits(fit, c("svyglm", "svrepglm"))) {
     return(NULL)
   }
   w <- tryCatch(stats::weights(fit), error = function(e) NULL)
+  if (is.numeric(w) && length(w) > 0L && anyNA(w)) {
+    na_act <- tryCatch(stats::na.action(fit), error = function(e) NULL)
+    if (
+      inherits(na_act, "exclude") &&
+        length(na_act) > 0L &&
+        all(na_act >= 1L & na_act <= length(w))
+    ) {
+      w <- w[-na_act]
+    }
+  }
+  if (!is.numeric(w) || length(w) == 0L) {
+    w <- tryCatch(
+      stats::model.frame(fit)[["(weights)"]],
+      error = function(e) NULL
+    )
+  }
   if (!is.numeric(w) || length(w) == 0L || !all(is.finite(w))) {
     return(NULL)
   }
@@ -388,8 +415,27 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 # levels() analogue for the AME term-id reconstruction: a logical
 # predictor enters the design matrix as a two-level FALSE/TRUE factor
 # (single dummy `<var>TRUE`), but levels() on a logical returns NULL.
+# A character predictor is coded by model.matrix() as factor(x) --
+# default sorted-unique levels -- but model.frame() keeps the column
+# as character, where levels() also returns NULL.
 .spicy_cat_levels <- function(x) {
-  if (is.logical(x)) c("FALSE", "TRUE") else levels(x)
+  if (is.logical(x)) {
+    c("FALSE", "TRUE")
+  } else if (is.character(x)) {
+    levels(factor(x))
+  } else {
+    levels(x)
+  }
+}
+
+# Model-frame classes whose AME rows must be grouped like factor
+# levels: factor / ordered, logical (single `<var>TRUE` dummy), and
+# character (coded as factor by model.matrix(), kept as character by
+# model.frame()). Binary NUMERICS stay excluded: marginaleffects also
+# reports their contrast as "1 - 0", but the B coefficient row is the
+# bare variable name.
+.spicy_is_categorical <- function(x) {
+  is.factor(x) || is.logical(x) || is.character(x)
 }
 
 
@@ -481,15 +527,15 @@ extract_ame_marginaleffects <- function(
       if (length(cand) > 0L) cand[1L] else var_name
     }
 
-    # Reconstruct coef-style term_id ONLY for true factor (or logical:
-    # dummy `<var>TRUE`, grouped like a two-level factor) variables.
+    # Reconstruct coef-style term_id ONLY for true categorical
+    # (factor / ordered / character / logical) variables.
     # marginaleffects' `contrast` is "lvl - ref" for factors AND
     # for binary numerics like am in {0, 1} (it returns "1 - 0"),
     # which would produce `am1` and de-align with the B coef row
     # named `am`. Anchor on the model-frame class to disambiguate.
     is_factor_var <- col_name %in%
       mf_names &&
-      (is.factor(mf[[col_name]]) || is.logical(mf[[col_name]]))
+      .spicy_is_categorical(mf[[col_name]])
     term_id <- if (
       is_factor_var &&
         !is.na(contrast_str) &&
@@ -678,11 +724,11 @@ extract_ame_glm <- function(
       if (length(cand) > 0L) cand[1L] else var_name # nocov
     }
 
-    # Reconstruct coef-style term_id only for true factor (or logical:
-    # dummy `<var>TRUE`, grouped like a two-level factor) variables.
+    # Reconstruct coef-style term_id only for true categorical
+    # (factor / ordered / character / logical) variables.
     is_factor_var <- col_name %in%
       mf_names &&
-      (is.factor(mf[[col_name]]) || is.logical(mf[[col_name]]))
+      .spicy_is_categorical(mf[[col_name]])
     term_id <- if (
       is_factor_var &&
         !is.na(contrast_str) &&
@@ -924,12 +970,12 @@ extract_ame_glm <- function(
     }
     is_factor_var <- col_name %in%
       mf_names &&
-      (is.factor(mf[[col_name]]) || is.logical(mf[[col_name]]))
+      .spicy_is_categorical(mf[[col_name]])
 
-    # Reconstruct a coef-style term id for factor and logical rows so
-    # the renderer groups them under the parent header (a logical is a
-    # two-level FALSE/TRUE factor in the design matrix). For numeric
-    # predictors the term IS the variable name.
+    # Reconstruct a coef-style term id for factor / character / logical
+    # rows so the renderer groups them under the parent header (a
+    # logical is a two-level FALSE/TRUE factor in the design matrix).
+    # For numeric predictors the term IS the variable name.
     term_id <- if (
       is_factor_var && !is.na(contrast_str) && grepl(" - ", contrast_str)
     ) {
@@ -1005,7 +1051,14 @@ extract_ame_glm <- function(
 .compute_bayes_ame_table <- function(fit, ci_level, hdi = FALSE) {
   s <- tryCatch(
     suppressWarnings(suppressMessages(
-      marginaleffects::avg_slopes(fit, conf_level = ci_level)
+      marginaleffects::avg_slopes(
+        fit,
+        conf_level = ci_level,
+        # Weighted fit: the AME draws average the unit-level slopes
+        # with the fit's prior weights, matching every frequentist
+        # path (Rd Weights section); equal weights otherwise.
+        wts = .spicy_ame_fit_wts(fit) %||% FALSE
+      )
     )),
     error = function(e) {
       # marginaleffects' Bayesian prediction path needs the collapse

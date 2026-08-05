@@ -85,6 +85,11 @@
   exponentiated coefficient is not a ratio (probit, cauchit, inverse,
   sqrt, ...). Ratio links (logit, log, binomial / ordinal cloglog) are
   unchanged; identity links keep the warn-and-skip.
+* `table_regression()` and `table_regression_uv()` exempt intercept
+  rows from `keep` / `drop`: the patterns select predictors, and
+  `show_intercept` alone controls the intercept. With the default
+  `show_intercept = TRUE`, `keep = "wt"` now retains the intercept
+  row; pass `show_intercept = FALSE` to hide it.
 * `table_categorical()` defaults to `drop_na = FALSE`: missing values
   display as a `"(Missing)"` level instead of being silently removed.
   With `drop_na = TRUE`, a table note now reports what was removed.
@@ -620,7 +625,11 @@ rendering an empty column.
   `marginaleffects::avg_slopes(fit, wts = weights(fit))`. AME values
   change for weighted fits (they matched the unweighted average
   before); `svyglm` is unaffected -- its design weights were already
-  applied natively.
+  applied natively. The weights reach every path: fits under
+  `na.action = na.exclude` (the NA-padded weights vector no longer
+  silently disabled the weighting), `MASS::polr` frequency weights
+  (recovered from the model frame), and the draws-native Bayesian
+  AME of `stanreg` / `brmsfit` fits.
 
 * `nlme::gls` fits populate the AME columns
   (`show_columns = c("b", "ame")`); the column rendered silently
@@ -631,6 +640,19 @@ rendering an empty column.
   promises: an `is_smoker:` header with indented `FALSE (ref.)` /
   `TRUE` rows (and aligned AME cells), instead of a flat
   `is_smokerTRUE` row with no reference level.
+
+* Character predictors align their AME rows with the grouped factor
+  levels, exactly like the same variable wrapped in `factor()`; the
+  AME column used to show one stray unlabeled row holding the first
+  contrast and drop the remaining levels' AMEs.
+
+* `table_regression()` reports correct `partial_chi2` values for
+  `glm` fits created with `y = FALSE` and a matrix
+  `cbind(successes, failures)` response: the internal refit
+  multiplied the binomial totals into the weights a second time,
+  inflating every chi-square. (`stats::drop1()` reconstructs such
+  fits the same way and shares the defect, so it is deliberately not
+  mirrored on this input.)
 
 * In mixed-class tables, a fit statistic not defined for a model's
   class renders an en-dash in that model's cell (console and rich

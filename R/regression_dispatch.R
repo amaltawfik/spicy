@@ -2115,6 +2115,26 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
             dims = openxlsx2::wb_dims(rows = excel_row, cols = j),
             numfmt = ov_fmt
           )
+          # NA fit-stat cell (a stat not defined for that model's class
+          # in a mixed table; the change tokens' first-model column):
+          # overwrite the blank with the documented per-cell en-dash,
+          # mirroring `.cell_to_string()`. Same exceptions as the other
+          # engines: the block-shaped disclosures ("FE: <factor>",
+          # "N (<factor>)") and the per-level n_events stay blank for
+          # models outside their scope.
+          if (
+            !is.null(ov$fit_stat) &&
+              !ov$fit_stat %in% c("fixed_effects", "n_groups", "n_events") &&
+              is.na(body[[j]][ov$row])
+          ) {
+            wb <- openxlsx2::wb_add_data(
+              wb,
+              sheet = excel_sheet,
+              x = na_dash,
+              start_row = excel_row,
+              start_col = j
+            )
+          }
         }
       }
       # Outcome row (multi-DV): overlay the label text (metadata; the typed

@@ -780,7 +780,7 @@ hypothesis that excludes any higher-order interaction
 containing it (the \code{car::Anova(type = 2)} convention), so
 the value does not depend on the factor coding. For \code{glm}
 the statistic is the likelihood-ratio chi-square (Long &
-Freese 2014 Section 3.5); for \code{lmer} / \code{glmer} / \code{glmmTMB} /
+Freese 2014 Sections 3.2.2, 3.2.4); for \code{lmer} / \code{glmer} / \code{glmmTMB} /
 \code{nlme::lme} it is the Wald chi-square built from the same
 Type-II hypothesis -- a deliberate departure from the
 Type-III default of SAS PROC MIXED and \code{lmerTest} (the two
@@ -1165,7 +1165,7 @@ Default change tokens auto-injected when \code{show_fit_stats} is
 \item All-lm: \code{c("r2_change", "f_change", "p_change")} --
 APA hierarchical regression standard.
 \item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer &
-Lemeshow Section 3.5; Long & Freese 2014 Section 3.6.
+Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
 }
 To customise, pass the change tokens directly to
 \code{show_fit_stats}. Variance-explained change tokens on an

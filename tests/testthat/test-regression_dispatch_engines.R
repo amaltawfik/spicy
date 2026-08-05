@@ -886,3 +886,40 @@ test_that("native engine verbs keep working on the spicy-returned objects", {
   )
   expect_s3_class(chained, "flextable")
 })
+
+
+# ============================================================================
+# Delta review D6: class-alien fit-stat cells carry the en-dash in Excel too
+# ============================================================================
+
+test_that("output = 'excel' renders the en-dash on class-alien fit-stat cells", {
+  skip_if_not_installed("openxlsx2")
+  m_lm <- lm(mpg ~ wt, data = mtcars)
+  m_glm <- glm(am ~ wt, data = mtcars, family = binomial)
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(
+    list(OLS = m_lm, Logit = m_glm),
+    show_fit_stats = c("nobs", "r2"),
+    output = "excel",
+    excel_path = path
+  )
+  wb <- openxlsx2::wb_load(path)
+  cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
+  col_a <- as.character(cells[, 1L])
+  r2_row <- which(col_a == "R\u00B2")
+  expect_length(r2_row, 1L)
+  vals <- as.character(unlist(cells[r2_row, -1L]))
+  vals <- vals[!is.na(vals)]
+  # One numeric R-squared (the lm model) + one en-dash (the glm model),
+  # matching the console / data.frame engines' per-cell contract.
+  expect_true("\u2013" %in% vals)
+  expect_true(any(suppressWarnings(!is.na(as.numeric(vals)))))
+  # The n row keeps two numeric values and no dash.
+  n_row <- which(col_a == "n")
+  expect_length(n_row, 1L)
+  n_vals <- as.character(unlist(cells[n_row, -1L]))
+  n_vals <- n_vals[!is.na(n_vals)]
+  expect_false("\u2013" %in% n_vals)
+  expect_identical(sum(!is.na(suppressWarnings(as.numeric(n_vals)))), 2L)
+})
