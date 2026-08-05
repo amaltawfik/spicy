@@ -148,9 +148,11 @@ factor, or when the levels sit in the wrong order. Data read from text
 files is particularly exposed: <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code> defaults to
 alphabetical levels (here <code>Fair, Good, Poor, Very good</code>),
 which would silently fit a nonsensical scale. And reversing the order
-negates every coefficient and marginal effect. Every interpretation
-below hinges on knowing the direction of the scale — here worst to best
-(Long &amp; Freese 2014).</p>
+negates every coefficient and threshold; the per-category marginal
+effects keep their values, but the category columns — and every
+directional reading built on them — reverse. Every interpretation below
+hinges on knowing the direction of the scale — here worst to best (Long
+&amp; Freese 2014).</p>
 <div class="section level2">
 <h2 id="the-proportional-odds-model">The proportional-odds model<a class="anchor" aria-label="anchor" href="#the-proportional-odds-model"></a>
 </h2>
@@ -238,7 +240,8 @@ compact footer line.</li>
 <li>Below the fit-stats rule, the model-fit block reports
 <strong>N</strong>, two pseudo-<span class="math inline">\(R^2\)</span>
 (<strong>McFadden</strong>, the Stata <code>ologit</code> default, and
-<strong>Nagelkerke</strong>, the SPSS PLUM default), and
+<strong>Nagelkerke</strong>, one of the three measures SPSS PLUM prints
+by default, alongside Cox &amp; Snell and McFadden), and
 <strong>AIC</strong>. Both compare the fitted log-likelihood to the
 intercept-only model’s, and both round to 0.00 here: these four
 predictors explain almost none of the variation in self-rated health.
@@ -256,11 +259,17 @@ templates, not as substantive findings. Override the block with
 <code>exponentiate = TRUE</code> reports <strong>odds ratios</strong>
 instead, exponentiating the estimate and its CI bounds and relabelling
 the column header accordingly. This is link-specific: under
-<code>method = "cloglog"</code> the exponentiated coefficient is a
-<strong>hazard ratio</strong> (the grouped-time proportional-hazards
-reading) and the header and footer relabel to HR; under probit or
-cauchit the exponential has no ratio interpretation, and
-<code>exponentiate = TRUE</code> is refused with a clear error.</p>
+<code>method = "cloglog"</code> the table reports a <strong>hazard
+ratio</strong> (the grouped-time proportional-hazards reading of
+Prentice &amp; Gloeckler 1978), and the sign convention matters —
+<code>polr</code> and <code>clm</code> parametrise the model as
+<code>cloglog P(Y ≤ j) = ζ_j − xB</code>, which places the hazard of the
+grouped event on <code>−B</code>, so the HR the table displays is
+<code>exp(−B)</code>, not <code>exp(B)</code> (a table note discloses
+this next to the HR definition, and the CI bounds are transformed
+accordingly). Under probit or cauchit the exponential has no ratio
+interpretation, and <code>exponentiate = TRUE</code> is refused with a
+clear error.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): self_rated_health</span></span></span>
@@ -395,9 +404,13 @@ directly:</p>
 <span><span class="co">#&gt; Type: probs</span></span></code></pre></div>
 <p>Smokers’ expected distribution sits lower on the scale than
 non-smokers’ — <code>Very good</code> 20.9% versus 25.8%,
-<code>Fair</code> 26.1% versus 21.9% — and the smoking AME row above is
-exactly the difference between these two profiles. For
-predicted-probability curves along a continuous predictor,
+<code>Fair</code> 26.1% versus 21.9% — and the smoking AME row above
+closely tracks the gap between these two profiles. The two are not the
+same estimand: the AME averages the Yes-versus-No contrast over the
+<em>whole</em> sample, while these profiles average within each observed
+group, each with its own covariate mix — here they agree to three
+decimals and diverge in the fourth. For predicted-probability curves
+along a continuous predictor,
 <code><a href="https://rdrr.io/pkg/marginaleffects/man/plot_predictions.html" class="external-link">marginaleffects::plot_predictions()</a></code> plots the same
 quantities.</p>
 <p>Request only the AME matrix (drop the coefficient column) with
@@ -438,11 +451,17 @@ only when the response has more than two categories.</p>
 <div class="section level2">
 <h2 id="cluster-robust-standard-errors">Cluster-robust standard errors<a class="anchor" aria-label="anchor" href="#cluster-robust-standard-errors"></a>
 </h2>
-<p>Ordinal fits honour the cluster-robust <code>vcov</code> family
-(<code>"CR0"</code>–<code>"CR3"</code>) via
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. Pass the cluster as a formula, a column
-name, or a vector (see the main vignette, <em>How to specify
-<code>cluster</code></em>):</p>
+<p>Ordinal fits accept the cluster-robust <code>vcov</code> family
+(<code>"CR0"</code>–<code>"CR3"</code>), computed by
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. One caveat up front: the CR2 / CR3
+small-sample bias-reduction adjustments are defined for (generalised)
+linear models — <code>clubSandwich</code> has no method for an ordinal
+MLE — so for <code>polr</code> / <code>clm</code> all four
+<code>CR*</code> labels map to the <em>same</em> plain (CR0-type)
+cluster sandwich, and the footer names the estimator <code>CL</code>
+rather than the requested label. Pass the cluster as a formula, a column
+name, or a vector (the three accepted forms are detailed in the main
+vignette’s <em>Cluster-robust (CR)</em> section):</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span>,</span>
@@ -485,9 +504,12 @@ variable. The clustering is applied <em>consistently</em>: the
 <code>Thresholds</code> rows and the AME columns are reweighted from the
 same <code>vcovCL</code> matrix as the slopes, so no row of the table
 quietly keeps model-based standard errors under a cluster-robust footer.
-Heteroskedasticity-consistent (<code>HC*</code>) estimators and the
-<code>bootstrap</code> / <code>jackknife</code> resamplers are
-<em>not</em> defined for ordinal fits and are refused with a clear
+Heteroskedasticity-consistent (<code>HC*</code>) estimators are refused
+— <code>HC2</code> / <code>HC3</code> need hat values that an ordinal
+MLE does not have, and the plain <code>HC0</code>-type sandwich is
+deliberately not offered without clustering — and the
+<code>bootstrap</code> / <code>jackknife</code> resamplers are not yet
+wired for ordinal fits. Both refusals raise a clear
 <code>spicy_unsupported_vcov</code> error rather than a silent
 fallback.</p>
 </div>
@@ -646,12 +668,12 @@ per-term tests have limited power, and one test per predictor invites
 multiplicity — so a borderline result argues for reporting the relaxed
 fit as a <em>sensitivity analysis</em>, not for switching automatically.
 In large samples the opposite failure dominates: the tests reject
-routinely — Long &amp; Freese (2014) report rejection in the majority of
-real applications — while also being sensitive to other kinds of
-misspecification, and the freed model’s <em>predictions</em> often
-barely differ from the proportional fit’s. When a test rejects, compare
-predicted probabilities across the two fits before restructuring the
-model. And a violated assumption is never a rationale for linear
+routinely — Long &amp; Freese (2014) describe the assumption as
+frequently violated in practice — while also being sensitive to other
+kinds of misspecification, and the freed model’s <em>predictions</em>
+often barely differ from the proportional fit’s. When a test rejects,
+compare predicted probabilities across the two fits before restructuring
+the model. And a violated assumption is never a rationale for linear
 regression on the ordinal outcome, whose assumptions are stronger still
 (Long &amp; Freese 2014). The next two sections demonstrate the two
 relaxations, using smoking precisely because it is the borderline
@@ -717,12 +739,14 @@ expressed as OR = 0.76 (&lt; 1) on the higher-category side — reverse
 polarity, because the nominal term enters the threshold, not the slope.
 Do not apply the earlier location-coefficient sign rules to this
 block.</p>
-<p>Two caveats for the non-proportional terms, both surfaced by the
-table: robust / cluster SEs are <strong>not available</strong>
-(<code>sandwich</code> has no estimating-functions method, so a robust
-<code>vcov</code> is refused), and <code>ci_method = "profile"</code>
-covers the proportional coefficients only (the non-proportional and
-threshold rows stay Wald).</p>
+<p>Two caveats for the non-proportional terms: robust / cluster SEs are
+<strong>not available</strong> — <code>sandwich</code> does ship an
+<code>estfun()</code> method for <code>clm</code>, but it does not (yet)
+implement the nominal and scale parts, so no cluster sandwich can be
+formed and <code>CR*</code> is refused (the scale section below shows
+the error) — and <code>ci_method = "profile"</code> covers the
+proportional coefficients only (the non-proportional and threshold rows
+stay Wald).</p>
 </div>
 <div class="section level3">
 <h3 id="scale-effects-scale">Scale effects: <code>scale = ~</code><a class="anchor" aria-label="anchor" href="#scale-effects-scale"></a>
@@ -788,15 +812,24 @@ is a ratio of latent standard deviations, not an odds ratio:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Thresholds: latent-scale category cut-points.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Scale effects: covariate effects on the log standard deviation of the latent response.</span></span></span></code></pre></div>
-<p>Cluster-robust SEs are not available for scale fits
-(<code>sandwich</code> has no estimating-functions method for them), so
-<code>CR*</code> is refused up front with a clear
+<p>Cluster-robust SEs are not available for scale fits:
+<code>sandwich</code>’s <code>estfun()</code> method for
+<code>clm</code> does not (yet) implement the scale and nominal parts
+(it stops with “estimating functions for scale regression not
+implemented yet”), so no cluster sandwich can be formed and
+<code>CR*</code> is refused up front with a
 <code>spicy_unsupported_vcov</code> error:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `validate_vcov_cluster_lists()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for `clm` models.</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> This class supports: classical. Robust standard errors for more model classes are being added; see ?table_regression.</span></span></code></pre></div>
+<p>One wart in the refusal message: it speaks of <code>clm</code> models
+as a class and lists only <code>classical</code> — read it as applying
+to this <em>fit</em>. A plain proportional-odds <code>clm</code> (no
+<code>scale =</code> or <code>nominal =</code> component) supports
+<code>CR0</code>–<code>CR3</code> exactly as the <code>polr</code> fit
+in the cluster section above.</p>
 </div>
 <div class="section level3">
 <h3 id="choosing-an-ordinal-specification">Choosing an ordinal specification<a class="anchor" aria-label="anchor" href="#choosing-an-ordinal-specification"></a>
@@ -816,8 +849,10 @@ Freese 2014), compared to the ordinal fit by AIC — covered in the <a href="tab
 <li>For asymmetric responses and grouped survival times, the
 <strong>cloglog</strong> link (<code>method = "cloglog"</code> in
 <code>polr</code>, <code>link = "cloglog"</code> in <code>clm</code>)
-replaces the odds-ratio reading with a hazard-ratio one, connecting the
-link menu above to a modelling rationale.</li>
+replaces the odds-ratio reading with a hazard-ratio one — displayed as
+<code>exp(−B)</code> under the cumulative parametrisation, as explained
+in the exponentiate section above — connecting the link menu to a
+modelling rationale.</li>
 </ul>
 </div>
 </div>
@@ -905,7 +940,7 @@ carries through to every format.</p>
 <span><span class="co">#&gt; 5        smoking:                                                 </span></span>
 <span><span class="co">#&gt; 6       No (ref.)     –        –        –        –             –</span></span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
 Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
@@ -1058,9 +1093,13 @@ tabular-nums; }</p>
 <p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
 <p>#mwlefoodfi .katex-display { display: inline-flex !important;
 margin-bottom: 0.75em !important; }</p>
-#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+<p>#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
 div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
-!important; } </style></p>
+!important; }</p>
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title, .gt_subtitle,
+.gt_sourcenotes, .gt_sourcenote { background-color: transparent
+!important; color: currentColor !important; } </style></p>
 <div class="spicy-gt-outer" style="text-align: center;">
 <div class="spicy-gt-wrap" style="display: inline-block; max-width: 100%; text-align: left; vertical-align: top;">
 <style>.spicy-gt-outer th[id^="model_span_"] { position: relative; }.spicy-gt-outer th[id^="model_span_"]::after { content: ""; position: absolute; left: 0.5em; right: 0.5em; bottom: 0; border-bottom: 1px solid #333333; }.spicy-gt-outer .gt_col_headings.gt_spanner_row, .spicy-gt-outer .gt_spanner_row { border-bottom-style: none !important; border-bottom-width: 0 !important; }.spicy-gt-outer .gt_col_heading { border-bottom: 1px solid #333333 !important; }.spicy-gt-outer .gt_table tbody .gt_row { border-top-width: 0 !important; }.spicy-gt-outer .gt_column_spanner { border-bottom-width: 0 !important; border-bottom-color: transparent !important; }</style>
@@ -1473,6 +1512,9 @@ row is labelled by its response category in the
 <ul>
 <li>Agresti, A. (2010). <em>Analysis of Ordinal Categorical Data</em>
 (2nd ed.). Wiley.</li>
+<li>Bender, R., &amp; Grouven, U. (1997). Ordinal logistic regression in
+medical research. <em>Journal of the Royal College of Physicians of
+London</em>, 31(5), 546–551.</li>
 <li>Brant, R. (1990). Assessing proportionality in the proportional odds
 model for ordinal logistic regression. <em>Biometrics</em>, 46(4),
 1171–1178.</li>
@@ -1487,8 +1529,8 @@ Statistical Society: Series C (Applied Statistics)</em>, 39(2),
 interpret adjusted predictions and marginal effects. <em>The Stata
 Journal</em>, 12(2), 308–331.</li>
 <li>Arel-Bundock, V., Greifer, N., &amp; Heiss, A. (2024). How to
-Interpret Statistical Models Using marginaleffects in R and Python.
-<em>Journal of Statistical Software</em>.</li>
+Interpret Statistical Models Using marginaleffects for R and Python.
+<em>Journal of Statistical Software</em>, 111(9), 1–32.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

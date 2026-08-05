@@ -236,12 +236,19 @@ table_regression(
   the result is a ratio: logit (`OR`), log (`IRR` / `RR` / `MR` per
   family, generic `exp(B)` for other log-link families – a genuine ratio
   of means), and binomial / ordinal cloglog (`HR`; grouped-time
-  proportional hazards, Prentice & Gloeckler 1978). The statistic and
-  p-value stay on the link scale (invariant under monotone
-  transformation). Identity-link fits are left untouched (a
-  `spicy_ignored_arg` warning fires when no model in the table
-  exponentiates), so mixed `lm` + logit tables keep working. Any other
-  link (probit, cauchit, inverse – the
+  proportional hazards, Prentice & Gloeckler 1978). For the *ordinal*
+  (cumulative) cloglog model the displayed `HR` is `exp(-B)`, not
+  `exp(B)`: the cumulative parametrisation
+  `cloglog P(Y <= j) = zeta_j - xB` places the hazard of the grouped
+  event on `-B`, so `exp(B)` would be the reciprocal of the hazard ratio
+  (the CI endpoints are negated and swapped accordingly, and the table
+  note discloses the convention; a cloglog `clm` with `nominal =` terms
+  refuses `exponentiate` because threshold-side coefficients have no
+  covariate-HR reading). The statistic and p-value stay on the link
+  scale (invariant under monotone transformation). Identity-link fits
+  are left untouched (a `spicy_ignored_arg` warning fires when no model
+  in the table exponentiates), so mixed `lm` + logit tables keep
+  working. Any other link (probit, cauchit, inverse – the
   [`Gamma()`](https://rdrr.io/r/stats/family.html) default –, `1/mu^2`,
   sqrt, ordinal `loglog`, ...) raises `spicy_invalid_input`: the
   exponential of such a coefficient has no ratio interpretation, and
@@ -1025,7 +1032,7 @@ model_id key.
 - `"classical"` – OLS (lm) / Fisher information (glm).
 
 - `"HC0"` to `"HC5"` – heteroskedasticity-consistent (via
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)).
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)).
 
 - `"CR0"` to `"CR3"` – cluster-robust with Satterthwaite-corrected df
   (via
@@ -1102,14 +1109,13 @@ silent model-based result under a robust label:
 - `mlogit`:
 
   `classical` + `CR*` only (cluster at the choice-situation level) –
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
   mis-scales the sandwich for mlogit's per-choice-situation scores, so
   `HC*` is refused.
 
-- `lmer`, `lme`, `glmmTMB`, `coxph`, `survreg`,
+- `lmer`, `lme`, `coxph`, `survreg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`, `polr`,
   `clm`, `betareg`,
-  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html),
   [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html), `rms`
   (`ols`/`lrm`/`cph`/`Glm`):
 
@@ -1127,18 +1133,26 @@ silent model-based result under a robust label:
   the displayed inference. `HC*` / `CR*` and `cluster` are refused with
   a pointer to those fit options.
 
-- Other classes (`glmer`, `rstanarm`/`brms`, ...):
+- [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html):
 
-  `classical` (model-based) only.
+  `classical` only, on principle: the design-based Taylor / replicate
+  variance is already the robust variance for the declared design, and
+  clustering belongs in the design itself (`survey::svydesign(ids = )`),
+  not in the table call.
+
+- Other classes (`glmer`, `glmmTMB`, `rstanarm`/`brms`, ...):
+
+  `classical` (model-based) only (clubSandwich has no working backend
+  for `glmer` / `glmmTMB`).
 
 Cluster-robust backends differ by class but are each cross-validated to
-the field-standard oracle: `lm`/`glm`/`lmer`/`lme`/`glmmTMB` use
-clubSandwich (CR2 = Bell-McCaffrey, with Satterthwaite df for
-`lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
-sandwich (identical to `coxph(..., cluster=)`);
+the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
+= Bell-McCaffrey, with Satterthwaite df for `lm`/`lme`/`lmer`);
+`coxph`/`cph` use the Lin-Wei grouped-dfbeta sandwich (identical to
+`coxph(..., cluster=)`);
 `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` use
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
-`svyglm` uses the design-aware clubSandwich estimator; `rms` fits use
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html);
+`rms` fits use
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (which needs
 the fit's `x = TRUE, y = TRUE`). These single cluster sandwiches have no
 CR0-CR3 bias-reduction variants, so the requested `CR*` maps to the one
@@ -1155,7 +1169,7 @@ Three accepted forms, in order of preference:
     `model.frame(fit)` first, then in the original `data` argument
     captured by the fit. **Recommended**: independent of the dataset's
     name, composable for multi-way clustering, consistent with
-    [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+    [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
     /
     [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md).
 
@@ -1471,9 +1485,9 @@ table_regression(fit)
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
 
-# Standardised coefficients (beta) injected next to B. Four
-# methods available; "refit" is the SPSS / Stata regress, beta
-# gold standard.
+# Standardised coefficients (beta) injected next to B. "refit"
+# is the Cohen et al. (2003) refit-on-z-scores convention;
+# "basic" reproduces the SPSS / Stata regress, beta definition.
 table_regression(fit, standardized = "refit")
 #> Linear regression: wellbeing_score
 #> 

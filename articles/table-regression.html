@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Publication-ready regression tables">
-<meta name="description" content="Coefficient tables for fitted regression models in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, four standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta name="description" content="Coefficient tables for fitted regression models in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, five standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
-<meta property="og:description" content="Coefficient tables for fitted regression models in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, four standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta property="og:description" content="Coefficient tables for fitted regression models in R with APA-aligned formatting: classical, heteroskedasticity-consistent and cluster-robust variance, five standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -142,7 +142,7 @@ negative-binomial, and two-part models,
 <code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal")</a></code> for ordinal models
 (<code>polr</code>, <code>clm</code>),
 <code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial")</a></code> for multinomial
-models (<code>multinom</code>, <code>mlogit</code>), and
+models (<code>multinom</code>, <code>mlogit</code>),
 <code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code> for survival models
 (<code>coxph</code>, <code>survreg</code>), and
 <code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code> for Bayesian fits
@@ -221,28 +221,37 @@ in <code>X</code> predicts a <code>β</code>-standard-deviation change in
 <code>B</code> and <code>β</code> so the unstandardised effect (natural
 units, interpretable) stays alongside the standardised effect
 (comparable across predictors).</p>
-<p><code>standardized</code> selects the method. Four are available; the
-choice is consequential and well-documented (Cohen, Cohen, West, and
-Aiken 2003 §3.4; Gelman 2008):</p>
+<p><code>standardized</code> selects the method. Four apply to linear
+models — a fifth, glm-specific <code>"pseudo"</code>, is covered in the
+<em>Generalised linear models</em> section — and the choice is
+consequential and well-documented (Cohen, Cohen, West, and Aiken 2003
+§3.4; Gelman 2008). The methods differ most visibly in how they treat
+factor dummies:</p>
 <ul>
 <li>
-<code>"refit"</code> — refit the model on z-scored outcome and
-predictors. Gold-standard convention, used by SPSS
-<code>REGRESSION</code> and Stata <code>regress, beta</code>. Both
-numeric and dummy-coded predictors enter the refit on the same
-scale.</li>
+<code>"refit"</code> — refit the model on the z-scored outcome and
+z-scored <em>numeric</em> predictors; factors stay factors, so their
+dummies keep the 0/1 scale (the Cohen et al. 2003 convention, matching
+the <code>effectsize</code> package). A dummy’s <code>β</code> is its
+group contrast in <code>SD(Y)</code> units.</li>
 <li>
-<code>"posthoc"</code> — algebraic rescaling
-<code>β = B × SD(X) / SD(Y)</code>, applied to the original fit.
+<code>"posthoc"</code> — the same estimand as <code>"refit"</code>,
+obtained by algebraic rescaling of the original fit:
+<code>β = B × SD(X) / SD(Y)</code> for numeric predictors,
+<code>β = B / SD(Y)</code> for factor dummies (which stay on 0/1).
 Numerically identical to <code>"refit"</code> for purely linear-additive
 Gaussian models; preferred when refitting is expensive or when
 <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> was wrapped in a pipeline that resists
 re-execution.</li>
 <li>
-<code>"basic"</code> — algebraic, but factor dummies keep their 0/1
-scale rather than being z-scored. Useful when factor levels carry
-meaningful base rates that scale-free standardisation would
-obscure.</li>
+<code>"basic"</code> — algebraic, but <em>every</em> design column
+is scaled by its column SD, factor dummies included:
+<code>β = B × SD(column) / SD(Y)</code>. This is the Beta definition of
+SPSS <code>REGRESSION</code> and Stata <code>regress, beta</code>
+(spicy’s oracle tests pin it against PSPP): reach for it when you need
+numbers that reproduce those packages, at the price of a dummy
+<code>β</code> that depends on the level’s base rate through
+<code>SD(dummy)</code>.</li>
 <li>
 <code>"smart"</code> — Gelman’s (2008) input scaling: numeric
 predictors divided by <code>2 × SD(X)</code>; binary predictors and
@@ -386,14 +395,16 @@ and Algina (2003) formula
 less-biased small-sample estimator than partial <code>η²</code>.</li>
 <li>The CI bounds come from inverting the noncentrality parameter of the
 F-distribution at the lower and upper confidence levels (Steiger 2004
-§4). Population partial <code>η²</code> and partial <code>ω²</code> are
-the same quantity — <code>ω²</code> is simply the less-biased
-small-sample estimator — so both columns share the single Steiger
-interval, following the MBESS convention (the <code>effectsize</code>
-package instead re-inverts an implied <code>F</code> for
-<code>ω²</code>, so its <code>ω²</code> bounds differ slightly). The
-interval brackets the bias-corrected point estimate, even when the lower
-bound clips at zero (common for near-null terms).</li>
+§4), anchored at the bias-corrected <code>F</code> implied by
+<code>ω²</code> rather than at the observed <code>F</code>. Population
+partial <code>η²</code> and partial <code>ω²</code> are the same
+quantity — <code>ω²</code> is simply the less-biased small-sample
+estimator — so both columns share that single interval, and it always
+brackets the bias-corrected point estimate, even when the lower bound
+clips at zero (common for near-null terms). Expect small differences
+from the <code>effectsize</code> package on <em>both</em> columns: it
+inverts the observed <code>F</code> for its <code>η²</code> bounds and
+its own implied <code>F</code> for <code>ω²</code>.</li>
 <li>For factor predictors with <code>k</code> levels, the partial F-test
 is the joint <code>(k − 1)</code> df Wald test, so the same effect-size
 value is broadcast across all non-reference dummy rows; the reference
@@ -465,8 +476,7 @@ attribution of each p-value unambiguous — the B-block
 scale</strong>, not the link scale. The <em>Generalised linear
 models</em> section below works out a logistic-regression example.</li>
 </ul>
-<p>Inference is delegated to
-[<code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>][marginaleffects::avg_slopes]
+<p>Inference is delegated to <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>
 and respects the chosen variance estimator. Under cluster-robust
 variance (covered in <em>Robust variance</em>), the AME inference shares
 the coefficient’s t-distribution and Satterthwaite-corrected degrees of
@@ -676,8 +686,9 @@ tokens controls the order of the rows. Other change tokens are
 available: <code>"adj_r2_change"</code>, <code>"f2_change"</code>,
 <code>"deviance_change"</code>, <code>"aic_change"</code> /
 <code>"aicc_change"</code> / <code>"bic_change"</code>.
-Variance-explained change tokens (Δr², Δf²) are NA for mixed-effects
-pairs — the F-test framework that grounds them doesn’t apply.</p>
+Variance-explained change tokens (Δr², Δf²) are undefined for
+mixed-effects pairs and their rows are dropped from the table — the
+F-test framework that grounds them doesn’t apply.</p>
 <p>Validation is strict: identical <code>nobs</code> and identical
 response across all models, otherwise a <code>spicy_invalid_input</code>
 error explains the listwise-deletion trap and suggests refitting on the
@@ -697,9 +708,9 @@ are also available via <code>vcov = "bootstrap"</code> /
 <p>When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set
 <code>vcov = "HC*"</code> for sandwich-style standard errors via
-[<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>][sandwich::vcovHC]. The valid types are
-<code>HC0</code> through <code>HC5</code>; <code>HC3</code> is the
-small-sample-friendly default (Long and Ervin 2000):</p>
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>. The valid types are <code>HC0</code>
+through <code>HC5</code>; <code>HC3</code> is the small-sample-friendly
+default (Long and Ervin 2000):</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></span>
@@ -732,9 +743,8 @@ tracks <code>ci_level</code>.</p>
 <p>For clustered observations (repeated measures on the same person,
 students within schools, observations within regions),
 <code>vcov = "CR*"</code> requests cluster-robust variance via
-[<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>][clubSandwich::vcovCR], with the
-cluster identifier supplied through <code>cluster</code>. Three forms
-are accepted:</p>
+<code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>, with the cluster identifier
+supplied through <code>cluster</code>. Three forms are accepted:</p>
 <ul>
 <li>
 <strong>Formula</strong> — <code>cluster = ~region</code>. The
@@ -765,10 +775,6 @@ dynamic column choice).</p>
 <span>  cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_p"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Registered S3 methods overwritten by 'clubSandwich':</span></span>
-<span><span class="co">#&gt;   method        from    </span></span>
-<span><span class="co">#&gt;   bread.lmerMod merDeriv</span></span>
-<span><span class="co">#&gt;   bread.mlm     sandwich</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p     AME     p   </span></span>
@@ -793,27 +799,26 @@ dynamic column choice).</p>
 <p><code>CR2</code> (the Bell-McCaffrey adjustment) is the recommended
 default under few clusters (Pustejovsky and Tipton 2018; Imbens and
 Kolesár 2016). Coefficient inference uses
-[<code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code>][clubSandwich::coef_test] with
-Satterthwaite-corrected degrees of freedom. When AME columns are
-requested, the same Satterthwaite framework is applied to the AME
-contrast via <code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so
-<code>B</code> and AME share the same t-distribution with the same df —
-visible in the footer.</p>
+<code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> with Satterthwaite-corrected
+degrees of freedom. When AME columns are requested, the same
+Satterthwaite framework is applied to the AME contrast via
+<code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so <code>B</code> and AME
+share the same t-distribution with the same df — visible in the
+footer.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="multiple-comparison-adjustment">Multiple-comparison adjustment<a class="anchor" aria-label="anchor" href="#multiple-comparison-adjustment"></a>
 </h2>
 <p><code>p_adjust</code> applies a family-wise or false-discovery-rate
-adjustment to the p-values via
-[<code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>][stats::p.adjust]. The family is the
-model’s full coefficient set (intercept and reference rows excluded);
-<code>B</code> and <code>AME</code> are adjusted as independent families
-within the same call. Available methods are the same as in
-<code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>: <code>"none"</code> (default),
-<code>"holm"</code>, <code>"hochberg"</code>, <code>"hommel"</code>,
-<code>"bonferroni"</code>, <code>"BH"</code> / <code>"fdr"</code>,
-<code>"BY"</code>.</p>
+adjustment to the p-values via <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>. The
+family is the model’s full coefficient set (intercept and reference rows
+excluded); <code>B</code> and <code>AME</code> are adjusted as
+independent families within the same call. Available methods are the
+same as in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>: <code>"none"</code>
+(default), <code>"holm"</code>, <code>"hochberg"</code>,
+<code>"hommel"</code>, <code>"bonferroni"</code>, <code>"BH"</code> /
+<code>"fdr"</code>, <code>"BY"</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>,</span>
 <span>          data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
@@ -882,10 +887,11 @@ to the reader.</p>
 <h2 id="filtering-displayed-coefficients">Filtering displayed coefficients<a class="anchor" aria-label="anchor" href="#filtering-displayed-coefficients"></a>
 </h2>
 <p><code>keep</code> and <code>drop</code> accept regular expressions
-matched against coefficient names (as returned by [stats::coef()]). They
-are mutually exclusive — use <code>keep</code> to retain only the focal
-predictors, or <code>drop</code> to hide a few control variables.
-Multiple patterns combine with logical OR.</p>
+matched against coefficient names (as returned by
+<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">stats::coef()</a></code>). They are mutually exclusive — use
+<code>keep</code> to retain only the focal predictors, or
+<code>drop</code> to hide a few control variables. Multiple patterns
+combine with logical OR.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">bmi</span> <span class="op">+</span> <span class="va">education</span>,</span>
 <span>          data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
@@ -1246,12 +1252,15 @@ other algebraic methods (<code>"posthoc"</code>, <code>"basic"</code>,
 <code>"smart"</code>) apply X-only scaling using the same algebra as in
 the <code>lm</code> case.</p>
 <p><code>standardized = "pseudo"</code> (<code>glm</code> only) is the
-Menard (2004, 2011) <em>fully</em> standardised coefficient, scaling by
-<code>SD(X) / SD(Y*)</code> where <code>Y*</code> is the latent variable
-on the link scale and
-<code>SD(Y*) = sqrt(var(linear-predictor) + var_link)</code> with
+latent-scale variant of Menard’s (2004, 2011) fully standardised
+coefficient: <code>Y*</code> is the latent variable on the link scale,
+with <code>SD(Y*) = sqrt(var(linear-predictor) + var_link)</code> and
 <code>var_link</code> = π²/3 for logit, 1 for probit, π²/6 for cloglog.
-Defined for binomial families; non-binomial returns NA with a
+Numeric predictors scale by <code>SD(X) / SD(Y*)</code>; factor dummies
+stay on their 0/1 scale and divide by <code>SD(Y*)</code> only — the
+same dummy convention as the other methods, which is why the factor rows
+in the table below are not <code>B × SD(X) / SD(Y*)</code>. Defined for
+binomial families; non-binomial returns NA with a
 <code>spicy_caveat</code>:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"pseudo"</span><span class="op">)</span></span>
@@ -1319,10 +1328,9 @@ communicating logistic effects (Mood 2010; Long and Freese 2014
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span></code></pre></div>
 <p>Point estimate and inference are delegated to
-[<code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>][marginaleffects::avg_slopes].
-Under cluster-robust variance, the Satterthwaite-df handling described
-in the <em>Robust variance</em> section applies to <code>glm</code> AME
-as well.</p>
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>. Under cluster-robust
+variance, the Satterthwaite-df handling described in the <em>Robust
+variance</em> section applies to <code>glm</code> AME as well.</p>
 </div>
 <div class="section level3">
 <h3 id="profile-likelihood-cis-ci_method-profile">Profile-likelihood CIs: <code>ci_method = "profile"</code><a class="anchor" aria-label="anchor" href="#profile-likelihood-cis-ci_method-profile"></a>
@@ -1466,7 +1474,6 @@ columns. The number of groups — one
 align per model in a comparison table:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: Matrix</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>

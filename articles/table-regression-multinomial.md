@@ -85,10 +85,10 @@ it does set which contrasts the table displays — and contrasts against a
 well-populated category are precisely estimated, which is why Stata’s
 `mlogit` defaults to the most frequent outcome.
 [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) uses the
-factor’s first level — here `Employed`, which is also the most frequent,
-so R’s positional default coincides with the frequency-based choice:
-large, so the displayed contrasts are precise, and substantively
-meaningful.
+factor’s first level — here `Employed`. Since `Employed` is also the
+modal category, R’s positional default coincides with the
+frequency-based choice: the displayed contrasts are precisely estimated,
+and the benchmark is substantively meaningful.
 
 ## Basic table
 
@@ -157,12 +157,30 @@ row blocks; side by side is the publication convention. Reading it:
   pseudo-R²**, and **AIC**, once, under the first group — they belong to
   the model, not to an equation.
 
-Before reading any cell, the whole model earns its keep: against the
-intercept-only fit, the likelihood-ratio chi-squared is 41.9 on 12
-degrees of freedom (p \< .001) — the test Stata prints in its `mlogit`
-header and the first number Long & Freese read. The printed
-`R² (McFadden)` row, 0.02 — precisely 1 − (−1242.9)/(−1263.8) = 0.017 —
-is a comparative index, not a share of explained variance (Long & Freese
+Before reading any cell, the whole model must earn its keep: the joint
+likelihood-ratio test against the intercept-only fit — the test Stata
+prints in its `mlogit` header and the first number Long & Freese read.
+In R it is one [`anova()`](https://rdrr.io/r/stats/anova.html) call away
+(fitting the null on `model.frame(fit)` guarantees the same estimation
+sample):
+
+``` r
+
+fit0 <- multinom(employment_status ~ 1, data = model.frame(fit),
+                 trace = FALSE)
+anova(fit0, fit)
+#>                   Model Resid. df Resid. Dev   Test    Df LR stat.     Pr(Chi)
+#> 1                     1      3597   2527.696           NA       NA          NA
+#> 2 age + sex + education      3585   2485.786 1 vs 2    12 41.90957 3.44925e-05
+c(full = logLik(fit), null = logLik(fit0))
+#>      full      null 
+#> -1242.893 -1263.848
+```
+
+The likelihood-ratio chi-squared is 41.9 on 12 degrees of freedom (p \<
+.001). The two log-likelihoods also decompose the table’s
+`R² (McFadden)` row: 0.02 is precisely 1 − (−1242.9)/(−1263.8) = 0.017 —
+a comparative index, not a share of explained variance (Long & Freese
 2014); the contrast between the tiny value and the decisive test is
 exactly why it should not be read as one.
 
@@ -171,9 +189,11 @@ One scope note on inference: alongside the classical Wald-z default,
 (`vcov = "CR0"`–`"CR3"` with `cluster = ~id`, one cluster value per
 observation; requires sandwich ≥ 3.1-2, whose new `estfun()` method
 unlocked the cluster sandwich) — and the AME columns honour the same
-estimator. Heteroskedasticity-robust `HC*` remains refused with an
-explanatory error: a multi-equation model has no working residuals, so
-no HC sandwich exists to compute.
+estimator. Heteroskedasticity-robust `HC*` remains refused — a
+multi-equation model has no working residuals, so no HC sandwich exists
+to compute; the error lists the estimators this class does support, and
+the rationale is documented in
+[`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 
 ## Odds ratios: `exponentiate = TRUE`
 
@@ -303,12 +323,30 @@ anova(fit_noeduc, fit)
 
 Education matters decisively — chi-squared 36.29 on 6 degrees of freedom
 (2 parameters in each of 3 equations), p \< .001 — even though its
-`Student`-equation cells looked unconvincing one table ago. The trap
-runs in both directions: sex shows one tempting cell (`Unemployed`, p =
-.172) but is jointly null (chi-squared 2.26 on 3 df, p = .520).
+`Student`-equation cells looked unconvincing one table ago.
+`car::Anova(fit)` runs this test for every predictor in one call — the
+equivalent of Stata’s `mlogtest, lr`:
+
+``` r
+
+car::Anova(fit)
+#> Analysis of Deviance Table (Type II tests)
+#> 
+#> Response: employment_status
+#>           LR Chisq Df Pr(>Chisq)    
+#> age          3.305  3     0.3469    
+#> sex          2.261  3     0.5200    
+#> education   36.293  6  2.418e-06 ***
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+The `education` line reproduces the 36.29 above, and the other lines
+show the trap runs in both directions: sex shows one tempting cell
+(`Unemployed`, p = .172) but is jointly null (chi-squared 2.26 on 3 df,
+p = .520), and age fares no better (3.31 on 3 df, p = .347).
 Individually weak cells can be jointly overwhelming, and one suggestive
-cell among \\J-1\\ can be noise. `car::Anova(fit)` runs this test for
-every predictor in one call — the equivalent of Stata’s `mlogtest, lr`.
+cell among \\J-1\\ can be noise.
 
 ## Can two categories be combined?
 
@@ -337,14 +375,16 @@ anova(glm(y ~ 1, binomial(), sub),
 
 `Student` and `Inactive` are not separated — chi-squared 6.95 on 4
 degrees of freedom, p = .139. Running all six pairs tells the honest
-story of these data: only `Unemployed` is sharply distinguished from the
-rest (versus `Employed`, chi-squared 33.6; versus `Student`, 22.6; both
-p \< .001), while `Employed`, `Student`, and `Inactive` are not mutually
-separated by age, sex, and education. Two cautions close the step:
-failing to reject does not prove interchangeability — the smaller cells
-give the test little power — and combining is ultimately a substantive
-decision: employment states remain distinct constructs even when these
-covariates do not separate them.
+story of these data: `Unemployed` is sharply distinguished from
+`Employed` (chi-squared 33.6) and from `Student` (22.6), both p \< .001,
+but only marginally from `Inactive` (8.49 on 4 df, p = .075), while
+`Employed`, `Student`, and `Inactive` are not mutually separated by age,
+sex, and education (the two pairs not yet shown: `Employed` versus
+`Student`, p = .293; `Employed` versus `Inactive`, p = .561). Two
+cautions close the step: failing to reject does not prove
+interchangeability — the smaller cells give the test little power — and
+combining is ultimately a substantive decision: employment states remain
+distinct constructs even when these covariates do not separate them.
 
 ## The sign trap, and marginal effects
 
@@ -615,7 +655,7 @@ Three guardrails: average marginal effects are refused for `mlogit`
 structure); the robust `vcov` family is `CR0`–`CR3` only, with one
 cluster value per choice situation, not per long-format row; and `HC*`
 is refused outright —
-[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
 mis-scales the sandwich for mlogit’s per-choice-situation scores.
 
 ## Several models side by side
@@ -675,12 +715,13 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #> Reference outcome: Employed.
 ```
 
-Adjustment changes nothing here: the education block is identical to two
-decimals across the columns — `Tertiary` is OR 0.29 in the
-`Unemployed`-versus-`Employed` equation both times — because age and
-sex, at best weakly related to employment status in this sample (their
-smallest p is .097), have nothing to confound the education gradient
-with.
+Adjustment barely moves anything here: five of the six education odds
+ratios agree to two decimals across the columns, and the sixth shifts by
+a single rounding step (`Student: Tertiary`, 1.14 to 1.15) — `Tertiary`
+is OR 0.29 in the `Unemployed`-versus-`Employed` equation both times —
+because age and sex, at best weakly related to employment status in this
+sample (their smallest p is .097), have nothing to confound the
+education gradient with.
 
 ## Output formats
 
@@ -710,7 +751,7 @@ head(table_regression(fit, exponentiate = TRUE, output = "data.frame"))
 
 ``` r
 
-table_regression(fit, show_columns = c("b", "ame"), output = "gt")
+pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt"))
 ```
 
 [TABLE]
@@ -755,6 +796,8 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   71(1), 11–18.
 - Cheng, S., & Long, J. S. (2007). Testing for IIA in the multinomial
   logit model. *Sociological Methods & Research*, 35(4), 583–600.
+- Cramer, J. S., & Ridder, G. (1991). Pooling states in the multinomial
+  logit model. *Journal of Econometrics*, 47(2–3), 267–272.
 - Croissant, Y. (2020). Estimation of random utility models in R: The
   mlogit package. *Journal of Statistical Software*, 95(11), 1–41.
 - Debreu, G. (1960). Review of R. D. Luce, *Individual Choice Behavior*.

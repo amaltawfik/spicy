@@ -721,7 +721,7 @@ td[, c("term", "estimate", "std.error", "conf.low", "conf.high",
 
 ``` r
 
-table_regression(fit, exponentiate = TRUE, output = "gt")
+pkgdown_dark_gt(table_regression(fit, exponentiate = TRUE, output = "gt"))
 ```
 
 [TABLE]

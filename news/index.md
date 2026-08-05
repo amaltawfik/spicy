@@ -299,7 +299,11 @@ for walk-throughs.
   alternative-specific layout; ordinal thresholds render as a labelled
   block (`show_thresholds = FALSE` to opt out), and
   partial-proportional-odds `clm` fits render their non-proportional
-  terms as their own block.
+  terms as their own block. Under `exponentiate = TRUE`, a cloglog
+  ordinal model reports the grouped-time hazard ratio as `exp(-B)` – the
+  cumulative parametrisation places the hazard on `-B`, so `exp(B)`
+  would be its reciprocal – with the sign convention disclosed in the
+  table note.
 - Survey
   ([`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html));
   robust / IV / panel (`estimatr`,
@@ -392,6 +396,13 @@ rendering an empty column.
   classes. Resampling footers report the valid replicate count, and a
   bootstrap / jackknife whose replicates nearly all fail raises
   `spicy_resampling_failed` instead of silently reporting classical SEs.
+  `glmmTMB` and
+  [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html) are
+  classical-only: clubSandwich has no backend for either, so a `CR*`
+  request is refused with a clear error instead of silently returning
+  invalid (`glmmTMB`) or design-ignoring (`svyglm`) matrices – for
+  survey fits, declare the clustering in `svydesign(ids = )` where it
+  belongs.
 - Cluster-robust `vcov` (`"CR0"`-`"CR3"`) for
   [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
   including its AME columns (needs sandwich \>= 3.1-2, which added the
@@ -1343,7 +1354,7 @@ CRAN release: 2026-05-04
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html);
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonisation across the table family

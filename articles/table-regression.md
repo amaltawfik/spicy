@@ -39,7 +39,7 @@ for Poisson, negative-binomial, and two-part models,
 [`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
 for ordinal models (`polr`, `clm`),
 [`vignette("table-regression-multinomial")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
-for multinomial models (`multinom`, `mlogit`), and
+for multinomial models (`multinom`, `mlogit`),
 [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
 for survival models (`coxph`, `survreg`), and
 [`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
@@ -116,22 +116,29 @@ reporting both `B` and `β` so the unstandardised effect (natural units,
 interpretable) stays alongside the standardised effect (comparable
 across predictors).
 
-`standardized` selects the method. Four are available; the choice is
-consequential and well-documented (Cohen, Cohen, West, and Aiken 2003
-§3.4; Gelman 2008):
+`standardized` selects the method. Four apply to linear models — a
+fifth, glm-specific `"pseudo"`, is covered in the *Generalised linear
+models* section — and the choice is consequential and well-documented
+(Cohen, Cohen, West, and Aiken 2003 §3.4; Gelman 2008). The methods
+differ most visibly in how they treat factor dummies:
 
-- `"refit"` — refit the model on z-scored outcome and predictors.
-  Gold-standard convention, used by SPSS `REGRESSION` and Stata
-  `regress, beta`. Both numeric and dummy-coded predictors enter the
-  refit on the same scale.
-- `"posthoc"` — algebraic rescaling `β = B × SD(X) / SD(Y)`, applied to
-  the original fit. Numerically identical to `"refit"` for purely
-  linear-additive Gaussian models; preferred when refitting is expensive
-  or when [`lm()`](https://rdrr.io/r/stats/lm.html) was wrapped in a
-  pipeline that resists re-execution.
-- `"basic"` — algebraic, but factor dummies keep their 0/1 scale rather
-  than being z-scored. Useful when factor levels carry meaningful base
-  rates that scale-free standardisation would obscure.
+- `"refit"` — refit the model on the z-scored outcome and z-scored
+  *numeric* predictors; factors stay factors, so their dummies keep the
+  0/1 scale (the Cohen et al. 2003 convention, matching the `effectsize`
+  package). A dummy’s `β` is its group contrast in `SD(Y)` units.
+- `"posthoc"` — the same estimand as `"refit"`, obtained by algebraic
+  rescaling of the original fit: `β = B × SD(X) / SD(Y)` for numeric
+  predictors, `β = B / SD(Y)` for factor dummies (which stay on 0/1).
+  Numerically identical to `"refit"` for purely linear-additive Gaussian
+  models; preferred when refitting is expensive or when
+  [`lm()`](https://rdrr.io/r/stats/lm.html) was wrapped in a pipeline
+  that resists re-execution.
+- `"basic"` — algebraic, but *every* design column is scaled by its
+  column SD, factor dummies included: `β = B × SD(column) / SD(Y)`. This
+  is the Beta definition of SPSS `REGRESSION` and Stata `regress, beta`
+  (spicy’s oracle tests pin it against PSPP): reach for it when you need
+  numbers that reproduce those packages, at the price of a dummy `β`
+  that depends on the level’s base rate through `SD(dummy)`.
 - `"smart"` — Gelman’s (2008) input scaling: numeric predictors divided
   by `2 × SD(X)`; binary predictors and factor dummies kept on their 0/1
   scale. The resulting `β` is the change in `Y`, in `SD(Y)` units, for a
@@ -276,13 +283,14 @@ Methodology notes:
   yielding a less-biased small-sample estimator than partial `η²`.
 - The CI bounds come from inverting the noncentrality parameter of the
   F-distribution at the lower and upper confidence levels (Steiger 2004
-  §4). Population partial `η²` and partial `ω²` are the same quantity —
-  `ω²` is simply the less-biased small-sample estimator — so both
-  columns share the single Steiger interval, following the MBESS
-  convention (the `effectsize` package instead re-inverts an implied `F`
-  for `ω²`, so its `ω²` bounds differ slightly). The interval brackets
+  §4), anchored at the bias-corrected `F` implied by `ω²` rather than at
+  the observed `F`. Population partial `η²` and partial `ω²` are the
+  same quantity — `ω²` is simply the less-biased small-sample estimator
+  — so both columns share that single interval, and it always brackets
   the bias-corrected point estimate, even when the lower bound clips at
-  zero (common for near-null terms).
+  zero (common for near-null terms). Expect small differences from the
+  `effectsize` package on *both* columns: it inverts the observed `F`
+  for its `η²` bounds and its own implied `F` for `ω²`.
 - For factor predictors with `k` levels, the partial F-test is the joint
   `(k − 1)` df Wald test, so the same effect-size value is broadcast
   across all non-reference dummy rows; the reference row leaves the
@@ -354,7 +362,7 @@ Reading conventions:
   works out a logistic-regression example.
 
 Inference is delegated to
-\[[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)\]\[marginaleffects::avg_slopes\]
+[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)
 and respects the chosen variance estimator. Under cluster-robust
 variance (covered in *Robust variance*), the AME inference shares the
 coefficient’s t-distribution and Satterthwaite-corrected degrees of
@@ -571,8 +579,8 @@ mixed-effects fits (`lmer` / `glmer` / `glmmTMB` /
 controls the order of the rows. Other change tokens are available:
 `"adj_r2_change"`, `"f2_change"`, `"deviance_change"`, `"aic_change"` /
 `"aicc_change"` / `"bic_change"`. Variance-explained change tokens (Δr²,
-Δf²) are NA for mixed-effects pairs — the F-test framework that grounds
-them doesn’t apply.
+Δf²) are undefined for mixed-effects pairs and their rows are dropped
+from the table — the F-test framework that grounds them doesn’t apply.
 
 Validation is strict: identical `nobs` and identical response across all
 models, otherwise a `spicy_invalid_input` error explains the
@@ -590,7 +598,7 @@ available via `vcov = "bootstrap"` / `"jackknife"`.
 When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set `vcov = "HC*"` for
 sandwich-style standard errors via
-\[[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)\]\[sandwich::vcovHC\].
+[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html).
 The valid types are `HC0` through `HC5`; `HC3` is the
 small-sample-friendly default (Long and Ervin 2000):
 
@@ -628,7 +636,7 @@ column header for the confidence interval automatically tracks
 For clustered observations (repeated measures on the same person,
 students within schools, observations within regions), `vcov = "CR*"`
 requests cluster-robust variance via
-\[[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)\]\[clubSandwich::vcovCR\],
+[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md),
 with the cluster identifier supplied through `cluster`. Three forms are
 accepted:
 
@@ -656,10 +664,6 @@ table_regression(
   cluster = ~region,
   show_columns = c("b", "se", "ci", "p", "ame", "ame_p")
 )
-#> Registered S3 methods overwritten by 'clubSandwich':
-#>   method        from    
-#>   bread.lmerMod merDeriv
-#>   bread.mlm     sandwich
 #> Linear regression: wellbeing_score
 #> 
 #>  Variable        │    B      SE       95% CI        p     AME     p   
@@ -686,7 +690,7 @@ table_regression(
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
 few clusters (Pustejovsky and Tipton 2018; Imbens and Kolesár 2016).
 Coefficient inference uses
-\[[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)\]\[clubSandwich::coef_test\]
+[`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
 with Satterthwaite-corrected degrees of freedom. When AME columns are
 requested, the same Satterthwaite framework is applied to the AME
 contrast via
@@ -698,10 +702,10 @@ in the footer.
 
 `p_adjust` applies a family-wise or false-discovery-rate adjustment to
 the p-values via
-\[[`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html)\]\[stats::p.adjust\].
-The family is the model’s full coefficient set (intercept and reference
-rows excluded); `B` and `AME` are adjusted as independent families
-within the same call. Available methods are the same as in
+[`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). The family
+is the model’s full coefficient set (intercept and reference rows
+excluded); `B` and `AME` are adjusted as independent families within the
+same call. Available methods are the same as in
 [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html): `"none"`
 (default), `"holm"`, `"hochberg"`, `"hommel"`, `"bonferroni"`, `"BH"` /
 `"fdr"`, `"BY"`.
@@ -772,9 +776,10 @@ analyst’s, and the footer makes that choice visible to the reader.
 ## Filtering displayed coefficients
 
 `keep` and `drop` accept regular expressions matched against coefficient
-names (as returned by \[stats::coef()\]). They are mutually exclusive —
-use `keep` to retain only the focal predictors, or `drop` to hide a few
-control variables. Multiple patterns combine with logical OR.
+names (as returned by
+[`stats::coef()`](https://rdrr.io/r/stats/coef.html)). They are mutually
+exclusive — use `keep` to retain only the focal predictors, or `drop` to
+hide a few control variables. Multiple patterns combine with logical OR.
 
 ``` r
 
@@ -1148,12 +1153,16 @@ the link function is fixed. This is the “x-standardization” convention
 `"basic"`, `"smart"`) apply X-only scaling using the same algebra as in
 the `lm` case.
 
-`standardized = "pseudo"` (`glm` only) is the Menard (2004, 2011)
-*fully* standardised coefficient, scaling by `SD(X) / SD(Y*)` where `Y*`
-is the latent variable on the link scale and
-`SD(Y*) = sqrt(var(linear-predictor) + var_link)` with `var_link` = π²/3
-for logit, 1 for probit, π²/6 for cloglog. Defined for binomial
-families; non-binomial returns NA with a `spicy_caveat`:
+`standardized = "pseudo"` (`glm` only) is the latent-scale variant of
+Menard’s (2004, 2011) fully standardised coefficient: `Y*` is the latent
+variable on the link scale, with
+`SD(Y*) = sqrt(var(linear-predictor) + var_link)` and `var_link` = π²/3
+for logit, 1 for probit, π²/6 for cloglog. Numeric predictors scale by
+`SD(X) / SD(Y*)`; factor dummies stay on their 0/1 scale and divide by
+`SD(Y*)` only — the same dummy convention as the other methods, which is
+why the factor rows in the table below are not `B × SD(X) / SD(Y*)`.
+Defined for binomial families; non-binomial returns NA with a
+`spicy_caveat`:
 
 ``` r
 
@@ -1224,7 +1233,7 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 ```
 
 Point estimate and inference are delegated to
-\[[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)\]\[marginaleffects::avg_slopes\].
+[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html).
 Under cluster-robust variance, the Satterthwaite-df handling described
 in the *Robust variance* section applies to `glm` AME as well.
 
@@ -1373,7 +1382,6 @@ table:
 ``` r
 
 library(lme4)
-#> Loading required package: Matrix
 fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 table_regression(fit)
 #> Linear mixed-effects regression: Reaction

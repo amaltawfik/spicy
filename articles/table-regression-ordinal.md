@@ -47,9 +47,10 @@ wrong order. Data read from text files is particularly exposed:
 [`factor()`](https://rdrr.io/r/base/factor.html) defaults to
 alphabetical levels (here `Fair, Good, Poor, Very good`), which would
 silently fit a nonsensical scale. And reversing the order negates every
-coefficient and marginal effect. Every interpretation below hinges on
-knowing the direction of the scale — here worst to best (Long & Freese
-2014).
+coefficient and threshold; the per-category marginal effects keep their
+values, but the category columns — and every directional reading built
+on them — reverse. Every interpretation below hinges on knowing the
+direction of the scale — here worst to best (Long & Freese 2014).
 
 ## The proportional-odds model
 
@@ -137,7 +138,8 @@ Reading the table:
   line.
 - Below the fit-stats rule, the model-fit block reports **N**, two
   pseudo-\\R^2\\ (**McFadden**, the Stata `ologit` default, and
-  **Nagelkerke**, the SPSS PLUM default), and **AIC**. Both compare the
+  **Nagelkerke**, one of the three measures SPSS PLUM prints by default,
+  alongside Cox & Snell and McFadden), and **AIC**. Both compare the
   fitted log-likelihood to the intercept-only model’s, and both round to
   0.00 here: these four predictors explain almost none of the variation
   in self-rated health. This survey model therefore illustrates table
@@ -151,11 +153,15 @@ Reading the table:
 On the logit scale a coefficient is a log cumulative-odds ratio.
 `exponentiate = TRUE` reports **odds ratios** instead, exponentiating
 the estimate and its CI bounds and relabelling the column header
-accordingly. This is link-specific: under `method = "cloglog"` the
-exponentiated coefficient is a **hazard ratio** (the grouped-time
-proportional-hazards reading) and the header and footer relabel to HR;
-under probit or cauchit the exponential has no ratio interpretation, and
-`exponentiate = TRUE` is refused with a clear error.
+accordingly. This is link-specific: under `method = "cloglog"` the table
+reports a **hazard ratio** (the grouped-time proportional-hazards
+reading of Prentice & Gloeckler 1978), and the sign convention matters —
+`polr` and `clm` parametrise the model as `cloglog P(Y ≤ j) = ζ_j − xB`,
+which places the hazard of the grouped event on `−B`, so the HR the
+table displays is `exp(−B)`, not `exp(B)` (a table note discloses this
+next to the HR definition, and the CI bounds are transformed
+accordingly). Under probit or cauchit the exponential has no ratio
+interpretation, and `exponentiate = TRUE` is refused with a clear error.
 
 ``` r
 
@@ -297,8 +303,12 @@ marginaleffects::avg_predictions(fit, by = "smoking")
 
 Smokers’ expected distribution sits lower on the scale than non-smokers’
 — `Very good` 20.9% versus 25.8%, `Fair` 26.1% versus 21.9% — and the
-smoking AME row above is exactly the difference between these two
-profiles. For predicted-probability curves along a continuous predictor,
+smoking AME row above closely tracks the gap between these two profiles.
+The two are not the same estimand: the AME averages the Yes-versus-No
+contrast over the *whole* sample, while these profiles average within
+each observed group, each with its own covariate mix — here they agree
+to three decimals and diverge in the fourth. For predicted-probability
+curves along a continuous predictor,
 [`marginaleffects::plot_predictions()`](https://rdrr.io/pkg/marginaleffects/man/plot_predictions.html)
 plots the same quantities.
 
@@ -343,11 +353,17 @@ than two categories.
 
 ## Cluster-robust standard errors
 
-Ordinal fits honour the cluster-robust `vcov` family (`"CR0"`–`"CR3"`)
-via
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
-Pass the cluster as a formula, a column name, or a vector (see the main
-vignette, *How to specify `cluster`*):
+Ordinal fits accept the cluster-robust `vcov` family (`"CR0"`–`"CR3"`),
+computed by
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+One caveat up front: the CR2 / CR3 small-sample bias-reduction
+adjustments are defined for (generalised) linear models — `clubSandwich`
+has no method for an ordinal MLE — so for `polr` / `clm` all four `CR*`
+labels map to the *same* plain (CR0-type) cluster sandwich, and the
+footer names the estimator `CL` rather than the requested label. Pass
+the cluster as a formula, a column name, or a vector (the three accepted
+forms are detailed in the main vignette’s *Cluster-robust (CR)*
+section):
 
 ``` r
 
@@ -394,9 +410,11 @@ The clustering is applied *consistently*: the `Thresholds` rows and the
 AME columns are reweighted from the same `vcovCL` matrix as the slopes,
 so no row of the table quietly keeps model-based standard errors under a
 cluster-robust footer. Heteroskedasticity-consistent (`HC*`) estimators
-and the `bootstrap` / `jackknife` resamplers are *not* defined for
-ordinal fits and are refused with a clear `spicy_unsupported_vcov` error
-rather than a silent fallback.
+are refused — `HC2` / `HC3` need hat values that an ordinal MLE does not
+have, and the plain `HC0`-type sandwich is deliberately not offered
+without clustering — and the `bootstrap` / `jackknife` resamplers are
+not yet wired for ordinal fits. Both refusals raise a clear
+`spicy_unsupported_vcov` error rather than a silent fallback.
 
 ## Standard errors and confidence intervals
 
@@ -551,8 +569,8 @@ sizes these per-term tests have limited power, and one test per
 predictor invites multiplicity — so a borderline result argues for
 reporting the relaxed fit as a *sensitivity analysis*, not for switching
 automatically. In large samples the opposite failure dominates: the
-tests reject routinely — Long & Freese (2014) report rejection in the
-majority of real applications — while also being sensitive to other
+tests reject routinely — Long & Freese (2014) describe the assumption as
+frequently violated in practice — while also being sensitive to other
 kinds of misspecification, and the freed model’s *predictions* often
 barely differ from the proportional fit’s. When a test rejects, compare
 predicted probabilities across the two fits before restructuring the
@@ -621,11 +639,13 @@ is the same worsening of health the proportional fit expressed as OR =
 nominal term enters the threshold, not the slope. Do not apply the
 earlier location-coefficient sign rules to this block.
 
-Two caveats for the non-proportional terms, both surfaced by the table:
-robust / cluster SEs are **not available** (`sandwich` has no
-estimating-functions method, so a robust `vcov` is refused), and
-`ci_method = "profile"` covers the proportional coefficients only (the
-non-proportional and threshold rows stay Wald).
+Two caveats for the non-proportional terms: robust / cluster SEs are
+**not available** — `sandwich` does ship an `estfun()` method for `clm`,
+but it does not (yet) implement the nominal and scale parts, so no
+cluster sandwich can be formed and `CR*` is refused (the scale section
+below shows the error) — and `ci_method = "profile"` covers the
+proportional coefficients only (the non-proportional and threshold rows
+stay Wald).
 
 ### Scale effects: `scale = ~`
 
@@ -698,9 +718,11 @@ table_regression(clm_scale)
 #> Scale effects: covariate effects on the log standard deviation of the latent response.
 ```
 
-Cluster-robust SEs are not available for scale fits (`sandwich` has no
-estimating-functions method for them), so `CR*` is refused up front with
-a clear `spicy_unsupported_vcov` error:
+Cluster-robust SEs are not available for scale fits: `sandwich`’s
+`estfun()` method for `clm` does not (yet) implement the scale and
+nominal parts (it stops with “estimating functions for scale regression
+not implemented yet”), so no cluster sandwich can be formed and `CR*` is
+refused up front with a `spicy_unsupported_vcov` error:
 
 ``` r
 
@@ -709,6 +731,11 @@ table_regression(clm_scale, vcov = "CR2", cluster = ~region)
 #> ! `vcov = "CR2"` is not available for `clm` models.
 #> ℹ This class supports: classical. Robust standard errors for more model classes are being added; see ?table_regression.
 ```
+
+One wart in the refusal message: it speaks of `clm` models as a class
+and lists only `classical` — read it as applying to this *fit*. A plain
+proportional-odds `clm` (no `scale =` or `nominal =` component) supports
+`CR0`–`CR3` exactly as the `polr` fit in the cluster section above.
 
 ### Choosing an ordinal specification
 
@@ -726,8 +753,10 @@ never plausible.
   vignette](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md).
 - For asymmetric responses and grouped survival times, the **cloglog**
   link (`method = "cloglog"` in `polr`, `link = "cloglog"` in `clm`)
-  replaces the odds-ratio reading with a hazard-ratio one, connecting
-  the link menu above to a modelling rationale.
+  replaces the odds-ratio reading with a hazard-ratio one — displayed as
+  `exp(−B)` under the cumulative parametrisation, as explained in the
+  exponentiate section above — connecting the link menu to a modelling
+  rationale.
 
 ## Several models side by side
 
@@ -817,7 +846,7 @@ head(table_regression(fit, show_columns = c("b", "ame"), output = "data.frame"))
 
 ``` r
 
-table_regression(fit, show_columns = c("b", "ame"), output = "gt")
+pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt"))
 ```
 
 [TABLE]
@@ -857,6 +886,9 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 
 - Agresti, A. (2010). *Analysis of Ordinal Categorical Data* (2nd ed.).
   Wiley.
+- Bender, R., & Grouven, U. (1997). Ordinal logistic regression in
+  medical research. *Journal of the Royal College of Physicians of
+  London*, 31(5), 546–551.
 - Brant, R. (1990). Assessing proportionality in the proportional odds
   model for ordinal logistic regression. *Biometrics*, 46(4), 1171–1178.
 - Long, J. S., & Freese, J. (2014). *Regression Models for Categorical
@@ -868,5 +900,5 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
   interpret adjusted predictions and marginal effects. *The Stata
   Journal*, 12(2), 308–331.
 - Arel-Bundock, V., Greifer, N., & Heiss, A. (2024). How to Interpret
-  Statistical Models Using marginaleffects in R and Python. *Journal of
-  Statistical Software*.
+  Statistical Models Using marginaleffects for R and Python. *Journal of
+  Statistical Software*, 111(9), 1–32.

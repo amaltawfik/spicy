@@ -36,7 +36,7 @@ A data frame with one row per supported engine and columns `family`,
 |----|----|----|----|----|----|
 | Family | Class | Engine | AME | Exponentiate | Blocks |
 | Linear and generalized linear | `lm` | [`stats::lm()`](https://rdrr.io/r/stats/lm.html) | yes | \- | \- |
-| Linear and generalized linear | `glm` | [`stats::glm()`](https://rdrr.io/r/stats/glm.html) | yes | OR / IRR / RR (link) | \- |
+| Linear and generalized linear | `glm` | [`stats::glm()`](https://rdrr.io/r/stats/glm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
 | Linear and generalized linear | `negbin` | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | yes | IRR | \- |
 | Linear and generalized linear | `rlm` | [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) | yes | \- | \- |
 | Linear and generalized linear | `nls` | [`stats::nls()`](https://rdrr.io/r/stats/nls.html) | no | \- | \- |
@@ -51,7 +51,7 @@ A data frame with one row per supported engine and columns `family`,
 | Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes | link-dependent (IRR for count families) | Random effects; Zero-inflation; Dispersion |
 | Mixed effects | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 | Mixed effects | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
-| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR (link) | \- |
+| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
 | Ordinal | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
 | Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
@@ -150,7 +150,7 @@ coefficients join the `p_adjust` family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). `CR*` for `pscl` fits covers both
 components via
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
 Opt out with `show_components = FALSE`.
 
 ## Categorical outcomes
@@ -168,7 +168,7 @@ working residuals. `mlogit` renders per-alternative rows; AME is refused
 (no `slopes()` method exists for its data format). `CR*` is available
 with one cluster value per choice situation, and `n` counts choice
 situations; `HC*` is refused
-([`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+([`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
 mis-scales the meat for mlogit's per-chooser score structure).
 
 ## Survival models
@@ -317,7 +317,7 @@ table_regression_models()
 #> 36                                                            brms::brm()
 #>                        ame                            exponentiate
 #> 1                      yes                                       -
-#> 2                      yes                    OR / IRR / RR (link)
+#> 2                      yes          OR / IRR / RR / MR / HR (link)
 #> 3                      yes                                     IRR
 #> 4                      yes                                       -
 #> 5                       no                                       -
@@ -332,7 +332,7 @@ table_regression_models()
 #> 14                     yes link-dependent (IRR for count families)
 #> 15                     yes                                       -
 #> 16                     yes                                       -
-#> 17                     yes                    OR / IRR / RR (link)
+#> 17                     yes          OR / IRR / RR / MR / HR (link)
 #> 18            per category                              OR (logit)
 #> 19            per category                              OR (logit)
 #> 20             per outcome                                      OR

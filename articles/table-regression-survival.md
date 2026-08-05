@@ -602,7 +602,7 @@ table_regression(cx, exponentiate = TRUE, output = "data.frame")
 
 ``` r
 
-table_regression(cx, exponentiate = TRUE, output = "gt")
+pkgdown_dark_gt(table_regression(cx, exponentiate = TRUE, output = "gt"))
 ```
 
 [TABLE]

@@ -29,7 +29,7 @@ to get it as a data frame.
 | Family | Class | Engine | AME | Exponentiate | Blocks |
 |:---|:---|:---|:---|:---|:---|
 | Linear and generalized linear | `lm` | [`stats::lm()`](https://rdrr.io/r/stats/lm.html) | yes | \- | \- |
-|  | `glm` | [`stats::glm()`](https://rdrr.io/r/stats/glm.html) | yes | OR / IRR / RR (link) | \- |
+|  | `glm` | [`stats::glm()`](https://rdrr.io/r/stats/glm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
 |  | `negbin` | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | yes | IRR | \- |
 |  | `rlm` | [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) | yes | \- | \- |
 |  | `nls` | [`stats::nls()`](https://rdrr.io/r/stats/nls.html) | no | \- | \- |
@@ -44,7 +44,7 @@ to get it as a data frame.
 |  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes | link-dependent (IRR for count families) | Random effects; Zero-inflation; Dispersion |
 |  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 |  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
-| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR (link) | \- |
+| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
 |  | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
 | Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
@@ -98,32 +98,37 @@ field-standard backend – or a clear refusal.
 **Robust and cluster-robust standard errors** (`vcov`, `cluster`). `lm`
 and `glm` take `HC0`–`HC5` (`sandwich`) and cluster-robust `CR0`–`CR3`
 (`clubSandwich`, bias-reduced with Satterthwaite df), plus `"bootstrap"`
-/ `"jackknife"` resampling estimators. Among the mixed engines, `lmer`,
-[`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) and `glmmTMB` take
-`CR*` via `clubSandwich` (for `glmmTMB` the sandwich covers the
-conditional part only, and the footer says so); `glmer` and `gls` are
-model-based only – `clubSandwich` has no working backend for them.
-Ordinal models take `CR0`–`CR3` but no `HC*`, and the cut-point
-thresholds are reweighted from the same clustered vcov (a `clm` with a
-scale or nominal partial-proportional-odds component is model-based
-only). `multinom` takes `CR*` (one cluster value per observation) and
-`mlogit` takes `CR*` (one per choice situation) – both refuse `HC*`,
-which has no valid working-residual form for multi-equation models.
-Quantile regression (`rq`) uses its own estimator family – `"classical"`
-resolves to the robust `nid` sandwich, `iid` / `ker` / `rank` are
-opt-ins, and clustering goes through its native wild gradient bootstrap
-(`vcov = "bootstrap"` + `cluster`; `HC*` / `CR*` are refused). Cox
-models use the Lin-Wei grouped-dfbeta sandwich, and the `rms` fits take
-`CR*` via [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html)
-(refit with `x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and
-`betareg` take `CR*` via
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
+/ `"jackknife"` resampling estimators. Among the mixed engines, `lmer`
+and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) take `CR*` via
+`clubSandwich`; `glmer`, `glmmTMB` and `gls` are model-based only –
+`clubSandwich` has no working backend for `glmer` or `glmmTMB`, and its
+`gls` backend is not yet wired and validated in spicy. Ordinal models
+take `CR0`–`CR3` but no `HC*`, and the cut-point thresholds are
+reweighted from the same clustered vcov (a `clm` with a scale or nominal
+partial-proportional-odds component is model-based only). `multinom`
+takes `CR*` (one cluster value per observation) and `mlogit` takes `CR*`
+(one per choice situation) – both refuse `HC*`: `multinom` has no
+working-residual form for a multi-equation model, and for `mlogit`,
+[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+computes a result but silently mis-scales the meat for its per-chooser
+score structure. Quantile regression (`rq`) uses its own estimator
+family – `"classical"` resolves to the robust `nid` sandwich, `iid` /
+`ker` / `rank` are opt-ins, and clustering goes through its native wild
+gradient bootstrap (`vcov = "bootstrap"` + `cluster`; `HC*` / `CR*` are
+refused). Cox models use the Lin-Wei grouped-dfbeta sandwich, and the
+`rms` fits take `CR*` via
+[`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
+`x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and `betareg` take `CR*`
+via
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html);
 `pscl` two-part fits cluster both components. `estimatr` fits keep their
 own robust SEs, and `fixest` fits keep the estimator they were computed
-with (the footer carries fixest’s own label – IID, clustered,
-Newey-West, … – and spicy’s `HC*` / `CR*` tokens are refused for them);
-`svyglm` is design-based by default and additionally accepts
-design-aware `CR0`–`CR3`. GEE fits
+with (the footer carries fixest’s own label – clustered, Newey-West,
+Conley, …; fixest’s “IID” is normalised to “Classical” – and spicy’s
+`HC*` / `CR*` tokens are refused for them); `svyglm` is design-based
+(Taylor / replicate) and refuses `HC*` / `CR*` – the design variance is
+already the robust variance, and clustering belongs in the design itself
+(`survey::svydesign(ids = )`). GEE fits
 ([`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html)) are
 robust by construction: the sandwich SEs the fit computed over its own
 `id =` clusters are the displayed inference, so spicy’s `HC*` / `CR*`
@@ -140,9 +145,10 @@ engines (`lmer` / `glmer` / `glmmTMB` /
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)), and fixed-effects
 Bayesian fits – `stan_glm`-style models and standard-formula `brm()`
 models – where `"posthoc"`, `"basic"` and `"smart"` are exact affine
-rescales of the posterior draws. Other classes – including multilevel
-Bayesian fits and brms formulas with distributional or special terms –
-refuse with a hint to standardize predictors before fitting.
+rescales of the posterior draws. Other classes refuse: the Bayesian
+refusals (multilevel fits, brms formulas with distributional or special
+terms) hint to standardize predictors before fitting, and the
+frequentist ones point to the AME columns instead.
 
 **Confidence intervals** (`ci_method`). Wald everywhere by default;
 `"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
@@ -241,7 +247,9 @@ g-computation for `coxph` and `survreg` fits. See
 
 **Survey-weighted.**
 [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html):
-design-based inference, weighted and unweighted n.
+design-based inference; the unweighted n is a default fit statistic and
+the sum of design weights is available as
+`show_fit_stats = "weighted_nobs"`.
 
 **Additive, proportions, selection.**
 [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()`,

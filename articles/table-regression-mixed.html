@@ -225,8 +225,9 @@ design</strong> — see the next section.</li>
 <strong>Nakagawa marginal / conditional R²</strong> — the variance
 explained by the fixed effects alone versus fixed and random together
 (Nakagawa &amp; Schielzeth 2013). The gap between the two (0.28 vs 0.80
-here) is itself a summary of how much the grouping structure
-matters.</li>
+here) is itself a summary of how much the grouping structure matters.
+AIC and BIC complete the block — read them under the REML/ML rule
+explained in the model-building sequence below.</li>
 <li>The footer closes with the <strong>likelihood-ratio test of the
 whole random part</strong> against the same model without random
 effects, referred to a <strong>chi-bar-squared</strong> mixture
@@ -892,17 +893,18 @@ footer’s chi-bar-squared line answers one question only: <em>does this
 model need its random part at all?</em> — the fit against a plain linear
 regression. Neither footer compares the two columns to each other. That
 comparison — <em>does the slope earn its place on top of the
-intercept?</em> — is the per-term test of the previous section:
-<code>re_test = "lrt"</code> on the slope model refits exactly the
-intercept-only model of column 1 and refers the REML deviance difference
-(42.8) to the 50:50 mixture of χ²(1) and χ²(2), p ≈ 3 × 10⁻¹⁰ — the
-textbook procedure for retaining a random slope (Snijders &amp; Bosker
-2012, §6.2; Stram &amp; Lee 1994). AIC and BIC agree (1794.5 → 1755.6;
-1807.2 → 1774.8). For hierarchies that grow the <em>fixed</em> part
-instead, <code>nested = TRUE</code> adds chi-squared, AIC, and BIC
-change rows — an ML-refit test with a plain χ² reference, appropriate
-there but conservative for random-structure changes, which is why the
-slope decision belongs to <code>re_test</code>.</p>
+intercept?</em> — is the per-term test of <em>Testing individual
+components</em> above: <code>re_test = "lrt"</code> on the slope model
+refits exactly the intercept-only model of column 1 and refers the REML
+deviance difference (42.8) to the 50:50 mixture of χ²(1) and χ²(2), p ≈
+3 × 10⁻¹⁰ — the textbook procedure for retaining a random slope
+(Snijders &amp; Bosker 2012, §6.2; Stram &amp; Lee 1994). AIC and BIC
+agree (1794.5 → 1755.6; 1807.2 → 1774.8). For hierarchies that grow the
+<em>fixed</em> part instead, <code>nested = TRUE</code> adds
+chi-squared, AIC, and BIC change rows — an ML-refit test with a plain χ²
+reference, appropriate there but conservative for random-structure
+changes, which is why the slope decision belongs to
+<code>re_test</code>.</p>
 <p><strong>Reading the two R² rows — without over-reading them.</strong>
 The Nakagawa pair is descriptive, and each member answers a different
 question. <em>Marginal</em> R² is the share of variance explained by the
@@ -1040,8 +1042,10 @@ as for <code>glm</code>, delegated to
 <li>
 <code>glmer</code> / <code>glmmTMB</code> Poisson: <strong>count
 scale</strong> (units of the outcome), not log-rate;</li>
-<li>Gaussian fits (identity link): the AME equals the <code>B</code>
-coefficient — the column is filled but redundant.</li>
+<li>Gaussian fits (identity link): for additive terms the AME equals the
+<code>B</code> coefficient — the column is filled but redundant. Under
+interactions or inline transforms it becomes the average total
+derivative and the two differ.</li>
 </ul>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
@@ -1238,40 +1242,27 @@ vignette; here is the contrast itself, in one table:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression comparison: outcome</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                Population-averaged         Subject-specific    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ────────────────────────────  ───────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>   OR       95% CI        p      OR       95% CI     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼─────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>   0.31  [0.17,  0.55]  &lt;.001    0.14  [0.05,  0.34] </span></span>
-<span><span class="co">#&gt;  treat:                  <span style="color: #9E9E9E;">│</span>                                                     </span></span>
-<span><span class="co">#&gt;    P (ref.)              <span style="color: #9E9E9E;">│</span>    –          –         –        –          –       </span></span>
-<span><span class="co">#&gt;    A                     <span style="color: #9E9E9E;">│</span>   3.48  [1.83,  6.62]  &lt;.001    7.79  [2.74, 22.14] </span></span>
-<span><span class="co">#&gt;  baseline                <span style="color: #9E9E9E;">│</span>   7.31  [3.89, 13.75]  &lt;.001   26.57  [8.40, 84.05] </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:         <span style="color: #9E9E9E;">│</span>                                                     </span></span>
-<span><span class="co">#&gt;    σ subject (Intercept) <span style="color: #9E9E9E;">│</span>                                 1.98  [1.45,  2.39] </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span> 444                           444                   </span></span>
-<span><span class="co">#&gt;  N (subject)             <span style="color: #9E9E9E;">│</span> 111                           111                   </span></span>
-<span><span class="co">#&gt;  ICC                     <span style="color: #9E9E9E;">│</span>    –                            0.54                </span></span>
-<span><span class="co">#&gt;  R² (marginal)           <span style="color: #9E9E9E;">│</span>    –                            0.34                </span></span>
-<span><span class="co">#&gt;  R² (conditional)        <span style="color: #9E9E9E;">│</span>    –                            0.70                </span></span>
-<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span>    –                          447.7                 </span></span>
-<span><span class="co">#&gt;  BIC                     <span style="color: #9E9E9E;">│</span>    –                          464.1                 </span></span>
-<span><span class="co">#&gt;  Max cluster size        <span style="color: #9E9E9E;">│</span>   4                              –                  </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                            Subj… </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ───── </span></span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼───────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt;  treat:                  <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;    P (ref.)              <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    A                     <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt;  baseline                <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Random effects:         <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;    σ subject (Intercept) <span style="color: #9E9E9E;">│</span>  –    </span></span>
+<span><span class="co">#&gt;                                Population-averaged             Subject-specific       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ────────────────────────────  ──────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>   OR       95% CI        p      OR       95% CI        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>   0.31  [0.17,  0.55]  &lt;.001    0.14  [0.05,  0.34]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  treat:                  <span style="color: #9E9E9E;">│</span>                                                            </span></span>
+<span><span class="co">#&gt;    P (ref.)              <span style="color: #9E9E9E;">│</span>    –          –         –        –          –         –    </span></span>
+<span><span class="co">#&gt;    A                     <span style="color: #9E9E9E;">│</span>   3.48  [1.83,  6.62]  &lt;.001    7.79  [2.74, 22.14]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  baseline                <span style="color: #9E9E9E;">│</span>   7.31  [3.89, 13.75]  &lt;.001   26.57  [8.40, 84.05]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Random effects:         <span style="color: #9E9E9E;">│</span>                                                            </span></span>
+<span><span class="co">#&gt;    σ subject (Intercept) <span style="color: #9E9E9E;">│</span>                                 1.98  [1.45,  2.39]   –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span> 444                           444                          </span></span>
+<span><span class="co">#&gt;  N (subject)             <span style="color: #9E9E9E;">│</span> 111                           111                          </span></span>
+<span><span class="co">#&gt;  ICC                     <span style="color: #9E9E9E;">│</span>    –                            0.54                       </span></span>
+<span><span class="co">#&gt;  R² (marginal)           <span style="color: #9E9E9E;">│</span>    –                            0.34                       </span></span>
+<span><span class="co">#&gt;  R² (conditional)        <span style="color: #9E9E9E;">│</span>    –                            0.70                       </span></span>
+<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span>    –                          447.7                        </span></span>
+<span><span class="co">#&gt;  BIC                     <span style="color: #9E9E9E;">│</span>    –                          464.1                        </span></span>
+<span><span class="co">#&gt;  Max cluster size        <span style="color: #9E9E9E;">│</span>   4                              –                         </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: population-averaged logistic regression (GEE); Model 2: logistic mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
@@ -1290,8 +1281,8 @@ accordingly farther from 1.</p>
 <div class="section level2">
 <h2 id="cluster-robust-and-other-variance-estimators">Cluster-robust and other variance estimators<a class="anchor" aria-label="anchor" href="#cluster-robust-and-other-variance-estimators"></a>
 </h2>
-<p>Mixed fits honour the cluster-robust family
-(<code>"CR0"</code>–<code>"CR3"</code>) through
+<p><code>lmer</code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> fits honour the
+cluster-robust family (<code>"CR0"</code>–<code>"CR3"</code>) through
 <code>clubSandwich</code>, with Satterthwaite small-sample degrees of
 freedom computed from the robust covariance — the footer attributes them
 accordingly. Reach for <code>CR*</code> when you suspect the
@@ -1326,10 +1317,9 @@ dependence:</p>
 rather than silently ignored: <code>HC*</code> (a single-level estimator
 whose sandwich assumes independent observations — the very dependence
 the random effects exist to model; use <code>CR*</code> instead),
-<code>CR*</code> on <code>glmer</code> (no <code>clubSandwich</code>
-method), and the resampling estimators. For <code>glmmTMB</code>,
-<code>CR*</code> covers the conditional component only, and the footer
-discloses it.</p>
+<code>CR*</code> on <code>glmer</code> or <code>glmmTMB</code> (no
+<code>clubSandwich</code> method for either), and the resampling
+estimators.</p>
 </div>
 <div class="section level2">
 <h2 id="standardized-coefficients">Standardized coefficients<a class="anchor" aria-label="anchor" href="#standardized-coefficients"></a>
@@ -1395,7 +1385,7 @@ the random-effects block carries through to every format.</p>
 <span><span class="co">#&gt; 7                    σ (Residual)   25.59 1.51 [ 22.44,  28.39]  –   </span></span>
 <span><span class="co">#&gt; 8                               n  180</span></span></code></pre></div>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div id="ijvoequvti" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#ijvoequvti table { font-family: system-ui, ‘Segoe UI’,
 Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
@@ -1548,9 +1538,13 @@ tabular-nums; }</p>
 <p>#ijvoequvti .gt_indent_5 { text-indent: 25px; }</p>
 <p>#ijvoequvti .katex-display { display: inline-flex !important;
 margin-bottom: 0.75em !important; }</p>
-#ijvoequvti div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+<p>#ijvoequvti div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
 div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
-!important; } </style></p>
+!important; }</p>
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title, .gt_subtitle,
+.gt_sourcenotes, .gt_sourcenote { background-color: transparent
+!important; color: currentColor !important; } </style></p>
 <div class="spicy-gt-outer" style="text-align: center;">
 <div class="spicy-gt-wrap" style="display: inline-block; max-width: 100%; text-align: left; vertical-align: top;">
 <style>.spicy-gt-outer th[id^="model_span_"] { position: relative; }.spicy-gt-outer th[id^="model_span_"]::after { content: ""; position: absolute; left: 0.5em; right: 0.5em; bottom: 0; border-bottom: 1px solid #333333; }.spicy-gt-outer .gt_col_headings.gt_spanner_row, .spicy-gt-outer .gt_spanner_row { border-bottom-style: none !important; border-bottom-width: 0 !important; }.spicy-gt-outer .gt_col_heading { border-bottom: 1px solid #333333 !important; }.spicy-gt-outer .gt_table tbody .gt_row { border-top-width: 0 !important; }.spicy-gt-outer .gt_column_spanner { border-bottom-width: 0 !important; border-bottom-color: transparent !important; }</style>

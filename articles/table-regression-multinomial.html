@@ -184,9 +184,10 @@ does set which contrasts the table displays — and contrasts against a
 well-populated category are precisely estimated, which is why Stata’s
 <code>mlogit</code> defaults to the most frequent outcome.
 <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom()</a></code> uses the factor’s first level — here
-<code>Employed</code>, which is also the most frequent, so R’s
-positional default coincides with the frequency-based choice: large, so
-the displayed contrasts are precise, and substantively meaningful.</p>
+<code>Employed</code>. Since <code>Employed</code> is also the modal
+category, R’s positional default coincides with the frequency-based
+choice: the displayed contrasts are precisely estimated, and the
+benchmark is substantively meaningful.</p>
 </div>
 <div class="section level2">
 <h2 id="basic-table">Basic table<a class="anchor" aria-label="anchor" href="#basic-table"></a>
@@ -254,12 +255,26 @@ matching <code><a href="https://rdrr.io/r/base/summary.html" class="external-lin
 and Nagelkerke pseudo-R²</strong>, and <strong>AIC</strong>, once, under
 the first group — they belong to the model, not to an equation.</li>
 </ul>
-<p>Before reading any cell, the whole model earns its keep: against the
-intercept-only fit, the likelihood-ratio chi-squared is 41.9 on 12
-degrees of freedom (p &lt; .001) — the test Stata prints in its
-<code>mlogit</code> header and the first number Long &amp; Freese read.
-The printed <code>R² (McFadden)</code> row, 0.02 — precisely 1 −
-(−1242.9)/(−1263.8) = 0.017 — is a comparative index, not a share of
+<p>Before reading any cell, the whole model must earn its keep: the
+joint likelihood-ratio test against the intercept-only fit — the test
+Stata prints in its <code>mlogit</code> header and the first number Long
+&amp; Freese read. In R it is one <code><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova()</a></code> call away
+(fitting the null on <code>model.frame(fit)</code> guarantees the same
+estimation sample):</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom</a></span><span class="op">(</span><span class="va">employment_status</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>,</span>
+<span>                 trace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova</a></span><span class="op">(</span><span class="va">fit0</span>, <span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                   Model Resid. df Resid. Dev   Test    Df LR stat.     Pr(Chi)</span></span>
+<span><span class="co">#&gt; 1                     1      3597   2527.696           NA       NA          NA</span></span>
+<span><span class="co">#&gt; 2 age + sex + education      3585   2485.786 1 vs 2    12 41.90957 3.44925e-05</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>full <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>, null <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik</a></span><span class="op">(</span><span class="va">fit0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      full      null </span></span>
+<span><span class="co">#&gt; -1242.893 -1263.848</span></span></code></pre></div>
+<p>The likelihood-ratio chi-squared is 41.9 on 12 degrees of freedom (p
+&lt; .001). The two log-likelihoods also decompose the table’s
+<code>R² (McFadden)</code> row: 0.02 is precisely 1 −
+(−1242.9)/(−1263.8) = 0.017 — a comparative index, not a share of
 explained variance (Long &amp; Freese 2014); the contrast between the
 tiny value and the decisive test is exactly why it should not be read as
 one.</p>
@@ -269,16 +284,17 @@ errors</strong> (<code>vcov = "CR0"</code>–<code>"CR3"</code> with
 <code>cluster = ~id</code>, one cluster value per observation; requires
 sandwich ≥ 3.1-2, whose new <code>estfun()</code> method unlocked the
 cluster sandwich) — and the AME columns honour the same estimator.
-Heteroskedasticity-robust <code>HC*</code> remains refused with an
-explanatory error: a multi-equation model has no working residuals, so
-no HC sandwich exists to compute.</p>
+Heteroskedasticity-robust <code>HC*</code> remains refused — a
+multi-equation model has no working residuals, so no HC sandwich exists
+to compute; the error lists the estimators this class does support, and
+the rationale is documented in <code><a href="../reference/table_regression.html">?table_regression</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="odds-ratios-exponentiate-true">Odds ratios: <code>exponentiate = TRUE</code><a class="anchor" aria-label="anchor" href="#odds-ratios-exponentiate-true"></a>
 </h2>
 <p><code>exponentiate = TRUE</code> puts the estimates and CI bounds on
 the ratio scale:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multinomial logistic regression: employment_status</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -331,7 +347,7 @@ generalizes from binary logistic regression.</p>
 refit with another baseline and it is the same model, reparameterized —
 same likelihood, same AIC, same fitted probabilities; only the
 comparisons displayed change.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="va">d</span></span>
 <span><span class="va">d2</span><span class="op">$</span><span class="va">employment_status</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html" class="external-link">relevel</a></span><span class="op">(</span><span class="va">d2</span><span class="op">$</span><span class="va">employment_status</span>, ref <span class="op">=</span> <span class="st">"Unemployed"</span><span class="op">)</span></span>
 <span><span class="va">fit_unemp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom</a></span><span class="op">(</span><span class="va">employment_status</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>,</span>
@@ -384,7 +400,7 @@ answers the question a reviewer asks first. The baseline-invariant
 answer is the <strong>joint likelihood-ratio test</strong> that all
 <span class="math inline">\(J-1\)</span> coefficients of a predictor are
 zero — the first testing step of Long &amp; Freese (2014):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_noeduc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom</a></span><span class="op">(</span><span class="va">employment_status</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>                       trace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova</a></span><span class="op">(</span><span class="va">fit_noeduc</span>, <span class="va">fit</span><span class="op">)</span></span>
@@ -394,12 +410,26 @@ zero — the first testing step of Long &amp; Freese (2014):</p>
 <p>Education matters decisively — chi-squared 36.29 on 6 degrees of
 freedom (2 parameters in each of 3 equations), p &lt; .001 — even though
 its <code>Student</code>-equation cells looked unconvincing one table
-ago. The trap runs in both directions: sex shows one tempting cell
-(<code>Unemployed</code>, p = .172) but is jointly null (chi-squared
-2.26 on 3 df, p = .520). Individually weak cells can be jointly
-overwhelming, and one suggestive cell among <span class="math inline">\(J-1\)</span> can be noise.
-<code>car::Anova(fit)</code> runs this test for every predictor in one
-call — the equivalent of Stata’s <code>mlogtest, lr</code>.</p>
+ago. <code>car::Anova(fit)</code> runs this test for every predictor in
+one call — the equivalent of Stata’s <code>mlogtest, lr</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html" class="external-link">Anova</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Analysis of Deviance Table (Type II tests)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Response: employment_status</span></span>
+<span><span class="co">#&gt;           LR Chisq Df Pr(&gt;Chisq)    </span></span>
+<span><span class="co">#&gt; age          3.305  3     0.3469    </span></span>
+<span><span class="co">#&gt; sex          2.261  3     0.5200    </span></span>
+<span><span class="co">#&gt; education   36.293  6  2.418e-06 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
+<p>The <code>education</code> line reproduces the 36.29 above, and the
+other lines show the trap runs in both directions: sex shows one
+tempting cell (<code>Unemployed</code>, p = .172) but is jointly null
+(chi-squared 2.26 on 3 df, p = .520), and age fares no better (3.31 on 3
+df, p = .347). Individually weak cells can be jointly overwhelming, and
+one suggestive cell among <span class="math inline">\(J-1\)</span> can
+be noise.</p>
 </div>
 <div class="section level2">
 <h2 id="can-two-categories-be-combined">Can two categories be combined?<a class="anchor" aria-label="anchor" href="#can-two-categories-be-combined"></a>
@@ -410,7 +440,7 @@ Freese 2014): if no covariate separates outcomes <span class="math inline">\(m\)
 the model may be estimating noise between them. The likelihood-ratio
 version restricts the sample to the two categories and tests a binary
 logit against the intercept-only model (Cramer &amp; Ridder 1991):</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">employment_status</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Student"</span>, <span class="st">"Inactive"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">sub</span><span class="op">$</span><span class="va">employment_status</span> <span class="op">==</span> <span class="st">"Student"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">sub</span><span class="op">)</span>,</span>
@@ -424,12 +454,15 @@ logit against the intercept-only model (Cramer &amp; Ridder 1991):</p>
 <span><span class="co">#&gt; 2       259     357.20  4   6.9505   0.1385</span></span></code></pre></div>
 <p><code>Student</code> and <code>Inactive</code> are not separated —
 chi-squared 6.95 on 4 degrees of freedom, p = .139. Running all six
-pairs tells the honest story of these data: only <code>Unemployed</code>
-is sharply distinguished from the rest (versus <code>Employed</code>,
-chi-squared 33.6; versus <code>Student</code>, 22.6; both p &lt; .001),
-while <code>Employed</code>, <code>Student</code>, and
-<code>Inactive</code> are not mutually separated by age, sex, and
-education. Two cautions close the step: failing to reject does not prove
+pairs tells the honest story of these data: <code>Unemployed</code> is
+sharply distinguished from <code>Employed</code> (chi-squared 33.6) and
+from <code>Student</code> (22.6), both p &lt; .001, but only marginally
+from <code>Inactive</code> (8.49 on 4 df, p = .075), while
+<code>Employed</code>, <code>Student</code>, and <code>Inactive</code>
+are not mutually separated by age, sex, and education (the two pairs not
+yet shown: <code>Employed</code> versus <code>Student</code>, p = .293;
+<code>Employed</code> versus <code>Inactive</code>, p = .561). Two
+cautions close the step: failing to reject does not prove
 interchangeability — the smaller cells give the test little power — and
 combining is ultimately a substantive decision: employment states remain
 distinct constructs even when these covariates do not separate them.</p>
@@ -452,7 +485,7 @@ mass.</p>
 <p>The probability-scale summary is the per-category <strong>average
 marginal effect</strong> (AME): one AME column per outcome category,
 next to that category’s coefficients:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multinomial logistic regression: employment_status</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -511,7 +544,7 @@ interpreting a multinomial model from its coefficient signs alone.</li>
 device of Long &amp; Freese (2014) is the <strong>predicted
 probabilities</strong> those changes move between, evaluated at named
 profiles:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">profiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  education <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">education</span><span class="op">)</span>,</span>
 <span>  sex       <span class="op">=</span> <span class="st">"Female"</span>,</span>
@@ -547,7 +580,7 @@ developed with its caveats in
 multinomial-specific: each freed coding costs one parameter <strong>per
 equation</strong>, so the test’s degrees of freedom multiply by the
 number of non-reference outcomes:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span><span class="op">$</span><span class="va">educ_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">education</span><span class="op">)</span>   <span class="co"># 1 / 2 / 3</span></span>
 <span><span class="va">fit_lin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom</a></span><span class="op">(</span><span class="va">employment_status</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">educ_score</span>,</span>
 <span>                    data <span class="op">=</span> <span class="va">d</span>, trace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
@@ -640,7 +673,7 @@ one table. The classic <code>Fishing</code> data: 1182 anglers choose
 among four modes; <code>price</code> and <code>catch</code> vary by
 alternative, while <code>income_k</code> (income in thousands of
 dollars) describes the angler:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cran.r-project.org/package=mlogit" class="external-link">mlogit</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Fishing"</span>, package <span class="op">=</span> <span class="st">"mlogit"</span><span class="op">)</span></span>
 <span><span class="va">Fishing</span><span class="op">$</span><span class="va">income_k</span> <span class="op">&lt;-</span> <span class="va">Fishing</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1000</span></span>
@@ -697,7 +730,7 @@ that is the model’s sample size.</p>
 for its one-row-per-choice structure); the robust <code>vcov</code>
 family is <code>CR0</code>–<code>CR3</code> only, with one cluster value
 per choice situation, not per long-format row; and <code>HC*</code> is
-refused outright — <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
+refused outright — <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
 sandwich for mlogit’s per-choice-situation scores.</p>
 </div>
 <div class="section level2">
@@ -709,7 +742,7 @@ models the column groups are needed for the <em>models</em>, so the
 table falls back to the one-row-per-comparison layout
 (<code>Student: Tertiary</code> rows), as does
 <code>nested = TRUE</code> above:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_min</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom</a></span><span class="op">(</span><span class="va">employment_status</span> <span class="op">~</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">d</span>, trace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Unadjusted <span class="op">=</span> <span class="va">fit_min</span>, Adjusted <span class="op">=</span> <span class="va">fit</span><span class="op">)</span>,</span>
 <span>                 exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
@@ -755,11 +788,13 @@ table falls back to the one-row-per-comparison layout
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Reference outcome: Employed.</span></span></span></code></pre></div>
-<p>Adjustment changes nothing here: the education block is identical to
-two decimals across the columns — <code>Tertiary</code> is OR 0.29 in
-the <code>Unemployed</code>-versus-<code>Employed</code> equation both
-times — because age and sex, at best weakly related to employment status
-in this sample (their smallest p is .097), have nothing to confound the
+<p>Adjustment barely moves anything here: five of the six education odds
+ratios agree to two decimals across the columns, and the sixth shifts by
+a single rounding step (<code>Student: Tertiary</code>, 1.14 to 1.15) —
+<code>Tertiary</code> is OR 0.29 in the
+<code>Unemployed</code>-versus-<code>Employed</code> equation both times
+— because age and sex, at best weakly related to employment status in
+this sample (their smallest p is .097), have nothing to confound the
 education gradient with.</p>
 </div>
 <div class="section level2">
@@ -770,7 +805,7 @@ renders as a raw data frame, a long broom-style tibble, or — with the
 corresponding Suggests package — a rich <code>gt</code>,
 <code>flextable</code>, <code>tinytable</code>, Excel, or Word
 table:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          Variable Student: OR Student: SE Student: p Unemployed: OR Unemployed: SE Unemployed: p Inactive: OR Inactive: SE</span></span>
 <span><span class="co">#&gt; 1     (Intercept)        0.24        0.09      &lt;.001           0.49           0.16          .030         0.17         0.07</span></span>
@@ -786,8 +821,8 @@ table:</p>
 <span><span class="co">#&gt; 4        –   </span></span>
 <span><span class="co">#&gt; 5        .464</span></span>
 <span><span class="co">#&gt; 6</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
 Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
@@ -940,9 +975,13 @@ tabular-nums; }</p>
 <p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
 <p>#mwlefoodfi .katex-display { display: inline-flex !important;
 margin-bottom: 0.75em !important; }</p>
-#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+<p>#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
 div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
-!important; } </style></p>
+!important; }</p>
+.gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title, .gt_subtitle,
+.gt_sourcenotes, .gt_sourcenote { background-color: transparent
+!important; color: currentColor !important; } </style></p>
 <div class="spicy-gt-outer" style="text-align: center;">
 <div class="spicy-gt-wrap" style="display: inline-block; max-width: 100%; text-align: left; vertical-align: top;">
 <style>.spicy-gt-outer th[id^="model_span_"] { position: relative; }.spicy-gt-outer th[id^="model_span_"]::after { content: ""; position: absolute; left: 0.5em; right: 0.5em; bottom: 0; border-bottom: 1px solid #333333; }.spicy-gt-outer .gt_col_headings.gt_spanner_row, .spicy-gt-outer .gt_spanner_row { border-bottom-style: none !important; border-bottom-width: 0 !important; }.spicy-gt-outer .gt_col_heading { border-bottom: 1px solid #333333 !important; }.spicy-gt-outer .gt_table tbody .gt_row { border-top-width: 0 !important; }.spicy-gt-outer .gt_column_spanner { border-bottom-width: 0 !important; border-bottom-color: transparent !important; }</style>
@@ -1381,7 +1420,7 @@ always returns the long frame, one row per
 <code>(term, estimate_type)</code>, whatever the display layout — the
 per-outcome structure is carried in the term labels
 (<code>"Student: age"</code>), and AME rows cover all <span class="math inline">\(J\)</span> categories including the reference:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 31 × 16</span></span></span>
 <span><span class="co">#&gt;    model_id outcome      outcome_level term  estimate_type estimate std.error conf.low conf.high statistic    df p.value test_type</span></span>
@@ -1413,6 +1452,9 @@ logistic regression parameters using individualized regressions.
 <li>Cheng, S., &amp; Long, J. S. (2007). Testing for IIA in the
 multinomial logit model. <em>Sociological Methods &amp; Research</em>,
 35(4), 583–600.</li>
+<li>Cramer, J. S., &amp; Ridder, G. (1991). Pooling states in the
+multinomial logit model. <em>Journal of Econometrics</em>, 47(2–3),
+267–272.</li>
 <li>Croissant, Y. (2020). Estimation of random utility models in R: The
 mlogit package. <em>Journal of Statistical Software</em>, 95(11),
 1–41.</li>

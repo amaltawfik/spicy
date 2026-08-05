@@ -119,7 +119,9 @@ Reading the table, top to bottom:
   the **Nakagawa marginal / conditional R²** — the variance explained by
   the fixed effects alone versus fixed and random together (Nakagawa &
   Schielzeth 2013). The gap between the two (0.28 vs 0.80 here) is
-  itself a summary of how much the grouping structure matters.
+  itself a summary of how much the grouping structure matters. AIC and
+  BIC complete the block — read them under the REML/ML rule explained in
+  the model-building sequence below.
 - The footer closes with the **likelihood-ratio test of the whole random
   part** against the same model without random effects, referred to a
   **chi-bar-squared** mixture distribution.
@@ -817,16 +819,16 @@ chi-bar-squared line answers one question only: *does this model need
 its random part at all?* — the fit against a plain linear regression.
 Neither footer compares the two columns to each other. That comparison —
 *does the slope earn its place on top of the intercept?* — is the
-per-term test of the previous section: `re_test = "lrt"` on the slope
-model refits exactly the intercept-only model of column 1 and refers the
-REML deviance difference (42.8) to the 50:50 mixture of χ²(1) and χ²(2),
-p ≈ 3 × 10⁻¹⁰ — the textbook procedure for retaining a random slope
-(Snijders & Bosker 2012, §6.2; Stram & Lee 1994). AIC and BIC agree
-(1794.5 → 1755.6; 1807.2 → 1774.8). For hierarchies that grow the
-*fixed* part instead, `nested = TRUE` adds chi-squared, AIC, and BIC
-change rows — an ML-refit test with a plain χ² reference, appropriate
-there but conservative for random-structure changes, which is why the
-slope decision belongs to `re_test`.
+per-term test of *Testing individual components* above:
+`re_test = "lrt"` on the slope model refits exactly the intercept-only
+model of column 1 and refers the REML deviance difference (42.8) to the
+50:50 mixture of χ²(1) and χ²(2), p ≈ 3 × 10⁻¹⁰ — the textbook procedure
+for retaining a random slope (Snijders & Bosker 2012, §6.2; Stram & Lee
+1994). AIC and BIC agree (1794.5 → 1755.6; 1807.2 → 1774.8). For
+hierarchies that grow the *fixed* part instead, `nested = TRUE` adds
+chi-squared, AIC, and BIC change rows — an ML-refit test with a plain χ²
+reference, appropriate there but conservative for random-structure
+changes, which is why the slope decision belongs to `re_test`.
 
 **Reading the two R² rows — without over-reading them.** The Nakagawa
 pair is descriptive, and each member answers a different question.
@@ -969,8 +971,10 @@ always on the **response scale**:
   log-odds;
 - `glmer` / `glmmTMB` Poisson: **count scale** (units of the outcome),
   not log-rate;
-- Gaussian fits (identity link): the AME equals the `B` coefficient —
-  the column is filled but redundant.
+- Gaussian fits (identity link): for additive terms the AME equals the
+  `B` coefficient — the column is filled but redundant. Under
+  interactions or inline transforms it becomes the average total
+  derivative and the two differ.
 
 ``` r
 
@@ -1173,40 +1177,27 @@ table_regression(
 )
 #> Regression comparison: outcome
 #> 
-#>                                Population-averaged         Subject-specific    
-#>                            ────────────────────────────  ───────────────────── 
-#>  Variable                │   OR       95% CI        p      OR       95% CI     
-#> ─────────────────────────┼─────────────────────────────────────────────────────
-#>  (Intercept)             │   0.31  [0.17,  0.55]  <.001    0.14  [0.05,  0.34] 
-#>  treat:                  │                                                     
-#>    P (ref.)              │    –          –         –        –          –       
-#>    A                     │   3.48  [1.83,  6.62]  <.001    7.79  [2.74, 22.14] 
-#>  baseline                │   7.31  [3.89, 13.75]  <.001   26.57  [8.40, 84.05] 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:         │                                                     
-#>    σ subject (Intercept) │                                 1.98  [1.45,  2.39] 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                       │ 444                           444                   
-#>  N (subject)             │ 111                           111                   
-#>  ICC                     │    –                            0.54                
-#>  R² (marginal)           │    –                            0.34                
-#>  R² (conditional)        │    –                            0.70                
-#>  AIC                     │    –                          447.7                 
-#>  BIC                     │    –                          464.1                 
-#>  Max cluster size        │   4                              –                  
-#> 
-#>                            Subj… 
-#>                            ───── 
-#>  Variable                │   p   
-#> ─────────────────────────┼───────
-#>  (Intercept)             │ <.001 
-#>  treat:                  │       
-#>    P (ref.)              │  –    
-#>    A                     │ <.001 
-#>  baseline                │ <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  Random effects:         │       
-#>    σ subject (Intercept) │  –    
+#>                                Population-averaged             Subject-specific       
+#>                            ────────────────────────────  ──────────────────────────── 
+#>  Variable                │   OR       95% CI        p      OR       95% CI        p   
+#> ─────────────────────────┼────────────────────────────────────────────────────────────
+#>  (Intercept)             │   0.31  [0.17,  0.55]  <.001    0.14  [0.05,  0.34]  <.001 
+#>  treat:                  │                                                            
+#>    P (ref.)              │    –          –         –        –          –         –    
+#>    A                     │   3.48  [1.83,  6.62]  <.001    7.79  [2.74, 22.14]  <.001 
+#>  baseline                │   7.31  [3.89, 13.75]  <.001   26.57  [8.40, 84.05]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:         │                                                            
+#>    σ subject (Intercept) │                                 1.98  [1.45,  2.39]   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │ 444                           444                          
+#>  N (subject)             │ 111                           111                          
+#>  ICC                     │    –                            0.54                       
+#>  R² (marginal)           │    –                            0.34                       
+#>  R² (conditional)        │    –                            0.70                       
+#>  AIC                     │    –                          447.7                        
+#>  BIC                     │    –                          464.1                        
+#>  Max cluster size        │   4                              –                         
 #> 
 #> Note. Model 1: population-averaged logistic regression (GEE); Model 2: logistic mixed-effects regression.
 #> Std. errors:
@@ -1226,7 +1217,8 @@ accordingly farther from 1.
 
 ## Cluster-robust and other variance estimators
 
-Mixed fits honour the cluster-robust family (`"CR0"`–`"CR3"`) through
+`lmer` and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) fits
+honour the cluster-robust family (`"CR0"`–`"CR3"`) through
 `clubSandwich`, with Satterthwaite small-sample degrees of freedom
 computed from the robust covariance — the footer attributes them
 accordingly. Reach for `CR*` when you suspect the random-effects
@@ -1263,10 +1255,9 @@ table_regression(fit_ri, vcov = "CR2", cluster = ~Subject)
 Requests that have no valid backend are refused with a clear error
 rather than silently ignored: `HC*` (a single-level estimator whose
 sandwich assumes independent observations — the very dependence the
-random effects exist to model; use `CR*` instead), `CR*` on `glmer` (no
-`clubSandwich` method), and the resampling estimators. For `glmmTMB`,
-`CR*` covers the conditional component only, and the footer discloses
-it.
+random effects exist to model; use `CR*` instead), `CR*` on `glmer` or
+`glmmTMB` (no `clubSandwich` method for either), and the resampling
+estimators.
 
 ## Standardized coefficients
 
@@ -1338,7 +1329,7 @@ head(table_regression(fit, output = "data.frame"), 8)
 
 ``` r
 
-table_regression(fit, output = "gt")
+pkgdown_dark_gt(table_regression(fit, output = "gt"))
 ```
 
 [TABLE]

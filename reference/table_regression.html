@@ -325,7 +325,16 @@ the SE (delta method: <code>SE_OR = OR x SE_log-odds</code>) are
 logit (<code>OR</code>), log (<code>IRR</code> / <code>RR</code> / <code>MR</code> per family, generic
 <code>exp(B)</code> for other log-link families – a genuine ratio of
 means), and binomial / ordinal cloglog (<code>HR</code>; grouped-time
-proportional hazards, Prentice &amp; Gloeckler 1978). The statistic
+proportional hazards, Prentice &amp; Gloeckler 1978). For the
+<em>ordinal</em> (cumulative) cloglog model the displayed <code>HR</code> is
+<code>exp(-B)</code>, not <code>exp(B)</code>: the cumulative parametrisation
+<code>cloglog P(Y &lt;= j) = zeta_j - xB</code> places the hazard of the
+grouped event on <code>-B</code>, so <code>exp(B)</code> would be the reciprocal of
+the hazard ratio (the CI endpoints are negated and swapped
+accordingly, and the table note discloses the convention; a
+cloglog <code>clm</code> with <code>nominal =</code> terms refuses <code>exponentiate</code>
+because threshold-side coefficients have no covariate-HR
+reading). The statistic
 and p-value stay on the link scale (invariant under monotone
 transformation). Identity-link fits are left untouched (a
 <code>spicy_ignored_arg</code> warning fires when no model in the table
@@ -1084,7 +1093,7 @@ internal model_id key.</p>
     <p><code>vcov</code> selects the variance-covariance estimator:</p>
 <ul><li><p><code>"classical"</code> – OLS (lm) / Fisher information (glm).</p></li>
 <li><p><code>"HC0"</code> to <code>"HC5"</code> – heteroskedasticity-consistent
-(via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
+(via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>).</p></li>
 <li><p><code>"CR0"</code> to <code>"CR3"</code> – cluster-robust with
 Satterthwaite-corrected df (via <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>).
 Requires <code>cluster</code>.</p></li>
@@ -1145,13 +1154,13 @@ the class cannot honour fails fast with <code>spicy_unsupported_vcov</code>
 
 <dt><code>mlogit</code></dt>
 <dd><p><code>classical</code> + <code>CR*</code> only (cluster at the
-choice-situation level) – <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
+choice-situation level) – <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
 sandwich for mlogit's per-choice-situation scores, so <code>HC*</code> is
 refused.</p></dd>
 
-<dt><code>lmer</code>, <code>lme</code>, <code>glmmTMB</code>, <code>coxph</code>, <code>survreg</code>,
+<dt><code>lmer</code>, <code>lme</code>, <code>coxph</code>, <code>survreg</code>,
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>,
-<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>,
+<code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>,
 <code>rms</code> (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>)</dt>
 <dd><p><code>classical</code>
 + <code>CR*</code> only – <code>HC*</code> and the resamplers (which refit
@@ -1169,19 +1178,27 @@ inference is robust by construction, so the fit's own sandwich
 displayed inference. <code>HC*</code> / <code>CR*</code> and <code>cluster</code> are refused
 with a pointer to those fit options.</p></dd>
 
-<dt>Other classes (<code>glmer</code>,
+<dt><code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code></dt>
+<dd><p><code>classical</code> only, on principle: the
+design-based Taylor / replicate variance is already the robust
+variance for the declared design, and clustering belongs in
+the design itself (<code>survey::svydesign(ids = )</code>), not in the
+table call.</p></dd>
+
+<dt>Other classes (<code>glmer</code>, <code>glmmTMB</code>,
 <code>rstanarm</code>/<code>brms</code>, ...)</dt>
-<dd><p><code>classical</code> (model-based) only.</p></dd>
+<dd><p><code>classical</code> (model-based) only
+(<span class="pkg">clubSandwich</span> has no working backend for <code>glmer</code> /
+<code>glmmTMB</code>).</p></dd>
 
 
 </dl><p>Cluster-robust backends differ by class but are each cross-validated
-to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>/<code>lme</code>/<code>glmmTMB</code> use
+to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>/<code>lme</code> use
 <span class="pkg">clubSandwich</span> (CR2 = Bell-McCaffrey, with Satterthwaite df for
 <code>lm</code>/<code>lme</code>/<code>lmer</code>); <code>coxph</code>/<code>cph</code> use the Lin-Wei grouped-dfbeta
 sandwich (identical to <code>coxph(..., cluster=)</code>);
 <code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code>/<code>multinom</code> use
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>svyglm</code> uses the design-aware
-<span class="pkg">clubSandwich</span> estimator; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
 needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
 <code>CR*</code> maps to the one available estimator. <code>cluster</code> length is one
@@ -1200,7 +1217,7 @@ variables). The variables are looked up in
 <code>model.frame(fit)</code> first, then in the original <code>data</code>
 argument captured by the fit. <strong>Recommended</strong>: independent
 of the dataset's name, composable for multi-way clustering,
-consistent with <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
+consistent with <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> /
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code>.</p></li>
 <li><p><strong>String</strong> – <code>cluster = "region"</code>. A single column
 name resolved the same way as the formula. Convenient but
@@ -1496,9 +1513,9 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Standardised coefficients (beta) injected next to B. Four</span></span></span>
-<span class="r-in"><span><span class="co"># methods available; "refit" is the SPSS / Stata regress, beta</span></span></span>
-<span class="r-in"><span><span class="co"># gold standard.</span></span></span>
+<span class="r-in"><span><span class="co"># Standardised coefficients (beta) injected next to B. "refit"</span></span></span>
+<span class="r-in"><span><span class="co"># is the Cohen et al. (2003) refit-on-z-scores convention;</span></span></span>
+<span class="r-in"><span><span class="co"># "basic" reproduces the SPSS / Stata regress, beta definition.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

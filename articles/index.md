@@ -62,7 +62,7 @@
 
   Coefficient tables for fitted regression models in R with APA-aligned
   formatting: classical, heteroskedasticity-consistent and
-  cluster-robust variance, four standardisation methods, partial effect
+  cluster-robust variance, five standardisation methods, partial effect
   sizes with noncentral-F CIs, average marginal effects,
   multiple-comparison adjustment, side-by-side and hierarchical layouts,
   and output to console, gt, tinytable, flextable, Excel, Word, or
@@ -77,8 +77,8 @@
   and IV estimators, mixed effects, ordinal and multinomial outcomes,
   two-part count models, survival models, survey-weighted and Bayesian
   fits – with each family’s marginal-effects estimand, exponentiate
-  semantics, robust-variance backends, and standardized-coefficient
-  support.
+  semantics and row blocks, plus the robust-variance backends and
+  standardized-coefficient support each family takes.
 
 - [The structured view: programmatic access to regression
   tables](https://amaltawfik.github.io/spicy/articles/as-structured.md):
