@@ -288,7 +288,7 @@ token is auto-injected into <code>show_columns</code> immediately after
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span></span></code></pre></div>
 <p>On the standardised scale the predictors become directly comparable:
 being male predicts a 0.25-SD higher wellbeing score, the largest
 standardised effect in the model, while a one-SD increase in age
@@ -1285,7 +1285,7 @@ binomial families; non-binomial returns NA with a
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="average-marginal-effects-probability-units-not-log-odds">Average marginal effects: probability units, not log-odds<a class="anchor" aria-label="anchor" href="#average-marginal-effects-probability-units-not-log-odds"></a>

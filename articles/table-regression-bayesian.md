@@ -549,7 +549,7 @@ table_regression(fit, standardized = "posthoc",
 #> 
 #> Note. Bayesian logistic regression (stanreg).
 #> Std. errors: posterior MAD SD (scaled median absolute deviation).
-#> β = standardised coefficient.
+#> β = standardised coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).
 ```
 
 On this logistic model the betas are x-standardized on the link scale

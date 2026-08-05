@@ -173,7 +173,7 @@ table_regression(fit, standardized = "refit")
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> β = standardised coefficient.
+#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
 On the standardised scale the predictors become directly comparable:
@@ -1188,7 +1188,7 @@ table_regression(fit, standardized = "pseudo")
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (Fisher information).
-#> β = standardised coefficient.
+#> β = standardised coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).
 ```
 
 ### Average marginal effects: probability units, not log-odds

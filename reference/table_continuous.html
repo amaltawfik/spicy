@@ -477,7 +477,10 @@ validation rules applied to explicit requests.</p>
 noncentral <em>F</em> inversion for \(\eta^2\), the Hedges-Olkin
 normal approximation for <em>g</em>, the Fisher <em>z</em>-transform for <em>r</em>,
 and percentile bootstrap (2,000 replicates) for
-\(\varepsilon^2\).</p>
+\(\varepsilon^2\). The bootstrap bounds depend on the random
+number generator state: call <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> before the table for
+reproducible \(\varepsilon^2\) intervals (the other three CIs
+are closed-form and deterministic).</p>
 <p>For Cohen's <em>d</em>, Hays' \(\omega^2\), and Cohen's <em>f</em>\(^2\)
 (derived from a fitted, possibly weighted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>), use the
 model-based companion <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p>

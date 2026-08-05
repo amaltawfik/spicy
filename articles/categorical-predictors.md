@@ -177,6 +177,25 @@ table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
 
 The `F-change` row is the joint 3-df test: F = 3.13, p = .025 —
 employment status improves the model, driven by the unemployed contrast.
+It is not a spicy invention: base R’s
+[`anova()`](https://rdrr.io/r/stats/anova.html) on the same two fits
+prints the identical canonical nested F-test, to the digit (F = 3.13 on
+3 and 1195 df, p = .025):
+
+``` r
+
+anova(m0, m1)
+#> Analysis of Variance Table
+#> 
+#> Model 1: wellbeing_score ~ age
+#> Model 2: wellbeing_score ~ age + employment_status
+#>   Res.Df    RSS Df Sum of Sq     F  Pr(>F)  
+#> 1   1198 292107                             
+#> 2   1195 289826  3      2281 3.135 0.02473 *
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
 For `glm` fits, the `partial_chi2` column reports the same joint
 question per term as a likelihood-ratio chi-square with its df, without
 needing a second model (see the main vignette’s *Term-level partial
@@ -189,21 +208,38 @@ The rule cuts the other way too:
 d_r <- sochealth[complete.cases(
   sochealth[, c("wellbeing_score", "age", "region")]
 ), ]
-anova(lm(wellbeing_score ~ age,          data = d_r),
-      lm(wellbeing_score ~ age + region, data = d_r))
-#> Analysis of Variance Table
+r0 <- lm(wellbeing_score ~ age, data = d_r)
+r1 <- lm(wellbeing_score ~ age + region, data = d_r)
+table_regression(list(r0, r1), nested = TRUE, show_columns = c("b", "p"))
+#> Hierarchical linear regression: wellbeing_score
 #> 
-#> Model 1: wellbeing_score ~ age
-#> Model 2: wellbeing_score ~ age + region
-#>   Res.Df    RSS Df Sum of Sq      F Pr(>F)
-#> 1   1198 292107                           
-#> 2   1193 291017  5      1090 0.8936 0.4845
+#>                        Model 1          Model 2     
+#>                     ──────────────  ─────────────── 
+#>  Variable         │    B       p       B        p   
+#> ──────────────────┼─────────────────────────────────
+#>  (Intercept)      │   67.00  <.001    66.62   <.001 
+#>  age              │    0.04   .177     0.04    .193 
+#>  region:          │                                 
+#>    Central (ref.) │                     –      –    
+#>    East           │                    1.07    .514 
+#>    North          │                    1.13    .447 
+#>    Other          │                    1.91    .201 
+#>    South          │                   -0.94    .528 
+#>    West           │                   -0.18    .900 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │ 1200            1200            
+#>  R²               │    0.00            0.01         
+#>  Adj.R²           │    0.00            0.00         
+#>  ΔR²              │     –             +0.00         
+#>  F-change         │     –             +0.89         
+#>  p (change)       │     –               .485        
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
 ```
 
-For `region`, the joint test gives F(5, 1193) = 0.89, p = .48 — no
-evidence that region matters at all
-([`anova()`](https://rdrr.io/r/stats/anova.html) on two nested fits is
-the same F-change test the table reports). Fitting the factor anyway and
+For `region`, the joint test gives F(5, 1193) = 0.89, p = .485 — no
+evidence that region matters at all. Fitting the factor anyway and
 scanning its five per-level p-values for a “significant” contrast to
 report alone would be a multiplicity artifact — “if the overall test is
 not significant, it can be dangerous to rely on individual pairwise

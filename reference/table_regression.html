@@ -1150,7 +1150,16 @@ the class cannot honour fails fast with <code>spicy_unsupported_vcov</code>
 – never a silent model-based result under a robust label:</p>
 <dl><dt><code>lm</code>, <code>glm</code>, <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code></dt>
 <dd><p>all of <code>classical</code>, <code>HC*</code>,
-<code>CR*</code>, <code>bootstrap</code>, <code>jackknife</code>.</p></dd>
+<code>CR*</code>, <code>bootstrap</code>, <code>jackknife</code>. <code>lm</code> additionally takes
+<code>"CR1S"</code> – the full Stata <code>regress, vce(cluster)</code>
+convention: the CR1S small-sample scaling (equal to
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> with <code>type = "HC1"</code>) with <code>t(G - 1)</code>
+inference, <code>G</code> the number of clusters. Use it to reproduce
+Stata tables; <code>"CR2"</code> (Bell-McCaffrey, Satterthwaite df)
+remains the recommended modern choice. <code>"CR1S"</code> is refused
+for <code>glm</code> with an explanation: Stata's ML commands use a
+different convention (<code>G/(G-1)</code> scaling, z), so the label
+would not match Stata output there.</p></dd>
 
 <dt><code>mlogit</code></dt>
 <dd><p><code>classical</code> + <code>CR*</code> only (cluster at the
@@ -1536,7 +1545,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">β = standardised coefficient.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Custom column set: B + AME + AME-specific p-value. Note that</span></span></span>
 <span class="r-in"><span><span class="co"># the `p` token always belongs to B, never to AME -- use the</span></span></span>

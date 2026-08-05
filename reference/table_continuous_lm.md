@@ -273,9 +273,10 @@ table_continuous_lm(
     the `df2` column and in the `t(df)` / `F(df1, df2)` test header.
     `"CR1"` applies the G/(G-1) correction only; Stata's
     `, vce(cluster id)` uses the larger G(N-1)/((G-1)(N-p)) factor with
-    t(G-1) inference (clubSandwich's `"CR1S"`, not exposed here), so
-    `"CR1"` does not reproduce Stata. Cluster-robust variants are
-    dispatched to
+    t(G-1) inference (clubSandwich's `"CR1S"`; exposed for `lm` fits in
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+    not here), so `"CR1"` does not reproduce Stata. Cluster-robust
+    variants are dispatched to
     [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
     and inference uses
     [`clubSandwich::coef_test()`](http://jepusto.github.io/clubSandwich/reference/coef_test.md)
@@ -782,10 +783,11 @@ fractional Satterthwaite degrees of freedom in `df2`, which the
 displayed `t(df)` / `F(df1, df2)` header renders to one decimal. `"CR1"`
 applies the G/(G-1) correction only – Stata's `, vce(cluster id)` uses
 the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-(clubSandwich's `"CR1S"`, not exposed here), so `"CR1"` does not
-reproduce Stata. Effect sizes remain invariant to `vcov` (including
-`CR*`); only the SE, CI, test statistic, and `df2` of the contrast
-change.
+(clubSandwich's `"CR1S"`; exposed for `lm` fits in
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+not here), so `"CR1"` does not reproduce Stata. Effect sizes remain
+invariant to `vcov` (including `CR*`); only the SE, CI, test statistic,
+and `df2` of the contrast change.
 
 Two resampling-based estimators are also available without adding any
 dependency: `vcov = "bootstrap"` (nonparametric resampling-cases

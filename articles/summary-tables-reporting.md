@@ -500,7 +500,7 @@ table_regression(
 #> 
 #> Note. Linear regression.
 #> Std. errors: heteroskedasticity-robust (HC3).
-#> β = standardised coefficient.
+#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
 The default footer documents the variance estimator, flags standardised

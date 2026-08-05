@@ -396,6 +396,16 @@ rendering an empty column.
   classes. Resampling footers report the valid replicate count, and a
   bootstrap / jackknife whose replicates nearly all fail raises
   `spicy_resampling_failed` instead of silently reporting classical SEs.
+- `vcov = "CR1S"` for `lm` fits reproduces Stata’s
+  `regress, vce(cluster)` exactly: the CR1S small-sample scaling with
+  `t(G - 1)` inference, and a footer naming the convention. `"CR2"`
+  stays the recommended modern choice; `"CR1S"` on a `glm` is refused
+  with an explanation (Stata’s ML commands use a different convention).
+- When a `β` column is displayed, the table note now names the
+  standardisation method and its factor-dummy convention (e.g.
+  `β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1)`)
+  – the methods disagree most visibly on dummies, and a table separated
+  from its script must carry the choice that produced its numbers.
   `glmmTMB` and
   [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html) are
   classical-only: clubSandwich has no backend for either, so a `CR*`

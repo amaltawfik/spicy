@@ -344,7 +344,8 @@ fractional df is reported in the <code>df2</code> column and in the
 <code>t(df)</code> / <code>F(df1, df2)</code> test header. <code>"CR1"</code> applies the
 G/(G-1) correction only; Stata's <code>, vce(cluster id)</code> uses the
 larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-(clubSandwich's <code>"CR1S"</code>, not exposed here), so <code>"CR1"</code> does
+(clubSandwich's <code>"CR1S"</code>; exposed for <code>lm</code> fits in
+<code><a href="table_regression.html">table_regression()</a></code>, not here), so <code>"CR1"</code> does
 not reproduce Stata. Cluster-robust variants
 are dispatched to <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> and inference uses
 <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> / <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code>;
@@ -768,7 +769,8 @@ Satterthwaite degrees of freedom in <code>df2</code>, which the displayed
 <code>t(df)</code> / <code>F(df1, df2)</code> header renders to one decimal. <code>"CR1"</code>
 applies the G/(G-1) correction only – Stata's <code>, vce(cluster id)</code>
 uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-(clubSandwich's <code>"CR1S"</code>, not exposed here), so <code>"CR1"</code> does not
+(clubSandwich's <code>"CR1S"</code>; exposed for <code>lm</code> fits in
+<code><a href="table_regression.html">table_regression()</a></code>, not here), so <code>"CR1"</code> does not
 reproduce Stata. Effect sizes remain invariant
 to <code>vcov</code> (including <code>CR*</code>); only the SE, CI, test statistic, and
 <code>df2</code> of the contrast change.</p>

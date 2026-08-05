@@ -822,8 +822,9 @@ implemented yet”), so no cluster sandwich can be formed and
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `validate_vcov_cluster_lists()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for `clm` models.</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> This class supports: classical. Robust standard errors for more model classes are being added; see ?table_regression.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for a `clm` fit with a scale or nominal component.</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> `ordinal` provides no estimating functions for the scale / nominal parts, so no sandwich can be built. A plain proportional-odds `clm` supports "CR0"-"CR3" with `cluster`.</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Use the model-based default, or refit without `scale` / `nominal`.</span></span></code></pre></div>
 <p>One wart in the refusal message: it speaks of <code>clm</code> models
 as a class and lists only <code>classical</code> — read it as applying
 to this <em>fit</em>. A plain proportional-odds <code>clm</code> (no

@@ -276,31 +276,63 @@ subset.</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
 <p>The <code>F-change</code> row is the joint 3-df test: F = 3.13, p =
 .025 — employment status improves the model, driven by the unemployed
-contrast. For <code>glm</code> fits, the <code>partial_chi2</code>
-column reports the same joint question per term as a likelihood-ratio
-chi-square with its df, without needing a second model (see the main
-vignette’s <em>Term-level partial chi-square</em>).</p>
-<p>The rule cuts the other way too:</p>
+contrast. It is not a spicy invention: base R’s <code><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova()</a></code> on
+the same two fits prints the identical canonical nested F-test, to the
+digit (F = 3.13 on 3 and 1195 df, p = .025):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">d_r</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wellbeing_score"</span>, <span class="st">"age"</span>, <span class="st">"region"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span>,          data <span class="op">=</span> <span class="va">d_r</span><span class="op">)</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">region</span>, data <span class="op">=</span> <span class="va">d_r</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova</a></span><span class="op">(</span><span class="va">m0</span>, <span class="va">m1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Analysis of Variance Table</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model 1: wellbeing_score ~ age</span></span>
-<span><span class="co">#&gt; Model 2: wellbeing_score ~ age + region</span></span>
-<span><span class="co">#&gt;   Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)</span></span>
-<span><span class="co">#&gt; 1   1198 292107                           </span></span>
-<span><span class="co">#&gt; 2   1193 291017  5      1090 0.8936 0.4845</span></span></code></pre></div>
+<span><span class="co">#&gt; Model 2: wellbeing_score ~ age + employment_status</span></span>
+<span><span class="co">#&gt;   Res.Df    RSS Df Sum of Sq     F  Pr(&gt;F)  </span></span>
+<span><span class="co">#&gt; 1   1198 292107                             </span></span>
+<span><span class="co">#&gt; 2   1195 289826  3      2281 3.135 0.02473 *</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
+<p>For <code>glm</code> fits, the <code>partial_chi2</code> column
+reports the same joint question per term as a likelihood-ratio
+chi-square with its df, without needing a second model (see the main
+vignette’s <em>Term-level partial chi-square</em>).</p>
+<p>The rule cuts the other way too:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d_r</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wellbeing_score"</span>, <span class="st">"age"</span>, <span class="st">"region"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">r0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">d_r</span><span class="op">)</span></span>
+<span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">region</span>, data <span class="op">=</span> <span class="va">d_r</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">r0</span>, <span class="va">r1</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical linear regression: wellbeing_score</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                        Model 1          Model 2     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                    ──────────────  ─────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span>    B       p       B        p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)      <span style="color: #9E9E9E;">│</span>   67.00  &lt;.001    66.62   &lt;.001 </span></span>
+<span><span class="co">#&gt;  age              <span style="color: #9E9E9E;">│</span>    0.04   .177     0.04    .193 </span></span>
+<span><span class="co">#&gt;  region:          <span style="color: #9E9E9E;">│</span>                                 </span></span>
+<span><span class="co">#&gt;    Central (ref.) <span style="color: #9E9E9E;">│</span>                     –      –    </span></span>
+<span><span class="co">#&gt;    East           <span style="color: #9E9E9E;">│</span>                    1.07    .514 </span></span>
+<span><span class="co">#&gt;    North          <span style="color: #9E9E9E;">│</span>                    1.13    .447 </span></span>
+<span><span class="co">#&gt;    Other          <span style="color: #9E9E9E;">│</span>                    1.91    .201 </span></span>
+<span><span class="co">#&gt;    South          <span style="color: #9E9E9E;">│</span>                   -0.94    .528 </span></span>
+<span><span class="co">#&gt;    West           <span style="color: #9E9E9E;">│</span>                   -0.18    .900 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                <span style="color: #9E9E9E;">│</span> 1200            1200            </span></span>
+<span><span class="co">#&gt;  R²               <span style="color: #9E9E9E;">│</span>    0.00            0.01         </span></span>
+<span><span class="co">#&gt;  Adj.R²           <span style="color: #9E9E9E;">│</span>    0.00            0.00         </span></span>
+<span><span class="co">#&gt;  ΔR²              <span style="color: #9E9E9E;">│</span>     –             +0.00         </span></span>
+<span><span class="co">#&gt;  F-change         <span style="color: #9E9E9E;">│</span>     –             +0.89         </span></span>
+<span><span class="co">#&gt;  p (change)       <span style="color: #9E9E9E;">│</span>     –               .485        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
 <p>For <code>region</code>, the joint test gives F(5, 1193) = 0.89, p =
-.48 — no evidence that region matters at all (<code><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova()</a></code> on
-two nested fits is the same F-change test the table reports). Fitting
-the factor anyway and scanning its five per-level p-values for a
-“significant” contrast to report alone would be a multiplicity artifact
-— “if the overall test is not significant, it can be dangerous to rely
-on individual pairwise comparisons” (Harrell 2015, §2.6).</p>
+.485 — no evidence that region matters at all. Fitting the factor anyway
+and scanning its five per-level p-values for a “significant” contrast to
+report alone would be a multiplicity artifact — “if the overall test is
+not significant, it can be dangerous to rely on individual pairwise
+comparisons” (Harrell 2015, §2.6).</p>
 </div>
 <div class="section level2">
 <h2 id="ordered-factors-rs-polynomial-contrasts">Ordered factors: R’s polynomial contrasts<a class="anchor" aria-label="anchor" href="#ordered-factors-rs-polynomial-contrasts"></a>
@@ -312,7 +344,7 @@ good) — raises a coding decision that R quietly makes for you. For an
 uses <strong>orthogonal polynomial contrasts</strong>, and the table
 shows trend components instead of level comparisons. spicy flags this
 the first time it happens and the footer names the coding:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_srh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">self_rated_health</span>,</span>
 <span>              data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_srh</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
@@ -363,7 +395,7 @@ comparison. The two examples below land on opposite sides of the
 decision.</p>
 <p><strong>Case 1 — the scores suffice.</strong> Education (3 levels)
 predicting smoking:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="va">sochealth</span></span>
 <span><span class="va">sh</span><span class="op">$</span><span class="va">education</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">education</span>, ordered <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">sh</span><span class="op">$</span><span class="va">educ_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">education</span><span class="op">)</span></span>
@@ -414,7 +446,7 @@ exactly in a linear model) — the quadratic component <em>is</em> the
 departure from linearity.</p>
 <p><strong>Case 2 — linearity is rejected.</strong> Self-rated health (4
 levels) predicting wellbeing:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d3</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wellbeing_score"</span>, <span class="st">"age"</span>, <span class="st">"self_rated_health"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="op">)</span>, <span class="op">]</span></span>
@@ -494,7 +526,7 @@ between <em>adjacent</em> levels (Venables &amp; Ripley 2002). Harrell
 (2015, §2.7.3) reaches the same reading with threshold indicators
 <code>[X ≥ level]</code>; the two parameterizations give identical
 fits.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d3</span><span class="op">$</span><span class="va">srh_sdif</span> <span class="op">&lt;-</span> <span class="va">d3</span><span class="op">$</span><span class="va">self_rated_health</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html" class="external-link">contrasts</a></span><span class="op">(</span><span class="va">d3</span><span class="op">$</span><span class="va">srh_sdif</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/contr.sdif.html" class="external-link">contr.sdif</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
@@ -534,7 +566,7 @@ predictor into categories almost never is (Harrell 2015, §2.4.1).
 <code>sochealth</code> ships both <code>bmi</code> and a conventional
 <code>bmi_category</code> (normal weight / overweight / obesity), so the
 cost can be shown directly:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d4</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wellbeing_score"</span>, <span class="st">"bmi"</span>, <span class="st">"bmi_category"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="op">)</span>, <span class="op">]</span></span>
@@ -574,7 +606,7 @@ sample sits inside the 25.0–29.9 interval, where the per-unit slope (B =
 -0.60 points per BMI unit, p &lt; .001) does not. And if a
 <em>nonlinear</em> effect is the worry, the remedy is a flexible
 continuous fit — a polynomial or a spline — not bins:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Linear <span class="op">=</span> <span class="va">b_cont</span>, Quadratic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">b_cont</span>, <span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">bmi</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  nested <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -636,7 +668,7 @@ factor header for compact tables; <code>keep</code> / <code>drop</code>
 filter rows by regex after all statistics are computed (see the main
 vignette’s <em>Display options</em> and <em>Filtering displayed
 coefficients</em>):</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>age <span class="op">=</span> <span class="st">"Age (years)"</span>,</span>

@@ -414,7 +414,11 @@ to explicit requests.
 Confidence intervals (enabled with `effect_size_ci = TRUE`) use
 noncentral *F* inversion for \\\eta^2\\, the Hedges-Olkin normal
 approximation for *g*, the Fisher *z*-transform for *r*, and percentile
-bootstrap (2,000 replicates) for \\\varepsilon^2\\.
+bootstrap (2,000 replicates) for \\\varepsilon^2\\. The bootstrap bounds
+depend on the random number generator state: call
+[`set.seed()`](https://rdrr.io/r/base/Random.html) before the table for
+reproducible \\\varepsilon^2\\ intervals (the other three CIs are
+closed-form and deterministic).
 
 For Cohen's *d*, Hays' \\\omega^2\\, and Cohen's *f*\\^2\\ (derived from
 a fitted, possibly weighted [`lm()`](https://rdrr.io/r/stats/lm.html)),

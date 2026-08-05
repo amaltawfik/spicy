@@ -1104,7 +1104,16 @@ silent model-based result under a robust label:
 - `lm`, `glm`,
   [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html):
 
-  all of `classical`, `HC*`, `CR*`, `bootstrap`, `jackknife`.
+  all of `classical`, `HC*`, `CR*`, `bootstrap`, `jackknife`. `lm`
+  additionally takes `"CR1S"` – the full Stata `regress, vce(cluster)`
+  convention: the CR1S small-sample scaling (equal to
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  with `type = "HC1"`) with `t(G - 1)` inference, `G` the number of
+  clusters. Use it to reproduce Stata tables; `"CR2"` (Bell-McCaffrey,
+  Satterthwaite df) remains the recommended modern choice. `"CR1S"` is
+  refused for `glm` with an explanation: Stata's ML commands use a
+  different convention (`G/(G-1)` scaling, z), so the label would not
+  match Stata output there.
 
 - `mlogit`:
 
@@ -1508,7 +1517,7 @@ table_regression(fit, standardized = "refit")
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> β = standardised coefficient.
+#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 
 # Custom column set: B + AME + AME-specific p-value. Note that
 # the `p` token always belongs to B, never to AME -- use the

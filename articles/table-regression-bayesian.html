@@ -627,7 +627,7 @@ SD ratio and nothing is re-summarized:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).</span></span></span></code></pre></div>
 <p>On this logistic model the betas are x-standardized on the link scale
 (the glm convention): <code>age</code>, the only continuous predictor,
 moves from a per-year log-odds of 0.01 to 0.09 per SD of age — the

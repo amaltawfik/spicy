@@ -728,8 +728,9 @@ refused up front with a `spicy_unsupported_vcov` error:
 
 table_regression(clm_scale, vcov = "CR2", cluster = ~region)
 #> Error in `validate_vcov_cluster_lists()`:
-#> ! `vcov = "CR2"` is not available for `clm` models.
-#> ℹ This class supports: classical. Robust standard errors for more model classes are being added; see ?table_regression.
+#> ! `vcov = "CR2"` is not available for a `clm` fit with a scale or nominal component.
+#> ℹ `ordinal` provides no estimating functions for the scale / nominal parts, so no sandwich can be built. A plain proportional-odds `clm` supports "CR0"-"CR3" with `cluster`.
+#> ℹ Use the model-based default, or refit without `scale` / `nominal`.
 ```
 
 One wart in the refusal message: it speaks of `clm` models as a class

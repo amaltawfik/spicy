@@ -1295,7 +1295,7 @@ table_regression(fit, standardized = "refit", show_columns = c("b", "beta", "p")
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
-#> β = standardised coefficient.
+#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
 The algebraic shortcuts (`"posthoc"`, `"basic"`, `"smart"`) are
