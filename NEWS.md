@@ -2,715 +2,434 @@
 
 ## Breaking changes
 
-* Declared missing values are now honored package-wide. Codes that survey files declare as missing (`na_values` / `na_range` metadata on haven-imported columns, and `haven::tagged_na()` values) are treated as missing by default in `freq()`, `cross_tab()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, `mean_n()`, `sum_n()`, `count_n()`, `varlist()`, `vl()`, and `code_book()`: they are excluded from statistics exactly like `NA` (valid percents, means, chi-squared tests and association measures, `min_valid` gates, group definitions), so numbers change for labelled survey data. Nothing disappears silently: `freq()` shows each declared value as its own labelled row in its Missing block (tagged NAs get per-tag rows with their labels), and the tabulation helpers disclose the exclusion in the table note ("Declared missing values removed: ..."). Migration: every function involved gains the same escape hatch, `user_na = FALSE`, which restores the previous behavior of treating declared codes as valid values. See the new "Declared missing values" section in `?freq`.
-
-* `varlist()`, `vl()`, and `code_book()` count columns are now internally coherent for labelled data: `N_distinct` uses the same missing definition as `N_valid` / `NAs` (declared missing values and `NA` elements of list and `POSIXlt` columns no longer count as distinct valid values), `na_range` codes observed in the data are listed in `Values` like `na_values` codes instead of vanishing, and value labels attached to tagged NAs (e.g. `Refused = tagged_na("a")`) now appear in `Values`.
-
-* `cross_tab()` now tabulates observations at an explicit `NA` factor level (`addNA()`, `factor(exclude = NULL)`, `forcats::fct_na_value_to_level()`) as a regular `NA` category row or column instead of silently dropping them: an explicit level is the analyst's choice to show missing as a category, so totals, percentages, and the chi-squared statistic now include it, matching `freq()` and base `table()` on the same input. Numbers change for tables built from such factors.
-
-* `freq()` on a factor with an explicit `NA` level now excludes those observations from the valid-percent denominator (and the `n_valid` attribute), matching the Missing classification its own printed table gives them and the SPSS convention; the Valid Percent column previously summed to less than the `100.0` printed in its Total row.
-
-* `build_ascii_table()` is no longer exported. It has always been
-  documented as internal plumbing; use `spicy_print_table()` for
-  console rendering from code.
-
-* The `column_total_line` argument of `build_ascii_table()` and
-  `spicy_print_table()` is removed. It was accepted and documented
-  but never had any effect.
-
-* Association measures: `detail = TRUE` vectors now always include
-  the standard error as an `se` element, and the internal-only
-  `.include_se` argument is gone from every public signature.
-
-* `gamma_gk()`, `kendall_tau_b()`, and `kendall_tau_c()` report an
-  `NA` p-value when the asymptotic standard error is zero (e.g. a
-  perfect association), instead of a spurious `0` or `NaN` -- the
-  same zero-SE gate as the other association measures.
-
-* `uncertainty_coef()` returns `NA` with a `spicy_undefined_stat`
-  warning when the marginal entropy in the denominator is zero (a
-  constant variable, e.g. an unused factor level), instead of
-  silently returning 0 -- the same degenerate-table behavior as the
-  rest of the association family.
-
-* `kendall_tau_c()` returns `NA` with a `spicy_undefined_stat`
-  warning when one variable is constant (all observations in a
-  single row or column), instead of a silent definite 0 with SE 0
-  and a zero-width confidence interval -- the same degenerate-table
-  contract as the rest of the ordinal family, and what SPSS / PSPP
-  report (no value).
-
-* The association measures and `assoc_measures()` validate
-  `conf_level`: anything other than a single number strictly
-  between 0 and 1 (or `NULL` to omit the confidence interval)
-  raises a classed error (`spicy_invalid_input`), instead of
-  silently producing `Inf` or `NaN` confidence bounds.
-  `conf_level = 95` gets a hint suggesting `conf_level = 0.95`.
-
-* `freq()` and `cross_tab()` replace the logical `styled` argument
-  with `output`, the same rendering argument the `table_*()` family
-  uses. Migration: `styled = TRUE` is now `output = "default"` (the
-  default) and `styled = FALSE` is now `output = "data.frame"`.
-  Passing `styled` raises a classed error (`spicy_defunct`) that
-  spells out the replacement. The rendered engines of the `table_*()`
-  family (`"tinytable"`, `"gt"`, `"flextable"`, ...) are not accepted
-  by the two tabulators.
-
-* `cross_tab(output = "data.frame")` (previously `styled = FALSE`)
-  now returns a genuinely plain `data.frame` (and a list of plain
-  data frames with `by`): the metadata attributes (`title`, `note`,
-  `n_total`, `chi2`, `p_value`, `assoc_*`, ...) are stripped, as
-  documented. For programmatic access to the statistics, read the
-  attributes of the default object instead, e.g.
-  `attr(cross_tab(...), "p_value")`.
-
-* `freq()` now defaults to `rescale = FALSE` (raw weighted counts),
-  matching `cross_tab()`, and reads `options(spicy.rescale)` the
-  same way `cross_tab()` does. Call `freq(..., rescale = TRUE)` to
-  restore the previous behavior.
-
-* `freq()` no longer prints as a side effect: it returns its
-  `spicy_freq_table` visibly and regular auto-printing displays it,
-  so a bare `freq(...)` call still shows the table while
-  `f <- freq(...)` is now silent (print `f` to display it). The
-  unused `...` argument is removed from the signature; passing
-  unknown arguments now errors.
-
-* `copy_clipboard()` arguments use snake_case like every other spicy
-  function: `row_names_as_col`, `row_names`, and `col_names` (were
-  `row.names.as.col`, `row.names`, `col.names`). The old dot.case names
-  raise an error that names the exact replacement.
-
-* `table_regression(exponentiate = TRUE)` now errors on links whose
-  exponentiated coefficient is not a ratio (probit, cauchit, inverse,
-  sqrt, ...). Ratio links (logit, log, binomial / ordinal cloglog) are
-  unchanged; identity links keep the warn-and-skip.
-* `table_regression()` exempts intercept rows from `keep` / `drop`:
-  the patterns select predictors, and `show_intercept` alone controls
-  the intercept. With the default `show_intercept = TRUE`,
-  `keep = "wt"` now retains the intercept row; pass
-  `show_intercept = FALSE` to hide it.
+* Declared missing values are now honored package-wide: codes a survey file
+  declares missing (`na_values` / `na_range`, tagged NAs) count as missing
+  in `freq()`, `cross_tab()`, `table_categorical()`, `table_continuous()`,
+  `table_continuous_lm()`, `mean_n()` / `sum_n()` / `count_n()`, and
+  `varlist()` / `vl()` / `code_book()`, so numbers change for labelled
+  survey data. Nothing disappears silently: the tabulating helpers disclose
+  the exclusion in the table note, and `freq()` keeps a labelled Missing row
+  per code. `user_na = FALSE` restores the previous behavior. See `?freq`.
+* `varlist()`, `vl()`, and `code_book()` count columns are coherent for
+  labelled data: `N_distinct` uses the same missing definition as `N_valid`
+  / `NAs`, and observed `na_range` codes and tagged-NA labels appear in
+  `Values`.
+* `cross_tab()` tabulates observations at an explicit `NA` factor level
+  (`addNA()`, `factor(exclude = NULL)`) as a regular `NA` row or column:
+  totals, percentages, and the chi-squared statistic include them.
+* `freq()` on a factor with an explicit `NA` level excludes those
+  observations from the valid-percent denominator and `n_valid`.
+* `freq()` and `cross_tab()` replace `styled` with `output`: `styled = TRUE`
+  is `output = "default"`, `styled = FALSE` is `output = "data.frame"`, and
+  `styled` now errors (`spicy_defunct`). The `table_*()` rendering engines
+  are not accepted here.
+* `cross_tab(output = "data.frame")` returns a genuinely plain `data.frame`
+  (a list of them with `by`): the metadata attributes are stripped. Read
+  them from the default object, e.g. `attr(cross_tab(...), "p_value")`.
+* `freq()` defaults to `rescale = FALSE` (raw weighted counts), matching
+  `cross_tab()`, and reads `options(spicy.rescale)` the same way. Call
+  `freq(..., rescale = TRUE)` for the previous behavior.
+* `freq()` no longer prints as a side effect: a bare `freq(...)` still shows
+  the table, but `f <- freq(...)` is silent. The unused `...` is removed, so
+  unknown arguments error.
+* `copy_clipboard()` arguments use snake_case: `row_names_as_col`,
+  `row_names`, `col_names`. The old dot.case names error with the
+  replacement.
+* `build_ascii_table()` is no longer exported -- use `spicy_print_table()`
+  -- and `column_total_line` is removed from both (it never had any effect).
+* Association measures with `detail = TRUE` always include the standard
+  error as an `se` element; the internal `.include_se` argument is gone.
+* On degenerate tables, `gamma_gk()`, `kendall_tau_b()` and
+  `kendall_tau_c()` give an `NA` p-value when the asymptotic SE is zero, and
+  `uncertainty_coef()` and `kendall_tau_c()` return `NA` with a
+  `spicy_undefined_stat` warning at zero entropy or on a constant variable.
+* The association measures and `assoc_measures()` validate `conf_level`:
+  anything but a single number strictly between 0 and 1 (or `NULL`) raises
+  `spicy_invalid_input`, and `conf_level = 95` hints at `conf_level = 0.95`.
 * `table_categorical()` defaults to `drop_na = FALSE`: missing values
-  display as a `"(Missing)"` level instead of being silently removed.
-  With `drop_na = TRUE`, a table note now reports what was removed.
-* `table_categorical()` rejects `p_digits` below 1 with a classed
-  error, as its documentation always promised; such values were
-  silently rendered with 3 decimals. Matches `table_continuous()`,
-  `table_continuous_lm()`, and `cross_tab()`.
-
-* `table_categorical()` uses the same `labels` contract as
-  `table_continuous()` and `table_continuous_lm()`: a named character
-  vector (`labels = c(smoking = "Current smoker")`), with the other
-  columns falling back to the variable's label attribute (e.g. from
-  haven) and then to the column name. Unnamed positional label
-  vectors, accepted since before 0.11.0, now raise an error with a
-  migration hint.
-* `table_categorical(output = "flextable")` no longer writes a `.docx`
-  as a side effect when `word_path` is supplied: `word_path` is
-  consulted only by `output = "word"`, as everywhere else in the table
-  family. The old combination now warns (class `spicy_ignored_arg`);
-  save the returned object with `flextable::save_as_docx()` if you
-  relied on it.
+  display as a `"(Missing)"` level. With `drop_na = TRUE`, a note reports
+  what was removed.
+* `table_categorical()` uses the family's `labels` contract -- a named
+  character vector, falling back to the label attribute then the column
+  name. Unnamed positional vectors error with a hint.
+* `table_categorical()` rejects `p_digits` below 1 with a classed error;
+  such values were silently rendered with 3 decimals.
+* `table_categorical(output = "flextable")` no longer writes a `.docx` when
+  `word_path` is supplied; the combination warns (`spicy_ignored_arg`). Use
+  `flextable::save_as_docx()`.
 * `standardized = "smart"` scales continuous inputs by 2 SD and leaves
-  binary inputs (0/1 and factor dummies) unscaled, as Gelman (2008)
-  defines it. The rule was applied inverted since 0.12.0, halving every
-  continuous "smart" beta.
+  binary inputs unscaled. The rule was applied inverted since 0.12.0,
+  halving every continuous "smart" beta.
+* `table_regression(exponentiate = TRUE)` errors on links whose
+  exponentiated coefficient is not a ratio (probit, cauchit, inverse, sqrt);
+  identity links keep the warn-and-skip.
+* `table_regression()` exempts intercept rows from `keep` / `drop`: the
+  patterns select predictors, and `show_intercept` alone controls the
+  intercept.
 * `align = "auto"` is removed from all `table_*()` functions; use
   `"decimal"` (default), `"center"`, or `"right"`.
-* `table_regression(show_fit_stats = character(0))` errors; use `FALSE`
-  to suppress the block.
-* Multi-model `show_columns = "all_b"` / `"all_ame"` auto-compact
-  (CIs dropped); request atomic tokens to keep them.
-* `tidy()` labels AME rows `estimate_type = "ame"` (was `"AME"`).
-* The `show_fit_stats` information criteria are lowercase tokens like
-  everything else: `"aic"`, `"aicc"`, `"bic"` (was `"AIC"` / `"AICc"` /
-  `"BIC"`). Uppercase errors with the replacement; rendered row labels
-  are unchanged.
-* The SE footer reads `"classical (Fisher information)"` (was
-  `"classical (MLE inverse Hessian)"`).
-* `count_n()` now warns (class `spicy_no_selection`) and returns `NA`
-  for all rows when the selection resolves to zero usable columns,
-  matching `mean_n()` and `sum_n()` (it silently returned all zeros).
-  A valid selection where the value is simply absent still counts `0`.
-* `mean_n()` and `sum_n()` with `min_valid = 0` now return `NA` for
-  rows with no valid values; `mean_n()` returned `NaN` and `sum_n()`
-  a silent `0` (the raw `rowMeans()` / `rowSums()` identities).
+* The `show_fit_stats` information criteria are lowercase tokens `"aic"`,
+  `"aicc"`, `"bic"`; uppercase errors with the replacement.
+  `show_fit_stats = character(0)` errors; use `FALSE` to suppress the block.
+* Multi-model `show_columns = "all_b"` / `"all_ame"` auto-compact (CIs
+  dropped); request atomic tokens to keep them.
+* `tidy()` labels AME rows `estimate_type = "ame"` (was `"AME"`), and the SE
+  footer reads `"classical (Fisher information)"`.
+* `count_n()` warns (`spicy_no_selection`) and returns `NA` for all rows
+  when the selection resolves to zero usable columns; a valid selection
+  whose value is simply absent still counts `0`.
+* `mean_n()` and `sum_n()` with `min_valid = 0` return `NA` for rows with no
+  valid values (was `NaN` and a silent `0`).
 
 ## New supported models
 
-`table_regression()` gains support for some 30 model classes beyond
-`lm` / `glm`. See `?table_regression_models` for the full registry and
-per-family behaviour, and the new vignettes for walk-throughs.
+`table_regression()` gains support for more than thirty model classes
+beyond `lm` / `glm`. See `?table_regression_models` for the registry and
+per-family behaviour, and the new vignettes for walk-throughs. Requests a
+class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
+`spicy_unsupported_standardized`) instead of rendering an empty column.
 
-* Mixed effects (`lme4::lmer` / `glmer`, `glmmTMB`, `nlme::lme`):
-  random effects as a block of rows (SD, correlations, residual, with
-  SE and CI), ICC, per-group N and marginal / conditional R² as fit
-  statistics, and a boundary-corrected LR test against the model
-  without random effects. The test follows the fit's own estimator
-  (REML or ML) and its full specification (prior weights, variance and
-  correlation structures, zero-inflation).
-* Bayesian (`rstanarm`, `brms`): posterior median, MAD SD, and
-  equal-tailed credible intervals (header `95% CrI`;
-  `ci_method = "hdi"` opts into the highest-density interval); no
-  p-values — the probability of direction is opt-in
-  (`show_columns = "pd"`). `R² (Bayes)` in the default fit statistics;
-  `"elpd_loo"` / `"looic"` / `"waic"` opt-in with their standard
-  errors in the footer and reliability caveats when the diagnostics
-  flag them. Every table runs a sampler-diagnostics guard (R-hat, ESS,
-  divergences, E-BFMI): problems add a footer line and a
-  `spicy_bayes_diagnostics` warning, and per-coefficient `"rhat"` /
-  `"ess_bulk"` / `"ess_tail"` columns are available -- plus `"mcse"`,
-  the Monte Carlo standard error of the displayed posterior median
-  (the criterion for how many digits the table can honestly show). Under
-  `exponentiate = TRUE` all quantities come from the exponentiated
-  draws (no delta method). The AME columns are draws-native too:
-  `avg_slopes()` runs per posterior draw and the table reports the
-  posterior median, MAD SD and credible interval of those draws (no
-  `"ame_p"` -- same policy as the p column). Standardized betas work
-  for the algebraic flavors (`"posthoc"` / `"basic"` / `"smart"`,
-  exact affine rescales of the draws) on fixed-effects Bayesian
-  fits: `stan_glm`-style models and standard-formula `brm()` models
-  (design matrix recovered through insight; the scale factors are
-  engine-invariant). Multilevel fits, non-GLM `stanreg` subclasses
-  (`stan_polr`, `stan_betareg`), brms formulas with distributional
-  or special terms, and `"refit"` / `"pseudo"` are refused with a
-  pre-standardization hint.
-  Variational / optimizing fits are refused with a refit hint.
-* Survival (`survival::coxph` / `survreg`, `rms::cph`,
-  `flexsurv::flexsurvreg`): Cox tables report `n` and `N events` as fit
-  statistics and the concordance as a footer note.
-* Categorical and ordinal (`nnet::multinom`, `mlogit::mlogit`,
-  `MASS::polr`, `ordinal::clm`): a single `multinom` renders outcome
-  categories as column groups (`outcome_labels` relabels them);
-  `mlogit` uses a two-segment alternative-specific layout; ordinal
-  thresholds render as a labelled block (`show_thresholds = FALSE` to
-  opt out), and partial-proportional-odds `clm` fits render their
-  non-proportional terms as their own block. Under
-  `exponentiate = TRUE`, a cloglog ordinal model reports the
-  grouped-time hazard ratio as `exp(-B)` -- the cumulative
-  parametrisation places the hazard on `-B`, so `exp(B)` would be its
-  reciprocal -- with the sign convention disclosed in the table note.
-* Survey (`survey::svyglm`); robust / IV / panel (`estimatr`,
-  `AER::ivreg`, `fixest`); beta, Tobit, and two-part counts
-  (`betareg`, `AER::tobit`, `pscl::zeroinfl` / `hurdle`); plus
-  `MASS::rlm` / `glm.nb`, `quantreg::rq`, `mgcv::gam` / `bam`,
-  `stats::nls`, `rms::ols` / `lrm` / `Glm`,
-  `sampleSelection::selection`.
-
-Requests a class cannot honour are refused with a classed error
-(`spicy_unsupported_vcov`, `spicy_unsupported_standardized`) instead of
-rendering an empty column.
+* Mixed effects (`lmer` / `glmer`, `glmmTMB`, `lme`, `gls`): random effects
+  as a block of rows (SD, correlations, residual, with SE and CI), ICC,
+  per-group N and marginal / conditional R² as fit statistics, and a
+  boundary-corrected LR test against the model without random effects.
+* GEE fits (`geeglm()`): its own sandwich SEs (clustered on `id =`, or the
+  `std.err =` jackknife) are the inference, the footer gives the working
+  correlation and alpha, fit stats report the cluster structure (`"qic"` /
+  `"qicu"` / `"scale"` opt-in), with AME and `exponentiate` as for `glm`.
+* Bayesian (`stan_glm()`, `brm()`): posterior median, MAD SD, and
+  equal-tailed credible intervals (`95% CrI`, or `ci_method = "hdi"`); no
+  p-values, probability of direction opt-in (`show_columns = "pd"`).
+  `R² (Bayes)` is a default fit stat, `"elpd_loo"` / `"looic"` / `"waic"`
+  opt-in. `exponentiate = TRUE` works on the draws, AME included, and
+  multilevel fits get a `Random effects (MCMC)` block.
+* Survival (`coxph` / `survreg`, `cph`, `flexsurvreg`): Cox tables report
+  `n` and `N events` as fit statistics and the concordance as a footer note.
+* Categorical (`multinom`, `mlogit`): a single `multinom` renders outcome
+  categories as column groups (`outcome_labels` relabels them), and `mlogit`
+  uses a two-segment alternative-specific layout.
+* Ordinal (`polr`, `clm`): thresholds render as a labelled block
+  (`show_thresholds = FALSE` to opt out), and partial-proportional-odds
+  terms and `clm(scale = ~)` scale coefficients get their own blocks, the
+  latter kept on the log scale under `exponentiate = TRUE`.
+* Survey (`svyglm`); robust / IV / panel (`estimatr`, `ivreg`, `feols` and
+  friends); beta, Tobit, and two-part counts (`betareg`, `tobit`, `zeroinfl`
+  / `hurdle`); plus `rlm`, `glm.nb`, `rq`, `gam` / `bam`, `nls`,
+  `ols` / `lrm` / `Glm`, and `selection`.
 
 ## New functions
 
-* `table_regression_uv()`: univariable screening tables. One fit per
-  candidate predictor, rendered as one table with a row block per
-  predictor and merged side by side with the multivariable model.
-  Supports `lm` (the default linear screen), `glm` (selected
-  automatically when a `family` is supplied), and `coxph`
-  (`outcome = Surv(time, status)`). Under the linear default, a
-  binary-looking outcome proceeds as a linear probability model and
-  says so in a classed warning pointing to `vcov = "HC3"` and to
-  `method = "glm"` for the logistic screen (see "Why the default
-  screen is linear" in `?table_regression_uv`). A per-predictor `N`
-  column is shown by default and a note discloses when Ns differ
-  across fits; `complete_cases = TRUE` forces the common sample.
-  Intercepts are hidden by default; `show_intercept = TRUE` displays
-  each univariable fit's own intercept at the top of its block along
-  with the multivariable one. `p_adjust` treats the whole screen as
-  one family. `exponentiate`, `vcov` / `cluster` (the footer names
-  the cluster column), `labels`, the output engines, and `tidy()`
-  work as in `table_regression()`.
-* `table_regression_models()`: the machine-readable registry of
-  supported model classes (family, engine, AME, exponentiate
-  semantics); its help page is the per-family reference.
+* `table_regression_uv()`: univariable screening tables -- one fit per
+  predictor, one row block each, merged side by side with the multivariable
+  model. Supports `lm` (the linear default), `glm` (selected by `family`, in
+  any form `glm()` accepts), and `coxph` (`outcome = Surv(time, status)`).
+* In the linear screen, a binary-looking outcome proceeds as a linear
+  probability model, in a classed warning pointing to `vcov = "HC3"` and
+  `method = "glm"`. A per-predictor `N` column shows by default, with a note
+  when Ns differ, and `complete_cases = TRUE` forces the common sample.
+* Univariable intercepts are hidden by default; `show_intercept = TRUE` adds
+  each fit's own. `p_adjust` covers the whole screen, and `exponentiate`,
+  `vcov` / `cluster` (the footer names the cluster column), `labels`, the
+  output engines and `tidy()` work as in `table_regression()`.
+* `table_regression_models()`: the machine-readable registry of supported
+  model classes (family, engine, AME, exponentiate semantics); its help page
+  is the per-family reference.
 
 ## New features
 
-* `table_regression()` supports GEE fits from `geepack::geeglm()`
-  (population-averaged models). The fit's own sandwich standard
-  errors -- clustered on its `id =`, or the jackknife variants chosen
-  via geeglm's `std.err =` -- are the displayed inference (Wald z),
-  and the footer discloses the working correlation structure with its
-  estimated alpha. Default fit statistics report the cluster
-  structure (n, `N (<id>)`, largest cluster); `"qic"`, `"qicu"`, and
-  `"scale"` are opt-in `show_fit_stats` tokens. AME columns and the
-  usual `exponentiate` gates (OR / IRR / RR by link) work as for
-  `glm`. Requests GEE cannot honour are refused with actionable
-  messages: spicy's `vcov` / `cluster` (inference is already robust
-  by construction; clustering belongs to `id =`), `standardized`,
-  `nested = TRUE`, and likelihood-based fit statistics (compare
-  working models with QIC).
-* New `show_columns` token families `"rmst"` and `"risk_diff"` for
-  `coxph` fits: covariate-adjusted differences in restricted mean
-  survival time over `[0, tau]` and in cumulative incidence at
-  `at_time`, computed by g-computation from the fitted model, with
-  bootstrap SEs, CIs, and p-values. Factor predictors get one row per
-  level (vs the reference); continuous predictors report the +1-unit
-  contrast. The horizon is explicit and required -- `tau = "minmax"`
-  picks the smallest per-group maximum follow-up -- and the table
-  note states the estimand and the replicate count.
-* New `show_columns` token `"n_events"`: outcome event counts displayed
-  as `events/N` next to the estimates -- per factor level (reference
-  row included) with model totals on continuous rows, computed on each
-  model's own estimation sample. Available for binomial outcomes --
-  `glm`, `glmer`, and `glmmTMB` fits alike -- and right-censored
-  `coxph` fits; opt-in everywhere.
-* `re_ci = "profile"`: profile-likelihood CIs for the variance
-  components of `lmer` / `glmer` fits (asymmetric, boundary-respecting;
-  no SE column, the footer discloses the method).
-* `re_test = "lrt"` / `"rlrt"`: opt-in per-term tests for the variance
-  components -- a boundary-corrected LR test or the exact restricted
-  LRT -- filling the otherwise empty test columns of the
-  `Random effects` rows.
-* `ci_method = "profile"` gives profile-likelihood CIs for `glm`,
-  `polr`, and `clm`; new `ci_method = "boot_percentile"` (with
-  `vcov = "bootstrap"`) reports percentile bootstrap CIs from the same
-  replicates as the bootstrap SEs. The footer names the method.
-* Heteroskedasticity- and cluster-robust `vcov` for the supported
-  classes. Resampling footers report the valid replicate count, and a
-  bootstrap / jackknife whose replicates nearly all fail raises
-  `spicy_resampling_failed` instead of silently reporting classical
-  SEs.
-* `vcov = "CR1S"` for `lm` fits reproduces Stata's
-  `regress, vce(cluster)` exactly: the CR1S small-sample scaling with
-  `t(G - 1)` inference, and a footer naming the convention. `"CR2"`
-  stays the recommended modern choice; `"CR1S"` on a `glm` is refused
-  with an explanation (Stata's ML commands use a different
-  convention).
-* When a `β` column is displayed, the table note now names the
-  standardisation method and its factor-dummy convention (e.g.
-  `β = standardised coefficient ("refit": outcome and numeric
-  predictors z-scored, factor dummies on 0/1)`) -- the methods
-  disagree most visibly on dummies, and a table separated from its
-  script must carry the choice that produced its numbers. `glmmTMB` and `survey::svyglm` are classical-only: clubSandwich
-  has no backend for either, so a `CR*` request is refused with a
-  clear error instead of silently returning invalid (`glmmTMB`) or
-  design-ignoring (`svyglm`) matrices -- for survey fits, declare the
-  clustering in `svydesign(ids = )` where it belongs.
-* Cluster-robust `vcov` (`"CR0"`-`"CR3"`) for `nnet::multinom`,
-  including its AME columns (needs sandwich >= 3.1-2, which added the
-  `estfun()` method). `HC*` stays refused: a multi-equation model has
-  no working residuals.
-* Under a cluster-robust `vcov`, the ordinal Thresholds block
-  (`polr` / `clm`) now takes its SEs, z, p and CIs from the same
-  cluster sandwich as the slopes -- previously the cut-point rows
-  kept model-based SEs under a footer describing the table as
-  cluster-robust.
-* AME columns are available for `betareg`, `mgcv::gam`, `svyglm`,
-  `survreg`, `fixest`, `estimatr`, `quantreg::rq`, `AER::ivreg`, and
-  `rms` fits, and per outcome category for `polr` / `clm` / `multinom`.
-  AME SEs, CIs, and p-values honour a robust `vcov`.
-* `fixest` tables disclose their absorbed fixed effects by default: a
-  `Fixed effects:` block at the top of the fit statistics with one
-  Yes / No row per factor (blank for non-fixest models in mixed
-  tables; varying-slope-only factors absorb no intercept and read
-  No where another model absorbs that factor), plus the within
-  R-squared (`"within_r2"`) for `feols` and McFadden's pseudo-R² for
-  `feglm` / `fepois` in the default statistics. The `"n_groups"`
-  token now renders one `N (<factor>)` row per grouping factor --
-  for absorbed fixed effects and crossed or nested random effects
-  alike -- instead of cramming every factor into one cell.
-* Two-part models show their full model: the zero component of
-  `pscl::zeroinfl` / `hurdle` and the `ziformula` / `dispformula`
-  components of `glmmTMB` render as labelled row blocks with full
-  inference (`show_components = FALSE` to opt out). A component is
-  exponentiated only when its link yields a ratio.
-* Class-aware fit-statistics defaults: pseudo-R² for ordinal and
-  multinomial fits;
-  every other class falls back to `nobs` + `AIC` instead of a blank
-  block. The `N (groups)` row upgrades to plain counts (e.g.
-  `N (Subject)`) when models share a single grouping factor.
+* New `show_columns` token families `"rmst"` and `"risk_diff"` for `coxph`
+  and `survreg`: covariate-adjusted differences in restricted mean survival
+  time over `[0, tau]` and in cumulative incidence at `at_time`, by
+  g-computation, with bootstrap SEs, CIs, and p-values.
+* The horizon is explicit and required (`tau = "minmax"` picks the smallest
+  per-group maximum follow-up, and is refused in the univariable screen,
+  which takes both families at one shared horizon); factors get one row per
+  level, continuous predictors the +1-unit contrast.
+* Stratified Cox fits keep each subject's own stratum baseline; stratified
+  `survreg` fits are refused.
+* New `show_columns` token `"n_events"`: event counts as `events/N` next to
+  the estimates -- per factor level (reference row included), model totals
+  on continuous rows -- for binomial outcomes (`glm`, `glmer`, `glmmTMB`)
+  and right-censored `coxph` fits.
+* Heteroskedasticity- and cluster-robust `vcov` for the supported classes.
+  Resampling footers report the valid replicate count, and a bootstrap /
+  jackknife whose replicates nearly all fail raises
+  `spicy_resampling_failed`.
+* `vcov = "CR1S"` for `lm` fits reproduces Stata's `regress, vce(cluster)`
+  exactly (CR1S scaling with `t(G - 1)` inference, named in the footer);
+  `"CR2"` stays the recommended modern choice, and `"CR1S"` on a `glm` is
+  refused.
+* Cluster-robust `vcov` (`"CR0"`-`"CR3"`) for `multinom`, AME columns
+  included (needs sandwich >= 3.1-2); `HC*` stays refused. `glmmTMB` and
+  `svyglm` are classical-only -- for survey fits, declare the clustering in
+  `svydesign(ids = )`.
+* `rq` fits get their own `vcov` family: the robust `"nid"` sandwich by
+  default, with `"iid"`, `"ker"`, `"rank"` (rank-inversion CIs, no SE / t /
+  p) and a native `"bootstrap"` opt-in; `cluster` runs the wild gradient
+  cluster bootstrap, and `HC*`, `CR*` and `"jackknife"` are refused.
+* `ci_method = "profile"` gives profile-likelihood CIs for `glm`, `polr`,
+  and `clm`; new `ci_method = "boot_percentile"` (with `vcov = "bootstrap"`)
+  reports percentile bootstrap CIs from the same replicates as the SEs.
+* `re_ci = "profile"` gives profile-likelihood CIs for the variance
+  components of `lmer` / `glmer` fits (no SE column; the footer discloses
+  the method), and `re_test = "lrt"` / `"rlrt"` fills the test columns of
+  the `Random effects` rows.
+* Variance-component SEs are omitted on large mixed fits, above
+  `options("spicy.re_se_max_n")` (default 1000), with a note and a warning
+  giving the override.
+* Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
+  `clm`) takes its SEs, z, p and CIs from the same sandwich as the slopes.
+* AME columns are available for many more classes, and per outcome category
+  for `polr` / `clm` / `multinom`; their SEs, CIs, and p-values honour a
+  robust `vcov`. Classes with no AME backend are refused with a pointer to
+  `?table_regression_models`.
+* `nested = TRUE` works for `multinom` (LR chi-square rows), defaults to LRT
+  rows for Cox comparisons, and compares nested `rq` fits through a
+  Wald-type F (all fits at one tau; mixing taus or classes is refused).
+* `fixest` tables show their absorbed fixed effects by default: a
+  `Fixed effects:` block with a Yes / No row per factor (blank for
+  non-fixest models), plus the within R-squared `"within_r2"` for `feols`
+  and McFadden's pseudo-R² for `feglm` / `fepois`.
+* The `"n_groups"` token renders one `N (<factor>)` row per grouping factor
+  -- absorbed fixed effects and crossed or nested random effects alike.
+* Two-part models show their full model: the zero component of `zeroinfl` /
+  `hurdle` and the `ziformula` / `dispformula` components of `glmmTMB`
+  render as labelled row blocks (`show_components = FALSE` to opt out),
+  exponentiated only when the link yields a ratio.
+* Class-aware fit-statistics defaults: McFadden's and Nagelkerke's pseudo-R²
+  for ordinal and multinomial fits, `nobs` and `AIC` for every other class
+  instead of a blank block, and plain counts (e.g. `N (Subject)`) in the
+  `N (groups)` row when models share one grouping factor.
+* New opt-in `show_fit_stats` dispersion tokens: `"theta"` (the NB2
+  dispersion) and `"alpha"` (its reciprocal) for `glm.nb`, and `"phi"` for
+  `betareg`. Refused for other families, and `"phi"` also when the precision
+  has covariates (`y ~ x | z`).
+* Bayesian tables run a sampler-diagnostics guard (R-hat, ESS, divergences,
+  E-BFMI) whose failures add a footer line and a `spicy_bayes_diagnostics`
+  warning; `"rhat"` / `"ess_bulk"` / `"ess_tail"` / `"mcse"` are available
+  as per-coefficient columns.
+* All-Bayesian tables drop the p column from the defaults, refuse an
+  explicit `"p"` / `"t"` request, expand the `"all_b*"` presets without
+  them, and carry no `ame_p`; mixed frequentist + Bayesian tables keep the
+  shared `95% CI` label and dash the Bayesian p cells.
+* `p_adjust` and likelihood-based fit statistics are refused for
+  all-Bayesian tables, standardized betas are limited to `"posthoc"` /
+  `"basic"` / `"smart"` on fixed-effects fits, and variational / optimizing
+  fits are refused with a refit hint.
+* When a `β` column is displayed, the table note names the standardisation
+  method and its factor-dummy convention, states the interaction convention,
+  and is fallback-aware.
+* `broom::tidy()` gains an `outcome_level` column naming the response
+  category of per-category rows (ordinal and multinomial AMEs).
 * `select` is optional in `table_categorical()`: when omitted, every
-  eligible categorical column is tabulated -- factor, character,
-  logical, and labelled (haven) columns, excluding `by` -- matching
-  the select-less defaults of `table_continuous()` and
-  `table_continuous_lm()`. An explicit `select` is still taken
-  verbatim, so numeric-coded categorical variables can be tabulated
-  by naming them.
+  eligible categorical column is tabulated (factor, character, logical,
+  labelled), excluding `by`. An explicit `select` is taken verbatim, so
+  numeric-coded categoricals can be tabulated by naming them.
+* `table_continuous()` gains `drop_na`: the default `TRUE` keeps the
+  historical behavior, `FALSE` shows rows with a missing `by` value as a
+  `"(Missing)"` group, with the test and effect size still computed on the
+  observed groups. Both modes disclose removed values in a table note.
+* `table_categorical()` reads `options(spicy.rescale)` like `cross_tab()`;
+  an explicitly supplied `rescale` still wins.
 * Seven new vignettes: *Mixed-effects*, *GEE (population-averaged)*,
-  *Multinomial*, *Count and two-part*, *Survival*, and *Ordinal
-  regression tables*, plus
-  *Categorical predictors* — a cross-cutting guide to dummy coding
-  and reference levels, joint tests of a factor, ordinal predictors
-  (scores vs dummies), successive-difference contrasts, and why
-  continuous predictors should not be categorized.
-* `table_categorical()` reads `options(spicy.rescale)` like
-  `cross_tab()`; an explicitly supplied `rescale` argument still wins.
-* `table_continuous()` gains `drop_na`, mirroring
-  `table_categorical()`: the default `TRUE` keeps the historical
-  behavior (rows with a missing `by` value are removed), while
-  `FALSE` displays them as a `"(Missing)"` group with the
-  group-comparison test and effect size still computed on the
-  observed groups only. In both modes the default output now
-  discloses removed missing values in a table note ("Missing values
-  removed: ...") instead of dropping them silently.
-
-## Row-wise summaries
-
-* `count_n()` resolves `select` and `exclude` through the same
-  tidyselect path as `mean_n()` and `sum_n()`: unknown names in a
-  character `select` raise a classed error (instead of a base
-  subscript error), and `exclude` accepts positions as well as names.
-* `count_n()` validates every `special` entry before expanding
-  `"all"`, so a typo supplied alongside `"all"` (e.g.
-  `special = c("all", "banana")`) errors instead of being silently
-  discarded.
-* `count_n(special = character(0))` errors with a clear classed
-  message (an empty `special` selects nothing to count) instead of
-  crashing downstream with an obscure base error.
-
-## Minor improvements
-
-* `cross_tab()` now discloses excluded missing values in the table note (`Missing values removed: x (2), y (1); 2 rows in total.`; with `by`, also `Rows with missing g removed: 2.`) instead of silently dropping the NA rows from the tabulation. The deduplicated row total appears when both variables lost values, so overlapping per-variable counts cannot be misread as a sum.
-
-* `cross_tab()` accepts logical weights, coerced to 1/0 like `freq()` already did; they previously raised an error.
-
-* `cross_tab()` warns (class `spicy_ignored_arg`) when a third positional argument is supplied in vector mode, e.g. `cross_tab(df$x, df$y, df$z)`; the extra argument used to be silently ignored.
-
-* `cross_tab()` validates `digits` with the same classed error as `freq()`; invalid values (negative, fractional, non-numeric) used to degrade the display silently or fail with obscure base-R errors.
-
-* `freq()`'s error for an invalid `sort` value now lists `""` (no sorting) among the valid choices.
-
-* `copy_clipboard()` re-emits clipboard backend messages and warnings
-  as real R conditions instead of colored console text, and signals
-  the "`row_names_as_col` has no effect" notice as a classed warning
-  (`spicy_ignored_arg`), so `suppressMessages()` /
-  `suppressWarnings()` and condition handlers work; `quiet = TRUE`
-  still silences everything at once. Its invisible return value is
-  now documented as the object actually sent to the clipboard
-  (reflecting a requested row-name promotion).
-
-* Invalid values for the enum arguments of the user-facing surface
-  (`output`, `align`, `percent`, `assoc_measure`, `direction`,
-  `method`, ...) now raise a classed `spicy_invalid_input` error
-  naming the argument and its valid values, instead of the
-  locale-dependent base `match.arg()` error that escaped the
-  `tryCatch(spicy_error = ...)` catch-all.
-* `print()` on `cross_tab()` tables validates its `digits` argument
-  (single non-negative integer) with a classed error.
-* `spicy_print_table()` raises classed errors (`spicy_invalid_data` /
-  `spicy_invalid_input`) when `x` is not a data frame or
-  `display_labels` does not have one label per column, replacing bare
-  `stopifnot()` failures.
-* `table_categorical()`, `table_continuous()`, and
-  `table_continuous_lm()` announce their clipboard export with a
-  classed message (`spicy_info`), so it can be muffled with
-  `withCallingHandlers(spicy_info = ...)` like every other spicy
-  signal.
-* `table_regression()`'s internal invariant check on the structured
-  body warns with a classed condition (`spicy_internal_invariant`)
-  instead of a bare `warning()`.
-* Wide multi-model tables split into stacked panels more cleanly:
-  continuation panels carry no empty stub rows, and over-wide column
-  spanners truncate with a visible ellipsis.
-* Under `exponentiate = TRUE` with a visible SE column, the footer
-  states the SE scale (delta method) and that the CI bounds are
-  asymmetric.
-* `show_fit_stats = FALSE` suppresses the fit-statistics block.
-* Placeholder cells decimal-align in the `gt` / `flextable` /
-  `tinytable` / Word / Excel outputs; `"deviance"` prints at 1 decimal;
-  the descriptive tables use a single font in Word outputs.
-* `table_continuous()`'s "`test` is ignored" warning states the full
-  trigger condition (`p_value`, `statistic`, `effect_size`, and
-  `effect_size_ci` all turned off) instead of naming only the first
-  two toggles.
-
-* `varlist()`, `vl()`, and `code_book()` annotate `difftime` values with their units in `Values` (e.g. `1.5, 2.5 (hours)`); the bare numbers were ambiguous between hours and days.
-
-* `varlist()` and `vl()` return tibble columns without stray names attributes (the variable names leaked onto 5 of the 7 columns), so element-wise `identical()` and snapshot comparisons behave the same for every column.
+  *Multinomial*, *Count and two-part*, *Survival*, *Ordinal regression
+  tables*, and *Categorical predictors*, a guide to dummy coding, reference
+  levels, joint tests of a factor, and contrast codings.
 
 ## Bug fixes
 
-* The flextable outputs of `table_categorical()`,
-  `table_continuous()` and `table_continuous_lm()` carry the same
-  `spicy_flextable` wrapper as `table_regression()`, so notes and
-  knit-time rendering behave identically across the four functions.
-
-* The asymptotic standard error of `kendall_tau_b()` mis-scaled one
-  margin term of its gradient, so every SE, confidence interval, and
-  Wald p-value it reported was wrong -- typically by under 1% on
-  near-balanced tables, but by up to 12% on tables with skewed
-  margins (the CI could be off at the second displayed decimal).
-  Every CRAN release from 0.6.0 through 0.12.0 shipped the wrong
-  formula; point estimates were always correct. The corrected ASE
-  matches SPSS / PSPP `CROSSTABS` to 7 decimals and is pinned to
-  PSPP 2.0 on six tables. It deliberately diverges from
-  `DescTools::KendallTauB()`, which computes the same wrong SE.
-  Also affects the tau-b rows of `assoc_measures()` and the default
-  ordered-by-ordered association line of `cross_tab()`.
-* `somers_d(direction = "symmetric")` returns the correct 0 instead
-  of a silent `NA` when concordant and discordant pairs are exactly
-  equal (e.g. an independence-pattern table), matching SPSS / PSPP;
-  the association line requested from `cross_tab()` no longer
-  silently disappears on such tables.
-* `assoc_measures()` no longer swallows the classed warnings its
-  measures raise on degenerate tables: each distinct warning (e.g.
-  `spicy_undefined_stat` for an undefined statistic) is re-emitted
-  once after the table is assembled, so `--` rows come with their
-  signal and condition handlers / `suppressWarnings()` keep working.
-* `cramer_v()`, `phi()`, and `contingency_coef()` return `NA` with a
-  `spicy_undefined_stat` warning on tables with a zero row or column
-  margin (the chi-squared statistic is NaN there), instead of a
-  silent `NaN` (`detail = FALSE`) or a crash (`detail = TRUE`); their
-  `assoc_measures()` rows now carry that signal too.
-* `cross_tab()` no longer blanket-suppresses warnings while computing
-  the association measure for its note: classed warnings from the
-  measures reach the caller, as in `assoc_measures()`.
-* `cross_tab()`, `table_categorical()`, and `assoc_measures()` label the `tau_c` association measure `"Stuart's Tau-c"` (the SPSS / PSPP name) everywhere: the `cross_tab()` note, its `assoc_measure` attribute, and the `assoc_measures()` summary row used to say `"Kendall's Tau-c"` while the `table_categorical()` column header said `"Stuart's Tau-c"`.
-* `cross_tab()` and `table_categorical()` no longer swallow the classed error an association measure raises when it does not apply to the tabulated table (e.g. `phi` on a labelled column whose declared missing codes are kept as valid values by `user_na = FALSE`, making the table 3x2): the documented hard error surfaces instead of a silent all-NA association column. `assoc_measure = "auto"` now counts levels under the same `user_na` regime as the table, so it picks a measure that matches the table actually tested.
-* `table_categorical()`, `table_continuous()`, and `table_continuous_lm()` resolve `by` data-first, like tidyselect: a column always wins over a same-named variable in the calling environment. An environment variable holding another column's name used to silently redirect the grouping to that other column.
-* `table_categorical()` keeps a `by` factor level that is declared but never observed as an explicit zero column (`0` n, `0.0` %) in the wide and long outputs; the wide output used to carry blank `NA` cells under that group's columns while the long output omitted the group entirely.
-* `table_categorical()` computes the ordinal association measures (`tau_b`, `tau_c`, `gamma`, `somers_d`, including the automatic tau-b for a pair of ordered factors) on the table in the declared level order under the default `drop_na = FALSE`. An internal character round-trip re-sorted the levels alphabetically before tabulation, so those measures were silently wrong whenever the alphabetical order differed from the ordinal order (education by self-rated health reported tau-b 0.02 instead of the correct 0.20); chi-squared, *p*, Cramer's V, and Phi were unaffected, and `drop_na = TRUE` was always correct.
-* `table_categorical()` displays the value labels of labelled (haven) columns as `"[code] label"` levels in every path, as `freq()` does; the raw codes (`1`, `2`, `3`) used to be displayed under `drop_na = FALSE` and in grouped tables, so the rendering depended on `drop_na` and on `by`.
-* `table_categorical()` keeps both the group and the margin when a `by` level is literally named `"Total"`: the true margin is always present (auto-renamed to `"Total_1"` with a single `spicy_renamed_column` warning, mirroring `cross_tab()`), and the user's `"Total"` group keeps its own column. The margin used to disappear silently, with the user's group displayed under the `Total` header. `tidy()` and `glance()` on such tables now drop the real margin instead of the user's group.
-* `table_categorical()` machine outputs (`output = "data.frame"`, `"long"`) carry full-precision values in grouped tables: weighted counts are exact and percentages are no longer pre-rounded to 1 decimal, matching the ungrouped path. `percent_digits = 2` therefore renders true decimals (`33.33`, not the fabricated `33.30`), and `tidy()` keeps exact fractional weighted counts instead of truncating them.
-* `table_categorical()` displays counts as integers everywhere: weighted cells and their `Total` margin are rounded by the same display rule (round half to even, at display time only -- the SPSS Crosstabs convention). A weighted row used to mix integer cells with a fractional margin. Cells and margins are rounded independently, so small display discrepancies remain possible; the machine outputs carry the exact weighted counts.
-* `table_categorical(correct = TRUE)` on a non-2x2 table warns once that Yates' correction is ignored, with the dimensions of the table actually tested; the warning used to fire three times per variable, twice with the dimensions of an internal table that included the `"(Missing)"` column.
-* `table_categorical(output = "data.frame")` includes the documented `Chi2` and `df` columns in grouped tables, consistent with the long output and `glance()`.
-* `print()` on `freq()` tables invisibly returns the table object
-  itself (as documented), not the internally rebuilt display frame.
-* `freq()` keeps the variable label footer when observations with `NA` weights are dropped; base subsetting used to strip the `label` attribute from plain vectors that carry a variable label without value labels (the haven pattern), silently losing the footer.
-* `freq(sort = "name+")` / `"name-"` on labelled variables sorts by the underlying code whenever the code is displayed (`labelled_levels` `"prefixed"` or `"values"`), matching the SPSS by-value convention; string collation used to rank `[10]` ahead of `[2]`. With `labelled_levels = "labels"` the alphabetical label sort is unchanged.
-* `table_categorical()` warns (class `spicy_no_selection`) and lists the available level strings when `levels_keep` matches nothing for a selected variable, instead of silently dropping the variable from the table. For labelled columns the matching strings are the `"[code] label"` level strings, never the bare label text.
-* `varlist()`, `vl()`, and `code_book()` render `POSIXlt` columns as datetime values under `values = TRUE`, as the compact summary already did, instead of a list-column summary (`List(3): list`).
-* `varlist()`, `vl()`, and `code_book()` show an explicit `NA` factor level (e.g. from `addNA()`) as `<NA>` in `Values` instead of silently dropping it, so `Values` and `N_distinct` agree on the declared levels.
-* `label_from_names()` no longer blames the split for duplicate
-  column names that already existed in the input
-  (`check.names = FALSE` data): pre-existing duplicates pass through
-  untouched, and only collisions created by the renaming error.
-* `table_regression_uv()` no longer silently ignores `family` with
-  `method = "lm"`: a non-gaussian family is refused with the same
-  actionable error as the `coxph` refusal, and a supplied
-  `gaussian()` is ignored with a classed warning.
-* `gt` and `flextable` outputs now render in Quarto / R Markdown
-  **Word**, PowerPoint, and PDF documents (they silently disappeared
-  from non-HTML targets). A new `as_flextable()` method returns the
-  underlying flextable for manual composition.
-* `table_continuous_lm()` now discloses robust and resampling SEs in
-  its table note, carries its notes into every rich output, and
-  accepts `cluster = ~region`.
-* `table_continuous_lm()` reports correct estimated means, SEs, CIs, and the displayed binary difference when `by` is an ordered factor. The model was fitted with polynomial contrasts while the prediction grid assumed treatment coding, so every `M` column was wrong (and the 2-level difference was shrunk by exactly 1/sqrt(2)) while the F statistic and p-value stayed correct, masking the error. A categorical `by` is now fitted with explicit treatment contrasts, matching the documented convention whatever the session sets: an ordered `by` no longer picks up polynomial coding, and a session-wide `options(contrasts = c("contr.sum", "contr.poly"))` (common in ANOVA workflows) no longer alters the results or aborts a binary `by`.
-* `table_continuous_lm(adjustment = "balanced")` computes correct adjusted means when a covariate is an ordered factor: the synthetic grid keeps the covariate's ordered coding (`contr.poly`) instead of silently rebuilding it with treatment columns against polynomial coefficients. `adjustment = "proportional"` was not affected.
-* `table_continuous()` forms groups from a non-factor `by` (character, numeric, haven labelled) in order of first appearance, matching `table_categorical()`; they used to be re-sorted, so the two sibling tables could show the same groups in different orders. The group-comparison test and effect size follow the displayed order, so the sign of a two-group statistic matches the first-minus-second convention of the table rows.
-* `table_continuous()` degrades per variable when a group-comparison test or effect size fails or is undefined on degenerate data (e.g. `t.test()`'s "data are essentially constant", or a zero pooled SD making Hedges' *g* non-finite): the affected cells become `NA` with a classed warning naming the variable, and the other selected variables keep their results. The raw error used to kill the whole multi-variable table.
-* `table_continuous_lm()` treats a haven labelled `by` with value labels as a categorical predictor -- groups over the raw codes, the same dispatch as `table_continuous()` and `table_categorical()` -- instead of silently fitting a continuous slope on the codes. A labelled `by` without value labels is still treated as continuous.
-* `table_continuous_lm()` fits cleanly when a factor covariate declares a level that never occurs in the data: empty covariate levels are dropped at fit entry, so the table matches the same model on `droplevels()`-ed data instead of crashing.
-* `table_continuous_lm()` excludes rows with `NA` in `weights` from the analytic sample, as its documentation always promised; such rows used to raise a hard "must contain only finite values" error. Rows dropped for a missing `by` value or a missing weight are now disclosed in the table note, like the rest of the family.
-* `table_continuous_lm()` accepts covariates with non-syntactic names (e.g. `"co var"`); they used to raise a raw formula parse error.
-* `table_continuous_lm()` errors with a classed, actionable message when `by` has a single observed level (nothing to compare; an all-NA row used to print silently), and reports `NA` SEs, CIs, tests, and *p*-values with a classed warning when the fit is saturated (one observation per group); `NaN` cells with a misleading `"z"` test label used to be displayed. When missing values leave a single outcome with fewer than two observed groups (or too few observations for a slope), that outcome degrades with a classed warning naming it, and its `NA` row keeps the regular group columns instead of growing a spurious `M (NA)` column; the other outcomes are unaffected.
-* `table_continuous_lm(adjustment = "proportional")` averages the G-computation predictions with the case weights when `weights` is supplied (the Stata `margins` convention, equivalent to `marginaleffects::avg_predictions(wts = )`); the aggregation used to ignore the weights, contradicting the documented Stata equivalence.
-* `table_continuous_lm(effect_size = "omega2", effect_size_ci = TRUE)` reports the correct confidence interval for the covariate-adjusted partial omega-squared, matching `effectsize::omega_squared(partial = TRUE)`; the bounds used to be those of the partial eta-squared.
-
-* `table_regression()` partial effect sizes are now true Type-II tests in models with interactions. The focal F behind `partial_f2` / `partial_eta2` / `partial_omega2` (and their CIs), and the `partial_chi2` likelihood-ratio chi-square for `glm`, test each term by comparing the two nested models that both exclude every higher-order interaction containing it (the `car::Anova(type = 2)` convention), so main-effect values respect marginality and no longer change with the factor coding (treatment, sum, Helmert). Values change only for models with interaction terms; additive models and the interaction terms themselves are unchanged. The same convention now governs the term-level Wald chi-square that `partial_chi2` reports for mixed-effects models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`).
-* The RMST and risk-difference columns extend to parametric survival
-  models (`survival::survreg`): the AFT curves are closed-form, so
-  the standardized survival is exact up to numerical integration.
-  Cross-validated against `flexsurv::standsurv()` (exact) and the
-  closed-form exponential RMST (machine precision). Stratified
-  `survreg` fits (per-stratum scale) are refused.
-* The univariable screen (`table_regression_uv(method = "coxph")`)
-  accepts the RMST and risk-difference columns: unadjusted per-predictor
-  estimands next to the covariate-adjusted ones of the multivariable
-  column, all at one shared horizon (`tau = "minmax"` is refused
-  there -- per-fit horizons would not be comparable).
-* The RMST and risk-difference columns now support stratified Cox
-  models (`strata()`): g-computation keeps each subject's own stratum
-  baseline, and the table note says so. The strata variable itself
-  gets no contrast row. Cross-validated against
-  `adjustedCurves::adjusted_rmst()` (exact).
-* `MASS::glm.nb` fits gain opt-in dispersion fit-stat rows:
-  `show_fit_stats` tokens `"theta"` (the NB2 dispersion) and
-  `"alpha"` (its reciprocal, the Stata convention). Refused with a
-  clear error for other families.
-* `betareg` fits gain the matching opt-in precision row: the
-  `show_fit_stats` token `"phi"`, back-transformed from the
-  precision link (`y ~ x | 1` reports the same phi as `y ~ x`).
-  Refused for other families and when the precision has covariates
-  (`y ~ x | z`), so phi is not a single number.
-* `nnet::multinom` fits now report McFadden's and Nagelkerke's
-  pseudo-R² (as the other categorical families do). The tokens were
-  silently dropped from `show_fit_stats` before, and a weighted fit's
-  null log-likelihood ignored the weights.
-* Bayesian tables get their fit statistics: `"r2_bayes"` (the
-  posterior-median Bayesian R², now in the all-Bayesian default
-  block) and the opt-in `"elpd_loo"` / `"looic"` / `"waic"` tokens
-  (PSIS-LOO / Watanabe-Akaike; the footer discloses the elpd
-  standard error). Refused for frequentist fits; Bayes factors stay
-  out by design.
-* All-Bayesian tables drop the p column from the defaults (a dash
-  column carries no information), refuse an explicit `"p"` / `"t"`
-  request, expand the `"all_b*"` presets without them, and label the
-  interval header `95% CrI`. Mixed frequentist + Bayesian tables
-  keep the shared `95% CI` label and dash the Bayesian p cells.
-* Bayesian tables gain the `"pd"` column (`show_columns`): the
-  posterior probability of direction, the reporting-guideline-aligned
-  reading of "is there an effect" -- computed at extraction since
-  0.12 but never exposed. Refused for frequentist fits.
-* Bayesian tables tighten up. `stan_glmer` / multilevel `brm` fits
-  report their random effects as a proper block (posterior median SD,
-  credible interval from the draws) instead of one flat row per group
-  deviation; the footer reads `Random effects (MCMC)` and no
-  likelihood-ratio line is printed. `p_adjust` and likelihood-based
-  fit-statistic tokens (`AIC`, pseudo-R², ...) are refused with clear
-  errors for all-Bayesian tables -- both were silent no-ops -- and
-  the class-aware defaults report `n` only. Mixed frequentist +
-  Bayesian tables keep the frequentist columns filled.
-* Factors under non-default contrast codings (successive differences,
-  sum-to-zero, Helmert, custom matrices) now group under their parent
-  variable like treatment and polynomial codings, labelled by the
-  contrast-matrix column names. No reference row is shown -- none
-  exists under those codings.
-* `ordinal::clm(scale = ~)` fits now render their scale (dispersion)
-  coefficients as a `Scale effects` block. They were silently absent
-  from the table: an estimated component of the model went unreported.
-  The rows stay on the log scale under `exponentiate = TRUE` (their
-  exponential is a ratio of latent standard deviations, not an odds
-  ratio) and the footer says so.
-* `broom::tidy()` gains an `outcome_level` column naming the response
-  category of per-category rows (ordinal and multinomial average
-  marginal effects). Those rows were previously indistinguishable --
-  four `age` AME rows sharing one term, with nothing to identify the
-  category.
-* The random-effects LR test no longer prints a negative statistic
-  (`-0.00`) on singular fits: the statistic is clamped at zero and the
-  boundary p-value is now 1 -- half the chi-bar-squared null
-  distribution is a point mass at zero, so a zero statistic carries no
-  evidence (it printed 0.500, the ceiling of the halved-chi-squared
-  formula).
-* `ci_level` now reaches the random-effect variance-component CIs; all
-  three mixed engines hardcoded 95% for those rows.
-* Large mixed fits no longer spend minutes on variance-component SEs:
-  above `options("spicy.re_se_max_n")` (default 1000) those cells are
-  omitted, with a note and a warning giving the override.
-* `nested = TRUE` now works for `multinom` (LR chi-square rows) and
-  defaults to LRT rows for Cox comparisons (`lm`'s R² / F-change rows
-  are undefined for a partial likelihood).
-* Quantile regression (`quantreg::rq`) gets its own `vcov` estimator
-  family: the default is now the heteroskedasticity-robust `"nid"`
-  sandwich (quantreg's own large-sample default; the previous iid
-  default understated SEs under heteroskedasticity and disagreed with
-  the AME columns, which already used `"nid"`), with `"iid"`, `"ker"`,
-  `"rank"` (rank-inversion CIs, no SE / t / p) and a native
-  `"bootstrap"` as opt-ins. `cluster` works through the wild gradient
-  cluster bootstrap (`vcov = "bootstrap"`); `HC*`, `CR*` and
-  `"jackknife"` are refused with the reason. The footer names the
-  estimator; AME columns share the coefficient rows' matrix.
-  `nested = TRUE` compares nested `rq` fits through `anova.rq`'s
-  Wald-type F (all fits at one tau; mixing taus or model classes is
-  refused with the reason).
-* AME columns that silently rendered empty are now populated (`fixest`,
-  `estimatr`, `quantreg`, `AER::ivreg`, `rms`, `pscl`) or refused with
-  a pointer to `?table_regression_models` (classes with no AME
-  backend).
-* The statistic column header follows each model's actual reference
-  distribution (`z` or `t`); it was hardcoded to `t`.
+* `kendall_tau_b()` reported wrong SEs, confidence intervals and Wald
+  p-values in every release from 0.6.0 through 0.12.0 -- its asymptotic
+  standard error mis-scaled one margin term; point estimates were correct.
+  Also affects `assoc_measures()` and the `cross_tab()` association line.
+* `somers_d(direction = "symmetric")` returns `0` on equal concordant and
+  discordant pairs, `cramer_v()` / `phi()` / `contingency_coef()` return
+  `NA` with a `spicy_undefined_stat` warning on a zero margin, and
+  `assoc_measures()` / `cross_tab()` stop swallowing those warnings.
+* `cross_tab()`, `table_categorical()`, and `assoc_measures()` label the
+  `tau_c` measure `"Stuart's Tau-c"` everywhere; several paths said
+  `"Kendall's Tau-c"`.
+* `cross_tab()` and `table_categorical()` surface the classed error a
+  measure raises when it does not apply (e.g. `phi` on a 3x2 table);
+  `assoc_measure = "auto"` counts levels under the table's `user_na` regime.
+* `cross_tab()` computes weighted count Totals (`percent = "none"`) from the
+  unrounded table, rounded once for display, and falls back to a neutral `x`
+  / `y` / `weights` placeholder in titles and the weight footer instead of a
+  data value plucked from an inline expression.
+* `freq()` keeps its label footer when `NA`-weight rows are dropped, and
+  `print()` invisibly returns the table object itself, not the rebuilt
+  display frame.
+* `freq()` warns (`spicy_caveat`) when `labelled_levels = "labels"` merges
+  distinct codes sharing a label, and `valid = FALSE` drops the Valid
+  Percent column -- and `Cum. Valid Percent` under `cum = TRUE` -- instead
+  of printing `NA` under a `100.0` Total.
+* `freq(sort = "name+")` / `"name-"` on labelled variables sorts by the
+  underlying code whenever the code is displayed; string collation ranked
+  `[10]` ahead of `[2]`. The `labelled_levels = "labels"` sort is unchanged.
+* `table_categorical()` computes the ordinal association measures (`tau_b`,
+  `tau_c`, `gamma`, `somers_d`) in declared level order under
+  `drop_na = FALSE`; an internal re-sort to alphabetical order made them
+  wrong when the orders differed.
+* `table_categorical()` displays the value labels of labelled columns as
+  `"[code] label"` levels in every path, and keeps a `by` level that is
+  declared but never observed as an explicit zero column (`0` n, `0.0` %).
+* `table_categorical()` keeps both the group and the margin when a `by`
+  level is named `"Total"`: the margin is auto-renamed `"Total_1"` with a
+  `spicy_renamed_column` warning, and `tidy()` / `glance()` drop the real
+  margin, not the user's group.
+* `table_categorical()` machine outputs (`"data.frame"`, `"long"`) carry
+  full-precision values in grouped tables (`percent_digits = 2` renders
+  `33.33`), and `output = "data.frame"` gains the documented `Chi2` and `df`
+  columns the long output already had; displayed counts
+  are integers everywhere, cells and `Total` margin under one rule.
+* `table_categorical(correct = TRUE)` on a non-2x2 table warns once that
+  Yates' correction is ignored, and `levels_keep` matching nothing warns
+  (`spicy_no_selection`) with the available level strings instead of
+  dropping the variable; for labelled columns the strings to match are the
+  displayed `"[code] label"` levels, not the bare label text.
+* `table_categorical()`, `table_continuous()`, and `table_continuous_lm()`
+  resolve `by` data-first, like tidyselect: a column always wins over a
+  same-named variable in the calling environment.
+* `table_continuous_lm()` reports correct estimated means, SEs, CIs, and
+  binary difference when `by` is an ordered factor; every `M` column was
+  wrong. A categorical `by` now uses explicit treatment contrasts, so
+  session-wide `options(contrasts = ...)` no longer alters the results.
+* `table_continuous_lm()` computes correct `"balanced"` adjusted means when
+  a covariate is an ordered factor, averages the `"proportional"`
+  predictions with the case weights, and reports the omega-squared interval
+  (not the eta-squared one) under `effect_size = "omega2"`.
+* `table_continuous_lm()` treats a labelled `by` with value labels as
+  categorical (groups over the raw codes; without value labels it stays
+  continuous), fits cleanly when a factor
+  covariate declares an unused level, accepts non-syntactic covariate names,
+  and excludes `NA`-weight rows, disclosing dropped rows in the note.
+* `table_continuous_lm()` errors when `by` has a single observed level and
+  reports `NA` inference with a classed warning on a saturated fit; an
+  outcome with too few observed groups degrades with a warning naming it,
+  leaving the others intact.
+* `table_continuous_lm()` discloses robust and resampling SEs in its table
+  note, carries its notes into every rich output, and accepts
+  `cluster = ~region`.
+* `table_continuous()` forms groups from a non-factor `by` (character,
+  numeric, labelled) in order of first appearance, matching
+  `table_categorical()`; the test and effect size follow the displayed
+  order.
+* `table_continuous()` degrades per variable when a test or effect size
+  fails on degenerate data: the affected cells become `NA` with a classed
+  warning naming the variable, and the other variables keep their results.
+* Average marginal effects now use the fit's prior weights: for a weighted
+  `lm` / `glm` / `geeglm` fit the AME (with SE / CI / p) is the weighted
+  average of the unit-level slopes, so AME values change for weighted fits.
+  `svyglm` is unaffected.
+* `table_regression()` partial effect sizes are now true Type-II tests:
+  `partial_f2` / `partial_eta2` / `partial_omega2` (with CIs), the `glm`
+  `partial_chi2`, and the mixed-model Wald chi-square change in models with
+  interactions, where main effects no longer depend on the factor coding.
+* `table_regression()` reports correct `partial_chi2` for `glm` fits created
+  with `y = FALSE` and a matrix `cbind(successes, failures)` response: the
+  internal refit multiplied the binomial totals into the weights twice,
+  inflating every chi-square.
 * Factor coefficient and AME rows follow `levels()` order (was
   alphabetical); ordered factors with AME columns show a reference row;
-  `ame_ci` / `ame_p` / `ame_se` populate without the bare `"ame"`
-  token; stars anchor on B (and AME), never on beta.
-* Bootstrap / jackknife and `standardized = "refit"` refits no longer
-  leak the caller's environment and now work on `factor()` / `log()` /
-  `poly()` formulas; a failed refit falls back with a warning instead
-  of silently changing method.
-* Standardized beta rows on mixed fits inherit B's reference
-  distribution (they showed a second p-value for the same test); the
-  standardized-coefficient table note states the interaction
-  convention and is fallback-aware.
-* Titles: binomial mixed / survey fits are link-aware (a probit fit is
-  no longer titled "Logistic"); Tobit titles name the response; ordinal
-  titles name the shared-slopes assumption by its link; proper nouns
-  keep their capitals in multi-model titles.
-* Mixed fits with `cbind()` responses get their LR test against the
-  no-random-effects model; `labels` accepts coefficient-level keys on
-  mixed fits; `polr` / `clm` detect non-uniform prior weights.
-* `flexsurv`: probit-scale splines and ancillary-parameter covariates
-  refuse `exponentiate = TRUE`; factor predictors group under their
-  parent variable with a reference row.
-* `as_structured()` and the rich output engines match the console body
-  exactly (blank vs en-dash reference cells, the multi-outcome
-  `Outcome` row); the structured schema gains
-  `reference_models_by_row` and `outcome_labels_by_col`.
-* `table_regression(m1, m2)` without `list()` errors with a helpful
-  message; colliding model labels no longer break `output = "gt"`;
-  the `p_adjust` footer's family size matches the adjustment
-  performed; `ci_method = "profile"` with a robust `vcov` defers to
-  the `vcov` and warns; the singular-fit note states the fact and
-  leaves the advice to a build-time warning.
-
-* Average marginal effects now use the fit's prior weights, as the
-  Weights section always promised: for a weighted `lm` / `glm` /
-  `geeglm` fit the AME (and its SE / CI / p) is the weighted average
-  of the unit-level slopes, matching
-  `marginaleffects::avg_slopes(fit, wts = weights(fit))`. AME values
-  change for weighted fits (they matched the unweighted average
-  before); `svyglm` is unaffected -- its design weights were already
-  applied natively. The weights reach every path: fits under
-  `na.action = na.exclude` (the NA-padded weights vector no longer
-  silently disabled the weighting), `MASS::polr` frequency weights
-  (recovered from the model frame), and the draws-native Bayesian
-  AME of `stanreg` / `brmsfit` fits.
-
-* `nlme::gls` fits populate the AME columns
-  (`show_columns = c("b", "ame")`); the column rendered silently
-  empty even though the model registry advertises AME support for
-  `gls`.
-
+  `ame_ci` / `ame_p` / `ame_se` populate without the bare `"ame"` token;
+  stars anchor on B (and AME), never on beta.
+* Factors under non-default contrast codings (successive differences,
+  sum-to-zero, Helmert, custom matrices) group under their parent variable,
+  labelled by the contrast-matrix column names. No reference row is shown --
+  none exists under those codings.
 * Logical predictors get the grouped factor layout the documentation
-  promises: an `is_smoker:` header with indented `FALSE (ref.)` /
-  `TRUE` rows (and aligned AME cells), instead of a flat
-  `is_smokerTRUE` row with no reference level.
+  promises (an `is_smoker:` header with indented `FALSE (ref.)` / `TRUE`
+  rows), and character predictors align their AME rows with the grouped
+  levels.
+* The statistic column header follows each model's actual reference
+  distribution (`z` or `t`); it was hardcoded to `t`.
+* Bootstrap / jackknife and `standardized = "refit"` refits no longer leak
+  the caller's environment and now work on `factor()` / `log()` / `poly()`
+  formulas; a failed refit falls back with a warning instead of silently
+  changing method.
+* In mixed-class tables, a fit statistic not defined for a model's class
+  renders an en-dash in that model's cell (console and rich outputs); the
+  blank cell was indistinguishable from "not requested". The first-column
+  dash of the nested change statistics is unchanged.
+* `show_fit_stats = "pseudo_r2_tjur"` is refused with a classed error when
+  no model in the set is a binomial-family `glm`; the row was silently
+  dropped.
+* `table_regression()` returns carry the documented provenance attributes
+  `outcome` and `model_ids`, `output = "data.frame"` carries the same pair,
+  `as.data.frame()` no longer drops `col_spec`, and `output = "long"`
+  returns the long tibble its documentation promised.
+* `as_structured()` and the rich output engines match the console body
+  exactly (blank vs en-dash reference cells, the multi-outcome `Outcome`
+  row); the structured schema gains `reference_models_by_row` and
+  `outcome_labels_by_col`.
+* `table_regression(m1, m2)` without `list()` errors with a helpful message;
+  colliding model labels no longer break `output = "gt"`; the `p_adjust`
+  footer's family size matches the adjustment performed; and multi-model
+  titles keep proper nouns capitalised.
+* `ci_method = "profile"` with a robust `vcov` defers to the `vcov` and
+  warns, and the singular-fit note states the fact, leaving the advice to a
+  build-time warning.
+* `gt` and `flextable` outputs now render in Quarto / R Markdown **Word**,
+  PowerPoint, and PDF documents, where they silently disappeared. A new
+  `as_flextable()` method returns the underlying flextable for manual
+  composition.
+* The flextable outputs of `table_categorical()`, `table_continuous()`, and
+  `table_continuous_lm()` carry the same `spicy_flextable` wrapper as
+  `table_regression()`, so notes and knit-time rendering behave identically.
+* `varlist()`, `vl()`, and `code_book()` render `POSIXlt` columns as
+  datetime values under `values = TRUE`, and show an explicit `NA` factor
+  level as `<NA>` in `Values` instead of dropping it.
+* `label_from_names()` no longer blames the split for duplicate column names
+  that already existed in the input (`check.names = FALSE` data).
+* `count_n()` resolves `select` and `exclude` through the same tidyselect
+  path as `mean_n()` and `sum_n()` (`exclude` now takes positions as well as
+  names), and raises a classed error (`spicy_invalid_input`) when `count` is
+  zero-length or all-missing, when `special` is empty, and for a typo
+  supplied alongside `special = "all"`. A rejected `count = NaN` now points
+  to `special = "NaN"` rather than to `special = "NA"`, which counts both.
+* The tabulating and summarising functions reject `bit64::integer64` input
+  with a classed error (`spicy_invalid_data`) naming the fix: convert with
+  `as.integer()` / `as.numeric()`, or `as.character()` for codes wider than
+  2^53. `count_n()` still works.
 
-* Character predictors align their AME rows with the grouped factor
-  levels, exactly like the same variable wrapped in `factor()`; the
-  AME column used to show one stray unlabeled row holding the first
-  contrast and drop the remaining levels' AMEs.
+## Minor improvements
 
-* `table_regression()` reports correct `partial_chi2` values for
-  `glm` fits created with `y = FALSE` and a matrix
-  `cbind(successes, failures)` response: the internal refit
-  multiplied the binomial totals into the weights a second time,
-  inflating every chi-square. (`stats::drop1()` reconstructs such
-  fits the same way and shares the defect, so it is deliberately not
-  mirrored on this input.)
-
-* In mixed-class tables, a fit statistic not defined for a model's
-  class renders an en-dash in that model's cell (console and rich
-  outputs), as documented; the cell was blank, indistinguishable
-  from "not requested". The first-column dash of the nested change
-  statistics is unchanged.
-
-* `show_fit_stats = "pseudo_r2_tjur"` is refused with a classed
-  error (`spicy_invalid_input`) when no model in the set is a
-  binomial-family `glm` -- Tjur's R² needs a binary outcome; the
-  requested row was silently dropped before. With at least one
-  binomial model in the set, the non-binomial cells render the
-  per-cell en-dash.
-
-* `table_regression()` returns carry the documented provenance
-  attributes `outcome` and `model_ids` (one entry per model, in
-  table order). `output = "data.frame"` carries the same pair, and
-  `as.data.frame()` no longer drops `col_spec`, so the two documented
-  equivalents now return identical objects (same cells, classes, and
-  attributes).
-
-* `table_regression(output = "long")` returns the long-format tibble
-  (`tbl_df`) its documentation always promised; it used to return a
-  plain `data.frame`.
-
-* `count_n()` raises a classed error (`spicy_invalid_input`) when `count` is zero-length or contains only missing values, instead of silently returning a plausible-looking all-zero count; and rejecting `count = NaN` now points to `special = "NaN"` (the exact counterpart) instead of describing the input as `count = NA` and hinting at `special = "NA"`, which counts NA and NaN together.
-
-* `cross_tab()` weighted count tables (`percent = "none"`) compute the Total row and grand total from the unrounded weighted table, rounded once for display, instead of summing the already-rounded cells: with fractional weights the printed margins could contradict both the true weighted totals and the N row the percent tables derive from the same data, and under `rescale = TRUE` the Total row did not even sum to its own printed grand total.
-
-* `cross_tab()` titles and the weight footer no longer present a data value plucked out of an inline expression as a variable name (e.g. a title ending in `x "g2"`, or `Weight: 1` for a literal weight vector): when no name can be derived structurally, a neutral `x` / `y` / `weights` placeholder is used.
-
-* `freq()` warns (class `spicy_caveat`) when `labelled_levels = "labels"` merges distinct codes that share the same label text, naming the merged codes: the pooling is forced by factor semantics, but SPSS keeps one row per value, so the silently changed partition is now disclosed.
-
-* `freq(valid = FALSE)` with missing values present no longer prints a Valid Percent column of `NA` values whose Total row asserts `100.0`; the column (and `Cum. Valid Percent` with `cum = TRUE`) is dropped whenever valid percentages were not computed.
-
-* `freq()`, `cross_tab()`, `mean_n()`, `sum_n()`, `table_categorical()`, `table_continuous()`, and `table_continuous_lm()` reject `bit64::integer64` input (tabulated variables, weights, selected columns, `by` groups, and covariates) with a classed error (`spicy_invalid_data`) naming the fix: integer64 passes `is.numeric()` but stores raw 64-bit integer bit patterns that base R numeric code silently misreads as garbage counts near `1e-323` -- a summary table showed `M = 0.00` for every integer64 column, and group labels printed as denormal doubles unless the bit64 namespace happened to be loaded -- a realistic hazard for BIGINT columns imported via DBI or `data.table::fread()`. Convert with `as.integer()` / `as.numeric()` (or `as.character()` for codes wider than 2^53) first; `count_n()` compares values without numeric aggregation and continues to work.
-
-* `table_regression_uv()` accepts `family` in the three forms `stats::glm()` accepts -- a family object (`binomial()`), its name (`"binomial"`), or the bare constructor function (`binomial`) -- and refuses anything else up front with a classed error (`spicy_invalid_input`); a name or bare constructor previously failed with a raw `$ operator is invalid for atomic vectors` error before any model was fitted.
+* `cross_tab()` discloses excluded missing values in the table note -- per
+  variable, with a deduplicated row total, and rows dropped for a missing
+  `by` -- instead of dropping them silently.
+* `cross_tab()` accepts logical weights, coerced to 1/0 like `freq()`; warns
+  (`spicy_ignored_arg`) on a third positional argument in vector mode; and
+  validates `digits` with the same classed error as `freq()`, in the
+  function and its `print()` method.
+* Invalid values for the enum arguments (`output`, `align`, `percent`,
+  `assoc_measure`, `direction`, `method`, ...) raise a classed
+  `spicy_invalid_input` error naming the argument and its valid values, and
+  `freq()`'s `sort` error lists `""` (no sorting).
+* `copy_clipboard()` re-emits clipboard backend messages and warnings as
+  real R conditions, and signals the "`row_names_as_col` has no effect"
+  notice as a classed warning (`spicy_ignored_arg`); its invisible return
+  value is the object actually sent to the clipboard.
+* `table_categorical()`, `table_continuous()`, and `table_continuous_lm()`
+  announce their clipboard export with a classed message (`spicy_info`), so
+  it can be muffled like every other spicy signal.
+* `spicy_print_table()` raises classed errors when `x` is not a data frame
+  or `display_labels` does not have one label per column, and
+  `table_regression()`'s internal invariant check warns with a classed
+  condition (`spicy_internal_invariant`).
+* Wide multi-model tables split into stacked panels more cleanly:
+  continuation panels carry no empty stub rows, and over-wide column
+  spanners truncate with a visible ellipsis.
+* Under `exponentiate = TRUE` with a visible SE column, the footer states
+  the SE scale (delta method) and that the CI bounds are asymmetric.
+* Placeholder cells decimal-align in the `gt` / `flextable` / `tinytable` /
+  Word / Excel outputs; `"deviance"` prints at 1 decimal; the descriptive
+  tables use a single font in Word outputs.
+* `table_continuous()`'s "`test` is ignored" warning states the full trigger
+  condition (`p_value`, `statistic`, `effect_size`, and `effect_size_ci` all
+  turned off) instead of naming only the first two toggles.
+* `varlist()`, `vl()`, and `code_book()` annotate `difftime` values with
+  their units in `Values` (e.g. `1.5, 2.5 (hours)`), and `varlist()` /
+  `vl()` return tibble columns without stray names attributes.
 
 # spicy 0.12.0
 
