@@ -156,9 +156,7 @@
   unchanged; identity links keep the warn-and-skip.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  and
-  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
-  exempt intercept rows from `keep` / `drop`: the patterns select
+  exempts intercept rows from `keep` / `drop`: the patterns select
   predictors, and `show_intercept` alone controls the intercept. With
   the default `show_intercept = TRUE`, `keep = "wt"` now retains the
   intercept row; pass `show_intercept = FALSE` to hide it.
