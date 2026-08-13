@@ -50,7 +50,11 @@ RECOMMANDATION : les deux voies de ta note, ensemble.
   document pose la sienne s'il en veut une).
 - ET issue upstream tinytable (la gouttière devrait être une option
   de group_tt, pas un effet de bord) — dossier au protocole habituel,
-  avec ta mesure 21pt vs 16pt comme evidence. Tu postes.
+  avec ta mesure 21pt vs 16pt comme evidence.
+  POSTÉE 2026-08-13 : tinytable#674
+  (https://github.com/vincentarelbundock/tinytable/issues/674), avec
+  repro compilable (185 vs 140 pt mesurés) et le précédent interne
+  #241 comme levier.
 
 ## 3. Notes du moteur tinytable — DÉCIDÉ 2026-08-13 : GO la reco RÉVISÉE
 ## (défaut 4 de ta note dev/uv_r2_colonne_spec.md)
