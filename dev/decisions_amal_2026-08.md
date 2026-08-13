@@ -88,6 +88,20 @@ tableau) — et l'échappement de note étant maintenant corrigé, le
 balisage passe. Opt-out documenté si un gabarit veut reprendre la
 main (spicy.note_style = "none").
 
+## 4. Titre de table_continuous(by=) — DÉCIDÉ 2026-08-13 : « Descriptive statistics by ‹label› »
+
+Le trou (mis au jour quand les titres ont atteint les légendes
+HTML/Word) : la variante by titrait « Descriptive statistics » tout
+court — la variable de croisement n'était dite nulle part dans le
+livrable. Proposition d'Amal examinée (« Continuous outcomes by ‹x› »,
+le titre de table_continuous_lm) et écartée d'un commun accord : deux
+tables différentes (descriptives par groupe vs comparaisons
+modélisées) porteraient la même légende, et le patron base+suffixe de
+table_categorical serait rompu. Retenu : le suffixe « by ‹label› »
+(label de variable, pas nom brut), via .continuous_title(by_label).
+Comportement publié qui change => bullet NEWS Minor improvements +
+snapshots. Implémentation : créneau mini-fixes post-clipboard.
+
 ## Ordre suggéré si tu valides les trois
 
 2 (petit, avec l'issue tinytable) -> 3 (petit) -> 1 (lot dédié).
