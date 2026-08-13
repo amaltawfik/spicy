@@ -52,8 +52,24 @@ RECOMMANDATION : les deux voies de ta note, ensemble.
   de group_tt, pas un effet de bord) — dossier au protocole habituel,
   avec ta mesure 21pt vs 16pt comme evidence. Tu postes.
 
-## 3. note_size / mise en forme des notes Typst (défaut 4 de ta note
-dev/uv_r2_colonne_spec.md)
+## 3. Notes du moteur tinytable — DÉCIDÉ 2026-08-13 : GO la reco RÉVISÉE
+## (défaut 4 de ta note dev/uv_r2_colonne_spec.md)
+
+DÉCISION (après vérification empirique des moteurs) :
+- Défaut : subordination PAR LA TAILLE SEULE, `0.9em`, noir — pour le
+  moteur tinytable en Typst ET en HTML (le `<tfoot>` HTML de tinytable
+  est aussi nu que son Typst). Pas de gris par défaut : le canon
+  typographique (Chicago, APA 7, tradition LaTeX, gt 90%) subordonne
+  par la taille, en noir ; le gris est une convention d'écran, fragile
+  sur fond sombre. Le ratio 0.9 ALIGNE les quatre moteurs (gt 0.9em,
+  Word 10pt/11pt, tinytable 0.9em) — c'est une décision de parité.
+- Opt-in : `options(spicy.note_style = ...)` accepte un habillage
+  supplémentaire (ex. `fill: luma(89)` pour ton gabarit 8pt gris) ou
+  `"none"` pour tout rendre au gabarit.
+- Implémentation : avec le Lot B tinytable de la campagne parité (mêmes
+  fichiers), revue par moi.
+
+Proposition initiale (pour mémoire) :
 
 Le fait : table.footer est un argument structurel Typst qu'aucune
 règle show n'atteint ; tes notes sortaient à 9.5pt noir au corps du
