@@ -249,6 +249,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   *Multinomial*, *Count and two-part*, *Survival*, *Ordinal regression
   tables*, and *Categorical predictors*, a guide to dummy coding, reference
   levels, joint tests of a factor, and contrast codings.
+* `as_structured()` carries everything the printed table shows, so a custom
+  renderer no longer has to reconstruct it: significance markers and their
+  cutoffs (`stars`), the display string of cells no single number can
+  express such as the `events/N` counts (`col_meta$display_cells`), and the
+  absorbed fixed-effects block as a header row plus one row per factor. A
+  new `version` field names the contract; components are only ever added,
+  and a view built by a newer version than the one reading it is refused
+  instead of mis-read.
 
 ## Bug fixes
 
@@ -387,6 +395,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   exactly (blank vs en-dash reference cells, the multi-outcome `Outcome`
   row); the structured schema gains `reference_models_by_row` and
   `outcome_labels_by_col`.
+* `stars = TRUE` marks the coefficients in every output, not just the
+  console: `output = "gt"`, `"tinytable"`, `"flextable"`, `"word"` and
+  `"clipboard"` used to ship the legend footnote without a single marker in
+  the table.
+* An `output = "gt"` table keeps its note wherever it is rendered -- saved
+  to a file, converted to HTML, or printed outside an interactive session.
+  It reached the interactive display only, so a published table lost the
+  model family, the standard errors, and the star legend.
 * `table_regression(m1, m2)` without `list()` errors with a helpful message;
   colliding model labels no longer break `output = "gt"`; the `p_adjust`
   footer's family size matches the adjustment performed; and multi-model

@@ -15,7 +15,9 @@ test_that("structured body: schema invariants (numerics, CI split, markers)", {
   expect_named(
     s,
     c(
+      "version",
       "body",
+      "stars",
       "reference_rows",
       "reference_models_by_row",
       "factor_header_rows",
@@ -237,7 +239,9 @@ test_that("as_structured() returns the typed view with the documented schema", {
   expect_named(
     s,
     c(
+      "version",
       "body",
+      "stars",
       "reference_rows",
       "reference_models_by_row",
       "factor_header_rows",

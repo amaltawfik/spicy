@@ -1126,20 +1126,59 @@ output_gt <- function(rendered) {
       locations = gt::cells_title(groups = "title")
     )
   }
-  # Note: the source_note is NOT added to gt's native `tab_source_note`
-  # because gt renders it inside the table's `<tfoot>` with a
-  # `<td colspan="N">` cell -- the cell's max-content widens the
-  # table in narrow viewports (same pathology as
-  # `output_tinytable` / `output_flextable`). Instead we tag the
-  # gt object with the sub-class `spicy_gt` + stash the raw note,
-  # and the custom `print.spicy_gt` / `knit_print.spicy_gt` methods
-  # below post-process the rendered HTML to inject the note as a
-  # `<div>` outside the table.
+  # The note is attached TWICE, on purpose.
+  #
+  # 1. `gt::tab_source_note()` puts it on the gt object itself, so it
+  #    survives every route to a rendered table: `gt::gtsave()`,
+  #    `gt::as_raw_html()`, `as_latex()`, `as_word()`, a
+  #    non-interactive `print()`. Without it those deliverables shipped
+  #    a table stripped of the disclosure the console prints (model
+  #    family, standard errors, star legend).
+  # 2. `attr(tbl, "spicy_note")` + the `spicy_gt` sub-class drive the
+  #    HTML display path below, which RE-STYLES the note: gt renders a
+  #    source note inside `<tfoot>` as a `<td colspan="N">` cell whose
+  #    max-content widens the whole table in narrow viewports (same
+  #    pathology as `output_tinytable` / `output_flextable`), so
+  #    `print.spicy_gt()` / `knit_print.spicy_gt()` move it to a
+  #    `<div>` sibling outside the table.
   if (!is.null(note) && nzchar(note)) {
+    tbl <- gt::tab_source_note(
+      tbl,
+      source_note = gsub("\n", " ", note, fixed = TRUE)
+    )
     attr(tbl, "spicy_note") <- note
   }
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl
+}
+
+# Remove the `<tfoot>` row that carries OUR source note (matched on
+# its text, so a source note the user added with their own
+# `gt::tab_source_note()` call survives), leaving an emptied `<tfoot>`
+# behind only if it had nothing else in it. Used by the HTML display
+# path, which renders the same note as a styled `<div>` outside the
+# table.
+.spicy_gt_drop_source_note <- function(html_str, note_one_line) {
+  # (?s): the row spans several lines in gt's rendered HTML.
+  pat <- "(?s)<tr class=\"gt_sourcenotes\">.*?</tr>"
+  m <- gregexpr(pat, html_str, perl = TRUE)
+  blocks <- regmatches(html_str, m)[[1L]]
+  if (length(blocks) == 0L) {
+    return(html_str)
+  }
+  unescape <- function(s) {
+    s <- gsub("&lt;", "<", s, fixed = TRUE)
+    s <- gsub("&gt;", ">", s, fixed = TRUE)
+    gsub("&amp;", "&", s)
+  }
+  target <- trimws(note_one_line)
+  for (b in blocks) {
+    txt <- trimws(unescape(gsub("<[^>]*>", "", b)))
+    if (identical(txt, target)) {
+      html_str <- sub(b, "", html_str, fixed = TRUE)
+    }
+  }
+  sub("<tfoot>\\s*</tfoot>", "", html_str)
 }
 
 # Wrap rendered gt HTML so the title (already inside the `<table>`
@@ -1158,6 +1197,12 @@ output_gt <- function(rendered) {
     s
   }
   note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+  # The same note also sits on the gt object as a native source note
+  # (so `gtsave()` / `as_raw_html()` / a non-interactive `print()` keep
+  # it); this display path moves it OUT of the table, so drop the
+  # `<tfoot>` row carrying it. Source notes the user added themselves
+  # are left alone -- only the row whose text is ours is removed.
+  html_str <- .spicy_gt_drop_source_note(html_str, note_one_line)
   note_html <- esc(note_one_line)
   note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
   note_div <- paste0(
@@ -1308,16 +1353,17 @@ knit_print.spicy_gt <- function(x, ...) {
   class(x) <- setdiff(class(x), "spicy_gt")
   # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
   # pandoc DROPS raw HTML, so the as_raw_html path below rendered an
-  # empty document (dev/quarto_word_rendering_spec.md). Unlike the
-  # flextable path, the gt object does NOT carry the note natively
-  # (tab_source_note is skipped at build time for an HTML-only
-  # viewport-width reason -- see output_gt) -- so attach it here,
-  # where that concern does not apply, then delegate to gt's own
-  # format-aware rendering. Outside a knit (pandoc target NULL) keep
-  # the historical HTML path.
+  # empty document (dev/quarto_word_rendering_spec.md). Regression
+  # tables already carry the note as a native source note (see
+  # output_gt), so nothing to do; the descriptive builders attach the
+  # attribute only (.spicy_gt_attach_note), so add it here -- where
+  # the viewport-width concern of the HTML path does not apply --
+  # before delegating to gt's own format-aware rendering. Outside a
+  # knit (pandoc target NULL) keep the historical HTML path.
   pandoc_to <- knitr::opts_knit$get("rmarkdown.pandoc.to")
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
-    if (!is.null(note) && nzchar(note)) {
+    has_source_note <- length(x[["_source_notes"]]) > 0L
+    if (!is.null(note) && nzchar(note) && !has_source_note) {
       x <- gt::tab_source_note(
         x,
         source_note = gsub("\n", " ", note, fixed = TRUE)
@@ -2699,6 +2745,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   schema).
 #'
 #' @section Schema:
+#' * `version` -- integer contract version (see *Versioning* below).
 #' * `body` -- `data.frame` with a `Variable` character column and one
 #'   or more numeric columns. Confidence intervals are split into
 #'   `LL` / `UL` columns named like `"95% CI: LL"` / `"95% CI: UL"` (or
@@ -2706,7 +2753,10 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   that have no value (reference levels, non-applicable rows in
 #'   multi-model output, factor headers) are `NA`.
 #' * `reference_rows`, `factor_header_rows`, `fit_stat_rows`,
-#'   `level_rows`, `outcome_row` -- integer row indices.
+#'   `level_rows`, `outcome_row` -- integer row indices. The
+#'   fixed-effects disclosure block of an absorbed-effects model
+#'   contributes a `"Fixed effects:"` factor header and one level row
+#'   per absorbed factor, named as the model names it.
 #' * `reference_models_by_row` -- for each reference row (keyed by its
 #'   row index as a character string), the `model_id`s of the models
 #'   that actually contain the factor: renderers show the reference
@@ -2716,13 +2766,31 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   keyed by each model's first structured column name.
 #' * `col_meta` -- per-column metadata keyed by structured column
 #'   name (token, model_id, precision, p-style, below-threshold,
-#'   CI pair / role / label).
+#'   CI pair / role / label). A column whose cells cannot be
+#'   reconstructed from one number -- the `"events/N"` counts of
+#'   `show_columns = "n_events"` -- also carries `display_cells`, a
+#'   character vector as long as `body` holding the display string
+#'   of each cell (`NA` where the number formats normally). A
+#'   renderer must prefer it over the numeric value.
+#' * `stars` -- `NULL` unless `stars` was requested, otherwise a list
+#'   with `thresholds` (symbol to p cutoff) and `markers` (per-cell
+#'   marker strings, keyed by column name, `""` where a cell takes
+#'   none).
 #' * `spanners` -- named list mapping model labels to their column
 #'   indices in `body` (multi-model only).
 #' * `ci_pairs` -- list of `(label, cols)` entries describing each
 #'   CI pair in `body`.
 #' * `format_spec` -- global format defaults (decimal mark, digits,
 #'   p-style, CI level, etc.).
+#'
+#' @section Versioning:
+#' Components are only ever added, never renamed or given new
+#' semantics, so code written against an older contract keeps working.
+#' `version` says which contract a given object carries: `2` adds
+#' `stars`, `col_meta$display_cells`, and the fixed-effects block row
+#' roles. An object built before the field existed reports version 1
+#' and triggers a warning here -- rebuild the table to get the
+#' current view.
 #'
 #' @seealso [table_regression()] for the user-facing entry point.
 #'
@@ -2751,6 +2819,44 @@ as_structured <- function(x) {
         "i" = "Was it built by `table_regression()` (>= 0.12.0)?"
       ),
       class = "spicy_invalid_input"
+    )
+  }
+  # Version guard. The contract only grows, so an older view is
+  # readable -- it just lacks the components added since, which a
+  # renderer written against the current contract would look for in
+  # vain. A newer one may carry semantics this spicy does not know.
+  current <- .spicy_structured_version()
+  v <- s$version
+  if (!is.numeric(v) || length(v) != 1L || is.na(v)) {
+    v <- 1L
+  }
+  if (v > current) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`x` carries structured contract v%d; this spicy reads v%d.",
+          as.integer(v),
+          current
+        ),
+        "i" = "Update spicy, or rebuild the table with this version."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (v < current) {
+    spicy_warn(
+      c(
+        sprintf(
+          "`x` carries structured contract v%d; this spicy builds v%d.",
+          as.integer(v),
+          current
+        ),
+        "i" = paste(
+          "Components added since (`stars`, `col_meta$display_cells`)",
+          "are absent. Rebuild the table with `table_regression()`."
+        )
+      ),
+      class = "spicy_structured_version"
     )
   }
   s

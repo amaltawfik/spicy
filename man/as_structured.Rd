@@ -41,6 +41,7 @@ structured contract as spicy's built-in engines.
 \section{Schema}{
 
 \itemize{
+\item \code{version} -- integer contract version (see \emph{Versioning} below).
 \item \code{body} -- \code{data.frame} with a \code{Variable} character column and one
 or more numeric columns. Confidence intervals are split into
 \code{LL} / \code{UL} columns named like \code{"95\% CI: LL"} / \code{"95\% CI: UL"} (or
@@ -48,7 +49,10 @@ prefixed with the model label in multi-model output). Cells
 that have no value (reference levels, non-applicable rows in
 multi-model output, factor headers) are \code{NA}.
 \item \code{reference_rows}, \code{factor_header_rows}, \code{fit_stat_rows},
-\code{level_rows}, \code{outcome_row} -- integer row indices.
+\code{level_rows}, \code{outcome_row} -- integer row indices. The
+fixed-effects disclosure block of an absorbed-effects model
+contributes a \code{"Fixed effects:"} factor header and one level row
+per absorbed factor, named as the model names it.
 \item \code{reference_models_by_row} -- for each reference row (keyed by its
 row index as a character string), the \code{model_id}s of the models
 that actually contain the factor: renderers show the reference
@@ -58,7 +62,16 @@ marker only in those models' columns and leave the others blank.
 keyed by each model's first structured column name.
 \item \code{col_meta} -- per-column metadata keyed by structured column
 name (token, model_id, precision, p-style, below-threshold,
-CI pair / role / label).
+CI pair / role / label). A column whose cells cannot be
+reconstructed from one number -- the \code{"events/N"} counts of
+\code{show_columns = "n_events"} -- also carries \code{display_cells}, a
+character vector as long as \code{body} holding the display string
+of each cell (\code{NA} where the number formats normally). A
+renderer must prefer it over the numeric value.
+\item \code{stars} -- \code{NULL} unless \code{stars} was requested, otherwise a list
+with \code{thresholds} (symbol to p cutoff) and \code{markers} (per-cell
+marker strings, keyed by column name, \code{""} where a cell takes
+none).
 \item \code{spanners} -- named list mapping model labels to their column
 indices in \code{body} (multi-model only).
 \item \code{ci_pairs} -- list of \verb{(label, cols)} entries describing each
@@ -66,6 +79,17 @@ CI pair in \code{body}.
 \item \code{format_spec} -- global format defaults (decimal mark, digits,
 p-style, CI level, etc.).
 }
+}
+
+\section{Versioning}{
+
+Components are only ever added, never renamed or given new
+semantics, so code written against an older contract keeps working.
+\code{version} says which contract a given object carries: \code{2} adds
+\code{stars}, \code{col_meta$display_cells}, and the fixed-effects block row
+roles. An object built before the field existed reports version 1
+and triggers a warning here -- rebuild the table to get the
+current view.
 }
 
 \examples{

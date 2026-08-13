@@ -35,12 +35,33 @@ test_that("docx target: spicy_flextable delegates to native openxml", {
 test_that("docx target: spicy_gt carries the note and skips raw HTML", {
   skip_if_not_installed("gt")
   gtb <- table_regression(.fit_qw(), output = "gt")
+  # The regression builder puts the note on the object itself, so it
+  # reaches every gt verb, not only this knit path.
+  expect_length(gtb[["_source_notes"]], 1L)
   out <- .with_pandoc_to("docx", knitr::knit_print(gtb))
   s <- paste(as.character(out), collapse = "")
   # The note -- HTML-injected as a div in HTML targets -- must reach
-  # the Word rendering through gt's native source note.
+  # the Word rendering through gt's native source note, exactly once.
   expect_match(s, "Std. errors", fixed = TRUE)
+  expect_length(gregexpr("Std. errors", s, fixed = TRUE)[[1L]], 1L)
   expect_false(grepl("spicy-gt-note", s, fixed = TRUE))
+})
+
+test_that("docx target: a descriptive gt gains the note at knit time", {
+  skip_if_not_installed("gt")
+  g <- table_continuous(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex,
+    output = "gt"
+  )
+  # The descriptive builders attach the note as an attribute only (the
+  # shared HTML post-processor styles it); the knit path adds the
+  # native source note pandoc needs.
+  expect_length(g[["_source_notes"]], 0L)
+  out <- .with_pandoc_to("docx", knitr::knit_print(g))
+  s <- paste(as.character(out), collapse = "")
+  expect_match(s, "Missing values removed", fixed = TRUE)
 })
 
 test_that("HTML target keeps the styled-note post-processing", {

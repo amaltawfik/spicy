@@ -500,7 +500,8 @@ render_regression_table <- function(
     labels = labels,
     ci_label = ci_label,
     model_outcomes = model_outcomes,
-    model_outcome_labels = model_outcome_labels
+    model_outcome_labels = model_outcome_labels,
+    stars_map = stars_map
   )
 
   body

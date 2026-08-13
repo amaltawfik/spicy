@@ -195,15 +195,22 @@ test_that("structured and rich engines encode the FE cells correctly", {
   tb <- suppressWarnings(table_regression(
     list(OLS = fl, FE = f_fe, OrOnly = f_or)
   ))
-  # Machine contract: numeric 1 / 0 / NA under "FE: <factor>" labels.
+  # Machine contract: numeric 1 / 0 / NA on a row labelled with the
+  # bare factor name, under a "Fixed effects:" block header registered
+  # as a factor header (the rows themselves as level rows).
   s <- as_structured(tb)
   b <- s$body
-  pr <- b[trimws(b$Variable) == "FE: Product", ]
+  pr <- b[trimws(b$Variable) == "Product", ]
   expect_identical(nrow(pr), 1L)
   vals <- suppressWarnings(as.numeric(unlist(pr[1, -1])))
   vals <- vals[!is.nan(vals)]
   expect_true(1 %in% vals) # FE model absorbs Product
   expect_true(0 %in% vals) # OrOnly does not
+  hdr <- which(b$Variable == "Fixed effects:")
+  expect_length(hdr, 1L)
+  expect_true(hdr %in% s$factor_header_rows)
+  expect_true(which(trimws(b$Variable) == "Product") %in% s$level_rows)
+  expect_false(any(grepl("^FE: ", b$Variable)))
   # Console: the lm column stays blank on FE rows, and the block
   # leads the fit stats in the mixed default too.
   out <- capture.output(print(tb))
