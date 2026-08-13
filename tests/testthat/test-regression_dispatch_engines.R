@@ -126,6 +126,41 @@ test_that("output = 'tinytable' escapes cells but leaves the note verbatim", {
   expect_match(tinytable::save_tt(tt, output = "html"), "&lt;.001", fixed = TRUE)
 })
 
+test_that("Typst output strips the forced column gutter on grouped headers", {
+  skip_if_not_installed("tinytable")
+  # Witness: bare tinytable injects `column-gutter: 5pt` whenever a table
+  # has column groups -- an argument-level Typst value no document `#set`
+  # rule can override (dev/gouttiere_tinytable_group_tt.md). If this
+  # stops matching, tinytable fixed it upstream: retire the finalizer in
+  # .spicy_tt_bare() and this test.
+  raw <- tinytable::group_tt(
+    tinytable::tt(data.frame(a = 1, b = 2, c = 3)),
+    j = list("Grp" = 2:3)
+  )
+  expect_match(
+    tinytable::save_tt(raw, output = "typst"),
+    "column-gutter",
+    fixed = TRUE
+  )
+  # spicy tables leave gutter control to the receiving document, on both
+  # the regression path and the descriptive path (shared finalizer).
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + cyl, data = mt)
+  typ <- tinytable::save_tt(
+    table_regression(list(m1, m2), output = "tinytable"),
+    output = "typst"
+  )
+  expect_no_match(typ, "column-gutter", fixed = TRUE)
+  expect_match(typ, "#table(", fixed = TRUE)
+
+  d <- transform(mtcars, cyl = factor(cyl), am = factor(am))
+  typ2 <- tinytable::save_tt(
+    table_categorical(d, cyl, by = am, output = "tinytable"),
+    output = "typst"
+  )
+  expect_no_match(typ2, "column-gutter", fixed = TRUE)
+})
+
 
 test_that("fit_stats_layout = 'merged' warns for engines without body-cell merge (tinytable, gt)", {
   skip_if_not_installed("tinytable")

@@ -247,6 +247,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* Tables rendered to Typst no longer force a `5pt` column gutter when they
+  carry grouped column headers (`by` groups, multi-model headers, CI
+  spanners). All tables in a document now share the same column grid, and a
+  document-level `#set table(column-gutter: ...)` rule becomes effective
+  again.
 * `table_categorical()` and `table_continuous()` carry their missing-value
   disclosure to every output: `"tinytable"`, `"gt"`, `"flextable"` and
   `"word"` now show it as a table note, and `"data.frame"` keeps it in the

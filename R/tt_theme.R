@@ -12,5 +12,24 @@
   x@lazy_format <- list()
   x@lazy_style <- list()
   x@lazy_prepare <- list()
-  x
+  # tinytable hard-codes `column-gutter: 5pt` into the Typst #table()
+  # call whenever the table has column groups (group_tt(j = )) -- an
+  # argument-level value no document `#set` rule can override. In a
+  # real 34-table report, the 16 tables with grouped headers carried
+  # a gutter the other 18 lacked (field report,
+  # dev/gouttiere_tinytable_group_tt.md). Strip it on every spicy
+  # table: geometry belongs to the receiving document, whose `#set`
+  # rules become effective again once nothing overrides them.
+  # Reported upstream; drop this when tinytable makes the gutter an
+  # option of group_tt().
+  tinytable::style_tt(x, finalize = function(tbl) {
+    if (identical(tbl@output, "typst")) {
+      tbl@table_string <- sub(
+        "\\s*column-gutter: 5pt,",
+        "",
+        tbl@table_string
+      )
+    }
+    tbl
+  })
 }
