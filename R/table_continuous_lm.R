@@ -344,9 +344,12 @@
 #'     column has the same width with the decimal mark at the same
 #'     internal position; centring those uniform-width strings then
 #'     stacks the decimal points vertically. The same pad-then-centre
-#'     strategy is applied on every engine (`gt`, `tinytable`,
-#'     `flextable`, `word`, `clipboard`, ASCII print) for a
-#'     homogeneous rendering, matching `table_regression()`.
+#'     strategy is applied on every rendering engine (`gt`,
+#'     `tinytable`, `flextable`, `word`, ASCII print) for a
+#'     homogeneous rendering, matching `table_regression()`. The
+#'     `clipboard` output is delimited text meant to be parsed rather
+#'     than read at a fixed width, so its cells travel unpadded (a
+#'     padded number pastes as text next to an unpadded number).
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
@@ -368,7 +371,9 @@
 #' @param excel_sheet Sheet name for `output = "excel"` (default:
 #'   `"Linear models"`).
 #' @param clipboard_delim Delimiter for `output = "clipboard"` (default:
-#'   `"\t"`).
+#'   `"\t"`). A cell holding the delimiter itself, a double quote or a
+#'   line break is quoted RFC 4180-style, so the grid survives whatever
+#'   delimiter you choose.
 #' @param word_path File path for `output = "word"`.
 #' @param verbose Logical. If `TRUE`, prints messages about ignored
 #'   non-numeric selected outcomes (default: `FALSE`).

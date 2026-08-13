@@ -1286,7 +1286,13 @@ test_that("table_continuous word errors with empty path", {
 
 test_that("table_continuous clipboard output works", {
   skip_if_not_installed("clipr")
-  skip_if_not(clipr::clipr_available(), "Clipboard not available")
+  # The writer is mocked, never the real system clipboard: a test run
+  # must not overwrite what the user has copied.
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) invisible(text),
+    clipr_available = function(...) TRUE,
+    .package = "clipr"
+  )
   expect_message(
     out <- table_continuous(
       iris,
@@ -1453,7 +1459,11 @@ test_that("table_continuous errors when by selects multiple columns", {
 
 test_that("table_continuous clipboard with groups works", {
   skip_if_not_installed("clipr")
-  skip_if_not(clipr::clipr_available(), "Clipboard not available")
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) invisible(text),
+    clipr_available = function(...) TRUE,
+    .package = "clipr"
+  )
   expect_message(
     out <- table_continuous(
       iris,
@@ -1472,7 +1482,11 @@ test_that("table_continuous clipboard with groups works", {
 
 test_that("table_continuous clipboard with custom delimiter works", {
   skip_if_not_installed("clipr")
-  skip_if_not(clipr::clipr_available(), "Clipboard not available")
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) invisible(text),
+    clipr_available = function(...) TRUE,
+    .package = "clipr"
+  )
   expect_message(
     out <- table_continuous(
       iris,
@@ -3761,4 +3775,3 @@ test_that("the note glosses only the columns actually displayed", {
     "missing_note"
   ))
 })
-

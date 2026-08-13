@@ -426,10 +426,13 @@
 #'     column has the same width with the decimal mark at the same
 #'     internal position; centring those uniform-width strings then
 #'     stacks the decimal points vertically. The same pad-then-centre
-#'     strategy is applied on every engine (`gt`, `tinytable`,
-#'     `flextable`, `word`, `clipboard`, ASCII print) for a
+#'     strategy is applied on every rendering engine (`gt`,
+#'     `tinytable`, `flextable`, `word`, ASCII print) for a
 #'     homogeneous rendering, matching `table_regression()` and
-#'     `table_continuous_lm()`.
+#'     `table_continuous_lm()`. The `clipboard` output is delimited
+#'     text meant to be parsed rather than read at a fixed width, so
+#'     its cells travel unpadded (a padded number pastes as text
+#'     next to an unpadded number).
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
@@ -463,7 +466,10 @@
 #'   as-is in wide raw output. If `TRUE`, replaces them with empty strings.
 #' @param excel_path Path for `output = "excel"`. Defaults to `NULL`.
 #' @param excel_sheet Sheet name for Excel export. Defaults to `"Categorical"`.
-#' @param clipboard_delim Delimiter for clipboard text export. Defaults to `"\t"`.
+#' @param clipboard_delim Delimiter for clipboard text export. Defaults
+#'   to `"\t"`. A cell holding the delimiter itself, a double quote or
+#'   a line break is quoted RFC 4180-style, so the grid survives
+#'   whatever delimiter you choose.
 #' @param word_path File path for `output = "word"`. Defaults to
 #'   `NULL`. Before 0.13.0, supplying it with `output = "flextable"`
 #'   also wrote a `.docx` as a side effect; it is now used exclusively
@@ -1274,7 +1280,7 @@ table_categorical <- function(
   # frame with figure-spaces (U+2007, digit-width) so the decimal
   # mark falls at the same horizontal position across each column.
   # Used by every body-rendering engine (`gt`, `tinytable`,
-  # `flextable`, `word`, `clipboard`, ASCII print) so the rendered
+  # `flextable`, `word`, ASCII print) so the rendered
   # output is homogeneous: centring uniform-width strings stacks the
   # decimal points vertically. Same strategy as `table_regression()`
   # and `table_continuous_lm()`. The first column is the variable /
@@ -1820,11 +1826,12 @@ table_categorical <- function(
       return(invisible(word_path))
     }
 
-    # Clipboard text gets the same pre-padded numeric columns as
-    # flextable / word, so dots line up when the text is pasted into
-    # any monospace-rendered destination (terminal, plain-text email,
-    # markdown code block).
-    clip_body <- pad_decimal_cols(report_wide_char)
+    # Clipboard text is NOT decimal-padded: the padding character of
+    # the fixed-width renderers (U+2007) is not whitespace to a
+    # parser, so a padded number pastes as text while its unpadded
+    # sibling pastes as a number. Alignment is the console's job; the
+    # payload's job is to arrive intact.
+    clip_body <- report_wide_char
     clip_body$Variable <- make_stronger_indent(
       clip_body$Variable,
       indent_text,
@@ -1959,10 +1966,15 @@ table_categorical <- function(
       if (!requireNamespace("clipr", quietly = TRUE)) {
         spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
       }
-      lines <- apply(clip_mat, 1, function(x) {
-        paste(x, collapse = clipboard_delim)
-      })
-      txt <- paste(lines, collapse = "\n")
+      # Same title and same disclosure note the console prints, from
+      # the same helpers: a table that names itself on screen names
+      # itself once pasted too.
+      txt <- .clipboard_payload_desc(
+        clip_mat,
+        clipboard_delim,
+        title = .categorical_title(NULL),
+        note = .categorical_note(missing_note, NULL)
+      )
       clipr::write_clip(txt)
       spicy_inform("Categorical table copied to clipboard.")
       return(invisible(txt))
@@ -3116,31 +3128,18 @@ table_categorical <- function(
   }
 
   # ---------------- clipboard matrix ----------------
-  # Pre-pad the n / % numeric columns so decimal points line up
-  # vertically in plain-text rendering. The Variable column is
-  # left untouched by `pad_decimal_cols()`. The p / association /
-  # CI columns are wrapped below in Excel-text formulas (`="..."`)
-  # to prevent Excel from auto-parsing leading-`<` strings; the
-  # `to_excel_text()` wrapper trims surrounding whitespace, so the
-  # quoted inner text stays clean and padded-empty cells stay empty.
-  clip_body <- pad_decimal_cols(report_wide_char)
+  # Plain text, cell for cell: no decimal padding (the U+2007 pad
+  # character of the fixed-width renderers is not whitespace to a
+  # parser, so padded numbers paste as text beside unpadded numbers)
+  # and no Excel text formulas (`="..."` shows up verbatim in the
+  # two other documented paste targets). The p / association / CI
+  # cells travel as the strings the console prints.
+  clip_body <- report_wide_char
   clip_body$Variable <- make_stronger_indent(
     clip_body$Variable,
     indent_text,
     indent_text_excel_clipboard
   )
-  to_excel_text <- function(x) {
-    trimmed <- trimws(x)
-    ifelse(!nzchar(trimmed), "", paste0("=\"", trimmed, "\""))
-  }
-  clip_body$p <- to_excel_text(clip_body$p)
-  if (show_assoc) {
-    clip_body[[measure_col]] <- to_excel_text(clip_body[[measure_col]])
-  }
-  if (show_assoc && assoc_ci) {
-    clip_body[["CI lower"]] <- to_excel_text(clip_body[["CI lower"]])
-    clip_body[["CI upper"]] <- to_excel_text(clip_body[["CI upper"]])
-  }
 
   clip_mat <- rbind(top_header_flat_ex, bot_header_ex, as.matrix(clip_body))
 
@@ -3363,10 +3362,16 @@ table_categorical <- function(
     if (!requireNamespace("clipr", quietly = TRUE)) {
       spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
     }
-    lines <- apply(clip_mat, 1, function(x) {
-      paste(x, collapse = clipboard_delim)
-    })
-    txt <- paste(lines, collapse = "\n")
+    # Same title (it names the grouping variable, which nothing else
+    # in the payload states) and same disclosure notes -- what left
+    # the table, then which association measure each row carries --
+    # as the console, from the same helpers.
+    txt <- .clipboard_payload_desc(
+      clip_mat,
+      clipboard_delim,
+      title = .categorical_title(by_name),
+      note = .categorical_note(missing_note, assoc_note_text)
+    )
     clipr::write_clip(txt)
     spicy_inform("Categorical table copied to clipboard.")
     return(invisible(txt))

@@ -2046,9 +2046,10 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
     .package = "clipr"
   )
 
-  # Oneway: with decimal, the n-column header value "smoking" sits
-  # alongside padded blank cells, making the column dot-aligned for
-  # plain-text consumers. With center, no padding is applied.
+  # Oneway: the payload is the same text whatever `align` asks for.
+  # Alignment is a fixed-width-rendering concern; a delimited payload
+  # is parsed, and the U+2007 pad character is not whitespace to a
+  # parser (a padded number would paste as text).
   table_categorical(
     sochealth,
     select = smoking,
@@ -2062,13 +2063,13 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
     output = "clipboard",
     align = "center"
   )
-  txt_auto <- captured$text
-  expect_true(nchar(txt_dec) > nchar(txt_auto))
+  txt_center <- captured$text
+  expect_identical(txt_dec, txt_center)
+  expect_false(grepl("\u2007", txt_dec, fixed = TRUE))
 
-  # Cross-tab: the n / % numeric columns are pre-padded; the
-  # Excel-text-wrapped p / Cramer's V columns are NOT padded inside
-  # the quote (trim happens before wrapping), so empty cells remain
-  # truly empty.
+  # Cross-tab: p / association cells travel as the plain strings the
+  # console prints -- no Excel text formula (`="..."`), which is
+  # meaningless in a text editor or a word processor, and no padding.
   table_categorical(
     sochealth,
     select = smoking,
@@ -2077,9 +2078,66 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
     align = "decimal"
   )
   txt_ct_dec <- captured$text
-  expect_match(txt_ct_dec, "=\"\\.\\d+\"") # wrapped p with no padding
-  # No spaces inside the wrapped quote
-  expect_false(any(grepl("=\"\\s+\\.\\d", strsplit(txt_ct_dec, "\n")[[1]])))
+  cells <- unlist(strsplit(txt_ct_dec, "[\t\n]"))
+  expect_false(any(grepl("=\"", cells, fixed = TRUE)))
+  expect_false(any(grepl("\u2007", cells, fixed = TRUE)))
+  expect_true(".713" %in% cells)
+  # Cells that carry nothing are empty, not runs of padding.
+  expect_true(any(!nzchar(cells)))
+})
+
+test_that("clipboard payload carries the console title and notes", {
+  skip_if_not_installed("clipr")
+  captured <- new.env()
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) {
+      captured$text <- text
+      invisible(text)
+    },
+    .package = "clipr"
+  )
+
+  d <- sochealth
+  d$smoking[1:40] <- NA
+
+  table_categorical(
+    d,
+    select = c(smoking, education),
+    by = sex,
+    drop_na = TRUE,
+    output = "clipboard"
+  )
+  lines <- strsplit(captured$text, "\n", fixed = TRUE)[[1L]]
+  cells <- strsplit(lines, "\t", fixed = TRUE)
+
+  # Title on the first row, disclosure notes on the last rows: what
+  # left the table, then which measure each row's effect size is.
+  expect_identical(cells[[1L]][1L], "Categorical table by sex")
+  expect_match(
+    lines[length(lines) - 1L],
+    "^Missing values removed: smoking \\(65\\)\\."
+  )
+  expect_match(
+    lines[length(lines)],
+    "^Note\\. Phi: Current smoker; Cramer's V: Highest education level\\."
+  )
+  # Title / note rows are padded to the full grid, so every line of
+  # the payload holds the same number of fields (trailing empty
+  # fields make delimiter counting the honest measure here).
+  n_delims <- vapply(
+    gregexpr("\t", lines, fixed = TRUE),
+    length,
+    integer(1)
+  )
+  expect_length(unique(n_delims), 1L)
+
+  # One-way tables name themselves too.
+  table_categorical(sochealth, select = smoking, output = "clipboard")
+  first_line <- strsplit(captured$text, "\n", fixed = TRUE)[[1L]][1L]
+  expect_identical(
+    strsplit(first_line, "\t", fixed = TRUE)[[1L]][1L],
+    "Categorical table"
+  )
 })
 
 
@@ -3075,8 +3133,12 @@ test_that("each variable keeps its own level order in multi-variable tables", {
     s = factor(c("F", "M", "F", NA, NA, "F")),
     e = factor(c("O", "N", NA, "O", "O", "N"))
   )
-  out <- table_categorical(d, select = c(a, s, e), drop_na = FALSE,
-                           output = "data.frame")
+  out <- table_categorical(
+    d,
+    select = c(a, s, e),
+    drop_na = FALSE,
+    output = "data.frame"
+  )
   lv <- trimws(out$Level)
   block <- cumsum(nzchar(trimws(out$Variable)))
   for (b in split(seq_along(lv), block)) {
@@ -3091,8 +3153,13 @@ test_that("each variable keeps its own level order in multi-variable tables", {
   o2 <- table_categorical(d2, select = c(u, v), output = "data.frame")
   expect_identical(trimws(o2$Level), c("Oui", "Non", "Non", "Oui"))
   # The by path orders identically.
-  outb <- table_categorical(d, select = c(a, s), by = e, drop_na = FALSE,
-                            output = "data.frame")
+  outb <- table_categorical(
+    d,
+    select = c(a, s),
+    by = e,
+    drop_na = FALSE,
+    output = "data.frame"
+  )
   lvb <- trimws(outb$Level)
   blockb <- cumsum(nzchar(trimws(outb$Variable)))
   for (b in split(seq_along(lvb), blockb)) {
@@ -3115,8 +3182,10 @@ test_that("spicy tinytables keep tinytable's format finalizers alive", {
     "breakable: true",
     fixed = TRUE
   )
-  y <- table_regression(lm(wellbeing_score ~ age, sochealth),
-                        output = "tinytable")
+  y <- table_regression(
+    lm(wellbeing_score ~ age, sochealth),
+    output = "tinytable"
+  )
   expect_match(
     tinytable::save_tt(y, output = "typst"),
     "breakable: true",

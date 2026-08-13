@@ -409,9 +409,12 @@ with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
 internal position; centring those uniform-width strings then
 stacks the decimal points vertically. The same pad-then-centre
-strategy is applied on every engine (\code{gt}, \code{tinytable},
-\code{flextable}, \code{word}, \code{clipboard}, ASCII print) for a
-homogeneous rendering, matching \code{table_regression()}.
+strategy is applied on every rendering engine (\code{gt},
+\code{tinytable}, \code{flextable}, \code{word}, ASCII print) for a
+homogeneous rendering, matching \code{table_regression()}. The
+\code{clipboard} output is delimited text meant to be parsed rather
+than read at a fixed width, so its cells travel unpadded (a
+padded number pastes as text next to an unpadded number).
 \item \code{"center"}: center-align all numeric columns.
 \item \code{"right"}: right-align all numeric columns.
 }
@@ -440,7 +443,9 @@ format would require a separate refactor.}
 \code{"Linear models"}).}
 
 \item{clipboard_delim}{Delimiter for \code{output = "clipboard"} (default:
-\code{"\\t"}).}
+\code{"\\t"}). A cell holding the delimiter itself, a double quote or a
+line break is quoted RFC 4180-style, so the grid survives whatever
+delimiter you choose.}
 
 \item{word_path}{File path for \code{output = "word"}.}
 

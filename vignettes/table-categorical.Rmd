@@ -329,9 +329,12 @@ figure-spaces (U+2007, spaces exactly one digit wide) so that every
 string in a column has the same width with the decimal mark at the
 same internal position; centring those uniform-width strings then
 stacks the decimal points vertically. The same pad-then-centre
-strategy is applied on every engine (`gt`, `tinytable`, `flextable`,
-`word`, `clipboard`, ASCII print) for a homogeneous rendering --
-same single-font policy as `table_regression()`. The native
+strategy is applied on every rendering engine (`gt`, `tinytable`,
+`flextable`, `word`, ASCII print) for a homogeneous rendering --
+same single-font policy as `table_regression()`. The clipboard is
+the exception: its payload is delimited text meant to be parsed, and
+a padded number would paste as text next to an unpadded number, so
+its cells travel unpadded. The native
 `gt::cols_align_decimal()` and `tinytable::style_tt(align = "d")`
 primitives are deliberately not used: the former renders visually
 right-aligned and the latter centres each cell on its own value

@@ -31,8 +31,8 @@ with_mocked_clipr <- function(
 
 test_that("copy_clipboard() works silently for different structures", {
   skip_if_not_installed("clipr")
-  skip_if_not(clipr::clipr_available())
-
+  # `with_mocked_clipr()` stands in for the system clipboard: a test
+  # run must never overwrite what the user has copied.
   df <- data.frame(
     col1 = c("A", "B", "C"),
     col2 = c(1, 2, 3)
@@ -59,65 +59,92 @@ test_that("copy_clipboard() works silently for different structures", {
   vec_chr <- c("alpha", "beta", "gamma")
 
   # Silent execution
-  expect_silent(copy_clipboard(df, quiet = TRUE))
-  expect_silent(copy_clipboard(df, row_names_as_col = TRUE, quiet = TRUE))
-  expect_silent(copy_clipboard(df, col_names = FALSE, quiet = TRUE))
+  with_mocked_clipr({
+    expect_silent(copy_clipboard(df, quiet = TRUE))
+    expect_silent(copy_clipboard(df, row_names_as_col = TRUE, quiet = TRUE))
+    expect_silent(copy_clipboard(df, col_names = FALSE, quiet = TRUE))
 
-  expect_silent(copy_clipboard(mat, quiet = TRUE))
-  expect_silent(copy_clipboard(mat, row_names_as_col = TRUE, quiet = TRUE))
-  expect_silent(copy_clipboard(mat, col_names = FALSE, quiet = TRUE))
+    expect_silent(copy_clipboard(mat, quiet = TRUE))
+    expect_silent(copy_clipboard(mat, row_names_as_col = TRUE, quiet = TRUE))
+    expect_silent(copy_clipboard(mat, col_names = FALSE, quiet = TRUE))
 
-  expect_silent(copy_clipboard(tab, quiet = TRUE))
-  expect_silent(copy_clipboard(tab, row_names_as_col = TRUE, quiet = TRUE))
+    expect_silent(copy_clipboard(tab, quiet = TRUE))
+    expect_silent(copy_clipboard(tab, row_names_as_col = TRUE, quiet = TRUE))
 
-  expect_silent(copy_clipboard(arr, quiet = TRUE))
+    expect_silent(copy_clipboard(arr, quiet = TRUE))
 
-  expect_silent(copy_clipboard(vec_num, quiet = TRUE))
-  expect_silent(copy_clipboard(vec_chr, quiet = TRUE))
+    expect_silent(copy_clipboard(vec_num, quiet = TRUE))
+    expect_silent(copy_clipboard(vec_chr, quiet = TRUE))
+  })
 })
 
 test_that("copy_clipboard() copies expected content", {
   skip_if_not_installed("clipr")
-  skip_if_not(clipr::clipr_available())
-
-  # Data frame
-  df <- data.frame(
-    name = c("Alice", "Bob"),
-    score = c(10, 15)
+  # The text is rendered by clipr's own renderer and captured here,
+  # instead of being written to the system clipboard and read back:
+  # the assertions stay end-to-end while the user's clipboard is left
+  # alone.
+  render <- tryCatch(
+    utils::getFromNamespace("render_object", "clipr"),
+    error = function(e) NULL
   )
+  skip_if(is.null(render), "clipr internal renderer unavailable")
 
-  copy_clipboard(df, quiet = TRUE)
-  clip <- clipr::read_clip()
+  captured <- NULL
+  capture_clip <- function(content, ...) {
+    dots <- list(...)
+    if (is.null(dots$sep)) {
+      dots$sep <- "\t"
+    }
+    captured <<- strsplit(
+      render(content, "auto", "\n", dots),
+      "\n",
+      fixed = TRUE
+    )[[1L]]
+    invisible(content)
+  }
 
-  expect_length(clip, 3)
-  expect_true(grepl("name\\tscore", clip[1]))
-  expect_true(grepl("Alice\\t10", clip[2]))
-  expect_true(grepl("Bob\\t15", clip[3]))
+  with_mocked_clipr(
+    write_clip = capture_clip,
+    {
+      # Data frame
+      df <- data.frame(
+        name = c("Alice", "Bob"),
+        score = c(10, 15)
+      )
 
-  # Matrix
-  mat <- matrix(
-    1:4,
-    nrow = 2,
-    byrow = TRUE,
-    dimnames = list(c("r1", "r2"), c("c1", "c2"))
+      copy_clipboard(df, quiet = TRUE)
+      clip <- captured
+
+      expect_length(clip, 3)
+      expect_true(grepl("name\\tscore", clip[1]))
+      expect_true(grepl("Alice\\t10", clip[2]))
+      expect_true(grepl("Bob\\t15", clip[3]))
+
+      # Matrix
+      mat <- matrix(
+        1:4,
+        nrow = 2,
+        byrow = TRUE,
+        dimnames = list(c("r1", "r2"), c("c1", "c2"))
+      )
+
+      copy_clipboard(mat, quiet = TRUE)
+      mat_clip <- captured
+      expect_length(mat_clip, 3)
+      expect_true(grepl("c1\\tc2", mat_clip[1]))
+
+      # Numeric vector
+      vec_num <- c(3.14, 2.71, 1.618)
+      copy_clipboard(vec_num, quiet = TRUE)
+      expect_equal(captured, as.character(vec_num))
+
+      # Character vector
+      vec_chr <- c("apple", "banana", "cherry")
+      copy_clipboard(vec_chr, quiet = TRUE)
+      expect_equal(captured, vec_chr)
+    }
   )
-
-  copy_clipboard(mat, quiet = TRUE)
-  mat_clip <- clipr::read_clip()
-  expect_length(mat_clip, 3)
-  expect_true(grepl("c1\\tc2", mat_clip[1]))
-
-  # Numeric vector
-  vec_num <- c(3.14, 2.71, 1.618)
-  copy_clipboard(vec_num, quiet = TRUE)
-  num_clip <- clipr::read_clip()
-  expect_equal(num_clip, as.character(vec_num))
-
-  # Character vector
-  vec_chr <- c("apple", "banana", "cherry")
-  copy_clipboard(vec_chr, quiet = TRUE)
-  chr_clip <- clipr::read_clip()
-  expect_equal(chr_clip, vec_chr)
 })
 
 test_that("copy_clipboard hard-errors on the pre-0.13.0 dot.case argument names", {

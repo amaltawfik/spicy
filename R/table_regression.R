@@ -1177,9 +1177,13 @@
 #'   cleanly into Excel / Google Sheets / Word). The clipboard
 #'   payload mirrors the Excel layout (title row, spanner row,
 #'   header, body, footer note) but is plain text -- horizontal
-#'   rules, cell merging, decimal alignment, monospace font, and
-#'   factor-level indentation cannot be encoded in TSV and are
-#'   therefore absent from the paste.
+#'   rules, cell merging, decimal alignment and the monospace font
+#'   cannot be encoded in delimited text and are therefore absent
+#'   from the paste. A cell holding the delimiter itself (a label
+#'   with a comma under `clipboard_delim = ","`, or any number under
+#'   `decimal_mark = ","`), a double quote or a line break is quoted
+#'   RFC 4180-style, so the grid survives whatever delimiter you
+#'   choose.
 #'
 #'   Paste behaviour by target:
 #'   * **Excel / Google Sheets:** numerics are auto-detected and

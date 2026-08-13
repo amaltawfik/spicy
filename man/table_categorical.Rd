@@ -180,10 +180,13 @@ with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
 internal position; centring those uniform-width strings then
 stacks the decimal points vertically. The same pad-then-centre
-strategy is applied on every engine (\code{gt}, \code{tinytable},
-\code{flextable}, \code{word}, \code{clipboard}, ASCII print) for a
+strategy is applied on every rendering engine (\code{gt},
+\code{tinytable}, \code{flextable}, \code{word}, ASCII print) for a
 homogeneous rendering, matching \code{table_regression()} and
-\code{table_continuous_lm()}.
+\code{table_continuous_lm()}. The \code{clipboard} output is delimited
+text meant to be parsed rather than read at a fixed width, so
+its cells travel unpadded (a padded number pastes as text
+next to an unpadded number).
 \item \code{"center"}: center-align all numeric columns.
 \item \code{"right"}: right-align all numeric columns.
 }
@@ -228,7 +231,10 @@ as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}
 
 \item{excel_sheet}{Sheet name for Excel export. Defaults to \code{"Categorical"}.}
 
-\item{clipboard_delim}{Delimiter for clipboard text export. Defaults to \code{"\\t"}.}
+\item{clipboard_delim}{Delimiter for clipboard text export. Defaults
+to \code{"\\t"}. A cell holding the delimiter itself, a double quote or
+a line break is quoted RFC 4180-style, so the grid survives
+whatever delimiter you choose.}
 
 \item{word_path}{File path for \code{output = "word"}. Defaults to
 \code{NULL}. Before 0.13.0, supplying it with \code{output = "flextable"}

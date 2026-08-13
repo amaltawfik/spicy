@@ -512,18 +512,22 @@ test_that("print.spicy_regression_table falls back to bare names without a struc
 
 test_that("dispatch routes output = 'clipboard' to output_clipboard", {
   skip_if_not_installed("clipr")
+  # Both clipr entry points are mocked: the switch arm has to be
+  # exercised on a headless runner AND without overwriting the real
+  # clipboard of a user running the suite locally.
+  captured <- NULL
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(content, ...) {
+      captured <<- content
+      invisible(content)
+    },
+    .package = "clipr"
+  )
   fit <- lm(mpg ~ wt, data = mt)
-  if (clipr::clipr_available()) {
-    out <- table_regression(fit, output = "clipboard")
-    expect_true(inherits(out, "data.frame"))
-  } else {
-    # Headless: the switch arm still dispatches into output_clipboard,
-    # which aborts on the unavailable system clipboard.
-    expect_error(
-      table_regression(fit, output = "clipboard"),
-      class = "spicy_unsupported"
-    )
-  }
+  out <- table_regression(fit, output = "clipboard")
+  expect_true(inherits(out, "data.frame"))
+  expect_match(captured, "Variable")
 })
 
 

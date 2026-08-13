@@ -2577,18 +2577,19 @@ output_clipboard <- function(rendered, clipboard_delim) {
 # pure clipboard_payload() builder below is NOT suppressed (it is
 # reachable on any user machine and directly unit-tested).
 
-# Build the TSV payload mirroring the Excel layout: title row,
-# spanner row, header, body, note rows. Cells are tab-separated.
-# The body is delivered with the pre-padding produced by
-# render_regression_table() (via decimal_align_strings() and
-# align_ci_strings()) so a paste into a fixed-width context (Word
-# with Consolas applied; plain-text editor) preserves the decimal
-# alignment. Horizontal rules are NOT injected: TSV cannot encode
-# a single continuous line, and - rule rows displayed as
-# tab-separated dash segments produce a visually broken result.
-# This matches table_continuous_lm's clipboard behaviour. Exported
-# so the layout is testable without exercising the clipboard
-# side-effect.
+# Build the delimited payload mirroring the Excel layout: title row,
+# spanner row, header, body, note rows. Cells are joined with
+# `clipboard_delim` (a tab by default) by the shared clipboard
+# helpers, which also escape any cell that would break the grid and
+# keep the cells free of the decimal-alignment padding: the body is
+# derived from the structured contract, so it carries the display
+# strings only and a paste into a spreadsheet types every column at
+# once. Horizontal rules are NOT injected: delimited text cannot
+# encode a single continuous line, and rule rows displayed as
+# delimiter-separated dash segments produce a visually broken result.
+# The same layout serves table_categorical(), table_continuous() and
+# table_continuous_lm(). Kept separate from output_clipboard() so the
+# layout is testable without exercising the clipboard side-effect.
 clipboard_payload <- function(rendered, clipboard_delim) {
   # Source from the structured (typed) body, then derive display strings
   # via the shared formatter. CI is already split into LL / UL columns
@@ -2603,16 +2604,17 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner <- length(ci_spanners) > 0L
 
-  pad_row <- function(first, n) c(first, rep("", max(0L, n - 1L)))
-
   rows <- list()
   add_row <- function(r) {
     rows[[length(rows) + 1L]] <<- as.character(r)
   }
-
-  if (!is.null(title) && nzchar(title)) {
-    add_row(pad_row(title, n_cols))
+  add_text_rows <- function(text) {
+    for (r in .spicy_clip_text_rows(text, n_cols)) {
+      add_row(r)
+    }
   }
+
+  add_text_rows(title)
 
   stripped <- if (has_model_spanner) {
     .strip_spanner_prefix(body, spanners)
@@ -2648,22 +2650,13 @@ clipboard_payload <- function(rendered, clipboard_delim) {
     add_row(hdr$bottom)
   }
 
-  body_mat <- as.matrix(stripped)
-  if (nrow(body_mat) > 0L) {
-    for (i in seq_len(nrow(body_mat))) {
-      add_row(body_mat[i, ])
-    }
+  for (r in .spicy_clip_rows(stripped)) {
+    add_row(r)
   }
 
-  if (!is.null(note) && nzchar(note)) {
-    note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
-    for (ln in note_lines) {
-      add_row(pad_row(ln, n_cols))
-    }
-  }
+  add_text_rows(note)
 
-  lines <- vapply(rows, paste, character(1), collapse = clipboard_delim)
-  paste(lines, collapse = "\n")
+  .spicy_clip_payload(rows, clipboard_delim)
 }
 
 # ---- word ----------------------------------------------------------------

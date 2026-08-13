@@ -179,10 +179,13 @@
 #'     column has the same width with the decimal mark at the same
 #'     internal position; centring those uniform-width strings then
 #'     stacks the decimal points vertically. The same pad-then-centre
-#'     strategy is applied on every engine (`gt`, `tinytable`,
-#'     `flextable`, `word`, `clipboard`, ASCII print) for a
+#'     strategy is applied on every rendering engine (`gt`,
+#'     `tinytable`, `flextable`, `word`, ASCII print) for a
 #'     homogeneous rendering, matching `table_regression()` and
-#'     `table_continuous_lm()`.
+#'     `table_continuous_lm()`. The `clipboard` output is delimited
+#'     text meant to be parsed rather than read at a fixed width, so
+#'     its cells travel unpadded (a padded number pastes as text
+#'     next to an unpadded number).
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
@@ -207,7 +210,9 @@
 #' @param excel_sheet Sheet name for `output = "excel"`
 #'   (default: `"Descriptives"`).
 #' @param clipboard_delim Delimiter for `output = "clipboard"`
-#'   (default: `"\t"`).
+#'   (default: `"\t"`). A cell holding the delimiter itself, a double
+#'   quote or a line break is quoted RFC 4180-style, so the grid
+#'   survives whatever delimiter you choose.
 #' @param word_path File path for `output = "word"`.
 #' @param verbose Logical. If `TRUE`, prints messages about excluded
 #'   non-numeric columns (default: `FALSE`).
@@ -2406,7 +2411,7 @@ export_desc_table <- function(
   # mark at the same internal position. Centring those uniform-width
   # strings then stacks the decimal points vertically. We use this
   # strategy on every engine that renders the body strings -- flextable,
-  # word, clipboard, ASCII print, plus gt and tinytable -- rather than
+  # word, ASCII print, plus gt and tinytable -- rather than
   # gt::cols_align_decimal() / tinytable::style_tt(align = "d"). The
   # native primitives render differently on each engine (gt looks
   # right-aligned; tinytable centres each cell on its own value rather
@@ -2415,9 +2420,13 @@ export_desc_table <- function(
   # engines. Same approach as `table_regression()` and
   # `table_continuous_lm()` for cross-function consistency. Excel is
   # excluded (proportional fonts make cell-string padding unreliable).
+  # The clipboard is deliberately absent from the padding engines:
+  # its payload is parsed, not read at a fixed width, and the U+2007
+  # pad character is not whitespace to a parser (a padded number
+  # pastes as text beside an unpadded number).
   use_decimal <- identical(align, "decimal")
   needs_padding_engine <- output %in%
-    c("flextable", "word", "clipboard", "gt", "tinytable")
+    c("flextable", "word", "gt", "tinytable")
 
   if (use_decimal && needs_padding_engine) {
     left_skip <- if (has_group) 2L else 1L
@@ -3088,11 +3097,22 @@ export_desc_table <- function(
     nc <- length(col_keys)
     hdrs <- build_header_rows(col_keys, ci_pct)
 
-    clip_mat <- rbind(hdrs$top, hdrs$bottom, as.matrix(display_df))
-    lines <- apply(clip_mat, 1, function(r) {
-      paste(r, collapse = clipboard_delim)
-    })
-    txt <- paste(lines, collapse = "\n")
+    # The sub-label row carries the LL / UL labels of the CI pairs;
+    # with no CI column it is empty and is dropped rather than
+    # pasted as a blank line (same rule as `clipboard_payload()`).
+    clip_mat <- if (any(nzchar(hdrs$bottom))) {
+      rbind(hdrs$top, hdrs$bottom, as.matrix(display_df))
+    } else {
+      rbind(hdrs$top, as.matrix(display_df))
+    }
+    # Same title and same disclosure note the console prints, from
+    # the same helpers.
+    txt <- .clipboard_payload_desc(
+      clip_mat,
+      clipboard_delim,
+      title = .continuous_title(),
+      note = note
+    )
     clipr::write_clip(txt)
     spicy_inform("Descriptive statistics copied to clipboard.")
     return(invisible(display_df))

@@ -335,6 +335,25 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   default column width.
 * Factor levels in an `"excel"` regression table are indented once, not
   twice.
+* `output = "clipboard"` survives any `clipboard_delim`: a cell holding the
+  delimiter, a double quote or a line break is now quoted RFC 4180-style.
+  A level label with a comma used to shift every following value one column
+  to the right under `clipboard_delim = ","`, and `decimal_mark = ","` split
+  every number into two cells.
+* `output = "clipboard"` pastes numbers as numbers: the decimal-alignment
+  padding is gone from the payload. It used the figure space U+2007, which a
+  spreadsheet does not read as whitespace, so a padded cell landed as text
+  in the middle of a numeric column.
+* `table_categorical(output = "clipboard")` ships plain text: p-values and
+  association measures used to arrive wrapped in an Excel formula
+  (`="  .424"`), visible verbatim in a text editor or a word processor, and
+  the wrapper turned blank cells into non-blank ones.
+* `table_categorical()`, `table_continuous()` and `table_continuous_lm()`
+  carry their title and their missing-value / association notes to
+  `output = "clipboard"`, like every other output.
+* A `table_continuous()` or `table_continuous_lm()` table without a
+  confidence-interval column no longer pastes a blank line between its
+  header and its body.
 * `kendall_tau_b()` reported wrong SEs, confidence intervals and Wald
   p-values in every release from 0.6.0 through 0.12.0 -- its asymptotic
   standard error mis-scaled one margin term; point estimates were correct.

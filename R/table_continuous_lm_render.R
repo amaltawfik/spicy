@@ -332,9 +332,9 @@ export_continuous_lm_table <- function(
   ci_ul <- paste0(ci_pct, " CI UL")
   has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))
 
-  # For engines without native decimal alignment (flextable, word,
-  # clipboard), pre-pad numeric cells with leading/trailing spaces so
-  # decimal points line up vertically. gt and tinytable have native
+  # For engines without native decimal alignment (flextable, word),
+  # pre-pad numeric cells with leading/trailing spaces so decimal
+  # points line up vertically. gt and tinytable have native
   # decimal alignment and are handled with their own API. Excel keeps
   # the engine-default alignment (proportional fonts make cell-string
   # padding unreliable; native decimal alignment in Excel would
@@ -354,8 +354,12 @@ export_continuous_lm_table <- function(
   # upstream, centre them downstream, decimals coincide because
   # every cell has the same character width on each side of the
   # dot.
+  # The clipboard is deliberately absent from the padding engines:
+  # its payload is parsed, not read at a fixed width, and the U+2007
+  # pad character is not whitespace to a parser (a padded number
+  # pastes as text beside an unpadded number).
   needs_padding_engine <- output %in%
-    c("flextable", "word", "clipboard", "gt", "tinytable")
+    c("flextable", "word", "gt", "tinytable")
   if (use_decimal && needs_padding_engine) {
     # Pad with U+2007 FIGURE SPACE so the padding survives HTML
     # whitespace collapsing and markdown-table cell-edge trimming.
@@ -990,11 +994,22 @@ export_continuous_lm_table <- function(
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
     hdrs <- build_header_rows_lm(col_keys, ci_pct)
-    clip_mat <- rbind(hdrs$top, hdrs$bottom, as.matrix(display_df))
-    lines <- apply(clip_mat, 1, function(r) {
-      paste(r, collapse = clipboard_delim)
-    })
-    clipr::write_clip(paste(lines, collapse = "\n"))
+    # The sub-label row carries the LL / UL labels of the CI pair;
+    # with no CI column it is empty and is dropped rather than
+    # pasted as a blank line (same rule as `clipboard_payload()`).
+    clip_mat <- if (any(nzchar(hdrs$bottom))) {
+      rbind(hdrs$top, hdrs$bottom, as.matrix(display_df))
+    } else {
+      rbind(hdrs$top, as.matrix(display_df))
+    }
+    # Same title (it names the predictor) and same note the console
+    # prints, from the same helpers.
+    clipr::write_clip(.clipboard_payload_desc(
+      clip_mat,
+      clipboard_delim,
+      title = title,
+      note = note
+    ))
     spicy_inform("Linear-model table copied to clipboard.")
     return(invisible(display_df))
   }
