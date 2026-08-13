@@ -34,6 +34,51 @@
   tbl
 }
 
+# Set the caption every Word (.docx) route writes above its table: the
+# APA auto-numbered "Table 1: <title>" paragraph. `run_autonum()`
+# writes a Word SEQ field, so the numbers renumber themselves when the
+# document gains a table and can be cross-referenced by bookmark; the
+# paragraph lands in the docx "Table Caption" style.
+#
+# Single source for `table_regression()` and the descriptive families
+# -- a table that announces itself on screen must announce itself in
+# the document. `props` is the caption's text formatting: pass it when
+# the builder pins a font for the whole table (table_regression() does,
+# so its caption must match), leave NULL to inherit the table default
+# (the descriptive builders force no font).
+#
+# `title = NULL` / "" returns the table untouched.
+.spicy_ft_word_caption <- function(ft, title, props = NULL) {
+  if (is.null(title) || !nzchar(title)) {
+    return(ft)
+  }
+  if (!spicy_pkg_available("officer")) {
+    spicy_abort(
+      c(
+        "Output `\"word\"` requires the 'officer' package.",
+        "i" = "Install it with `install.packages(\"officer\")`."
+      ),
+      class = "spicy_missing_pkg"
+    )
+  }
+  chunk <- if (is.null(props)) {
+    flextable::as_chunk(title)
+  } else {
+    flextable::as_chunk(title, props = props)
+  }
+  flextable::set_caption(
+    ft,
+    caption = flextable::as_paragraph(chunk),
+    autonum = officer::run_autonum(
+      seq_id = "tab",
+      pre_label = "Table ",
+      post_label = ": "
+    ),
+    align_with_table = FALSE,
+    fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
+  )
+}
+
 # Build a flextable/officer-compatible border object without forcing
 # a hard dependency on officer for plain flextable output.
 spicy_fp_border <- function(color = "black", width = 1, style = "solid") {

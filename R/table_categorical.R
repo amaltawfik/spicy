@@ -1791,6 +1791,9 @@ table_categorical <- function(
         )
       }
       ft <- build_flextable_oneway(report_wide_char)
+      # Same title the console prints, from the same helper: a table
+      # that names itself on screen names itself in the document too.
+      ft <- .spicy_ft_word_caption(ft, .categorical_title(NULL))
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
     }
@@ -3001,7 +3004,13 @@ table_categorical <- function(
     }
 
     ft <- flextable::autofit(ft)
-    ft <- .spicy_ft_attach_note(ft, missing_note)
+    # The association-measure gloss belongs to the rendered table as
+    # much as to the console: it names which measure each row carries.
+    # Same pair, same order as the console printer.
+    ft <- .spicy_ft_attach_note(
+      ft,
+      .categorical_note(missing_note, assoc_note_text)
+    )
     class(ft) <- c("spicy_flextable", class(ft))
     ft
   }
@@ -3018,6 +3027,7 @@ table_categorical <- function(
       )
     }
     ft <- build_flextable(merge_ci_inline(report_wide_char))
+    ft <- .spicy_ft_word_caption(ft, .categorical_title(by_name))
     flextable::save_as_docx(ft, path = word_path)
     return(invisible(word_path))
   }

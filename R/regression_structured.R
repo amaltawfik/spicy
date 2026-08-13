@@ -244,6 +244,14 @@ build_structured_body <- function(
   for (e in expanded) {
     cs <- e$cs
     token <- cs$token
+    # A p-value column is any column whose SOURCE FIELD is the p-value,
+    # whichever estimate block it belongs to: B, AME, or a survival
+    # estimand (`rmst_p`, `risk_diff_p`). The console decides the same
+    # way (`format_cell_value()` branches on `field == "p_value"`), so
+    # keying on the field rather than on a list of token names keeps a
+    # newly added p column from silently rendering as a generic
+    # 2-decimal number -- which turned a p of .00098 into "0.00".
+    is_p_col <- identical(e$source, "p_value")
     # Precision selection mirrors format_cell_value() / format_fit_stat_value()
     prec <- if (
       token %in%
@@ -258,7 +266,7 @@ build_structured_body <- function(
         )
     ) {
       effect_size_digits
-    } else if (identical(token, "p") || identical(token, "ame_p")) {
+    } else if (is_p_col) {
       p_digits
     } else if (identical(token, "pd")) {
       # Posterior probability: p-column style (see the console
@@ -286,8 +294,8 @@ build_structured_body <- function(
       prec <- 0L
     }
 
-    p_style <- if (token %in% c("p", "ame_p", "pd")) "apa" else NULL
-    threshold <- if (token %in% c("p", "ame_p")) 10^(-p_digits) else NULL
+    p_style <- if (is_p_col || identical(token, "pd")) "apa" else NULL
+    threshold <- if (is_p_col) 10^(-p_digits) else NULL
 
     col_meta[[e$name]] <- list(
       token = token,

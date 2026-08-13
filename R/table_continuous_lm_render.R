@@ -324,7 +324,8 @@ export_continuous_lm_table <- function(
   excel_sheet,
   clipboard_delim,
   word_path,
-  note = NULL
+  note = NULL,
+  title = NULL
 ) {
   ci_pct <- paste0(round(ci_level * 100), "%")
   ci_ll <- paste0(ci_pct, " CI LL")
@@ -794,7 +795,11 @@ export_continuous_lm_table <- function(
       }
       # The footer added above flows into the docx via the flextable
       # object, mirroring table_regression()'s word output (which
-      # keeps the in-table footer for docx fidelity).
+      # keeps the in-table footer for docx fidelity). The title the
+      # console prints becomes the Word caption -- for a by-table it
+      # names the grouping variable, which nothing else in the
+      # document states.
+      ft <- .spicy_ft_word_caption(ft, title)
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
     }

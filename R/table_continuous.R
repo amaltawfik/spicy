@@ -2894,6 +2894,8 @@ export_desc_table <- function(
           class = "spicy_invalid_input"
         )
       }
+      # Same title the console prints, from the same helper.
+      ft <- .spicy_ft_word_caption(ft, .continuous_title())
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
     }

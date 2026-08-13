@@ -1620,7 +1620,8 @@ table_continuous_lm <- function(
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
     word_path = word_path,
-    note = .tclm_note_text(result)
+    note = .tclm_note_text(result),
+    title = .continuous_lm_title(by_label)
   )
 }
 

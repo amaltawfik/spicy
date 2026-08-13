@@ -293,6 +293,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `Variable`, like the console and like the `by` version.
 * Factor levels in a `"tinytable"` regression table are indented once, not
   twice.
+* `table_categorical()`, `table_continuous()` and `table_continuous_lm()`
+  carry their title to `output = "word"`, as the numbered caption the
+  regression tables already get; the document used to open with an untitled
+  table, and a `by` table lost the name of its grouping variable with it.
+* A `by` table's association-measure note reaches the `"flextable"` and
+  `"word"` outputs, beside the missing-value disclosure.
+* Factor levels in a `"flextable"` or `"word"` regression table are indented
+  once, not twice.
 * `kendall_tau_b()` reported wrong SEs, confidence intervals and Wald
   p-values in every release from 0.6.0 through 0.12.0 -- its asymptotic
   standard error mis-scaled one margin term; point estimates were correct.

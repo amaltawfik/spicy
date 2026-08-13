@@ -95,7 +95,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 
   spicy_print_table(
     display_df,
-    title = paste0("Continuous outcomes by ", by_label),
+    title = .continuous_lm_title(by_label),
     note = note,
     padding = padding,
     first_column_line = TRUE,
@@ -107,6 +107,16 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   )
 
   invisible(x)
+}
+
+# ---- Table title -----------------------------------------------------------
+
+# Internal: the title of a bivariate linear-model table, from the label
+# of the grouping / predictor variable. Single source for the console
+# header and the caption the rendering engines set, so the two can
+# never drift apart (same contract as `.categorical_title()`).
+.continuous_lm_title <- function(by_label) {
+  paste0("Continuous outcomes by ", by_label)
 }
 
 # ---- Shared note builder ---------------------------------------------------

@@ -1363,6 +1363,17 @@ output_flextable <- function(rendered) {
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner <- length(ci_spanners) > 0L
 
+  # Factor-level rows carry the console's two-space indent in the
+  # Variable cell, and the engine indents them again below
+  # (`padding.left = 20`). One indentation is the design; two is an
+  # artefact of reading a display string as data -- and Word keeps
+  # literal spaces, so the .docx showed both. The engine's own indent
+  # is the one that survives every backend, so the cell text is
+  # cleaned here (same rule as `output_tinytable()`).
+  if (length(level_rows) > 0L) {
+    body[[1L]][level_rows] <- sub("^[ \t]+", "", body[[1L]][level_rows])
+  }
+
   orig_names <- names(body)
   n_cols <- ncol(body)
   # Pin the flextable default font BEFORE constructing the table so
@@ -2610,29 +2621,14 @@ output_word <- function(rendered, word_path, word_template = NULL) {
   ft <- output_flextable(rendered)
 
   # --- APA auto-numbered caption (overrides the plain caption set by
-  # output_flextable). `run_autonum` injects a Word SEQ field that
-  # auto-numbers tables across the document ("Table 1: ...", "Table 2:
-  # ..."), supports cross-references via the bookmark, and uses the
-  # docx "Table Caption" style.
-  title <- attr(rendered, "title")
-  if (!is.null(title) && nzchar(title)) {
-    ft <- flextable::set_caption(
-      ft,
-      caption = flextable::as_paragraph(
-        flextable::as_chunk(
-          title,
-          props = officer::fp_text(font.family = "Calibri", font.size = 11)
-        )
-      ),
-      autonum = officer::run_autonum(
-        seq_id = "tab",
-        pre_label = "Table ",
-        post_label = ": "
-      ),
-      align_with_table = FALSE,
-      fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
-    )
-  }
+  # output_flextable). Shared with the descriptive families through
+  # `.spicy_ft_word_caption()`; this builder pins Calibri on the whole
+  # table, so the caption is given the same font explicitly.
+  ft <- .spicy_ft_word_caption(
+    ft,
+    attr(rendered, "title"),
+    props = officer::fp_text(font.family = "Calibri", font.size = 11)
+  )
 
   # --- Repeated header on page break + cant-split rows ----------------
   # `paginate()` marks the flextable for header re-rendering on each
