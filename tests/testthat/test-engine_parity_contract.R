@@ -414,3 +414,37 @@ test_that("invariant checks cover the added per-cell components", {
     class = "spicy_internal_invariant"
   )
 })
+
+
+# ---- per-category AME columns (ordinal / multinomial) ---------------------
+
+test_that("per-category AME columns carry each category's own cell", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("marginaleffects")
+  fit <- MASS::polr(
+    self_rated_health ~ age + sex,
+    data = sochealth,
+    Hess = TRUE
+  )
+  tbl <- table_regression(fit, show_columns = c("b", "ame"))
+  # The long frame is the oracle: one AME per (term, outcome category).
+  td <- broom::tidy(tbl)
+  ame_age <- td[td$estimate_type == "ame" & td$term == "age", ]
+  expect_true(nrow(ame_age) >= 3L)
+  s <- as_structured(tbl)
+  ame_cols <- grep("^AME ", names(s$body), value = TRUE)
+  expect_identical(length(ame_cols), nrow(ame_age))
+  # age opens the coefficients: the first row with a value in an AME
+  # column is its row.
+  age_row <- which(!is.na(s$body[[ame_cols[1L]]]))[1L]
+  got <- vapply(ame_cols, function(cl) s$body[[cl]][age_row], numeric(1))
+  want <- ame_age$estimate[
+    match(sub("^AME ", "", ame_cols), ame_age$outcome_level)
+  ]
+  expect_equal(unname(got), unname(want), tolerance = 1e-10)
+  # The bug's signature: every category column carried the FIRST
+  # category's number.
+  expect_true(length(unique(got)) > 1L)
+  # And the structured strings match the console cell for cell.
+  expect_equal(unname(.ep_structured(tbl)), unname(.ep_console(tbl)))
+})

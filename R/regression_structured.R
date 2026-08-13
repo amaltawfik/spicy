@@ -820,6 +820,24 @@ build_structured_body <- function(
       ,
       drop = FALSE
     ]
+    # Per-category AME columns are tagged with an `outcome_level`;
+    # narrow to that category so each column pulls its own cell -- the
+    # same filter build_body_row() applies. Without it every category
+    # column of an ordinal / multinomial AME received the FIRST
+    # category's number. A NULL/NA tag (B columns, single-outcome AME)
+    # leaves the match untouched.
+    if (
+      !is.null(cs$outcome_level) &&
+        !is.na(cs$outcome_level) &&
+        "outcome_level" %in% names(long_row) &&
+        nrow(long_row) > 0L
+    ) {
+      long_row <- long_row[
+        long_row$outcome_level %in% cs$outcome_level,
+        ,
+        drop = FALSE
+      ]
+    }
     if (nrow(long_row) == 0L) {
       next
     } # cell stays NA (blank)
