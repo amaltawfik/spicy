@@ -812,6 +812,9 @@ export_continuous_lm_table <- function(
     if (!is.null(note) && nzchar(note)) {
       attr(ft, "spicy_note") <- note
     }
+    # Same title the console prints -- for a by-table it names the
+    # grouping variable, which nothing else in the table states.
+    ft <- .spicy_ft_html_caption(ft, title)
     class(ft) <- c("spicy_flextable", class(ft))
     return(ft)
   }

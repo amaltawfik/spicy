@@ -2,11 +2,12 @@
 # `table_continuous()` as a footer line. Unlike the regression
 # builders, these tables are NOT tagged with `spicy_note`: the shared
 # `print.spicy_flextable()` post-processor that relocates the note out
-# of the `<tfoot>` also injects header CSS written for a two-row
-# header, which would erase the single header rule of the one-way
-# categorical table. Keeping the native footer costs the note the
-# out-of-grid placement and keeps the borders intact on every route
-# (HTML, docx, console).
+# of the `<tfoot>` also injects header CSS written for the regression
+# header, which replaces the rule under a spanner with a trimmed
+# booktabs pseudo-rule -- the descriptive families draw that rule
+# under their own group spanners and expect it full width. Keeping the
+# native footer costs the note the out-of-grid placement and keeps the
+# borders intact on every route (HTML, docx, console).
 .spicy_ft_attach_note <- function(ft, note) {
   if (is.null(note) || !nzchar(note)) {
     return(ft)
@@ -74,6 +75,47 @@
       pre_label = "Table ",
       post_label = ": "
     ),
+    align_with_table = FALSE,
+    fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
+  )
+}
+
+# Set the caption every HTML (flextable) route prints above its
+# table: the same title the console announces. Word gets its own
+# auto-numbered caption from `.spicy_ft_word_caption()` above -- that
+# route replaces this one, and the numbering it adds is a Word field
+# with no HTML equivalent.
+#
+# Two non-obvious knobs in flextable's `set_caption()`:
+#
+#   * `align_with_table = FALSE`: flextable's default behaviour
+#     overrides the caller's `text.align` with the underlying table's
+#     alignment (via `process_caption_fp_par()`); the table is centred
+#     for HTML output, so the caption would be too. FALSE keeps the
+#     APA flush-left caption (APA Manual 7 Section 7.10-7.11).
+#   * `padding.bottom`: the rendered HTML caption otherwise has
+#     `padding-bottom: 0pt` and sits flush against the table's top
+#     border. 6pt gives a comfortable APA-style gap.
+#
+# `props` is the caption's text formatting: pass it when the builder
+# pins a font for the whole table (`table_regression()` does, so its
+# caption must match), leave NULL to inherit the table default (the
+# descriptive builders force no font). `flextable::font(part = "all")`
+# does NOT reach the caption, hence the explicit chunk properties.
+#
+# `title = NULL` / "" returns the table untouched.
+.spicy_ft_html_caption <- function(ft, title, props = NULL) {
+  if (is.null(title) || !nzchar(title)) {
+    return(ft)
+  }
+  chunk <- if (is.null(props)) {
+    flextable::as_chunk(title)
+  } else {
+    flextable::as_chunk(title, props = props)
+  }
+  flextable::set_caption(
+    ft,
+    caption = flextable::as_paragraph(chunk),
     align_with_table = FALSE,
     fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
   )

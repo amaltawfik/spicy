@@ -1358,7 +1358,17 @@ output_flextable <- function(rendered) {
   ci_spanners <- struct$ci_pairs
   reference_rows <- struct$reference_rows
   level_rows <- struct$level_rows
-  group_sep <- attr(rendered, "group_sep_rows")
+  # `group_sep` keeps the RAW attribute: its first element is where
+  # the fit-stats block starts, which `.fit_stat_merge_ranges()` reads
+  # below. `rule_rows` is every rule the console draws between blocks
+  # -- the coefficients / fit-stats divide AND the rule that opens a
+  # subordinate block (ordinal `Thresholds:`, mixed-model
+  # `Random effects:`, carried by `section_sep_rows`).
+  group_sep <- as.integer(attr(rendered, "group_sep_rows") %||% integer(0))
+  rule_rows <- sort(unique(c(
+    group_sep,
+    as.integer(attr(rendered, "section_sep_rows") %||% integer(0))
+  )))
 
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner <- length(ci_spanners) > 0L
@@ -1389,17 +1399,24 @@ output_flextable <- function(rendered) {
   ft <- flextable::flextable(body)
 
   # ---- Header structure (matches gt / tinytable convention) -------------
-  # Per-col labels ("B", "SE", "p") live in their OWN spanner row
-  # (1-wide spanners), NOT in the bottom column-labels row -- exactly
-  # the gt::tab_spanner() pattern used for output_gt. The CI spanner
-  # ("95% CI") sits in that same row, 2-wide over its LL/UL pair. The
-  # bottom column-labels row keeps only "Variable" (col 1) and the
-  # bare "LL" / "UL" sub-labels (CI cols); other cols are blank.
+  # The per-column label ("B", "SE", "p") can live in one of two rows:
   #
-  # Layout from top to bottom of the header:
-  #   * (multi-model) Model spanner row
-  #   * Per-col + CI spanner row  ("B" / "SE" / "95% CI" / "p" / ...)
-  #   * Column-labels row         ("Variable" / "" / "" / "LL" / "UL" / "")
+  #   * WITH a CI pair -- the labels move up into their own spanner
+  #     row (1-wide spanners, the gt::tab_spanner() pattern of
+  #     output_gt) so the column-labels row is free to carry the bare
+  #     "LL" / "UL" under the 2-wide "95% CI" spanner. Rows, top to
+  #     bottom: Model spanner (multi-model only) | per-col + CI
+  #     spanner | LL/UL.
+  #   * WITHOUT a CI pair -- nothing needs the lower row, so the
+  #     labels stay in the column-labels row flextable already has.
+  #     Rows: Model spanner (multi-model only) | Variable B SE p.
+  #
+  # Blanking the labels unconditionally left a wholly empty header
+  # strip under the labels of every table without a CI column (in the
+  # HTML and in the .docx alike) and pushed the rules one row down.
+  # Deriving the layout from `has_ci_spanner` keeps the rule
+  # arithmetic below true by construction -- same rule as
+  # `output_tinytable()`.
   ci_col_set <- if (has_ci_spanner) {
     unlist(lapply(ci_spanners, function(cs) cs$cols))
   } else {
@@ -1425,17 +1442,33 @@ output_flextable <- function(rendered) {
   }
   # nocov end
 
-  # Column-labels row (bottom-most header row) -- only LL/UL on the
-  # CI cols, blank elsewhere. The "Variable" label moves up to the
-  # spanner row (built below), aligned with the per-col B/SE/p labels.
+  # Bare per-column label ("B", "SE", "p"): `col_meta$display_label`
+  # (no Model prefix, no dedup `.N` suffix) when available, with the
+  # legacy `strip_model_prefix()` path as a fallback so structured
+  # bodies that pre-date `display_label` still render.
+  col_label <- function(j) {
+    lbl <- struct$col_meta[[orig_names[j]]]$display_label
+    if (!is.null(lbl) && nzchar(lbl)) {
+      lbl
+    } else {
+      strip_model_prefix(orig_names[j]) # nocov -- display_label always set
+    }
+  }
+
+  # Column-labels row (bottom-most header row). With a CI pair it
+  # carries only the bare "LL" / "UL" and is blank elsewhere (the
+  # labels live in the spanner row built below); without one it
+  # carries the labels themselves.
   display_labels <- as.list(orig_names)
   names(display_labels) <- orig_names
-  display_labels[[orig_names[1L]]] <- ""
+  display_labels[[orig_names[1L]]] <- if (has_ci_spanner) "" else "Variable"
   for (j in seq_len(n_cols)) {
     if (j == 1L) {
       next
     }
-    if (j %in% ci_col_set) {
+    if (!has_ci_spanner) {
+      display_labels[[orig_names[j]]] <- col_label(j)
+    } else if (j %in% ci_col_set) {
       for (cs in ci_spanners) {
         if (identical(cs$cols[1L], j)) {
           display_labels[[orig_names[j]]] <- "LL"
@@ -1452,17 +1485,27 @@ output_flextable <- function(rendered) {
   }
   ft <- do.call(flextable::set_header_labels, c(list(x = ft), display_labels))
 
-  # Helper: compress contiguous identical labels into single spans
-  # (input vector of per-col labels -> add_header_row(values, colwidths)).
-  build_run_spec <- function(label_at_col) {
+  # Helper: compress contiguous cells into spanning ones (per-col
+  # labels -> add_header_row(values, colwidths)). A run continues only
+  # while BOTH the label and the run KEY are unchanged; the key names
+  # the block a column belongs to (its model, its CI pair). Without
+  # it, two neighbouring models that display the same label merged
+  # into ONE header cell straddling the model spanner above -- "B" and
+  # "B" became a single 2-wide "B", and two distinct CI pairs a single
+  # 4-wide "95% CI". The console and the other engines print one label
+  # per model.
+  build_run_spec <- function(label_at_col, key_at_col) {
     n <- length(label_at_col)
     values <- character(0)
     widths <- integer(0)
     i <- 1L
     while (i <= n) {
       lbl <- label_at_col[i]
+      key <- key_at_col[i]
       j <- i
-      while (j < n && label_at_col[j + 1L] == lbl) {
+      while (
+        j < n && label_at_col[j + 1L] == lbl && key_at_col[j + 1L] == key
+      ) {
         j <- j + 1L
       }
       values <- c(values, lbl)
@@ -1472,47 +1515,29 @@ output_flextable <- function(rendered) {
     list(values = values, colwidths = widths)
   }
 
-  # Per-col + CI spanner row: "Variable" on col 1, the column's bare
-  # token ("B" / "SE" / "p" / ...) on non-CI numeric cols, the CI
-  # label ("95% CI") on each LL/UL pair.
-  sub_label_at_col <- character(n_cols)
-  for (j in seq_len(n_cols)) {
-    if (j == 1L) {
-      sub_label_at_col[j] <- "Variable"
-    } else if (j %in% ci_col_set) {
-      for (cs in ci_spanners) {
-        if (j %in% cs$cols) {
-          sub_label_at_col[j] <- cs$label
-          break
+  if (has_ci_spanner) {
+    # Per-col + CI spanner row: "Variable" on col 1, the column's bare
+    # token ("B" / "SE" / "p" / ...) on non-CI numeric cols, the CI
+    # label ("95% CI") on each LL/UL pair. Only a CI pair may span:
+    # every other column keys on its own index.
+    sub_label_at_col <- character(n_cols)
+    sub_key_at_col <- paste0("col", seq_len(n_cols))
+    for (j in seq_len(n_cols)) {
+      if (j == 1L) {
+        sub_label_at_col[j] <- "Variable"
+      } else if (j %in% ci_col_set) {
+        for (k in seq_along(ci_spanners)) {
+          if (j %in% ci_spanners[[k]]$cols) {
+            sub_label_at_col[j] <- ci_spanners[[k]]$label
+            sub_key_at_col[j] <- paste0("ci", k)
+            break
+          }
         }
-      }
-    } else {
-      # Prefer `col_meta$display_label` (bare, no Model prefix, no
-      # dedup `.N` suffix) when available; fall back to the legacy
-      # `strip_model_prefix(orig_names[j])` path so older
-      # structured bodies that pre-date `display_label` still work.
-      lbl <- struct$col_meta[[orig_names[j]]]$display_label
-      sub_label_at_col[j] <- if (!is.null(lbl) && nzchar(lbl)) {
-        lbl
       } else {
-        strip_model_prefix(orig_names[j]) # nocov -- display_label always set
+        sub_label_at_col[j] <- col_label(j)
       }
     }
-  }
-  rs <- build_run_spec(sub_label_at_col)
-  ft <- flextable::add_header_row(
-    ft,
-    top = TRUE,
-    values = rs$values,
-    colwidths = rs$colwidths
-  )
-
-  if (has_model_spanner) {
-    model_labels_at_col <- rep("", n_cols)
-    for (lbl in names(spanners)) {
-      model_labels_at_col[spanners[[lbl]]] <- lbl
-    }
-    rs <- build_run_spec(model_labels_at_col)
+    rs <- build_run_spec(sub_label_at_col, sub_key_at_col)
     ft <- flextable::add_header_row(
       ft,
       top = TRUE,
@@ -1521,10 +1546,26 @@ output_flextable <- function(rendered) {
     )
   }
 
-  # APA borders. The header now has up to 3 rows (model spanner row
-  # = 1, CI spanner row = 2, column-labels row = 3) -- the last
-  # header row is always the column-labels row and is the target of
-  # `hline_bottom(part = "header")`.
+  if (has_model_spanner) {
+    model_labels_at_col <- rep("", n_cols)
+    model_key_at_col <- rep("gap", n_cols)
+    for (k in seq_along(spanners)) {
+      model_labels_at_col[spanners[[k]]] <- names(spanners)[k]
+      model_key_at_col[spanners[[k]]] <- paste0("model", k)
+    }
+    rs <- build_run_spec(model_labels_at_col, model_key_at_col)
+    ft <- flextable::add_header_row(
+      ft,
+      top = TRUE,
+      values = rs$values,
+      colwidths = rs$colwidths
+    )
+  }
+
+  # APA borders. The header has up to 3 rows -- model spanner row (1,
+  # multi-model only), per-col + CI spanner row (CI tables only),
+  # column-labels row -- and the last one is always the column-labels
+  # row, the target of `hline_bottom(part = "header")`.
   bd <- spicy_fp_border(color = "black", width = 1)
   bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
   ft <- flextable::hline_top(ft, part = "header", border = bd)
@@ -1542,30 +1583,31 @@ output_flextable <- function(rendered) {
       part = "header",
       border = bd_none
     )
-    for (lbl in names(spanners)) {
+    for (k in seq_along(spanners)) {
       ft <- flextable::hline(
         ft,
         i = 1L,
-        j = spanners[[lbl]],
+        j = spanners[[k]],
         part = "header",
         border = bd
       )
     }
   }
-  # Bottom border of the per-col + CI spanner row.
-  # First clear flextable's default grey 1.5pt border across the whole
-  # row, THEN draw the black 1pt rule only under CI spanner pair(s).
-  # Without the clearing pass, the default grey bleeds across the row
-  # and overshoots the CI bracket visually.
-  sub_row_idx <- if (has_model_spanner) 2L else 1L
-  ft <- flextable::hline(
-    ft,
-    i = sub_row_idx,
-    j = seq_len(n_cols),
-    part = "header",
-    border = bd_none
-  )
+  # Bottom border of the per-col + CI spanner row (that row exists
+  # only when a CI pair does). First clear flextable's default grey
+  # 1.5pt border across the whole row, THEN draw the black 1pt rule
+  # only under CI spanner pair(s). Without the clearing pass, the
+  # default grey bleeds across the row and overshoots the CI bracket
+  # visually.
   if (has_ci_spanner) {
+    sub_row_idx <- if (has_model_spanner) 2L else 1L
+    ft <- flextable::hline(
+      ft,
+      i = sub_row_idx,
+      j = seq_len(n_cols),
+      part = "header",
+      border = bd_none
+    )
     for (cs in ci_spanners) {
       ft <- flextable::hline(
         ft,
@@ -1577,17 +1619,16 @@ output_flextable <- function(rendered) {
     }
   }
   ft <- flextable::hline_bottom(ft, part = "header", border = bd)
-  if (
-    length(group_sep) >= 1L &&
-      group_sep[1L] >= 2L &&
-      group_sep[1L] <= nrow(body)
-  ) {
-    ft <- flextable::hline(
-      ft,
-      i = group_sep[1L] - 1L,
-      part = "body",
-      border = bd_light
-    )
+  # Every rule the console draws between blocks, not only the first.
+  for (sep in rule_rows) {
+    if (sep >= 2L && sep <= nrow(body)) {
+      ft <- flextable::hline(
+        ft,
+        i = sep - 1L,
+        part = "body",
+        border = bd_light
+      )
+    }
   }
   if (nrow(body) > 0L) {
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
@@ -1655,38 +1696,17 @@ output_flextable <- function(rendered) {
 
   title <- attr(rendered, "title")
   note <- attr(rendered, "note")
-  if (!is.null(title) && nzchar(title)) {
-    # APA Manual 7 Section 7.10-Section 7.11: table caption is flush-left
-    # (italic-styled by Word's "Table Caption" style at the OOXML
-    # level when rendered into docx). Two non-obvious knobs in
-    # flextable's `set_caption()`:
-    #
-    #   * `align_with_table = FALSE`: flextable's default behaviour
-    #     overrides the caller's `text.align` with the underlying
-    #     table's alignment (via `process_caption_fp_par()`); the
-    #     table is centred for HTML output, so the caption is too.
-    #     Setting this to FALSE keeps our `text.align = "left"`.
-    #   * `padding.bottom`: the rendered HTML caption otherwise has
-    #     `padding-bottom: 0pt` and sits flush against the table's
-    #     top border. 6pt gives a comfortable APA-style gap.
-    # `flextable::font(part = "all", fontname = "Calibri")` further
-    # below covers header / body / footer but NOT the caption text
-    # (the caption is rendered from the paragraph value passed here,
-    # and `font(part = "all")` does not touch it). Wrap the title in
-    # an explicit `as_paragraph(as_chunk(..., props = fp_text(Calibri)))`
-    # so the caption picks up the same font as the body.
-    ft <- flextable::set_caption(
-      ft,
-      caption = flextable::as_paragraph(
-        flextable::as_chunk(
-          title,
-          props = officer::fp_text(font.family = "Calibri", font.size = 11)
-        )
-      ),
-      align_with_table = FALSE,
-      fp_p = officer::fp_par(text.align = "left", padding.bottom = 6)
-    )
-  }
+  # APA Manual 7 Section 7.10-Section 7.11: the caption is flush-left
+  # (italic-styled by Word's "Table Caption" style at the OOXML level
+  # when rendered into docx). Same helper as the descriptive
+  # families; this builder pins Calibri on the whole table, so the
+  # caption is pinned with it (`font(part = "all")` does not reach
+  # the caption).
+  ft <- .spicy_ft_html_caption(
+    ft,
+    title,
+    props = officer::fp_text(font.family = "Calibri", font.size = 11)
+  )
   if (!is.null(note) && nzchar(note)) {
     # APA Manual 7 Section 7.14: general notes form a SINGLE paragraph
     # ("*Note.* ...") that wraps naturally within the table width.
@@ -1800,21 +1820,28 @@ output_flextable <- function(rendered) {
   # default classes). Killing either alone leaves the other in
   # place, so we neutralise both via `!important`, then add the
   # trimmed pseudo-rule on the Model spanner cells only.
-  # CI-spanner cells in the per-col row are in the SECOND thead
-  # row but only have `colspan="2"` if there's a CI; their bottom
-  # border (the CI bracket rule) is set elsewhere and is not
-  # touched by this rule. Single-model tables have no first-row
-  # `colspan>1` cell, so the trim rules are no-ops there.
+  # In a single-model table WITH a CI pair the per-col row is the
+  # first thead row, so the CI-spanner cell (`colspan="2"`) takes the
+  # same treatment: its bracket rule is redrawn trimmed by the
+  # pseudo-element instead of running edge to edge.
+  #
+  # Every `tr:first-child` rule is qualified with `:not(:last-child)`:
+  # a table whose header is a SINGLE row (no model spanner, no CI
+  # pair) has its first thead row as the last one too, and its
+  # bottom border is the APA rule under the column labels -- the one
+  # line the table cannot do without. Unqualified, the selector
+  # erased it.
   border_collapse_css <- paste0(
     "<style>",
     ".spicy-ft-outer table { border-collapse: collapse; }",
-    ".spicy-ft-outer thead tr:first-child th { ",
+    ".spicy-ft-outer thead tr:first-child:not(:last-child) th { ",
     "border-bottom: 0 none !important; }",
     ".spicy-ft-outer thead tr:nth-child(2) th { ",
     "border-top: 0 none !important; }",
-    ".spicy-ft-outer thead tr:first-child th[colspan]:not([colspan=\"1\"]) { ",
-    "position: relative; }",
-    ".spicy-ft-outer thead tr:first-child th[colspan]:not([colspan=\"1\"])::after { ",
+    ".spicy-ft-outer thead tr:first-child:not(:last-child) ",
+    "th[colspan]:not([colspan=\"1\"]) { position: relative; }",
+    ".spicy-ft-outer thead tr:first-child:not(:last-child) ",
+    "th[colspan]:not([colspan=\"1\"])::after { ",
     "content: \"\"; position: absolute; left: 0.5em; right: 0.5em; ",
     "bottom: 0; border-bottom: 1pt solid black; }",
     "</style>"

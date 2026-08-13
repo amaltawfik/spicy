@@ -1027,11 +1027,21 @@ test_that("spanner – flextable output adds a header row with spanners", {
   hdr <- f$header$dataset
   # Multi-model header layout (matches gt / tinytable convention):
   #   row 1: model spanner (A / B)
-  #   row 2: per-col + CI spanner (B / 95% CI / p / ...)
+  #   row 2: per-col + CI spanner (B / 95% CI / p / ...) -- only when
+  #          the table has a CI pair; the labels stay in the
+  #          column-labels row otherwise
   #   row 3: column-labels row (Variable / LL / UL / ...)
-  expect_equal(nrow(hdr), 3L)
+  # These models default to B / SE / p, so the console prints two
+  # header rows and so does the engine.
+  expect_equal(nrow(hdr), 2L)
   expect_true(any(unlist(hdr[1, ]) == "A"))
   expect_true(any(unlist(hdr[1, ]) == "B"))
+  f_ci <- table_regression(
+    list("A" = m1, "B" = m2),
+    show_columns = c("b", "ci", "p"),
+    output = "flextable"
+  )
+  expect_equal(nrow(f_ci$header$dataset), 3L)
 })
 
 test_that("ordered factor – grouped under header, poly-order, auto footer note", {

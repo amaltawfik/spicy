@@ -1722,6 +1722,20 @@ table_categorical <- function(
         spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
       }
       df <- pad_decimal_cols(df)
+      # Level rows carry the console's indent inside the label cell
+      # and the engine indents them again below (`padding.left`). One
+      # indentation is the design; two is an artefact of reading a
+      # display string as data -- and Word keeps the literal spaces.
+      # Keep the engine's indent, which survives every backend, and
+      # hand the cell the bare level name (same rule as the gt and
+      # tinytable branches).
+      id_mod <- which(startsWith(df[[1L]], indent_text))
+      if (length(id_mod)) {
+        df[[1L]][id_mod] <- substring(
+          df[[1L]][id_mod],
+          nchar(indent_text) + 1L
+        )
+      }
       ft <- flextable::flextable(df)
       map <- data.frame(
         col_keys = names(df),
@@ -1763,7 +1777,6 @@ table_categorical <- function(
       ft <- flextable::hline_top(ft, part = "header", border = bd)
       ft <- flextable::hline_bottom(ft, part = "header", border = bd)
       ft <- flextable::hline_bottom(ft, part = "body", border = bd)
-      id_mod <- which(startsWith(df[[1]], indent_text))
       if (length(id_mod)) {
         ft <- flextable::padding(
           ft,
@@ -1780,7 +1793,12 @@ table_categorical <- function(
     }
 
     if (output == "flextable") {
-      return(build_flextable_oneway(report_wide_char))
+      # Same title the console prints, from the same helper: a table
+      # that names itself on screen names itself in HTML too.
+      return(.spicy_ft_html_caption(
+        build_flextable_oneway(report_wide_char),
+        .categorical_title(NULL)
+      ))
     }
 
     if (output == "word") {
@@ -2938,6 +2956,17 @@ table_categorical <- function(
       spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
     }
     df <- pad_decimal_cols(df)
+    # Level rows carry the console's indent inside the label cell and
+    # the engine indents them again below (`padding.left`). One
+    # indentation is the design; two is an artefact of reading a
+    # display string as data -- and Word keeps the literal spaces.
+    # Keep the engine's indent, which survives every backend, and hand
+    # the cell the bare level name (same rule as the gt and tinytable
+    # branches).
+    id_mod <- which(startsWith(df[[1L]], indent_text))
+    if (length(id_mod)) {
+      df[[1L]][id_mod] <- substring(df[[1L]][id_mod], nchar(indent_text) + 1L)
+    }
     ft <- flextable::flextable(df)
 
     map <- data.frame(
@@ -2992,7 +3021,6 @@ table_categorical <- function(
     ft <- flextable::hline_bottom(ft, part = "header", border = bd)
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
 
-    id_mod <- which(startsWith(df[[1]], indent_text))
     if (length(id_mod)) {
       ft <- flextable::padding(
         ft,
@@ -3016,7 +3044,13 @@ table_categorical <- function(
   }
 
   if (output == "flextable") {
-    return(build_flextable(merge_ci_inline(report_wide_char)))
+    # Same title the console prints, from the same helper -- for a
+    # by-table it names the grouping variable, which nothing else in
+    # the rendered table states.
+    return(.spicy_ft_html_caption(
+      build_flextable(merge_ci_inline(report_wide_char)),
+      .categorical_title(by_name)
+    ))
   }
 
   if (output == "word") {

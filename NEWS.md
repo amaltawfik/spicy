@@ -301,6 +301,20 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `"word"` outputs, beside the missing-value disclosure.
 * Factor levels in a `"flextable"` or `"word"` regression table are indented
   once, not twice.
+* A table without a confidence-interval column no longer carries an empty
+  header strip in the `"flextable"` and `"word"` outputs: the column labels
+  and the rules land where the console draws them.
+* A column header in a `"flextable"` or `"word"` table stays inside its own
+  model. Two models sharing a label used to merge into a single header cell
+  straddling both, two confidence intervals into one `95% CI` spanning four
+  columns.
+* The `"flextable"` and `"word"` outputs draw every rule the console draws
+  between blocks, not only the first: `Thresholds:` and `Random effects:`
+  open with one too.
+* `table_categorical()`, `table_continuous()` and `table_continuous_lm()`
+  carry their title to `output = "flextable"`, as the table caption.
+* Factor levels in a `"flextable"` or `"word"` `table_categorical()` are
+  indented once, not twice.
 * `kendall_tau_b()` reported wrong SEs, confidence intervals and Wald
   p-values in every release from 0.6.0 through 0.12.0 -- its asymptotic
   standard error mis-scaled one margin term; point estimates were correct.

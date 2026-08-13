@@ -2900,6 +2900,8 @@ export_desc_table <- function(
       return(invisible(word_path))
     }
 
+    # Same title the console prints, from the same helper.
+    ft <- .spicy_ft_html_caption(ft, .continuous_title())
     class(ft) <- c("spicy_flextable", class(ft))
     return(ft)
   }
