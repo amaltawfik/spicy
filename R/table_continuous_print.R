@@ -91,7 +91,7 @@ print.spicy_continuous_table <- function(x, ...) {
     }
   }
 
-  title <- .continuous_title()
+  title <- .continuous_title(attr(x, "group_label", exact = TRUE))
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
@@ -134,10 +134,19 @@ print.spicy_continuous_table <- function(x, ...) {
 
 # ---- Table title ----------------------------------------------------------
 
-# Internal: the title of a continuous summary table. Single source for
-# the console header and the caption every rendering engine sets, so
-# the two can never drift apart.
-.continuous_title <- function() "Descriptive statistics"
+# Internal: the title of a continuous summary table, from the label of
+# the grouping variable (`NULL` = ungrouped). Single source for the
+# console header and the caption every rendering engine sets, so the
+# two can never drift apart. The by table states its grouping variable
+# like its siblings ("Categorical table by <x>", "Continuous outcomes
+# by <x>") -- decision of 2026-08-13, dev/decisions_amal_2026-08.md.
+.continuous_title <- function(by_label = NULL) {
+  if (is.null(by_label) || !nzchar(by_label)) {
+    "Descriptive statistics"
+  } else {
+    paste0("Descriptive statistics by ", by_label)
+  }
+}
 
 # ---- Coercion to plain data.frame / tibble --------------------------------
 

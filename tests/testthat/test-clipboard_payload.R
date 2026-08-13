@@ -200,9 +200,11 @@ test_that("table_continuous clipboard carries the title and the note", {
     output = "clipboard"
   ))
   lines <- .clip_lines(captured$text)
+  # The by table states its grouping variable in the title
+  # (decision 4, 2026-08-13), label resolved ("Sex", not "sex").
   expect_identical(
     strsplit(lines[1L], "\t", fixed = TRUE)[[1L]][1L],
-    "Descriptive statistics"
+    "Descriptive statistics by Sex"
   )
   expect_match(lines[length(lines)], "^Missing values removed: bmi \\(68\\)\\.")
   expect_false(grepl("\u2007", captured$text, fixed = TRUE))

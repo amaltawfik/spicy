@@ -3775,3 +3775,15 @@ test_that("the note glosses only the columns actually displayed", {
     "missing_note"
   ))
 })
+
+
+test_that("the by table titles itself 'Descriptive statistics by <label>'", {
+  # Decision 4 (2026-08-13): the grouping variable is stated in the
+  # title, label resolved, like the other by tables of the family.
+  out <- capture.output(print(
+    table_continuous(sochealth, select = bmi, by = sex)
+  ))
+  expect_true(any(grepl("^Descriptive statistics by Sex$", trimws(out))))
+  out1 <- capture.output(print(table_continuous(sochealth, select = bmi)))
+  expect_true(any(grepl("^Descriptive statistics$", trimws(out1))))
+})

@@ -1320,6 +1320,15 @@ table_continuous <- function(
   attr(result, "decimal_mark") <- decimal_mark
   attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
+  # Label of the grouping variable (resolved like table_continuous_lm's
+  # by_label), for the "Descriptive statistics by <label>" title: the
+  # by variable must be stated in the rendered caption, like the other
+  # by tables of the family.
+  attr(result, "group_label") <- if (has_group) {
+    resolve_variable_labels(data, group_col_name)
+  } else {
+    NULL
+  }
   attr(result, "test") <- if (do_test) test else NA_character_
   attr(result, "show_p") <- p_value && has_group
   attr(result, "show_statistic") <- statistic && has_group
@@ -2393,6 +2402,7 @@ export_desc_table <- function(
   word_path,
   note = NULL
 ) {
+  title_by <- attr(raw_result, "group_label", exact = TRUE)
   ci_pct <- paste0(round(ci_level * 100), "%")
   ci_ll <- paste0(ci_pct, " CI LL")
   ci_ul <- paste0(ci_pct, " CI UL")
@@ -2471,7 +2481,7 @@ export_desc_table <- function(
 
     tt <- tinytable::tt(
       display_df,
-      caption = .continuous_title(),
+      caption = .continuous_title(title_by),
       notes = note
     )
     tt <- tinytable::group_tt(tt, j = gspec)
@@ -2908,13 +2918,13 @@ export_desc_table <- function(
         )
       }
       # Same title the console prints, from the same helper.
-      ft <- .spicy_ft_word_caption(ft, .continuous_title())
+      ft <- .spicy_ft_word_caption(ft, .continuous_title(title_by))
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
     }
 
     # Same title the console prints, from the same helper.
-    ft <- .spicy_ft_html_caption(ft, .continuous_title())
+    ft <- .spicy_ft_html_caption(ft, .continuous_title(title_by))
     class(ft) <- c("spicy_flextable", class(ft))
     return(ft)
   }
@@ -2943,7 +2953,7 @@ export_desc_table <- function(
 
     # Same title the console prints, from the same helper, then the
     # two header rows two lines below.
-    wb <- openxlsx2::wb_add_data(wb, x = .continuous_title(), start_row = 1)
+    wb <- openxlsx2::wb_add_data(wb, x = .continuous_title(title_by), start_row = 1)
     top_header_row <- 3L
     bot_header_row <- top_header_row + 1L
     first_body_row <- bot_header_row + 1L
@@ -3110,7 +3120,7 @@ export_desc_table <- function(
     txt <- .clipboard_payload_desc(
       clip_mat,
       clipboard_delim,
-      title = .continuous_title(),
+      title = .continuous_title(title_by),
       note = note
     )
     clipr::write_clip(txt)
