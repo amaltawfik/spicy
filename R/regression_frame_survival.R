@@ -633,15 +633,8 @@ as_regression_frame.survreg <- function(
 
 # Title-case distribution label for survreg's title prefix.
 .survreg_dist_title <- function(dist) {
-  switch(
-    dist,
-    weibull = "Weibull",
-    lognormal = "Log-normal",
-    loglogistic = "Log-logistic",
-    exponential = "Exponential",
-    gaussian = "Gaussian",
-    logistic = "Logistic",
-    `t` = "Student-t",
-    paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
-  )
+  # Delegates to the shared distribution-name table (single source,
+  # regression_titlefooter.R) -- this used to be a second, diverging
+  # copy.
+  .surv_title_dist(dist)
 }

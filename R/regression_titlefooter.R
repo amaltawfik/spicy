@@ -708,18 +708,17 @@ build_standardized_caveat_footer_block_from_frames <- function(
 # Mapping rendered in increasing-strictness order (smallest p first
 # at the lead) mirroring stargazer / modelsummary convention.
 build_stars_footer_block <- function(stars) {
-  if (isFALSE(stars) || is.null(stars)) {
+  # Single source: the SAME resolver that computes the body markers
+  # (resolve_stars_thresholds, regression_render.R). The legend and
+  # the cells cannot disagree on the cutoffs -- the defaults used to
+  # be written twice, here and there.
+  stars <- resolve_stars_thresholds(stars)
+  if (is.null(stars)) {
     return(NULL)
   }
-  if (isTRUE(stars)) {
-    stars <- c("*" = 0.05, "**" = 0.01, "***" = 0.001)
-  }
-  if (!is.numeric(stars) || is.null(names(stars))) {
-    return(NULL)
-  }
-  ord <- order(stars) # smallest p first => strictest symbol first
-  sym <- names(stars)[ord]
-  thr <- stars[ord]
+  # Already sorted smallest p first => strictest symbol first.
+  sym <- names(stars)
+  thr <- stars
   parts <- vapply(
     seq_along(sym),
     function(i) {
@@ -1035,6 +1034,10 @@ build_survival_footer_block_from_frames <- function(frames) {
 
 
 .surv_title_dist <- function(dist) {
+  # Single source for parametric-survival distribution display names:
+  # the union of the survreg and flexsurvreg vocabularies.
+  # .survreg_dist_title() (regression_frame_survival.R) delegates
+  # here -- the two used to be separate, diverging tables.
   switch(
     dist,
     weibull = "Weibull",
@@ -1050,6 +1053,8 @@ build_survival_footer_block_from_frames <- function(frames) {
     gengamma = "Generalised gamma",
     genf = "Generalised F",
     gaussian = "Gaussian",
+    logistic = "Logistic",
+    `t` = "Student-t",
     paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
   )
 }
@@ -1713,7 +1718,10 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
         "Random-effect variance components: SE and CI not ",
         "computed (n = %s exceeds the spicy.re_se_max_n cap)."
       ),
-      format(n, big.mark = ",")
+      # No thousands separator: every other N the package prints is
+      # bare, and an anglophone "," reads as a decimal under
+      # decimal_mark = ",".
+      format(n)
     )
   }
   affected <- which(!is.na(ns))

@@ -295,7 +295,7 @@ test_that("re_se_skipped footer consolidates when all models share the n", {
     out,
     paste0(
       "Random-effect variance components: SE and CI not computed ",
-      "(n = 15,000 exceeds the spicy.re_se_max_n cap)."
+      "(n = 15000 exceeds the spicy.re_se_max_n cap)."
     )
   )
 })
@@ -309,9 +309,9 @@ test_that("re_se_skipped footer lists per-model lines when n differs", {
     out,
     paste0(
       "Model 1: Random-effect variance components: SE and CI not ",
-      "computed (n = 15,000 exceeds the spicy.re_se_max_n cap).\n",
+      "computed (n = 15000 exceeds the spicy.re_se_max_n cap).\n",
       "Model 2: Random-effect variance components: SE and CI not ",
-      "computed (n = 20,000 exceeds the spicy.re_se_max_n cap)."
+      "computed (n = 20000 exceeds the spicy.re_se_max_n cap)."
     )
   )
 })
@@ -326,7 +326,7 @@ test_that("re_se_skipped footer prefixes only the affected model", {
     out,
     paste0(
       "Model 2: Random-effect variance components: SE and CI not ",
-      "computed (n = 20,000 exceeds the spicy.re_se_max_n cap)."
+      "computed (n = 20000 exceeds the spicy.re_se_max_n cap)."
     )
   )
 })
