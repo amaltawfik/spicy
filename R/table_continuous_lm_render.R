@@ -486,63 +486,14 @@ export_continuous_lm_table <- function(
 
     # ---- Note rendering (HTML): strip the rendered `<tfoot>` and ------
     # wrap the table together with the note in an `inline-block` flex
-    # sibling. Same mechanism and CSS as table_regression()'s
-    # output_tinytable (regression_dispatch.R): a
-    # `<tfoot><td colspan="N">` cell contributes its max-content
-    # width to every column it spans, so the note is pulled out of
-    # the table grid and re-injected as a flush-left `<div>` that
-    # wraps within the table's width (`width: min-content;
-    # min-width: 100%`). See regression_dispatch.R for the full CSS
-    # rationale; the strings are kept identical so the visual reading
-    # matches across engines.
+    # sibling. Same mechanism, markup and CSS as table_regression()'s
+    # output_tinytable(): both call the shared pair in R/tt_theme.R, so
+    # a note reads the same way whichever family produced the table.
     if (!is.null(note) && nzchar(note)) {
-      .html_escape <- function(s) {
-        s <- gsub("&", "&amp;", s, fixed = TRUE)
-        s <- gsub("<", "&lt;", s, fixed = TRUE)
-        s <- gsub(">", "&gt;", s, fixed = TRUE)
-        s
-      }
-      note_html <- .html_escape(note)
-      note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
-      note_div <- paste0(
-        "<div class=\"spicy-tt-note\" style=\"",
-        "width: min-content; min-width: 100%; box-sizing: border-box; ",
-        "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
-        "font-size: 0.875rem; line-height: 1.25; ",
-        "text-align: left;\">",
-        note_html,
-        "</div>"
-      )
-      open_outer <- paste0(
-        "<div class=\"spicy-tt-outer\" ",
-        "style=\"text-align: center;\">"
-      )
-      open_inner <- paste0(
-        "<div class=\"spicy-tt-wrap\" style=\"",
-        "display: inline-block; max-width: 100%; ",
-        "text-align: left; vertical-align: top;\">"
-      )
-      close_both <- "</div></div>"
+      note_div <- .spicy_tt_note_div(note)
       tt <- tinytable::style_tt(tt, finalize = function(x) {
         if (identical(x@output, "html")) {
-          x@table_string <- sub(
-            "<tfoot>[\\s\\S]*?</tfoot>",
-            "",
-            x@table_string,
-            perl = TRUE
-          )
-          x@table_string <- sub(
-            "<table ",
-            paste0(open_outer, open_inner, "<table "),
-            x@table_string,
-            fixed = TRUE
-          )
-          x@table_string <- sub(
-            "</table>",
-            paste0("</table>", note_div, close_both),
-            x@table_string,
-            fixed = TRUE
-          )
+          x@table_string <- .spicy_tt_wrap_html(x@table_string, note_div)
         }
         x
       })

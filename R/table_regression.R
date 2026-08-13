@@ -558,6 +558,23 @@
 #' model with the model-level statistics; `df.residual` is kept
 #' numeric so cluster-robust Satterthwaite df is preserved.
 #'
+#' # Global options
+#'
+#' * **`options(spicy.note_style = )`** -- how the table note is
+#'   rendered by the `"tinytable"` engine (all four table families).
+#'   A note is subordinate to the table it documents, so it is set
+#'   one size down, in black: `0.9em`, matching the `"gt"` engine and
+#'   the 10pt-on-11pt of the Word engine. Two opt-ins:
+#'   \itemize{
+#'     \item `"none"` -- no intervention; the note is rendered
+#'       exactly as the receiving document template styles it.
+#'     \item any other string -- extra arguments for the Typst
+#'       `text()` call around the note, appended to the size (e.g.
+#'       `options(spicy.note_style = "fill: luma(89)")` for a grey
+#'       note). Typst only; the HTML note keeps the plain `0.9em`.
+#'   }
+#'   `options(spicy.note_style = NULL)` restores the default.
+#'
 #' # Weights
 #'
 #' No `weights` argument: weights are a property of the fit

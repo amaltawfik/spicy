@@ -137,6 +137,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* Table notes rendered by the `"tinytable"` engine are set one size down
+  (`0.9em`, black), like the notes of the other engines. New
+  `options(spicy.note_style)`: `"none"` leaves the note to the document
+  template, and any other string is added to the Typst `text()` call around
+  it, e.g. `"fill: luma(89)"` for a grey note.
 * `table_continuous()` gains `show_columns`: pick the statistics the table
   shows -- `"med"`, `"q1"`, `"q3"`, `"iqr"`, the compact `"med_iqr"`
   (`Med [Q1, Q3]`), and `"med_ci"` (exact order-statistic CI of the median)
@@ -271,6 +276,23 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `missing_note` attribute. It used to reach the console print only, so a
   report rendered with `warning: false` showed a table computed on fewer
   observations than it announced.
+* `table_categorical()` and `table_continuous()` also carry their title to
+  the `"tinytable"` output, as the table caption; a `by` table carries its
+  association-measure note there too.
+* A table without a confidence-interval column had its `"tinytable"` header
+  rules one row too low -- no rule above the table, the per-model rules
+  under the column labels instead of under the model names -- and carried an
+  empty header strip below the labels.
+* The `"tinytable"` output draws every rule the console draws between
+  blocks: above `Thresholds:` and `Random effects:` in `table_regression()`,
+  and between variable blocks in `table_categorical()`.
+* A multi-line table note keeps one disclosure per line in the
+  `"tinytable"` HTML and Typst output; the lines used to run together into
+  a single sentence.
+* `table_categorical()` without `by` labels the first `"tinytable"` column
+  `Variable`, like the console and like the `by` version.
+* Factor levels in a `"tinytable"` regression table are indented once, not
+  twice.
 * `kendall_tau_b()` reported wrong SEs, confidence intervals and Wald
   p-values in every release from 0.6.0 through 0.12.0 -- its asymptotic
   standard error mis-scaled one margin term; point estimates were correct.

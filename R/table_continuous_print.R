@@ -91,7 +91,7 @@ print.spicy_continuous_table <- function(x, ...) {
     }
   }
 
-  title <- "Descriptive statistics"
+  title <- .continuous_title()
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
@@ -131,6 +131,13 @@ print.spicy_continuous_table <- function(x, ...) {
 
   invisible(x)
 }
+
+# ---- Table title ----------------------------------------------------------
+
+# Internal: the title of a continuous summary table. Single source for
+# the console header and the caption every rendering engine sets, so
+# the two can never drift apart.
+.continuous_title <- function() "Descriptive statistics"
 
 # ---- Coercion to plain data.frame / tibble --------------------------------
 

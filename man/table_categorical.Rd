@@ -276,7 +276,9 @@ table, \code{"tinytable"} / \code{"gt"} / \code{"flextable"} / \code{"word"} car
 a table note, and \code{"data.frame"} keeps the sentence verbatim in the
 \code{missing_note} attribute (\code{attr(x, "missing_note")}, \code{NULL} when
 nothing was removed) so a pipeline that renders the numbers itself
-can still state what left the table.
+can still state what left the table. On the \code{"tinytable"} route the
+note is set one size down; \code{options(spicy.note_style)} governs that
+(see \code{\link[=table_regression]{table_regression()}}).
 }
 \description{
 Builds a publication-ready frequency or cross-tabulation table for one

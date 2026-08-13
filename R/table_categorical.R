@@ -510,7 +510,9 @@
 #' a table note, and `"data.frame"` keeps the sentence verbatim in the
 #' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
 #' nothing was removed) so a pipeline that renders the numbers itself
-#' can still state what left the table.
+#' can still state what left the table. On the `"tinytable"` route the
+#' note is set one size down; `options(spicy.note_style)` governs that
+#' (see [table_regression()]).
 #'
 #' @details
 #' # Tests
@@ -1568,17 +1570,24 @@ table_categorical <- function(
       # the rendering used by the other engines.
       dat_tt <- pad_decimal_cols(dat_tt)
       mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
+      # Rule above the first row of each variable block (the console
+      # draws the same dashed separator between blocks).
+      var_sep_rows <- .categorical_var_sep_rows(dat_tt[[1]], indent_text)
       if (length(mod_rows)) {
         dat_tt[[1]][mod_rows] <- paste0(
           strrep("\u00A0", 4),
           substring(dat_tt[[1]][mod_rows], nchar(indent_text) + 1L)
         )
       }
-      names(dat_tt) <- c("", "n", "%")
+      # "Variable" is what the console and the `by =` branch put over
+      # the row labels; a blank corner made the engine disagree with
+      # itself depending on whether `by` was supplied.
+      names(dat_tt) <- c("Variable", "n", "%")
 
       tt <- tinytable::tt(
         dat_tt,
         escape = FALSE,
+        caption = .categorical_title(NULL),
         notes = missing_note
       )
       tt <- .spicy_tt_bare(tt)
@@ -1626,6 +1635,17 @@ table_categorical <- function(
         line = "b",
         line_width = 0.06
       )
+      # Light separators between variable blocks (same rule
+      # table_continuous() draws).
+      for (sr in var_sep_rows) {
+        tt <- tinytable::style_tt(
+          tt,
+          i = sr - 1L,
+          j = seq_len(ncol(dat_tt)),
+          line = "b",
+          line_width = 0.03
+        )
+      }
       return(tt)
     }
 
@@ -2558,6 +2578,9 @@ table_categorical <- function(
 
     # Detect modality rows before header rename
     mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
+    # Rule above the first row of each variable block (the console
+    # draws the same dashed separator between blocks).
+    var_sep_rows <- .categorical_var_sep_rows(dat_tt[[1]], indent_text)
     if (length(mod_rows)) {
       dat_tt[[1]][mod_rows] <- paste0(
         strrep("\u00A0", 4),
@@ -2587,7 +2610,11 @@ table_categorical <- function(
     tt <- tinytable::tt(
       dat_tt,
       escape = FALSE,
-      notes = missing_note
+      caption = .categorical_title(by_name),
+      # The association-measure gloss belongs to the rendered table as
+      # much as to the console: it names which measure each row
+      # carries.
+      notes = .categorical_note(missing_note, assoc_note_text)
     )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- .spicy_tt_bare(tt)
@@ -2660,6 +2687,17 @@ table_categorical <- function(
       line = "b",
       line_width = 0.06
     )
+    # Light separators between variable blocks (same rule
+    # table_continuous() draws).
+    for (sr in var_sep_rows) {
+      tt <- tinytable::style_tt(
+        tt,
+        i = sr - 1L,
+        j = seq_len(ncol(dat_tt)),
+        line = "b",
+        line_width = 0.03
+      )
+    }
     # Prevent p-value and measure columns from wrapping
     tt <- tinytable::style_tt(
       tt,

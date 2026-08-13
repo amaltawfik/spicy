@@ -1311,6 +1311,25 @@ model with the model-level statistics; \code{df.residual} is kept
 numeric so cluster-robust Satterthwaite df is preserved.
 }
 
+\section{Global options}{
+\itemize{
+\item \strong{\code{options(spicy.note_style = )}} -- how the table note is
+rendered by the \code{"tinytable"} engine (all four table families).
+A note is subordinate to the table it documents, so it is set
+one size down, in black: \verb{0.9em}, matching the \code{"gt"} engine and
+the 10pt-on-11pt of the Word engine. Two opt-ins:
+\itemize{
+\item \code{"none"} -- no intervention; the note is rendered
+exactly as the receiving document template styles it.
+\item any other string -- extra arguments for the Typst
+\code{text()} call around the note, appended to the size (e.g.
+\code{options(spicy.note_style = "fill: luma(89)")} for a grey
+note). Typst only; the HTML note keeps the plain \verb{0.9em}.
+}
+\code{options(spicy.note_style = NULL)} restores the default.
+}
+}
+
 \section{Weights}{
 No \code{weights} argument: weights are a property of the fit
 (extracted via \code{\link[stats:weights]{stats::weights()}}). Pass them when fitting:

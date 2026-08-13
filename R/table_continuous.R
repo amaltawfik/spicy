@@ -266,7 +266,9 @@
 #' `"data.frame"` / `"long"` keep the sentence verbatim in the
 #' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
 #' nothing was removed) so a pipeline that renders the numbers itself
-#' can still state what left the table.
+#' can still state what left the table. On the `"tinytable"` route the
+#' note is set one size down; `options(spicy.note_style)` governs that
+#' (see [table_regression()]).
 #'
 #' @details
 #' # Choosing the statistics
@@ -1597,7 +1599,9 @@ median_order_ci <- function(x, ci_level) {
 # Join the note parts, dropping the empty ones. NULL when nothing is
 # to be said, so the default table's note attribute stays NULL.
 paste_note_parts <- function(parts) {
-  parts <- parts[!vapply(parts, function(p) is.null(p) || !nzchar(p), logical(1))]
+  parts <- parts[
+    !vapply(parts, function(p) is.null(p) || !nzchar(p), logical(1))
+  ]
   if (length(parts) == 0L) {
     return(NULL)
   }
@@ -1609,7 +1613,11 @@ continuous_test_label <- function(method, n_groups) {
   two <- !is.na(n_groups) && n_groups == 2L
   switch(
     method,
-    nonparametric = if (two) "Wilcoxon rank-sum test" else "Kruskal-Wallis test",
+    nonparametric = if (two) {
+      "Wilcoxon rank-sum test"
+    } else {
+      "Kruskal-Wallis test"
+    },
     student = if (two) "Student t-test" else "one-way ANOVA",
     if (two) "Welch t-test" else "Welch one-way ANOVA"
   )
@@ -2448,7 +2456,11 @@ export_desc_table <- function(
       gspec[[g$label]] <- g$cols
     }
 
-    tt <- tinytable::tt(display_df, notes = note)
+    tt <- tinytable::tt(
+      display_df,
+      caption = .continuous_title(),
+      notes = note
+    )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- .spicy_tt_bare(tt)
 
@@ -2719,7 +2731,11 @@ export_desc_table <- function(
       "  background-color: transparent !important;",
       "}",
       if (has_any_ci) paste0(ci_css_sel, " {") else "",
-      if (has_any_ci) "  border-top: 1px solid currentColor !important;" else "",
+      if (has_any_ci) {
+        "  border-top: 1px solid currentColor !important;"
+      } else {
+        ""
+      },
       if (has_any_ci) "}" else "",
       ".gt_table thead tr:last-child {",
       "  border-bottom: 1px solid currentColor !important;",

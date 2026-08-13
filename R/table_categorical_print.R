@@ -19,18 +19,13 @@ print.spicy_categorical_table <- function(x, ...) {
   indent_text <- attr(x, "indent_text") %||% "  "
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
-  assoc_note <- attr(x, "assoc_note")
   # drop_na = TRUE disclosure ("Missing values removed: ...") prepends
   # the association note -- the reader sees what left the table before
   # reading the statistics computed on what remains.
-  missing_note <- attr(x, "missing_note")
-  if (!is.null(missing_note)) {
-    assoc_note <- if (is.null(assoc_note)) {
-      missing_note
-    } else {
-      paste(missing_note, assoc_note, sep = "\n")
-    }
-  }
+  assoc_note <- .categorical_note(
+    attr(x, "missing_note"),
+    attr(x, "assoc_note")
+  )
 
   if (is.null(display_df)) {
     display_df <- x
@@ -65,15 +60,7 @@ print.spicy_categorical_table <- function(x, ...) {
     align_center <- integer(0)
   }
 
-  sep_rows <- integer(0)
-  first_col <- display_df[[1]]
-  for (i in seq_along(first_col)) {
-    if (
-      i > 1L && nzchar(first_col[i]) && !startsWith(first_col[i], indent_text)
-    ) {
-      sep_rows <- c(sep_rows, i)
-    }
-  }
+  sep_rows <- .categorical_var_sep_rows(display_df[[1]], indent_text)
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
@@ -94,11 +81,7 @@ print.spicy_categorical_table <- function(x, ...) {
     padding <- 0L
   }
 
-  title <- if (is.null(group_var)) {
-    "Categorical table"
-  } else {
-    paste0("Categorical table by ", group_var)
-  }
+  title <- .categorical_title(group_var)
 
   spicy_print_table(
     display_df,
@@ -114,6 +97,43 @@ print.spicy_categorical_table <- function(x, ...) {
   )
 
   invisible(x)
+}
+
+# ---- Table title ----------------------------------------------------------
+
+# Internal: the title of a categorical summary table, from the name of
+# the grouping variable (`NULL` = one-way). Single source for the
+# console header and the caption every rendering engine sets, so the
+# two can never drift apart.
+.categorical_title <- function(group_var) {
+  if (is.null(group_var)) {
+    "Categorical table"
+  } else {
+    paste0("Categorical table by ", group_var)
+  }
+}
+
+# Internal: body rows that OPEN a variable block (all but the first) --
+# the rows the console rules off from the block above. A block opens on
+# a non-empty, non-indented row label. Shared by the console printer and
+# the tinytable branches so both draw the same separators.
+.categorical_var_sep_rows <- function(labels, indent_text) {
+  keep <- nzchar(labels) & !startsWith(labels, indent_text)
+  keep[1L] <- FALSE
+  which(keep)
+}
+
+# Internal: the note of a categorical summary table -- the drop_na
+# disclosure prepended to the association-measure gloss, so the reader
+# sees what left the table before reading the statistics computed on
+# what remains. Either part may be absent; `NULL` when both are.
+.categorical_note <- function(missing_note, assoc_note) {
+  parts <- c(missing_note, assoc_note) # c() drops the absent ones
+  parts <- parts[nzchar(parts)]
+  if (length(parts) == 0L) {
+    return(NULL)
+  }
+  paste(parts, collapse = "\n")
 }
 
 # ---- Coercion to plain data.frame / tibble --------------------------------

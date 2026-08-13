@@ -354,7 +354,14 @@ output_tinytable <- function(rendered) {
   }
   title <- attr(rendered, "title")
   note <- attr(rendered, "note")
-  group_sep <- attr(rendered, "group_sep_rows")
+  # Every rule the console draws between blocks: the coefficients /
+  # fit-stats divide (`group_sep_rows`) AND the rule that opens a
+  # subordinate block -- ordinal `Thresholds:`, mixed-model
+  # `Random effects:` (`section_sep_rows`).
+  group_sep <- sort(unique(c(
+    as.integer(attr(rendered, "group_sep_rows") %||% integer(0)),
+    as.integer(attr(rendered, "section_sep_rows") %||% integer(0))
+  )))
 
   # ---- Read structured (typed) body, derive padded display strings ----
   # tinytable's native HTML `align = "d"` does NOT decimal-align: it
@@ -402,30 +409,53 @@ output_tinytable <- function(rendered) {
   body_names_orig <- names(body)
   n_rows <- nrow(body)
 
-  # Unified header construction for single- AND multi-model.
-  # Structure (top-to-bottom):
-  #   * (multi-model only) Model spanner row: Step 1 | Step 2 | ...
-  #     covering each model's column range.
-  #   * Per-col + CI spanner row: Variable | B | 95% CI | p | AME |
-  #     95% CI | p | ... -- 1-wide spanners for non-CI cols (label
-  #     from `col_meta$display_label`), 2-wide spanners for each
-  #     CI pair (label "95% CI").
-  #   * Column-labels row: empty | empty | LL | UL | empty | empty
-  #     | LL | UL | empty | ... -- only LL/UL on CI sub-cols.
+  # Factor-level rows carry the console's two-space indent in the
+  # Variable cell, and the engine indents them again below
+  # (`indent = 1` + `padding-left`). One indentation is the design;
+  # two is an artefact of reading a display string as data. The
+  # engine's own indent is the one that survives every backend, so
+  # the cell text is cleaned here.
+  if (length(level_rows) > 0L) {
+    body[[1L]][level_rows] <- sub("^[ \t]+", "", body[[1L]][level_rows])
+  }
+
+  # Header labels. The per-column label can live in one of two rows:
   #
-  # Blanking the column-labels row and moving every per-col label
-  # to the spanner row is what gt / flextable also do; previously
-  # the multi-model path used a different structure (visible per-
-  # col labels in the column-labels row) because of tinytable's
-  # duplicate-name bug in `group_tt(j = list)` -- but the ZWSP
-  # disambiguator below now handles arbitrary duplicates safely,
-  # so the same per-col-spanner pattern works for both cases.
-  # (CI columns were already renamed to LL / UL above; no second pass needed.)
-  for (j in seq_along(body_names_orig)) {
-    if (j %in% ci_cols_set) {
-      next
+  #   * WITH a CI pair -- the labels move up into a spanner row so the
+  #     column-labels row is free to carry "LL" / "UL" under the
+  #     2-wide "95% CI" spanner. Rows, top to bottom: Model spanner
+  #     (multi-model only) | per-col + CI spanner | LL/UL.
+  #   * WITHOUT a CI pair -- nothing needs the lower row, so the
+  #     labels stay in the column-labels row where tinytable puts
+  #     them. Rows: Model spanner (multi-model only) | B SE p.
+  #
+  # Blanking the labels unconditionally (and covering EVERY column
+  # with a 1-wide spanner) left a wholly empty header strip under the
+  # labels of every table without a CI column, and pushed the header
+  # rules one row down: the top rule was drawn under the model names
+  # instead of above them. Deriving the layout from `has_ci_spanner`
+  # keeps the rule arithmetic below true by construction.
+  # (CI columns were already renamed to LL / UL above.)
+  col_label <- function(j) {
+    # Look up `col_meta` by the ORIGINAL prefixed col name (e.g.
+    # "Step 1: p.2") because `col_meta` is keyed on the structured
+    # col names, NOT on the post-strip body colnames. Use the
+    # `display_label` (e.g. "p") -- this is what was set at the bare
+    # `header_short` level, stripped of both the model prefix and any
+    # dedup `.N` suffix.
+    struct$col_meta[[struct_col_names_orig[j]]]$display_label %||%
+      body_names_orig[j]
+  }
+  if (has_ci_spanner) {
+    for (j in seq_along(body_names_orig)) {
+      if (!(j %in% ci_cols_set)) {
+        names(body)[j] <- ""
+      }
     }
-    names(body)[j] <- ""
+  } else {
+    for (j in seq_along(body_names_orig)) {
+      names(body)[j] <- col_label(j)
+    }
   }
   n_cols <- ncol(body)
   tt <- tinytable::tt(
@@ -434,25 +464,18 @@ output_tinytable <- function(rendered) {
     notes = if (!is.null(note)) note else NULL
   )
   gspec <- list()
-  for (j in seq_along(body_names_orig)) {
-    if (j %in% ci_cols_set) {
-      next
+  if (has_ci_spanner) {
+    for (j in seq_along(body_names_orig)) {
+      if (j %in% ci_cols_set) {
+        next
+      }
+      gspec[[length(gspec) + 1L]] <- j
+      names(gspec)[length(gspec)] <- col_label(j)
     }
-    # Look up `col_meta` by the ORIGINAL prefixed col name (e.g.
-    # "Step 1: p.2") because `col_meta` is keyed on the structured
-    # col names, NOT on the post-strip body colnames. Use the
-    # `display_label` (e.g. "p") for the spanner-row text -- this
-    # is what was set at the bare `header_short` level, stripped of
-    # both the model prefix and any dedup `.N` suffix.
-    nm_orig <- struct_col_names_orig[j]
-    nm <- body_names_orig[j]
-    lbl <- struct$col_meta[[nm_orig]]$display_label %||% nm
-    gspec[[length(gspec) + 1L]] <- j
-    names(gspec)[length(gspec)] <- lbl
-  }
-  for (cs in ci_spanners) {
-    gspec[[length(gspec) + 1L]] <- cs$cols
-    names(gspec)[length(gspec)] <- cs$label
+    for (cs in ci_spanners) {
+      gspec[[length(gspec) + 1L]] <- cs$cols
+      names(gspec)[length(gspec)] <- cs$label
+    }
   }
   # tinytable's `group_tt(j = list)` accesses entries via
   # `idx[[name]]` during sanitisation, so when the named list has
@@ -524,9 +547,11 @@ output_tinytable <- function(rendered) {
   if (n_cols >= 2L) {
     tt <- tinytable::style_tt(tt, i = 0L, j = 2:n_cols, align = "c")
   }
-  # Spanner rows (CI level at i = -1, model level at i = -2 when
-  # both present).
-  ci_i <- -1L # CI spanner row index (or -1 alone when only CI)
+  # Spanner rows. The per-col + CI spanner row exists only when a CI
+  # pair does (see the header-labels block above), so the Model row
+  # sits one step higher in that case and directly above the column
+  # labels otherwise.
+  ci_i <- -1L # per-col + CI spanner row
   model_i <- if (has_ci_spanner) -2L else -1L
   if (has_ci_spanner) {
     tt <- tinytable::style_tt(tt, i = ci_i, j = seq_len(n_cols), align = "c")
@@ -592,19 +617,17 @@ output_tinytable <- function(rendered) {
     line = "b",
     line_width = 0.06
   )
-  if (
-    length(group_sep) >= 1L &&
-      group_sep[1L] >= 2L &&
-      group_sep[1L] <= nrow(body)
-  ) {
-    tt <- tinytable::style_tt(
-      tt,
-      i = group_sep[1L] - 1L,
-      j = seq_len(n_cols),
-      line = "b",
-      line_width = 0.03,
-      line_color = "#cccccc"
-    )
+  for (sep in group_sep) {
+    if (sep >= 2L && sep <= nrow(body)) {
+      tt <- tinytable::style_tt(
+        tt,
+        i = sep - 1L,
+        j = seq_len(n_cols),
+        line = "b",
+        line_width = 0.03,
+        line_color = "#cccccc"
+      )
+    }
   }
   if (nrow(body) > 0L) {
     tt <- tinytable::style_tt(
@@ -633,20 +656,9 @@ output_tinytable <- function(rendered) {
 
   # ---- Note rendering: strip the rendered `<tfoot>` and wrap the ------
   # table together with the note in an `inline-block` flex sibling
-  # (HTML output only). Rationale: in `table-layout: auto`, a
-  # `<tfoot><td colspan="N">` cell contributes its max-content width
-  # to every column it spans, so a multi-line note (longest line
-  # unwrapped) forces the whole table to render wider than the body
-  # would natively demand. Pulling the note out of the table grid
-  # entirely lets the body alone determine column widths.
-  #
-  # APA Manual 7 Section 7.14 expects the note flush-left with the table's
-  # left edge AND wrapped within the table's width. Pure CSS achieves
-  # this with the `width: min-content; min-width: 100%` trick: the
-  # note's *preferred* width is its longest word (negligible), so it
-  # does not push the inline-block wrapper wider than the table; the
-  # `min-width: 100%` then forces the rendered note to fill the
-  # wrapper, which is exactly the table's content width.
+  # (HTML output only). `.spicy_tt_note_div()` / `.spicy_tt_wrap_html()`
+  # (R/tt_theme.R) hold the markup and the CSS rationale; the same pair
+  # serves table_continuous_lm(), so the two families read alike.
   #
   # We still pass `notes = note` to `tt()` so LaTeX, typst and
   # markdown backends keep their native footnote rendering; this
@@ -656,39 +668,7 @@ output_tinytable <- function(rendered) {
   # `lazy_finalize` exactly once after building `table_string`, so
   # no idempotency check is required.
   if (!is.null(note)) {
-    .html_escape <- function(s) {
-      s <- gsub("&", "&amp;", s, fixed = TRUE)
-      s <- gsub("<", "&lt;", s, fixed = TRUE)
-      s <- gsub(">", "&gt;", s, fixed = TRUE)
-      s
-    }
-    note_html <- .html_escape(note)
-    # APA Manual 7 Section 7.14: the "Note." prefix is italicised. Wrap it
-    # in <em> AFTER escaping (the prefix itself contains no special
-    # chars, so the <em> is safe to insert). The substitution is
-    # anchored to the start of the string; if a note doesn't begin
-    # with "Note." (theoretically possible) the source string is
-    # unchanged.
-    note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
-    note_div <- paste0(
-      "<div class=\"spicy-tt-note\" style=\"",
-      "width: min-content; min-width: 100%; box-sizing: border-box; ",
-      "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
-      "font-size: 0.875rem; line-height: 1.25; ",
-      "text-align: left;\">",
-      note_html,
-      "</div>"
-    )
-    open_outer <- paste0(
-      "<div class=\"spicy-tt-outer\" ",
-      "style=\"text-align: center;\">"
-    )
-    open_inner <- paste0(
-      "<div class=\"spicy-tt-wrap\" style=\"",
-      "display: inline-block; max-width: 100%; ",
-      "text-align: left; vertical-align: top;\">"
-    )
-    close_both <- "</div></div>"
+    note_div <- .spicy_tt_note_div(note)
     tt <- tinytable::style_tt(tt, finalize = function(x) {
       # Strip the U+200B disambiguator we added to duplicate spanner
       # labels so the rendered output is identical regardless of how
@@ -701,34 +681,7 @@ output_tinytable <- function(rendered) {
         x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
       }
       if (identical(x@output, "html")) {
-        # 1. Drop the rendered tfoot. tinytable emits
-        #    `<tfoot><tr><td colspan='N'>...</td></tr></tfoot>` as
-        #    one piece (newlines inside survive as plain text); a
-        #    perl multiline regex covers it.
-        x@table_string <- sub(
-          "<tfoot>[\\s\\S]*?</tfoot>",
-          "",
-          x@table_string,
-          perl = TRUE
-        )
-        # 2. Open the centering outer + inline-block inner wrapper
-        #    just before `<table ...>`. We match the literal "<table "
-        #    (with trailing space) so we hit the opening tag and
-        #    not e.g. the </table> closer.
-        x@table_string <- sub(
-          "<table ",
-          paste0(open_outer, open_inner, "<table "),
-          x@table_string,
-          fixed = TRUE
-        )
-        # 3. Append the note div + close both wrappers right after
-        #    `</table>`.
-        x@table_string <- sub(
-          "</table>",
-          paste0("</table>", note_div, close_both),
-          x@table_string,
-          fixed = TRUE
-        )
+        x@table_string <- .spicy_tt_wrap_html(x@table_string, note_div)
       }
       x
     })
