@@ -271,6 +271,185 @@ test_that("the N column is a count: no decimals whatever `digits`", {
 })
 
 
+# ---- 2b. The per-fit R^2 columns (spec: dev/uv_r2_colonne_spec.md) -------
+#
+# Oracle: `summary(lm(y ~ x))$r.squared` / `$adj.r.squared` on each
+# predictor's own fit -- the quantity the column claims to report. The
+# comparison runs on the UNROUNDED values of the structured body, so the
+# 2-decimal display cannot hide a wrong number.
+
+test_that("the r2 / adj_r2 tokens carry each predictor's own R-squared", {
+  d <- .uv_soc()
+  preds <- c("age", "bmi", "sex")
+  df <- table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, bmi, sex),
+    multivariable = FALSE,
+    show_columns = c("b", "ci", "p", "r2", "adj_r2"),
+    output = "data.frame"
+  )
+  st <- attr(df, "structured")
+  r2_col <- grep("(^|: )R²$", names(st$body), value = TRUE)
+  adj_col <- grep("Adj\\.R²$", names(st$body), value = TRUE)
+  expect_length(r2_col, 1L)
+  expect_length(adj_col, 1L)
+
+  oracle <- lapply(preds, function(p) {
+    sm <- summary(stats::lm(
+      stats::reformulate(p, response = "wellbeing_score"),
+      data = d
+    ))
+    c(r2 = unname(sm$r.squared), adj_r2 = unname(sm$adj.r.squared))
+  })
+  # One value per predictor BLOCK, in block order (the factor `sex`
+  # carries it on its first non-reference level row, exactly like N).
+  got_r2 <- st$body[[r2_col]][!is.na(st$body[[r2_col]])]
+  got_adj <- st$body[[adj_col]][!is.na(st$body[[adj_col]])]
+  expect_equal(
+    got_r2,
+    vapply(oracle, `[[`, numeric(1), "r2"),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    got_adj,
+    vapply(oracle, `[[`, numeric(1), "adj_r2"),
+    tolerance = 1e-10
+  )
+
+  # The workaround this token replaces: in a one-predictor model the
+  # partial eta^2 IS the R^2 (spec demonstration), so the two columns
+  # agree to machine precision -- but only the R^2 header is honest
+  # about which quantity a univariable screen shows.
+  eta <- table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, bmi, sex),
+    multivariable = FALSE,
+    show_columns = c("b", "partial_eta2"),
+    output = "data.frame"
+  )
+  eta_st <- attr(eta, "structured")
+  eta_col <- grep("η²", names(eta_st$body), value = TRUE)[1L]
+  eta_vals <- eta_st$body[[eta_col]][!is.na(eta_st$body[[eta_col]])]
+  expect_equal(eta_vals, got_r2, tolerance = 1e-10)
+})
+
+
+test_that("the R-squared column is one value per block, blank elsewhere", {
+  d <- .uv_soc()
+  tbl <- table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, sex),
+    multivariable = FALSE,
+    show_columns = c("n", "b", "p", "r2")
+  )
+  body <- as.data.frame(tbl)
+  r2_col <- grep("(^|: )R²$", names(body), value = TRUE)
+  expect_length(r2_col, 1L)
+  cells <- trimws(body[[r2_col]], whitespace = "[\\h\\v]")
+  # age row + Male row carry a value; the "sex:" header row is blank and
+  # the reference row keeps the en-dash of an absent estimate.
+  expect_identical(sum(nzchar(cells) & cells != "–"), 2L)
+  # Blank, never an en-dash, where the value simply belongs to another
+  # row of the same fit (the N convention).
+  expect_identical(cells[body$Variable == "sex:"], "")
+})
+
+
+test_that("the multivariable side keeps R-squared as a fit-stat row", {
+  d <- .uv_soc()
+  tbl <- table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, bmi),
+    show_columns = c("n", "b", "p", "r2")
+  )
+  body <- as.data.frame(tbl)
+  # One R^2 COLUMN only -- the univariable one; the multivariable group
+  # reports a single model-level value, so it stays a row.
+  expect_length(grep("(^|: )R²$", names(body), value = TRUE), 1L)
+  expect_match(names(body)[grep("(^|: )R²$", names(body))], "^Univariable")
+  stubs <- trimws(body$Variable)
+  expect_true("R²" %in% stubs)
+  m_full <- stats::lm(wellbeing_score ~ age + bmi, data = d)
+  st <- as_structured(tbl)
+  fit_row <- which(trimws(st$body$Variable) == "R²")
+  multi_col <- grep("^Multivariable: B$", names(st$body))
+  expect_equal(
+    st$body[[multi_col]][fit_row],
+    summary(m_full)$r.squared,
+    tolerance = 1e-10
+  )
+
+  # A single model (no screen) has nothing to put in the column: it is
+  # dropped for that group, exactly as the N column is.
+  df <- table_regression(
+    m_full,
+    show_columns = c("b", "r2"),
+    output = "data.frame"
+  )
+  expect_identical(names(df), c("Variable", "B"))
+})
+
+
+test_that("the R-squared column follows `fit_digits`, like the R2 row", {
+  d <- .uv_soc()
+  r2_cells <- function(...) {
+    body <- as.data.frame(table_regression_uv(
+      d,
+      outcome = wellbeing_score,
+      method = "lm",
+      predictors = c(age, bmi),
+      multivariable = FALSE,
+      show_columns = c("b", "r2"),
+      ...
+    ))
+    trimws(body[[grep("(^|: )R²$", names(body))]], whitespace = "[\\h\\v]")
+  }
+  expect_identical(r2_cells(), c("0.00", "0.02"))
+  expect_identical(r2_cells(fit_digits = 4L), c("0.0015", "0.0202"))
+  # `digits` governs the estimates, not the variance explained -- the
+  # same split the fit-statistics rows already apply.
+  expect_identical(r2_cells(digits = 4L), c("0.00", "0.02"))
+})
+
+
+test_that("the R-squared tokens are refused where the quantity is not defined", {
+  d <- .uv_soc()
+  expect_error(
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(age, bmi),
+      show_columns = c("b", "r2")
+    ),
+    "r2",
+    class = "spicy_invalid_input"
+  )
+  # ... and the message names the reason (a pseudo-R^2 would be
+  # ambiguous), with the way to ask for one by name.
+  err <- tryCatch(
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(age, bmi),
+      show_columns = c("b", "adj_r2")
+    ),
+    error = function(e) e
+  )
+  expect_match(conditionMessage(err), "pseudo-R", fixed = TRUE)
+  expect_match(conditionMessage(err), "pseudo_r2_mcfadden", fixed = TRUE)
+})
+
+
 test_that("intercepts are hidden by default; show_intercept shows both
            sides", {
   d <- .uv_soc()
@@ -294,6 +473,24 @@ test_that("intercepts are hidden by default; show_intercept shows both
   expect_identical(nrow(ic), 3L)
   expect_identical(sum(ic$model_id == "Univariable"), 2L)
   expect_identical(sum(ic$model_id == "Multivariable"), 1L)
+})
+
+
+test_that("show_intercept is an explicit formal and validates its input", {
+  # The flipped default relative to table_regression() lives in the
+  # signature, not buried in `...`.
+  expect_identical(formals(table_regression_uv)$show_intercept, FALSE)
+  d <- .uv_soc()
+  expect_error(
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(age, sex),
+      show_intercept = NA
+    ),
+    class = "spicy_invalid_input"
+  )
 })
 
 

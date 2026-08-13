@@ -197,6 +197,24 @@ render_regression_table <- function(
     logical(1)
   )]
 
+  # Same rule for the per-fit R^2 columns: a model whose frame carries
+  # no per-row variance explained (any single fit) drops them for its
+  # group -- its R^2 is a model-level statistic and belongs to the
+  # fit-statistics rows (`show_fit_stats`), not to a column repeated
+  # down the coefficients.
+  models_with_r2 <- model_ids[vapply(
+    model_ids,
+    function(m) {
+      rows <- coefs$model_id == m
+      any(vapply(
+        c("r2", "adj_r2"),
+        function(f) f %in% names(coefs) && any(!is.na(coefs[[f]][rows])),
+        logical(1)
+      ))
+    },
+    logical(1)
+  )]
+
   col_spec <- build_column_spec(
     show_columns,
     model_ids,
@@ -207,6 +225,7 @@ render_regression_table <- function(
     model_stat_headers = aligned$stat_headers_auto,
     ame_categories = ame_cats_by_model,
     models_with_n = models_with_n,
+    models_with_r2 = models_with_r2,
     estimand_horizons = aligned$estimand_horizons
   )
 
@@ -297,6 +316,7 @@ render_regression_table <- function(
       digits = digits,
       p_digits = p_digits,
       effect_size_digits = effect_size_digits,
+      fit_digits = fit_digits,
       decimal_mark = decimal_mark,
       labels = labels,
       re_columns = re_columns
@@ -557,11 +577,15 @@ build_column_spec <- function(
   model_stat_headers = NULL,
   ame_categories = NULL,
   models_with_n = NULL,
+  models_with_r2 = NULL,
   estimand_horizons = NULL
 ) {
   # NULL (direct/legacy callers): keep the "n" column for every model.
   if (is.null(models_with_n)) {
     models_with_n <- model_ids
+  }
+  if (is.null(models_with_r2)) {
+    models_with_r2 <- model_ids
   }
   if (is.null(estimand_horizons)) {
     estimand_horizons <- list()
@@ -699,6 +723,21 @@ build_column_spec <- function(
       header_short = ci_hdr
     ),
     ame_p = list(estimate_type = "ame", fields = "p_value", header_short = "p"),
+    # Model-level variance explained, per fit. Populated by the
+    # univariable screen (one fit per predictor block), where the
+    # question "how much of the outcome does this predictor explain on
+    # its own" has one answer per block; dropped for models whose R^2
+    # is a single model-level number (fit-statistics rows instead).
+    r2 = list(
+      estimate_type = "B",
+      fields = "r2",
+      header_short = fit_stat_label("r2")
+    ),
+    adj_r2 = list(
+      estimate_type = "B",
+      fields = "adj_r2",
+      header_short = fit_stat_label("adj_r2")
+    ),
     # Partial-variance-explained \u2013 split (was bundled too).
     partial_f2 = list(
       estimate_type = "partial_f2",
@@ -752,6 +791,10 @@ build_column_spec <- function(
       # All-empty per-model N column: drop it for this model group
       # (see the models_with_n comment at the call site).
       if (identical(tk, "n") && !(m_id %in% models_with_n)) {
+        next
+      }
+      # Same treatment for the per-fit R^2 columns (see models_with_r2).
+      if (tk %in% c("r2", "adj_r2") && !(m_id %in% models_with_r2)) {
         next
       }
       # Per-model B-header rebrand under exponentiate (Step 2 / glm).
@@ -848,6 +891,7 @@ build_body_row <- function(
   digits,
   p_digits,
   effect_size_digits,
+  fit_digits = 2L,
   decimal_mark,
   labels,
   re_columns = c("est", "se", "ci")
@@ -943,6 +987,7 @@ build_body_row <- function(
       digits = digits,
       p_digits = p_digits,
       effect_size_digits = effect_size_digits,
+      fit_digits = fit_digits,
       decimal_mark = decimal_mark,
       show_columns = show_columns
     )
@@ -961,6 +1006,7 @@ format_cell_value <- function(
   digits,
   p_digits,
   effect_size_digits,
+  fit_digits = 2L,
   decimal_mark,
   show_columns
 ) {
@@ -975,7 +1021,16 @@ format_cell_value <- function(
       "partial_omega2_ci",
       "partial_chi2"
     )
-  digits_to_use <- if (is_es) effect_size_digits else digits
+  digits_to_use <- if (is_es) {
+    effect_size_digits
+  } else if (tk %in% c("r2", "adj_r2")) {
+    # Same knob as the R^2 fit-statistics ROW of the multivariable
+    # model beside it (`fit_digits`, default 2): one statistic, one
+    # precision, whichever layout it lands in.
+    fit_digits
+  } else {
+    digits
+  }
 
   # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) \u2013
   # the `car::Anova` display convention. Df sits in parens to
@@ -1092,6 +1147,14 @@ format_cell_value <- function(
       return("")
     }
     return(format(as.integer(val)))
+  }
+  # Per-fit R^2: like the N cell, an NA means "same fit as the block's
+  # first row", not "no value exists" -- blank, never an en-dash.
+  if (field %in% c("r2", "adj_r2")) {
+    if (is.na(val)) {
+      return("")
+    }
+    return(format_number(val, digits_to_use, decimal_mark))
   }
   if (is.na(val)) {
     return("\u2013")

@@ -260,7 +260,8 @@ median, all-Bayesian tables only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"
 \code{"risk_diff"} + its \verb{_se} / \verb{_ci} / \verb{_p} companions,
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
 \code{"partial_eta2_ci"}, \code{"partial_omega2"} +
-\code{"partial_omega2_ci"}, \code{"partial_chi2"}) and \strong{group tokens}
+\code{"partial_omega2_ci"}, \code{"partial_chi2"}, \code{"r2"} / \code{"adj_r2"}
+(per-fit variance explained, \code{lm} screens)) and \strong{group tokens}
 (\code{"all_b"}, \code{"all_b_compact"}, \code{"all_b_full"}, \code{"all_beta"},
 \code{"all_ame"}, \code{"all_ame_compact"}, \code{"all_f2"}, \code{"all_eta2"},
 \code{"all_omega2"}). See \emph{Vocabulary tokens} in the details for
@@ -796,6 +797,18 @@ Type-III default of SAS PROC MIXED and \code{lmerTest} (the two
 conventions coincide for models without interactions).
 Rendered as \code{value (df)} to disambiguate factor terms (k-1
 df) from numeric terms (1 df).
+\item Variance explained per fit -- \code{lm} only: \code{"r2"},
+\code{"adj_r2"}. Like \code{"n"}, these are \emph{per-fit} columns: they are
+populated by \code{\link[=table_regression_uv]{table_regression_uv()}} screens, where each
+predictor block is its own model and the \eqn{R^2}{R^2}
+answers "how much of the outcome does this predictor explain
+on its own". A model whose \eqn{R^2}{R^2} is a single
+model-level number drops the column and reports it in the
+fit-statistics rows instead (the \code{"r2"} / \code{"adj_r2"} tokens of
+\code{show_fit_stats}, on by default for \code{lm}). Refused for classes
+with no least-squares variance partition (\code{glm}, \code{coxph},
+...), where only competing pseudo-\eqn{R^2}{R^2} measures
+exist: name the one you want in \code{show_fit_stats}.
 \item Sample columns: \code{"n"} -- per-row N, populated by
 \code{\link[=table_regression_uv]{table_regression_uv()}} screens (each predictor block is its
 own fit); models without per-row N data drop the column.

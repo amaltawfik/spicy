@@ -49,6 +49,18 @@
 #'     conventions coincide for models without interactions).
 #'     Rendered as `value (df)` to disambiguate factor terms (k-1
 #'     df) from numeric terms (1 df).
+#'   \item Variance explained per fit -- `lm` only: `"r2"`,
+#'     `"adj_r2"`. Like `"n"`, these are *per-fit* columns: they are
+#'     populated by [table_regression_uv()] screens, where each
+#'     predictor block is its own model and the \eqn{R^2}{R^2}
+#'     answers "how much of the outcome does this predictor explain
+#'     on its own". A model whose \eqn{R^2}{R^2} is a single
+#'     model-level number drops the column and reports it in the
+#'     fit-statistics rows instead (the `"r2"` / `"adj_r2"` tokens of
+#'     `show_fit_stats`, on by default for `lm`). Refused for classes
+#'     with no least-squares variance partition (`glm`, `coxph`,
+#'     ...), where only competing pseudo-\eqn{R^2}{R^2} measures
+#'     exist: name the one you want in `show_fit_stats`.
 #'   \item Sample columns: `"n"` -- per-row N, populated by
 #'     [table_regression_uv()] screens (each predictor block is its
 #'     own fit); models without per-row N data drop the column.
@@ -752,7 +764,8 @@
 #'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
 #'   `"partial_eta2_ci"`, `"partial_omega2"` +
-#'   `"partial_omega2_ci"`, `"partial_chi2"`) and **group tokens**
+#'   `"partial_omega2_ci"`, `"partial_chi2"`, `"r2"` / `"adj_r2"`
+#'   (per-fit variance explained, `lm` screens)) and **group tokens**
 #'   (`"all_b"`, `"all_b_compact"`, `"all_b_full"`, `"all_beta"`,
 #'   `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
 #'   `"all_omega2"`). See *Vocabulary tokens* in the details for

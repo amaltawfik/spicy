@@ -84,6 +84,19 @@ align_frames <- function(
       } else {
         rep(NA_real_, nrow(cf))
       }
+      # Optional per-row variance explained (univariable screening
+      # frames again: the R^2 of each predictor's own fit, carried on
+      # the block's first row like n_obs). NA elsewhere.
+      r2_col <- if (!is.null(cf$r2)) {
+        as.numeric(cf$r2)
+      } else {
+        rep(NA_real_, nrow(cf))
+      }
+      adj_r2_col <- if (!is.null(cf$adj_r2)) {
+        as.numeric(cf$adj_r2)
+      } else {
+        rep(NA_real_, nrow(cf))
+      }
       # Optional per-row outcome event counts (show_columns "n_events",
       # binomial fits): events observed in the row's factor level /
       # model totals for continuous rows. NA elsewhere.
@@ -111,6 +124,8 @@ align_frames <- function(
         p_value = cf$p_value,
         test_type = test_type_col,
         n_obs = n_obs_col,
+        r2 = r2_col,
+        adj_r2 = adj_r2_col,
         events = events_col,
         events_n = events_n_col,
         is_singular = cf$term %in% singular_terms,

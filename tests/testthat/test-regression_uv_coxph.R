@@ -77,6 +77,28 @@ test_that("per-fit N uses the subject count, not the coxph event count", {
 })
 
 
+test_that("the r2 / adj_r2 columns are refused for the Cox screen", {
+  skip_if_not_installed("survival")
+  d <- .uv_lung()
+  # A Cox model has no least-squares variance partition; several
+  # pseudo-R^2 exist and disagree, so the token is refused by name
+  # instead of silently printing one of them (dev/uv_r2_colonne_spec.md).
+  err <- tryCatch(
+    table_regression_uv(
+      d,
+      outcome = Surv(time, status),
+      predictors = c(age, ph.ecog),
+      method = "coxph",
+      show_columns = c("b", "r2")
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "r2", fixed = TRUE)
+  expect_match(conditionMessage(err), "coxph", fixed = TRUE)
+})
+
+
 test_that("n_events column: Surv status counts per level and totals", {
   skip_if_not_installed("survival")
   d <- .uv_lung()

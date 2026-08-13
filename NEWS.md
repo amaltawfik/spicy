@@ -146,6 +146,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   Kruskal-Wallis with the matching rank effect size, per variable, and the
   note says which test each variable carries. The default display is
   unchanged.
+* New `show_columns` tokens `"r2"` and `"adj_r2"` for linear
+  `table_regression_uv()` screens: the share of outcome variance each
+  predictor explains on its own, one value per predictor block. The
+  multivariable model keeps reporting its R-squared in the fit-statistics
+  rows; `glm` and `coxph` screens are refused.
 * New `show_columns` token families `"rmst"` and `"risk_diff"` for `coxph`
   and `survreg`: covariate-adjusted differences in restricted mean survival
   time over `[0, tau]` and in cumulative incidence at `at_time`, by

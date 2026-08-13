@@ -201,6 +201,10 @@ build_structured_body <- function(
       # renderer) -- the generic 2-decimal cell is blind exactly
       # where pd lives (.95 to 1).
       p_digits
+    } else if (token %in% c("r2", "adj_r2")) {
+      # Per-fit variance explained: same precision as the fit-statistics
+      # R^2 row it can also appear as (`fit_digits`).
+      fit_digits
     } else if (token %in% c("n", "n_events")) {
       # Counts, not estimates: `digits` governs the estimation columns
       # only, so N stays "364" and never "364.00" / "364.000". The

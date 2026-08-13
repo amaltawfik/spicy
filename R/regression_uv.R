@@ -37,6 +37,22 @@
 #' `complete_cases = TRUE` to restrict every model -- univariable and
 #' multivariable -- to the common complete-case sample.
 #'
+#' # Variance explained
+#' `show_columns = c("n", "b", "ci", "p", "r2")` adds an
+#' \eqn{R^2}{R^2} column to the screen (`method = "lm"`): each
+#' predictor block reports its **own** model's \eqn{R^2}{R^2}, on the
+#' first row of the block like `N`. It answers what a coefficient and
+#' its interval cannot -- how much of the outcome the predictor
+#' accounts for -- and often shows that a firmly established
+#' association still explains a small share of the variance. Add
+#' `"adj_r2"` for the adjusted form. On the multivariable side the
+#' \eqn{R^2}{R^2} is one number for the whole model, so it stays in
+#' the fit-statistics rows (where it is shown by default) instead of
+#' being repeated down a column. Not available for `method = "glm"`
+#' or `"coxph"`: outside least squares only competing
+#' pseudo-\eqn{R^2}{R^2} measures exist, and spicy asks you to name
+#' the one you want (`show_fit_stats = "pseudo_r2_mcfadden"`).
+#'
 #' # Multiplicity
 #' `p_adjust` (passed through to [table_regression()]) treats the
 #' whole univariable screen as ONE family (all screened coefficients
@@ -105,6 +121,9 @@
 #'   as in the reference layouts). For binary outcomes, add
 #'   `"n_events"` for outcome event counts as `events/N` per factor
 #'   level (each column group counts on its own estimation sample).
+#'   For `method = "lm"`, add `"r2"` (and/or `"adj_r2"`) for the
+#'   share of outcome variance each predictor explains **on its
+#'   own** -- see *Variance explained* below.
 #'   For `method = "coxph"`, the RMST / risk-difference families
 #'   (`"rmst"`, `"risk_diff"`, ...) work with an explicit numeric
 #'   `tau` / `at_time` shared by every column: each univariable fit
@@ -112,11 +131,15 @@
 #'   group reports the covariate-adjusted estimand from the full fit.
 #'   `tau = "minmax"` is refused (per-fit horizons would make the
 #'   column incomparable across predictors).
+#' @param show_intercept Display the `(Intercept)` rows? Default
+#'   `FALSE` -- the opposite of [table_regression()]'s default,
+#'   because each univariable fit carries its own nuisance intercept.
+#'   See *Intercepts*.
 #' @param title Table title; `NULL` (default) builds
 #'   `"Univariable and multivariable <type> regression: <outcome>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
 #'   `cluster`, `p_adjust`, `digits`, `labels`, `output`, ...).
-#'   `show_intercept` defaults to `FALSE` here; `nested` is not
+#'   `nested` is not
 #'   meaningful for a screen and is refused. `cluster` must be a
 #'   single vector with one value per row of `data`; it is aligned to
 #'   each fit's own estimation sample automatically.
@@ -145,6 +168,16 @@
 #'   family     = binomial(),
 #'   exponentiate = TRUE
 #' )
+#'
+#' # Linear screen with the share of variance each predictor
+#' # explains on its own (the multivariable model reports its own
+#' # R-squared in the fit-statistics rows).
+#' table_regression_uv(
+#'   sochealth,
+#'   outcome      = wellbeing_score,
+#'   predictors   = c(age, sex, bmi),
+#'   show_columns = c("n", "b", "ci", "p", "r2")
+#' )
 #' }
 #' @export
 table_regression_uv <- function(
@@ -156,6 +189,7 @@ table_regression_uv <- function(
   multivariable = TRUE,
   complete_cases = FALSE,
   show_columns = c("n", "b", "ci", "p"),
+  show_intercept = FALSE,
   title = NULL,
   ...
 ) {
@@ -423,10 +457,21 @@ table_regression_uv <- function(
       class = "spicy_invalid_input"
     )
   }
-  # gtsummary convention (tbl_regression: intercept = FALSE default).
-  if (is.null(dots$show_intercept)) {
-    dots$show_intercept <- FALSE
+  if (
+    !is.logical(show_intercept) ||
+      length(show_intercept) != 1L ||
+      is.na(show_intercept)
+  ) {
+    spicy_abort(
+      "`show_intercept` must be TRUE/FALSE.",
+      class = "spicy_invalid_input"
+    )
   }
+  # Explicit formal (default FALSE, the gtsummary tbl_regression
+  # convention) rather than inherited through `...`: the flipped
+  # default relative to table_regression() must be visible in the
+  # signature.
+  dots$show_intercept <- show_intercept
 
   if (isTRUE(complete_cases)) {
     cc <- stats::complete.cases(data[, c(outcome_vars, pred_names)])
@@ -632,6 +677,23 @@ table_regression_uv <- function(
 }
 
 
+# Classical R^2 / adjusted R^2 of one screened fit, read off the frame
+# the fit already produced (`summary(fit)$r.squared` /
+# `$adj.r.squared`, via extract_fit_stats()). Both NA for classes
+# without a least-squares variance partition -- `supports$classical_r2`
+# is the frame's own answer to that question.
+.uv_fit_r2 <- function(info) {
+  fs <- info$fit_stats
+  if (!isTRUE(info$supports$classical_r2) || is.null(fs)) {
+    return(c(r2 = NA_real_, adj_r2 = NA_real_))
+  }
+  c(
+    r2 = .scalar_or_na(fs$r2 %||% fs$r_squared),
+    adj_r2 = .scalar_or_na(fs$adj_r2 %||% fs$adj_r_squared)
+  )
+}
+
+
 # The label validator (validate_predictor_labels) reads term labels
 # off every model via stats::terms(); the screen's terms are simply
 # outcome ~ all screened predictors.
@@ -750,6 +812,19 @@ as_regression_frame.spicy_uv_screen <- function(
     n_k <- .uv_fit_n(bundle$fits[[k]])
     block$n_obs <- NA_real_
     block$n_obs[1L] <- as.numeric(n_k)
+    # Per-fit variance explained, on the same first-row-of-the-block
+    # convention as N: the `r2` / `adj_r2` show_columns tokens report
+    # each predictor's OWN univariable model. The value is the fit's
+    # `summary()$r.squared`, already computed for the fit-statistics
+    # rows -- in a one-predictor model it is also the partial eta^2 of
+    # that predictor, which is what the column would otherwise be
+    # relabelled from. NA (blank cell) for classes without a classical
+    # variance partition; the token gate refuses those tables anyway.
+    r2_k <- .uv_fit_r2(fr$info)
+    block$r2 <- NA_real_
+    block$r2[1L] <- r2_k[["r2"]]
+    block$adj_r2 <- NA_real_
+    block$adj_r2[1L] <- r2_k[["adj_r2"]]
     block$is_intercept <- block$term == "(Intercept)"
     # Each fit's own nuisance intercept opens its block, so
     # `show_intercept = TRUE` displays it as the Rd promises (hidden
@@ -768,6 +843,8 @@ as_regression_frame.spicy_uv_screen <- function(
       ic$term <- key
       ic$parent_var <- key
       ic$n_obs <- NA_real_
+      ic$r2 <- NA_real_
+      ic$adj_r2 <- NA_real_
       ic$is_intercept <- TRUE
       block <- rbind(ic, block)
     }

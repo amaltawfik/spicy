@@ -61,6 +61,14 @@
     "risk_diff_se",
     "risk_diff_ci",
     "risk_diff_p",
+    # Model-level variance explained, as a per-fit COLUMN (lm only).
+    # Populated by univariable-screening frames -- each predictor block
+    # reports its OWN model's R^2 / adjusted R^2, on the same first-row
+    # convention as `n`. A single multivariable model reports them as
+    # fit-statistics ROWS instead (`show_fit_stats`), where the same two
+    # token names live.
+    "r2",
+    "adj_r2",
     # Variance-explained partials (lm only) \u2013 split into
     # estimate-only + CI-only, matching the b / ci asymmetry-free
     # convention.
@@ -988,6 +996,21 @@ validate_show_columns <- function(show_columns, standardized) {
   invisible(NULL)
 }
 
+# Replace every univariable-screen bundle in `models` by the fits it
+# wraps, so a class gate sees the models that will actually be
+# estimated. Everything else passes through untouched.
+.unwrap_screen_bundles <- function(models) {
+  out <- list()
+  for (m in models) {
+    if (inherits(m, "spicy_uv_screen")) {
+      out <- c(out, m$fits)
+    } else {
+      out <- c(out, list(m))
+    }
+  }
+  out
+}
+
 # Class-aware token validation. Rejects tokens that are
 # mathematically inappropriate for the model class with a clear
 # remediation pointer toward the right substitute. Called AFTER
@@ -1125,6 +1148,60 @@ validate_class_appropriate_tokens <- function(
             paste(shQuote(bad_fit), collapse = ", ")
           ),
           "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # `r2` / `adj_r2` as COLUMNS (the univariable-screen per-fit R^2).
+  # The quantity is the least-squares variance partition, so the token
+  # needs at least one OLS fit in the table -- one is enough (a mixed
+  # set leaves the other groups' cells blank, like every other
+  # class-specific column). The refusal is explicit rather than a
+  # silently substituted pseudo-R^2: outside least squares there are
+  # several, they disagree, and none of them is "the" R^2.
+  r2_cols <- intersect(show_columns, c("r2", "adj_r2"))
+  if (length(r2_cols) > 0L) {
+    # A univariable-screen bundle stands for the fits it wraps: with
+    # `multivariable = FALSE` the bundle is the ONLY entry in `models`,
+    # so reading its class alone would refuse the linear screen -- the
+    # very table the column is for.
+    eff_fits <- .unwrap_screen_bundles(models)
+    any_ols <- any(vapply(
+      eff_fits,
+      function(f) inherits(f, "lm") && !inherits(f, "glm"),
+      logical(1)
+    ))
+    if (!any_ols) {
+      eff_classes <- unique(vapply(eff_fits, function(f) class(f)[1L], ""))
+      any_glm_eff <- any(vapply(eff_fits, inherits, logical(1), "glm"))
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not defined for %s models.",
+            paste(shQuote(r2_cols), collapse = ", "),
+            paste(sprintf("`%s`", eff_classes), collapse = " / ")
+          ),
+          "i" = paste0(
+            "The column reports the classical R\u00B2 of the ",
+            "least-squares variance partition. Outside it only ",
+            "pseudo-R\u00B2 measures exist (McFadden 1974, Cox & Snell ",
+            "1989, Nagelkerke 1991, Tjur 2009); they disagree with one ",
+            "another, so spicy does not print one under an R\u00B2 ",
+            "header without naming it."
+          ),
+          "i" = if (any_glm_eff) {
+            paste0(
+              "Name the one you want as a fit-statistics row, e.g. ",
+              "`show_fit_stats = c(\"nobs\", \"pseudo_r2_mcfadden\")`."
+            )
+          } else {
+            paste0(
+              "Report the model's own summary instead (for `coxph`, ",
+              "the concordance and the likelihood-ratio test)."
+            )
+          }
         ),
         class = "spicy_invalid_input"
       )

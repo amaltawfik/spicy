@@ -1051,13 +1051,15 @@ poly_suffix_degree <- function(suffix) {
 
 # ---- Fit-statistics extraction --------------------------------------------
 
-# Compute the model-level fit statistics requested via `show_fit_stats`.
-# Returns a single-row data.frame with the model_id + outcome + one
-# numeric column per requested token. Tokens not in show_fit_stats
-# get NA so the wide schema is constant across models (downstream
-# bind_rows works without column-mismatch issues).
+# Compute ALL model-level fit statistics for one fit. Returns a
+# single-row data.frame with the model_id + outcome + one numeric
+# column per statistic; the wide schema is constant across models
+# (downstream bind_rows works without column-mismatch issues) and the
+# selection requested via `show_fit_stats` happens at rendering, not
+# here -- which is also what lets per-fit consumers (the univariable
+# screen's r2 column) read a statistic the user did not request as a
+# row.
 extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
-  # Compute everything once, then subset by show_fit_stats.
   sm <- summary(fit)
   is_glm <- inherits(fit, "glm")
 

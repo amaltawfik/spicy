@@ -13,6 +13,7 @@ table_regression_uv(
   multivariable = TRUE,
   complete_cases = FALSE,
   show_columns = c("n", "b", "ci", "p"),
+  show_intercept = FALSE,
   title = NULL,
   ...
 )
@@ -61,6 +62,9 @@ carries no \code{N} column (its single \code{n} is a fit-statistics row,
 as in the reference layouts). For binary outcomes, add
 \code{"n_events"} for outcome event counts as \code{events/N} per factor
 level (each column group counts on its own estimation sample).
+For \code{method = "lm"}, add \code{"r2"} (and/or \code{"adj_r2"}) for the
+share of outcome variance each predictor explains \strong{on its
+own} -- see \emph{Variance explained} below.
 For \code{method = "coxph"}, the RMST / risk-difference families
 (\code{"rmst"}, \code{"risk_diff"}, ...) work with an explicit numeric
 \code{tau} / \code{at_time} shared by every column: each univariable fit
@@ -69,12 +73,17 @@ group reports the covariate-adjusted estimand from the full fit.
 \code{tau = "minmax"} is refused (per-fit horizons would make the
 column incomparable across predictors).}
 
+\item{show_intercept}{Display the \code{(Intercept)} rows? Default
+\code{FALSE} -- the opposite of \code{\link[=table_regression]{table_regression()}}'s default,
+because each univariable fit carries its own nuisance intercept.
+See \emph{Intercepts}.}
+
 \item{title}{Table title; \code{NULL} (default) builds
 \code{"Univariable and multivariable <type> regression: <outcome>"}.}
 
 \item{...}{Passed to \code{\link[=table_regression]{table_regression()}} (\code{exponentiate}, \code{vcov},
 \code{cluster}, \code{p_adjust}, \code{digits}, \code{labels}, \code{output}, ...).
-\code{show_intercept} defaults to \code{FALSE} here; \code{nested} is not
+\code{nested} is not
 meaningful for a screen and is refused. \code{cluster} must be a
 single vector with one value per row of \code{data}; it is aligned to
 each fit's own estimation sample automatically.}
@@ -100,6 +109,23 @@ model is fit on the complete cases of \strong{all} its variables (its
 \code{n} appears in the fit-statistics rows). Pass
 \code{complete_cases = TRUE} to restrict every model -- univariable and
 multivariable -- to the common complete-case sample.
+}
+
+\section{Variance explained}{
+\code{show_columns = c("n", "b", "ci", "p", "r2")} adds an
+\eqn{R^2}{R^2} column to the screen (\code{method = "lm"}): each
+predictor block reports its \strong{own} model's \eqn{R^2}{R^2}, on the
+first row of the block like \code{N}. It answers what a coefficient and
+its interval cannot -- how much of the outcome the predictor
+accounts for -- and often shows that a firmly established
+association still explains a small share of the variance. Add
+\code{"adj_r2"} for the adjusted form. On the multivariable side the
+\eqn{R^2}{R^2} is one number for the whole model, so it stays in
+the fit-statistics rows (where it is shown by default) instead of
+being repeated down a column. Not available for \code{method = "glm"}
+or \code{"coxph"}: outside least squares only competing
+pseudo-\eqn{R^2}{R^2} measures exist, and spicy asks you to name
+the one you want (\code{show_fit_stats = "pseudo_r2_mcfadden"}).
 }
 
 \section{Multiplicity}{
@@ -145,6 +171,16 @@ table_regression_uv(
   predictors = c(age, sex, education),
   family     = binomial(),
   exponentiate = TRUE
+)
+
+# Linear screen with the share of variance each predictor
+# explains on its own (the multivariable model reports its own
+# R-squared in the fit-statistics rows).
+table_regression_uv(
+  sochealth,
+  outcome      = wellbeing_score,
+  predictors   = c(age, sex, bmi),
+  show_columns = c("n", "b", "ci", "p", "r2")
 )
 }
 }
