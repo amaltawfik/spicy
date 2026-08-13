@@ -229,7 +229,7 @@
     Code
       table_continuous(df, select = "age", by = sex)
     Output
-      Descriptive statistics
+      Descriptive statistics by sex
       
        Variable │ Group    M     SD    Min    Max   95% CI LL  95% CI UL  n   p   
       ──────────┼─────────────────────────────────────────────────────────────────

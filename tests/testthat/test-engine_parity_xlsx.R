@@ -431,7 +431,9 @@ test_that("table_continuous writes its console title and missing note", {
   })
   expect_length(.xl_error_cells(path), 0L)
   m <- .xl_grid(path)
-  expect_equal(.xl_at(m, 1L, "A"), "Descriptive statistics")
+  # Decision 4 (2026-08-13): the by table states its grouping
+  # variable, label resolved.
+  expect_equal(.xl_at(m, 1L, "A"), "Descriptive statistics by Sex")
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
   expect_equal(.xl_at(m, 4L, "G"), "LL")
   expect_true(attr(obj, "missing_note") %in% m[, "A"])

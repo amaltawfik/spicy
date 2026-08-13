@@ -209,7 +209,9 @@ test_that("the descriptive families carry their title as an HTML caption", {
       by = "sex",
       output = "flextable"
     ))),
-    "Descriptive statistics"
+    # Decision 4 (2026-08-13): the by table states its grouping
+    # variable, label resolved.
+    "Descriptive statistics by Sex"
   )
   expect_identical(
     .pf_caption(.pf_html(table_continuous_lm(
