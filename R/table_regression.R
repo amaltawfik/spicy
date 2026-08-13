@@ -2398,7 +2398,11 @@ table_regression <- function(
         !any(
           frames[[i]]$coefs$estimate_type %in%
             c("rmst", "risk_diff")
-        )
+        ) &&
+        # A supported class whose predictors were ALL transformed-only
+        # produced zero rows legitimately (marker in extras + caveat
+        # warning); only a class with no estimand machinery aborts.
+        is.null(frames[[i]]$info$extras$survival_estimands)
     ) {
       model_tag <- if (n_models > 1L) {
         sprintf("model %d (class %s)", i, class(models[[i]])[1L])

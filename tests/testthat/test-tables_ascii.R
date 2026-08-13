@@ -231,3 +231,31 @@ test_that("build_ascii_table / spicy_print_table validate inputs with classed er
     class = "spicy_invalid_input"
   )
 })
+
+test_that("continuation panels name the estimand of an orphaned companion column", {
+  # dev/registre_rendu_estimands_spec.md (phase 4): a companion column
+  # (SE / p / CI label) split away from its carrier repeated only its
+  # generic header, ambiguous when the main panel already shows another
+  # 95% CI. The orphan now reads "95% CI (<carrier>)"; a companion
+  # whose carrier shares the panel keeps the short header.
+  x <- data.frame(
+    Variable = c("aaaa", "bbbb"),
+    HR = c("1.1", "2.2"),
+    "dRMST (365)" = c("-3", "4"),
+    ci1 = c("[1.23, 2.34]", "[3.45, 4.56]"),
+    "dRisk (365)" = c("0.11", "0.22"),
+    ci2 = c("[5.67, 6.78]", "[7.89, 8.90]"),
+    check.names = FALSE
+  )
+  names(x)[c(4L, 6L)] <- c("95% CI", "95% CI")
+  op <- options(width = 66)
+  on.exit(options(op), add = TRUE)
+  out <- capture.output(spicy_print_table(x, align_left_cols = 1L))
+  expect_true(any(grepl("95% CI (dRisk (365))", out, fixed = TRUE)))
+  # Carrier travelling WITH its companion: short header preserved.
+  options(width = 58)
+  out2 <- capture.output(spicy_print_table(x, align_left_cols = 1L))
+  hdr2 <- grep("dRisk", out2, value = TRUE)
+  expect_true(any(grepl("dRisk (365)", hdr2, fixed = TRUE)))
+  expect_false(any(grepl("95% CI (dRisk", out2, fixed = TRUE)))
+})

@@ -108,7 +108,8 @@ as_regression_frame.coxph <- function(
       at_time = estimands$at_time,
       boot_n = estimands$boot_n,
       boot_valid = estimands$boot_valid,
-      stratified = isTRUE(estimands$stratified)
+      stratified = isTRUE(estimands$stratified),
+      skipped_terms = estimands$skipped_terms
     )
   }
 
@@ -212,7 +213,8 @@ as_regression_frame.survreg <- function(
       at_time = estimands$at_time,
       boot_n = estimands$boot_n,
       boot_valid = estimands$boot_valid,
-      stratified = FALSE
+      stratified = FALSE,
+      skipped_terms = estimands$skipped_terms
     )
   }
 

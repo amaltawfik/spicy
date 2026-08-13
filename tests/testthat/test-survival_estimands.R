@@ -379,3 +379,45 @@ test_that("the eight estimand tokens render in token order; variants error", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("transformed terms get no orphan estimand row; note + caveat fire", {
+  # Spec dev/registre_rendu_estimands_spec.md (phase 4, option a): the
+  # g-computation contrast is defined per RAW variable, so I(age/10)
+  # used to spawn an orphan `age` row with a +1-YEAR contrast next to a
+  # per-decade coefficient. Transformed-only variables are now skipped,
+  # the footer discloses them, and an all-transformed fit warns.
+  skip_if_not_installed("survival")
+  lung2 <- na.omit(survival::lung[, c("time", "status", "age", "sex", "ph.ecog")])
+  lung2$sex <- factor(lung2$sex, labels = c("Male", "Female"))
+  fit <- survival::coxph(
+    survival::Surv(time, status) ~ I(age / 10) + sex + ph.ecog,
+    data = lung2
+  )
+  set.seed(7)
+  out <- table_regression(
+    fit,
+    show_columns = c("b", "rmst"),
+    tau = 365,
+    exponentiate = TRUE,
+    boot_n = 20
+  )
+  df <- as.data.frame(out)
+  expect_false(any(trimws(df$Variable) == "age"))
+  expect_true(any(trimws(df$Variable) == "I(age/10)"))
+  expect_match(
+    paste(attr(out, "note"), collapse = " "),
+    "Transformed terms (I(age/10))",
+    fixed = TRUE
+  )
+  # Untransformed predictors keep their estimand rows.
+  s <- as_structured(out)
+  expect_true("dRMST (365)" %in% names(s$body))
+  expect_false(all(is.na(s$body[["dRMST (365)"]])))
+  # All-transformed fit: classed caveat, no estimand rows, no crash.
+  fit2 <- survival::coxph(survival::Surv(time, status) ~ I(age / 10), data = lung2)
+  set.seed(7)
+  expect_warning(
+    table_regression(fit2, show_columns = c("b", "rmst"), tau = 365, boot_n = 20),
+    class = "spicy_caveat"
+  )
+})

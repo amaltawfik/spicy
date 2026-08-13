@@ -249,7 +249,54 @@
   # (the table has no HR row for them either), and standardization
   # deliberately holds each subject's stratum fixed.
   rhs_vars <- setdiff(rhs_vars, .coxph_strata_vars(fit))
-  .estimand_contrast_rows(data, rhs_vars, curve_stats)
+  bv <- .estimand_bare_vars(fit, rhs_vars)
+  rows <- .estimand_contrast_rows(data, bv$keep, curve_stats)
+  if (is.null(rows)) {
+    rows <- data.frame()
+  }
+  attr(rows, "skipped_terms") <- bv$skipped
+  rows
+}
+
+
+# Estimand contrasts are defined per RAW variable (+1 unit, or level
+# vs reference), so a variable entering the formula ONLY inside a
+# transformed term (I(age/10), log(x), poly(x, 2), a bare a:b) has no
+# coefficient row for its contrast to sit next to. The old behaviour
+# appended an ORPHAN row (term = the raw variable) whose +1-unit
+# contrast silently mismatched the displayed transformed coefficient
+# (wave-2 vignette review, dev/registre_rendu_estimands_spec.md).
+# Restrict to variables present as a bare term label; the transformed
+# term labels are reported for the footer note. A variable that is
+# both bare AND inside an interaction keeps its row: the g-computation
+# contrast is the total effect, which is the estimand.
+.estimand_bare_vars <- function(fit, rhs_vars) {
+  tl <- attr(stats::terms(fit), "term.labels")
+  keep <- intersect(rhs_vars, tl)
+  dropped <- setdiff(rhs_vars, keep)
+  skipped <- tl[vapply(
+    tl,
+    function(t) {
+      any(all.vars(str2lang(t)) %in% dropped)
+    },
+    logical(1)
+  )]
+  if (length(dropped) > 0L && length(keep) == 0L) {
+    spicy_warn(
+      c(
+        paste0(
+          "RMST / risk-difference columns: no untransformed ",
+          "predictor to contrast."
+        ),
+        "i" = sprintf(
+          "Transformed terms (%s) get no absolute-effect row; rescale the variable in the data instead of the formula.",
+          paste(skipped, collapse = ", ")
+        )
+      ),
+      class = "spicy_caveat"
+    )
+  }
+  list(keep = keep, skipped = skipped)
 }
 
 
@@ -425,7 +472,13 @@
     all.vars(stats::formula(fit)),
     all.vars(stats::formula(fit)[[2L]])
   )
-  .estimand_contrast_rows(data, rhs_vars, curve_stats)
+  bv <- .estimand_bare_vars(fit, rhs_vars)
+  rows <- .estimand_contrast_rows(data, bv$keep, curve_stats)
+  if (is.null(rows)) {
+    rows <- data.frame()
+  }
+  attr(rows, "skipped_terms") <- bv$skipped
+  rows
 }
 
 
@@ -585,7 +638,23 @@
   }
 
   pts <- points_fn(fit, data, want_rmst, want_risk, tau_resolved, at_time)
+  skipped_terms <- attr(pts, "skipped_terms") %||% character(0)
   if (is.null(pts) || nrow(pts) == 0L) {
+    # Supported class, but every predictor was transformed-only: no
+    # contrast row exists. Return a marker (not bare NULL) so the
+    # orchestrator's availability gate can tell this apart from an
+    # unsupported class; .estimand_bare_vars() already warned.
+    if (length(skipped_terms) > 0L) {
+      return(list(
+        rows = NULL,
+        tau = NULL,
+        at_time = NULL,
+        boot_n = boot_n,
+        boot_valid = 0L,
+        stratified = FALSE,
+        skipped_terms = skipped_terms
+      ))
+    }
     return(NULL)
   }
 
@@ -611,14 +680,14 @@
       next
     }
     rep_pts <- tryCatch(
-      points_fn(
+      suppressWarnings(points_fn(
         rep_fit,
         data[idx, , drop = FALSE],
         want_rmst,
         want_risk,
         tau_resolved,
         at_time
-      ),
+      )),
       error = function(e) NULL
     )
     if (is.null(rep_pts)) {
@@ -686,7 +755,8 @@
     at_time = if (want_risk) at_time else NULL,
     boot_n = boot_n,
     boot_valid = as.integer(boot_valid),
-    stratified = !is.null(attr(fit$terms, "specials")$strata)
+    stratified = !is.null(attr(fit$terms, "specials")$strata),
+    skipped_terms = skipped_terms
   )
 }
 
@@ -725,6 +795,19 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
           )
         )
       }
+      skipped_note <- if (length(es$skipped_terms %||% character(0)) > 0L) {
+        sprintf(
+          " Transformed terms (%s) have no absolute-effect row: the contrast is defined per raw variable; rescale the variable in the data instead of the formula.",
+          paste(es$skipped_terms, collapse = ", ")
+        )
+      } else {
+        ""
+      }
+      if (length(parts) == 0L) {
+        return(
+          if (nzchar(skipped_note)) trimws(skipped_note) else NA_character_
+        )
+      }
       paste0(
         paste(parts, collapse = "; "),
         sprintf(
@@ -739,7 +822,8 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
           } else {
             format(es$boot_n)
           }
-        )
+        ),
+        skipped_note
       )
     },
     character(1)

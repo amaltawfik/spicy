@@ -205,11 +205,11 @@ table_regression(cx,
 ```
 
 One display note before reading: five columns are one more than the
-default console width holds, so the last interval — the `95% CI` of
-`dRisk (365)` — folds into a continuation panel printed below the
-fit block rather than beside its estimate (the output formats of
-the final section keep every column on one row). With the panels
-matched up, the numbers: being female adds an average of **40.5
+default console width holds, so the last interval folds into a
+continuation panel printed below the fit block, its header naming
+its estimand — `95% CI (dRisk (365))` — rather than beside its
+estimate (the output formats of the final section keep every column
+on one row). With the panels matched up, the numbers: being female adds an average of **40.5
 event-free days** over the first year (95% CI 17 to 64) and lowers
 the one-year risk of death by **19 percentage points** (95% CI 8 to
 30); each additional ECOG point costs 38 days and adds 15 percentage

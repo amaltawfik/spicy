@@ -799,6 +799,13 @@ spicy_print_table <- function(
       # names that the print method handed us.
       sub <- x[, cols, drop = FALSE]
       names(sub) <- names(x)[cols]
+      # Continuation panels: a companion column (SE / p / a CI label)
+      # separated from its carrier by the width split used to repeat
+      # only its generic header ("95% CI") -- silently ambiguous when
+      # another CI column sits in the main panel (wave-2 review;
+      # dev/registre_rendu_estimands_spec.md). Suffix the carrier's
+      # name so the orphan column names its estimand. Companions whose
+      # carrier made it into the same panel keep their short header.
       # Continuation panels: model-level statistics (n / AIC / R2 ...)
       # live once, under the columns that carry their values -- for a
       # single-model table split by width, that is panel 1 only. Drop
@@ -847,6 +854,55 @@ spicy_print_table <- function(
         display_labels[cols]
       } else {
         NULL
+      }
+      # Continuation panels: a companion column (SE / p / a CI label)
+      # separated from its carrier by the width split used to repeat
+      # only its generic header ("95% CI") -- silently ambiguous when
+      # another CI column sits in the main panel (wave-2 review;
+      # dev/registre_rendu_estimands_spec.md). Suffix the carrier's
+      # display name so the orphan column names its estimand; a
+      # companion whose carrier made it into the same panel keeps its
+      # short header. Duplicate columns arrive uniquified ("95% CI.2"),
+      # so matching goes through the base name; the display label (what
+      # build_ascii_table actually prints) is edited when present.
+      if (panel_i > 1L) {
+        base_nm <- function(nm) sub("[.][0-9]+$", "", nm)
+        shown <- if (!is.null(panel_display_labels)) {
+          as.character(panel_display_labels)
+        } else {
+          names(sub)
+        }
+        is_companion <- function(nm) {
+          grepl("^([0-9]+% C(r)?I|SE|p)$", base_nm(nm))
+        }
+        all_shown <- if (!is.null(display_labels)) {
+          as.character(display_labels)
+        } else {
+          names(x)
+        }
+        for (k in which(is_companion(shown))) {
+          carrier <- NA_integer_
+          for (j in rev(seq_len(cols[k] - 1L))) {
+            if (
+              !is_companion(all_shown[j]) && !(j %in% align_left_cols)
+            ) {
+              carrier <- j
+              break
+            }
+          }
+          if (!is.na(carrier) && !(carrier %in% cols)) {
+            relabeled <- sprintf(
+              "%s (%s)",
+              base_nm(shown[k]),
+              base_nm(all_shown[carrier])
+            )
+            if (!is.null(panel_display_labels)) {
+              panel_display_labels[k] <- relabeled
+            } else {
+              names(sub)[k] <- relabeled
+            }
+          }
+        }
       }
       build_ascii_table(
         sub,
