@@ -412,6 +412,9 @@ export_continuous_lm_table <- function(
     # outside the table grid via the finalize below.
     tt <- tinytable::tt(
       display_df,
+      # Same title the console prints ("Continuous outcomes by <x>"),
+      # like the captions of the other tinytable descriptive families.
+      caption = if (!is.null(title) && nzchar(title)) title else NULL,
       notes = if (!is.null(note) && nzchar(note)) note else NULL
     )
     tt <- tinytable::group_tt(tt, j = gspec)

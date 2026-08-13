@@ -1671,6 +1671,9 @@ table_categorical <- function(
       # the rendering used by the other engines.
       dat_gt <- pad_decimal_cols(dat_gt)
       mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
+      # Block starts BEFORE the indent rewrite, for the same light rule
+      # the console and the other engines draw between variable blocks.
+      var_sep_rows <- .categorical_var_sep_rows(dat_gt[[1]], indent_text)
       if (length(mod_rows)) {
         dat_gt[[1]][mod_rows] <- paste0(
           strrep("\u00A0", 4),
@@ -1679,7 +1682,10 @@ table_categorical <- function(
       }
       names(dat_gt) <- c("Variable", "n", "pct")
       tbl <- gt::gt(dat_gt)
-      tbl <- gt::cols_label(tbl, Variable = "", n = "n", pct = "%")
+      # "Variable", not a blanked corner: the console, tinytable and
+      # flextable all label the first column, and gt was the last
+      # dissenter (lot B incident).
+      tbl <- gt::cols_label(tbl, Variable = "Variable", n = "n", pct = "%")
       tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
       if (identical(align, "decimal")) {
         tbl <- gt::cols_align(tbl, align = "center", columns = c("n", "pct"))
@@ -1724,6 +1730,20 @@ table_categorical <- function(
         style = rule,
         locations = gt::cells_body(rows = nrow(dat_gt))
       )
+      # Light separators between variable blocks (console / tinytable /
+      # flextable parity; same style as table_continuous()'s gt branch).
+      light_rule <- gt::cell_borders(
+        sides = "bottom",
+        color = "#cccccc",
+        weight = gt::px(0.5)
+      )
+      for (sr in var_sep_rows) {
+        tbl <- gt::tab_style(
+          tbl,
+          style = light_rule,
+          locations = gt::cells_body(rows = sr - 1L)
+        )
+      }
       return(.spicy_gt_attach_note(tbl, missing_note))
     }
 
@@ -1740,6 +1760,10 @@ table_categorical <- function(
       # hand the cell the bare level name (same rule as the gt and
       # tinytable branches).
       id_mod <- which(startsWith(df[[1L]], indent_text))
+      # Block starts BEFORE the indent strip (the helper tells levels
+      # from block openers by the indent), for the same light rule the
+      # console and tinytable draw between variable blocks.
+      var_sep_rows <- .categorical_var_sep_rows(df[[1L]], indent_text)
       if (length(id_mod)) {
         df[[1L]][id_mod] <- substring(
           df[[1L]][id_mod],
@@ -1787,6 +1811,12 @@ table_categorical <- function(
       ft <- flextable::hline_top(ft, part = "header", border = bd)
       ft <- flextable::hline_bottom(ft, part = "header", border = bd)
       ft <- flextable::hline_bottom(ft, part = "body", border = bd)
+      # Light separators between variable blocks (console / tinytable /
+      # table_continuous() flextable parity).
+      bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
+      for (sr in var_sep_rows) {
+        ft <- flextable::hline(ft, i = sr - 1L, part = "body", border = bd_light)
+      }
       if (length(id_mod)) {
         ft <- flextable::padding(
           ft,
@@ -2793,6 +2823,9 @@ table_categorical <- function(
     # the rendering used by the other engines.
     dat_gt <- pad_decimal_cols(dat_gt)
 
+    # Block starts BEFORE the indent rewrite, for the same light rule
+    # the console and the other engines draw between variable blocks.
+    var_sep_rows <- .categorical_var_sep_rows(dat_gt[[1]], indent_text)
     # Indent modality rows with non-breaking spaces
     mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
     if (length(mod_rows)) {
@@ -2955,6 +2988,20 @@ table_categorical <- function(
       style = rule,
       locations = gt::cells_body(rows = nrow(dat_gt))
     )
+    # Light separators between variable blocks (console / tinytable /
+    # flextable parity; same style as table_continuous()'s gt branch).
+    light_rule <- gt::cell_borders(
+      sides = "bottom",
+      color = "#cccccc",
+      weight = gt::px(0.5)
+    )
+    for (sr in var_sep_rows) {
+      tbl <- gt::tab_style(
+        tbl,
+        style = light_rule,
+        locations = gt::cells_body(rows = sr - 1L)
+      )
+    }
 
     # 3) opt_css rules (override gt's hidden borders in normal
     #    renderers: RStudio viewer, Quarto, pkgdown)
@@ -3014,6 +3061,10 @@ table_categorical <- function(
     # the cell the bare level name (same rule as the gt and tinytable
     # branches).
     id_mod <- which(startsWith(df[[1L]], indent_text))
+    # Block starts BEFORE the indent strip (the helper tells levels
+    # from block openers by the indent), for the same light rule the
+    # console and tinytable draw between variable blocks.
+    var_sep_rows <- .categorical_var_sep_rows(df[[1L]], indent_text)
     if (length(id_mod)) {
       df[[1L]][id_mod] <- substring(df[[1L]][id_mod], nchar(indent_text) + 1L)
     }
@@ -3070,6 +3121,12 @@ table_categorical <- function(
     ft <- flextable::hline(ft, i = 1, j = grp_j, part = "header", border = bd)
     ft <- flextable::hline_bottom(ft, part = "header", border = bd)
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
+    # Light separators between variable blocks (console / tinytable /
+    # table_continuous() flextable parity).
+    bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
+    for (sr in var_sep_rows) {
+      ft <- flextable::hline(ft, i = sr - 1L, part = "body", border = bd_light)
+    }
 
     if (length(id_mod)) {
       ft <- flextable::padding(

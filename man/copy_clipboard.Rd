@@ -78,7 +78,8 @@ re-emitted as regular R conditions, so \code{suppressMessages()} /
 all at once.
 }
 \examples{
-\donttest{
+# Writes to the system clipboard, so never run by checks:
+\dontrun{
 if (clipr::clipr_available()) {
   # Data frame
   copy_clipboard(sochealth)

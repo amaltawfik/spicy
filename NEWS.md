@@ -265,6 +265,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `table_categorical()` draws its light rule between variable blocks in the
+  `"gt"` and `"flextable"` outputs too, labels the first `"gt"` column
+  `Variable` like every other engine, and `table_continuous_lm()` carries
+  its title to the `"tinytable"` caption.
 * Tables rendered to Typst no longer force a `5pt` column gutter when they
   carry grouped column headers (`by` groups, multi-model headers, CI
   spanners). All tables in a document now share the same column grid, and a
