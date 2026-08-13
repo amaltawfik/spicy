@@ -483,6 +483,10 @@ and sample size (\code{n}, \code{weighted_n}).
 \item \code{"clipboard"}: copies the wide table and returns it invisibly.
 }
 
+The Excel sheet carries the same title the console prints on its
+first row; the table itself starts on row 3, and the note lines sit
+below the body.
+
 If no numeric outcome columns remain after applying \code{select}, \code{exclude},
 and \code{regex}, the function emits a warning and returns an empty
 \code{data.frame()} regardless of \code{output}.

@@ -315,6 +315,26 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   carry their title to `output = "flextable"`, as the table caption.
 * Factor levels in a `"flextable"` or `"word"` `table_categorical()` are
   indented once, not twice.
+* `output = "excel"` writes the cells the console shows: the `Events/N`
+  counts keep their denominator (reference levels included), significance
+  stars reach the estimates the note's legend documents, and absorbed fixed
+  effects read `Yes` / `No` instead of `1` / `0`.
+* `output = "excel"` with `decimal_mark = ","` no longer mixes separators:
+  a sheet used to show `65.07` next to its own `<,001` because a numeric
+  cell follows the reader's locale. The body is written pre-formatted
+  instead; the default `"."` still writes real numbers.
+* `table_categorical(output = "excel")` writes blank cells on
+  variable-header rows. They used to be Excel error cells (`#N/A`), which
+  spread the error to any `SUM()` over the column.
+* `table_categorical()` and `table_continuous()` carry their title and
+  their missing-value / association notes to `output = "excel"`, like every
+  other output; `table_continuous_lm()` gains the title. The table starts
+  on row 3, below the title.
+* Every Excel export sizes its columns to the text they carry: row labels
+  such as `WHO-5 wellbeing index (0-100)` used to open clipped by the
+  default column width.
+* Factor levels in an `"excel"` regression table are indented once, not
+  twice.
 * `kendall_tau_b()` reported wrong SEs, confidence intervals and Wald
   p-values in every release from 0.6.0 through 0.12.0 -- its asymptotic
   standard error mis-scaled one margin term; point estimates were correct.

@@ -838,42 +838,60 @@ export_continuous_lm_table <- function(
 
     wb <- openxlsx2::wb_workbook()
     wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
+    # Same title the console prints -- for a by-table it names the
+    # grouping variable, which nothing else in the sheet states.
+    if (!is.null(title) && nzchar(title)) {
+      wb <- openxlsx2::wb_add_data(wb, x = title, start_row = 1)
+    }
+    top_header_row <- 3L
+    bot_header_row <- top_header_row + 1L
+    first_body_row <- bot_header_row + 1L
     wb <- openxlsx2::wb_add_data(
       wb,
       x = as.data.frame(t(hdrs$top), stringsAsFactors = FALSE),
-      start_row = 1,
+      start_row = top_header_row,
       col_names = FALSE
     )
     wb <- openxlsx2::wb_add_data(
       wb,
       x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
-      start_row = 2,
+      start_row = bot_header_row,
       col_names = FALSE
     )
+    # `na.strings = ""`: an empty cell stays empty instead of becoming
+    # an Excel error cell ("#N/A").
     wb <- openxlsx2::wb_add_data(
       wb,
       x = display_df,
-      start_row = 3,
+      start_row = first_body_row,
       col_names = FALSE,
-      row_names = FALSE
+      row_names = FALSE,
+      na.strings = ""
     )
     if (has_ci) {
       wb <- openxlsx2::wb_merge_cells(
         wb,
-        dims = openxlsx2::wb_dims(rows = 1, cols = ci_j)
+        dims = openxlsx2::wb_dims(rows = top_header_row, cols = ci_j)
       )
     }
-    last_row <- 2 + nrow(display_df)
+    last_row <- bot_header_row + nrow(display_df)
 
     left_cols <- 1L
     right_cols <- which(col_keys %in% c("n", "Weighted n", "p"))
     center_cols <- setdiff(seq_len(nc), c(left_cols, right_cols))
-    header_rows <- 1:2
-    body_rows <- if (last_row >= 3) 3:last_row else integer(0)
+    header_rows <- top_header_row:bot_header_row
+    body_rows <- if (last_row >= first_body_row) {
+      first_body_row:last_row
+    } else {
+      integer(0)
+    }
 
     wb <- openxlsx2::wb_add_cell_style(
       wb,
-      dims = openxlsx2::wb_dims(rows = 1:last_row, cols = left_cols),
+      dims = openxlsx2::wb_dims(
+        rows = top_header_row:last_row,
+        cols = left_cols
+      ),
       horizontal = "left"
     )
     if (length(center_cols) > 0L) {
@@ -915,7 +933,7 @@ export_continuous_lm_table <- function(
     # Pass NULL on every unused side to draw only the intended rule.
     wb <- openxlsx2::wb_add_border(
       wb,
-      dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
+      dims = openxlsx2::wb_dims(rows = top_header_row, cols = 1:nc),
       top_border = "thin",
       bottom_border = NULL,
       left_border = NULL,
@@ -924,7 +942,7 @@ export_continuous_lm_table <- function(
     if (has_ci) {
       wb <- openxlsx2::wb_add_border(
         wb,
-        dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
+        dims = openxlsx2::wb_dims(rows = top_header_row, cols = ci_j),
         bottom_border = "thin",
         top_border = NULL,
         left_border = NULL,
@@ -933,7 +951,7 @@ export_continuous_lm_table <- function(
     }
     wb <- openxlsx2::wb_add_border(
       wb,
-      dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
+      dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
       bottom_border = "thin",
       top_border = NULL,
       left_border = NULL,
@@ -951,14 +969,15 @@ export_continuous_lm_table <- function(
     }
     # Note below the table (one worksheet row per note line), same
     # placement as table_regression()'s output_excel.
-    if (!is.null(note) && nzchar(note)) {
-      note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
-      wb <- openxlsx2::wb_add_data(
-        wb,
-        x = note_lines,
-        start_row = last_row + 2L
+    wb <- .spicy_xl_add_note(wb, note = note, start_row = last_row + 2L)
+    wb <- .spicy_xl_set_widths(
+      wb,
+      sheet = excel_sheet,
+      cells = .spicy_xl_cells(
+        display_df,
+        headers = list(hdrs$top, hdrs$bottom)
       )
-    }
+    )
     openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
     return(invisible(excel_path))
   }

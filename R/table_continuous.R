@@ -262,13 +262,17 @@
 #' and rows removed for a missing `by` value under `drop_na = TRUE`)
 #' travels with the table on every route, not just the console:
 #' `"default"` prints it under the ASCII table, `"tinytable"` / `"gt"` /
-#' `"flextable"` / `"word"` carry it as a table note, and
+#' `"flextable"` / `"word"` carry it as a table note, `"excel"` writes
+#' it below the body, and
 #' `"data.frame"` / `"long"` keep the sentence verbatim in the
 #' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
 #' nothing was removed) so a pipeline that renders the numbers itself
 #' can still state what left the table. On the `"tinytable"` route the
 #' note is set one size down; `options(spicy.note_style)` governs that
 #' (see [table_regression()]).
+#'
+#' The Excel sheet carries the same title the console prints on its
+#' first row; the table itself starts on row 3.
 #'
 #' @details
 #' # Choosing the statistics
@@ -2928,33 +2932,43 @@ export_desc_table <- function(
     wb <- openxlsx2::wb_workbook()
     wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
 
+    # Same title the console prints, from the same helper, then the
+    # two header rows two lines below.
+    wb <- openxlsx2::wb_add_data(wb, x = .continuous_title(), start_row = 1)
+    top_header_row <- 3L
+    bot_header_row <- top_header_row + 1L
+    first_body_row <- bot_header_row + 1L
+
     wb <- openxlsx2::wb_add_data(
       wb,
       x = as.data.frame(t(hdrs$top), stringsAsFactors = FALSE),
-      start_row = 1,
+      start_row = top_header_row,
       col_names = FALSE
     )
     wb <- openxlsx2::wb_add_data(
       wb,
       x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
-      start_row = 2,
+      start_row = bot_header_row,
       col_names = FALSE
     )
+    # `na.strings = ""`: an empty cell stays empty instead of becoming
+    # an Excel error cell ("#N/A").
     wb <- openxlsx2::wb_add_data(
       wb,
       x = display_df,
-      start_row = 3,
+      start_row = first_body_row,
       col_names = FALSE,
-      row_names = FALSE
+      row_names = FALSE,
+      na.strings = ""
     )
 
     for (g in ci_pairs) {
       wb <- openxlsx2::wb_merge_cells(
         wb,
-        dims = openxlsx2::wb_dims(rows = 1, cols = g$cols)
+        dims = openxlsx2::wb_dims(rows = top_header_row, cols = g$cols)
       )
     }
-    last_row <- 2 + nrow(display_df)
+    last_row <- bot_header_row + nrow(display_df)
 
     # Alignment. Right-align n / p (when present); centre everything
     # else except the left-side label columns.
@@ -2967,7 +2981,7 @@ export_desc_table <- function(
       right_cols <- c(right_cols, which(col_keys == "p"))
     }
     center_cols <- setdiff(seq_len(nc), c(left_cols, right_cols))
-    all_rows <- 1:last_row
+    all_rows <- top_header_row:last_row
 
     wb <- openxlsx2::wb_add_cell_style(
       wb,
@@ -3000,7 +3014,7 @@ export_desc_table <- function(
     # side to draw only the intended rule.
     wb <- openxlsx2::wb_add_border(
       wb,
-      dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
+      dims = openxlsx2::wb_dims(rows = top_header_row, cols = 1:nc),
       top_border = "thin",
       bottom_border = NULL,
       left_border = NULL,
@@ -3009,7 +3023,7 @@ export_desc_table <- function(
     for (g in ci_pairs) {
       wb <- openxlsx2::wb_add_border(
         wb,
-        dims = openxlsx2::wb_dims(rows = 1, cols = g$cols),
+        dims = openxlsx2::wb_dims(rows = top_header_row, cols = g$cols),
         bottom_border = "thin",
         top_border = NULL,
         left_border = NULL,
@@ -3018,7 +3032,7 @@ export_desc_table <- function(
     }
     wb <- openxlsx2::wb_add_border(
       wb,
-      dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
+      dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
       bottom_border = "thin",
       top_border = NULL,
       left_border = NULL,
@@ -3039,13 +3053,25 @@ export_desc_table <- function(
     for (sr in sep_rows) {
       wb <- openxlsx2::wb_add_border(
         wb,
-        dims = openxlsx2::wb_dims(rows = sr - 1L + 2L, cols = 1:nc),
+        dims = openxlsx2::wb_dims(rows = sr - 1L + bot_header_row, cols = 1:nc),
         bottom_border = "hair",
         top_border = NULL,
         left_border = NULL,
         right_border = NULL
       )
     }
+
+    # Disclosure note (what left the table, which test was used) two
+    # rows below the body -- the same text the console prints.
+    wb <- .spicy_xl_add_note(wb, note = note, start_row = last_row + 2L)
+    wb <- .spicy_xl_set_widths(
+      wb,
+      sheet = excel_sheet,
+      cells = .spicy_xl_cells(
+        display_df,
+        headers = list(hdrs$top, hdrs$bottom)
+      )
+    )
 
     openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
     return(invisible(excel_path))

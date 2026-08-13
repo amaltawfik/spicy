@@ -2105,6 +2105,13 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   }
 
   body_first_row <- current_row
+  # A factor level (and the absorbed factors of the "Fixed effects:"
+  # block) is indented ONCE, by the engine: the Excel `indent` cell
+  # style set below carries the offset, so the label text goes in
+  # unpadded -- the console's leading spaces would indent it twice.
+  if (length(level_rows) > 0L) {
+    body[[1L]][level_rows] <- sub("^\\s+", "", body[[1L]][level_rows])
+  }
   # `na.strings = ""` so NA numeric cells render as blank (not "#N/A");
   # below we overwrite reference-row and below-threshold cells with
   # text overrides ("--" / "<.001").
@@ -2118,18 +2125,27 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   )
   body_end_row <- body_first_row + nrow(body) - 1L
 
+  # Display string of every body cell, from the formatter the console,
+  # the clipboard and flextable already share
+  # (`.format_structured_to_string_body()` -> `.cell_to_string()`).
+  # Excel keeps a REAL number wherever a number plus a number format
+  # renders what the console renders; the cells a number cannot
+  # express are overwritten with this text (see `text_rows` below), so
+  # the sheet can never word a cell differently from the console.
+  txt_body <- .format_structured_to_string_body(struct)
+  txt_body[[1L]] <- body[[1L]] # row labels as written (single indent)
+
   # ---- Per-cell number format (using col_meta from structured body) ------
   # `wb_add_data(x = body)` above wrote real numerics directly (NA
   # cells become empty). This loop:
   #   * applies the per-column number format (".00" / "#.000" / "0"
   #     / etc.) so Excel renders each cell at the requested precision,
-  #   * overrides numeric cells with text on reference rows (en-dash)
-  #     and below-threshold p-cells ("<.001").
+  #   * overwrites with text the cells no number can express (composite
+  #     counts, starred estimates, Yes/No, en-dash, "<.001", ...).
   # No string parsing -- precision / p_style / threshold come from
   # the structured body's col_meta, populated by render_regression_table().
   if (nrow(body) > 0L && n_cols >= 2L) {
     body_rows_idx <- seq.int(body_first_row, body_end_row)
-    na_dash <- "\u2013" # U+2013 en dash (Phase 7c14 typography)
     for (j in 2:n_cols) {
       col_name <- names(body)[j]
       meta <- col_meta[[col_name]]
@@ -2163,83 +2179,107 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
             dims = openxlsx2::wb_dims(rows = excel_row, cols = j),
             numfmt = ov_fmt
           )
-          # NA fit-stat cell (a stat not defined for that model's class
-          # in a mixed table; the change tokens' first-model column):
-          # overwrite the blank with the documented per-cell en-dash,
-          # mirroring `.cell_to_string()`. Same exceptions as the other
-          # engines: the block-shaped disclosures ("FE: <factor>",
-          # "N (<factor>)") and the per-level n_events stay blank for
-          # models outside their scope.
-          if (
-            !is.null(ov$fit_stat) &&
-              !ov$fit_stat %in% c("fixed_effects", "n_groups", "n_events") &&
-              is.na(body[[j]][ov$row])
+        }
+      }
+
+      # ---- Text overrides ------------------------------------------------
+      # `text_rows` flags the body rows of this column whose display
+      # string cannot be produced by a number plus a number format.
+      # Everything else stays a real number, so the workbook keeps its
+      # arithmetic value. The strings themselves always come from
+      # `txt_body` -- one formatter for every engine.
+      col_vals <- body[[j]]
+      text_rows <- logical(nrow(body))
+
+      # (1) `decimal_mark`. Excel renders a numeric cell with the
+      #     VIEWER's locale separator, which the file cannot set: a
+      #     table asked for "," would show "65.07" next to its own
+      #     "<,001" text on a period-locale machine. When a non-default
+      #     mark is requested the body goes out as text, so the
+      #     requested convention holds in every locale.
+      if (!identical(format_spec$decimal_mark, ".")) {
+        text_rows[] <- TRUE
+      }
+      # (2) Composite cells (`display_cells`, today the "events/N"
+      #     counts): no single number expresses them. They exist on
+      #     reference rows too -- a reference level HAS events.
+      disp_col <- meta[["display_cells"]]
+      if (!is.null(disp_col)) {
+        text_rows[!is.na(disp_col)] <- TRUE
+      }
+      # (3) Significance markers: "64.63***" is not a number. Only the
+      #     marked cells convert; the rest of the column keeps its
+      #     numbers, and the explicit right-alignment below keeps the
+      #     column visually uniform.
+      star_col <- struct$stars$markers[[col_name]]
+      if (!is.null(star_col)) {
+        text_rows[nzchar(star_col)] <- TRUE
+      }
+      # (4) Fit-stat rows: the Yes/No of the fixed-effects disclosure
+      #     block (numeric-encoded 1/0 in the typed body -- a bare "1"
+      #     in a coefficient column would read like an estimate), and
+      #     the en-dash of a cell whose stat is not defined for that
+      #     model's class. Same exceptions as the other engines: the
+      #     block-shaped disclosures ("FE: <factor>", "N (<factor>)")
+      #     and the per-level n_events stay blank outside their scope.
+      if (!is.null(meta$fit_stat_overrides)) {
+        for (ov in meta$fit_stat_overrides) {
+          fs <- ov$fit_stat %||% ""
+          if (identical(fs, "fixed_effects")) {
+            text_rows[ov$row] <- TRUE
+          } else if (
+            nzchar(fs) &&
+              !fs %in% c("n_groups", "n_events") &&
+              is.na(col_vals[ov$row])
           ) {
-            wb <- openxlsx2::wb_add_data(
-              wb,
-              sheet = excel_sheet,
-              x = na_dash,
-              start_row = excel_row,
-              start_col = j
-            )
+            text_rows[ov$row] <- TRUE
           }
         }
       }
-      # Outcome row (multi-DV): overlay the label text (metadata; the typed
-      # body keeps the cell NA).
+      # (5) Outcome row (multi-DV): a label, not a value.
       if (
         length(struct$outcome_row) == 1L &&
           col_name %in% names(struct$outcome_labels_by_col)
       ) {
+        text_rows[struct$outcome_row] <- TRUE
+      }
+      # (6) Reference rows: en-dash -- but only in the columns of models
+      #     that HAVE the factor (models it is absent from keep a blank
+      #     cell, char-body parity, finding M3) and only where (2) left
+      #     no composite. Both exemptions are already in the strings:
+      #     a blank display writes nothing.
+      if (length(reference_rows) > 0L) {
+        text_rows[reference_rows] <- TRUE
+      }
+      # (7) Below-threshold p-values ("<.001").
+      if (!is.null(meta$threshold)) {
+        text_rows[!is.na(col_vals) & col_vals < meta$threshold] <- TRUE
+      }
+
+      txt_col <- txt_body[[j]]
+      if (all(text_rows)) {
         wb <- openxlsx2::wb_add_data(
           wb,
           sheet = excel_sheet,
-          x = struct$outcome_labels_by_col[[col_name]],
-          start_row = body_first_row + struct$outcome_row - 1L,
-          start_col = j
+          x = data.frame(x = txt_col, stringsAsFactors = FALSE),
+          start_row = body_first_row,
+          start_col = j,
+          col_names = FALSE
         )
-      }
-      # Reference rows: overwrite numeric with en-dash text -- but only in
-      # the columns of models that HAVE the factor; models it is absent from
-      # keep a blank cell (char-body parity, finding M3).
-      if (length(reference_rows) > 0L) {
-        for (i in reference_rows) {
-          ref_models <- struct$reference_models_by_row[[as.character(i)]]
-          if (
-            !is.null(ref_models) &&
-              !is.null(meta$model_id) &&
-              !meta$model_id %in% ref_models
-          ) {
+      } else {
+        for (i in which(text_rows)) {
+          # A blank display leaves the cell as written above (an NA
+          # numeric is already an empty cell).
+          if (!nzchar(txt_col[i])) {
             next
           }
-          excel_row <- body_first_row + i - 1L
           wb <- openxlsx2::wb_add_data(
             wb,
             sheet = excel_sheet,
-            x = na_dash,
-            start_row = excel_row,
+            x = txt_col[i],
+            start_row = body_first_row + i - 1L,
             start_col = j
           )
-        }
-      }
-      # Below-threshold p-values: overwrite numeric with "<.001" text
-      if (!is.null(meta$threshold)) {
-        below_text <- .below_threshold_text(
-          meta$threshold,
-          format_spec$decimal_mark
-        )
-        col_vals <- body[[j]]
-        for (i in seq_along(col_vals)) {
-          if (!is.na(col_vals[i]) && col_vals[i] < meta$threshold) {
-            excel_row <- body_first_row + i - 1L
-            wb <- openxlsx2::wb_add_data(
-              wb,
-              sheet = excel_sheet,
-              x = below_text,
-              start_row = excel_row,
-              start_col = j
-            )
-          }
         }
       }
     }
@@ -2482,6 +2522,14 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       start_row = foot_row
     )
   }
+
+  # Column widths from the text each column carries (header labels +
+  # the display strings), so the row labels are readable on open.
+  wb <- .spicy_xl_set_widths(
+    wb,
+    sheet = excel_sheet,
+    cells = .spicy_xl_cells(txt_body, headers = list(hdr$top, hdr$bottom))
+  )
 
   openxlsx2::wb_save(wb, file = excel_path, overwrite = TRUE)
   invisible(rendered)

@@ -1091,6 +1091,9 @@
 #'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric
 #'   vector specifies custom thresholds, e.g.
 #'   `c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
+#'   With `output = "excel"` a marked estimate is written as text
+#'   (`"64.63***"` is not a number); the cells with no marker stay
+#'   numeric.
 #' @param nested Whether to inject pairwise change-statistic rows
 #'   for adjacent models (M2 vs M1, M3 vs M2, ...). `FALSE`
 #'   (default) -- pure side-by-side display. `TRUE` -- requires
@@ -1117,6 +1120,10 @@
 #'   `"."` (default) or `","` (European convention). When
 #'   `","` is used, the CI bracket separator switches to `"; "`
 #'   automatically to avoid `"0,18 [0,07, 0,30]"` ambiguity.
+#'   With `output = "excel"` a numeric cell is displayed by Excel
+#'   with the *viewer's* locale separator, which a file cannot set,
+#'   so a non-default mark makes the body go out as pre-formatted
+#'   text (the default `"."` keeps every cell a real number).
 #' @param align Numeric column alignment.
 #'   `"decimal"` (default) -- pre-pad cells so decimal marks line
 #'   up vertically (publication-style). For CI cells (`[LL, UL]`)

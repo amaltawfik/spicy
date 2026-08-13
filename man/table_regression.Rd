@@ -587,7 +587,10 @@ is a no-op (there is no Outcome row to suppress).}
 Section 6.46) -- no stars. \code{TRUE} -- APA cutoffs
 \code{c("*" = 0.05, "**" = 0.01, "***" = 0.001)}. A named numeric
 vector specifies custom thresholds, e.g.
-\code{c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)}.}
+\code{c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)}.
+With \code{output = "excel"} a marked estimate is written as text
+(\code{"64.63***"} is not a number); the cells with no marker stay
+numeric.}
 
 \item{nested}{Whether to inject pairwise change-statistic rows
 for adjacent models (M2 vs M1, M3 vs M2, ...). \code{FALSE}
@@ -620,7 +623,11 @@ effect-size fit stats (\code{r2}, \code{adj_r2}, \code{r2_change},
 \item{decimal_mark}{Decimal mark used in numeric display.
 \code{"."} (default) or \code{","} (European convention). When
 \code{","} is used, the CI bracket separator switches to \code{"; "}
-automatically to avoid \code{"0,18 [0,07, 0,30]"} ambiguity.}
+automatically to avoid \code{"0,18 [0,07, 0,30]"} ambiguity.
+With \code{output = "excel"} a numeric cell is displayed by Excel
+with the \emph{viewer's} locale separator, which a file cannot set,
+so a non-default mark makes the body go out as pre-formatted
+text (the default \code{"."} keeps every cell a real number).}
 
 \item{align}{Numeric column alignment.
 \code{"decimal"} (default) -- pre-pad cells so decimal marks line

@@ -507,12 +507,16 @@
 #' The `drop_na = TRUE` disclosure travels with the table on every
 #' route, not just the console: `"default"` prints it under the ASCII
 #' table, `"tinytable"` / `"gt"` / `"flextable"` / `"word"` carry it as
-#' a table note, and `"data.frame"` keeps the sentence verbatim in the
+#' a table note, `"excel"` writes it below the body, and
+#' `"data.frame"` keeps the sentence verbatim in the
 #' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
 #' nothing was removed) so a pipeline that renders the numbers itself
 #' can still state what left the table. On the `"tinytable"` route the
 #' note is set one size down; `options(spicy.note_style)` governs that
 #' (see [table_regression()]).
+#'
+#' The Excel sheet carries the same title the console prints on its
+#' first row; the table itself starts on row 3.
 #'
 #' @details
 #' # Tests
@@ -1848,25 +1852,37 @@ table_categorical <- function(
 
       wb <- openxlsx2::wb_workbook()
       wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
+      # Same title the console prints, from the same helper, on the
+      # first row; the table starts two rows below (the layout
+      # `table_regression()`'s Excel export already uses).
+      xl_title <- .categorical_title(NULL)
+      wb <- openxlsx2::wb_add_data(wb, x = xl_title, start_row = 1)
+      header_row <- 3L
+      # `na.strings = ""` so the empty cells of a variable-header row
+      # stay blank. Without it openxlsx2 writes Excel ERROR cells
+      # ("#N/A") in the middle of the counts, and any SUM over the
+      # column inherits the error.
       wb <- openxlsx2::wb_add_data(
         wb,
         x = body_xl,
-        start_row = 1,
+        start_row = header_row,
         col_names = TRUE,
-        row_names = FALSE
+        row_names = FALSE,
+        na.strings = ""
       )
 
       nc <- ncol(body_xl)
-      last_row <- nrow(body_xl) + 1
+      first_body_row <- header_row + 1L
+      last_row <- header_row + nrow(body_xl)
       pct_fmt <- paste0("0.", paste(rep("0", percent_digits), collapse = ""))
 
-      # Header borders (top + bottom on row 1). IMPORTANT:
-      # openxlsx2::wb_add_border() defaults every side to "thin", so
-      # left/right must be explicitly NULL to avoid painting vertical
-      # rules on every header cell.
+      # Header borders (top + bottom on the column-labels row).
+      # IMPORTANT: openxlsx2::wb_add_border() defaults every side to
+      # "thin", so left/right must be explicitly NULL to avoid painting
+      # vertical rules on every header cell.
       wb <- openxlsx2::wb_add_border(
         wb,
-        dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
+        dims = openxlsx2::wb_dims(rows = header_row, cols = 1:nc),
         top_border = "thin",
         bottom_border = "thin",
         left_border = NULL,
@@ -1883,23 +1899,26 @@ table_categorical <- function(
         num_horiz <- if (identical(align, "center")) "center" else "right"
         wb <- openxlsx2::wb_add_cell_style(
           wb,
-          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 1),
+          dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 1),
           horizontal = "left"
         )
         wb <- openxlsx2::wb_add_cell_style(
           wb,
-          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 2:nc),
+          dims = openxlsx2::wb_dims(
+            rows = first_body_row:last_row,
+            cols = 2:nc
+          ),
           horizontal = num_horiz
         )
         # Number formats: integers (col 2), percentages (col 3)
         wb <- openxlsx2::wb_add_numfmt(
           wb,
-          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 2),
+          dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 2),
           numfmt = "0"
         )
         wb <- openxlsx2::wb_add_numfmt(
           wb,
-          dims = openxlsx2::wb_dims(rows = 2:last_row, cols = 3),
+          dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 3),
           numfmt = pct_fmt
         )
         # Bottom border on last row
@@ -1912,6 +1931,25 @@ table_categorical <- function(
           right_border = NULL
         )
       }
+
+      # Disclosure note (what left the table) two rows below the body,
+      # one worksheet row per line -- the placement the regression
+      # export uses. Same text the console prints.
+      wb <- .spicy_xl_add_note(
+        wb,
+        note = .categorical_note(missing_note, NULL),
+        start_row = last_row + 2L
+      )
+      # Widths from the DISPLAY strings (the char body), not from the
+      # raw numerics the sheet stores: "5.16949152542373" is a stored
+      # value, "5.2" is what the cell shows.
+      width_df <- report_wide_char
+      width_df$Variable <- body_xl$Variable
+      wb <- .spicy_xl_set_widths(
+        wb,
+        sheet = excel_sheet,
+        cells = .spicy_xl_cells(width_df, headers = list(names(body_xl)))
+      )
 
       openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
       return(invisible(excel_path))
@@ -3121,16 +3159,28 @@ table_categorical <- function(
     wb <- openxlsx2::wb_workbook()
     wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
 
+    # Same title the console prints (it names the grouping variable,
+    # which nothing else in the sheet states), then the two header
+    # rows two lines below.
+    wb <- openxlsx2::wb_add_data(
+      wb,
+      x = .categorical_title(by_name),
+      start_row = 1
+    )
+    top_header_row <- 3L
+    bot_header_row <- top_header_row + 1L
+    first_body_row <- bot_header_row + 1L
+
     wb <- openxlsx2::wb_add_data(
       wb,
       x = as.data.frame(t(top_header_flat_ex), stringsAsFactors = FALSE),
-      start_row = 1,
+      start_row = top_header_row,
       col_names = FALSE
     )
     wb <- openxlsx2::wb_add_data(
       wb,
       x = as.data.frame(t(bot_header_ex), stringsAsFactors = FALSE),
-      start_row = 2,
+      start_row = bot_header_row,
       col_names = FALSE
     )
 
@@ -3149,16 +3199,21 @@ table_categorical <- function(
       body_xl[["CI upper"]] <- report_wide_char[["CI upper"]]
     }
 
+    # `na.strings = ""` so the empty cells of a variable-header row
+    # stay blank. Without it openxlsx2 writes Excel ERROR cells
+    # ("#N/A") in the middle of the counts, and any SUM over the
+    # column inherits the error.
     wb <- openxlsx2::wb_add_data(
       wb,
       x = body_xl,
-      start_row = 3,
+      start_row = first_body_row,
       col_names = FALSE,
-      row_names = FALSE
+      row_names = FALSE,
+      na.strings = ""
     )
 
     nc <- ncol(body_xl)
-    last_row <- 2 + nrow(body_xl)
+    last_row <- bot_header_row + nrow(body_xl)
     pct_fmt <- paste0("0.", paste(rep("0", percent_digits), collapse = ""))
 
     if (add_multilevel_header) {
@@ -3166,7 +3221,7 @@ table_categorical <- function(
         c1 <- 2 + (i - 1) * 2
         wb <- openxlsx2::wb_merge_cells(
           wb,
-          dims = openxlsx2::wb_dims(rows = 1, cols = c1:(c1 + 1))
+          dims = openxlsx2::wb_dims(rows = top_header_row, cols = c1:(c1 + 1))
         )
       }
     }
@@ -3174,7 +3229,10 @@ table_categorical <- function(
     # Header alignment (center, vertically centered)
     wb <- openxlsx2::wb_add_cell_style(
       wb,
-      dims = openxlsx2::wb_dims(rows = 1:2, cols = 1:nc),
+      dims = openxlsx2::wb_dims(
+        rows = top_header_row:bot_header_row,
+        cols = 1:nc
+      ),
       horizontal = "center",
       vertical = "center"
     )
@@ -3187,12 +3245,12 @@ table_categorical <- function(
       num_horiz <- if (identical(align, "center")) "center" else "right"
       wb <- openxlsx2::wb_add_cell_style(
         wb,
-        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = 1),
+        dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 1),
         horizontal = "left"
       )
       wb <- openxlsx2::wb_add_cell_style(
         wb,
-        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = 2:nc),
+        dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 2:nc),
         horizontal = num_horiz
       )
       # Text columns (p, assoc, CI) -- force text format
@@ -3205,7 +3263,10 @@ table_categorical <- function(
       }
       wb <- openxlsx2::wb_add_numfmt(
         wb,
-        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = text_cols),
+        dims = openxlsx2::wb_dims(
+          rows = first_body_row:last_row,
+          cols = text_cols
+        ),
         numfmt = "@"
       )
     }
@@ -3216,7 +3277,7 @@ table_categorical <- function(
     # every styled cell.
     wb <- openxlsx2::wb_add_border(
       wb,
-      dims = openxlsx2::wb_dims(rows = 1, cols = 1:nc),
+      dims = openxlsx2::wb_dims(rows = top_header_row, cols = 1:nc),
       top_border = "thin",
       bottom_border = NULL,
       left_border = NULL,
@@ -3224,7 +3285,7 @@ table_categorical <- function(
     )
     wb <- openxlsx2::wb_add_border(
       wb,
-      dims = openxlsx2::wb_dims(rows = 1, cols = grp_j),
+      dims = openxlsx2::wb_dims(rows = top_header_row, cols = grp_j),
       bottom_border = "thin",
       top_border = NULL,
       left_border = NULL,
@@ -3232,7 +3293,7 @@ table_categorical <- function(
     )
     wb <- openxlsx2::wb_add_border(
       wb,
-      dims = openxlsx2::wb_dims(rows = 2, cols = 1:nc),
+      dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
       bottom_border = "thin",
       top_border = NULL,
       left_border = NULL,
@@ -3256,15 +3317,42 @@ table_categorical <- function(
     if (nrow(body_xl) > 0) {
       wb <- openxlsx2::wb_add_numfmt(
         wb,
-        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = n_cols),
+        dims = openxlsx2::wb_dims(
+          rows = first_body_row:last_row,
+          cols = n_cols
+        ),
         numfmt = "0"
       )
       wb <- openxlsx2::wb_add_numfmt(
         wb,
-        dims = openxlsx2::wb_dims(rows = 3:last_row, cols = p_cols),
+        dims = openxlsx2::wb_dims(
+          rows = first_body_row:last_row,
+          cols = p_cols
+        ),
         numfmt = pct_fmt
       )
     }
+
+    # Disclosure notes below the table: what left it (drop_na), then
+    # the association-measure gloss -- the same text, in the same
+    # order, as the console footer.
+    wb <- .spicy_xl_add_note(
+      wb,
+      note = .categorical_note(missing_note, assoc_note_text),
+      start_row = last_row + 2L
+    )
+    # Widths from the DISPLAY strings (the char body), not from the
+    # raw numerics the sheet stores.
+    width_df <- report_wide_char
+    width_df$Variable <- body_xl$Variable
+    wb <- .spicy_xl_set_widths(
+      wb,
+      sheet = excel_sheet,
+      cells = .spicy_xl_cells(
+        width_df,
+        headers = list(top_header_flat_ex, bot_header_ex)
+      )
+    )
 
     openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
     return(invisible(excel_path))
