@@ -269,6 +269,14 @@ path invisibly.
 \item \code{"clipboard"}: copies the table and returns the display
 \code{data.frame} invisibly.
 }
+
+The \code{drop_na = TRUE} disclosure travels with the table on every
+route, not just the console: \code{"default"} prints it under the ASCII
+table, \code{"tinytable"} / \code{"gt"} / \code{"flextable"} / \code{"word"} carry it as
+a table note, and \code{"data.frame"} keeps the sentence verbatim in the
+\code{missing_note} attribute (\code{attr(x, "missing_note")}, \code{NULL} when
+nothing was removed) so a pipeline that renders the numbers itself
+can still state what left the table.
 }
 \description{
 Builds a publication-ready frequency or cross-tabulation table for one

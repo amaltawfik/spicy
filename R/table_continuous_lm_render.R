@@ -410,7 +410,7 @@ export_continuous_lm_table <- function(
       notes = if (!is.null(note) && nzchar(note)) note else NULL
     )
     tt <- tinytable::group_tt(tt, j = gspec)
-    tt <- tinytable::theme_empty(tt)
+    tt <- .spicy_tt_bare(tt)
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     if (ncol(display_df) > 1L) {
       numeric_j <- setdiff(seq_len(nc), 1L)

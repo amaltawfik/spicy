@@ -201,6 +201,11 @@ build_structured_body <- function(
       # renderer) -- the generic 2-decimal cell is blind exactly
       # where pd lives (.95 to 1).
       p_digits
+    } else if (token %in% c("n", "n_events")) {
+      # Counts, not estimates: `digits` governs the estimation columns
+      # only, so N stays "364" and never "364.00" / "364.000". The
+      # console renderer already formats n_obs / events as integers.
+      0L
     } else if (token %in% c("ess_bulk", "ess_tail")) {
       0L # effective SAMPLE SIZES: integers, never "959.60"
     } else if (identical(token, "rhat")) {
@@ -785,9 +790,12 @@ build_structured_body <- function(
     if (!tk %in% names(fit_stats)) {
       next
     }
-    # icc: drop the row when no model carries a value (mirrors
-    # build_fit_stats_rows).
-    if (identical(tk, "icc") && all(is.na(fit_stats[[tk]]))) {
+    # Drop the row when NO model carries a value, exactly as
+    # build_fit_stats_rows() does for the console. Restricting the skip
+    # to `icc` left the univariable screen -- whose model-level stats
+    # are all NA by construction -- emitting empty `n` / `AIC` rows in
+    # every structured-driven engine.
+    if (all(is.na(fit_stats[[tk]]))) {
       next
     }
     row <- empty_row

@@ -238,6 +238,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `table_categorical()` and `table_continuous()` carry their missing-value
+  disclosure to every output: `"tinytable"`, `"gt"`, `"flextable"` and
+  `"word"` now show it as a table note, and `"data.frame"` keeps it in the
+  `missing_note` attribute. It used to reach the console print only, so a
+  report rendered with `warning: false` showed a table computed on fewer
+  observations than it announced.
 * `kendall_tau_b()` reported wrong SEs, confidence intervals and Wald
   p-values in every release from 0.6.0 through 0.12.0 -- its asymptotic
   standard error mis-scaled one margin term; point estimates were correct.

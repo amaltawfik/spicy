@@ -504,6 +504,14 @@
 #'     `data.frame` invisibly.
 #' }
 #'
+#' The `drop_na = TRUE` disclosure travels with the table on every
+#' route, not just the console: `"default"` prints it under the ASCII
+#' table, `"tinytable"` / `"gt"` / `"flextable"` / `"word"` carry it as
+#' a table note, and `"data.frame"` keeps the sentence verbatim in the
+#' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
+#' nothing was removed) so a pipeline that renders the numbers itself
+#' can still state what left the table.
+#'
 #' @details
 #' # Tests
 #'
@@ -1358,6 +1366,12 @@ table_categorical <- function(
         rows[[rr]] <- data.frame(
           variable = labels[i],
           level = lv,
+          # Per-variable display rank: the global level factor used to
+          # impose the FIRST variable's ordering on every later one,
+          # hoisting "(Missing)" to the head of subsequent blocks and
+          # reordering homonymous levels (field report,
+          # dev/bug_missing_order_multivar.md).
+          .lvrank = match(lv, lv_use),
           n = suppressWarnings(as.numeric(ft$n[idx])),
           pct = 100 * suppressWarnings(as.numeric(ft$prop[idx])),
           stringsAsFactors = FALSE,
@@ -1387,17 +1401,22 @@ table_categorical <- function(
           long_raw$level,
           levels = as.character(levels_keep)
         )
+        long_raw <- long_raw[
+          order(long_raw$variable, long_raw$level, method = "radix"),
+          ,
+          drop = FALSE
+        ]
       } else {
-        long_raw$level <- factor(
-          long_raw$level,
-          levels = unique(all_level_order)
-        )
+        # Sort on the per-variable rank captured at build time -- each
+        # variable keeps its own level order, "(Missing)" stays last in
+        # every block.
+        long_raw <- long_raw[
+          order(long_raw$variable, long_raw$.lvrank, method = "radix"),
+          ,
+          drop = FALSE
+        ]
       }
-      long_raw <- long_raw[
-        order(long_raw$variable, long_raw$level, method = "radix"),
-        ,
-        drop = FALSE
-      ]
+      long_raw$.lvrank <- NULL
       long_raw$variable <- as.character(long_raw$variable)
       long_raw$level <- as.character(long_raw$level)
       rownames(long_raw) <- NULL
@@ -1428,6 +1447,10 @@ table_categorical <- function(
     }
 
     if (output == "data.frame") {
+      # The raw frame keeps the ledger as an attribute: a pipeline that
+      # re-renders the numbers itself must still be able to state what
+      # was removed. See the `output` section of the docs.
+      attr(wide_raw, "missing_note") <- build_missing_note()
       return(wide_raw)
     }
 
@@ -1510,11 +1533,15 @@ table_categorical <- function(
     report_wide_char <- make_report_wide_oneway("char")
     report_wide_excel <- make_report_wide_oneway("excel")
 
+    # Read the ledger once, here: every output route below must carry
+    # the same disclosure, not print() alone.
+    missing_note <- build_missing_note()
+
     if (output == "default") {
       out <- wide_raw
       attr(out, "display_df") <- report_wide_char
       attr(out, "group_var") <- NULL
-      attr(out, "missing_note") <- build_missing_note()
+      attr(out, "missing_note") <- missing_note
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
@@ -1549,8 +1576,12 @@ table_categorical <- function(
       }
       names(dat_tt) <- c("", "n", "%")
 
-      tt <- tinytable::tt(dat_tt, escape = FALSE)
-      tt <- tinytable::theme_empty(tt)
+      tt <- tinytable::tt(
+        dat_tt,
+        escape = FALSE,
+        notes = missing_note
+      )
+      tt <- .spicy_tt_bare(tt)
       tt <- tinytable::style_tt(tt, j = 1, align = "l")
       tt_align <- switch(
         align,
@@ -1663,7 +1694,7 @@ table_categorical <- function(
         style = rule,
         locations = gt::cells_body(rows = nrow(dat_gt))
       )
-      return(tbl)
+      return(.spicy_gt_attach_note(tbl, missing_note))
     }
 
     build_flextable_oneway <- function(df) {
@@ -1723,6 +1754,7 @@ table_categorical <- function(
         )
       }
       ft <- flextable::autofit(ft)
+      ft <- .spicy_ft_attach_note(ft, missing_note)
       class(ft) <- c("spicy_flextable", class(ft))
       ft
     }
@@ -2123,6 +2155,9 @@ table_categorical <- function(
         row_df <- data.frame(
           variable = labels[i],
           level = lv,
+          # Per-variable display rank (see the no-by branch): keeps
+          # each block's own level order under the global sort.
+          .lvrank = match(lv, lv_use),
           group = gr,
           n = suppressWarnings(as.numeric(n_val)),
           pct = suppressWarnings(as.numeric(pct_val)),
@@ -2194,23 +2229,33 @@ table_categorical <- function(
         long_raw$level,
         levels = as.character(levels_keep)
       )
+      long_raw$group <- factor(long_raw$group, levels = group_levels)
+      long_raw <- long_raw[
+        order(
+          long_raw$variable,
+          long_raw$level,
+          long_raw$group,
+          method = "radix"
+        ),
+        ,
+        drop = FALSE
+      ]
     } else {
-      long_raw$level <- factor(
-        long_raw$level,
-        levels = unique(all_level_order)
-      )
+      # Per-variable rank (see the no-by branch): each block keeps its
+      # own level order, "(Missing)" stays last per variable.
+      long_raw$group <- factor(long_raw$group, levels = group_levels)
+      long_raw <- long_raw[
+        order(
+          long_raw$variable,
+          long_raw$.lvrank,
+          long_raw$group,
+          method = "radix"
+        ),
+        ,
+        drop = FALSE
+      ]
     }
-    long_raw$group <- factor(long_raw$group, levels = group_levels)
-    long_raw <- long_raw[
-      order(
-        long_raw$variable,
-        long_raw$level,
-        long_raw$group,
-        method = "radix"
-      ),
-      ,
-      drop = FALSE
-    ]
+    long_raw$.lvrank <- NULL
     long_raw$variable <- as.character(long_raw$variable)
     long_raw$level <- as.character(long_raw$level)
     long_raw$group <- as.character(long_raw$group)
@@ -2298,7 +2343,14 @@ table_categorical <- function(
   }
 
   wide_raw <- make_wide_raw(long_raw)
+  # Read the ledger once, here: every output route below must carry the
+  # same disclosure, not print() alone.
+  missing_note <- build_missing_note()
   if (output == "data.frame") {
+    # The raw frame keeps the ledger as an attribute: a pipeline that
+    # re-renders the numbers itself must still be able to state what was
+    # removed. See the `output` section of the docs.
+    attr(wide_raw, "missing_note") <- missing_note
     return(wide_raw)
   }
 
@@ -2428,7 +2480,7 @@ table_categorical <- function(
   if (output == "default") {
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
-    attr(out, "missing_note") <- build_missing_note()
+    attr(out, "missing_note") <- missing_note
     attr(out, "group_var") <- by_name
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
@@ -2532,9 +2584,13 @@ table_categorical <- function(
       gspec[[measure_col]] <- ncol(dat_tt)
     }
 
-    tt <- tinytable::tt(dat_tt, escape = FALSE)
+    tt <- tinytable::tt(
+      dat_tt,
+      escape = FALSE,
+      notes = missing_note
+    )
     tt <- tinytable::group_tt(tt, j = gspec)
-    tt <- tinytable::theme_empty(tt)
+    tt <- .spicy_tt_bare(tt)
 
     # Alignment. Honour the `align` argument: "decimal" centres
     # uniform-width pre-padded strings (same strategy as
@@ -2832,7 +2888,7 @@ table_categorical <- function(
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
 
-    return(tbl)
+    return(.spicy_gt_attach_note(tbl, missing_note))
   }
 
   # ---------------- flextable / word ----------------
@@ -2907,6 +2963,7 @@ table_categorical <- function(
     }
 
     ft <- flextable::autofit(ft)
+    ft <- .spicy_ft_attach_note(ft, missing_note)
     class(ft) <- c("spicy_flextable", class(ft))
     ft
   }

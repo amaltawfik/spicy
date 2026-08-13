@@ -109,6 +109,24 @@ test_that("output = 'tinytable' attaches caption + notes from title / footer", {
   expect_true(inherits(out, "tinytable"))
 })
 
+test_that("output = 'tinytable' escapes cells but leaves the note verbatim", {
+  skip_if_not_installed("tinytable")
+  fit <- lm(mpg ~ wt, data = mt)
+  tt <- table_regression(
+    fit,
+    output = "tinytable",
+    note = "#text(8pt)[a_note_]"
+  )
+  typ <- tinytable::save_tt(tt, output = "typst")
+  # The note keeps its Typst markup: escaping "[" left text() bodyless
+  # and Typst aborted with "missing argument: body".
+  expect_match(typ, "#text(8pt)[a_note_]", fixed = TRUE)
+  # Cells are still escaped on both backends.
+  expect_match(typ, "\\<.001", fixed = TRUE)
+  expect_match(tinytable::save_tt(tt, output = "html"), "&lt;.001", fixed = TRUE)
+})
+
+
 test_that("fit_stats_layout = 'merged' warns for engines without body-cell merge (tinytable, gt)", {
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")

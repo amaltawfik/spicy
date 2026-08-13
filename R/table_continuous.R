@@ -248,6 +248,16 @@
 #'     `data.frame` invisibly.
 #' }
 #'
+#' The missing-value disclosure (values excluded from the summaries,
+#' and rows removed for a missing `by` value under `drop_na = TRUE`)
+#' travels with the table on every route, not just the console:
+#' `"default"` prints it under the ASCII table, `"tinytable"` / `"gt"` /
+#' `"flextable"` / `"word"` carry it as a table note, and
+#' `"data.frame"` / `"long"` keep the sentence verbatim in the
+#' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
+#' nothing was removed) so a pipeline that renders the numbers itself
+#' can still state what left the table.
+#'
 #' @details
 #' # Tests
 #'
@@ -1106,7 +1116,15 @@ table_continuous <- function(
   # already long (one row per (variable x group)), so the two are
   # synonyms and return identical content; pick whichever name reads
   # better in your pipeline.
+  # Read the ledger once, here: every output route below must carry the
+  # same disclosure, not print() alone.
+  missing_note <- build_missing_note()
+
   if (output %in% c("data.frame", "long")) {
+    # The raw frame keeps the ledger as an attribute: a pipeline that
+    # re-renders the numbers itself must still be able to state what was
+    # removed. See the `output` section of the docs.
+    attr(result, "missing_note") <- missing_note
     return(result)
   }
 
@@ -1139,16 +1157,15 @@ table_continuous <- function(
         excel_path = excel_path,
         excel_sheet = excel_sheet,
         clipboard_delim = clipboard_delim,
-        word_path = word_path
+        word_path = word_path,
+        note = missing_note
       )
     )
   }
 
   # --- return ---
-  # Disclosure note (default output only, mirroring
-  # table_categorical()): read lazily now that the ledger is filled;
-  # print() renders it under the table.
-  attr(result, "missing_note") <- build_missing_note()
+  # Disclosure note: print() renders it under the table.
+  attr(result, "missing_note") <- missing_note
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
   print(result)
   invisible(result)
@@ -1739,7 +1756,8 @@ export_desc_table <- function(
   excel_path,
   excel_sheet,
   clipboard_delim,
-  word_path
+  word_path,
+  note = NULL
 ) {
   ci_pct <- paste0(round(ci_level * 100), "%")
   ci_ll <- paste0(ci_pct, " CI LL")
@@ -1855,9 +1873,9 @@ export_desc_table <- function(
       gspec[["ES"]] <- pos
     }
 
-    tt <- tinytable::tt(display_df)
+    tt <- tinytable::tt(display_df, notes = note)
     tt <- tinytable::group_tt(tt, j = gspec)
-    tt <- tinytable::theme_empty(tt)
+    tt <- .spicy_tt_bare(tt)
 
     # Body alignment. The first column ("Variable") and "Group" (when
     # present) are always left-aligned; numeric columns honour the
@@ -2194,7 +2212,7 @@ export_desc_table <- function(
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
 
-    return(tbl)
+    return(.spicy_gt_attach_note(tbl, note))
   }
 
   # ---- flextable / word ----
@@ -2326,6 +2344,7 @@ export_desc_table <- function(
     }
 
     ft <- flextable::autofit(ft)
+    ft <- .spicy_ft_attach_note(ft, note)
 
     if (output == "word") {
       if (is.null(word_path) || !nzchar(word_path)) {

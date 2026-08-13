@@ -205,6 +205,72 @@ test_that("screen-only tables carry no empty fit-stat rows", {
 })
 
 
+test_that("the structured body carries no empty fit-stat rows either", {
+  d <- .uv_soc()
+  df <- table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, bmi),
+    multivariable = FALSE,
+    output = "data.frame"
+  )
+  st <- attr(df, "structured")
+  expect_length(st$fit_stat_rows, 0L)
+  expect_false(any(st$body$Variable %in% c("n", "AIC")))
+
+  skip_if_not_installed("tinytable")
+  tt <- table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, bmi),
+    multivariable = FALSE,
+    output = "tinytable"
+  )
+  empty <- apply(tt@data[, -1L, drop = FALSE], 1L, function(r) {
+    all(!nzchar(trimws(r)))
+  })
+  expect_false(any(empty))
+
+  # The multivariable merge still fills (and keeps) its own fit stats.
+  tt2 <- table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, bmi),
+    output = "tinytable"
+  )
+  stubs <- trimws(tt2@data[[1L]])
+  expect_true("n" %in% stubs)
+  fit_row <- unlist(tt2@data[stubs == "n", -1L, drop = FALSE])
+  expect_true(any(nzchar(trimws(fit_row))))
+})
+
+
+test_that("the N column is a count: no decimals whatever `digits`", {
+  skip_if_not_installed("tinytable")
+  d <- .uv_soc()
+  n_cells <- function(digits) {
+    tt <- table_regression_uv(
+      d,
+      outcome = wellbeing_score,
+      method = "lm",
+      predictors = c(age, bmi),
+      multivariable = FALSE,
+      digits = digits,
+      show_columns = c("n", "b", "ci", "p"),
+      output = "tinytable"
+    )
+    # Decimal-alignment padding uses figure spaces (U+2007), which the
+    # default trimws() whitespace class does not cover.
+    trimws(tt@data[[2L]], whitespace = "[\\h\\v]")
+  }
+  expect_identical(n_cells(2L), c("1200", "1188"))
+  expect_identical(n_cells(3L), c("1200", "1188"))
+})
+
+
 test_that("intercepts are hidden by default; show_intercept shows both
            sides", {
   d <- .uv_soc()

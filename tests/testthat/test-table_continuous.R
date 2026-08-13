@@ -1052,10 +1052,21 @@ test_that("drop_na = FALSE without by warns spicy_ignored_arg", {
   )
 })
 
-test_that("table_continuous raw outputs carry no missing_note attribute", {
+test_that("table_continuous raw outputs carry the missing_note attribute", {
+  # Reversal of the pre-0.13 contract: a raw frame that a pipeline
+  # re-renders itself must still be able to state what was removed.
   df <- data.frame(x = c(1:7, NA))
   out <- table_continuous(df, select = "x", output = "data.frame")
-  expect_null(attr(out, "missing_note"))
+  expect_identical(attr(out, "missing_note"), "Missing values removed: x (1).")
+  long <- table_continuous(df, select = "x", output = "long")
+  expect_identical(attr(long, "missing_note"), "Missing values removed: x (1).")
+  # Nothing removed -> nothing to disclose.
+  clean <- table_continuous(
+    data.frame(x = 1:5),
+    select = "x",
+    output = "data.frame"
+  )
+  expect_null(attr(clean, "missing_note"))
 })
 
 test_that("fmt_p uses non-breaking space in display", {
@@ -3166,4 +3177,89 @@ test_that("tidy/glance column sets are frozen (stabilising contract)", {
       "n_total"
     )
   )
+})
+
+# ---- the disclosure reaches every output route ---------------------------
+# dev/notes_perdues_hors_console.md: rows dropped for a missing `by`
+# value were signalled by a console warning and a note only print()
+# could read -- invisible in any document rendered with
+# `warning: false`.
+
+test_that("table_continuous discloses dropped rows on the rich outputs", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("htmltools")
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+
+  x <- suppressWarnings(
+    table_continuous(d, select = age, by = sex_na, output = "tinytable")
+  )
+  expect_identical(
+    paste(unlist(x@notes), collapse = " "),
+    "Rows with missing sex_na removed: 40."
+  )
+  expect_match(
+    tinytable::save_tt(x, output = "html"),
+    "Rows with missing sex_na removed: 40.",
+    fixed = TRUE
+  )
+
+  g <- suppressWarnings(
+    table_continuous(d, select = age, by = sex_na, output = "gt")
+  )
+  expect_s3_class(g, "spicy_gt")
+  expect_identical(
+    attr(g, "spicy_note"),
+    "Rows with missing sex_na removed: 40."
+  )
+
+  f <- suppressWarnings(
+    table_continuous(d, select = age, by = sex_na, output = "flextable")
+  )
+  expect_identical(nrow(f$footer$dataset), 1L)
+  expect_match(
+    as.character(flextable::htmltools_value(f)),
+    "Rows with missing sex_na removed: 40.",
+    fixed = TRUE
+  )
+})
+
+test_that("table_continuous rich outputs carry no note when nothing is lost", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  df <- data.frame(x = 1:6, g = rep(c("A", "B"), each = 3))
+
+  expect_length(
+    table_continuous(df, select = "x", by = "g", output = "tinytable")@notes,
+    0L
+  )
+  g <- table_continuous(df, select = "x", by = "g", output = "gt")
+  expect_false(inherits(g, "spicy_gt"))
+  f <- table_continuous(df, select = "x", by = "g", output = "flextable")
+  expect_identical(nrow(f$footer$dataset), 0L)
+})
+
+test_that("an existing table note is joined, never overwritten", {
+  # table_continuous_lm() already emits an SE-estimator note; the
+  # missing-data disclosure must be added to it, not on top of it.
+  skip_if_not_installed("tinytable")
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+  z <- suppressWarnings(
+    table_continuous_lm(
+      d,
+      select = age,
+      by = sex_na,
+      vcov = "HC3",
+      output = "tinytable"
+    )
+  )
+  note <- paste(unlist(z@notes), collapse = " ")
+  expect_match(note, "HC3", fixed = TRUE)
+  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
 })

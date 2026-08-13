@@ -3064,3 +3064,234 @@ test_that("tidy/glance column sets are frozen (stabilising contract)", {
     )
   )
 })
+
+test_that("each variable keeps its own level order in multi-variable tables", {
+  # dev/bug_missing_order_multivar.md: the global level factor imposed
+  # the FIRST variable's ordering on every later block -- "(Missing)"
+  # jumped to the head from the second variable on, and homonymous
+  # levels were reordered. Ordering is now per variable.
+  d <- data.frame(
+    a = factor(c("x", "y", NA, "x", "y", "x")),
+    s = factor(c("F", "M", "F", NA, NA, "F")),
+    e = factor(c("O", "N", NA, "O", "O", "N"))
+  )
+  out <- table_categorical(d, select = c(a, s, e), drop_na = FALSE,
+                           output = "data.frame")
+  lv <- trimws(out$Level)
+  block <- cumsum(nzchar(trimws(out$Variable)))
+  for (b in split(seq_along(lv), block)) {
+    m <- which(lv[b] == "(Missing)")
+    if (length(m)) expect_identical(max(m), length(b))
+  }
+  # Homonymous levels with opposite declared orders stay per-variable.
+  d2 <- data.frame(
+    u = factor(c("Oui", "Non", "Oui"), levels = c("Oui", "Non")),
+    v = factor(c("Non", "Oui", "Non"), levels = c("Non", "Oui"))
+  )
+  o2 <- table_categorical(d2, select = c(u, v), output = "data.frame")
+  expect_identical(trimws(o2$Level), c("Oui", "Non", "Non", "Oui"))
+  # The by path orders identically.
+  outb <- table_categorical(d, select = c(a, s), by = e, drop_na = FALSE,
+                            output = "data.frame")
+  lvb <- trimws(outb$Level)
+  blockb <- cumsum(nzchar(trimws(outb$Variable)))
+  for (b in split(seq_along(lvb), blockb)) {
+    m <- which(lvb[b] == "(Missing)")
+    if (length(m)) expect_identical(max(m), length(b))
+  }
+})
+
+test_that("spicy tinytables keep tinytable's format finalizers alive", {
+  # dev/theme_empty_efface_les_finaliseurs.md: theme_empty() wiped
+  # lazy_finalize, killing options(tinytable_typst_multipage) -- and
+  # any future format hook -- on every spicy table. .spicy_tt_bare()
+  # strips appearance slots only.
+  skip_if_not_installed("tinytable")
+  op <- options(tinytable_typst_multipage = TRUE)
+  on.exit(options(op), add = TRUE)
+  x <- table_categorical(sochealth, select = smoking, output = "tinytable")
+  expect_match(
+    tinytable::save_tt(x, output = "typst"),
+    "breakable: true",
+    fixed = TRUE
+  )
+  y <- table_regression(lm(wellbeing_score ~ age, sochealth),
+                        output = "tinytable")
+  expect_match(
+    tinytable::save_tt(y, output = "typst"),
+    "breakable: true",
+    fixed = TRUE
+  )
+})
+
+# ---- the disclosure reaches every output route ---------------------------
+# dev/notes_perdues_hors_console.md: the drop_na ledger was built and
+# then read by print() alone, so a Quarto report with `warning: false`
+# showed a table computed on fewer people than it announced.
+
+test_that("the missing disclosure reaches tinytable, one-way and by", {
+  skip_if_not_installed("tinytable")
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+
+  x <- table_categorical(
+    d,
+    select = c(income_group, smoking),
+    drop_na = TRUE,
+    output = "tinytable"
+  )
+  expect_identical(
+    paste(unlist(x@notes), collapse = " "),
+    "Missing values removed: income_group (18), smoking (25)."
+  )
+  # And it survives rendering, not just the slot.
+  expect_match(
+    tinytable::save_tt(x, output = "html"),
+    "Missing values removed",
+    fixed = TRUE
+  )
+
+  x_by <- table_categorical(
+    d,
+    select = smoking,
+    by = sex_na,
+    drop_na = TRUE,
+    output = "tinytable"
+  )
+  note <- paste(unlist(x_by@notes), collapse = " ")
+  expect_match(note, "Missing values removed: smoking (25).", fixed = TRUE)
+  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
+
+  # Nothing removed -> no note at all.
+  clean <- table_categorical(
+    data.frame(v = factor(c("a", "b", "a"))),
+    select = v,
+    drop_na = TRUE,
+    output = "tinytable"
+  )
+  expect_length(clean@notes, 0L)
+})
+
+test_that("the missing disclosure reaches gt, one-way and by", {
+  skip_if_not_installed("gt")
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+
+  g <- table_categorical(
+    d,
+    select = c(income_group, smoking),
+    drop_na = TRUE,
+    output = "gt"
+  )
+  expect_s3_class(g, "spicy_gt")
+  expect_identical(
+    attr(g, "spicy_note"),
+    "Missing values removed: income_group (18), smoking (25)."
+  )
+
+  g_by <- table_categorical(
+    d,
+    select = smoking,
+    by = sex_na,
+    drop_na = TRUE,
+    output = "gt"
+  )
+  expect_match(
+    attr(g_by, "spicy_note"),
+    "Rows with missing sex_na removed: 40.",
+    fixed = TRUE
+  )
+
+  # Nothing removed -> the gt object stays untagged.
+  clean <- table_categorical(
+    data.frame(v = factor(c("a", "b", "a"))),
+    select = v,
+    drop_na = TRUE,
+    output = "gt"
+  )
+  expect_false(inherits(clean, "spicy_gt"))
+  expect_null(attr(clean, "spicy_note"))
+})
+
+test_that("the missing disclosure reaches flextable, one-way and by", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("htmltools")
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+
+  f <- table_categorical(
+    d,
+    select = c(income_group, smoking),
+    drop_na = TRUE,
+    output = "flextable"
+  )
+  expect_identical(nrow(f$footer$dataset), 1L)
+  expect_match(
+    as.character(flextable::htmltools_value(f)),
+    "Missing values removed: income_group (18), smoking (25).",
+    fixed = TRUE
+  )
+
+  f_by <- table_categorical(
+    d,
+    select = smoking,
+    by = sex_na,
+    drop_na = TRUE,
+    output = "flextable"
+  )
+  expect_match(
+    as.character(flextable::htmltools_value(f_by)),
+    "Rows with missing sex_na removed: 40.",
+    fixed = TRUE
+  )
+
+  # Nothing removed -> no footer row.
+  clean <- table_categorical(
+    data.frame(v = factor(c("a", "b", "a"))),
+    select = v,
+    drop_na = TRUE,
+    output = "flextable"
+  )
+  expect_identical(nrow(clean$footer$dataset), 0L)
+})
+
+test_that("the missing disclosure rides along on output = 'data.frame'", {
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+
+  out <- table_categorical(
+    d,
+    select = c(income_group, smoking),
+    drop_na = TRUE,
+    output = "data.frame"
+  )
+  expect_identical(
+    attr(out, "missing_note"),
+    "Missing values removed: income_group (18), smoking (25)."
+  )
+
+  out_by <- table_categorical(
+    d,
+    select = smoking,
+    by = sex_na,
+    drop_na = TRUE,
+    output = "data.frame"
+  )
+  expect_match(
+    attr(out_by, "missing_note"),
+    "Rows with missing sex_na removed: 40.",
+    fixed = TRUE
+  )
+
+  clean <- table_categorical(
+    data.frame(v = factor(c("a", "b", "a"))),
+    select = v,
+    drop_na = TRUE,
+    output = "data.frame"
+  )
+  expect_null(attr(clean, "missing_note"))
+})

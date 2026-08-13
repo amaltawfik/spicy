@@ -290,6 +290,16 @@ path invisibly.
 \item \code{"clipboard"}: copies the table and returns the display
 \code{data.frame} invisibly.
 }
+
+The missing-value disclosure (values excluded from the summaries,
+and rows removed for a missing \code{by} value under \code{drop_na = TRUE})
+travels with the table on every route, not just the console:
+\code{"default"} prints it under the ASCII table, \code{"tinytable"} / \code{"gt"} /
+\code{"flextable"} / \code{"word"} carry it as a table note, and
+\code{"data.frame"} / \code{"long"} keep the sentence verbatim in the
+\code{missing_note} attribute (\code{attr(x, "missing_note")}, \code{NULL} when
+nothing was removed) so a pipeline that renders the numbers itself
+can still state what left the table.
 }
 \description{
 Computes descriptive statistics (mean, SD, min, max, confidence interval

@@ -496,13 +496,24 @@ output_tinytable <- function(rendered) {
   #      tokens like "<.001" would otherwise be parsed as the start of
   #      an HTML tag by the browser. Skipped for LaTeX / typst output
   #      (those backends do their own escaping).
+  #      The note is deliberately EXCLUDED (tinytable's "all" minus
+  #      "notes"): the table_*() descriptive families never escape it,
+  #      and escaping it broke Typst compilation -- the typst escape
+  #      set covers "[" / "]", so a note carrying markup such as
+  #      #text(8pt)[...] came out as \#text(8pt)\[...\], leaving
+  #      text() without a body ("missing argument: body"). Cell escaping
+  #      still applies, so real CI brackets stay protected.
   #   3. alignment ("l" on Variable, "c" on numeric cols -- pre-padded
   #      via .pad_for_decimal_align so center-aligning yields true
   #      decimal alignment in any digit-width-figure-space font).
   #   4. spanner-row centring.
   #   5. APA borders LAST.
-  tt <- tinytable::theme_empty(tt)
-  tt <- tinytable::format_tt(tt, escape = TRUE)
+  tt <- .spicy_tt_bare(tt)
+  tt <- tinytable::format_tt(
+    tt,
+    i = c("colnames", "caption", "~groupi", "groupi", "groupj", "cells"),
+    escape = TRUE
+  )
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
