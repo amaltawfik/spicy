@@ -137,6 +137,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* `table_continuous()` gains `show_columns`: pick the statistics the table
+  shows -- `"med"`, `"q1"`, `"q3"`, `"iqr"`, the compact `"med_iqr"`
+  (`Med [Q1, Q3]`), and `"med_ci"` (exact order-statistic CI of the median)
+  alongside the usual `"m"`, `"sd"`, `"min"`, `"max"`, `"ci"`, `"n"`. Pass a
+  named list to give each variable its own selection. A variable shown as a
+  median is tested as one: its default test becomes Wilcoxon /
+  Kruskal-Wallis with the matching rank effect size, per variable, and the
+  note says which test each variable carries. The default display is
+  unchanged.
 * New `show_columns` token families `"rmst"` and `"risk_diff"` for `coxph`
   and `survreg`: covariate-adjusted differences in restricted mean survival
   time over `[0, tau]` and in cumulative incidence at `at_time`, by

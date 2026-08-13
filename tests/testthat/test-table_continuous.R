@@ -14,6 +14,12 @@ test_that("table_continuous returns correct structure", {
       "max",
       "ci_lower",
       "ci_upper",
+      "median",
+      "q1",
+      "q3",
+      "iqr",
+      "med_ci_lower",
+      "med_ci_upper",
       "n"
     )
   )
@@ -3263,3 +3269,496 @@ test_that("an existing table note is joined, never overwritten", {
   expect_match(note, "HC3", fixed = TRUE)
   expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
 })
+
+# ---- show_columns: statistic selection -----------------------------------
+
+test_that("show_columns = NULL reproduces the historical display exactly", {
+  # The default must not move: the printed table shows M / SD / Min /
+  # Max and none of the new statistics, and its note stays empty.
+  base_no_by <- capture.output(
+    table_continuous(sleep, select = extra)
+  )
+  expect_true(any(grepl(" M ", base_no_by, fixed = TRUE)))
+  expect_false(any(grepl("Med", base_no_by, fixed = TRUE)))
+  expect_false(any(grepl("IQR", base_no_by, fixed = TRUE)))
+
+  out <- table_continuous(sleep, select = extra, by = group, output = "long")
+  expect_identical(
+    attr(out, "show_columns"),
+    c("m", "sd", "min", "max", "ci", "n")
+  )
+  expect_identical(
+    attr(
+      table_continuous(
+        sleep,
+        select = extra,
+        ci = FALSE,
+        show_n = FALSE,
+        output = "long"
+      ),
+      "show_columns"
+    ),
+    c("m", "sd", "min", "max")
+  )
+  # No gloss is appended to a default table's note.
+  expect_null(attr(out, "missing_note"))
+})
+
+test_that("median / quartile columns equal stats::median() and quantile() type 7", {
+  set.seed(101)
+  d <- data.frame(x = stats::rexp(41, 1 / 10))
+  out <- table_continuous(
+    d,
+    select = x,
+    show_columns = c("med", "q1", "q3", "iqr", "med_iqr"),
+    output = "long"
+  )
+  q <- unname(stats::quantile(d$x, probs = c(0.25, 0.75)))
+  expect_identical(out$median, stats::median(d$x))
+  expect_identical(out$q1, q[1])
+  expect_identical(out$q3, q[2])
+  expect_identical(out$iqr, q[2] - q[1])
+  expect_identical(out$iqr, stats::IQR(d$x))
+
+  # The compact column shows the INTERVAL, `iqr` shows the width.
+  printed <- capture.output(
+    table_continuous(d, select = x, show_columns = c("med_iqr", "iqr"))
+  )
+  expect_true(any(grepl("Med [Q1, Q3]", printed, fixed = TRUE)))
+  expect_true(any(grepl(
+    sprintf("%.2f [%.2f, %.2f]", stats::median(d$x), q[1], q[2]),
+    printed,
+    fixed = TRUE
+  )))
+})
+
+test_that("med_ci is the exact order-statistic interval, NA at small n", {
+  # Hand-pinned against the sign-test inversion: the tightest
+  # [x(k), x(n-k+1)] whose binomial coverage still reaches 95%.
+  #   n = 6  -> k = 1  (coverage 0.96875)
+  #   n = 10 -> k = 2  (coverage 0.97852)
+  #   n = 25 -> k = 8  (coverage 0.95671)
+  #   n = 5  -> no k reaches 95%, the interval is undefined
+  pinned <- list(c(6, 1, 6), c(10, 2, 9), c(25, 8, 18))
+  for (p in pinned) {
+    x <- as.numeric(seq_len(p[1]))
+    out <- table_continuous(
+      data.frame(x = x),
+      show_columns = c("med", "med_ci"),
+      output = "long"
+    )
+    expect_identical(out$med_ci_lower, x[p[2]])
+    expect_identical(out$med_ci_upper, x[p[3]])
+  }
+  small <- table_continuous(
+    data.frame(x = c(1, 2, 3, 4, 5)),
+    show_columns = c("med", "med_ci"),
+    output = "long"
+  )
+  expect_true(is.na(small$med_ci_lower))
+  expect_true(is.na(small$med_ci_upper))
+  printed <- capture.output(
+    table_continuous(
+      data.frame(x = c(1, 2, 3, 4, 5)),
+      show_columns = c("med", "med_ci")
+    )
+  )
+  expect_true(any(grepl("--", printed, fixed = TRUE)))
+  expect_true(any(grepl("too small for this level", printed, fixed = TRUE)))
+})
+
+test_that("med_ci matches DescTools::MedianCI(method = 'exact')", {
+  skip_if_not_installed("DescTools")
+  set.seed(202)
+  for (n in c(6, 7, 10, 25, 50)) {
+    x <- round(stats::rnorm(n) * 10, 2)
+    out <- table_continuous(
+      data.frame(x = x),
+      show_columns = c("med", "med_ci"),
+      output = "long"
+    )
+    oracle <- DescTools::MedianCI(x, method = "exact")
+    expect_equal(out$med_ci_lower, unname(oracle[2]))
+    expect_equal(out$med_ci_upper, unname(oracle[3]))
+  }
+})
+
+test_that("med_ci follows ci_level", {
+  x <- as.numeric(1:25)
+  # n = 25: k = 6 at 99% -> [6, 20]; k = 8 at 95% -> [8, 18].
+  wide <- table_continuous(
+    data.frame(x = x),
+    show_columns = c("med", "med_ci"),
+    ci_level = 0.99,
+    output = "long"
+  )
+  narrow <- table_continuous(
+    data.frame(x = x),
+    show_columns = c("med", "med_ci"),
+    ci_level = 0.95,
+    output = "long"
+  )
+  expect_identical(c(wide$med_ci_lower, wide$med_ci_upper), c(6, 20))
+  expect_identical(c(narrow$med_ci_lower, narrow$med_ci_upper), c(8, 18))
+})
+
+test_that("a named list gives each variable its own columns, blanks the rest", {
+  set.seed(7)
+  d <- data.frame(
+    mvpa = round(stats::rexp(60, 1 / 300)),
+    sitting = round(stats::rexp(60, 1 / 400)),
+    age = round(stats::rnorm(60, 22, 3))
+  )
+  out <- table_continuous(
+    d,
+    select = c(mvpa, sitting, age),
+    show_columns = list(
+      mvpa = c("med_iqr", "n"),
+      sitting = c("med_iqr", "n"),
+      .default = c("m", "sd", "n")
+    ),
+    output = "long"
+  )
+  expect_identical(attr(out, "show_columns"), c("m", "sd", "med_iqr", "n"))
+  display <- spicy:::build_display_df(
+    out,
+    digits = 2,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    tokens_union = attr(out, "show_columns"),
+    tokens_by_var = attr(out, "show_columns_by_var")
+  )
+  expect_named(display, c("Variable", "M", "SD", "Med [Q1, Q3]", "n"))
+  # Structural blank (""), never the undefined-statistic en-dash.
+  expect_identical(display$M[1:2], c("", ""))
+  expect_identical(display[[4]][3], "")
+  expect_false(any(display$M[1:2] == "--"))
+  expect_true(all(nzchar(display$n)))
+})
+
+test_that("a variable named in show_columns but absent from the table errors", {
+  expect_error(
+    table_continuous(sleep, select = extra, show_columns = list(nope = "m")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(sleep, select = extra, show_columns = list("m")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(
+      sleep,
+      select = extra,
+      show_columns = list(extra = "m", extra = "sd")
+    ),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("unknown show_columns tokens error with the valid list", {
+  expect_error(
+    table_continuous(sleep, select = extra, show_columns = c("m", "mediane")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(sleep, select = extra, show_columns = c("m", "m")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(sleep, select = extra, show_columns = character(0)),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(
+      sleep,
+      select = extra,
+      show_columns = list(extra = c("m", "q4"))
+    ),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("a variable shown as a median is tested as one, per variable", {
+  set.seed(9)
+  d <- data.frame(
+    skewed = round(stats::rexp(60, 1 / 300)),
+    age = round(stats::rnorm(60, 22, 3)),
+    g = rep(c("a", "b"), 30)
+  )
+  out <- table_continuous(
+    d,
+    select = c(skewed, age),
+    by = g,
+    show_columns = list(skewed = c("med_iqr", "n"), age = c("m", "sd", "n")),
+    output = "long"
+  )
+  types <- out$test_type[!is.na(out$test_type)]
+  names(types) <- out$variable[!is.na(out$test_type)]
+  expect_identical(unname(types[["skewed"]]), "wilcoxon")
+  expect_identical(unname(types[["age"]]), "welch_t")
+  # Oracle: the p-values the stats:: tests give directly.
+  expect_equal(
+    out$p.value[out$variable == "skewed" & !is.na(out$p.value)],
+    stats::wilcox.test(skewed ~ g, data = d)$p.value
+  )
+  expect_equal(
+    out$p.value[out$variable == "age" & !is.na(out$p.value)],
+    stats::t.test(age ~ g, data = d)$p.value
+  )
+  # The note discloses the test per variable when they differ.
+  note <- attr(out, "missing_note")
+  expect_match(note, "Wilcoxon rank-sum test (skewed)", fixed = TRUE)
+  expect_match(note, "Welch t-test (age)", fixed = TRUE)
+
+  # Three groups: Kruskal-Wallis on the median variable.
+  d3 <- d
+  d3$g3 <- rep(c("a", "b", "c"), 20)
+  out3 <- table_continuous(
+    d3,
+    select = skewed,
+    by = g3,
+    show_columns = c("med_iqr", "n"),
+    output = "long"
+  )
+  expect_identical(out3$test_type[1], "kruskal")
+  expect_match(
+    attr(out3, "missing_note"),
+    "Group comparison: Kruskal-Wallis test.",
+    fixed = TRUE
+  )
+})
+
+test_that("the rank switch carries the rank effect size", {
+  set.seed(19)
+  d <- data.frame(
+    skewed = round(stats::rexp(60, 1 / 300)),
+    g = rep(c("a", "b"), 30)
+  )
+  out <- table_continuous(
+    d,
+    select = skewed,
+    by = g,
+    show_columns = c("med_iqr", "n"),
+    effect_size = "auto",
+    output = "long"
+  )
+  expect_identical(out$es_type[1], "r_rb")
+})
+
+test_that("an explicit test stays sovereign but raises a caveat", {
+  set.seed(21)
+  d <- data.frame(
+    skewed = round(stats::rexp(60, 1 / 300)),
+    g = rep(c("a", "b"), 30)
+  )
+  expect_warning(
+    out <- table_continuous(
+      d,
+      select = skewed,
+      by = g,
+      show_columns = c("med_iqr", "n"),
+      test = "welch",
+      output = "long"
+    ),
+    class = "spicy_caveat"
+  )
+  expect_identical(out$test_type[1], "welch_t")
+  # Sovereign means uniform: the note glosses the columns but never
+  # claims a rank test the table did not run.
+  expect_false(grepl(
+    "Group comparison",
+    attr(out, "missing_note"),
+    fixed = TRUE
+  ))
+})
+
+test_that("ci without m is dropped and points at med_ci; med_ci mirrors it", {
+  expect_warning(
+    out <- table_continuous(
+      sleep,
+      select = extra,
+      show_columns = c("med", "ci", "n"),
+      output = "long"
+    ),
+    class = "spicy_ignored_arg"
+  )
+  expect_false("ci" %in% attr(out, "show_columns"))
+  expect_warning(
+    out2 <- table_continuous(
+      sleep,
+      select = extra,
+      show_columns = c("m", "med_ci"),
+      output = "long"
+    ),
+    class = "spicy_ignored_arg"
+  )
+  expect_false("med_ci" %in% attr(out2, "show_columns"))
+  # med_iqr also displays the median, so it satisfies med_ci.
+  out3 <- table_continuous(
+    sleep,
+    select = extra,
+    show_columns = c("med_iqr", "med_ci"),
+    output = "long"
+  )
+  expect_true("med_ci" %in% attr(out3, "show_columns"))
+})
+
+test_that("show_columns overrules a contradictory show_n / ci", {
+  expect_warning(
+    out <- table_continuous(
+      sleep,
+      select = extra,
+      show_columns = c("m", "sd"),
+      show_n = TRUE,
+      output = "long"
+    ),
+    class = "spicy_ignored_arg"
+  )
+  expect_false("n" %in% attr(out, "show_columns"))
+  expect_warning(
+    table_continuous(
+      sleep,
+      select = extra,
+      show_columns = c("m", "sd"),
+      ci = TRUE,
+      output = "long"
+    ),
+    class = "spicy_ignored_arg"
+  )
+  # A consistent legacy toggle stays silent.
+  expect_silent(
+    table_continuous(
+      sleep,
+      select = extra,
+      show_columns = c("m", "sd"),
+      show_n = FALSE,
+      ci = FALSE,
+      output = "long"
+    )
+  )
+})
+
+test_that("show_columns reaches every output engine with the same columns", {
+  Sys.setenv(CLIPR_ALLOW = "TRUE")
+  testthat::local_mocked_bindings(
+    write_clip = function(text, ...) invisible(text),
+    .package = "clipr"
+  )
+  set.seed(33)
+  d <- data.frame(
+    skewed = round(stats::rexp(60, 1 / 300)),
+    age = round(stats::rnorm(60, 22, 3)),
+    g = rep(c("a", "b"), 30)
+  )
+  spec <- list(
+    skewed = c("med", "med_iqr", "med_ci", "n"),
+    age = c("m", "sd", "ci", "n")
+  )
+  # data.frame / long: every statistic present whatever is displayed.
+  lg <- table_continuous(
+    d,
+    select = c(skewed, age),
+    by = g,
+    show_columns = spec,
+    output = "long"
+  )
+  expect_true(all(
+    c("median", "q1", "q3", "iqr", "med_ci_lower", "med_ci_upper") %in%
+      names(lg)
+  ))
+  expect_identical(
+    attr(lg, "show_columns"),
+    c("m", "sd", "med", "med_iqr", "ci", "med_ci", "n")
+  )
+
+  display <- spicy:::build_display_df(
+    lg,
+    digits = 2,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    tokens_union = attr(lg, "show_columns"),
+    tokens_by_var = attr(lg, "show_columns_by_var")
+  )
+  expect_named(
+    display,
+    c(
+      "Variable",
+      "Group",
+      "M",
+      "SD",
+      "Med",
+      "Med [Q1, Q3]",
+      "95% CI LL",
+      "95% CI UL",
+      "Med 95% CI LL",
+      "Med 95% CI UL",
+      "n",
+      "p"
+    )
+  )
+
+  for (eng in c("default", "data.frame", "clipboard")) {
+    expect_no_error(
+      table_continuous(
+        d,
+        select = c(skewed, age),
+        by = g,
+        show_columns = spec,
+        output = eng
+      )
+    )
+  }
+
+  skip_if_not_installed("tinytable")
+  tt <- table_continuous(
+    d,
+    select = c(skewed, age),
+    by = g,
+    show_columns = spec,
+    output = "tinytable"
+  )
+  expect_s4_class(tt, "tinytable")
+
+  skip_if_not_installed("flextable")
+  ft <- table_continuous(
+    d,
+    select = c(skewed, age),
+    by = g,
+    show_columns = spec,
+    output = "flextable"
+  )
+  # Both CI pairs keep their own spanner; the headers do not collide.
+  hdr <- unlist(ft$header$dataset, use.names = FALSE)
+  expect_true(any(grepl("Med 95% CI", hdr, fixed = TRUE)))
+  expect_true(any(hdr == "95% CI"))
+})
+
+test_that("the note glosses only the columns actually displayed", {
+  d <- data.frame(x = as.numeric(1:40))
+  n_iqr <- attr(
+    table_continuous(d, show_columns = c("med", "iqr"), output = "long"),
+    "missing_note"
+  )
+  expect_match(n_iqr, "IQR = interquartile range (Q3 - Q1).", fixed = TRUE)
+  expect_false(grepl("order-statistic", n_iqr, fixed = TRUE))
+
+  n_full <- attr(
+    table_continuous(
+      d,
+      show_columns = c("med_iqr", "med_ci"),
+      output = "long"
+    ),
+    "missing_note"
+  )
+  expect_match(n_full, "Med [Q1, Q3] = median", fixed = TRUE)
+  expect_match(n_full, "coverage at least 95%", fixed = TRUE)
+  expect_false(grepl("IQR = interquartile", n_full, fixed = TRUE))
+
+  # A plain M / SD selection adds nothing to the note.
+  expect_null(attr(
+    table_continuous(d, show_columns = c("m", "sd"), output = "long"),
+    "missing_note"
+  ))
+})
+

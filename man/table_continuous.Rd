@@ -15,6 +15,7 @@ table_continuous(
   p_value = NULL,
   statistic = FALSE,
   show_n = TRUE,
+  show_columns = NULL,
   effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
   effect_size_ci = FALSE,
   ci = TRUE,
@@ -117,7 +118,15 @@ column in the printed ASCII table and in every rendered output
 Set to \code{FALSE} to drop the \code{n} column structurally from those
 outputs (no empty placeholder, no spanner). The \code{n} column is
 always present in the raw \code{output = "data.frame"} /
-\code{"long"} for downstream programmatic access. Defaults to \code{TRUE}.}
+\code{"long"} for downstream programmatic access. Defaults to \code{TRUE}.
+Ignored (with a warning) when \code{show_columns} is supplied.}
+
+\item{show_columns}{Statistics to display, as a character vector of
+tokens or a named list of such vectors (one per variable). \code{NULL}
+(the default) keeps the historical display: mean, SD, min, max,
+the mean CI (see \code{ci}) and \code{n} (see \code{show_n}). See the
+"Choosing the statistics" section for the token vocabulary, the
+per-variable form, and the test that follows a median.}
 
 \item{effect_size}{Effect-size measure to include in the rendered
 outputs. One of:
@@ -165,7 +174,8 @@ structurally from those outputs (no empty placeholders, no
 border lines under an empty header). The CI bounds are always
 present as \code{ci_lower} / \code{ci_upper} in the raw
 \code{output = "data.frame"} / \code{"long"} for downstream programmatic
-access. Defaults to \code{TRUE}. The CI level is taken from \code{ci_level}.}
+access. Defaults to \code{TRUE}. The CI level is taken from \code{ci_level}.
+Ignored (with a warning) when \code{show_columns} is supplied.}
 
 \item{labels}{An optional named character vector of variable labels.
 Names must match column names in \code{data}. When \code{NULL} (the default),
@@ -264,7 +274,9 @@ be re-coerced via \code{\link[=as.data.frame.spicy_continuous_table]{as.data.fra
 piped into \code{broom::tidy()} / \code{broom::glance()}.
 \item \code{"data.frame"} / \code{"long"}: a plain \code{data.frame} with
 columns \code{variable}, \code{label}, \code{group} (when \code{by} is used),
-\code{mean}, \code{sd}, \code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{n}. When
+\code{mean}, \code{sd}, \code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{median},
+\code{q1}, \code{q3}, \code{iqr}, \code{med_ci_lower}, \code{med_ci_upper}, \code{n}. Every
+statistic is computed whatever \code{show_columns} displays. When
 \code{by} is used together with \code{p_value = TRUE}, \code{statistic = TRUE},
 or \code{effect_size != "none"}, additional columns are appended
 (populated on the first row of each variable block only):
@@ -326,6 +338,70 @@ uniform side by side. Use \code{\link[=table_continuous_lm]{table_continuous_lm(
 robust SE, weighted contrasts, fitted means, or covariate
 adjustment.
 }
+\section{Choosing the statistics}{
+\code{show_columns} selects which statistics the table displays. The
+tokens, and the column each one produces:\tabular{lll}{
+   Token \tab Column \tab Statistic \cr
+   \code{"m"} \tab \code{M} \tab mean \cr
+   \code{"sd"} \tab \code{SD} \tab standard deviation \cr
+   \code{"med"} \tab \code{Med} \tab median (\code{\link[stats:median]{stats::median()}}) \cr
+   \code{"iqr"} \tab \code{IQR} \tab interquartile \emph{width}, \code{Q3 - Q1} \cr
+   \code{"med_iqr"} \tab \code{Med [Q1, Q3]} \tab median and the interquartile \emph{interval}, in one compact column \cr
+   \code{"q1"} / \code{"q3"} \tab \code{Q1} / \code{Q3} \tab first / third quartile \cr
+   \code{"min"} / \code{"max"} \tab \code{Min} / \code{Max} \tab extremes \cr
+   \code{"ci"} \tab \verb{<level>\% CI LL} / \code{UL} \tab \emph{t} confidence interval of the mean \cr
+   \code{"med_ci"} \tab \verb{Med <level>\% CI LL} / \code{UL} \tab exact confidence interval of the median \cr
+   \code{"n"} \tab \code{n} \tab valid observations \cr
+}
+
+
+Quartiles use \code{\link[stats:quantile]{stats::quantile()}}'s default type 7. \code{"iqr"} is the
+width (one number, the rank mirror of \code{SD}); \code{"med_iqr"} shows the
+interval with its bounds. Columns appear in the canonical order of
+the table above, whatever order they were written in.
+
+A named list applies a different selection to each variable, with
+\code{.default} covering the variables it does not name -- the case of a
+table where a skewed variable must be reported as a median while the
+others keep the mean:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{show_columns = list(
+  mvpa    = c("med_iqr", "n"),
+  sitting = c("med_iqr", "n"),
+  .default = c("m", "sd", "n")
+)
+}\if{html}{\out{</div>}}
+
+The table's columns are the union of the requested tokens; a cell of
+a column the variable did not ask for is left blank (structurally
+empty, not \code{"--"}, which is reserved for an undefined statistic).
+
+The table tests what it shows. A variable displaying a median
+without a mean takes the rank-based test -- Wilcoxon rank-sum for
+two groups, Kruskal-Wallis beyond -- and the rank effect size
+(rank-biserial \emph{r}, \eqn{\varepsilon^2}) when \code{effect_size} is
+\code{"auto"}. The switch is per variable, so a mixed table carries a
+rank test on its median rows and Welch on its mean rows, and the
+table note names which test each variable carries. An explicit
+\code{test} is sovereign: it applies to every variable, with a warning
+naming the ones displayed as medians.
+
+\code{"med_ci"} is the exact order-statistic (sign-test) confidence
+interval: the tightest interval \eqn{[x_{(k)}, x_{(n-k+1)}]} whose
+binomial coverage still reaches \code{ci_level}. It is distribution-free
+and deterministic -- no bootstrap, no seed -- and its coverage is at
+least nominal, the same convention as SAS \verb{PROC UNIVARIATE}
+(\code{CIPCTLDF}) and \code{DescTools::MedianCI(method = "exact")}. Below
+about six observations no interval reaches the requested level; the
+cells then show \code{"--"} rather than a false interval.
+
+\code{"ci"} is the confidence interval \emph{of the mean}: requested without
+\code{"m"} it is dropped with a warning pointing at \code{"med_ci"}, and
+\code{"med_ci"} without a displayed median is dropped likewise. When
+\code{show_columns} is supplied it decides the \code{n} and CI columns on its
+own, and a contradictory \code{show_n} / \code{ci} is reported.
+}
+
 \section{Tests}{
 The omnibus test is computed only when \code{by} is supplied and at
 least two groups remain after dropping \code{NA}s, with every group
@@ -422,6 +498,36 @@ table_continuous(
   select = c(bmi, wellbeing_score),
   by = education,
   statistic = TRUE
+)
+
+# --- Choosing the statistics --------------------------------------------
+
+# Median and interquartile range instead of mean and SD.
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  show_columns = c("med_iqr", "n")
+)
+
+# Median with its exact (order-statistic) confidence interval.
+table_continuous(
+  sochealth,
+  select = bmi,
+  show_columns = c("med", "iqr", "med_ci", "n")
+)
+
+# One selection per variable. A skewed variable that a scoring
+# protocol requires in median and IQR (the IPAQ case) sits next to
+# variables kept in mean and SD; each row is tested the way it is
+# displayed, and the note says so.
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health, wellbeing_score),
+  by = sex,
+  show_columns = list(
+    life_sat_health = c("med_iqr", "n"),
+    .default = c("m", "sd", "n")
+  )
 )
 
 # --- Effect sizes -------------------------------------------------------

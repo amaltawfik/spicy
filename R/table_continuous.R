@@ -96,6 +96,13 @@
 #'   outputs (no empty placeholder, no spanner). The `n` column is
 #'   always present in the raw `output = "data.frame"` /
 #'   `"long"` for downstream programmatic access. Defaults to `TRUE`.
+#'   Ignored (with a warning) when `show_columns` is supplied.
+#' @param show_columns Statistics to display, as a character vector of
+#'   tokens or a named list of such vectors (one per variable). `NULL`
+#'   (the default) keeps the historical display: mean, SD, min, max,
+#'   the mean CI (see `ci`) and `n` (see `show_n`). See the
+#'   "Choosing the statistics" section for the token vocabulary, the
+#'   per-variable form, and the test that follows a median.
 #' @param effect_size Effect-size measure to include in the rendered
 #'   outputs. One of:
 #'   - `"none"` (default): no effect-size column.
@@ -139,6 +146,7 @@
 #'   present as `ci_lower` / `ci_upper` in the raw
 #'   `output = "data.frame"` / `"long"` for downstream programmatic
 #'   access. Defaults to `TRUE`. The CI level is taken from `ci_level`.
+#'   Ignored (with a warning) when `show_columns` is supplied.
 #' @param labels An optional named character vector of variable labels.
 #'   Names must match column names in `data`. When `NULL` (the default),
 #'   labels are auto-detected from variable attributes (e.g., haven
@@ -221,7 +229,9 @@
 #'     piped into `broom::tidy()` / `broom::glance()`.
 #'   \item `"data.frame"` / `"long"`: a plain `data.frame` with
 #'     columns `variable`, `label`, `group` (when `by` is used),
-#'     `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `n`. When
+#'     `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `median`,
+#'     `q1`, `q3`, `iqr`, `med_ci_lower`, `med_ci_upper`, `n`. Every
+#'     statistic is computed whatever `show_columns` displays. When
 #'     `by` is used together with `p_value = TRUE`, `statistic = TRUE`,
 #'     or `effect_size != "none"`, additional columns are appended
 #'     (populated on the first row of each variable block only):
@@ -259,6 +269,71 @@
 #' can still state what left the table.
 #'
 #' @details
+#' # Choosing the statistics
+#'
+#' `show_columns` selects which statistics the table displays. The
+#' tokens, and the column each one produces:
+#'
+#' | Token | Column | Statistic |
+#' |---|---|---|
+#' | `"m"` | `M` | mean |
+#' | `"sd"` | `SD` | standard deviation |
+#' | `"med"` | `Med` | median ([stats::median()]) |
+#' | `"iqr"` | `IQR` | interquartile *width*, `Q3 - Q1` |
+#' | `"med_iqr"` | `Med [Q1, Q3]` | median and the interquartile *interval*, in one compact column |
+#' | `"q1"` / `"q3"` | `Q1` / `Q3` | first / third quartile |
+#' | `"min"` / `"max"` | `Min` / `Max` | extremes |
+#' | `"ci"` | `<level>% CI LL` / `UL` | *t* confidence interval of the mean |
+#' | `"med_ci"` | `Med <level>% CI LL` / `UL` | exact confidence interval of the median |
+#' | `"n"` | `n` | valid observations |
+#'
+#' Quartiles use [stats::quantile()]'s default type 7. `"iqr"` is the
+#' width (one number, the rank mirror of `SD`); `"med_iqr"` shows the
+#' interval with its bounds. Columns appear in the canonical order of
+#' the table above, whatever order they were written in.
+#'
+#' A named list applies a different selection to each variable, with
+#' `.default` covering the variables it does not name -- the case of a
+#' table where a skewed variable must be reported as a median while the
+#' others keep the mean:
+#'
+#' ```r
+#' show_columns = list(
+#'   mvpa    = c("med_iqr", "n"),
+#'   sitting = c("med_iqr", "n"),
+#'   .default = c("m", "sd", "n")
+#' )
+#' ```
+#'
+#' The table's columns are the union of the requested tokens; a cell of
+#' a column the variable did not ask for is left blank (structurally
+#' empty, not `"--"`, which is reserved for an undefined statistic).
+#'
+#' The table tests what it shows. A variable displaying a median
+#' without a mean takes the rank-based test -- Wilcoxon rank-sum for
+#' two groups, Kruskal-Wallis beyond -- and the rank effect size
+#' (rank-biserial *r*, \eqn{\varepsilon^2}) when `effect_size` is
+#' `"auto"`. The switch is per variable, so a mixed table carries a
+#' rank test on its median rows and Welch on its mean rows, and the
+#' table note names which test each variable carries. An explicit
+#' `test` is sovereign: it applies to every variable, with a warning
+#' naming the ones displayed as medians.
+#'
+#' `"med_ci"` is the exact order-statistic (sign-test) confidence
+#' interval: the tightest interval \eqn{[x_{(k)}, x_{(n-k+1)}]} whose
+#' binomial coverage still reaches `ci_level`. It is distribution-free
+#' and deterministic -- no bootstrap, no seed -- and its coverage is at
+#' least nominal, the same convention as SAS `PROC UNIVARIATE`
+#' (`CIPCTLDF`) and `DescTools::MedianCI(method = "exact")`. Below
+#' about six observations no interval reaches the requested level; the
+#' cells then show `"--"` rather than a false interval.
+#'
+#' `"ci"` is the confidence interval *of the mean*: requested without
+#' `"m"` it is dropped with a warning pointing at `"med_ci"`, and
+#' `"med_ci"` without a displayed median is dropped likewise. When
+#' `show_columns` is supplied it decides the `n` and CI columns on its
+#' own, and a contradictory `show_n` / `ci` is reported.
+#'
 #' # Tests
 #'
 #' The omnibus test is computed only when `by` is supplied and at
@@ -332,6 +407,36 @@
 #'   select = c(bmi, wellbeing_score),
 #'   by = education,
 #'   statistic = TRUE
+#' )
+#'
+#' # --- Choosing the statistics --------------------------------------------
+#'
+#' # Median and interquartile range instead of mean and SD.
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, wellbeing_score),
+#'   show_columns = c("med_iqr", "n")
+#' )
+#'
+#' # Median with its exact (order-statistic) confidence interval.
+#' table_continuous(
+#'   sochealth,
+#'   select = bmi,
+#'   show_columns = c("med", "iqr", "med_ci", "n")
+#' )
+#'
+#' # One selection per variable. A skewed variable that a scoring
+#' # protocol requires in median and IQR (the IPAQ case) sits next to
+#' # variables kept in mean and SD; each row is tested the way it is
+#' # displayed, and the note says so.
+#' table_continuous(
+#'   sochealth,
+#'   select = c(bmi, life_sat_health, wellbeing_score),
+#'   by = sex,
+#'   show_columns = list(
+#'     life_sat_health = c("med_iqr", "n"),
+#'     .default = c("m", "sd", "n")
+#'   )
 #' )
 #'
 #' # --- Effect sizes -------------------------------------------------------
@@ -457,6 +562,7 @@ table_continuous <- function(
   p_value = NULL,
   statistic = FALSE,
   show_n = TRUE,
+  show_columns = NULL,
   effect_size = c(
     "none",
     "auto",
@@ -601,7 +707,13 @@ table_continuous <- function(
     )
   }
   output <- spicy_match_arg(output)
+  # `missing()` must be read BEFORE the enum is resolved: an explicit
+  # `test` is sovereign (no automatic switch to the rank family), and
+  # an explicit `show_n` / `ci` contradicting `show_columns` must be
+  # reported rather than silently overruled.
   test_explicit <- !missing(test)
+  show_n_explicit <- !missing(show_n)
+  ci_explicit <- !missing(ci)
   test <- spicy_match_arg(test)
   align <- spicy_match_arg(align)
 
@@ -810,10 +922,77 @@ table_continuous <- function(
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
 
+  # --- displayed columns (show_columns) ---
+  # `show_columns = NULL` reproduces the historical display exactly, so
+  # the legacy toggles keep their meaning; a non-NULL `show_columns` is
+  # sovereign and a contradictory `show_n` / `ci` is reported.
+  legacy_tokens <- order_continuous_tokens(c(
+    "m",
+    "sd",
+    "min",
+    "max",
+    if (isTRUE(ci)) "ci",
+    if (isTRUE(show_n)) "n"
+  ))
+  col_spec <- resolve_continuous_show_columns(
+    show_columns,
+    numeric_cols,
+    legacy_tokens
+  )
+  tokens_by_var <- col_spec$per_var
+  tokens_union <- col_spec$union
+  if (!is.null(show_columns)) {
+    if (show_n_explicit && !identical(isTRUE(show_n), "n" %in% tokens_union)) {
+      spicy_warn(
+        "`show_n` is ignored: `show_columns` decides whether the `n` column is shown (add or drop the \"n\" token).",
+        class = "spicy_ignored_arg"
+      )
+    }
+    if (ci_explicit && !identical(isTRUE(ci), "ci" %in% tokens_union)) {
+      spicy_warn(
+        "`ci` is ignored: `show_columns` decides whether the mean confidence interval is shown (add or drop the \"ci\" token).",
+        class = "spicy_ignored_arg"
+      )
+    }
+  }
+  show_n <- "n" %in% tokens_union
+  ci <- "ci" %in% tokens_union
+
+  # A variable displaying a median-based position statistic WITHOUT the
+  # mean is a "median variable": the table must not test a mean it does
+  # not show, so its default test switches to the rank family below.
+  median_only <- vapply(
+    numeric_cols,
+    function(nm) {
+      tk <- tokens_by_var[[nm]]
+      any(.continuous_median_tokens %in% tk) && !("m" %in% tk)
+    },
+    logical(1)
+  )
+  names(median_only) <- numeric_cols
+  auto_rank <- !test_explicit & median_only
+  if (test_explicit && any(median_only) && (do_test || do_es)) {
+    spicy_warn(
+      c(
+        sprintf(
+          "`test = \"%s\"` is applied to variables displaying a median without a mean: %s.",
+          test,
+          paste(sprintf("`%s`", numeric_cols[median_only]), collapse = ", ")
+        ),
+        "i" = "Drop `test` to let those variables use the rank-based test, or add \"m\" to their `show_columns`."
+      ),
+      class = "spicy_caveat"
+    )
+  }
+
   # --- label detection (shared family contract) ---
   var_labels <- resolve_variable_labels(data, numeric_cols, labels)
 
   # --- computation ---
+  # Every statistic is computed for every variable (the cost is nil);
+  # `show_columns` selects what the table displays. The quantiles use
+  # stats::quantile()'s default type 7, so `med` / `q1` / `q3` equal
+  # stats::median() / stats::quantile() on the same vector.
   compute_one <- function(x, ci_level) {
     x_valid <- x[!is.na(x)]
     n <- length(x_valid)
@@ -825,6 +1004,12 @@ table_continuous <- function(
         max = NA_real_,
         ci_lower = NA_real_,
         ci_upper = NA_real_,
+        median = NA_real_,
+        q1 = NA_real_,
+        q3 = NA_real_,
+        iqr = NA_real_,
+        med_ci_lower = NA_real_,
+        med_ci_upper = NA_real_,
         n = 0L,
         stringsAsFactors = FALSE
       ))
@@ -834,6 +1019,8 @@ table_continuous <- function(
     se <- if (n > 1L) s / sqrt(n) else NA_real_
     alpha <- 1 - ci_level
     t_crit <- if (n > 1L) stats::qt(1 - alpha / 2, df = n - 1L) else NA_real_
+    qs <- unname(stats::quantile(x_valid, probs = c(0.25, 0.75), names = FALSE))
+    med_ci <- median_order_ci(x_valid, ci_level)
     data.frame(
       mean = m,
       sd = s,
@@ -841,10 +1028,25 @@ table_continuous <- function(
       max = max(x_valid),
       ci_lower = if (n > 1L) m - t_crit * se else NA_real_,
       ci_upper = if (n > 1L) m + t_crit * se else NA_real_,
+      median = stats::median(x_valid),
+      q1 = qs[1L],
+      q3 = qs[2L],
+      iqr = qs[2L] - qs[1L],
+      med_ci_lower = med_ci[1L],
+      med_ci_upper = med_ci[2L],
       n = n,
       stringsAsFactors = FALSE
     )
   }
+
+  # Test actually used per variable, for the disclosure note: the table
+  # must say which test each row carries when they differ. NA where no
+  # test ran (no `by`, or a variable with too few observations).
+  test_used <- stats::setNames(
+    rep(NA_character_, length(numeric_cols)),
+    numeric_cols
+  )
+  n_test_groups <- NA_integer_
 
   if (has_group) {
     # `by` follows the same `user_na` contract as the summarized
@@ -902,6 +1104,10 @@ table_continuous <- function(
     rows <- list()
     for (i in seq_along(numeric_cols)) {
       nm <- numeric_cols[i]
+      # The table tests what it shows: a variable displaying a median
+      # without a mean takes the rank-based test unless `test` was
+      # given explicitly.
+      var_test <- if (isTRUE(auto_rank[[nm]])) "nonparametric" else test
 
       # --- group-comparison test ---
       test_row <- data.frame(
@@ -941,8 +1147,10 @@ table_continuous <- function(
           # multi-variable table. The row keeps NA test columns, the
           # warning says which variable failed and why, and the other
           # variables are unaffected (audit phase 2, finding 27).
+          test_used[[nm]] <- var_test
+          n_test_groups <- n_valid_groups
           test_row <- tryCatch(
-            run_group_test(xvec, gvec, n_valid_groups, test),
+            run_group_test(xvec, gvec, n_valid_groups, var_test),
             error = function(e) {
               spicy_warn(
                 c(
@@ -971,10 +1179,13 @@ table_continuous <- function(
       )
       if (do_es) {
         if (testable) {
+          # The effect size follows the test the variable actually
+          # carries: a rank-switched variable gets the rank homologue
+          # (rank-biserial r / epsilon-squared).
           chosen_es <- resolve_effect_size_choice(
             effect_size,
             n_valid_groups,
-            test,
+            var_test,
             explicit = effect_size_explicit
           )
           if (!identical(chosen_es, "none")) {
@@ -987,7 +1198,7 @@ table_continuous <- function(
                 xvec,
                 gvec,
                 n_valid_groups,
-                test,
+                var_test,
                 ci_level,
                 type = chosen_es
               ),
@@ -1106,6 +1317,8 @@ table_continuous <- function(
   attr(result, "show_effect_size") <- has_es_request && has_group
   attr(result, "show_effect_size_ci") <- effect_size_ci && has_group
   attr(result, "effect_size") <- effect_size
+  attr(result, "show_columns") <- tokens_union
+  attr(result, "show_columns_by_var") <- tokens_by_var
 
   # --- raw long-format return (one row per variable x group) ---
   # `output = "data.frame"` and `output = "long"` both return the
@@ -1117,8 +1330,15 @@ table_continuous <- function(
   # synonyms and return identical content; pick whichever name reads
   # better in your pipeline.
   # Read the ledger once, here: every output route below must carry the
-  # same disclosure, not print() alone.
-  missing_note <- build_missing_note()
+  # same disclosure, not print() alone. The statistical glosses (which
+  # test each variable carries, what the new abbreviations mean) are
+  # appended to the same note: they exist only when `show_columns`
+  # changes the display, so the default table's note is untouched.
+  missing_note <- paste_note_parts(c(
+    build_missing_note(),
+    build_test_note(test_used, auto_rank, n_test_groups),
+    build_column_glosses(tokens_union, result, ci_level)
+  ))
 
   if (output %in% c("data.frame", "long")) {
     # The raw frame keeps the ledger as an attribute: a pipeline that
@@ -1142,7 +1362,9 @@ table_continuous <- function(
       show_p = attr(result, "show_p"),
       show_statistic = attr(result, "show_statistic"),
       show_effect_size = attr(result, "show_effect_size"),
-      show_effect_size_ci = attr(result, "show_effect_size_ci")
+      show_effect_size_ci = attr(result, "show_effect_size_ci"),
+      tokens_union = tokens_union,
+      tokens_by_var = tokens_by_var
     )
     return(
       export_desc_table(
@@ -1169,6 +1391,297 @@ table_continuous <- function(
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
   print(result)
   invisible(result)
+}
+
+
+# ---- show_columns vocabulary ----------------------------------------------
+
+# Display tokens for `table_continuous(show_columns = )`, listed in
+# CANONICAL DISPLAY ORDER: the table shows the requested tokens in this
+# order whatever order the user wrote them in. `ci` and `med_ci` each
+# expand to a pair of bound columns (LL / UL).
+.continuous_column_tokens <- c(
+  "m",
+  "sd",
+  "med",
+  "iqr",
+  "med_iqr",
+  "q1",
+  "q3",
+  "min",
+  "max",
+  "ci",
+  "med_ci",
+  "n"
+)
+
+# Tokens that put a median-based POSITION statistic on the row. A
+# variable showing any of them without `m` is tested with the rank
+# family by default (the table tests what it shows). `iqr` is absent
+# on purpose: it is a dispersion measure, and `M SD IQR` is still a
+# mean table.
+.continuous_median_tokens <- c("med", "med_iqr", "q1", "q3")
+
+# Internal: put a token set in canonical display order, dropping
+# unknown entries (validation happens upstream).
+order_continuous_tokens <- function(tokens) {
+  .continuous_column_tokens[.continuous_column_tokens %in% tokens]
+}
+
+# Internal: resolve `show_columns` to one ordered token vector per
+# variable plus their ordered union (the columns of the table).
+#
+# `NULL` reproduces `default_tokens` (the legacy display) for every
+# variable. A character vector applies globally. A named list applies
+# per variable, with `.default` covering the variables it does not
+# name; a variable named but absent from the table is an error, not a
+# silent no-op.
+#
+# Two incoherent requests are pruned rather than rendered: a mean CI
+# without the mean, and a median CI without the median. Both are
+# reported once, naming the variables.
+resolve_continuous_show_columns <- function(
+  show_columns,
+  variables,
+  default_tokens
+) {
+  if (is.null(show_columns)) {
+    per_var <- stats::setNames(
+      rep(list(default_tokens), length(variables)),
+      variables
+    )
+    return(list(per_var = per_var, union = default_tokens))
+  }
+
+  if (is.list(show_columns)) {
+    nms <- names(show_columns)
+    if (is.null(nms) || any(!nzchar(nms)) || anyNA(nms)) {
+      spicy_abort(
+        c(
+          "`show_columns` must be a character vector or a NAMED list.",
+          "i" = "Name each element after a summarized variable, or use `.default` for the rest."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    if (anyDuplicated(nms)) {
+      spicy_abort(
+        sprintf(
+          "`show_columns` names variable(s) more than once: %s.",
+          paste(shQuote(unique(nms[duplicated(nms)])), collapse = ", ")
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    unknown <- setdiff(nms, c(variables, ".default"))
+    if (length(unknown) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "`show_columns` names variable(s) absent from the table: %s.",
+            paste(shQuote(unknown), collapse = ", ")
+          ),
+          "i" = sprintf(
+            "Summarized variables: %s.",
+            paste(shQuote(variables), collapse = ", ")
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    for (nm in nms) {
+      validate_token_vector(
+        show_columns[[nm]],
+        .continuous_column_tokens,
+        arg = sprintf("show_columns[[\"%s\"]]", nm)
+      )
+    }
+    fallback <- if (".default" %in% nms) {
+      order_continuous_tokens(show_columns[[".default"]])
+    } else {
+      default_tokens
+    }
+    per_var <- stats::setNames(
+      lapply(variables, function(v) {
+        if (v %in% nms) order_continuous_tokens(show_columns[[v]]) else fallback
+      }),
+      variables
+    )
+  } else {
+    validate_token_vector(
+      show_columns,
+      .continuous_column_tokens,
+      arg = "show_columns"
+    )
+    global <- order_continuous_tokens(show_columns)
+    per_var <- stats::setNames(
+      rep(list(global), length(variables)),
+      variables
+    )
+  }
+
+  ci_orphan <- character(0)
+  med_ci_orphan <- character(0)
+  for (v in variables) {
+    tk <- per_var[[v]]
+    if ("ci" %in% tk && !("m" %in% tk)) {
+      ci_orphan <- c(ci_orphan, v)
+      tk <- setdiff(tk, "ci")
+    }
+    if ("med_ci" %in% tk && !any(c("med", "med_iqr") %in% tk)) {
+      med_ci_orphan <- c(med_ci_orphan, v)
+      tk <- setdiff(tk, "med_ci")
+    }
+    per_var[[v]] <- tk
+  }
+  if (length(ci_orphan) > 0L) {
+    spicy_warn(
+      c(
+        sprintf(
+          "`\"ci\"` is dropped for %s: it is the confidence interval OF THE MEAN, which is not displayed.",
+          paste(sprintf("`%s`", ci_orphan), collapse = ", ")
+        ),
+        "i" = "Add \"m\", or use \"med_ci\" for a confidence interval of the median."
+      ),
+      class = "spicy_ignored_arg"
+    )
+  }
+  if (length(med_ci_orphan) > 0L) {
+    spicy_warn(
+      sprintf(
+        "`\"med_ci\"` is dropped for %s: the median it bounds is not displayed. Add \"med\" or \"med_iqr\".",
+        paste(sprintf("`%s`", med_ci_orphan), collapse = ", ")
+      ),
+      class = "spicy_ignored_arg"
+    )
+  }
+
+  union_tokens <- order_continuous_tokens(unique(unlist(per_var)))
+  if (length(union_tokens) == 0L) {
+    spicy_abort(
+      "`show_columns` leaves no statistic to display.",
+      class = "spicy_invalid_input"
+    )
+  }
+  list(per_var = per_var, union = union_tokens)
+}
+
+# --- internal: exact order-statistic CI of the median ----------------------
+# Inverts the sign (binomial) test: the interval [x(k), x(n-k+1)] with
+# the largest k whose binomial coverage 1 - 2 * P(X <= k - 1) still
+# reaches `ci_level`, i.e. the tightest exact interval at that level.
+# Distribution-free, deterministic, no bootstrap and no seed. Coverage
+# is discrete, hence >= nominal. Same convention as SAS PROC UNIVARIATE
+# (CIPCTLDF) and DescTools::MedianCI(method = "exact"). Small n: when
+# even k = 1 (the full range) does not reach the level, the interval is
+# undefined and both bounds are NA rather than a false interval.
+median_order_ci <- function(x, ci_level) {
+  x <- sort(x[!is.na(x)])
+  n <- length(x)
+  if (n < 1L) {
+    return(c(NA_real_, NA_real_))
+  }
+  alpha <- 1 - ci_level
+  k <- stats::qbinom(alpha / 2, n, 0.5)
+  while (k >= 1L && stats::pbinom(k - 1L, n, 0.5) > alpha / 2) {
+    k <- k - 1L
+  }
+  if (k < 1L) {
+    return(c(NA_real_, NA_real_))
+  }
+  c(as.numeric(x[k]), as.numeric(x[n - k + 1L]))
+}
+
+# --- internal: table-note assembly ----------------------------------------
+
+# Join the note parts, dropping the empty ones. NULL when nothing is
+# to be said, so the default table's note attribute stays NULL.
+paste_note_parts <- function(parts) {
+  parts <- parts[!vapply(parts, function(p) is.null(p) || !nzchar(p), logical(1))]
+  if (length(parts) == 0L) {
+    return(NULL)
+  }
+  paste(unlist(parts), collapse = " ")
+}
+
+# Reader-facing name of a test, given the method and the group count.
+continuous_test_label <- function(method, n_groups) {
+  two <- !is.na(n_groups) && n_groups == 2L
+  switch(
+    method,
+    nonparametric = if (two) "Wilcoxon rank-sum test" else "Kruskal-Wallis test",
+    student = if (two) "Student t-test" else "one-way ANOVA",
+    if (two) "Welch t-test" else "Welch one-way ANOVA"
+  )
+}
+
+# Disclose the test per variable, but ONLY when the display forced at
+# least one variable onto the rank family: with a uniform, unswitched
+# default the table keeps its historical note.
+build_test_note <- function(test_used, auto_rank, n_groups) {
+  if (!any(auto_rank) || all(is.na(test_used))) {
+    return(NULL)
+  }
+  ran <- names(test_used)[!is.na(test_used)]
+  methods <- unname(test_used[ran])
+  labels <- vapply(
+    methods,
+    continuous_test_label,
+    character(1),
+    n_groups = n_groups
+  )
+  if (length(unique(labels)) == 1L) {
+    return(sprintf("Group comparison: %s.", labels[[1L]]))
+  }
+  by_label <- split(ran, labels)
+  sprintf(
+    "Group comparison: %s.",
+    paste(
+      vapply(
+        names(by_label),
+        function(lb) {
+          sprintf("%s (%s)", lb, paste(by_label[[lb]], collapse = ", "))
+        },
+        character(1)
+      ),
+      collapse = "; "
+    )
+  )
+}
+
+# Gloss the abbreviations the displayed columns introduce, and only
+# those: "IQR" is used in the literature for both the interval and its
+# width, and an order-statistic CI is not a t interval.
+build_column_glosses <- function(tokens, result, ci_level) {
+  ci_pct <- paste0(round(ci_level * 100), "%")
+  parts <- character(0)
+  if ("iqr" %in% tokens) {
+    parts <- c(parts, "IQR = interquartile range (Q3 - Q1).")
+  }
+  if ("med_iqr" %in% tokens) {
+    parts <- c(
+      parts,
+      "Med [Q1, Q3] = median [first quartile, third quartile]."
+    )
+  }
+  if ("med_ci" %in% tokens) {
+    gloss <- sprintf(
+      "Med %s CI = exact order-statistic confidence interval for the median (coverage at least %s).",
+      ci_pct,
+      ci_pct
+    )
+    if (any(is.na(result$med_ci_lower))) {
+      gloss <- paste(
+        gloss,
+        "\"--\" where the sample is too small for this level."
+      )
+    }
+    parts <- c(parts, gloss)
+  }
+  if (length(parts) == 0L) {
+    return(NULL)
+  }
+  paste(parts, collapse = " ")
 }
 
 
@@ -1533,7 +2046,9 @@ build_display_df <- function(
   show_effect_size = FALSE,
   show_effect_size_ci = FALSE,
   effect_size_digits = 2L,
-  p_digits = 3L
+  p_digits = 3L,
+  tokens_union = NULL,
+  tokens_by_var = NULL
 ) {
   fmt <- function(v, d = digits) {
     out <- formatC(v, format = "f", digits = d)
@@ -1613,6 +2128,9 @@ build_display_df <- function(
   }
 
   ci_pct <- paste0(round(ci_level * 100), "%")
+  # European convention: with a comma decimal mark the list separator
+  # inside brackets becomes ";" (same rule as the effect-size CI above).
+  bracket_sep <- if (decimal_mark == ",") "; " else ", "
 
   has_group <- "group" %in% names(result)
   has_computed <- "statistic" %in% names(result)
@@ -1620,26 +2138,94 @@ build_display_df <- function(
 
   ci_ll_name <- paste0(ci_pct, " CI LL")
   ci_ul_name <- paste0(ci_pct, " CI UL")
+  med_ci_ll_name <- paste0("Med ", ci_pct, " CI LL")
+  med_ci_ul_name <- paste0("Med ", ci_pct, " CI UL")
+
+  # Legacy callers pass `show_ci` / `show_n` and no tokens: rebuild the
+  # historical column set from them so the default display is untouched.
+  if (is.null(tokens_union)) {
+    tokens_union <- order_continuous_tokens(c(
+      "m",
+      "sd",
+      "min",
+      "max",
+      if (isTRUE(show_ci)) "ci",
+      if (isTRUE(show_n)) "n"
+    ))
+  }
+  if (is.null(tokens_by_var)) {
+    uvars <- unique(result$variable)
+    tokens_by_var <- stats::setNames(
+      rep(list(tokens_union), length(uvars)),
+      uvars
+    )
+  }
+  # Structural blank (not an en-dash): the column belongs to another
+  # variable of the table, the statistic is not undefined here.
+  shows <- function(token) {
+    vapply(
+      result$variable,
+      function(v) token %in% tokens_by_var[[v]],
+      logical(1),
+      USE.NAMES = FALSE
+    )
+  }
+  blanked <- function(v, token) {
+    v[!shows(token)] <- ""
+    v
+  }
+
+  df <- data.frame(
+    Variable = result$label,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  if (has_group) {
+    df$Group <- result$group
+  }
+  for (tok in tokens_union) {
+    if (tok == "m") {
+      df[["M"]] <- blanked(fmt(result$mean), tok)
+    } else if (tok == "sd") {
+      df[["SD"]] <- blanked(fmt(result$sd), tok)
+    } else if (tok == "med") {
+      df[["Med"]] <- blanked(fmt(result$median), tok)
+    } else if (tok == "iqr") {
+      df[["IQR"]] <- blanked(fmt(result$iqr), tok)
+    } else if (tok == "med_iqr") {
+      compact <- ifelse(
+        is.na(result$median) | is.na(result$q1) | is.na(result$q3),
+        "--",
+        paste0(
+          fmt(result$median),
+          " [",
+          fmt(result$q1),
+          bracket_sep,
+          fmt(result$q3),
+          "]"
+        )
+      )
+      df[["Med [Q1, Q3]"]] <- blanked(compact, tok)
+    } else if (tok == "q1") {
+      df[["Q1"]] <- blanked(fmt(result$q1), tok)
+    } else if (tok == "q3") {
+      df[["Q3"]] <- blanked(fmt(result$q3), tok)
+    } else if (tok == "min") {
+      df[["Min"]] <- blanked(fmt(result$min), tok)
+    } else if (tok == "max") {
+      df[["Max"]] <- blanked(fmt(result$max), tok)
+    } else if (tok == "ci") {
+      df[[ci_ll_name]] <- blanked(fmt(result$ci_lower), tok)
+      df[[ci_ul_name]] <- blanked(fmt(result$ci_upper), tok)
+    } else if (tok == "med_ci") {
+      df[[med_ci_ll_name]] <- blanked(fmt(result$med_ci_lower), tok)
+      df[[med_ci_ul_name]] <- blanked(fmt(result$med_ci_upper), tok)
+    } else if (tok == "n") {
+      df[["n"]] <- blanked(as.character(result$n), tok)
+    }
+  }
 
   if (has_group) {
-    df <- data.frame(
-      Variable = result$label,
-      Group = result$group,
-      M = fmt(result$mean),
-      SD = fmt(result$sd),
-      Min = fmt(result$min),
-      Max = fmt(result$max),
-      stringsAsFactors = FALSE,
-      check.names = FALSE
-    )
-    if (isTRUE(show_ci)) {
-      df[[ci_ll_name]] <- fmt(result$ci_lower)
-      df[[ci_ul_name]] <- fmt(result$ci_upper)
-    }
-    if (isTRUE(show_n)) {
-      df$n <- as.character(result$n)
-    }
-
     # Deduplicate Variable labels: show only on first row per block
     vars <- result$variable
     for (i in seq_along(vars)) {
@@ -1686,23 +2272,6 @@ build_display_df <- function(
         character(1)
       )
     }
-  } else {
-    df <- data.frame(
-      Variable = result$label,
-      M = fmt(result$mean),
-      SD = fmt(result$sd),
-      Min = fmt(result$min),
-      Max = fmt(result$max),
-      stringsAsFactors = FALSE,
-      check.names = FALSE
-    )
-    if (isTRUE(show_ci)) {
-      df[[ci_ll_name]] <- fmt(result$ci_lower)
-      df[[ci_ul_name]] <- fmt(result$ci_upper)
-    }
-    if (isTRUE(show_n)) {
-      df$n <- as.character(result$n)
-    }
   }
 
   df
@@ -1725,21 +2294,69 @@ compute_var_sep_rows <- function(display_df) {
 }
 
 # --- internal: rename CI columns for export ---
-rename_ci_cols <- function(display_df, ci_ll, ci_ul) {
-  names(display_df)[names(display_df) == ci_ll] <- "LL"
-  names(display_df)[names(display_df) == ci_ul] <- "UL"
+# The engines below carry the CI level in the SPANNER, so the column
+# keys are the bare bounds. The median CI keeps its own keys: two
+# columns named "LL" would collide.
+rename_ci_cols <- function(display_df, ci_pct) {
+  nms <- names(display_df)
+  nms[nms == paste0(ci_pct, " CI LL")] <- "LL"
+  nms[nms == paste0(ci_pct, " CI UL")] <- "UL"
+  nms[nms == paste0("Med ", ci_pct, " CI LL")] <- "Med LL"
+  nms[nms == paste0("Med ", ci_pct, " CI UL")] <- "Med UL"
+  names(display_df) <- nms
   display_df
+}
+
+# --- internal: spanner layout shared by every rendering engine ---
+# One entry per spanner, in column order: every column spans itself
+# except the CI bound pairs, which share one spanner. Driven by the
+# actual column keys so any `show_columns` selection renders the same
+# way on every engine.
+desc_spanner_groups <- function(col_keys, ci_pct) {
+  pairs <- list(
+    c("LL", "UL", paste0(ci_pct, " CI")),
+    c("Med LL", "Med UL", paste0("Med ", ci_pct, " CI"))
+  )
+  groups <- list()
+  i <- 1L
+  n <- length(col_keys)
+  while (i <= n) {
+    matched <- FALSE
+    for (p in pairs) {
+      if (
+        identical(col_keys[i], p[1L]) &&
+          i < n &&
+          identical(col_keys[i + 1L], p[2L])
+      ) {
+        groups[[length(groups) + 1L]] <- list(
+          label = p[3L],
+          cols = c(i, i + 1L)
+        )
+        i <- i + 2L
+        matched <- TRUE
+        break
+      }
+    }
+    if (!matched) {
+      groups[[length(groups) + 1L]] <- list(label = col_keys[i], cols = i)
+      i <- i + 1L
+    }
+  }
+  groups
 }
 
 # --- internal: build 2-row header vectors ---
 build_header_rows <- function(col_keys, ci_pct) {
   nc <- length(col_keys)
   top <- col_keys
-  top[col_keys == "LL"] <- paste0(ci_pct, " CI")
-  top[col_keys == "UL"] <- paste0(ci_pct, " CI")
   bot <- rep("", nc)
-  bot[col_keys == "LL"] <- "LL"
-  bot[col_keys == "UL"] <- "UL"
+  for (g in desc_spanner_groups(col_keys, ci_pct)) {
+    top[g$cols] <- g$label
+    if (length(g$cols) > 1L) {
+      bot[g$cols] <- col_keys[g$cols]
+      bot[g$cols] <- sub("^Med ", "", bot[g$cols])
+    }
+  }
   list(top = top, bottom = bot)
 }
 
@@ -1763,6 +2380,9 @@ export_desc_table <- function(
   ci_ll <- paste0(ci_pct, " CI LL")
   ci_ul <- paste0(ci_pct, " CI UL")
   has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))
+  has_med_ci <- all(
+    paste0("Med ", ci_pct, " CI ", c("LL", "UL")) %in% names(display_df)
+  )
   has_statistic <- "Test" %in% names(display_df)
   has_p <- "p" %in% names(display_df)
   has_es <- "ES" %in% names(display_df)
@@ -1809,68 +2429,23 @@ export_desc_table <- function(
     options(tinytable_print_output = "html")
     on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
-    display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
+    display_df <- rename_ci_cols(display_df, ci_pct)
     nc <- ncol(display_df)
-    ll_pos <- which(names(display_df) == "LL")
-    ul_pos <- which(names(display_df) == "UL")
+    col_keys <- names(display_df)
+    groups_spec <- desc_spanner_groups(col_keys, ci_pct)
+    ll_pos <- which(col_keys == "LL")
+    ul_pos <- which(col_keys == "UL")
 
-    # Sub-row labels: empty for single-col spanners, LL/UL for CI.
-    # When `ci = FALSE` the CI columns are absent (`ll_pos` / `ul_pos`
-    # are integer(0)) and the sub-row stays empty everywhere.
-    sub_labels <- rep("", nc)
-    if (has_ci) {
-      sub_labels[ll_pos] <- "LL"
-      sub_labels[ul_pos] <- "UL"
-    }
+    # Sub-row labels: empty for single-col spanners, LL/UL under each
+    # CI spanner. Absent CI columns simply contribute no pair.
+    sub_labels <- build_header_rows(col_keys, ci_pct)$bottom
     colnames(display_df) <- sub_labels
 
-    # Build gspec by walking the actual column names of the display
-    # data frame in order. Single-column spanners use the column name
-    # itself as the label; the CI pair uses a single spanning entry.
-    # This works regardless of which optional columns are present
-    # (`has_ci`, `has_n`, `has_statistic`, `has_p`, `has_es`).
-    col_keys <- c("Variable")
-    if (has_group) {
-      col_keys <- c(col_keys, "Group")
-    }
-    col_keys <- c(col_keys, "M", "SD", "Min", "Max")
-    if (has_n) {
-      col_keys <- c(col_keys, "n")
-    }
-    if (has_statistic) {
-      col_keys <- c(col_keys, "Test")
-    }
-    if (has_p) {
-      col_keys <- c(col_keys, "p")
-    }
-    if (has_es) {
-      col_keys <- c(col_keys, "ES")
-    }
-
+    # gspec walks the actual column keys in order, so any
+    # `show_columns` selection renders with the right spanners.
     gspec <- list()
-    pos <- 1L
-    for (nm in c("Variable", if (has_group) "Group", "M", "SD", "Min", "Max")) {
-      gspec[[nm]] <- pos
-      pos <- pos + 1L
-    }
-    if (has_ci) {
-      gspec[[paste0(ci_pct, " CI")]] <- c(ll_pos, ul_pos)
-      pos <- ul_pos + 1L
-    }
-    if (has_n) {
-      gspec[["n"]] <- pos
-      pos <- pos + 1L
-    }
-    if (has_statistic) {
-      gspec[["Test"]] <- pos
-      pos <- pos + 1L
-    }
-    if (has_p) {
-      gspec[["p"]] <- pos
-      pos <- pos + 1L
-    }
-    if (has_es) {
-      gspec[["ES"]] <- pos
+    for (g in groups_spec) {
+      gspec[[g$label]] <- g$cols
     }
 
     tt <- tinytable::tt(display_df, notes = note)
@@ -1938,14 +2513,17 @@ export_desc_table <- function(
       line = "t",
       line_width = 0.06
     )
-    if (has_ci) {
-      tt <- tinytable::style_tt(
-        tt,
-        i = -1,
-        j = c(ll_pos, ul_pos),
-        line = "b",
-        line_width = 0.06
-      )
+    # Rule under each two-column spanner (the CI pairs).
+    for (g in groups_spec) {
+      if (length(g$cols) > 1L) {
+        tt <- tinytable::style_tt(
+          tt,
+          i = -1,
+          j = g$cols,
+          line = "b",
+          line_width = 0.06
+        )
+      }
     }
     tt <- tinytable::style_tt(
       tt,
@@ -1982,71 +2560,24 @@ export_desc_table <- function(
       spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
     }
 
-    display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
+    display_df <- rename_ci_cols(display_df, ci_pct)
+    gt_col_keys <- names(display_df)
+    groups_spec <- desc_spanner_groups(gt_col_keys, ci_pct)
     tbl <- gt::gt(display_df)
 
-    # Sub-row labels: empty for single-col spanners, LL/UL for the
-    # CI pair (when present).
-    label_list <- list(
-      Variable = "",
-      M = "",
-      SD = "",
-      Min = "",
-      Max = ""
-    )
-    if (has_group) {
-      label_list[["Group"]] <- ""
-    }
-    if (has_ci) {
-      label_list[["LL"]] <- "LL"
-      label_list[["UL"]] <- "UL"
-    }
-    if (has_n) {
-      label_list[["n"]] <- ""
-    }
-    if (has_statistic) {
-      label_list[["Test"]] <- ""
-    }
-    if (has_p) {
-      label_list[["p"]] <- ""
-    }
-    if (has_es) {
-      label_list[["ES"]] <- ""
-    }
+    # Sub-row labels: empty for single-col spanners, LL/UL under each
+    # CI spanner.
+    gt_bottom <- build_header_rows(gt_col_keys, ci_pct)$bottom
+    label_list <- as.list(gt_bottom)
+    names(label_list) <- gt_col_keys
     tbl <- gt::cols_label(tbl, .list = label_list)
 
-    # Single-column spanners: include only columns that are present.
-    single_cols <- c("Variable")
-    if (has_group) {
-      single_cols <- c(single_cols, "Group")
-    }
-    single_cols <- c(single_cols, "M", "SD", "Min", "Max")
-    if (has_n) {
-      single_cols <- c(single_cols, "n")
-    }
-    if (has_statistic) {
-      single_cols <- c(single_cols, "Test")
-    }
-    if (has_p) {
-      single_cols <- c(single_cols, "p")
-    }
-    if (has_es) {
-      single_cols <- c(single_cols, "ES")
-    }
-
-    for (col in single_cols) {
+    for (g in groups_spec) {
       tbl <- gt::tab_spanner(
         tbl,
-        label = col,
-        columns = col,
-        id = paste0("spn_", col)
-      )
-    }
-    if (has_ci) {
-      tbl <- gt::tab_spanner(
-        tbl,
-        label = paste0(ci_pct, " CI"),
-        columns = c("LL", "UL")
+        label = g$label,
+        columns = gt_col_keys[g$cols],
+        id = paste0("spn_", g$label)
       )
     }
 
@@ -2073,23 +2604,10 @@ export_desc_table <- function(
     } else {
       # "auto": legacy per-column rule. Center descriptive / CI cols,
       # right-align n / p (when present).
-      center_cols <- c("M", "SD", "Min", "Max")
-      if (has_ci) {
-        center_cols <- c(center_cols, "LL", "UL")
-      }
-      if (has_statistic) {
-        center_cols <- c(center_cols, "Test")
-      }
-      if (has_es) {
-        center_cols <- c(center_cols, "ES")
-      }
-      tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
-      right_cols <- character(0)
-      if (has_n) {
-        right_cols <- c(right_cols, "n")
-      }
-      if (has_p) {
-        right_cols <- c(right_cols, "p")
+      right_cols <- intersect(c("n", "p"), numeric_cols)
+      center_cols <- setdiff(numeric_cols, right_cols)
+      if (length(center_cols) > 0L) {
+        tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
       }
       if (length(right_cols) > 0L) {
         tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
@@ -2135,13 +2653,17 @@ export_desc_table <- function(
       column_labels.border.lr.color = "transparent"
     )
 
-    ci_cols <- c("LL", "UL")
+    # Bound columns of every CI spanner (mean CI, median CI).
+    ci_cols <- unlist(lapply(
+      groups_spec,
+      function(g) if (length(g$cols) > 1L) gt_col_keys[g$cols] else NULL
+    ))
     tbl <- gt::tab_style(
       tbl,
       style = rule_top,
       locations = gt::cells_column_spanners()
     )
-    if (has_ci) {
+    if (length(ci_cols) > 0L) {
       tbl <- gt::tab_style(
         tbl,
         style = rule_top,
@@ -2171,7 +2693,8 @@ export_desc_table <- function(
     # CSS overrides. The CI-specific selector is only emitted when the
     # CI columns are present; without CI the column-label-row top
     # border rule simply doesn't apply (no header rows to draw it on).
-    ci_css_sel <- if (has_ci) {
+    has_any_ci <- length(ci_cols) > 0L
+    ci_css_sel <- if (has_any_ci) {
       paste(
         vapply(
           ci_cols,
@@ -2195,9 +2718,9 @@ export_desc_table <- function(
       ".gt_table thead th, .gt_table thead td {",
       "  background-color: transparent !important;",
       "}",
-      if (has_ci) paste0(ci_css_sel, " {") else "",
-      if (has_ci) "  border-top: 1px solid currentColor !important;" else "",
-      if (has_ci) "}" else "",
+      if (has_any_ci) paste0(ci_css_sel, " {") else "",
+      if (has_any_ci) "  border-top: 1px solid currentColor !important;" else "",
+      if (has_any_ci) "}" else "",
       ".gt_table thead tr:last-child {",
       "  border-bottom: 1px solid currentColor !important;",
       "}",
@@ -2223,10 +2746,11 @@ export_desc_table <- function(
     if (output == "word" && !requireNamespace("officer", quietly = TRUE)) {
       spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
     }
-    display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
+    display_df <- rename_ci_cols(display_df, ci_pct)
     col_keys <- names(display_df)
     nc <- length(col_keys)
     hdrs <- build_header_rows(col_keys, ci_pct)
+    groups_spec <- desc_spanner_groups(col_keys, ci_pct)
 
     map <- data.frame(
       col_keys = col_keys,
@@ -2243,7 +2767,6 @@ export_desc_table <- function(
     bd <- spicy_fp_border(color = "black", width = 1)
     bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
 
-    ci_j <- which(col_keys %in% c("LL", "UL"))
     left_j <- if (has_group) 1:2 else 1L
     numeric_j <- setdiff(seq_len(nc), left_j)
 
@@ -2318,17 +2841,19 @@ export_desc_table <- function(
       }
     }
 
-    # APA borders. The intermediate header line under the CI spanner
-    # is only drawn when the CI columns are present.
+    # APA borders. An intermediate header line is drawn under each
+    # two-column spanner (the CI pairs), and only under those.
     ft <- flextable::hline_top(ft, part = "header", border = bd)
-    if (length(ci_j) > 0L) {
-      ft <- flextable::hline(
-        ft,
-        i = 1,
-        j = ci_j,
-        part = "header",
-        border = bd
-      )
+    for (g in groups_spec) {
+      if (length(g$cols) > 1L) {
+        ft <- flextable::hline(
+          ft,
+          i = 1,
+          j = g$cols,
+          part = "header",
+          border = bd
+        )
+      }
     }
     ft <- flextable::hline_bottom(ft, part = "header", border = bd)
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
@@ -2373,11 +2898,12 @@ export_desc_table <- function(
       )
     }
 
-    display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
+    display_df <- rename_ci_cols(display_df, ci_pct)
     col_keys <- names(display_df)
     nc <- length(col_keys)
     hdrs <- build_header_rows(col_keys, ci_pct)
-    ci_j <- which(col_keys %in% c("LL", "UL"))
+    groups_spec <- desc_spanner_groups(col_keys, ci_pct)
+    ci_pairs <- Filter(function(g) length(g$cols) > 1L, groups_spec)
 
     wb <- openxlsx2::wb_workbook()
     wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
@@ -2402,10 +2928,10 @@ export_desc_table <- function(
       row_names = FALSE
     )
 
-    if (length(ci_j) > 0L) {
+    for (g in ci_pairs) {
       wb <- openxlsx2::wb_merge_cells(
         wb,
-        dims = openxlsx2::wb_dims(rows = 1, cols = ci_j)
+        dims = openxlsx2::wb_dims(rows = 1, cols = g$cols)
       )
     }
     last_row <- 2 + nrow(display_df)
@@ -2460,10 +2986,10 @@ export_desc_table <- function(
       left_border = NULL,
       right_border = NULL
     )
-    if (length(ci_j) > 0L) {
+    for (g in ci_pairs) {
       wb <- openxlsx2::wb_add_border(
         wb,
-        dims = openxlsx2::wb_dims(rows = 1, cols = ci_j),
+        dims = openxlsx2::wb_dims(rows = 1, cols = g$cols),
         bottom_border = "thin",
         top_border = NULL,
         left_border = NULL,
@@ -2511,7 +3037,7 @@ export_desc_table <- function(
       spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
     }
 
-    display_df <- rename_ci_cols(display_df, ci_ll, ci_ul)
+    display_df <- rename_ci_cols(display_df, ci_pct)
     col_keys <- names(display_df)
     nc <- length(col_keys)
     hdrs <- build_header_rows(col_keys, ci_pct)
