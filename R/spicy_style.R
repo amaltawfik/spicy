@@ -791,7 +791,7 @@ spicy_style <- function(
         "decimal mark: midline dot U+00B7 on every number",
         paste0(
           "p-values: 2 significant figures capped at 4 decimals, ",
-          "floor <0·0001, leading zero kept"
+          "floor <0\u00b70001, leading zero kept"
         ),
         paste0(
           "confidence intervals: en dash between bounds (matches the ",
@@ -804,12 +804,12 @@ spicy_style <- function(
       # The en dash is OBSERVED in the journal's model tables
       # ("0[U+00B7]78 (0[U+00B7]60-1[U+00B7]00)"), never stated as a rule.
       style = spicy_style(
-        decimal_mark = "·",
+        decimal_mark = "\u00b7",
         p_style = "standard",
         p_sigfig = 2L,
         p_digits = 4L,
         p_floor = 0.0001,
-        ci_sep = "–"
+        ci_sep = "\u2013"
       )
     ),
     annals = list(
