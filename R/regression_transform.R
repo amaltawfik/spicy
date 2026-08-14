@@ -81,6 +81,39 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
     )
   }
 
+  # A pattern that matches NO term is almost always a mistake -- the
+  # classic one being a pattern written against a display LABEL
+  # ("Sexe") instead of the model term ("sexMale"). With `drop` the
+  # failure is invisible: the filter is inert and the table stays
+  # plausible. Name every dead pattern instead of staying silent
+  # (the `coef_omit` bug class documented in the 2026-08 field audit).
+  dead <- character(0)
+  for (p in c(keep, drop)) {
+    if (!any(grepl(p, terms, perl = TRUE))) {
+      dead <- c(dead, p)
+    }
+  }
+  if (length(dead) > 0L) {
+    spicy_warn(
+      c(
+        sprintf(
+          "%s pattern(s) %s matched no coefficient term.",
+          if (is.null(keep)) "`drop`" else "`keep`",
+          paste(shQuote(dead), collapse = ", ")
+        ),
+        "i" = paste0(
+          "Patterns match term names as in `stats::coef()` (e.g. ",
+          "\"sexMale\", \"factor(cyl)8\"), never display labels. ",
+          "The terms of this table: ",
+          paste(shQuote(utils::head(unique(terms), 12L)), collapse = ", "),
+          if (length(unique(terms)) > 12L) ", ..." else "",
+          "."
+        )
+      ),
+      class = "spicy_no_match"
+    )
+  }
+
   keep_mask <- if (!is.null(keep)) {
     matches_any(terms, keep)
   } else {

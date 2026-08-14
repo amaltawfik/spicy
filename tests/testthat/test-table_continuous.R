@@ -3381,9 +3381,19 @@ test_that("med_ci is the exact order-statistic interval, NA at small n", {
   expect_true(any(grepl("too small for this level", printed, fixed = TRUE)))
 })
 
-test_that("med_ci matches DescTools::MedianCI(method = 'exact')", {
-  skip_if_not_installed("DescTools")
+test_that("med_ci matches the exact order-statistic oracle", {
+  # Oracle values PINNED from DescTools::MedianCI(method = "exact")
+  # (v0.99.60, captured 2026-08-14) on set.seed(202) draws -- pinned,
+  # not called live, per the house rule (and so the package declares
+  # no DescTools dependency; R CMD check flags undeclared '::' uses).
   set.seed(202)
+  oracle <- list(
+    `6` = c(-14.31, -1.46),
+    `7` = c(-19.33, 11.80),
+    `10` = c(-2.58, 16.70),
+    `25` = c(-3.59, 5.97),
+    `50` = c(-1.63, 2.37)
+  )
   for (n in c(6, 7, 10, 25, 50)) {
     x <- round(stats::rnorm(n) * 10, 2)
     out <- table_continuous(
@@ -3391,9 +3401,8 @@ test_that("med_ci matches DescTools::MedianCI(method = 'exact')", {
       show_columns = c("med", "med_ci"),
       output = "long"
     )
-    oracle <- DescTools::MedianCI(x, method = "exact")
-    expect_equal(out$med_ci_lower, unname(oracle[2]))
-    expect_equal(out$med_ci_upper, unname(oracle[3]))
+    expect_equal(out$med_ci_lower, oracle[[as.character(n)]][1])
+    expect_equal(out$med_ci_upper, oracle[[as.character(n)]][2])
   }
 })
 

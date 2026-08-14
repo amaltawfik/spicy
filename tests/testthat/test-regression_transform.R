@@ -316,3 +316,38 @@ test_that("every p_adjust method equals stats::p.adjust over the slope family", 
     tolerance = 1e-12
   )
 })
+
+
+# ---- keep / drop: dead-pattern warning (spicy_no_match) -------------------
+
+test_that("a keep / drop pattern matching no term warns spicy_no_match", {
+  fit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
+  # The classic mistake: a display label instead of a term name --
+  # the drop is inert and, without the warning, invisible.
+  expect_warning(
+    out <- table_regression(fit, drop = "Cylindree"),
+    class = "spicy_no_match"
+  )
+  # The inert drop leaves the table identical to the unfiltered one.
+  expect_identical(
+    as.data.frame(out),
+    as.data.frame(table_regression(fit))
+  )
+  # Real term names stay silent, keep side included.
+  expect_no_warning(table_regression(fit, drop = "factor[(]cyl[)]"))
+  expect_no_warning(table_regression(fit, keep = "wt"))
+  expect_warning(
+    table_regression(fit, keep = c("wt", "Poids")),
+    class = "spicy_no_match"
+  )
+})
+
+
+test_that("keep / drop filters on term names, never on display labels", {
+  fit <- lm(mpg ~ wt + hp, data = mtcars)
+  # Relabelling does not shield a term from a filter on its term name.
+  out <- table_regression(fit, labels = c(wt = "Poids"), drop = "^wt$")
+  td <- broom::tidy(out)
+  expect_false(any(td$term == "wt"))
+  expect_true(any(td$term == "hp"))
+})
