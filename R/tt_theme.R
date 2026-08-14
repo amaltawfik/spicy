@@ -237,7 +237,11 @@
   # chars, so the <em> is safe to insert). The substitution is anchored
   # to the start of the string; if a note doesn't begin with "Note."
   # (theoretically possible) the source string is unchanged.
-  note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
+  note_html <- sub(
+    .note_prefix_pattern(),
+    paste0("<em>", spicy_str("note_prefix_emphasis"), "</em>"),
+    note_html
+  )
   note_html <- .spicy_note_html_lines(note_html)
   paste0(
     "<div class=\"spicy-tt-note\" style=\"",

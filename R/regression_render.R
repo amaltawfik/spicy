@@ -67,7 +67,7 @@ render_regression_table <- function(
   factor_layout = c("grouped", "flat"),
   stars = FALSE,
   ci_level = 0.95,
-  ci_label = "CI",
+  ci_label = spicy_str("header_ci_label_confidence"),
   digits = 2L,
   p_digits = 3L,
   effect_size_digits = 2L,
@@ -574,7 +574,7 @@ build_column_spec <- function(
   model_ids,
   label_map,
   ci_level = 0.95,
-  ci_label = "CI",
+  ci_label = spicy_str("header_ci_label_confidence"),
   model_exp_headers = NULL,
   model_stat_headers = NULL,
   ame_categories = NULL,
@@ -605,54 +605,86 @@ build_column_spec <- function(
       model_ids
     )
   }
-  ci_hdr <- paste0(ci_pct, "% ", ci_label)
+  ci_hdr <- spicy_fmt("header_ci_spanner", ci_pct, ci_label)
   base <- list(
     # B-coefficient family \u2013 atomic, one cell = one component.
     # Per-row N: the fit sample size, shown on the first row of a
     # predictor block by univariable-screening frames. Models without
     # per-row N data (n_obs all NA) drop the column for their group
     # (models_with_n): their single n is a fit-stat row instead.
-    n = list(estimate_type = "B", fields = "n_obs", header_short = "N"),
+    n = list(
+      estimate_type = "B",
+      fields = "n_obs",
+      header_short = spicy_str("header_n_upper")
+    ),
     # Outcome event counts "events/N" per factor level (reference row
     # included), model totals on continuous rows. Binomial outcomes
     # only -- the orchestrator gate errors otherwise.
     n_events = list(
       estimate_type = "B",
       fields = c("events", "events_n"),
-      header_short = "Events/N"
+      header_short = spicy_str("header_events_n")
     ),
-    b = list(estimate_type = "B", fields = "estimate", header_short = "B"),
-    se = list(estimate_type = "B", fields = "se", header_short = "SE"),
+    b = list(
+      estimate_type = "B",
+      fields = "estimate",
+      header_short = spicy_str("header_b")
+    ),
+    se = list(
+      estimate_type = "B",
+      fields = "se",
+      header_short = spicy_str("header_se")
+    ),
     ci = list(
       estimate_type = "B",
       fields = c("ci_low", "ci_high"),
       header_short = ci_hdr
     ),
-    t = list(estimate_type = "B", fields = "statistic", header_short = "t"),
-    p = list(estimate_type = "B", fields = "p_value", header_short = "p"),
+    t = list(
+      estimate_type = "B",
+      fields = "statistic",
+      header_short = spicy_str("symbol_t")
+    ),
+    p = list(
+      estimate_type = "B",
+      fields = "p_value",
+      header_short = spicy_str("header_p")
+    ),
     # Probability of direction (Bayesian fits): share of posterior
     # draws on the dominant side of zero, range [0.5, 1].
-    pd = list(estimate_type = "B", fields = "pd", header_short = "pd"),
+    pd = list(
+      estimate_type = "B",
+      fields = "pd",
+      header_short = spicy_str("header_pd")
+    ),
     # Per-parameter sampler diagnostics (BARG steps 2.B / 2.C:
     # convergence and resolution for every parameter).
-    rhat = list(estimate_type = "B", fields = "rhat", header_short = "R-hat"),
+    rhat = list(
+      estimate_type = "B",
+      fields = "rhat",
+      header_short = spicy_str("header_rhat")
+    ),
     ess_bulk = list(
       estimate_type = "B",
       fields = "ess_bulk",
-      header_short = "ESS (bulk)"
+      header_short = spicy_str("header_ess_bulk")
     ),
     ess_tail = list(
       estimate_type = "B",
       fields = "ess_tail",
-      header_short = "ESS (tail)"
+      header_short = spicy_str("header_ess_tail")
     ),
     # MCSE of the displayed posterior median (Bayesian Workflow
     # sec. 11.6: the criterion for how many digits are honest).
-    mcse = list(estimate_type = "B", fields = "mcse", header_short = "MCSE"),
+    mcse = list(
+      estimate_type = "B",
+      fields = "mcse",
+      header_short = spicy_str("header_mcse")
+    ),
     beta = list(
       estimate_type = "beta",
       fields = "estimate",
-      header_short = "\u03B2"
+      header_short = spicy_str("symbol_beta")
     ),
     # AME family \u2013 split (was bundled "value [CI]" in <= 0.11).
     # Convention: only the estimate column itself ("AME") carries the
@@ -673,12 +705,16 @@ build_column_spec <- function(
       estimate_type = "rmst",
       fields = "estimate",
       header_short = if (!is.null(estimand_horizons$tau)) {
-        sprintf("dRMST (%s)", format(estimand_horizons$tau))
+        spicy_fmt("header_rmst", format(estimand_horizons$tau))
       } else {
-        "dRMST" # nocov
+        spicy_str("header_rmst_no_horizon") # nocov
       }
     ),
-    rmst_se = list(estimate_type = "rmst", fields = "se", header_short = "SE"),
+    rmst_se = list(
+      estimate_type = "rmst",
+      fields = "se",
+      header_short = spicy_str("header_se")
+    ),
     rmst_ci = list(
       estimate_type = "rmst",
       fields = c("ci_low", "ci_high"),
@@ -687,21 +723,21 @@ build_column_spec <- function(
     rmst_p = list(
       estimate_type = "rmst",
       fields = "p_value",
-      header_short = "p"
+      header_short = spicy_str("header_p")
     ),
     risk_diff = list(
       estimate_type = "risk_diff",
       fields = "estimate",
       header_short = if (!is.null(estimand_horizons$at_time)) {
-        sprintf("dRisk (%s)", format(estimand_horizons$at_time))
+        spicy_fmt("header_risk_diff", format(estimand_horizons$at_time))
       } else {
-        "dRisk" # nocov
+        spicy_str("header_risk_diff_no_horizon") # nocov
       }
     ),
     risk_diff_se = list(
       estimate_type = "risk_diff",
       fields = "se",
-      header_short = "SE"
+      header_short = spicy_str("header_se")
     ),
     risk_diff_ci = list(
       estimate_type = "risk_diff",
@@ -711,20 +747,28 @@ build_column_spec <- function(
     risk_diff_p = list(
       estimate_type = "risk_diff",
       fields = "p_value",
-      header_short = "p"
+      header_short = spicy_str("header_p")
     ),
     ame = list(
       estimate_type = "ame",
       fields = "estimate",
-      header_short = "AME"
+      header_short = spicy_str("header_ame")
     ),
-    ame_se = list(estimate_type = "ame", fields = "se", header_short = "SE"),
+    ame_se = list(
+      estimate_type = "ame",
+      fields = "se",
+      header_short = spicy_str("header_se")
+    ),
     ame_ci = list(
       estimate_type = "ame",
       fields = c("ci_low", "ci_high"),
       header_short = ci_hdr
     ),
-    ame_p = list(estimate_type = "ame", fields = "p_value", header_short = "p"),
+    ame_p = list(
+      estimate_type = "ame",
+      fields = "p_value",
+      header_short = spicy_str("header_p")
+    ),
     # Model-level variance explained, per fit. Populated by the
     # univariable screen (one fit per predictor block), where the
     # question "how much of the outcome does this predictor explain on
@@ -744,39 +788,51 @@ build_column_spec <- function(
     partial_f2 = list(
       estimate_type = "partial_f2",
       fields = "estimate",
-      header_short = "f\u00B2"
+      header_short = spicy_str("symbol_f2_partial")
     ),
     partial_f2_ci = list(
       estimate_type = "partial_f2",
       fields = c("ci_low", "ci_high"),
-      header_short = paste0("f\u00B2 ", ci_hdr)
+      header_short = spicy_fmt(
+        "header_with_ci_suffix",
+        spicy_str("symbol_f2_partial"),
+        ci_hdr
+      )
     ),
     partial_eta2 = list(
       estimate_type = "partial_eta2",
       fields = "estimate",
-      header_short = "\u03B7\u00B2"
+      header_short = spicy_str("symbol_eta_sq_partial")
     ),
     partial_eta2_ci = list(
       estimate_type = "partial_eta2",
       fields = c("ci_low", "ci_high"),
-      header_short = paste0("\u03B7\u00B2 ", ci_hdr)
+      header_short = spicy_fmt(
+        "header_with_ci_suffix",
+        spicy_str("symbol_eta_sq_partial"),
+        ci_hdr
+      )
     ),
     partial_omega2 = list(
       estimate_type = "partial_omega2",
       fields = "estimate",
-      header_short = "\u03C9\u00B2"
+      header_short = spicy_str("symbol_omega_sq_partial")
     ),
     partial_omega2_ci = list(
       estimate_type = "partial_omega2",
       fields = c("ci_low", "ci_high"),
-      header_short = paste0("\u03C9\u00B2 ", ci_hdr)
+      header_short = spicy_fmt(
+        "header_with_ci_suffix",
+        spicy_str("symbol_omega_sq_partial"),
+        ci_hdr
+      )
     ),
     # Partial chi-square (glm) \u2013 kept BUNDLED as "value (df)".
     # That's the universal reporting convention "chi2(df) = value".
     partial_chi2 = list(
       estimate_type = "partial_chi2",
       fields = c("estimate", "df"),
-      header_short = "\u03C7\u00B2"
+      header_short = spicy_str("symbol_chi_sq")
     )
   )
 
@@ -831,14 +887,21 @@ build_column_spec <- function(
       }
       col_variants <- if (length(cats) > 0L) {
         lapply(cats, function(ct) {
-          list(hs = paste0(header_short, " ", ct), outcome_level = ct)
+          list(
+            hs = spicy_fmt("header_ame_by_category", header_short, ct),
+            outcome_level = ct
+          )
         })
       } else {
         list(list(hs = header_short, outcome_level = NA_character_))
       }
 
       for (cv in col_variants) {
-        header <- if (nzchar(m_lbl)) paste0(m_lbl, ": ", cv$hs) else cv$hs
+        header <- if (nzchar(m_lbl)) {
+          spicy_fmt("header_model_prefixed", m_lbl, cv$hs)
+        } else {
+          cv$hs
+        }
         out[[length(out) + 1L]] <- list(
           col_name = make_unique_col_name(out, header),
           # `display_label` is the bare header text BEFORE dedup
@@ -1624,53 +1687,65 @@ build_fit_stats_rows <- function(
 # Display label for each show_fit_stats token. Greek symbols and
 # typographic conventions per APA / modelsummary.
 fit_stat_label <- function(token) {
+  # A change token displays the delta prefix over its base label, so the
+  # two can never disagree.
+  delta <- function(base) spicy_fmt("fitstat_change_prefix", base)
   switch(
     token,
-    nobs = "n",
-    n_events = "N events",
-    weighted_nobs = "Weighted n",
-    r2 = "R\u00B2",
-    adj_r2 = "Adj.R\u00B2",
-    omega2 = "\u03C9\u00B2",
-    pseudo_r2_mcfadden = "R\u00B2 (McFadden)",
-    pseudo_r2_nagelkerke = "R\u00B2 (Nagelkerke)",
-    pseudo_r2_tjur = "R\u00B2 (Tjur)",
-    theta = "\u03B8 (dispersion)",
-    alpha = "\u03B1 (= 1/\u03B8)",
-    within_r2 = "R\u00B2 (within)",
-    phi = "\u03C6 (precision)",
-    qic = "QIC",
-    qicu = "QICu",
-    scale = "Scale",
-    max_cluster_size = "Max cluster size",
-    r2_bayes = "R\u00B2 (Bayes)",
-    elpd_loo = "ELPD (LOO)",
-    looic = "LOOIC",
-    waic = "WAIC",
-    r2_marginal = "R\u00B2 (marginal)",
-    r2_conditional = "R\u00B2 (conditional)",
-    icc = "ICC",
+    nobs = spicy_str("header_n_lower"),
+    n_events = spicy_str("fitstat_n_events"),
+    weighted_nobs = spicy_str("label_weighted_n"),
+    r2 = spicy_str("symbol_r2"),
+    adj_r2 = spicy_str("fitstat_adj_r2"),
+    omega2 = spicy_str("symbol_omega_sq_global"),
+    pseudo_r2_mcfadden = spicy_fmt("fitstat_pseudo_r2", "McFadden"),
+    pseudo_r2_nagelkerke = spicy_fmt("fitstat_pseudo_r2", "Nagelkerke"),
+    pseudo_r2_tjur = spicy_fmt("fitstat_pseudo_r2", "Tjur"),
+    theta = spicy_str("fitstat_theta"),
+    alpha = spicy_str("fitstat_alpha"),
+    within_r2 = spicy_fmt(
+      "fitstat_r2_qualified",
+      spicy_str("label_r2_within")
+    ),
+    phi = spicy_str("fitstat_phi"),
+    qic = spicy_str("fitstat_qic"),
+    qicu = spicy_str("fitstat_qicu"),
+    scale = spicy_str("fitstat_scale"),
+    max_cluster_size = spicy_str("fitstat_max_cluster_size"),
+    r2_bayes = spicy_fmt("fitstat_pseudo_r2", "Bayes"),
+    elpd_loo = spicy_str("fitstat_elpd_loo"),
+    looic = spicy_str("fitstat_looic"),
+    waic = spicy_str("fitstat_waic"),
+    r2_marginal = spicy_fmt(
+      "fitstat_r2_qualified",
+      spicy_str("label_r2_marginal")
+    ),
+    r2_conditional = spicy_fmt(
+      "fitstat_r2_qualified",
+      spicy_str("label_r2_conditional")
+    ),
+    icc = spicy_str("fitstat_icc"),
     # (no n_groups entry: the token expands to per-factor
     # "N (<factor>)" rows inside both fit-stat builders and never
     # reaches this label map)
-    sigma = "\u03C3\u0302",
-    rmse = "RMSE",
-    f2 = "f\u00B2",
-    aic = "AIC",
-    aicc = "AICc",
-    bic = "BIC",
-    deviance = "Deviance",
+    sigma = spicy_str("symbol_sigma_hat"),
+    rmse = spicy_str("fitstat_rmse"),
+    f2 = spicy_str("symbol_f2_global"),
+    aic = spicy_str("fitstat_aic"),
+    aicc = spicy_str("fitstat_aicc"),
+    bic = spicy_str("fitstat_bic"),
+    deviance = spicy_str("fitstat_deviance"),
     # Nested-comparison change tokens (APA Table 7.13)
-    r2_change = "\u0394R\u00B2",
-    adj_r2_change = "\u0394Adj.R\u00B2",
-    f_change = "F-change",
-    f2_change = "\u0394f\u00B2",
-    lrt_change = "\u0394\u03C7\u00B2",
-    aic_change = "\u0394AIC",
-    aicc_change = "\u0394AICc",
-    bic_change = "\u0394BIC",
-    deviance_change = "\u0394Deviance",
-    p_change = "p (change)",
+    r2_change = delta(spicy_str("symbol_r2")),
+    adj_r2_change = delta(spicy_str("fitstat_adj_r2")),
+    f_change = spicy_str("fitstat_f_change"),
+    f2_change = delta(spicy_str("symbol_f2_global")),
+    lrt_change = delta(spicy_str("symbol_chi_sq")),
+    aic_change = delta(spicy_str("fitstat_aic")),
+    aicc_change = delta(spicy_str("fitstat_aicc")),
+    bic_change = delta(spicy_str("fitstat_bic")),
+    deviance_change = delta(spicy_str("fitstat_deviance")),
+    p_change = spicy_str("fitstat_p_change"),
     token
   )
 }
@@ -1825,7 +1900,14 @@ resolve_stars_thresholds <- function(stars) {
     return(NULL)
   }
   if (isTRUE(stars)) {
-    return(c("***" = 0.001, "**" = 0.01, "*" = 0.05))
+    return(stats::setNames(
+      c(0.001, 0.01, 0.05),
+      c(
+        spicy_str("symbol_star_001"),
+        spicy_str("symbol_star_01"),
+        spicy_str("symbol_star_05")
+      )
+    ))
   }
   if (!is.numeric(stars) || is.null(names(stars))) {
     return(NULL)

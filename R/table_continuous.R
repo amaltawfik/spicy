@@ -913,9 +913,9 @@ table_continuous <- function(
       parts <- c(
         parts,
         paste0(
-          "Missing values removed: ",
+          spicy_str("note_missing_removed"),
           paste(
-            sprintf("%s (%d)", names(na_dropped), na_dropped),
+            spicy_fmt("note_missing_item", names(na_dropped), na_dropped),
             collapse = ", "
           ),
           "."
@@ -926,9 +926,13 @@ table_continuous <- function(
       parts <- c(
         parts,
         paste0(
-          "Declared missing values removed: ",
+          spicy_str("note_declared_missing_removed"),
           paste(
-            sprintf("%s (%d)", names(user_na_dropped), user_na_dropped),
+            spicy_fmt(
+              "note_missing_item",
+              names(user_na_dropped),
+              user_na_dropped
+            ),
             collapse = ", "
           ),
           "."
@@ -938,8 +942,8 @@ table_continuous <- function(
     if (by_na_dropped > 0L) {
       parts <- c(
         parts,
-        sprintf(
-          "Rows with missing %s removed: %d.",
+        spicy_fmt(
+          "note_rows_missing_by_removed",
           group_col_name,
           by_na_dropped
         )
@@ -1117,14 +1121,14 @@ table_continuous <- function(
       # The scan covers DECLARED factor levels as well as observed
       # values: a declared-but-unobserved level literally named
       # "(Missing)" would otherwise duplicate the group.
-      missing_label <- "(Missing)"
+      missing_label <- spicy_str("row_missing_level")
       g_values <- unique(c(
         as.character(groups[!is.na(groups)]),
         as.character(group_levels)
       ))
       idx_lab <- 1L
       while (missing_label %in% g_values) {
-        missing_label <- paste0("(Missing_", idx_lab, ")")
+        missing_label <- spicy_fmt("row_missing_level_dedup", idx_lab)
         idx_lab <- idx_lab + 1L
       }
       group_levels <- c(as.character(group_levels), missing_label)
@@ -1688,12 +1692,20 @@ continuous_test_label <- function(method, n_groups) {
   switch(
     method,
     nonparametric = if (two) {
-      "Wilcoxon rank-sum test"
+      spicy_str("test_wilcoxon_rank_sum")
     } else {
-      "Kruskal-Wallis test"
+      spicy_str("test_kruskal_wallis")
     },
-    student = if (two) "Student t-test" else "one-way ANOVA",
-    if (two) "Welch t-test" else "Welch one-way ANOVA"
+    student = if (two) {
+      spicy_str("test_student_t")
+    } else {
+      spicy_str("test_oneway_anova")
+    },
+    if (two) {
+      spicy_str("test_welch_t")
+    } else {
+      spicy_str("test_welch_oneway_anova")
+    }
   )
 }
 
@@ -1713,16 +1725,20 @@ build_test_note <- function(test_used, auto_rank, n_groups) {
     n_groups = n_groups
   )
   if (length(unique(labels)) == 1L) {
-    return(sprintf("Group comparison: %s.", labels[[1L]]))
+    return(spicy_fmt("note_group_comparison", labels[[1L]]))
   }
   by_label <- split(ran, labels)
-  sprintf(
-    "Group comparison: %s.",
+  spicy_fmt(
+    "note_group_comparison",
     paste(
       vapply(
         names(by_label),
         function(lb) {
-          sprintf("%s (%s)", lb, paste(by_label[[lb]], collapse = ", "))
+          spicy_fmt(
+            "note_group_comparison_item",
+            lb,
+            paste(by_label[[lb]], collapse = ", ")
+          )
         },
         character(1)
       ),
@@ -1738,24 +1754,17 @@ build_column_glosses <- function(tokens, result, ci_level) {
   ci_pct <- paste0(round(ci_level * 100), "%")
   parts <- character(0)
   if ("iqr" %in% tokens) {
-    parts <- c(parts, "IQR = interquartile range (Q3 - Q1).")
+    parts <- c(parts, spicy_str("note_gloss_iqr"))
   }
   if ("med_iqr" %in% tokens) {
-    parts <- c(
-      parts,
-      "Med [Q1, Q3] = median [first quartile, third quartile]."
-    )
+    parts <- c(parts, spicy_str("note_gloss_med_iqr"))
   }
   if ("med_ci" %in% tokens) {
-    gloss <- sprintf(
-      "Med %s CI = exact order-statistic confidence interval for the median (coverage at least %s).",
-      ci_pct,
-      ci_pct
-    )
+    gloss <- spicy_fmt("note_gloss_med_ci", ci_pct)
     if (any(is.na(result$med_ci_lower))) {
       gloss <- paste(
         gloss,
-        "\"--\" where the sample is too small for this level."
+        spicy_fmt("note_gloss_med_ci_undefined", spicy_str("cell_undefined"))
       )
     }
     parts <- c(parts, gloss)
@@ -2137,7 +2146,7 @@ build_display_df <- function(
     if (decimal_mark != ".") {
       out <- sub("\\.", decimal_mark, out)
     }
-    ifelse(is.na(v), "--", out)
+    ifelse(is.na(v), spicy_str("cell_undefined"), out)
   }
 
   # Delegate p-value formatting to the shared helper from
@@ -2278,7 +2287,7 @@ build_display_df <- function(
     } else if (tok == "med_iqr") {
       compact <- ifelse(
         is.na(result$median) | is.na(result$q1) | is.na(result$q3),
-        "--",
+        spicy_str("cell_undefined"),
         paste0(
           fmt(result$median),
           " [",

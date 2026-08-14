@@ -72,47 +72,47 @@ spicy_glm_exp_header <- function(family_name, link_name) {
     family_name <- "binomial"
   }
   if (identical(family_name, "binomial") && identical(link_name, "logit")) {
-    return("OR")
+    return(spicy_str("header_exp_or"))
   }
   if (identical(family_name, "poisson") && identical(link_name, "log")) {
-    return("IRR")
+    return(spicy_str("header_exp_irr"))
   }
   if (identical(family_name, "binomial") && identical(link_name, "cloglog")) {
-    return("HR")
+    return(spicy_str("header_exp_hr"))
   }
   if (identical(family_name, "binomial") && identical(link_name, "log")) {
-    return("RR")
+    return(spicy_str("header_exp_rr"))
   }
   if (identical(family_name, "Gamma") && identical(link_name, "log")) {
-    return("MR") # mean ratio
+    return(spicy_str("header_exp_mr")) # mean ratio
   }
   if (identical(family_name, "cox") && identical(link_name, "log")) {
-    return("HR") # hazard ratio (coxph / rms::cph)
+    return(spicy_str("header_exp_hr")) # hazard ratio (coxph / rms::cph)
   }
   if (identical(family_name, "cumulative") && identical(link_name, "logit")) {
-    return("OR") # proportional-odds ratio (ordinal: polr / clm)
+    return(spicy_str("header_exp_or")) # proportional-odds ratio (ordinal: polr / clm)
   }
   if (identical(family_name, "cumulative") && identical(link_name, "cloglog")) {
-    return("HR") # proportional-hazards ratio (ordinal cloglog link)
+    return(spicy_str("header_exp_hr")) # proportional-hazards ratio (ordinal cloglog link)
   }
   if (identical(family_name, "multinomial") && identical(link_name, "logit")) {
-    return("OR") # multinomial odds / relative-risk ratio (multinom / mlogit)
+    return(spicy_str("header_exp_or")) # multinomial odds / relative-risk ratio (multinom / mlogit)
   }
   if (identical(family_name, "beta") && identical(link_name, "logit")) {
-    return("OR") # betareg mean model (logit link)
+    return(spicy_str("header_exp_or")) # betareg mean model (logit link)
   }
   if (identical(family_name, "negbin") && identical(link_name, "log")) {
-    return("IRR") # negative-binomial rate ratio (fixest / pscl)
+    return(spicy_str("header_exp_irr")) # negative-binomial rate ratio (fixest / pscl)
   }
   if (
     family_name %in%
       c("negbinomial", "geometric", "neg_binomial_2") &&
       identical(link_name, "log")
   ) {
-    return("IRR") # brms / rstanarm count-family spellings (log link)
+    return(spicy_str("header_exp_irr")) # brms / rstanarm count-family spellings (log link)
   }
   if (identical(family_name, "gamma") && identical(link_name, "log")) {
-    return("MR") # brms lowercase gamma family (log link)
+    return(spicy_str("header_exp_mr")) # brms lowercase gamma family (log link)
   }
   if (
     family_name %in%
@@ -127,20 +127,20 @@ spicy_glm_exp_header <- function(family_name, link_name) {
       ) &&
       identical(link_name, "log")
   ) {
-    return("IRR") # glmmTMB count families (log link)
+    return(spicy_str("header_exp_irr")) # glmmTMB count families (log link)
   }
   if (grepl("^Negative Binomial", family_name) && identical(link_name, "log")) {
-    return("IRR") # MASS::glm.nb family string is "Negative Binomial(theta)"
+    return(spicy_str("header_exp_irr")) # MASS::glm.nb family string is "Negative Binomial(theta)"
   }
   if (
     identical(family_name, "quasibinomial") && identical(link_name, "logit")
   ) {
-    return("OR") # survey::svyglm(family = quasibinomial())
+    return(spicy_str("header_exp_or")) # survey::svyglm(family = quasibinomial())
   }
   if (identical(family_name, "quasipoisson") && identical(link_name, "log")) {
-    return("IRR") # survey::svyglm(family = quasipoisson())
+    return(spicy_str("header_exp_irr")) # survey::svyglm(family = quasipoisson())
   }
-  "exp(B)"
+  spicy_str("header_exp_generic")
 }
 
 

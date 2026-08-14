@@ -198,7 +198,7 @@ varlist_impl <- function(
     if (interactive()) {
       # nocov start
       tryCatch(
-        tibble::view(res, title = "vl: (no columns selected)"),
+        tibble::view(res, title = spicy_str("title_varlist_empty")),
         error = function(e) {
           message("tibble::view() failed: ", e$message)
           message("Displaying result in console instead:")

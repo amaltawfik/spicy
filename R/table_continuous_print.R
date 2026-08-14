@@ -147,9 +147,9 @@ print.spicy_continuous_table <- function(x, ...) {
 # by <x>") -- decision of 2026-08-13, dev/decisions_amal_2026-08.md.
 .continuous_title <- function(by_label = NULL) {
   if (is.null(by_label) || !nzchar(by_label)) {
-    "Descriptive statistics"
+    spicy_str("title_continuous")
   } else {
-    paste0("Descriptive statistics by ", by_label)
+    spicy_fmt("title_continuous_by", by_label)
   }
 }
 

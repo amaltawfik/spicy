@@ -141,7 +141,7 @@ build_regression_footer_from_frames <- function(
   if (length(themes) == 0L) {
     return(NULL)
   }
-  paste0("Note. ", paste(themes, collapse = "\n"))
+  paste0(spicy_str("note_prefix"), paste(themes, collapse = "\n"))
 }
 
 capitalize_first <- function(s) {
@@ -187,7 +187,7 @@ build_regression_type_footer_block_from_frames <- function(frames) {
   per <- vapply(
     seq_along(types),
     function(i) {
-      sprintf("Model %d: %s", i, lowercase_first(types[i]))
+      spicy_fmt("note_model_prefix", i, lowercase_first(types[i]))
     },
     character(1)
   )
@@ -229,7 +229,7 @@ lowercase_first <- function(s) {
 # Routing: lm / glm go through the legacy classical/HC*/CR* derivation
 # below (so historical snapshots stay byte-stable). All other classes
 # use the engine-supplied `vcov_label` verbatim (which the Phase 1+
-# methods set thoughtfully -- e.g. "Wald asymptotic (z)" for coxph,
+# methods set thoughtfully -- e.g. `note_vcov_wald_asymptotic` for coxph,
 # "Robust (HC2)" / "Cluster-robust (CR2)" for estimatr).
 format_vcov_label_from_frame <- function(frame) {
   cls <- frame$info$class %||% ""
@@ -259,26 +259,27 @@ format_vcov_label_from_frame <- function(frame) {
     # "OIM" / SAS PROC LOGISTIC's bare "Standard Error" labels.
     # Parallels "classical (OLS)" for lm: both name the underlying
     # mechanism that produces the SE.
-    return(if (is_glm) "classical (Fisher information)" else "classical (OLS)")
+    return(if (is_glm) {
+      spicy_str("note_vcov_classical_glm")
+    } else {
+      spicy_str("note_vcov_classical_lm")
+    })
   }
   if (startsWith(vt, "HC")) {
-    return(sprintf("heteroskedasticity-robust (%s)", vt))
+    return(spicy_fmt("note_vcov_hc", vt))
   }
   if (startsWith(vt, "CR")) {
     cluster_part <- if (is.na(cn) || !nzchar(cn)) {
-      "cluster vector supplied"
+      spicy_str("note_vcov_cluster_vector")
     } else {
-      sprintf("clusters by %s", cn)
+      spicy_fmt("note_vcov_cluster_named", cn)
     }
     if (identical(vt, "CR1S")) {
       # The Stata-correspondence token names its convention so a
       # reader can match the table to Stata output.
-      return(sprintf(
-        "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), %s",
-        cluster_part
-      ))
+      return(spicy_fmt("note_vcov_cr1s", cluster_part))
     }
-    return(sprintf("cluster-robust (%s), %s", vt, cluster_part))
+    return(spicy_fmt("note_vcov_cr", vt, cluster_part))
   }
   # Resampling estimators name the scheme and -- for the bootstrap -- the
   # VALID replicate count (failed replicates are dropped; Stata's
@@ -290,18 +291,18 @@ format_vcov_label_from_frame <- function(frame) {
     reps <- if (is.na(n_valid)) {
       ""
     } else {
-      sprintf(" (%d replicates)", as.integer(n_valid))
+      spicy_fmt("note_vcov_bootstrap_reps", as.integer(n_valid))
     }
     if (is.na(cn) || !nzchar(cn)) {
-      return(sprintf("nonparametric bootstrap%s", reps))
+      return(spicy_fmt("note_vcov_bootstrap", reps))
     }
-    return(sprintf("cluster bootstrap%s, clusters by %s", reps, cn))
+    return(spicy_fmt("note_vcov_bootstrap_cluster", reps, cn))
   }
   if (identical(vt, "jackknife")) {
     if (is.na(cn) || !nzchar(cn)) {
-      return("jackknife (leave-one-out)")
+      return(spicy_str("note_vcov_jackknife"))
     }
-    return(sprintf("jackknife (leave-one-cluster-out), clusters by %s", cn))
+    return(spicy_fmt("note_vcov_jackknife_cluster", cn))
   }
   vt
 }
@@ -314,16 +315,16 @@ build_vcov_footer_block_from_frames <- function(frames) {
   }
   labels <- vapply(frames, format_vcov_label_from_frame, character(1))
   if (all(labels == labels[1])) {
-    return(paste0("Std. errors: ", labels[1], "."))
+    return(spicy_fmt("note_std_errors_single", labels[1]))
   }
   per <- vapply(
     seq_along(labels),
     function(i) {
-      sprintf("  Model %d: %s", i, labels[i])
+      spicy_fmt("note_model_prefix_indented", i, labels[i])
     },
     character(1)
   )
-  paste0("Std. errors:\n", paste(per, collapse = "\n"))
+  spicy_fmt("note_std_errors_multi", paste(per, collapse = "\n"))
 }
 
 
@@ -358,7 +359,7 @@ build_ci_method_footer_block_from_frames <- function(
   if (any(is_profile)) {
     lines <- c(
       lines,
-      paste0(.pct(which(is_profile)[1]), "% CIs: profile likelihood.")
+      spicy_fmt("note_ci_profile", .pct(which(is_profile)[1]))
     )
   }
   # Percentile bootstrap CIs (G5): a CI-only refinement of the bootstrap
@@ -374,7 +375,7 @@ build_ci_method_footer_block_from_frames <- function(
   if (any(is_bperc)) {
     lines <- c(
       lines,
-      paste0(.pct(which(is_bperc)[1]), "% CIs: bootstrap percentile.")
+      spicy_fmt("note_ci_bootstrap_percentile", .pct(which(is_bperc)[1]))
     )
   }
   # Bayesian credible intervals in a MIXED table: the shared column
@@ -403,14 +404,7 @@ build_ci_method_footer_block_from_frames <- function(
       vapply(
         which(is_post),
         function(k) {
-          sprintf(
-            paste0(
-              "Model %d: %s%% CI is an equal-tailed posterior ",
-              "credible interval."
-            ),
-            k,
-            .pct(k)
-          )
+          spicy_fmt("note_ci_posterior_mixed", k, .pct(k))
         },
         character(1)
       )
@@ -451,12 +445,9 @@ build_abbreviations_footer_block_from_frames <- function(
         logical(1)
       ))
     if (isTRUE(has_percat)) {
-      defs <- c(
-        defs,
-        "AME = average marginal effect on a response-category probability"
-      )
+      defs <- c(defs, spicy_str("note_abbrev_ame_percat"))
     } else {
-      defs <- c(defs, "AME = average marginal effect")
+      defs <- c(defs, spicy_str("note_abbrev_ame"))
     }
   }
 
@@ -512,13 +503,25 @@ build_abbreviations_footer_block_from_frames <- function(
         function(f) f$info$extras$exp_header,
         character(1)
       ))
-      exp_defs <- c(
-        "OR" = "OR = odds ratio",
-        "IRR" = "IRR = incidence rate ratio",
-        "HR" = "HR = hazard ratio",
-        "RR" = "RR = risk ratio",
-        "MR" = "MR = mean ratio",
-        "exp(B)" = "exp(B) = exponentiated coefficient"
+      # Keyed by the DISPLAYED header, so both sides read the same registry
+      # entry: a header and its gloss can never drift apart.
+      exp_defs <- stats::setNames(
+        c(
+          spicy_str("note_abbrev_or"),
+          spicy_str("note_abbrev_irr"),
+          spicy_str("note_abbrev_hr"),
+          spicy_str("note_abbrev_rr"),
+          spicy_str("note_abbrev_mr"),
+          spicy_str("note_abbrev_expb")
+        ),
+        c(
+          spicy_str("header_exp_or"),
+          spicy_str("header_exp_irr"),
+          spicy_str("header_exp_hr"),
+          spicy_str("header_exp_rr"),
+          spicy_str("header_exp_mr"),
+          spicy_str("header_exp_generic")
+        )
       )
       for (h in hdrs) {
         if (h %in% names(exp_defs)) defs <- c(defs, exp_defs[[h]])
@@ -527,41 +530,28 @@ build_abbreviations_footer_block_from_frames <- function(
   }
 
   if (any(c("partial_f2", "partial_f2_ci") %in% show_columns)) {
-    defs <- c(defs, "f\u00B2 = Cohen's partial f\u00B2")
+    defs <- c(defs, spicy_str("note_abbrev_f2"))
   }
   if (any(c("partial_eta2", "partial_eta2_ci") %in% show_columns)) {
-    defs <- c(defs, "\u03B7\u00B2 = partial eta-squared")
+    defs <- c(defs, spicy_str("note_abbrev_eta2"))
   }
   if (any(c("partial_omega2", "partial_omega2_ci") %in% show_columns)) {
-    defs <- c(defs, "\u03C9\u00B2 = bias-corrected partial omega-squared")
+    defs <- c(defs, spicy_str("note_abbrev_omega2"))
   }
   if ("partial_chi2" %in% show_columns) {
-    defs <- c(defs, "\u03C7\u00B2 = partial likelihood-ratio chi-squared")
+    defs <- c(defs, spicy_str("note_abbrev_chi2"))
   }
   if ("pd" %in% show_columns) {
     # The definition travels WITH the table (BARG: a rendered artifact
     # must be self-describing); the p-value-correspondence caveat is
     # reader pedagogy and stays in the vignette.
-    defs <- c(
-      defs,
-      paste0(
-        "pd = probability of direction (share of the ",
-        "posterior on the dominant side of zero; Makowski ",
-        "et al. 2019)"
-      )
-    )
+    defs <- c(defs, spicy_str("note_abbrev_pd"))
   }
   if ("mcse" %in% show_columns) {
     # The reading rule (a displayed digit is Monte-Carlo stable when
     # 2 x MCSE stays below it) is vignette pedagogy; the footer keys
     # the abbreviation.
-    defs <- c(
-      defs,
-      paste0(
-        "MCSE = Monte Carlo standard error of the ",
-        "posterior median (Vehtari et al. 2021)"
-      )
-    )
+    defs <- c(defs, spicy_str("note_abbrev_mcse"))
   }
 
   if (length(defs) == 0L) {
@@ -722,7 +712,7 @@ build_stars_footer_block <- function(stars) {
   parts <- vapply(
     seq_along(sym),
     function(i) {
-      sprintf("%s p < %s", sym[i], format_p_threshold(thr[i]))
+      spicy_fmt("note_stars_legend_entry", sym[i], format_p_threshold(thr[i]))
     },
     character(1)
   )
@@ -824,7 +814,7 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      sprintf("Model %d: %s", pm$idx, pm$text)
+      spicy_fmt("note_model_prefix", pm$idx, pm$text)
     },
     character(1)
   )
@@ -863,7 +853,7 @@ build_gee_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      sprintf("Model %d: %s", pm$idx, pm$text)
+      spicy_fmt("note_model_prefix", pm$idx, pm$text)
     },
     character(1)
   )
@@ -953,7 +943,7 @@ build_survival_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      sprintf("Model %d: %s", pm$idx, pm$text)
+      spicy_fmt("note_model_prefix", pm$idx, pm$text)
     },
     character(1)
   )
@@ -1131,7 +1121,7 @@ build_random_effects_footer_block_from_frames <- function(
   lines <- vapply(
     per_model,
     function(pm) {
-      sprintf("Model %d: %s", pm$idx, pm$text)
+      spicy_fmt("note_model_prefix", pm$idx, pm$text)
     },
     character(1)
   )
@@ -1179,7 +1169,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      sprintf("Model %d: %s", pm$idx, pm$text)
+      spicy_fmt("note_model_prefix", pm$idx, pm$text)
     },
     character(1)
   )
@@ -1632,8 +1622,8 @@ build_singular_footer_block_from_frames <- function(frames) {
   per <- vapply(
     seq_along(affected),
     function(k) {
-      sprintf(
-        "Model %d: %s",
+      spicy_fmt(
+        "note_model_prefix",
         affected[k],
         .singular_msg_for_frame(frames[[affected[k]]], is_mixed[k])
       )
@@ -1744,7 +1734,7 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
   per <- vapply(
     affected,
     function(k) {
-      sprintf("Model %d: %s", k, msg(ns[k]))
+      spicy_fmt("note_model_prefix", k, msg(ns[k]))
     },
     character(1)
   )
@@ -1781,7 +1771,7 @@ build_reference_alternative_footer_block_from_frames <- function(frames) {
   per <- vapply(
     affected,
     function(k) {
-      sprintf("Model %d: %s", k, msg(refs[k]))
+      spicy_fmt("note_model_prefix", k, msg(refs[k]))
     },
     character(1)
   )
@@ -1824,7 +1814,7 @@ build_reference_outcome_footer_block_from_frames <- function(frames) {
   per <- vapply(
     affected,
     function(k) {
-      sprintf("Model %d: %s", k, msg(refs[k]))
+      spicy_fmt("note_model_prefix", k, msg(refs[k]))
     },
     character(1)
   )
@@ -2328,7 +2318,7 @@ build_loo_footer_block_from_frames <- function(frames) {
     vapply(
       affected,
       function(k) {
-        sprintf("Model %d: %s", k, notes[k])
+        spicy_fmt("note_model_prefix", k, notes[k])
       },
       character(1)
     ),
@@ -2364,7 +2354,7 @@ build_stan_convergence_footer_block_from_frames <- function(frames) {
     vapply(
       affected,
       function(k) {
-        sprintf("Model %d: %s", k, notes[k])
+        spicy_fmt("note_model_prefix", k, notes[k])
       },
       character(1)
     ),

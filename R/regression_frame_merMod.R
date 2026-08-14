@@ -544,7 +544,7 @@ as_regression_frame.glmerMod <- function(
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
     vcov_label = vcov_label %||%
-      (if (is_glm) "Wald asymptotic (z)" else "Wald (model-based)"),
+      (if (is_glm) spicy_str("note_vcov_wald_asymptotic") else "Wald (model-based)"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,

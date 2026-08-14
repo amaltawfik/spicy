@@ -25,7 +25,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   p_digits <- attr(x, "p_digits") %||% 3L
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   ci_level <- attr(x, "ci_level") %||% 0.95
-  by_label <- attr(x, "by_label") %||% "Predictor"
+  by_label <- attr(x, "by_label") %||%
+    spicy_str("title_continuous_lm_by_fallback")
   show_statistic <- attr(x, "show_statistic") %||% FALSE
   show_p_value <- attr(x, "show_p_value") %||% TRUE
   show_n <- attr(x, "show_n") %||% TRUE
@@ -121,7 +122,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # header and the caption the rendering engines set, so the two can
 # never drift apart (same contract as `.categorical_title()`).
 .continuous_lm_title <- function(by_label) {
-  paste0("Continuous outcomes by ", by_label)
+  spicy_fmt("title_continuous_lm_by", by_label)
 }
 
 # ---- Shared note builder ---------------------------------------------------
@@ -162,24 +163,29 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 
   lines <- character()
   if (length(covariates) > 0L && !is.na(adjustment)) {
+    # The `adjustment` TOKEN stays an API identifier; only its display form
+    # comes from the registry.
+    adjustment_label <- switch(
+      adjustment,
+      proportional = spicy_str("note_adjustment_proportional"),
+      balanced = spicy_str("note_adjustment_balanced"),
+      adjustment
+    )
     lines <- c(
       lines,
-      paste0(
-        "Adjusted for ",
+      spicy_fmt(
+        "note_adjusted_for",
         paste(covariates, collapse = ", "),
-        " (",
-        adjustment,
-        ")."
+        adjustment_label
       )
     )
   }
   if (!identical(vcov_type, "classical")) {
     lines <- c(
       lines,
-      paste0(
-        "Std. errors: ",
-        .tclm_vcov_label(vcov_type, cluster_name, boot_valid),
-        "."
+      spicy_fmt(
+        "note_std_errors_single",
+        .tclm_vcov_label(vcov_type, cluster_name, boot_valid)
       )
     )
   }
@@ -193,7 +199,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   if (length(lines) == 0L) {
     return(NULL)
   }
-  lines[1L] <- paste0("Note. ", lines[1L])
+  lines[1L] <- paste0(spicy_str("note_prefix"), lines[1L])
   paste(lines, collapse = "\n")
 }
 
@@ -209,17 +215,19 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   boot_valid = NULL
 ) {
   if (startsWith(vcov_type, "HC")) {
-    return(sprintf("heteroskedasticity-robust (%s)", vcov_type))
+    return(spicy_fmt("note_vcov_hc", vcov_type))
   }
   if (startsWith(vcov_type, "CR")) {
-    label <- sprintf("cluster-robust (%s)", vcov_type)
+    # The regression family's `note_vcov_cr` bundles the cluster fragment;
+    # here it is optional, so the two halves are composed instead.
+    label <- spicy_fmt("note_vcov_cr_bare", vcov_type)
     if (
       is.character(cluster_name) &&
         length(cluster_name) == 1L &&
         !is.na(cluster_name) &&
         nzchar(cluster_name)
     ) {
-      label <- paste0(label, ", clusters by ", cluster_name)
+      label <- paste0(label, spicy_fmt("note_vcov_cluster_by", cluster_name))
     }
     return(label)
   }
@@ -227,14 +235,18 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     reps <- if (is.null(boot_valid) || !length(boot_valid)) {
       ""
     } else if (length(boot_valid) == 1L) {
-      sprintf(" (%d replicates)", boot_valid)
+      spicy_fmt("note_vcov_bootstrap_reps", boot_valid)
     } else {
-      sprintf(" (%d-%d replicates)", min(boot_valid), max(boot_valid))
+      spicy_fmt(
+        "note_vcov_bootstrap_reps_range",
+        min(boot_valid),
+        max(boot_valid)
+      )
     }
-    return(paste0("nonparametric bootstrap", reps))
+    return(spicy_fmt("note_vcov_bootstrap", reps))
   }
   if (identical(vcov_type, "jackknife")) {
-    return("jackknife")
+    return(spicy_str("note_vcov_jackknife_plain"))
   }
   vcov_type # nocov -- defensive: `vcov` is validated upstream
 }

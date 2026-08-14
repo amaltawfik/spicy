@@ -1569,7 +1569,7 @@ table_continuous_lm <- function(
   if (n_na_by > 0L) {
     missing_parts <- c(
       missing_parts,
-      sprintf("Rows with missing %s removed: %d.", by_name, n_na_by)
+      spicy_fmt("note_rows_missing_by_removed", by_name, n_na_by)
     )
   }
   if (!is.null(weights_vec)) {
@@ -1577,9 +1577,9 @@ table_continuous_lm <- function(
     if (n_na_weights > 0L) {
       missing_parts <- c(
         missing_parts,
-        sprintf(
-          "Rows with missing %s removed: %d.",
-          weights_name %||% "weights",
+        spicy_fmt(
+          "note_rows_missing_weights",
+          weights_name %||% spicy_str("note_weights_fallback"),
           n_na_weights
         )
       )

@@ -375,7 +375,7 @@ as_regression_frame.glmmTMB <- function(
     random_effects = re,
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% "Wald asymptotic (z)",
+    vcov_label = vcov_label %||% spicy_str("note_vcov_wald_asymptotic"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,

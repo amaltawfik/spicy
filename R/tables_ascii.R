@@ -410,7 +410,10 @@ build_ascii_table <- function(
         # -- and wrong -- label. Trade one more character for an
         # ellipsis whenever there is room for it.
         if (span_width >= 2L) {
-          paste0(substr(lbl, 1L, span_width - 1L), "\u2026")
+          paste0(
+            substr(lbl, 1L, span_width - 1L),
+            spicy_str("marker_truncation_ellipsis")
+          )
         } else {
           substr(lbl, 1L, span_width)
         }
@@ -872,8 +875,9 @@ spicy_print_table <- function(
         } else {
           names(sub)
         }
+        companion_rx <- .companion_header_pattern()
         is_companion <- function(nm) {
-          grepl("^([0-9]+% C(r)?I|SE|p)$", base_nm(nm))
+          grepl(companion_rx, base_nm(nm))
         }
         all_shown <- if (!is.null(display_labels)) {
           as.character(display_labels)
@@ -891,8 +895,8 @@ spicy_print_table <- function(
             }
           }
           if (!is.na(carrier) && !(carrier %in% cols)) {
-            relabeled <- sprintf(
-              "%s (%s)",
+            relabeled <- spicy_fmt(
+              "header_companion_qualified",
               base_nm(shown[k]),
               base_nm(all_shown[carrier])
             )

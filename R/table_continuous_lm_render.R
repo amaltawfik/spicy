@@ -778,13 +778,14 @@ export_continuous_lm_table <- function(
       # force a font, so hard-coding one here would make the note
       # clash with the body.
       note_one_line <- gsub("\n", " ", note, fixed = TRUE)
-      if (startsWith(note_one_line, "Note.")) {
+      note_split <- .note_prefix_split(note_one_line)
+      if (!is.null(note_split)) {
         note_para <- flextable::as_paragraph(
           flextable::as_chunk(
-            "Note.",
+            note_split$marker,
             props = officer::fp_text_lite(italic = TRUE)
           ),
-          flextable::as_chunk(substring(note_one_line, 6L))
+          flextable::as_chunk(note_split$rest)
         )
       } else {
         note_para <- flextable::as_paragraph(

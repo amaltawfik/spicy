@@ -9,16 +9,29 @@
 .assoc_label <- function(measure) {
   switch(
     measure,
-    cramer_v = "Cramer's V",
-    phi = "Phi",
-    tau_b = "Kendall's Tau-b",
-    tau_c = "Stuart's Tau-c",
-    gamma = "Goodman-Kruskal Gamma",
-    somers_d = "Somers' D",
-    lambda = "Lambda",
+    cramer_v = spicy_str("stat_cramer_v"),
+    phi = spicy_str("stat_phi"),
+    tau_b = spicy_str("stat_tau_b"),
+    tau_c = spicy_str("stat_tau_c"),
+    gamma = spicy_str("stat_gamma"),
+    somers_d = spicy_str("stat_somers_d"),
+    lambda = spicy_str("stat_lambda"),
     measure
   )
 }
+
+# Every measure key `.assoc_label()` knows, in the order the registry
+# lists them. Used to build the defensive note-parsing pattern below from
+# the labels themselves, so the pattern can never fall behind them.
+.assoc_measure_keys <- c(
+  "cramer_v",
+  "phi",
+  "gamma",
+  "tau_b",
+  "tau_c",
+  "somers_d",
+  "lambda"
+)
 
 # Coerce a column selected for tabulation to the factor that flows
 # through freq() / cross_tab() untouched. The factor is built BEFORE
@@ -279,11 +292,15 @@
     function(m) {
       vars <- names(shown)[shown == m]
       lab <- labels[match(vars, names(per_row_measures))]
-      paste0(.assoc_label(m), ": ", paste(lab, collapse = ", "))
+      spicy_fmt(
+        "note_assoc_measure_item",
+        .assoc_label(m),
+        paste(lab, collapse = ", ")
+      )
     },
     character(1)
   )
-  paste0("Note. ", paste(parts, collapse = "; "), ".")
+  paste0(spicy_str("note_prefix"), paste(parts, collapse = "; "), ".")
 }
 
 
@@ -956,9 +973,9 @@ table_categorical <- function(
       parts <- c(
         parts,
         paste0(
-          "Missing values removed: ",
+          spicy_str("note_missing_removed"),
           paste(
-            sprintf("%s (%d)", names(na_dropped), na_dropped),
+            spicy_fmt("note_missing_item", names(na_dropped), na_dropped),
             collapse = ", "
           ),
           "."
@@ -969,9 +986,13 @@ table_categorical <- function(
       parts <- c(
         parts,
         paste0(
-          "Declared missing values removed: ",
+          spicy_str("note_declared_missing_removed"),
           paste(
-            sprintf("%s (%d)", names(user_na_dropped), user_na_dropped),
+            spicy_fmt(
+              "note_missing_item",
+              names(user_na_dropped),
+              user_na_dropped
+            ),
             collapse = ", "
           ),
           "."
@@ -981,7 +1002,7 @@ table_categorical <- function(
     if (by_na_dropped > 0L) {
       parts <- c(
         parts,
-        sprintf("Rows with missing %s removed: %d.", by_name, by_na_dropped)
+        spicy_fmt("note_rows_missing_by_removed", by_name, by_na_dropped)
       )
     }
     if (length(parts)) paste(parts, collapse = " ") else NULL
@@ -1123,11 +1144,11 @@ table_categorical <- function(
     }),
     use.names = FALSE
   ))
-  missing_label <- "(Missing)"
+  missing_label <- spicy_str("row_missing_level")
   if (missing_label %in% all_values) {
     idx <- 1L
     repeat {
-      candidate <- paste0("(Missing_", idx, ")")
+      candidate <- spicy_fmt("row_missing_level_dedup", idx)
       if (!(candidate %in% all_values)) {
         missing_label <- candidate
         break
@@ -1188,11 +1209,21 @@ table_categorical <- function(
       NA_real_
     }
 
-    # Try to match any "Measure = value" pattern
+    # Try to match any "Measure = value" pattern. The alternation is built
+    # from the labels themselves, never re-typed: a hardcoded copy would
+    # silently stop matching the day a measure is renamed or translated.
+    measure_alt <- paste(
+      vapply(
+        .assoc_measure_keys,
+        function(k) .escape_regex(.assoc_label(k)),
+        character(1)
+      ),
+      collapse = "|"
+    )
     vm <- regmatches(
       txt,
       regexec(
-        "(?:Cramer's V|Phi|Goodman-Kruskal(?:'s)? (?:Gamma|Tau)|Kendall's Tau-b|Stuart's Tau-c|Somers' D|Lambda)\\s*=\\s*([0-9.eE+-]+)",
+        paste0("(?:", measure_alt, ")\\s*=\\s*([0-9.eE+-]+)"),
         txt,
         perl = TRUE
       )

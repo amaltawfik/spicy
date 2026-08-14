@@ -3056,14 +3056,14 @@ table_regression <- function(
     length(frames) > 0L &&
       all(frame_ci_methods == "posterior_quantile")
   ) {
-    "CrI"
+    spicy_str("header_ci_label_credible")
   } else if (
     length(frames) > 0L &&
       all(frame_ci_methods == "posterior_hdi")
   ) {
-    "HDI"
+    spicy_str("header_ci_label_hdi")
   } else {
-    "CI"
+    spicy_str("header_ci_label_confidence")
   }
   rendered <- render_regression_table(
     aligned,

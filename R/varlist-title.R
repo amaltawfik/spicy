@@ -2,11 +2,18 @@ varlist_title <- function(expr, selectors_used = FALSE) {
   source <- varlist_expr_source(expr)
 
   if (is.null(source)) {
-    return("vl: <data>")
+    return(spicy_str("title_varlist_anonymous"))
   }
 
   transformed <- selectors_used || source$transformed
-  paste("vl:", if (transformed) paste0(source$name, "*") else source$name)
+  spicy_fmt(
+    "title_varlist",
+    if (transformed) {
+      paste0(source$name, spicy_str("marker_varlist_transformed"))
+    } else {
+      source$name
+    }
+  )
 }
 
 

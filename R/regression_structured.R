@@ -289,7 +289,7 @@ build_structured_body <- function(
   labels = NULL,
   model_outcomes = NULL,
   model_outcome_labels = NULL,
-  ci_label = "CI",
+  ci_label = spicy_str("header_ci_label_confidence"),
   stars_map = NULL,
   re_columns = c("est", "se", "ci")
 ) {

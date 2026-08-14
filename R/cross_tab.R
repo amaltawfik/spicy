@@ -926,18 +926,17 @@ cross_tab <- function(
       assoc_result <- NULL
       assoc_name <- NULL
       if (assoc_choice != "none") {
+        # One registry key per measure: this note, the
+        # `table_categorical()` column header and the `assoc_measures()`
+        # row label must name the same statistic the same way.
         assoc_labels <- c(
-          cramer_v = "Cramer's V",
-          phi = "Phi",
-          gamma = "Goodman-Kruskal Gamma",
-          tau_b = "Kendall's Tau-b",
-          # "Stuart's Tau-c" is the SAS PROC FREQ label (honouring
-          # Stuart, 1953); SPSS and PSPP print "Kendall's tau-c" for
-          # the same statistic. Matches the table_categorical()
-          # column header.
-          tau_c = "Stuart's Tau-c",
-          somers_d = "Somers' D",
-          lambda = "Lambda"
+          cramer_v = spicy_str("stat_cramer_v"),
+          phi = spicy_str("stat_phi"),
+          gamma = spicy_str("stat_gamma"),
+          tau_b = spicy_str("stat_tau_b"),
+          tau_c = spicy_str("stat_tau_c"),
+          somers_d = spicy_str("stat_somers_d"),
+          lambda = spicy_str("stat_lambda")
         )
         # No `suppressWarnings()` blanket here: the measures emit only
         # classed spicy warnings (chisq.test noise is already muffled
@@ -989,9 +988,9 @@ cross_tab <- function(
         digits = p_digits
       )
       p_str <- if (substring(p_formatted, 1L, 1L) == "<") {
-        paste0("p ", p_formatted) # "p <.001"
+        spicy_fmt("note_p_prefix_lt", p_formatted) # "p <.001"
       } else {
-        paste0("p = ", p_formatted) # "p = .045"
+        spicy_fmt("note_p_prefix_eq", p_formatted) # "p = .045"
       }
 
       chi2_str <- if (is.nan(chi2) || is.na(chi2)) {
@@ -1000,13 +999,8 @@ cross_tab <- function(
         format_number(chi2, digits = 1L, decimal_mark = decimal_mark)
       }
       note <- paste0(
-        "Chi-2(",
-        df_,
-        ") = ",
-        chi2_str,
-        ", ",
-        p_str,
-        if (simulate_p) " (simulated)"
+        spicy_fmt("test_chisq", df_, chi2_str, p_str),
+        if (simulate_p) spicy_str("note_chisq_simulated")
       )
 
       if (!is.null(assoc_name) && !is.na(estimate)) {
@@ -1015,14 +1009,14 @@ cross_tab <- function(
           digits = 2L,
           decimal_mark = decimal_mark
         )
-        assoc_line <- paste0(assoc_name, " = ", est_str)
+        assoc_line <- spicy_fmt("note_kv_pair", assoc_name, est_str)
         if (isTRUE(assoc_ci) && !is.null(assoc_result)) {
           ci_lo <- assoc_result[["ci_lower"]]
           ci_hi <- assoc_result[["ci_upper"]]
           if (!is.na(ci_lo) && !is.na(ci_hi)) {
             assoc_line <- paste0(
               assoc_line,
-              ", 95% CI [",
+              spicy_str("note_assoc_ci"),
               format_number(ci_lo, digits = 2L, decimal_mark = decimal_mark),
               ci_bracket_separator(decimal_mark),
               format_number(ci_hi, digits = 2L, decimal_mark = decimal_mark),
@@ -1034,13 +1028,14 @@ cross_tab <- function(
       }
 
       if (isTRUE(correct_used)) {
-        note <- paste0(note, "\nYates continuity correction applied.")
+        note <- paste0(note, "\n", spicy_str("note_yates_applied"))
       }
       if (pruned) {
         note <- paste0(
           note,
-          sprintf(
-            "\nStats computed on %dx%d sub-table after dropping empty rows / columns.",
+          "\n",
+          spicy_fmt(
+            "note_stats_subtable",
             nrow(tab_stats),
             ncol(tab_stats)
           )
@@ -1063,51 +1058,56 @@ cross_tab <- function(
         min_exp <- round(min(expected, na.rm = TRUE), 2)
         note <- paste0(
           note,
-          "\nWarning: ",
-          small5,
-          " expected cell",
-          if (small5 > 1) "s" else "",
-          " < 5 (",
-          round(prop5 * 100, 1),
-          "%).",
+          "\n",
+          spicy_str("note_warning_prefix"),
+          spicy_fmt(
+            "note_expected_lt5",
+            small5,
+            if (small5 > 1) "s" else "",
+            round(prop5 * 100, 1)
+          ),
           if (small1 > 0) {
             paste0(
               " ",
-              small1,
-              " expected cell",
-              if (small1 > 1) "s" else "",
-              " < 1."
+              spicy_fmt(
+                "note_expected_lt1",
+                small1,
+                if (small1 > 1) "s" else ""
+              )
             )
           },
-          " Minimum expected = ",
-          min_exp,
-          ". Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`."
+          spicy_fmt("note_min_expected", min_exp),
+          spicy_fmt(
+            "note_expected_advice",
+            "`simulate_p = TRUE`",
+            "`options(spicy.simulate_p = TRUE)`"
+          )
         )
       }
     }
 
     perc_label <- switch(
       percent,
-      "row" = " (Row %)",
-      "column" = " (Column %)",
-      "none" = " (N)"
+      "row" = spicy_str("title_percent_row"),
+      "column" = spicy_str("title_percent_column"),
+      "none" = spicy_str("title_percent_none")
     )
-    title <- paste0(
-      "Crosstable: ",
+    title <- spicy_fmt(
+      "title_crosstab",
       x_name,
-      if (!is.null(y_name)) paste0(" x ", y_name),
+      if (!is.null(y_name)) spicy_fmt("title_crosstab_by", y_name) else "",
       perc_label
     )
     if (!is.null(group_label)) {
-      title <- paste0(title, " | ", by_name, " = ", group_label)
+      title <- spicy_fmt("title_crosstab_group", title, by_name, group_label)
     }
 
     # Add weighting information to the note when applicable
     if (!rlang::quo_is_null(w_expr) && !isTRUE(all(w == 1))) {
       w_name <- get_var_name(call_weights, "weights")
-      w_text <- paste0("Weight: ", w_name)
+      w_text <- spicy_fmt("note_weight", w_name)
       if (isTRUE(rescale)) {
-        w_text <- paste0(w_text, " (rescaled)")
+        w_text <- paste0(w_text, spicy_str("note_weight_rescaled"))
       }
 
       # Append to the existing note or create a new one
@@ -1130,10 +1130,10 @@ cross_tab <- function(
     n_na_y <- sum(sys_na_y)
     na_parts <- character(0)
     if (n_na_x > 0L) {
-      na_parts <- c(na_parts, sprintf("%s (%d)", x_name, n_na_x))
+      na_parts <- c(na_parts, spicy_fmt("note_missing_item", x_name, n_na_x))
     }
     if (n_na_y > 0L) {
-      na_parts <- c(na_parts, sprintf("%s (%d)", y_name, n_na_y))
+      na_parts <- c(na_parts, spicy_fmt("note_missing_item", y_name, n_na_y))
     }
     if (length(na_parts) > 0L) {
       # With NAs on BOTH variables the per-variable counts overlap
@@ -1145,10 +1145,10 @@ cross_tab <- function(
       na_suffix <- ""
       if (n_na_x > 0L && n_na_y > 0L) {
         n_rows_na <- sum(sys_na_x | sys_na_y)
-        na_suffix <- sprintf("; %d rows in total", n_rows_na)
+        na_suffix <- spicy_fmt("note_missing_rows_total", n_rows_na)
       }
       na_text <- paste0(
-        "Missing values removed: ",
+        spicy_str("note_missing_removed"),
         paste(na_parts, collapse = ", "),
         na_suffix,
         "."
@@ -1165,21 +1165,27 @@ cross_tab <- function(
     n_user_y <- sum(mask_y)
     user_parts <- character(0)
     if (n_user_x > 0L) {
-      user_parts <- c(user_parts, sprintf("%s (%d)", x_name, n_user_x))
+      user_parts <- c(
+        user_parts,
+        spicy_fmt("note_missing_item", x_name, n_user_x)
+      )
     }
     if (n_user_y > 0L) {
-      user_parts <- c(user_parts, sprintf("%s (%d)", y_name, n_user_y))
+      user_parts <- c(
+        user_parts,
+        spicy_fmt("note_missing_item", y_name, n_user_y)
+      )
     }
     if (length(user_parts) > 0L) {
       user_suffix <- ""
       if (n_user_x > 0L && n_user_y > 0L) {
-        user_suffix <- sprintf(
-          "; %d rows in total",
+        user_suffix <- spicy_fmt(
+          "note_missing_rows_total",
           sum(mask_x | mask_y)
         )
       }
       user_text <- paste0(
-        "Declared missing values removed: ",
+        spicy_str("note_declared_missing_removed"),
         paste(user_parts, collapse = ", "),
         user_suffix,
         "."
@@ -1191,8 +1197,8 @@ cross_tab <- function(
       }
     }
     if (n_by_dropped > 0L) {
-      by_text <- sprintf(
-        "Rows with missing %s removed: %d.",
+      by_text <- spicy_fmt(
+        "note_rows_missing_by_removed",
         by_name,
         n_by_dropped
       )
@@ -1209,6 +1215,11 @@ cross_tab <- function(
     attr(df_out, "digits") <- digits
     attr(df_out, "decimal_mark") <- decimal_mark
     attr(df_out, "p_digits") <- p_digits
+    # The percentage mode drives the default number of decimals in
+    # `print.spicy_cross_table()`. Carried as a KEY, never re-read from the
+    # title text: a title is a display string and may be translated (or may
+    # legitimately contain a "%" coming from a variable name).
+    attr(df_out, "percent_mode") <- percent
     # Mark the N row / N column position robustly (string-matching on
     # `Values == "N"` would collide with a user-level literally named
     # "N", e.g. Yes/No factors).
@@ -1468,11 +1479,18 @@ print.spicy_cross_table <- function(
   title <- attr(x, "title")
   digits_attr <- attr(x, "digits")
   decimal_mark_attr <- attr(x, "decimal_mark")
+  percent_mode <- attr(x, "percent_mode")
 
   if (is.null(digits)) {
     digits <- if (!is.null(digits_attr)) {
       digits_attr
+    } else if (!is.null(percent_mode)) {
+      # Percentages get one decimal, raw counts none. Read from the KEY
+      # `cross_tab()` stored, not from a "%" in the displayed title.
+      if (identical(percent_mode, "none")) 0 else 1
     } else if (grepl("%", title)) {
+      # Objects rebuilt from the plain-data.frame payload have no
+      # `percent_mode`; they keep the historical text probe.
       1
     } else {
       0

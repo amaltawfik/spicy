@@ -308,7 +308,12 @@ align_frames <- function(
           !f$coefs$is_ref
       ])
       tt <- tt[!is.na(tt)]
-      if (length(tt) == 1L && tt %in% c("t", "z")) tt else NA_character_
+      # `tt` is the internal TOKEN; the header is its registry label.
+      if (length(tt) == 1L && tt %in% c("t", "z")) {
+        switch(tt, t = spicy_str("symbol_t"), z = spicy_str("symbol_z"))
+      } else {
+        NA_character_
+      }
     },
     character(1)
   )

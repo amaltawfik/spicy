@@ -179,7 +179,7 @@ as_regression_frame.gee <- function(fit, ...) {
 .gee_refuse_cluster <- function(model_index = NULL) {
   lead <- "`cluster` is not used for `geeglm` models."
   if (!is.null(model_index)) {
-    lead <- sprintf("Model %d: %s", model_index, lead)
+    lead <- spicy_fmt("note_model_prefix", model_index, lead)
   }
   spicy_abort(
     c(

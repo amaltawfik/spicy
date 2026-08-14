@@ -1155,7 +1155,11 @@ output_gt <- function(rendered) {
   # are left alone -- only the row whose text is ours is removed.
   html_str <- .spicy_gt_drop_source_note(html_str, note_one_line)
   note_html <- esc(note_one_line)
-  note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
+  note_html <- sub(
+    .note_prefix_pattern(),
+    paste0("<em>", spicy_str("note_prefix_emphasis"), "</em>"),
+    note_html
+  )
   note_div <- paste0(
     "<div class=\"spicy-gt-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",
@@ -1718,10 +1722,11 @@ output_flextable <- function(rendered) {
       font.size = 10,
       italic = TRUE
     )
-    if (startsWith(note_one_line, "Note.")) {
+    note_split <- .note_prefix_split(note_one_line)
+    if (!is.null(note_split)) {
       para <- flextable::as_paragraph(
-        flextable::as_chunk("Note.", props = fp_italic),
-        flextable::as_chunk(substring(note_one_line, 6L), props = fp_normal)
+        flextable::as_chunk(note_split$marker, props = fp_italic),
+        flextable::as_chunk(note_split$rest, props = fp_normal)
       )
     } else {
       para <- flextable::as_paragraph(
@@ -1772,7 +1777,11 @@ output_flextable <- function(rendered) {
   }
   note_one_line <- gsub("\n", " ", note, fixed = TRUE)
   note_html <- esc(note_one_line)
-  note_html <- sub("^Note\\.", "<em>Note.</em>", note_html)
+  note_html <- sub(
+    .note_prefix_pattern(),
+    paste0("<em>", spicy_str("note_prefix_emphasis"), "</em>"),
+    note_html
+  )
   note_div <- paste0(
     "<div class=\"spicy-ft-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",

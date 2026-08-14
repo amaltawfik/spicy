@@ -107,9 +107,9 @@ print.spicy_categorical_table <- function(x, ...) {
 # two can never drift apart.
 .categorical_title <- function(group_var) {
   if (is.null(group_var)) {
-    "Categorical table"
+    spicy_str("title_categorical")
   } else {
-    paste0("Categorical table by ", group_var)
+    spicy_fmt("title_categorical_by", group_var)
   }
 }
 

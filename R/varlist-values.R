@@ -45,7 +45,7 @@ summarize_varlist_column <- function(
         ),
         class = "spicy_summary_failed"
       )
-      paste0("<error: ", msg, ">")
+      spicy_fmt("value_summary_error", msg)
     }
   )
 }
@@ -103,14 +103,18 @@ summarize_values_minmax <- function(
     val_str <- paste(vals_chr_clean, collapse = ", ")
   } else {
     val_str <- paste(
-      c(vals_chr_clean[seq_len(3)], "...", utils::tail(vals_chr_clean, 1)),
+      c(
+        vals_chr_clean[seq_len(3)],
+        spicy_str("marker_ellipsis_values"),
+        utils::tail(vals_chr_clean, 1)
+      ),
       collapse = ", "
     )
   }
 
   units_suffix <- varlist_difftime_units(col)
   if (!is.null(units_suffix) && nzchar(val_str)) {
-    val_str <- paste0(val_str, " (", units_suffix, ")")
+    val_str <- paste0(val_str, spicy_fmt("value_summary_units", units_suffix))
   }
 
   extras <- format_varlist_missing_values(has_na, has_nan, include_na)
@@ -145,7 +149,7 @@ summarize_values_all <- function(
         }
       },
       error = function(e) {
-        "Error: invalid values"
+        spicy_str("value_summary_invalid")
       }
     )
 
@@ -156,9 +160,7 @@ summarize_values_all <- function(
     if (!is.null(units_suffix) && length(vals_chr_clean) > 0L) {
       vals_chr_clean[[length(vals_chr_clean)]] <- paste0(
         vals_chr_clean[[length(vals_chr_clean)]],
-        " (",
-        units_suffix,
-        ")"
+        spicy_fmt("value_summary_units", units_suffix)
       )
     }
 
@@ -253,10 +255,10 @@ format_varlist_missing_values <- function(has_na, has_nan, include_na) {
 
   extras <- character()
   if (has_na) {
-    extras <- c(extras, "<NA>")
+    extras <- c(extras, spicy_str("marker_na"))
   }
   if (has_nan) {
-    extras <- c(extras, "<NaN>")
+    extras <- c(extras, spicy_str("marker_nan"))
   }
 
   extras
@@ -264,12 +266,12 @@ format_varlist_missing_values <- function(has_na, has_nan, include_na) {
 
 
 summarize_varlist_array <- function(col, include_na = FALSE) {
-  summary <- paste0(
-    if (is.matrix(col)) "Matrix" else "Array",
-    "(",
-    paste(dim(col), collapse = " x "),
-    ")"
-  )
+  dims <- paste(dim(col), collapse = " x ")
+  summary <- if (is.matrix(col)) {
+    spicy_fmt("value_summary_matrix", dims)
+  } else {
+    spicy_fmt("value_summary_array", dims)
+  }
   extras <- format_varlist_missing_values(
     varlist_has_na(col),
     varlist_has_nan(col),
@@ -281,11 +283,15 @@ summarize_varlist_array <- function(col, include_na = FALSE) {
 
 
 summarize_varlist_list <- function(col, values = FALSE, include_na = FALSE) {
-  base <- paste0("List(", length(col), ")")
+  base <- spicy_fmt("value_summary_list", length(col))
 
   if (values && length(col) > 0L) {
     types <- safe_sort_unique(vapply(col, typeof, character(1)))
-    base <- paste0(base, ": ", paste(types, collapse = ", "))
+    base <- spicy_fmt(
+      "value_summary_list_types",
+      base,
+      paste(types, collapse = ", ")
+    )
   }
 
   extras <- format_varlist_missing_values(

@@ -1,0 +1,379 @@
+# ---------------------------------------------------------------------------
+# spicy's display-string registry (stage 1: extraction at byte-identical
+# default output).
+#
+# Every string a reader of a spicy TABLE sees -- column headers, row labels,
+# cell contents, titles, table footnotes -- lives here and nowhere else.
+# Deliberately NOT here (see dev/i18n_string_census.md section 6):
+#   * R conditions (errors, warnings, messages): they stay English, they are
+#     read by developers and quoted in bug reports;
+#   * argument token VALUES ("welch", "HC3", "refit"): API identifiers;
+#   * public output COLUMN NAMES (`Variable`, `Level`, `N_valid`, ...): a
+#     documented contract that user code indexes into.
+#
+# Keys are stable; values are the English defaults. A key is never derived
+# from its value, and no mechanism of the package may branch on a displayed
+# string -- see dev/i18n_string_census.md section 1.6.
+#
+# Stage 2 (not implemented here) will resolve, in order:
+#   getOption("spicy.labels")[[key]] -> language table -> English default.
+# Only the body of `spicy_str()` changes then; `spicy_fmt()` is untouched.
+#
+# Non-ASCII glyphs are written as \uXXXX escapes, as everywhere else in the
+# package (CRAN portability; see dev/fix_nonascii.R).
+# ---------------------------------------------------------------------------
+
+.spicy_strings <- c(
+  # -- missing values: display level and disclosure notes ------------------
+  row_missing_level = "(Missing)",
+  row_missing_level_dedup = "(Missing_%d)",
+  note_missing_removed = "Missing values removed: ",
+  note_declared_missing_removed = "Declared missing values removed: ",
+  note_missing_item = "%s (%d)",
+  note_missing_rows_total = "; %d rows in total",
+  note_rows_missing_by_removed = "Rows with missing %s removed: %d.",
+  # Same text as `note_rows_missing_by_removed`, different subject (the
+  # weights column, not the grouping variable): an inflected language needs
+  # the two apart.
+  note_rows_missing_weights = "Rows with missing %s removed: %d.",
+  note_weights_fallback = "weights",
+
+  # -- table titles: descriptive families -----------------------------------
+  title_categorical = "Categorical table",
+  title_categorical_by = "Categorical table by %s",
+  title_continuous = "Descriptive statistics",
+  title_continuous_by = "Descriptive statistics by %s",
+  title_continuous_lm_by = "Continuous outcomes by %s",
+  title_continuous_lm_by_fallback = "Predictor",
+  title_freq = "Frequency table: %s",
+  # Three holes: row variable, the (possibly empty) cross fragment, the
+  # percentage suffix. `y` is optional in `cross_tab()`, so the " x <y>" part
+  # cannot live inside this template.
+  title_crosstab = "Crosstable: %s%s%s",
+  title_crosstab_by = " x %s",
+  title_crosstab_group = "%s | %s = %s",
+  title_percent_row = " (Row %)",
+  title_percent_column = " (Column %)",
+  title_percent_none = " (N)",
+  title_varlist = "vl: %s",
+  title_varlist_anonymous = "vl: <data>",
+  title_varlist_empty = "vl: (no columns selected)",
+
+  # -- freq() and cross_tab(): headers, margin and block labels -------------
+  header_category = "Category",
+  label_values = "Values",
+  header_freq = "Freq.",
+  header_percent = "Percent",
+  header_valid_percent = "Valid Percent",
+  header_cum_percent = "Cum. Percent",
+  header_cum_valid_percent = "Cum. Valid Percent",
+  row_valid = "Valid",
+  row_missing_block = "Missing",
+  label_total = "Total",
+  note_label = "Label: %s",
+  note_class = "Class: %s",
+  note_data = "Data: %s",
+  note_weight = "Weight: %s",
+  note_weight_applied = "Weight: (applied)",
+  note_weight_rescaled = " (rescaled)",
+
+  # -- association measures: one key per measure, shared by the three
+  #    families that name it (cross_tab() note, table_categorical() header,
+  #    assoc_measures() row labels) ------------------------------------------
+  stat_cramer_v = "Cramer's V",
+  stat_phi = "Phi",
+  stat_gamma = "Goodman-Kruskal Gamma",
+  stat_tau_b = "Kendall's Tau-b",
+  # "Stuart's Tau-c" is the SAS PROC FREQ label (honouring Stuart, 1953);
+  # SPSS and PSPP print "Kendall's tau-c" for the same statistic.
+  stat_tau_c = "Stuart's Tau-c",
+  stat_somers_d = "Somers' D",
+  stat_lambda = "Lambda",
+
+  # -- cross_tab() statistics note ------------------------------------------
+  note_p_prefix_lt = "p %s",
+  note_p_prefix_eq = "p = %s",
+  test_chisq = "Chi-2(%s) = %s, %s",
+  note_chisq_simulated = " (simulated)",
+  # The 95 is hardcoded upstream (dev/i18n_string_census.md section 4.7,
+  # inconsistency 2); the literal "%" here is why this key is read through
+  # `spicy_str()` and never through `spicy_fmt()`.
+  note_assoc_ci = ", 95% CI [",
+  note_yates_applied = "Yates continuity correction applied.",
+  note_stats_subtable = "Stats computed on %dx%d sub-table after dropping empty rows / columns.",
+  note_warning_prefix = "Warning: ",
+  note_expected_lt5 = "%d expected cell%s < 5 (%s%%).",
+  note_expected_lt1 = "%d expected cell%s < 1.",
+  note_min_expected = " Minimum expected = %s",
+  note_expected_advice = ". Consider %s or set globally via %s.",
+  note_kv_pair = "%s = %s",
+
+  # -- mathematical glyphs: frozen, never translated ------------------------
+  # One key per GLYPH, all roles confined -- except where the same glyph
+  # names two different statistics (global vs partial), which the package
+  # may want to gloss differently without a side effect.
+  symbol_t = "t",
+  symbol_z = "z",
+  symbol_chi_sq = "\u03C7\u00B2",
+  symbol_beta = "\u03B2",
+  symbol_eta_sq_partial = "\u03B7\u00B2",
+  symbol_omega_sq_global = "\u03C9\u00B2",
+  symbol_omega_sq_partial = "\u03C9\u00B2",
+  symbol_f2_global = "f\u00B2",
+  symbol_f2_partial = "f\u00B2",
+  symbol_r2 = "R\u00B2",
+  # Composed character (base + combining diacritic): never retype it, copy
+  # it. Sensitive to Unicode normalisation and to ASCII width computation.
+  symbol_sigma_hat = "\u03C3\u0302",
+
+  # -- table_regression(): column headers -----------------------------------
+  header_n_upper = "N",
+  header_events_n = "Events/N",
+  header_b = "B",
+  header_se = "SE",
+  header_p = "p",
+  header_pd = "pd",
+  header_rhat = "R-hat",
+  header_ess_bulk = "ESS (bulk)",
+  header_ess_tail = "ESS (tail)",
+  header_mcse = "MCSE",
+  header_rmst = "dRMST (%s)",
+  header_rmst_no_horizon = "dRMST",
+  header_risk_diff = "dRisk (%s)",
+  header_risk_diff_no_horizon = "dRisk",
+  header_ame = "AME",
+  header_ci_label_confidence = "CI",
+  header_ci_label_credible = "CrI",
+  header_ci_label_hdi = "HDI",
+  # Two holes: coverage percentage, interval label. One template for the
+  # three families, so the percentage / label order is translatable at once.
+  header_ci_spanner = "%s%% %s",
+  header_with_ci_suffix = "%s %s",
+  header_model_prefixed = "%s: %s",
+  header_ame_by_category = "%s %s",
+  header_companion_qualified = "%s (%s)",
+  # Exponentiated-coefficient headers, per family / link.
+  header_exp_or = "OR",
+  header_exp_irr = "IRR",
+  header_exp_hr = "HR",
+  header_exp_rr = "RR",
+  header_exp_mr = "MR",
+  header_exp_generic = "exp(B)",
+
+  # -- table_regression(): fit-statistic row labels -------------------------
+  header_n_lower = "n",
+  fitstat_n_events = "N events",
+  label_weighted_n = "Weighted n",
+  fitstat_adj_r2 = "Adj.R\u00B2",
+  # One hole: a PROPER NAME (McFadden / Nagelkerke / Tjur / Bayes), never
+  # translated.
+  fitstat_pseudo_r2 = "R\u00B2 (%s)",
+  # One hole: a translatable qualifier.
+  fitstat_r2_qualified = "R\u00B2 (%s)",
+  label_r2_within = "within",
+  label_r2_marginal = "marginal",
+  label_r2_conditional = "conditional",
+  fitstat_theta = "\u03B8 (dispersion)",
+  fitstat_alpha = "\u03B1 (= 1/\u03B8)",
+  fitstat_phi = "\u03C6 (precision)",
+  fitstat_qic = "QIC",
+  fitstat_qicu = "QICu",
+  fitstat_scale = "Scale",
+  fitstat_max_cluster_size = "Max cluster size",
+  fitstat_elpd_loo = "ELPD (LOO)",
+  fitstat_looic = "LOOIC",
+  fitstat_waic = "WAIC",
+  fitstat_icc = "ICC",
+  fitstat_rmse = "RMSE",
+  fitstat_aic = "AIC",
+  fitstat_aicc = "AICc",
+  fitstat_bic = "BIC",
+  fitstat_deviance = "Deviance",
+  # Nested-comparison change tokens: one template over the base label.
+  fitstat_change_prefix = "\u0394%s",
+  fitstat_f_change = "F-change",
+  fitstat_p_change = "p (change)",
+
+  # -- table_regression(): abbreviation glosses -----------------------------
+  note_abbrev_or = "OR = odds ratio",
+  note_abbrev_irr = "IRR = incidence rate ratio",
+  note_abbrev_hr = "HR = hazard ratio",
+  note_abbrev_rr = "RR = risk ratio",
+  note_abbrev_mr = "MR = mean ratio",
+  note_abbrev_expb = "exp(B) = exponentiated coefficient",
+  note_abbrev_f2 = "f\u00B2 = Cohen's partial f\u00B2",
+  note_abbrev_eta2 = "\u03B7\u00B2 = partial eta-squared",
+  note_abbrev_omega2 = "\u03C9\u00B2 = bias-corrected partial omega-squared",
+  note_abbrev_chi2 = "\u03C7\u00B2 = partial likelihood-ratio chi-squared",
+  note_abbrev_pd = "pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019)",
+  note_abbrev_mcse = "MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
+  note_abbrev_ame = "AME = average marginal effect",
+  note_abbrev_ame_percat = "AME = average marginal effect on a response-category probability",
+
+  # -- table footnotes: the APA prefix --------------------------------------
+  # `note_prefix` is what a note BUILDER prepends. `note_prefix_emphasis` is
+  # the part the rich engines italicise (APA Manual 7 section 7.14) and the
+  # part their recognisers look for; it must be a prefix of `note_prefix`
+  # (asserted in test-i18n.R). Neither is ever re-typed at a call site: the
+  # recogniser derives its pattern and its offset from the key.
+  note_prefix = "Note. ",
+  note_prefix_emphasis = "Note.",
+  note_assoc_measure_item = "%s: %s",
+
+  # -- table_continuous(): tests and glosses --------------------------------
+  test_wilcoxon_rank_sum = "Wilcoxon rank-sum test",
+  test_kruskal_wallis = "Kruskal-Wallis test",
+  test_student_t = "Student t-test",
+  # Lowercase because the template puts it mid-sentence: the case belongs to
+  # `note_group_comparison`, not to the label.
+  test_oneway_anova = "one-way ANOVA",
+  test_welch_t = "Welch t-test",
+  test_welch_oneway_anova = "Welch one-way ANOVA",
+  note_group_comparison = "Group comparison: %s.",
+  note_group_comparison_item = "%s (%s)",
+  cell_undefined = "--",
+  note_gloss_iqr = "IQR = interquartile range (Q3 - Q1).",
+  note_gloss_med_iqr = "Med [Q1, Q3] = median [first quartile, third quartile].",
+  # The same coverage percentage appears twice: positional form, mandatory.
+  note_gloss_med_ci = "Med %1$s CI = exact order-statistic confidence interval for the median (coverage at least %1$s).",
+  note_gloss_med_ci_undefined = "\"%s\" where the sample is too small for this level.",
+
+  # -- table_regression(): standard-error and interval notes ----------------
+  note_adjusted_for = "Adjusted for %s (%s).",
+  # Argument-token VALUES inserted verbatim into a sentence: the token stays
+  # "proportional" / "balanced", only its DISPLAY lives here.
+  note_adjustment_proportional = "proportional",
+  note_adjustment_balanced = "balanced",
+  note_std_errors_single = "Std. errors: %s.",
+  note_std_errors_multi = "Std. errors:\n%s",
+  note_model_prefix = "Model %d: %s",
+  # Two leading spaces are significant: the indented per-model line of the
+  # Std. errors block.
+  note_model_prefix_indented = "  Model %d: %s",
+  note_vcov_classical_glm = "classical (Fisher information)",
+  note_vcov_classical_lm = "classical (OLS)",
+  note_vcov_hc = "heteroskedasticity-robust (%s)",
+  note_vcov_cluster_vector = "cluster vector supplied",
+  note_vcov_cluster_named = "clusters by %s",
+  note_vcov_cr = "cluster-robust (%s), %s",
+  # Same opening without the cluster fragment: `table_continuous_lm()` may
+  # have no cluster name to append.
+  note_vcov_cr_bare = "cluster-robust (%s)",
+  note_vcov_cr1s = "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), %s",
+  note_vcov_bootstrap = "nonparametric bootstrap%s",
+  note_vcov_bootstrap_cluster = "cluster bootstrap%s, clusters by %s",
+  note_vcov_bootstrap_reps = " (%d replicates)",
+  note_vcov_bootstrap_reps_range = " (%d-%d replicates)",
+  note_vcov_jackknife = "jackknife (leave-one-out)",
+  note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
+  note_vcov_jackknife_plain = "jackknife",
+  note_vcov_wald_asymptotic = "Wald asymptotic (z)",
+  note_vcov_cluster_by = ", clusters by %s",
+  note_ci_profile = "%s%% CIs: profile likelihood.",
+  note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",
+  note_ci_posterior_mixed = "Model %d: %s%% CI is an equal-tailed posterior credible interval.",
+
+  # -- typographic markers: frozen ------------------------------------------
+  # R's own spellings for the two missing markers. `varlist-values.R` quotes
+  # the literal values "NA" / "NaN" / "" precisely to tell them apart from
+  # these markers, which is the reason they are frozen.
+  marker_na = "<NA>",
+  marker_nan = "<NaN>",
+  marker_ellipsis_values = "...",
+  marker_truncation_ellipsis = "\u2026",
+  marker_varlist_transformed = "*",
+  symbol_star_001 = "***",
+  symbol_star_01 = "**",
+  symbol_star_05 = "*",
+  note_stars_legend_entry = "%s p < %s",
+
+  # -- varlist() / code_book(): value summaries -----------------------------
+  value_summary_matrix = "Matrix(%s)",
+  value_summary_array = "Array(%s)",
+  value_summary_list = "List(%d)",
+  # Second hole: `typeof()` names -- base R vocabulary, not translated.
+  value_summary_list_types = "%s: %s",
+  # One hole: a difftime unit -- base R vocabulary, not translated.
+  value_summary_units = " (%s)",
+  # One hole: `conditionMessage()`, which stays English (it is a condition).
+  value_summary_error = "<error: %s>",
+  value_summary_invalid = "Error: invalid values"
+)
+
+# Raw display label for `key`.
+#
+# Hard error on an unknown key: a missing key is a development bug, never a
+# runtime condition. `[[` on a named character vector already raises
+# "subscript out of bounds", which is the behaviour we want.
+spicy_str <- function(key) {
+  .spicy_strings[[key]]
+}
+
+# Interpolated display label. The template is an `sprintf` format; the holes
+# are DATA (variable names, counts, percentages), never words to translate.
+# A template whose hole repeats must use the positional form (`%1$s`).
+spicy_fmt <- function(key, ...) {
+  sprintf(spicy_str(key), ...)
+}
+
+# Escape a display label so it can be pasted into a regular expression.
+#
+# The package sometimes has to RECOGNISE one of its own labels in text it
+# assembled earlier. The pattern must then be generated from the label, never
+# typed out a second time: a hardcoded copy stops matching the day the label
+# changes -- silently, since a regex that fails to match raises nothing.
+.escape_regex <- function(x) {
+  gsub("([][{}()*+?.\\\\^$|])", "\\\\\\1", x)
+}
+
+# Pattern matching a "companion" column header -- a sub-column that only means
+# something next to the estimate column it belongs to (SE, p, the CI spanner).
+# `spicy_print_table()` uses it when a width split orphans such a column on a
+# continuation panel, to name the estimand it belongs to.
+#
+# Built from the registry rather than typed out: the labels and the pattern
+# that recognises them must move together. The credible / confidence labels are
+# the two the historical pattern covered; `header_ci_label_hdi` is deliberately
+# NOT included, to keep today's behaviour byte-for-byte.
+# Split a rendered note into (emphasised prefix, remainder), or NULL when the
+# note does not open with the prefix. The rich engines (tinytable, gt,
+# flextable / Word) italicise the first element and leave the second in
+# regular type -- none of them may re-type the prefix or hardcode its length.
+.note_prefix_split <- function(note) {
+  marker <- spicy_str("note_prefix_emphasis")
+  if (!startsWith(note, marker)) {
+    return(NULL)
+  }
+  list(marker = marker, rest = substring(note, nchar(marker) + 1L))
+}
+
+# `^<prefix>` as a regular expression, for the HTML engines that wrap the
+# prefix in <em> with a single anchored substitution.
+.note_prefix_pattern <- function() {
+  paste0("^", .escape_regex(spicy_str("note_prefix_emphasis")))
+}
+
+.companion_header_pattern <- function() {
+  ci_alt <- paste(
+    vapply(
+      c("header_ci_label_confidence", "header_ci_label_credible"),
+      function(k) .escape_regex(spicy_str(k)),
+      character(1)
+    ),
+    collapse = "|"
+  )
+  ci_pat <- spicy_fmt(
+    "header_ci_spanner",
+    "[0-9]+",
+    paste0("(?:", ci_alt, ")")
+  )
+  paste0(
+    "^(",
+    ci_pat,
+    "|",
+    .escape_regex(spicy_str("header_se")),
+    "|",
+    .escape_regex(spicy_str("header_p")),
+    ")$"
+  )
+}
