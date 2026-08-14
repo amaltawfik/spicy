@@ -237,12 +237,15 @@ table_categorical(
     (U+2007, digit-width) so every string in a column has the same width
     with the decimal mark at the same internal position; centring those
     uniform-width strings then stacks the decimal points vertically. The
-    same pad-then-centre strategy is applied on every engine (`gt`,
-    `tinytable`, `flextable`, `word`, `clipboard`, ASCII print) for a
+    same pad-then-centre strategy is applied on every rendering engine
+    (`gt`, `tinytable`, `flextable`, `word`, ASCII print) for a
     homogeneous rendering, matching
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
     and
     [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+    The `clipboard` output is delimited text meant to be parsed rather
+    than read at a fixed width, so its cells travel unpadded (a padded
+    number pastes as text next to an unpadded number).
 
   - `"center"`: center-align all numeric columns.
 
@@ -313,7 +316,9 @@ table_categorical(
 
 - clipboard_delim:
 
-  Delimiter for clipboard text export. Defaults to `"\t"`.
+  Delimiter for clipboard text export. Defaults to `"\t"`. A cell
+  holding the delimiter itself, a double quote or a line break is quoted
+  RFC 4180-style, so the grid survives whatever delimiter you choose.
 
 - word_path:
 
@@ -362,6 +367,20 @@ Depends on `output`:
 
 - `"clipboard"`: copies the table and returns the display `data.frame`
   invisibly.
+
+The `drop_na = TRUE` disclosure travels with the table on every route,
+not just the console: `"default"` prints it under the ASCII table,
+`"tinytable"` / `"gt"` / `"flextable"` / `"word"` carry it as a table
+note, `"excel"` writes it below the body, and `"data.frame"` keeps the
+sentence verbatim in the `missing_note` attribute
+(`attr(x, "missing_note")`, `NULL` when nothing was removed) so a
+pipeline that renders the numbers itself can still state what left the
+table. On the `"tinytable"` route the note is set one size down;
+`options(spicy.note_style)` governs that (see
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
+
+The Excel sheet carries the same title the console prints on its first
+row; the table itself starts on row 3.
 
 ## Tests
 
@@ -613,12 +632,12 @@ table_categorical(
 #>    Yes          │       20.8             59         14.8       249     20.8   
 #>    (Missing)    │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable       │   p    Cramer's V  CI lower  CI upper 
-#> ────────────────┼───────────────────────────────────────
-#>  Current smoker │ <.001     .14        .08       .19    
-#>    No           │                                       
-#>    Yes          │                                       
-#>    (Missing)    │                                       
+#>  Variable       │ p (Total %)  Cramer's V  CI lower  CI upper 
+#> ────────────────┼─────────────────────────────────────────────
+#>  Current smoker │    <.001        .14        .08       .19    
+#>    No           │                                             
+#>    Yes          │                                             
+#>    (Missing)    │                                             
 
 # --- Per-variable association measure ----------------------------------
 
@@ -646,17 +665,17 @@ table_categorical(
 #>    Upper secondary       │   290       46.8     249     42.9     539     44.9   
 #>    Tertiary              │   196       31.6     204     35.2     400     33.3   
 #> 
-#>  Variable                │  p    Effect size 
-#> ─────────────────────────┼───────────────────
-#>  Current smoker          │ .713      .01     
-#>    No                    │                   
-#>    Yes                   │                   
-#>    (Missing)             │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level │ .344      .04     
-#>    Lower secondary       │                   
-#>    Upper secondary       │                   
-#>    Tertiary              │                   
+#>  Variable                │ p (Total %)  Effect size 
+#> ─────────────────────────┼──────────────────────────
+#>  Current smoker          │    .713          .01     
+#>    No                    │                          
+#>    Yes                   │                          
+#>    (Missing)             │                          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │    .344          .04     
+#>    Lower secondary       │                          
+#>    Upper secondary       │                          
+#>    Tertiary              │                          
 #> 
 #> Note. Phi: Current smoker; Cramer's V: Highest education level.
 
@@ -681,17 +700,17 @@ table_categorical(
 #>    Upper secondary       │   290       46.8     249     42.9     539     44.9   
 #>    Tertiary              │   196       31.6     204     35.2     400     33.3   
 #> 
-#>  Variable                │  p    Cramer's V 
-#> ─────────────────────────┼──────────────────
-#>  Current smoker          │ .713     .01     
-#>    No                    │                  
-#>    Yes                   │                  
-#>    (Missing)             │                  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level │ .344     .04     
-#>    Lower secondary       │                  
-#>    Upper secondary       │                  
-#>    Tertiary              │                  
+#>  Variable                │ p (Total %)  Cramer's V 
+#> ─────────────────────────┼─────────────────────────
+#>  Current smoker          │    .713         .01     
+#>    No                    │                         
+#>    Yes                   │                         
+#>    (Missing)             │                         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │    .344         .04     
+#>    Lower secondary       │                         
+#>    Upper secondary       │                         
+#>    Tertiary              │                         
 
 # Per-variable override (recommended named form).
 table_categorical(
@@ -719,30 +738,30 @@ table_categorical(
 #>    Tertiary              │   196       31.6     204     35.2     400     33.3   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Self-rated health       │                                                      
-#>    (Missing)             │    10        1.6      10      1.7      20      1.7   
 #>    Poor                  │    31        5.0      30      5.2      61      5.1   
 #>    Fair                  │   143       23.1     123     21.2     266     22.2   
 #>    Good                  │   282       45.5     276     47.6     558     46.5   
 #>    Very good             │   154       24.8     141     24.3     295     24.6   
+#>    (Missing)             │    10        1.6      10      1.7      20      1.7   
 #> 
-#>  Variable                │  p    Effect size 
-#> ─────────────────────────┼───────────────────
-#>  Current smoker          │ .713      .01     
-#>    No                    │                   
-#>    Yes                   │                   
-#>    (Missing)             │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level │ .344      .04     
-#>    Lower secondary       │                   
-#>    Upper secondary       │                   
-#>    Tertiary              │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Self-rated health       │ .849      .01     
-#>    (Missing)             │                   
-#>    Poor                  │                   
-#>    Fair                  │                   
-#>    Good                  │                   
-#>    Very good             │                   
+#>  Variable                │ p (Total %)  Effect size 
+#> ─────────────────────────┼──────────────────────────
+#>  Current smoker          │    .713          .01     
+#>    No                    │                          
+#>    Yes                   │                          
+#>    (Missing)             │                          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │    .344          .04     
+#>    Lower secondary       │                          
+#>    Upper secondary       │                          
+#>    Tertiary              │                          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Self-rated health       │    .849          .01     
+#>    Poor                  │                          
+#>    Fair                  │                          
+#>    Good                  │                          
+#>    Very good             │                          
+#>    (Missing)             │                          
 #> 
 #> Note. Phi: Current smoker; Cramer's V: Highest education level; Kendall's Tau-b: Self-rated health.
 

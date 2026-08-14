@@ -140,7 +140,11 @@
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>New <code>show_columns</code> token families <code>"rmst"</code> and <code>"risk_diff"</code> for <code>coxph</code> and <code>survreg</code>: covariate-adjusted differences in restricted mean survival time over <code>[0, tau]</code> and in cumulative incidence at <code>at_time</code>, by g-computation, with bootstrap SEs, CIs, and p-values.</li>
+<ul><li>Table notes rendered by the <code>"tinytable"</code> engine are set one size down (<code>0.9em</code>, black), like the notes of the other engines. New <code>options(spicy.note_style)</code>: <code>"none"</code> leaves the note to the document template, and any other string is added to the Typst <code><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text()</a></code> call around it, e.g. <code>"fill: luma(89)"</code> for a grey note.</li>
+<li>
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code> gains <code>show_columns</code>: pick the statistics the table shows – <code>"med"</code>, <code>"q1"</code>, <code>"q3"</code>, <code>"iqr"</code>, the compact <code>"med_iqr"</code> (<code>Med [Q1, Q3]</code>), and <code>"med_ci"</code> (exact order-statistic CI of the median) alongside the usual <code>"m"</code>, <code>"sd"</code>, <code>"min"</code>, <code>"max"</code>, <code>"ci"</code>, <code>"n"</code>. Pass a named list to give each variable its own selection. A variable shown as a median is tested as one: its default test becomes Wilcoxon / Kruskal-Wallis with the matching rank effect size, per variable, and the note says which test each variable carries. The default display is unchanged.</li>
+<li>New <code>show_columns</code> tokens <code>"r2"</code> and <code>"adj_r2"</code> for linear <code><a href="../reference/table_regression_uv.html">table_regression_uv()</a></code> screens: the share of outcome variance each predictor explains on its own, one value per predictor block. The multivariable model keeps reporting its R-squared in the fit-statistics rows; <code>glm</code> and <code>coxph</code> screens are refused.</li>
+<li>New <code>show_columns</code> token families <code>"rmst"</code> and <code>"risk_diff"</code> for <code>coxph</code> and <code>survreg</code>: covariate-adjusted differences in restricted mean survival time over <code>[0, tau]</code> and in cumulative incidence at <code>at_time</code>, by g-computation, with bootstrap SEs, CIs, and p-values.</li>
 <li>The horizon is explicit and required (<code>tau = "minmax"</code> picks the smallest per-group maximum follow-up, and is refused in the univariable screen, which takes both families at one shared horizon); factors get one row per level, continuous predictors the +1-unit contrast.</li>
 <li>Stratified Cox fits keep each subject’s own stratum baseline; stratified <code>survreg</code> fits are refused.</li>
 <li>New <code>show_columns</code> token <code>"n_events"</code>: event counts as <code>events/N</code> next to the estimates – per factor level (reference row included), model totals on continuous rows – for binomial outcomes (<code>glm</code>, <code>glmer</code>, <code>glmmTMB</code>) and right-censored <code>coxph</code> fits.</li>
@@ -181,10 +185,54 @@
 <li>
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code> reads <code>options(spicy.rescale)</code> like <code><a href="../reference/cross_tab.html">cross_tab()</a></code>; an explicitly supplied <code>rescale</code> still wins.</li>
 <li>Seven new vignettes: <em>Mixed-effects</em>, <em>GEE (population-averaged)</em>, <em>Multinomial</em>, <em>Count and two-part</em>, <em>Survival</em>, <em>Ordinal regression tables</em>, and <em>Categorical predictors</em>, a guide to dummy coding, reference levels, joint tests of a factor, and contrast codings.</li>
+<li>
+<code><a href="../reference/as_structured.html">as_structured()</a></code> carries everything the printed table shows, so a custom renderer no longer has to reconstruct it: significance markers and their cutoffs (<code>stars</code>), the display string of cells no single number can express such as the <code>events/N</code> counts (<code>col_meta$display_cells</code>), and the absorbed fixed-effects block as a header row plus one row per factor. A new <code>version</code> field names the contract; components are only ever added, and a view built by a newer version than the one reading it is refused instead of mis-read.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> draws its light rule between variable blocks in the <code>"gt"</code> and <code>"flextable"</code> outputs too, labels the first <code>"gt"</code> column <code>Variable</code> like every other engine, and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> carries its title to the <code>"tinytable"</code> caption.</li>
+<li>Tables rendered to Typst no longer force a <code>5pt</code> column gutter when they carry grouped column headers (<code>by</code> groups, multi-model headers, CI spanners). All tables in a document now share the same column grid, and a document-level <code>#set table(column-gutter: ...)</code> rule becomes effective again.</li>
+<li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> carry their missing-value disclosure to every output: <code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code> and <code>"word"</code> now show it as a table note, and <code>"data.frame"</code> keeps it in the <code>missing_note</code> attribute. It used to reach the console print only, so a report rendered with <code>warning: false</code> showed a table computed on fewer observations than it announced.</li>
+<li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> also carry their title to the <code>"tinytable"</code> output, as the table caption; a <code>by</code> table carries its association-measure note there too.</li>
+<li>A table without a confidence-interval column had its <code>"tinytable"</code> header rules one row too low – no rule above the table, the per-model rules under the column labels instead of under the model names – and carried an empty header strip below the labels.</li>
+<li>The <code>"tinytable"</code> output draws every rule the console draws between blocks: above <code>Thresholds:</code> and <code>Random effects:</code> in <code><a href="../reference/table_regression.html">table_regression()</a></code>, and between variable blocks in <code><a href="../reference/table_categorical.html">table_categorical()</a></code>.</li>
+<li>A multi-line table note keeps one disclosure per line in the <code>"tinytable"</code> HTML and Typst output; the lines used to run together into a single sentence.</li>
+<li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> without <code>by</code> labels the first <code>"tinytable"</code> column <code>Variable</code>, like the console and like the <code>by</code> version.</li>
+<li>Factor levels in a <code>"tinytable"</code> regression table are indented once, not twice.</li>
+<li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> carry their title to <code>output = "word"</code>, as the numbered caption the regression tables already get; the document used to open with an untitled table, and a <code>by</code> table lost the name of its grouping variable with it.</li>
+<li>A <code>by</code> table’s association-measure note reaches the <code>"flextable"</code> and <code>"word"</code> outputs, beside the missing-value disclosure.</li>
+<li>Factor levels in a <code>"flextable"</code> or <code>"word"</code> regression table are indented once, not twice.</li>
+<li>A table without a confidence-interval column no longer carries an empty header strip in the <code>"flextable"</code> and <code>"word"</code> outputs: the column labels and the rules land where the console draws them.</li>
+<li>A column header in a <code>"flextable"</code> or <code>"word"</code> table stays inside its own model. Two models sharing a label used to merge into a single header cell straddling both, two confidence intervals into one <code>95% CI</code> spanning four columns.</li>
+<li>The <code>"flextable"</code> and <code>"word"</code> outputs draw every rule the console draws between blocks, not only the first: <code>Thresholds:</code> and <code>Random effects:</code> open with one too.</li>
+<li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> carry their title to <code>output = "flextable"</code>, as the table caption.</li>
+<li>Factor levels in a <code>"flextable"</code> or <code>"word"</code> <code><a href="../reference/table_categorical.html">table_categorical()</a></code> are indented once, not twice.</li>
+<li>
+<code>output = "excel"</code> writes the cells the console shows: the <code>Events/N</code> counts keep their denominator (reference levels included), significance stars reach the estimates the note’s legend documents, and absorbed fixed effects read <code>Yes</code> / <code>No</code> instead of <code>1</code> / <code>0</code>.</li>
+<li>
+<code>output = "excel"</code> with <code>decimal_mark = ","</code> no longer mixes separators: a sheet used to show <code>65.07</code> next to its own <code>&lt;,001</code> because a numeric cell follows the reader’s locale. The body is written pre-formatted instead; the default <code>"."</code> still writes real numbers.</li>
+<li>
+<code>table_categorical(output = "excel")</code> writes blank cells on variable-header rows. They used to be Excel error cells (<code>#N/A</code>), which spread the error to any <code>SUM()</code> over the column.</li>
+<li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> carry their title and their missing-value / association notes to <code>output = "excel"</code>, like every other output; <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> gains the title. The table starts on row 3, below the title.</li>
+<li>Every Excel export sizes its columns to the text they carry: row labels such as <code>WHO-5 wellbeing index (0-100)</code> used to open clipped by the default column width.</li>
+<li>Factor levels in an <code>"excel"</code> regression table are indented once, not twice.</li>
+<li>
+<code>output = "clipboard"</code> survives any <code>clipboard_delim</code>: a cell holding the delimiter, a double quote or a line break is now quoted RFC 4180-style. A level label with a comma used to shift every following value one column to the right under <code>clipboard_delim = ","</code>, and <code>decimal_mark = ","</code> split every number into two cells.</li>
+<li>
+<code>output = "clipboard"</code> pastes numbers as numbers: the decimal-alignment padding is gone from the payload. It used the figure space U+2007, which a spreadsheet does not read as whitespace, so a padded cell landed as text in the middle of a numeric column.</li>
+<li>
+<code>table_categorical(output = "clipboard")</code> ships plain text: p-values and association measures used to arrive wrapped in an Excel formula (<code>="  .424"</code>), visible verbatim in a text editor or a word processor, and the wrapper turned blank cells into non-blank ones.</li>
+<li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> carry their title and their missing-value / association notes to <code>output = "clipboard"</code>, like every other output.</li>
+<li>A <code><a href="../reference/table_continuous.html">table_continuous()</a></code> or <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> table without a confidence-interval column no longer pastes a blank line between its header and its body.</li>
+<li>
 <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> reported wrong SEs, confidence intervals and Wald p-values in every release from 0.6.0 through 0.12.0 – its asymptotic standard error mis-scaled one margin term; point estimates were correct. Also affects <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code> and the <code><a href="../reference/cross_tab.html">cross_tab()</a></code> association line.</li>
 <li>
 <code>somers_d(direction = "symmetric")</code> returns <code>0</code> on equal concordant and discordant pairs, <code><a href="../reference/cramer_v.html">cramer_v()</a></code> / <code><a href="../reference/phi.html">phi()</a></code> / <code><a href="../reference/contingency_coef.html">contingency_coef()</a></code> return <code>NA</code> with a <code>spicy_undefined_stat</code> warning on a zero margin, and <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code> / <code><a href="../reference/cross_tab.html">cross_tab()</a></code> stop swallowing those warnings.</li>
@@ -244,6 +292,9 @@
 <li>
 <code><a href="../reference/as_structured.html">as_structured()</a></code> and the rich output engines match the console body exactly (blank vs en-dash reference cells, the multi-outcome <code>Outcome</code> row); the structured schema gains <code>reference_models_by_row</code> and <code>outcome_labels_by_col</code>.</li>
 <li>
+<code>stars = TRUE</code> marks the coefficients in every output, not just the console: <code>output = "gt"</code>, <code>"tinytable"</code>, <code>"flextable"</code>, <code>"word"</code> and <code>"clipboard"</code> used to ship the legend footnote without a single marker in the table.</li>
+<li>An <code>output = "gt"</code> table keeps its note wherever it is rendered – saved to a file, converted to HTML, or printed outside an interactive session. It reached the interactive display only, so a published table lost the model family, the standard errors, and the star legend.</li>
+<li>
 <code>table_regression(m1, m2)</code> without <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> errors with a helpful message; colliding model labels no longer break <code>output = "gt"</code>; the <code>p_adjust</code> footer’s family size matches the adjustment performed; and multi-model titles keep proper nouns capitalised.</li>
 <li>
 <code>ci_method = "profile"</code> with a robust <code>vcov</code> defers to the <code>vcov</code> and warns, and the singular-fit note states the fact, leaving the advice to a build-time warning.</li>
@@ -261,6 +312,8 @@
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
 <ul><li>
+<code>table_continuous(by = )</code> titles the table <code>Descriptive statistics by &lt;label&gt;</code>: the grouping variable is stated in the console header and in every rendered caption, like the other <code>by</code> tables of the family.</li>
+<li>
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> discloses excluded missing values in the table note – per variable, with a deduplicated row total, and rows dropped for a missing <code>by</code> – instead of dropping them silently.</li>
 <li>
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> accepts logical weights, coerced to 1/0 like <code><a href="../reference/freq.html">freq()</a></code>; warns (<code>spicy_ignored_arg</code>) on a third positional argument in vector mode; and validates <code>digits</code> with the same classed error as <code><a href="../reference/freq.html">freq()</a></code>, in the function and its <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method.</li>

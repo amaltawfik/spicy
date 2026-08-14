@@ -80,12 +80,13 @@ view underneath:
 
 s <- as_structured(tbl)
 names(s)
-#>  [1] "body"                    "reference_rows"         
-#>  [3] "reference_models_by_row" "outcome_labels_by_col"  
-#>  [5] "factor_header_rows"      "fit_stat_rows"          
-#>  [7] "level_rows"              "outcome_row"            
-#>  [9] "col_meta"                "spanners"               
-#> [11] "ci_pairs"                "format_spec"
+#>  [1] "version"                 "body"                   
+#>  [3] "stars"                   "reference_rows"         
+#>  [5] "reference_models_by_row" "outcome_labels_by_col"  
+#>  [7] "factor_header_rows"      "fit_stat_rows"          
+#>  [9] "level_rows"              "outcome_row"            
+#> [11] "col_meta"                "spanners"               
+#> [13] "ci_pairs"                "format_spec"
 ```
 
 The centrepiece is `body`: a data frame with the `Variable` column and
@@ -240,13 +241,16 @@ s$format_spec$ci_level
 #> [1] 0.95
 ```
 
-That is seven of the twelve components; `spanners` and
-`reference_models_by_row` follow in the multi-model section below. Of
-the remaining three, `ci_pairs` records which `LL`/`UL` columns form a
+That is seven of the fourteen components; `spanners` and
+`reference_models_by_row` follow in the multi-model section below,
+`stars` and `col_meta$display_cells` in the section after it. Of the
+remaining, `ci_pairs` records which `LL`/`UL` columns form a
 confidence-interval pair (here, columns 4 and 5 under the label
 `95% CI`), while `outcome_row` and `outcome_labels_by_col` locate and
 label the optional outcome header row of multi-outcome tables and are
-empty here. The complete schema, component by component, is in
+empty here. `version` names the contract the object carries, so a
+renderer can tell which components to expect. The complete schema,
+component by component, is in
 [`?as_structured`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
 
 ## Filtering and aggregating
@@ -353,6 +357,69 @@ s2$body[, c(1, s2$spanners$Extended)]
 #> 12          Adj.R²    0.03929546           NA            NA
 ```
 
+## Cells a number cannot express
+
+Two things a reader sees are not values of a statistic, and the typed
+body alone cannot express them: a cell built from two counts, and a
+marker attached to a cell. Both travel in the contract, so a renderer
+never has to reconstruct them from the printed table.
+
+The event counts requested with `show_columns = "n_events"` print as
+`events/N`. The body keeps the numerator as a number, and the column’s
+`display_cells` carries the string of each cell – `NA` where the number
+formats normally, as on the fit-statistics rows in that same column:
+
+``` r
+
+counts <- table_regression(
+  glm(dentist_12m ~ age + sex, data = sochealth, family = binomial()),
+  show_columns = c("n_events", "b", "p")
+)
+sc <- as_structured(counts)
+sc$body[["Events/N"]]
+#> [1] 8.460000e+02 8.460000e+02           NA 4.370000e+02 4.090000e+02
+#> [6] 1.200000e+03 2.791201e-03 4.810310e-03 1.457700e+03
+sc$col_meta[["Events/N"]]$display_cells
+#> [1] "846/1200" "846/1200" NA         "437/620"  "409/580"  NA         NA        
+#> [8] NA         NA
+```
+
+Read the two together on the reference row: the level has 437 events out
+of 620, and it keeps them – the en-dash of a reference row means “no
+estimate by design”, which says nothing about a count. A renderer that
+ignores `display_cells` prints a numerator under a header promising a
+ratio.
+
+Significance stars work the same way. `stars = TRUE` leaves the body
+untouched and fills the `stars` component: the thresholds the footer
+legend documents, and the marker of each cell that takes one.
+
+``` r
+
+starred <- table_regression(
+  lm(wellbeing_score ~ age + sex, data = sochealth),
+  stars = TRUE
+)
+ss <- as_structured(starred)
+ss$stars$thresholds
+#>   ***    **     * 
+#> 0.001 0.010 0.050
+ss$stars$markers$B
+#> [1] "***" ""    ""    ""    "***" ""    ""    ""
+```
+
+The rule for which column takes the markers is the console’s: the raw
+coefficient, the standardized coefficient only when `B` is not displayed
+beside it, and the average marginal effect on its own p-value. `stars`
+is `NULL` when the table has none.
+
+One more display convention lives in the row indices rather than in a
+cell. A model with absorbed fixed effects discloses them as a block:
+`factor_header_rows` gains the `Fixed effects:` row and `level_rows` one
+row per absorbed factor, named as the model names it. Treat that block
+exactly like a factor group in the coefficients and it renders the way
+it prints.
+
 ## Building your own renderer
 
 The structured view carries everything a renderer needs. A compact
@@ -430,9 +497,12 @@ Three properties make the structured view safe to build on:
   section *API stability*): components will not be silently renamed or
   change semantics within `0.y.z`, and additions are announced in
   `NEWS.md`.
-- **Version guard.** Objects built by a spicy version before the
-  structured contract existed are refused with an actionable message
-  rather than mis-read.
+- **Version guard.** `version` names the contract an object carries.
+  Components are only ever added, so code written against an older one
+  keeps working; a table built before a component existed says so when
+  you open it, and one built by a newer spicy than the one reading it is
+  refused rather than mis-read. Objects from before the structured view
+  existed are refused outright.
 
 For the statistical long form – estimates with standard errors and
 unformatted p-values, one row per term and estimate type across models –

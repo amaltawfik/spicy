@@ -204,7 +204,7 @@ categories. When <code>by</code> is supplied, a Welch-test
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────────</span></span></span>
@@ -234,7 +234,7 @@ categories. When <code>by</code> is supplied, a Welch-test
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary     3.43       3.63    534 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary            4.01       4.21    399 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group              p   </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group            p (n) </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary        </span></span>
@@ -294,7 +294,7 @@ alongside the default <em>p</em>-value column:</p>
 <span>  effect_size <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────────</span></span></span>
@@ -364,7 +364,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span></span>
@@ -421,7 +421,7 @@ its character name:</p>
 <span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max    95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────────</span></span></span>
@@ -462,20 +462,27 @@ error.</p>
 <span><span class="co">#&gt; 4 wellbeing_score WHO-5 wellbeing index (0-100) Lower secondary 57.21571</span></span>
 <span><span class="co">#&gt; 5 wellbeing_score WHO-5 wellbeing index (0-100) Upper secondary 68.96920</span></span>
 <span><span class="co">#&gt; 6 wellbeing_score WHO-5 wellbeing index (0-100)        Tertiary 76.85250</span></span>
-<span><span class="co">#&gt;          sd  min   max ci_lower ci_upper   n   test_type statistic df1      df2</span></span>
-<span><span class="co">#&gt; 1  3.471744 18.2  38.9 27.66333 28.51129 260 welch_anova  87.95902   2 654.4758</span></span>
-<span><span class="co">#&gt; 2  3.434736 16.0  37.1 25.72693 26.31090 534        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 3  3.520150 16.0  33.0 24.04170 24.73901 394        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 4 15.444587 18.7  97.9 55.33323 59.09819 261 welch_anova 144.35083   2 638.5873</span></span>
-<span><span class="co">#&gt; 5 13.621193 26.7 100.0 67.81669 70.12172 539        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 6 13.226818 40.4 100.0 75.55235 78.15265 400        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt;        p.value es_type  es_value es_ci_lower es_ci_upper</span></span>
-<span><span class="co">#&gt; 1 1.467916e-34  eta_sq 0.1307679  0.09667861   0.1654516</span></span>
-<span><span class="co">#&gt; 2           NA    &lt;NA&gt;        NA          NA          NA</span></span>
-<span><span class="co">#&gt; 3           NA    &lt;NA&gt;        NA          NA          NA</span></span>
-<span><span class="co">#&gt; 4 1.888362e-52  eta_sq 0.2081970  0.16901207   0.2461732</span></span>
-<span><span class="co">#&gt; 5           NA    &lt;NA&gt;        NA          NA          NA</span></span>
-<span><span class="co">#&gt; 6           NA    &lt;NA&gt;        NA          NA          NA</span></span></code></pre></div>
+<span><span class="co">#&gt;          sd  min   max ci_lower ci_upper median    q1     q3    iqr</span></span>
+<span><span class="co">#&gt; 1  3.471744 18.2  38.9 27.66333 28.51129   28.2 25.70 29.900  4.200</span></span>
+<span><span class="co">#&gt; 2  3.434736 16.0  37.1 25.72693 26.31090   26.1 23.50 28.500  5.000</span></span>
+<span><span class="co">#&gt; 3  3.520150 16.0  33.0 24.04170 24.73901   24.5 22.00 26.775  4.775</span></span>
+<span><span class="co">#&gt; 4 15.444587 18.7  97.9 55.33323 59.09819   57.9 45.40 68.500 23.100</span></span>
+<span><span class="co">#&gt; 5 13.621193 26.7 100.0 67.81669 70.12172   69.5 60.85 77.300 16.450</span></span>
+<span><span class="co">#&gt; 6 13.226818 40.4 100.0 75.55235 78.15265   77.2 68.60 86.150 17.550</span></span>
+<span><span class="co">#&gt;   med_ci_lower med_ci_upper   n   test_type statistic df1      df2      p.value</span></span>
+<span><span class="co">#&gt; 1         27.6         28.7 260 welch_anova  87.95902   2 654.4758 1.467916e-34</span></span>
+<span><span class="co">#&gt; 2         25.7         26.5 534        &lt;NA&gt;        NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 3         24.1         24.9 394        &lt;NA&gt;        NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 4         55.5         60.2 261 welch_anova 144.35083   2 638.5873 1.888362e-52</span></span>
+<span><span class="co">#&gt; 5         68.1         70.9 539        &lt;NA&gt;        NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt; 6         76.2         78.5 400        &lt;NA&gt;        NA  NA       NA           NA</span></span>
+<span><span class="co">#&gt;   es_type  es_value es_ci_lower es_ci_upper</span></span>
+<span><span class="co">#&gt; 1  eta_sq 0.1307679  0.09667861   0.1654516</span></span>
+<span><span class="co">#&gt; 2    &lt;NA&gt;        NA          NA          NA</span></span>
+<span><span class="co">#&gt; 3    &lt;NA&gt;        NA          NA          NA</span></span>
+<span><span class="co">#&gt; 4  eta_sq 0.2081970  0.16901207   0.2461732</span></span>
+<span><span class="co">#&gt; 5    &lt;NA&gt;        NA          NA          NA</span></span>
+<span><span class="co">#&gt; 6    &lt;NA&gt;        NA          NA          NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="selecting-variables">Selecting variables<a class="anchor" aria-label="anchor" href="#selecting-variables"></a>
@@ -487,7 +494,7 @@ error.</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Group    M     SD   Min   Max  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼────────────────────────────────</span></span></span>
@@ -517,19 +524,19 @@ error.</p>
 <span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female    3.28       3.46     615 </span></span>
 <span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male      3.33       3.52     577 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Group    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span> Female  .267 </span></span>
-<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> Female  .073 </span></span>
-<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> Female  .570 </span></span>
-<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female  .453 </span></span>
-<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male         </span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Group   p (n) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼───────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span> Female  .267  </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> Female  .073  </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> Female  .570  </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> Female  .453  </span></span>
+<span><span class="co">#&gt;                                             <span style="color: #9E9E9E;">│</span> Male          </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span></span></code></pre></div>
 <p>For more programmatic selection, set <code>regex = TRUE</code>:</p>
@@ -554,32 +561,45 @@ error.</p>
 <span><span class="co">#&gt; 10      life_sat_standard Satisfaction with standard of living (1-5)</span></span>
 <span><span class="co">#&gt; 11      life_sat_standard Satisfaction with standard of living (1-5)</span></span>
 <span><span class="co">#&gt; 12      life_sat_standard Satisfaction with standard of living (1-5)</span></span>
-<span><span class="co">#&gt;              group     mean        sd min max ci_lower ci_upper   n   test_type</span></span>
-<span><span class="co">#&gt; 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382 259 welch_anova</span></span>
-<span><span class="co">#&gt; 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473 534        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950 399        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660 261 welch_anova</span></span>
-<span><span class="co">#&gt; 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169 535        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909 396        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908 260 welch_anova</span></span>
-<span><span class="co">#&gt; 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439 534        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159 398        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487 261 welch_anova</span></span>
-<span><span class="co">#&gt; 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466 532        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589 399        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;    statistic df1      df2      p.value</span></span>
-<span><span class="co">#&gt; 1  118.73585   2 652.0775 1.063917e-44</span></span>
-<span><span class="co">#&gt; 2         NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 3         NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 4  105.98821   2 651.9434 1.398117e-40</span></span>
-<span><span class="co">#&gt; 5         NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 6         NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 7   82.35074   2 617.9668 1.969764e-32</span></span>
-<span><span class="co">#&gt; 8         NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 9         NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 10 101.31672   2 648.7723 5.105889e-39</span></span>
-<span><span class="co">#&gt; 11        NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 12        NA  NA       NA           NA</span></span></code></pre></div>
+<span><span class="co">#&gt;              group     mean        sd min max ci_lower ci_upper median q1  q3</span></span>
+<span><span class="co">#&gt; 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382      3  2 3.5</span></span>
+<span><span class="co">#&gt; 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473      4  3 5.0</span></span>
+<span><span class="co">#&gt; 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950      4  3 5.0</span></span>
+<span><span class="co">#&gt; 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660      3  2 3.0</span></span>
+<span><span class="co">#&gt; 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169      4  3 4.0</span></span>
+<span><span class="co">#&gt; 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909      4  3 5.0</span></span>
+<span><span class="co">#&gt; 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908      3  2 4.0</span></span>
+<span><span class="co">#&gt; 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439      4  3 5.0</span></span>
+<span><span class="co">#&gt; 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159      4  4 5.0</span></span>
+<span><span class="co">#&gt; 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487      3  2 3.0</span></span>
+<span><span class="co">#&gt; 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466      4  3 4.0</span></span>
+<span><span class="co">#&gt; 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589      4  3 5.0</span></span>
+<span><span class="co">#&gt;    iqr med_ci_lower med_ci_upper   n   test_type statistic df1      df2</span></span>
+<span><span class="co">#&gt; 1  1.5            3            3 259 welch_anova 118.73585   2 652.0775</span></span>
+<span><span class="co">#&gt; 2  2.0            3            4 534        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 3  2.0            4            5 399        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 4  1.0            2            3 261 welch_anova 105.98821   2 651.9434</span></span>
+<span><span class="co">#&gt; 5  1.0            3            4 535        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 6  2.0            4            4 396        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 7  2.0            3            3 260 welch_anova  82.35074   2 617.9668</span></span>
+<span><span class="co">#&gt; 8  2.0            4            4 534        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 9  1.0            4            5 398        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 10 1.0            2            3 261 welch_anova 101.31672   2 648.7723</span></span>
+<span><span class="co">#&gt; 11 1.0            3            4 532        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 12 2.0            4            4 399        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt;         p.value</span></span>
+<span><span class="co">#&gt; 1  1.063917e-44</span></span>
+<span><span class="co">#&gt; 2            NA</span></span>
+<span><span class="co">#&gt; 3            NA</span></span>
+<span><span class="co">#&gt; 4  1.398117e-40</span></span>
+<span><span class="co">#&gt; 5            NA</span></span>
+<span><span class="co">#&gt; 6            NA</span></span>
+<span><span class="co">#&gt; 7  1.969764e-32</span></span>
+<span><span class="co">#&gt; 8            NA</span></span>
+<span><span class="co">#&gt; 9            NA</span></span>
+<span><span class="co">#&gt; 10 5.105889e-39</span></span>
+<span><span class="co">#&gt; 11           NA</span></span>
+<span><span class="co">#&gt; 12           NA</span></span></code></pre></div>
 <p>Use <code>exclude</code> when you want a broad selection with one or
 two explicit removals:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -589,7 +609,7 @@ two explicit removals:</p>
 <span>  exclude <span class="op">=</span> <span class="st">"life_sat_work"</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────────</span></span></span>
@@ -650,7 +670,7 @@ removed”) and in a warning:</p>
 <span>  by <span class="op">=</span> <span class="va">income_group</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: 18 observation(s) with NA in `income_group` were excluded.</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Household income group</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group           M     SD    Min    Max   95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
@@ -678,7 +698,7 @@ still cover the observed groups only, matching
 <span>  by <span class="op">=</span> <span class="va">income_group</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Household income group</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group           M     SD    Min    Max   95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
@@ -715,7 +735,7 @@ the others keep their attribute label or column name:</p>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>wellbeing_score <span class="op">=</span> <span class="st">"Well-being score (0-100)"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────────</span></span></span>
@@ -771,7 +791,7 @@ code.</li>
 <span>  show_n <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">4</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max      p    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────────</span></span></span>
@@ -797,7 +817,7 @@ workflow:</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max    95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────────</span></span></span>
@@ -848,11 +868,16 @@ workflow:</p>
 <span><span class="co">#&gt; 2             bmi               Body mass index   Male 26.19685  3.638092 16.0</span></span>
 <span><span class="co">#&gt; 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6</span></span>
 <span><span class="co">#&gt; 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7</span></span>
-<span><span class="co">#&gt;     max ci_lower ci_upper   n test_type statistic      df1 df2      p.value</span></span>
-<span><span class="co">#&gt; 1  38.9 25.38588 25.98425 616   welch_t -2.377237 1184.497  NA 1.760093e-02</span></span>
-<span><span class="co">#&gt; 2  37.7 25.89808 26.49563 572      &lt;NA&gt;        NA       NA  NA           NA</span></span>
-<span><span class="co">#&gt; 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05</span></span>
-<span><span class="co">#&gt; 4 100.0 69.72540 72.37219 580      &lt;NA&gt;        NA       NA  NA           NA</span></span></code></pre></div>
+<span><span class="co">#&gt;     max ci_lower ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper</span></span>
+<span><span class="co">#&gt; 1  38.9 25.38588 25.98425   25.7 23.100 28.600  5.500         25.4         26.1</span></span>
+<span><span class="co">#&gt; 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6</span></span>
+<span><span class="co">#&gt; 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7</span></span>
+<span><span class="co">#&gt; 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2</span></span>
+<span><span class="co">#&gt;     n test_type statistic      df1 df2      p.value</span></span>
+<span><span class="co">#&gt; 1 616   welch_t -2.377237 1184.497  NA 1.760093e-02</span></span>
+<span><span class="co">#&gt; 2 572      &lt;NA&gt;        NA       NA  NA           NA</span></span>
+<span><span class="co">#&gt; 3 620   welch_t -4.326141 1168.700  NA 1.647005e-05</span></span>
+<span><span class="co">#&gt; 4 580      &lt;NA&gt;        NA       NA  NA           NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -918,646 +943,546 @@ APA-style borders and column spanners:</p>
 <span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="noktjftfkl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#noktjftfkl table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#noktjftfkl thead, #noktjftfkl tbody, #noktjftfkl tfoot, #noktjftfkl tr, #noktjftfkl td, #noktjftfkl th {
-  border-style: none;
-}
-
-#noktjftfkl p {
-  margin: 0;
-  padding: 0;
-}
-
-#noktjftfkl .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#noktjftfkl .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#noktjftfkl .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#noktjftfkl .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: rgba(255, 255, 255, 0);
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: rgba(255, 255, 255, 0);
-}
-
-#noktjftfkl .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#noktjftfkl .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#noktjftfkl .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#noktjftfkl .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#noktjftfkl .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#noktjftfkl .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#noktjftfkl .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#noktjftfkl .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#noktjftfkl .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#noktjftfkl .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#noktjftfkl .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: rgba(255, 255, 255, 0);
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#noktjftfkl .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#noktjftfkl .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#noktjftfkl .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#noktjftfkl .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#noktjftfkl .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#noktjftfkl .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#noktjftfkl .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#noktjftfkl .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#noktjftfkl .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#noktjftfkl .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#noktjftfkl .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#noktjftfkl .gt_left {
-  text-align: left;
-}
-
-#noktjftfkl .gt_center {
-  text-align: center;
-}
-
-#noktjftfkl .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#noktjftfkl .gt_font_normal {
-  font-weight: normal;
-}
-
-#noktjftfkl .gt_font_bold {
-  font-weight: bold;
-}
-
-#noktjftfkl .gt_font_italic {
-  font-style: italic;
-}
-
-#noktjftfkl .gt_super {
-  font-size: 65%;
-}
-
-#noktjftfkl .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#noktjftfkl .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#noktjftfkl .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#noktjftfkl .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#noktjftfkl .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#noktjftfkl .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#noktjftfkl .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#noktjftfkl .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#noktjftfkl div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-
-.gt_table thead tr:first-child {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr.gt_spanner_row {
-  border-bottom-style: none !important;
-}
-
-.gt_table thead th, .gt_table thead td {
-  background-color: transparent !important;
-}
-
-.gt_table thead tr:last-child th[id="LL"],
-.gt_table thead tr:last-child th[id="UL"] {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr {
-  border-top-style: none !important;
-  border-bottom-style: none !important;
-}
-
+<p><style>#noktjftfkl table { font-family: system-ui, ‘Segoe UI’,
+Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
+Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
+antialiased; -moz-osx-font-smoothing: grayscale; }</p>
+<p>#noktjftfkl thead, #noktjftfkl tbody, #noktjftfkl tfoot, #noktjftfkl
+tr, #noktjftfkl td, #noktjftfkl th { border-style: none; }</p>
+<p>#noktjftfkl p { margin: 0; padding: 0; }</p>
+<p>#noktjftfkl .gt_table { display: table; border-collapse: collapse;
+line-height: normal; margin-left: auto; margin-right: auto; color:
+#333333; font-size: 16px; font-weight: normal; font-style: normal;
+background-color: #FFFFFF; width: auto; border-top-style: solid;
+border-top-width: 0px; border-top-color: #A8A8A8; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3;
+border-bottom-style: solid; border-bottom-width: 0px;
+border-bottom-color: #A8A8A8; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_caption { padding-top: 4px; padding-bottom: 4px;
+}</p>
+<p>#noktjftfkl .gt_title { color: #333333; font-size: 125%; font-weight:
+initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
+padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
+0; }</p>
+<p>#noktjftfkl .gt_subtitle { color: #333333; font-size: 85%;
+font-weight: initial; padding-top: 3px; padding-bottom: 5px;
+padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
+border-top-width: 0; }</p>
+<p>#noktjftfkl .gt_heading { background-color: #FFFFFF; text-align:
+center; border-bottom-color: #FFFFFF; border-left-style: none;
+border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_bottom_border { border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_col_headings { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3;
+border-left-style: none; border-left-width: 1px; border-left-color:
+rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
+1px; border-right-color: rgba(255, 255, 255, 0); }</p>
+<p>#noktjftfkl .gt_col_heading { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
+padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
+hidden; }</p>
+<p>#noktjftfkl .gt_column_spanner_outer { color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: normal;
+text-transform: inherit; padding-top: 0; padding-bottom: 0;
+padding-left: 4px; padding-right: 4px; }</p>
+<p>#noktjftfkl .gt_column_spanner_outer:first-child { padding-left: 0;
+}</p>
+<p>#noktjftfkl .gt_column_spanner_outer:last-child { padding-right: 0;
+}</p>
+<p>#noktjftfkl .gt_column_spanner { border-bottom-style: solid;
+border-bottom-width: 0px; border-bottom-color: #D3D3D3; vertical-align:
+bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
+display: inline-block; width: 100%; }</p>
+<p>#noktjftfkl .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#noktjftfkl .gt_group_heading { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+text-transform: inherit; border-top-style: solid; border-top-width: 2px;
+border-top-color: #D3D3D3; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
+}</p>
+<p>#noktjftfkl .gt_empty_group_heading { padding: 0.5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+border-top-style: solid; border-top-width: 2px; border-top-color:
+#D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
+<p>#noktjftfkl .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#noktjftfkl .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#noktjftfkl .gt_row { padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
+solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
+}</p>
+<p>#noktjftfkl .gt_stub { color: #333333; background-color: #FFFFFF;
+font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
+<p>#noktjftfkl .gt_stub_row_group { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
+}</p>
+<p>#noktjftfkl .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#noktjftfkl .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#noktjftfkl .gt_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#noktjftfkl .gt_first_summary_row { border-top-style: solid;
+border-top-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_first_summary_row.thick { border-top-width: 2px;
+}</p>
+<p>#noktjftfkl .gt_last_summary_row { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_grand_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#noktjftfkl .gt_first_grand_summary_row { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-top-style: double; border-top-width: 6px; border-top-color:
+#D3D3D3; }</p>
+<p>#noktjftfkl .gt_last_grand_summary_row_top { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-bottom-style: double; border-bottom-width: 6px;
+border-bottom-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_striped { background-color: rgba(128, 128, 128,
+0.05); }</p>
+<p>#noktjftfkl .gt_table_body { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_footnotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#noktjftfkl .gt_sourcenotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#noktjftfkl .gt_sourcenote { font-size: 90%; padding-top: 4px;
+padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#noktjftfkl .gt_left { text-align: left; }</p>
+<p>#noktjftfkl .gt_center { text-align: center; }</p>
+<p>#noktjftfkl .gt_right { text-align: right; font-variant-numeric:
+tabular-nums; }</p>
+<p>#noktjftfkl .gt_font_normal { font-weight: normal; }</p>
+<p>#noktjftfkl .gt_font_bold { font-weight: bold; }</p>
+<p>#noktjftfkl .gt_font_italic { font-style: italic; }</p>
+<p>#noktjftfkl .gt_super { font-size: 65%; }</p>
+<p>#noktjftfkl .gt_footnote_marks { font-size: 75%; vertical-align:
+0.4em; position: initial; }</p>
+<p>#noktjftfkl .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#noktjftfkl .gt_indent_1 { text-indent: 5px; }</p>
+<p>#noktjftfkl .gt_indent_2 { text-indent: 10px; }</p>
+<p>#noktjftfkl .gt_indent_3 { text-indent: 15px; }</p>
+<p>#noktjftfkl .gt_indent_4 { text-indent: 20px; }</p>
+<p>#noktjftfkl .gt_indent_5 { text-indent: 25px; }</p>
+<p>#noktjftfkl .katex-display { display: inline-flex !important;
+margin-bottom: 0.75em !important; }</p>
+<p>#noktjftfkl div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
+!important; }</p>
+<p>.gt_table thead tr:first-child { border-top: 1px solid currentColor
+!important; }</p>
+<p>.gt_table thead tr.gt_spanner_row { border-bottom-style: none
+!important; }</p>
+<p>.gt_table thead th, .gt_table thead td { background-color:
+transparent !important; }</p>
+<p>.gt_table thead tr:last-child th[id=“LL”], .gt_table thead
+tr:last-child th[id=“UL”] { border-top: 1px solid currentColor
+!important; }</p>
+<p>.gt_table thead tr:last-child { border-bottom: 1px solid currentColor
+!important; }</p>
+<p>.gt_table tbody tr:last-child { border-bottom: 1px solid currentColor
+!important; }</p>
+<p>.gt_table tbody tr { border-top-style: none !important;
+border-bottom-style: none !important; }</p>
 .gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
-.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
-.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
-  background-color: transparent !important;
-  color: currentColor !important;
-}
-</style>
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title, .gt_subtitle,
+.gt_sourcenotes, .gt_sourcenote { background-color: transparent
+!important; color: currentColor !important; } </style></p>
+<div class="spicy-gt-outer" style="text-align: center;">
+<div class="spicy-gt-wrap" style="display: inline-block; max-width: 100%; text-align: left; vertical-align: top;">
+<style>.spicy-gt-outer th[id^="model_span_"] { position: relative; }.spicy-gt-outer th[id^="model_span_"]::after { content: ""; position: absolute; left: 0.5em; right: 0.5em; bottom: 0; border-bottom: 1px solid #333333; }.spicy-gt-outer .gt_col_headings.gt_spanner_row, .spicy-gt-outer .gt_spanner_row { border-bottom-style: none !important; border-bottom-width: 0 !important; }.spicy-gt-outer .gt_col_heading { border-bottom: 1px solid #333333 !important; }.spicy-gt-outer .gt_table tbody .gt_row { border-top-width: 0 !important; }.spicy-gt-outer .gt_column_spanner { border-bottom-width: 0 !important; border-bottom-color: transparent !important; }</style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_col_headings gt_spanner_row">
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Variable">
-        <div class="gt_column_spanner">Variable</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Group">
-        <div class="gt_column_spanner">Group</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M">
-        <div class="gt_column_spanner">M</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_SD">
-        <div class="gt_column_spanner">SD</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Min">
-        <div class="gt_column_spanner">Min</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Max">
-        <div class="gt_column_spanner">Max</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="95% CI">
-        <div class="gt_column_spanner">95% CI</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_n">
-        <div class="gt_column_spanner">n</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
-        <div class="gt_column_spanner">p</div>
-      </th>
-    </tr>
+<div class="gt_column_spanner">
+Variable
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Group">
+<div class="gt_column_spanner">
+Group
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_M">
+<div class="gt_column_spanner">
+M
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_SD">
+<div class="gt_column_spanner">
+SD
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Min">
+<div class="gt_column_spanner">
+Min
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Max">
+<div class="gt_column_spanner">
+Max
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_95% CI">
+<div class="gt_column_spanner">
+95% CI
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_n">
+<div class="gt_column_spanner">
+n
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
+<div class="gt_column_spanner">
+p
+</div>
+</th>
+</tr>
 <tr class="gt_col_headings">
-<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Group"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="M"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="SD"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Min"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Max"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="LL">LL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="UL">UL</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="n"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p"></th>
-    </tr>
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Group">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="M">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="SD">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Min">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Max">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="LL">
+LL
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="UL">
+UL
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="n">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p">
+</th>
+</tr>
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="Variable" class="gt_row gt_left">Body mass index</td>
-<td headers="Group" class="gt_row gt_left">Lower secondary</td>
-<td headers="M" class="gt_row gt_center">28.09</td>
-<td headers="SD" class="gt_row gt_center"> 3.47</td>
-<td headers="Min" class="gt_row gt_center">18.20</td>
-<td headers="Max" class="gt_row gt_center"> 38.90</td>
-<td headers="LL" class="gt_row gt_center">27.66</td>
-<td headers="UL" class="gt_row gt_center">28.51</td>
-<td headers="n" class="gt_row gt_center">260</td>
-<td headers="p" class="gt_row gt_center">&lt;.001</td>
+<td headers="Variable" class="gt_row gt_left">
+Body mass index
+</td>
+<td headers="Group" class="gt_row gt_left">
+Lower secondary
+</td>
+<td headers="M" class="gt_row gt_center">
+28.09
+</td>
+<td headers="SD" class="gt_row gt_center">
+ 3.47
+</td>
+<td headers="Min" class="gt_row gt_center">
+18.20
+</td>
+<td headers="Max" class="gt_row gt_center">
+ 38.90
+</td>
+<td headers="LL" class="gt_row gt_center">
+27.66
+</td>
+<td headers="UL" class="gt_row gt_center">
+28.51
+</td>
+<td headers="n" class="gt_row gt_center">
+260
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left"></td>
-<td headers="Group" class="gt_row gt_left">Upper secondary</td>
-<td headers="M" class="gt_row gt_center">26.02</td>
-<td headers="SD" class="gt_row gt_center"> 3.43</td>
-<td headers="Min" class="gt_row gt_center">16.00</td>
-<td headers="Max" class="gt_row gt_center"> 37.10</td>
-<td headers="LL" class="gt_row gt_center">25.73</td>
-<td headers="UL" class="gt_row gt_center">26.31</td>
-<td headers="n" class="gt_row gt_center">534</td>
-<td headers="p" class="gt_row gt_center">     </td>
+<td headers="Variable" class="gt_row gt_left">
+</td>
+<td headers="Group" class="gt_row gt_left">
+Upper secondary
+</td>
+<td headers="M" class="gt_row gt_center">
+26.02
+</td>
+<td headers="SD" class="gt_row gt_center">
+ 3.43
+</td>
+<td headers="Min" class="gt_row gt_center">
+16.00
+</td>
+<td headers="Max" class="gt_row gt_center">
+ 37.10
+</td>
+<td headers="LL" class="gt_row gt_center">
+25.73
+</td>
+<td headers="UL" class="gt_row gt_center">
+26.31
+</td>
+<td headers="n" class="gt_row gt_center">
+534
+</td>
+<td headers="p" class="gt_row gt_center">
+     
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"></td>
-<td headers="Group" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">Tertiary</td>
-<td headers="M" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">24.39</td>
-<td headers="SD" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 3.52</td>
-<td headers="Min" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">16.00</td>
-<td headers="Max" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 33.00</td>
-<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">24.04</td>
-<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">24.74</td>
-<td headers="n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">394</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">     </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+</td>
+<td headers="Group" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+Tertiary
+</td>
+<td headers="M" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+24.39
+</td>
+<td headers="SD" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 3.52
+</td>
+<td headers="Min" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+16.00
+</td>
+<td headers="Max" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 33.00
+</td>
+<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+24.04
+</td>
+<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+24.74
+</td>
+<td headers="n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+394
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+     
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">WHO-5 wellbeing index (0-100)</td>
-<td headers="Group" class="gt_row gt_left">Lower secondary</td>
-<td headers="M" class="gt_row gt_center">57.22</td>
-<td headers="SD" class="gt_row gt_center">15.44</td>
-<td headers="Min" class="gt_row gt_center">18.70</td>
-<td headers="Max" class="gt_row gt_center"> 97.90</td>
-<td headers="LL" class="gt_row gt_center">55.33</td>
-<td headers="UL" class="gt_row gt_center">59.10</td>
-<td headers="n" class="gt_row gt_center">261</td>
-<td headers="p" class="gt_row gt_center">&lt;.001</td>
+<td headers="Variable" class="gt_row gt_left">
+WHO-5 wellbeing index (0-100)
+</td>
+<td headers="Group" class="gt_row gt_left">
+Lower secondary
+</td>
+<td headers="M" class="gt_row gt_center">
+57.22
+</td>
+<td headers="SD" class="gt_row gt_center">
+15.44
+</td>
+<td headers="Min" class="gt_row gt_center">
+18.70
+</td>
+<td headers="Max" class="gt_row gt_center">
+ 97.90
+</td>
+<td headers="LL" class="gt_row gt_center">
+55.33
+</td>
+<td headers="UL" class="gt_row gt_center">
+59.10
+</td>
+<td headers="n" class="gt_row gt_center">
+261
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left"></td>
-<td headers="Group" class="gt_row gt_left">Upper secondary</td>
-<td headers="M" class="gt_row gt_center">68.97</td>
-<td headers="SD" class="gt_row gt_center">13.62</td>
-<td headers="Min" class="gt_row gt_center">26.70</td>
-<td headers="Max" class="gt_row gt_center">100.00</td>
-<td headers="LL" class="gt_row gt_center">67.82</td>
-<td headers="UL" class="gt_row gt_center">70.12</td>
-<td headers="n" class="gt_row gt_center">539</td>
-<td headers="p" class="gt_row gt_center">     </td>
+<td headers="Variable" class="gt_row gt_left">
+</td>
+<td headers="Group" class="gt_row gt_left">
+Upper secondary
+</td>
+<td headers="M" class="gt_row gt_center">
+68.97
+</td>
+<td headers="SD" class="gt_row gt_center">
+13.62
+</td>
+<td headers="Min" class="gt_row gt_center">
+26.70
+</td>
+<td headers="Max" class="gt_row gt_center">
+100.00
+</td>
+<td headers="LL" class="gt_row gt_center">
+67.82
+</td>
+<td headers="UL" class="gt_row gt_center">
+70.12
+</td>
+<td headers="n" class="gt_row gt_center">
+539
+</td>
+<td headers="p" class="gt_row gt_center">
+     
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"></td>
-<td headers="Group" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">Tertiary</td>
-<td headers="M" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">76.85</td>
-<td headers="SD" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">13.23</td>
-<td headers="Min" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">40.40</td>
-<td headers="Max" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">100.00</td>
-<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">75.55</td>
-<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">78.15</td>
-<td headers="n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">400</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">     </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+</td>
+<td headers="Group" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+Tertiary
+</td>
+<td headers="M" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+76.85
+</td>
+<td headers="SD" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+13.23
+</td>
+<td headers="Min" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+40.40
+</td>
+<td headers="Max" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+100.00
+</td>
+<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+75.55
+</td>
+<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+78.15
+</td>
+<td headers="n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+400
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+     
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">Satisfaction with health (1-5)</td>
-<td headers="Group" class="gt_row gt_left">Lower secondary</td>
-<td headers="M" class="gt_row gt_center"> 2.71</td>
-<td headers="SD" class="gt_row gt_center"> 1.20</td>
-<td headers="Min" class="gt_row gt_center"> 1.00</td>
-<td headers="Max" class="gt_row gt_center">  5.00</td>
-<td headers="LL" class="gt_row gt_center"> 2.57</td>
-<td headers="UL" class="gt_row gt_center"> 2.86</td>
-<td headers="n" class="gt_row gt_center">259</td>
-<td headers="p" class="gt_row gt_center">&lt;.001</td>
+<td headers="Variable" class="gt_row gt_left">
+Satisfaction with health (1-5)
+</td>
+<td headers="Group" class="gt_row gt_left">
+Lower secondary
+</td>
+<td headers="M" class="gt_row gt_center">
+ 2.71
+</td>
+<td headers="SD" class="gt_row gt_center">
+ 1.20
+</td>
+<td headers="Min" class="gt_row gt_center">
+ 1.00
+</td>
+<td headers="Max" class="gt_row gt_center">
+  5.00
+</td>
+<td headers="LL" class="gt_row gt_center">
+ 2.57
+</td>
+<td headers="UL" class="gt_row gt_center">
+ 2.86
+</td>
+<td headers="n" class="gt_row gt_center">
+259
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left"></td>
-<td headers="Group" class="gt_row gt_left">Upper secondary</td>
-<td headers="M" class="gt_row gt_center"> 3.53</td>
-<td headers="SD" class="gt_row gt_center"> 1.19</td>
-<td headers="Min" class="gt_row gt_center"> 1.00</td>
-<td headers="Max" class="gt_row gt_center">  5.00</td>
-<td headers="LL" class="gt_row gt_center"> 3.43</td>
-<td headers="UL" class="gt_row gt_center"> 3.63</td>
-<td headers="n" class="gt_row gt_center">534</td>
-<td headers="p" class="gt_row gt_center">     </td>
+<td headers="Variable" class="gt_row gt_left">
+</td>
+<td headers="Group" class="gt_row gt_left">
+Upper secondary
+</td>
+<td headers="M" class="gt_row gt_center">
+ 3.53
+</td>
+<td headers="SD" class="gt_row gt_center">
+ 1.19
+</td>
+<td headers="Min" class="gt_row gt_center">
+ 1.00
+</td>
+<td headers="Max" class="gt_row gt_center">
+  5.00
+</td>
+<td headers="LL" class="gt_row gt_center">
+ 3.43
+</td>
+<td headers="UL" class="gt_row gt_center">
+ 3.63
+</td>
+<td headers="n" class="gt_row gt_center">
+534
+</td>
+<td headers="p" class="gt_row gt_center">
+     
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"></td>
-<td headers="Group" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">Tertiary</td>
-<td headers="M" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 4.11</td>
-<td headers="SD" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 1.04</td>
-<td headers="Min" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 1.00</td>
-<td headers="Max" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">  5.00</td>
-<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 4.01</td>
-<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 4.21</td>
-<td headers="n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">399</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">     </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+</td>
+<td headers="Group" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+Tertiary
+</td>
+<td headers="M" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 4.11
+</td>
+<td headers="SD" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 1.04
+</td>
+<td headers="Min" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 1.00
+</td>
+<td headers="Max" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+  5.00
+</td>
+<td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 4.01
+</td>
+<td headers="UL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 4.21
+</td>
+<td headers="n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+399
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+     
+</td>
 </tr>
 </tbody>
 </table>
+<div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
+Missing values removed: bmi (12), life_sat_health (8).
+</div>
+</div>
+</div>
 </div>
 <p><code>output = "tinytable"</code> works well in Quarto and R Markdown
 documents:</p>
@@ -1610,7 +1535,8 @@ documents:</p>
     </style>
 <div class="container">
       <table class="table tinytable" id="tinytable_7qtaxuazr2oz2pe3o4p8" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<thead>
+<caption>Descriptive statistics by Highest education level</caption>
+        <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="2">Group</th>
@@ -1635,6 +1561,7 @@ documents:</p>
                 <th scope="col" data-row="0" data-col="10"></th>
               </tr>
 </thead>
+<tfoot><tr><td colspan="10" style="font-size: 0.9em; ">Missing values removed: bmi (12), life_sat_health (8).</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">Body mass index</td>

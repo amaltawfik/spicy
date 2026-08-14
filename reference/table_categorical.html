@@ -314,10 +314,13 @@ with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
 internal position; centring those uniform-width strings then
 stacks the decimal points vertically. The same pad-then-centre
-strategy is applied on every engine (<code>gt</code>, <code>tinytable</code>,
-<code>flextable</code>, <code>word</code>, <code>clipboard</code>, ASCII print) for a
+strategy is applied on every rendering engine (<code>gt</code>,
+<code>tinytable</code>, <code>flextable</code>, <code>word</code>, ASCII print) for a
 homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code> and
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></li>
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. The <code>clipboard</code> output is delimited
+text meant to be parsed rather than read at a fixed width, so
+its cells travel unpadded (a padded number pastes as text
+next to an unpadded number).</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
 </ul><p>The <code>excel</code> output uses the engine's default alignment in any
@@ -374,7 +377,10 @@ as-is in wide raw output. If <code>TRUE</code>, replaces them with empty strings
 
 
 <dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
-<dd><p>Delimiter for clipboard text export. Defaults to <code>"\t"</code>.</p></dd>
+<dd><p>Delimiter for clipboard text export. Defaults
+to <code>"\t"</code>. A cell holding the delimiter itself, a double quote or
+a line break is quoted RFC 4180-style, so the grid survives
+whatever delimiter you choose.</p></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
@@ -418,7 +424,19 @@ association measure column when <code>by</code> is used).</p></li>
 path invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
-</ul></div>
+</ul><p>The <code>drop_na = TRUE</code> disclosure travels with the table on every
+route, not just the console: <code>"default"</code> prints it under the ASCII
+table, <code>"tinytable"</code> / <code>"gt"</code> / <code>"flextable"</code> / <code>"word"</code> carry it as
+a table note, <code>"excel"</code> writes it below the body, and
+<code>"data.frame"</code> keeps the sentence verbatim in the
+<code>missing_note</code> attribute (<code>attr(x, "missing_note")</code>, <code>NULL</code> when
+nothing was removed) so a pipeline that renders the numbers itself
+can still state what left the table. On the <code>"tinytable"</code> route the
+note is set one size down; <code>options(spicy.note_style)</code> governs that
+(see <code><a href="table_regression.html">table_regression()</a></code>).</p>
+<p>The Excel sheet carries the same title the console prints on its
+first row; the table itself starts on row 3.</p>
+    </div>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
     <p>When <code>by</code> is used, each selected variable is cross-tabulated
@@ -655,12 +673,12 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes          <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249     20.8   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)    <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25      2.1   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable       <span style="color: #9E9E9E;">│</span>   p    Cramer's V  CI lower  CI upper </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────┼───────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker <span style="color: #9E9E9E;">│</span> &lt;.001     .14        .08       .19    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No           <span style="color: #9E9E9E;">│</span>                                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes          <span style="color: #9E9E9E;">│</span>                                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)    <span style="color: #9E9E9E;">│</span>                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable       <span style="color: #9E9E9E;">│</span> p (Total %)  Cramer's V  CI lower  CI upper </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker <span style="color: #9E9E9E;">│</span>    &lt;.001        .14        .08       .19    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No           <span style="color: #9E9E9E;">│</span>                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes          <span style="color: #9E9E9E;">│</span>                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)    <span style="color: #9E9E9E;">│</span>                                             </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Per-variable association measure ----------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -688,17 +706,17 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>   290       46.8     249     42.9     539     44.9   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>   196       31.6     204     35.2     400     33.3   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span>  p    Effect size </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼───────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker          <span style="color: #9E9E9E;">│</span> .713      .01     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                    <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                   <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Highest education level <span style="color: #9E9E9E;">│</span> .344      .04     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary       <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span> p (Total %)  Effect size </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker          <span style="color: #9E9E9E;">│</span>    .713          .01     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No                    <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                   <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Highest education level <span style="color: #9E9E9E;">│</span>    .344          .04     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary       <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>                          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Phi: Current smoker; Cramer's V: Highest education level.</span></span>
 <span class="r-in"><span></span></span>
@@ -723,17 +741,17 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>   290       46.8     249     42.9     539     44.9   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>   196       31.6     204     35.2     400     33.3   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span>  p    Cramer's V </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼──────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker          <span style="color: #9E9E9E;">│</span> .713     .01     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                    <span style="color: #9E9E9E;">│</span>                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                   <span style="color: #9E9E9E;">│</span>                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Highest education level <span style="color: #9E9E9E;">│</span> .344     .04     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary       <span style="color: #9E9E9E;">│</span>                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span> p (Total %)  Cramer's V </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼─────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker          <span style="color: #9E9E9E;">│</span>    .713         .01     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No                    <span style="color: #9E9E9E;">│</span>                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                   <span style="color: #9E9E9E;">│</span>                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Highest education level <span style="color: #9E9E9E;">│</span>    .344         .04     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary       <span style="color: #9E9E9E;">│</span>                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>                         </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Per-variable override (recommended named form).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -761,30 +779,30 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>   196       31.6     204     35.2     400     33.3   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Self-rated health       <span style="color: #9E9E9E;">│</span>                                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>    10        1.6      10      1.7      20      1.7   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Poor                  <span style="color: #9E9E9E;">│</span>    31        5.0      30      5.2      61      5.1   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Fair                  <span style="color: #9E9E9E;">│</span>   143       23.1     123     21.2     266     22.2   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Good                  <span style="color: #9E9E9E;">│</span>   282       45.5     276     47.6     558     46.5   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Very good             <span style="color: #9E9E9E;">│</span>   154       24.8     141     24.3     295     24.6   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>    10        1.6      10      1.7      20      1.7   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span>  p    Effect size </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼───────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker          <span style="color: #9E9E9E;">│</span> .713      .01     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                    <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                   <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Highest education level <span style="color: #9E9E9E;">│</span> .344      .04     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary       <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Self-rated health       <span style="color: #9E9E9E;">│</span> .849      .01     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Poor                  <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Fair                  <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Good                  <span style="color: #9E9E9E;">│</span>                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Very good             <span style="color: #9E9E9E;">│</span>                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                <span style="color: #9E9E9E;">│</span> p (Total %)  Effect size </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Current smoker          <span style="color: #9E9E9E;">│</span>    .713          .01     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No                    <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes                   <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Highest education level <span style="color: #9E9E9E;">│</span>    .344          .04     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary       <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary       <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary              <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Self-rated health       <span style="color: #9E9E9E;">│</span>    .849          .01     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Poor                  <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Fair                  <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Good                  <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Very good             <span style="color: #9E9E9E;">│</span>                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)             <span style="color: #9E9E9E;">│</span>                          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Phi: Current smoker; Cramer's V: Highest education level; Kendall's Tau-b: Self-rated health.</span></span>
 <span class="r-in"><span></span></span>

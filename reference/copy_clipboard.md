@@ -95,7 +95,8 @@ usual; `quiet = TRUE` silences them all at once.
 ## Examples
 
 ``` r
-# \donttest{
+# Writes to the system clipboard, so never run by checks:
+if (FALSE) { # \dontrun{
 if (clipr::clipr_available()) {
   # Data frame
   copy_clipboard(sochealth)
@@ -127,5 +128,5 @@ if (clipr::clipr_available()) {
   # Quiet mode (no messages shown)
   copy_clipboard(sochealth, quiet = TRUE)
 }
-# }
+} # }
 ```

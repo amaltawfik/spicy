@@ -199,6 +199,28 @@ instead of rendering an empty column.
 
 ### New features
 
+- Table notes rendered by the `"tinytable"` engine are set one size down
+  (`0.9em`, black), like the notes of the other engines. New
+  `options(spicy.note_style)`: `"none"` leaves the note to the document
+  template, and any other string is added to the Typst
+  [`text()`](https://rdrr.io/r/graphics/text.html) call around it,
+  e.g. `"fill: luma(89)"` for a grey note.
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  gains `show_columns`: pick the statistics the table shows – `"med"`,
+  `"q1"`, `"q3"`, `"iqr"`, the compact `"med_iqr"` (`Med [Q1, Q3]`), and
+  `"med_ci"` (exact order-statistic CI of the median) alongside the
+  usual `"m"`, `"sd"`, `"min"`, `"max"`, `"ci"`, `"n"`. Pass a named
+  list to give each variable its own selection. A variable shown as a
+  median is tested as one: its default test becomes Wilcoxon /
+  Kruskal-Wallis with the matching rank effect size, per variable, and
+  the note says which test each variable carries. The default display is
+  unchanged.
+- New `show_columns` tokens `"r2"` and `"adj_r2"` for linear
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  screens: the share of outcome variance each predictor explains on its
+  own, one value per predictor block. The multivariable model keeps
+  reporting its R-squared in the fit-statistics rows; `glm` and `coxph`
+  screens are refused.
 - New `show_columns` token families `"rmst"` and `"risk_diff"` for
   `coxph` and `survreg`: covariate-adjusted differences in restricted
   mean survival time over `[0, tau]` and in cumulative incidence at
@@ -311,9 +333,139 @@ instead of rendering an empty column.
   *Multinomial*, *Count and two-part*, *Survival*, *Ordinal regression
   tables*, and *Categorical predictors*, a guide to dummy coding,
   reference levels, joint tests of a factor, and contrast codings.
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  carries everything the printed table shows, so a custom renderer no
+  longer has to reconstruct it: significance markers and their cutoffs
+  (`stars`), the display string of cells no single number can express
+  such as the `events/N` counts (`col_meta$display_cells`), and the
+  absorbed fixed-effects block as a header row plus one row per factor.
+  A new `version` field names the contract; components are only ever
+  added, and a view built by a newer version than the one reading it is
+  refused instead of mis-read.
 
 ### Bug fixes
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  draws its light rule between variable blocks in the `"gt"` and
+  `"flextable"` outputs too, labels the first `"gt"` column `Variable`
+  like every other engine, and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  carries its title to the `"tinytable"` caption.
+- Tables rendered to Typst no longer force a `5pt` column gutter when
+  they carry grouped column headers (`by` groups, multi-model headers,
+  CI spanners). All tables in a document now share the same column grid,
+  and a document-level `#set table(column-gutter: ...)` rule becomes
+  effective again.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  carry their missing-value disclosure to every output: `"tinytable"`,
+  `"gt"`, `"flextable"` and `"word"` now show it as a table note, and
+  `"data.frame"` keeps it in the `missing_note` attribute. It used to
+  reach the console print only, so a report rendered with
+  `warning: false` showed a table computed on fewer observations than it
+  announced.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  also carry their title to the `"tinytable"` output, as the table
+  caption; a `by` table carries its association-measure note there too.
+- A table without a confidence-interval column had its `"tinytable"`
+  header rules one row too low – no rule above the table, the per-model
+  rules under the column labels instead of under the model names – and
+  carried an empty header strip below the labels.
+- The `"tinytable"` output draws every rule the console draws between
+  blocks: above `Thresholds:` and `Random effects:` in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  and between variable blocks in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+- A multi-line table note keeps one disclosure per line in the
+  `"tinytable"` HTML and Typst output; the lines used to run together
+  into a single sentence.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  without `by` labels the first `"tinytable"` column `Variable`, like
+  the console and like the `by` version.
+- Factor levels in a `"tinytable"` regression table are indented once,
+  not twice.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  carry their title to `output = "word"`, as the numbered caption the
+  regression tables already get; the document used to open with an
+  untitled table, and a `by` table lost the name of its grouping
+  variable with it.
+- A `by` table’s association-measure note reaches the `"flextable"` and
+  `"word"` outputs, beside the missing-value disclosure.
+- Factor levels in a `"flextable"` or `"word"` regression table are
+  indented once, not twice.
+- A table without a confidence-interval column no longer carries an
+  empty header strip in the `"flextable"` and `"word"` outputs: the
+  column labels and the rules land where the console draws them.
+- A column header in a `"flextable"` or `"word"` table stays inside its
+  own model. Two models sharing a label used to merge into a single
+  header cell straddling both, two confidence intervals into one
+  `95% CI` spanning four columns.
+- The `"flextable"` and `"word"` outputs draw every rule the console
+  draws between blocks, not only the first: `Thresholds:` and
+  `Random effects:` open with one too.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  carry their title to `output = "flextable"`, as the table caption.
+- Factor levels in a `"flextable"` or `"word"`
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  are indented once, not twice.
+- `output = "excel"` writes the cells the console shows: the `Events/N`
+  counts keep their denominator (reference levels included),
+  significance stars reach the estimates the note’s legend documents,
+  and absorbed fixed effects read `Yes` / `No` instead of `1` / `0`.
+- `output = "excel"` with `decimal_mark = ","` no longer mixes
+  separators: a sheet used to show `65.07` next to its own `<,001`
+  because a numeric cell follows the reader’s locale. The body is
+  written pre-formatted instead; the default `"."` still writes real
+  numbers.
+- `table_categorical(output = "excel")` writes blank cells on
+  variable-header rows. They used to be Excel error cells (`#N/A`),
+  which spread the error to any `SUM()` over the column.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  carry their title and their missing-value / association notes to
+  `output = "excel"`, like every other output;
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  gains the title. The table starts on row 3, below the title.
+- Every Excel export sizes its columns to the text they carry: row
+  labels such as `WHO-5 wellbeing index (0-100)` used to open clipped by
+  the default column width.
+- Factor levels in an `"excel"` regression table are indented once, not
+  twice.
+- `output = "clipboard"` survives any `clipboard_delim`: a cell holding
+  the delimiter, a double quote or a line break is now quoted RFC
+  4180-style. A level label with a comma used to shift every following
+  value one column to the right under `clipboard_delim = ","`, and
+  `decimal_mark = ","` split every number into two cells.
+- `output = "clipboard"` pastes numbers as numbers: the
+  decimal-alignment padding is gone from the payload. It used the figure
+  space U+2007, which a spreadsheet does not read as whitespace, so a
+  padded cell landed as text in the middle of a numeric column.
+- `table_categorical(output = "clipboard")` ships plain text: p-values
+  and association measures used to arrive wrapped in an Excel formula
+  (`=" .424"`), visible verbatim in a text editor or a word processor,
+  and the wrapper turned blank cells into non-blank ones.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  carry their title and their missing-value / association notes to
+  `output = "clipboard"`, like every other output.
+- A
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  or
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  table without a confidence-interval column no longer pastes a blank
+  line between its header and its body.
 - [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md)
   reported wrong SEs, confidence intervals and Wald p-values in every
   release from 0.6.0 through 0.12.0 – its asymptotic standard error
@@ -482,6 +634,14 @@ instead of rendering an empty column.
   en-dash reference cells, the multi-outcome `Outcome` row); the
   structured schema gains `reference_models_by_row` and
   `outcome_labels_by_col`.
+- `stars = TRUE` marks the coefficients in every output, not just the
+  console: `output = "gt"`, `"tinytable"`, `"flextable"`, `"word"` and
+  `"clipboard"` used to ship the legend footnote without a single marker
+  in the table.
+- An `output = "gt"` table keeps its note wherever it is rendered –
+  saved to a file, converted to HTML, or printed outside an interactive
+  session. It reached the interactive display only, so a published table
+  lost the model family, the standard errors, and the star legend.
 - `table_regression(m1, m2)` without
   [`list()`](https://rdrr.io/r/base/list.html) errors with a helpful
   message; colliding model labels no longer break `output = "gt"`; the
@@ -532,6 +692,10 @@ instead of rendering an empty column.
 
 ### Minor improvements
 
+- `table_continuous(by = )` titles the table
+  `Descriptive statistics by <label>`: the grouping variable is stated
+  in the console header and in every rendered caption, like the other
+  `by` tables of the family.
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   discloses excluded missing values in the table note – per variable,
   with a deduplicated row total, and rows dropped for a missing `by` –

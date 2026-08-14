@@ -20,6 +20,7 @@ table_regression_uv(
   multivariable = TRUE,
   complete_cases = FALSE,
   show_columns = c("n", "b", "ci", "p"),
+  show_intercept = FALSE,
   title = NULL,
   ...
 )
@@ -86,13 +87,23 @@ table_regression_uv(
   carries no `N` column (its single `n` is a fit-statistics row, as in
   the reference layouts). For binary outcomes, add `"n_events"` for
   outcome event counts as `events/N` per factor level (each column group
-  counts on its own estimation sample). For `method = "coxph"`, the RMST
-  / risk-difference families (`"rmst"`, `"risk_diff"`, ...) work with an
-  explicit numeric `tau` / `at_time` shared by every column: each
-  univariable fit runs its own `boot_n`-replicate bootstrap, and the
-  multivariable group reports the covariate-adjusted estimand from the
-  full fit. `tau = "minmax"` is refused (per-fit horizons would make the
-  column incomparable across predictors).
+  counts on its own estimation sample). For `method = "lm"`, add `"r2"`
+  (and/or `"adj_r2"`) for the share of outcome variance each predictor
+  explains **on its own** – see *Variance explained* below. For
+  `method = "coxph"`, the RMST / risk-difference families (`"rmst"`,
+  `"risk_diff"`, ...) work with an explicit numeric `tau` / `at_time`
+  shared by every column: each univariable fit runs its own
+  `boot_n`-replicate bootstrap, and the multivariable group reports the
+  covariate-adjusted estimand from the full fit. `tau = "minmax"` is
+  refused (per-fit horizons would make the column incomparable across
+  predictors).
+
+- show_intercept:
+
+  Display the `(Intercept)` rows? Default `FALSE` – the opposite of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)'s
+  default, because each univariable fit carries its own nuisance
+  intercept. See *Intercepts*.
 
 - title:
 
@@ -104,10 +115,10 @@ table_regression_uv(
   Passed to
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   (`exponentiate`, `vcov`, `cluster`, `p_adjust`, `digits`, `labels`,
-  `output`, ...). `show_intercept` defaults to `FALSE` here; `nested` is
-  not meaningful for a screen and is refused. `cluster` must be a single
-  vector with one value per row of `data`; it is aligned to each fit's
-  own estimation sample automatically.
+  `output`, ...). `nested` is not meaningful for a screen and is
+  refused. `cluster` must be a single vector with one value per row of
+  `data`; it is aligned to each fit's own estimation sample
+  automatically.
 
 ## Value
 
@@ -124,6 +135,21 @@ whenever the Ns differ. The multivariable model is fit on the complete
 cases of **all** its variables (its `n` appears in the fit-statistics
 rows). Pass `complete_cases = TRUE` to restrict every model –
 univariable and multivariable – to the common complete-case sample.
+
+## Variance explained
+
+`show_columns = c("n", "b", "ci", "p", "r2")` adds an \\R^2\\ column to
+the screen (`method = "lm"`): each predictor block reports its **own**
+model's \\R^2\\, on the first row of the block like `N`. It answers what
+a coefficient and its interval cannot – how much of the outcome the
+predictor accounts for – and often shows that a firmly established
+association still explains a small share of the variance. Add `"adj_r2"`
+for the adjusted form. On the multivariable side the \\R^2\\ is one
+number for the whole model, so it stays in the fit-statistics rows
+(where it is shown by default) instead of being repeated down a column.
+Not available for `method = "glm"` or `"coxph"`: outside least squares
+only competing pseudo-\\R^2\\ measures exist, and spicy asks you to name
+the one you want (`show_fit_stats = "pseudo_r2_mcfadden"`).
 
 ## Multiplicity
 
@@ -208,22 +234,61 @@ table_regression_uv(
 #>  R² (Nagelkerke) │                                     0.03               
 #>  AIC             │                                  1200.9                
 #> 
-#>                    Mult… 
-#>                    ───── 
-#>  Variable        │   p   
-#> ─────────────────┼───────
-#>  age             │  .214 
-#>  sex:            │       
-#>    Female (ref.) │  –    
-#>    Male          │  .800 
-#>  education:      │       
-#>    .L            │ <.001 
-#>    .Q            │  .852 
+#>                    Multi… 
+#>                    ────── 
+#>  Variable        │ p (OR) 
+#> ─────────────────┼────────
+#>  age             │   .214 
+#>  sex:            │        
+#>    Female (ref.) │   –    
+#>    Male          │   .800 
+#>  education:      │        
+#>    .L            │  <.001 
+#>    .Q            │   .852 
 #> 
 #> Note. Logistic regression models.
 #> Std. errors: classical (Fisher information).
 #> OR = odds ratio.
 #> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
 #> Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
+
+# Linear screen with the share of variance each predictor
+# explains on its own (the multivariable model reports its own
+# R-squared in the fit-statistics rows).
+table_regression_uv(
+  sochealth,
+  outcome      = wellbeing_score,
+  predictors   = c(age, sex, bmi),
+  show_columns = c("n", "b", "ci", "p", "r2")
+)
+#> Univariable and multivariable linear regression: wellbeing_score
+#> 
+#>                                  Univariable                 Multiv… 
+#>                    ────────────────────────────────────────  ─────── 
+#>  Variable        │  N      B        95% CI        p     R²      B    
+#> ─────────────────┼───────────────────────────────────────────────────
+#>  age             │ 1200   0.04  [-0.02,  0.10]   .177  0.00     0.07 
+#>  sex:            │                                                   
+#>    Female (ref.) │    –    –          –          –      –        –   
+#>    Male          │ 1200   3.89  [ 2.13,  5.64]  <.001  0.02     4.27 
+#>  bmi             │ 1188  -0.60  [-0.83, -0.36]  <.001  0.02    -0.67 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │                                           1188    
+#>  R²              │                                              0.04 
+#>  Adj.R²          │                                              0.04 
+#> 
+#>                        Multivariable     
+#>                    ───────────────────── 
+#>  Variable        │   95% CI (B)    p (B) 
+#> ─────────────────┼───────────────────────
+#>  age             │ [ 0.01,  0.13]   .023 
+#>  sex:            │                       
+#>    Female (ref.) │       –          –    
+#>    Male          │ [ 2.52,  6.02]  <.001 
+#>  bmi             │ [-0.91, -0.44]  <.001 
+#> 
+#> Note. Linear regression models.
+#> Std. errors: classical (OLS).
+#> Each univariable model is fit on its own complete cases; N varies by predictor (1188-1200).
 # }
 ```

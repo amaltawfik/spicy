@@ -142,6 +142,7 @@ adjustment.</p>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  show_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"auto"</span>, <span class="st">"hedges_g"</span>, <span class="st">"eta_sq"</span>, <span class="st">"r_rb"</span>, <span class="st">"epsilon_sq"</span><span class="op">)</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -263,7 +264,17 @@ column in the printed ASCII table and in every rendered output
 Set to <code>FALSE</code> to drop the <code>n</code> column structurally from those
 outputs (no empty placeholder, no spanner). The <code>n</code> column is
 always present in the raw <code>output = "data.frame"</code> /
-<code>"long"</code> for downstream programmatic access. Defaults to <code>TRUE</code>.</p></dd>
+<code>"long"</code> for downstream programmatic access. Defaults to <code>TRUE</code>.
+Ignored (with a warning) when <code>show_columns</code> is supplied.</p></dd>
+
+
+<dt id="arg-show-columns">show_columns<a class="anchor" aria-label="anchor" href="#arg-show-columns"></a></dt>
+<dd><p>Statistics to display, as a character vector of
+tokens or a named list of such vectors (one per variable). <code>NULL</code>
+(the default) keeps the historical display: mean, SD, min, max,
+the mean CI (see <code>ci</code>) and <code>n</code> (see <code>show_n</code>). See the
+"Choosing the statistics" section for the token vocabulary, the
+per-variable form, and the test that follows a median.</p></dd>
 
 
 <dt id="arg-effect-size">effect_size<a class="anchor" aria-label="anchor" href="#arg-effect-size"></a></dt>
@@ -313,7 +324,8 @@ structurally from those outputs (no empty placeholders, no
 border lines under an empty header). The CI bounds are always
 present as <code>ci_lower</code> / <code>ci_upper</code> in the raw
 <code>output = "data.frame"</code> / <code>"long"</code> for downstream programmatic
-access. Defaults to <code>TRUE</code>. The CI level is taken from <code>ci_level</code>.</p></dd>
+access. Defaults to <code>TRUE</code>. The CI level is taken from <code>ci_level</code>.
+Ignored (with a warning) when <code>show_columns</code> is supplied.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -366,10 +378,13 @@ with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
 internal position; centring those uniform-width strings then
 stacks the decimal points vertically. The same pad-then-centre
-strategy is applied on every engine (<code>gt</code>, <code>tinytable</code>,
-<code>flextable</code>, <code>word</code>, <code>clipboard</code>, ASCII print) for a
+strategy is applied on every rendering engine (<code>gt</code>,
+<code>tinytable</code>, <code>flextable</code>, <code>word</code>, ASCII print) for a
 homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code> and
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></li>
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. The <code>clipboard</code> output is delimited
+text meant to be parsed rather than read at a fixed width, so
+its cells travel unpadded (a padded number pastes as text
+next to an unpadded number).</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
 </ul><p>The <code>excel</code> output uses the engine's default alignment in any
@@ -405,7 +420,9 @@ better in your pipeline (<code>"long"</code> matches
 
 <dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
 <dd><p>Delimiter for <code>output = "clipboard"</code>
-(default: <code>"\t"</code>).</p></dd>
+(default: <code>"\t"</code>). A cell holding the delimiter itself, a double
+quote or a line break is quoted RFC 4180-style, so the grid
+survives whatever delimiter you choose.</p></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
@@ -434,7 +451,9 @@ be re-coerced via <code><a href="as.data.frame.spicy_continuous_table.html">as.d
 piped into <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>.</p></li>
 <li><p><code>"data.frame"</code> / <code>"long"</code>: a plain <code>data.frame</code> with
 columns <code>variable</code>, <code>label</code>, <code>group</code> (when <code>by</code> is used),
-<code>mean</code>, <code>sd</code>, <code>min</code>, <code>max</code>, <code>ci_lower</code>, <code>ci_upper</code>, <code>n</code>. When
+<code>mean</code>, <code>sd</code>, <code>min</code>, <code>max</code>, <code>ci_lower</code>, <code>ci_upper</code>, <code>median</code>,
+<code>q1</code>, <code>q3</code>, <code>iqr</code>, <code>med_ci_lower</code>, <code>med_ci_upper</code>, <code>n</code>. Every
+statistic is computed whatever <code>show_columns</code> displays. When
 <code>by</code> is used together with <code>p_value = TRUE</code>, <code>statistic = TRUE</code>,
 or <code>effect_size != "none"</code>, additional columns are appended
 (populated on the first row of each variable block only):</p><ul><li><p><code>test_type</code> – test identifier (e.g., <code>"welch_t"</code>,
@@ -456,7 +475,63 @@ reads better in your code.</p></li>
 path invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
-</ul></div>
+</ul><p>The missing-value disclosure (values excluded from the summaries,
+and rows removed for a missing <code>by</code> value under <code>drop_na = TRUE</code>)
+travels with the table on every route, not just the console:
+<code>"default"</code> prints it under the ASCII table, <code>"tinytable"</code> / <code>"gt"</code> /
+<code>"flextable"</code> / <code>"word"</code> carry it as a table note, <code>"excel"</code> writes
+it below the body, and
+<code>"data.frame"</code> / <code>"long"</code> keep the sentence verbatim in the
+<code>missing_note</code> attribute (<code>attr(x, "missing_note")</code>, <code>NULL</code> when
+nothing was removed) so a pipeline that renders the numbers itself
+can still state what left the table. On the <code>"tinytable"</code> route the
+note is set one size down; <code>options(spicy.note_style)</code> governs that
+(see <code><a href="table_regression.html">table_regression()</a></code>).</p>
+<p>The Excel sheet carries the same title the console prints on its
+first row; the table itself starts on row 3.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="choosing-the-statistics">Choosing the statistics<a class="anchor" aria-label="anchor" href="#choosing-the-statistics"></a></h2>
+    <p><code>show_columns</code> selects which statistics the table displays. The
+tokens, and the column each one produces:</p><table class="table table"><tr><td>Token</td><td>Column</td><td>Statistic</td></tr><tr><td><code>"m"</code></td><td><code>M</code></td><td>mean</td></tr><tr><td><code>"sd"</code></td><td><code>SD</code></td><td>standard deviation</td></tr><tr><td><code>"med"</code></td><td><code>Med</code></td><td>median (<code><a href="https://rdrr.io/r/stats/median.html" class="external-link">stats::median()</a></code>)</td></tr><tr><td><code>"iqr"</code></td><td><code>IQR</code></td><td>interquartile <em>width</em>, <code>Q3 - Q1</code></td></tr><tr><td><code>"med_iqr"</code></td><td><code>Med [Q1, Q3]</code></td><td>median and the interquartile <em>interval</em>, in one compact column</td></tr><tr><td><code>"q1"</code> / <code>"q3"</code></td><td><code>Q1</code> / <code>Q3</code></td><td>first / third quartile</td></tr><tr><td><code>"min"</code> / <code>"max"</code></td><td><code>Min</code> / <code>Max</code></td><td>extremes</td></tr><tr><td><code>"ci"</code></td><td><code>&lt;level&gt;% CI LL</code> / <code>UL</code></td><td><em>t</em> confidence interval of the mean</td></tr><tr><td><code>"med_ci"</code></td><td><code>Med &lt;level&gt;% CI LL</code> / <code>UL</code></td><td>exact confidence interval of the median</td></tr><tr><td><code>"n"</code></td><td><code>n</code></td><td>valid observations</td></tr></table><p>Quartiles use <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code>'s default type 7. <code>"iqr"</code> is the
+width (one number, the rank mirror of <code>SD</code>); <code>"med_iqr"</code> shows the
+interval with its bounds. Columns appear in the canonical order of
+the table above, whatever order they were written in.</p>
+<p>A named list applies a different selection to each variable, with
+<code>.default</code> covering the variables it does not name – the case of a
+table where a skewed variable must be reported as a median while the
+others keep the mean:</p>
+<p></p><div class="sourceCode r"><pre><code><span><span class="va">show_columns</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  mvpa    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
+<span>  sitting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
+<span>  .default <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre><p></p></div>
+<p>The table's columns are the union of the requested tokens; a cell of
+a column the variable did not ask for is left blank (structurally
+empty, not <code>"--"</code>, which is reserved for an undefined statistic).</p>
+<p>The table tests what it shows. A variable displaying a median
+without a mean takes the rank-based test – Wilcoxon rank-sum for
+two groups, Kruskal-Wallis beyond – and the rank effect size
+(rank-biserial <em>r</em>, \(\varepsilon^2\)) when <code>effect_size</code> is
+<code>"auto"</code>. The switch is per variable, so a mixed table carries a
+rank test on its median rows and Welch on its mean rows, and the
+table note names which test each variable carries. An explicit
+<code>test</code> is sovereign: it applies to every variable, with a warning
+naming the ones displayed as medians.</p>
+<p><code>"med_ci"</code> is the exact order-statistic (sign-test) confidence
+interval: the tightest interval \([x_{(k)}, x_{(n-k+1)}]\) whose
+binomial coverage still reaches <code>ci_level</code>. It is distribution-free
+and deterministic – no bootstrap, no seed – and its coverage is at
+least nominal, the same convention as SAS <code>PROC UNIVARIATE</code>
+(<code>CIPCTLDF</code>) and <code>DescTools::MedianCI(method = "exact")</code>. Below
+about six observations no interval reaches the requested level; the
+cells then show <code>"--"</code> rather than a false interval.</p>
+<p><code>"ci"</code> is the confidence interval <em>of the mean</em>: requested without
+<code>"m"</code> it is dropped with a warning pointing at <code>"med_ci"</code>, and
+<code>"med_ci"</code> without a displayed median is dropped likewise. When
+<code>show_columns</code> is supplied it decides the <code>n</code> and CI columns on its
+own, and a contradictory <code>show_n</code> / <code>ci</code> is reported.</p>
+    </div>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
     <p>The omnibus test is computed only when <code>by</code> is supplied and at
@@ -568,7 +643,7 @@ contrasts, fitted means);
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span>
@@ -590,7 +665,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group            p (n) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
@@ -609,7 +684,7 @@ contrasts, fitted means);
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
 <span class="r-in"><span>  statistic <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span>
@@ -643,6 +718,76 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># --- Choosing the statistics --------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Median and interquartile range instead of mean and SD.</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                        <span style="color: #9E9E9E;">│</span>      Med [Q1, Q3]         n    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────────────┼────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index                 <span style="color: #9E9E9E;">│</span>  25.90 [23.40, 28.60]    1188  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100)   <span style="color: #9E9E9E;">│</span>  70.25 [58.90, 79.23]    1200  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Median with its exact (order-statistic) confidence interval.</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="va">bmi</span>,</span></span>
+<span class="r-in"><span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med"</span>, <span class="st">"iqr"</span>, <span class="st">"med_ci"</span>, <span class="st">"n"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index   <span style="color: #9E9E9E;">│</span>  25.90    5.20        25.70            26.20        1188  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># One selection per variable. A skewed variable that a scoring</span></span></span>
+<span class="r-in"><span><span class="co"># protocol requires in median and IQR (the IPAQ case) sits next to</span></span></span>
+<span class="r-in"><span><span class="co"># variables kept in mean and SD; each row is tested the way it is</span></span></span>
+<span class="r-in"><span><span class="co"># displayed, and the note says so.</span></span></span>
+<span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    life_sat_health <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    .default <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                       <span style="color: #9E9E9E;">│</span> Group     M     SD      Med [Q1, Q3]      n  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index                <span style="color: #9E9E9E;">│</span> Female  25.69   3.78                     616 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male    26.20   3.64                     572 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female                4.00 [3.00, 5.00]  616 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male                  4.00 [3.00, 5.00]  576 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female  67.16  14.80                     620 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male    71.05  16.23                     580 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                       <span style="color: #9E9E9E;">│</span> Group   p (n) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────┼───────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index                <span style="color: #9E9E9E;">│</span> Female   .018 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female   .233 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Auto-selected effect size with confidence interval (Hedges' g for</span></span></span>
@@ -654,7 +799,7 @@ contrasts, fitted means);
 <span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"auto"</span>,</span></span>
 <span class="r-in"><span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max    95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────────</span></span>
@@ -680,7 +825,7 @@ contrasts, fitted means);
 <span class="r-in"><span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  effect_size_digits <span class="op">=</span> <span class="fl">3</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span>
@@ -694,7 +839,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group            p (n) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
@@ -777,11 +922,16 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi               Body mass index   Male 26.19685  3.638092 16.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     max ci_lower ci_upper   n test_type statistic      df1 df2      p.value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  38.9 25.38588 25.98425 616   welch_t -2.377237 1184.497  NA 1.760093e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  37.7 25.89808 26.49563 572      &lt;NA&gt;        NA       NA  NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 100.0 69.72540 72.37219 580      &lt;NA&gt;        NA       NA  NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     max ci_lower ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  38.9 25.38588 25.98425   25.7 23.100 28.600  5.500         25.4         26.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     n test_type statistic      df1 df2      p.value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 616   welch_t -2.377237 1184.497  NA 1.760093e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 572      &lt;NA&gt;        NA       NA  NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 620   welch_t -4.326141 1168.700  NA 1.647005e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 580      &lt;NA&gt;        NA       NA  NA           NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Rendered HTML / docx objects -- best viewed inside a</span></span></span>

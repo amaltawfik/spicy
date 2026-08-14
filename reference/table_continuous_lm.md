@@ -531,10 +531,13 @@ table_continuous_lm(
     (U+2007, digit-width) so every string in a column has the same width
     with the decimal mark at the same internal position; centring those
     uniform-width strings then stacks the decimal points vertically. The
-    same pad-then-centre strategy is applied on every engine (`gt`,
-    `tinytable`, `flextable`, `word`, `clipboard`, ASCII print) for a
+    same pad-then-centre strategy is applied on every rendering engine
+    (`gt`, `tinytable`, `flextable`, `word`, ASCII print) for a
     homogeneous rendering, matching
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+    The `clipboard` output is delimited text meant to be parsed rather
+    than read at a fixed width, so its cells travel unpadded (a padded
+    number pastes as text next to an unpadded number).
 
   - `"center"`: center-align all numeric columns.
 
@@ -577,7 +580,9 @@ table_continuous_lm(
 
 - clipboard_delim:
 
-  Delimiter for `output = "clipboard"` (default: `"\t"`).
+  Delimiter for `output = "clipboard"` (default: `"\t"`). A cell holding
+  the delimiter itself, a double quote or a line break is quoted RFC
+  4180-style, so the grid survives whatever delimiter you choose.
 
 - word_path:
 
@@ -632,6 +637,10 @@ Depends on `output`:
 - `"excel"` / `"word"`: writes to disk and returns the file path.
 
 - `"clipboard"`: copies the wide table and returns it invisibly.
+
+The Excel sheet carries the same title the console prints on its first
+row; the table itself starts on row 3, and the note lines sit below the
+body.
 
 If no numeric outcome columns remain after applying `select`, `exclude`,
 and `regex`, the function emits a warning and returns an empty

@@ -218,13 +218,13 @@ table_regression(cx,
 #>  N events      │  163                                                
 #>  AIC           │ 1454.2                                              
 #> 
-#>  Variable      │     95% CI     
-#> ───────────────┼────────────────
-#>  age           │ [-0.00,  0.01] 
-#>  sex:          │                
-#>    Male (ref.) │                
-#>    Female      │ [-0.30, -0.08] 
-#>  ph.ecog       │ [ 0.08,  0.22] 
+#>  Variable      │ 95% CI (dRisk (365)) 
+#> ───────────────┼──────────────────────
+#>  age           │       [-0.00,  0.01] 
+#>  sex:          │                      
+#>    Male (ref.) │                      
+#>    Female      │       [-0.30, -0.08] 
+#>  ph.ecog       │       [ 0.08,  0.22] 
 #> 
 #> Note. Cox proportional hazards regression.
 #> Std. errors: Wald asymptotic (z).
@@ -235,22 +235,23 @@ table_regression(cx,
 ```
 
 One display note before reading: five columns are one more than the
-default console width holds, so the last interval — the `95% CI` of
-`dRisk (365)` — folds into a continuation panel printed below the fit
-block rather than beside its estimate (the output formats of the final
-section keep every column on one row). With the panels matched up, the
-numbers: being female adds an average of **40.5 event-free days** over
-the first year (95% CI 17 to 64) and lowers the one-year risk of death
-by **19 percentage points** (95% CI 8 to 30); each additional ECOG point
-costs 38 days and adds 15 percentage points to one-year risk. And the
-age row teaches that the contrast unit matters as much as the scale: per
-**year** of age the effect is invisible (HR 1.01, under a day of RMST),
-but per **decade** — the clinically natural unit — the same fit implies
-HR 1.12 and 8.6 fewer event-free days. Both are one refit away: add a
-rescaled column (`lung2$age10 <- lung2$age / 10`), and the `age10` row
-of the same table reads HR 1.12 (equivalently, exp(10 × B) on the
-original fit) with dRMST −8.6. Rescale the predictor when the per-unit
-contrast is not the meaningful one.
+default console width holds, so the last interval folds into a
+continuation panel printed below the fit block, its header naming its
+estimand — `95% CI (dRisk (365))` — rather than beside its estimate (the
+output formats of the final section keep every column on one row). With
+the panels matched up, the numbers: being female adds an average of
+**40.5 event-free days** over the first year (95% CI 17 to 64) and
+lowers the one-year risk of death by **19 percentage points** (95% CI 8
+to 30); each additional ECOG point costs 38 days and adds 15 percentage
+points to one-year risk. And the age row teaches that the contrast unit
+matters as much as the scale: per **year** of age the effect is
+invisible (HR 1.01, under a day of RMST), but per **decade** — the
+clinically natural unit — the same fit implies HR 1.12 and 8.6 fewer
+event-free days. Both are one refit away: add a rescaled column
+(`lung2$age10 <- lung2$age / 10`), and the `age10` row of the same table
+reads HR 1.12 (equivalently, exp(10 × B) on the original fit) with dRMST
+−8.6. Rescale the predictor when the per-unit contrast is not the
+meaningful one.
 
 The absolute columns re-express the same model on interpretable scales,
 each averaged over the sample’s covariate mix — and that cuts both ways.
@@ -397,15 +398,15 @@ table_regression_uv(lung2, outcome = Surv(time, status),
 #>  N events      │                                                 163         
 #>  AIC           │                                                1454.2       
 #> 
-#>                     Multivariable    
-#>                  ─────────────────── 
-#>  Variable      │    95% CI       p   
-#> ───────────────┼─────────────────────
-#>  age           │ [0.99, 1.03]   .225 
-#>  sex:          │                     
-#>    Male (ref.) │      –         –    
-#>    Female      │ [0.41, 0.80]  <.001 
-#>  ph.ecog       │ [1.28, 2.00]  <.001 
+#>                     Multivariable     
+#>                  ──────────────────── 
+#>  Variable      │ 95% CI (HR)   p (HR) 
+#> ───────────────┼──────────────────────
+#>  age           │ [0.99, 1.03]    .225 
+#>  sex:          │                      
+#>    Male (ref.) │      –          –    
+#>    Female      │ [0.41, 0.80]   <.001 
+#>  ph.ecog       │ [1.28, 2.00]   <.001 
 #> 
 #> Note. Cox proportional hazards regression models.
 #> Std. errors: Wald asymptotic (z).

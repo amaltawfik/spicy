@@ -203,7 +203,7 @@ table_regression(
 #> 
 #>                   AR(1) 
 #>                   ───── 
-#>  Variable       │   p   
+#>  Variable       │ p (B) 
 #> ────────────────┼───────
 #>  (Intercept)    │ <.001 
 #>  Time           │ <.001 
@@ -501,18 +501,18 @@ table_regression(
 | Variable         | Events/N | OR   | 95% CI |       | p      |
 |------------------|----------|------|--------|-------|--------|
 |                  |          |      | LL     | UL    |        |
-| (Intercept)      | 248.00   | 0.45 | 0.18   |  1.10 |  .080  |
+| (Intercept)      | 248/444  | 0.45 | 0.18   |  1.10 |  .080  |
 | treat:           |          |      |        |       |        |
-|  P (ref.)        |   –      | –    | –      |  –    | –      |
-|  A               | 147.00   | 3.44 | 1.81   |  6.54 | \<.001 |
-| age              | 248.00   | 0.99 | 0.97   |  1.01 |  .338  |
-| baseline         | 248.00   | 7.26 | 3.86   | 13.64 | \<.001 |
-| n                | 444      |      |        |       |        |
-| N (subject)      | 111      |      |        |       |        |
-| Max cluster size |   4      |      |        |       |        |
+| P (ref.)         | 101/228  | –    | –      |  –    | –      |
+| A                | 147/216  | 3.44 | 1.81   |  6.54 | \<.001 |
+| age              | 248/444  | 0.99 | 0.97   |  1.01 |  .338  |
+| baseline         | 248/444  | 7.26 | 3.86   | 13.64 | \<.001 |
+| n                |     444  |      |        |       |        |
+| N (subject)      |     111  |      |        |       |        |
+| Max cluster size |       4  |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-78e88aa8 quarto-disable-processing="true"}
+.cl-59917db2 quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:

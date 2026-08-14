@@ -143,7 +143,7 @@ table_continuous(
     life_sat_health = "Satisfaction with health"
   )
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                 │ Group              M     SD     Min    Max   
 #> ──────────────────────────┼──────────────────────────────────────────────
@@ -376,7 +376,7 @@ table_continuous(
   p_value = TRUE,
   effect_size = TRUE
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                 │ Group              M     SD     Min    Max   
 #> ──────────────────────────┼──────────────────────────────────────────────
@@ -551,7 +551,7 @@ table_regression(
 #> 
 #>                       Adju… 
 #>                       ───── 
-#>  Variable           │   p   
+#>  Variable           │ p (B) 
 #> ────────────────────┼───────
 #>  (Intercept)        │ <.001 
 #>  smoking:           │       
@@ -732,6 +732,10 @@ tab |>
 | Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
+
+Categorical table by education {#tinytable_05x0o7wvirrapy1m2305 .table
+.tinytable style="width: auto; margin-left: auto; margin-right: auto;"
+quarto-disable-processing="true"}
 
 Use `flextable::` functions when you want to keep working toward Office
 or HTML document output. The example is shown as code here because the

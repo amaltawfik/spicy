@@ -101,6 +101,7 @@ presentation of applied epidemiology (the
 <span>  multivariable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  complete_cases <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n"</span>, <span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span>,</span>
+<span>  show_intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -168,6 +169,9 @@ carries no <code>N</code> column (its single <code>n</code> is a fit-statistics 
 as in the reference layouts). For binary outcomes, add
 <code>"n_events"</code> for outcome event counts as <code>events/N</code> per factor
 level (each column group counts on its own estimation sample).
+For <code>method = "lm"</code>, add <code>"r2"</code> (and/or <code>"adj_r2"</code>) for the
+share of outcome variance each predictor explains <strong>on its
+own</strong> – see <em>Variance explained</em> below.
 For <code>method = "coxph"</code>, the RMST / risk-difference families
 (<code>"rmst"</code>, <code>"risk_diff"</code>, ...) work with an explicit numeric
 <code>tau</code> / <code>at_time</code> shared by every column: each univariable fit
@@ -175,6 +179,13 @@ runs its own <code>boot_n</code>-replicate bootstrap, and the multivariable
 group reports the covariate-adjusted estimand from the full fit.
 <code>tau = "minmax"</code> is refused (per-fit horizons would make the
 column incomparable across predictors).</p></dd>
+
+
+<dt id="arg-show-intercept">show_intercept<a class="anchor" aria-label="anchor" href="#arg-show-intercept"></a></dt>
+<dd><p>Display the <code>(Intercept)</code> rows? Default
+<code>FALSE</code> – the opposite of <code><a href="table_regression.html">table_regression()</a></code>'s default,
+because each univariable fit carries its own nuisance intercept.
+See <em>Intercepts</em>.</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
@@ -185,7 +196,7 @@ column incomparable across predictors).</p></dd>
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Passed to <code><a href="table_regression.html">table_regression()</a></code> (<code>exponentiate</code>, <code>vcov</code>,
 <code>cluster</code>, <code>p_adjust</code>, <code>digits</code>, <code>labels</code>, <code>output</code>, ...).
-<code>show_intercept</code> defaults to <code>FALSE</code> here; <code>nested</code> is not
+<code>nested</code> is not
 meaningful for a screen and is refused. <code>cluster</code> must be a
 single vector with one value per row of <code>data</code>; it is aligned to
 each fit's own estimation sample automatically.</p></dd>
@@ -205,6 +216,23 @@ model is fit on the complete cases of <strong>all</strong> its variables (its
 <code>n</code> appears in the fit-statistics rows). Pass
 <code>complete_cases = TRUE</code> to restrict every model – univariable and
 multivariable – to the common complete-case sample.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="variance-explained">Variance explained<a class="anchor" aria-label="anchor" href="#variance-explained"></a></h2>
+    <p><code>show_columns = c("n", "b", "ci", "p", "r2")</code> adds an
+\(R^2\) column to the screen (<code>method = "lm"</code>): each
+predictor block reports its <strong>own</strong> model's \(R^2\), on the
+first row of the block like <code>N</code>. It answers what a coefficient and
+its interval cannot – how much of the outcome the predictor
+accounts for – and often shows that a firmly established
+association still explains a small share of the variance. Add
+<code>"adj_r2"</code> for the adjusted form. On the multivariable side the
+\(R^2\) is one number for the whole model, so it stays in
+the fit-statistics rows (where it is shown by default) instead of
+being repeated down a column. Not available for <code>method = "glm"</code>
+or <code>"coxph"</code>: outside least squares only competing
+pseudo-\(R^2\) measures exist, and spicy asks you to name
+the one you want (<code>show_fit_stats = "pseudo_r2_mcfadden"</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="multiplicity">Multiplicity<a class="anchor" aria-label="anchor" href="#multiplicity"></a></h2>
@@ -286,23 +314,62 @@ gtsummary package. <em>The R Journal</em>, 13(1), 570-580.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>                                     0.03               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC             <span style="color: #9E9E9E;">│</span>                                  1200.9                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    Mult… </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───── </span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .214 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>  –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>  .800 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>  .852 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    Multi… </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> p (OR) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>   .214 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>   –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span>   .800 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education:      <span style="color: #9E9E9E;">│</span>        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .L            <span style="color: #9E9E9E;">│</span>  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    .Q            <span style="color: #9E9E9E;">│</span>   .852 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Logistic regression models.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (Fisher information).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">OR = odds ratio.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Coefficients exponentiated and displayed as OR; CI bounds exponentiated.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Linear screen with the share of variance each predictor</span></span></span>
+<span class="r-in"><span><span class="co"># explains on its own (the multivariable model reports its own</span></span></span>
+<span class="r-in"><span><span class="co"># R-squared in the fit-statistics rows).</span></span></span>
+<span class="r-in"><span><span class="fu">table_regression_uv</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  outcome      <span class="op">=</span> <span class="va">wellbeing_score</span>,</span></span>
+<span class="r-in"><span>  predictors   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">sex</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n"</span>, <span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span>, <span class="st">"r2"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Univariable and multivariable linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                  Univariable                 Multiv… </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ────────────────────────────────────────  ─────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  N      B        95% CI        p     R²      B    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span> 1200   0.04  [-0.02,  0.10]   .177  0.00     0.07 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>    –    –          –          –      –        –   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> 1200   3.89  [ 2.13,  5.64]  &lt;.001  0.02     4.27 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 1188  -0.60  [-0.83, -0.36]  &lt;.001  0.02    -0.67 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>                                           1188    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>                                              0.04 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>                                              0.04 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        Multivariable     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───────────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   95% CI (B)    p (B) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span> [ 0.01,  0.13]   .023 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>       –          –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> [ 2.52,  6.02]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> [-0.91, -0.44]  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Each univariable model is fit on its own complete cases; N varies by predictor (1188-1200).</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

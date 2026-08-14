@@ -321,13 +321,13 @@ table.</p>
 <span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                                                </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1454.2                                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>     95% CI     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼────────────────</span></span></span>
-<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span> [-0.00,  0.01] </span></span>
-<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                </span></span>
-<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>                </span></span>
-<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> [-0.30, -0.08] </span></span>
-<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> [ 0.08,  0.22] </span></span>
+<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span> 95% CI (dRisk (365)) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼──────────────────────</span></span></span>
+<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span>       [-0.00,  0.01] </span></span>
+<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                      </span></span>
+<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>                      </span></span>
+<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span>       [-0.30, -0.08] </span></span>
+<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span>       [ 0.08,  0.22] </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
@@ -336,9 +336,9 @@ table.</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; HR = hazard ratio.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as HR; CI bounds exponentiated.</span></span></span></code></pre></div>
 <p>One display note before reading: five columns are one more than the
-default console width holds, so the last interval — the
-<code>95% CI</code> of <code>dRisk (365)</code> — folds into a
-continuation panel printed below the fit block rather than beside its
+default console width holds, so the last interval folds into a
+continuation panel printed below the fit block, its header naming its
+estimand — <code>95% CI (dRisk (365))</code> — rather than beside its
 estimate (the output formats of the final section keep every column on
 one row). With the panels matched up, the numbers: being female adds an
 average of <strong>40.5 event-free days</strong> over the first year
@@ -493,15 +493,15 @@ estimation sample:</p>
 <span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>                                                 163         </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span>                                                1454.2       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                     Multivariable    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                 ─────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>    95% CI       p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────────────</span></span></span>
-<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span> [0.99, 1.03]   .225 </span></span>
-<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                     </span></span>
-<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>      –         –    </span></span>
-<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> [0.41, 0.80]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> [1.28, 2.00]  &lt;.001 </span></span>
+<span><span class="co">#&gt;                     Multivariable     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                 ──────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span> 95% CI (HR)   p (HR) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼──────────────────────</span></span></span>
+<span><span class="co">#&gt;  age           <span style="color: #9E9E9E;">│</span> [0.99, 1.03]    .225 </span></span>
+<span><span class="co">#&gt;  sex:          <span style="color: #9E9E9E;">│</span>                      </span></span>
+<span><span class="co">#&gt;    Male (ref.) <span style="color: #9E9E9E;">│</span>      –          –    </span></span>
+<span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> [0.41, 0.80]   &lt;.001 </span></span>
+<span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> [1.28, 2.00]   &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>

@@ -293,7 +293,7 @@ variables, every one of them carrying a variable label (see
 <span>    life_sat_health <span class="op">=</span> <span class="st">"Satisfaction with health"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────────</span></span></span>
@@ -521,7 +521,7 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────────</span></span></span>
@@ -685,7 +685,7 @@ supported by passing a list of fits:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                       Adju… </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ───── </span></span></span>
-<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   p   </span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span> p (B) </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼───────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)        <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
 <span><span class="co">#&gt;  smoking:           <span style="color: #9E9E9E;">│</span>       </span></span>
@@ -1417,17 +1417,17 @@ changes what the rendering engine produces.</p>
 <td headers="assoc_col" class="gt_row gt_center">   </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    (Missing)</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">  4</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center"> 1.5</td>
-<td headers="Upper secondary_n" class="gt_row gt_center"> 12</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center"> 2.2</td>
-<td headers="Tertiary_n" class="gt_row gt_center">  9</td>
-<td headers="Tertiary_pct" class="gt_row gt_center"> 2.2</td>
-<td headers="Total_n" class="gt_row gt_center"> 25</td>
-<td headers="Total_pct" class="gt_row gt_center"> 2.1</td>
-<td headers="p" class="gt_row gt_center">     </td>
-<td headers="assoc_col" class="gt_row gt_center">   </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">    (Missing)</td>
+<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  4</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 1.5</td>
+<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 12</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  9</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
+<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 25</td>
+<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.1</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">     </td>
+<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">   </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">Regular physical activity</td>
@@ -1505,15 +1505,18 @@ table-specific styling:</p>
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '4', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_rwyfubc70jyhdexk56yz',}, 
-          { positions: [ { i: '0', j: 10 }, { i: '7', j: 10 }, { i: '0', j: 11 }, { i: '7', j: 11 } ], css_id: 'tinytable_css_nyb99qx6crp18b5x1wg0',}, 
-          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_g4e4rbosrgwhmvmap65k',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_jok56654b7avfax9a7hl',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_gwkhqnxj4bmj3iklkidr',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_2hervnp7pfzwsoxmcup2',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_evjq0o9uxijtdx5ntl7d',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_ua6rb2f7b16hpwp18wfm',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_14h3igmus9n8o98iosem',}, 
+          { positions: [ { i: '4', j: 10 }, { i: '4', j: 11 } ], css_id: 'tinytable_css_i80fl95724olspg8l5gy',}, 
+          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_r44c0k8p3avlpyuvwvoj',}, 
+          { positions: [ { i: '0', j: 10 }, { i: '7', j: 10 }, { i: '0', j: 11 }, { i: '7', j: 11 } ], css_id: 'tinytable_css_yz96aco8g9dc94va645e',}, 
+          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_rwyfubc70jyhdexk56yz',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_nyb99qx6crp18b5x1wg0',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_g4e4rbosrgwhmvmap65k',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_jok56654b7avfax9a7hl',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_gwkhqnxj4bmj3iklkidr',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_2hervnp7pfzwsoxmcup2',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_evjq0o9uxijtdx5ntl7d',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_ua6rb2f7b16hpwp18wfm',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_14h3igmus9n8o98iosem',}, 
           { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_g9ckz0265qbaehks92zd',}, 
           { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_4awz6mnx78oyhm3xhtib',}, 
           { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_li10rw6b1pd4bgcwwchv',}, 
@@ -1529,14 +1532,17 @@ table-specific styling:</p>
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_rwyfubc70jyhdexk56yz, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_rwyfubc70jyhdexk56yz { text-align: center; white-space: nowrap; }
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_nyb99qx6crp18b5x1wg0, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_nyb99qx6crp18b5x1wg0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_g4e4rbosrgwhmvmap65k, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_g4e4rbosrgwhmvmap65k {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_jok56654b7avfax9a7hl, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_jok56654b7avfax9a7hl { font-weight: bold; text-align: center; color: white; background-color: #FF0000 }
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_gwkhqnxj4bmj3iklkidr, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_gwkhqnxj4bmj3iklkidr { text-align: center }
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_2hervnp7pfzwsoxmcup2, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_2hervnp7pfzwsoxmcup2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_evjq0o9uxijtdx5ntl7d, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_evjq0o9uxijtdx5ntl7d {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_ua6rb2f7b16hpwp18wfm, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_ua6rb2f7b16hpwp18wfm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_i80fl95724olspg8l5gy, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_i80fl95724olspg8l5gy {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_r44c0k8p3avlpyuvwvoj, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_r44c0k8p3avlpyuvwvoj { text-align: center; white-space: nowrap; }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_yz96aco8g9dc94va645e, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_yz96aco8g9dc94va645e {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_rwyfubc70jyhdexk56yz, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_rwyfubc70jyhdexk56yz {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_nyb99qx6crp18b5x1wg0, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_nyb99qx6crp18b5x1wg0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_g4e4rbosrgwhmvmap65k, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_g4e4rbosrgwhmvmap65k { font-weight: bold; text-align: center; color: white; background-color: #FF0000 }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_jok56654b7avfax9a7hl, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_jok56654b7avfax9a7hl { text-align: center }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_gwkhqnxj4bmj3iklkidr, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_gwkhqnxj4bmj3iklkidr {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_2hervnp7pfzwsoxmcup2, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_2hervnp7pfzwsoxmcup2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_evjq0o9uxijtdx5ntl7d, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_evjq0o9uxijtdx5ntl7d {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_ua6rb2f7b16hpwp18wfm, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_ua6rb2f7b16hpwp18wfm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
     #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_14h3igmus9n8o98iosem, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_14h3igmus9n8o98iosem { text-align: left; padding-left: 1em; padding-left: 0.8em; }
     #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_g9ckz0265qbaehks92zd, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_g9ckz0265qbaehks92zd { text-align: left }
     #tinytable_05x0o7wvirrapy1m2305 td.tinytable_css_4awz6mnx78oyhm3xhtib, #tinytable_05x0o7wvirrapy1m2305 th.tinytable_css_4awz6mnx78oyhm3xhtib {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
@@ -1544,7 +1550,8 @@ table-specific styling:</p>
     </style>
 <div class="container">
       <table class="table tinytable" id="tinytable_05x0o7wvirrapy1m2305" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<thead>
+<caption>Categorical table by education</caption>
+        <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Lower secondary</th>

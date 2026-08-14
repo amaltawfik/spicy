@@ -569,18 +569,18 @@ introduced in <em>Per-coefficient effect sizes</em>:</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>                                     0.03 </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span>                                  1200.9  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                Multivariable    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ─────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    95% CI       p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼─────────────────────</span></span></span>
-<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                     </span></span>
-<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>      –         –    </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span> [0.73, 1.28]   .800 </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span> [1.00, 1.02]   .214 </span></span>
-<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                     </span></span>
-<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>      –         –    </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> [0.44, 0.87]   .005 </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span> [0.27, 0.59]  &lt;.001 </span></span>
+<span><span class="co">#&gt;                                Multivariable     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ──────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span> 95% CI (OR)   p (OR) </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────</span></span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                      </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>      –          –    </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span> [0.73, 1.28]    .800 </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span> [1.00, 1.02]    .214 </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                      </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>      –          –    </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> [0.44, 0.87]    .005 </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span> [0.27, 0.59]   &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
@@ -651,7 +651,7 @@ front:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                    Mode… </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ───── </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   p   </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> p (B) </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────</span></span></span>
 <span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>  .019 </span></span>
@@ -1619,7 +1619,8 @@ same content is available as a plain <code>data.frame</code>
 <span><span class="co">#&gt;  - attr(*, "section_sep_rows")= int(0) </span></span>
 <span><span class="co">#&gt;  - attr(*, "align")= chr "decimal"</span></span>
 <span><span class="co">#&gt;  - attr(*, "decimal_mark")= chr "."</span></span>
-<span><span class="co">#&gt;  - attr(*, "structured")=List of 12</span></span>
+<span><span class="co">#&gt;  - attr(*, "structured")=List of 14</span></span>
+<span><span class="co">#&gt;   ..$ version                : int 2</span></span>
 <span><span class="co">#&gt;   ..$ body                   :'data.frame':  11 obs. of  6 variables:</span></span>
 <span><span class="co">#&gt;   .. ..$ Variable  : chr [1:11] "(Intercept)" "age" "sex:" "  Female (ref.)" ...</span></span>
 <span><span class="co">#&gt;   .. ..$ B         : num [1:11] 65.2009 0.0465 NA NA 3.8558 ...</span></span>
@@ -1627,6 +1628,7 @@ same content is available as a plain <code>data.frame</code>
 <span><span class="co">#&gt;   .. ..$ 95% CI: LL: num [1:11] 61.9504 -0.0137 NA NA 2.0796 ...</span></span>
 <span><span class="co">#&gt;   .. ..$ 95% CI: UL: num [1:11] 68.451 0.107 NA NA 5.632 ...</span></span>
 <span><span class="co">#&gt;   .. ..$ p         : num [1:11] 1.59e-216 1.30e-01 NA NA 2.22e-05 ...</span></span>
+<span><span class="co">#&gt;   ..$ stars                  : NULL</span></span>
 <span><span class="co">#&gt;   ..$ reference_rows         : int [1:2] 4 7</span></span>
 <span><span class="co">#&gt;   ..$ reference_models_by_row:List of 2</span></span>
 <span><span class="co">#&gt;   .. ..$ 4: chr "M1"</span></span>

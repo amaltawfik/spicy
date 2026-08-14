@@ -289,16 +289,17 @@ table_regression(
   `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`, `"risk_diff"` + its `_se` /
   `_ci` / `_p` companions, `"partial_f2"` + `"partial_f2_ci"`,
   `"partial_eta2"` + `"partial_eta2_ci"`, `"partial_omega2"` +
-  `"partial_omega2_ci"`, `"partial_chi2"`) and **group tokens**
-  (`"all_b"`, `"all_b_compact"`, `"all_b_full"`, `"all_beta"`,
-  `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
-  `"all_omega2"`). See *Vocabulary tokens* in the details for the full
-  enumeration. Default `NULL` selects a context-aware layout: `"all_b"`
-  (single model) or `"all_b_compact"` (multi-model, and the
-  single-multinomial outcome-as-columns layout, which has the same width
-  pressure – restore CIs with atomic tokens, e.g.
-  `c("b", "se", "ci", "p")`). The `"p"` token is always the B / beta
-  p-value; for the AME-specific p-value use `"ame_p"`.
+  `"partial_omega2_ci"`, `"partial_chi2"`, `"r2"` / `"adj_r2"` (per-fit
+  variance explained, `lm` screens)) and **group tokens** (`"all_b"`,
+  `"all_b_compact"`, `"all_b_full"`, `"all_beta"`, `"all_ame"`,
+  `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`, `"all_omega2"`). See
+  *Vocabulary tokens* in the details for the full enumeration. Default
+  `NULL` selects a context-aware layout: `"all_b"` (single model) or
+  `"all_b_compact"` (multi-model, and the single-multinomial
+  outcome-as-columns layout, which has the same width pressure – restore
+  CIs with atomic tokens, e.g. `c("b", "se", "ci", "p")`). The `"p"`
+  token is always the B / beta p-value; for the AME-specific p-value use
+  `"ame_p"`.
 
 - keep:
 
@@ -647,7 +648,9 @@ table_regression(
   stars. `TRUE` – APA cutoffs
   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric vector
   specifies custom thresholds, e.g.
-  `c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
+  `c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`. With
+  `output = "excel"` a marked estimate is written as text (`"64.63***"`
+  is not a number); the cells with no marker stay numeric.
 
 - nested:
 
@@ -690,7 +693,10 @@ table_regression(
   Decimal mark used in numeric display. `"."` (default) or `","`
   (European convention). When `","` is used, the CI bracket separator
   switches to `"; "` automatically to avoid `"0,18 [0,07, 0,30]"`
-  ambiguity.
+  ambiguity. With `output = "excel"` a numeric cell is displayed by
+  Excel with the *viewer's* locale separator, which a file cannot set,
+  so a non-default mark makes the body go out as pre-formatted text (the
+  default `"."` keeps every cell a real number).
 
 - align:
 
@@ -765,9 +771,12 @@ table_regression(
   (tab-separated, pastes cleanly into Excel / Google Sheets / Word). The
   clipboard payload mirrors the Excel layout (title row, spanner row,
   header, body, footer note) but is plain text – horizontal rules, cell
-  merging, decimal alignment, monospace font, and factor-level
-  indentation cannot be encoded in TSV and are therefore absent from the
-  paste.
+  merging, decimal alignment and the monospace font cannot be encoded in
+  delimited text and are therefore absent from the paste. A cell holding
+  the delimiter itself (a label with a comma under
+  `clipboard_delim = ","`, or any number under `decimal_mark = ","`), a
+  double quote or a line break is quoted RFC 4180-style, so the grid
+  survives whatever delimiter you choose.
 
   Paste behaviour by target:
 
@@ -868,6 +877,18 @@ Each token = one displayed column.
   (the two conventions coincide for models without interactions).
   Rendered as `value (df)` to disambiguate factor terms (k-1 df) from
   numeric terms (1 df).
+
+- Variance explained per fit – `lm` only: `"r2"`, `"adj_r2"`. Like
+  `"n"`, these are *per-fit* columns: they are populated by
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  screens, where each predictor block is its own model and the \\R^2\\
+  answers "how much of the outcome does this predictor explain on its
+  own". A model whose \\R^2\\ is a single model-level number drops the
+  column and reports it in the fit-statistics rows instead (the `"r2"` /
+  `"adj_r2"` tokens of `show_fit_stats`, on by default for `lm`).
+  Refused for classes with no least-squares variance partition (`glm`,
+  `coxph`, ...), where only competing pseudo-\\R^2\\ measures exist:
+  name the one you want in `show_fit_stats`.
 
 - Sample columns: `"n"` – per-row N, populated by
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -1380,6 +1401,25 @@ and broom-canonical column names (`estimate`, `std.error`, `conf.low`,
 returns one row per model with the model-level statistics; `df.residual`
 is kept numeric so cluster-robust Satterthwaite df is preserved.
 
+## Global options
+
+- **`options(spicy.note_style = )`** – how the table note is rendered by
+  the `"tinytable"` engine (all four table families). A note is
+  subordinate to the table it documents, so it is set one size down, in
+  black: `0.9em`, matching the `"gt"` engine and the 10pt-on-11pt of the
+  Word engine. Two opt-ins:
+
+  - `"none"` – no intervention; the note is rendered exactly as the
+    receiving document template styles it.
+
+  - any other string – extra arguments for the Typst
+    [`text()`](https://rdrr.io/r/graphics/text.html) call around the
+    note, appended to the size (e.g.
+    `options(spicy.note_style = "fill: luma(89)")` for a grey note).
+    Typst only; the HTML note keeps the plain `0.9em`.
+
+  `options(spicy.note_style = NULL)` restores the default.
+
 ## Weights
 
 No `weights` argument: weights are a property of the fit (extracted via
@@ -1567,16 +1607,16 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 #>  R²              │    0.02                                           
 #>  Adj.R²          │    0.02                                           
 #> 
-#>  Variable        │    95% CI        p   
-#> ─────────────────┼──────────────────────
-#>  (Intercept)     │                      
-#>  age             │ [-0.01, 0.11]   .130 
-#>  sex:            │                      
-#>    Female (ref.) │       –         –    
-#>    Male          │ [ 2.08, 5.63]  <.001 
-#>  smoking:        │                      
-#>    No (ref.)     │       –         –    
-#>    Yes           │ [-3.89, 0.45]   .121 
+#>  Variable        │ 95% CI (AME)   p (AME) 
+#> ─────────────────┼────────────────────────
+#>  (Intercept)     │                        
+#>  age             │ [-0.01, 0.11]     .130 
+#>  sex:            │                        
+#>    Female (ref.) │       –           –    
+#>    Male          │ [ 2.08, 5.63]    <.001 
+#>  smoking:        │                        
+#>    No (ref.)     │       –           –    
+#>    Yes           │ [-3.89, 0.45]     .121 
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -1689,7 +1729,7 @@ table_regression(
 #> 
 #>                    Step… 
 #>                    ───── 
-#>  Variable        │   p   
+#>  Variable        │ p (B) 
 #> ─────────────────┼───────
 #>  (Intercept)     │ <.001 
 #>  age             │  .130 
@@ -1732,7 +1772,7 @@ table_regression(
 #> 
 #>                     CR2  
 #>                    ───── 
-#>  Variable        │   p   
+#>  Variable        │ p (B) 
 #> ─────────────────┼───────
 #>  (Intercept)     │ <.001 
 #>  age             │  .285 

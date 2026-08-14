@@ -381,7 +381,8 @@ median, all-Bayesian tables only), <code>"ame"</code>, <code>"ame_se"</code>, <c
 <code>"risk_diff"</code> + its <code>_se</code> / <code>_ci</code> / <code>_p</code> companions,
 <code>"partial_f2"</code> + <code>"partial_f2_ci"</code>, <code>"partial_eta2"</code> +
 <code>"partial_eta2_ci"</code>, <code>"partial_omega2"</code> +
-<code>"partial_omega2_ci"</code>, <code>"partial_chi2"</code>) and <strong>group tokens</strong>
+<code>"partial_omega2_ci"</code>, <code>"partial_chi2"</code>, <code>"r2"</code> / <code>"adj_r2"</code>
+(per-fit variance explained, <code>lm</code> screens)) and <strong>group tokens</strong>
 (<code>"all_b"</code>, <code>"all_b_compact"</code>, <code>"all_b_full"</code>, <code>"all_beta"</code>,
 <code>"all_ame"</code>, <code>"all_ame_compact"</code>, <code>"all_f2"</code>, <code>"all_eta2"</code>,
 <code>"all_omega2"</code>). See <em>Vocabulary tokens</em> in the details for
@@ -717,7 +718,10 @@ is a no-op (there is no Outcome row to suppress).</p></dd>
 Section 6.46) – no stars. <code>TRUE</code> – APA cutoffs
 <code>c("*" = 0.05, "**" = 0.01, "***" = 0.001)</code>. A named numeric
 vector specifies custom thresholds, e.g.
-<code>c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)</code>.</p></dd>
+<code>c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)</code>.
+With <code>output = "excel"</code> a marked estimate is written as text
+(<code>"64.63***"</code> is not a number); the cells with no marker stay
+numeric.</p></dd>
 
 
 <dt id="arg-nested">nested<a class="anchor" aria-label="anchor" href="#arg-nested"></a></dt>
@@ -764,7 +768,11 @@ effect-size fit stats (<code>r2</code>, <code>adj_r2</code>, <code>r2_change</co
 <dd><p>Decimal mark used in numeric display.
 <code>"."</code> (default) or <code>","</code> (European convention). When
 <code>","</code> is used, the CI bracket separator switches to <code>"; "</code>
-automatically to avoid <code>"0,18 [0,07, 0,30]"</code> ambiguity.</p></dd>
+automatically to avoid <code>"0,18 [0,07, 0,30]"</code> ambiguity.
+With <code>output = "excel"</code> a numeric cell is displayed by Excel
+with the <em>viewer's</em> locale separator, which a file cannot set,
+so a non-default mark makes the body go out as pre-formatted
+text (the default <code>"."</code> keeps every cell a real number).</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
@@ -839,9 +847,13 @@ tables); <code>"excel"</code> (writes to <code>excel_path</code>); <code>"clipbo
 cleanly into Excel / Google Sheets / Word). The clipboard
 payload mirrors the Excel layout (title row, spanner row,
 header, body, footer note) but is plain text – horizontal
-rules, cell merging, decimal alignment, monospace font, and
-factor-level indentation cannot be encoded in TSV and are
-therefore absent from the paste.</p>
+rules, cell merging, decimal alignment and the monospace font
+cannot be encoded in delimited text and are therefore absent
+from the paste. A cell holding the delimiter itself (a label
+with a comma under <code>clipboard_delim = ","</code>, or any number under
+<code>decimal_mark = ","</code>), a double quote or a line break is quoted
+RFC 4180-style, so the grid survives whatever delimiter you
+choose.</p>
 <p>Paste behaviour by target:</p><ul><li><p><strong>Excel / Google Sheets:</strong> numerics are auto-detected and
 right-aligned; text cells stay left-aligned. (P-values such
 as <code>.005</code> get re-parsed as <code>0.005</code> by Excel's auto-format
@@ -943,6 +955,18 @@ Type-III default of SAS PROC MIXED and <code>lmerTest</code> (the two
 conventions coincide for models without interactions).
 Rendered as <code>value (df)</code> to disambiguate factor terms (k-1
 df) from numeric terms (1 df).</p></li>
+<li><p>Variance explained per fit – <code>lm</code> only: <code>"r2"</code>,
+<code>"adj_r2"</code>. Like <code>"n"</code>, these are <em>per-fit</em> columns: they are
+populated by <code><a href="table_regression_uv.html">table_regression_uv()</a></code> screens, where each
+predictor block is its own model and the \(R^2\)
+answers "how much of the outcome does this predictor explain
+on its own". A model whose \(R^2\) is a single
+model-level number drops the column and reports it in the
+fit-statistics rows instead (the <code>"r2"</code> / <code>"adj_r2"</code> tokens of
+<code>show_fit_stats</code>, on by default for <code>lm</code>). Refused for classes
+with no least-squares variance partition (<code>glm</code>, <code>coxph</code>,
+...), where only competing pseudo-\(R^2\) measures
+exist: name the one you want in <code>show_fit_stats</code>.</p></li>
 <li><p>Sample columns: <code>"n"</code> – per-row N, populated by
 <code><a href="table_regression_uv.html">table_regression_uv()</a></code> screens (each predictor block is its
 own fit); models without per-row N data drop the column.
@@ -1419,6 +1443,21 @@ model with the model-level statistics; <code>df.residual</code> is kept
 numeric so cluster-robust Satterthwaite df is preserved.</p>
     </div>
     <div class="section level2">
+    <h2 id="global-options">Global options<a class="anchor" aria-label="anchor" href="#global-options"></a></h2>
+
+<ul><li><p><strong><code>options(spicy.note_style = )</code></strong> – how the table note is
+rendered by the <code>"tinytable"</code> engine (all four table families).
+A note is subordinate to the table it documents, so it is set
+one size down, in black: <code>0.9em</code>, matching the <code>"gt"</code> engine and
+the 10pt-on-11pt of the Word engine. Two opt-ins:</p><ul><li><p><code>"none"</code> – no intervention; the note is rendered
+exactly as the receiving document template styles it.</p></li>
+<li><p>any other string – extra arguments for the Typst
+<code><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text()</a></code> call around the note, appended to the size (e.g.
+<code>options(spicy.note_style = "fill: luma(89)")</code> for a grey
+note). Typst only; the HTML note keeps the plain <code>0.9em</code>.</p></li>
+</ul><p><code>options(spicy.note_style = NULL)</code> restores the default.</p></li>
+</ul></div>
+    <div class="section level2">
     <h2 id="weights">Weights<a class="anchor" aria-label="anchor" href="#weights"></a></h2>
     <p>No <code>weights</code> argument: weights are a property of the fit
 (extracted via <code><a href="https://rdrr.io/r/stats/weights.html" class="external-link">stats::weights()</a></code>). Pass them when fitting:
@@ -1595,16 +1634,16 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                                           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    95% CI        p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span> [-0.01, 0.11]   .130 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>       –         –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> [ 2.08, 5.63]  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>       –         –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span> [-3.89, 0.45]   .121 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI (AME)   p (AME) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span>                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span> [-0.01, 0.11]     .130 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex:            <span style="color: #9E9E9E;">│</span>                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female (ref.) <span style="color: #9E9E9E;">│</span>       –           –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male          <span style="color: #9E9E9E;">│</span> [ 2.08, 5.63]    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking:        <span style="color: #9E9E9E;">│</span>                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>       –           –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span> [-3.89, 0.45]     .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
@@ -1717,7 +1756,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                    Step… </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───── </span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> p (B) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .130 </span>
@@ -1760,7 +1799,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     CR2  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ───── </span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> p (B) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  age             <span style="color: #9E9E9E;">│</span>  .285 </span>

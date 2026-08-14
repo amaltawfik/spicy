@@ -179,19 +179,19 @@ variables, and a grouping variable:</p>
 <span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>     67         16.8       354     29.5   </span></span>
 <span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>    333         83.2       846     70.5   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>   p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼───────────────────</span></span></span>
-<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span> &lt;.001     .14     </span></span>
-<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
-<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                   </span></span>
-<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>                   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span> &lt;.001     .21     </span></span>
-<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
-<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span> &lt;.001     .22     </span></span>
-<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span> p (Total %)  Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼─────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span>    &lt;.001        .14     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span>    &lt;.001        .21     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span>    &lt;.001        .22     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                         </span></span>
 <span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p>The default output is <code>"default"</code>, which prints a styled
 ASCII table to the console, folded into successive panels when it is
@@ -430,11 +430,11 @@ vector to mix measures per row:</p>
 <span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249     20.8   </span></span>
 <span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25      2.1   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   p    Lambda </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼───────────────</span></span></span>
-<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span> &lt;.001   .00   </span></span>
-<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>               </span></span>
-<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>               </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> p (Total %)  Lambda </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>    &lt;.001      .00   </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>                     </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>                     </span></span>
 <span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p>A significant chi-squared <em>p</em>-value next to a lambda of
 exactly .00 is not a contradiction. Goodman-Kruskal lambda measures the
@@ -468,11 +468,11 @@ keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          4                1.5                 12        </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          1                0.4                 12        </span></span>
 <span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>         28               10.7                 28        </span></span>
 <span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>         86               33.0                118        </span></span>
 <span><span class="co">#&gt;    Good            <span style="color: #9E9E9E;">│</span>        102               39.1                263        </span></span>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>         44               16.9                118        </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          1                0.4                 12        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span></span>
@@ -482,11 +482,11 @@ keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.2              7          1.8        20   </span></span>
 <span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>        5.2              5          1.2        61   </span></span>
 <span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>       21.9             62         15.5       266   </span></span>
 <span><span class="co">#&gt;    Good            <span style="color: #9E9E9E;">│</span>       48.8            193         48.2       558   </span></span>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>       21.9            133         33.2       295   </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>        2.2              7          1.8        20   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Effect size </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────</span></span></span>
@@ -496,11 +496,11 @@ keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1                       </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>          &lt;.001      .31     </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   1.7                       </span></span>
 <span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>   5.1                       </span></span>
 <span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>  22.2                       </span></span>
 <span><span class="co">#&gt;    Good            <span style="color: #9E9E9E;">│</span>  46.5                       </span></span>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>  24.6                       </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   1.7                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cramer's V: Current smoker; Goodman-Kruskal Gamma: Self-rated health.</span></span></span></code></pre></div>
 <p><code>smoking</code> keeps its automatic Cramer’s V (.14) while
@@ -721,11 +721,11 @@ association measure:</p>
 <span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>       20.78            59        14.75       249     20.75  </span></span>
 <span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>        2.23             9         2.25        25      2.08  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   p     Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼────────────────────</span></span></span>
-<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span> &lt;.0001     .136    </span></span>
-<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>                    </span></span>
-<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>                    </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> p (Total %)  Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>   &lt;.0001        .136    </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>                         </span></span>
 <span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p><code>p_digits</code> drives both the displayed precision of the
 <code>p</code> column and the small-<em>p</em> threshold
@@ -744,11 +744,13 @@ pre-padded with figure-spaces (U+2007, spaces exactly one digit wide) so
 that every string in a column has the same width with the decimal mark
 at the same internal position; centring those uniform-width strings then
 stacks the decimal points vertically. The same pad-then-centre strategy
-is applied on every engine (<code>gt</code>, <code>tinytable</code>,
-<code>flextable</code>, <code>word</code>, <code>clipboard</code>, ASCII
+is applied on every rendering engine (<code>gt</code>,
+<code>tinytable</code>, <code>flextable</code>, <code>word</code>, ASCII
 print) for a homogeneous rendering – same single-font policy as
-<code><a href="../reference/table_regression.html">table_regression()</a></code>. The native
-<code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> and
+<code><a href="../reference/table_regression.html">table_regression()</a></code>. The clipboard is the exception: its
+payload is delimited text meant to be parsed, and a padded number would
+paste as text next to an unpadded number, so its cells travel unpadded.
+The native <code><a href="https://gt.rstudio.com/reference/cols_align_decimal.html" class="external-link">gt::cols_align_decimal()</a></code> and
 <code>tinytable::style_tt(align = "d")</code> primitives are
 deliberately not used: the former renders visually right-aligned and the
 latter centres each cell on its own value rather than on the decimal
@@ -1440,17 +1442,17 @@ APA-style borders, column spanners, and decimal alignment:</p>
 <td headers="assoc_col" class="gt_row gt_center">   </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    (Missing)</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">  4</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center"> 1.5</td>
-<td headers="Upper secondary_n" class="gt_row gt_center"> 12</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center"> 2.2</td>
-<td headers="Tertiary_n" class="gt_row gt_center">  9</td>
-<td headers="Tertiary_pct" class="gt_row gt_center"> 2.2</td>
-<td headers="Total_n" class="gt_row gt_center"> 25</td>
-<td headers="Total_pct" class="gt_row gt_center"> 2.1</td>
-<td headers="p" class="gt_row gt_center">     </td>
-<td headers="assoc_col" class="gt_row gt_center">   </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">    (Missing)</td>
+<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  4</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 1.5</td>
+<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 12</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  9</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
+<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 25</td>
+<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.1</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">     </td>
+<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">   </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">Regular physical activity</td>
@@ -1479,17 +1481,17 @@ APA-style borders, column spanners, and decimal alignment:</p>
 <td headers="assoc_col" class="gt_row gt_center">   </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    Yes</td>
-<td headers="Lower secondary_n" class="gt_row gt_center"> 84</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center">32.2</td>
-<td headers="Upper secondary_n" class="gt_row gt_center">229</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center">42.5</td>
-<td headers="Tertiary_n" class="gt_row gt_center">237</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">59.2</td>
-<td headers="Total_n" class="gt_row gt_center">550</td>
-<td headers="Total_pct" class="gt_row gt_center">45.8</td>
-<td headers="p" class="gt_row gt_center">     </td>
-<td headers="assoc_col" class="gt_row gt_center">   </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">    Yes</td>
+<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 84</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">32.2</td>
+<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">229</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">42.5</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">237</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">59.2</td>
+<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">550</td>
+<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">45.8</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">     </td>
+<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">   </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">Dentist visit in last 12 months</td>
@@ -1552,14 +1554,17 @@ table by sex):</p>
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_map65knyb99qx6crp18b',}, 
-          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_x9a7hlg4e4rbosrgwhmv',}, 
-          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_klkidrjok56654b7avfa',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_xmcup2gwkhqnxj4bmj3i',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_5ntl7d2hervnp7pfzwso',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_p18wfmevjq0o9uxijtdx',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_8iosemua6rb2f7b16hpw',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_ks92zd14h3igmus9n8o9',}, 
+          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_va645er44c0k8p3avlpy',}, 
+          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_xk56yzyz96aco8g9dc94',}, 
+          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_5x1wg0rwyfubc70jyhde',}, 
+          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_map65knyb99qx6crp18b',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_x9a7hlg4e4rbosrgwhmv',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_klkidrjok56654b7avfa',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_xmcup2gwkhqnxj4bmj3i',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_5ntl7d2hervnp7pfzwso',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_p18wfmevjq0o9uxijtdx',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_8iosemua6rb2f7b16hpw',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_ks92zd14h3igmus9n8o9',}, 
           { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_3xhtibg9ckz0265qbaeh',}, 
           { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_cwwchv4awz6mnx78oyhm',}, 
           { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_1m2305li10rw6b1pd4bg',}, 
@@ -1575,13 +1580,16 @@ table by sex):</p>
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_map65knyb99qx6crp18b, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_map65knyb99qx6crp18b { text-align: center; white-space: nowrap; }
-    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_x9a7hlg4e4rbosrgwhmv, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_x9a7hlg4e4rbosrgwhmv {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_klkidrjok56654b7avfa, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_klkidrjok56654b7avfa {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_xmcup2gwkhqnxj4bmj3i, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_xmcup2gwkhqnxj4bmj3i { text-align: center }
-    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_5ntl7d2hervnp7pfzwso, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_5ntl7d2hervnp7pfzwso {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_p18wfmevjq0o9uxijtdx, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_p18wfmevjq0o9uxijtdx {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_8iosemua6rb2f7b16hpw, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_8iosemua6rb2f7b16hpw {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_va645er44c0k8p3avlpy, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_va645er44c0k8p3avlpy {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_xk56yzyz96aco8g9dc94, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_xk56yzyz96aco8g9dc94 { text-align: center; white-space: nowrap; }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_5x1wg0rwyfubc70jyhde, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_5x1wg0rwyfubc70jyhde {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_map65knyb99qx6crp18b, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_map65knyb99qx6crp18b {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_x9a7hlg4e4rbosrgwhmv, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_x9a7hlg4e4rbosrgwhmv {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_klkidrjok56654b7avfa, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_klkidrjok56654b7avfa { text-align: center }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_xmcup2gwkhqnxj4bmj3i, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_xmcup2gwkhqnxj4bmj3i {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_5ntl7d2hervnp7pfzwso, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_5ntl7d2hervnp7pfzwso {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_p18wfmevjq0o9uxijtdx, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_p18wfmevjq0o9uxijtdx {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_8iosemua6rb2f7b16hpw, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_8iosemua6rb2f7b16hpw {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
     #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_ks92zd14h3igmus9n8o9, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_ks92zd14h3igmus9n8o9 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
     #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_3xhtibg9ckz0265qbaeh, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_3xhtibg9ckz0265qbaeh { text-align: left }
     #tinytable_9vxglu05x0o7wvirrapy td.tinytable_css_cwwchv4awz6mnx78oyhm, #tinytable_9vxglu05x0o7wvirrapy th.tinytable_css_cwwchv4awz6mnx78oyhm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
@@ -1589,7 +1597,8 @@ table by sex):</p>
     </style>
 <div class="container">
       <table class="table tinytable" id="tinytable_9vxglu05x0o7wvirrapy" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<thead>
+<caption>Categorical table by sex</caption>
+        <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="2">Female</th>
@@ -1704,23 +1713,23 @@ confidence interval inline after the association measure:</p>
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="fmzbbiaqaa" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#fmzbbiaqaa table {
+<div id="saheytsijy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#saheytsijy table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#fmzbbiaqaa thead, #fmzbbiaqaa tbody, #fmzbbiaqaa tfoot, #fmzbbiaqaa tr, #fmzbbiaqaa td, #fmzbbiaqaa th {
+#saheytsijy thead, #saheytsijy tbody, #saheytsijy tfoot, #saheytsijy tr, #saheytsijy td, #saheytsijy th {
   border-style: none;
 }
 
-#fmzbbiaqaa p {
+#saheytsijy p {
   margin: 0;
   padding: 0;
 }
 
-#fmzbbiaqaa .gt_table {
+#saheytsijy .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1746,12 +1755,12 @@ confidence interval inline after the association measure:</p>
   border-left-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_caption {
+#saheytsijy .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#fmzbbiaqaa .gt_title {
+#saheytsijy .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1763,7 +1772,7 @@ confidence interval inline after the association measure:</p>
   border-bottom-width: 0;
 }
 
-#fmzbbiaqaa .gt_subtitle {
+#saheytsijy .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1775,7 +1784,7 @@ confidence interval inline after the association measure:</p>
   border-top-width: 0;
 }
 
-#fmzbbiaqaa .gt_heading {
+#saheytsijy .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1787,13 +1796,13 @@ confidence interval inline after the association measure:</p>
   border-right-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_bottom_border {
+#saheytsijy .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_col_headings {
+#saheytsijy .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1808,7 +1817,7 @@ confidence interval inline after the association measure:</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#fmzbbiaqaa .gt_col_heading {
+#saheytsijy .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1828,7 +1837,7 @@ confidence interval inline after the association measure:</p>
   overflow-x: hidden;
 }
 
-#fmzbbiaqaa .gt_column_spanner_outer {
+#saheytsijy .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1840,15 +1849,15 @@ confidence interval inline after the association measure:</p>
   padding-right: 4px;
 }
 
-#fmzbbiaqaa .gt_column_spanner_outer:first-child {
+#saheytsijy .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#fmzbbiaqaa .gt_column_spanner_outer:last-child {
+#saheytsijy .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#fmzbbiaqaa .gt_column_spanner {
+#saheytsijy .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
@@ -1860,11 +1869,11 @@ confidence interval inline after the association measure:</p>
   width: 100%;
 }
 
-#fmzbbiaqaa .gt_spanner_row {
+#saheytsijy .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#fmzbbiaqaa .gt_group_heading {
+#saheytsijy .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1890,7 +1899,7 @@ confidence interval inline after the association measure:</p>
   text-align: left;
 }
 
-#fmzbbiaqaa .gt_empty_group_heading {
+#saheytsijy .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1905,15 +1914,15 @@ confidence interval inline after the association measure:</p>
   vertical-align: middle;
 }
 
-#fmzbbiaqaa .gt_from_md > :first-child {
+#saheytsijy .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#fmzbbiaqaa .gt_from_md > :last-child {
+#saheytsijy .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#fmzbbiaqaa .gt_row {
+#saheytsijy .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1932,7 +1941,7 @@ confidence interval inline after the association measure:</p>
   overflow-x: hidden;
 }
 
-#fmzbbiaqaa .gt_stub {
+#saheytsijy .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1945,7 +1954,7 @@ confidence interval inline after the association measure:</p>
   padding-right: 5px;
 }
 
-#fmzbbiaqaa .gt_stub_row_group {
+#saheytsijy .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1959,15 +1968,15 @@ confidence interval inline after the association measure:</p>
   vertical-align: top;
 }
 
-#fmzbbiaqaa .gt_row_group_first td {
+#saheytsijy .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#fmzbbiaqaa .gt_row_group_first th {
+#saheytsijy .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#fmzbbiaqaa .gt_summary_row {
+#saheytsijy .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1977,16 +1986,16 @@ confidence interval inline after the association measure:</p>
   padding-right: 5px;
 }
 
-#fmzbbiaqaa .gt_first_summary_row {
+#saheytsijy .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_first_summary_row.thick {
+#saheytsijy .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#fmzbbiaqaa .gt_last_summary_row {
+#saheytsijy .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1996,7 +2005,7 @@ confidence interval inline after the association measure:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_grand_summary_row {
+#saheytsijy .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2006,7 +2015,7 @@ confidence interval inline after the association measure:</p>
   padding-right: 5px;
 }
 
-#fmzbbiaqaa .gt_first_grand_summary_row {
+#saheytsijy .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2016,7 +2025,7 @@ confidence interval inline after the association measure:</p>
   border-top-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_last_grand_summary_row_top {
+#saheytsijy .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2026,11 +2035,11 @@ confidence interval inline after the association measure:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_striped {
+#saheytsijy .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#fmzbbiaqaa .gt_table_body {
+#saheytsijy .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -2039,7 +2048,7 @@ confidence interval inline after the association measure:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_footnotes {
+#saheytsijy .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2053,7 +2062,7 @@ confidence interval inline after the association measure:</p>
   border-right-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_footnote {
+#saheytsijy .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2062,7 +2071,7 @@ confidence interval inline after the association measure:</p>
   padding-right: 5px;
 }
 
-#fmzbbiaqaa .gt_sourcenotes {
+#saheytsijy .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2076,7 +2085,7 @@ confidence interval inline after the association measure:</p>
   border-right-color: #D3D3D3;
 }
 
-#fmzbbiaqaa .gt_sourcenote {
+#saheytsijy .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2084,72 +2093,72 @@ confidence interval inline after the association measure:</p>
   padding-right: 5px;
 }
 
-#fmzbbiaqaa .gt_left {
+#saheytsijy .gt_left {
   text-align: left;
 }
 
-#fmzbbiaqaa .gt_center {
+#saheytsijy .gt_center {
   text-align: center;
 }
 
-#fmzbbiaqaa .gt_right {
+#saheytsijy .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#fmzbbiaqaa .gt_font_normal {
+#saheytsijy .gt_font_normal {
   font-weight: normal;
 }
 
-#fmzbbiaqaa .gt_font_bold {
+#saheytsijy .gt_font_bold {
   font-weight: bold;
 }
 
-#fmzbbiaqaa .gt_font_italic {
+#saheytsijy .gt_font_italic {
   font-style: italic;
 }
 
-#fmzbbiaqaa .gt_super {
+#saheytsijy .gt_super {
   font-size: 65%;
 }
 
-#fmzbbiaqaa .gt_footnote_marks {
+#saheytsijy .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#fmzbbiaqaa .gt_asterisk {
+#saheytsijy .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#fmzbbiaqaa .gt_indent_1 {
+#saheytsijy .gt_indent_1 {
   text-indent: 5px;
 }
 
-#fmzbbiaqaa .gt_indent_2 {
+#saheytsijy .gt_indent_2 {
   text-indent: 10px;
 }
 
-#fmzbbiaqaa .gt_indent_3 {
+#saheytsijy .gt_indent_3 {
   text-indent: 15px;
 }
 
-#fmzbbiaqaa .gt_indent_4 {
+#saheytsijy .gt_indent_4 {
   text-indent: 20px;
 }
 
-#fmzbbiaqaa .gt_indent_5 {
+#saheytsijy .gt_indent_5 {
   text-indent: 25px;
 }
 
-#fmzbbiaqaa .katex-display {
+#saheytsijy .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#fmzbbiaqaa div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#saheytsijy div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
@@ -2276,17 +2285,17 @@ confidence interval inline after the association measure:</p>
 <td headers="assoc_col" class="gt_row gt_center">              </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    (Missing)</td>
-<td headers="Lower secondary_n" class="gt_row gt_center">  4</td>
-<td headers="Lower secondary_pct" class="gt_row gt_center"> 1.5</td>
-<td headers="Upper secondary_n" class="gt_row gt_center"> 12</td>
-<td headers="Upper secondary_pct" class="gt_row gt_center"> 2.2</td>
-<td headers="Tertiary_n" class="gt_row gt_center">  9</td>
-<td headers="Tertiary_pct" class="gt_row gt_center"> 2.2</td>
-<td headers="Total_n" class="gt_row gt_center"> 25</td>
-<td headers="Total_pct" class="gt_row gt_center"> 2.1</td>
-<td headers="p" class="gt_row gt_center">     </td>
-<td headers="assoc_col" class="gt_row gt_center">              </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">    (Missing)</td>
+<td headers="Lower secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  4</td>
+<td headers="Lower secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 1.5</td>
+<td headers="Upper secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 12</td>
+<td headers="Upper secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  9</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
+<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 25</td>
+<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.1</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">     </td>
+<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">              </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">Regular physical activity</td>

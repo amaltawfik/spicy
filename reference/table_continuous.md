@@ -40,6 +40,7 @@ table_continuous(
   p_value = NULL,
   statistic = FALSE,
   show_n = TRUE,
+  show_columns = NULL,
   effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
   effect_size_ci = FALSE,
   ci = TRUE,
@@ -169,7 +170,17 @@ table_continuous(
   `n` column structurally from those outputs (no empty placeholder, no
   spanner). The `n` column is always present in the raw
   `output = "data.frame"` / `"long"` for downstream programmatic access.
-  Defaults to `TRUE`.
+  Defaults to `TRUE`. Ignored (with a warning) when `show_columns` is
+  supplied.
+
+- show_columns:
+
+  Statistics to display, as a character vector of tokens or a named list
+  of such vectors (one per variable). `NULL` (the default) keeps the
+  historical display: mean, SD, min, max, the mean CI (see `ci`) and `n`
+  (see `show_n`). See the "Choosing the statistics" section for the
+  token vocabulary, the per-variable form, and the test that follows a
+  median.
 
 - effect_size:
 
@@ -222,7 +233,8 @@ table_continuous(
   empty placeholders, no border lines under an empty header). The CI
   bounds are always present as `ci_lower` / `ci_upper` in the raw
   `output = "data.frame"` / `"long"` for downstream programmatic access.
-  Defaults to `TRUE`. The CI level is taken from `ci_level`.
+  Defaults to `TRUE`. The CI level is taken from `ci_level`. Ignored
+  (with a warning) when `show_columns` is supplied.
 
 - labels:
 
@@ -274,12 +286,15 @@ table_continuous(
     (U+2007, digit-width) so every string in a column has the same width
     with the decimal mark at the same internal position; centring those
     uniform-width strings then stacks the decimal points vertically. The
-    same pad-then-centre strategy is applied on every engine (`gt`,
-    `tinytable`, `flextable`, `word`, `clipboard`, ASCII print) for a
+    same pad-then-centre strategy is applied on every rendering engine
+    (`gt`, `tinytable`, `flextable`, `word`, ASCII print) for a
     homogeneous rendering, matching
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
     and
     [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+    The `clipboard` output is delimited text meant to be parsed rather
+    than read at a fixed width, so its cells travel unpadded (a padded
+    number pastes as text next to an unpadded number).
 
   - `"center"`: center-align all numeric columns.
 
@@ -325,7 +340,9 @@ table_continuous(
 
 - clipboard_delim:
 
-  Delimiter for `output = "clipboard"` (default: `"\t"`).
+  Delimiter for `output = "clipboard"` (default: `"\t"`). A cell holding
+  the delimiter itself, a double quote or a line break is quoted RFC
+  4180-style, so the grid survives whatever delimiter you choose.
 
 - word_path:
 
@@ -360,7 +377,9 @@ Depends on `output`:
 
 - `"data.frame"` / `"long"`: a plain `data.frame` with columns
   `variable`, `label`, `group` (when `by` is used), `mean`, `sd`, `min`,
-  `max`, `ci_lower`, `ci_upper`, `n`. When `by` is used together with
+  `max`, `ci_lower`, `ci_upper`, `median`, `q1`, `q3`, `iqr`,
+  `med_ci_lower`, `med_ci_upper`, `n`. Every statistic is computed
+  whatever `show_columns` displays. When `by` is used together with
   `p_value = TRUE`, `statistic = TRUE`, or `effect_size != "none"`,
   additional columns are appended (populated on the first row of each
   variable block only):
@@ -391,6 +410,85 @@ Depends on `output`:
 
 - `"clipboard"`: copies the table and returns the display `data.frame`
   invisibly.
+
+The missing-value disclosure (values excluded from the summaries, and
+rows removed for a missing `by` value under `drop_na = TRUE`) travels
+with the table on every route, not just the console: `"default"` prints
+it under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
+`"word"` carry it as a table note, `"excel"` writes it below the body,
+and `"data.frame"` / `"long"` keep the sentence verbatim in the
+`missing_note` attribute (`attr(x, "missing_note")`, `NULL` when nothing
+was removed) so a pipeline that renders the numbers itself can still
+state what left the table. On the `"tinytable"` route the note is set
+one size down; `options(spicy.note_style)` governs that (see
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
+
+The Excel sheet carries the same title the console prints on its first
+row; the table itself starts on row 3.
+
+## Choosing the statistics
+
+`show_columns` selects which statistics the table displays. The tokens,
+and the column each one produces:
+
+|  |  |  |
+|----|----|----|
+| Token | Column | Statistic |
+| `"m"` | `M` | mean |
+| `"sd"` | `SD` | standard deviation |
+| `"med"` | `Med` | median ([`stats::median()`](https://rdrr.io/r/stats/median.html)) |
+| `"iqr"` | `IQR` | interquartile *width*, `Q3 - Q1` |
+| `"med_iqr"` | `Med [Q1, Q3]` | median and the interquartile *interval*, in one compact column |
+| `"q1"` / `"q3"` | `Q1` / `Q3` | first / third quartile |
+| `"min"` / `"max"` | `Min` / `Max` | extremes |
+| `"ci"` | `<level>% CI LL` / `UL` | *t* confidence interval of the mean |
+| `"med_ci"` | `Med <level>% CI LL` / `UL` | exact confidence interval of the median |
+| `"n"` | `n` | valid observations |
+
+Quartiles use
+[`stats::quantile()`](https://rdrr.io/r/stats/quantile.html)'s default
+type 7. `"iqr"` is the width (one number, the rank mirror of `SD`);
+`"med_iqr"` shows the interval with its bounds. Columns appear in the
+canonical order of the table above, whatever order they were written in.
+
+A named list applies a different selection to each variable, with
+`.default` covering the variables it does not name – the case of a table
+where a skewed variable must be reported as a median while the others
+keep the mean:
+
+    show_columns = list(
+      mvpa    = c("med_iqr", "n"),
+      sitting = c("med_iqr", "n"),
+      .default = c("m", "sd", "n")
+    )
+
+The table's columns are the union of the requested tokens; a cell of a
+column the variable did not ask for is left blank (structurally empty,
+not `"--"`, which is reserved for an undefined statistic).
+
+The table tests what it shows. A variable displaying a median without a
+mean takes the rank-based test – Wilcoxon rank-sum for two groups,
+Kruskal-Wallis beyond – and the rank effect size (rank-biserial *r*,
+\\\varepsilon^2\\) when `effect_size` is `"auto"`. The switch is per
+variable, so a mixed table carries a rank test on its median rows and
+Welch on its mean rows, and the table note names which test each
+variable carries. An explicit `test` is sovereign: it applies to every
+variable, with a warning naming the ones displayed as medians.
+
+`"med_ci"` is the exact order-statistic (sign-test) confidence interval:
+the tightest interval \\\[x\_{(k)}, x\_{(n-k+1)}\]\\ whose binomial
+coverage still reaches `ci_level`. It is distribution-free and
+deterministic – no bootstrap, no seed – and its coverage is at least
+nominal, the same convention as SAS `PROC UNIVARIATE` (`CIPCTLDF`) and
+`DescTools::MedianCI(method = "exact")`. Below about six observations no
+interval reaches the requested level; the cells then show `"--"` rather
+than a false interval.
+
+`"ci"` is the confidence interval *of the mean*: requested without `"m"`
+it is dropped with a warning pointing at `"med_ci"`, and `"med_ci"`
+without a displayed median is dropped likewise. When `show_columns` is
+supplied it decides the `n` and CI columns on its own, and a
+contradictory `show_n` / `ci` is reported.
 
 ## Tests
 
@@ -518,7 +616,7 @@ table_continuous(
   select = c(bmi, wellbeing_score),
   by = education
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
@@ -540,7 +638,7 @@ table_continuous(
 #>                                │ Upper secondary    67.82      70.12    539 
 #>                                │ Tertiary           75.55      78.15    400 
 #> 
-#>  Variable                      │ Group              p   
+#>  Variable                      │ Group            p (n) 
 #> ───────────────────────────────┼────────────────────────
 #>  Body mass index               │ Lower secondary  <.001 
 #>                                │ Upper secondary        
@@ -559,7 +657,7 @@ table_continuous(
   by = education,
   statistic = TRUE
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
@@ -593,6 +691,76 @@ table_continuous(
 #> 
 #> Missing values removed: bmi (12).
 
+# --- Choosing the statistics --------------------------------------------
+
+# Median and interquartile range instead of mean and SD.
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  show_columns = c("med_iqr", "n")
+)
+#> Descriptive statistics
+#> 
+#>  Variable                        │      Med [Q1, Q3]         n    
+#> ─────────────────────────────────┼────────────────────────────────
+#>  Body mass index                 │  25.90 [23.40, 28.60]    1188  
+#>  WHO-5 wellbeing index (0-100)   │  70.25 [58.90, 79.23]    1200  
+#> 
+#> Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].
+
+# Median with its exact (order-statistic) confidence interval.
+table_continuous(
+  sochealth,
+  select = bmi,
+  show_columns = c("med", "iqr", "med_ci", "n")
+)
+#> Descriptive statistics
+#> 
+#>  Variable          │   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    
+#> ───────────────────┼───────────────────────────────────────────────────────────
+#>  Body mass index   │  25.90    5.20        25.70            26.20        1188  
+#> 
+#> Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
+
+# One selection per variable. A skewed variable that a scoring
+# protocol requires in median and IQR (the IPAQ case) sits next to
+# variables kept in mean and SD; each row is tested the way it is
+# displayed, and the note says so.
+table_continuous(
+  sochealth,
+  select = c(bmi, life_sat_health, wellbeing_score),
+  by = sex,
+  show_columns = list(
+    life_sat_health = c("med_iqr", "n"),
+    .default = c("m", "sd", "n")
+  )
+)
+#> Descriptive statistics by Sex
+#> 
+#>  Variable                       │ Group     M     SD      Med [Q1, Q3]      n  
+#> ────────────────────────────────┼──────────────────────────────────────────────
+#>  Body mass index                │ Female  25.69   3.78                     616 
+#>                                 │ Male    26.20   3.64                     572 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Female                4.00 [3.00, 5.00]  616 
+#>                                 │ Male                  4.00 [3.00, 5.00]  576 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100)  │ Female  67.16  14.80                     620 
+#>                                 │ Male    71.05  16.23                     580 
+#> 
+#>  Variable                       │ Group   p (n) 
+#> ────────────────────────────────┼───────────────
+#>  Body mass index                │ Female   .018 
+#>                                 │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Female   .233 
+#>                                 │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100)  │ Female  <.001 
+#>                                 │ Male          
+#> 
+#> Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
+
 # --- Effect sizes -------------------------------------------------------
 
 # Auto-selected effect size with confidence interval (Hedges' g for
@@ -604,7 +772,7 @@ table_continuous(
   effect_size = "auto",
   effect_size_ci = TRUE
 )
-#> Descriptive statistics
+#> Descriptive statistics by Sex
 #> 
 #>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
 #> ───────────────────────────────┼────────────────────────────────────────────────
@@ -630,7 +798,7 @@ table_continuous(
   effect_size_ci = TRUE,
   effect_size_digits = 3
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
@@ -644,7 +812,7 @@ table_continuous(
 #>                                │ Upper secondary    67.82      70.12    539 
 #>                                │ Tertiary           75.55      78.15    400 
 #> 
-#>  Variable                      │ Group              p   
+#>  Variable                      │ Group            p (n) 
 #> ───────────────────────────────┼────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  <.001 
 #>                                │ Upper secondary        
@@ -727,11 +895,16 @@ table_continuous(
 #> 2             bmi               Body mass index   Male 26.19685  3.638092 16.0
 #> 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6
 #> 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7
-#>     max ci_lower ci_upper   n test_type statistic      df1 df2      p.value
-#> 1  38.9 25.38588 25.98425 616   welch_t -2.377237 1184.497  NA 1.760093e-02
-#> 2  37.7 25.89808 26.49563 572      <NA>        NA       NA  NA           NA
-#> 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05
-#> 4 100.0 69.72540 72.37219 580      <NA>        NA       NA  NA           NA
+#>     max ci_lower ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper
+#> 1  38.9 25.38588 25.98425   25.7 23.100 28.600  5.500         25.4         26.1
+#> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6
+#> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7
+#> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2
+#>     n test_type statistic      df1 df2      p.value
+#> 1 616   welch_t -2.377237 1184.497  NA 1.760093e-02
+#> 2 572      <NA>        NA       NA  NA           NA
+#> 3 620   welch_t -4.326141 1168.700  NA 1.647005e-05
+#> 4 580      <NA>        NA       NA  NA           NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

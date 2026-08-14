@@ -560,9 +560,12 @@ with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
 internal position; centring those uniform-width strings then
 stacks the decimal points vertically. The same pad-then-centre
-strategy is applied on every engine (<code>gt</code>, <code>tinytable</code>,
-<code>flextable</code>, <code>word</code>, <code>clipboard</code>, ASCII print) for a
-homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code>.</p></li>
+strategy is applied on every rendering engine (<code>gt</code>,
+<code>tinytable</code>, <code>flextable</code>, <code>word</code>, ASCII print) for a
+homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code>. The
+<code>clipboard</code> output is delimited text meant to be parsed rather
+than read at a fixed width, so its cells travel unpadded (a
+padded number pastes as text next to an unpadded number).</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
 </ul><p>The <code>excel</code> output uses the engine's default alignment in any
@@ -595,7 +598,9 @@ format would require a separate refactor.</p></dd>
 
 <dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
 <dd><p>Delimiter for <code>output = "clipboard"</code> (default:
-<code>"\t"</code>).</p></dd>
+<code>"\t"</code>). A cell holding the delimiter itself, a double quote or a
+line break is quoted RFC 4180-style, so the grid survives whatever
+delimiter you choose.</p></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
@@ -642,7 +647,10 @@ and sample size (<code>n</code>, <code>weighted_n</code>).</p></li>
 <li><p><code>"flextable"</code>: a <code>flextable</code> object.</p></li>
 <li><p><code>"excel"</code> / <code>"word"</code>: writes to disk and returns the file path.</p></li>
 <li><p><code>"clipboard"</code>: copies the wide table and returns it invisibly.</p></li>
-</ul><p>If no numeric outcome columns remain after applying <code>select</code>, <code>exclude</code>,
+</ul><p>The Excel sheet carries the same title the console prints on its
+first row; the table itself starts on row 3, and the note lines sit
+below the body.</p>
+<p>If no numeric outcome columns remain after applying <code>select</code>, <code>exclude</code>,
 and <code>regex</code>, the function emits a warning and returns an empty
 <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code> regardless of <code>output</code>.</p>
     </div>

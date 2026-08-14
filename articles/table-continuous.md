@@ -103,7 +103,7 @@ table_continuous(
   select = c(bmi, wellbeing_score, life_sat_health),
   by = education
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                       │ Group              M     SD     Min    Max   
 #> ────────────────────────────────┼──────────────────────────────────────────────
@@ -133,7 +133,7 @@ table_continuous(
 #>                                 │ Upper secondary     3.43       3.63    534 
 #>                                 │ Tertiary            4.01       4.21    399 
 #> 
-#>  Variable                       │ Group              p   
+#>  Variable                       │ Group            p (n) 
 #> ────────────────────────────────┼────────────────────────
 #>  Body mass index                │ Lower secondary  <.001 
 #>                                 │ Upper secondary        
@@ -201,7 +201,7 @@ table_continuous(
   effect_size = "auto",
   effect_size_ci = TRUE
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                       │ Group              M     SD     Min    Max   
 #> ────────────────────────────────┼──────────────────────────────────────────────
@@ -275,7 +275,7 @@ table_continuous(
   statistic = TRUE,
   effect_size = "auto"
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                      │ Group              M     SD     Min    Max   
 #> ───────────────────────────────┼──────────────────────────────────────────────
@@ -335,7 +335,7 @@ table_continuous(
   effect_size = "hedges_g",
   effect_size_ci = TRUE
 )
-#> Descriptive statistics
+#> Descriptive statistics by Sex
 #> 
 #>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
 #> ───────────────────────────────┼────────────────────────────────────────────────
@@ -378,20 +378,27 @@ table_continuous(
 #> 4 wellbeing_score WHO-5 wellbeing index (0-100) Lower secondary 57.21571
 #> 5 wellbeing_score WHO-5 wellbeing index (0-100) Upper secondary 68.96920
 #> 6 wellbeing_score WHO-5 wellbeing index (0-100)        Tertiary 76.85250
-#>          sd  min   max ci_lower ci_upper   n   test_type statistic df1      df2
-#> 1  3.471744 18.2  38.9 27.66333 28.51129 260 welch_anova  87.95902   2 654.4758
-#> 2  3.434736 16.0  37.1 25.72693 26.31090 534        <NA>        NA  NA       NA
-#> 3  3.520150 16.0  33.0 24.04170 24.73901 394        <NA>        NA  NA       NA
-#> 4 15.444587 18.7  97.9 55.33323 59.09819 261 welch_anova 144.35083   2 638.5873
-#> 5 13.621193 26.7 100.0 67.81669 70.12172 539        <NA>        NA  NA       NA
-#> 6 13.226818 40.4 100.0 75.55235 78.15265 400        <NA>        NA  NA       NA
-#>        p.value es_type  es_value es_ci_lower es_ci_upper
-#> 1 1.467916e-34  eta_sq 0.1307679  0.09667861   0.1654516
-#> 2           NA    <NA>        NA          NA          NA
-#> 3           NA    <NA>        NA          NA          NA
-#> 4 1.888362e-52  eta_sq 0.2081970  0.16901207   0.2461732
-#> 5           NA    <NA>        NA          NA          NA
-#> 6           NA    <NA>        NA          NA          NA
+#>          sd  min   max ci_lower ci_upper median    q1     q3    iqr
+#> 1  3.471744 18.2  38.9 27.66333 28.51129   28.2 25.70 29.900  4.200
+#> 2  3.434736 16.0  37.1 25.72693 26.31090   26.1 23.50 28.500  5.000
+#> 3  3.520150 16.0  33.0 24.04170 24.73901   24.5 22.00 26.775  4.775
+#> 4 15.444587 18.7  97.9 55.33323 59.09819   57.9 45.40 68.500 23.100
+#> 5 13.621193 26.7 100.0 67.81669 70.12172   69.5 60.85 77.300 16.450
+#> 6 13.226818 40.4 100.0 75.55235 78.15265   77.2 68.60 86.150 17.550
+#>   med_ci_lower med_ci_upper   n   test_type statistic df1      df2      p.value
+#> 1         27.6         28.7 260 welch_anova  87.95902   2 654.4758 1.467916e-34
+#> 2         25.7         26.5 534        <NA>        NA  NA       NA           NA
+#> 3         24.1         24.9 394        <NA>        NA  NA       NA           NA
+#> 4         55.5         60.2 261 welch_anova 144.35083   2 638.5873 1.888362e-52
+#> 5         68.1         70.9 539        <NA>        NA  NA       NA           NA
+#> 6         76.2         78.5 400        <NA>        NA  NA       NA           NA
+#>   es_type  es_value es_ci_lower es_ci_upper
+#> 1  eta_sq 0.1307679  0.09667861   0.1654516
+#> 2    <NA>        NA          NA          NA
+#> 3    <NA>        NA          NA          NA
+#> 4  eta_sq 0.2081970  0.16901207   0.2461732
+#> 5    <NA>        NA          NA          NA
+#> 6    <NA>        NA          NA          NA
 ```
 
 ## Selecting variables
@@ -405,7 +412,7 @@ table_continuous(
   select = starts_with("life_sat"),
   by = sex
 )
-#> Descriptive statistics
+#> Descriptive statistics by Sex
 #> 
 #>  Variable                                   │ Group    M     SD   Min   Max  
 #> ────────────────────────────────────────────┼────────────────────────────────
@@ -435,19 +442,19 @@ table_continuous(
 #>  Satisfaction with standard of living (1-5) │ Female    3.28       3.46     615 
 #>                                             │ Male      3.33       3.52     577 
 #> 
-#>  Variable                                   │ Group    p   
-#> ────────────────────────────────────────────┼──────────────
-#>  Satisfaction with health (1-5)             │ Female  .267 
-#>                                             │ Male         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with work (1-5)               │ Female  .073 
-#>                                             │ Male         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with relationships (1-5)      │ Female  .570 
-#>                                             │ Male         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with standard of living (1-5) │ Female  .453 
-#>                                             │ Male         
+#>  Variable                                   │ Group   p (n) 
+#> ────────────────────────────────────────────┼───────────────
+#>  Satisfaction with health (1-5)             │ Female  .267  
+#>                                             │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with work (1-5)               │ Female  .073  
+#>                                             │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with relationships (1-5)      │ Female  .570  
+#>                                             │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with standard of living (1-5) │ Female  .453  
+#>                                             │ Male          
 #> 
 #> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 ```
@@ -476,32 +483,45 @@ table_continuous(
 #> 10      life_sat_standard Satisfaction with standard of living (1-5)
 #> 11      life_sat_standard Satisfaction with standard of living (1-5)
 #> 12      life_sat_standard Satisfaction with standard of living (1-5)
-#>              group     mean        sd min max ci_lower ci_upper   n   test_type
-#> 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382 259 welch_anova
-#> 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473 534        <NA>
-#> 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950 399        <NA>
-#> 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660 261 welch_anova
-#> 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169 535        <NA>
-#> 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909 396        <NA>
-#> 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908 260 welch_anova
-#> 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439 534        <NA>
-#> 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159 398        <NA>
-#> 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487 261 welch_anova
-#> 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466 532        <NA>
-#> 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589 399        <NA>
-#>    statistic df1      df2      p.value
-#> 1  118.73585   2 652.0775 1.063917e-44
-#> 2         NA  NA       NA           NA
-#> 3         NA  NA       NA           NA
-#> 4  105.98821   2 651.9434 1.398117e-40
-#> 5         NA  NA       NA           NA
-#> 6         NA  NA       NA           NA
-#> 7   82.35074   2 617.9668 1.969764e-32
-#> 8         NA  NA       NA           NA
-#> 9         NA  NA       NA           NA
-#> 10 101.31672   2 648.7723 5.105889e-39
-#> 11        NA  NA       NA           NA
-#> 12        NA  NA       NA           NA
+#>              group     mean        sd min max ci_lower ci_upper median q1  q3
+#> 1  Lower secondary 2.714286 1.2021575   1   5 2.567189 2.861382      3  2 3.5
+#> 2  Upper secondary 3.533708 1.1853493   1   5 3.432943 3.634473      4  3 5.0
+#> 3         Tertiary 4.110276 1.0432216   1   5 4.007602 4.212950      4  3 5.0
+#> 4  Lower secondary 2.570881 1.1467994   1   5 2.431102 2.710660      3  2 3.0
+#> 5  Upper secondary 3.422430 1.1037312   1   5 3.328691 3.516169      4  3 4.0
+#> 6         Tertiary 3.851010 1.0314174   1   5 3.749112 3.952909      4  3 5.0
+#> 7  Lower secondary 3.023077 1.2268891   1   5 2.873246 3.172908      3  2 4.0
+#> 8  Upper secondary 3.743446 0.9645227   1   5 3.661453 3.825439      4  3 5.0
+#> 9         Tertiary 4.158291 0.9322485   1   5 4.066423 4.250159      4  4 5.0
+#> 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487      3  2 3.0
+#> 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466      4  3 4.0
+#> 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589      4  3 5.0
+#>    iqr med_ci_lower med_ci_upper   n   test_type statistic df1      df2
+#> 1  1.5            3            3 259 welch_anova 118.73585   2 652.0775
+#> 2  2.0            3            4 534        <NA>        NA  NA       NA
+#> 3  2.0            4            5 399        <NA>        NA  NA       NA
+#> 4  1.0            2            3 261 welch_anova 105.98821   2 651.9434
+#> 5  1.0            3            4 535        <NA>        NA  NA       NA
+#> 6  2.0            4            4 396        <NA>        NA  NA       NA
+#> 7  2.0            3            3 260 welch_anova  82.35074   2 617.9668
+#> 8  2.0            4            4 534        <NA>        NA  NA       NA
+#> 9  1.0            4            5 398        <NA>        NA  NA       NA
+#> 10 1.0            2            3 261 welch_anova 101.31672   2 648.7723
+#> 11 1.0            3            4 532        <NA>        NA  NA       NA
+#> 12 2.0            4            4 399        <NA>        NA  NA       NA
+#>         p.value
+#> 1  1.063917e-44
+#> 2            NA
+#> 3            NA
+#> 4  1.398117e-40
+#> 5            NA
+#> 6            NA
+#> 7  1.969764e-32
+#> 8            NA
+#> 9            NA
+#> 10 5.105889e-39
+#> 11           NA
+#> 12           NA
 ```
 
 Use `exclude` when you want a broad selection with one or two explicit
@@ -515,7 +535,7 @@ table_continuous(
   exclude = "life_sat_work",
   by = sex
 )
-#> Descriptive statistics
+#> Descriptive statistics by Sex
 #> 
 #>  Variable                       │ Group     M     SD     Min    Max   
 #> ────────────────────────────────┼─────────────────────────────────────
@@ -581,7 +601,7 @@ table_continuous(
   by = income_group
 )
 #> Warning: 18 observation(s) with NA in `income_group` were excluded.
-#> Descriptive statistics
+#> Descriptive statistics by Household income group
 #> 
 #>  Variable        │ Group           M     SD    Min    Max   95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
@@ -613,7 +633,7 @@ table_continuous(
   by = income_group,
   drop_na = FALSE
 )
-#> Descriptive statistics
+#> Descriptive statistics by Household income group
 #> 
 #>  Variable        │ Group           M     SD    Min    Max   95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
@@ -653,7 +673,7 @@ table_continuous(
   by = sex,
   labels = c(wellbeing_score = "Well-being score (0-100)")
 )
-#> Descriptive statistics
+#> Descriptive statistics by Sex
 #> 
 #>  Variable                       │ Group     M     SD     Min    Max   
 #> ────────────────────────────────┼─────────────────────────────────────
@@ -704,7 +724,7 @@ table_continuous(
   show_n = FALSE,
   p_digits = 4
 )
-#> Descriptive statistics
+#> Descriptive statistics by Sex
 #> 
 #>  Variable                      │ Group     M     SD     Min    Max      p    
 #> ───────────────────────────────┼─────────────────────────────────────────────
@@ -733,7 +753,7 @@ out <- table_continuous(
   select = c(bmi, wellbeing_score),
   by = sex
 )
-#> Descriptive statistics
+#> Descriptive statistics by Sex
 #> 
 #>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
 #> ───────────────────────────────┼────────────────────────────────────────────────
@@ -784,11 +804,16 @@ head(as.data.frame(out))
 #> 2             bmi               Body mass index   Male 26.19685  3.638092 16.0
 #> 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6
 #> 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7
-#>     max ci_lower ci_upper   n test_type statistic      df1 df2      p.value
-#> 1  38.9 25.38588 25.98425 616   welch_t -2.377237 1184.497  NA 1.760093e-02
-#> 2  37.7 25.89808 26.49563 572      <NA>        NA       NA  NA           NA
-#> 3 100.0 65.99480 68.32907 620   welch_t -4.326141 1168.700  NA 1.647005e-05
-#> 4 100.0 69.72540 72.37219 580      <NA>        NA       NA  NA           NA
+#>     max ci_lower ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper
+#> 1  38.9 25.38588 25.98425   25.7 23.100 28.600  5.500         25.4         26.1
+#> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6
+#> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7
+#> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2
+#>     n test_type statistic      df1 df2      p.value
+#> 1 616   welch_t -2.377237 1184.497  NA 1.760093e-02
+#> 2 572      <NA>        NA       NA  NA           NA
+#> 3 620   welch_t -4.326141 1168.700  NA 1.647005e-05
+#> 4 580      <NA>        NA       NA  NA           NA
 ```
 
 ## Output formats
@@ -823,6 +848,8 @@ table_continuous(
 
 [TABLE]
 
+Missing values removed: bmi (12), life_sat_health (8).
+
 `output = "tinytable"` works well in Quarto and R Markdown documents:
 
 ``` r
@@ -847,6 +874,12 @@ table_continuous(
 | Satisfaction with health (1-5) | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
 |  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
+| Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
+
+Descriptive statistics by Highest education level
+{#tinytable_7qtaxuazr2oz2pe3o4p8 .table .tinytable
+style="width: auto; margin-left: auto; margin-right: auto;"
+quarto-disable-processing="true"}
 
 ## Export to Excel or Word
 

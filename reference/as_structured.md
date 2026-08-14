@@ -44,6 +44,8 @@ This is the right entry point for users who want to:
 
 ## Schema
 
+- `version` – integer contract version (see *Versioning* below).
+
 - `body` – `data.frame` with a `Variable` character column and one or
   more numeric columns. Confidence intervals are split into `LL` / `UL`
   columns named like `"95% CI: LL"` / `"95% CI: UL"` (or prefixed with
@@ -52,7 +54,10 @@ This is the right entry point for users who want to:
   headers) are `NA`.
 
 - `reference_rows`, `factor_header_rows`, `fit_stat_rows`, `level_rows`,
-  `outcome_row` – integer row indices.
+  `outcome_row` – integer row indices. The fixed-effects disclosure
+  block of an absorbed-effects model contributes a `"Fixed effects:"`
+  factor header and one level row per absorbed factor, named as the
+  model names it.
 
 - `reference_models_by_row` – for each reference row (keyed by its row
   index as a character string), the `model_id`s of the models that
@@ -65,7 +70,15 @@ This is the right entry point for users who want to:
 
 - `col_meta` – per-column metadata keyed by structured column name
   (token, model_id, precision, p-style, below-threshold, CI pair / role
-  / label).
+  / label). A column whose cells cannot be reconstructed from one number
+  – the `"events/N"` counts of `show_columns = "n_events"` – also
+  carries `display_cells`, a character vector as long as `body` holding
+  the display string of each cell (`NA` where the number formats
+  normally). A renderer must prefer it over the numeric value.
+
+- `stars` – `NULL` unless `stars` was requested, otherwise a list with
+  `thresholds` (symbol to p cutoff) and `markers` (per-cell marker
+  strings, keyed by column name, `""` where a cell takes none).
 
 - `spanners` – named list mapping model labels to their column indices
   in `body` (multi-model only).
@@ -75,6 +88,15 @@ This is the right entry point for users who want to:
 
 - `format_spec` – global format defaults (decimal mark, digits, p-style,
   CI level, etc.).
+
+## Versioning
+
+Components are only ever added, never renamed or given new semantics, so
+code written against an older contract keeps working. `version` says
+which contract a given object carries: `2` adds `stars`,
+`col_meta$display_cells`, and the fixed-effects block row roles. An
+object built before the field existed reports version 1 and triggers a
+warning here – rebuild the table to get the current view.
 
 ## See also
 

@@ -73,19 +73,19 @@ table_categorical(
 #>    No                            │     67         16.8       354     29.5   
 #>    Yes                           │    333         83.2       846     70.5   
 #> 
-#>  Variable                        │   p    Cramer's V 
-#> ─────────────────────────────────┼───────────────────
-#>  Current smoker                  │ <.001     .14     
-#>    No                            │                   
-#>    Yes                           │                   
-#>    (Missing)                     │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity       │ <.001     .21     
-#>    No                            │                   
-#>    Yes                           │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months │ <.001     .22     
-#>    No                            │                   
+#>  Variable                        │ p (Total %)  Cramer's V 
+#> ─────────────────────────────────┼─────────────────────────
+#>  Current smoker                  │    <.001        .14     
+#>    No                            │                         
+#>    Yes                           │                         
+#>    (Missing)                     │                         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity       │    <.001        .21     
+#>    No                            │                         
+#>    Yes                           │                         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist visit in last 12 months │    <.001        .22     
+#>    No                            │                         
 #>    Yes                           │
 ```
 
@@ -300,11 +300,11 @@ table_categorical(
 #>    Yes          │       20.8             59         14.8       249     20.8   
 #>    (Missing)    │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable       │   p    Lambda 
-#> ────────────────┼───────────────
-#>  Current smoker │ <.001   .00   
-#>    No           │               
-#>    Yes          │               
+#>  Variable       │ p (Total %)  Lambda 
+#> ────────────────┼─────────────────────
+#>  Current smoker │    <.001      .00   
+#>    No           │                     
+#>    Yes          │                     
 #>    (Missing)    │
 ```
 
@@ -342,11 +342,11 @@ table_categorical(
 #>    (Missing)       │          4                1.5                 12        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Self-rated health │                                                         
-#>    (Missing)       │          1                0.4                 12        
 #>    Poor            │         28               10.7                 28        
 #>    Fair            │         86               33.0                118        
 #>    Good            │        102               39.1                263        
 #>    Very good       │         44               16.9                118        
+#>    (Missing)       │          1                0.4                 12        
 #> 
 #>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
 #> ───────────────────┼────────────────────────────────────────────────────
@@ -356,11 +356,11 @@ table_categorical(
 #>    (Missing)       │        2.2              9          2.2        25   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Self-rated health │                                                    
-#>    (Missing)       │        2.2              7          1.8        20   
 #>    Poor            │        5.2              5          1.2        61   
 #>    Fair            │       21.9             62         15.5       266   
 #>    Good            │       48.8            193         48.2       558   
 #>    Very good       │       21.9            133         33.2       295   
+#>    (Missing)       │        2.2              7          1.8        20   
 #> 
 #>  Variable          │ Total %    p    Effect size 
 #> ───────────────────┼─────────────────────────────
@@ -370,11 +370,11 @@ table_categorical(
 #>    (Missing)       │   2.1                       
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Self-rated health │          <.001      .31     
-#>    (Missing)       │   1.7                       
 #>    Poor            │   5.1                       
 #>    Fair            │  22.2                       
 #>    Good            │  46.5                       
 #>    Very good       │  24.6                       
+#>    (Missing)       │   1.7                       
 #> 
 #> Note. Cramer's V: Current smoker; Goodman-Kruskal Gamma: Self-rated health.
 ```
@@ -604,11 +604,11 @@ table_categorical(
 #>    Yes          │       20.78            59        14.75       249     20.75  
 #>    (Missing)    │        2.23             9         2.25        25      2.08  
 #> 
-#>  Variable       │   p     Cramer's V 
-#> ────────────────┼────────────────────
-#>  Current smoker │ <.0001     .136    
-#>    No           │                    
-#>    Yes          │                    
+#>  Variable       │ p (Total %)  Cramer's V 
+#> ────────────────┼─────────────────────────
+#>  Current smoker │   <.0001        .136    
+#>    No           │                         
+#>    Yes          │                         
 #>    (Missing)    │
 ```
 
@@ -627,11 +627,13 @@ LaTeX `siunitx`). Numeric cells are pre-padded with figure-spaces
 (U+2007, spaces exactly one digit wide) so that every string in a column
 has the same width with the decimal mark at the same internal position;
 centring those uniform-width strings then stacks the decimal points
-vertically. The same pad-then-centre strategy is applied on every engine
-(`gt`, `tinytable`, `flextable`, `word`, `clipboard`, ASCII print) for a
-homogeneous rendering – same single-font policy as
+vertically. The same pad-then-centre strategy is applied on every
+rendering engine (`gt`, `tinytable`, `flextable`, `word`, ASCII print)
+for a homogeneous rendering – same single-font policy as
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
-The native
+The clipboard is the exception: its payload is delimited text meant to
+be parsed, and a padded number would paste as text next to an unpadded
+number, so its cells travel unpadded. The native
 [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
 and `tinytable::style_tt(align = "d")` primitives are deliberately not
 used: the former renders visually right-aligned and the latter centres
@@ -786,6 +788,10 @@ table_categorical(
 | Regular physical activity |        |      |      |      |       |      | .832 | .01 |
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
+
+Categorical table by sex {#tinytable_9vxglu05x0o7wvirrapy .table
+.tinytable style="width: auto; margin-left: auto; margin-right: auto;"
+quarto-disable-processing="true"}
 
 With `assoc_ci = TRUE`, the rendered formats show the confidence
 interval inline after the association measure:

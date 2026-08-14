@@ -458,18 +458,18 @@ table_regression_uv(sh, outcome = smoking,
 #>  R² (Nagelkerke)          │                                     0.03 
 #>  AIC                      │                                  1200.9  
 #> 
-#>                                Multivariable    
-#>                             ─────────────────── 
-#>  Variable                 │    95% CI       p   
-#> ──────────────────────────┼─────────────────────
-#>  sex:                     │                     
-#>    Female (ref.)          │      –         –    
-#>    Male                   │ [0.73, 1.28]   .800 
-#>  age                      │ [1.00, 1.02]   .214 
-#>  education:               │                     
-#>    Lower secondary (ref.) │      –         –    
-#>    Upper secondary        │ [0.44, 0.87]   .005 
-#>    Tertiary               │ [0.27, 0.59]  <.001 
+#>                                Multivariable     
+#>                             ──────────────────── 
+#>  Variable                 │ 95% CI (OR)   p (OR) 
+#> ──────────────────────────┼──────────────────────
+#>  sex:                     │                      
+#>    Female (ref.)          │      –          –    
+#>    Male                   │ [0.73, 1.28]    .800 
+#>  age                      │ [1.00, 1.02]    .214 
+#>  education:               │                      
+#>    Lower secondary (ref.) │      –          –    
+#>    Upper secondary        │ [0.44, 0.87]    .005 
+#>    Tertiary               │ [0.27, 0.59]   <.001 
 #> 
 #> Note. Logistic regression models.
 #> Std. errors: classical (Fisher information).
@@ -544,7 +544,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #> 
 #>                    Mode… 
 #>                    ───── 
-#>  Variable        │   p   
+#>  Variable        │ p (B) 
 #> ─────────────────┼───────
 #>  (Intercept)     │ <.001 
 #>  age             │  .019 
@@ -1527,7 +1527,8 @@ str(out)
 #>  - attr(*, "section_sep_rows")= int(0) 
 #>  - attr(*, "align")= chr "decimal"
 #>  - attr(*, "decimal_mark")= chr "."
-#>  - attr(*, "structured")=List of 12
+#>  - attr(*, "structured")=List of 14
+#>   ..$ version                : int 2
 #>   ..$ body                   :'data.frame':  11 obs. of  6 variables:
 #>   .. ..$ Variable  : chr [1:11] "(Intercept)" "age" "sex:" "  Female (ref.)" ...
 #>   .. ..$ B         : num [1:11] 65.2009 0.0465 NA NA 3.8558 ...
@@ -1535,6 +1536,7 @@ str(out)
 #>   .. ..$ 95% CI: LL: num [1:11] 61.9504 -0.0137 NA NA 2.0796 ...
 #>   .. ..$ 95% CI: UL: num [1:11] 68.451 0.107 NA NA 5.632 ...
 #>   .. ..$ p         : num [1:11] 1.59e-216 1.30e-01 NA NA 2.22e-05 ...
+#>   ..$ stars                  : NULL
 #>   ..$ reference_rows         : int [1:2] 4 7
 #>   ..$ reference_models_by_row:List of 2
 #>   .. ..$ 4: chr "M1"

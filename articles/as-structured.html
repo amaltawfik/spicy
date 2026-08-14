@@ -176,12 +176,13 @@ one bracketed <code>[LL, UL]</code> column, APA p-values
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "body"                    "reference_rows"         </span></span>
-<span><span class="co">#&gt;  [3] "reference_models_by_row" "outcome_labels_by_col"  </span></span>
-<span><span class="co">#&gt;  [5] "factor_header_rows"      "fit_stat_rows"          </span></span>
-<span><span class="co">#&gt;  [7] "level_rows"              "outcome_row"            </span></span>
-<span><span class="co">#&gt;  [9] "col_meta"                "spanners"               </span></span>
-<span><span class="co">#&gt; [11] "ci_pairs"                "format_spec"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "version"                 "body"                   </span></span>
+<span><span class="co">#&gt;  [3] "stars"                   "reference_rows"         </span></span>
+<span><span class="co">#&gt;  [5] "reference_models_by_row" "outcome_labels_by_col"  </span></span>
+<span><span class="co">#&gt;  [7] "factor_header_rows"      "fit_stat_rows"          </span></span>
+<span><span class="co">#&gt;  [9] "level_rows"              "outcome_row"            </span></span>
+<span><span class="co">#&gt; [11] "col_meta"                "spanners"               </span></span>
+<span><span class="co">#&gt; [13] "ci_pairs"                "format_spec"</span></span></code></pre></div>
 <p>The centrepiece is <code>body</code>: a data frame with the
 <code>Variable</code> column and one numeric column per displayed
 statistic. The confidence interval that prints as one bracketed column
@@ -325,15 +326,17 @@ digits, CI level):</p>
 <span><span class="co">#&gt; [1] 11</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="va">format_spec</span><span class="op">$</span><span class="va">ci_level</span></span>
 <span><span class="co">#&gt; [1] 0.95</span></span></code></pre></div>
-<p>That is seven of the twelve components; <code>spanners</code> and
+<p>That is seven of the fourteen components; <code>spanners</code> and
 <code>reference_models_by_row</code> follow in the multi-model section
-below. Of the remaining three, <code>ci_pairs</code> records which
+below, <code>stars</code> and <code>col_meta$display_cells</code> in the
+section after it. Of the remaining, <code>ci_pairs</code> records which
 <code>LL</code>/<code>UL</code> columns form a confidence-interval pair
 (here, columns 4 and 5 under the label <code>95% CI</code>), while
 <code>outcome_row</code> and <code>outcome_labels_by_col</code> locate
 and label the optional outcome header row of multi-outcome tables and
-are empty here. The complete schema, component by component, is in
-<code><a href="../reference/as_structured.html">?as_structured</a></code>.</p>
+are empty here. <code>version</code> names the contract the object
+carries, so a renderer can tell which components to expect. The complete
+schema, component by component, is in <code><a href="../reference/as_structured.html">?as_structured</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="filtering-and-aggregating">Filtering and aggregating<a class="anchor" aria-label="anchor" href="#filtering-and-aggregating"></a>
@@ -425,6 +428,63 @@ the <code>Minimal</code> cells blank.</p>
 <span><span class="co">#&gt; 12          Adj.R²    0.03929546           NA            NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="cells-a-number-cannot-express">Cells a number cannot express<a class="anchor" aria-label="anchor" href="#cells-a-number-cannot-express"></a>
+</h2>
+<p>Two things a reader sees are not values of a statistic, and the typed
+body alone cannot express them: a cell built from two counts, and a
+marker attached to a cell. Both travel in the contract, so a renderer
+never has to reconstruct them from the printed table.</p>
+<p>The event counts requested with
+<code>show_columns = "n_events"</code> print as <code>events/N</code>.
+The body keeps the numerator as a number, and the column’s
+<code>display_cells</code> carries the string of each cell –
+<code>NA</code> where the number formats normally, as on the
+fit-statistics rows in that same column:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">dentist_12m</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n_events"</span>, <span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span></span>
+<span><span class="va">sc</span><span class="op">$</span><span class="va">body</span><span class="op">[[</span><span class="st">"Events/N"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] 8.460000e+02 8.460000e+02           NA 4.370000e+02 4.090000e+02</span></span>
+<span><span class="co">#&gt; [6] 1.200000e+03 2.791201e-03 4.810310e-03 1.457700e+03</span></span>
+<span><span class="va">sc</span><span class="op">$</span><span class="va">col_meta</span><span class="op">[[</span><span class="st">"Events/N"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">display_cells</span></span>
+<span><span class="co">#&gt; [1] "846/1200" "846/1200" NA         "437/620"  "409/580"  NA         NA        </span></span>
+<span><span class="co">#&gt; [8] NA         NA</span></span></code></pre></div>
+<p>Read the two together on the reference row: the level has 437 events
+out of 620, and it keeps them – the en-dash of a reference row means “no
+estimate by design”, which says nothing about a count. A renderer that
+ignores <code>display_cells</code> prints a numerator under a header
+promising a ratio.</p>
+<p>Significance stars work the same way. <code>stars = TRUE</code>
+leaves the body untouched and fills the <code>stars</code> component:
+the thresholds the footer legend documents, and the marker of each cell
+that takes one.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">starred</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
+<span>  stars <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ss</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">starred</span><span class="op">)</span></span>
+<span><span class="va">ss</span><span class="op">$</span><span class="va">stars</span><span class="op">$</span><span class="va">thresholds</span></span>
+<span><span class="co">#&gt;   ***    **     * </span></span>
+<span><span class="co">#&gt; 0.001 0.010 0.050</span></span>
+<span><span class="va">ss</span><span class="op">$</span><span class="va">stars</span><span class="op">$</span><span class="va">markers</span><span class="op">$</span><span class="va">B</span></span>
+<span><span class="co">#&gt; [1] "***" ""    ""    ""    "***" ""    ""    ""</span></span></code></pre></div>
+<p>The rule for which column takes the markers is the console’s: the raw
+coefficient, the standardized coefficient only when <code>B</code> is
+not displayed beside it, and the average marginal effect on its own
+p-value. <code>stars</code> is <code>NULL</code> when the table has
+none.</p>
+<p>One more display convention lives in the row indices rather than in a
+cell. A model with absorbed fixed effects discloses them as a block:
+<code>factor_header_rows</code> gains the <code>Fixed effects:</code>
+row and <code>level_rows</code> one row per absorbed factor, named as
+the model names it. Treat that block exactly like a factor group in the
+coefficients and it renders the way it prints.</p>
+</div>
+<div class="section level2">
 <h2 id="building-your-own-renderer">Building your own renderer<a class="anchor" aria-label="anchor" href="#building-your-own-renderer"></a>
 </h2>
 <p>The structured view carries everything a renderer needs. A compact
@@ -433,7 +493,7 @@ formats at its <code>col_meta</code> precision, and the
 <code>fit_stat_overrides</code> seen earlier supply the per-row
 exceptions – that is what renders the <code>n</code> row as
 <code>1175</code> rather than <code>1175.00</code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">render_kable</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">body</span></span>
@@ -587,9 +647,12 @@ section <em>API stability</em>): components will not be silently renamed
 or change semantics within <code>0.y.z</code>, and additions are
 announced in <code>NEWS.md</code>.</li>
 <li>
-<strong>Version guard.</strong> Objects built by a spicy version
-before the structured contract existed are refused with an actionable
-message rather than mis-read.</li>
+<strong>Version guard.</strong> <code>version</code> names the
+contract an object carries. Components are only ever added, so code
+written against an older one keeps working; a table built before a
+component existed says so when you open it, and one built by a newer
+spicy than the one reading it is refused rather than mis-read. Objects
+from before the structured view existed are refused outright.</li>
 </ul>
 <p>For the statistical long form – estimates with standard errors and
 unformatted p-values, one row per term and estimate type across models –

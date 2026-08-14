@@ -245,7 +245,7 @@ table_regression(m_empty)
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p < .001.
-#> Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).
+#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 The **ICC of 0.18** is nothing but the two σ rows combined: 2.93² /
@@ -305,7 +305,7 @@ table_regression(list(OLS = ols, Multilevel = m_ri),
 #>   Model 2: Wald (model-based)
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001.
-#> Model 2: Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).
+#> Model 2: Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 Reading the two columns against each other, five things change:
@@ -371,7 +371,7 @@ table_regression(m_wb, show_columns = c("b", "se", "p"))
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p < .001.
-#> Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).
+#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 Within a school, a one-point difference in SES is associated with 2.19
@@ -427,7 +427,7 @@ table_regression(m_rs, re_test = "lrt", show_columns = c("b", "p"))
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001.
 #> Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.
-#> Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).
+#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 The slope SD is 0.83 achievement points around the average slope of
@@ -483,7 +483,7 @@ table_regression(m_cl, show_columns = c("b", "se", "p"))
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p < .001.
-#> Random-effect variance components: SE and CI not computed (n = 7,185 exceeds the spicy.re_se_max_n cap).
+#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 In public schools the within-school SES slope is 2.79; in Catholic
