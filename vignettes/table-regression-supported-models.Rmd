@@ -169,47 +169,54 @@ The same arguments work across families, each through the family's
 field-standard backend -- or a clear refusal.
 
 **Robust and cluster-robust standard errors** (`vcov`, `cluster`).
-`lm` and `glm` take `HC0`--`HC5` (`sandwich`) and cluster-robust
-`CR0`--`CR3` (`clubSandwich`, bias-reduced with Satterthwaite df),
-plus `"bootstrap"` / `"jackknife"` resampling estimators. Among the
-mixed engines, `lmer` and `nlme::lme` take `CR*` via
-`clubSandwich`; `glmer`, `glmmTMB` and `gls` are model-based only
--- `clubSandwich` has no working backend for `glmer` or `glmmTMB`,
-and its `gls` backend is not yet wired and validated in spicy.
-Ordinal models take `CR0`--`CR3` but no `HC*`, and the cut-point
-thresholds are reweighted from the same clustered vcov (a `clm`
-with a scale or nominal partial-proportional-odds component is
-model-based only). `multinom` takes `CR*` (one cluster value per
-observation) and `mlogit` takes `CR*` (one per choice situation) --
-both refuse `HC*`: `multinom` has no working-residual form for a
-multi-equation model, and for `mlogit`, `sandwich::vcovHC()`
-computes a result but silently mis-scales the meat for its
-per-chooser score structure. Quantile regression (`rq`) uses its own
-estimator family -- `"classical"` resolves to the robust `nid`
-sandwich, `iid` / `ker` / `rank` are opt-ins, and clustering goes
-through its native wild gradient bootstrap (`vcov = "bootstrap"` +
-`cluster`; `HC*` / `CR*` are refused). Cox models use the Lin-Wei
-grouped-dfbeta
-sandwich, and the `rms` fits take `CR*` via `rms::robcov()` (refit
-with `x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and `betareg`
-take `CR*` via `sandwich::vcovCL()`; `pscl` two-part fits cluster
-both components. `estimatr` fits keep their own robust SEs, and `fixest`
-fits keep the estimator they were computed with (the footer carries
-fixest's own label -- clustered, Newey-West, Conley, ...; fixest's
-"IID" is normalised to "Classical" -- and
-spicy's `HC*` / `CR*` tokens are refused for them);
-`svyglm` is design-based (Taylor / replicate) and refuses `HC*` /
-`CR*` -- the design variance is already the robust variance, and
-clustering belongs in the design itself
-(`survey::svydesign(ids = )`). GEE fits (`geepack::geeglm`) are robust by
-construction: the sandwich SEs the fit computed over its own `id =`
-clusters are the displayed inference, so spicy's `HC*` / `CR*` tokens
-and `cluster` argument are refused -- change the estimator by
-refitting with geeglm's `std.err =` option. Bayesian fits refuse
-`vcov` -- nothing
-standard plays the sandwich role for a posterior. Whatever the
-backend, the footer names the estimator actually applied, and a
-robust vcov also flows into the AME uncertainty.
+Family by family:
+
+* **`lm`, `glm`** -- `HC0`--`HC5` (`sandwich`) and `CR0`--`CR3`
+  (`clubSandwich`, bias-reduced with Satterthwaite df), plus
+  `"bootstrap"` / `"jackknife"` resampling estimators.
+* **Mixed effects** -- `lmer` and `nlme::lme` take `CR*` via
+  `clubSandwich`; `glmer`, `glmmTMB` and `gls` are model-based only
+  (`clubSandwich` has no working backend for the first two, and its
+  `gls` backend is not yet wired and validated in spicy).
+* **Ordinal (`polr`, `clm`)** -- `CR0`--`CR3`, no `HC*`; the
+  cut-point thresholds are reweighted from the same clustered vcov.
+  A `clm` with a scale or nominal partial-proportional-odds
+  component is model-based only.
+* **Categorical** -- `multinom` takes `CR*` (one cluster value per
+  observation), `mlogit` takes `CR*` (one per choice situation).
+  Both refuse `HC*`: `multinom` has no working-residual form for a
+  multi-equation model, and for `mlogit`, `sandwich::vcovHC()`
+  computes a result but silently mis-scales the meat for its
+  per-chooser score structure.
+* **Quantile (`rq`)** -- its own estimator family: `"classical"`
+  resolves to the robust `nid` sandwich, `iid` / `ker` / `rank` are
+  opt-ins, and clustering goes through the native wild gradient
+  bootstrap (`vcov = "bootstrap"` + `cluster`). `HC*` / `CR*` are
+  refused.
+* **Survival** -- Cox models use the Lin-Wei grouped-dfbeta
+  sandwich; the `rms` fits take `CR*` via `rms::robcov()` (refit
+  with `x = TRUE, y = TRUE`); `survreg` takes `CR*` via
+  `sandwich::vcovCL()`.
+* **`gam` / `bam`, `betareg`, `pscl` two-part** -- `CR*` via
+  `sandwich::vcovCL()`; zero-inflated and hurdle fits cluster both
+  components.
+* **Own-estimator classes** -- `estimatr` fits keep the robust SEs
+  they were computed with; `fixest` fits keep their estimator (the
+  footer carries fixest's own label -- clustered, Newey-West,
+  Conley, ...; fixest's "IID" is normalised to "Classical"). spicy's
+  `HC*` / `CR*` tokens are refused for both.
+* **Robust by construction** -- `svyglm` is design-based (Taylor /
+  replicate): the design variance *is* the robust variance, and
+  clustering belongs in the design itself
+  (`survey::svydesign(ids = )`). `geeglm` displays the sandwich SEs
+  the fit computed over its own `id =` clusters; change the
+  estimator by refitting with `std.err =`. Both refuse spicy's
+  `HC*` / `CR*` tokens and `cluster`.
+* **Bayesian** -- `vcov` is refused: nothing standard plays the
+  sandwich role for a posterior.
+
+Whatever the backend, the footer names the estimator actually
+applied, and a robust vcov also flows into the AME uncertainty.
 
 **Standardized coefficients** (`standardized`). Available for `lm`,
 `glm` (including `MASS::glm.nb`), the mixed engines (`lmer` /
@@ -222,12 +229,15 @@ distributional or special terms) hint to standardize predictors
 before fitting, and the frequentist ones point to the AME columns
 instead.
 
-**Confidence intervals** (`ci_method`). Wald everywhere by default;
-`"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
-`"boot_percentile"` (with `vcov = "bootstrap"`) replaces the bounds
-with equal-tailed percentile intervals of the bootstrap replicates;
-`"hdi"` (highest-density interval) for Bayesian fits, which
-otherwise report equal-tailed credible intervals.
+**Confidence intervals** (`ci_method`).
+
+* Wald everywhere by default;
+* `"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
+* `"boot_percentile"` (with `vcov = "bootstrap"`) replaces the
+  bounds with equal-tailed percentile intervals of the bootstrap
+  replicates;
+* `"hdi"` (highest-density interval) for Bayesian fits, which
+  otherwise report equal-tailed credible intervals.
 
 **Model comparison and multiplicity.** `nested = TRUE` compares
 nested fits by the family's change-test convention: Delta R-squared
