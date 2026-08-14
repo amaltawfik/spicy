@@ -43,6 +43,79 @@ as a silently empty or approximate column.
 This article is the map. Each family below links to a dedicated
 article that walks through its behaviour in depth.
 
+## Choosing a model
+
+Most readers arrive with the opposite question: not "what does spicy
+support?" but "I have this outcome -- which model do I fit?". The
+table below answers it for the situations applied work meets most
+often. It *recommends and explains*; it never chooses for you --
+model choice depends on your design and your estimand, and spicy will
+render whichever defensible model you fit.
+
+| Your outcome | The situation | Reach for | Notes |
+|---|---|---|---|
+| Continuous | roughly symmetric errors, independent observations | `lm()` | the default screen; `beta` for standardized effects |
+| Continuous | positive and right-skewed | `glm(family = Gamma("log"))` | `exponentiate = TRUE` gives mean ratios (MR) |
+| Continuous | censored at a bound (floor/ceiling) | `AER::tobit()` | |
+| Continuous | outlying responses distort the fit | `MASS::rlm()` | M-estimation: resistant estimates, not just fixed SEs |
+| Continuous | the median or another quantile is the estimand | `quantreg::rq()` | one model per quantile; effects are quantile-specific |
+| Binary | independent observations | `glm(family = binomial())` | OR via `exponentiate`; add `"ame"` for probability effects |
+| Binary | overdispersed grouped binomial data | `glm(family = quasibinomial())` | |
+| Ordered categories | a Likert scale, severity grades | `MASS::polr()` or `ordinal::clm()` | thresholds render as a labelled block; AME per category; `clm()` also fits partial proportional odds |
+| Unordered categories | 3+ nominal outcomes | `nnet::multinom()`; `mlogit::mlogit()` for alternative-specific predictors | outcome categories render as column groups |
+| Count | mean roughly equal to variance | `glm(family = poisson())` | IRR via `exponentiate`; rates via an `offset()` |
+| Count | variance well above the mean | `MASS::glm.nb()` | models the overdispersion; `quasipoisson` merely widens the SEs |
+| Count | more zeros than the count part explains | `pscl::zeroinfl()` / `pscl::hurdle()` | both components render as labelled blocks |
+| Proportion in (0, 1) | rates, indices, shares | `betareg::betareg()` | |
+| Time-to-event | independent observations | `survival::coxph()` | HR -- and adjusted RMST / risk-difference columns beyond it |
+| Time-to-event | a parametric survival-time model | `survival::survreg()` | time ratios (TR) via `exponentiate` |
+| Any of the above | clustered or repeated measures | `lme4::lmer()` / `glmer()` **or** `geepack::geeglm()` | *the distinction below matters* |
+| Any of the above | many absorbed fixed effects (panel) | `fixest::feols()` / `feglm()` | the absorbed factors render as a Yes/No block |
+| Any of the above | a complex survey design | `survey::svyglm()` | design-based SEs are the inference |
+| Any of the above | smooth non-linear terms | `mgcv::gam()` / `bam()` | |
+| Any of the above | a Bayesian analysis | `rstanarm::stan_glm()` / `brms::brm()` | posterior medians, MAD SD, credible intervals -- no p-values |
+| Any of the above | an endogenous predictor, an instrument | `AER::ivreg()` / `estimatr::iv_robust()` | |
+
+Three distinctions the table cannot compress:
+
+**Clustered data: marginal or conditional?** For repeated or
+clustered measurements, `glmer()` and `geeglm()` answer *different
+questions*. A mixed model is *subject-specific*: its odds ratio
+compares outcomes within the same cluster. GEE is
+*population-averaged*: its odds ratio compares whole subpopulations
+-- usually the public-health question. For non-linear links the two
+coefficients genuinely differ, so the choice is about your estimand,
+not about taste. spicy renders both with their own correct inference
+(boundary-corrected random-effect tests for the former, the native
+sandwich SEs and working correlation for the latter).
+
+**Binary outcomes: OR, RR, or a probability effect?** The odds ratio
+is the default because the logit is; it is also routinely
+misread as a risk ratio. When the RR is the estimand, fit the log
+link (`binomial("log")`) and spicy labels the exponentiated
+coefficient RR -- knowing that log-binomial models can fail to
+converge on common data, which is a property of the model, not of
+the table. When what you need is "how many percentage points does
+this predictor change the probability", add
+`show_columns = c("b", "ame")` -- the average marginal effect is the
+quantity most readers actually want, it sidesteps both ratio
+debates, and for ordinal and multinomial models spicy gives it per
+outcome category.
+
+**Survival: beyond the hazard ratio.** The HR is conditional and
+non-collapsible, and when proportional hazards fail it loses its
+meaning. spicy's `rmst` and `risk_diff` columns give
+covariate-adjusted differences in restricted mean survival time and
+in cumulative incidence by g-computation -- absolute, time-anchored
+quantities a reader can act on -- for Cox and parametric AFT fits
+alike, in single tables and in the univariable screen.
+
+And when you fit something the guide does not cover: if the class is
+supported, the registry below renders it; if it is not, spicy
+refuses with a classed error that names the nearest supported route
+(see *When a class is not supported*) -- it never renders an
+approximation of a model it does not understand.
+
 ## The registry
 
 The table is generated from the same internal registry that the
