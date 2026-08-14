@@ -1610,6 +1610,24 @@ table_continuous_lm <- function(
   )
 
   if (identical(output, "default")) {
+    # Typed view for `as_structured()`: `wide_raw` and `wide_df` are
+    # the raw and displayed frames already built above, so the typed
+    # body and the printed body come from one computation each.
+    attr(result, "structured") <- .build_continuous_lm_structured(
+      result = result,
+      wide_raw = wide_raw,
+      wide_display = wide_df,
+      digits = digits,
+      fit_digits = fit_digits,
+      effect_size_digits = effect_size_digits,
+      p_digits = p_digits,
+      decimal_mark = decimal_mark,
+      ci_level = ci_level,
+      show_statistic = statistic,
+      effect_size = effect_size,
+      effect_size_ci = effect_size_ci,
+      r2_type = r2
+    )
     class(result) <- c(
       "spicy_continuous_lm_table",
       "spicy_table",

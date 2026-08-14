@@ -1058,6 +1058,11 @@ table_continuous <- function(
     numeric_cols
   )
   n_test_groups <- NA_integer_
+  # Display label of the missing-`by` group when one is shown (NA
+  # otherwise). Recorded here so the typed view can flag that row by
+  # its KEY: the label itself is a display string, auto-renamed on
+  # collision with a real group value.
+  missing_group_label <- NA_character_
 
   if (has_group) {
     # `by` follows the same `user_na` contract as the summarized
@@ -1110,6 +1115,7 @@ table_continuous <- function(
       group_levels <- c(as.character(group_levels), missing_label)
       groups <- as.character(groups)
       groups[is.na(groups)] <- missing_label
+      missing_group_label <- missing_label
     }
     n_groups <- length(group_levels)
     rows <- list()
@@ -1408,6 +1414,37 @@ table_continuous <- function(
   # --- return ---
   # Disclosure note: print() renders it under the table.
   attr(result, "missing_note") <- missing_note
+  # Typed view for `as_structured()`: the numbers come from `result`
+  # (the compute frame), the composite cells from the very display
+  # frame print() renders, so the two can never word a cell
+  # differently.
+  attr(result, "structured") <- .build_continuous_structured(
+    result = result,
+    display_df = build_display_df(
+      result,
+      digits = digits,
+      effect_size_digits = effect_size_digits,
+      p_digits = p_digits,
+      decimal_mark = decimal_mark,
+      ci_level = ci_level,
+      show_ci = ci,
+      show_n = show_n,
+      show_p = attr(result, "show_p"),
+      show_statistic = attr(result, "show_statistic"),
+      show_effect_size = attr(result, "show_effect_size"),
+      show_effect_size_ci = attr(result, "show_effect_size_ci"),
+      tokens_union = tokens_union,
+      tokens_by_var = tokens_by_var
+    ),
+    tokens_union = tokens_union,
+    tokens_by_var = tokens_by_var,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level,
+    missing_group_label = missing_group_label
+  )
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
   print(result)
   invisible(result)
@@ -2953,7 +2990,11 @@ export_desc_table <- function(
 
     # Same title the console prints, from the same helper, then the
     # two header rows two lines below.
-    wb <- openxlsx2::wb_add_data(wb, x = .continuous_title(title_by), start_row = 1)
+    wb <- openxlsx2::wb_add_data(
+      wb,
+      x = .continuous_title(title_by),
+      start_row = 1
+    )
     top_header_row <- 3L
     bot_header_row <- top_header_row + 1L
     first_body_row <- bot_header_row + 1L

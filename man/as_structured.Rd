@@ -2,27 +2,29 @@
 % Please edit documentation in R/regression_dispatch.R
 \name{as_structured}
 \alias{as_structured}
-\title{Extract the typed (structured) view of a \code{spicy_regression_table}}
+\title{Extract the typed (structured) view of a spicy table}
 \usage{
 as_structured(x)
 }
 \arguments{
-\item{x}{A \code{spicy_regression_table} object returned by
-\code{\link[=table_regression]{table_regression()}}.}
+\item{x}{A spicy table built with \code{output = "default"}:
+\code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous]{table_continuous()}} or \code{\link[=table_continuous_lm]{table_continuous_lm()}}. All four return
+the same schema.}
 }
 \value{
 A list with the structured view (see Details for the
 schema).
 }
 \description{
-\code{table_regression()} returns a \emph{display} representation by default
--- a character \code{data.frame} with stars suffixes, en-dash for
-reference rows, bracketed \code{"[L, U]"} confidence intervals, and APA
-padding on p-values. This accessor returns the \emph{typed} view that
-the output engines (Excel, gt, tinytable, flextable, clipboard)
-consume internally: a fully numeric body with CI pre-split into
-\code{LL} / \code{UL} columns, NAs for non-applicable / reference cells, plus
-per-cell markers and a format specification.
+spicy's tables return a \emph{display} representation by default -- a
+character \code{data.frame} with stars suffixes, en-dash for reference
+rows, bracketed \code{"[L, U]"} confidence intervals, and APA padding on
+p-values. This accessor returns the \emph{typed} view that the output
+engines (Excel, gt, tinytable, flextable, clipboard) consume
+internally: a fully numeric body with CI pre-split into \code{LL} / \code{UL}
+columns, NAs for non-applicable / reference cells, plus per-cell
+markers and a format specification.
 }
 \details{
 This is the right entry point for users who want to:
@@ -56,9 +58,15 @@ the fit-statistic token (\code{"nobs"}, \code{"r2"}, \code{"fixed_effects"},
 \item \code{body$.level} -- the factor level (or the absorbed factor of a
 fixed-effects block, or the grouping factor of an \code{"N (...)"}
 row); \code{NA} outside a factor.
-\item \code{body$.row_role} -- one of \code{"coef"}, \code{"factor_header"},
-\code{"level"}, \code{"reference"}, \code{"fit_stat"}, \code{"outcome"}, \code{"vc"}
-(variance component).
+\item \code{body$.row_role} -- what the row \emph{is}: \code{"coef"},
+\code{"factor_header"}, \code{"level"}, \code{"reference"}, \code{"fit_stat"},
+\code{"outcome"}, \code{"vc"} (variance component) in a regression table,
+plus \code{"summary"} (a row summarising one variable), \code{"group"} (a
+row keyed by one level of \code{by}) and \code{"missing"} (a row keyed by
+the \emph{missing} value) in the descriptive ones. The role is the
+key a consumer matches on: \code{"(Missing)"} is a display label --
+auto-renamed on collision, translatable -- and the role survives
+both.
 \item \code{body$.indent} -- display indent depth of the label (\code{0} or \code{1}).
 Renderers indent \code{.indent > 0} rows; the label text itself is
 already indented in the character body only.
@@ -86,13 +94,50 @@ renderer must prefer it over the numeric value.
 with \code{thresholds} (symbol to p cutoff) and \code{markers} (per-cell
 marker strings, keyed by column name, \code{""} where a cell takes
 none).
-\item \code{spanners} -- named list mapping model labels to their column
-indices in \code{body} (multi-model only).
+\item \code{spanners} -- named list mapping a grouping label to its column
+indices in \code{body}: the model labels of a multi-model regression
+table, the \code{by} levels of a categorical one (each spanning its
+\code{n} / \verb{\%} pair).
 \item \code{ci_pairs} -- list of \verb{(label, cols)} entries describing each
 CI pair in \code{body}.
 \item \code{format_spec} -- global format defaults (decimal mark, digits,
 p-style, CI level, etc.).
 }
+}
+
+\section{Descriptive tables}{
+
+The three descriptive families return the same schema; only the
+\code{col_meta} tokens and the row roles they emit differ.
+\itemize{
+\item \code{\link[=table_categorical]{table_categorical()}} -- one \code{"factor_header"} row per variable
+then one \code{"level"} (or \code{"missing"}) row per category, exactly as
+the console lays them out. Tokens: \code{"n"}, \code{"pct"}, \code{"p"},
+\code{"assoc"} (the association measure) and \code{"assoc_ci"} (its
+bounds). In a \code{by} table each group owns an \code{n} / \verb{\%} pair with
+its own spanner, and the margin column is flagged
+\verb{col_meta$<col>$total}, never matched on the label \code{"Total"}.
+\item \code{\link[=table_continuous]{table_continuous()}} -- one \code{"summary"} row per variable, or one
+\code{"group"} row per level of \code{by} (\code{"missing"} for the missing-\code{by}
+group), with the level in \code{.level}. Tokens are the
+\code{show_columns} vocabulary itself (\code{"m"}, \code{"sd"}, \code{"med"},
+\code{"iqr"}, \code{"med_iqr"}, \code{"q1"}, \code{"q3"}, \code{"min"}, \code{"max"}, \code{"ci"},
+\code{"med_ci"}, \code{"n"}) plus \code{"statistic"}, \code{"p"} and \code{"es"} for the
+group comparison. A statistic another variable displays is
+\emph{absent} (\code{NA}, no status); one that applies but has no value is
+\code{"undefined"}.
+\item \code{\link[=table_continuous_lm]{table_continuous_lm()}} -- one \code{"summary"} row per outcome.
+Tokens: \code{"emmean"} (a marginal mean; the column says which level
+in \verb{col_meta$<col>$level}), \code{"delta"} (the contrast), \code{"b"} (a
+numeric predictor's slope), \code{"ci"}, \code{"statistic"}, \code{"p"},
+\code{"r2"}, \code{"es"}, \code{"n"}, \code{"weighted_n"}.
+}
+
+Cells the console builds from more than one number -- a
+\code{"Med [Q1, Q3]"}, a test gloss, an effect size with its interval --
+keep their numeric anchor in \code{body} and their exact printed string
+in \verb{col_meta$<col>$display_cells}. \code{stars} is always \code{NULL}:
+descriptive tables carry no significance markers.
 }
 
 \section{Versioning}{
@@ -113,9 +158,14 @@ no per-level reference at all.
 Index vectors are the structure that corrupts as soon as two bodies
 are stacked or merged, so they were removed rather than kept
 alongside. An object carrying an older contract (or none) is
-refused with the correspondence above; rebuild it with
-\code{\link[=table_regression]{table_regression()}}. An object carrying a \emph{newer} contract than
-the spicy reading it is refused as well.
+refused with the correspondence above; rebuild it with the function
+that produced it. An object carrying a \emph{newer} contract than the
+spicy reading it is refused as well.
+
+Version \code{3} also opened the accessor to the descriptive families,
+which had no typed view before: \code{.row_role} gained \code{"summary"},
+\code{"group"} and \code{"missing"}. The vocabulary is extended by addition
+-- an existing role never changes meaning.
 }
 
 \examples{
@@ -129,7 +179,15 @@ s$body$.row_role                     # what each row is
 s$body[s$body$.variable == "wt", ]   # address a row by its variable
 s$col_meta$B                         # column metadata for B
 
+# The same schema on a descriptive table.
+ct <- table_categorical(mtcars, c(cyl, gear), by = am)
+sc <- as_structured(ct)
+sc$body[, c("Variable", ".variable", ".level", ".row_role")]
+sc$spanners                          # one per `by` group
+
 }
 \seealso{
-\code{\link[=table_regression]{table_regression()}} for the user-facing entry point.
+\code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}} for the
+user-facing entry points.
 }

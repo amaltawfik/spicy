@@ -148,6 +148,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* `as_structured()` now reads the descriptive tables --
+  `table_categorical()`, `table_continuous()` and
+  `table_continuous_lm()` -- and returns the schema it returns for
+  `table_regression()`: a numeric body carrying the identity of every
+  row in `.variable` / `.level` / `.row_role` / `.indent`. New roles
+  `"summary"`, `"group"` and `"missing"` name the descriptive rows.
 * Table notes rendered by the `"tinytable"` engine are set one size down
   (`0.9em`, black), like the notes of the other engines. New
   `options(spicy.note_style)`: `"none"` leaves the note to the document

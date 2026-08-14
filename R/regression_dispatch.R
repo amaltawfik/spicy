@@ -2729,16 +2729,16 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 
 # ---- as_structured() accessor --------------------------------------------
 
-#' Extract the typed (structured) view of a `spicy_regression_table`
+#' Extract the typed (structured) view of a spicy table
 #'
-#' `table_regression()` returns a *display* representation by default
-#' -- a character `data.frame` with stars suffixes, en-dash for
-#' reference rows, bracketed `"[L, U]"` confidence intervals, and APA
-#' padding on p-values. This accessor returns the *typed* view that
-#' the output engines (Excel, gt, tinytable, flextable, clipboard)
-#' consume internally: a fully numeric body with CI pre-split into
-#' `LL` / `UL` columns, NAs for non-applicable / reference cells, plus
-#' per-cell markers and a format specification.
+#' spicy's tables return a *display* representation by default -- a
+#' character `data.frame` with stars suffixes, en-dash for reference
+#' rows, bracketed `"[L, U]"` confidence intervals, and APA padding on
+#' p-values. This accessor returns the *typed* view that the output
+#' engines (Excel, gt, tinytable, flextable, clipboard) consume
+#' internally: a fully numeric body with CI pre-split into `LL` / `UL`
+#' columns, NAs for non-applicable / reference cells, plus per-cell
+#' markers and a format specification.
 #'
 #' This is the right entry point for users who want to:
 #'
@@ -2752,8 +2752,10 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' * **Build a custom downstream renderer** that consumes the same
 #'   structured contract as spicy's built-in engines.
 #'
-#' @param x A `spicy_regression_table` object returned by
-#'   [table_regression()].
+#' @param x A spicy table built with `output = "default"`:
+#'   [table_regression()], [table_categorical()],
+#'   [table_continuous()] or [table_continuous_lm()]. All four return
+#'   the same schema.
 #'
 #' @return A list with the structured view (see Details for the
 #'   schema).
@@ -2774,9 +2776,15 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' * `body$.level` -- the factor level (or the absorbed factor of a
 #'   fixed-effects block, or the grouping factor of an `"N (...)"`
 #'   row); `NA` outside a factor.
-#' * `body$.row_role` -- one of `"coef"`, `"factor_header"`,
-#'   `"level"`, `"reference"`, `"fit_stat"`, `"outcome"`, `"vc"`
-#'   (variance component).
+#' * `body$.row_role` -- what the row *is*: `"coef"`,
+#'   `"factor_header"`, `"level"`, `"reference"`, `"fit_stat"`,
+#'   `"outcome"`, `"vc"` (variance component) in a regression table,
+#'   plus `"summary"` (a row summarising one variable), `"group"` (a
+#'   row keyed by one level of `by`) and `"missing"` (a row keyed by
+#'   the *missing* value) in the descriptive ones. The role is the
+#'   key a consumer matches on: `"(Missing)"` is a display label --
+#'   auto-renamed on collision, translatable -- and the role survives
+#'   both.
 #' * `body$.indent` -- display indent depth of the label (`0` or `1`).
 #'   Renderers indent `.indent > 0` rows; the label text itself is
 #'   already indented in the character body only.
@@ -2804,12 +2812,46 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   with `thresholds` (symbol to p cutoff) and `markers` (per-cell
 #'   marker strings, keyed by column name, `""` where a cell takes
 #'   none).
-#' * `spanners` -- named list mapping model labels to their column
-#'   indices in `body` (multi-model only).
+#' * `spanners` -- named list mapping a grouping label to its column
+#'   indices in `body`: the model labels of a multi-model regression
+#'   table, the `by` levels of a categorical one (each spanning its
+#'   `n` / `%` pair).
 #' * `ci_pairs` -- list of `(label, cols)` entries describing each
 #'   CI pair in `body`.
 #' * `format_spec` -- global format defaults (decimal mark, digits,
 #'   p-style, CI level, etc.).
+#'
+#' @section Descriptive tables:
+#' The three descriptive families return the same schema; only the
+#' `col_meta` tokens and the row roles they emit differ.
+#'
+#' * [table_categorical()] -- one `"factor_header"` row per variable
+#'   then one `"level"` (or `"missing"`) row per category, exactly as
+#'   the console lays them out. Tokens: `"n"`, `"pct"`, `"p"`,
+#'   `"assoc"` (the association measure) and `"assoc_ci"` (its
+#'   bounds). In a `by` table each group owns an `n` / `%` pair with
+#'   its own spanner, and the margin column is flagged
+#'   `col_meta$<col>$total`, never matched on the label `"Total"`.
+#' * [table_continuous()] -- one `"summary"` row per variable, or one
+#'   `"group"` row per level of `by` (`"missing"` for the missing-`by`
+#'   group), with the level in `.level`. Tokens are the
+#'   `show_columns` vocabulary itself (`"m"`, `"sd"`, `"med"`,
+#'   `"iqr"`, `"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`,
+#'   `"med_ci"`, `"n"`) plus `"statistic"`, `"p"` and `"es"` for the
+#'   group comparison. A statistic another variable displays is
+#'   *absent* (`NA`, no status); one that applies but has no value is
+#'   `"undefined"`.
+#' * [table_continuous_lm()] -- one `"summary"` row per outcome.
+#'   Tokens: `"emmean"` (a marginal mean; the column says which level
+#'   in `col_meta$<col>$level`), `"delta"` (the contrast), `"b"` (a
+#'   numeric predictor's slope), `"ci"`, `"statistic"`, `"p"`,
+#'   `"r2"`, `"es"`, `"n"`, `"weighted_n"`.
+#'
+#' Cells the console builds from more than one number -- a
+#' `"Med [Q1, Q3]"`, a test gloss, an effect size with its interval --
+#' keep their numeric anchor in `body` and their exact printed string
+#' in `col_meta$<col>$display_cells`. `stars` is always `NULL`:
+#' descriptive tables carry no significance markers.
 #'
 #' @section Versioning:
 #' `version` says which contract an object carries. Version `3` moved
@@ -2827,11 +2869,18 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' Index vectors are the structure that corrupts as soon as two bodies
 #' are stacked or merged, so they were removed rather than kept
 #' alongside. An object carrying an older contract (or none) is
-#' refused with the correspondence above; rebuild it with
-#' [table_regression()]. An object carrying a *newer* contract than
-#' the spicy reading it is refused as well.
+#' refused with the correspondence above; rebuild it with the function
+#' that produced it. An object carrying a *newer* contract than the
+#' spicy reading it is refused as well.
 #'
-#' @seealso [table_regression()] for the user-facing entry point.
+#' Version `3` also opened the accessor to the descriptive families,
+#' which had no typed view before: `.row_role` gained `"summary"`,
+#' `"group"` and `"missing"`. The vocabulary is extended by addition
+#' -- an existing role never changes meaning.
+#'
+#' @seealso [table_regression()], [table_categorical()],
+#'   [table_continuous()], [table_continuous_lm()] for the
+#'   user-facing entry points.
 #'
 #' @examples
 #' fit <- lm(mpg ~ wt + factor(cyl), data = mtcars)
@@ -2844,11 +2893,41 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' s$body[s$body$.variable == "wt", ]   # address a row by its variable
 #' s$col_meta$B                         # column metadata for B
 #'
+#' # The same schema on a descriptive table.
+#' ct <- table_categorical(mtcars, c(cyl, gear), by = am)
+#' sc <- as_structured(ct)
+#' sc$body[, c("Variable", ".variable", ".level", ".row_role")]
+#' sc$spanners                          # one per `by` group
+#'
 #' @export
 as_structured <- function(x) {
-  if (!inherits(x, "spicy_regression_table")) {
+  # The four table families that carry a structured view, mapped to
+  # the function that builds one -- named in the error so a user who
+  # passed the wrong object is told what to call.
+  builders <- c(
+    spicy_regression_table = "table_regression()",
+    spicy_categorical_table = "table_categorical()",
+    spicy_continuous_table = "table_continuous()",
+    spicy_continuous_lm_table = "table_continuous_lm()"
+  )
+  # spicy release that gave each family its structured view -- a table
+  # pickled by an older one carries no attribute at all.
+  since <- c(
+    spicy_regression_table = "0.12.0",
+    spicy_categorical_table = "0.13.0",
+    spicy_continuous_table = "0.13.0",
+    spicy_continuous_lm_table = "0.13.0"
+  )
+  family <- names(builders)[names(builders) %in% class(x)]
+  if (length(family) == 0L) {
     spicy_abort(
-      "`as_structured()` expects a `spicy_regression_table` object.",
+      c(
+        "`as_structured()` expects a spicy table object.",
+        "i" = sprintf(
+          "Supported: %s.",
+          paste(paste0("`", names(builders), "`"), collapse = ", ")
+        )
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -2857,7 +2936,11 @@ as_structured <- function(x) {
     spicy_abort(
       c(
         "`x` has no structured view attached.",
-        "i" = "Was it built by `table_regression()` (>= 0.12.0)?"
+        "i" = sprintf(
+          "Was it built by `%s` (>= %s)?",
+          builders[[family[[1L]]]],
+          since[[family[[1L]]]]
+        )
       ),
       class = "spicy_invalid_input"
     )
@@ -2900,7 +2983,10 @@ as_structured <- function(x) {
           "`factor_header_rows` / `fit_stat_rows` / `outcome_row` by",
           "`body$.row_role`, `level_rows` by `body$.indent`."
         ),
-        "i" = "Rebuild the table with `table_regression()`."
+        "i" = sprintf(
+          "Rebuild the table with `%s`.",
+          builders[[family[[1L]]]]
+        )
       ),
       class = "spicy_structured_version"
     )

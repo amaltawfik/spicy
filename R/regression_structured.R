@@ -12,6 +12,12 @@
 # (primary return) is unchanged for backward compatibility with
 # print() / clipboard / current test snapshots.
 #
+# The DESCRIPTIVE families (table_categorical / table_continuous /
+# table_continuous_lm) attach the same view under the same attribute,
+# built by R/tables_structured.R. The schema below is normative for
+# them too; only the `token` vocabulary and the set of row roles a
+# family emits differ.
+#
 # Schema:
 #
 #   structured = list(
@@ -29,7 +35,12 @@
 #                                   #                "level" |
 #                                   #                "reference" |
 #                                   #                "fit_stat" |
-#                                   #                "outcome" | "vc"
+#                                   #                "outcome" | "vc" |
+#                                   #                "summary" | "group" |
+#                                   #                "missing"
+#                                   #                (the last three are
+#                                   #                emitted by the
+#                                   #                descriptive families)
 #                                   #  .indent   int display indent (0/1)
 #                                   #
 #                                   # The identity of a row is DATA, filled
@@ -81,6 +92,20 @@
 #         ci_label = NULL | chr,    # e.g., "95% CI" for spanner
 #         fit_stat = NULL | chr,    # for fit-stat cols, the token
 #                                   # ("nobs", "r2", etc.)
+#         value_range = NULL | num(2), # bounds a `p_style = "apa"`
+#                                   # column is validated against;
+#                                   # default c(0, 1). Signed
+#                                   # association measures declare
+#                                   # c(-1, 1).
+#         level = NULL | chr,       # descriptive: the `by` level a
+#                                   # per-level column reports.
+#         group = NULL | chr,       # descriptive: the `by` group a
+#                                   # per-group column belongs to.
+#         total = NULL | TRUE,      # descriptive: the column belongs
+#                                   # to the MARGIN group. A flag, not
+#                                   # a label match: "Total" is a
+#                                   # display string and is auto-
+#                                   # renamed on collision.
 #         display_cells = NULL | chr  # per-cell display override, len
 #                                   # nrow(body), NA where the numeric
 #                                   # value formats normally. Carries
@@ -148,7 +173,19 @@
 # index (spanners, ci_pairs, engine loops) keeps its meaning.
 .STRUCT_META_COLS <- c(".variable", ".level", ".row_role", ".indent")
 
-# The row roles a v3 body may carry.
+# The row roles a v3 body may carry. Regression roles first, then the
+# three the descriptive families add (R/tables_structured.R). The
+# vocabulary is EXTENDED, never re-worded: a role says what a row IS,
+# so it is the key a consumer matches on -- never the displayed label,
+# which is a display string ("(Missing)", auto-renamed on collision,
+# translatable) and can change without the row changing.
+#   summary  a row that summarises one variable with no sub-key (a
+#            continuous variable, a modelled outcome).
+#   group    a row keyed by one level of the `by` variable.
+#   missing  a row keyed by the MISSING value -- the "(Missing)"
+#            category of a categorical table, the missing-`by` group
+#            of a continuous one. Takes precedence over `level` /
+#            `group`: what the row is, is the missing key.
 .STRUCT_ROW_ROLES <- c(
   "coef",
   "factor_header",
@@ -156,7 +193,10 @@
   "reference",
   "fit_stat",
   "outcome",
-  "vc"
+  "vc",
+  "summary",
+  "group",
+  "missing"
 )
 
 # Value (displayable) columns of a structured body: everything but the
@@ -842,7 +882,13 @@ build_structured_body <- function(
     }
   }
 
-  # p-value range. Skip fit-stat cells: when the user reorders or
+  # Bounded-value range. `p_style = "apa"` marks the columns that drop
+  # the leading zero, which are exactly the bounded ones: p-values and
+  # posterior probabilities in [0, 1], and (descriptive tables) the
+  # association measures, signed in [-1, 1] for the ordinal family.
+  # A column may therefore declare its own `value_range`; the default
+  # is the [0, 1] of a probability.
+  # Skip fit-stat cells: when the user reorders or
   # restricts `show_columns` (e.g. asks for just `c("p")`), the
   # fit-stat values (n / R² / AIC ...) are written to the FIRST
   # numeric column of the per-model block, which may happen to be
@@ -866,15 +912,27 @@ build_structured_body <- function(
         )
         coef_idx <- setdiff(seq_along(vals), c(fit_rows, ov_rows))
         coef_vals <- vals[coef_idx]
-        bad <- !is.na(coef_vals) & (coef_vals < 0 | coef_vals > 1)
+        declared <- meta$value_range
+        rng <- declared %||% c(0, 1)
+        bad <- !is.na(coef_vals) & (coef_vals < rng[1L] | coef_vals > rng[2L])
         if (any(bad)) {
           problems <- c(
             problems,
-            sprintf(
-              "Column %s: %d p-value(s) outside [0, 1].",
-              col_name,
-              sum(bad)
-            )
+            if (is.null(declared)) {
+              sprintf(
+                "Column %s: %d p-value(s) outside [0, 1].",
+                col_name,
+                sum(bad)
+              )
+            } else {
+              sprintf(
+                "Column %s: %d value(s) outside [%s, %s].",
+                col_name,
+                sum(bad),
+                format(rng[1L]),
+                format(rng[2L])
+              )
+            }
           )
         }
       }

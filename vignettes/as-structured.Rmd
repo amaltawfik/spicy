@@ -1,19 +1,19 @@
 ---
-title: "The structured view: programmatic access to regression tables"
+title: "The structured view: programmatic access to spicy tables"
 description: >
   `as_structured()` exposes the typed representation behind every
-  `table_regression()` output: a numeric body with split CI columns,
-  per-row identity columns, per-column metadata, and the format
-  specification -- the same contract spicy's own Excel, gt,
-  tinytable, flextable, and clipboard engines consume. Filter
-  coefficients programmatically, aggregate raw values, or build a
-  custom renderer.
+  `table_regression()`, `table_categorical()`, `table_continuous()`,
+  and `table_continuous_lm()` output: a numeric body with per-row
+  identity columns, per-column metadata, per-cell status, and the
+  format specification. Filter rows programmatically, aggregate raw
+  values, or build a custom renderer -- against one schema for all
+  four families.
 output:
   rmarkdown::html_vignette:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{The structured view: programmatic access to regression tables}
+  %\VignetteIndexEntry{The structured view: programmatic access to spicy tables}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -38,9 +38,13 @@ compute on. The companion accessor `as_structured()` returns the
 *typed* view underneath: a fully numeric body, confidence intervals
 pre-split into their own columns, `NA` where a cell is structurally
 empty, plus the metadata a renderer needs to reconstruct the
-display. It is the same contract spicy's own output engines (Excel,
-gt, tinytable, flextable, clipboard) consume internally -- nothing
-about it is second-class.
+display. For regression tables it is the very contract spicy's own
+output engines (Excel, gt, tinytable, flextable, clipboard) consume
+internally -- nothing about it is second-class -- and the
+descriptive families (`table_categorical()`, `table_continuous()`,
+`table_continuous_lm()`) expose the same schema, covered at the end
+of this vignette. The tour below uses a regression table; everything
+it shows reads identically on the other three.
 
 Two sibling tools serve different needs, and choosing well saves
 work. `broom::tidy()` returns the *statistical* long form -- one row
@@ -271,6 +275,63 @@ and each absorbed factor a `"level"` row with `.indent` 1, named as
 the model names it. Treat that block exactly like a factor group in
 the coefficients and it renders the way it prints.
 
+## The descriptive tables
+
+Everything above extends beyond regression. The same accessor reads
+`table_categorical()`, `table_continuous()` and
+`table_continuous_lm()`, and returns the same schema -- the same
+identity columns, the same `cell_status`, the same `display_cells`
+mechanism for composite cells. A consumer written for one family
+reads the other three. `table_categorical()` lays out one factor
+header row per variable and one row per category:
+
+```{r desc-categorical}
+ct <- table_categorical(sochealth, c(sex, smoking), by = education)
+sc <- as_structured(ct)
+sc$body[, c("Variable", ".variable", ".level", ".row_role")]
+sc$spanners
+```
+
+Row identity is data here too: the `"(Missing)"` row carries
+`.row_role == "missing"` rather than a label a consumer would have to
+match, and the margin column is flagged in `col_meta` rather than
+found by the string `"Total"`.
+
+```{r desc-categorical-keys}
+sc$body[sc$body$.row_role == "missing", c("Variable", ".variable", ".level")]
+sc$col_meta[["Total n"]]$total
+```
+
+`table_continuous()` puts one row per variable, or one row per level
+of `by` — the level lives in `.level`, with role `"group"`. The
+`col_meta` tokens are the `show_columns` vocabulary itself:
+
+```{r desc-continuous}
+cn <- table_continuous(sochealth, c(age, bmi), by = sex, effect_size = "auto")
+scn <- as_structured(cn)
+scn$body[, c("Variable", ".variable", ".level", ".row_role", "M", "SD")]
+vapply(scn$col_meta, `[[`, character(1), "token")
+```
+
+Cells the console builds from more than one number keep their numeric
+anchor in `body` and their printed string in `display_cells` — the
+effect size and its interval, a compact `Med [Q1, Q3]`, a test gloss:
+
+```{r desc-composite}
+scn$col_meta$ES$display_cells
+```
+
+`table_continuous_lm()` reports one row per outcome, with the levels
+of `by` as columns; each marginal-mean column says which level it
+carries, so nothing has to parse `M (Male)`:
+
+```{r desc-lm}
+lm_tbl <- table_continuous_lm(sochealth, c(age, bmi), by = sex)
+slm <- as_structured(lm_tbl)
+slm$body[, c("Variable", ".variable", ".row_role")]
+slm$col_meta[["M (Male)"]]
+```
+
 ## Building your own renderer
 
 The structured view carries everything a renderer needs. A compact
@@ -325,10 +386,13 @@ self-documenting footer verbatim.
 
 Three properties make the structured view safe to build on:
 
-* **Engine parity.** The built-in engines consume this exact
-  structure: what you read in `body` is, cell for cell, what the
-  Excel workbook contains and what the gt table displays at its
-  precision. This parity is pinned by tests.
+* **Engine parity.** For regression tables, the built-in engines
+  consume this exact structure: what you read in `body` is, cell for
+  cell, what the Excel workbook contains and what the gt table
+  displays at its precision. For the descriptive families the typed
+  view is built from the same computation frames the display is --
+  value fidelity is pinned by tests, and the engines migrate onto
+  the view as the contract settles.
 * **Stability tier.** `as_structured()` sits in the *stabilising*
   tier of the API (see `?spicy`, section *API stability*). The rule
   the contract actually keeps in the `0.y` series is this: nothing

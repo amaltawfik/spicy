@@ -1558,6 +1558,21 @@ table_categorical <- function(
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
       attr(out, "long_data") <- long_raw
+      # Typed view of the SAME rows the console prints, for
+      # `as_structured()`. Built from the compute frame, never parsed
+      # back from `display_df`.
+      attr(out, "structured") <- .build_categorical_structured(
+        long_raw = long_raw,
+        select_names = select_names,
+        labels = labels,
+        levels_keep = levels_keep,
+        missing_label = missing_label,
+        indent_text = indent_text,
+        percent_digits = percent_digits,
+        p_digits = p_digits,
+        v_digits = v_digits,
+        decimal_mark = decimal_mark
+      )
       class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
       print(out)
       return(invisible(out))
@@ -1815,7 +1830,12 @@ table_categorical <- function(
       # table_continuous() flextable parity).
       bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
       for (sr in var_sep_rows) {
-        ft <- flextable::hline(ft, i = sr - 1L, part = "body", border = bd_light)
+        ft <- flextable::hline(
+          ft,
+          i = sr - 1L,
+          part = "body",
+          border = bd_light
+        )
       }
       if (length(id_mod)) {
         ft <- flextable::padding(
@@ -2608,6 +2628,26 @@ table_categorical <- function(
     attr(out, "decimal_mark") <- decimal_mark
     attr(out, "long_data") <- long_raw
     attr(out, "assoc_note") <- assoc_note_text
+    # Typed view of the SAME rows the console prints (see the one-way
+    # branch above). The group columns carry their spanner; the margin
+    # is flagged rather than matched by label.
+    attr(out, "structured") <- .build_categorical_structured(
+      long_raw = long_raw,
+      select_names = select_names,
+      labels = labels,
+      levels_keep = levels_keep,
+      missing_label = missing_label,
+      indent_text = indent_text,
+      percent_digits = percent_digits,
+      p_digits = p_digits,
+      v_digits = v_digits,
+      decimal_mark = decimal_mark,
+      group_levels = group_levels,
+      margin_key = if (include_total) margin_key else NULL,
+      measure_col = measure_col,
+      show_assoc = show_assoc,
+      assoc_ci = assoc_ci
+    )
     if (include_total) {
       # The internal key of the margin group in `long_data` ("Total",
       # or the auto-renamed "Total_<i>" when a `by` level collides).
