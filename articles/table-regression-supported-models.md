@@ -19,6 +19,79 @@ available – never rendered as a silently empty or approximate column.
 This article is the map. Each family below links to a dedicated article
 that walks through its behaviour in depth.
 
+## Choosing a model
+
+Most readers arrive with the opposite question: not “what does spicy
+support?” but “I have this outcome – which model do I fit?”. The table
+below answers it for the situations applied work meets most often. It
+*recommends and explains*; it never chooses for you – model choice
+depends on your design and your estimand, and spicy will render
+whichever defensible model you fit.
+
+| Your outcome | The situation | Reach for | Notes |
+|----|----|----|----|
+| Continuous | roughly symmetric errors, independent observations | [`lm()`](https://rdrr.io/r/stats/lm.html) | the default screen; `beta` for standardized effects |
+| Continuous | positive and right-skewed | `glm(family = Gamma("log"))` | `exponentiate = TRUE` gives mean ratios (MR) |
+| Continuous | censored at a bound (floor/ceiling) | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) |  |
+| Continuous | outlying responses distort the fit | [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) | M-estimation: resistant estimates, not just fixed SEs |
+| Continuous | the median or another quantile is the estimand | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | one model per quantile; effects are quantile-specific |
+| Binary | independent observations | `glm(family = binomial())` | OR via `exponentiate`; add `"ame"` for probability effects |
+| Binary | overdispersed grouped binomial data | `glm(family = quasibinomial())` |  |
+| Ordered categories | a Likert scale, severity grades | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) or [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | thresholds render as a labelled block; AME per category; `clm()` also fits partial proportional odds |
+| Unordered categories | 3+ nominal outcomes | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html); [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) for alternative-specific predictors | outcome categories render as column groups |
+| Count | mean roughly equal to variance | `glm(family = poisson())` | IRR via `exponentiate`; rates via an [`offset()`](https://rdrr.io/r/stats/offset.html) |
+| Count | variance well above the mean | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | models the overdispersion; `quasipoisson` merely widens the SEs |
+| Count | more zeros than the count part explains | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) / [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | both components render as labelled blocks |
+| Proportion in (0, 1) | rates, indices, shares | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) |  |
+| Time-to-event | independent observations | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | HR – and adjusted RMST / risk-difference columns beyond it |
+| Time-to-event | a parametric survival-time model | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | time ratios (TR) via `exponentiate` |
+| Any of the above | clustered or repeated measures | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) / [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) **or** [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | *the distinction below matters* |
+| Any of the above | many absorbed fixed effects (panel) | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html) / `feglm()` | the absorbed factors render as a Yes/No block |
+| Any of the above | a complex survey design | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | design-based SEs are the inference |
+| Any of the above | smooth non-linear terms | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` |  |
+| Any of the above | a Bayesian analysis | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html) / [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | posterior medians, MAD SD, credible intervals – no p-values |
+| Any of the above | an endogenous predictor, an instrument | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) / [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) |  |
+
+Three distinctions the table cannot compress:
+
+**Clustered data: marginal or conditional?** For repeated or clustered
+measurements, [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) and
+[`geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) answer
+*different questions*. A mixed model is *subject-specific*: its odds
+ratio compares outcomes within the same cluster. GEE is
+*population-averaged*: its odds ratio compares whole subpopulations –
+usually the public-health question. For non-linear links the two
+coefficients genuinely differ, so the choice is about your estimand, not
+about taste. spicy renders both with their own correct inference
+(boundary-corrected random-effect tests for the former, the native
+sandwich SEs and working correlation for the latter).
+
+**Binary outcomes: OR, RR, or a probability effect?** The odds ratio is
+the default because the logit is; it is also routinely misread as a risk
+ratio. When the RR is the estimand, fit the log link (`binomial("log")`)
+and spicy labels the exponentiated coefficient RR – knowing that
+log-binomial models can fail to converge on common data, which is a
+property of the model, not of the table. When what you need is “how many
+percentage points does this predictor change the probability”, add
+`show_columns = c("b", "ame")` – the average marginal effect is the
+quantity most readers actually want, it sidesteps both ratio debates,
+and for ordinal and multinomial models spicy gives it per outcome
+category.
+
+**Survival: beyond the hazard ratio.** The HR is conditional and
+non-collapsible, and when proportional hazards fail it loses its
+meaning. spicy’s `rmst` and `risk_diff` columns give covariate-adjusted
+differences in restricted mean survival time and in cumulative incidence
+by g-computation – absolute, time-anchored quantities a reader can act
+on – for Cox and parametric AFT fits alike, in single tables and in the
+univariable screen.
+
+And when you fit something the guide does not cover: if the class is
+supported, the registry below renders it; if it is not, spicy refuses
+with a classed error that names the nearest supported route (see *When a
+class is not supported*) – it never renders an approximation of a model
+it does not understand.
+
 ## The registry
 
 The table is generated from the same internal registry that the package
@@ -95,48 +168,56 @@ How to read the columns:
 The same arguments work across families, each through the family’s
 field-standard backend – or a clear refusal.
 
-**Robust and cluster-robust standard errors** (`vcov`, `cluster`). `lm`
-and `glm` take `HC0`–`HC5` (`sandwich`) and cluster-robust `CR0`–`CR3`
-(`clubSandwich`, bias-reduced with Satterthwaite df), plus `"bootstrap"`
-/ `"jackknife"` resampling estimators. Among the mixed engines, `lmer`
-and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) take `CR*` via
-`clubSandwich`; `glmer`, `glmmTMB` and `gls` are model-based only –
-`clubSandwich` has no working backend for `glmer` or `glmmTMB`, and its
-`gls` backend is not yet wired and validated in spicy. Ordinal models
-take `CR0`–`CR3` but no `HC*`, and the cut-point thresholds are
-reweighted from the same clustered vcov (a `clm` with a scale or nominal
-partial-proportional-odds component is model-based only). `multinom`
-takes `CR*` (one cluster value per observation) and `mlogit` takes `CR*`
-(one per choice situation) – both refuse `HC*`: `multinom` has no
-working-residual form for a multi-equation model, and for `mlogit`,
-[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
-computes a result but silently mis-scales the meat for its per-chooser
-score structure. Quantile regression (`rq`) uses its own estimator
-family – `"classical"` resolves to the robust `nid` sandwich, `iid` /
-`ker` / `rank` are opt-ins, and clustering goes through its native wild
-gradient bootstrap (`vcov = "bootstrap"` + `cluster`; `HC*` / `CR*` are
-refused). Cox models use the Lin-Wei grouped-dfbeta sandwich, and the
-`rms` fits take `CR*` via
-[`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
-`x = TRUE, y = TRUE`); `survreg`, `gam` / `bam` and `betareg` take `CR*`
-via
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
-`pscl` two-part fits cluster both components. `estimatr` fits keep their
-own robust SEs, and `fixest` fits keep the estimator they were computed
-with (the footer carries fixest’s own label – clustered, Newey-West,
-Conley, …; fixest’s “IID” is normalised to “Classical” – and spicy’s
-`HC*` / `CR*` tokens are refused for them); `svyglm` is design-based
-(Taylor / replicate) and refuses `HC*` / `CR*` – the design variance is
-already the robust variance, and clustering belongs in the design itself
-(`survey::svydesign(ids = )`). GEE fits
-([`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html)) are
-robust by construction: the sandwich SEs the fit computed over its own
-`id =` clusters are the displayed inference, so spicy’s `HC*` / `CR*`
-tokens and `cluster` argument are refused – change the estimator by
-refitting with geeglm’s `std.err =` option. Bayesian fits refuse `vcov`
-– nothing standard plays the sandwich role for a posterior. Whatever the
-backend, the footer names the estimator actually applied, and a robust
-vcov also flows into the AME uncertainty.
+**Robust and cluster-robust standard errors** (`vcov`, `cluster`).
+Family by family:
+
+- **`lm`, `glm`** – `HC0`–`HC5` (`sandwich`) and `CR0`–`CR3`
+  (`clubSandwich`, bias-reduced with Satterthwaite df), plus
+  `"bootstrap"` / `"jackknife"` resampling estimators.
+- **Mixed effects** – `lmer` and
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) take `CR*` via
+  `clubSandwich`; `glmer`, `glmmTMB` and `gls` are model-based only
+  (`clubSandwich` has no working backend for the first two, and its
+  `gls` backend is not yet wired and validated in spicy).
+- **Ordinal (`polr`, `clm`)** – `CR0`–`CR3`, no `HC*`; the cut-point
+  thresholds are reweighted from the same clustered vcov. A `clm` with a
+  scale or nominal partial-proportional-odds component is model-based
+  only.
+- **Categorical** – `multinom` takes `CR*` (one cluster value per
+  observation), `mlogit` takes `CR*` (one per choice situation). Both
+  refuse `HC*`: `multinom` has no working-residual form for a
+  multi-equation model, and for `mlogit`,
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+  computes a result but silently mis-scales the meat for its per-chooser
+  score structure.
+- **Quantile (`rq`)** – its own estimator family: `"classical"` resolves
+  to the robust `nid` sandwich, `iid` / `ker` / `rank` are opt-ins, and
+  clustering goes through the native wild gradient bootstrap
+  (`vcov = "bootstrap"` + `cluster`). `HC*` / `CR*` are refused.
+- **Survival** – Cox models use the Lin-Wei grouped-dfbeta sandwich; the
+  `rms` fits take `CR*` via
+  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
+  `x = TRUE, y = TRUE`); `survreg` takes `CR*` via
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+- **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR*` via
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
+  zero-inflated and hurdle fits cluster both components.
+- **Own-estimator classes** – `estimatr` fits keep the robust SEs they
+  were computed with; `fixest` fits keep their estimator (the footer
+  carries fixest’s own label – clustered, Newey-West, Conley, …;
+  fixest’s “IID” is normalised to “Classical”). spicy’s `HC*` / `CR*`
+  tokens are refused for both.
+- **Robust by construction** – `svyglm` is design-based (Taylor /
+  replicate): the design variance *is* the robust variance, and
+  clustering belongs in the design itself (`survey::svydesign(ids = )`).
+  `geeglm` displays the sandwich SEs the fit computed over its own
+  `id =` clusters; change the estimator by refitting with `std.err =`.
+  Both refuse spicy’s `HC*` / `CR*` tokens and `cluster`.
+- **Bayesian** – `vcov` is refused: nothing standard plays the sandwich
+  role for a posterior.
+
+Whatever the backend, the footer names the estimator actually applied,
+and a robust vcov also flows into the AME uncertainty.
 
 **Standardized coefficients** (`standardized`). Available for `lm`,
 `glm` (including
@@ -150,12 +231,14 @@ refusals (multilevel fits, brms formulas with distributional or special
 terms) hint to standardize predictors before fitting, and the
 frequentist ones point to the AME columns instead.
 
-**Confidence intervals** (`ci_method`). Wald everywhere by default;
-`"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
-`"boot_percentile"` (with `vcov = "bootstrap"`) replaces the bounds with
-equal-tailed percentile intervals of the bootstrap replicates; `"hdi"`
-(highest-density interval) for Bayesian fits, which otherwise report
-equal-tailed credible intervals.
+**Confidence intervals** (`ci_method`).
+
+- Wald everywhere by default;
+- `"profile"` (profile likelihood) for `glm`, `polr` and `clm`;
+- `"boot_percentile"` (with `vcov = "bootstrap"`) replaces the bounds
+  with equal-tailed percentile intervals of the bootstrap replicates;
+- `"hdi"` (highest-density interval) for Bayesian fits, which otherwise
+  report equal-tailed credible intervals.
 
 **Model comparison and multiplicity.** `nested = TRUE` compares nested
 fits by the family’s change-test convention: Delta R-squared with the

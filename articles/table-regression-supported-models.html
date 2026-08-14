@@ -127,6 +127,217 @@ approximate column.</p>
 <p>This article is the map. Each family below links to a dedicated
 article that walks through its behaviour in depth.</p>
 <div class="section level2">
+<h2 id="choosing-a-model">Choosing a model<a class="anchor" aria-label="anchor" href="#choosing-a-model"></a>
+</h2>
+<p>Most readers arrive with the opposite question: not “what does spicy
+support?” but “I have this outcome – which model do I fit?”. The table
+below answers it for the situations applied work meets most often. It
+<em>recommends and explains</em>; it never chooses for you – model
+choice depends on your design and your estimand, and spicy will render
+whichever defensible model you fit.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Your outcome</th>
+<th>The situation</th>
+<th>Reach for</th>
+<th>Notes</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Continuous</td>
+<td>roughly symmetric errors, independent observations</td>
+<td><code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code></td>
+<td>the default screen; <code>beta</code> for standardized effects</td>
+</tr>
+<tr class="even">
+<td>Continuous</td>
+<td>positive and right-skewed</td>
+<td><code>glm(family = Gamma("log"))</code></td>
+<td>
+<code>exponentiate = TRUE</code> gives mean ratios (MR)</td>
+</tr>
+<tr class="odd">
+<td>Continuous</td>
+<td>censored at a bound (floor/ceiling)</td>
+<td><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Continuous</td>
+<td>outlying responses distort the fit</td>
+<td><code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm()</a></code></td>
+<td>M-estimation: resistant estimates, not just fixed SEs</td>
+</tr>
+<tr class="odd">
+<td>Continuous</td>
+<td>the median or another quantile is the estimand</td>
+<td><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code></td>
+<td>one model per quantile; effects are quantile-specific</td>
+</tr>
+<tr class="even">
+<td>Binary</td>
+<td>independent observations</td>
+<td><code>glm(family = binomial())</code></td>
+<td>OR via <code>exponentiate</code>; add <code>"ame"</code> for
+probability effects</td>
+</tr>
+<tr class="odd">
+<td>Binary</td>
+<td>overdispersed grouped binomial data</td>
+<td><code>glm(family = quasibinomial())</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Ordered categories</td>
+<td>a Likert scale, severity grades</td>
+<td>
+<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code> or <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code>
+</td>
+<td>thresholds render as a labelled block; AME per category;
+<code>clm()</code> also fits partial proportional odds</td>
+</tr>
+<tr class="odd">
+<td>Unordered categories</td>
+<td>3+ nominal outcomes</td>
+<td>
+<code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code>; <code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code> for
+alternative-specific predictors</td>
+<td>outcome categories render as column groups</td>
+</tr>
+<tr class="even">
+<td>Count</td>
+<td>mean roughly equal to variance</td>
+<td><code>glm(family = poisson())</code></td>
+<td>IRR via <code>exponentiate</code>; rates via an
+<code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset()</a></code>
+</td>
+</tr>
+<tr class="odd">
+<td>Count</td>
+<td>variance well above the mean</td>
+<td><code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code></td>
+<td>models the overdispersion; <code>quasipoisson</code> merely widens
+the SEs</td>
+</tr>
+<tr class="even">
+<td>Count</td>
+<td>more zeros than the count part explains</td>
+<td>
+<code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code> / <code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code>
+</td>
+<td>both components render as labelled blocks</td>
+</tr>
+<tr class="odd">
+<td>Proportion in (0, 1)</td>
+<td>rates, indices, shares</td>
+<td><code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Time-to-event</td>
+<td>independent observations</td>
+<td><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td>
+<td>HR – and adjusted RMST / risk-difference columns beyond it</td>
+</tr>
+<tr class="odd">
+<td>Time-to-event</td>
+<td>a parametric survival-time model</td>
+<td><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td>
+<td>time ratios (TR) via <code>exponentiate</code>
+</td>
+</tr>
+<tr class="even">
+<td>Any of the above</td>
+<td>clustered or repeated measures</td>
+<td>
+<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code> / <code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">glmer()</a></code> <strong>or</strong>
+<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code>
+</td>
+<td><em>the distinction below matters</em></td>
+</tr>
+<tr class="odd">
+<td>Any of the above</td>
+<td>many absorbed fixed effects (panel)</td>
+<td>
+<code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code> / <code>feglm()</code>
+</td>
+<td>the absorbed factors render as a Yes/No block</td>
+</tr>
+<tr class="even">
+<td>Any of the above</td>
+<td>a complex survey design</td>
+<td><code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code></td>
+<td>design-based SEs are the inference</td>
+</tr>
+<tr class="odd">
+<td>Any of the above</td>
+<td>smooth non-linear terms</td>
+<td>
+<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code>bam()</code>
+</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Any of the above</td>
+<td>a Bayesian analysis</td>
+<td>
+<code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">rstanarm::stan_glm()</a></code> / <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code>
+</td>
+<td>posterior medians, MAD SD, credible intervals – no p-values</td>
+</tr>
+<tr class="odd">
+<td>Any of the above</td>
+<td>an endogenous predictor, an instrument</td>
+<td>
+<code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code> / <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code>
+</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Three distinctions the table cannot compress:</p>
+<p><strong>Clustered data: marginal or conditional?</strong> For
+repeated or clustered measurements, <code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">glmer()</a></code> and
+<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geeglm()</a></code> answer <em>different questions</em>. A mixed model
+is <em>subject-specific</em>: its odds ratio compares outcomes within
+the same cluster. GEE is <em>population-averaged</em>: its odds ratio
+compares whole subpopulations – usually the public-health question. For
+non-linear links the two coefficients genuinely differ, so the choice is
+about your estimand, not about taste. spicy renders both with their own
+correct inference (boundary-corrected random-effect tests for the
+former, the native sandwich SEs and working correlation for the
+latter).</p>
+<p><strong>Binary outcomes: OR, RR, or a probability effect?</strong>
+The odds ratio is the default because the logit is; it is also routinely
+misread as a risk ratio. When the RR is the estimand, fit the log link
+(<code>binomial("log")</code>) and spicy labels the exponentiated
+coefficient RR – knowing that log-binomial models can fail to converge
+on common data, which is a property of the model, not of the table. When
+what you need is “how many percentage points does this predictor change
+the probability”, add <code>show_columns = c("b", "ame")</code> – the
+average marginal effect is the quantity most readers actually want, it
+sidesteps both ratio debates, and for ordinal and multinomial models
+spicy gives it per outcome category.</p>
+<p><strong>Survival: beyond the hazard ratio.</strong> The HR is
+conditional and non-collapsible, and when proportional hazards fail it
+loses its meaning. spicy’s <code>rmst</code> and <code>risk_diff</code>
+columns give covariate-adjusted differences in restricted mean survival
+time and in cumulative incidence by g-computation – absolute,
+time-anchored quantities a reader can act on – for Cox and parametric
+AFT fits alike, in single tables and in the univariable screen.</p>
+<p>And when you fit something the guide does not cover: if the class is
+supported, the registry below renders it; if it is not, spicy refuses
+with a classed error that names the nearest supported route (see
+<em>When a class is not supported</em>) – it never renders an
+approximation of a model it does not understand.</p>
+</div>
+<div class="section level2">
 <h2 id="the-registry">The registry<a class="anchor" aria-label="anchor" href="#the-registry"></a>
 </h2>
 <p>The table is generated from the same internal registry that the
@@ -487,56 +698,76 @@ per-outcome segments), each explained by a footer line.</li>
 <p>The same arguments work across families, each through the family’s
 field-standard backend – or a clear refusal.</p>
 <p><strong>Robust and cluster-robust standard errors</strong>
-(<code>vcov</code>, <code>cluster</code>). <code>lm</code> and
-<code>glm</code> take <code>HC0</code>–<code>HC5</code>
-(<code>sandwich</code>) and cluster-robust
+(<code>vcov</code>, <code>cluster</code>). Family by family:</p>
+<ul>
+<li>
+<strong><code>lm</code>, <code>glm</code></strong> –
+<code>HC0</code>–<code>HC5</code> (<code>sandwich</code>) and
 <code>CR0</code>–<code>CR3</code> (<code>clubSandwich</code>,
 bias-reduced with Satterthwaite df), plus <code>"bootstrap"</code> /
-<code>"jackknife"</code> resampling estimators. Among the mixed engines,
-<code>lmer</code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> take <code>CR*</code> via
+<code>"jackknife"</code> resampling estimators.</li>
+<li>
+<strong>Mixed effects</strong> – <code>lmer</code> and
+<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> take <code>CR*</code> via
 <code>clubSandwich</code>; <code>glmer</code>, <code>glmmTMB</code> and
-<code>gls</code> are model-based only – <code>clubSandwich</code> has no
-working backend for <code>glmer</code> or <code>glmmTMB</code>, and its
-<code>gls</code> backend is not yet wired and validated in spicy.
-Ordinal models take <code>CR0</code>–<code>CR3</code> but no
-<code>HC*</code>, and the cut-point thresholds are reweighted from the
-same clustered vcov (a <code>clm</code> with a scale or nominal
-partial-proportional-odds component is model-based only).
-<code>multinom</code> takes <code>CR*</code> (one cluster value per
-observation) and <code>mlogit</code> takes <code>CR*</code> (one per
-choice situation) – both refuse <code>HC*</code>: <code>multinom</code>
-has no working-residual form for a multi-equation model, and for
+<code>gls</code> are model-based only (<code>clubSandwich</code> has no
+working backend for the first two, and its <code>gls</code> backend is
+not yet wired and validated in spicy).</li>
+<li>
+<strong>Ordinal (<code>polr</code>, <code>clm</code>)</strong> –
+<code>CR0</code>–<code>CR3</code>, no <code>HC*</code>; the cut-point
+thresholds are reweighted from the same clustered vcov. A
+<code>clm</code> with a scale or nominal partial-proportional-odds
+component is model-based only.</li>
+<li>
+<strong>Categorical</strong> – <code>multinom</code> takes
+<code>CR*</code> (one cluster value per observation),
+<code>mlogit</code> takes <code>CR*</code> (one per choice situation).
+Both refuse <code>HC*</code>: <code>multinom</code> has no
+working-residual form for a multi-equation model, and for
 <code>mlogit</code>, <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> computes a result
-but silently mis-scales the meat for its per-chooser score structure.
-Quantile regression (<code>rq</code>) uses its own estimator family –
-<code>"classical"</code> resolves to the robust <code>nid</code>
+but silently mis-scales the meat for its per-chooser score
+structure.</li>
+<li>
+<strong>Quantile (<code>rq</code>)</strong> – its own estimator
+family: <code>"classical"</code> resolves to the robust <code>nid</code>
 sandwich, <code>iid</code> / <code>ker</code> / <code>rank</code> are
-opt-ins, and clustering goes through its native wild gradient bootstrap
-(<code>vcov = "bootstrap"</code> + <code>cluster</code>;
-<code>HC*</code> / <code>CR*</code> are refused). Cox models use the
-Lin-Wei grouped-dfbeta sandwich, and the <code>rms</code> fits take
-<code>CR*</code> via <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (refit with
-<code>x = TRUE, y = TRUE</code>); <code>survreg</code>, <code>gam</code>
-/ <code>bam</code> and <code>betareg</code> take <code>CR*</code> via
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>pscl</code> two-part fits cluster
-both components. <code>estimatr</code> fits keep their own robust SEs,
-and <code>fixest</code> fits keep the estimator they were computed with
-(the footer carries fixest’s own label – clustered, Newey-West, Conley,
-…; fixest’s “IID” is normalised to “Classical” – and spicy’s
-<code>HC*</code> / <code>CR*</code> tokens are refused for them);
-<code>svyglm</code> is design-based (Taylor / replicate) and refuses
-<code>HC*</code> / <code>CR*</code> – the design variance is already the
+opt-ins, and clustering goes through the native wild gradient bootstrap
+(<code>vcov = "bootstrap"</code> + <code>cluster</code>).
+<code>HC*</code> / <code>CR*</code> are refused.</li>
+<li>
+<strong>Survival</strong> – Cox models use the Lin-Wei
+grouped-dfbeta sandwich; the <code>rms</code> fits take <code>CR*</code>
+via <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (refit with
+<code>x = TRUE, y = TRUE</code>); <code>survreg</code> takes
+<code>CR*</code> via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>.</li>
+<li>
+<strong><code>gam</code> / <code>bam</code>, <code>betareg</code>,
+<code>pscl</code> two-part</strong> – <code>CR*</code> via
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; zero-inflated and hurdle fits cluster
+both components.</li>
+<li>
+<strong>Own-estimator classes</strong> – <code>estimatr</code> fits
+keep the robust SEs they were computed with; <code>fixest</code> fits
+keep their estimator (the footer carries fixest’s own label – clustered,
+Newey-West, Conley, …; fixest’s “IID” is normalised to “Classical”).
+spicy’s <code>HC*</code> / <code>CR*</code> tokens are refused for
+both.</li>
+<li>
+<strong>Robust by construction</strong> – <code>svyglm</code> is
+design-based (Taylor / replicate): the design variance <em>is</em> the
 robust variance, and clustering belongs in the design itself
-(<code>survey::svydesign(ids = )</code>). GEE fits
-(<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code>) are robust by construction: the sandwich
-SEs the fit computed over its own <code>id =</code> clusters are the
-displayed inference, so spicy’s <code>HC*</code> / <code>CR*</code>
-tokens and <code>cluster</code> argument are refused – change the
-estimator by refitting with geeglm’s <code>std.err =</code> option.
-Bayesian fits refuse <code>vcov</code> – nothing standard plays the
-sandwich role for a posterior. Whatever the backend, the footer names
-the estimator actually applied, and a robust vcov also flows into the
-AME uncertainty.</p>
+(<code>survey::svydesign(ids = )</code>). <code>geeglm</code> displays
+the sandwich SEs the fit computed over its own <code>id =</code>
+clusters; change the estimator by refitting with <code>std.err =</code>.
+Both refuse spicy’s <code>HC*</code> / <code>CR*</code> tokens and
+<code>cluster</code>.</li>
+<li>
+<strong>Bayesian</strong> – <code>vcov</code> is refused: nothing
+standard plays the sandwich role for a posterior.</li>
+</ul>
+<p>Whatever the backend, the footer names the estimator actually
+applied, and a robust vcov also flows into the AME uncertainty.</p>
 <p><strong>Standardized coefficients</strong>
 (<code>standardized</code>). Available for <code>lm</code>,
 <code>glm</code> (including <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), the mixed
@@ -549,14 +780,20 @@ of the posterior draws. Other classes refuse: the Bayesian refusals
 (multilevel fits, brms formulas with distributional or special terms)
 hint to standardize predictors before fitting, and the frequentist ones
 point to the AME columns instead.</p>
-<p><strong>Confidence intervals</strong> (<code>ci_method</code>). Wald
-everywhere by default; <code>"profile"</code> (profile likelihood) for
-<code>glm</code>, <code>polr</code> and <code>clm</code>;
-<code>"boot_percentile"</code> (with <code>vcov = "bootstrap"</code>)
-replaces the bounds with equal-tailed percentile intervals of the
-bootstrap replicates; <code>"hdi"</code> (highest-density interval) for
-Bayesian fits, which otherwise report equal-tailed credible
-intervals.</p>
+<p><strong>Confidence intervals</strong> (<code>ci_method</code>).</p>
+<ul>
+<li>Wald everywhere by default;</li>
+<li>
+<code>"profile"</code> (profile likelihood) for <code>glm</code>,
+<code>polr</code> and <code>clm</code>;</li>
+<li>
+<code>"boot_percentile"</code> (with
+<code>vcov = "bootstrap"</code>) replaces the bounds with equal-tailed
+percentile intervals of the bootstrap replicates;</li>
+<li>
+<code>"hdi"</code> (highest-density interval) for Bayesian fits,
+which otherwise report equal-tailed credible intervals.</li>
+</ul>
 <p><strong>Model comparison and multiplicity.</strong>
 <code>nested = TRUE</code> compares nested fits by the family’s
 change-test convention: Delta R-squared with the partial F test for
