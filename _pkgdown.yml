@@ -154,6 +154,13 @@ reference:
       - table_regression
       - table_regression_uv
       - as_structured
+  - title: Table styles
+    desc: >
+      Journal and locale number-formatting themes, each encoding only
+      rules sourced from an official document of the institution --
+      `?spicy_style` lists every rule with the sentence it comes from.
+    contents:
+      - spicy_style
   - title: Supported models
     desc: >
       The registry of model classes `table_regression()` supports --
