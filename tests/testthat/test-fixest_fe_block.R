@@ -208,8 +208,11 @@ test_that("structured and rich engines encode the FE cells correctly", {
   expect_true(0 %in% vals) # OrOnly does not
   hdr <- which(b$Variable == "Fixed effects:")
   expect_length(hdr, 1L)
-  expect_true(hdr %in% s$factor_header_rows)
-  expect_true(which(trimws(b$Variable) == "Product") %in% s$level_rows)
+  expect_identical(s$body$.row_role[hdr], "factor_header")
+  expect_identical(s$body$.variable[hdr], "fixed_effects")
+  expect_true(
+    which(trimws(b$Variable) == "Product") %in% spicy:::.struct_indent_rows(s)
+  )
   expect_false(any(grepl("^FE: ", b$Variable)))
   # Console: the lm column stays blank on FE rows, and the block
   # leads the fit stats in the mixed default too.

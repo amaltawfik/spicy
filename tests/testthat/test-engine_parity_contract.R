@@ -127,11 +127,16 @@ test_that("the structured contract carries the composite as a display override",
   expect_identical(meta$display_cells[1L], "846/1200")
   expect_length(meta$display_cells, nrow(s$body))
   # Reference rows: value AND override present (they were NA before).
-  i_ref <- s$reference_rows[1L]
+  i_ref <- which(s$body$.row_role == "reference")[1L]
   expect_identical(s$body[["Events/N"]][i_ref], 437)
   expect_identical(meta$display_cells[i_ref], "437/620")
+  # The count column is exempt from the reference en-dash: no status.
+  expect_identical(spicy:::.struct_cell_status(s, "Events/N")[i_ref], "")
+  expect_identical(s$cell_status[["B"]][i_ref], "reference")
   # Fit-stat rows in the same column format normally (no override).
-  expect_true(all(is.na(meta$display_cells[s$fit_stat_rows])))
+  expect_true(all(
+    is.na(meta$display_cells[s$body$.row_role == "fit_stat"])
+  ))
   # Columns that need no override do not carry one.
   expect_null(s$col_meta[["B"]]$display_cells)
 })
@@ -315,9 +320,13 @@ test_that("the fixed-effects block registers its row roles", {
   hdr <- which(s$body$Variable == "Fixed effects:")
   lvl <- which(trimws(s$body$Variable) == "region")
   expect_length(hdr, 1L)
-  expect_true(hdr %in% s$factor_header_rows)
-  expect_true(hdr %in% s$fit_stat_rows)
-  expect_true(lvl %in% s$level_rows)
+  expect_identical(s$body$.row_role[hdr], "factor_header")
+  expect_identical(s$body$.variable[hdr], "fixed_effects")
+  expect_identical(s$body$.row_role[lvl], "level")
+  expect_identical(s$body$.variable[lvl], "fixed_effects")
+  expect_identical(s$body$.level[lvl], "region")
+  expect_true(lvl %in% spicy:::.struct_indent_rows(s))
+  expect_false(hdr %in% spicy:::.struct_indent_rows(s))
   # Structured and character bodies are row-aligned: the block used to
   # exist only in the character body.
   tbl <- table_regression(f1, show_fit_stats = c("nobs", "fixed_effects"))
@@ -377,12 +386,23 @@ test_that("the HTML display path moves the note out of the table, once", {
 
 test_that("as_structured() reports and guards the contract version", {
   tbl <- table_regression(stats::lm(mpg ~ wt, data = mtcars))
-  expect_identical(as_structured(tbl)$version, 2L)
+  expect_identical(as_structured(tbl)$version, 3L)
+  # A v2 object is REFUSED, not read: v3 moved row identity into the
+  # body, so a v2 view read by this code would report no reference
+  # cells, no fit-stat rows and no indent -- a wrong table.
   old <- tbl
   s_old <- attr(old, "structured")
-  s_old$version <- NULL
+  s_old$version <- 2L
   attr(old, "structured") <- s_old
-  expect_warning(as_structured(old), class = "spicy_structured_version")
+  expect_error(as_structured(old), class = "spicy_structured_version")
+  expect_error(as_structured(old), "cell_status")
+  expect_error(as_structured(old), "table_regression")
+  # Same for a view built before the field existed.
+  older <- tbl
+  s_older <- attr(older, "structured")
+  s_older$version <- NULL
+  attr(older, "structured") <- s_older
+  expect_error(as_structured(older), class = "spicy_structured_version")
   newer <- tbl
   s_new <- attr(newer, "structured")
   s_new$version <- 99L
@@ -393,7 +413,7 @@ test_that("as_structured() reports and guards the contract version", {
   s_bad <- attr(broken, "structured")
   s_bad$version <- "two"
   attr(broken, "structured") <- s_bad
-  expect_warning(as_structured(broken), class = "spicy_structured_version")
+  expect_error(as_structured(broken), class = "spicy_structured_version")
 })
 
 test_that("invariant checks cover the added per-cell components", {
@@ -413,6 +433,253 @@ test_that("invariant checks cover the added per-cell components", {
     spicy:::.validate_structured(s2),
     class = "spicy_internal_invariant"
   )
+  s3 <- as_structured(table_regression(stats::lm(mpg ~ wt, data = mtcars)))
+  s3$cell_status[["B"]] <- "reference" # too short
+  expect_warning(
+    spicy:::.validate_structured(s3),
+    class = "spicy_internal_invariant"
+  )
+  s4 <- as_structured(table_regression(stats::lm(mpg ~ wt, data = mtcars)))
+  s4$body$.row_role[1L] <- "whatever"
+  expect_warning(
+    spicy:::.validate_structured(s4),
+    class = "spicy_internal_invariant"
+  )
+})
+
+
+# ---- row identity: (variable, level, role) come from the data -------------
+
+test_that("the identity columns name every row of a factor table", {
+  fit <- stats::lm(wellbeing_score ~ age + sex + smoking, data = .ep_data())
+  s <- as_structured(table_regression(fit))
+  b <- s$body
+  # One row per display row, in display order, addressable without ever
+  # touching the rendered label.
+  expect_identical(nrow(b), nrow(table_regression(fit)))
+  i <- which(b$Variable == "sex:")
+  expect_identical(b$.row_role[i], "factor_header")
+  expect_identical(b$.variable[i], "sex")
+  expect_true(is.na(b$.level[i]))
+  expect_identical(b$.indent[i], 0L)
+  # Levels: same variable, their own level, indented.
+  lv <- which(b$.variable == "sex" & b$.row_role %in% c("level", "reference"))
+  expect_identical(b$.level[lv], c("Female", "Male"))
+  expect_identical(b$.row_role[lv], c("reference", "level"))
+  expect_true(all(b$.indent[lv] == 1L))
+  # A plain numeric predictor is a bare coefficient.
+  ai <- which(b$.variable == "age")
+  expect_identical(b$.row_role[ai], "coef")
+  expect_true(is.na(b$.level[ai]))
+  # Fit-statistics carry their TOKEN, not their printed label.
+  expect_true(all(c("nobs", "r2", "adj_r2") %in% b$.variable))
+  expect_true(all(b$.row_role[b$.variable %in% c("nobs", "r2")] == "fit_stat"))
+  # The indent set is what the engines indent -- and it no longer comes
+  # from grepping the label for leading whitespace.
+  expect_identical(
+    spicy:::.struct_indent_rows(s),
+    which(grepl("^\\s", b$Variable))
+  )
+})
+
+test_that("the identity columns survive the flat layout and the uv screen", {
+  d <- .ep_data()
+  # Flat layout: same identity, no indent.
+  s_flat <- as_structured(table_regression(
+    stats::lm(wellbeing_score ~ age + sex, data = d),
+    factor_layout = "flat"
+  ))
+  lv <- which(s_flat$body$.variable == "sex")
+  expect_true(all(s_flat$body$.indent[lv] == 0L))
+  expect_true("reference" %in% s_flat$body$.row_role[lv])
+  expect_identical(spicy:::.struct_indent_rows(s_flat), integer(0))
+
+  # Univariable screen: each predictor is its own model, and the bundle
+  # has no model-level fit statistics at all.
+  s_uv <- as_structured(table_regression_uv(
+    d,
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, sex),
+    multivariable = FALSE
+  ))
+  expect_false(any(s_uv$body$.row_role == "fit_stat"))
+  expect_true(all(c("age", "sex") %in% s_uv$body$.variable))
+  expect_identical(
+    s_uv$body$.level[s_uv$body$.variable == "sex" & !is.na(s_uv$body$.level)],
+    c("Female", "Male")
+  )
+})
+
+test_that("subordinate blocks name themselves in the identity columns", {
+  skip_if_not_installed("MASS")
+  fit <- MASS::polr(
+    self_rated_health ~ age + sex,
+    data = sochealth,
+    Hess = TRUE
+  )
+  s <- as_structured(table_regression(fit))
+  thr <- which(s$body$.variable == "Thresholds")
+  expect_gt(length(thr), 0L)
+  expect_identical(s$body$.row_role[thr[1L]], "factor_header")
+  expect_true(all(s$body$.row_role[thr[-1L]] == "level"))
+  expect_true(all(s$body$.indent[thr[-1L]] == 1L))
+})
+
+test_that("multi-model bodies keep one identity per row", {
+  d <- .ep_data()
+  s <- as_structured(table_regression(
+    list(
+      Minimal = stats::lm(wellbeing_score ~ age + sex, data = d),
+      Base = stats::lm(wellbeing_score ~ age + sex + smoking, data = d)
+    ),
+    outcome_labels = c("Wellbeing", "Wellbeing")
+  ))
+  b <- s$body
+  expect_identical(b$.row_role[1L], "outcome")
+  expect_true(is.na(b$.variable[1L]))
+  expect_identical(spicy:::.struct_outcome_row(s), 1L)
+  # A row appears once, whichever models carry it.
+  smk <- which(b$.variable == "smoking")
+  expect_gt(length(smk), 0L)
+  expect_identical(anyDuplicated(paste(b$.variable, b$.level, b$.row_role)), 0L)
+})
+
+
+# ---- D1: variance components -- console == structured == engines ---------
+
+test_that("a variance component's undefined p en-dashes in every engine", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  build <- function(o) {
+    table_regression(fit, show_columns = c("b", "se", "p"), output = o)
+  }
+  console <- .ep_expect_all_engines(build)
+  vc <- which(startsWith(console[["Variable"]], "σ"))
+  expect_length(vc, 2L)
+  # The console oracle: the estimate and its SE are numbers, the p of a
+  # variance component is the en-dash of "applies but not computable"
+  # (the optional test is a chi-bar-squared LR statistic). Every engine
+  # rendered a BLANK there until the predicate became shared.
+  expect_true(all(nzchar(console[["B"]][vc])))
+  expect_true(all(nzchar(console[["SE"]][vc])))
+  expect_identical(unique(console[["p"]][vc]), "–")
+  # And the contract says so in machine terms.
+  s <- as_structured(build("default"))
+  vc_s <- which(s$body$.row_role == "vc")
+  expect_identical(vc_s, vc)
+  expect_identical(unique(s$cell_status[["p"]][vc_s]), "undefined")
+  # B and SE carry no status at all: their numbers stand.
+  expect_identical(
+    spicy:::.struct_cell_status(s, "B")[vc_s],
+    rep("", length(vc_s))
+  )
+  expect_identical(
+    spicy:::.struct_cell_status(s, "SE")[vc_s],
+    rep("", length(vc_s))
+  )
+})
+
+test_that("a variance component with no computable SE / CI en-dashes them", {
+  skip_if_not_installed("lme4")
+  d <- .ep_data()
+  # Singular fit: the region variance is at the boundary, so its Wald SE
+  # and CI do not exist.
+  fit <- suppressWarnings(
+    lme4::lmer(wellbeing_score ~ age + sex + (1 | region), data = d)
+  )
+  build <- function(o) {
+    suppressWarnings(table_regression(
+      fit,
+      show_columns = c("b", "se", "p"),
+      output = o
+    ))
+  }
+  console <- .ep_expect_all_engines(build)
+  vc <- which(startsWith(console[["Variable"]], "σ"))
+  expect_gt(length(vc), 0L)
+  expect_identical(unique(console[["SE"]][vc]), "–")
+  s <- as_structured(build("default"))
+  vc_s <- which(s$body$.row_role == "vc")
+  expect_identical(unique(s$cell_status[["SE"]][vc_s]), "undefined")
+  # The CI columns take the same route. The console prints ONE bracketed
+  # cell where the structured body holds LL and UL, so the two are
+  # compared on the cell's content rather than column for column.
+  ci_tbl <- suppressWarnings(table_regression(
+    fit,
+    show_columns = c("b", "ci")
+  ))
+  ci_console <- .ep_console(ci_tbl)
+  expect_identical(unique(ci_console[["95% CI"]][vc]), "–")
+  ci_struct <- .ep_df(spicy:::.format_structured_to_string_body(
+    as_structured(ci_tbl)
+  ))
+  expect_identical(unique(ci_struct[["95% CI: LL"]][vc]), "–")
+  expect_identical(unique(ci_struct[["95% CI: UL"]][vc]), "–")
+  s_ci <- as_structured(ci_tbl)
+  expect_identical(unique(s_ci$cell_status[["95% CI: LL"]][vc]), "undefined")
+  expect_identical(unique(s_ci$cell_status[["95% CI: UL"]][vc]), "undefined")
+})
+
+test_that("`re_columns` suppresses the display, never the value", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  build <- function(o) {
+    table_regression(
+      fit,
+      show_columns = c("b", "se", "p"),
+      re_columns = "est",
+      output = o
+    )
+  }
+  console <- .ep_expect_all_engines(build)
+  vc <- which(startsWith(console[["Variable"]], "σ"))
+  expect_length(vc, 2L)
+  expect_identical(unique(console[["SE"]][vc]), "–")
+  s <- as_structured(build("default"))
+  vc_s <- which(s$body$.row_role == "vc")
+  expect_identical(unique(s$cell_status[["SE"]][vc_s]), "undefined")
+  # The deselected column is a DISPLAY choice: the SE the fit provides
+  # is still in the typed body for a downstream consumer -- and equal
+  # to the one the default display prints.
+  shown <- as_structured(table_regression(fit, show_columns = c("b", "se")))
+  expect_equal(s$body[["SE"]][vc_s], shown$body[["SE"]][vc_s])
+  expect_true(all(!is.na(s$body[["SE"]][vc_s])))
+})
+
+
+# ---- D2: a reference is a reference of its BLOCK, not of its row ---------
+
+test_that("an ordered factor's AME reference leaves its B / p cells alone", {
+  skip_if_not_installed("marginaleffects")
+  d <- .ep_data()
+  d$educ_ord <- factor(
+    as.character(d$education),
+    levels = levels(d$education),
+    ordered = TRUE
+  )
+  fit <- suppressMessages(stats::lm(wellbeing_score ~ age + educ_ord, data = d))
+  build <- function(o) {
+    suppressMessages(table_regression(
+      fit,
+      show_columns = c("b", "p", "ame"),
+      output = o
+    ))
+  }
+  console <- .ep_expect_all_engines(build)
+  i <- which(grepl("(ref.)", console[["Variable"]], fixed = TRUE))
+  expect_length(i, 1L)
+  # The AME block has a per-level reference; the B / p block holds
+  # polynomial trends and has none. The row-scoped v2 flag put an
+  # en-dash in all three.
+  expect_identical(console[["AME"]][i], "–")
+  expect_identical(console[["B"]][i], "")
+  expect_identical(console[["p"]][i], "")
+  s <- as_structured(build("default"))
+  expect_identical(s$cell_status[["AME"]][i], "reference")
+  expect_identical(spicy:::.struct_cell_status(s, "B")[i], "")
+  expect_identical(spicy:::.struct_cell_status(s, "p")[i], "")
+  expect_identical(s$body$.row_role[i], "reference")
 })
 
 

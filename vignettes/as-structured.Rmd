@@ -3,7 +3,7 @@ title: "The structured view: programmatic access to regression tables"
 description: >
   `as_structured()` exposes the typed representation behind every
   `table_regression()` output: a numeric body with split CI columns,
-  per-column metadata, row-role indices, and the format
+  per-row identity columns, per-column metadata, and the format
   specification -- the same contract spicy's own Excel, gt,
   tinytable, flextable, and clipboard engines consume. Filter
   coefficients programmatically, aggregate raw values, or build a
@@ -80,8 +80,9 @@ s <- as_structured(tbl)
 names(s)
 ```
 
-The centrepiece is `body`: a data frame with the `Variable` column
-and one numeric column per displayed statistic. The confidence
+The centrepiece is `body`: a data frame with the `Variable` column,
+one numeric column per displayed statistic, and four dot-prefixed
+identity columns at the end (the next section). The confidence
 interval that prints as one bracketed column arrives split into
 `LL` / `UL`:
 
@@ -93,14 +94,26 @@ Read it against the printed table and the structure becomes
 obvious: factor header rows (`sex:`, `smoking:`) and reference
 rows carry `NA` across the statistics -- structurally empty, not
 missing data -- and the fit-statistics rows (`n`, `R²`, ...) put
-their value in the first numeric column. The row-role indices name
-each of these regions so you never have to guess from the text:
+their value in the first numeric column. What each row *is* travels
+with the row itself, in four dot-prefixed identity columns at the
+end of `body` -- never in positions you would have to track:
 
 ```{r indices}
-s$reference_rows
-s$factor_header_rows
-s$fit_stat_rows
-s$level_rows
+s$body[, c("Variable", ".variable", ".level", ".row_role", ".indent")]
+```
+
+`.variable` is the source variable (or, on a fit-statistics row,
+the statistic's token), `.level` the factor level, `.row_role` one
+of `"coef"`, `"factor_header"`, `"level"`, `"reference"`,
+`"fit_stat"`, `"outcome"`, `"vc"`, and `.indent` the display indent
+depth. A row is addressable by `(.variable, .level)` rather than by
+its position -- and because identity is data, not indices, it
+survives whatever you do to the body: subset it, reorder it, stack
+two tables with `rbind()`, and every row still says what it is.
+
+```{r identity}
+s$body[which(s$body$.variable == "smoking"), c("Variable", ".level", "B")]
+which(s$body$.row_role == "reference")
 ```
 
 `col_meta` describes each column: which token produced it, which
@@ -116,16 +129,15 @@ s$col_meta$B
 s$format_spec$ci_level
 ```
 
-That is seven of the fourteen components; `spanners` and
-`reference_models_by_row` follow in the multi-model section below,
-`stars` and `col_meta$display_cells` in the section after it. Of
-the remaining, `ci_pairs` records which `LL`/`UL` columns form a
-confidence-interval pair (here, columns 4 and 5 under the label
-`95% CI`), while `outcome_row` and `outcome_labels_by_col` locate
-and label the optional outcome header row of multi-outcome tables
-and are empty here. `version` names the contract the object
-carries, so a renderer can tell which components to expect. The
-complete schema, component by component, is in `?as_structured`.
+That is five of the nine components. `spanners` appears in the
+multi-model section below; `stars`, `cell_status` and
+`col_meta$display_cells` in the section after it. The last two are
+`ci_pairs`, which records which `LL`/`UL` columns pair up under one
+interval label (here, columns 4 and 5 under `95% CI`), and
+`outcome_labels_by_col`, which labels the outcome header row of
+multi-outcome tables (empty here). `version` names the contract the
+object carries -- see *The contract* below. The complete schema,
+component by component, is in `?as_structured`.
 
 ## Filtering and aggregating
 
@@ -139,11 +151,10 @@ s$body[which(s$body$p < 0.05), c("Variable", "B", "p")]
 Note the `which()`: the structurally empty rows are `NA`, and
 `which()` drops them where a bare logical index would keep them as
 `NA` rows. To restrict attention to coefficient rows before any
-filter, exclude the structural regions:
+filter, select on the role:
 
 ```{r coefrows}
-structural <- c(s$reference_rows, s$factor_header_rows, s$fit_stat_rows)
-coef_rows <- setdiff(seq_len(nrow(s$body)), structural)
+coef_rows <- which(s$body$.row_role %in% c("coef", "level"))
 s$body[coef_rows, c("Variable", "B", "95% CI: LL", "95% CI: UL")]
 ```
 
@@ -157,13 +168,13 @@ range(s$body[coef_rows, "95% CI: UL"] - s$body[coef_rows, "95% CI: LL"])
 
 ## Multi-model tables: spanners and per-model columns
 
-With several models, columns are prefixed by the model label and
-two more components become useful. `spanners` maps each model label
-to its column indices in `body`; `reference_models_by_row` records,
-for each reference row, which models actually contain the factor --
-the rule renderers use to decide where the reference en-dash
-belongs. To see it discriminate, the `Minimal` model below omits
-`smoking`:
+With several models, columns are prefixed by the model label (and
+the interval columns compact away by default, which is why each
+model shows `B` / `SE` / `p`). Two more components become useful.
+`spanners` maps each model label to its column indices in `body`;
+`cell_status` says, cell by cell, which ones carry the reference
+en-dash -- only the models that actually contain the factor do. To
+see it discriminate, the `Minimal` model below omits `smoking`:
 
 ```{r multi}
 fit2 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth)
@@ -173,15 +184,17 @@ s2 <- as_structured(
 )
 s2$spanners
 names(s2$body)
-s2$reference_models_by_row
+ref <- which(s2$body$.row_role == "reference")
+s2$body[ref, c("Variable", ".variable", ".level")]
+vapply(s2$cell_status, function(x) x[ref[2]], character(1))
 ```
 
 Rows 4 and 7 are the two reference rows (`Female (ref.)`,
-`No (ref.)`). All three models contain `sex`, so row 4 lists all
-three; only `Base` and `Extended` contain `smoking`, so row 7
-lists those two -- a renderer draws the reference en-dash in
-exactly those models' columns and leaves the `Minimal` cells
-blank.
+`No (ref.)`). All three models contain `sex`, so every column of
+row 4 is marked `"reference"`; only `Base` and `Extended` contain
+`smoking`, so on row 7 the `Minimal` columns are unmarked -- a
+renderer draws the reference en-dash where the status says
+`"reference"` and leaves the rest blank.
 
 Model-wise extraction follows from the spanner map:
 
@@ -238,12 +251,25 @@ raw coefficient, the standardized coefficient only when `B` is not
 displayed beside it, and the average marginal effect on its own
 p-value. `stars` is `NULL` when the table has none.
 
-One more display convention lives in the row indices rather than in
-a cell. A model with absorbed fixed effects discloses them as a
-block: `factor_header_rows` gains the `Fixed effects:` row and
-`level_rows` one row per absorbed factor, named as the model names
-it. Treat that block exactly like a factor group in the
-coefficients and it renders the way it prints.
+A third case is a cell that has no number to show at all, and
+`cell_status` distinguishes the two reasons. `"reference"` is the
+reference level of a factor, in that estimate block and that model.
+`"undefined"` is a statistic that applies to the row but is not
+computable -- the standard error of a variance component, or one a
+`re_columns` selection left out. Both display as an en-dash. A cell
+with no status whose value is `NA` is simply absent, and displays
+blank.
+
+```{r status}
+sc$cell_status$B
+```
+
+One more display convention lives in the row identity rather than
+in a cell. A model with absorbed fixed effects discloses them as a
+block: the `Fixed effects:` row takes `.row_role == "factor_header"`
+and each absorbed factor a `"level"` row with `.indent` 1, named as
+the model names it. Treat that block exactly like a factor group in
+the coefficients and it renders the way it prints.
 
 ## Building your own renderer
 
@@ -256,8 +282,11 @@ supply the per-row exceptions -- that is what renders the `n` row as
 ```{r kable}
 render_kable <- function(tbl) {
   s <- as_structured(tbl)
-  out <- s$body
-  for (nm in names(out)[-1]) {
+  # Value columns only: the dot-prefixed identity columns describe the
+  # rows, they are not cells of the table.
+  value_cols <- setdiff(names(s$body), c("Variable", grep("^\\.", names(s$body), value = TRUE)))
+  out <- s$body[, c("Variable", value_cols)]
+  for (nm in value_cols) {
     meta <- s$col_meta[[nm]]
     prec <- meta$precision
     if (is.null(prec)) prec <- s$format_spec$digits
@@ -285,7 +314,8 @@ render_kable(tbl)
 Anything more ambitious -- a `DT::datatable()` with significant
 rows highlighted, a LaTeX booktabs layout, an HTML widget --
 follows the same pattern: `body` for the cells, `col_meta` for
-per-column formatting, the row indices for styling regions, and
+per-column formatting, `.row_role` / `.indent` for styling regions,
+`cell_status` for the cells no number expresses, and
 `format_spec` for the global conventions. The note and title stay
 available on the original object (`attr(tbl, "note")`,
 `attr(tbl, "title")`), so a custom renderer can reproduce spicy's
@@ -300,15 +330,20 @@ Three properties make the structured view safe to build on:
   Excel workbook contains and what the gt table displays at its
   precision. This parity is pinned by tests.
 * **Stability tier.** `as_structured()` sits in the *stabilising*
-  tier of the API (see `?spicy`, section *API stability*):
-  components will not be silently renamed or change semantics
-  within `0.y.z`, and additions are announced in `NEWS.md`.
+  tier of the API (see `?spicy`, section *API stability*). The rule
+  the contract actually keeps in the `0.y` series is this: nothing
+  ever changes *silently*. Components are added by default; when one
+  must be removed or reshaped -- as version 3 did with the row-index
+  vectors -- the removal is announced under *Breaking changes* in
+  `NEWS.md` with its replacement named, and the version guard below
+  turns any version mismatch into an error instead of a wrong table.
 * **Version guard.** `version` names the contract an object
-  carries. Components are only ever added, so code written against
-  an older one keeps working; a table built before a component
-  existed says so when you open it, and one built by a newer spicy
-  than the one reading it is refused rather than mis-read. Objects
-  from before the structured view existed are refused outright.
+  carries; it is `3` here. A table built by a spicy that speaks a
+  different contract -- older or newer -- is refused rather than
+  mis-read, with the correspondence between the two named in the
+  error. Objects from before the structured view existed are
+  refused outright.
+
 
 For the statistical long form -- estimates with standard errors and
 unformatted p-values, one row per term and estimate type across

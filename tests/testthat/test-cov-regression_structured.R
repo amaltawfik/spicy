@@ -14,6 +14,18 @@
 
 mt <- mtcars
 
+# Attach the v3 identity columns to a hand-built body, so each fixture
+# below fails on the ONE invariant it targets rather than on "this is
+# not a v3 body".
+.v3 <- function(df, role = "coef") {
+  n <- nrow(df)
+  df[[".variable"]] <- as.character(seq_len(n))
+  df[[".level"]] <- rep(NA_character_, n)
+  df[[".row_role"]] <- rep(role, n)
+  df[[".indent"]] <- rep(0L, n)
+  df
+}
+
 
 # ============================================================================
 # .validate_structured – type / range / precision arms (414, 420-422,
@@ -22,12 +34,7 @@ mt <- mtcars
 
 test_that(".validate_structured warns when Variable column is not character", {
   s <- list(
-    body = data.frame(Variable = c(1L, 2L), B = c(1.0, 2.0)),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    body = .v3(data.frame(Variable = c(1L, 2L), B = c(1.0, 2.0))),
     col_meta = list(B = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(),
@@ -41,16 +48,11 @@ test_that(".validate_structured warns when Variable column is not character", {
 
 test_that(".validate_structured warns on a non-numeric, non-all-NA column", {
   s <- list(
-    body = data.frame(
+    body = .v3(data.frame(
       Variable = c("a", "b"),
       B = c("x", "y"),
       stringsAsFactors = FALSE
-    ),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    )),
     col_meta = list(B = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(),
@@ -58,7 +60,73 @@ test_that(".validate_structured warns on a non-numeric, non-all-NA column", {
   )
   expect_warning(
     spicy:::.validate_structured(s),
-    "Column 2 \\(B\\) is not numeric"
+    "Column B is not numeric"
+  )
+})
+
+test_that(".validate_structured warns on missing / malformed identity columns", {
+  base_body <- data.frame(
+    Variable = c("a", "b"),
+    B = c(1.0, 2.0),
+    stringsAsFactors = FALSE
+  )
+  s <- list(
+    body = base_body, # no identity columns at all
+    col_meta = list(B = list(precision = 2L)),
+    spanners = NULL,
+    ci_pairs = list(),
+    format_spec = list(decimal_mark = ".")
+  )
+  expect_warning(
+    spicy:::.validate_structured(s),
+    "Identity column\\(s\\) missing"
+  )
+  # Present but carrying a role nobody defines.
+  s_role <- s
+  s_role$body <- .v3(base_body, role = "mystery")
+  expect_warning(spicy:::.validate_structured(s_role), "Unknown row role")
+  # `.indent` must be an integer vector: a double would silently pass a
+  # `> 0` test and fail an `identical()` one.
+  s_ind <- s
+  s_ind$body <- .v3(base_body)
+  s_ind$body$.indent <- c(0, 1)
+  expect_warning(
+    spicy:::.validate_structured(s_ind),
+    "`.indent` is not an integer vector"
+  )
+  # `.row_role` must be character.
+  s_chr <- s
+  s_chr$body <- .v3(base_body)
+  s_chr$body$.row_role <- factor(c("coef", "coef"))
+  expect_warning(
+    spicy:::.validate_structured(s_chr),
+    "`.row_role` is not character"
+  )
+})
+
+test_that(".validate_structured warns on a malformed cell_status", {
+  body <- .v3(data.frame(
+    Variable = c("a", "b"),
+    B = c(1.0, 2.0),
+    stringsAsFactors = FALSE
+  ))
+  s <- list(
+    body = body,
+    cell_status = list(B = "reference"), # too short
+    col_meta = list(B = list(precision = 2L)),
+    spanners = NULL,
+    ci_pairs = list(),
+    format_spec = list(decimal_mark = ".")
+  )
+  expect_warning(
+    spicy:::.validate_structured(s),
+    "`cell_status` must be a character vector of length 2"
+  )
+  s_bad <- s
+  s_bad$cell_status <- list(B = c("reference", "sort-of"))
+  expect_warning(
+    spicy:::.validate_structured(s_bad),
+    "unknown cell status"
   )
 })
 
@@ -68,12 +136,7 @@ test_that(".validate_structured skips a body column with no col_meta entry", {
   # [0, 1]: had the guard NOT skipped it, the apa p-range check would
   # have warned. `B` (an in-range apa column) carries the only col_meta.
   s <- list(
-    body = data.frame(Variable = "a", B = 0.5, Extra = 2.0),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    body = .v3(data.frame(Variable = "a", B = 0.5, Extra = 2.0)),
     col_meta = list(
       B = list(precision = 3L, p_style = "apa", token = "p", threshold = 0.001)
     ),
@@ -106,12 +169,7 @@ test_that(".validate_structured skips a body column with no col_meta entry", {
 
 test_that(".validate_structured warns on a negative precision", {
   s <- list(
-    body = data.frame(Variable = "a", B = 1.0),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    body = .v3(data.frame(Variable = "a", B = 1.0)),
     col_meta = list(B = list(precision = -2L)),
     spanners = NULL,
     ci_pairs = list(),
@@ -165,9 +223,16 @@ test_that("build_structured_body produces a 0-row, correctly-shaped body", {
     model_outcome_labels = NULL
   )
   expect_identical(nrow(s$body), 0L)
-  # Columns are still present (Variable + B + p) so engines can bind to
-  # a typed-but-empty body without a schema mismatch.
-  expect_identical(names(s$body), c("Variable", "B", "p"))
+  # Columns are still present (Variable + B + p, then the identity
+  # columns) so engines can bind to a typed-but-empty body without a
+  # schema mismatch.
+  expect_identical(
+    names(s$body),
+    c("Variable", "B", "p", ".variable", ".level", ".row_role", ".indent")
+  )
+  expect_identical(spicy:::.struct_value_cols(s$body), c("B", "p"))
+  expect_identical(spicy:::.struct_indent_rows(s), integer(0))
+  expect_identical(spicy:::.struct_outcome_row(s), integer(0))
 })
 
 

@@ -216,7 +216,7 @@ test_that("the structured body carries no empty fit-stat rows either", {
     output = "data.frame"
   )
   st <- attr(df, "structured")
-  expect_length(st$fit_stat_rows, 0L)
+  expect_false(any(st$body$.row_role == "fit_stat"))
   expect_false(any(st$body$Variable %in% c("n", "AIC")))
 
   skip_if_not_installed("tinytable")

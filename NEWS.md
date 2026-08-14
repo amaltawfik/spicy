@@ -73,6 +73,17 @@
   `show_fit_stats = character(0)` errors; use `FALSE` to suppress the block.
 * Multi-model `show_columns = "all_b"` / `"all_ame"` auto-compact (CIs
   dropped); request atomic tokens to keep them.
+* `as_structured()` describes a row in the body itself instead of in
+  row-index vectors, which broke as soon as two tables were stacked or
+  merged. The five index components of 0.12.0 are removed, and a table
+  built by an older spicy is refused rather than read as if it were
+  current. `version` is `3`.
+  * `reference_rows` becomes `cell_status`, which marks the reference
+    *cell* rather than the whole row.
+  * `factor_header_rows` becomes `body$.row_role == "factor_header"`.
+  * `fit_stat_rows` becomes `body$.row_role == "fit_stat"`.
+  * `level_rows` becomes `body$.indent > 0`.
+  * `outcome_row` becomes `body$.row_role == "outcome"`.
 * `tidy()` labels AME rows `estimate_type = "ame"` (was `"AME"`), and the SE
   footer reads `"classical (Fisher information)"`.
 * `count_n()` warns (`spicy_no_selection`) and returns `NA` for all rows
@@ -259,9 +270,16 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   cutoffs (`stars`), the display string of cells no single number can
   express such as the `events/N` counts (`col_meta$display_cells`), and the
   absorbed fixed-effects block as a header row plus one row per factor. A
-  new `version` field names the contract; components are only ever added,
-  and a view built by a newer version than the one reading it is refused
-  instead of mis-read.
+  new `version` field names the contract, and a view built by a newer
+  version than the one reading it is refused instead of mis-read.
+* `as_structured()` also gives every row an identity that does not depend on
+  where the row sits: `body$.variable` (the source variable, or the
+  fit-statistic token), `body$.level` (the factor level), `body$.row_role`
+  (`"coef"`, `"factor_header"`, `"level"`, `"reference"`, `"fit_stat"`,
+  `"outcome"`, `"vc"`) and `body$.indent`. `cell_status` says the same per
+  cell -- `"reference"` when a cell is a reference level of its estimate
+  block, `"undefined"` when the statistic applies but no number expresses
+  it -- so a renderer never has to read an en-dash back to find out.
 
 ## Bug fixes
 
@@ -480,8 +498,18 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   returns the long tibble its documentation promised.
 * `as_structured()` and the rich output engines match the console body
   exactly (blank vs en-dash reference cells, the multi-outcome `Outcome`
-  row); the structured schema gains `reference_models_by_row` and
-  `outcome_labels_by_col`.
+  row); the structured schema gains `outcome_labels_by_col`.
+* The standard error, confidence interval and p-value of a random-effect
+  variance component show the same en-dash in `"gt"`, `"tinytable"`,
+  `"flextable"`, `"word"`, `"excel"` and the clipboard as in the console.
+  They were blank, and `re_columns` was ignored outside the console.
+* When a factor's estimate blocks do not share a reference level -- an
+  ordered factor with `show_columns = c("b", "ame")`, where the AME
+  contrasts against a baseline while B holds polynomial trends -- the
+  reference en-dash stays in the block that has one instead of blanking the
+  B and p cells beside it.
+* `output = "excel"` rules off `Thresholds:`, `Random effects:` and the
+  other subordinate blocks, like every other output.
 * `stars = TRUE` marks the coefficients in every output, not just the
   console: `output = "gt"`, `"tinytable"`, `"flextable"`, `"word"` and
   `"clipboard"` used to ship the legend footnote without a single marker in

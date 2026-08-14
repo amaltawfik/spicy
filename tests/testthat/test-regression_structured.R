@@ -6,6 +6,18 @@
 
 mt <- mtcars # local alias
 
+# Minimal v3 identity columns for the hand-built structs the validator
+# tests exercise: the checks below must fail on ONE invariant each, not
+# on a body that is not a v3 body at all.
+.v3_meta <- function(n, role = "coef") {
+  list(
+    .variable = as.character(seq_len(n)),
+    .level = rep(NA_character_, n),
+    .row_role = rep(role, n),
+    .indent = rep(0L, n)
+  )
+}
+
 test_that("structured body: schema invariants (numerics, CI split, markers)", {
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   r <- table_regression(m1, show_columns = c("b", "se", "ci", "p"))
@@ -18,12 +30,7 @@ test_that("structured body: schema invariants (numerics, CI split, markers)", {
       "version",
       "body",
       "stars",
-      "reference_rows",
-      "reference_models_by_row",
-      "factor_header_rows",
-      "fit_stat_rows",
-      "level_rows",
-      "outcome_row",
+      "cell_status",
       "outcome_labels_by_col",
       "col_meta",
       "spanners",
@@ -33,23 +40,39 @@ test_that("structured body: schema invariants (numerics, CI split, markers)", {
     ignore.order = TRUE
   )
 
-  # Variable col is character; all other body cols are numeric.
+  # Variable col is character; every VALUE col is numeric. The four
+  # dot-prefixed identity columns are metadata and are excluded.
   expect_type(s$body$Variable, "character")
-  for (j in 2:ncol(s$body)) {
+  value_cols <- spicy:::.struct_value_cols(s$body)
+  for (nm in value_cols) {
     expect_true(
-      is.numeric(s$body[[j]]) || all(is.na(s$body[[j]])),
-      info = paste("col", names(s$body)[j], "must be numeric")
+      is.numeric(s$body[[nm]]) || all(is.na(s$body[[nm]])),
+      info = paste("col", nm, "must be numeric")
     )
   }
+  expect_identical(
+    setdiff(names(s$body), c("Variable", value_cols)),
+    c(".variable", ".level", ".row_role", ".indent")
+  )
 
-  # CI is split into LL/UL: two columns per CI spanner.
+  # CI is split into LL/UL: two columns per CI spanner. The identity
+  # columns sit AFTER the value columns, so the pair indices still
+  # address the same cells.
   expect_length(s$ci_pairs, 1L)
   expect_identical(s$ci_pairs[[1L]]$label, "95% CI")
   expect_length(s$ci_pairs[[1L]]$cols, 2L)
+  expect_identical(
+    names(s$body)[s$ci_pairs[[1L]]$cols],
+    c("95% CI: LL", "95% CI: UL")
+  )
 
-  # Reference row marker (one row: "4 (ref.)" for factor(cyl)).
-  expect_length(s$reference_rows, 1L)
-  expect_true(grepl("ref\\.", s$body$Variable[s$reference_rows[1L]]))
+  # Reference row (one row: "4 (ref.)" for factor(cyl)), and the cells
+  # that carry the reference en-dash.
+  ref <- which(s$body$.row_role == "reference")
+  expect_length(ref, 1L)
+  expect_true(grepl("ref\\.", s$body$Variable[ref]))
+  expect_identical(s$cell_status$B[ref], "reference")
+  expect_identical(s$cell_status$p[ref], "reference")
 
   # Format spec is well-formed.
   expect_identical(s$format_spec$decimal_mark, ".")
@@ -108,12 +131,11 @@ test_that("structured body validates p-value range invariant", {
   # and warns. We can't easily inject bad data through the public API,
   # so test the validator directly via :::.
   fake_struct <- list(
-    body = data.frame(Variable = c("a", "b"), p = c(0.5, 1.5)),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    body = data.frame(
+      c(list(Variable = c("a", "b"), p = c(0.5, 1.5)), .v3_meta(2L)),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    ),
     col_meta = list(
       p = list(token = "p", precision = 3L, p_style = "apa", threshold = 0.001)
     ),
@@ -129,12 +151,11 @@ test_that("structured body validates p-value range invariant", {
 
 test_that("structured body validates LL <= UL invariant", {
   fake_struct <- list(
-    body = data.frame(Variable = "a", LL = 0.5, UL = 0.2),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    body = data.frame(
+      c(list(Variable = "a", LL = 0.5, UL = 0.2), .v3_meta(1L)),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    ),
     col_meta = list(LL = list(precision = 2L), UL = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(list(label = "95% CI", cols = c(2L, 3L))),
@@ -148,12 +169,11 @@ test_that("structured body validates LL <= UL invariant", {
 
 test_that("structured body validates decimal_mark", {
   fake_struct <- list(
-    body = data.frame(Variable = "a", B = 1.0),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    body = data.frame(
+      c(list(Variable = "a", B = 1.0), .v3_meta(1L)),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    ),
     col_meta = list(B = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(),
@@ -172,12 +192,11 @@ test_that("structured body: clean input produces no warning", {
 
 test_that(".validate_structured warns with a classed spicy condition", {
   fake_struct <- list(
-    body = data.frame(Variable = "a", B = 1.0),
-    reference_rows = integer(0),
-    factor_header_rows = integer(0),
-    fit_stat_rows = integer(0),
-    level_rows = integer(0),
-    outcome_row = integer(0),
+    body = data.frame(
+      c(list(Variable = "a", B = 1.0), .v3_meta(1L)),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    ),
     col_meta = list(B = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(),
@@ -242,12 +261,7 @@ test_that("as_structured() returns the typed view with the documented schema", {
       "version",
       "body",
       "stars",
-      "reference_rows",
-      "reference_models_by_row",
-      "factor_header_rows",
-      "fit_stat_rows",
-      "level_rows",
-      "outcome_row",
+      "cell_status",
       "outcome_labels_by_col",
       "col_meta",
       "spanners",
@@ -289,7 +303,7 @@ test_that("as_structured – col_meta carries token/model_id/precision per colum
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   s <- as_structured(table_regression(m1))
   expect_false(is.null(s$col_meta$B))
-  expect_true(all(names(s$col_meta) %in% setdiff(names(s$body), "Variable")))
+  expect_true(all(names(s$col_meta) %in% spicy:::.struct_value_cols(s$body)))
   for (m in s$col_meta) {
     expect_true(is.character(m$token) && nzchar(m$token))
     expect_true(is.character(m$model_id) && nzchar(m$model_id))
@@ -352,15 +366,18 @@ test_that("as_structured – no-value cells are NA in body", {
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   m2 <- lm(mpg ~ wt, data = mt)
   s <- as_structured(table_regression(list(WithCyl = m1, NoCyl = m2)))
-  num <- s$body[, setdiff(names(s$body), "Variable"), drop = FALSE]
-  expect_gt(length(s$reference_rows), 0L)
-  expect_gt(length(s$factor_header_rows), 0L)
-  expect_true(all(is.na(unlist(num[s$reference_rows, ]))))
-  expect_true(all(is.na(unlist(num[s$factor_header_rows, ]))))
+  num <- s$body[, spicy:::.struct_value_cols(s$body), drop = FALSE]
+  ref <- which(s$body$.row_role == "reference")
+  hdr <- which(s$body$.row_role == "factor_header")
+  lvl <- which(s$body$.indent > 0L)
+  expect_gt(length(ref), 0L)
+  expect_gt(length(hdr), 0L)
+  expect_true(all(is.na(unlist(num[ref, ]))))
+  expect_true(all(is.na(unlist(num[hdr, ]))))
   # Model without the factor: its columns stay NA on the level rows.
   nocyl_cols <- grep("^NoCyl", names(s$body), value = TRUE)
-  expect_gt(length(s$level_rows), 0L)
-  expect_true(all(is.na(unlist(s$body[s$level_rows, nocyl_cols]))))
+  expect_gt(length(lvl), 0L)
+  expect_true(all(is.na(unlist(s$body[lvl, nocyl_cols]))))
 })
 
 test_that("as_structured – outcome_labels_by_col keyed by first structured column", {
@@ -372,43 +389,73 @@ test_that("as_structured – outcome_labels_by_col keyed by first structured col
   )
   expect_identical(unname(unlist(s$outcome_labels_by_col)), c("A", "B"))
   expect_identical(names(s$outcome_labels_by_col), c("M_a: B", "M_b: B"))
-  expect_identical(s$body$Variable[s$outcome_row], "Outcome")
+  expect_identical(
+    s$body$Variable[s$body$.row_role == "outcome"],
+    "Outcome"
+  )
 })
 
-test_that("as_structured – reference_models_by_row keys and model ids", {
-  # rd-methods:as-structured-reference-models-by-row
+test_that("as_structured – the reference en-dash is scoped to the model that has the factor", {
+  # v3: what `reference_models_by_row` used to say, now said per CELL.
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   m2 <- lm(mpg ~ wt, data = mt)
   s <- as_structured(table_regression(list(WithCyl = m1, NoCyl = m2)))
-  expect_identical(
-    names(s$reference_models_by_row),
-    as.character(s$reference_rows)
-  )
-  # Only the model that actually contains the factor is listed.
-  expect_identical(unique(unlist(s$reference_models_by_row)), "WithCyl")
+  ref <- which(s$body$.row_role == "reference")
+  expect_length(ref, 1L)
+  with_cols <- grep("^WithCyl", names(s$body), value = TRUE)
+  no_cols <- grep("^NoCyl", names(s$body), value = TRUE)
+  for (cl in with_cols) {
+    expect_identical(s$cell_status[[cl]][ref], "reference", info = cl)
+  }
+  # The model that does not contain the factor gets no status at all:
+  # its cells are ABSENT (blank), not references.
+  for (cl in no_cols) {
+    expect_identical(
+      spicy:::.struct_cell_status(s, cl)[ref],
+      "",
+      info = cl
+    )
+  }
 })
 
-test_that("as_structured – row-index components are valid integer indices", {
-  # rd-methods:as-structured-row-indices-integer
+test_that("as_structured – the identity columns are typed and complete", {
+  # rd-methods:as-structured-row-identity-columns
   m1 <- lm(mpg ~ wt + factor(cyl), data = mt)
   m2 <- lm(hp ~ wt, data = mt)
   s <- as_structured(
     table_regression(list(A = m1, B = m2), outcome_labels = c("mpg", "hp"))
   )
-  n <- nrow(s$body)
-  comps <- list(
-    reference_rows = s$reference_rows,
-    factor_header_rows = s$factor_header_rows,
-    fit_stat_rows = s$fit_stat_rows,
-    level_rows = s$level_rows,
-    outcome_row = s$outcome_row
-  )
-  for (nm in names(comps)) {
-    expect_true(is.integer(comps[[nm]]), info = nm)
-    expect_true(all(comps[[nm]] %in% seq_len(n)), info = nm)
-    # This table exercises every component, so each check bites.
-    expect_gt(length(comps[[nm]]), 0L)
+  expect_type(s$body$.variable, "character")
+  expect_type(s$body$.level, "character")
+  expect_type(s$body$.row_role, "character")
+  expect_type(s$body$.indent, "integer")
+  expect_true(all(s$body$.row_role %in% spicy:::.STRUCT_ROW_ROLES))
+  # One identity per body row, always -- the columns are the body's, not
+  # a parallel structure that can fall out of step with it.
+  for (nm in c(".variable", ".level", ".row_role", ".indent")) {
+    expect_length(s$body[[nm]], nrow(s$body))
   }
+  # `.indent` is a depth, not a flag: 0 or 1 today, never negative.
+  expect_true(all(s$body$.indent >= 0L))
+  # The identity columns are NOT value columns: no engine renders them.
+  expect_false(any(spicy:::.struct_value_cols(s$body) %in% c(
+    ".variable",
+    ".level",
+    ".row_role",
+    ".indent"
+  )))
+  expect_identical(
+    names(spicy:::.struct_display_body(s$body)),
+    c("Variable", spicy:::.struct_value_cols(s$body))
+  )
+  # This table exercises every role the layout can produce.
+  expect_true(all(
+    c("outcome", "coef", "factor_header", "reference", "level", "fit_stat") %in%
+      s$body$.row_role
+  ))
+  # No row is left unidentified.
+  expect_false(any(is.na(s$body$.row_role)))
+  expect_false(any(is.na(s$body$.indent)))
 })
 
 test_that("as_structured – engines see the same values (excel + gt parity)", {

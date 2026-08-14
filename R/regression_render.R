@@ -501,7 +501,8 @@ render_regression_table <- function(
     ci_label = ci_label,
     model_outcomes = model_outcomes,
     model_outcome_labels = model_outcome_labels,
-    stars_map = stars_map
+    stars_map = stars_map,
+    re_columns = re_columns
   )
 
   body
@@ -966,18 +967,13 @@ build_body_row <- function(
       cells[[cs$col_name]] <- "\u2013" # en-dash
       next
     }
-    # `re_columns` (display-only): on a variance-component row, en-dash the
-    # SE / CI cells the user deselected. The underlying data stays complete
-    # (broom::tidy / as_structured always carry full SE + CI). The t/z cell is
-    # always en-dashed on vc rows: the optional re_test statistic is a
-    # chi-bar-squared LR statistic, which would be mislabelled under a t/z
-    # header (it stays available via broom::tidy()).
-    if (
-      identical(long_row$estimate_type[1L], "vc") &&
-        (identical(cs$token, "t") ||
-          (identical(cs$token, "se") && !"se" %in% re_columns) ||
-          (identical(cs$token, "ci") && !"ci" %in% re_columns))
-    ) {
+    # Variance-component cells no number expresses (see
+    # `.vc_cell_undefined()`): the deselected `re_columns`, the t/z a
+    # variance component has none of, and the SE / CI / estimate that is
+    # simply not computable for this component. The SAME predicate feeds
+    # build_structured_body(), so the character body and the typed body
+    # can no longer disagree about where the dash goes.
+    if (.vc_cell_undefined(long_row, cs, re_columns)) {
       cells[[cs$col_name]] <- "\u2013"
       next
     }
@@ -995,6 +991,71 @@ build_body_row <- function(
   }
 
   as.data.frame(cells, stringsAsFactors = FALSE, check.names = FALSE)
+}
+
+
+# ---- Undefined variance-component cells (shared predicate) ---------------
+
+# Fields whose console rendering of an NA is a BLANK, not an en-dash: an
+# NA there means "same fit as the block's first row", "this diagnostic
+# does not apply", or "there is no count for this row" -- never "the
+# number exists but could not be computed". Kept beside the branches of
+# format_cell_value() that implement them.
+.blank_on_na_fields <- function() {
+  c(
+    "n_obs",
+    "r2",
+    "adj_r2",
+    "pd",
+    "ess_bulk",
+    "ess_tail",
+    "rhat",
+    "mcse",
+    "events",
+    "events_n"
+  )
+}
+
+# TRUE when the console renders an en-dash on a variance-component cell
+# because the statistic APPLIES to the row but no number expresses it.
+# Two causes, both display-relevant and neither visible in the typed
+# value alone:
+#
+#   * the user deselected the column for random effects (`re_columns`),
+#     or asked for a t/z a variance component has none of -- the value
+#     may well exist, and stays in the typed body and in
+#     `broom::tidy()`;
+#   * the value is not computable for this component (profile / Wald SE
+#     unavailable, CI bounds missing).
+#
+# Shared by build_body_row() (character body) and
+# build_structured_body() (typed body): the console used to draw the
+# dash while every structured-driven engine left the cell blank, because
+# each side owned its own copy of the rule.
+.vc_cell_undefined <- function(long_row, cs, re_columns = c("est", "se", "ci")) {
+  # An empty match yields NA here, which is not "vc": a cell whose term
+  # is absent from the model is blank, never a dash.
+  if (!identical(long_row$estimate_type[1L], "vc")) {
+    return(FALSE)
+  }
+  tk <- cs$token
+  if (identical(tk, "t")) {
+    return(TRUE)
+  }
+  if (identical(tk, "se") && !"se" %in% re_columns) {
+    return(TRUE)
+  }
+  if (identical(tk, "ci") && !"ci" %in% re_columns) {
+    return(TRUE)
+  }
+  flds <- cs$fields
+  if (identical(flds, c("ci_low", "ci_high"))) {
+    return(is.na(long_row$ci_low[1L]) || is.na(long_row$ci_high[1L]))
+  }
+  fld <- flds[1L]
+  fld %in% names(long_row) &&
+    !fld %in% .blank_on_na_fields() &&
+    is.na(long_row[[fld]][1L])
 }
 
 

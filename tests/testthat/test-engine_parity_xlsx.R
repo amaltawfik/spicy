@@ -108,6 +108,24 @@
   )
 }
 
+# The bottom-border weight a cell declares ("thin", "hair", or NA),
+# read through the style chain: cell -> cellXfs -> borders.
+.xl_bottom_border <- function(path, ref) {
+  wb <- openxlsx2::wb_load(path)
+  cc <- wb$worksheets[[1L]]$sheet_data$cc
+  s <- cc$c_s[cc$r == ref]
+  if (length(s) == 0L || !nzchar(s[1L])) {
+    return(NA_character_)
+  }
+  xf <- wb$styles_mgr$styles$cellXfs[[as.integer(s[1L]) + 1L]]
+  id <- as.integer(sub('.*borderId="([0-9]+)".*', "\\1", xf))
+  b <- wb$styles_mgr$styles$borders[[id + 1L]]
+  if (!grepl("<bottom style=", b, fixed = TRUE)) {
+    return(NA_character_)
+  }
+  sub('.*<bottom style="([a-z]+)".*', "\\1", b)
+}
+
 # Every cell the sheet stores as an Excel ERROR cell.
 .xl_error_cells <- function(path) {
   cc <- openxlsx2::wb_load(path)$worksheets[[1L]]$sheet_data$cc
@@ -546,4 +564,56 @@ test_that(".spicy_xl_add_note writes one row per line and skips empties", {
   openxlsx2::wb_save(wb, path, overwrite = TRUE)
   m <- .xl_grid(path)
   expect_equal(unname(m[, "A"]), c("one", "two"))
+})
+
+
+# ---- (h) block rules: every rule the console draws ------------------------
+
+test_that("the sheet rules off each subordinate block, not just the fit stats", {
+  .xl_skip()
+  skip_if_not_installed("lme4")
+  d <- .xl_data()
+  fit <- suppressWarnings(
+    lme4::lmer(wellbeing_score ~ age + sex + (1 | region), data = d)
+  )
+  path <- .xl_write(function(p) {
+    suppressWarnings(table_regression(fit, output = "excel", excel_path = p))
+  })
+  m <- .xl_grid(path)
+  rows <- as.integer(rownames(m))
+  row_of <- function(label) rows[which(trimws(m[, "A"]) == label)]
+
+  re <- row_of("Random effects:")
+  n_row <- row_of("n")
+  expect_length(re, 1L)
+  expect_length(n_row, 1L)
+  # The console rules ABOVE `Random effects:` and above the fit stats;
+  # the sheet drew only the second one until section_sep_rows reached
+  # the Excel writer.
+  expect_identical(.xl_bottom_border(path, paste0("A", re - 1L)), "hair")
+  expect_identical(.xl_bottom_border(path, paste0("C", re - 1L)), "hair")
+  expect_identical(.xl_bottom_border(path, paste0("A", n_row - 1L)), "hair")
+  # A coefficient row in the middle of a block carries no rule.
+  age_row <- row_of("age")
+  expect_true(is.na(.xl_bottom_border(path, paste0("A", age_row))))
+})
+
+test_that("a table with no subordinate block keeps its single fit-stats rule", {
+  .xl_skip()
+  d <- .xl_data()
+  fit <- stats::lm(wellbeing_score ~ age + sex, data = d)
+  path <- .xl_write(function(p) {
+    table_regression(fit, output = "excel", excel_path = p)
+  })
+  m <- .xl_grid(path)
+  rows <- as.integer(rownames(m))
+  n_row <- rows[which(trimws(m[, "A"]) == "n")]
+  expect_length(n_row, 1L)
+  expect_identical(.xl_bottom_border(path, paste0("A", n_row - 1L)), "hair")
+  hair <- vapply(
+    paste0("A", rows),
+    function(r) identical(.xl_bottom_border(path, r), "hair"),
+    logical(1)
+  )
+  expect_identical(sum(hair), 1L)
 })

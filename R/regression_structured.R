@@ -16,32 +16,51 @@
 #
 #   structured = list(
 #     version = integer(),          # contract version (see
-#                                   #   .spicy_structured_version()); a
-#                                   #   view without this field predates
-#                                   #   version 2 and carries neither
-#                                   #   `stars` nor `col_meta$display_cells`.
-#     body = data.frame(...),       # numeric body, CI pre-split (LL/UL)
-#     reference_rows = integer(),   # body row indices where ALL numeric
-#                                   #   cells should display en-dash
-#                                   #   (reference-level rows). Count
-#                                   #   columns (token "n_events") are
-#                                   #   exempt: a reference level HAS
-#                                   #   events, so its cell keeps them.
-#     factor_header_rows = integer(),# body row indices for factor-name
-#                                   #   header rows (all numeric NA;
-#                                   #   display blank). Includes the
-#                                   #   "Fixed effects:" block header of
-#                                   #   the absorbed-factor disclosure.
-#     fit_stat_rows = integer(),    # body row indices for fit-stats
-#                                   #   (n, R^2, AIC, etc.)
-#     level_rows = integer(),       # body row indices for indented
-#                                   #   factor-level coefficient rows
-#                                   #   (same definition as
-#                                   #   .detect_level_rows). Includes the
-#                                   #   absorbed-factor rows of the
-#                                   #   "Fixed effects:" block.
-#     outcome_row = integer(),      # body row index for the optional
-#                                   #   multi-DV outcome row (or NULL)
+#                                   #   .spicy_structured_version()).
+#     body = data.frame(...),       # numeric body, CI pre-split (LL/UL),
+#                                   #   followed by the four dot-prefixed
+#                                   #   IDENTITY columns (v3):
+#                                   #  .variable chr source variable, or
+#                                   #                the fit-stat token
+#                                   #  .level    chr factor level (NA
+#                                   #                outside a factor)
+#                                   #  .row_role chr "coef" |
+#                                   #                "factor_header" |
+#                                   #                "level" |
+#                                   #                "reference" |
+#                                   #                "fit_stat" |
+#                                   #                "outcome" | "vc"
+#                                   #  .indent   int display indent (0/1)
+#                                   #
+#                                   # The identity of a row is DATA, filled
+#                                   # at construction from the long frame
+#                                   # (factor_term / factor_level / term /
+#                                   # estimate_type / is_reference), never
+#                                   # re-parsed from the displayed string.
+#                                   # They sit AFTER the value columns so
+#                                   # `body[[1L]]` is still `Variable` and
+#                                   # every column index in `spanners` /
+#                                   # `ci_pairs` keeps pointing at the same
+#                                   # value column. Use
+#                                   # `.struct_value_cols()` to iterate the
+#                                   # value columns only.
+#
+#     cell_status = list(           # per-CELL semantics, keyed by
+#                                   #   structured col name, one character
+#                                   #   vector of nrow(body) per column
+#                                   #   that needs one:
+#                                   #     ""          nothing special
+#                                   #     "reference" reference level of a
+#                                   #                 factor IN THIS BLOCK
+#                                   #                 (display en-dash)
+#                                   #     "undefined" the statistic applies
+#                                   #                 to the row but no
+#                                   #                 number expresses it
+#                                   #                 (display en-dash)
+#                                   #   A cell with no status whose value
+#                                   #   is NA is ABSENT (display blank).
+#                                   #   Columns with no marked cell are
+#                                   #   left out entirely.
 #
 #     col_meta = list(              # per-column metadata, keyed by
 #                                   # structured body col name
@@ -106,16 +125,84 @@
 #   )
 #
 
-# Version of the structured contract produced by this spicy. Bumped
-# whenever components are ADDED (they never get renamed inside a
-# 0.y.z series, so a reader written against an older version keeps
-# working -- it just does not see the additions):
+# Version of the structured contract produced by this spicy.
 #   1: initial typed view (implicit -- views built before the field
 #      existed carry no `version` at all).
 #   2: `col_meta$display_cells` per-cell overrides, `stars`, the fixest
 #      "Fixed effects:" block registered in `factor_header_rows` /
 #      `level_rows`.
-.spicy_structured_version <- function() 2L
+#   3: row identity moves from index vectors into body COLUMNS
+#      (`.variable`, `.level`, `.row_role`, `.indent`) and cell
+#      semantics into `cell_status`. The five v2 index vectors
+#      (`reference_rows`, `factor_header_rows`, `fit_stat_rows`,
+#      `level_rows`, `outcome_row`) and `reference_models_by_row` are
+#      REMOVED, not derived: row indices are the structure that
+#      corrupts as soon as two bodies are stacked or merged, and the
+#      per-row reference flag was overwriting cells of estimate blocks
+#      that have no per-level reference at all. A v2 object is refused
+#      by `as_structured()` rather than read as if it were a v3.
+.spicy_structured_version <- function() 3L
+
+# The dot-prefixed identity columns of the v3 body, in emission order.
+# They are appended AFTER the value columns so every existing column
+# index (spanners, ci_pairs, engine loops) keeps its meaning.
+.STRUCT_META_COLS <- c(".variable", ".level", ".row_role", ".indent")
+
+# The row roles a v3 body may carry.
+.STRUCT_ROW_ROLES <- c(
+  "coef",
+  "factor_header",
+  "level",
+  "reference",
+  "fit_stat",
+  "outcome",
+  "vc"
+)
+
+# Value (displayable) columns of a structured body: everything but the
+# `Variable` label and the dot-prefixed identity columns. Every consumer
+# that iterates "the numeric columns" goes through this, so adding an
+# identity column never has to be reflected in a loop bound again.
+.struct_value_cols <- function(body) {
+  setdiff(names(body), c("Variable", .STRUCT_META_COLS))
+}
+
+# The body as engines lay it out: the label column plus the value
+# columns, identity columns dropped.
+.struct_display_body <- function(body) {
+  body[, c("Variable", .struct_value_cols(body)), drop = FALSE]
+}
+
+# Row indices whose label is displayed indented (factor levels, the
+# rows of a subordinate block, the absorbed factors of a fixed-effects
+# disclosure). Replaces the v2 `level_rows` component.
+.struct_indent_rows <- function(struct) {
+  ind <- struct$body[[".indent"]]
+  if (is.null(ind)) {
+    return(integer(0)) # nocov -- v3 bodies always carry the column
+  }
+  which(!is.na(ind) & ind > 0L)
+}
+
+# Row index of the optional multi-DV outcome row (integer(0) if none).
+# Replaces the v2 `outcome_row` component.
+.struct_outcome_row <- function(struct) {
+  role <- struct$body[[".row_role"]]
+  if (is.null(role)) {
+    return(integer(0)) # nocov -- v3 bodies always carry the column
+  }
+  which(role == "outcome")
+}
+
+# Per-cell status of column `col_name` (character vector of nrow(body),
+# "" where the cell carries no special semantics).
+.struct_cell_status <- function(struct, col_name) {
+  st <- struct$cell_status[[col_name]]
+  if (is.null(st)) {
+    return(rep("", nrow(struct$body)))
+  }
+  st
+}
 
 # Turn a per-row map of named cell overrides into per-column vectors of
 # length `n_rows`. Columns with no override anywhere are dropped, so the
@@ -163,7 +250,8 @@ build_structured_body <- function(
   model_outcomes = NULL,
   model_outcome_labels = NULL,
   ci_label = "CI",
-  stars_map = NULL
+  stars_map = NULL,
+  re_columns = c("est", "se", "ci")
 ) {
   group_factor_levels <- identical(factor_layout, "grouped")
   coefs <- aligned$coefs_aligned
@@ -337,22 +425,30 @@ build_structured_body <- function(
   )
 
   rows <- list()
-  # Per-row display overrides and star markers, keyed by structured col
-  # name. Collected row by row (the builders below know the source
-  # long-format cells); assembled into per-column vectors once the row
-  # count is final.
+  # Per-row display overrides, star markers and cell statuses, keyed by
+  # structured col name. Collected row by row (the builders below know
+  # the source long-format cells); assembled into per-column vectors
+  # once the row count is final.
   display_by_row <- list()
   stars_by_row <- list()
-  reference_rows <- integer(0)
-  # Per reference row: the model_ids that actually carry the term. In a
-  # multi-model table a factor absent from a model must render BLANK in that
-  # model's columns (matching the char body), not en-dash -- the en-dash
-  # means "reference by design", which only holds where the factor exists.
-  reference_models_by_row <- list()
-  factor_header_rows <- integer(0)
-  fit_stat_rows <- integer(0)
-  level_rows <- integer(0)
-  outcome_row_idx <- integer(0)
+  status_by_row <- list()
+  # Row IDENTITY, filled here from the long frame. `push_row()` is the
+  # single place a row enters the body, so a row can never reach the
+  # contract without saying what it is.
+  meta_variable <- character(0)
+  meta_level <- character(0)
+  meta_role <- character(0)
+  meta_indent <- integer(0)
+  push_row <- function(row, variable, level, role, indent = 0L) {
+    rows[[length(rows) + 1L]] <<- row
+    # Coerce explicitly: a `factor_term` / `factor_level` that reached
+    # the frame as a factor would otherwise land as its integer code.
+    meta_variable[[length(meta_variable) + 1L]] <<- as.character(variable)
+    meta_level[[length(meta_level) + 1L]] <<- as.character(level)
+    meta_role[[length(meta_role) + 1L]] <<- role
+    meta_indent[[length(meta_indent) + 1L]] <<- as.integer(indent)
+    length(rows)
+  }
 
   # --- Outcome row (multi-DV, when applicable) ---
   # Mirrors build_outcome_row(); for the structured body we just put
@@ -374,8 +470,12 @@ build_structured_body <- function(
   )
   outcome_labels_by_col <- character(0)
   if (!is.null(outcome_row)) {
-    rows[[length(rows) + 1L]] <- outcome_row$row
-    outcome_row_idx <- length(rows)
+    push_row(
+      outcome_row$row,
+      variable = NA_character_,
+      level = NA_character_,
+      role = "outcome"
+    )
     outcome_labels_by_col <- outcome_row$labels_by_col
   }
 
@@ -412,8 +512,12 @@ build_structured_body <- function(
       )
       hdr <- empty_row
       hdr$Variable <- header_label
-      rows[[length(rows) + 1L]] <- hdr
-      factor_header_rows <- c(factor_header_rows, length(rows))
+      push_row(
+        hdr,
+        variable = rt$factor_term,
+        level = NA_character_,
+        role = "factor_header"
+      )
       current_factor <- rt$factor_term
     }
     new_factor_row <- !is.na(rt$factor_term) &&
@@ -433,11 +537,13 @@ build_structured_body <- function(
       labels = labels,
       empty_row = empty_row,
       stars_map = stars_map,
-      show_columns = show_columns
+      show_columns = show_columns,
+      re_columns = re_columns
     )
     new_row <- built$row
     display_by_row[[as.character(length(rows) + 1L)]] <- built$display
     stars_by_row[[as.character(length(rows) + 1L)]] <- built$stars
+    status_by_row[[as.character(length(rows) + 1L)]] <- built$status
     # Annotation injection for flat layout (same logic as renderer)
     if (
       identical(reference_style, "annotation") &&
@@ -451,17 +557,28 @@ build_structured_body <- function(
         current_factor <- rt$factor_term
       }
     }
-    rows[[length(rows) + 1L]] <- new_row
-    if (isTRUE(rt$is_reference)) {
-      reference_rows <- c(reference_rows, length(rows))
-      reference_models_by_row[[as.character(length(rows))]] <-
-        unique(coefs$model_id[coefs$term == rt$term])
-    }
-    # level_rows: same heuristic as .detect_level_rows() — Variable
-    # starts with whitespace under grouped layout.
-    if (grepl("^\\s+", new_row$Variable)) {
-      level_rows <- c(level_rows, length(rows))
-    }
+    push_row(
+      new_row,
+      variable = if (is.na(rt$factor_term)) rt$term else rt$factor_term,
+      level = rt$factor_level,
+      role = .struct_term_role(
+        rt,
+        unique(coefs$estimate_type[coefs$term == rt$term])
+      ),
+      # Indent depth read off the SAME branches format_term_label()
+      # uses to decide whether to prefix two spaces, instead of
+      # grepping the rendered label back for leading whitespace (which
+      # a user-supplied label starting with a space would defeat).
+      indent = if (
+        isTRUE(group_factor_levels) &&
+          !isTRUE(rt$is_intercept) &&
+          (isTRUE(rt$is_reference) || !is.na(rt$factor_term))
+      ) {
+        1L
+      } else {
+        0L
+      }
+    )
   }
 
   # --- Fit-stat rows ---
@@ -485,17 +602,21 @@ build_structured_body <- function(
       blank_models = aligned$blank_fit_stats_models
     )
     for (fr in fit_rows) {
-      rows[[length(rows) + 1L]] <- fr$row
-      fit_stat_rows <- c(fit_stat_rows, length(rows))
       # Block-shaped disclosures (today: the fixest "Fixed effects:"
-      # block) carry the same row roles as a factor group in the
+      # block) carry the same row geometry as a factor group in the
       # coefficients: a header row with no cells, then one indented row
-      # per absorbed factor. Registering them here is what lets every
+      # per absorbed factor. `.build_structured_fit_stat_rows()` names
+      # the role and the indent; recording them here is what lets every
       # engine draw the block the way the console does.
-      if (identical(fr$role, "factor_header")) {
-        factor_header_rows <- c(factor_header_rows, length(rows))
-      } else if (identical(fr$role, "level")) {
-        level_rows <- c(level_rows, length(rows))
+      row_idx <- push_row(
+        fr$row,
+        variable = fr$variable,
+        level = fr$level %||% NA_character_,
+        role = fr$role %||% "fit_stat",
+        indent = fr$indent %||% 0L
+      )
+      if (length(fr$status) > 0L) {
+        status_by_row[[as.character(row_idx)]] <- fr$status
       }
       # Extend col_meta with per-fit-stat token annotation for the
       # column where the value lives. Precision and (for p_change) APA
@@ -507,7 +628,7 @@ build_structured_body <- function(
         # map (col_meta is COLUMN-level; per-row precision differences
         # are recorded by the structured body's row index + col_meta
         # union). For simplicity here we stash via a side-list.
-        ov$row <- length(rows)
+        ov$row <- row_idx
         col_meta[[col_name]]$fit_stat_overrides <- c(
           col_meta[[col_name]]$fit_stat_overrides %||% list(),
           list(ov)
@@ -522,6 +643,14 @@ build_structured_body <- function(
     body_df <- do.call(rbind, rows)
     rownames(body_df) <- NULL
   }
+  # ---- Row identity columns (v3) ---------------------------------------
+  # Appended AFTER the value columns: `body[[1L]]` stays `Variable` and
+  # every column index already published (`spanners`, `ci_pairs`) keeps
+  # pointing at the same value column.
+  body_df[[".variable"]] <- as.character(meta_variable)
+  body_df[[".level"]] <- as.character(meta_level)
+  body_df[[".row_role"]] <- as.character(meta_role)
+  body_df[[".indent"]] <- as.integer(meta_indent)
 
   # ---- Per-cell display overrides + star markers ------------------------
   # Both are column-shaped vectors over the final body: `display` lands
@@ -553,6 +682,16 @@ build_structured_body <- function(
   } else {
     list(thresholds = stars_map, markers = star_cols)
   }
+  # Per-cell semantics (v3). Scoped to the CELL, never to the row: a
+  # reference level is a reference only in the estimate blocks that have
+  # one, so the AME reference of an ordered factor no longer blanks the
+  # polynomial-contrast B / p cells of the same row.
+  cell_status <- .collect_cell_overrides(
+    status_by_row,
+    struct_col_names,
+    n_body_rows,
+    empty = ""
+  )
 
   # ---- Spanners on structured columns -----------------------------------
   # The char body's spanners map "label -> integer body col indices
@@ -590,13 +729,8 @@ build_structured_body <- function(
     version = .spicy_structured_version(),
     body = body_df,
     stars = stars,
-    reference_rows = reference_rows,
-    reference_models_by_row = reference_models_by_row,
+    cell_status = cell_status,
     outcome_labels_by_col = outcome_labels_by_col,
-    factor_header_rows = factor_header_rows,
-    fit_stat_rows = fit_stat_rows,
-    level_rows = level_rows,
-    outcome_row = outcome_row_idx,
     col_meta = col_meta,
     spanners = spanners,
     ci_pairs = ci_pairs,
@@ -616,8 +750,10 @@ build_structured_body <- function(
 #
 # Validates:
 #   * Variable column is character.
-#   * Every non-Variable column is numeric (or all-NA, which coerces
+#   * Every value column is numeric (or all-NA, which coerces
 #     to logical -- we accept that as the empty / placeholder case).
+#   * The identity columns are present, correctly typed, and carry
+#     only known row roles.
 #   * For each p-column (token "p" / "ame_p" / "p_change" with
 #     `p_style = "apa"`): values are in [0, 1] (or NA).
 #   * For each CI pair (`ci_pairs[[k]]`): `LL <= UL` (or both NA),
@@ -632,31 +768,90 @@ build_structured_body <- function(
 .validate_structured <- function(struct) {
   body <- struct$body
   problems <- character(0)
+  n_rows <- nrow(body)
+  value_cols <- .struct_value_cols(body)
 
   if (!is.character(body[[1L]])) {
     problems <- c(problems, "Variable column is not character.")
   }
-  if (ncol(body) >= 2L) {
-    for (j in 2:ncol(body)) {
-      col <- body[[j]]
-      if (!is.numeric(col) && !all(is.na(col))) {
+  for (col_name in value_cols) {
+    col <- body[[col_name]]
+    if (!is.numeric(col) && !all(is.na(col))) {
+      problems <- c(
+        problems,
+        sprintf("Column %s is not numeric.", col_name)
+      )
+    }
+  }
+
+  # Identity columns: present, right type, known roles. A body that
+  # loses them stops being addressable by (variable, level) -- the one
+  # property v3 exists to guarantee.
+  missing_meta <- setdiff(.STRUCT_META_COLS, names(body))
+  if (length(missing_meta) > 0L) {
+    problems <- c(
+      problems,
+      sprintf(
+        "Identity column(s) missing: %s.",
+        paste(missing_meta, collapse = ", ")
+      )
+    )
+  } else {
+    if (!is.character(body[[".row_role"]])) {
+      problems <- c(problems, "`.row_role` is not character.")
+    } else {
+      unknown <- setdiff(unique(body[[".row_role"]]), .STRUCT_ROW_ROLES)
+      if (length(unknown) > 0L) {
         problems <- c(
           problems,
-          sprintf("Column %d (%s) is not numeric.", j, names(body)[j])
+          sprintf("Unknown row role(s): %s.", paste(unknown, collapse = ", "))
+        )
+      }
+    }
+    if (!is.integer(body[[".indent"]])) {
+      problems <- c(problems, "`.indent` is not an integer vector.")
+    }
+  }
+
+  # Per-cell statuses are column-shaped, like the display overrides and
+  # the star markers: a short vector would silently drop cell semantics
+  # in every engine.
+  for (col_name in names(struct$cell_status)) {
+    st <- struct$cell_status[[col_name]]
+    if (!is.character(st) || length(st) != n_rows) {
+      problems <- c(
+        problems,
+        sprintf(
+          "Column %s: `cell_status` must be a character vector of length %d.",
+          col_name,
+          n_rows
+        )
+      )
+    } else {
+      bad_st <- setdiff(unique(st), c("", "reference", "undefined"))
+      if (length(bad_st) > 0L) {
+        problems <- c(
+          problems,
+          sprintf(
+            "Column %s: unknown cell status(es): %s.",
+            col_name,
+            paste(bad_st, collapse = ", ")
+          )
         )
       }
     }
   }
 
-  # p-value range. Skip fit-stat rows: when the user reorders or
+  # p-value range. Skip fit-stat cells: when the user reorders or
   # restricts `show_columns` (e.g. asks for just `c("p")`), the
   # fit-stat values (n / R² / AIC ...) are written to the FIRST
   # numeric column of the per-model block, which may happen to be
-  # the `p` column. Those values aren't p-values -- they belong
-  # to a separate row tagged in `struct$fit_stat_rows`. Validate
-  # only the coefficient rows.
-  fit_rows <- struct$fit_stat_rows %||% integer(0)
-  for (col_name in names(body)[-1L]) {
+  # the `p` column. Those values aren't p-values -- they belong to a
+  # fit-stat row, or (block-shaped disclosures) to a cell carrying a
+  # `fit_stat` override. Validate only the coefficient cells.
+  role <- body[[".row_role"]] %||% rep("coef", n_rows)
+  fit_rows <- which(role == "fit_stat")
+  for (col_name in value_cols) {
     meta <- struct$col_meta[[col_name]]
     if (is.null(meta)) {
       next
@@ -664,7 +859,12 @@ build_structured_body <- function(
     if (identical(meta$p_style, "apa")) {
       vals <- body[[col_name]]
       if (is.numeric(vals)) {
-        coef_idx <- setdiff(seq_along(vals), fit_rows)
+        ov_rows <- vapply(
+          meta$fit_stat_overrides %||% list(),
+          function(ov) as.integer(ov$row),
+          integer(1)
+        )
+        coef_idx <- setdiff(seq_along(vals), c(fit_rows, ov_rows))
         coef_vals <- vals[coef_idx]
         bad <- !is.na(coef_vals) & (coef_vals < 0 | coef_vals > 1)
         if (any(bad)) {
@@ -723,7 +923,6 @@ build_structured_body <- function(
   # Per-cell display overrides and star markers are column-shaped: a
   # vector shorter than the body would silently drop cells in every
   # string-driven engine.
-  n_rows <- nrow(body)
   for (col_name in names(struct$col_meta)) {
     disp <- struct$col_meta[[col_name]][["display_cells"]]
     if (!is.null(disp) && (!is.character(disp) || length(disp) != n_rows)) {
@@ -773,6 +972,27 @@ build_structured_body <- function(
 }
 
 
+# ---- Row role ------------------------------------------------------------
+
+# The display role of a coefficient row, read off the long frame. A
+# reference level is announced as such first (it is what a reader sees
+# and what a renderer styles); a variance component next (its cells are
+# not coefficients and never take stars); then any row that belongs to a
+# factor / subordinate block; then a plain coefficient.
+.struct_term_role <- function(rt, estimate_types) {
+  if (isTRUE(rt$is_reference)) {
+    return("reference")
+  }
+  if ("vc" %in% estimate_types) {
+    return("vc")
+  }
+  if (!is.na(rt$factor_term)) {
+    return("level")
+  }
+  "coef"
+}
+
+
 # ---- Body row builder (structured) ---------------------------------------
 
 .build_structured_body_row <- function(
@@ -786,7 +1006,8 @@ build_structured_body <- function(
   labels,
   empty_row,
   stars_map = NULL,
-  show_columns = character(0)
+  show_columns = character(0),
+  re_columns = c("est", "se", "ci")
 ) {
   # Variable label: identical to char body's format_term_label().
   row <- empty_row
@@ -799,6 +1020,7 @@ build_structured_body <- function(
   )
   display <- character(0)
   stars <- character(0)
+  status <- character(0)
 
   for (e in expanded) {
     cs <- e$cs
@@ -808,11 +1030,6 @@ build_structured_body <- function(
     # counts are data about the level, not an estimate (STROBE item 16),
     # exactly as build_body_row() exempts the token from the en-dash.
     is_events <- identical(cs$fields, c("events", "events_n"))
-    if (isTRUE(rt$is_reference) && !is_events) {
-      # Reference row: all numeric cells stay NA (engines render as
-      # en-dash via reference_rows tag).
-      next
-    }
     # Random-effect variance rows (estimate_type = "vc") display on the B
     # (estimate / SE / CI) axis: alias "vc" to the "B" column here, mirroring
     # the char body's build_body_row().
@@ -848,7 +1065,17 @@ build_structured_body <- function(
     }
     if (nrow(long_row) == 0L) {
       next
-    } # cell stays NA (blank)
+    } # term ABSENT from this model / block: cell stays NA, renders blank
+    # Reference check, per CELL and per model, exactly as
+    # build_body_row() does it for the character body. Scoping it to the
+    # row instead (what v2 did) put an en-dash on estimate blocks that
+    # have no per-level reference at all: an ordered factor shows AME
+    # contrasts against a baseline level while its B / p cells hold
+    # polynomial trends, and those were being blanked out.
+    if (isTRUE(long_row$is_reference[1L]) && !identical(cs$token, "n_events")) {
+      status[[e$name]] <- "reference"
+      next
+    }
     if (is_events) {
       ev <- long_row$events[1L]
       nn <- long_row$events_n[1L]
@@ -865,6 +1092,17 @@ build_structured_body <- function(
     val <- long_row[[e$source]][1L]
     if (!is.null(val) && length(val) == 1L) {
       row[[e$name]] <- as.numeric(val)
+    }
+    # Variance-component cells the console en-dashes: the statistic
+    # applies to the row but no number expresses it -- either because it
+    # is not computable for that component, or because `re_columns`
+    # deselected it (a DISPLAY choice; the value stays in the typed body
+    # and in `broom::tidy()`). The predicate is shared with
+    # build_body_row(), so the character body and the typed body cannot
+    # word the same cell differently again.
+    if (.vc_cell_undefined(long_row, cs, re_columns)) {
+      status[[e$name]] <- "undefined"
+      next
     }
     # Star marker for this cell, under exactly the conditions
     # format_cell_value() applies one: the B column always, beta only
@@ -887,7 +1125,7 @@ build_structured_body <- function(
       }
     }
   }
-  list(row = row, display = display, stars = stars)
+  list(row = row, display = display, stars = stars, status = status)
 }
 
 
@@ -950,7 +1188,10 @@ build_structured_body <- function(
       rows[[length(rows) + 1L]] <- list(
         row = hdr,
         col_overrides = list(),
-        role = "factor_header"
+        variable = tk,
+        level = NA_character_,
+        role = "factor_header",
+        indent = 0L
       )
       for (fct in fe$factors) {
         row <- empty_row
@@ -973,7 +1214,10 @@ build_structured_body <- function(
         rows[[length(rows) + 1L]] <- list(
           row = row,
           col_overrides = col_overrides,
-          role = "level"
+          variable = tk,
+          level = fct,
+          role = "level",
+          indent = 1L
         )
       }
       next
@@ -1016,7 +1260,11 @@ build_structured_body <- function(
         }
         rows[[length(rows) + 1L]] <- list(
           row = row,
-          col_overrides = col_overrides
+          col_overrides = col_overrides,
+          variable = tk,
+          level = fct,
+          role = "fit_stat",
+          indent = 0L
         )
       }
       next
@@ -1035,6 +1283,7 @@ build_structured_body <- function(
     row <- empty_row
     row$Variable <- fit_stat_label(tk)
     col_overrides <- list()
+    status <- character(0)
 
     # Per-token precision: same logic as format_fit_stat_value()
     prec <- .fit_stat_precision(
@@ -1079,10 +1328,25 @@ build_structured_body <- function(
         p_style = p_style,
         threshold = threshold
       )
+      # A fit statistic that is not defined for this model's class in a
+      # mixed table: the console prints an en-dash, so the cell is
+      # UNDEFINED, not absent. Emitting the status here (rather than
+      # re-deriving it in the string formatter) keeps one source of
+      # truth for the dash. The two block-shaped disclosures keep their
+      # own console convention (blank) and are handled above; the
+      # per-level `n_events` counts likewise.
+      if (is.na(val) && !tk %in% c("fixed_effects", "n_groups", "n_events")) {
+        status[[target_col]] <- "undefined"
+      }
     }
     rows[[length(rows) + 1L]] <- list(
       row = row,
-      col_overrides = col_overrides
+      col_overrides = col_overrides,
+      status = status,
+      variable = tk,
+      level = NA_character_,
+      role = "fit_stat",
+      indent = 0L
     )
   }
   rows
@@ -1281,54 +1545,41 @@ build_structured_body <- function(
 }
 
 # Render a single cell of the structured body to its display string,
-# applying precision, APA p-style (drop leading zero), reference en-dash,
-# and below-threshold "<.001" overrides. Used by engines that drive
-# their formatters via pre-formatted strings (flextable, console).
+# applying precision, APA p-style (drop leading zero), the en-dash of a
+# reference / undefined cell, and below-threshold "<.001" overrides.
+# Used by engines that drive their formatters via pre-formatted strings
+# (flextable, tinytable, Excel, clipboard, console-from-structured).
+#
+# `status` is the cell's own semantics (`cell_status`, v3): "reference"
+# and "undefined" both display the en-dash, "" defers to the value --
+# and an NA value with no status is an ABSENT cell, which displays
+# blank. The caller passes the cell's status, never a row index: a cell
+# is what it is regardless of where its row sits.
 .cell_to_string <- function(
   val,
   row_idx,
   col_meta_entry,
-  reference_rows,
+  status = "",
   decimal_mark = ".",
-  ref_models = NULL,
   star = ""
 ) {
   # Per-cell display override (composite cells: the "events/N" counts).
-  # It outranks every rule below, including the reference-row en-dash --
-  # the override exists precisely because no single number expresses
-  # the cell.
+  # It outranks every rule below, including the en-dash -- the override
+  # exists precisely because no single number expresses the cell.
   disp <- col_meta_entry[["display_cells"]]
   if (!is.null(disp) && length(disp) >= row_idx && !is.na(disp[[row_idx]])) {
     return(disp[[row_idx]])
   }
-  # Count columns are exempt from the reference-row en-dash: the
-  # reference level has events, and the console prints them (the
-  # en-dash means "no estimate by design", which does not apply to a
-  # count). Falls through to the blank / value paths below.
-  if (
-    row_idx %in% reference_rows && !identical(col_meta_entry$token, "n_events")
-  ) {
-    # En-dash only in the columns of models that HAVE the factor; a model
-    # the factor is absent from gets a blank cell (char-body parity, M3).
-    in_model <- is.null(ref_models) ||
-      is.null(col_meta_entry$model_id) ||
-      col_meta_entry$model_id %in% ref_models
-    return(if (in_model) "\u2013" else "")
+  # "reference": no estimate by design, in THIS block and THIS model.
+  # "undefined": the statistic applies but no number expresses it (the
+  # SE of a variance component, a fit statistic undefined for this
+  # model's class in a mixed table).
+  if (nzchar(status)) {
+    return("\u2013")
   }
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
   if (is.na(val)) {
-    # Fit-stat cells en-dash on NA (a stat not defined for that model's
-    # class in a mixed table; the change tokens' first-model column) --
-    # the documented "en-dashes per cell" contract, mirroring the
-    # console renderer's format_fit_stat_value(). The two block-shaped
-    # disclosures keep their own console conventions: blank for a
-    # non-fixest model's cell in the fixed-effects block and for an
-    # "N (<factor>)" cell of a model without that grouping factor.
-    # Body cells stay blank (term absent from the model).
-    fs <- cfmt$fit_stat
-    if (!is.null(fs) && !fs %in% c("fixed_effects", "n_groups", "n_events")) {
-      return("\u2013")
-    }
+    # Absent: the term / statistic does not exist for this cell.
     return("")
   }
   # Fixed-effects disclosure cells are numeric-encoded in the
@@ -1475,39 +1726,39 @@ build_structured_body <- function(
 # and by console / clipboard derivers. The Variable column is preserved
 # verbatim; each numeric column is replaced by its display strings.
 .format_structured_to_string_body <- function(struct) {
-  body_num <- struct$body
-  out <- body_num
-  reference_rows <- struct$reference_rows
+  # Identity columns are metadata, not cells: the string body is what a
+  # reader sees, so it carries `Variable` plus the value columns only.
+  out <- .struct_display_body(struct$body)
   decimal_mark <- struct$format_spec$decimal_mark
-  n_rows <- nrow(body_num)
-  for (j in seq_along(body_num)) {
-    col_name <- names(body_num)[j]
+  n_rows <- nrow(out)
+  outcome_row <- .struct_outcome_row(struct)
+  for (j in seq_along(out)) {
+    col_name <- names(out)[j]
     if (j == 1L) {
       next
     } # Variable column stays as-is
     meta <- struct$col_meta[[col_name]]
-    col_vals <- body_num[[j]]
+    col_vals <- out[[j]]
     star_col <- struct$stars$markers[[col_name]]
+    status_col <- .struct_cell_status(struct, col_name)
     formatted <- character(n_rows)
     for (i in seq_len(n_rows)) {
       formatted[i] <- .cell_to_string(
         col_vals[i],
         i,
         meta,
-        reference_rows,
-        decimal_mark,
-        ref_models = struct$reference_models_by_row[[as.character(i)]],
+        status = status_col[i],
+        decimal_mark = decimal_mark,
         star = if (is.null(star_col)) "" else star_col[i]
       )
     }
     # Outcome row (multi-DV): the label text lives in metadata (the typed
     # body stays numeric); overlay it on the model's first sub-column.
     if (
-      length(struct$outcome_row) == 1L &&
+      length(outcome_row) == 1L &&
         col_name %in% names(struct$outcome_labels_by_col)
     ) {
-      formatted[struct$outcome_row] <-
-        struct$outcome_labels_by_col[[col_name]]
+      formatted[outcome_row] <- struct$outcome_labels_by_col[[col_name]]
     }
     out[[j]] <- formatted
   }

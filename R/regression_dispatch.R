@@ -179,8 +179,8 @@ output_long <- function(aligned) {
 
 # (Removed in v0.13: `.detect_level_rows` / `.trim_level_indent`.
 # Their job is now performed at the renderer level: build_structured_body()
-# returns `level_rows` directly as an integer index, so engines no longer
-# need to re-parse the Variable column's whitespace prefix.)
+# records the indent depth of each row in `body$.indent`, so engines no
+# longer need to re-parse the Variable column's whitespace prefix.)
 
 # Parse a bracketed CI cell ("[lo, hi]" or "[lo; hi]" -- the separator
 # adapts to `decimal_mark`) into its lo / hi components.
@@ -382,8 +382,7 @@ output_tinytable <- function(rendered) {
   body <- .pad_for_decimal_align(body, struct)
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
-  reference_rows <- struct$reference_rows
-  level_rows <- struct$level_rows
+  level_rows <- .struct_indent_rows(struct)
   format_spec <- struct$format_spec
   decimal_mark <- format_spec$decimal_mark
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
@@ -395,7 +394,7 @@ output_tinytable <- function(rendered) {
   # column-labels row. Keep the PRE-strip col names so `col_meta`
   # lookups (which key on the original prefixed names) still resolve
   # after `strip_spanner_prefix` rewrites `body`'s colnames.
-  struct_col_names_orig <- names(struct$body)
+  struct_col_names_orig <- names(.struct_display_body(struct$body))
   if (has_model_spanner) {
     body <- .strip_spanner_prefix(body, spanners)
   }
@@ -749,8 +748,7 @@ output_gt <- function(rendered) {
   body <- .pad_for_decimal_align(body, struct)
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
-  reference_rows <- struct$reference_rows
-  level_rows <- struct$level_rows
+  level_rows <- .struct_indent_rows(struct)
   format_spec <- struct$format_spec
   decimal_mark <- format_spec$decimal_mark
 
@@ -1356,8 +1354,7 @@ output_flextable <- function(rendered) {
   body <- .pad_for_decimal_align(body, struct)
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
-  reference_rows <- struct$reference_rows
-  level_rows <- struct$level_rows
+  level_rows <- .struct_indent_rows(struct)
   # `group_sep` keeps the RAW attribute: its first element is where
   # the fit-stats block starts, which `.fit_stat_merge_ranges()` reads
   # below. `rule_rows` is every rule the console draws between blocks
@@ -1987,17 +1984,28 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # in col_meta, reference/fit-stat row markers). Engines consume it
   # directly -- no string parsing.
   struct <- attr(rendered, "structured")
-  body <- struct$body # numeric body
+  # Value columns only: the dot-prefixed identity columns are metadata
+  # about each row, not cells of the table a reader opens.
+  body <- .struct_display_body(struct$body) # numeric body
   spanners <- struct$spanners # model-level spanners
   ci_spanners <- struct$ci_pairs # CI pairs (LL/UL)
   col_meta <- struct$col_meta # per-col format spec
   format_spec <- struct$format_spec
-  reference_rows <- struct$reference_rows
-  fit_stat_rows <- struct$fit_stat_rows
-  level_rows <- struct$level_rows
+  level_rows <- .struct_indent_rows(struct)
+  outcome_row <- .struct_outcome_row(struct)
   title <- attr(rendered, "title")
   note <- attr(rendered, "note")
   group_sep <- attr(rendered, "group_sep_rows")
+  # Every rule the console draws between blocks: the coefficients /
+  # fit-stats divide (`group_sep_rows`) AND the rule that opens a
+  # subordinate block -- ordinal `Thresholds:`, mixed-model
+  # `Random effects:`, and the other component blocks -- carried by
+  # `section_sep_rows`. Excel was the last engine drawing only the
+  # first of them.
+  rule_rows <- sort(unique(c(
+    as.integer(group_sep %||% integer(0)),
+    as.integer(attr(rendered, "section_sep_rows") %||% integer(0))
+  )))
 
   n_cols <- ncol(body)
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
@@ -2215,42 +2223,32 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       if (!is.null(star_col)) {
         text_rows[nzchar(star_col)] <- TRUE
       }
-      # (4) Fit-stat rows: the Yes/No of the fixed-effects disclosure
-      #     block (numeric-encoded 1/0 in the typed body -- a bare "1"
-      #     in a coefficient column would read like an estimate), and
-      #     the en-dash of a cell whose stat is not defined for that
-      #     model's class. Same exceptions as the other engines: the
-      #     block-shaped disclosures ("FE: <factor>", "N (<factor>)")
-      #     and the per-level n_events stay blank outside their scope.
+      # (4) The Yes/No of the fixed-effects disclosure block
+      #     (numeric-encoded 1/0 in the typed body -- a bare "1" in a
+      #     coefficient column would read like an estimate).
       if (!is.null(meta$fit_stat_overrides)) {
         for (ov in meta$fit_stat_overrides) {
-          fs <- ov$fit_stat %||% ""
-          if (identical(fs, "fixed_effects")) {
-            text_rows[ov$row] <- TRUE
-          } else if (
-            nzchar(fs) &&
-              !fs %in% c("n_groups", "n_events") &&
-              is.na(col_vals[ov$row])
-          ) {
+          if (identical(ov$fit_stat %||% "", "fixed_effects")) {
             text_rows[ov$row] <- TRUE
           }
         }
       }
       # (5) Outcome row (multi-DV): a label, not a value.
       if (
-        length(struct$outcome_row) == 1L &&
+        length(outcome_row) == 1L &&
           col_name %in% names(struct$outcome_labels_by_col)
       ) {
-        text_rows[struct$outcome_row] <- TRUE
+        text_rows[outcome_row] <- TRUE
       }
-      # (6) Reference rows: en-dash -- but only in the columns of models
-      #     that HAVE the factor (models it is absent from keep a blank
-      #     cell, char-body parity, finding M3) and only where (2) left
-      #     no composite. Both exemptions are already in the strings:
-      #     a blank display writes nothing.
-      if (length(reference_rows) > 0L) {
-        text_rows[reference_rows] <- TRUE
-      }
+      # (6) Cells the contract marks: the en-dash of a reference level
+      #     (in this block, in this model) and of a statistic that
+      #     applies but is not computable -- an unavailable variance-
+      #     component SE, a fit statistic undefined for one model's
+      #     class in a mixed table. Cells with no status keep their
+      #     number; an absent cell has a blank display and writes
+      #     nothing.
+      status_col <- .struct_cell_status(struct, col_name)
+      text_rows[nzchar(status_col)] <- TRUE
       # (7) Below-threshold p-values ("<.001").
       if (!is.null(meta$threshold)) {
         text_rows[!is.na(col_vals) & col_vals < meta$threshold] <- TRUE
@@ -2291,10 +2289,12 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   #   2. Spanner mid-rule beneath each spanned range (when spanners
   #      exist) -- structural twin of the CI mid-rule in continuous.
   #   3. Sub-rule below the sub-header row.
-  #   4. Hair rule between the last coefficient row and the first
-  #      fit-stat row (uses group_sep_rows, the body-index of the
-  #      first fit-stat row; -2L shifts into the corresponding
-  #      Excel row).
+  #   4. Hair rule above each block boundary the console rules off:
+  #      the coefficients / fit-stats divide (group_sep_rows) and the
+  #      opening of a subordinate block -- `Thresholds:`,
+  #      `Random effects:`, ... (section_sep_rows). Each value is the
+  #      body index of the block's first row; -2L shifts to the Excel
+  #      row above it.
   #   5. Bottom rule below the final body row.
   #
   # IMPORTANT: openxlsx2::wb_add_border() has formal defaults
@@ -2387,20 +2387,17 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     cols = seq_len(n_cols),
     bottom = TRUE
   )
-  # Hair rule between last coefficient and first fit-stat row.
-  if (
-    length(group_sep) >= 1L &&
-      group_sep[1L] >= 2L &&
-      group_sep[1L] <= nrow(body)
-  ) {
-    last_coef_excel <- body_first_row + group_sep[1L] - 2L
-    wb <- draw_rule(
-      wb,
-      rows = last_coef_excel,
-      cols = seq_len(n_cols),
-      bottom = TRUE,
-      weight = "hair"
-    )
+  # Hair rule above each block boundary.
+  for (sep in rule_rows) {
+    if (sep >= 2L && sep <= nrow(body)) {
+      wb <- draw_rule(
+        wb,
+        rows = body_first_row + sep - 2L,
+        cols = seq_len(n_cols),
+        bottom = TRUE,
+        weight = "hair"
+      )
+    }
   }
   # Bottom rule under last body row.
   if (nrow(body) > 0L) {
@@ -2763,22 +2760,36 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'
 #' @section Schema:
 #' * `version` -- integer contract version (see *Versioning* below).
-#' * `body` -- `data.frame` with a `Variable` character column and one
-#'   or more numeric columns. Confidence intervals are split into
-#'   `LL` / `UL` columns named like `"95% CI: LL"` / `"95% CI: UL"` (or
-#'   prefixed with the model label in multi-model output). Cells
-#'   that have no value (reference levels, non-applicable rows in
-#'   multi-model output, factor headers) are `NA`.
-#' * `reference_rows`, `factor_header_rows`, `fit_stat_rows`,
-#'   `level_rows`, `outcome_row` -- integer row indices. The
-#'   fixed-effects disclosure block of an absorbed-effects model
-#'   contributes a `"Fixed effects:"` factor header and one level row
-#'   per absorbed factor, named as the model names it.
-#' * `reference_models_by_row` -- for each reference row (keyed by its
-#'   row index as a character string), the `model_id`s of the models
-#'   that actually contain the factor: renderers show the reference
-#'   marker only in those models' columns and leave the others blank.
-#' * `outcome_labels_by_col` -- for the `outcome_row` (explicit
+#' * `body` -- `data.frame` with a `Variable` character column, one or
+#'   more numeric value columns, and four dot-prefixed *identity*
+#'   columns at the end. Confidence intervals are split into `LL` /
+#'   `UL` columns named like `"95% CI: LL"` / `"95% CI: UL"` (or
+#'   prefixed with the model label in multi-model output). A cell with
+#'   no value (reference level, term absent from a model, factor
+#'   header) is `NA`.
+#' * `body$.variable` -- source variable of the row: the factor name on
+#'   a factor header / level / reference row, the term otherwise, and
+#'   the fit-statistic token (`"nobs"`, `"r2"`, `"fixed_effects"`,
+#'   ...) on a fit-statistic row.
+#' * `body$.level` -- the factor level (or the absorbed factor of a
+#'   fixed-effects block, or the grouping factor of an `"N (...)"`
+#'   row); `NA` outside a factor.
+#' * `body$.row_role` -- one of `"coef"`, `"factor_header"`,
+#'   `"level"`, `"reference"`, `"fit_stat"`, `"outcome"`, `"vc"`
+#'   (variance component).
+#' * `body$.indent` -- display indent depth of the label (`0` or `1`).
+#'   Renderers indent `.indent > 0` rows; the label text itself is
+#'   already indented in the character body only.
+#' * `cell_status` -- per-**cell** semantics, keyed by column name, one
+#'   character vector as long as `body` per column that needs one:
+#'   `"reference"` (reference level, *in this estimate block and this
+#'   model*), `"undefined"` (the statistic applies to the row but no
+#'   number expresses it -- an unavailable variance-component standard
+#'   error, a fit statistic undefined for one model's class), `""`
+#'   otherwise. Both marked statuses display as an en-dash. A cell
+#'   whose value is `NA` with no status is *absent* and displays
+#'   blank. Columns with no marked cell are omitted.
+#' * `outcome_labels_by_col` -- for the outcome row (explicit
 #'   `outcome_labels` with two or more models), the display label
 #'   keyed by each model's first structured column name.
 #' * `col_meta` -- per-column metadata keyed by structured column
@@ -2801,13 +2812,24 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   p-style, CI level, etc.).
 #'
 #' @section Versioning:
-#' Components are only ever added, never renamed or given new
-#' semantics, so code written against an older contract keeps working.
-#' `version` says which contract a given object carries: `2` adds
-#' `stars`, `col_meta$display_cells`, and the fixed-effects block row
-#' roles. An object built before the field existed reports version 1
-#' and triggers a warning here -- rebuild the table to get the
-#' current view.
+#' `version` says which contract an object carries. Version `3` moved
+#' row identity out of index vectors and into the body itself:
+#'
+#' * `reference_rows` and `reference_models_by_row` become
+#'   `cell_status`, which marks the reference cell instead of the whole
+#'   row -- the row-scoped flag was blanking estimate blocks that have
+#'   no per-level reference at all.
+#' * `factor_header_rows` becomes `.row_role == "factor_header"`.
+#' * `fit_stat_rows` becomes `.row_role == "fit_stat"`.
+#' * `level_rows` becomes `.indent > 0`.
+#' * `outcome_row` becomes `.row_role == "outcome"`.
+#'
+#' Index vectors are the structure that corrupts as soon as two bodies
+#' are stacked or merged, so they were removed rather than kept
+#' alongside. An object carrying an older contract (or none) is
+#' refused with the correspondence above; rebuild it with
+#' [table_regression()]. An object carrying a *newer* contract than
+#' the spicy reading it is refused as well.
 #'
 #' @seealso [table_regression()] for the user-facing entry point.
 #'
@@ -2818,6 +2840,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' s$body                               # raw numeric body
 #' s$body[which(s$body$p < 0.05), ]     # filter significant rows
 #' # which() drops the structural NA rows (headers, reference levels)
+#' s$body$.row_role                     # what each row is
+#' s$body[s$body$.variable == "wt", ]   # address a row by its variable
 #' s$col_meta$B                         # column metadata for B
 #'
 #' @export
@@ -2838,10 +2862,12 @@ as_structured <- function(x) {
       class = "spicy_invalid_input"
     )
   }
-  # Version guard. The contract only grows, so an older view is
-  # readable -- it just lacks the components added since, which a
-  # renderer written against the current contract would look for in
-  # vain. A newer one may carry semantics this spicy does not know.
+  # Version guard, both ways. A NEWER view may carry semantics this
+  # spicy does not know. An OLDER one is no longer readable: v3 moved
+  # row identity out of the index vectors into the body, so reading a
+  # v2 view with v3 code would silently see no reference rows, no
+  # fit-stat rows and no indent -- a wrong table rather than a missing
+  # feature.
   current <- .spicy_structured_version()
   v <- s$version
   if (!is.numeric(v) || length(v) != 1L || is.na(v)) {
@@ -2861,17 +2887,20 @@ as_structured <- function(x) {
     )
   }
   if (v < current) {
-    spicy_warn(
+    spicy_abort(
       c(
         sprintf(
-          "`x` carries structured contract v%d; this spicy builds v%d.",
+          "`x` carries structured contract v%d; this spicy reads v%d.",
           as.integer(v),
           current
         ),
         "i" = paste(
-          "Components added since (`stars`, `col_meta$display_cells`)",
-          "are absent. Rebuild the table with `table_regression()`."
-        )
+          "v3 replaced the row-index components: `reference_rows` and",
+          "`reference_models_by_row` by `cell_status`,",
+          "`factor_header_rows` / `fit_stat_rows` / `outcome_row` by",
+          "`body$.row_role`, `level_rows` by `body$.indent`."
+        ),
+        "i" = "Rebuild the table with `table_regression()`."
       ),
       class = "spicy_structured_version"
     )

@@ -42,22 +42,36 @@ structured contract as spicy's built-in engines.
 
 \itemize{
 \item \code{version} -- integer contract version (see \emph{Versioning} below).
-\item \code{body} -- \code{data.frame} with a \code{Variable} character column and one
-or more numeric columns. Confidence intervals are split into
-\code{LL} / \code{UL} columns named like \code{"95\% CI: LL"} / \code{"95\% CI: UL"} (or
-prefixed with the model label in multi-model output). Cells
-that have no value (reference levels, non-applicable rows in
-multi-model output, factor headers) are \code{NA}.
-\item \code{reference_rows}, \code{factor_header_rows}, \code{fit_stat_rows},
-\code{level_rows}, \code{outcome_row} -- integer row indices. The
-fixed-effects disclosure block of an absorbed-effects model
-contributes a \code{"Fixed effects:"} factor header and one level row
-per absorbed factor, named as the model names it.
-\item \code{reference_models_by_row} -- for each reference row (keyed by its
-row index as a character string), the \code{model_id}s of the models
-that actually contain the factor: renderers show the reference
-marker only in those models' columns and leave the others blank.
-\item \code{outcome_labels_by_col} -- for the \code{outcome_row} (explicit
+\item \code{body} -- \code{data.frame} with a \code{Variable} character column, one or
+more numeric value columns, and four dot-prefixed \emph{identity}
+columns at the end. Confidence intervals are split into \code{LL} /
+\code{UL} columns named like \code{"95\% CI: LL"} / \code{"95\% CI: UL"} (or
+prefixed with the model label in multi-model output). A cell with
+no value (reference level, term absent from a model, factor
+header) is \code{NA}.
+\item \code{body$.variable} -- source variable of the row: the factor name on
+a factor header / level / reference row, the term otherwise, and
+the fit-statistic token (\code{"nobs"}, \code{"r2"}, \code{"fixed_effects"},
+...) on a fit-statistic row.
+\item \code{body$.level} -- the factor level (or the absorbed factor of a
+fixed-effects block, or the grouping factor of an \code{"N (...)"}
+row); \code{NA} outside a factor.
+\item \code{body$.row_role} -- one of \code{"coef"}, \code{"factor_header"},
+\code{"level"}, \code{"reference"}, \code{"fit_stat"}, \code{"outcome"}, \code{"vc"}
+(variance component).
+\item \code{body$.indent} -- display indent depth of the label (\code{0} or \code{1}).
+Renderers indent \code{.indent > 0} rows; the label text itself is
+already indented in the character body only.
+\item \code{cell_status} -- per-\strong{cell} semantics, keyed by column name, one
+character vector as long as \code{body} per column that needs one:
+\code{"reference"} (reference level, \emph{in this estimate block and this
+model}), \code{"undefined"} (the statistic applies to the row but no
+number expresses it -- an unavailable variance-component standard
+error, a fit statistic undefined for one model's class), \code{""}
+otherwise. Both marked statuses display as an en-dash. A cell
+whose value is \code{NA} with no status is \emph{absent} and displays
+blank. Columns with no marked cell are omitted.
+\item \code{outcome_labels_by_col} -- for the outcome row (explicit
 \code{outcome_labels} with two or more models), the display label
 keyed by each model's first structured column name.
 \item \code{col_meta} -- per-column metadata keyed by structured column
@@ -83,13 +97,25 @@ p-style, CI level, etc.).
 
 \section{Versioning}{
 
-Components are only ever added, never renamed or given new
-semantics, so code written against an older contract keeps working.
-\code{version} says which contract a given object carries: \code{2} adds
-\code{stars}, \code{col_meta$display_cells}, and the fixed-effects block row
-roles. An object built before the field existed reports version 1
-and triggers a warning here -- rebuild the table to get the
-current view.
+\code{version} says which contract an object carries. Version \code{3} moved
+row identity out of index vectors and into the body itself:
+\itemize{
+\item \code{reference_rows} and \code{reference_models_by_row} become
+\code{cell_status}, which marks the reference cell instead of the whole
+row -- the row-scoped flag was blanking estimate blocks that have
+no per-level reference at all.
+\item \code{factor_header_rows} becomes \code{.row_role == "factor_header"}.
+\item \code{fit_stat_rows} becomes \code{.row_role == "fit_stat"}.
+\item \code{level_rows} becomes \code{.indent > 0}.
+\item \code{outcome_row} becomes \code{.row_role == "outcome"}.
+}
+
+Index vectors are the structure that corrupts as soon as two bodies
+are stacked or merged, so they were removed rather than kept
+alongside. An object carrying an older contract (or none) is
+refused with the correspondence above; rebuild it with
+\code{\link[=table_regression]{table_regression()}}. An object carrying a \emph{newer} contract than
+the spicy reading it is refused as well.
 }
 
 \examples{
@@ -99,6 +125,8 @@ s <- as_structured(tbl)
 s$body                               # raw numeric body
 s$body[which(s$body$p < 0.05), ]     # filter significant rows
 # which() drops the structural NA rows (headers, reference levels)
+s$body$.row_role                     # what each row is
+s$body[s$body$.variable == "wt", ]   # address a row by its variable
 s$col_meta$B                         # column metadata for B
 
 }

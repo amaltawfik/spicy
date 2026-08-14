@@ -19,18 +19,29 @@ test_that("M3: reference row is blank (not en-dash) for models lacking the facto
   x <- table_regression(list(.sp_m_factor(), .sp_m_plain()))
   s <- as_structured(x)
   sb <- spicy:::.format_structured_to_string_body(s)
-  i_ref <- s$reference_rows[1]
+  i_ref <- which(s$body$.row_role == "reference")[1L]
   m1_cols <- grep("Model 1", names(sb), value = TRUE)
   m2_cols <- grep("Model 2", names(sb), value = TRUE)
   # model WITH the factor: en-dash; model WITHOUT: blank
   expect_true(all(sb[i_ref, m1_cols] == "–"))
   expect_true(all(sb[i_ref, m2_cols] == ""))
+  # v3 says the same thing per cell, without a per-row model list.
+  for (cl in m1_cols) {
+    expect_identical(s$cell_status[[cl]][i_ref], "reference", info = cl)
+  }
+  for (cl in m2_cols) {
+    expect_identical(
+      spicy:::.struct_cell_status(s, cl)[i_ref],
+      "",
+      info = cl
+    )
+  }
 })
 
 test_that("M3: single-model reference rows still en-dash everywhere", {
   s <- as_structured(table_regression(.sp_m_factor()))
   sb <- spicy:::.format_structured_to_string_body(s)
-  i_ref <- s$reference_rows[1]
+  i_ref <- which(s$body$.row_role == "reference")[1L]
   data_cols <- names(sb)[-1]
   expect_true(all(sb[i_ref, data_cols] == "–"))
 })
@@ -49,11 +60,12 @@ test_that("B-structured-outcome: as_structured() carries the Outcome row", {
   m2 <- lm(hp ~ wt, data = mtcars)
   x <- table_regression(list(m1, m2), outcome_labels = c("MPG", "HP"))
   s <- as_structured(x)
-  expect_length(s$outcome_row, 1L)
-  expect_identical(s$body$Variable[s$outcome_row], "Outcome")
+  orow <- spicy:::.struct_outcome_row(s)
+  expect_length(orow, 1L)
+  expect_identical(s$body$Variable[orow], "Outcome")
   # the label text overlays in the string body (per-model first sub-column)
   sb <- spicy:::.format_structured_to_string_body(s)
-  cells <- unlist(sb[s$outcome_row, -1])
+  cells <- unlist(sb[orow, -1])
   expect_true("MPG" %in% cells && "HP" %in% cells)
   # parity with print()
   out <- paste(capture.output(print(x)), collapse = "\n")
@@ -64,5 +76,5 @@ test_that("B-structured-outcome: no Outcome row without explicit labels", {
   m1 <- .sp_m_factor()
   m2 <- lm(hp ~ wt, data = mtcars)
   s <- as_structured(table_regression(list(m1, m2)))
-  expect_length(s$outcome_row, 0L)
+  expect_length(spicy:::.struct_outcome_row(s), 0L)
 })
