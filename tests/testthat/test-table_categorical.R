@@ -935,7 +935,7 @@ test_that("table_categorical validates boolean arguments", {
 test_that("table_categorical validates decimal_mark", {
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
-    table_categorical(df, "v", "g", decimal_mark = ";"),
+    table_categorical(df, "v", "g", decimal_mark = "--"),
     "`decimal_mark` must be"
   )
 })

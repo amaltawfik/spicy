@@ -504,7 +504,7 @@ test_that("table_continuous_lm validates core user arguments", {
       df,
       select = y,
       by = x,
-      decimal_mark = ";",
+      decimal_mark = "--",
       output = "long"
     ),
     "decimal_mark"

@@ -422,8 +422,14 @@ build_structured_body <- function(
       prec <- 0L
     }
 
-    p_style <- if (is_p_col || identical(token, "pd")) "apa" else NULL
-    threshold <- if (is_p_col) 10^(-p_digits) else NULL
+    # The leading-zero policy of bounded columns is spicy's APA drop
+    # by default; a journal style may pin it to "standard".
+    p_style <- if (is_p_col || identical(token, "pd")) {
+      .style_p_style_token()
+    } else {
+      NULL
+    }
+    threshold <- if (is_p_col) .style_p_floor(p_digits) else NULL
 
     col_meta[[e$name]] <- list(
       token = token,
@@ -760,8 +766,8 @@ build_structured_body <- function(
     effect_size_digits = as.integer(effect_size_digits),
     fit_digits = as.integer(fit_digits),
     ic_digits = as.integer(ic_digits),
-    p_style = "apa",
-    p_threshold = 10^(-p_digits),
+    p_style = .style_p_style_token(),
+    p_threshold = .style_p_floor(p_digits),
     ci_level = ci_level
   )
 
@@ -902,7 +908,7 @@ build_structured_body <- function(
     if (is.null(meta)) {
       next
     }
-    if (identical(meta$p_style, "apa")) {
+    if (!is.null(meta$p_style)) {
       vals <- body[[col_name]]
       if (is.numeric(vals)) {
         ov_rows <- vapply(
@@ -1010,10 +1016,12 @@ build_structured_body <- function(
 
   # decimal_mark
   dm <- struct$format_spec$decimal_mark
-  if (!isTRUE(dm %in% c(".", ","))) {
+  # Any single character: "." and "," are the usual pair, but a journal
+  # style may ask for another mark (The Lancet's midline dot, U+00B7).
+  if (!(is.character(dm) && length(dm) == 1L && !is.na(dm) && nchar(dm) == 1L)) {
     problems <- c(
       problems,
-      sprintf("decimal_mark must be '.' or ',' (got '%s').", dm)
+      sprintf("decimal_mark must be a single character (got '%s').", dm)
     )
   }
 
@@ -1369,8 +1377,8 @@ build_structured_body <- function(
       ic_digits = ic_digits,
       p_digits = p_digits
     )
-    p_style <- if (identical(tk, "p_change")) "apa" else NULL
-    threshold <- if (identical(tk, "p_change")) 10^(-p_digits) else NULL
+    p_style <- if (identical(tk, "p_change")) .style_p_style_token() else NULL
+    threshold <- if (identical(tk, "p_change")) .style_p_floor(p_digits) else NULL
     is_change_p <- identical(tk, "p_change")
 
     for (m_id in model_ids) {
@@ -1613,11 +1621,14 @@ build_structured_body <- function(
   if (is.null(threshold) || !is.finite(threshold) || threshold <= 0) {
     return(NULL)
   }
-  digits <- as.integer(round(-log10(threshold)))
-  if (digits < 1L) {
-    digits <- 1L
-  }
-  paste0("<", decimal_mark, strrep("0", digits - 1L), "1")
+  paste0(
+    "<",
+    .strip_leading_zero(
+      .format_p_floor(threshold, decimal_mark),
+      decimal_mark,
+      .style_p_leading_zero()
+    )
+  )
 }
 
 # Render a single cell of the structured body to its display string,

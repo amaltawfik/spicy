@@ -14,6 +14,11 @@
 #' @keywords internal
 #' @export
 print.spicy_continuous_lm_table <- function(x, ...) {
+  # This method re-formats from the raw values, so a journal style used
+  # to build the table has to be back in force here (see
+  # `.style_stamp()`); with no style it is a no-op.
+  .style_pushed <- .style_restore(x)
+  on.exit(.style_end(.style_pushed), add = TRUE)
   digits <- attr(x, "digits") %||% 2L
   fit_digits <- attr(x, "fit_digits") %||% 2L
   effect_size_digits <- attr(x, "effect_size_digits") %||% 2L

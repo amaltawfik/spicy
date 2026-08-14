@@ -177,7 +177,9 @@ test_that("structured body validates decimal_mark", {
     col_meta = list(B = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(),
-    format_spec = list(decimal_mark = "x")
+    # Any SINGLE character is a valid decimal mark (a journal style
+    # may ask for The Lancet's midline dot); two characters is not.
+    format_spec = list(decimal_mark = "xx")
   )
   expect_warning(
     spicy:::.validate_structured(fake_struct),
@@ -200,7 +202,9 @@ test_that(".validate_structured warns with a classed spicy condition", {
     col_meta = list(B = list(precision = 2L)),
     spanners = NULL,
     ci_pairs = list(),
-    format_spec = list(decimal_mark = "x")
+    # Any SINGLE character is a valid decimal mark (a journal style
+    # may ask for The Lancet's midline dot); two characters is not.
+    format_spec = list(decimal_mark = "xx")
   )
   expect_warning(
     spicy:::.validate_structured(fake_struct),

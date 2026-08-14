@@ -560,6 +560,19 @@
 #'
 #' # Global options
 #'
+#' * **`options(spicy.style = )`** -- the journal or locale style
+#'   applied by default to all four table families
+#'   (`table_regression()`, `table_categorical()`,
+#'   `table_continuous()`, `table_continuous_lm()`). Takes a theme
+#'   name (`"jama"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`,
+#'   `"fr"`) or a [spicy_style()] object. The style of a report is a
+#'   property of the document, so it is set once in the setup chunk;
+#'   the `style` argument overrides it per call, and any formatting
+#'   argument you type overrides both. `options(spicy.style = NULL)`
+#'   restores spicy's own defaults. See [spicy_style()] for the exact
+#'   rules each theme encodes and the official document they come
+#'   from.
+#'
 #' * **`options(spicy.note_style = )`** -- how the table note is
 #'   rendered by the `"tinytable"` engine (all four table families).
 #'   A note is subordinate to the table it documents, so it is set
@@ -1235,6 +1248,16 @@
 #'   APA-strict, journal-specific) be applied without modifying the
 #'   call site.
 #'
+#' @param style A journal or locale style: a theme name (`"jama"`,
+#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+#'   [spicy_style()] object, or `NULL` (the default). A style only
+#'   changes DEFAULTS -- any argument you pass explicitly wins over it.
+#'   Set `options(spicy.style = )` for document-wide scope. A theme
+#'   covers numeric formatting conformity only, not full editorial
+#'   conformity; `?spicy_style` lists the exact rules each one encodes
+#'   and the official document they come from. An unknown name is an
+#'   error.
+#'
 #' @return A `spicy_regression_table` object (a `data.frame`
 #'   subclass with classes `c("spicy_regression_table",
 #'   "spicy_table", "data.frame")`) when `output = "default"`.
@@ -1478,8 +1501,16 @@ table_regression <- function(
   excel_sheet = "Regression",
   clipboard_delim = "\t",
   word_path = NULL,
-  word_template = NULL
+  word_template = NULL,
+  style = NULL
 ) {
+  # A journal / locale style only moves DEFAULTS: `.style_begin()`
+  # rewrites the formatting formals the caller did NOT type, and pushes
+  # the levers that have no formal (p-value banding, interval
+  # separator, ...) onto a call-scoped stack popped on exit.
+  .style_pushed <- .style_begin(style, match.call(), environment())
+  on.exit(.style_end(.style_pushed), add = TRUE)
+
   # Capture the cluster expression BEFORE evaluation so we can
   # (a) derive a friendly name for the footer ("clusters by
   # clinic_id" rather than "cluster vector supplied"), and

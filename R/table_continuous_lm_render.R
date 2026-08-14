@@ -283,7 +283,8 @@ build_wide_display_df_continuous_lm <- function(
         )
         if (nzchar(es_str) && nzchar(es_lo) && nzchar(es_hi)) {
           sep <- ci_bracket_separator(decimal_mark)
-          es_str <- paste0(es_str, " [", es_lo, sep, es_hi, "]")
+          br <- .style_ci_brackets()
+          es_str <- paste0(es_str, " ", br[[1L]], es_lo, sep, es_hi, br[[2L]])
         }
       }
       out[[format_effect_size_header_lm(effect_size)]][i] <- es_str

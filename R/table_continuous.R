@@ -223,6 +223,16 @@
 #'   `FALSE`, the declared codes are summarized as ordinary numbers.
 #'   See the "Declared missing values" section of [freq()].
 #'
+#' @param style A journal or locale style: a theme name (`"jama"`,
+#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+#'   [spicy_style()] object, or `NULL` (the default). A style only
+#'   changes DEFAULTS -- any argument you pass explicitly wins over it.
+#'   Set `options(spicy.style = )` for document-wide scope. A theme
+#'   covers numeric formatting conformity only, not full editorial
+#'   conformity; `?spicy_style` lists the exact rules each one encodes
+#'   and the official document they come from. An unknown name is an
+#'   error.
+#'
 #' @inheritSection freq Declared missing values
 #'
 #' @return Depends on `output`:
@@ -607,8 +617,13 @@ table_continuous <- function(
   clipboard_delim = "\t",
   word_path = NULL,
   verbose = FALSE,
-  user_na = TRUE
+  user_na = TRUE,
+  style = NULL
 ) {
+  # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
+  .style_pushed <- .style_begin(style, match.call(), environment())
+  on.exit(.style_end(.style_pushed), add = TRUE)
+
   # --- validation ---
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
@@ -661,9 +676,9 @@ table_continuous <- function(
     )
   }
   p_digits <- as.integer(p_digits)
-  if (!decimal_mark %in% c(".", ",")) {
+  if (!.is_single_char(decimal_mark)) {
     spicy_abort(
-      '`decimal_mark` must be "." or ","',
+      '`decimal_mark` must be a single character (e.g. "." or ",").',
       class = "spicy_invalid_input"
     )
   }
@@ -1324,6 +1339,10 @@ table_continuous <- function(
   attr(result, "effect_size_digits") <- effect_size_digits
   attr(result, "p_digits") <- p_digits
   attr(result, "decimal_mark") <- decimal_mark
+  # The style levers that have no argument (p-value banding, interval
+  # separator, ...) ride along like the rest of the formatting
+  # attributes, because this table re-formats at print time.
+  result <- .style_stamp(result)
   attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
   # Label of the grouping variable (resolved like table_continuous_lm's
@@ -2184,8 +2203,9 @@ build_display_df <- function(
       # European convention: when the decimal mark is ",", switch the
       # list separator inside [LL, UL] to ";" to avoid the ambiguity
       # of "[0,07, 0,30]" where commas serve two roles.
-      ci_sep <- if (decimal_mark == ",") "; " else ", "
-      s <- paste0(s, " [", lo, ci_sep, hi, "]")
+      ci_sep <- ci_bracket_separator(decimal_mark)
+      ci_brackets <- .style_ci_brackets()
+      s <- paste0(s, " ", ci_brackets[[1L]], lo, ci_sep, hi, ci_brackets[[2L]])
     }
     s
   }

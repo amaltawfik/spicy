@@ -384,6 +384,16 @@
 #'   ordinary values. See the "Declared missing values" section of
 #'   [freq()].
 #'
+#' @param style A journal or locale style: a theme name (`"jama"`,
+#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+#'   [spicy_style()] object, or `NULL` (the default). A style only
+#'   changes DEFAULTS -- any argument you pass explicitly wins over it.
+#'   Set `options(spicy.style = )` for document-wide scope. A theme
+#'   covers numeric formatting conformity only, not full editorial
+#'   conformity; `?spicy_style` lists the exact rules each one encodes
+#'   and the official document they come from. An unknown name is an
+#'   error.
+#'
 #' @inheritSection freq Declared missing values
 #'
 #' @return Depends on `output`:
@@ -1058,8 +1068,13 @@ table_continuous_lm <- function(
   clipboard_delim = "\t",
   word_path = NULL,
   verbose = FALSE,
-  user_na = TRUE
+  user_na = TRUE,
+  style = NULL
 ) {
+  # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
+  .style_pushed <- .style_begin(style, match.call(), environment())
+  on.exit(.style_end(.style_pushed), add = TRUE)
+
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
   }
@@ -1135,9 +1150,9 @@ table_continuous_lm <- function(
     )
   }
   boot_n <- as.integer(boot_n)
-  if (!decimal_mark %in% c(".", ",")) {
+  if (!.is_single_char(decimal_mark)) {
     spicy_abort(
-      '`decimal_mark` must be "." or ",".',
+      '`decimal_mark` must be a single character (e.g. "." or ",").',
       class = "spicy_invalid_input"
     )
   }
@@ -1517,6 +1532,9 @@ table_continuous_lm <- function(
   attr(result, "effect_size_digits") <- effect_size_digits
   attr(result, "p_digits") <- p_digits
   attr(result, "decimal_mark") <- decimal_mark
+  # See `.style_stamp()`: this table re-formats at print time, so the
+  # argument-less style levers travel with it.
+  result <- .style_stamp(result)
   attr(result, "by_var") <- by_name
   attr(result, "by_label") <- by_label
   attr(result, "vcov_type") <- vcov

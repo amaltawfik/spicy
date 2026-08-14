@@ -484,6 +484,16 @@
 #'   `FALSE`, the declared codes stay valid categories. See the
 #'   "Declared missing values" section of [freq()].
 #'
+#' @param style A journal or locale style: a theme name (`"jama"`,
+#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+#'   [spicy_style()] object, or `NULL` (the default). A style only
+#'   changes DEFAULTS -- any argument you pass explicitly wins over it.
+#'   Set `options(spicy.style = )` for document-wide scope. A theme
+#'   covers numeric formatting conformity only, not full editorial
+#'   conformity; `?spicy_style` lists the exact rules each one encodes
+#'   and the official document they come from. An unknown name is an
+#'   error.
+#'
 #' @inheritSection freq Declared missing values
 #'
 #' @return Depends on `output`:
@@ -760,9 +770,13 @@ table_categorical <- function(
   excel_sheet = "Categorical",
   clipboard_delim = "\t",
   word_path = NULL,
-  user_na = TRUE
+  user_na = TRUE,
+  style = NULL
 ) {
   select_missing <- missing(select)
+  # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
+  .style_pushed <- .style_begin(style, match.call(), environment())
+  on.exit(.style_end(.style_pushed), add = TRUE)
   output <- spicy_match_arg(output)
   align <- spicy_match_arg(align)
 
@@ -1016,9 +1030,9 @@ table_categorical <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (!identical(decimal_mark, ".") && !identical(decimal_mark, ",")) {
+  if (!.is_single_char(decimal_mark)) {
     spicy_abort(
-      "`decimal_mark` must be either '.' or ','.",
+      "`decimal_mark` must be a single character (e.g. '.' or ',').",
       class = "spicy_invalid_input"
     )
   }
@@ -1260,7 +1274,10 @@ table_categorical <- function(
       return("")
     }
     s <- formatC(v, format = "f", digits = v_digits)
-    s <- sub("^0\\.", ".", s)
+    # The association measure is bounded, so it follows the same
+    # leading-zero policy as a p-value: dropped by default (APA), kept
+    # under a style that says so (`p_style = "standard"`).
+    s <- .strip_leading_zero(s, ".", .style_p_leading_zero())
     if (decimal_mark != ".") {
       s <- sub("\\.", decimal_mark, s)
     }
@@ -2666,13 +2683,19 @@ table_categorical <- function(
       return(df)
     }
     has_val <- nzchar(df[[measure_col]]) & nzchar(df[["CI lower"]])
+    # `", "` is this call site's historical separator, kept as the
+    # no-style default so the corpus is byte-identical; a style may
+    # replace it (and the brackets).
+    ci_sep <- .style_ci_sep(", ")
+    br <- .style_ci_brackets()
     df[[measure_col]][has_val] <- paste0(
       df[[measure_col]][has_val],
-      " [",
+      " ",
+      br[[1L]],
       df[["CI lower"]][has_val],
-      ", ",
+      ci_sep,
       df[["CI upper"]][has_val],
-      "]"
+      br[[2L]]
     )
     df[["CI lower"]] <- NULL
     df[["CI upper"]] <- NULL

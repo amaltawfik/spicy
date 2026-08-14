@@ -737,9 +737,14 @@ format_p_threshold <- function(p) {
     return(format(p))
   }
   s <- formatC(p, format = "f", digits = 3) # always 3 decimals first
-  s <- sub("^0", "", s) # ".050" / ".100" / ".001"
-  # Trim trailing zeros but keep at least 2 decimal digits ("." + 2 chars).
-  while (nchar(s) > 3L && substr(s, nchar(s), nchar(s)) == "0") {
+  # ".050" / ".100" / ".001" -- unless a style keeps the leading zero.
+  s <- .strip_leading_zero(s, ".", .style_p_leading_zero())
+  # Trim trailing zeros but keep at least 2 decimal digits ("." + 2
+  # chars). The floor counts the integer part, which is empty under the
+  # APA drop (".050" -> 3) and one digit when a style keeps the leading
+  # zero ("0.050" -> 4).
+  min_len <- nchar(sub("\\..*$", "", s)) + 3L
+  while (nchar(s) > min_len && substr(s, nchar(s), nchar(s)) == "0") {
     s <- substr(s, 1L, nchar(s) - 1L)
   }
   s

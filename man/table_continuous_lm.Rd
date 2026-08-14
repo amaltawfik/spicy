@@ -41,7 +41,8 @@ table_continuous_lm(
   clipboard_delim = "\\t",
   word_path = NULL,
   verbose = FALSE,
-  user_na = TRUE
+  user_na = TRUE,
+  style = NULL
 )
 }
 \arguments{
@@ -458,6 +459,16 @@ as missing and excluded from the fitted models (reflected in the
 per-group \code{n}). If \code{FALSE}, the declared codes enter the fits as
 ordinary values. See the "Declared missing values" section of
 \code{\link[=freq]{freq()}}.}
+
+\item{style}{A journal or locale style: a theme name (\code{"jama"},
+\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}, \code{"fr"}), a
+\code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
+changes DEFAULTS -- any argument you pass explicitly wins over it.
+Set \code{options(spicy.style = )} for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; \code{?spicy_style} lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.}
 }
 \value{
 Depends on \code{output}:

@@ -145,9 +145,30 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `table_regression_models()`: the machine-readable registry of supported
   model classes (family, engine, AME, exponentiate semantics); its help page
   is the per-family reference.
+* `spicy_style()`: build a table style, or fetch one of the named journal
+  themes. `?spicy_style` lists, for each theme, the exact rules it encodes
+  and the official document they come from.
 
 ## New features
 
+* New `style` argument on `table_regression()`, `table_categorical()`,
+  `table_continuous()` and `table_continuous_lm()`: `"jama"`, `"nejm"`,
+  `"lancet"`, `"annals"`, `"apa"`, `"aer"` and `"fr"`. Each theme encodes only rules
+  taken from an official document of the institution, listed one by one in
+  `?spicy_style` -- numeric formatting conformity, not full editorial
+  conformity. An unknown name errors and names the ones that exist.
+* Themes move defaults only. Any formatting argument you pass wins over the
+  theme, even at its own default value.
+* New `options(spicy.style = )` for document-wide scope, like the language
+  of a report. The `style` argument overrides it per call.
+* `spicy_style()` composes a style by hand -- p-value decimals, bands or
+  significant figures, the `<` floor, the leading zero, decimal mark,
+  interval separator and brackets, stars, per-family digits -- and can start
+  from a theme: `spicy_style("lancet", ci_sep = " to ")`. Every field is
+  validated; a misspelt lever errors instead of being ignored.
+* `table_categorical()`, `table_continuous()` and `table_continuous_lm()`
+  accept any single character as `decimal_mark`, like `table_regression()`
+  already did. This is what lets `"lancet"` set the midline dot.
 * `as_structured()` now reads the descriptive tables --
   `table_categorical()`, `table_continuous()` and
   `table_continuous_lm()` -- and returns the schema it returns for

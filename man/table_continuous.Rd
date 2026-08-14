@@ -33,7 +33,8 @@ table_continuous(
   clipboard_delim = "\\t",
   word_path = NULL,
   verbose = FALSE,
-  user_na = TRUE
+  user_na = TRUE,
+  style = NULL
 )
 }
 \arguments{
@@ -268,6 +269,16 @@ values never reach the numeric summaries: they are excluded like
 \code{NA} and disclosed in the table note (\verb{Declared missing values removed: ...}); declared-missing \code{by} values form no group. If
 \code{FALSE}, the declared codes are summarized as ordinary numbers.
 See the "Declared missing values" section of \code{\link[=freq]{freq()}}.}
+
+\item{style}{A journal or locale style: a theme name (\code{"jama"},
+\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}, \code{"fr"}), a
+\code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
+changes DEFAULTS -- any argument you pass explicitly wins over it.
+Set \code{options(spicy.style = )} for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; \code{?spicy_style} lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.}
 }
 \value{
 Depends on \code{output}:

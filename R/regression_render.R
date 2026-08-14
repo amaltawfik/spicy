@@ -1139,12 +1139,13 @@ format_cell_value <- function(
       return("\u2013")
     }
     ci_sep <- ci_bracket_separator(decimal_mark)
+    ci_brackets <- .style_ci_brackets()
     return(paste0(
-      "[",
+      ci_brackets[[1L]],
       format_number(lo, digits_to_use, decimal_mark),
       ci_sep,
       format_number(hi, digits_to_use, decimal_mark),
-      "]"
+      ci_brackets[[2L]]
     ))
   }
 
@@ -1170,7 +1171,7 @@ format_cell_value <- function(
       digits = p_digits,
       decimal.mark = decimal_mark
     )
-    return(sub("^0(?=[.,])", "", out, perl = TRUE))
+    return(.strip_leading_zero(out, decimal_mark, .style_p_leading_zero()))
   }
   if (field %in% c("ess_bulk", "ess_tail")) {
     val <- long_row[[field]][1]

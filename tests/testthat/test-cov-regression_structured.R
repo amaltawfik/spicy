@@ -381,12 +381,14 @@ test_that(".below_threshold_text returns NULL for non-positive / non-finite thre
   expect_null(spicy:::.below_threshold_text(Inf))
 })
 
-test_that(".below_threshold_text floors the digit count at 1", {
-  # threshold >= 1 -> -log10 <= 0 -> digits floored to 1 -> "<.1".
-  expect_identical(spicy:::.below_threshold_text(1), "<.1")
-  expect_identical(spicy:::.below_threshold_text(5), "<.1")
-  # Normal case for reference.
+test_that(".below_threshold_text renders a threshold at its own precision", {
+  # A degenerate threshold >= 1 is shown as itself, not as ".1": the
+  # floor is rendered with exactly the decimals it has.
+  expect_identical(spicy:::.below_threshold_text(1), "<1")
+  expect_identical(spicy:::.below_threshold_text(5), "<5")
+  # Normal cases.
   expect_identical(spicy:::.below_threshold_text(0.001), "<.001")
+  expect_identical(spicy:::.below_threshold_text(0.05), "<.05")
 })
 
 

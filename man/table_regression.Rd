@@ -54,7 +54,8 @@ table_regression(
   excel_sheet = "Regression",
   clipboard_delim = "\\t",
   word_path = NULL,
-  word_template = NULL
+  word_template = NULL,
+  style = NULL
 )
 }
 \arguments{
@@ -750,6 +751,16 @@ delegation keeps the rendered caption consistent with the
 surrounding document and lets editorial conventions (Nature,
 APA-strict, journal-specific) be applied without modifying the
 call site.}
+
+\item{style}{A journal or locale style: a theme name (\code{"jama"},
+\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}, \code{"fr"}), a
+\code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
+changes DEFAULTS -- any argument you pass explicitly wins over it.
+Set \code{options(spicy.style = )} for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; \code{?spicy_style} lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.}
 }
 \value{
 A \code{spicy_regression_table} object (a \code{data.frame}
@@ -1324,6 +1335,18 @@ numeric so cluster-robust Satterthwaite df is preserved.
 
 \section{Global options}{
 \itemize{
+\item \strong{\code{options(spicy.style = )}} -- the journal or locale style
+applied by default to all four table families
+(\code{table_regression()}, \code{table_categorical()},
+\code{table_continuous()}, \code{table_continuous_lm()}). Takes a theme
+name (\code{"jama"}, \code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"},
+\code{"fr"}) or a \code{\link[=spicy_style]{spicy_style()}} object. The style of a report is a
+property of the document, so it is set once in the setup chunk;
+the \code{style} argument overrides it per call, and any formatting
+argument you type overrides both. \code{options(spicy.style = NULL)}
+restores spicy's own defaults. See \code{\link[=spicy_style]{spicy_style()}} for the exact
+rules each theme encodes and the official document they come
+from.
 \item \strong{\code{options(spicy.note_style = )}} -- how the table note is
 rendered by the \code{"tinytable"} engine (all four table families).
 A note is subordinate to the table it documents, so it is set

@@ -97,6 +97,13 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
 # below threshold; `digits = 4` gives `.0451` and `<.0001`. Leading
 # zeros are always stripped, the configured `decimal_mark` is
 # honoured. NA -> "".
+#
+# A journal style (`R/spicy_style.R`) may override three of those
+# choices for the duration of a table call: how many decimals this
+# p-value gets (banded, or by significant figures), where the "<"
+# floor sits, and whether the leading zero is kept. With no style
+# active every hook returns the value computed here, so the output
+# is byte-identical to the pre-style formatter.
 format_p_value <- function(p, decimal_mark = ".", digits = 3L) {
   if (is.na(p)) {
     return("")
@@ -105,15 +112,43 @@ format_p_value <- function(p, decimal_mark = ".", digits = 3L) {
   if (!is.finite(digits) || digits < 1L) {
     digits <- 3L
   }
-  threshold <- 10^(-digits)
+  threshold <- .style_p_floor(digits)
+  keep_zero <- .style_p_leading_zero()
   if (p < threshold) {
     # "<.001" for digits=3, "<.0001" for digits=4, "<.01" for digits=2
-    return(paste0("<", decimal_mark, strrep("0", digits - 1L), "1"))
+    return(paste0(
+      "<",
+      .strip_leading_zero(
+        .format_p_floor(threshold, decimal_mark),
+        decimal_mark,
+        keep_zero
+      )
+    ))
   }
-  out <- format_number(p, digits, decimal_mark)
-  out <- sub("^0(?=[\\.,])", "", out, perl = TRUE)
-  out <- sub("^-0(?=[\\.,])", "-", out, perl = TRUE)
-  out
+  out <- format_number(p, .style_p_decimals(p, digits), decimal_mark)
+  .strip_leading_zero(out, decimal_mark, keep_zero)
+}
+
+# Internal: render the "<" floor of a p-value at exactly the precision
+# the floor itself has -- 0.001 -> "0.001", 0.0001 -> "0.0001",
+# 0.05 -> "0.05" -- so a style-set floor is never shown rounded.
+.format_p_floor <- function(threshold, decimal_mark) {
+  nd <- 0L
+  while (nd < 15L && !isTRUE(all.equal(round(threshold, nd), threshold))) {
+    nd <- nd + 1L
+  }
+  format_number(threshold, nd, decimal_mark)
+}
+
+# Internal: drop the leading zero of a decimal fraction ("0.03" ->
+# ".03", "-0.03" -> "-.03") unless `keep` says to keep it. Works with
+# any single-character decimal mark.
+.strip_leading_zero <- function(x, decimal_mark, keep = FALSE) {
+  if (isTRUE(keep)) {
+    return(x)
+  }
+  dm <- gsub("([.^$*+?()\\[\\]{}|\\\\])", "\\\\\\1", decimal_mark, perl = TRUE)
+  sub(paste0("^(-?)0(?=", dm, ")"), "\\1", x, perl = TRUE)
 }
 
 # Internal: decimal-point alignment for a vector of formatted numeric
@@ -252,7 +287,7 @@ decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
 # European convention is to switch to a semicolon in that case
 # (`"0,18 [0,07; 0,30]"`).
 ci_bracket_separator <- function(decimal_mark) {
-  if (identical(decimal_mark, ",")) "; " else ", "
+  .style_ci_sep(if (identical(decimal_mark, ",")) "; " else ", ")
 }
 
 # Internal: decimal-align the LL and UL inside a column of
@@ -275,13 +310,27 @@ align_ci_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   }
   values <- as.character(values)
   values[is.na(values)] <- ""
-  is_ci <- grepl("^\\[", values) & grepl("\\]\\s*$", values)
+  # Build regexes that escape regex metacharacters in `sep` and in the
+  # bracket pair. The only non-trivial cases here are "," and "; "
+  # (literal text); escape defensively because a style may set either
+  # the separator or the brackets to anything.
+  esc <- function(s) gsub("([.|()\\^{}+$*?\\[\\]])", "\\\\\\1", s, perl = TRUE)
+  brackets <- .style_ci_brackets()
+  open_re <- esc(brackets[[1L]])
+  close_re <- esc(brackets[[2L]])
+  is_ci <- grepl(paste0("^", open_re), values) &
+    grepl(paste0(close_re, "\\s*$"), values)
   sep <- ci_bracket_separator(decimal_mark)
-  # Build a regex that escapes regex metacharacters in `sep`. The
-  # only non-trivial cases here are "," and "; " (literal text);
-  # escape defensively in case `sep` is ever extended.
-  sep_re <- gsub("([.|()\\^{}+$*?])", "\\\\\\1", sep, perl = TRUE)
-  pattern <- paste0("^\\[\\s*(.*?)\\s*", sep_re, "\\s*(.*?)\\s*\\]\\s*$")
+  sep_re <- esc(sep)
+  pattern <- paste0(
+    "^",
+    open_re,
+    "\\s*(.*?)\\s*",
+    sep_re,
+    "\\s*(.*?)\\s*",
+    close_re,
+    "\\s*$"
+  )
   parts <- regmatches(values, regexec(pattern, values))
 
   lls <- rep(NA_character_, length(values))
@@ -296,7 +345,13 @@ align_ci_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   aligned_lls <- decimal_align_strings(lls, decimal_mark, pad_char)
   aligned_uls <- decimal_align_strings(uls, decimal_mark, pad_char)
 
-  ci_cells <- paste0("[", aligned_lls, sep, aligned_uls, "]")
+  ci_cells <- paste0(
+    brackets[[1L]],
+    aligned_lls,
+    sep,
+    aligned_uls,
+    brackets[[2L]]
+  )
   ci_width <- if (length(ci_cells)) max(nchar(ci_cells)) else 0L
 
   # `pad_char` is the same character passed to decimal_align_strings()

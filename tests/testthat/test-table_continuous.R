@@ -913,7 +913,7 @@ test_that("table_continuous validates digits", {
 
 test_that("table_continuous validates decimal_mark", {
   df <- data.frame(x = 1:5)
-  expect_error(table_continuous(df, decimal_mark = ";"), "decimal_mark")
+  expect_error(table_continuous(df, decimal_mark = "--"), "decimal_mark")
 })
 
 test_that("table_continuous validates labels", {
