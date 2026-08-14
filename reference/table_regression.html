@@ -151,7 +151,8 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  excel_sheet <span class="op">=</span> <span class="st">"Regression"</span>,</span>
 <span>  clipboard_delim <span class="op">=</span> <span class="st">"\t"</span>,</span>
 <span>  word_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  word_template <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  word_template <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  style <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -908,6 +909,18 @@ surrounding document and lets editorial conventions (Nature,
 APA-strict, journal-specific) be applied without modifying the
 call site.</p></dd>
 
+
+<dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
+<dd><p>A journal or locale style: a theme name (<code>"jama"</code>,
+<code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>, <code>"fr"</code>), a
+<code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
+changes DEFAULTS – any argument you pass explicitly wins over it.
+Set <code>options(spicy.style = )</code> for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -1445,7 +1458,19 @@ numeric so cluster-robust Satterthwaite df is preserved.</p>
     <div class="section level2">
     <h2 id="global-options">Global options<a class="anchor" aria-label="anchor" href="#global-options"></a></h2>
 
-<ul><li><p><strong><code>options(spicy.note_style = )</code></strong> – how the table note is
+<ul><li><p><strong><code>options(spicy.style = )</code></strong> – the journal or locale style
+applied by default to all four table families
+(<code>table_regression()</code>, <code><a href="table_categorical.html">table_categorical()</a></code>,
+<code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>). Takes a theme
+name (<code>"jama"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>,
+<code>"fr"</code>) or a <code><a href="spicy_style.html">spicy_style()</a></code> object. The style of a report is a
+property of the document, so it is set once in the setup chunk;
+the <code>style</code> argument overrides it per call, and any formatting
+argument you type overrides both. <code>options(spicy.style = NULL)</code>
+restores spicy's own defaults. See <code><a href="spicy_style.html">spicy_style()</a></code> for the exact
+rules each theme encodes and the official document they come
+from.</p></li>
+<li><p><strong><code>options(spicy.note_style = )</code></strong> – how the table note is
 rendered by the <code>"tinytable"</code> engine (all four table families).
 A note is subordinate to the table it documents, so it is set
 one size down, in black: <code>0.9em</code>, matching the <code>"gt"</code> engine and

@@ -58,7 +58,8 @@ table_continuous(
   clipboard_delim = "\t",
   word_path = NULL,
   verbose = FALSE,
-  user_na = TRUE
+  user_na = TRUE,
+  style = NULL
 )
 ```
 
@@ -362,6 +363,19 @@ table_continuous(
   codes are summarized as ordinary numbers. See the "Declared missing
   values" section of
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
+
+- style:
+
+  A journal or locale style: a theme name (`"jama"`, `"lancet"`,
+  `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  object, or `NULL` (the default). A style only changes DEFAULTS – any
+  argument you pass explicitly wins over it. Set
+  `options(spicy.style = )` for document-wide scope. A theme covers
+  numeric formatting conformity only, not full editorial conformity;
+  [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  lists the exact rules each one encodes and the official document they
+  come from. An unknown name is an error.
 
 ## Value
 

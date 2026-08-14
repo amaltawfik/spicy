@@ -80,17 +80,20 @@
   semantics and row blocks, plus the robust-variance backends and
   standardized-coefficient support each family takes.
 
-- [The structured view: programmatic access to regression
+- [The structured view: programmatic access to spicy
   tables](https://amaltawfik.github.io/spicy/articles/as-structured.md):
 
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   exposes the typed representation behind every
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  output: a numeric body with split CI columns, per-column metadata,
-  row-role indices, and the format specification – the same contract
-  spicy’s own Excel, gt, tinytable, flextable, and clipboard engines
-  consume. Filter coefficients programmatically, aggregate raw values,
-  or build a custom renderer.
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  output: a numeric body with per-row identity columns, per-column
+  metadata, per-cell status, and the format specification. Filter rows
+  programmatically, aggregate raw values, or build a custom renderer –
+  against one schema for all four families.
 
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>The structured view: programmatic access to regression tables • spicy</title>
+<title>The structured view: programmatic access to spicy tables • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -24,10 +24,10 @@
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="The structured view: programmatic access to regression tables">
-<meta name="description" content="`as_structured()` exposes the typed representation behind every `table_regression()` output: a numeric body with split CI columns, per-column metadata, row-role indices, and the format specification -- the same contract spicy's own Excel, gt, tinytable, flextable, and clipboard engines consume. Filter coefficients programmatically, aggregate raw values, or build a custom renderer.
+<meta property="og:title" content="The structured view: programmatic access to spicy tables">
+<meta name="description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, and `table_continuous_lm()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all four families.
 ">
-<meta property="og:description" content="`as_structured()` exposes the typed representation behind every `table_regression()` output: a numeric body with split CI columns, per-column metadata, row-role indices, and the format specification -- the same contract spicy's own Excel, gt, tinytable, flextable, and clipboard engines consume. Filter coefficients programmatically, aggregate raw values, or build a custom renderer.
+<meta property="og:description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, and `table_continuous_lm()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all four families.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -102,7 +102,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>The structured view: programmatic access to regression tables</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>The structured view: programmatic access to spicy tables</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/as-structured.Rmd" class="external-link"><code>vignettes/as-structured.Rmd</code></a></small>
@@ -121,9 +121,14 @@ publish – and the wrong thing to compute on. The companion accessor
 <code><a href="../reference/as_structured.html">as_structured()</a></code> returns the <em>typed</em> view underneath:
 a fully numeric body, confidence intervals pre-split into their own
 columns, <code>NA</code> where a cell is structurally empty, plus the
-metadata a renderer needs to reconstruct the display. It is the same
-contract spicy’s own output engines (Excel, gt, tinytable, flextable,
-clipboard) consume internally – nothing about it is second-class.</p>
+metadata a renderer needs to reconstruct the display. For regression
+tables it is the very contract spicy’s own output engines (Excel, gt,
+tinytable, flextable, clipboard) consume internally – nothing about it
+is second-class – and the descriptive families
+(<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>) expose the same schema, covered at
+the end of this vignette. The tour below uses a regression table;
+everything it shows reads identically on the other three.</p>
 <p>Two sibling tools serve different needs, and choosing well saves
 work. <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns the <em>statistical</em> long
 form – one row per term and estimate type per model, with
@@ -176,16 +181,13 @@ one bracketed <code>[LL, UL]</code> column, APA p-values
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "version"                 "body"                   </span></span>
-<span><span class="co">#&gt;  [3] "stars"                   "reference_rows"         </span></span>
-<span><span class="co">#&gt;  [5] "reference_models_by_row" "outcome_labels_by_col"  </span></span>
-<span><span class="co">#&gt;  [7] "factor_header_rows"      "fit_stat_rows"          </span></span>
-<span><span class="co">#&gt;  [9] "level_rows"              "outcome_row"            </span></span>
-<span><span class="co">#&gt; [11] "col_meta"                "spanners"               </span></span>
-<span><span class="co">#&gt; [13] "ci_pairs"                "format_spec"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "version"               "body"                  "stars"                </span></span>
+<span><span class="co">#&gt; [4] "cell_status"           "outcome_labels_by_col" "col_meta"             </span></span>
+<span><span class="co">#&gt; [7] "spanners"              "ci_pairs"              "format_spec"</span></span></code></pre></div>
 <p>The centrepiece is <code>body</code>: a data frame with the
-<code>Variable</code> column and one numeric column per displayed
-statistic. The confidence interval that prints as one bracketed column
+<code>Variable</code> column, one numeric column per displayed
+statistic, and four dot-prefixed identity columns at the end (the next
+section). The confidence interval that prints as one bracketed column
 arrives split into <code>LL</code> / <code>UL</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span></span>
@@ -201,34 +203,59 @@ arrives split into <code>LL</code> / <code>UL</code>:</p>
 <span><span class="co">#&gt; 9                n 1175.00000000         NA          NA         NA</span></span>
 <span><span class="co">#&gt; 10              R²    0.01901139         NA          NA         NA</span></span>
 <span><span class="co">#&gt; 11          Adj.R²    0.01649818         NA          NA         NA</span></span>
-<span><span class="co">#&gt;                p</span></span>
-<span><span class="co">#&gt; 1  1.591088e-216</span></span>
-<span><span class="co">#&gt; 2   1.301575e-01</span></span>
-<span><span class="co">#&gt; 3             NA</span></span>
-<span><span class="co">#&gt; 4             NA</span></span>
-<span><span class="co">#&gt; 5   2.216170e-05</span></span>
-<span><span class="co">#&gt; 6             NA</span></span>
-<span><span class="co">#&gt; 7             NA</span></span>
-<span><span class="co">#&gt; 8   1.209641e-01</span></span>
-<span><span class="co">#&gt; 9             NA</span></span>
-<span><span class="co">#&gt; 10            NA</span></span>
-<span><span class="co">#&gt; 11            NA</span></span></code></pre></div>
+<span><span class="co">#&gt;                p   .variable .level     .row_role .indent</span></span>
+<span><span class="co">#&gt; 1  1.591088e-216 (Intercept)   &lt;NA&gt;          coef       0</span></span>
+<span><span class="co">#&gt; 2   1.301575e-01         age   &lt;NA&gt;          coef       0</span></span>
+<span><span class="co">#&gt; 3             NA         sex   &lt;NA&gt; factor_header       0</span></span>
+<span><span class="co">#&gt; 4             NA         sex Female     reference       1</span></span>
+<span><span class="co">#&gt; 5   2.216170e-05         sex   Male         level       1</span></span>
+<span><span class="co">#&gt; 6             NA     smoking   &lt;NA&gt; factor_header       0</span></span>
+<span><span class="co">#&gt; 7             NA     smoking     No     reference       1</span></span>
+<span><span class="co">#&gt; 8   1.209641e-01     smoking    Yes         level       1</span></span>
+<span><span class="co">#&gt; 9             NA        nobs   &lt;NA&gt;      fit_stat       0</span></span>
+<span><span class="co">#&gt; 10            NA          r2   &lt;NA&gt;      fit_stat       0</span></span>
+<span><span class="co">#&gt; 11            NA      adj_r2   &lt;NA&gt;      fit_stat       0</span></span></code></pre></div>
 <p>Read it against the printed table and the structure becomes obvious:
 factor header rows (<code>sex:</code>, <code>smoking:</code>) and
 reference rows carry <code>NA</code> across the statistics –
 structurally empty, not missing data – and the fit-statistics rows
 (<code>n</code>, <code>R²</code>, …) put their value in the first
-numeric column. The row-role indices name each of these regions so you
-never have to guess from the text:</p>
+numeric column. What each row <em>is</em> travels with the row itself,
+in four dot-prefixed identity columns at the end of <code>body</code> –
+never in positions you would have to track:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">reference_rows</span></span>
-<span><span class="co">#&gt; [1] 4 7</span></span>
-<span><span class="va">s</span><span class="op">$</span><span class="va">factor_header_rows</span></span>
-<span><span class="co">#&gt; [1] 3 6</span></span>
-<span><span class="va">s</span><span class="op">$</span><span class="va">fit_stat_rows</span></span>
-<span><span class="co">#&gt; [1]  9 10 11</span></span>
-<span><span class="va">s</span><span class="op">$</span><span class="va">level_rows</span></span>
-<span><span class="co">#&gt; [1] 4 5 7 8</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".level"</span>, <span class="st">".row_role"</span>, <span class="st">".indent"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;           Variable   .variable .level     .row_role .indent</span></span>
+<span><span class="co">#&gt; 1      (Intercept) (Intercept)   &lt;NA&gt;          coef       0</span></span>
+<span><span class="co">#&gt; 2              age         age   &lt;NA&gt;          coef       0</span></span>
+<span><span class="co">#&gt; 3             sex:         sex   &lt;NA&gt; factor_header       0</span></span>
+<span><span class="co">#&gt; 4    Female (ref.)         sex Female     reference       1</span></span>
+<span><span class="co">#&gt; 5             Male         sex   Male         level       1</span></span>
+<span><span class="co">#&gt; 6         smoking:     smoking   &lt;NA&gt; factor_header       0</span></span>
+<span><span class="co">#&gt; 7        No (ref.)     smoking     No     reference       1</span></span>
+<span><span class="co">#&gt; 8              Yes     smoking    Yes         level       1</span></span>
+<span><span class="co">#&gt; 9                n        nobs   &lt;NA&gt;      fit_stat       0</span></span>
+<span><span class="co">#&gt; 10              R²          r2   &lt;NA&gt;      fit_stat       0</span></span>
+<span><span class="co">#&gt; 11          Adj.R²      adj_r2   &lt;NA&gt;      fit_stat       0</span></span></code></pre></div>
+<p><code>.variable</code> is the source variable (or, on a
+fit-statistics row, the statistic’s token), <code>.level</code> the
+factor level, <code>.row_role</code> one of <code>"coef"</code>,
+<code>"factor_header"</code>, <code>"level"</code>,
+<code>"reference"</code>, <code>"fit_stat"</code>,
+<code>"outcome"</code>, <code>"vc"</code>, and <code>.indent</code> the
+display indent depth. A row is addressable by
+<code>(.variable, .level)</code> rather than by its position – and
+because identity is data, not indices, it survives whatever you do to
+the body: subset it, reorder it, stack two tables with
+<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>, and every row still says what it is.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">.variable</span> <span class="op">==</span> <span class="st">"smoking"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".level"</span>, <span class="st">"B"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;      Variable .level         B</span></span>
+<span><span class="co">#&gt; 6    smoking:   &lt;NA&gt;        NA</span></span>
+<span><span class="co">#&gt; 7   No (ref.)     No        NA</span></span>
+<span><span class="co">#&gt; 8         Yes    Yes -1.718713</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">.row_role</span> <span class="op">==</span> <span class="st">"reference"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 4 7</span></span></code></pre></div>
 <p><code>col_meta</code> describes each column: which token produced it,
 which model it belongs to, its display precision, and – for p-value
 columns – the APA style and below-threshold rule, plus per-row
@@ -236,7 +263,7 @@ columns – the APA style and below-threshold rule, plus per-row
 the column’s precision (put to work in the renderer below).
 <code>format_spec</code> carries the global defaults (decimal mark,
 digits, CI level):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">col_meta</span><span class="op">$</span><span class="va">B</span></span>
 <span><span class="co">#&gt; $token</span></span>
 <span><span class="co">#&gt; [1] "b"</span></span>
@@ -326,24 +353,24 @@ digits, CI level):</p>
 <span><span class="co">#&gt; [1] 11</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="va">format_spec</span><span class="op">$</span><span class="va">ci_level</span></span>
 <span><span class="co">#&gt; [1] 0.95</span></span></code></pre></div>
-<p>That is seven of the fourteen components; <code>spanners</code> and
-<code>reference_models_by_row</code> follow in the multi-model section
-below, <code>stars</code> and <code>col_meta$display_cells</code> in the
-section after it. Of the remaining, <code>ci_pairs</code> records which
-<code>LL</code>/<code>UL</code> columns form a confidence-interval pair
-(here, columns 4 and 5 under the label <code>95% CI</code>), while
-<code>outcome_row</code> and <code>outcome_labels_by_col</code> locate
-and label the optional outcome header row of multi-outcome tables and
-are empty here. <code>version</code> names the contract the object
-carries, so a renderer can tell which components to expect. The complete
-schema, component by component, is in <code><a href="../reference/as_structured.html">?as_structured</a></code>.</p>
+<p>That is five of the nine components. <code>spanners</code> appears in
+the multi-model section below; <code>stars</code>,
+<code>cell_status</code> and <code>col_meta$display_cells</code> in the
+section after it. The last two are <code>ci_pairs</code>, which records
+which <code>LL</code>/<code>UL</code> columns pair up under one interval
+label (here, columns 4 and 5 under <code>95% CI</code>), and
+<code>outcome_labels_by_col</code>, which labels the outcome header row
+of multi-outcome tables (empty here). <code>version</code> names the
+contract the object carries – see <em>The contract</em> below. The
+complete schema, component by component, is in
+<code><a href="../reference/as_structured.html">?as_structured</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="filtering-and-aggregating">Filtering and aggregating<a class="anchor" aria-label="anchor" href="#filtering-and-aggregating"></a>
 </h2>
 <p>Because the body is numeric, ordinary data-frame idioms work. Keep
 the coefficient rows a reader would call significant:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">p</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"B"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;      Variable         B             p</span></span>
 <span><span class="co">#&gt; 1 (Intercept) 65.200855 1.591088e-216</span></span>
@@ -351,11 +378,9 @@ the coefficient rows a reader would call significant:</p>
 <p>Note the <code><a href="https://rdrr.io/r/base/which.html" class="external-link">which()</a></code>: the structurally empty rows are
 <code>NA</code>, and <code><a href="https://rdrr.io/r/base/which.html" class="external-link">which()</a></code> drops them where a bare
 logical index would keep them as <code>NA</code> rows. To restrict
-attention to coefficient rows before any filter, exclude the structural
-regions:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">structural</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">reference_rows</span>, <span class="va">s</span><span class="op">$</span><span class="va">factor_header_rows</span>, <span class="va">s</span><span class="op">$</span><span class="va">fit_stat_rows</span><span class="op">)</span></span>
-<span><span class="va">coef_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">)</span><span class="op">)</span>, <span class="va">structural</span><span class="op">)</span></span>
+attention to coefficient rows before any filter, select on the role:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">coef_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">.row_role</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coef"</span>, <span class="st">"level"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">coef_rows</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"B"</span>, <span class="st">"95% CI: LL"</span>, <span class="st">"95% CI: UL"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;      Variable           B  95% CI: LL 95% CI: UL</span></span>
 <span><span class="co">#&gt; 1 (Intercept) 65.20085505 61.95040841 68.4513017</span></span>
@@ -364,7 +389,7 @@ regions:</p>
 <span><span class="co">#&gt; 8         Yes -1.71871310 -3.89164426  0.4542181</span></span></code></pre></div>
 <p>Aggregation is just as direct – the mean absolute coefficient, the
 range of CI widths:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">B</span><span class="op">[</span><span class="va">coef_rows</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 17.70546</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">coef_rows</span>, <span class="st">"95% CI: UL"</span><span class="op">]</span> <span class="op">-</span> <span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">coef_rows</span>, <span class="st">"95% CI: LL"</span><span class="op">]</span><span class="op">)</span></span>
@@ -373,14 +398,15 @@ range of CI widths:</p>
 <div class="section level2">
 <h2 id="multi-model-tables-spanners-and-per-model-columns">Multi-model tables: spanners and per-model columns<a class="anchor" aria-label="anchor" href="#multi-model-tables-spanners-and-per-model-columns"></a>
 </h2>
-<p>With several models, columns are prefixed by the model label and two
-more components become useful. <code>spanners</code> maps each model
-label to its column indices in <code>body</code>;
-<code>reference_models_by_row</code> records, for each reference row,
-which models actually contain the factor – the rule renderers use to
-decide where the reference en-dash belongs. To see it discriminate, the
+<p>With several models, columns are prefixed by the model label (and the
+interval columns compact away by default, which is why each model shows
+<code>B</code> / <code>SE</code> / <code>p</code>). Two more components
+become useful. <code>spanners</code> maps each model label to its column
+indices in <code>body</code>; <code>cell_status</code> says, cell by
+cell, which ones carry the reference en-dash – only the models that
+actually contain the factor do. To see it discriminate, the
 <code>Minimal</code> model below omits <code>smoking</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">bmi</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="va">fit0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span></span>
@@ -397,21 +423,27 @@ decide where the reference en-dash belongs. To see it discriminate, the
 <span><span class="co">#&gt; [1]  8  9 10</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s2</span><span class="op">$</span><span class="va">body</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "Variable"     "Minimal: B"   "Minimal: SE"  "Minimal: p"   "Base: B"     </span></span>
-<span><span class="co">#&gt;  [6] "Base: SE"     "Base: p"      "Extended: B"  "Extended: SE" "Extended: p"</span></span>
-<span><span class="va">s2</span><span class="op">$</span><span class="va">reference_models_by_row</span></span>
-<span><span class="co">#&gt; $`4`</span></span>
-<span><span class="co">#&gt; [1] "Base"     "Extended" "Minimal" </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`7`</span></span>
-<span><span class="co">#&gt; [1] "Base"     "Extended"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [6] "Base: SE"     "Base: p"      "Extended: B"  "Extended: SE" "Extended: p" </span></span>
+<span><span class="co">#&gt; [11] ".variable"    ".level"       ".row_role"    ".indent"</span></span>
+<span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">s2</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">.row_role</span> <span class="op">==</span> <span class="st">"reference"</span><span class="op">)</span></span>
+<span><span class="va">s2</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">ref</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".level"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;          Variable .variable .level</span></span>
+<span><span class="co">#&gt; 4   Female (ref.)       sex Female</span></span>
+<span><span class="co">#&gt; 7       No (ref.)   smoking     No</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">s2</span><span class="op">$</span><span class="va">cell_status</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[</span><span class="va">ref</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Minimal: B  Minimal: SE   Minimal: p      Base: B     Base: SE      Base: p </span></span>
+<span><span class="co">#&gt;           ""           ""           ""  "reference"  "reference"  "reference" </span></span>
+<span><span class="co">#&gt;  Extended: B Extended: SE  Extended: p </span></span>
+<span><span class="co">#&gt;  "reference"  "reference"  "reference"</span></span></code></pre></div>
 <p>Rows 4 and 7 are the two reference rows (<code>Female (ref.)</code>,
 <code>No (ref.)</code>). All three models contain <code>sex</code>, so
-row 4 lists all three; only <code>Base</code> and <code>Extended</code>
-contain <code>smoking</code>, so row 7 lists those two – a renderer
-draws the reference en-dash in exactly those models’ columns and leaves
-the <code>Minimal</code> cells blank.</p>
+every column of row 4 is marked <code>"reference"</code>; only
+<code>Base</code> and <code>Extended</code> contain
+<code>smoking</code>, so on row 7 the <code>Minimal</code> columns are
+unmarked – a renderer draws the reference en-dash where the status says
+<code>"reference"</code> and leaves the rest blank.</p>
 <p>Model-wise extraction follows from the spanner map:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s2</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">s2</span><span class="op">$</span><span class="va">spanners</span><span class="op">$</span><span class="va">Extended</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;           Variable   Extended: B Extended: SE   Extended: p</span></span>
 <span><span class="co">#&gt; 1      (Intercept)   80.57147725   3.36672527 3.650589e-103</span></span>
@@ -440,7 +472,7 @@ The body keeps the numerator as a number, and the column’s
 <code>display_cells</code> carries the string of each cell –
 <code>NA</code> where the number formats normally, as on the
 fit-statistics rows in that same column:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">dentist_12m</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n_events"</span>, <span class="st">"b"</span>, <span class="st">"p"</span><span class="op">)</span></span>
@@ -461,7 +493,7 @@ promising a ratio.</p>
 leaves the body untouched and fills the <code>stars</code> component:
 the thresholds the footer legend documents, and the marker of each cell
 that takes one.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">starred</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  stars <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -477,12 +509,181 @@ coefficient, the standardized coefficient only when <code>B</code> is
 not displayed beside it, and the average marginal effect on its own
 p-value. <code>stars</code> is <code>NULL</code> when the table has
 none.</p>
-<p>One more display convention lives in the row indices rather than in a
-cell. A model with absorbed fixed effects discloses them as a block:
-<code>factor_header_rows</code> gains the <code>Fixed effects:</code>
-row and <code>level_rows</code> one row per absorbed factor, named as
-the model names it. Treat that block exactly like a factor group in the
+<p>A third case is a cell that has no number to show at all, and
+<code>cell_status</code> distinguishes the two reasons.
+<code>"reference"</code> is the reference level of a factor, in that
+estimate block and that model. <code>"undefined"</code> is a statistic
+that applies to the row but is not computable – the standard error of a
+variance component, or one a <code>re_columns</code> selection left out.
+Both display as an en-dash. A cell with no status whose value is
+<code>NA</code> is simply absent, and displays blank.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sc</span><span class="op">$</span><span class="va">cell_status</span><span class="op">$</span><span class="va">B</span></span>
+<span><span class="co">#&gt; [1] ""          ""          ""          "reference" ""          ""         </span></span>
+<span><span class="co">#&gt; [7] ""          ""          ""</span></span></code></pre></div>
+<p>One more display convention lives in the row identity rather than in
+a cell. A model with absorbed fixed effects discloses them as a block:
+the <code>Fixed effects:</code> row takes
+<code>.row_role == "factor_header"</code> and each absorbed factor a
+<code>"level"</code> row with <code>.indent</code> 1, named as the model
+names it. Treat that block exactly like a factor group in the
 coefficients and it renders the way it prints.</p>
+</div>
+<div class="section level2">
+<h2 id="the-descriptive-tables">The descriptive tables<a class="anchor" aria-label="anchor" href="#the-descriptive-tables"></a>
+</h2>
+<p>Everything above extends beyond regression. The same accessor reads
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and returns the same schema – the
+same identity columns, the same <code>cell_status</code>, the same
+<code>display_cells</code> mechanism for composite cells. A consumer
+written for one family reads the other three.
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> lays out one factor header row per
+variable and one row per category:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">education</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Sex            <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    Female       <span style="color: #9E9E9E;">│</span>        134               51.3                290        </span></span>
+<span><span class="co">#&gt;    Male         <span style="color: #9E9E9E;">│</span>        127               48.7                249        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                         </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>        179               68.6                415        </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>          4                1.5                 12        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n  Total % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Sex            <span style="color: #9E9E9E;">│</span>                                                             </span></span>
+<span><span class="co">#&gt;    Female       <span style="color: #9E9E9E;">│</span>       53.8            196         49.0       620     51.7   </span></span>
+<span><span class="co">#&gt;    Male         <span style="color: #9E9E9E;">│</span>       46.2            204         51.0       580     48.3   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                             </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>       77.0            332         83.0       926     77.2   </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249     20.8   </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>        2.2              9          2.2        25      2.1   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> p (Total %)  Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Sex            <span style="color: #9E9E9E;">│</span>     .344        .04     </span></span>
+<span><span class="co">#&gt;    Female       <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;    Male         <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>    &lt;.001        .14     </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span></span></span>
+<span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">ct</span><span class="op">)</span></span>
+<span><span class="va">sc</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".level"</span>, <span class="st">".row_role"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;         Variable .variable    .level     .row_role</span></span>
+<span><span class="co">#&gt; 1            Sex       sex      &lt;NA&gt; factor_header</span></span>
+<span><span class="co">#&gt; 2         Female       sex    Female         level</span></span>
+<span><span class="co">#&gt; 3           Male       sex      Male         level</span></span>
+<span><span class="co">#&gt; 4 Current smoker   smoking      &lt;NA&gt; factor_header</span></span>
+<span><span class="co">#&gt; 5             No   smoking        No         level</span></span>
+<span><span class="co">#&gt; 6            Yes   smoking       Yes         level</span></span>
+<span><span class="co">#&gt; 7      (Missing)   smoking (Missing)       missing</span></span>
+<span><span class="va">sc</span><span class="op">$</span><span class="va">spanners</span></span>
+<span><span class="co">#&gt; $`Lower secondary`</span></span>
+<span><span class="co">#&gt; [1] 2 3</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`Upper secondary`</span></span>
+<span><span class="co">#&gt; [1] 4 5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Tertiary</span></span>
+<span><span class="co">#&gt; [1] 6 7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Total</span></span>
+<span><span class="co">#&gt; [1] 8 9</span></span></code></pre></div>
+<p>Row identity is data here too: the <code>"(Missing)"</code> row
+carries <code>.row_role == "missing"</code> rather than a label a
+consumer would have to match, and the margin column is flagged in
+<code>col_meta</code> rather than found by the string
+<code>"Total"</code>.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sc</span><span class="op">$</span><span class="va">body</span><span class="op">[</span><span class="va">sc</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">.row_role</span> <span class="op">==</span> <span class="st">"missing"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".level"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;      Variable .variable    .level</span></span>
+<span><span class="co">#&gt; 7   (Missing)   smoking (Missing)</span></span>
+<span><span class="va">sc</span><span class="op">$</span><span class="va">col_meta</span><span class="op">[[</span><span class="st">"Total n"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">total</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> puts one row per variable, or one row
+per level of <code>by</code> — the level lives in <code>.level</code>,
+with role <code>"group"</code>. The <code>col_meta</code> tokens are the
+<code>show_columns</code> vocabulary itself:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">bmi</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span>, effect_size <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max   95% CI LL  95% CI UL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Age (years)     <span style="color: #9E9E9E;">│</span> Female  49.38  14.91  25.00  75.00    48.20      50.55   </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Male    49.14  14.50  25.00  75.00    47.96      50.32   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Body mass index <span style="color: #9E9E9E;">│</span> Female  25.69   3.78  16.00  38.90    25.39      25.98   </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Male    26.20   3.64  16.00  37.70    25.90      26.50   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group    n    p       ES     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Age (years)     <span style="color: #9E9E9E;">│</span> Female  620  .780   g = 0.02 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Male    580                  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Body mass index <span style="color: #9E9E9E;">│</span> Female  616  .018  g = -0.14 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Male    572                  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span>
+<span><span class="va">scn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">cn</span><span class="op">)</span></span>
+<span><span class="va">scn</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".level"</span>, <span class="st">".row_role"</span>, <span class="st">"M"</span>, <span class="st">"SD"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;          Variable .variable .level .row_role        M        SD</span></span>
+<span><span class="co">#&gt; 1     Age (years)       age Female     group 49.37903 14.905948</span></span>
+<span><span class="co">#&gt; 2                       age   Male     group 49.14138 14.497478</span></span>
+<span><span class="co">#&gt; 3 Body mass index       bmi Female     group 25.68506  3.781113</span></span>
+<span><span class="co">#&gt; 4                       bmi   Male     group 26.19685  3.638092</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">scn</span><span class="op">$</span><span class="va">col_meta</span>, <span class="va">`[[`</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="st">"token"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         M        SD       Min       Max 95% CI LL 95% CI UL         n         p </span></span>
+<span><span class="co">#&gt;       "m"      "sd"     "min"     "max"      "ci"      "ci"       "n"       "p" </span></span>
+<span><span class="co">#&gt;        ES </span></span>
+<span><span class="co">#&gt;      "es"</span></span></code></pre></div>
+<p>Cells the console builds from more than one number keep their numeric
+anchor in <code>body</code> and their printed string in
+<code>display_cells</code> — the effect size and its interval, a compact
+<code>Med [Q1, Q3]</code>, a test gloss:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">scn</span><span class="op">$</span><span class="va">col_meta</span><span class="op">$</span><span class="va">ES</span><span class="op">$</span><span class="va">display_cells</span></span>
+<span><span class="co">#&gt; [1] "g = 0.02"  NA          "g = -0.14" NA</span></span></code></pre></div>
+<p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> reports one row per outcome, with
+the levels of <code>by</code> as columns; each marginal-mean column says
+which level it carries, so nothing has to parse
+<code>M (Male)</code>:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lm_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">bmi</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by Sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Age (years)     <span style="color: #9E9E9E;">│</span>   49.38      49.14          -0.24          -1.90   </span></span>
+<span><span class="co">#&gt;  Body mass index <span style="color: #9E9E9E;">│</span>   25.69      26.20           0.51           0.09   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL   p     R²    n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Age (years)     <span style="color: #9E9E9E;">│</span>   1.43     .780  0.00  1200 </span></span>
+<span><span class="co">#&gt;  Body mass index <span style="color: #9E9E9E;">│</span>   0.93     .018  0.00  1188</span></span>
+<span><span class="va">slm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">lm_tbl</span><span class="op">)</span></span>
+<span><span class="va">slm</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".row_role"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;          Variable .variable .row_role</span></span>
+<span><span class="co">#&gt; 1     Age (years)       age   summary</span></span>
+<span><span class="co">#&gt; 2 Body mass index       bmi   summary</span></span>
+<span><span class="va">slm</span><span class="op">$</span><span class="va">col_meta</span><span class="op">[[</span><span class="st">"M (Male)"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; $token</span></span>
+<span><span class="co">#&gt; [1] "emmean"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $precision</span></span>
+<span><span class="co">#&gt; [1] 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $level</span></span>
+<span><span class="co">#&gt; [1] "Male"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="building-your-own-renderer">Building your own renderer<a class="anchor" aria-label="anchor" href="#building-your-own-renderer"></a>
@@ -493,11 +694,14 @@ formats at its <code>col_meta</code> precision, and the
 <code>fit_stat_overrides</code> seen earlier supply the per-row
 exceptions – that is what renders the <code>n</code> row as
 <code>1175</code> rather than <code>1175.00</code>:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">render_kable</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">body</span></span>
-<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">nm</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Value columns only: the dot-prefixed identity columns describe the</span></span>
+<span>  <span class="co"># rows, they are not cells of the table.</span></span>
+<span>  <span class="va">value_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^\\."</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="va">value_cols</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">nm</span> <span class="kw">in</span> <span class="va">value_cols</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">col_meta</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span></span>
 <span>    <span class="va">prec</span> <span class="op">&lt;-</span> <span class="va">meta</span><span class="op">$</span><span class="va">precision</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">prec</span><span class="op">)</span><span class="op">)</span> <span class="va">prec</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">$</span><span class="va">format_spec</span><span class="op">$</span><span class="va">digits</span></span>
@@ -623,12 +827,13 @@ exceptions – that is what renders the <code>n</code> row as
 <p>Anything more ambitious – a <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">DT::datatable()</a></code> with
 significant rows highlighted, a LaTeX booktabs layout, an HTML widget –
 follows the same pattern: <code>body</code> for the cells,
-<code>col_meta</code> for per-column formatting, the row indices for
-styling regions, and <code>format_spec</code> for the global
-conventions. The note and title stay available on the original object
-(<code>attr(tbl, "note")</code>, <code>attr(tbl, "title")</code>), so a
-custom renderer can reproduce spicy’s self-documenting footer
-verbatim.</p>
+<code>col_meta</code> for per-column formatting, <code>.row_role</code>
+/ <code>.indent</code> for styling regions, <code>cell_status</code> for
+the cells no number expresses, and <code>format_spec</code> for the
+global conventions. The note and title stay available on the original
+object (<code>attr(tbl, "note")</code>,
+<code>attr(tbl, "title")</code>), so a custom renderer can reproduce
+spicy’s self-documenting footer verbatim.</p>
 </div>
 <div class="section level2">
 <h2 id="the-contract">The contract<a class="anchor" aria-label="anchor" href="#the-contract"></a>
@@ -636,23 +841,31 @@ verbatim.</p>
 <p>Three properties make the structured view safe to build on:</p>
 <ul>
 <li>
-<strong>Engine parity.</strong> The built-in engines consume this
-exact structure: what you read in <code>body</code> is, cell for cell,
-what the Excel workbook contains and what the gt table displays at its
-precision. This parity is pinned by tests.</li>
+<strong>Engine parity.</strong> For regression tables, the built-in
+engines consume this exact structure: what you read in <code>body</code>
+is, cell for cell, what the Excel workbook contains and what the gt
+table displays at its precision. For the descriptive families the typed
+view is built from the same computation frames the display is – value
+fidelity is pinned by tests, and the engines migrate onto the view as
+the contract settles.</li>
 <li>
 <strong>Stability tier.</strong> <code><a href="../reference/as_structured.html">as_structured()</a></code> sits
 in the <em>stabilising</em> tier of the API (see <code><a href="../reference/spicy-package.html">?spicy</a></code>,
-section <em>API stability</em>): components will not be silently renamed
-or change semantics within <code>0.y.z</code>, and additions are
-announced in <code>NEWS.md</code>.</li>
+section <em>API stability</em>). The rule the contract actually keeps in
+the <code>0.y</code> series is this: nothing ever changes
+<em>silently</em>. Components are added by default; when one must be
+removed or reshaped – as version 3 did with the row-index vectors – the
+removal is announced under <em>Breaking changes</em> in
+<code>NEWS.md</code> with its replacement named, and the version guard
+below turns any version mismatch into an error instead of a wrong
+table.</li>
 <li>
 <strong>Version guard.</strong> <code>version</code> names the
-contract an object carries. Components are only ever added, so code
-written against an older one keeps working; a table built before a
-component existed says so when you open it, and one built by a newer
-spicy than the one reading it is refused rather than mis-read. Objects
-from before the structured view existed are refused outright.</li>
+contract an object carries; it is <code>3</code> here. A table built by
+a spicy that speaks a different contract – older or newer – is refused
+rather than mis-read, with the correspondence between the two named in
+the error. Objects from before the structured view existed are refused
+outright.</li>
 </ul>
 <p>For the statistical long form – estimates with standard errors and
 unformatted p-values, one row per term and estimate type across models –

@@ -61,23 +61,27 @@
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   : Categorical summary table
-
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   : Continuous summary table
-
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   : Continuous-outcome linear-model table
-
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
-
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   : Univariable screening table (with optional multivariable merge)
-
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  :
+  : Extract the typed (structured) view of a spicy table
 
-  Extract the typed (structured) view of a `spicy_regression_table`
+## Table styles
+
+Journal and locale number-formatting themes, each encoding only rules
+sourced from an official document of the institution –
+[`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+lists every rule with the sentence it comes from.
+
+- [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  [`spicy_style_names()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  : Build or select a table style
 
 ## Supported models
 

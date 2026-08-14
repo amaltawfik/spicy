@@ -62,7 +62,8 @@ table_regression(
   excel_sheet = "Regression",
   clipboard_delim = "\t",
   word_path = NULL,
-  word_template = NULL
+  word_template = NULL,
+  style = NULL
 )
 ```
 
@@ -830,6 +831,19 @@ table_regression(
   editorial conventions (Nature, APA-strict, journal-specific) be
   applied without modifying the call site.
 
+- style:
+
+  A journal or locale style: a theme name (`"jama"`, `"lancet"`,
+  `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  object, or `NULL` (the default). A style only changes DEFAULTS – any
+  argument you pass explicitly wins over it. Set
+  `options(spicy.style = )` for document-wide scope. A theme covers
+  numeric formatting conformity only, not full editorial conformity;
+  [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  lists the exact rules each one encodes and the official document they
+  come from. An unknown name is an error.
+
 ## Value
 
 A `spicy_regression_table` object (a `data.frame` subclass with classes
@@ -1402,6 +1416,22 @@ returns one row per model with the model-level statistics; `df.residual`
 is kept numeric so cluster-robust Satterthwaite df is preserved.
 
 ## Global options
+
+- **`options(spicy.style = )`** – the journal or locale style applied by
+  default to all four table families (`table_regression()`,
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)).
+  Takes a theme name (`"jama"`, `"lancet"`, `"annals"`, `"apa"`,
+  `"aer"`, `"fr"`) or a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  object. The style of a report is a property of the document, so it is
+  set once in the setup chunk; the `style` argument overrides it per
+  call, and any formatting argument you type overrides both.
+  `options(spicy.style = NULL)` restores spicy's own defaults. See
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  for the exact rules each theme encodes and the official document they
+  come from.
 
 - **`options(spicy.note_style = )`** – how the table note is rendered by
   the `"tinytable"` engine (all four table families). A note is

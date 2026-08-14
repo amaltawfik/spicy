@@ -117,6 +117,18 @@
   block.
 - Multi-model `show_columns = "all_b"` / `"all_ame"` auto-compact (CIs
   dropped); request atomic tokens to keep them.
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  describes a row in the body itself instead of in row-index vectors,
+  which broke as soon as two tables were stacked or merged. The five
+  index components of 0.12.0 are removed, and a table built by an older
+  spicy is refused rather than read as if it were current. `version` is
+  `3`.
+  - `reference_rows` becomes `cell_status`, which marks the reference
+    *cell* rather than the whole row.
+  - `factor_header_rows` becomes `body$.row_role == "factor_header"`.
+  - `fit_stat_rows` becomes `body$.row_role == "fit_stat"`.
+  - `level_rows` becomes `body$.indent > 0`.
+  - `outcome_row` becomes `body$.row_role == "outcome"`.
 - [`tidy()`](https://generics.r-lib.org/reference/tidy.html) labels AME
   rows `estimate_type = "ame"` (was `"AME"`), and the SE footer reads
   `"classical (Fisher information)"`.
@@ -196,9 +208,54 @@ instead of rendering an empty column.
   the machine-readable registry of supported model classes (family,
   engine, AME, exponentiate semantics); its help page is the per-family
   reference.
+- [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md):
+  build a table style, or fetch one of the named journal themes.
+  [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  lists, for each theme, the exact rules it encodes and the official
+  document they come from.
 
 ### New features
 
+- New `style` argument on
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md):
+  `"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"` and
+  `"fr"`. Each theme encodes only rules taken from an official document
+  of the institution, listed one by one in
+  [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  – numeric formatting conformity, not full editorial conformity. An
+  unknown name errors and names the ones that exist.
+- Themes move defaults only. Any formatting argument you pass wins over
+  the theme, even at its own default value.
+- New `options(spicy.style = )` for document-wide scope, like the
+  language of a report. The `style` argument overrides it per call.
+- [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  composes a style by hand – p-value decimals, bands or significant
+  figures, the `<` floor, the leading zero, decimal mark, interval
+  separator and brackets, stars, per-family digits – and can start from
+  a theme: `spicy_style("lancet", ci_sep = " to ")`. Every field is
+  validated; a misspelt lever errors instead of being ignored.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  accept any single character as `decimal_mark`, like
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  already did. This is what lets `"lancet"` set the midline dot.
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  now reads the descriptive tables –
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  – and returns the schema it returns for
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a numeric body carrying the identity of every row in `.variable` /
+  `.level` / `.row_role` / `.indent`. New roles `"summary"`, `"group"`
+  and `"missing"` name the descriptive rows.
 - Table notes rendered by the `"tinytable"` engine are set one size down
   (`0.9em`, black), like the notes of the other engines. New
   `options(spicy.note_style)`: `"none"` leaves the note to the document
@@ -339,9 +396,18 @@ instead of rendering an empty column.
   (`stars`), the display string of cells no single number can express
   such as the `events/N` counts (`col_meta$display_cells`), and the
   absorbed fixed-effects block as a header row plus one row per factor.
-  A new `version` field names the contract; components are only ever
-  added, and a view built by a newer version than the one reading it is
-  refused instead of mis-read.
+  A new `version` field names the contract, and a view built by a newer
+  version than the one reading it is refused instead of mis-read.
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  also gives every row an identity that does not depend on where the row
+  sits: `body$.variable` (the source variable, or the fit-statistic
+  token), `body$.level` (the factor level), `body$.row_role` (`"coef"`,
+  `"factor_header"`, `"level"`, `"reference"`, `"fit_stat"`,
+  `"outcome"`, `"vc"`) and `body$.indent`. `cell_status` says the same
+  per cell – `"reference"` when a cell is a reference level of its
+  estimate block, `"undefined"` when the statistic applies but no number
+  expresses it – so a renderer never has to read an en-dash back to find
+  out.
 
 ### Bug fixes
 
@@ -632,8 +698,24 @@ instead of rendering an empty column.
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   and the rich output engines match the console body exactly (blank vs
   en-dash reference cells, the multi-outcome `Outcome` row); the
-  structured schema gains `reference_models_by_row` and
-  `outcome_labels_by_col`.
+  structured schema gains `outcome_labels_by_col`.
+- Every cell whose statistic applies but has no number – an aliased
+  coefficient in a rank-deficient fit, a term an extractor returns
+  without a standard error – shows the console’s en-dash in every rich
+  output instead of a blank that reads as “nothing to report”. The
+  emission rule mirrors the console branch exactly, exemptions included.
+- The standard error, confidence interval and p-value of a random-effect
+  variance component show the same en-dash in `"gt"`, `"tinytable"`,
+  `"flextable"`, `"word"`, `"excel"` and the clipboard as in the
+  console. They were blank, and `re_columns` was ignored outside the
+  console.
+- When a factor’s estimate blocks do not share a reference level – an
+  ordered factor with `show_columns = c("b", "ame")`, where the AME
+  contrasts against a baseline while B holds polynomial trends – the
+  reference en-dash stays in the block that has one instead of blanking
+  the B and p cells beside it.
+- `output = "excel"` rules off `Thresholds:`, `Random effects:` and the
+  other subordinate blocks, like every other output.
 - `stars = TRUE` marks the coefficients in every output, not just the
   console: `output = "gt"`, `"tinytable"`, `"flextable"`, `"word"` and
   `"clipboard"` used to ship the legend footnote without a single marker

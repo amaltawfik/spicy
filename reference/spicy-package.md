@@ -65,6 +65,10 @@ on the **stable** surface.
   [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 
+- Table styles:
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md),
+  [`spicy_style_names()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+
 - Omnibus association overview:
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
 
