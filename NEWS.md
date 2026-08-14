@@ -505,6 +505,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `as_structured()` and the rich output engines match the console body
   exactly (blank vs en-dash reference cells, the multi-outcome `Outcome`
   row); the structured schema gains `outcome_labels_by_col`.
+* Every cell whose statistic applies but has no number -- an aliased
+  coefficient in a rank-deficient fit, a term an extractor returns without a
+  standard error -- shows the console's en-dash in every rich output instead
+  of a blank that reads as "nothing to report". The emission rule mirrors
+  the console branch exactly, exemptions included.
 * The standard error, confidence interval and p-value of a random-effect
   variance component show the same en-dash in `"gt"`, `"tinytable"`,
   `"flextable"`, `"word"`, `"excel"` and the clipboard as in the console.

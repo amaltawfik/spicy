@@ -1162,6 +1162,24 @@ build_structured_body <- function(
       status[[e$name]] <- "undefined"
       next
     }
+    # Generalised NA-with-term-present (decision 12, 2026-08-14). The
+    # console's generic NA branch (format_cell_value()) prints an
+    # en-dash for any NA that survives the field-specific blanks:
+    # "the statistic applies to this row, no number expresses it" --
+    # an aliased coefficient in a rank-deficient fit, an extractor
+    # with no SE for a term. Mirror that branch exactly: the fields
+    # the console deliberately BLANKS on NA are exempt
+    # (.blank_on_na_fields, kept beside the console branches), and
+    # every other NA-with-term-present cell is marked undefined, so a
+    # Word or Excel table says what the console says instead of a
+    # blank that reads as "nothing to report".
+    if (
+      is.na(row[[e$name]]) &&
+        !e$source %in% .blank_on_na_fields()
+    ) {
+      status[[e$name]] <- "undefined"
+      next
+    }
     # Star marker for this cell, under exactly the conditions
     # format_cell_value() applies one: the B column always, beta only
     # when B is not displayed beside it, AME on its own p-value -- and

@@ -715,3 +715,51 @@ test_that("per-category AME columns carry each category's own cell", {
   # And the structured strings match the console cell for cell.
   expect_equal(unname(.ep_structured(tbl)), unname(.ep_console(tbl)))
 })
+
+
+# ---- generalised undefined: NA with the term present ----------------------
+
+test_that("an aliased coefficient shows the console's en-dash in every engine", {
+  # Decision 12 (2026-08-14): any NA that survives the console's
+  # field-specific blanks means "the statistic applies, no number
+  # expresses it" -- and must say so in every output, not only in the
+  # console. The canonical case is a rank-deficient fit.
+  d <- mtcars
+  d$wt2 <- d$wt * 2
+  fit <- lm(mpg ~ wt + wt2, data = d)
+  tbl <- table_regression(fit)
+
+  s <- as_structured(tbl)
+  i <- which(s$body$.variable == "wt2")
+  expect_length(i, 1L)
+  expect_true(is.na(s$body$B[i]))
+  expect_identical(s$cell_status$B[i], "undefined")
+  expect_identical(s$cell_status$p[i], "undefined")
+
+  # The string body (tinytable / gt / flextable / Word / clipboard all
+  # read it) words the cell as the console does.
+  sb <- spicy:::.format_structured_to_string_body(s)
+  wt2 <- sb[sb$Variable == "wt2", ]
+  expect_identical(unname(unlist(wt2[, -1L])), rep("\u2013", ncol(sb) - 1L))
+
+  # And the console itself is untouched: en-dash plus the standing
+  # rank-deficiency note.
+  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  expect_match(out, "wt2", fixed = TRUE)
+  expect_match(out, "Rank-deficient model", fixed = TRUE)
+
+  # The exempt fields keep their console blanks: the per-fit N of a
+  # univariable screen still renders empty on continuation rows.
+  scr <- table_regression_uv(
+    as.data.frame(sochealth),
+    outcome = wellbeing_score,
+    method = "lm",
+    predictors = c(age, sex),
+    multivariable = FALSE
+  )
+  ss <- as_structured(scr)
+  n_col <- grep("(^|: )N$", names(ss$cell_status), value = TRUE)
+  if (length(n_col) == 1L) {
+    expect_false(any(ss$cell_status[[n_col]] == "undefined"))
+  }
+})
