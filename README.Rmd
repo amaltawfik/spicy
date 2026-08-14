@@ -95,6 +95,34 @@ functions, with disclosure notes and a `user_na` escape hatch. For a full introd
 started with
 spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
 
+## What makes the tables dependable
+
+- **One table, every output, verified.** The console rendering and the
+  gt, tinytable, flextable, Word, Excel, and clipboard outputs are kept
+  cell-for-cell identical by dedicated parity test batteries –
+  significance stars, `events/N` counts, reference rows, block
+  structure, captions, and disclosure notes included. What you publish
+  is what you saw.
+- **Numbers validated against reference implementations.** Estimates,
+  standard errors, and association measures are pinned, to the digit,
+  against independent software and packages (SPSS/PSPP conventions for
+  contingency measures, Stata conventions for cluster-robust variance,
+  `survival::concordance()`, exact order-statistic confidence intervals
+  for medians), and each convention is documented where the number is
+  produced.
+- **Disclosure by default.** Whatever affects the numbers is stated in
+  the table’s own notes, on every output: removed missing values,
+  estimation samples, standard-error types, test choices,
+  multiple-comparison families.
+- **A typed, versioned table contract.** `as_structured()` returns the
+  complete typed view of a regression table – values, precisions,
+  significance markers, row roles – with an explicit contract version,
+  so custom renderers and downstream pipelines can detect changes
+  instead of silently mis-reading them.
+- **Hard errors over silent guesses.** Requests a model class cannot
+  honour are refused with a classed, actionable error – never rendered
+  as an empty column or a silently substituted statistic.
+
 ## Supported models
 
 `table_regression()` accepts a single fit or a list of fits from any
