@@ -50,6 +50,7 @@ changes):
 \item Regression tables: \code{\link[=table_regression]{table_regression()}},
 \code{\link[=table_regression_uv]{table_regression_uv()}}, \code{\link[=table_regression_models]{table_regression_models()}},
 \code{\link[=as_structured]{as_structured()}}
+\item Table styles: \code{\link[=spicy_style]{spicy_style()}}, \code{\link[=spicy_style_names]{spicy_style_names()}}
 \item Omnibus association overview: \code{\link[=assoc_measures]{assoc_measures()}}
 }
 
