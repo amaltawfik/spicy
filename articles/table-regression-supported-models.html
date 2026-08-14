@@ -307,11 +307,12 @@ repeated or clustered measurements, <code><a href="https://rdrr.io/pkg/lme4/man/
 <code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geeglm()</a></code> answer <em>different questions</em>. A mixed model
 is <em>subject-specific</em>: its odds ratio compares outcomes within
 the same cluster. GEE is <em>population-averaged</em>: its odds ratio
-compares whole subpopulations – usually the public-health question. For
-non-linear links the two coefficients genuinely differ, so the choice is
-about your estimand, not about taste. spicy renders both with their own
-correct inference (boundary-corrected random-effect tests for the
-former, the native sandwich SEs and working correlation for the
+compares whole subpopulations – usually the public-health question.
+Under a logit link the two genuinely differ – the population-averaged OR
+is attenuated toward the null relative to the subject-specific one – so
+the choice is about your estimand, not about taste. spicy renders both
+with their own correct inference (boundary-corrected random-effect tests
+for the former, the native sandwich SEs and working correlation for the
 latter).</p>
 <p><strong>Binary outcomes: OR, RR, or a probability effect?</strong>
 The odds ratio is the default because the logit is; it is also routinely
@@ -325,12 +326,15 @@ average marginal effect is the quantity most readers actually want, it
 sidesteps both ratio debates, and for ordinal and multinomial models
 spicy gives it per outcome category.</p>
 <p><strong>Survival: beyond the hazard ratio.</strong> The HR is
-conditional and non-collapsible, and when proportional hazards fail it
-loses its meaning. spicy’s <code>rmst</code> and <code>risk_diff</code>
-columns give covariate-adjusted differences in restricted mean survival
-time and in cumulative incidence by g-computation – absolute,
-time-anchored quantities a reader can act on – for Cox and parametric
-AFT fits alike, in single tables and in the univariable screen.</p>
+non-collapsible – adjusting for a prognostic covariate changes it even
+without any confounding – and when proportional hazards fail, the single
+reported HR is an average whose weights depend on censoring and
+follow-up, not a stable quantity. spicy’s <code>rmst</code> and
+<code>risk_diff</code> columns give covariate-adjusted differences in
+restricted mean survival time and in cumulative incidence by
+g-computation – absolute, time-anchored quantities a reader can act on –
+for Cox and parametric AFT fits alike, in single tables and in the
+univariable screen.</p>
 <p>And when you fit something the guide does not cover: if the class is
 supported, the registry below renders it; if it is not, spicy refuses
 with a classed error that names the nearest supported route (see
