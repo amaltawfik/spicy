@@ -241,6 +241,11 @@ align_frames <- function(
     "Zero hurdle",
     "Dispersion",
     "Scale effects",
+    # Before Thresholds, matching the single-model layout (the block
+    # order here IS the final bottom-of-table order). Its omission let
+    # a multi-model table interleave the block among a later model's
+    # predictors.
+    "Non-proportional effects",
     "Thresholds",
     "Random effects"
   )) {

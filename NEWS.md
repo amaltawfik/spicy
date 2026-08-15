@@ -122,7 +122,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * Ordinal (`polr`, `clm`): thresholds render as a labelled block
   (`show_thresholds = FALSE` to opt out), and partial-proportional-odds
   terms and `clm(scale = ~)` scale coefficients get their own blocks, the
-  latter kept on the log scale under `exponentiate = TRUE`.
+  latter kept on the log scale under `exponentiate = TRUE`. An aliased
+  `clm` predictor (rank-deficient design) renders as undefined, like an
+  aliased `lm` or `glm` coefficient.
 * Survey (`svyglm`); robust / IV / panel (`estimatr`, `ivreg`, `feols` and
   friends); beta, Tobit, and two-part counts (`betareg`, `tobit`, `zeroinfl`
   / `hurdle`); plus `rlm`, `glm.nb`, `rq`, `gam` / `bam`, `nls`,
@@ -323,9 +325,6 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   indent string is no longer mistaken for a level row: every output now
   reads the block geometry from the table's typed row roles instead of
   parsing the label text back.
-* `table_regression()` no longer errors on a `clm` fit with an aliased
-  predictor (rank-deficient design): the row renders as undefined, like
-  an aliased `lm` or `glm` coefficient.
 * The descriptive tables' `output = "clipboard"` shares the regression
   validator's pre-flight: on a system without a clipboard (headless
   session) they fail with the same clear `spicy_unsupported` error

@@ -112,3 +112,24 @@ test_that("the title reports partial proportional odds", {
     fixed = TRUE
   )
 })
+
+
+test_that("the Non-proportional effects block sorts below every predictor", {
+  fit <- ppo_fit()
+  # A second model introduces a predictor the first lacks: the block
+  # was missing from the sort-to-bottom list in align_terms() and
+  # landed at its first-appearance position, interleaved among the
+  # later model's predictors. It now closes the coefficients, before
+  # Thresholds, exactly as in the single-model layout.
+  data(wine, package = "ordinal", envir = environment())
+  f2 <- ordinal::clm(rating ~ temp + judge, data = wine)
+  v <- trimws(table_regression(list(fit, f2), output = "data.frame")$Variable)
+  np_head <- which(v == "Non-proportional effects:")
+  judge_rows <- which(startsWith(v, "judge"))
+  thr_head <- which(v == "Thresholds:")
+  expect_length(np_head, 1L)
+  expect_length(thr_head, 1L)
+  expect_true(length(judge_rows) > 0L)
+  expect_true(all(judge_rows < np_head))
+  expect_true(np_head < thr_head)
+})
