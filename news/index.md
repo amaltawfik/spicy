@@ -218,6 +218,21 @@ instead of rendering an empty column.
 
 ### New features
 
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  gains `weights` and `rescale`: weighted mean, SD, quantiles, extremes
+  and mean CI under a documented convention (integer weights reproduce
+  the row-expanded data exactly, all weights 1 reproduce the unweighted
+  table; `rescale = TRUE` gives the sampling-weights reading, whose SD
+  equals Stata’s `[aweight]` /
+  [`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html)).
+  A new `"weighted_n"` column token reports the sum of weights (the raw
+  `"data.frame"` / `"long"` outputs always carry a `weighted_n` column,
+  `NA` without weights), and the table names its weights in the note.
+  Group tests and the median CI are deliberately refused under weights –
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  is the weighted-comparison tool. See the Weights section of
+  [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  for the formulas and the cross-software correspondence.
 - New `style` argument on
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),

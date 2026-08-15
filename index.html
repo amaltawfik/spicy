@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>spicy: APA-style regression and summary tables for R • spicy</title>
+<title>spicy: publication-ready summary and regression tables for R • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -24,10 +24,10 @@
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
-<meta property="og:title" content="spicy: APA-style regression and summary tables for R">
-<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, and publication-ready regression coefficient tables for one or more `lm` or `glm` fits side by side. All table outputs follow APA conventions, expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
+<meta property="og:title" content="spicy: publication-ready summary and regression tables for R">
+<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, and publication-ready regression coefficient tables for one or more `lm` or `glm` fits side by side. All table outputs follow rigorous reporting conventions (APA by default, with named journal styles), expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
 ">
-<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, and publication-ready regression coefficient tables for one or more `lm` or `glm` fits side by side. All table outputs follow APA conventions, expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
+<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, and publication-ready regression coefficient tables for one or more `lm` or `glm` fits side by side. All table outputs follow rigorous reporting conventions (APA by default, with named journal styles), expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -72,7 +72,7 @@
     <li><a class="dropdown-item" href="articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="articles/categorical-predictors.html">Categorical predictors</a></li>
-    <li><a class="dropdown-item" href="articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
+    <li><a class="dropdown-item" href="articles/summary-tables-reporting.html">Summary tables for reporting</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
@@ -109,7 +109,7 @@
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
-<p>Every spicy table prints as readable text in the console and exports to gt, tinytable, flextable, Excel, Word, or the clipboard, following APA conventions. Around the tables, spicy provides the survey-data tools that feed them: variable inspection, codebooks, label extraction, and row-wise summaries.</p>
+<p>Every spicy table prints as readable text in the console and exports to gt, tinytable, flextable, Excel, Word, or the clipboard, following rigorous reporting conventions – APA by default, with named journal styles. Around the tables, spicy provides the survey-data tools that feed them: variable inspection, codebooks, label extraction, and row-wise summaries.</p>
 <ul>
 <li>
 <strong>Frequency tables</strong> with <code><a href="reference/freq.html">freq()</a></code>.</li>
@@ -125,6 +125,8 @@
 <strong>Regression tables</strong> with <code><a href="reference/table_regression.html">table_regression()</a></code> for one or more fitted models side by side, across 30+ model classes (see <em>Supported models</em> below): classical / heteroskedasticity-robust / cluster-robust / bootstrap / jackknife variance with each class’s field-standard backend, standardised coefficients, family-aware <code>exponentiate</code> (OR / IRR / HR / RR / MR, link-gated), Wald or profile-likelihood CIs, average marginal effects (per-category for ordinal and multinomial models), partial <em>f²</em> / <em>η²</em> / <em>ω²</em> / <em>χ²</em> effect sizes, class-aware fit statistics (pseudo-<em>R²</em>, Nakagawa marginal / conditional <em>R²</em>, ICC), hierarchical model comparisons with the correct nested test per class, and multiple-comparison adjustment. Mixed models report their random effects as table rows with an optional boundary-correct per-term test; ordinal models report their thresholds; zero-inflated and hurdle models report every model component. Survival models go beyond hazard ratios: adjusted restricted-mean-survival-time and risk differences by g-computation (<code>tau</code> / <code>at_time</code>), for Cox fits (stratified included) and parametric AFT fits, in single tables and in the univariable screen.</li>
 <li>
 <strong>Univariable screening</strong> with <code><a href="reference/table_regression_uv.html">table_regression_uv()</a></code>: one-predictor-at-a-time models merged with the multivariable fit, per-predictor N and events, for <code>glm</code>, <code>lm</code>, and Cox outcomes.</li>
+<li>
+<strong>Journal styles</strong> with <code><a href="reference/spicy_style.html">spicy_style()</a></code>: <code>style = "jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>, or <code>"fr"</code> restyles any table, every rule sourced from the journal’s author guidelines.</li>
 <li>
 <strong>Variable inspection</strong> with <code><a href="reference/varlist.html">varlist()</a></code> and <code><a href="reference/varlist.html">vl()</a></code>: names, labels, values, classes, distinct values (<code>N_distinct</code>), valid observations (<code>N_valid</code>), and missing data.</li>
 <li>
@@ -158,8 +160,8 @@
 <p><code><a href="reference/table_regression.html">table_regression()</a></code> accepts a single fit or a list of fits from any of these classes, and renders them with the conventions of each model family:</p>
 <table class="table">
 <colgroup>
-<col width="15%">
-<col width="84%">
+<col width="50%">
+<col width="50%">
 </colgroup>
 <thead><tr>
 <th>Family</th>
@@ -437,7 +439,7 @@
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Descriptive statistics</span></span>
+<span><span class="co">#&gt; Descriptive statistics by Highest education level</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                       │ Group              M     SD    Min    Max  </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼────────────────────────────────────────────</span></span>
@@ -459,7 +461,7 @@
 <span><span class="co">#&gt;                                 │ Upper secondary     3.43       3.63    534 </span></span>
 <span><span class="co">#&gt;                                 │ Tertiary            4.01       4.21    399 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       │ Group              p   </span></span>
+<span><span class="co">#&gt;  Variable                       │ Group            p (n) </span></span>
 <span><span class="co">#&gt; ────────────────────────────────┼────────────────────────</span></span>
 <span><span class="co">#&gt;  Body mass index                │ Lower secondary  &lt;.001 </span></span>
 <span><span class="co">#&gt;                                 │ Upper secondary        </span></span>
@@ -538,7 +540,7 @@
 <span><span class="co">#&gt; Std. errors: Wald (model-based).</span></span>
 <span><span class="co">#&gt; p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
 <span><span class="co">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables</a> for regression tables across model families, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a> for an overview of summary tables.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Regression coefficient tables</a> for regression tables across model families, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for reporting</a> for an overview of summary tables.</p>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -596,7 +598,7 @@
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-regression-survival.html">Survival regression tables</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for reporting</a></li>
 </ul>
 <p>Key reference pages: <a href="https://amaltawfik.github.io/spicy/reference/freq.html"><code>freq()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/cross_tab.html"><code>cross_tab()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/cramer_v.html"><code>cramer_v()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_categorical.html"><code>table_categorical()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_continuous.html"><code>table_continuous()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html"><code>table_continuous_lm()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/table_regression.html"><code>table_regression()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/varlist.html"><code>varlist()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/code_book.html"><code>code_book()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/label_from_names.html"><code>label_from_names()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/mean_n.html"><code>mean_n()</code></a>, <a href="https://amaltawfik.github.io/spicy/reference/sum_n.html"><code>sum_n()</code></a>, and <a href="https://amaltawfik.github.io/spicy/reference/count_n.html"><code>count_n()</code></a> – see the <a href="https://amaltawfik.github.io/spicy/reference/index.html">full function index</a> for everything else.</p>
 <hr>

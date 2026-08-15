@@ -1,4 +1,4 @@
-# Summary tables for APA-style reporting
+# Summary tables for reporting
 
 ``` r
 
@@ -661,6 +661,48 @@ if (requireNamespace("flextable", quietly = TRUE)) {
   )
 }
 ```
+
+## House styles
+
+Everything above uses spicy’s defaults: two decimals, APA-style *p*
+values (leading zero dropped, `< .001` floor), confidence intervals in
+brackets. Those defaults are one house style among several.
+[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+names the others — each rule sourced from the journal’s published author
+guidelines:
+
+``` r
+
+table_categorical(sochealth, select = smoking, by = sex, style = "jama")
+#> Categorical table by sex
+#> 
+#>  Variable       │ Female n  Female %  Male n  Male %  Total n  Total %   p  
+#> ────────────────┼───────────────────────────────────────────────────────────
+#>  Current smoker │                                                       .71 
+#>    No           │   475       76.6     451     77.8     926     77.2        
+#>    Yes          │   131       21.1     118     20.3     249     20.8        
+#>    (Missing)    │    14        2.3      11      1.9      25      2.1        
+#> 
+#>  Variable       │ Phi 
+#> ────────────────┼─────
+#>  Current smoker │ .01 
+#>    No           │     
+#>    Yes          │     
+#>    (Missing)    │
+```
+
+The visible change here is the *p* column: JAMA rounds *p* values to two
+decimals (`.71`), where the default reports three (`.713`).
+
+Two properties make styles safe to adopt. A style only moves *display*
+defaults — decimals, *p* notation, interval punctuation — never the
+statistics underneath; and an argument you set explicitly always wins
+over it, so `style = "jama"` with `p_digits = 3` keeps your three
+decimals. The style travels with the table: the same call rendered to
+Word, Excel, or HTML follows it, and `options(spicy.style = "lancet")`
+sets one for a whole document.
+[`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+lists every style and every rule with the sentence it comes from.
 
 ## Post-process the returned table object
 

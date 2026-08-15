@@ -487,7 +487,8 @@ print(res, digits = 5)
   argument.
 - See
   [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
-  for association measures inside APA-style categorical summary tables.
+  for association measures inside publication-ready categorical summary
+  tables.
 
 ## References
 

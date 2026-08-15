@@ -186,10 +186,10 @@
   ordinal predictors, successive-difference coding, and why continuous
   predictors should not be categorized.
 
-- [Summary tables for APA-style
+- [Summary tables for
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 
   Learn when to use table_categorical(), table_continuous(),
-  table_continuous_lm(), and table_regression() for APA-style reporting
-  in R, how their shared arguments fit together, and which output format
-  to choose for console, Quarto, Word, or Excel workflows.
+  table_continuous_lm(), and table_regression() for reporting in R, how
+  their shared arguments fit together, and which output format to choose
+  for console, Quarto, Word, or Excel workflows.

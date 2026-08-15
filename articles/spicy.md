@@ -404,7 +404,7 @@ For detailed guidance, see the dedicated articles on
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 and
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-and the final reporting overview for APA-style summary tables.
+and the final reporting overview tying the summary tables together.
 
 ## Regression tables
 
@@ -546,8 +546,8 @@ sochealth |>
 **Putting it together**
 
 - [`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-  — the end-to-end APA reporting sequence tying the four `table_*`
-  helpers together.
+  — the end-to-end reporting sequence tying the four `table_*` helpers
+  together.
 - [`?mean_n`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
   [`?sum_n`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
   [`?count_n`](https://amaltawfik.github.io/spicy/reference/count_n.md)

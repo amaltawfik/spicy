@@ -36,6 +36,8 @@ table_continuous(
   exclude = NULL,
   regex = FALSE,
   drop_na = TRUE,
+  weights = NULL,
+  rescale = FALSE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
@@ -127,6 +129,32 @@ table_continuous(
   the observed, matching
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
   Ignored (with a warning) when `by` is not used.
+
+- weights:
+
+  Optional case weights: an unquoted column name, a character column
+  name, or a numeric vector of length `nrow(data)`. Weights must be
+  non-negative and finite; rows with `NA` or zero weight leave every
+  statistic (including `Min` / `Max`) and `NA` weights are disclosed in
+  the table note. The weighted formulas follow the frequency-expansion
+  convention – see the **Weights** section. The weighted table names its
+  weights in the note ("Statistics weighted by ..."). Group tests and
+  effect sizes are not computed under weights: use
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  for weighted comparisons.
+
+- rescale:
+
+  Logical. If `TRUE`, weights are first normalised so that they sum to
+  the number of observations used for each variable – the same `rescale`
+  grammar as
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  read from `options(spicy.rescale)` when not supplied. This is the
+  sampling-weights reading: results become invariant to the scale of the
+  weights, and the weighted SD then equals Stata's `[aweight]` /
+  [`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html)
+  value exactly. The default `FALSE` uses the weights as given
+  (frequency reading).
 
 - test:
 
@@ -458,12 +486,61 @@ and the column each one produces:
 | `"ci"` | `<level>% CI LL` / `UL` | *t* confidence interval of the mean |
 | `"med_ci"` | `Med <level>% CI LL` / `UL` | exact confidence interval of the median |
 | `"n"` | `n` | valid observations |
+| `"weighted_n"` | `Weighted n` | sum of weights (requires `weights`) |
 
 Quartiles use
 [`stats::quantile()`](https://rdrr.io/r/stats/quantile.html)'s default
 type 7. `"iqr"` is the width (one number, the rank mirror of `SD`);
 `"med_iqr"` shows the interval with its bounds. Columns appear in the
 canonical order of the table above, whatever order they were written in.
+
+## Weights
+
+With `weights`, every displayed statistic uses the
+**frequency-expansion** convention: for integer weights each statistic
+equals its unweighted version computed on the data with every row
+repeated `w` times (`rep(x, w)`), exactly; with all weights equal to 1
+every statistic equals its unweighted sibling. The formulas, with \\W =
+\sum w_i\\:
+
+- mean: \\\sum w_i x_i / W\\;
+
+- SD: \\\sqrt{\sum w_i (x_i - \bar{x}\_w)^2 / (W - 1)}\\;
+
+- quantiles: type-7 positions on the cumulative-weight scale (the
+  [`Hmisc::wtd.quantile()`](https://rdrr.io/pkg/Hmisc/man/wtd.stats.html)
+  default algorithm);
+
+- CI of the mean: \\\bar{x}\_w \pm t\_{W-1} \\ s_w / \sqrt{W}\\;
+
+- `n` counts the rows used; `"weighted_n"` reports \\W\\.
+
+These are the conventions of
+[`Hmisc::wtd.mean()`](https://rdrr.io/pkg/Hmisc/man/wtd.stats.html) /
+`wtd.var()` / `wtd.quantile()` (defaults),
+[`matrixStats::weightedSd()`](https://rdrr.io/pkg/matrixStats/man/weightedVar.html),
+and `DescTools::Quantile()`, and – for integer weights – of Stata's
+`[fweight]` and SPSS's `WEIGHT BY`. With `rescale = TRUE` the weights
+are normalised to sum to the number of observations first, which makes
+every result invariant to the scale of the weights and makes the SD
+equal Stata's `[aweight]` /
+[`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html)
+value – the reading appropriate for sampling weights. Weighted-quantile
+conventions genuinely differ across software (Stata interpolates
+nowhere, SAS refuses analytic-weighted quantiles, the survey package
+offers twelve rules); spicy states its rule here rather than leaving it
+implicit.
+
+Two deliberate refusals: the `"med_ci"` token (an order-statistic
+interval with no weighted version) and, under `by`, the group tests and
+effect sizes – a *t*-test printed next to weighted descriptives would
+silently be unweighted. Set `p_value = FALSE` for weighted descriptives
+by group, or use
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+with `weights` for weighted comparisons. Note that
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)'s
+residual SD answers a different question (model-based, precision-weight
+convention) and is not expected to match the descriptive SD here.
 
 A named list applies a different selection to each variable, with
 `.default` covering the variables it does not name – the case of a table
@@ -914,11 +991,11 @@ table_continuous(
 #> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6
 #> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7
 #> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2
-#>     n test_type statistic      df1 df2      p.value
-#> 1 616   welch_t -2.377237 1184.497  NA 1.760093e-02
-#> 2 572      <NA>        NA       NA  NA           NA
-#> 3 620   welch_t -4.326141 1168.700  NA 1.647005e-05
-#> 4 580      <NA>        NA       NA  NA           NA
+#>     n weighted_n test_type statistic      df1 df2      p.value
+#> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02
+#> 2 572         NA      <NA>        NA       NA  NA           NA
+#> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05
+#> 4 580         NA      <NA>        NA       NA  NA           NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

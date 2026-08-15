@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Summary tables for APA-style reporting • spicy</title>
+<title>Summary tables for reporting • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -24,10 +24,10 @@
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="Summary tables for APA-style reporting">
-<meta name="description" content="Learn when to use table_categorical(), table_continuous(), table_continuous_lm(), and table_regression() for APA-style reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
+<meta property="og:title" content="Summary tables for reporting">
+<meta name="description" content="Learn when to use table_categorical(), table_continuous(), table_continuous_lm(), and table_regression() for reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
 ">
-<meta property="og:description" content="Learn when to use table_categorical(), table_continuous(), table_continuous_lm(), and table_regression() for APA-style reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
+<meta property="og:description" content="Learn when to use table_categorical(), table_continuous(), table_continuous_lm(), and table_regression() for reporting in R, how their shared arguments fit together, and which output format to choose for console, Quarto, Word, or Excel workflows.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -72,7 +72,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
-    <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
+    <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for reporting</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -102,7 +102,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>Summary tables for APA-style reporting</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Summary tables for reporting</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/summary-tables-reporting.Rmd" class="external-link"><code>vignettes/summary-tables-reporting.Rmd</code></a></small>
@@ -812,6 +812,44 @@ workflows but can also be rendered in HTML documents,
 <span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="house-styles">House styles<a class="anchor" aria-label="anchor" href="#house-styles"></a>
+</h2>
+<p>Everything above uses spicy’s defaults: two decimals, APA-style
+<em>p</em> values (leading zero dropped, <code>&lt; .001</code> floor),
+confidence intervals in brackets. Those defaults are one house style
+among several. <code><a href="../reference/spicy_style.html">spicy_style()</a></code> names the others — each rule
+sourced from the journal’s published author guidelines:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="va">smoking</span>, by <span class="op">=</span> <span class="va">sex</span>, style <span class="op">=</span> <span class="st">"jama"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %   p  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼───────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                       .71 </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>   475       76.6     451     77.8     926     77.2        </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>   131       21.1     118     20.3     249     20.8        </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span>    14        2.3      11      1.9      25      2.1        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Phi </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────</span></span></span>
+<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span> .01 </span></span>
+<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span>     </span></span>
+<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span>     </span></span>
+<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
+<p>The visible change here is the <em>p</em> column: JAMA rounds
+<em>p</em> values to two decimals (<code>.71</code>), where the default
+reports three (<code>.713</code>).</p>
+<p>Two properties make styles safe to adopt. A style only moves
+<em>display</em> defaults — decimals, <em>p</em> notation, interval
+punctuation — never the statistics underneath; and an argument you set
+explicitly always wins over it, so <code>style = "jama"</code> with
+<code>p_digits = 3</code> keeps your three decimals. The style travels
+with the table: the same call rendered to Word, Excel, or HTML follows
+it, and <code>options(spicy.style = "lancet")</code> sets one for a
+whole document. <code><a href="../reference/spicy_style.html">?spicy_style</a></code> lists every style and every
+rule with the sentence it comes from.</p>
+</div>
+<div class="section level2">
 <h2 id="post-process-the-returned-table-object">Post-process the returned table object<a class="anchor" aria-label="anchor" href="#post-process-the-returned-table-object"></a>
 </h2>
 <p>All four summary-table helpers return regular <code>gt</code>,
@@ -821,7 +859,7 @@ keep styling them with the native package API. This includes
 changes what the rendering engine produces.</p>
 <p>Use <code>gt::</code> functions when you want to keep the
 <code>gt</code> workflow:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -1478,7 +1516,7 @@ changes what the rendering engine produces.</p>
 </div>
 <p>Use <code>tinytable::</code> functions when you want lightweight
 table-specific styling:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -1677,7 +1715,7 @@ table-specific styling:</p>
 toward Office or HTML document output. The example is shown as code here
 because the dark pkgdown theme is not a reliable preview of the final
 <code>flextable</code> HTML rendering:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>

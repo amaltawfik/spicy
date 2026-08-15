@@ -386,20 +386,20 @@ table_continuous(
 #> 4 15.444587 18.7  97.9 55.33323 59.09819   57.9 45.40 68.500 23.100
 #> 5 13.621193 26.7 100.0 67.81669 70.12172   69.5 60.85 77.300 16.450
 #> 6 13.226818 40.4 100.0 75.55235 78.15265   77.2 68.60 86.150 17.550
-#>   med_ci_lower med_ci_upper   n   test_type statistic df1      df2      p.value
-#> 1         27.6         28.7 260 welch_anova  87.95902   2 654.4758 1.467916e-34
-#> 2         25.7         26.5 534        <NA>        NA  NA       NA           NA
-#> 3         24.1         24.9 394        <NA>        NA  NA       NA           NA
-#> 4         55.5         60.2 261 welch_anova 144.35083   2 638.5873 1.888362e-52
-#> 5         68.1         70.9 539        <NA>        NA  NA       NA           NA
-#> 6         76.2         78.5 400        <NA>        NA  NA       NA           NA
-#>   es_type  es_value es_ci_lower es_ci_upper
-#> 1  eta_sq 0.1307679  0.09667861   0.1654516
-#> 2    <NA>        NA          NA          NA
-#> 3    <NA>        NA          NA          NA
-#> 4  eta_sq 0.2081970  0.16901207   0.2461732
-#> 5    <NA>        NA          NA          NA
-#> 6    <NA>        NA          NA          NA
+#>   med_ci_lower med_ci_upper   n weighted_n   test_type statistic df1      df2
+#> 1         27.6         28.7 260         NA welch_anova  87.95902   2 654.4758
+#> 2         25.7         26.5 534         NA        <NA>        NA  NA       NA
+#> 3         24.1         24.9 394         NA        <NA>        NA  NA       NA
+#> 4         55.5         60.2 261         NA welch_anova 144.35083   2 638.5873
+#> 5         68.1         70.9 539         NA        <NA>        NA  NA       NA
+#> 6         76.2         78.5 400         NA        <NA>        NA  NA       NA
+#>        p.value es_type  es_value es_ci_lower es_ci_upper
+#> 1 1.467916e-34  eta_sq 0.1307679  0.09667861   0.1654516
+#> 2           NA    <NA>        NA          NA          NA
+#> 3           NA    <NA>        NA          NA          NA
+#> 4 1.888362e-52  eta_sq 0.2081970  0.16901207   0.2461732
+#> 5           NA    <NA>        NA          NA          NA
+#> 6           NA    <NA>        NA          NA          NA
 ```
 
 ## Selecting variables
@@ -497,32 +497,32 @@ table_continuous(
 #> 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487      3  2 3.0
 #> 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466      4  3 4.0
 #> 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589      4  3 5.0
-#>    iqr med_ci_lower med_ci_upper   n   test_type statistic df1      df2
-#> 1  1.5            3            3 259 welch_anova 118.73585   2 652.0775
-#> 2  2.0            3            4 534        <NA>        NA  NA       NA
-#> 3  2.0            4            5 399        <NA>        NA  NA       NA
-#> 4  1.0            2            3 261 welch_anova 105.98821   2 651.9434
-#> 5  1.0            3            4 535        <NA>        NA  NA       NA
-#> 6  2.0            4            4 396        <NA>        NA  NA       NA
-#> 7  2.0            3            3 260 welch_anova  82.35074   2 617.9668
-#> 8  2.0            4            4 534        <NA>        NA  NA       NA
-#> 9  1.0            4            5 398        <NA>        NA  NA       NA
-#> 10 1.0            2            3 261 welch_anova 101.31672   2 648.7723
-#> 11 1.0            3            4 532        <NA>        NA  NA       NA
-#> 12 2.0            4            4 399        <NA>        NA  NA       NA
-#>         p.value
-#> 1  1.063917e-44
-#> 2            NA
-#> 3            NA
-#> 4  1.398117e-40
-#> 5            NA
-#> 6            NA
-#> 7  1.969764e-32
-#> 8            NA
-#> 9            NA
-#> 10 5.105889e-39
-#> 11           NA
-#> 12           NA
+#>    iqr med_ci_lower med_ci_upper   n weighted_n   test_type statistic df1
+#> 1  1.5            3            3 259         NA welch_anova 118.73585   2
+#> 2  2.0            3            4 534         NA        <NA>        NA  NA
+#> 3  2.0            4            5 399         NA        <NA>        NA  NA
+#> 4  1.0            2            3 261         NA welch_anova 105.98821   2
+#> 5  1.0            3            4 535         NA        <NA>        NA  NA
+#> 6  2.0            4            4 396         NA        <NA>        NA  NA
+#> 7  2.0            3            3 260         NA welch_anova  82.35074   2
+#> 8  2.0            4            4 534         NA        <NA>        NA  NA
+#> 9  1.0            4            5 398         NA        <NA>        NA  NA
+#> 10 1.0            2            3 261         NA welch_anova 101.31672   2
+#> 11 1.0            3            4 532         NA        <NA>        NA  NA
+#> 12 2.0            4            4 399         NA        <NA>        NA  NA
+#>         df2      p.value
+#> 1  652.0775 1.063917e-44
+#> 2        NA           NA
+#> 3        NA           NA
+#> 4  651.9434 1.398117e-40
+#> 5        NA           NA
+#> 6        NA           NA
+#> 7  617.9668 1.969764e-32
+#> 8        NA           NA
+#> 9        NA           NA
+#> 10 648.7723 5.105889e-39
+#> 11       NA           NA
+#> 12       NA           NA
 ```
 
 Use `exclude` when you want a broad selection with one or two explicit
@@ -653,6 +653,73 @@ table_continuous(
 #>                  │ (Missing)       27.86     18        
 #> 
 #> Missing values removed: bmi (12).
+```
+
+## Weights
+
+Survey data usually comes with case weights, and `sochealth` carries
+one. Passing it weights every displayed statistic — mean, SD, quantiles,
+extremes, and the CI of the mean — and the table says so in its note:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  weights = weight,
+  rescale = TRUE
+)
+#> Descriptive statistics
+#> 
+#>  Variable                      │   M     SD     Min    Max    95% CI LL 
+#> ───────────────────────────────┼────────────────────────────────────────
+#>  Body mass index               │ 25.72   3.69  16.00   38.90    25.51   
+#>  WHO-5 wellbeing index (0-100) │ 68.78  15.54  18.70  100.00    67.90   
+#> 
+#>  Variable                      │ 95% CI UL   n   
+#> ───────────────────────────────┼─────────────────
+#>  Body mass index               │   25.94    1188 
+#>  WHO-5 wellbeing index (0-100) │   69.66    1200 
+#> 
+#> Statistics weighted by weight. Missing values removed: bmi (12).
+```
+
+Two conventions coexist for weighted statistics, and spicy makes the
+choice explicit instead of silent. Without `rescale`, weights are taken
+as *frequencies*: integer weights reproduce, exactly, the statistics of
+the data with each row repeated `w` times — the reading of SPSS’s
+`WEIGHT BY` and Stata’s `fweight`. With `rescale = TRUE`, weights are
+first normalised to sum to the number of observations — the
+*sampling-weights* reading, invariant to the scale of the weights, whose
+SD matches Stata’s `aweight` and
+[`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html).
+For a survey weight like this one, `rescale = TRUE` is the reading you
+want. The mean is the same under both (it is a ratio); the SD and the
+`weighted_n` column differ. The exact formulas and the cross-software
+correspondence are in the Weights section of
+[`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+
+Two things are deliberately refused under weights rather than silently
+wrong: the median confidence interval (an order-statistic interval with
+no weighted version), and the group tests — a *t*-test printed next to
+weighted descriptives would itself be unweighted. For weighted group
+comparisons,
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+takes the same `weights` argument and fits them properly:
+
+``` r
+
+# Weighted descriptives by group: turn the test columns off
+table_continuous(
+  sochealth,
+  select = bmi,
+  by = sex,
+  weights = weight,
+  rescale = TRUE,
+  p_value = FALSE
+)
+# Weighted group comparison: the model-based tool
+table_continuous_lm(sochealth, select = bmi, by = sex, weights = weight)
 ```
 
 ## Custom labels
@@ -810,11 +877,11 @@ head(as.data.frame(out))
 #> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6
 #> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7
 #> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2
-#>     n test_type statistic      df1 df2      p.value
-#> 1 616   welch_t -2.377237 1184.497  NA 1.760093e-02
-#> 2 572      <NA>        NA       NA  NA           NA
-#> 3 620   welch_t -4.326141 1168.700  NA 1.647005e-05
-#> 4 580      <NA>        NA       NA  NA           NA
+#>     n weighted_n test_type statistic      df1 df2      p.value
+#> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02
+#> 2 572         NA      <NA>        NA       NA  NA           NA
+#> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05
+#> 4 580         NA      <NA>        NA       NA  NA           NA
 ```
 
 ## Output formats

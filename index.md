@@ -8,9 +8,10 @@ survey data workflows.
 ## Features
 
 Every spicy table prints as readable text in the console and exports to
-gt, tinytable, flextable, Excel, Word, or the clipboard, following APA
-conventions. Around the tables, spicy provides the survey-data tools
-that feed them: variable inspection, codebooks, label extraction, and
+gt, tinytable, flextable, Excel, Word, or the clipboard, following
+rigorous reporting conventions – APA by default, with named journal
+styles. Around the tables, spicy provides the survey-data tools that
+feed them: variable inspection, codebooks, label extraction, and
 row-wise summaries.
 
 - **Frequency tables** with
@@ -62,6 +63,11 @@ row-wise summaries.
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
   one-predictor-at-a-time models merged with the multivariable fit,
   per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
+- **Journal styles** with
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md):
+  `style = "jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`,
+  or `"fr"` restyles any table, every rule sourced from the journal’s
+  author guidelines.
 - **Variable inspection** with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
@@ -406,7 +412,7 @@ table_continuous(
   select = c(bmi, life_sat_health),
   by = education
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                       │ Group              M     SD    Min    Max  
 #> ────────────────────────────────┼────────────────────────────────────────────
@@ -428,7 +434,7 @@ table_continuous(
 #>                                 │ Upper secondary     3.43       3.63    534 
 #>                                 │ Tertiary            4.01       4.21    399 
 #> 
-#>  Variable                       │ Group              p   
+#>  Variable                       │ Group            p (n) 
 #> ────────────────────────────────┼────────────────────────
 #>  Body mass index                │ Lower secondary  <.001 
 #>                                 │ Upper secondary        
@@ -533,7 +539,6 @@ tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
 for weighted or robust linear-model reporting, [Regression coefficient
 tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 for regression tables across model families, and [Summary tables for
-APA-style
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
 
@@ -620,7 +625,7 @@ Each workflow has a dedicated vignette:
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
-- [Summary tables for APA-style
+- [Summary tables for
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 
 Key reference pages:

@@ -6,13 +6,13 @@ library(spicy)
 ```
 
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-builds publication-ready categorical tables suitable for APA-style
-reporting in social science and data science research. With `by`, it
-produces grouped cross-tabulation tables with chi-squared \\p\\-values,
-effect sizes, confidence intervals, and multi-level headers. Without
-`by`, it produces one-way frequency-style tables for the selected
-variables. Export to gt, tinytable, flextable, Excel, or Word. This
-vignette walks through the main features.
+builds publication-ready categorical tables for reports and articles in
+social science and data science research. With `by`, it produces grouped
+cross-tabulation tables with chi-squared \\p\\-values, effect sizes,
+confidence intervals, and multi-level headers. Without `by`, it produces
+one-way frequency-style tables for the selected variables. Export to gt,
+tinytable, flextable, Excel, or Word. This vignette walks through the
+main features.
 
 ## Basic usage
 

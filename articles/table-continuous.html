@@ -72,7 +72,7 @@
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
-    <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for APA-style reporting</a></li>
+    <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for reporting</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -470,20 +470,20 @@ error.</p>
 <span><span class="co">#&gt; 4 15.444587 18.7  97.9 55.33323 59.09819   57.9 45.40 68.500 23.100</span></span>
 <span><span class="co">#&gt; 5 13.621193 26.7 100.0 67.81669 70.12172   69.5 60.85 77.300 16.450</span></span>
 <span><span class="co">#&gt; 6 13.226818 40.4 100.0 75.55235 78.15265   77.2 68.60 86.150 17.550</span></span>
-<span><span class="co">#&gt;   med_ci_lower med_ci_upper   n   test_type statistic df1      df2      p.value</span></span>
-<span><span class="co">#&gt; 1         27.6         28.7 260 welch_anova  87.95902   2 654.4758 1.467916e-34</span></span>
-<span><span class="co">#&gt; 2         25.7         26.5 534        &lt;NA&gt;        NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 3         24.1         24.9 394        &lt;NA&gt;        NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 4         55.5         60.2 261 welch_anova 144.35083   2 638.5873 1.888362e-52</span></span>
-<span><span class="co">#&gt; 5         68.1         70.9 539        &lt;NA&gt;        NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt; 6         76.2         78.5 400        &lt;NA&gt;        NA  NA       NA           NA</span></span>
-<span><span class="co">#&gt;   es_type  es_value es_ci_lower es_ci_upper</span></span>
-<span><span class="co">#&gt; 1  eta_sq 0.1307679  0.09667861   0.1654516</span></span>
-<span><span class="co">#&gt; 2    &lt;NA&gt;        NA          NA          NA</span></span>
-<span><span class="co">#&gt; 3    &lt;NA&gt;        NA          NA          NA</span></span>
-<span><span class="co">#&gt; 4  eta_sq 0.2081970  0.16901207   0.2461732</span></span>
-<span><span class="co">#&gt; 5    &lt;NA&gt;        NA          NA          NA</span></span>
-<span><span class="co">#&gt; 6    &lt;NA&gt;        NA          NA          NA</span></span></code></pre></div>
+<span><span class="co">#&gt;   med_ci_lower med_ci_upper   n weighted_n   test_type statistic df1      df2</span></span>
+<span><span class="co">#&gt; 1         27.6         28.7 260         NA welch_anova  87.95902   2 654.4758</span></span>
+<span><span class="co">#&gt; 2         25.7         26.5 534         NA        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 3         24.1         24.9 394         NA        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 4         55.5         60.2 261         NA welch_anova 144.35083   2 638.5873</span></span>
+<span><span class="co">#&gt; 5         68.1         70.9 539         NA        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt; 6         76.2         78.5 400         NA        &lt;NA&gt;        NA  NA       NA</span></span>
+<span><span class="co">#&gt;        p.value es_type  es_value es_ci_lower es_ci_upper</span></span>
+<span><span class="co">#&gt; 1 1.467916e-34  eta_sq 0.1307679  0.09667861   0.1654516</span></span>
+<span><span class="co">#&gt; 2           NA    &lt;NA&gt;        NA          NA          NA</span></span>
+<span><span class="co">#&gt; 3           NA    &lt;NA&gt;        NA          NA          NA</span></span>
+<span><span class="co">#&gt; 4 1.888362e-52  eta_sq 0.2081970  0.16901207   0.2461732</span></span>
+<span><span class="co">#&gt; 5           NA    &lt;NA&gt;        NA          NA          NA</span></span>
+<span><span class="co">#&gt; 6           NA    &lt;NA&gt;        NA          NA          NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="selecting-variables">Selecting variables<a class="anchor" aria-label="anchor" href="#selecting-variables"></a>
@@ -575,32 +575,32 @@ error.</p>
 <span><span class="co">#&gt; 10 Lower secondary 2.666667 1.1635489   1   5 2.524846 2.808487      3  2 3.0</span></span>
 <span><span class="co">#&gt; 11 Upper secondary 3.387218 1.1065913   1   5 3.292970 3.481466      4  3 4.0</span></span>
 <span><span class="co">#&gt; 12        Tertiary 3.887218 0.9588582   1   5 3.792847 3.981589      4  3 5.0</span></span>
-<span><span class="co">#&gt;    iqr med_ci_lower med_ci_upper   n   test_type statistic df1      df2</span></span>
-<span><span class="co">#&gt; 1  1.5            3            3 259 welch_anova 118.73585   2 652.0775</span></span>
-<span><span class="co">#&gt; 2  2.0            3            4 534        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 3  2.0            4            5 399        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 4  1.0            2            3 261 welch_anova 105.98821   2 651.9434</span></span>
-<span><span class="co">#&gt; 5  1.0            3            4 535        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 6  2.0            4            4 396        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 7  2.0            3            3 260 welch_anova  82.35074   2 617.9668</span></span>
-<span><span class="co">#&gt; 8  2.0            4            4 534        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 9  1.0            4            5 398        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 10 1.0            2            3 261 welch_anova 101.31672   2 648.7723</span></span>
-<span><span class="co">#&gt; 11 1.0            3            4 532        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt; 12 2.0            4            4 399        &lt;NA&gt;        NA  NA       NA</span></span>
-<span><span class="co">#&gt;         p.value</span></span>
-<span><span class="co">#&gt; 1  1.063917e-44</span></span>
-<span><span class="co">#&gt; 2            NA</span></span>
-<span><span class="co">#&gt; 3            NA</span></span>
-<span><span class="co">#&gt; 4  1.398117e-40</span></span>
-<span><span class="co">#&gt; 5            NA</span></span>
-<span><span class="co">#&gt; 6            NA</span></span>
-<span><span class="co">#&gt; 7  1.969764e-32</span></span>
-<span><span class="co">#&gt; 8            NA</span></span>
-<span><span class="co">#&gt; 9            NA</span></span>
-<span><span class="co">#&gt; 10 5.105889e-39</span></span>
-<span><span class="co">#&gt; 11           NA</span></span>
-<span><span class="co">#&gt; 12           NA</span></span></code></pre></div>
+<span><span class="co">#&gt;    iqr med_ci_lower med_ci_upper   n weighted_n   test_type statistic df1</span></span>
+<span><span class="co">#&gt; 1  1.5            3            3 259         NA welch_anova 118.73585   2</span></span>
+<span><span class="co">#&gt; 2  2.0            3            4 534         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt; 3  2.0            4            5 399         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt; 4  1.0            2            3 261         NA welch_anova 105.98821   2</span></span>
+<span><span class="co">#&gt; 5  1.0            3            4 535         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt; 6  2.0            4            4 396         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt; 7  2.0            3            3 260         NA welch_anova  82.35074   2</span></span>
+<span><span class="co">#&gt; 8  2.0            4            4 534         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt; 9  1.0            4            5 398         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt; 10 1.0            2            3 261         NA welch_anova 101.31672   2</span></span>
+<span><span class="co">#&gt; 11 1.0            3            4 532         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt; 12 2.0            4            4 399         NA        &lt;NA&gt;        NA  NA</span></span>
+<span><span class="co">#&gt;         df2      p.value</span></span>
+<span><span class="co">#&gt; 1  652.0775 1.063917e-44</span></span>
+<span><span class="co">#&gt; 2        NA           NA</span></span>
+<span><span class="co">#&gt; 3        NA           NA</span></span>
+<span><span class="co">#&gt; 4  651.9434 1.398117e-40</span></span>
+<span><span class="co">#&gt; 5        NA           NA</span></span>
+<span><span class="co">#&gt; 6        NA           NA</span></span>
+<span><span class="co">#&gt; 7  617.9668 1.969764e-32</span></span>
+<span><span class="co">#&gt; 8        NA           NA</span></span>
+<span><span class="co">#&gt; 9        NA           NA</span></span>
+<span><span class="co">#&gt; 10 648.7723 5.105889e-39</span></span>
+<span><span class="co">#&gt; 11       NA           NA</span></span>
+<span><span class="co">#&gt; 12       NA           NA</span></span></code></pre></div>
 <p>Use <code>exclude</code> when you want a broad selection with one or
 two explicit removals:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -720,6 +720,67 @@ still cover the observed groups only, matching
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="weights">Weights<a class="anchor" aria-label="anchor" href="#weights"></a>
+</h2>
+<p>Survey data usually comes with case weights, and
+<code>sochealth</code> carries one. Passing it weights every displayed
+statistic — mean, SD, quantiles, extremes, and the CI of the mean — and
+the table says so in its note:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
+<span>  weights <span class="op">=</span> <span class="va">weight</span>,</span>
+<span>  rescale <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>   M     SD     Min    Max    95% CI LL </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 25.72   3.69  16.00   38.90    25.51   </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 68.78  15.54  18.70  100.00    67.90   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL   n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────</span></span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   25.94    1188 </span></span>
+<span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   69.66    1200 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Statistics weighted by weight. Missing values removed: bmi (12).</span></span></span></code></pre></div>
+<p>Two conventions coexist for weighted statistics, and spicy makes the
+choice explicit instead of silent. Without <code>rescale</code>, weights
+are taken as <em>frequencies</em>: integer weights reproduce, exactly,
+the statistics of the data with each row repeated <code>w</code> times —
+the reading of SPSS’s <code>WEIGHT BY</code> and Stata’s
+<code>fweight</code>. With <code>rescale = TRUE</code>, weights are
+first normalised to sum to the number of observations — the
+<em>sampling-weights</em> reading, invariant to the scale of the
+weights, whose SD matches Stata’s <code>aweight</code> and
+<code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svyvar()</a></code>. For a survey weight like this one,
+<code>rescale = TRUE</code> is the reading you want. The mean is the
+same under both (it is a ratio); the SD and the <code>weighted_n</code>
+column differ. The exact formulas and the cross-software correspondence
+are in the Weights section of <code><a href="../reference/table_continuous.html">?table_continuous</a></code>.</p>
+<p>Two things are deliberately refused under weights rather than
+silently wrong: the median confidence interval (an order-statistic
+interval with no weighted version), and the group tests — a
+<em>t</em>-test printed next to weighted descriptives would itself be
+unweighted. For weighted group comparisons,
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> takes the same <code>weights</code>
+argument and fits them properly:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Weighted descriptives by group: turn the test columns off</span></span>
+<span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">bmi</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  weights <span class="op">=</span> <span class="va">weight</span>,</span>
+<span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  p_value <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># Weighted group comparison: the model-based tool</span></span>
+<span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="va">bmi</span>, by <span class="op">=</span> <span class="va">sex</span>, weights <span class="op">=</span> <span class="va">weight</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="custom-labels">Custom labels<a class="anchor" aria-label="anchor" href="#custom-labels"></a>
 </h2>
 <p>By default, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> labels each variable with
@@ -729,7 +790,7 @@ the tables above read “Body mass index” rather than <code>bmi</code>.
 Use the <code>labels</code> argument, a named character vector keyed by
 column name, to override either. Only the listed columns are relabelled;
 the others keep their attribute label or column name:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -783,7 +844,7 @@ every output; the underlying <code>n</code> and <code>ci_lower</code> /
 <code>output = "data.frame"</code> / <code>"long"</code> for downstream
 code.</li>
 </ul>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
@@ -812,7 +873,7 @@ to a plain <code>data.frame</code> / <code>tbl_df</code> (stripping the
 spicy formatting attributes) or piped into <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> /
 <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for any downstream tidyverse stats
 workflow:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span>
@@ -874,11 +935,11 @@ workflow:</p>
 <span><span class="co">#&gt; 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6</span></span>
 <span><span class="co">#&gt; 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7</span></span>
 <span><span class="co">#&gt; 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2</span></span>
-<span><span class="co">#&gt;     n test_type statistic      df1 df2      p.value</span></span>
-<span><span class="co">#&gt; 1 616   welch_t -2.377237 1184.497  NA 1.760093e-02</span></span>
-<span><span class="co">#&gt; 2 572      &lt;NA&gt;        NA       NA  NA           NA</span></span>
-<span><span class="co">#&gt; 3 620   welch_t -4.326141 1168.700  NA 1.647005e-05</span></span>
-<span><span class="co">#&gt; 4 580      &lt;NA&gt;        NA       NA  NA           NA</span></span></code></pre></div>
+<span><span class="co">#&gt;     n weighted_n test_type statistic      df1 df2      p.value</span></span>
+<span><span class="co">#&gt; 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02</span></span>
+<span><span class="co">#&gt; 2 572         NA      &lt;NA&gt;        NA       NA  NA           NA</span></span>
+<span><span class="co">#&gt; 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05</span></span>
+<span><span class="co">#&gt; 4 580         NA      &lt;NA&gt;        NA       NA  NA           NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -936,7 +997,7 @@ code)</td>
 </table>
 <p><code>output = "gt"</code> produces a formatted gt table with
 APA-style borders and column spanners:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1487,7 +1548,7 @@ Missing values removed: bmi (12), life_sat_health (8).
 </div>
 <p><code>output = "tinytable"</code> works well in Quarto and R Markdown
 documents:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -1681,7 +1742,7 @@ documents:</p>
 <h2 id="export-to-excel-or-word">Export to Excel or Word<a class="anchor" aria-label="anchor" href="#export-to-excel-or-word"></a>
 </h2>
 <p>Use the same function to export the table directly:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
