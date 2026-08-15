@@ -11,6 +11,8 @@ table_continuous(
   exclude = NULL,
   regex = FALSE,
   drop_na = TRUE,
+  weights = NULL,
+  rescale = FALSE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
@@ -83,6 +85,26 @@ group-comparison test and effect size are still computed on the
 observed groups only (show the missing, test the observed,
 matching \code{\link[=table_categorical]{table_categorical()}}). Ignored (with a warning) when
 \code{by} is not used.}
+
+\item{weights}{Optional case weights: an unquoted column name, a
+character column name, or a numeric vector of length \code{nrow(data)}.
+Weights must be non-negative and finite; rows with \code{NA} or zero
+weight leave every statistic (including \code{Min} / \code{Max}) and \code{NA}
+weights are disclosed in the table note. The weighted formulas
+follow the frequency-expansion convention -- see the \strong{Weights}
+section. The weighted table names its weights in the note
+("Statistics weighted by ..."). Group tests and effect sizes are
+not computed under weights: use \code{\link[=table_continuous_lm]{table_continuous_lm()}} for
+weighted comparisons.}
+
+\item{rescale}{Logical. If \code{TRUE}, weights are first normalised so
+that they sum to the number of observations used for each
+variable -- the same \code{rescale} grammar as \code{\link[=table_categorical]{table_categorical()}},
+read from \code{options(spicy.rescale)} when not supplied. This is the
+sampling-weights reading: results become invariant to the scale
+of the weights, and the weighted SD then equals Stata's
+\verb{[aweight]} / \code{survey::svyvar()} value exactly. The default
+\code{FALSE} uses the weights as given (frequency reading).}
 
 \item{test}{Character. Statistical test to use when comparing groups.
 One of \code{"welch"} (default), \code{"student"}, or \code{"nonparametric"}.
@@ -374,6 +396,7 @@ tokens, and the column each one produces:\tabular{lll}{
    \code{"ci"} \tab \verb{<level>\% CI LL} / \code{UL} \tab \emph{t} confidence interval of the mean \cr
    \code{"med_ci"} \tab \verb{Med <level>\% CI LL} / \code{UL} \tab exact confidence interval of the median \cr
    \code{"n"} \tab \code{n} \tab valid observations \cr
+   \code{"weighted_n"} \tab \verb{Weighted n} \tab sum of weights (requires \code{weights}) \cr
 }
 
 
@@ -381,6 +404,46 @@ Quartiles use \code{\link[stats:quantile]{stats::quantile()}}'s default type 7. 
 width (one number, the rank mirror of \code{SD}); \code{"med_iqr"} shows the
 interval with its bounds. Columns appear in the canonical order of
 the table above, whatever order they were written in.
+}
+
+\section{Weights}{
+With \code{weights}, every displayed statistic uses the
+\strong{frequency-expansion} convention: for integer weights each
+statistic equals its unweighted version computed on the data with
+every row repeated \code{w} times (\code{rep(x, w)}), exactly; with all
+weights equal to 1 every statistic equals its unweighted sibling.
+The formulas, with \eqn{W = \sum w_i}:
+\itemize{
+\item mean: \eqn{\sum w_i x_i / W};
+\item SD: \eqn{\sqrt{\sum w_i (x_i - \bar{x}_w)^2 / (W - 1)}};
+\item quantiles: type-7 positions on the cumulative-weight scale (the
+\code{\link[Hmisc:wtd.quantile]{Hmisc::wtd.quantile()}} default algorithm);
+\item CI of the mean: \eqn{\bar{x}_w \pm t_{W-1} \, s_w / \sqrt{W}};
+\item \code{n} counts the rows used; \code{"weighted_n"} reports \eqn{W}.
+}
+
+These are the conventions of \code{Hmisc::wtd.mean()} / \code{wtd.var()} /
+\code{wtd.quantile()} (defaults), \code{matrixStats::weightedSd()}, and
+\code{DescTools::Quantile()}, and -- for integer weights -- of Stata's
+\verb{[fweight]} and SPSS's \verb{WEIGHT BY}. With \code{rescale = TRUE} the
+weights are normalised to sum to the number of observations first,
+which makes every result invariant to the scale of the weights and
+makes the SD equal Stata's \verb{[aweight]} / \code{survey::svyvar()} value
+-- the reading appropriate for sampling weights. Weighted-quantile
+conventions genuinely differ across software (Stata interpolates
+nowhere, SAS refuses analytic-weighted quantiles, the survey
+package offers twelve rules); spicy states its rule here rather
+than leaving it implicit.
+
+Two deliberate refusals: the \code{"med_ci"} token (an order-statistic
+interval with no weighted version) and, under \code{by}, the group tests
+and effect sizes -- a \emph{t}-test printed next to weighted descriptives
+would silently be unweighted. Set \code{p_value = FALSE} for weighted
+descriptives by group, or use \code{\link[=table_continuous_lm]{table_continuous_lm()}} with
+\code{weights} for weighted comparisons. Note that
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}'s residual SD answers a different question
+(model-based, precision-weight convention) and is not expected to
+match the descriptive SD here.
 
 A named list applies a different selection to each variable, with
 \code{.default} covering the variables it does not name -- the case of a

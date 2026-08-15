@@ -153,6 +153,19 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* `table_continuous()` gains `weights` and `rescale`: weighted mean,
+  SD, quantiles, extremes and mean CI under a documented convention
+  (integer weights reproduce the row-expanded data exactly, all
+  weights 1 reproduce the unweighted table; `rescale = TRUE` gives
+  the sampling-weights reading, whose SD equals Stata's `[aweight]` /
+  `survey::svyvar()`). A new `"weighted_n"` column token reports the
+  sum of weights (the raw `"data.frame"` / `"long"` outputs always
+  carry a `weighted_n` column, `NA` without weights), and the table
+  names its weights in the note. Group
+  tests and the median CI are deliberately refused under weights --
+  `table_continuous_lm()` is the weighted-comparison tool. See the
+  Weights section of `?table_continuous` for the formulas and the
+  cross-software correspondence.
 * New `style` argument on `table_regression()`, `table_categorical()`,
   `table_continuous()` and `table_continuous_lm()`: `"jama"`, `"nejm"`,
   `"lancet"`, `"annals"`, `"apa"`, `"aer"` and `"fr"`. Each theme encodes only rules

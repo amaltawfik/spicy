@@ -404,7 +404,12 @@
         ci_role = "UL"
       )
     ),
-    n = list(list(name = "n", field = "n", integer = TRUE))
+    n = list(list(name = "n", field = "n", integer = TRUE)),
+    # Sum of weights (decision 17): a weighted count, generally
+    # non-integer, so it takes the table's regular precision.
+    weighted_n = list(
+      list(name = "Weighted n", field = "weighted_n", integer = FALSE)
+    )
   )
 }
 

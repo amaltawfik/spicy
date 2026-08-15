@@ -37,6 +37,8 @@
   # the two apart.
   note_rows_missing_weights = "Rows with missing %s removed: %d.",
   note_weights_fallback = "weights",
+  # Decision 17: the weighted table names its weights up front.
+  note_weighted_by = "Statistics weighted by %s.",
 
   # -- table titles: descriptive families -----------------------------------
   title_categorical = "Categorical table",

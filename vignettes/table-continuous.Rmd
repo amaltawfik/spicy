@@ -226,6 +226,57 @@ table_continuous(
 )
 ```
 
+## Weights
+
+Survey data usually comes with case weights, and `sochealth` carries
+one. Passing it weights every displayed statistic — mean, SD,
+quantiles, extremes, and the CI of the mean — and the table says so
+in its note:
+
+```{r weights}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  weights = weight,
+  rescale = TRUE
+)
+```
+
+Two conventions coexist for weighted statistics, and spicy makes the
+choice explicit instead of silent. Without `rescale`, weights are
+taken as *frequencies*: integer weights reproduce, exactly, the
+statistics of the data with each row repeated `w` times — the reading
+of SPSS's `WEIGHT BY` and Stata's `fweight`. With `rescale = TRUE`,
+weights are first normalised to sum to the number of observations —
+the *sampling-weights* reading, invariant to the scale of the
+weights, whose SD matches Stata's `aweight` and `survey::svyvar()`.
+For a survey weight like this one, `rescale = TRUE` is the reading
+you want. The mean is the same under both (it is a ratio); the SD
+and the `weighted_n` column differ. The exact formulas and the
+cross-software correspondence are in the Weights section of
+`?table_continuous`.
+
+Two things are deliberately refused under weights rather than
+silently wrong: the median confidence interval (an order-statistic
+interval with no weighted version), and the group tests — a *t*-test
+printed next to weighted descriptives would itself be unweighted.
+For weighted group comparisons, `table_continuous_lm()` takes the
+same `weights` argument and fits them properly:
+
+```{r weights-by, eval = FALSE}
+# Weighted descriptives by group: turn the test columns off
+table_continuous(
+  sochealth,
+  select = bmi,
+  by = sex,
+  weights = weight,
+  rescale = TRUE,
+  p_value = FALSE
+)
+# Weighted group comparison: the model-based tool
+table_continuous_lm(sochealth, select = bmi, by = sex, weights = weight)
+```
+
 ## Custom labels
 
 By default, `table_continuous()` labels each variable with its label

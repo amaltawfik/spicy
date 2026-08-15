@@ -20,7 +20,10 @@ test_that("table_continuous returns correct structure", {
       "iqr",
       "med_ci_lower",
       "med_ci_upper",
-      "n"
+      "n",
+      # Stable schema (decision 17): always present, NA without
+      # `weights` -- programmatic consumers get one shape, not two.
+      "weighted_n"
     )
   )
   expect_equal(nrow(out), 4L)

@@ -65,6 +65,24 @@
 #'   observed groups only (show the missing, test the observed,
 #'   matching [table_categorical()]). Ignored (with a warning) when
 #'   `by` is not used.
+#' @param weights Optional case weights: an unquoted column name, a
+#'   character column name, or a numeric vector of length `nrow(data)`.
+#'   Weights must be non-negative and finite; rows with `NA` or zero
+#'   weight leave every statistic (including `Min` / `Max`) and `NA`
+#'   weights are disclosed in the table note. The weighted formulas
+#'   follow the frequency-expansion convention -- see the **Weights**
+#'   section. The weighted table names its weights in the note
+#'   ("Statistics weighted by ..."). Group tests and effect sizes are
+#'   not computed under weights: use [table_continuous_lm()] for
+#'   weighted comparisons.
+#' @param rescale Logical. If `TRUE`, weights are first normalised so
+#'   that they sum to the number of observations used for each
+#'   variable -- the same `rescale` grammar as [table_categorical()],
+#'   read from `options(spicy.rescale)` when not supplied. This is the
+#'   sampling-weights reading: results become invariant to the scale
+#'   of the weights, and the weighted SD then equals Stata's
+#'   `[aweight]` / `survey::svyvar()` value exactly. The default
+#'   `FALSE` uses the weights as given (frequency reading).
 #' @param test Character. Statistical test to use when comparing groups.
 #'   One of `"welch"` (default), `"student"`, or `"nonparametric"`.
 #'   - `"welch"`: Welch *t*-test (2 groups) or Welch one-way ANOVA
@@ -307,11 +325,51 @@
 #' | `"ci"` | `<level>% CI LL` / `UL` | *t* confidence interval of the mean |
 #' | `"med_ci"` | `Med <level>% CI LL` / `UL` | exact confidence interval of the median |
 #' | `"n"` | `n` | valid observations |
+#' | `"weighted_n"` | `Weighted n` | sum of weights (requires `weights`) |
 #'
 #' Quartiles use [stats::quantile()]'s default type 7. `"iqr"` is the
 #' width (one number, the rank mirror of `SD`); `"med_iqr"` shows the
 #' interval with its bounds. Columns appear in the canonical order of
 #' the table above, whatever order they were written in.
+#'
+#' # Weights
+#'
+#' With `weights`, every displayed statistic uses the
+#' **frequency-expansion** convention: for integer weights each
+#' statistic equals its unweighted version computed on the data with
+#' every row repeated `w` times (`rep(x, w)`), exactly; with all
+#' weights equal to 1 every statistic equals its unweighted sibling.
+#' The formulas, with \eqn{W = \sum w_i}:
+#'
+#' * mean: \eqn{\sum w_i x_i / W};
+#' * SD: \eqn{\sqrt{\sum w_i (x_i - \bar{x}_w)^2 / (W - 1)}};
+#' * quantiles: type-7 positions on the cumulative-weight scale (the
+#'   [Hmisc::wtd.quantile()] default algorithm);
+#' * CI of the mean: \eqn{\bar{x}_w \pm t_{W-1} \, s_w / \sqrt{W}};
+#' * `n` counts the rows used; `"weighted_n"` reports \eqn{W}.
+#'
+#' These are the conventions of `Hmisc::wtd.mean()` / `wtd.var()` /
+#' `wtd.quantile()` (defaults), `matrixStats::weightedSd()`, and
+#' `DescTools::Quantile()`, and -- for integer weights -- of Stata's
+#' `[fweight]` and SPSS's `WEIGHT BY`. With `rescale = TRUE` the
+#' weights are normalised to sum to the number of observations first,
+#' which makes every result invariant to the scale of the weights and
+#' makes the SD equal Stata's `[aweight]` / `survey::svyvar()` value
+#' -- the reading appropriate for sampling weights. Weighted-quantile
+#' conventions genuinely differ across software (Stata interpolates
+#' nowhere, SAS refuses analytic-weighted quantiles, the survey
+#' package offers twelve rules); spicy states its rule here rather
+#' than leaving it implicit.
+#'
+#' Two deliberate refusals: the `"med_ci"` token (an order-statistic
+#' interval with no weighted version) and, under `by`, the group tests
+#' and effect sizes -- a *t*-test printed next to weighted descriptives
+#' would silently be unweighted. Set `p_value = FALSE` for weighted
+#' descriptives by group, or use [table_continuous_lm()] with
+#' `weights` for weighted comparisons. Note that
+#' [table_continuous_lm()]'s residual SD answers a different question
+#' (model-based, precision-weight convention) and is not expected to
+#' match the descriptive SD here.
 #'
 #' A named list applies a different selection to each variable, with
 #' `.default` covering the variables it does not name -- the case of a
@@ -579,6 +637,8 @@ table_continuous <- function(
   exclude = NULL,
   regex = FALSE,
   drop_na = TRUE,
+  weights = NULL,
+  rescale = FALSE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   statistic = FALSE,
@@ -814,6 +874,72 @@ table_continuous <- function(
     do_test <- TRUE
   }
 
+  # --- weights (decision 17: frequency-expansion convention) --------------
+  # Same resolver and validation as table_continuous_lm(); the
+  # `rescale` grammar (weights normalised to sum to n) is shared with
+  # table_categorical() and read from the same option.
+  weights_quo <- rlang::enquo(weights)
+  weights_name <- detect_weights_column_name(weights_quo, data)
+  weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
+  if (missing(rescale)) {
+    rescale <- getOption("spicy.rescale", FALSE)
+  }
+  if (!is.logical(rescale) || length(rescale) != 1L || is.na(rescale)) {
+    spicy_abort(
+      "`rescale` must be TRUE or FALSE.",
+      class = "spicy_invalid_input"
+    )
+  }
+  n_na_weights <- 0L
+  if (!is.null(weights_vec)) {
+    # NA weights are legal: those rows leave the analytic sample and
+    # the exclusion is disclosed in the table note. Only genuinely
+    # non-finite values (Inf, -Inf, NaN) are rejected.
+    if (any(is.infinite(weights_vec) | is.nan(weights_vec))) {
+      spicy_abort(
+        "`weights` must contain only finite values.",
+        class = "spicy_invalid_input"
+      )
+    }
+    if (any(weights_vec < 0, na.rm = TRUE)) {
+      spicy_abort(
+        "`weights` must be non-negative.",
+        class = "spicy_invalid_input"
+      )
+    }
+    if (all(is.na(weights_vec) | weights_vec == 0)) {
+      spicy_abort(
+        "`weights` must contain at least one positive value.",
+        class = "spicy_invalid_input"
+      )
+    }
+    n_na_weights <- sum(is.na(weights_vec))
+    # The group tests (Welch/Student t, ANOVA, rank tests) and their
+    # effect sizes have no weighted version here; the weighted
+    # comparison lives in table_continuous_lm(weights = ). Hard
+    # refusal rather than silently unweighted inference next to
+    # weighted descriptives.
+    if (has_group && (do_test || do_es)) {
+      spicy_abort(
+        c(
+          "Weighted group tests are not implemented.",
+          "i" = paste0(
+            "Set `p_value = FALSE` (and `statistic = FALSE`, ",
+            "`effect_size = \"none\"`) for weighted descriptives ",
+            "by group, or use `table_continuous_lm(weights = )` ",
+            "for weighted comparisons."
+          )
+        ),
+        class = "spicy_not_implemented"
+      )
+    }
+  } else if (isTRUE(rescale) && !missing(rescale)) {
+    spicy_warn(
+      "`rescale = TRUE` has no effect when `weights` is not supplied.",
+      class = "spicy_ignored_arg"
+    )
+  }
+
   # --- column selection (reuse mean_n pattern) ---
   work <- data
   if (has_group) {
@@ -949,7 +1075,29 @@ table_continuous <- function(
         )
       )
     }
+    if (n_na_weights > 0L) {
+      parts <- c(
+        parts,
+        spicy_fmt(
+          "note_rows_missing_weights",
+          weights_name %||% spicy_str("note_weights_fallback"),
+          n_na_weights
+        )
+      )
+    }
     if (length(parts)) paste(parts, collapse = " ") else NULL
+  }
+
+  # Decision 17: a weighted table SAYS it is weighted (STROBE-style
+  # disclosure -- the reader must know the estimates are not raw).
+  build_weights_note <- function() {
+    if (is.null(weights_vec)) {
+      return(NULL)
+    }
+    spicy_fmt(
+      "note_weighted_by",
+      weights_name %||% spicy_str("note_weights_fallback")
+    )
   }
 
   # --- displayed columns (show_columns) ---
@@ -988,6 +1136,28 @@ table_continuous <- function(
   show_n <- "n" %in% tokens_union
   ci <- "ci" %in% tokens_union
 
+  # Decision-17 token guards: the order-statistic median CI has no
+  # weighted version, and the weighted-count column has nothing to
+  # show without weights. Both are hard refusals, not silent blanks.
+  if (!is.null(weights_vec) && "med_ci" %in% tokens_union) {
+    spicy_abort(
+      c(
+        "The median confidence interval is not available with `weights`.",
+        "i" = paste0(
+          "`med_ci` is an order-statistic interval with no weighted ",
+          "version; drop the \"med_ci\" token from `show_columns`."
+        )
+      ),
+      class = "spicy_not_implemented"
+    )
+  }
+  if (is.null(weights_vec) && "weighted_n" %in% tokens_union) {
+    spicy_abort(
+      "The \"weighted_n\" column requires `weights`.",
+      class = "spicy_invalid_input"
+    )
+  }
+
   # A variable displaying a median-based position statistic WITHOUT the
   # mean is a "median variable": the table must not test a mean it does
   # not show, so its default test switches to the rank family below.
@@ -1023,11 +1193,9 @@ table_continuous <- function(
   # `show_columns` selects what the table displays. The quantiles use
   # stats::quantile()'s default type 7, so `med` / `q1` / `q3` equal
   # stats::median() / stats::quantile() on the same vector.
-  compute_one <- function(x, ci_level) {
-    x_valid <- x[!is.na(x)]
-    n <- length(x_valid)
-    if (n == 0L) {
-      return(data.frame(
+  compute_one <- function(x, ci_level, w = NULL) {
+    empty_row <- function() {
+      data.frame(
         mean = NA_real_,
         sd = NA_real_,
         min = NA_real_,
@@ -1041,8 +1209,60 @@ table_continuous <- function(
         med_ci_lower = NA_real_,
         med_ci_upper = NA_real_,
         n = 0L,
+        weighted_n = NA_real_,
+        stringsAsFactors = FALSE
+      )
+    }
+    if (!is.null(w)) {
+      # Weighted branch (decision 17, frequency-expansion convention;
+      # see R/weighted_stats.R for the formulas and their
+      # triangulation). Rows with NA or zero weight carry zero
+      # copies: they leave every statistic, min/max included. The
+      # mean CI uses SE = s/sqrt(W) with df = W - 1 -- for integer
+      # weights this IS the t interval of the expanded data, and
+      # with all weights 1 it collapses to the unweighted interval.
+      # The order-statistic median CI has no weighted version (the
+      # med_ci token is refused up front); its fields stay NA.
+      keep <- !is.na(x) & !is.na(w) & w > 0
+      x_valid <- x[keep]
+      w_valid <- w[keep]
+      n <- length(x_valid)
+      if (n == 0L) {
+        return(empty_row())
+      }
+      big_w <- sum(w_valid)
+      m <- .wtd_mean(x_valid, w_valid)
+      s <- .wtd_sd(x_valid, w_valid)
+      se <- if (!is.na(s)) s / sqrt(big_w) else NA_real_
+      alpha <- 1 - ci_level
+      t_crit <- if (big_w > 1) {
+        stats::qt(1 - alpha / 2, df = big_w - 1)
+      } else {
+        NA_real_
+      }
+      qs <- .wtd_quantile7(x_valid, w_valid, probs = c(0.25, 0.5, 0.75))
+      return(data.frame(
+        mean = m,
+        sd = s,
+        min = min(x_valid),
+        max = max(x_valid),
+        ci_lower = if (!is.na(se)) m - t_crit * se else NA_real_,
+        ci_upper = if (!is.na(se)) m + t_crit * se else NA_real_,
+        median = qs[2L],
+        q1 = qs[1L],
+        q3 = qs[3L],
+        iqr = qs[3L] - qs[1L],
+        med_ci_lower = NA_real_,
+        med_ci_upper = NA_real_,
+        n = n,
+        weighted_n = big_w,
         stringsAsFactors = FALSE
       ))
+    }
+    x_valid <- x[!is.na(x)]
+    n <- length(x_valid)
+    if (n == 0L) {
+      return(empty_row())
     }
     m <- mean(x_valid)
     s <- if (n > 1L) stats::sd(x_valid) else NA_real_
@@ -1065,6 +1285,7 @@ table_continuous <- function(
       med_ci_lower = med_ci[1L],
       med_ci_upper = med_ci[2L],
       n = n,
+      weighted_n = NA_real_,
       stringsAsFactors = FALSE
     )
   }
@@ -1283,10 +1504,17 @@ table_continuous <- function(
         stringsAsFactors = FALSE
       )
 
+      # Per-VARIABLE weight preparation: `rescale` normalises over the
+      # variable's whole surviving sample, never per group -- a
+      # per-group rescale would destroy the relative weights across
+      # groups, which is the entire information sampling weights
+      # carry into a by table.
+      w_var <- .prep_variable_weights(work[[nm]], weights_vec, rescale)
+
       for (j in seq_along(group_levels)) {
         g <- group_levels[j]
         idx <- which(groups == g)
-        desc <- compute_one(work[[nm]][idx], ci_level)
+        desc <- compute_one(work[[nm]][idx], ci_level, w = w_var[idx])
         desc <- cbind(
           data.frame(
             variable = nm,
@@ -1322,7 +1550,12 @@ table_continuous <- function(
     result <- do.call(rbind, rows)
   } else {
     rows <- lapply(seq_along(numeric_cols), function(i) {
-      desc <- compute_one(work[[numeric_cols[i]]], ci_level)
+      x_i <- work[[numeric_cols[i]]]
+      desc <- compute_one(
+        x_i,
+        ci_level,
+        w = .prep_variable_weights(x_i, weights_vec, rescale)
+      )
       cbind(
         data.frame(
           variable = numeric_cols[i],
@@ -1384,6 +1617,7 @@ table_continuous <- function(
   # appended to the same note: they exist only when `show_columns`
   # changes the display, so the default table's note is untouched.
   missing_note <- paste_note_parts(c(
+    build_weights_note(),
     build_missing_note(),
     build_test_note(test_used, auto_rank, n_test_groups),
     build_column_glosses(tokens_union, result, ci_level)
@@ -1492,7 +1726,8 @@ table_continuous <- function(
   "max",
   "ci",
   "med_ci",
-  "n"
+  "n",
+  "weighted_n"
 )
 
 # Tokens that put a median-based POSITION statistic on the row. A
@@ -2314,6 +2549,11 @@ build_display_df <- function(
       df[[med_ci_ul_name]] <- blanked(fmt(result$med_ci_upper), tok)
     } else if (tok == "n") {
       df[["n"]] <- blanked(as.character(result$n), tok)
+    } else if (tok == "weighted_n") {
+      # Sum of weights, formatted like the other statistics (it is a
+      # weighted count, generally non-integer) -- the table_continuous_lm
+      # "Weighted n" convention.
+      df[["Weighted n"]] <- blanked(fmt(result$weighted_n), tok)
     }
   }
 
