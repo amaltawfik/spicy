@@ -248,3 +248,42 @@ pro-grade.
 excel_sheet = NULL dans les signatures, nom réel résolu en interne via
 le registre, documenté dans @param. Usage Rd propre, traduisible à
 l'étage 2, breaking doux pre-1.0. Clôt la question ouverte de l'étage 1.
+
+## 17. Convention weights de table_continuous — DÉCIDÉ 2026-08-15 : « go d17 »
+
+Défaut FRÉQUENTIEL : SD = sqrt(SS/(Σw−1)), quantiles type-7 pondérés
+(accord Hmisc défaut / DescTools / matrixStats ; sémantique SPSS
+WEIGHT BY ; architecture Harrell). Deux invariants d'acceptation
+EXACTS : w=1 ≡ tableau non pondéré à l'octet près ; poids entiers ≡
+données dupliquées à l'octet près. `rescale = TRUE` (grammaire déjà
+présente dans table_categorical, option spicy.rescale) = la voie
+analytique : Σw=n rend la formule fréquentielle algébriquement égale
+au SD Stata-aweight/survey::svyvar (2.8428667890285464 vérifié au 16e
+chiffre). Documentation à la Stata : chaque formule dans le Rd + table
+de correspondance + caveat quantiles analytiques (SAS refuse, survey
+offre 12 règles, nous documentons la nôtre). Le raisonnement expert
+complet (Stata type system, SAS FREQ/WEIGHT split, manuel SPSS,
+Harrell, Lumley) et les oracles : dev/weights_continuous_spec.md +
+scratchpad/wtd_dossier.md. min/max sur poids > 0 (bug gtsummary en
+test négatif). Upstream candidats (décision Amal différée) : 2 bugs
+PSPP, 1 bug gtsummary {min}/{max}, quirk survey hf4 'quantile.2'.
+
+## 18. Recadrage APA → styles de revues — DÉCIDÉ 2026-08-15
+
+Formulations validées (l'audit : l'identité APA incrustée dans 4
+surfaces publiques ; « each rule traced... » jugé trop pour la
+DESCRIPTION — la traçabilité s'affiche là où elle est démontrée) :
+- Titre du site : « spicy: publication-ready summary and regression
+  tables for R ».
+- Phrase DESCRIPTION : « Summary and regression tables follow APA
+  conventions by default and can switch to named journal styles such
+  as JAMA, NEJM, or The Lancet. »
+- README Features : même substitution + nouvelle bullet Journal
+  styles (« every rule sourced from the journal's author
+  guidelines » — permis ici, vérifiable en un clic).
+- pkgdown description : « rigorous reporting conventions (APA by
+  default, with named journal styles) ».
+- Vignette summary-tables-reporting : retitrée « Summary tables for
+  reporting » (fichier inchangé, URLs stables), + section « House
+  styles » ; miroirs navbar/index/Learn more/README suivis par les
+  sentinelles. Vignette thèmes dédiée DIFFÉRÉE post-i18n-1.5.
