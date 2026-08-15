@@ -237,11 +237,11 @@ test_that("a multi-line note keeps its lines in HTML and Typst", {
   html <- .pt_html(tt)
   expect_match(html, "Std. errors:<br>", fixed = TRUE)
   # The console indents the per-model attributions; the indent survives
-  # as no-break spaces.
-  expect_match(html, "<br>&nbsp;&nbsp;Model 1:", fixed = TRUE)
+  # as no-break spaces. Named models: the line cites the spanner label.
+  expect_match(html, "<br>&nbsp;&nbsp;OLS:", fixed = TRUE)
   # Typst collapses a bare newline exactly as HTML does: the line
   # ends with a forced break, the indent becomes no-break spaces.
-  expect_match(.pt_typst(tt), "Std. errors: \\\n~~Model 1:", fixed = TRUE)
+  expect_match(.pt_typst(tt), "Std. errors: \\\n~~OLS:", fixed = TRUE)
 })
 
 test_that("notes are subordinated by size, in black, by default", {

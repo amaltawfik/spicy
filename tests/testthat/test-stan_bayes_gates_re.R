@@ -773,7 +773,8 @@ test_that("mixed-table loo note keeps its Model prefix", {
     )))),
     collapse = "\n"
   )
-  expect_match(out, "Model 2: Predictive accuracy by PSIS-LOO", fixed = TRUE)
+  # Named models: the loo attribution cites the spanner label.
+  expect_match(out, "B: Predictive accuracy by PSIS-LOO", fixed = TRUE)
 })
 
 
