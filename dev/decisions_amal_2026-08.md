@@ -196,6 +196,23 @@ vignette porte le message des douves (validation par classe,
 conventions) = l'action « dire les douves » de l'audit. Écriture
 par la boucle principale (règle vignettes), pas de délégation.
 
+## 12. « undefined » généralisé — DÉCIDÉ 2026-08-14 : GO (« en mode pro et robuste »)
+
+Étendre l'émission de cell_status == "undefined" à TOUTE cellule
+NA-dont-le-terme-est-présent (aujourd'hui vc seulement), avec la
+MÊME liste d'exemptions que la console (.blank_on_na_fields: les
+champs qu'elle blanchit volontairement — n, r2, events, pd, ess_*,
+rhat, mcse...). Effet: les moteurs riches montrent l'en-dash de la
+console (rang déficient/colinéarité: « s'applique, non estimable »)
+au lieu d'un blanc trompeur (« rien à signaler »). Console
+inchangée; la règle d'émission devient COMPLÈTE, la console reste
+l'oracle exact. Exigences pro: miroir exact de la branche NA de
+format_cell_value() (pas une réinvention), test du cas colinéaire
+(lm rang déficient) épinglé console==structuré==moteurs, delta de
+corpus listé. Implémentation: Fable, petit commit dédié post-vague-2
+(regression_structured.R est tenu par l'agent en vol), avant la
+barrière du cycle v3.
+
 ## Ordre suggéré si tu valides les trois
 
 2 (petit, avec l'issue tinytable) -> 3 (petit) -> 1 (lot dédié).

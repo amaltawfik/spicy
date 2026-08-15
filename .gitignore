@@ -31,5 +31,8 @@ dev/*_retriage.md
 dev/*.pdf
 dev/*.epub
 dev/_source/
+# Journal style guides (copyrighted PDFs; catalogued in
+# dev/journal_styles_sources.md, which stays versioned).
+dev/journal_styles/
 /*.tar.gz
 tools/suite_results.csv
