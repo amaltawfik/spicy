@@ -460,7 +460,11 @@ spicy_style <- function(
   )
   fit_digits <- .style_check_count(fit_digits, "fit_digits", min = 0L)
   ic_digits <- .style_check_count(ic_digits, "ic_digits", min = 0L)
-  percent_digits <- .style_check_count(percent_digits, "percent_digits", min = 0L)
+  percent_digits <- .style_check_count(
+    percent_digits,
+    "percent_digits",
+    min = 0L
+  )
   v_digits <- .style_check_count(v_digits, "v_digits", min = 0L)
 
   if (!is.null(p_bands) && !is.null(p_sigfig)) {
@@ -590,9 +594,7 @@ spicy_style <- function(
   if (is.null(x)) {
     return(NULL)
   }
-  if (
-    !is.character(x) || length(x) != 1L || is.na(x) || nchar(x) != 1L
-  ) {
+  if (!is.character(x) || length(x) != 1L || is.na(x) || nchar(x) != 1L) {
     spicy_abort(
       sprintf("`%s` must be a single character.", field),
       class = "spicy_invalid_input"
@@ -685,9 +687,7 @@ spicy_style <- function(
     if (b[[1L]] <= 0) {
       bad(sprintf("`p_bands[[%d]]` has a cutoff <= 0.", i))
     }
-    if (
-      !is.finite(b[[2L]]) || b[[2L]] != as.integer(b[[2L]]) || b[[2L]] < 0
-    ) {
+    if (!is.finite(b[[2L]]) || b[[2L]] != as.integer(b[[2L]]) || b[[2L]] < 0) {
       bad(sprintf("`p_bands[[%d]]` has a non-integer digit count.", i))
     }
     cuts[[i]] <- b[[1L]]
@@ -987,7 +987,9 @@ print.spicy_style <- function(x, ...) {
         paste(prov$overrides, collapse = ", ")
       ))
     }
-    cat("\nEncoded rules (numeric formatting only, not editorial conformity):\n")
+    cat(
+      "\nEncoded rules (numeric formatting only, not editorial conformity):\n"
+    )
     for (r in prov$rules) {
       cat(paste0(" - ", r, "\n"))
     }

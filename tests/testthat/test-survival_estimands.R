@@ -387,7 +387,13 @@ test_that("transformed terms get no orphan estimand row; note + caveat fire", {
   # per-decade coefficient. Transformed-only variables are now skipped,
   # the footer discloses them, and an all-transformed fit warns.
   skip_if_not_installed("survival")
-  lung2 <- na.omit(survival::lung[, c("time", "status", "age", "sex", "ph.ecog")])
+  lung2 <- na.omit(survival::lung[, c(
+    "time",
+    "status",
+    "age",
+    "sex",
+    "ph.ecog"
+  )])
   lung2$sex <- factor(lung2$sex, labels = c("Male", "Female"))
   fit <- survival::coxph(
     survival::Surv(time, status) ~ I(age / 10) + sex + ph.ecog,
@@ -414,10 +420,18 @@ test_that("transformed terms get no orphan estimand row; note + caveat fire", {
   expect_true("dRMST (365)" %in% names(s$body))
   expect_false(all(is.na(s$body[["dRMST (365)"]])))
   # All-transformed fit: classed caveat, no estimand rows, no crash.
-  fit2 <- survival::coxph(survival::Surv(time, status) ~ I(age / 10), data = lung2)
+  fit2 <- survival::coxph(
+    survival::Surv(time, status) ~ I(age / 10),
+    data = lung2
+  )
   set.seed(7)
   expect_warning(
-    table_regression(fit2, show_columns = c("b", "rmst"), tau = 365, boot_n = 20),
+    table_regression(
+      fit2,
+      show_columns = c("b", "rmst"),
+      tau = 365,
+      boot_n = 20
+    ),
     class = "spicy_caveat"
   )
 })

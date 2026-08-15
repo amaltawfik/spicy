@@ -887,9 +887,7 @@ spicy_print_table <- function(
         for (k in which(is_companion(shown))) {
           carrier <- NA_integer_
           for (j in rev(seq_len(cols[k] - 1L))) {
-            if (
-              !is_companion(all_shown[j]) && !(j %in% align_left_cols)
-            ) {
+            if (!is_companion(all_shown[j]) && !(j %in% align_left_cols)) {
               carrier <- j
               break
             }

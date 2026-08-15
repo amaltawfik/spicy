@@ -1018,7 +1018,9 @@ build_structured_body <- function(
   dm <- struct$format_spec$decimal_mark
   # Any single character: "." and "," are the usual pair, but a journal
   # style may ask for another mark (The Lancet's midline dot, U+00B7).
-  if (!(is.character(dm) && length(dm) == 1L && !is.na(dm) && nchar(dm) == 1L)) {
+  if (
+    !(is.character(dm) && length(dm) == 1L && !is.na(dm) && nchar(dm) == 1L)
+  ) {
     problems <- c(
       problems,
       sprintf("decimal_mark must be a single character (got '%s').", dm)
@@ -1378,7 +1380,11 @@ build_structured_body <- function(
       p_digits = p_digits
     )
     p_style <- if (identical(tk, "p_change")) .style_p_style_token() else NULL
-    threshold <- if (identical(tk, "p_change")) .style_p_floor(p_digits) else NULL
+    threshold <- if (identical(tk, "p_change")) {
+      .style_p_floor(p_digits)
+    } else {
+      NULL
+    }
     is_change_p <- identical(tk, "p_change")
 
     for (m_id in model_ids) {

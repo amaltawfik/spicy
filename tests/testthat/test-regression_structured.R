@@ -442,12 +442,15 @@ test_that("as_structured – the identity columns are typed and complete", {
   # `.indent` is a depth, not a flag: 0 or 1 today, never negative.
   expect_true(all(s$body$.indent >= 0L))
   # The identity columns are NOT value columns: no engine renders them.
-  expect_false(any(spicy:::.struct_value_cols(s$body) %in% c(
-    ".variable",
-    ".level",
-    ".row_role",
-    ".indent"
-  )))
+  expect_false(any(
+    spicy:::.struct_value_cols(s$body) %in%
+      c(
+        ".variable",
+        ".level",
+        ".row_role",
+        ".indent"
+      )
+  ))
   expect_identical(
     names(spicy:::.struct_display_body(s$body)),
     c("Variable", spicy:::.struct_value_cols(s$body))

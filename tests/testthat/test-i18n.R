@@ -45,11 +45,13 @@ test_that("no dead keys: every registry key is consumed in R/", {
     collapse = "\n"
   )
   ks <- names(.spicy_strings)
-  dead <- ks[!vapply(
-    ks,
-    function(k) grepl(paste0('"', k, '"'), src, fixed = TRUE),
-    logical(1)
-  )]
+  dead <- ks[
+    !vapply(
+      ks,
+      function(k) grepl(paste0('"', k, '"'), src, fixed = TRUE),
+      logical(1)
+    )
+  ]
   expect_identical(dead, character(0))
 })
 

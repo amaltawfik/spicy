@@ -281,14 +281,29 @@ test_that("lancet: midline dot, 2 significant figures capped at 4 dp", {
   expect_identical(st$decimal_mark, dot)
   d <- st$p_digits
   expect_identical(d, 4L)
-  expect_identical(spicy:::format_p_value(0.034, dot, d), paste0("0", dot, "034"))
-  expect_identical(spicy:::format_p_value(0.0021, dot, d), paste0("0", dot, "0021"))
-  expect_identical(spicy:::format_p_value(0.123, dot, d), paste0("0", dot, "12"))
+  expect_identical(
+    spicy:::format_p_value(0.034, dot, d),
+    paste0("0", dot, "034")
+  )
+  expect_identical(
+    spicy:::format_p_value(0.0021, dot, d),
+    paste0("0", dot, "0021")
+  )
+  expect_identical(
+    spicy:::format_p_value(0.123, dot, d),
+    paste0("0", dot, "12")
+  )
   expect_identical(spicy:::format_p_value(0.5, dot, d), paste0("0", dot, "50"))
   # capped at four decimal places
-  expect_identical(spicy:::format_p_value(0.00021, dot, d), paste0("0", dot, "0002"))
+  expect_identical(
+    spicy:::format_p_value(0.00021, dot, d),
+    paste0("0", dot, "0002")
+  )
   # the floor, with its leading zero
-  expect_identical(spicy:::format_p_value(0.00005, dot, d), paste0("<0", dot, "0001"))
+  expect_identical(
+    spicy:::format_p_value(0.00005, dot, d),
+    paste0("<0", dot, "0001")
+  )
 })
 
 test_that("lancet on a real table: dot, floor, en dash", {
@@ -416,7 +431,11 @@ test_that("an argument passed at its own default value still wins", {
   # beat the theme: the rule is "typed", not "different".
   expect_false(grepl(
     "·",
-    console(table_regression(fixed_fit(), style = "lancet", decimal_mark = ".")),
+    console(table_regression(
+      fixed_fit(),
+      style = "lancet",
+      decimal_mark = "."
+    )),
     fixed = TRUE
   ))
 })

@@ -1095,7 +1095,11 @@ build_body_row <- function(
 # build_structured_body() (typed body): the console used to draw the
 # dash while every structured-driven engine left the cell blank, because
 # each side owned its own copy of the rule.
-.vc_cell_undefined <- function(long_row, cs, re_columns = c("est", "se", "ci")) {
+.vc_cell_undefined <- function(
+  long_row,
+  cs,
+  re_columns = c("est", "se", "ci")
+) {
   # An empty match yields NA here, which is not "vc": a cell whose term
   # is absent from the model is blank, never a dash.
   if (!identical(long_row$estimate_type[1L], "vc")) {
@@ -1116,7 +1120,8 @@ build_body_row <- function(
     return(is.na(long_row$ci_low[1L]) || is.na(long_row$ci_high[1L]))
   }
   fld <- flds[1L]
-  fld %in% names(long_row) &&
+  fld %in%
+    names(long_row) &&
     !fld %in% .blank_on_na_fields() &&
     is.na(long_row[[fld]][1L])
 }

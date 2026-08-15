@@ -389,7 +389,11 @@ test_that("beta abbreviation names the standardisation method and dummy conventi
       attr(table_regression(fit, standardized = m), "note"),
       collapse = "\n"
     )
-    expect_match(note, sprintf('\u03B2 = standardised coefficient ("%s"', m), fixed = TRUE)
+    expect_match(
+      note,
+      sprintf('\u03B2 = standardised coefficient ("%s"', m),
+      fixed = TRUE
+    )
     expect_match(note, "dummies", fixed = TRUE)
   }
   gfit <- glm(smoking ~ age + sex, data = sochealth, family = binomial)

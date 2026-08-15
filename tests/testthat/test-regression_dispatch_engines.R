@@ -123,7 +123,11 @@ test_that("output = 'tinytable' escapes cells but leaves the note verbatim", {
   expect_match(typ, "#text(8pt)[a_note_]", fixed = TRUE)
   # Cells are still escaped on both backends.
   expect_match(typ, "\\<.001", fixed = TRUE)
-  expect_match(tinytable::save_tt(tt, output = "html"), "&lt;.001", fixed = TRUE)
+  expect_match(
+    tinytable::save_tt(tt, output = "html"),
+    "&lt;.001",
+    fixed = TRUE
+  )
 })
 
 test_that("Typst output strips the forced column gutter on grouped headers", {

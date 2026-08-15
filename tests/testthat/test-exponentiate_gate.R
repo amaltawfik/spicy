@@ -321,7 +321,11 @@ test_that("cumulative cloglog HR is exp(-B): direction, delta SE, swapped CI", {
   expect_equal(bx$estimate, exp(-br$estimate), tolerance = 1e-10)
   expect_gt(bx$estimate, 1.5)
   # Delta-method SE on the displayed scale; CI endpoints negated + swapped.
-  expect_equal(bx$std.error, exp(-br$estimate) * br$std.error, tolerance = 1e-10)
+  expect_equal(
+    bx$std.error,
+    exp(-br$estimate) * br$std.error,
+    tolerance = 1e-10
+  )
   expect_equal(bx$conf.low, exp(-br$conf.high), tolerance = 1e-10)
   expect_equal(bx$conf.high, exp(-br$conf.low), tolerance = 1e-10)
   # p-value invariant under the monotone transform.

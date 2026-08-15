@@ -260,11 +260,13 @@ format_vcov_label_from_frame <- function(frame) {
     # "OIM" / SAS PROC LOGISTIC's bare "Standard Error" labels.
     # Parallels "classical (OLS)" for lm: both name the underlying
     # mechanism that produces the SE.
-    return(if (is_glm) {
-      spicy_str("note_vcov_classical_glm")
-    } else {
-      spicy_str("note_vcov_classical_lm")
-    })
+    return(
+      if (is_glm) {
+        spicy_str("note_vcov_classical_glm")
+      } else {
+        spicy_str("note_vcov_classical_lm")
+      }
+    )
   }
   if (startsWith(vt, "HC")) {
     return(spicy_fmt("note_vcov_hc", vt))
