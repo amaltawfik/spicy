@@ -1560,11 +1560,56 @@ table_continuous_lm <- function(
   attr(result, "align") <- align
 
   # Truthfulness ledger (the family convention of table_continuous()
-  # / table_categorical()): rows dropped for a missing `by` value or a
-  # missing weight are disclosed in the table note -- the reader must
-  # be able to see what left the analytic sample. Per-outcome NA in
-  # `y` / covariates is already visible through the `n` column.
+  # / table_categorical()): what left the analytic sample is disclosed
+  # in the table note. Per-variable NA counts (outcomes and
+  # covariates, regular vs declared missing -- the same split
+  # table_continuous() reports; decision 14, 2026-08-15: the `n`
+  # column shows the effect but not the cause), then rows dropped for
+  # a missing `by` value or a missing weight.
+  na_dropped <- integer(0)
+  user_na_dropped <- integer(0)
+  for (.nm in c(numeric_outcomes, covariates_names)) {
+    .col <- data[[.nm]]
+    .n_user <- if (isTRUE(user_na)) sum(.user_na_mask(.col)) else 0L
+    if (.n_user > 0L) {
+      user_na_dropped[[.nm]] <- .n_user
+    }
+    .nd <- sum(is.na(resolve_user_na(.col))) - .n_user
+    if (.nd > 0L) {
+      na_dropped[[.nm]] <- .nd
+    }
+  }
   missing_parts <- character(0)
+  if (length(na_dropped)) {
+    missing_parts <- c(
+      missing_parts,
+      paste0(
+        spicy_str("note_missing_removed"),
+        paste(
+          spicy_fmt("note_missing_item", names(na_dropped), na_dropped),
+          collapse = ", "
+        ),
+        "."
+      )
+    )
+  }
+  if (length(user_na_dropped)) {
+    missing_parts <- c(
+      missing_parts,
+      paste0(
+        spicy_str("note_declared_missing_removed"),
+        paste(
+          spicy_fmt(
+            "note_missing_item",
+            names(user_na_dropped),
+            user_na_dropped
+          ),
+          collapse = ", "
+        ),
+        "."
+      )
+    )
+  }
   n_na_by <- sum(is.na(by_vector))
   if (n_na_by > 0L) {
     missing_parts <- c(

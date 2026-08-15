@@ -4565,3 +4565,71 @@ test_that("balanced adjustment expands logical covariates like factors (no crash
   ])
   expect_equal(got, em$emmean, tolerance = 1e-6)
 })
+
+
+test_that("missing values are disclosed in the table note (decision 14)", {
+  d <- as.data.frame(sochealth)
+  d$bmi[1:57] <- NA
+  d$age[5:16] <- NA
+  d$sex[1:3] <- NA
+  n_bmi <- sum(is.na(d$bmi))
+  n_age <- sum(is.na(d$age))
+  # Per-variable counts for outcomes AND covariates, then the by rows
+  # -- the same ledger wording as table_continuous(). The n column
+  # shows the effect of the exclusions; the note shows the cause.
+  txt <- paste(
+    capture.output(suppressMessages(invisible(
+      table_continuous_lm(d, select = bmi, by = sex, covariates = "age")
+    ))),
+    collapse = "\n"
+  )
+  expect_match(
+    txt,
+    sprintf("Missing values removed: bmi (%d), age (%d).", n_bmi, n_age),
+    fixed = TRUE
+  )
+  expect_match(txt, "Rows with missing sex removed: 3.", fixed = TRUE)
+  # One note, at the bottom -- not repeated.
+  expect_length(
+    gregexpr("Missing values removed", txt, fixed = TRUE)[[1L]],
+    1L
+  )
+
+  # The disclosure travels to the rich engines with the rest of the note.
+  skip_if_not_installed("tinytable")
+  tt <- suppressMessages(table_continuous_lm(
+    d,
+    select = bmi,
+    by = sex,
+    covariates = "age",
+    output = "tinytable"
+  ))
+  expect_true(any(grepl(
+    "Missing values removed",
+    unlist(tt@notes),
+    fixed = TRUE
+  )))
+})
+
+test_that("declared missing values are disclosed separately (decision 14)", {
+  d <- data.frame(y = c(5, 6, 7, 10, 11, 12, 99, NA))
+  d$y <- structure(
+    d$y,
+    na_values = 99,
+    class = c("haven_labelled_spss", "haven_labelled", "vctrs_vctr", "double")
+  )
+  d$grp <- rep(c("a", "b"), 4L)
+  txt <- paste(
+    capture.output(suppressMessages(invisible(
+      table_continuous_lm(d, select = y, by = grp)
+    ))),
+    collapse = "\n"
+  )
+  expect_match(txt, "Missing values removed: y (1).", fixed = TRUE)
+  expect_match(txt, "y (1)", fixed = TRUE)
+  expect_match(
+    txt,
+    "Declared missing values removed: y (1).",
+    fixed = TRUE
+  )
+})

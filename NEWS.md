@@ -344,6 +344,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `missing_note` attribute. It used to reach the console print only, so a
   report rendered with `warning: false` showed a table computed on fewer
   observations than it announced.
+* `table_continuous_lm()` keeps the same ledger: per-variable missing
+  counts for outcomes and covariates (declared missing values listed
+  separately), then the rows dropped for a missing `by` value or a
+  missing weight. The `n` column shows the effect of the exclusions;
+  the note shows the cause.
+* Footer lines that cite a model use the model's displayed label: a
+  table headed `Baseline / Adjusted` is footnoted `Baseline: ...`, not
+  `Model 1: ...` -- a name that appeared nowhere in the table. Tables
+  without custom labels keep the historical `Model 1` wording.
 * `table_categorical()` and `table_continuous()` also carry their title to
   the `"tinytable"` output, as the table caption; a `by` table carries its
   association-measure note there too.
