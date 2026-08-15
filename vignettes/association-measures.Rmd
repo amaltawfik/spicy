@@ -366,7 +366,7 @@ print(res, digits = 5)
 - See `vignette("frequency-tables")` for `cross_tab()`, which reports
   these measures inline through its `assoc_measure` argument.
 - See `vignette("table-categorical")` for association measures inside
-  APA-style categorical summary tables.
+  publication-ready categorical summary tables.
 
 ## References
 

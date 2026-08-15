@@ -1,8 +1,9 @@
 #' Continuous-outcome linear-model table
 #'
 #' @description
-#' Builds APA-style summary tables from a series of linear models for one
-#' or many continuous outcomes selected with tidyselect syntax.
+#' Builds publication-ready summary tables from a series of linear
+#' models for one or many continuous outcomes selected with tidyselect
+#' syntax.
 #'
 #' A single focal predictor is supplied with `by`; each selected numeric
 #' outcome is fit as `lm(outcome ~ by, ...)`, optionally extended with

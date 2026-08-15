@@ -508,8 +508,9 @@ and \code{regex}, the function emits a warning and returns an empty
 \code{data.frame()} regardless of \code{output}.
 }
 \description{
-Builds APA-style summary tables from a series of linear models for one
-or many continuous outcomes selected with tidyselect syntax.
+Builds publication-ready summary tables from a series of linear
+models for one or many continuous outcomes selected with tidyselect
+syntax.
 
 A single focal predictor is supplied with \code{by}; each selected numeric
 outcome is fit as \code{lm(outcome ~ by, ...)}, optionally extended with

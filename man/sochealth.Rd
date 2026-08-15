@@ -74,7 +74,7 @@ sochealth
 A simulated dataset of 1200 respondents from a fictional
 social-health survey, designed to illustrate the main features of
 the spicy package: variable labels, ordered factors, survey
-weights, association measures, and APA-style reporting.
+weights, association measures, and publication-ready reporting.
 }
 \details{
 Every variable carries a \code{"label"} attribute (read by

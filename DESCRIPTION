@@ -18,10 +18,12 @@ Description: Provides tabulation, descriptive-summary, and
     univariable screening tables; and outcome-by-group comparison
     tables from linear models with optional additive covariate
     adjustment. Summary and regression tables follow APA
-    conventions and expose 'broom'-compatible 'tidy()' / 'glance()'
-    methods for downstream pipelines. Helpers cover interactive
-    codebooks, variable-label extraction, clipboard export, and
-    row-wise descriptive summaries.
+    conventions by default and can switch to named journal styles
+    such as JAMA, NEJM, or The Lancet; all tables expose
+    'broom'-compatible 'tidy()' / 'glance()' methods for downstream
+    pipelines. Helpers cover interactive codebooks, variable-label
+    extraction, clipboard export, and row-wise descriptive
+    summaries.
 License: MIT + file LICENSE
 URL: https://github.com/amaltawfik/spicy/, https://amaltawfik.github.io/spicy/
 BugReports: https://github.com/amaltawfik/spicy/issues

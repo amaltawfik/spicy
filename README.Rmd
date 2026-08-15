@@ -35,9 +35,10 @@ labelled survey data workflows.
 
 Every spicy table prints as readable text in the console and exports
 to gt, tinytable, flextable, Excel, Word, or the clipboard, following
-APA conventions. Around the tables, spicy provides the survey-data
-tools that feed them: variable inspection, codebooks, label
-extraction, and row-wise summaries.
+rigorous reporting conventions -- APA by default, with named journal
+styles. Around the tables, spicy provides the survey-data tools that
+feed them: variable inspection, codebooks, label extraction, and
+row-wise summaries.
 
 - **Frequency tables** with `freq()`.
 - **Cross-tabulations** with `cross_tab()`: percentages, weights,
@@ -78,6 +79,10 @@ extraction, and row-wise summaries.
 - **Univariable screening** with `table_regression_uv()`:
   one-predictor-at-a-time models merged with the multivariable fit,
   per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
+- **Journal styles** with `spicy_style()`: `style = "jama"`,
+  `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`, or `"fr"`
+  restyles any table, every rule sourced from the journal's author
+  guidelines.
 - **Variable inspection** with `varlist()` and `vl()`: names,
   labels, values, classes, distinct values (`N_distinct`), valid
   observations (`N_valid`), and missing data.
@@ -335,7 +340,6 @@ for weighted or robust linear-model reporting, [Regression
 coefficient
 tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 for regression tables across model families, and [Summary tables for
-APA-style
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
 
@@ -392,7 +396,7 @@ Each workflow has a dedicated vignette:
 - [Survival regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-survival.html)
 - [Ordinal regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 - [Multinomial regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
-- [Summary tables for APA-style reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
+- [Summary tables for reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 
 Key reference pages:
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.html),

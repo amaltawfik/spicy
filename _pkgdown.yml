@@ -1,7 +1,7 @@
 url: https://amaltawfik.github.io/spicy/
 
 home:
-  title: "spicy: APA-style regression and summary tables for R"
+  title: "spicy: publication-ready summary and regression tables for R"
   description: >
     R package for frequency tables, cross-tabulations with
     chi-squared tests and association measures (Cramer's V, Phi,
@@ -9,7 +9,8 @@ home:
     summary tables, model-based group comparisons for continuous
     outcomes, and publication-ready regression coefficient tables
     for one or more `lm` or `glm` fits side by side. All table
-    outputs follow APA conventions, expose `broom`-compatible
+    outputs follow rigorous reporting conventions (APA by default,
+    with named journal styles), expose `broom`-compatible
     `tidy()` / `glance()` methods, and export to console, gt,
     tinytable, flextable, Excel, Word, or clipboard. A
     tidyverse-friendly alternative to SPSS and Stata for survey,
@@ -85,7 +86,7 @@ navbar:
           href: articles/table-regression-bayesian.html
         - text: Categorical predictors
           href: articles/categorical-predictors.html
-        - text: Summary tables for APA-style reporting
+        - text: Summary tables for reporting
           href: articles/summary-tables-reporting.html
     github:
       icon: fa-github

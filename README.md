@@ -26,9 +26,10 @@ survey data workflows.
 ## Features
 
 Every spicy table prints as readable text in the console and exports to
-gt, tinytable, flextable, Excel, Word, or the clipboard, following APA
-conventions. Around the tables, spicy provides the survey-data tools
-that feed them: variable inspection, codebooks, label extraction, and
+gt, tinytable, flextable, Excel, Word, or the clipboard, following
+rigorous reporting conventions – APA by default, with named journal
+styles. Around the tables, spicy provides the survey-data tools that
+feed them: variable inspection, codebooks, label extraction, and
 row-wise summaries.
 
 - **Frequency tables** with `freq()`.
@@ -66,6 +67,9 @@ row-wise summaries.
 - **Univariable screening** with `table_regression_uv()`:
   one-predictor-at-a-time models merged with the multivariable fit,
   per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
+- **Journal styles** with `spicy_style()`: `style = "jama"`, `"nejm"`,
+  `"lancet"`, `"annals"`, `"apa"`, `"aer"`, or `"fr"` restyles any
+  table, every rule sourced from the journal’s author guidelines.
 - **Variable inspection** with `varlist()` and `vl()`: names, labels,
   values, classes, distinct values (`N_distinct`), valid observations
   (`N_valid`), and missing data.
@@ -117,19 +121,19 @@ spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
 these classes, and renders them with the conventions of each model
 family:
 
-| Family                           | Engines                                                                                                                                                                            |
-|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Linear and generalized linear    | `stats::lm()`, `stats::glm()`, `MASS::glm.nb()`, `MASS::rlm()`, `stats::nls()`                                                                                                     |
-| Robust, IV, quantile, panel      | `estimatr::lm_robust()`, `estimatr::iv_robust()`, `AER::ivreg()`, `AER::tobit()`, `quantreg::rq()`, `fixest::feols()`, `fixest::feglm()`, `fixest::fepois()`, `fixest::fenegbin()` |
-| Mixed effects                    | `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`, `nlme::gls()`                                                                                                |
-| Ordinal and categorical          | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `nnet::multinom()`, `mlogit::mlogit()`                                                                         |
-| Counts, two-part models          | `pscl::hurdle()`, `pscl::zeroinfl()`, `glmmTMB::glmmTMB()` (zero-inflation and dispersion components)                                                                              |
-| Survival                         | `survival::coxph()`, `survival::survreg()`, `rms::cph()`, `flexsurv::flexsurvreg()`                                                                                                |
-| Survey-weighted                  | `survey::svyglm()` (design-based SEs)                                                                                                                                              |
-| Population-averaged (GEE)        | `geepack::geeglm()` (native sandwich SEs, working correlation disclosed)                                                                                                           |
-| Additive, proportions, selection | `mgcv::gam()`, `mgcv::bam()`, `betareg::betareg()`, `sampleSelection::selection()`                                                                                                 |
-| rms                              | `rms::ols()`, `rms::lrm()`, `rms::Glm()`                                                                                                                                           |
-| Bayesian                         | `rstanarm::stan_glm()`, `rstanarm::stan_glmer()`, `brms::brm()` (posterior median, credible intervals, no p-values)                                                                |
+| Family | Engines |
+|----|----|
+| Linear and generalized linear | `stats::lm()`, `stats::glm()`, `MASS::glm.nb()`, `MASS::rlm()`, `stats::nls()` |
+| Robust, IV, quantile, panel | `estimatr::lm_robust()`, `estimatr::iv_robust()`, `AER::ivreg()`, `AER::tobit()`, `quantreg::rq()`, `fixest::feols()`, `fixest::feglm()`, `fixest::fepois()`, `fixest::fenegbin()` |
+| Mixed effects | `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`, `nlme::gls()` |
+| Ordinal and categorical | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `nnet::multinom()`, `mlogit::mlogit()` |
+| Counts, two-part models | `pscl::hurdle()`, `pscl::zeroinfl()`, `glmmTMB::glmmTMB()` (zero-inflation and dispersion components) |
+| Survival | `survival::coxph()`, `survival::survreg()`, `rms::cph()`, `flexsurv::flexsurvreg()` |
+| Survey-weighted | `survey::svyglm()` (design-based SEs) |
+| Population-averaged (GEE) | `geepack::geeglm()` (native sandwich SEs, working correlation disclosed) |
+| Additive, proportions, selection | `mgcv::gam()`, `mgcv::bam()`, `betareg::betareg()`, `sampleSelection::selection()` |
+| rms | `rms::ols()`, `rms::lrm()`, `rms::Glm()` |
+| Bayesian | `rstanarm::stan_glm()`, `rstanarm::stan_glmer()`, `brms::brm()` (posterior median, credible intervals, no p-values) |
 
 Class-specific structure renders as labelled blocks in the same table:
 random effects (with SE and CI on each variance component, and an
@@ -382,7 +386,7 @@ table_continuous(
   select = c(bmi, life_sat_health),
   by = education
 )
-#> Descriptive statistics
+#> Descriptive statistics by Highest education level
 #> 
 #>  Variable                       │ Group              M     SD    Min    Max  
 #> ────────────────────────────────┼────────────────────────────────────────────
@@ -404,7 +408,7 @@ table_continuous(
 #>                                 │ Upper secondary     3.43       3.63    534 
 #>                                 │ Tertiary            4.01       4.21    399 
 #> 
-#>  Variable                       │ Group              p   
+#>  Variable                       │ Group            p (n) 
 #> ────────────────────────────────┼────────────────────────
 #>  Body mass index                │ Lower secondary  <.001 
 #>                                 │ Upper secondary        
@@ -506,7 +510,6 @@ tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
 for weighted or robust linear-model reporting, [Regression coefficient
 tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 for regression tables across model families, and [Summary tables for
-APA-style
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
 
@@ -584,7 +587,7 @@ Each workflow has a dedicated vignette:
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
-- [Summary tables for APA-style
+- [Summary tables for
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 
 Key reference pages:

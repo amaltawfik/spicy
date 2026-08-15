@@ -1,17 +1,16 @@
 ---
-title: "Summary tables for APA-style reporting"
+title: "Summary tables for reporting"
 description: >
   Learn when to use table_categorical(), table_continuous(),
-  table_continuous_lm(), and table_regression() for APA-style
-  reporting in R, how their shared arguments fit together, and which
-  output format to choose for console, Quarto, Word, or Excel
-  workflows.
+  table_continuous_lm(), and table_regression() for reporting in R,
+  how their shared arguments fit together, and which output format
+  to choose for console, Quarto, Word, or Excel workflows.
 output:
   rmarkdown::html_vignette:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Summary tables for APA-style reporting}
+  %\VignetteIndexEntry{Summary tables for reporting}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -342,6 +341,31 @@ if (requireNamespace("flextable", quietly = TRUE)) {
   )
 }
 ```
+
+## House styles
+
+Everything above uses spicy's defaults: two decimals, APA-style
+*p* values (leading zero dropped, `< .001` floor), confidence
+intervals in brackets. Those defaults are one house style among
+several. `spicy_style()` names the others — each rule sourced from
+the journal's published author guidelines:
+
+```{r house-styles}
+table_categorical(sochealth, select = smoking, by = sex, style = "jama")
+```
+
+The visible change here is the *p* column: JAMA rounds *p* values to
+two decimals (`.71`), where the default reports three (`.713`).
+
+Two properties make styles safe to adopt. A style only moves
+*display* defaults — decimals, *p* notation, interval punctuation —
+never the statistics underneath; and an argument you set explicitly
+always wins over it, so `style = "jama"` with `p_digits = 3` keeps
+your three decimals. The style travels with the table: the same call
+rendered to Word, Excel, or HTML follows it, and
+`options(spicy.style = "lancet")` sets one for a whole document.
+`?spicy_style` lists every style and every rule with the sentence it
+comes from.
 
 ## Post-process the returned table object
 
