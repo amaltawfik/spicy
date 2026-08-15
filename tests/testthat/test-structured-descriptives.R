@@ -68,14 +68,33 @@ lm_display <- function(x) {
 # engine uses, must equal the console frame column for column. Label
 # columns the typed body does not carry (`Group`, which names the row
 # and travels in `.level`) are excluded from the comparison.
+#
+# Column matching goes through `col_meta$display_label` (decision 13):
+# the structured column NAME is the frozen programmatic key, the
+# label is what the console prints. The two are identical strings
+# today, so this comparison is byte-for-byte the old one -- but the
+# helper is ready for the day a label is translated while the key
+# stays put.
 expect_faithful <- function(struct, display, skip_cols = character(0)) {
   formatted <- spicy:::.format_structured_to_string_body(struct)
-  expect_identical(
+  shown <- vapply(
     names(formatted),
+    function(nm) {
+      lbl <- struct$col_meta[[nm]]$display_label
+      if (is.null(lbl)) nm else lbl
+    },
+    character(1)
+  )
+  expect_identical(
+    unname(shown),
     setdiff(names(display), skip_cols)
   )
-  for (nm in names(formatted)) {
-    expect_identical(formatted[[nm]], display[[nm]], info = nm)
+  for (i in seq_along(formatted)) {
+    expect_identical(
+      formatted[[i]],
+      display[[shown[[i]]]],
+      info = names(formatted)[[i]]
+    )
   }
 }
 
@@ -686,4 +705,24 @@ test_that("the decimal mark of the typed view follows the table", {
   sc <- as_structured(cat_tbl)
   expect_identical(sc$format_spec$decimal_mark, ",")
   expect_faithful(sc, cat_display(cat_tbl))
+})
+
+
+test_that("descriptive col_meta carries display_label, defaulting to the key", {
+  # Decision 13 / i18n stage 1.5 lot 0: the column NAME is the frozen
+  # programmatic key; display_label is what engines will render. The
+  # three descriptive families all funnel through .desc_assemble(),
+  # which fills the identity default.
+  sh <- sh_desc()
+  s_cat <- as_structured(quiet(table_categorical(sh, sex, by = education)))
+  s_con <- as_structured(quiet(table_continuous(sh, select = bmi)))
+  s_lm <- as_structured(quiet(table_continuous_lm(sh, select = bmi, by = sex)))
+  for (s in list(s_cat, s_con, s_lm)) {
+    labels <- vapply(
+      names(s$col_meta),
+      function(nm) s$col_meta[[nm]]$display_label,
+      character(1)
+    )
+    expect_identical(unname(labels), names(s$col_meta))
+  }
 })

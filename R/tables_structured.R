@@ -75,6 +75,18 @@
   spanners = NULL,
   ci_pairs = list()
 ) {
+  # Decision 13 (i18n stage 1.5, lot 0): every descriptive col_meta
+  # entry carries a `display_label` -- the header a rendering engine
+  # prints -- distinct in ROLE from the entry's name, which is the
+  # frozen programmatic key (`body` column, `col_meta` index). The
+  # two are identical strings until the display decoupling fills the
+  # field; the regression family has carried the same slot since the
+  # v2 contract (regression_structured.R).
+  for (nm in names(col_meta)) {
+    if (is.null(col_meta[[nm]]$display_label)) {
+      col_meta[[nm]]$display_label <- nm
+    }
+  }
   empty <- .desc_empty_row(col_names)
   n_rows <- length(rows)
 
