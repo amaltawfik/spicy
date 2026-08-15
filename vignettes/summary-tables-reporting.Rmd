@@ -367,6 +367,39 @@ rendered to Word, Excel, or HTML follows it, and
 `?spicy_style` lists every style and every rule with the sentence it
 comes from.
 
+## Citing table values in the text
+
+The number a sentence quotes should be the number the table prints —
+retyping it is how a manuscript ends up saying 3.9 where the table
+says 3.90, or keeping a *p* value a revision changed. `inline()`
+returns one cell of a spicy table as text, formatted by the same
+machinery that formatted the table:
+
+```{r inline-single}
+fit <- lm(wellbeing_score ~ age + sex, data = sochealth)
+tbl <- table_regression(fit)
+inline(tbl, sex, "Male", "b")
+```
+
+so in Quarto you write
+`` `r knitr::inline_expr('inline(tbl, sex, "Male", "b")')` ``
+inside the sentence. A `{token}` pattern quotes a full fragment in
+one call:
+
+```{r inline-pattern}
+inline(tbl, sex, "Male", "{b} ({ci_label} {ci}; p {p})")
+```
+
+Two properties carry the guarantee. The text follows the table:
+under `style = "jama"` or `decimal_mark = ","` the cited string
+changes with the printed one. And the addressing survives relabeling:
+rows are found by the source variable and level — not by the
+displayed label — so `labels = c(sex = "Administrative sex")` changes
+the table, not your calls. Misaddressing never fails silently: an
+unknown variable, level, or column token errors with the list of
+available choices, and a reference or non-estimable cell refuses with
+its reason instead of pasting a dash into a sentence.
+
 ## Post-process the returned table object
 
 All four summary-table helpers return regular `gt`, `tinytable`, or

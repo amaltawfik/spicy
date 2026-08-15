@@ -132,6 +132,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New functions
 
+* `inline()` cites one table cell in running Quarto / R Markdown text:
+  the returned string is exactly the displayed cell -- same decimals,
+  *p* style, interval punctuation, journal style -- so a number quoted
+  in a sentence can never drift from the number printed in the table.
+  Rows are addressed by variable / level identity (never by display
+  label), columns by their typed token, `"ci"` composes the interval,
+  `{token}` patterns build full fragments
+  (`"{b} ({ci_label} {ci}; p {p})"`), and every misaddressing errors
+  with the list of available choices.
 * `table_regression_uv()`: univariable screening tables -- one fit per
   predictor, one row block each, merged side by side with the multivariable
   model. Supports `lm` (the linear default), `glm` (selected by `family`, in

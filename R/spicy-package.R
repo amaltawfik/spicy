@@ -44,6 +44,7 @@
 #'   \item Regression tables: [table_regression()],
 #'         [table_regression_uv()], [table_regression_models()],
 #'         [as_structured()]
+#'   \item Inline citation: [inline()]
 #'   \item Table styles: [spicy_style()], [spicy_style_names()]
 #'   \item Omnibus association overview: [assoc_measures()]
 #' }

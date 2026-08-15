@@ -155,6 +155,7 @@ reference:
       - table_regression
       - table_regression_uv
       - as_structured
+      - inline
   - title: Table styles
     desc: >
       Journal and locale number-formatting themes, each encoding only
