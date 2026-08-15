@@ -81,8 +81,26 @@ build_regression_footer_from_frames <- function(
   re_test = "none",
   displayed_parent_vars = NULL,
   frames_display = frames,
-  decimal_mark = "."
+  decimal_mark = ".",
+  model_labels = NULL
 ) {
+  # Per-model footer lines cite the label the column spanners display,
+  # so a table headed "Baseline / Adjusted" is not footnoted "Model 1 /
+  # Model 2" -- names that appear nowhere in what the reader sees. The
+  # label is stamped on each frame once, here, and every theme builder
+  # reads it back through .model_line(); without user labels the stamp
+  # is absent and .model_line() falls back to the historical
+  # "Model %d", byte for byte.
+  if (!is.null(model_labels) && is.list(frames)) {
+    for (i in seq_len(min(length(frames), length(model_labels)))) {
+      frames[[i]]$info$model_label <- model_labels[[i]]
+    }
+    if (is.list(frames_display)) {
+      for (i in seq_len(min(length(frames_display), length(model_labels)))) {
+        frames_display[[i]]$info$model_label <- model_labels[[i]]
+      }
+    }
+  }
   # `frames_display`: the frames whose coefficient labels match the
   # DISPLAYED body. Only the multinomial columns layout passes a
   # different set (the exploded per-category pseudo-frames): the two
@@ -152,6 +170,24 @@ capitalize_first <- function(s) {
   paste0(toupper(substr(s, 1L, 1L)), substring(s, 2L))
 }
 
+# The reference a footer prints for model `idx`: the spanner label when
+# the dispatcher stamped one (user-supplied `model_labels` / list
+# names), the historical "Model <idx>" otherwise.
+.model_ref <- function(frames, idx) {
+  frames[[idx]]$info$model_label %||% spicy_fmt("note_model_name", idx)
+}
+
+# One per-model footer line: "<label>: <text>". The default label IS
+# "Model <idx>", so tables without custom labels render byte-identical
+# to the historical "Model %d: %s" template.
+.model_line <- function(frames, idx, text, indented = FALSE) {
+  spicy_fmt(
+    if (indented) "note_model_line_indented" else "note_model_line",
+    .model_ref(frames, idx),
+    text
+  )
+}
+
 
 # Frame-aware sibling of build_regression_type_footer_block().
 # Reads from frame$info$extras$title_prefix instead of extract$title_prefix.
@@ -188,7 +224,7 @@ build_regression_type_footer_block_from_frames <- function(frames) {
   per <- vapply(
     seq_along(types),
     function(i) {
-      spicy_fmt("note_model_prefix", i, lowercase_first(types[i]))
+      .model_line(frames, i, lowercase_first(types[i]))
     },
     character(1)
   )
@@ -323,7 +359,7 @@ build_vcov_footer_block_from_frames <- function(frames) {
   per <- vapply(
     seq_along(labels),
     function(i) {
-      spicy_fmt("note_model_prefix_indented", i, labels[i])
+      .model_line(frames, i, labels[i], indented = TRUE)
     },
     character(1)
   )
@@ -829,7 +865,7 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      spicy_fmt("note_model_prefix", pm$idx, pm$text)
+      .model_line(frames, pm$idx, pm$text)
     },
     character(1)
   )
@@ -868,7 +904,7 @@ build_gee_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      spicy_fmt("note_model_prefix", pm$idx, pm$text)
+      .model_line(frames, pm$idx, pm$text)
     },
     character(1)
   )
@@ -958,7 +994,7 @@ build_survival_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      spicy_fmt("note_model_prefix", pm$idx, pm$text)
+      .model_line(frames, pm$idx, pm$text)
     },
     character(1)
   )
@@ -1136,7 +1172,7 @@ build_random_effects_footer_block_from_frames <- function(
   lines <- vapply(
     per_model,
     function(pm) {
-      spicy_fmt("note_model_prefix", pm$idx, pm$text)
+      .model_line(frames, pm$idx, pm$text)
     },
     character(1)
   )
@@ -1184,7 +1220,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   lines <- vapply(
     per_model,
     function(pm) {
-      spicy_fmt("note_model_prefix", pm$idx, pm$text)
+      .model_line(frames, pm$idx, pm$text)
     },
     character(1)
   )
@@ -1637,8 +1673,8 @@ build_singular_footer_block_from_frames <- function(frames) {
   per <- vapply(
     seq_along(affected),
     function(k) {
-      spicy_fmt(
-        "note_model_prefix",
+      .model_line(
+        frames,
         affected[k],
         .singular_msg_for_frame(frames[[affected[k]]], is_mixed[k])
       )
@@ -1749,7 +1785,7 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
   per <- vapply(
     affected,
     function(k) {
-      spicy_fmt("note_model_prefix", k, msg(ns[k]))
+      .model_line(frames, k, msg(ns[k]))
     },
     character(1)
   )
@@ -1786,7 +1822,7 @@ build_reference_alternative_footer_block_from_frames <- function(frames) {
   per <- vapply(
     affected,
     function(k) {
-      spicy_fmt("note_model_prefix", k, msg(refs[k]))
+      .model_line(frames, k, msg(refs[k]))
     },
     character(1)
   )
@@ -1829,7 +1865,7 @@ build_reference_outcome_footer_block_from_frames <- function(frames) {
   per <- vapply(
     affected,
     function(k) {
-      spicy_fmt("note_model_prefix", k, msg(refs[k]))
+      .model_line(frames, k, msg(refs[k]))
     },
     character(1)
   )
@@ -1878,7 +1914,14 @@ build_exponentiate_footer_block_from_frames <- function(
   } else {
     sprintf(
       "%s: coefficients",
-      paste(sprintf("Model %d", which(applied)), collapse = ", ")
+      paste(
+        vapply(
+          which(applied),
+          function(i) .model_ref(frames, i),
+          character(1)
+        ),
+        collapse = ", "
+      )
     )
   }
 
@@ -2333,7 +2376,7 @@ build_loo_footer_block_from_frames <- function(frames) {
     vapply(
       affected,
       function(k) {
-        spicy_fmt("note_model_prefix", k, notes[k])
+        .model_line(frames, k, notes[k])
       },
       character(1)
     ),
@@ -2369,7 +2412,7 @@ build_stan_convergence_footer_block_from_frames <- function(frames) {
     vapply(
       affected,
       function(k) {
-        spicy_fmt("note_model_prefix", k, notes[k])
+        .model_line(frames, k, notes[k])
       },
       character(1)
     ),

@@ -840,7 +840,7 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
       affected,
       function(k) {
         # nocov start
-        spicy_fmt("note_model_prefix", k, notes[k])
+        .model_line(frames, k, notes[k])
       },
       character(1)
     ),

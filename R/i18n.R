@@ -248,10 +248,19 @@
   note_adjustment_balanced = "balanced",
   note_std_errors_single = "Std. errors: %s.",
   note_std_errors_multi = "Std. errors:\n%s",
+  # Index-based model reference: frame-layer messages raised before the
+  # display labels exist (e.g. the geeglm cluster refusal).
   note_model_prefix = "Model %d: %s",
+  # The name of a model with no user-supplied label; also what a footer
+  # line prints for it, so custom `model_labels` substitute cleanly.
+  note_model_name = "Model %d",
+  # Footer per-model lines cite the label the column spanners display
+  # (.model_line() in regression_titlefooter.R): "Baseline: ..." when
+  # the user labelled the models, "Model 1: ..." otherwise.
+  note_model_line = "%s: %s",
   # Two leading spaces are significant: the indented per-model line of the
   # Std. errors block.
-  note_model_prefix_indented = "  Model %d: %s",
+  note_model_line_indented = "  %s: %s",
   note_vcov_classical_glm = "classical (Fisher information)",
   note_vcov_classical_lm = "classical (OLS)",
   note_vcov_hc = "heteroskedasticity-robust (%s)",

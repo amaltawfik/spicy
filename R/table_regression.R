@@ -2952,6 +2952,25 @@ table_regression <- function(
     ca$factor_term
   ))
 
+  # Q1 precedence (explicit > names(list) > default), resolved here so
+  # the FOOTER can cite the same labels the column spanners display.
+  # The multinomial columns layout is excluded: its "models" are
+  # outcome categories and its footer never prints per-model lines.
+  # NULL means default labels; .model_line() then prints "Model %d",
+  # byte-identical to the historical footer.
+  named_model_labels <- if (mn_exploded) {
+    NULL
+  } else if (!is.null(model_labels)) {
+    model_labels
+  } else if (!is.null(names(models)) && any(nzchar(names(models)))) {
+    nms <- names(models)
+    missing_idx <- which(!nzchar(nms))
+    nms[missing_idx] <- paste0("Model ", missing_idx)
+    nms
+  } else {
+    NULL
+  }
+
   # Footer: model-facing themes read `frames` (one entry per model);
   # the label-reading themes (reference categories, polynomial
   # trends) read the DISPLAY frames -- under the columns layout the
@@ -2971,7 +2990,8 @@ table_regression <- function(
     re_columns = re_columns_val,
     re_test = re_test_val,
     displayed_parent_vars = displayed_parent_vars,
-    decimal_mark = decimal_mark
+    decimal_mark = decimal_mark,
+    model_labels = named_model_labels
   )
 
   # "none" + flat: silent information loss flag. Inform-level
@@ -3025,21 +3045,16 @@ table_regression <- function(
   # Partial-name auto-fill: `list("Step 1" = m1, m2)` becomes
   # `c("Step 1", "Model 2")`. validate_models_input() rejects
   # duplicates but accepts partial naming since user intent is
-  # unambiguous (named slots win, unnamed slots default).
+  # unambiguous (named slots win, unnamed slots default). Resolved
+  # above the footer build (`named_model_labels`) so the footer's
+  # per-model lines cite the same labels.
   effective_model_labels <- if (mn_exploded) {
     # Columns layout: the "model" labels are the category spanners
     # (already outcome_labels-overridden); `model_labels` itself was
     # refused fail-fast up top.
     mn_spanners
-  } else if (!is.null(model_labels)) {
-    model_labels
-  } else if (!is.null(names(models)) && any(nzchar(names(models)))) {
-    nms <- names(models)
-    missing_idx <- which(!nzchar(nms))
-    nms[missing_idx] <- paste0("Model ", missing_idx)
-    nms
   } else {
-    NULL # render_regression_table generates "Model 1", ... as fallback
+    named_model_labels # NULL: render_regression_table generates "Model 1", ...
   }
   # "95% CrI" (equal-tailed) or "95% HDI" header when EVERY frame is a
   # posterior interval (the design promise in regression_frame_stan.R;

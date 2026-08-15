@@ -424,3 +424,58 @@ test_that("the stars legend follows the table's decimal mark", {
   )
   expect_match(txt2, "p < .001", fixed = TRUE)
 })
+
+
+test_that("footer per-model lines cite the spanner labels", {
+  fit1 <- lm(mpg ~ wt, data = mtcars)
+  fit2 <- lm(mpg ~ wt + hp, data = mtcars)
+  # Custom labels: the footer used to read "Model 1: ..." under
+  # spanners headed "Baseline / Adjusted" -- names that appeared
+  # nowhere in the table the reader was looking at.
+  txt <- paste(
+    capture.output(print(table_regression(
+      list(fit1, fit2),
+      model_labels = c("Baseline", "Adjusted"),
+      vcov = list("classical", "HC3")
+    ))),
+    collapse = "\n"
+  )
+  expect_match(txt, "Baseline: classical (OLS)", fixed = TRUE)
+  expect_match(txt, "Adjusted: heteroskedasticity-robust (HC3)", fixed = TRUE)
+  expect_false(grepl("Model 1", txt, fixed = TRUE))
+
+  # names(models) route, partial naming auto-filled.
+  txt2 <- paste(
+    capture.output(print(table_regression(
+      list("Step 1" = fit1, fit2),
+      vcov = list("classical", "HC3")
+    ))),
+    collapse = "\n"
+  )
+  expect_match(txt2, "Step 1: classical (OLS)", fixed = TRUE)
+  expect_match(txt2, "Model 2: heteroskedasticity-robust (HC3)", fixed = TRUE)
+
+  # No labels: the historical wording, byte for byte.
+  txt3 <- paste(
+    capture.output(print(table_regression(
+      list(fit1, fit2),
+      vcov = list("classical", "HC3")
+    ))),
+    collapse = "\n"
+  )
+  expect_match(txt3, "Model 1: classical (OLS)", fixed = TRUE)
+  expect_match(txt3, "Model 2: heteroskedasticity-robust (HC3)", fixed = TRUE)
+})
+
+test_that("the exponentiate scope sentence cites the spanner labels", {
+  fit1 <- lm(mpg ~ wt, data = mtcars)
+  g1 <- glm(am ~ wt, data = mtcars, family = binomial())
+  txt <- paste(
+    capture.output(print(suppressWarnings(table_regression(
+      list("Linear" = fit1, "Logit" = g1),
+      exponentiate = TRUE
+    )))),
+    collapse = "\n"
+  )
+  expect_match(txt, "Logit: coefficients exponentiated", fixed = TRUE)
+})
