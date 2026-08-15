@@ -217,3 +217,31 @@ test_that("ordinal pseudo-R2 helpers return NA on degenerate inputs", {
   expect_true(all(stats::model.weights(mf_w0) == 0))
   expect_identical(spicy:::.ordinal_null_loglik(mf_w0), NA_real_)
 })
+
+
+test_that("an aliased clm predictor renders undefined instead of erroring", {
+  skip_if_not_installed("ordinal")
+  # wine's bottle is confounded with temp: bottle8 is aliased. Its NA
+  # coefficient stays in fit$beta but vcov() drops the row, and the
+  # frame builder used to die on the out-of-bounds index. The row now
+  # carries NA everywhere and renders as the en-dash undefined cell,
+  # like an aliased lm / glm coefficient.
+  data(wine, package = "ordinal", envir = environment())
+  fit <- ordinal::clm(rating ~ temp + bottle, data = wine)
+  expect_true(any(fit$aliased$beta))
+  df <- table_regression(fit, output = "data.frame")
+  row8 <- df[trimws(df$Variable) == "8", , drop = FALSE]
+  expect_identical(nrow(row8), 1L)
+  expect_identical(trimws(row8$B), "\u2013")
+  expect_identical(trimws(row8$SE), "\u2013")
+  # The estimable coefficients keep exact values (oracle: summary.clm).
+  sm <- summary(fit)$coefficients
+  fr <- as_regression_frame(fit)
+  b7 <- fr$coefs[fr$coefs$term == "bottle7", ]
+  expect_equal(b7$estimate, unname(sm["bottle7", "Estimate"]), tolerance = 1e-9)
+  expect_equal(
+    b7$std_error,
+    unname(sm["bottle7", "Std. Error"]),
+    tolerance = 1e-9
+  )
+})

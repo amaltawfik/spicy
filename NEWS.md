@@ -323,6 +323,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   indent string is no longer mistaken for a level row: every output now
   reads the block geometry from the table's typed row roles instead of
   parsing the label text back.
+* `table_regression()` no longer errors on a `clm` fit with an aliased
+  predictor (rank-deficient design): the row renders as undefined, like
+  an aliased `lm` or `glm` coefficient.
+* The descriptive tables' `output = "clipboard"` shares the regression
+  validator's pre-flight: on a system without a clipboard (headless
+  session) they fail with the same clear `spicy_unsupported` error
+  instead of an internal one from further down.
 * `table_categorical()` draws its light rule between variable blocks in the
   `"gt"` and `"flextable"` outputs too, labels the first `"gt"` column
   `Variable` like every other engine, and `table_continuous_lm()` carries

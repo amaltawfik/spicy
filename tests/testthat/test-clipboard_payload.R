@@ -301,3 +301,29 @@ test_that("an unusable clipboard_delim is a hard error, not a broken payload", {
     "a | b"
   )
 })
+
+
+test_that("a descriptive clipboard route fails cleanly without a clipboard", {
+  skip_if_not_installed("clipr")
+  # A headless session (CI, ssh) has no system clipboard. The
+  # descriptive routes used to probe only for the package and let
+  # clipr fail deeper; they now share the regression validator's
+  # pre-flight, message and class included.
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) FALSE,
+    .package = "clipr"
+  )
+  expect_error(
+    suppressMessages(
+      table_continuous(sochealth, select = bmi, output = "clipboard")
+    ),
+    "Clipboard is not available",
+    class = "spicy_unsupported"
+  )
+  expect_error(
+    suppressMessages(
+      table_categorical(sochealth, select = sex, output = "clipboard")
+    ),
+    class = "spicy_unsupported"
+  )
+})

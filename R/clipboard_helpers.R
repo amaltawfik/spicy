@@ -31,6 +31,24 @@
 # established for regression tables; the descriptive tables reuse it
 # through these helpers.
 
+# Pre-flight of a clipboard route: the package, then the system
+# clipboard itself. A headless session (CI, ssh) has no clipboard;
+# without the second probe clipr fails deeper with its own error
+# instead of spicy's actionable one. Message and class match the
+# table_regression() validator, so every family fails the same way.
+.spicy_clip_preflight <- function() {
+  if (!requireNamespace("clipr", quietly = TRUE)) {
+    spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
+  }
+  if (!clipr::clipr_available()) {
+    spicy_abort(
+      "Clipboard is not available on this system.",
+      class = "spicy_unsupported"
+    )
+  }
+  invisible(TRUE)
+}
+
 # One clipboard cell, ready to be joined: NA becomes empty, the
 # decimal-alignment padding is stripped, and the cell is quoted when
 # it would otherwise break the grid.

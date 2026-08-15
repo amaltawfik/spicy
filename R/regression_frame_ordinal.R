@@ -590,10 +590,22 @@ as_regression_frame.clm <- function(
     return(.empty_coefs_frame())
   }
   V_full <- as.matrix(stats::vcov(fit))
-  V <- V_full[names(beta), names(beta), drop = FALSE]
+  nm <- names(beta)
+  # An aliased predictor (rank-deficient design, `fit$aliased`) keeps
+  # its NA coefficient in `fit$beta` but is DROPPED from `vcov()`, so
+  # indexing the matrix by `names(beta)` is an out-of-bounds error.
+  # Rebuild the full-size matrix with NA in the aliased entries: the
+  # row then renders as undefined, like the lm / glm families.
+  keep <- intersect(nm, rownames(V_full))
+  V <- matrix(
+    NA_real_,
+    length(nm),
+    length(nm),
+    dimnames = list(nm, nm)
+  )
+  V[keep, keep] <- V_full[keep, keep, drop = FALSE]
   est <- unname(beta)
   se <- sqrt(diag(V))
-  nm <- names(beta)
 
   # summary(clm)$coefficients carries Estimate, Std. Error, z value,
   # Pr(>|z|). The predictor rows are the ones whose name matches beta.

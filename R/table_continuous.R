@@ -3168,9 +3168,7 @@ export_desc_table <- function(
 
   # ---- clipboard ----
   if (output == "clipboard") {
-    if (!requireNamespace("clipr", quietly = TRUE)) {
-      spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
-    }
+    .spicy_clip_preflight()
 
     display_df <- rename_ci_cols(display_df, ci_pct)
     col_keys <- names(display_df)

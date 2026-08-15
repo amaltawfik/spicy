@@ -992,9 +992,7 @@ export_continuous_lm_table <- function(
   }
 
   if (identical(output, "clipboard")) {
-    if (!requireNamespace("clipr", quietly = TRUE)) {
-      spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
-    }
+    .spicy_clip_preflight()
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)

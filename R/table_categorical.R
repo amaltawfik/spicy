@@ -2069,9 +2069,7 @@ table_categorical <- function(
     }
 
     if (output == "clipboard") {
-      if (!requireNamespace("clipr", quietly = TRUE)) {
-        spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
-      }
+      .spicy_clip_preflight()
       # Same title and same disclosure note the console prints, from
       # the same helpers: a table that names itself on screen names
       # itself once pasted too.
@@ -3524,9 +3522,7 @@ table_categorical <- function(
 
   # ---------------- clipboard ----------------
   if (output == "clipboard") {
-    if (!requireNamespace("clipr", quietly = TRUE)) {
-      spicy_abort("Install package 'clipr'.", class = "spicy_missing_pkg")
-    }
+    .spicy_clip_preflight()
     # Same title (it names the grouping variable, which nothing else
     # in the payload states) and same disclosure notes -- what left
     # the table, then which association measure each row carries --
