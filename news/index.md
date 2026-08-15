@@ -179,7 +179,9 @@ instead of rendering an empty column.
 - Ordinal (`polr`, `clm`): thresholds render as a labelled block
   (`show_thresholds = FALSE` to opt out), and partial-proportional-odds
   terms and `clm(scale = ~)` scale coefficients get their own blocks,
-  the latter kept on the log scale under `exponentiate = TRUE`.
+  the latter kept on the log scale under `exponentiate = TRUE`. An
+  aliased `clm` predictor (rank-deficient design) renders as undefined,
+  like an aliased `lm` or `glm` coefficient.
 - Survey (`svyglm`); robust / IV / panel (`estimatr`, `ivreg`, `feols`
   and friends); beta, Tobit, and two-part counts (`betareg`, `tobit`,
   `zeroinfl` / `hurdle`); plus `rlm`, `glm.nb`, `rq`, `gam` / `bam`,
@@ -411,6 +413,26 @@ instead of rendering an empty column.
 
 ### Bug fixes
 
+- The significance-star legend of `table_regression(stars = TRUE)`
+  follows the table’s `decimal_mark`: a comma table now reads
+  `p < ,001`, not `p < .001`.
+- The confidence interval of an association measure in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  separates its bounds with `;` under `decimal_mark = ","`, as every
+  other interval in the package already did; `0,45 [0,31, 0,59]` was
+  ambiguous.
+- An empty or non-string `clipboard_delim` raises a classed error
+  instead of silently building an unusable payload.
+- A
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  variable label that happens to start with the indent string is no
+  longer mistaken for a level row: every output now reads the block
+  geometry from the table’s typed row roles instead of parsing the label
+  text back.
+- The descriptive tables’ `output = "clipboard"` shares the regression
+  validator’s pre-flight: on a system without a clipboard (headless
+  session) they fail with the same clear `spicy_unsupported` error
+  instead of an internal one from further down.
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   draws its light rule between variable blocks in the `"gt"` and
   `"flextable"` outputs too, labels the first `"gt"` column `Variable`
@@ -431,6 +453,15 @@ instead of rendering an empty column.
   reach the console print only, so a report rendered with
   `warning: false` showed a table computed on fewer observations than it
   announced.
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  keeps the same ledger: per-variable missing counts for outcomes and
+  covariates (declared missing values listed separately), then the rows
+  dropped for a missing `by` value or a missing weight. The `n` column
+  shows the effect of the exclusions; the note shows the cause.
+- Footer lines that cite a model use the model’s displayed label: a
+  table headed `Baseline / Adjusted` is footnoted `Baseline: ...`, not
+  `Model 1: ...` – a name that appeared nowhere in the table. Tables
+  without custom labels keep the historical `Model 1` wording.
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)

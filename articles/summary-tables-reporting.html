@@ -346,7 +346,8 @@ variables, every one of them carrying a variable label (see
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>    76.55      &lt;.001  0.19  1200 </span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>     4.09      &lt;.001  0.15  1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>Two words on the weighted example. <code>weights</code> supplies
 <strong>case weights</strong>, passed to <code>lm(weights = )</code> —
 appropriate for weighted article tables, but not a substitute for a full
@@ -594,7 +595,8 @@ function that fits each variable type.</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>    2.12      5.65     4.32  &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>   -0.06      0.22     1.11   .267  0.00  1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>This is the better summary-table path when the article is already
 organized around simple linear models, weighted analyses, or robust
 standard errors.</p>

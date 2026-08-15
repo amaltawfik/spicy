@@ -214,9 +214,9 @@ table_regression(
 #> 
 #> Note. Population-averaged linear regression (GEE) models.
 #> Std. errors: Robust sandwich (GEE), clusters by Pig.
-#> Model 1: GEE working correlation: independence.
-#> Model 2: GEE working correlation: exchangeable (alpha = 0.77).
-#> Model 3: GEE working correlation: ar1 (alpha = 0.94).
+#> Independence: GEE working correlation: independence.
+#> Exchangeable: GEE working correlation: exchangeable (alpha = 0.77).
+#> AR(1): GEE working correlation: ar1 (alpha = 0.94).
 ```
 
 The division of labor between the two criteria is Pan’s (2001): pick the
@@ -512,7 +512,7 @@ table_regression(
 | Max cluster size |       4  |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-9dd00152 quarto-disable-processing="true"}
+.cl-29556ca4 quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:

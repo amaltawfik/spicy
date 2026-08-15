@@ -184,6 +184,7 @@ table_continuous_lm(
 #>  Satisfaction with health (1-5) │     4.11      <.001  0.16  1192 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 ## Add test statistics and effect sizes

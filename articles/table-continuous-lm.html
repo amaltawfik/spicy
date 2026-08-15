@@ -147,7 +147,9 @@ Cohen’s <em>d</em>, Hedges’ <em>g</em>, Hays’ <span class="math inline">\(
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼─────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span>    2.13      5.64     &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span>    0.09      0.93      .018  0.00  1188 </span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>   -0.06      0.22      .267  0.00  1192</span></span></code></pre></div>
+<span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span>   -0.06      0.22      .267  0.00  1192 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>For categorical predictors, the table reports estimated means by
 level. When the predictor is dichotomous, it can also show a single mean
 difference and confidence interval.</p>
@@ -177,7 +179,8 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   2.12       5.65     4.32  &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.09       0.93     2.38   .018  0.00  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p>The <code>HC*</code> family is computed via
 <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> and includes <code>"HC0"</code>,
 <code>"HC1"</code>, <code>"HC2"</code>, <code>"HC3"</code> (the
@@ -286,7 +289,9 @@ slopes in the same model-based table:</p>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)    p     R²    n    Weighted n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    76.55      &lt;.001  0.19  1200   1196.47   </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    24.23      &lt;.001  0.13  1188   1183.32</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    24.23      &lt;.001  0.13  1188   1183.32   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p>This is often the most natural summary-table function when your
 reporting workflow already relies on weighted linear models.</p>
 </div>
@@ -309,7 +314,8 @@ reports the slope rather than group means:</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.04    -0.02      0.10      .176  0.00  1200 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.04     0.02      0.05     &lt;.001  0.02  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p>When you need the underlying returned data for further processing,
 use <code>output = "data.frame"</code> for the wide raw table or
 <code>output = "long"</code> for the analytic long table.</p>
@@ -347,7 +353,8 @@ which estimand they are reading.</p>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.19       0.97      .004  0.16  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p><code>covariates</code> accepts the full tidyselect vocabulary
 (<code>c(age, sex)</code>,
 <code>tidyselect::starts_with("life_sat_")</code>,
@@ -423,7 +430,8 @@ equally.</p>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.19       0.97      .004  0.16  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="effect-sizes-under-adjustment">Effect sizes under adjustment<a class="anchor" aria-label="anchor" href="#effect-sizes-under-adjustment"></a>
@@ -497,7 +505,7 @@ require <code>by</code> to have exactly two non-empty levels:</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   0.47     .124  0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.49     .905  0.00  -0.01  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Rows with missing smoking removed: 25.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.</span></span></span></code></pre></div>
 <p>Hedges’ <em>g</em> applies the small-sample correction
 <code>J = 1 - 3/(4·df_resid - 1)</code>. It is generally preferred over
 raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
@@ -521,7 +529,7 @@ raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   0.47     .124  0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>   0.49     .905  0.00  -0.01  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Rows with missing smoking removed: 25.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.</span></span></span></code></pre></div>
 <p>For categorical predictors with three or more levels (or numeric
 predictors), use Hays’ <code>omega²</code> for a less biased estimate of
 the population variance explained (Hays 1963; Olejnik and Algina 2003;
@@ -543,7 +551,9 @@ Lakens 2013):</p>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span> M (Tertiary)    p     R²    ω²    n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>    76.85      &lt;.001  0.21  0.21  1200 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    24.39      &lt;.001  0.13  0.13  1188</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span>    24.39      &lt;.001  0.13  0.13  1188 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p>Cohen’s <code>f²</code> (= <code>R² / (1 - R²)</code>) is the effect
 size familiar from power-analysis frameworks (e.g. G*Power) and is
 defined for any predictor type:</p>
@@ -564,7 +574,9 @@ defined for any predictor type:</p>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>  n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼──────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 1200 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 1188</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 1188 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="confidence-intervals-for-effect-sizes">Confidence intervals for effect sizes<a class="anchor" aria-label="anchor" href="#confidence-intervals-for-effect-sizes"></a>
@@ -615,7 +627,7 @@ with the bracketed CI (article-ready):</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 1175 </span></span>
 <span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Rows with missing smoking removed: 25.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.</span></span></span></code></pre></div>
 <p>The CI level follows <code>ci_level</code> (default
 <code>0.95</code>). For programmatic access, the wide raw output exposes
 separate numeric columns, and the long output always includes them:</p>
@@ -684,7 +696,9 @@ European reporting):</p>
 <span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²           g           n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼─────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   5,64     &lt;,001  0,02  0,25 [0,14; 0,36]  1200 </span></span>
-<span><span class="co">#&gt;  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   0,93      ,018  0,00  0,14 [0,02; 0,25]  1188</span></span></code></pre></div>
+<span><span class="co">#&gt;  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   0,93      ,018  0,00  0,14 [0,02; 0,25]  1188 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="publication-ready-output">Publication-ready output<a class="anchor" aria-label="anchor" href="#publication-ready-output"></a>
@@ -1059,7 +1073,8 @@ Satisfaction with health (1-5)
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Std. errors: heteroskedasticity-robust (HC3).
+<em>Note.</em> Std. errors: heteroskedasticity-robust (HC3). Missing
+values removed: bmi (12), life_sat_health (8).
 </div>
 </div>
 </div>
@@ -1096,7 +1111,9 @@ downstream tidyverse-stats workflow:</p>
 <span><span class="co">#&gt;  Variable                      <span style="color: #9E9E9E;">│</span>         g           n   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 0.25 [0.14, 0.36]  1200 </span></span>
-<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.14 [0.02, 0.25]  1188</span></span>
+<span><span class="co">#&gt;  Body mass index               <span style="color: #9E9E9E;">│</span> 0.14 [0.02, 0.25]  1188 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span>
 <span></span>
 <span><span class="co"># One row per estimated parameter: emmean per level, contrast for</span></span>
 <span><span class="co"># binary predictors, slope for numeric predictors.</span></span>

@@ -396,6 +396,7 @@ table_continuous_lm(
 #>  Body mass index               │   0.09       0.93      .018  0.00  1188 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
+#> Missing values removed: bmi (12).
 ```
 
 For detailed guidance, see the dedicated articles on

@@ -1081,6 +1081,8 @@ table_continuous_lm(
 #> ───────────────────────────────┼─────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1102,6 +1104,8 @@ table_continuous_lm(
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  0.25  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  0.14  1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # Hedges' g with weighted analysis and weighted n column.
 table_continuous_lm(
@@ -1129,6 +1133,8 @@ table_continuous_lm(
 #> ───────────────────────────────┼──────────────────
 #>  WHO-5 wellbeing index (0-100) │ 1200   1196.47   
 #>  Body mass index               │ 1188   1183.32   
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # Hedges' g with noncentral t confidence interval (bracket notation).
 table_continuous_lm(
@@ -1154,6 +1160,8 @@ table_continuous_lm(
 #> ───────────────────────────────┼─────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ 0.25 [0.14, 0.36]  1200 
 #>  Body mass index               │ 0.14 [0.02, 0.25]  1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).
 table_continuous_lm(
@@ -1173,6 +1181,8 @@ table_continuous_lm(
 #> ───────────────────────────────┼───────────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02  0.02  1200 
 #>  Body mass index               │   0.09       0.93      .018  0.00  0.00  1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # Hays' omega-squared for a 3-level predictor (d / g would error here).
 table_continuous_lm(
@@ -1192,6 +1202,8 @@ table_continuous_lm(
 #> ───────────────────────────────┼───────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │    76.85      <.001  0.21  0.21  1200 
 #>  Body mass index               │    24.39      <.001  0.13  0.13  1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # --- Robust SE for a numeric predictor ----------------------------------
 
@@ -1211,6 +1223,7 @@ table_continuous_lm(
 #>  Body mass index                 │  0.04    <.001    0.02    1188  
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
+#> Missing values removed: bmi (12).
 
 # Cluster-robust SE for repeated-measures data: the `sleep` dataset
 # has 10 subjects measured twice (one observation per group).
@@ -1258,6 +1271,7 @@ table_continuous_lm(
 #> 
 #> Note. Adjusted for age, education (proportional).
 #> Std. errors: heteroskedasticity-robust (HC3).
+#> Missing values removed: bmi (12).
 
 # Same model with the emmeans / SPSS UNIANOVA convention (equal-weight
 # marginal means on a synthetic covariate grid).
@@ -1283,6 +1297,7 @@ table_continuous_lm(
 #> 
 #> Note. Adjusted for age, education (balanced).
 #> Std. errors: heteroskedasticity-robust (HC3).
+#> Missing values removed: bmi (12).
 
 # Effect sizes adjust automatically: f2 / omega2 become partial
 # effect sizes via the partial F restricted to the focal `by`.
@@ -1313,6 +1328,7 @@ table_continuous_lm(
 #>  Body mass index               │ 0.01 [0.00, 0.02]  1188 
 #> 
 #> Note. Adjusted for age, education (proportional).
+#> Missing values removed: bmi (12).
 
 # --- Article-style polish -----------------------------------------------
 
@@ -1338,6 +1354,8 @@ table_continuous_lm(
 #> ──────────────────────────┼─────────────────────────────────
 #>  WHO-5 wellbeing (0-100)  │   5.64     <.001   0.01    1200 
 #>  Body-mass index (kg/m^2) │   0.93      .018   0.00    1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # European decimal comma.
 table_continuous_lm(
@@ -1357,6 +1375,8 @@ table_continuous_lm(
 #> ───────────────────────────────┼─────────────────────────────────────────
 #>  WHO-5 wellbeing index (0-100) │   2,13       5,64     <,001  0,02  1200 
 #>  Body mass index               │   0,09       0,93      ,018  0,00  1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 
 # Regex selection of all columns starting with "life_sat".
 table_continuous_lm(
@@ -1387,6 +1407,8 @@ table_continuous_lm(
 #>  Satisfaction with work (1-5)               │   0.26     .073  0.00  1192 
 #>  Satisfaction with relationships (1-5)      │   0.16     .570  0.00  1192 
 #>  Satisfaction with standard of living (1-5) │   0.18     .453  0.00  1192 
+#> 
+#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 
 # --- Output formats -----------------------------------------------------
 

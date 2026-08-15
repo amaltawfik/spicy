@@ -1815,9 +1815,9 @@ table_regression(
 #> 
 #> Note. Linear regression models.
 #> Std. errors:
-#>   Model 1: classical (OLS)
-#>   Model 2: heteroskedasticity-robust (HC3)
-#>   Model 3: cluster-robust (CR2), clusters by region
+#>   Classical: classical (OLS)
+#>   HC3: heteroskedasticity-robust (HC3)
+#>   CR2: cluster-robust (CR2), clusters by region
 
 # ---- Tidy long format for downstream pipelines -------------------
 broom::tidy(table_regression(fit))

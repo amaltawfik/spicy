@@ -396,12 +396,12 @@ table_regression(
 #>  R² (Nagelkerke) │    0.19      –       0.11      –   
 #>  AIC             │ 3312.3   3225.5   3134.1   3122.5  
 #> 
-#> Note. Model 1: Poisson regression; Model 2: Poisson zero-inflated regression; Model 3: negative-binomial regression; Model 4: negative-binomial zero-inflated regression.
+#> Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression.
 #> Std. errors:
-#>   Model 1: classical (Fisher information)
-#>   Model 2: Wald asymptotic (z)
-#>   Model 3: Model-based (asymptotic)
-#>   Model 4: Wald asymptotic (z)
+#>   Poisson: classical (Fisher information)
+#>   ZIP: Wald asymptotic (z)
+#>   NB: Model-based (asymptotic)
+#>   ZINB: Wald asymptotic (z)
 #> Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.
 #> IRR = incidence rate ratio.
 #> Coefficients exponentiated and displayed as IRR; CI bounds exponentiated.

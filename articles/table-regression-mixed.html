@@ -400,13 +400,13 @@ suppressed warning) accompanies every HSB table in this sequence.</p>
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 47103.9                46653.2               </span></span>
 <span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 47124.6                46680.7               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: linear regression; Model 2: linear mixed-effects regression.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. OLS: linear regression; Multilevel: linear mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 1: classical (OLS)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Wald (model-based)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   OLS: classical (OLS)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Multilevel: Wald (model-based)</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p &lt; .001.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Multilevel: Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>Reading the two columns against each other, five things change:</p>
 <ul>
 <li>The <strong>intercept SE more than doubles</strong> (0.08 → 0.19).
@@ -886,8 +886,8 @@ each model gets its own footer line.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 1: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span></code></pre></div>
 <p><strong>What is — and is not — being tested here.</strong> Each
 footer’s chi-bar-squared line answers one question only: <em>does this
 model need its random part at all?</em> — the fit against a plain linear
@@ -1264,10 +1264,10 @@ vignette; here is the contrast itself, in one table:</p>
 <span><span class="co">#&gt;  BIC                     <span style="color: #9E9E9E;">│</span>    –                          464.1                        </span></span>
 <span><span class="co">#&gt;  Max cluster size        <span style="color: #9E9E9E;">│</span>   4                              –                         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Model 1: population-averaged logistic regression (GEE); Model 2: logistic mixed-effects regression.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 1: Robust sandwich (GEE), clusters by subject</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Model 2: Wald asymptotic (z)</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Population-averaged: Robust sandwich (GEE), clusters by subject</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Subject-specific: Wald asymptotic (z)</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Wald-z asymptotic (lme4).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; GEE working correlation: exchangeable (alpha = 0.36).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.14, p &lt; .001.</span></span></span>

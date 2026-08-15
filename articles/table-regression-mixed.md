@@ -299,13 +299,13 @@ table_regression(list(OLS = ols, Multilevel = m_ri),
 #>  AIC                    │ 47103.9                46653.2               
 #>  BIC                    │ 47124.6                46680.7               
 #> 
-#> Note. Model 1: linear regression; Model 2: linear mixed-effects regression.
+#> Note. OLS: linear regression; Multilevel: linear mixed-effects regression.
 #> Std. errors:
-#>   Model 1: classical (OLS)
-#>   Model 2: Wald (model-based)
+#>   OLS: classical (OLS)
+#>   Multilevel: Wald (model-based)
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001.
-#> Model 2: Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
+#> Multilevel: Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 Reading the two columns against each other, five things change:
@@ -810,8 +810,8 @@ table_regression(
 #> Note. Linear mixed-effects regression models.
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
-#> Model 1: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
-#> Model 2: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
+#> + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 **What is — and is not — being tested here.** Each footer’s
@@ -1199,10 +1199,10 @@ table_regression(
 #>  BIC                     │    –                          464.1                        
 #>  Max cluster size        │   4                              –                         
 #> 
-#> Note. Model 1: population-averaged logistic regression (GEE); Model 2: logistic mixed-effects regression.
+#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression.
 #> Std. errors:
-#>   Model 1: Robust sandwich (GEE), clusters by subject
-#>   Model 2: Wald asymptotic (z)
+#>   Population-averaged: Robust sandwich (GEE), clusters by subject
+#>   Subject-specific: Wald asymptotic (z)
 #> p-values: Wald-z asymptotic (lme4).
 #> GEE working correlation: exchangeable (alpha = 0.36).
 #> Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.14, p < .001.

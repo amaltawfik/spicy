@@ -627,7 +627,9 @@ lm_tbl <- table_continuous_lm(sochealth, c(age, bmi), by = sex)
 #>  Variable        │ 95% CI UL   p     R²    n   
 #> ─────────────────┼─────────────────────────────
 #>  Age (years)     │   1.43     .780  0.00  1200 
-#>  Body mass index │   0.93     .018  0.00  1188
+#>  Body mass index │   0.93     .018  0.00  1188 
+#> 
+#> Note. Missing values removed: bmi (12).
 slm <- as_structured(lm_tbl)
 slm$body[, c("Variable", ".variable", ".row_role")]
 #>          Variable .variable .row_role

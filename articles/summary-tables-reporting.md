@@ -200,6 +200,7 @@ table_continuous_lm(
 #>  Satisfaction with health (1-5) │     4.09      <.001  0.15  1192 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 Two words on the weighted example. `weights` supplies **case weights**,
@@ -452,6 +453,7 @@ table_continuous_lm(
 #>  Satisfaction with health (1-5) │   -0.06      0.22     1.11   .267  0.00  1192 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 This is the better summary-table path when the article is already

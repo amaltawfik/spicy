@@ -474,6 +474,7 @@ table_regression(sr, exponentiate = TRUE)
 #> Note. Weibull AFT regression.
 #> Std. errors: Wald asymptotic (z).
 #> Distribution: Weibull; scale = 0.73.
+#> TR = time ratio.
 #> Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric).
 ```
 
