@@ -27,9 +27,17 @@ test_that("registry keys are unique and non-empty", {
 })
 
 test_that("no dead keys: every registry key is consumed in R/", {
-  # Only meaningful against the sources; skipped for an installed package.
+  # Only meaningful against the sources; skipped for an installed
+  # package. `dir.exists()` is NOT the right guard: an installed
+  # package also has an R/ directory two levels up under covr's
+  # layout, holding the lazy-load database and no .R source -- every
+  # key then looks dead (2026-08-15 test-coverage CI failure). Probe
+  # for a known source file instead.
   r_dir <- testthat::test_path("..", "..", "R")
-  skip_if_not(dir.exists(r_dir), "package sources not available")
+  skip_if_not(
+    file.exists(file.path(r_dir, "i18n.R")),
+    "package sources not available"
+  )
   files <- list.files(r_dir, pattern = "[.][Rr]$", full.names = TRUE)
   files <- files[basename(files) != "i18n.R"]
   src <- paste(

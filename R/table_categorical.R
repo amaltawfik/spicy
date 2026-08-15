@@ -1315,11 +1315,13 @@ table_categorical <- function(
     s
   }
 
-  make_stronger_indent <- function(x, base_indent, strong_indent) {
-    is_mod <- startsWith(x, base_indent)
-    if (any(is_mod)) {
-      suffix <- substring(x[is_mod], nchar(base_indent) + 1L)
-      x[is_mod] <- paste0(strong_indent, suffix)
+  # `rows` are the level rows, read from the typed roles of the
+  # structured view -- not sniffed back from the indent prefix, so a
+  # variable label starting with `base_indent` keeps its label.
+  make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
+    if (length(rows)) {
+      suffix <- substring(x[rows], nchar(base_indent) + 1L)
+      x[rows] <- paste0(strong_indent, suffix)
     }
     x
   }
@@ -1597,6 +1599,25 @@ table_categorical <- function(
     # the same disclosure, not print() alone.
     missing_note <- build_missing_note()
 
+    # Typed view of the SAME rows the display frames hold, built from
+    # the compute frame, never parsed back from a label string. Every
+    # output route below reads the block geometry (which rows open a
+    # variable block, which rows are levels) from its `.row_role`
+    # column, so a label that happens to start with `indent_text`
+    # cannot be mistaken for a level row.
+    structured <- .build_categorical_structured(
+      long_raw = long_raw,
+      select_names = select_names,
+      labels = labels,
+      levels_keep = levels_keep,
+      missing_label = missing_label,
+      indent_text = indent_text,
+      percent_digits = percent_digits,
+      p_digits = p_digits,
+      v_digits = v_digits,
+      decimal_mark = decimal_mark
+    )
+
     if (output == "default") {
       out <- wide_raw
       attr(out, "display_df") <- report_wide_char
@@ -1606,21 +1627,7 @@ table_categorical <- function(
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
       attr(out, "long_data") <- long_raw
-      # Typed view of the SAME rows the console prints, for
-      # `as_structured()`. Built from the compute frame, never parsed
-      # back from `display_df`.
-      attr(out, "structured") <- .build_categorical_structured(
-        long_raw = long_raw,
-        select_names = select_names,
-        labels = labels,
-        levels_keep = levels_keep,
-        missing_label = missing_label,
-        indent_text = indent_text,
-        percent_digits = percent_digits,
-        p_digits = p_digits,
-        v_digits = v_digits,
-        decimal_mark = decimal_mark
-      )
+      attr(out, "structured") <- structured
       class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
       print(out)
       return(invisible(out))
@@ -1642,10 +1649,10 @@ table_categorical <- function(
       # rather than on the decimal mark, which is inconsistent with
       # the rendering used by the other engines.
       dat_tt <- pad_decimal_cols(dat_tt)
-      mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
+      mod_rows <- .categorical_level_rows_typed(structured)
       # Rule above the first row of each variable block (the console
       # draws the same dashed separator between blocks).
-      var_sep_rows <- .categorical_var_sep_rows(dat_tt[[1]], indent_text)
+      var_sep_rows <- .categorical_sep_rows_typed(structured)
       if (length(mod_rows)) {
         dat_tt[[1]][mod_rows] <- paste0(
           strrep("\u00A0", 4),
@@ -1733,10 +1740,10 @@ table_categorical <- function(
       # renders visually right-aligned, which is inconsistent with
       # the rendering used by the other engines.
       dat_gt <- pad_decimal_cols(dat_gt)
-      mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
-      # Block starts BEFORE the indent rewrite, for the same light rule
-      # the console and the other engines draw between variable blocks.
-      var_sep_rows <- .categorical_var_sep_rows(dat_gt[[1]], indent_text)
+      mod_rows <- .categorical_level_rows_typed(structured)
+      # Same light rule the console and the other engines draw between
+      # variable blocks, from the same typed geometry.
+      var_sep_rows <- .categorical_sep_rows_typed(structured)
       if (length(mod_rows)) {
         dat_gt[[1]][mod_rows] <- paste0(
           strrep("\u00A0", 4),
@@ -1822,11 +1829,10 @@ table_categorical <- function(
       # Keep the engine's indent, which survives every backend, and
       # hand the cell the bare level name (same rule as the gt and
       # tinytable branches).
-      id_mod <- which(startsWith(df[[1L]], indent_text))
-      # Block starts BEFORE the indent strip (the helper tells levels
-      # from block openers by the indent), for the same light rule the
-      # console and tinytable draw between variable blocks.
-      var_sep_rows <- .categorical_var_sep_rows(df[[1L]], indent_text)
+      id_mod <- .categorical_level_rows_typed(structured)
+      # Same light rule the console and tinytable draw between variable
+      # blocks, from the same typed geometry.
+      var_sep_rows <- .categorical_sep_rows_typed(structured)
       if (length(id_mod)) {
         df[[1L]][id_mod] <- substring(
           df[[1L]][id_mod],
@@ -1933,7 +1939,8 @@ table_categorical <- function(
     clip_body$Variable <- make_stronger_indent(
       clip_body$Variable,
       indent_text,
-      indent_text_excel_clipboard
+      indent_text_excel_clipboard,
+      .categorical_level_rows_typed(structured)
     )
     clip_mat <- rbind(matrix(names(clip_body), nrow = 1), as.matrix(clip_body))
 
@@ -1952,7 +1959,8 @@ table_categorical <- function(
       body_xl$Variable <- make_stronger_indent(
         body_xl$Variable,
         indent_text,
-        indent_text_excel_clipboard
+        indent_text_excel_clipboard,
+        .categorical_level_rows_typed(structured)
       )
 
       wb <- openxlsx2::wb_workbook()
@@ -2666,6 +2674,29 @@ table_categorical <- function(
 
   report_wide_char <- make_report_wide(long_raw, mode = "char")
   report_wide_excel <- make_report_wide(long_raw, mode = "excel")
+
+  # Typed view of the SAME rows the display frames hold (see the
+  # one-way branch above). The group columns carry their spanner; the
+  # margin is flagged rather than matched by label. Every output route
+  # below reads its block geometry from the `.row_role` column.
+  structured <- .build_categorical_structured(
+    long_raw = long_raw,
+    select_names = select_names,
+    labels = labels,
+    levels_keep = levels_keep,
+    missing_label = missing_label,
+    indent_text = indent_text,
+    percent_digits = percent_digits,
+    p_digits = p_digits,
+    v_digits = v_digits,
+    decimal_mark = decimal_mark,
+    group_levels = group_levels,
+    margin_key = if (include_total) margin_key else NULL,
+    measure_col = measure_col,
+    show_assoc = show_assoc,
+    assoc_ci = assoc_ci
+  )
+
   if (output == "default") {
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
@@ -2676,26 +2707,7 @@ table_categorical <- function(
     attr(out, "decimal_mark") <- decimal_mark
     attr(out, "long_data") <- long_raw
     attr(out, "assoc_note") <- assoc_note_text
-    # Typed view of the SAME rows the console prints (see the one-way
-    # branch above). The group columns carry their spanner; the margin
-    # is flagged rather than matched by label.
-    attr(out, "structured") <- .build_categorical_structured(
-      long_raw = long_raw,
-      select_names = select_names,
-      labels = labels,
-      levels_keep = levels_keep,
-      missing_label = missing_label,
-      indent_text = indent_text,
-      percent_digits = percent_digits,
-      p_digits = p_digits,
-      v_digits = v_digits,
-      decimal_mark = decimal_mark,
-      group_levels = group_levels,
-      margin_key = if (include_total) margin_key else NULL,
-      measure_col = measure_col,
-      show_assoc = show_assoc,
-      assoc_ci = assoc_ci
-    )
+    attr(out, "structured") <- structured
     if (include_total) {
       # The internal key of the margin group in `long_data` ("Total",
       # or the auto-renamed "Total_<i>" when a `by` level collides).
@@ -2773,11 +2785,10 @@ table_categorical <- function(
     # the rendering used by the other engines.
     dat_tt <- pad_decimal_cols(dat_tt)
 
-    # Detect modality rows before header rename
-    mod_rows <- which(startsWith(dat_tt[[1]], indent_text))
+    mod_rows <- .categorical_level_rows_typed(structured)
     # Rule above the first row of each variable block (the console
     # draws the same dashed separator between blocks).
-    var_sep_rows <- .categorical_var_sep_rows(dat_tt[[1]], indent_text)
+    var_sep_rows <- .categorical_sep_rows_typed(structured)
     if (length(mod_rows)) {
       dat_tt[[1]][mod_rows] <- paste0(
         strrep("\u00A0", 4),
@@ -2919,11 +2930,11 @@ table_categorical <- function(
     # the rendering used by the other engines.
     dat_gt <- pad_decimal_cols(dat_gt)
 
-    # Block starts BEFORE the indent rewrite, for the same light rule
-    # the console and the other engines draw between variable blocks.
-    var_sep_rows <- .categorical_var_sep_rows(dat_gt[[1]], indent_text)
+    # Same light rule the console and the other engines draw between
+    # variable blocks, from the same typed geometry.
+    var_sep_rows <- .categorical_sep_rows_typed(structured)
     # Indent modality rows with non-breaking spaces
-    mod_rows <- which(startsWith(dat_gt[[1]], indent_text))
+    mod_rows <- .categorical_level_rows_typed(structured)
     if (length(mod_rows)) {
       dat_gt[[1]][mod_rows] <- paste0(
         strrep("\u00A0", 4),
@@ -3156,11 +3167,10 @@ table_categorical <- function(
     # Keep the engine's indent, which survives every backend, and hand
     # the cell the bare level name (same rule as the gt and tinytable
     # branches).
-    id_mod <- which(startsWith(df[[1L]], indent_text))
-    # Block starts BEFORE the indent strip (the helper tells levels
-    # from block openers by the indent), for the same light rule the
-    # console and tinytable draw between variable blocks.
-    var_sep_rows <- .categorical_var_sep_rows(df[[1L]], indent_text)
+    id_mod <- .categorical_level_rows_typed(structured)
+    # Same light rule the console and tinytable draw between variable
+    # blocks, from the same typed geometry.
+    var_sep_rows <- .categorical_sep_rows_typed(structured)
     if (length(id_mod)) {
       df[[1L]][id_mod] <- substring(df[[1L]][id_mod], nchar(indent_text) + 1L)
     }
@@ -3291,7 +3301,8 @@ table_categorical <- function(
   clip_body$Variable <- make_stronger_indent(
     clip_body$Variable,
     indent_text,
-    indent_text_excel_clipboard
+    indent_text_excel_clipboard,
+    .categorical_level_rows_typed(structured)
   )
 
   clip_mat <- rbind(top_header_flat_ex, bot_header_ex, as.matrix(clip_body))
@@ -3340,7 +3351,8 @@ table_categorical <- function(
     body_xl$Variable <- make_stronger_indent(
       body_xl$Variable,
       indent_text,
-      indent_text_excel_clipboard
+      indent_text_excel_clipboard,
+      .categorical_level_rows_typed(structured)
     )
     body_xl$p <- report_wide_char$p
     if (show_assoc) {

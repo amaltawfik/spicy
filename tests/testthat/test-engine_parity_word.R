@@ -98,8 +98,9 @@ test_that("stars reach the Word cells that the footer legend documents", {
   # A non-significant coefficient carries no star.
   expect_false(grepl("*", .wd_row(rows, "age")[2L], fixed = TRUE))
   # The legend the audit found orphaned now documents symbols that are
-  # in the table.
-  expect_match(.wd_note(rows), "*** p < .001", fixed = TRUE)
+  # in the table -- and its thresholds follow the table's decimal mark
+  # (they used to stay dot-based in a comma table).
+  expect_match(.wd_note(rows), "*** p < ,001", fixed = TRUE)
 })
 
 

@@ -60,7 +60,15 @@ print.spicy_categorical_table <- function(x, ...) {
     align_center <- integer(0)
   }
 
-  sep_rows <- .categorical_var_sep_rows(display_df[[1]], indent_text)
+  # Block geometry from the typed roles when the object carries them
+  # (every table_categorical() return does); the string derivation
+  # remains only for a degraded object printed without its attributes.
+  s <- attr(x, "structured", exact = TRUE)
+  sep_rows <- if (is.null(s) || nrow(s$body) != nrow(display_df)) {
+    .categorical_var_sep_rows(display_df[[1]], indent_text)
+  } else {
+    .categorical_sep_rows_typed(s)
+  }
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
@@ -115,12 +123,26 @@ print.spicy_categorical_table <- function(x, ...) {
 
 # Internal: body rows that OPEN a variable block (all but the first) --
 # the rows the console rules off from the block above. A block opens on
-# a non-empty, non-indented row label. Shared by the console printer and
-# the tinytable branches so both draw the same separators.
+# a non-empty, non-indented row label. Legacy string derivation, kept
+# as the console printer's fallback for an object without a typed view
+# and as the independent oracle the agreement test in
+# test-structured-descriptives.R pins against the typed answer.
 .categorical_var_sep_rows <- function(labels, indent_text) {
   keep <- nzchar(labels) & !startsWith(labels, indent_text)
   keep[1L] <- FALSE
   which(keep)
+}
+
+# Internal: the same block geometry, read from the typed roles of the
+# structured view instead of parsed back from the label strings. The
+# typed answer survives a variable label that starts with the indent
+# string; every rendering / export route uses these two.
+.categorical_sep_rows_typed <- function(structured) {
+  which(structured$body$.row_role == "factor_header")[-1L]
+}
+
+.categorical_level_rows_typed <- function(structured) {
+  which(structured$body$.row_role != "factor_header")
 }
 
 # Internal: the note of a categorical summary table -- the drop_na

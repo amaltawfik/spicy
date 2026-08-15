@@ -319,6 +319,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   did; `0,45 [0,31, 0,59]` was ambiguous.
 * An empty or non-string `clipboard_delim` raises a classed error instead
   of silently building an unusable payload.
+* A `table_categorical()` variable label that happens to start with the
+  indent string is no longer mistaken for a level row: every output now
+  reads the block geometry from the table's typed row roles instead of
+  parsing the label text back.
 * `table_categorical()` draws its light rule between variable blocks in the
   `"gt"` and `"flextable"` outputs too, labels the first `"gt"` column
   `Variable` like every other engine, and `table_continuous_lm()` carries

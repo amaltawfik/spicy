@@ -299,10 +299,11 @@ test_that("the typed roles reproduce the console's block geometry", {
   tbl <- quiet(table_categorical(sh, c(sex, smoking), by = education))
   s <- as_structured(tbl)
 
-  # The console finds the rows that OPEN a variable block by reading
-  # the label string back (`.categorical_var_sep_rows()` tests it for
-  # the indent prefix); the typed body says it outright. The two agree
-  # -- and the typed answer is the one that survives a relabelled row.
+  # The legacy string derivation reads the label back
+  # (`.categorical_var_sep_rows()` tests it for the indent prefix);
+  # the typed body says it outright, and since the row_role migration
+  # every route reads the typed answer. On sane labels the two agree
+  # -- this pin keeps the retired derivation as an independent oracle.
   expect_identical(
     spicy:::.categorical_var_sep_rows(attr(tbl, "display_df")$Variable, "  "),
     which(s$body$.row_role == "factor_header")[-1L]
@@ -320,6 +321,35 @@ test_that("the typed roles reproduce the console's block geometry", {
   expect_identical(sw$body$.level, s$body$.level)
   expect_identical(sw$body$.indent, s$body$.indent)
   expect_faithful(sw, cat_display(wide))
+})
+
+test_that("a label that starts with the indent string keeps its geometry", {
+  skip_if_not_installed("tinytable")
+  sh <- sh_desc()
+  # A variable label crafted to LOOK like an indented level row. The
+  # retired string derivation misread the header as a level -- no rule
+  # above the block, label re-indented as a level name -- because it
+  # keyed on the indent prefix. The typed roles cannot be fooled.
+  tricky <- "  Sex (label starts with the indent)"
+  tbl <- quiet(table_categorical(
+    sh,
+    c(sex, smoking),
+    by = education,
+    labels = c(sex = tricky)
+  ))
+  s <- as_structured(tbl)
+  expect_identical(s$body$.row_role[1L], "factor_header")
+
+  tt <- quiet(table_categorical(
+    sh,
+    c(sex, smoking),
+    by = education,
+    labels = c(sex = tricky),
+    output = "tinytable"
+  ))
+  # The engine keeps the header label verbatim: it is not re-indented
+  # into a level and its block still opens where the roles say.
+  expect_identical(tt@data[[1L]][1L], tricky)
 })
 
 test_that("an empty categorical table yields an empty typed body", {
