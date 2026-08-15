@@ -159,3 +159,21 @@ test_that(".surv_title_dist normalises lnorm -> 'Log-normal'", {
   expect_identical(spicy:::.surv_title_dist("weibull"), "Weibull")
   expect_identical(spicy:::.surv_title_dist("gengamma"), "Generalised gamma")
 })
+
+
+test_that("the TR header is glossed in the abbreviations footer", {
+  skip_if_not_installed("survival")
+  sv <- survival::survreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung,
+    dist = "lognormal"
+  )
+  txt <- paste(
+    capture.output(print(table_regression(sv, exponentiate = TRUE))),
+    collapse = "\n"
+  )
+  # TR used to reach a published table with no expansion: every other
+  # exponentiated header (OR, HR, IRR, ...) had its "X = ..." gloss in
+  # exp_defs, TR alone was missing from the map.
+  expect_match(txt, "TR = time ratio.", fixed = TRUE)
+})

@@ -240,9 +240,9 @@ as_regression_frame.survreg <- function(
   # relabel as a time ratio. Cox is already mapped to "HR".
   if (
     isTRUE(out$info$extras$exp_applied) &&
-      identical(out$info$extras$exp_header, "exp(B)")
+      identical(out$info$extras$exp_header, spicy_str("header_exp_generic"))
   ) {
-    out$info$extras$exp_header <- "TR"
+    out$info$extras$exp_header <- spicy_str("header_exp_tr")
   }
   out
 }

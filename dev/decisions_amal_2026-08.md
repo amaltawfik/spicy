@@ -216,3 +216,35 @@ barrière du cycle v3.
 ## Ordre suggéré si tu valides les trois
 
 2 (petit, avec l'issue tinytable) -> 3 (petit) -> 1 (lot dédié).
+
+## 13. Doctrine i18n 1.5 — DÉCIDÉ 2026-08-15 : clés gelées + étiquettes
+
+Les noms de colonnes actuels (« Total n », « M », « 95% CI LL »...)
+deviennent le contrat programmatique GELÉ (data.frame/long, clés
+col_meta, as_structured) — jamais traduits. La traduction ne touche
+qu'une couche display_label appliquée au rendu par chaque moteur (le
+modèle regression_structured.R:452 généralisé aux trois familles
+descriptives). Lecture cohérente de la règle R/i18n.R:11. Spec :
+dev/i18n_stage15_spec.md (inventaire 388 sites, 2026-08-15).
+
+## 14. Divulgation NA de table_continuous_lm — DÉCIDÉ 2026-08-15
+
+Même note que table_continuous (« Missing values removed: bmi (68),
+... » par variable), même constructeur, portée sur tous les moteurs.
+Constat vérifié : 68 NA retirés sans aucune note aujourd'hui,
+contraire à la doctrine « rien ne disparaît en silence ».
+
+## 15. weights dans table_continuous — DÉCIDÉ 2026-08-15 : complet 0.13
+
+Le trou de grammaire (weights présent dans table_categorical ET
+table_continuous_lm, absent de table_continuous) se comble en 0.13
+par l'implémentation COMPLÈTE : moyenne/SD/n pondérés ET quantiles
+pondérés sous convention documentée et triangulée (Stata summarize
+aweights / PSPP / Hmisc::wtd.quantile), oracles épinglés — standard
+pro-grade.
+
+## 16. excel_sheet defaults — DÉCIDÉ 2026-08-15 : NULL + résolution interne
+
+excel_sheet = NULL dans les signatures, nom réel résolu en interne via
+le registre, documenté dans @param. Usage Rd propre, traduisible à
+l'étage 2, breaking doux pre-1.0. Clôt la question ouverte de l'étage 1.

@@ -515,6 +515,7 @@ build_abbreviations_footer_block_from_frames <- function(
           spicy_str("note_abbrev_hr"),
           spicy_str("note_abbrev_rr"),
           spicy_str("note_abbrev_mr"),
+          spicy_str("note_abbrev_tr"),
           spicy_str("note_abbrev_expb")
         ),
         c(
@@ -523,6 +524,7 @@ build_abbreviations_footer_block_from_frames <- function(
           spicy_str("header_exp_hr"),
           spicy_str("header_exp_rr"),
           spicy_str("header_exp_mr"),
+          spicy_str("header_exp_tr"),
           spicy_str("header_exp_generic")
         )
       )

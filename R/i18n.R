@@ -158,6 +158,7 @@
   header_exp_hr = "HR",
   header_exp_rr = "RR",
   header_exp_mr = "MR",
+  header_exp_tr = "TR",
   header_exp_generic = "exp(B)",
 
   # -- table_regression(): fit-statistic row labels -------------------------
@@ -200,6 +201,7 @@
   note_abbrev_hr = "HR = hazard ratio",
   note_abbrev_rr = "RR = risk ratio",
   note_abbrev_mr = "MR = mean ratio",
+  note_abbrev_tr = "TR = time ratio",
   note_abbrev_expb = "exp(B) = exponentiated coefficient",
   note_abbrev_f2 = "f\u00B2 = Cohen's partial f\u00B2",
   note_abbrev_eta2 = "\u03B7\u00B2 = partial eta-squared",
