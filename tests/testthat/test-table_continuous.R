@@ -2644,6 +2644,7 @@ test_that("glance() without by returns NA test/ES, populated n_total", {
 test_that("ci = FALSE / show_n = FALSE render across every output (smoke matrix)", {
   Sys.setenv(CLIPR_ALLOW = "TRUE")
   testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
     write_clip = function(text, ...) invisible(text),
     .package = "clipr"
   )
@@ -2841,6 +2842,7 @@ test_that("clipboard text reflects ci = FALSE structurally", {
   Sys.setenv(CLIPR_ALLOW = "TRUE")
   captured <- new.env()
   testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
     write_clip = function(text, ...) {
       captured$text <- text
       invisible(text)
@@ -2917,6 +2919,7 @@ test_that("every align value renders cleanly across every rendered engine", {
   # silent regression in any branch is caught.
   Sys.setenv(CLIPR_ALLOW = "TRUE")
   testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
     write_clip = function(text, ...) invisible(text),
     .package = "clipr"
   )
@@ -3667,6 +3670,7 @@ test_that("show_columns overrules a contradictory show_n / ci", {
 test_that("show_columns reaches every output engine with the same columns", {
   Sys.setenv(CLIPR_ALLOW = "TRUE")
   testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
     write_clip = function(text, ...) invisible(text),
     .package = "clipr"
   )

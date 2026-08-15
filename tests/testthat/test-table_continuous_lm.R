@@ -3137,6 +3137,7 @@ test_that("table_continuous_lm clipboard output can be exercised with a mocked w
   captured <- NULL
 
   local_mocked_bindings(
+    clipr_available = function(...) TRUE,
     write_clip = function(text, ...) {
       captured <<- text
       invisible(text)
