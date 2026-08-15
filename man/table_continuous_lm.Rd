@@ -37,7 +37,7 @@ table_continuous_lm(
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
-  excel_sheet = "Linear models",
+  excel_sheet = NULL,
   clipboard_delim = "\\t",
   word_path = NULL,
   verbose = FALSE,
@@ -440,8 +440,8 @@ format would require a separate refactor.}
 
 \item{excel_path}{File path for \code{output = "excel"}.}
 
-\item{excel_sheet}{Sheet name for \code{output = "excel"} (default:
-\code{"Linear models"}).}
+\item{excel_sheet}{Sheet name for \code{output = "excel"}. \code{NULL} (the
+default) uses \code{"Linear models"}.}
 
 \item{clipboard_delim}{Delimiter for \code{output = "clipboard"} (default:
 \code{"\\t"}). A cell holding the delimiter itself, a double quote or a

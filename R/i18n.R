@@ -39,6 +39,13 @@
   note_weights_fallback = "weights",
   # Decision 17: the weighted table names its weights up front.
   note_weighted_by = "Statistics weighted by %s.",
+  # Default Excel sheet names, resolved when `excel_sheet = NULL`
+  # (decision 16: the \usage line stays clean, and the name can follow
+  # the table language at stage 2).
+  excel_sheet_regression = "Regression",
+  excel_sheet_categorical = "Categorical",
+  excel_sheet_continuous = "Descriptives",
+  excel_sheet_continuous_lm = "Linear models",
 
   # -- table titles: descriptive families -----------------------------------
   title_categorical = "Categorical table",

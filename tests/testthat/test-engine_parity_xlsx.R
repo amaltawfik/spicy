@@ -617,3 +617,59 @@ test_that("a table with no subordinate block keeps its single fit-stats rule", {
   )
   expect_identical(sum(hair), 1L)
 })
+
+
+test_that("excel_sheet = NULL resolves to the family sheet names (decision 16)", {
+  skip_if_not_installed("openxlsx2")
+  d <- as.data.frame(sochealth)
+  fit <- stats::lm(wellbeing_score ~ age, data = d)
+  cases <- list(
+    Regression = function(p) {
+      table_regression(fit, output = "excel", excel_path = p)
+    },
+    Categorical = function(p) {
+      suppressMessages(table_categorical(
+        d,
+        select = sex,
+        output = "excel",
+        excel_path = p
+      ))
+    },
+    Descriptives = function(p) {
+      suppressMessages(table_continuous(
+        d,
+        select = bmi,
+        output = "excel",
+        excel_path = p
+      ))
+    },
+    "Linear models" = function(p) {
+      suppressMessages(table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        output = "excel",
+        excel_path = p
+      ))
+    }
+  )
+  for (expected in names(cases)) {
+    path <- tempfile(fileext = ".xlsx")
+    cases[[expected]](path)
+    wb <- openxlsx2::wb_load(path)
+    expect_identical(wb$get_sheet_names()[[1L]], expected)
+    unlink(path)
+  }
+  # An explicit name still wins.
+  path <- tempfile(fileext = ".xlsx")
+  suppressMessages(table_continuous(
+    d,
+    select = bmi,
+    output = "excel",
+    excel_path = path,
+    excel_sheet = "Mine"
+  ))
+  wb <- openxlsx2::wb_load(path)
+  expect_identical(wb$get_sheet_names()[[1L]], "Mine")
+  unlink(path)
+})

@@ -31,7 +31,7 @@ table_continuous(
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
-  excel_sheet = "Descriptives",
+  excel_sheet = NULL,
   clipboard_delim = "\\t",
   word_path = NULL,
   verbose = FALSE,
@@ -273,8 +273,8 @@ better in your pipeline (\code{"long"} matches
 
 \item{excel_path}{File path for \code{output = "excel"}.}
 
-\item{excel_sheet}{Sheet name for \code{output = "excel"}
-(default: \code{"Descriptives"}).}
+\item{excel_sheet}{Sheet name for \code{output = "excel"}. \code{NULL} (the
+default) uses \code{"Descriptives"}.}
 
 \item{clipboard_delim}{Delimiter for \code{output = "clipboard"}
 (default: \code{"\\t"}). A cell holding the delimiter itself, a double

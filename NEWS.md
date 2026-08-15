@@ -623,6 +623,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Minor improvements
 
+* `excel_sheet` defaults to `NULL` in the four table functions and
+  resolves to the same sheet names as before (`"Regression"`,
+  `"Categorical"`, `"Descriptives"`, `"Linear models"`). Behaviour is
+  unchanged; an explicit name still wins.
 * `table_continuous(by = )` titles the table `Descriptive statistics by
   <label>`: the grouping variable is stated in the console header and in
   every rendered caption, like the other `by` tables of the family.

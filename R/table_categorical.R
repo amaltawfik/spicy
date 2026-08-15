@@ -482,7 +482,8 @@
 #' @param blank_na_wide Logical. If `FALSE` (the default), `NA` values are kept
 #'   as-is in wide raw output. If `TRUE`, replaces them with empty strings.
 #' @param excel_path Path for `output = "excel"`. Defaults to `NULL`.
-#' @param excel_sheet Sheet name for Excel export. Defaults to `"Categorical"`.
+#' @param excel_sheet Sheet name for Excel export. `NULL` (the
+#'   default) uses `"Categorical"`.
 #' @param clipboard_delim Delimiter for clipboard text export. Defaults
 #'   to `"\t"`. A cell holding the delimiter itself, a double quote or
 #'   a line break is quoted RFC 4180-style, so the grid survives
@@ -784,7 +785,7 @@ table_categorical <- function(
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
-  excel_sheet = "Categorical",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   user_na = TRUE,
@@ -795,6 +796,11 @@ table_categorical <- function(
   .style_pushed <- .style_begin(style, match.call(), environment())
   on.exit(.style_end(.style_pushed), add = TRUE)
   output <- spicy_match_arg(output)
+  # Decision 16: NULL resolves to the family's registry sheet name,
+  # keeping the usage line of the Rd clean of a display string.
+  if (is.null(excel_sheet)) {
+    excel_sheet <- spicy_str("excel_sheet_categorical")
+  }
   align <- spicy_match_arg(align)
 
   # Global options (mirrors cross_tab()): an explicitly supplied

@@ -51,7 +51,7 @@ table_regression(
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
-  excel_sheet = "Regression",
+  excel_sheet = NULL,
   clipboard_delim = "\\t",
   word_path = NULL,
   word_template = NULL,
@@ -682,8 +682,8 @@ tables); \code{"excel"} (writes to \code{excel_path}); \code{"clipboard"}
 \item{excel_path}{File path for \code{output = "excel"}. Default
 \code{NULL} (required when \code{output = "excel"}).}
 
-\item{excel_sheet}{Sheet name when writing to Excel. Default
-\code{"Regression"}.}
+\item{excel_sheet}{Sheet name when writing to Excel. \code{NULL} (the
+default) uses \code{"Regression"}.}
 
 \item{clipboard_delim}{Field delimiter for
 \code{output = "clipboard"}. Default \code{"\\t"} (tab-separated, pastes

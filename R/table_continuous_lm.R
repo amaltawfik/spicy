@@ -369,8 +369,8 @@
 #'   - `"clipboard"` (requires `clipr`)
 #'   - `"word"` (requires `flextable` and `officer`)
 #' @param excel_path File path for `output = "excel"`.
-#' @param excel_sheet Sheet name for `output = "excel"` (default:
-#'   `"Linear models"`).
+#' @param excel_sheet Sheet name for `output = "excel"`. `NULL` (the
+#'   default) uses `"Linear models"`.
 #' @param clipboard_delim Delimiter for `output = "clipboard"` (default:
 #'   `"\t"`). A cell holding the delimiter itself, a double quote or a
 #'   line break is quoted RFC 4180-style, so the grid survives whatever
@@ -1065,7 +1065,7 @@ table_continuous_lm <- function(
     "word"
   ),
   excel_path = NULL,
-  excel_sheet = "Linear models",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   verbose = FALSE,
@@ -1184,6 +1184,11 @@ table_continuous_lm <- function(
   }
 
   output <- spicy_match_arg(output)
+  # Decision 16: NULL resolves to the family's registry sheet name,
+  # keeping the usage line of the Rd clean of a display string.
+  if (is.null(excel_sheet)) {
+    excel_sheet <- spicy_str("excel_sheet_continuous_lm")
+  }
   vcov <- spicy_match_arg(vcov)
   contrast <- spicy_match_arg(contrast)
   effect_size <- spicy_match_arg(effect_size)

@@ -1183,8 +1183,8 @@
 #'   `word_path`).
 #' @param excel_path File path for `output = "excel"`. Default
 #'   `NULL` (required when `output = "excel"`).
-#' @param excel_sheet Sheet name when writing to Excel. Default
-#'   `"Regression"`.
+#' @param excel_sheet Sheet name when writing to Excel. `NULL` (the
+#'   default) uses `"Regression"`.
 #' @param clipboard_delim Field delimiter for
 #'   `output = "clipboard"`. Default `"\t"` (tab-separated, pastes
 #'   cleanly into Excel / Google Sheets / Word). The clipboard
@@ -1498,7 +1498,7 @@ table_regression <- function(
     "word"
   ),
   excel_path = NULL,
-  excel_sheet = "Regression",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   word_template = NULL,

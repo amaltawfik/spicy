@@ -31,7 +31,7 @@ table_categorical(
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
-  excel_sheet = "Categorical",
+  excel_sheet = NULL,
   clipboard_delim = "\\t",
   word_path = NULL,
   user_na = TRUE,
@@ -230,7 +230,8 @@ as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}
 
 \item{excel_path}{Path for \code{output = "excel"}. Defaults to \code{NULL}.}
 
-\item{excel_sheet}{Sheet name for Excel export. Defaults to \code{"Categorical"}.}
+\item{excel_sheet}{Sheet name for Excel export. \code{NULL} (the
+default) uses \code{"Categorical"}.}
 
 \item{clipboard_delim}{Delimiter for clipboard text export. Defaults
 to \code{"\\t"}. A cell holding the delimiter itself, a double quote or

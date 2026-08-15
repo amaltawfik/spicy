@@ -37,7 +37,7 @@ dispatch_regression_output <- function(
   aligned,
   output = "default",
   excel_path = NULL,
-  excel_sheet = "Regression",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   word_template = NULL
@@ -1964,6 +1964,10 @@ knit_print.spicy_flextable <- function(x, ...) {
 # ---- excel ---------------------------------------------------------------
 
 output_excel <- function(rendered, excel_path, excel_sheet) {
+  # Decision 16: NULL resolves to the registry sheet name.
+  if (is.null(excel_sheet)) {
+    excel_sheet <- spicy_str("excel_sheet_regression")
+  }
   if (!spicy_pkg_available("openxlsx2")) {
     # nocov start
     spicy_abort(
