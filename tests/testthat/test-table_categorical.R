@@ -465,26 +465,17 @@ test_that("table_categorical returns one-way rendered objects when requested", {
   )
   expect_true(file.exists(tmp_docx))
 
+  # Never the real clipboard, and clipr_available too: under
+  # R CMD check the session is non-interactive with no CLIPR_ALLOW,
+  # so the pre-flight would refuse before write_clip is reached.
   clip_text <- NULL
-  ns <- asNamespace("clipr")
-  old_write <- get("write_clip", envir = ns)
-  unlockBinding("write_clip", ns)
-  assign(
-    "write_clip",
-    function(x, ...) {
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(x, ...) {
       clip_text <<- x
       invisible(NULL)
     },
-    envir = ns
-  )
-  lockBinding("write_clip", ns)
-  on.exit(
-    {
-      unlockBinding("write_clip", ns)
-      assign("write_clip", old_write, envir = ns)
-      lockBinding("write_clip", ns)
-    },
-    add = TRUE
+    .package = "clipr"
   )
 
   expect_message(
@@ -1065,35 +1056,25 @@ test_that("table_categorical grouped word and clipboard outputs work", {
   expect_identical(path, invisible(tmp_docx))
   expect_true(file.exists(tmp_docx))
 
+  # Never the real clipboard; clipr_available mocked too so the
+  # pre-flight passes in the non-interactive R CMD check session.
   clip_text <- NULL
-  ns <- asNamespace("clipr")
-  old_write <- get("write_clip", envir = ns)
-  unlockBinding("write_clip", ns)
-  assign(
-    "write_clip",
-    function(x, ...) {
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(x, ...) {
       clip_text <<- x
       invisible(NULL)
     },
-    envir = ns
-  )
-  lockBinding("write_clip", ns)
-  on.exit(
-    {
-      unlockBinding("write_clip", ns)
-      assign("write_clip", old_write, envir = ns)
-      lockBinding("write_clip", ns)
-    },
-    add = TRUE
+    .package = "clipr"
   )
 
-  txt <- table_categorical(
+  txt <- suppressMessages(table_categorical(
     sochealth,
     "smoking",
     "education",
     output = "clipboard",
     assoc_ci = TRUE
-  )
+  ))
   expect_type(txt, "character")
   expect_match(clip_text, "Cramer's V")
   expect_match(clip_text, "CI lower")
@@ -2037,6 +2018,7 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
   skip_if_not_installed("clipr")
   captured <- new.env()
   testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
     write_clip = function(text, ...) {
       captured$text <- text
       invisible(text)
@@ -2088,6 +2070,7 @@ test_that("clipboard payload carries the console title and notes", {
   skip_if_not_installed("clipr")
   captured <- new.env()
   testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
     write_clip = function(text, ...) {
       captured$text <- text
       invisible(text)

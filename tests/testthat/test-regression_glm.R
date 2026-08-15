@@ -1287,10 +1287,10 @@ test_that("E2E: mixed lm + glm side-by-side renders without error", {
   expect_s3_class(out, "spicy_regression_table")
   # Title falls back to plain "Regression comparison" (mixed families)
   expect_match(attr(out, "title"), "^Regression comparison$")
-  # vcov footer per-model: OLS / Fisher information (Phase 7c24)
+  # vcov footer per-model, cited by the spanner labels (named models).
   note <- attr(out, "note")
-  expect_match(note, "Model 1: classical (OLS)", fixed = TRUE)
-  expect_match(note, "Model 2: classical (Fisher information)", fixed = TRUE)
+  expect_match(note, "OLS: classical (OLS)", fixed = TRUE)
+  expect_match(note, "Logistic: classical (Fisher information)", fixed = TRUE)
 })
 
 test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {

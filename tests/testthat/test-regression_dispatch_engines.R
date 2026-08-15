@@ -303,8 +303,9 @@ test_that("output = 'excel' with mixed lm + glm carries the per-model regression
   wb <- openxlsx2::wb_load(path)
   cells <- openxlsx2::wb_to_df(wb, sheet = 1, col_names = FALSE)
   col_a <- as.character(cells[, 1L])
-  expect_true(any(grepl("Model 1: linear regression", col_a, fixed = TRUE)))
-  expect_true(any(grepl("Model 2: logistic regression", col_a, fixed = TRUE)))
+  # Named models: the footer cites the spanner labels, not "Model %d".
+  expect_true(any(grepl("OLS: linear regression", col_a, fixed = TRUE)))
+  expect_true(any(grepl("Logit: logistic regression", col_a, fixed = TRUE)))
 })
 
 
