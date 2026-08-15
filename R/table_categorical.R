@@ -2714,10 +2714,12 @@ table_categorical <- function(
       return(df)
     }
     has_val <- nzchar(df[[measure_col]]) & nzchar(df[["CI lower"]])
-    # `", "` is this call site's historical separator, kept as the
-    # no-style default so the corpus is byte-identical; a style may
-    # replace it (and the brackets).
-    ci_sep <- .style_ci_sep(", ")
+    # Same disambiguation rule as every other family: under a comma
+    # decimal mark the bound separator becomes "; " (this site used to
+    # hardcode ", ", printing `0,45 [0,31, 0,59]` -- the ambiguity
+    # ci_bracket_separator() exists to avoid). A style may still
+    # replace it.
+    ci_sep <- .style_ci_sep(ci_bracket_separator(decimal_mark))
     br <- .style_ci_brackets()
     df[[measure_col]][has_val] <- paste0(
       df[[measure_col]][has_val],

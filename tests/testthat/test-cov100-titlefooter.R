@@ -399,3 +399,24 @@ test_that("beta abbreviation names the standardisation method and dummy conventi
   )
   expect_match(note_p, '"pseudo": latent-scale', fixed = TRUE)
 })
+
+
+test_that("the stars legend follows the table's decimal mark", {
+  # The legend used to hardcode the dot: a comma table printed a body
+  # in commas under a footer reading "p < .001".
+  fit <- lm(mpg ~ wt + hp, data = mtcars)
+  txt <- paste(
+    capture.output(print(
+      table_regression(fit, stars = TRUE, decimal_mark = ",")
+    )),
+    collapse = "\n"
+  )
+  expect_match(txt, "p < ,001", fixed = TRUE)
+  expect_false(grepl("p < .001", txt, fixed = TRUE))
+  # And the dot world is untouched.
+  txt2 <- paste(
+    capture.output(print(table_regression(fit, stars = TRUE))),
+    collapse = "\n"
+  )
+  expect_match(txt2, "p < .001", fixed = TRUE)
+})

@@ -310,6 +310,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* The significance-star legend of `table_regression(stars = TRUE)` follows
+  the table's `decimal_mark`: a comma table now reads `p < ,001`, not
+  `p < .001`.
+* The confidence interval of an association measure in
+  `table_categorical()` separates its bounds with `;` under
+  `decimal_mark = ","`, as every other interval in the package already
+  did; `0,45 [0,31, 0,59]` was ambiguous.
+* An empty or non-string `clipboard_delim` raises a classed error instead
+  of silently building an unusable payload.
 * `table_categorical()` draws its light rule between variable blocks in the
   `"gt"` and `"flextable"` outputs too, labels the first `"gt"` column
   `Variable` like every other engine, and `table_continuous_lm()` carries

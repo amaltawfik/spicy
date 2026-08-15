@@ -278,3 +278,26 @@ test_that("a descriptive payload parses as a grid under a comma delimiter", {
   grid2 <- .clip_parse(captured$text, ",")
   expect_equal(ncol(grid2), 10L)
 })
+
+
+test_that("an unusable clipboard_delim is a hard error, not a broken payload", {
+  # Pre-1.0 doctrine: an empty or non-string delimiter used to build
+  # an unusable payload with no visible failure at all.
+  expect_error(
+    spicy:::.spicy_clip_payload(list(c("a", "b")), ""),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    spicy:::.spicy_clip_payload(list(c("a", "b")), NA_character_),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    spicy:::.spicy_clip_payload(list(c("a", "b")), 3),
+    class = "spicy_invalid_input"
+  )
+  # Multi-character delimiters are legitimate and pass.
+  expect_identical(
+    spicy:::.spicy_clip_payload(list(c("a", "b")), " | "),
+    "a | b"
+  )
+})

@@ -48,7 +48,21 @@
 # own spanner row).
 .ep_expect_all_engines <- function(build) {
   console <- .ep_console(build("default"))
-  expect_equal(unname(.ep_structured(build("default"))), unname(console))
+  structured <- .ep_structured(build("default"))
+  # Guard (cost two debugging cycles once): a table with a bracketed
+  # CI column cannot go through this helper -- the console body has
+  # one `95% CI` column where the structured body has LL / UL, and
+  # expect_equal() dies inside waldo with `subscript out of bounds`
+  # instead of a readable failure. Compare such tables per engine.
+  if (!identical(ncol(structured), ncol(console))) {
+    stop(
+      ".ep_expect_all_engines(): column counts differ (a bracketed ",
+      "CI column?). Drop 'ci' from show_columns or compare engines ",
+      "directly.",
+      call. = FALSE
+    )
+  }
+  expect_equal(unname(structured), unname(console))
   if (requireNamespace("gt", quietly = TRUE)) {
     expect_equal(unname(.ep_gt(build("gt"))), unname(console))
   }

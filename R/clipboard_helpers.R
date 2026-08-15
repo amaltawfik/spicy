@@ -61,6 +61,24 @@
 # join rows with a newline. `rows` is a list of character vectors,
 # one per line.
 .spicy_clip_payload <- function(rows, delim) {
+  # Single validation point for every clipboard route: an empty or
+  # non-string delimiter produces an unusable payload with no visible
+  # failure at all (the incident the 2026-08 clipboard lot recorded).
+  # Multi-character delimiters are legitimate (" | ") and pass.
+  if (
+    !is.character(delim) ||
+      length(delim) != 1L ||
+      is.na(delim) ||
+      !nzchar(delim)
+  ) {
+    spicy_abort(
+      paste0(
+        "`clipboard_delim` must be a single non-empty string ",
+        "(e.g. \"\\t\", \";\")."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   if (length(rows) == 0L) {
     return("")
   }

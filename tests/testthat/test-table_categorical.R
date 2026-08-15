@@ -3364,3 +3364,25 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
   )
   expect_null(attr(clean, "missing_note"))
 })
+
+
+test_that("the association CI separator follows the decimal mark", {
+  skip_if_not_installed("tinytable")
+  d <- transform(mtcars, vs = factor(vs), am = factor(am))
+  tt <- table_categorical(
+    d,
+    vs,
+    by = am,
+    assoc_measure = "cramer_v",
+    assoc_ci = TRUE,
+    decimal_mark = ",",
+    output = "tinytable"
+  )
+  cells <- unlist(tt@data)
+  merged <- grep("[[]", cells, value = TRUE)
+  expect_true(length(merged) >= 1L)
+  # Bounds separated by '; ' under a comma mark -- the site used to
+  # hardcode ', ', printing the ambiguous `0,45 [0,31, 0,59]`.
+  expect_true(any(grepl("; ", merged, fixed = TRUE)))
+  expect_false(any(grepl("[0-9], [0-9]", merged)))
+})

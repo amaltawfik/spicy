@@ -80,7 +80,8 @@ build_regression_footer_from_frames <- function(
   re_columns = c("est", "se", "ci"),
   re_test = "none",
   displayed_parent_vars = NULL,
-  frames_display = frames
+  frames_display = frames,
+  decimal_mark = "."
 ) {
   # `frames_display`: the frames whose coefficient labels match the
   # DISPLAYED body. Only the multinomial columns layout passes a
@@ -118,7 +119,7 @@ build_regression_footer_from_frames <- function(
     build_exponentiate_footer_block_from_frames(frames, show_columns),
     build_standardized_caveat_footer_block_from_frames(frames, standardized),
     build_p_adjust_footer_block_from_frames(frames, p_adjust),
-    build_stars_footer_block(stars),
+    build_stars_footer_block(stars, decimal_mark),
     build_singular_footer_block_from_frames(frames),
     build_re_se_skipped_footer_block_from_frames(frames),
     build_re_profile_footer_block_from_frames(frames),
@@ -697,7 +698,7 @@ build_standardized_caveat_footer_block_from_frames <- function(
 # stars = c("+"=.10, "*"=.05)    -> "* p < .05, + p < .10."
 # Mapping rendered in increasing-strictness order (smallest p first
 # at the lead) mirroring stargazer / modelsummary convention.
-build_stars_footer_block <- function(stars) {
+build_stars_footer_block <- function(stars, decimal_mark = ".") {
   # Single source: the SAME resolver that computes the body markers
   # (resolve_stars_thresholds, regression_render.R). The legend and
   # the cells cannot disagree on the cutoffs -- the defaults used to
@@ -712,7 +713,11 @@ build_stars_footer_block <- function(stars) {
   parts <- vapply(
     seq_along(sym),
     function(i) {
-      spicy_fmt("note_stars_legend_entry", sym[i], format_p_threshold(thr[i]))
+      spicy_fmt(
+        "note_stars_legend_entry",
+        sym[i],
+        format_p_threshold(thr[i], decimal_mark)
+      )
     },
     character(1)
   )
@@ -722,7 +727,7 @@ build_stars_footer_block <- function(stars) {
 # APA-style threshold formatting: leading dot, minimum 2 decimal
 # digits, trailing zeros trimmed beyond that. Examples:
 #   0.001 -> ".001",  0.01 -> ".01",  0.05 -> ".05",  0.10 -> ".10".
-format_p_threshold <- function(p) {
+format_p_threshold <- function(p, decimal_mark = ".") {
   if (!is.finite(p) || p <= 0 || p > 1) {
     return(format(p))
   }
@@ -736,6 +741,12 @@ format_p_threshold <- function(p) {
   min_len <- nchar(sub("\\..*$", "", s)) + 3L
   while (nchar(s) > min_len && substr(s, nchar(s), nchar(s)) == "0") {
     s <- substr(s, 1L, nchar(s) - 1L)
+  }
+  # The internal logic stays dot-based; the table's decimal mark is
+  # applied on the way out, so a comma table's star legend no longer
+  # reads "p < 0.001" under a body printed in commas.
+  if (!identical(decimal_mark, ".")) {
+    s <- sub(".", decimal_mark, s, fixed = TRUE)
   }
   s
 }

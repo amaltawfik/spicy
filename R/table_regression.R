@@ -2970,7 +2970,8 @@ table_regression <- function(
     re_scale = re_scale_val,
     re_columns = re_columns_val,
     re_test = re_test_val,
-    displayed_parent_vars = displayed_parent_vars
+    displayed_parent_vars = displayed_parent_vars,
+    decimal_mark = decimal_mark
   )
 
   # "none" + flat: silent information loss flag. Inform-level
