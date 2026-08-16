@@ -647,6 +647,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `table_continuous(by = )` titles the table `Descriptive statistics by
   <label>`: the grouping variable is stated in the console header and in
   every rendered caption, like the other `by` tables of the family.
+* The `Weighted n` column of `table_continuous()` right-aligns with `n`
+  instead of being centred, matching `table_continuous_lm()`. Visible in
+  Excel workbooks at every `align` value.
 * `cross_tab()` discloses excluded missing values in the table note -- per
   variable, with a deduplicated row total, and rows dropped for a missing
   `by` -- instead of dropping them silently.

@@ -2964,13 +2964,18 @@ build_header_rows <- function(col_keys, ci_level) {
   list(top = top, bottom = bot)
 }
 
-# --- internal: the legacy `align = "auto"` right-hand columns ---
+# --- internal: the count / p-value right-hand columns ---
 # One rule, four engines: the counts and the p-value right-align, every
 # other numeric column centres. Compared KEY against key -- `Variable` and
 # `Group` can never collide with these, they are excluded upstream by
 # position rather than by name.
+#
+# "Weighted n" is a count and aligns with `n`, the rule
+# `table_continuous_lm()` has always applied. Three engines reach this
+# only through the legacy `align = "auto"` arm; Excel has no `align`
+# branch and applies it at every `align` value.
 .continuous_right_cols <- function(col_keys) {
-  which(col_keys %in% c(.CON_KEY_N, .CON_KEY_P))
+  which(col_keys %in% c(.CON_KEY_N, .CON_KEY_WEIGHTED_N, .CON_KEY_P))
 }
 
 # --- internal: export to various formats ---

@@ -234,3 +234,40 @@ test_that("the structured view carries the weighted_n token faithfully", {
   expect_identical(s$col_meta[["Weighted n"]]$token, "weighted_n")
   expect_equal(s$body[["Weighted n"]], 8.5, tolerance = 1e-15)
 })
+
+test_that("Weighted n right-aligns with n, as table_continuous_lm does", {
+  # A weighted count is a count. The column was born with the weights
+  # feature and never joined the rule its sibling `n` follows, so a
+  # sheet centred it beside a right-aligned `n`.
+  keys <- c("Variable", "Group", "M", "SD", "n", "Weighted n", "p")
+  expect_identical(spicy:::.continuous_right_cols(keys), c(5L, 6L, 7L))
+
+  skip_if_not_installed("openxlsx2")
+  d <- .wt_data()
+  path <- tempfile(fileext = ".xlsx")
+  table_continuous(
+    d,
+    select = x,
+    weights = wa,
+    show_columns = c("m", "sd", "n", "weighted_n"),
+    output = "excel",
+    excel_path = path
+  )
+  wb <- openxlsx2::wb_load(path)
+  cc <- wb$worksheets[[1L]]$sheet_data$cc
+  horiz <- function(ref) {
+    s <- cc$c_s[cc$r == ref]
+    if (length(s) == 0L || !nzchar(s[1L])) {
+      return(NA_character_)
+    }
+    xf <- wb$styles_mgr$styles$cellXfs[[as.integer(s[1L]) + 1L]]
+    if (!grepl('horizontal="', xf, fixed = TRUE)) {
+      return(NA_character_)
+    }
+    sub('.*horizontal="([a-z]+)".*', "\\1", xf)
+  }
+  # Columns: A Variable, B M, C SD, D n, E Weighted n. Body row 5.
+  expect_identical(horiz("D5"), "right")
+  expect_identical(horiz("E5"), "right")
+  expect_identical(horiz("B5"), "center")
+})
