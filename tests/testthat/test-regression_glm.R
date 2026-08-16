@@ -139,7 +139,12 @@ test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
   expect_true("R² (McFadden)" %in% out$Variable)
   expect_true("R² (Nagelkerke)" %in% out$Variable)
   expect_true("AIC" %in% out$Variable)
-  # And NOT plain R² / Adj. R² (those are lm tokens)
+  # And NOT plain R² / Adj. R² (those are lm tokens). Positive control:
+  # the same two strings ARE the lm footer rows, so this pair of
+  # negative memberships cannot silently stop matching the day either
+  # label is renamed.
+  lm_out <- table_regression(lm(mpg ~ wt, data = mt))
+  expect_true(all(c("R²", "Adj. R²") %in% lm_out$Variable))
   expect_false(any(out$Variable == "R²"))
   expect_false(any(out$Variable == "Adj. R²"))
   # Pin the rendered fit-stat cells to runtime oracles (single-model
@@ -715,18 +720,21 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm en-dashed", {
   # lm side of chi2 column is blank (token doesn't apply to this model
   # class); glm side has values. Check that lm column has only blanks
   # for non-Intercept body rows, while glm column has values.
-  body_no_fit <- body[
-    !body$Variable %in%
-      c(
-        "n",
-        "R²",
-        "Adj. R²",
-        "R² (McFadden)",
-        "R² (Nagelkerke)",
-        "AIC",
-        "Outcome"
-      ),
-  ]
+  fit_rows <- c(
+    "n",
+    "R²",
+    "Adj. R²",
+    "R² (McFadden)",
+    "R² (Nagelkerke)",
+    "AIC",
+    "Outcome"
+  )
+  # An exclusion list of typed-out labels degrades silently: rename one
+  # and it simply stops excluding, letting a fit-stat row into the
+  # comparison below with no test ever saying so. Assert it bites.
+  expect_true(all(c("n", "R²", "Adj. R²") %in% body$Variable))
+  body_no_fit <- body[!body$Variable %in% fit_rows, ]
+  expect_lt(nrow(body_no_fit), nrow(body))
   non_int <- body_no_fit[!grepl("Intercept", body_no_fit$Variable), ]
   lm_vals <- gsub("\\s+", "", non_int[[lm_chi_col]])
   glm_vals <- gsub("\\s+", "", non_int[[glm_chi_col]])

@@ -539,6 +539,13 @@ test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
 
 test_that("show_fit_stats = FALSE drops the footer block", {
   fit <- lm(mpg ~ wt, data = mt)
+  # Positive control first: a negative membership on typed-out labels
+  # asserts nothing the day one of them is renamed -- it just stops
+  # matching and stays green. Pin that these three strings ARE the
+  # footer rows before asserting they are gone.
+  kept <- table_regression(fit)
+  expect_true(all(c("n", "R²", "Adj. R²") %in% kept$Variable))
+
   out <- table_regression(fit, show_fit_stats = FALSE)
   expect_false(any(c("n", "R²", "Adj. R²") %in% out$Variable))
 })
