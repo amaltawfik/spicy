@@ -287,3 +287,46 @@ DESCRIPTION — la traçabilité s'affiche là où elle est démontrée) :
   reporting » (fichier inchangé, URLs stables), + section « House
   styles » ; miroirs navbar/index/Learn more/README suivis par les
   sentinelles. Vignette thèmes dédiée DIFFÉRÉE post-i18n-1.5.
+
+## 20. D2 (i18n 1.5) — colonne d'association en `output = "long"` — DÉCIDÉ 2026-08-16
+
+Le nom de la colonne portant la mesure d'association dans la sortie
+`long` de `table_categorical()` cesse d'être l'étiquette affichée
+(« Cramer's V », « Effect size » si mesures mixtes) — seule entorse
+au schéma snake_case stable (variable, level, group, n, pct, p, p_op,
+ci_lower, ci_upper). Décision (option recommandée retenue) :
+
+- **`effect_size`** : nom stable, indépendant de la mesure et de la
+  future langue des rendus.
+- **`effect_size_type`** : colonne compagnon donnant l'identité de la
+  mesure PAR LIGNE (« cramer_v », « phi », … = les clés de
+  `.assoc_measure_keys`) — consomme le champ interne `st$measure`
+  aujourd'hui calculé mais jamais exposé (code mort identifié par la
+  revue lot A, sites 1190/1251).
+
+Portée : `output = "long"` uniquement. La sortie `data.frame` (table
+affichée) garde l'étiquette anglaise gelée (doctrine D13/D1). Break
+pre-1.0 : entrée NEWS breaking + migration une-ligne. À implémenter
+dans le lot A (le rename 2421 devient `"effect_size"` + ajout du
+compagnon ; `ci_lower`/`ci_upper` réfèrent déjà à son IC).
+
+## 21. Graphie « Adj. R² » unifiée — DÉCIDÉ 2026-08-16
+
+Une seule statistique, une seule graphie publiée : « Adj. R² » (avec
+espace, graphie de la famille table_continuous_lm) gagne partout. La
+famille régression migre : fitstat_adj_r2 passe de « Adj.R² » à
+« Adj. R² » — y compris le nom de colonne public de l'écran
+univariable (les DEUX graphies étaient des contrats publics, revue
+lot C F1 ; coût vérifié ~6 pins + 3 goldens/5 lignes + largeur
+d'en-tête uv). Break pre-1.0 documenté NEWS. À implémenter en
+micro-commit dédié du lot C (C15), étiqueté comme changement visible,
+jamais fondu dans un commit byte-identique.
+
+## 22. Alignement « Weighted n » dans table_continuous — DÉCIDÉ 2026-08-16
+
+La règle d'alignement des colonnes n/p (entiers à droite) s'étend à
+« Weighted n » dans table_continuous, comme la famille lm le fait
+déjà pour sa colonne équivalente — l'écart était visible au défaut
+align="decimal" et inconditionnel dans Excel (revue lot B F3).
+Changement visible mineur, bullet NEWS Minor improvements, intégré
+au lot B avec témoins.
