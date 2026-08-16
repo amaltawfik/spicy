@@ -1398,7 +1398,7 @@ this function include \code{spicy_invalid_input},
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 
 # Default APA layout: B / SE / 95\% CI / p plus the n / R^2 /
-# Adj.R^2 fit-stats footer. Factor reference level is annotated
+# Adj. R^2 fit-stats footer. Factor reference level is annotated
 # with `(ref.)` and shows an en dash in the statistic columns.
 table_regression(fit)
 

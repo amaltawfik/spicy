@@ -1307,7 +1307,7 @@
 #' fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 #'
 #' # Default APA layout: B / SE / 95% CI / p plus the n / R^2 /
-#' # Adj.R^2 fit-stats footer. Factor reference level is annotated
+#' # Adj. R^2 fit-stats footer. Factor reference level is annotated
 #' # with `(ref.)` and shows an en dash in the statistic columns.
 #' table_regression(fit)
 #'
@@ -1691,7 +1691,7 @@ table_regression <- function(
   # When `nested = TRUE`, change-stat tokens (`r2_change` / `f_change`
   # / `p_change` for lm; `lrt_change` / `p_change` for glm) are
   # injected RIGHT AFTER `r2` / `adj_r2` / `AIC` so the table reads
-  # "n / R^2 / Adj.R^2 / DeltaR^2 / F-change / p" as in APA Table 7.13.
+  # "n / R^2 / Adj. R^2 / DeltaR^2 / F-change / p" as in APA Table 7.13.
   user_set_fit_stats <- !is.null(show_fit_stats)
   if (!user_set_fit_stats) {
     # Bayesian fits inherit from lm / glm (stanreg subclasses both), but

@@ -2,6 +2,11 @@
 
 ## Breaking changes
 
+* The adjusted R-squared reads `Adj. R²` everywhere. In
+  `table_regression()` it is the label of a fit-statistic row and of the
+  `ΔAdj. R²` change row; in `table_regression_uv()` it is also a column
+  name, so code selecting that column must use the new spelling
+  (`Adj.R²` had no space). `table_continuous_lm()` already used it.
 * Declared missing values are now honored package-wide: codes a survey file
   declares missing (`na_values` / `na_range`, tagged NAs) count as missing
   in `freq()`, `cross_tab()`, `table_categorical()`, `table_continuous()`,

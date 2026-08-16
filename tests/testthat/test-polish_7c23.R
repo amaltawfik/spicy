@@ -16,7 +16,7 @@ test_that("show_fit_stats = FALSE suppresses the fit-stats block", {
   fit <- lm(mpg ~ wt, data = mtcars)
   out <- capture.output(print(table_regression(fit, show_fit_stats = FALSE)))
   combined <- paste(out, collapse = "\n")
-  # No "n" / "R²" / "Adj.R²" rows.
+  # No "n" / "R²" / "Adj. R²" rows.
   expect_false(grepl("\n n  ", combined, fixed = TRUE))
   expect_false(grepl("R²", combined, fixed = TRUE))
 })
@@ -26,7 +26,7 @@ test_that("show_fit_stats = NULL keeps the class-aware default (auto)", {
   out <- capture.output(print(table_regression(fit, show_fit_stats = NULL)))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "R²", fixed = TRUE)
-  expect_match(combined, "Adj.R²", fixed = TRUE)
+  expect_match(combined, "Adj. R²", fixed = TRUE)
 })
 
 test_that("show_fit_stats = c(token) keeps explicit token list", {

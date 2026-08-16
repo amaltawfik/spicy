@@ -81,7 +81,7 @@ vignette: `vignette("categorical-predictors")`.
 
 Pass a fitted `lm()` object. The default rendering returns a
 single-model table with `B`, `SE`, `95% CI`, and `p` columns and
-a fit-statistics footer (`n`, `R²`, `Adj.R²`):
+a fit-statistics footer (`n`, `R²`, `Adj. R²`):
 
 ```{r basic}
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
@@ -364,7 +364,7 @@ same call takes `method = "coxph"` with a `Surv()` outcome — see
 Set `nested = TRUE` to add **in-table change-statistic rows**
 (APA Table 7.13 / Stata `esttab` / SPSS Model Summary
 convention). Each adjacent pair (M2 vs M1, M3 vs M2, …)
-contributes one column of change stats below `R² / Adj.R²`; the
+contributes one column of change stats below `R² / Adj. R²`; the
 first model column gets en-dashes (no previous model to compare
 to).
 
@@ -621,7 +621,7 @@ follows Stata's `glm` default rather than `summary.glm()`. The
 table title becomes family-aware ("Logistic regression", "Poisson
 regression", "Probit regression", …) and the default
 fit-statistics block swaps in `nobs`, `pseudo_r2_mcfadden`,
-`pseudo_r2_nagelkerke`, and `AIC` instead of `R²` and `Adj.R²`.
+`pseudo_r2_nagelkerke`, and `AIC` instead of `R²` and `Adj. R²`.
 
 We illustrate with a logistic regression of `smoking` on `sex`,
 `age`, and `education` from `sochealth`, reusing `sh` — the copy

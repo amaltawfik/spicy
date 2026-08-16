@@ -139,9 +139,9 @@ test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
   expect_true("R² (McFadden)" %in% out$Variable)
   expect_true("R² (Nagelkerke)" %in% out$Variable)
   expect_true("AIC" %in% out$Variable)
-  # And NOT plain R² / Adj.R² (those are lm tokens)
+  # And NOT plain R² / Adj. R² (those are lm tokens)
   expect_false(any(out$Variable == "R²"))
-  expect_false(any(out$Variable == "Adj.R²"))
+  expect_false(any(out$Variable == "Adj. R²"))
   # Pin the rendered fit-stat cells to runtime oracles (single-model
   # table: fit-stat values render in the "B" column; pseudo-R2 rows
   # use 2 decimals, AIC uses 1 decimal per the renderer contract).
@@ -720,7 +720,7 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm en-dashed", {
       c(
         "n",
         "R²",
-        "Adj.R²",
+        "Adj. R²",
         "R² (McFadden)",
         "R² (Nagelkerke)",
         "AIC",

@@ -9,7 +9,7 @@ fs_labels <- function(fit, ...) {
 test_that("lm default fit-stats = nobs + R2 + adj_R2 (no AIC)", {
   v <- fs_labels(lm(mpg ~ wt + hp, data = mtcars))
   expect_true(any(v == "n"))
-  expect_true(any(grepl("Adj", v))) # Adj.R2
+  expect_true(any(grepl("Adj", v))) # Adj. R2
   expect_false(any(v == "AIC"))
 })
 
@@ -89,7 +89,7 @@ test_that("mixed lm + glm default is the union of both class defaults", {
   vars <- trimws(d$Variable)
   # Union of lm (n, R2, adj_R2) and glm (n, McFadden, Nagelkerke, AIC)
   expect_true(all(
-    c("n", "R²", "Adj.R²", "R² (McFadden)", "R² (Nagelkerke)", "AIC") %in% vars
+    c("n", "R²", "Adj. R²", "R² (McFadden)", "R² (Nagelkerke)", "AIC") %in% vars
   ))
   s <- as_structured(out)
   b <- s$body
@@ -120,7 +120,7 @@ test_that("mixed lm + glm alien fit-stat cells render an en-dash", {
   logit_col <- grep("^Logit", names(d), value = TRUE)[1L]
   dash <- "–"
   expect_identical(trimws(d[[logit_col]][vars == "R²"]), dash)
-  expect_identical(trimws(d[[logit_col]][vars == "Adj.R²"]), dash)
+  expect_identical(trimws(d[[logit_col]][vars == "Adj. R²"]), dash)
   expect_identical(trimws(d[[ols_col]][vars == "R² (McFadden)"]), dash)
   expect_identical(trimws(d[[ols_col]][vars == "R² (Nagelkerke)"]), dash)
   # A stat BOTH classes define keeps its two values (no dash).

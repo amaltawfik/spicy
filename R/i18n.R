@@ -208,7 +208,7 @@
   header_n_lower = "n",
   fitstat_n_events = "N events",
   label_weighted_n = "Weighted n",
-  fitstat_adj_r2 = "Adj.R\u00B2",
+  fitstat_adj_r2 = "Adj. R\u00B2",
   # One hole: a PROPER NAME (McFadden / Nagelkerke / Tjur / Bayes), never
   # translated.
   fitstat_pseudo_r2 = "R\u00B2 (%s)",

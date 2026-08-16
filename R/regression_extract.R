@@ -1063,7 +1063,7 @@ extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
   sm <- summary(fit)
   is_glm <- inherits(fit, "glm")
 
-  # Variance-explained stats (lm only). For glm, R^2 / Adj.R^2 /
+  # Variance-explained stats (lm only). For glm, R^2 / Adj. R^2 /
   # omega^2 / f^2 are not defined and stay NA -- pseudo_r2_* tokens
   # cover the equivalent reporting need.
   if (is_glm) {

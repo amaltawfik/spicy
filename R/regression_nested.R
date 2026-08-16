@@ -11,7 +11,7 @@
 # Tokens (all *_change suffix for consistency):
 #
 #   r2_change       (lm)        -- DeltaR^2 (signed)
-#   adj_r2_change   (lm)        -- DeltaAdj.R^2 (signed)
+#   adj_r2_change   (lm)        -- DeltaAdj. R^2 (signed)
 #   f_change        (lm)        -- partial F (anova(m_i, m_{i+1}))
 #   f2_change       (lm)        -- Cohen's f^2 for added predictors
 #   lrt_change      (lm/glm/me) -- likelihood-ratio chi^2

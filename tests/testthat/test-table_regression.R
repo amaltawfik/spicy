@@ -518,12 +518,12 @@ test_that("output = 'excel' with non-existent dir errors spicy_invalid_input", {
 # names, align argument
 # ============================================================================
 
-test_that("show_fit_stats – default tokens (n / R² / Adj.R²) appear in body", {
+test_that("show_fit_stats – default tokens (n / R² / Adj. R²) appear in body", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   expect_true("n" %in% out$Variable)
   expect_true("R²" %in% out$Variable)
-  expect_true("Adj.R²" %in% out$Variable)
+  expect_true("Adj. R²" %in% out$Variable)
 })
 
 test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
@@ -540,7 +540,7 @@ test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
 test_that("show_fit_stats = FALSE drops the footer block", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, show_fit_stats = FALSE)
-  expect_false(any(c("n", "R²", "Adj.R²") %in% out$Variable))
+  expect_false(any(c("n", "R²", "Adj. R²") %in% out$Variable))
 })
 
 test_that("show_fit_stats – multi-model: each model contributes its values", {
@@ -978,7 +978,7 @@ test_that("spanner – multi-model print strips 'Label: ' prefix from headers", 
   txt <- capture.output(print(out))
   joined <- paste(txt, collapse = "\n")
   # The spanner row is a dedicated line containing ONLY the two
-  # model labels, in order ("A" alone would match e.g. "Adj.R2").
+  # model labels, in order ("A" alone would match e.g. "Adj. R2").
   expect_true(any(grepl("^\\s+A\\s+B\\s*$", txt)))
   # The bare sub-column tokens are shown twice (one per model);
   # the "A: B" / "B: B" prefixed form must not appear in the header.
@@ -1588,7 +1588,7 @@ test_that("r2 / adj_r2 – lm oracle values; lm-only tokens refused on all-glm",
     tolerance = 1e-10
   )
   expect_equal(
-    b$B[b$Variable == "Adj.R²"],
+    b$B[b$Variable == "Adj. R²"],
     summary(fit)$adj.r.squared,
     tolerance = 1e-10
   )

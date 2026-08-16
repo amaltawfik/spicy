@@ -499,7 +499,7 @@ test_that(".fit_stat_merge_ranges emits one spec per (fit-stat row, model)", {
     struct$spanners,
     attr(r, "group_sep_rows")
   )
-  # 3 fit-stat rows (n, R^2, Adj.R^2) x 2 models = 6 merge specs.
+  # 3 fit-stat rows (n, R^2, Adj. R^2) x 2 models = 6 merge specs.
   expect_length(specs, 6L)
   expect_identical(
     unique(vapply(specs, `[[`, integer(1L), "row")),

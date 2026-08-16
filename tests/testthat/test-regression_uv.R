@@ -292,7 +292,7 @@ test_that("the r2 / adj_r2 tokens carry each predictor's own R-squared", {
   )
   st <- attr(df, "structured")
   r2_col <- grep("(^|: )R²$", names(st$body), value = TRUE)
-  adj_col <- grep("Adj\\.R²$", names(st$body), value = TRUE)
+  adj_col <- grep("Adj\\. R²$", names(st$body), value = TRUE)
   expect_length(r2_col, 1L)
   expect_length(adj_col, 1L)
 
