@@ -108,11 +108,25 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   # Measured on what is PRINTED -- the labels, not the keys: measuring
   # the keys while printing the labels would leave this decision
   # disagreeing with the header the reader actually gets.
+  #
+  # And measured the way `ascii_table_widths()` measures, by display
+  # WIDTH rather than character count: `nchar()` counts a CJK glyph as
+  # one where the renderer lays it out as two, so a wide label made this
+  # decision over-estimate how much room the compact layout needed and
+  # split the table into panels the console had space for.
+  # `nchar(NA_character_)` is NA on top of that, which would turn the
+  # comparison below into "missing value where TRUE/FALSE needed".
   padding <- 2L
   col_widths <- vapply(
     seq_along(display_df),
     function(i) {
-      max(nchar(c(header_labels[i], as.character(display_df[[i]]))))
+      max(
+        crayon::col_nchar(
+          c(header_labels[i], as.character(display_df[[i]])),
+          type = "width"
+        ),
+        na.rm = TRUE
+      )
     },
     numeric(1)
   )

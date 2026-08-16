@@ -360,6 +360,8 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * A variable label written in wide characters (CJK, emoji) no longer
   overflows a narrow console in `table_continuous()`: column widths are
   measured as they are displayed rather than counted as characters.
+* The same measure now governs `table_continuous_lm()`, which used to
+  split such a table across two panels on a console wide enough for one.
 * An empty or non-string `clipboard_delim` raises a classed error instead
   of silently building an unusable payload.
 * A `table_categorical()` variable label that happens to start with the

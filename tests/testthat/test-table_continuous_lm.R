@@ -835,6 +835,35 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
   expect_equal(spicy:::format_p_value(0.045, ","), ",045")
 })
 
+test_that("a wide-character label does not split the console into panels", {
+  # `nchar()` counts CHARACTERS, the renderer lays out COLUMNS. A CJK
+  # label is twice as wide as it is long, so the padding decision used
+  # to over-estimate what the compact layout needed, keep the 2-char
+  # padding, and hand `spicy_print_table()` a table too wide for the
+  # console -- which then split it into panels the console had room
+  # for. Non-monotonic on top of it: the same table printed on ONE
+  # panel at width 92, on TWO at width 100, and on one again at 106.
+  d <- data.frame(
+    yy = c(1, 2, 3, 10, 11, 12),
+    g = factor(c("a", "a", "a", "b", "b", "b"))
+  )
+  attr(d$yy, "label") <- strrep("身", 10L)
+  render <- function(w) {
+    withr::with_options(list(width = w), {
+      invisible(capture.output(
+        out <- table_continuous_lm(d, select = yy, by = g)
+      ))
+      capture.output(print(out))
+    })
+  }
+  for (w in c(92L, 95L, 100L, 103L)) {
+    txt <- render(w)
+    # Exactly one header rule: one panel, not two.
+    expect_length(which(grepl("┼", txt, fixed = TRUE)), 1L)
+    expect_lte(max(crayon::col_nchar(txt, type = "width")), w)
+  }
+})
+
 test_that("table_continuous_lm internal covariance helper covers fallback branches", {
   fit <- lm(mpg ~ wt, data = mtcars)
   fit_singular <- lm(mpg ~ wt + I(2 * wt), data = mtcars)
