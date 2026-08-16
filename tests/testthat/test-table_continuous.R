@@ -880,6 +880,43 @@ test_that("print.spicy_continuous_table returns invisible x", {
   expect_s3_class(ret$value, "spicy_continuous_table")
 })
 
+test_that("the console prints the registry header, not the column key", {
+  # At the English default the label and the key are the same string, so
+  # nothing else in the suite can tell whether the console reads the
+  # label layer at all. Mocking the resolver makes the difference
+  # visible: dropping `display_labels` from the spicy_print_table() call
+  # fails this test and only this one.
+  local_mocked_bindings(
+    .continuous_labels = function(col_keys, ci_level) {
+      paste0("<", col_keys, ">")
+    }
+  )
+  out <- table_continuous(iris, select = Sepal.Length)
+  txt <- capture.output(print(out))
+  expect_true(any(grepl("<Variable>", txt, fixed = TRUE)))
+  expect_true(any(grepl("<95% CI LL>", txt, fixed = TRUE)))
+  # The frozen key is gone from the header row it used to occupy.
+  expect_false(any(grepl(" Variable ", txt, fixed = TRUE)))
+})
+
+test_that("a table without `by` draws no variable separator in the console", {
+  # `compute_var_sep_rows()` reads the DEDUPLICATED label column, and
+  # `build_display_df()` only deduplicates under a `by`. Calling it
+  # unguarded from the print method draws a hairline under every row of a
+  # one-way table -- which is why the `has_group` guard is kept when the
+  # inlined copy is replaced by the shared helper.
+  one_way <- capture.output(print(
+    table_continuous(iris, select = c(Sepal.Length, Sepal.Width))
+  ))
+  expect_false(any(grepl("╌", one_way, fixed = TRUE)))
+
+  by_group <- capture.output(print(
+    table_continuous(iris, select = c(Sepal.Length, Sepal.Width), by = Species)
+  ))
+  expect_true(any(grepl("╌", by_group, fixed = TRUE)))
+})
+
+
 # ---- validation ----
 
 test_that("table_continuous errors on non-data-frame", {

@@ -83,29 +83,46 @@ print.spicy_continuous_table <- function(x, ...) {
     align_center <- integer(0)
   }
 
-  # Compute separator rows: first row of each variable block (except first)
-  sep_rows <- integer(0)
-  if (has_group && "Variable" %in% names(display_df)) {
-    vars <- display_df$Variable
-    for (i in seq_along(vars)) {
-      if (i > 1L && nzchar(vars[i])) {
-        sep_rows <- c(sep_rows, i)
-      }
-    }
-  }
+  # Separator rows: the first row of each variable block, except the
+  # first. The shared helper carries the `"Variable" %in% names()` half of
+  # the old inline test; the `has_group` half stays HERE and must stay.
+  # Without a `by`, `build_display_df()` does not deduplicate the label
+  # column -- that loop is itself under `has_group` -- so every row would
+  # be the start of a block and the console would draw a hairline under
+  # each one. The two `has_group` are now co-dependent: this one is
+  # `!is.null(group_var)`, `build_display_df()`'s is
+  # `"group" %in% names(result)`, and `table_continuous()` sets the
+  # attribute and the column together.
+  #
+  # (The rendering engines call `compute_var_sep_rows()` unguarded and DO
+  # draw those rules on a one-way table. That console / engine divergence
+  # is preserved here, not settled.)
+  sep_rows <- if (has_group) compute_var_sep_rows(display_df) else integer(0)
 
   title <- .continuous_title(attr(x, "group_label", exact = TRUE))
+
+  # The header a reader sees is the registry label, never the frozen
+  # column key (decision 13). No shape guard is needed, unlike the
+  # categorical console: `.continuous_labels()` maps `names(display_df)`
+  # to a vector of the same length by construction, so
+  # `spicy_print_table()`'s abort on a mismatched label vector is
+  # unreachable from here.
+  header_labels <- .continuous_labels(names(display_df), ci_level)
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
   # Each column in build_ascii_table uses: 1 (gutter) + w[i] + 1
   # (gutter) chars, plus 1 char for the vertical separator after
   # column 1; `padding` is added to each w[i].
+  #
+  # Measured on what is PRINTED -- the labels, not the keys: measuring
+  # the keys while printing the labels would leave this decision
+  # disagreeing with the header the reader actually gets.
   padding <- 2L
   col_widths <- vapply(
     seq_along(display_df),
     function(i) {
-      max(nchar(c(names(display_df)[i], as.character(display_df[[i]]))))
+      max(nchar(c(header_labels[i], as.character(display_df[[i]]))))
     },
     numeric(1)
   )
@@ -129,7 +146,8 @@ print.spicy_continuous_table <- function(x, ...) {
     bottom_line = FALSE,
     align_left_cols = align_left,
     align_center_cols = align_center,
-    group_sep_rows = sep_rows
+    group_sep_rows = sep_rows,
+    display_labels = header_labels
   )
 
   invisible(x)
