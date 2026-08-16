@@ -330,3 +330,32 @@ déjà pour sa colonne équivalente — l'écart était visible au défaut
 align="decimal" et inconditionnel dans Excel (revue lot B F3).
 Changement visible mineur, bullet NEWS Minor improvements, intégré
 au lot B avec témoins.
+
+## 23. Glyphe des cellules vides-par-principe : – (U+2013) partout — DÉCIDÉ 2026-08-17
+
+Un seul glyphe pour référence/indéfini dans toutes les familles : le
+demi-cadratin (standard typographique des tables, APA), alimenté par
+l'unique clé de registre cell_undefined = « – ». Les familles
+descriptives migrent (« -- » → « – », console/typé/data.frame
+d'affichage), la régression est déjà en U+2013. Changement visible
+documenté NEWS, livré dans le cycle D.
+
+## 24. Blocks de table_regression_models() : contrat GELÉ anglais — DÉCIDÉ 2026-08-17
+
+Amal a délégué avec le critère « le plus pro et robuste pour 15 ans ».
+Verdict : la colonne Blocks publie des identifiants dans un data.frame
+public — comme les matrices e() de Stata ou les colonnes de broom,
+elle ne suit jamais la locale (un subset(grepl("Random effects"))
+utilisateur ne doit pas casser en changeant de langue). La traduction
+de l'expérience de LECTURE, si l'étage 2 la veut, passera par la
+méthode print de la table (découplage clé/étiquette standard), sans
+toucher au contrat.
+
+## 25. Med [Q1, Q3] : crochets gelés « [ ] » — DÉCIDÉ 2026-08-17
+
+Même délégation, même critère. La règle APA des crochets est
+spécifique aux IC ; l'IQR relève d'une règle distincte dans les guides
+réels (« median (IQR x–y) »). Réemployer ci_brackets serait une
+erreur de catégorie. L'implémentation lot B (littéraux gelés) est
+confirmée ; si un thème de revue nommé exige un jour un format IQR,
+il recevra son propre token (iqr_brackets), pas un réemploi.
