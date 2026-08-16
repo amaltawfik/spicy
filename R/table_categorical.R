@@ -78,6 +78,38 @@
 .cat_key_n <- function(g) paste0(g, " n")
 .cat_key_pct <- function(g) paste0(g, " %")
 
+# Display labels for the same pair. Here the registry decides: these are
+# HEADERS, not keys. `sprintf("%s %s", g, "n")` is `paste0(g, " n")`
+# character for character at the English default, and a "%" inside a
+# group name is safe because it travels as an argument, not a template.
+.cat_label_n <- function(g) {
+  spicy_fmt("header_group_qualified", g, spicy_str("header_n_lower"))
+}
+
+.cat_label_pct <- function(g) {
+  spicy_fmt("header_group_qualified", g, spicy_str("header_percent_symbol"))
+}
+
+# Display label of a group column. Group levels are DATA and travel
+# verbatim; the margin is the one member of `group_levels` that is a word
+# of ours -- but only while it keeps its default key. Renamed on collision
+# ("Total_1") it must show the disambiguated key, or a reader could no
+# longer tell the margin from the user's homonymous group.
+#
+# One resolver for every engine: split it and the margin would translate
+# in some outputs and not in others.
+.cat_group_label <- function(g, margin_key = NULL) {
+  if (
+    !is.null(margin_key) &&
+      identical(g, margin_key) &&
+      identical(margin_key, .CAT_MARGIN_KEY)
+  ) {
+    spicy_str("header_margin_total")
+  } else {
+    g
+  }
+}
+
 # Coerce a column selected for tabulation to the factor that flows
 # through freq() / cross_tab() untouched. The factor is built BEFORE
 # tabulation so the declared level order survives end-to-end: the
@@ -1568,6 +1600,19 @@ table_categorical <- function(
     }
 
     report_cols <- c(.CAT_KEY_VARIABLE, "n", "%")
+    # The header each output route prints, indexed BY the frozen column
+    # name: every engine below looks its labels up with
+    # `report_labels[names(df)]` instead of re-typing them, so the
+    # console, the three rendering engines, the sheet and the clipboard
+    # can never disagree about a header.
+    report_labels <- setNames(
+      c(
+        spicy_str("header_variable"),
+        spicy_str("header_n_lower"),
+        spicy_str("header_percent_symbol")
+      ),
+      report_cols
+    )
     make_report_wide_oneway <- function(mode = c("char", "excel")) {
       mode <- match.arg(mode)
 
@@ -1713,7 +1758,7 @@ table_categorical <- function(
       # "Variable" is what the console and the `by =` branch put over
       # the row labels; a blank corner made the engine disagree with
       # itself depending on whether `by` was supplied.
-      names(dat_tt) <- c("Variable", "n", "%")
+      names(dat_tt) <- unname(report_labels[names(dat_tt)])
 
       tt <- tinytable::tt(
         dat_tt,
@@ -1801,13 +1846,20 @@ table_categorical <- function(
           substring(dat_gt[[1]][mod_rows], nchar(indent_text) + 1L)
         )
       }
-      names(dat_gt) <- c("Variable", "n", "pct")
+      names(dat_gt) <- c(.CAT_KEY_VARIABLE, "n", "pct")
       tbl <- gt::gt(dat_gt)
       # "Variable", not a blanked corner: the console, tinytable and
       # flextable all label the first column, and gt was the last
       # dissenter (lot B incident).
-      tbl <- gt::cols_label(tbl, Variable = "Variable", n = "n", pct = "%")
-      tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
+      # `names(dat_gt)` above are gt's machine ids and stay literal; only
+      # the labels come from the registry.
+      tbl <- gt::cols_label(
+        tbl,
+        Variable = report_labels[[.CAT_KEY_VARIABLE]],
+        n = report_labels[["n"]],
+        pct = report_labels[["%"]]
+      )
+      tbl <- gt::cols_align(tbl, align = "left", columns = .CAT_KEY_VARIABLE)
       if (identical(align, "decimal")) {
         tbl <- gt::cols_align(tbl, align = "center", columns = c("n", "pct"))
       } else if (identical(align, "center")) {
@@ -1893,7 +1945,7 @@ table_categorical <- function(
       ft <- flextable::flextable(df)
       map <- data.frame(
         col_keys = names(df),
-        label = c("Variable", "n", "%"),
+        label = unname(report_labels[names(df)]),
         stringsAsFactors = FALSE,
         check.names = FALSE
       )
@@ -1993,7 +2045,12 @@ table_categorical <- function(
       indent_text_excel_clipboard,
       .categorical_level_rows_typed(structured)
     )
-    clip_mat <- rbind(matrix(names(clip_body), nrow = 1), as.matrix(clip_body))
+    # The payload's header row is a HEADER, like every other route's:
+    # it reads the labels, not the frame's frozen names.
+    clip_mat <- rbind(
+      matrix(unname(report_labels[names(clip_body)]), nrow = 1),
+      as.matrix(clip_body)
+    )
 
     if (output == "excel") {
       if (is.null(excel_path) || !nzchar(excel_path)) {
@@ -2026,9 +2083,14 @@ table_categorical <- function(
       # stay blank. Without it openxlsx2 writes Excel ERROR cells
       # ("#N/A") in the middle of the counts, and any SUM over the
       # column inherits the error.
+      # `col_names = TRUE` writes `names(x)` as the sheet's header row,
+      # so the frame handed to the writer carries the LABELS -- the
+      # `by` branch already writes its two header rows from the display
+      # vectors, and this route used to write the keys instead.
+      xl_header <- unname(report_labels[names(body_xl)])
       wb <- openxlsx2::wb_add_data(
         wb,
-        x = body_xl,
+        x = setNames(body_xl, xl_header),
         start_row = header_row,
         col_names = TRUE,
         row_names = FALSE,
@@ -2112,7 +2174,7 @@ table_categorical <- function(
       wb <- .spicy_xl_set_widths(
         wb,
         sheet = excel_sheet,
-        cells = .spicy_xl_cells(width_df, headers = list(names(body_xl)))
+        cells = .spicy_xl_cells(width_df, headers = list(xl_header))
       )
 
       openxlsx2::wb_save(wb, excel_path, overwrite = TRUE)
@@ -2214,6 +2276,12 @@ table_categorical <- function(
     }
     group_levels <- c(group_levels, margin_key)
   }
+  # The margin key names a COLUMN only when the margin is displayed;
+  # otherwise it is a disambiguation artefact with no header to label.
+  # Stage-2 note: the collision loop above compares `by` levels to the
+  # KEY, so once the margin's header is translated a user level may
+  # print the same word as the margin without triggering the rename.
+  margin_col_key <- if (include_total) margin_key else NULL
   # The margin collision is disclosed once, above; the identical
   # per-call disclosures the internal cross_tab() calls would emit
   # (three per variable) are muffled as redundant noise.
@@ -2450,6 +2518,15 @@ table_categorical <- function(
     # frozen key, or it would drift from its twin.
     .assoc_key("cramer_v")
   }
+  # The word printed OVER that column. The name above is frozen; this
+  # follows the registry, and the two are the same string in English.
+  measure_label <- if (length(unique_shown) == 1L) {
+    .assoc_label(unique_shown)
+  } else if (length(unique_shown) > 1L) {
+    spicy_str("header_effect_size")
+  } else {
+    .assoc_label("cramer_v")
+  }
   assoc_note_text <- .assoc_note_apa(assoc_measures_per_row, labels)
 
   if (length(rows) == 0) {
@@ -2621,6 +2698,15 @@ table_categorical <- function(
     report_cols <- c(report_cols, .CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
   }
 
+  # Group headers, resolved once: user levels are data, the margin is
+  # the single entry that carries a word of ours.
+  group_labels <- vapply(
+    group_levels,
+    .cat_group_label,
+    character(1),
+    margin_key = margin_col_key,
+    USE.NAMES = FALSE
+  )
   make_report_wide <- function(ldf, mode = c("char", "excel")) {
     mode <- match.arg(mode)
 
@@ -2748,8 +2834,9 @@ table_categorical <- function(
     v_digits = v_digits,
     decimal_mark = decimal_mark,
     group_levels = group_levels,
-    margin_key = if (include_total) margin_key else NULL,
+    margin_key = margin_col_key,
     measure_col = measure_col,
+    measure_label = measure_label,
     show_assoc = show_assoc,
     assoc_ci = assoc_ci
   )
@@ -2804,21 +2891,31 @@ table_categorical <- function(
     df
   }
 
-  # Headers (base: without CI; used by rendered formats)
+  # Headers (base: without CI; used by rendered formats). Pure DISPLAY:
+  # the column keys travel separately (flextable takes
+  # `col_keys = names(df)`, the sheet and the clipboard write these rows
+  # verbatim), so these three vectors carry labels only.
   top_header_span <- c(
-    "Variable",
-    rep(group_levels, each = 2),
-    "p"
+    spicy_str("header_variable"),
+    rep(group_labels, each = 2),
+    spicy_str("header_p")
   )
   top_header_flat <- c(
-    "Variable",
-    as.vector(rbind(group_levels, rep("", length(group_levels)))),
-    "p"
+    spicy_str("header_variable"),
+    as.vector(rbind(group_labels, rep("", length(group_labels)))),
+    spicy_str("header_p")
   )
-  bot_header <- c("", rep(c("n", "%"), times = length(group_levels)), "")
+  bot_header <- c(
+    "",
+    rep(
+      c(spicy_str("header_n_lower"), spicy_str("header_percent_symbol")),
+      times = length(group_levels)
+    ),
+    ""
+  )
   if (show_assoc) {
-    top_header_span <- c(top_header_span, measure_col)
-    top_header_flat <- c(top_header_flat, measure_col)
+    top_header_span <- c(top_header_span, measure_label)
+    top_header_flat <- c(top_header_flat, measure_label)
     bot_header <- c(bot_header, "")
   }
   grp_j <- 2:(1 + 2 * length(group_levels))
@@ -2855,21 +2952,29 @@ table_categorical <- function(
 
     colnames(dat_tt) <- c(
       "",
-      rep(c("n", "%"), times = length(group_levels)),
+      rep(
+        c(spicy_str("header_n_lower"), spicy_str("header_percent_symbol")),
+        times = length(group_levels)
+      ),
       rep("", 1L + as.integer(show_assoc))
     )
 
-    # Spanners
+    # Spanners. A `group_tt()` spec is indexed BY its label, so two equal
+    # labels would silently merge into one entry and drop a column from
+    # the header -- already reachable with two homonymous `by` levels.
     gspec <- c(
-      list("Variable" = 1),
+      setNames(list(1), spicy_str("header_variable")),
       setNames(
         lapply(seq_along(group_levels), function(i) c(2 * i, 2 * i + 1)),
-        group_levels
+        group_labels
       ),
-      list("p" = ncol(dat_tt) - if (show_assoc) 1L else 0L)
+      setNames(
+        list(ncol(dat_tt) - if (show_assoc) 1L else 0L),
+        spicy_str("header_p")
+      )
     )
     if (show_assoc) {
-      gspec[[measure_col]] <- ncol(dat_tt)
+      gspec[[measure_label]] <- ncol(dat_tt)
     }
 
     tt <- tinytable::tt(
@@ -3019,8 +3124,12 @@ table_categorical <- function(
     label_list <- list()
     label_list[[.CAT_KEY_VARIABLE]] <- ""
     for (gi in seq_along(group_levels)) {
-      label_list[[paste0(group_levels[gi], "_n")]] <- "n"
-      label_list[[paste0(group_levels[gi], "_pct")]] <- "%"
+      label_list[[paste0(group_levels[gi], "_n")]] <- spicy_str(
+        "header_n_lower"
+      )
+      label_list[[paste0(group_levels[gi], "_pct")]] <- spicy_str(
+        "header_percent_symbol"
+      )
     }
     label_list[[.CAT_KEY_P]] <- ""
     if (show_assoc) {
@@ -3028,17 +3137,19 @@ table_categorical <- function(
     }
     tbl <- gt::cols_label(tbl, .list = label_list)
 
-    # Spanners: group names over n/% pairs, single-col for Variable/p/V
+    # Spanners: group names over n/% pairs, single-col for Variable/p/V.
+    # `columns =` addresses the machine ids built above; only `label =`
+    # takes a header.
     tbl <- gt::tab_spanner(
       tbl,
-      label = "Variable",
+      label = spicy_str("header_variable"),
       columns = .CAT_KEY_VARIABLE,
       id = "spn_variable"
     )
     for (gi in seq_along(group_levels)) {
       tbl <- gt::tab_spanner(
         tbl,
-        label = group_levels[gi],
+        label = group_labels[gi],
         columns = c(
           paste0(group_levels[gi], "_n"),
           paste0(group_levels[gi], "_pct")
@@ -3047,14 +3158,14 @@ table_categorical <- function(
     }
     tbl <- gt::tab_spanner(
       tbl,
-      label = "p",
+      label = spicy_str("header_p"),
       columns = .CAT_KEY_P,
       id = "spn_p"
     )
     if (show_assoc) {
       tbl <- gt::tab_spanner(
         tbl,
-        label = measure_col,
+        label = measure_label,
         columns = "assoc_col",
         id = "spn_v"
       )
@@ -3338,9 +3449,10 @@ table_categorical <- function(
 
   # Extend headers with CI columns for data/export formats
   if (assoc_ci) {
-    top_header_flat_ex <- c(top_header_flat, "CI lower", "CI upper")
+    ci_headers <- c(spicy_str("header_ci_lower"), spicy_str("header_ci_upper"))
+    top_header_flat_ex <- c(top_header_flat, ci_headers)
     bot_header_ex <- c(bot_header, "", "")
-    top_header_span_ex <- c(top_header_span, "CI lower", "CI upper")
+    top_header_span_ex <- c(top_header_span, ci_headers)
   } else {
     top_header_flat_ex <- top_header_flat
     bot_header_ex <- bot_header

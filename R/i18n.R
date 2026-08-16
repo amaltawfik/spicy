@@ -86,6 +86,30 @@
   note_weight_applied = "Weight: (applied)",
   note_weight_rescaled = " (rescaled)",
 
+  # -- table_categorical(): column headers -----------------------------------
+  # The column NAME stays frozen English -- it is the contract user code
+  # indexes into. These keys name only the HEADER a reader sees, which
+  # reaches the engines through `col_meta$display_label`.
+  header_variable = "Variable",
+  # Not `header_percent` ("Percent", freq()'s full-width column): this is
+  # the bare glyph a two-row categorical header prints under a group.
+  header_percent_symbol = "%",
+  # Two holes: the group label (DATA -- a level of `by`) and the statistic
+  # ("n" / "%"). One template for both, so their order is translatable in
+  # one move; the "%" glyph travels as an ARGUMENT of sprintf, never
+  # inside the template. Third key of value "%s %s" after
+  # `header_with_ci_suffix` and `header_ame_by_category` -- one key per
+  # ROLE is the registry's rule, not one key per string.
+  header_group_qualified = "%s %s",
+  header_effect_size = "Effect size",
+  header_ci_lower = "CI lower",
+  header_ci_upper = "CI upper",
+  # The margin COLUMN of table_categorical(), distinct from the totals ROW
+  # of freq() / cross_tab() (`label_total`): it carries a deduplication
+  # mechanic the row has not, and a language may want one word in the stub
+  # and another over a column.
+  header_margin_total = "Total",
+
   # -- association measures: one key per measure, shared by the three
   #    families that name it (cross_tab() note, table_categorical() header,
   #    assoc_measures() row labels) ------------------------------------------

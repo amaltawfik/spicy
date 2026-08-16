@@ -72,11 +72,33 @@ test_that("the emphasised note prefix really is a prefix of the note prefix", {
   expect_null(.note_prefix_split("no prefix here"))
 })
 
-test_that("the frozen measure keys equal their display labels in English", {
+test_that("every frozen categorical key equals its English display label", {
+  # The column NAME and the header are two layers that hold the same
+  # string in English and are free to diverge at stage 2. Nothing else
+  # can catch a key that stops matching its label -- the key is pinned by
+  # `%in% names(...)` tests, the label by the console snapshots, and both
+  # sets of pins would stay green past a drift.
+  couples <- list(
+    list(.CAT_KEY_VARIABLE, "header_variable"),
+    list(.CAT_KEY_P, "header_p"),
+    list(.CAT_MARGIN_KEY, "header_margin_total"),
+    list(.CAT_KEY_CI_LL, "header_ci_lower"),
+    list(.CAT_KEY_CI_UL, "header_ci_upper"),
+    list(.CAT_KEY_EFFECT_SIZE, "header_effect_size"),
+    list("n", "header_n_lower"),
+    list("%", "header_percent_symbol")
+  )
+  for (cp in couples) {
+    expect_identical(cp[[1L]], spicy_str(cp[[2L]]), info = cp[[2L]])
+  }
+  # The ninth couple is a composition rule, not a constant: `paste0()` on
+  # the key side, the registry template on the label side.
+  expect_identical(.cat_key_n("G"), .cat_label_n("G"))
+  expect_identical(.cat_key_pct("G"), .cat_label_pct("G"))
+
   # `.assoc_key()` names the public column of `table_categorical()`,
   # `.assoc_label()` names the header a reader sees. Two switch tables
-  # that must stay equal at the English default, and nothing else can
-  # catch a drift between them.
+  # that must stay equal at the English default.
   for (k in .assoc_measure_keys) {
     expect_identical(.assoc_key(k), .assoc_label(k))
   }

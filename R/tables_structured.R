@@ -185,7 +185,9 @@
 #
 # Columns: `n` / `pct` per group (one spanner per group level in a
 # `by` table, the margin flagged `total = TRUE` in its `col_meta`),
-# then the test `p`, the association measure, and its CI bounds.
+# then the test `p`, the association measure, and its CI bounds. Every
+# column NAME is a frozen key; the header an engine prints is its
+# `display_label`, resolved from the registry here and nowhere else.
 .build_categorical_structured <- function(
   long_raw,
   select_names,
@@ -200,6 +202,7 @@
   group_levels = NULL,
   margin_key = NULL,
   measure_col = NULL,
+  measure_label = NULL,
   show_assoc = FALSE,
   assoc_ci = FALSE,
   assoc_ci_level = 0.95
@@ -224,11 +227,24 @@
     for (g in group_levels) {
       n_col <- .cat_key_n(g)
       p_col <- .cat_key_pct(g)
+      # The margin is the one group whose header is a word of ours; every
+      # user level is data and travels into the header verbatim.
+      g_label <- .cat_group_label(g, margin_key)
       col_names <- c(col_names, n_col, p_col)
       # Counts display as integers, weighted counts included (the SPSS
       # Crosstabs convention `fmt_n()` implements).
-      col_meta[[n_col]] <- num_meta("n", 0L, group = g)
-      col_meta[[p_col]] <- num_meta("pct", percent_digits, group = g)
+      col_meta[[n_col]] <- num_meta(
+        "n",
+        0L,
+        group = g,
+        display_label = .cat_label_n(g_label)
+      )
+      col_meta[[p_col]] <- num_meta(
+        "pct",
+        percent_digits,
+        group = g,
+        display_label = .cat_label_pct(g_label)
+      )
       if (identical(g, margin_key)) {
         # The margin, told apart from a user group by a FLAG rather
         # than by its label: "Total" is a display string (and is
@@ -243,7 +259,8 @@
       token = "p",
       precision = as.integer(p_digits),
       p_style = .style_p_style_token(),
-      threshold = 10^(-p_digits)
+      threshold = 10^(-p_digits),
+      display_label = spicy_str("header_p")
     )
     if (show_assoc) {
       col_names <- c(col_names, measure_col)
@@ -255,7 +272,8 @@
         precision = as.integer(v_digits),
         p_style = .style_p_style_token(),
         value_range = c(-1, 1),
-        measure = measure_col
+        measure = measure_col,
+        display_label = measure_label %||% measure_col
       )
       if (assoc_ci) {
         ll <- .CAT_KEY_CI_LL
@@ -270,7 +288,12 @@
             value_range = c(-1, 1),
             ci_role = if (identical(nm, ll)) "LL" else "UL",
             ci_pair = if (identical(nm, ll)) ul else ll,
-            ci_label = ci_label
+            ci_label = ci_label,
+            display_label = if (identical(nm, ll)) {
+              spicy_str("header_ci_lower")
+            } else {
+              spicy_str("header_ci_upper")
+            }
           )
         }
         ci_pairs <- list(list(
@@ -281,8 +304,16 @@
     }
   } else {
     col_names <- c("n", "%")
-    col_meta[["n"]] <- num_meta("n", 0L)
-    col_meta[["%"]] <- num_meta("pct", percent_digits)
+    col_meta[["n"]] <- num_meta(
+      "n",
+      0L,
+      display_label = spicy_str("header_n_lower")
+    )
+    col_meta[["%"]] <- num_meta(
+      "pct",
+      percent_digits,
+      display_label = spicy_str("header_percent_symbol")
+    )
   }
 
   # ---- rows, in the display order of `make_report_wide()` ---------------
