@@ -72,6 +72,18 @@ test_that("the emphasised note prefix really is a prefix of the note prefix", {
   expect_null(.note_prefix_split("no prefix here"))
 })
 
+test_that("the frozen measure keys equal their display labels in English", {
+  # `.assoc_key()` names the public column of `table_categorical()`,
+  # `.assoc_label()` names the header a reader sees. Two switch tables
+  # that must stay equal at the English default, and nothing else can
+  # catch a drift between them.
+  for (k in .assoc_measure_keys) {
+    expect_identical(.assoc_key(k), .assoc_label(k))
+  }
+  # Both pass an unknown measure through unchanged.
+  expect_identical(.assoc_key("no_such_measure"), "no_such_measure")
+})
+
 test_that("spicy_str() errors hard on an unknown key", {
   expect_error(spicy_str("no_such_key_exists"))
 })

@@ -222,8 +222,8 @@
   if (has_group) {
     spanners <- list()
     for (g in group_levels) {
-      n_col <- paste0(g, " n")
-      p_col <- paste0(g, " %")
+      n_col <- .cat_key_n(g)
+      p_col <- .cat_key_pct(g)
       col_names <- c(col_names, n_col, p_col)
       # Counts display as integers, weighted counts included (the SPSS
       # Crosstabs convention `fmt_n()` implements).
@@ -238,8 +238,8 @@
       }
       spanners[[g]] <- .desc_col_index(col_names, c(n_col, p_col))
     }
-    col_names <- c(col_names, "p")
-    col_meta[["p"]] <- list(
+    col_names <- c(col_names, .CAT_KEY_P)
+    col_meta[[.CAT_KEY_P]] <- list(
       token = "p",
       precision = as.integer(p_digits),
       p_style = .style_p_style_token(),
@@ -258,8 +258,8 @@
         measure = measure_col
       )
       if (assoc_ci) {
-        ll <- "CI lower"
-        ul <- "CI upper"
+        ll <- .CAT_KEY_CI_LL
+        ul <- .CAT_KEY_CI_UL
         col_names <- c(col_names, ll, ul)
         ci_label <- paste0(formatC(assoc_ci_level * 100, format = "g"), "% CI")
         for (nm in c(ll, ul)) {
@@ -303,12 +303,12 @@
 
       header_values <- list()
       if (has_group) {
-        header_values[["p"]] <- sv$p[1L]
+        header_values[[.CAT_KEY_P]] <- sv$p[1L]
         if (show_assoc) {
           header_values[[measure_col]] <- sv[[measure_col]][1L]
           if (assoc_ci) {
-            header_values[["CI lower"]] <- sv$ci_lower[1L]
-            header_values[["CI upper"]] <- sv$ci_upper[1L]
+            header_values[[.CAT_KEY_CI_LL]] <- sv$ci_lower[1L]
+            header_values[[.CAT_KEY_CI_UL]] <- sv$ci_upper[1L]
           }
         }
       }
@@ -327,8 +327,8 @@
         if (has_group) {
           for (g in group_levels) {
             sx <- sl[sl$group == g, , drop = FALSE]
-            values[[paste0(g, " n")]] <- if (nrow(sx)) sx$n[1L] else NA_real_
-            values[[paste0(g, " %")]] <- if (nrow(sx)) sx$pct[1L] else NA_real_
+            values[[.cat_key_n(g)]] <- if (nrow(sx)) sx$n[1L] else NA_real_
+            values[[.cat_key_pct(g)]] <- if (nrow(sx)) sx$pct[1L] else NA_real_
           }
         } else {
           values[["n"]] <- sl$n[1L]

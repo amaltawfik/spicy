@@ -20,6 +20,25 @@
   )
 }
 
+# Frozen twin of `.assoc_label()`: the COLUMN NAME a measure gives the
+# public wide output. Same switch, English literals typed here rather
+# than read from the registry -- the programmatic contract never follows
+# the display language (decision 13). The two tables must agree at the
+# English default; nothing but the pin in test-i18n.R can catch a drift.
+.assoc_key <- function(measure) {
+  switch(
+    measure,
+    cramer_v = "Cramer's V",
+    phi = "Phi",
+    tau_b = "Kendall's Tau-b",
+    tau_c = "Stuart's Tau-c",
+    gamma = "Goodman-Kruskal Gamma",
+    somers_d = "Somers' D",
+    lambda = "Lambda",
+    measure
+  )
+}
+
 # Every measure key `.assoc_label()` knows, in the order the registry
 # lists them. Used to build the defensive note-parsing pattern below from
 # the labels themselves, so the pattern can never fall behind them.
@@ -32,6 +51,32 @@
   "somers_d",
   "lambda"
 )
+
+# -- Frozen column keys of the categorical family -----------------------------
+#
+# The public column name, the `col_meta` index, the value of `long$group`
+# and the `total_group` attribute are one frozen English contract that
+# user code indexes into (decision 13). These constants name it once so a
+# read path can compare key against key instead of re-typing the string.
+# The displayed HEADER is a separate layer, resolved from the registry
+# into `col_meta$display_label`; the two never share a literal.
+#
+# `$Variable` / `$p` accessors are left as they are: `$` on a data.frame
+# is unmistakably a column access, and spelling it `[[.CAT_KEY_P]]` would
+# cost more in noise than it buys in intent.
+.CAT_KEY_VARIABLE <- "Variable"
+.CAT_KEY_P <- "p"
+.CAT_MARGIN_KEY <- "Total"
+.CAT_KEY_CI_LL <- "CI lower"
+.CAT_KEY_CI_UL <- "CI upper"
+.CAT_KEY_EFFECT_SIZE <- "Effect size"
+
+# The `<group> n` / `<group> %` key pair. `paste0()`, not `sprintf()`:
+# these compose a KEY, so the composition rule must not change with the
+# display language -- and `paste0()` recycles a zero-length group vector
+# to `" n"` where `sprintf()` would drop it.
+.cat_key_n <- function(g) paste0(g, " n")
+.cat_key_pct <- function(g) paste0(g, " %")
 
 # Coerce a column selected for tabulation to the factor that flows
 # through freq() / cross_tab() untouched. The factor is built BEFORE
@@ -1522,7 +1567,7 @@ table_categorical <- function(
       return(wide_raw)
     }
 
-    report_cols <- c("Variable", "n", "%")
+    report_cols <- c(.CAT_KEY_VARIABLE, "n", "%")
     make_report_wide_oneway <- function(mode = c("char", "excel")) {
       mode <- match.arg(mode)
 
@@ -2128,18 +2173,24 @@ table_categorical <- function(
   if (!drop_na && any(is.na(g0))) {
     group_levels <- unique(c(group_levels, missing_label))
   }
-  # Internal key for the margin column: "Total" unless the by-variable
-  # has a level literally named "Total", in which case the first free
-  # "Total_<i>" is used -- mirroring cross_tab()'s own margin
-  # auto-rename -- so the user's group keeps its name and position
-  # among the group columns while the true margin is always present
-  # and unambiguous. (Before 0.13.0 the margin silently vanished and
-  # the user's "Total" group posed as it.)
-  margin_key <- "Total"
+  # Internal KEY for the margin column, never a label: it is a value of
+  # `long$group`, the prefix of a public column name ("Total n") and the
+  # `total_group` attribute, and every site that recognises the margin --
+  # the wide and report fills, the typed view's `total` flag, tidy() and
+  # glance() -- compares it against another key, never against a rendered
+  # header.
+  #
+  # The key is "Total" unless the by-variable has a level literally named
+  # "Total", in which case the first free "Total_<i>" is used -- mirroring
+  # cross_tab()'s own margin auto-rename -- so the user's group keeps its
+  # name and position among the group columns while the true margin is
+  # always present and unambiguous. (Before 0.13.0 the margin silently
+  # vanished and the user's "Total" group posed as it.)
+  margin_key <- .CAT_MARGIN_KEY
   if (margin_key %in% group_levels) {
     idx <- 1L
     repeat {
-      candidate <- paste0("Total_", idx)
+      candidate <- paste0(.CAT_MARGIN_KEY, "_", idx)
       if (!(candidate %in% group_levels)) {
         margin_key <- candidate
         break
@@ -2148,7 +2199,7 @@ table_categorical <- function(
     }
   }
   if (include_total) {
-    if (!identical(margin_key, "Total")) {
+    if (!identical(margin_key, .CAT_MARGIN_KEY)) {
       spicy_warn(
         c(
           sprintf(
@@ -2385,17 +2436,19 @@ table_categorical <- function(
 
   # Collapse the per-variable measure vector into the column header
   # the printed / wide outputs will use:
-  #   * one measure used everywhere -> that measure's pretty label
-  #   * mixed measures              -> generic "Effect size"
+  #   * one measure used everywhere -> that measure's name
+  #   * mixed measures              -> the generic effect-size name
   # Row-level `.assoc` cells are then renamed once, below.
   shown_measures <- assoc_measures_per_row[assoc_measures_per_row != "none"]
   unique_shown <- unique(unname(shown_measures))
   measure_col <- if (length(unique_shown) == 1L) {
-    .assoc_label(unique_shown)
+    .assoc_key(unique_shown)
   } else if (length(unique_shown) > 1L) {
-    "Effect size"
+    .CAT_KEY_EFFECT_SIZE
   } else {
-    "Cramer's V" # show_assoc is FALSE in this branch; placeholder name
+    # show_assoc is FALSE in this branch; placeholder name. Still a
+    # frozen key, or it would drift from its twin.
+    .assoc_key("cramer_v")
   }
   assoc_note_text <- .assoc_note_apa(assoc_measures_per_row, labels)
 
@@ -2476,18 +2529,18 @@ table_categorical <- function(
   # ---------------- WIDE RAW ----------------
   make_wide_raw <- function(ldf) {
     cols <- c(
-      "Variable",
+      .CAT_KEY_VARIABLE,
       "Level",
-      as.vector(rbind(paste0(group_levels, " n"), paste0(group_levels, " %"))),
+      as.vector(rbind(.cat_key_n(group_levels), .cat_key_pct(group_levels))),
       "Chi2",
       "df",
-      "p"
+      .CAT_KEY_P
     )
     if (show_assoc) {
       cols <- c(cols, measure_col)
     }
     if (show_assoc && assoc_ci) {
-      cols <- c(cols, "CI lower", "CI upper")
+      cols <- c(cols, .CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
     }
     if (nrow(ldf) == 0) {
       return(as.data.frame(
@@ -2511,8 +2564,8 @@ table_categorical <- function(
 
       for (gr in group_levels) {
         s <- sv[sv$group == gr, , drop = FALSE]
-        r[[paste0(gr, " n")]] <- if (nrow(s)) s$n[1] else NA_real_
-        r[[paste0(gr, " %")]] <- if (nrow(s)) s$pct[1] else NA_real_
+        r[[.cat_key_n(gr)]] <- if (nrow(s)) s$n[1] else NA_real_
+        r[[.cat_key_pct(gr)]] <- if (nrow(s)) s$pct[1] else NA_real_
       }
 
       r$Chi2 <- if (nrow(sv)) sv$chi2[1] else NA_real_
@@ -2522,8 +2575,8 @@ table_categorical <- function(
         r[[measure_col]] <- if (nrow(sv)) sv[[measure_col]][1] else NA_real_
       }
       if (show_assoc && assoc_ci) {
-        r[["CI lower"]] <- if (nrow(sv)) sv$ci_lower[1] else NA_real_
-        r[["CI upper"]] <- if (nrow(sv)) sv$ci_upper[1] else NA_real_
+        r[[.CAT_KEY_CI_LL]] <- if (nrow(sv)) sv$ci_lower[1] else NA_real_
+        r[[.CAT_KEY_CI_UL]] <- if (nrow(sv)) sv$ci_upper[1] else NA_real_
       }
 
       out[[k]] <- as.data.frame(
@@ -2557,15 +2610,15 @@ table_categorical <- function(
 
   # ---------------- REPORT WIDE ----------------
   report_cols <- c(
-    "Variable",
-    as.vector(rbind(paste0(group_levels, " n"), paste0(group_levels, " %"))),
-    "p"
+    .CAT_KEY_VARIABLE,
+    as.vector(rbind(.cat_key_n(group_levels), .cat_key_pct(group_levels))),
+    .CAT_KEY_P
   )
   if (show_assoc) {
     report_cols <- c(report_cols, measure_col)
   }
   if (show_assoc && assoc_ci) {
-    report_cols <- c(report_cols, "CI lower", "CI upper")
+    report_cols <- c(report_cols, .CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
   }
 
   make_report_wide <- function(ldf, mode = c("char", "excel")) {
@@ -2622,11 +2675,11 @@ table_categorical <- function(
       }
       if (show_assoc && assoc_ci) {
         if (mode == "char") {
-          r0[["CI lower"]] <- fmt_v(sv$ci_lower[1])
-          r0[["CI upper"]] <- fmt_v(sv$ci_upper[1])
+          r0[[.CAT_KEY_CI_LL]] <- fmt_v(sv$ci_lower[1])
+          r0[[.CAT_KEY_CI_UL]] <- fmt_v(sv$ci_upper[1])
         } else {
-          r0[["CI lower"]] <- sv$ci_lower[1]
-          r0[["CI upper"]] <- sv$ci_upper[1]
+          r0[[.CAT_KEY_CI_LL]] <- sv$ci_lower[1]
+          r0[[.CAT_KEY_CI_UL]] <- sv$ci_upper[1]
         }
       }
       out[[z]] <- as.data.frame(
@@ -2652,11 +2705,11 @@ table_categorical <- function(
           p_val <- if (nrow(sx)) sx$pct[1] else NA_real_
 
           if (mode == "char") {
-            r1[[paste0(gr, " n")]] <- fmt_n(n_val)
-            r1[[paste0(gr, " %")]] <- fmt_num(p_val, percent_digits)
+            r1[[.cat_key_n(gr)]] <- fmt_n(n_val)
+            r1[[.cat_key_pct(gr)]] <- fmt_num(p_val, percent_digits)
           } else {
-            r1[[paste0(gr, " n")]] <- n_val
-            r1[[paste0(gr, " %")]] <- p_val
+            r1[[.cat_key_n(gr)]] <- n_val
+            r1[[.cat_key_pct(gr)]] <- p_val
           }
         }
 
@@ -2726,10 +2779,10 @@ table_categorical <- function(
 
   # For rendered formats: merge CI inline into measure column, drop CI cols
   merge_ci_inline <- function(df) {
-    if (!show_assoc || !assoc_ci || !("CI lower" %in% names(df))) {
+    if (!show_assoc || !assoc_ci || !(.CAT_KEY_CI_LL %in% names(df))) {
       return(df)
     }
-    has_val <- nzchar(df[[measure_col]]) & nzchar(df[["CI lower"]])
+    has_val <- nzchar(df[[measure_col]]) & nzchar(df[[.CAT_KEY_CI_LL]])
     # Same disambiguation rule as every other family: under a comma
     # decimal mark the bound separator becomes "; " (this site used to
     # hardcode ", ", printing `0,45 [0,31, 0,59]` -- the ambiguity
@@ -2741,13 +2794,13 @@ table_categorical <- function(
       df[[measure_col]][has_val],
       " ",
       br[[1L]],
-      df[["CI lower"]][has_val],
+      df[[.CAT_KEY_CI_LL]][has_val],
       ci_sep,
-      df[["CI upper"]][has_val],
+      df[[.CAT_KEY_CI_UL]][has_val],
       br[[2L]]
     )
-    df[["CI lower"]] <- NULL
-    df[["CI upper"]] <- NULL
+    df[[.CAT_KEY_CI_LL]] <- NULL
+    df[[.CAT_KEY_CI_UL]] <- NULL
     df
   }
 
@@ -2948,13 +3001,13 @@ table_categorical <- function(
 
     # Rename n/% columns to unique names for gt, then relabel
     col_ids <- character(ncol(dat_gt))
-    col_ids[1] <- "Variable"
+    col_ids[1] <- .CAT_KEY_VARIABLE
     for (gi in seq_along(group_levels)) {
       col_ids[2 * gi] <- paste0(group_levels[gi], "_n")
       col_ids[2 * gi + 1] <- paste0(group_levels[gi], "_pct")
     }
     p_col_pos <- ncol(dat_gt) - if (show_assoc) 1L else 0L
-    col_ids[p_col_pos] <- "p"
+    col_ids[p_col_pos] <- .CAT_KEY_P
     if (show_assoc) {
       col_ids[ncol(dat_gt)] <- "assoc_col"
     }
@@ -2964,12 +3017,12 @@ table_categorical <- function(
 
     # Column labels: n / % under each group; empty for single-col spanners
     label_list <- list()
-    label_list[["Variable"]] <- ""
+    label_list[[.CAT_KEY_VARIABLE]] <- ""
     for (gi in seq_along(group_levels)) {
       label_list[[paste0(group_levels[gi], "_n")]] <- "n"
       label_list[[paste0(group_levels[gi], "_pct")]] <- "%"
     }
-    label_list[["p"]] <- ""
+    label_list[[.CAT_KEY_P]] <- ""
     if (show_assoc) {
       label_list[["assoc_col"]] <- ""
     }
@@ -2979,7 +3032,7 @@ table_categorical <- function(
     tbl <- gt::tab_spanner(
       tbl,
       label = "Variable",
-      columns = "Variable",
+      columns = .CAT_KEY_VARIABLE,
       id = "spn_variable"
     )
     for (gi in seq_along(group_levels)) {
@@ -2995,7 +3048,7 @@ table_categorical <- function(
     tbl <- gt::tab_spanner(
       tbl,
       label = "p",
-      columns = "p",
+      columns = .CAT_KEY_P,
       id = "spn_p"
     )
     if (show_assoc) {
@@ -3012,11 +3065,11 @@ table_categorical <- function(
     # uniform-width pre-padded strings (same strategy as
     # table_regression() / table_continuous_lm()); "center" / "right"
     # use gt::cols_align() literally.
-    tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
+    tbl <- gt::cols_align(tbl, align = "left", columns = .CAT_KEY_VARIABLE)
     grp_cols <- unlist(lapply(group_levels, function(g) {
       c(paste0(g, "_n"), paste0(g, "_pct"))
     }))
-    right_cols <- "p"
+    right_cols <- .CAT_KEY_P
     if (show_assoc) {
       right_cols <- c(right_cols, "assoc_col")
     }
@@ -3363,8 +3416,8 @@ table_categorical <- function(
       body_xl[[measure_col]] <- report_wide_char[[measure_col]]
     }
     if (show_assoc && assoc_ci) {
-      body_xl[["CI lower"]] <- report_wide_char[["CI lower"]]
-      body_xl[["CI upper"]] <- report_wide_char[["CI upper"]]
+      body_xl[[.CAT_KEY_CI_LL]] <- report_wide_char[[.CAT_KEY_CI_LL]]
+      body_xl[[.CAT_KEY_CI_UL]] <- report_wide_char[[.CAT_KEY_CI_UL]]
     }
 
     # `na.strings = ""` so the empty cells of a variable-header row
