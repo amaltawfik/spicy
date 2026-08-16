@@ -595,6 +595,28 @@ test_that("as_structured() types a two-level bivariate model table", {
   expect_faithful(s, lm_display(tbl))
 })
 
+test_that(".desc_assemble() falls back to the key when no display_label is given", {
+  # Decision 13 (lot 0): every descriptive `col_meta` entry carries a
+  # `display_label`. The three families now all resolve it themselves --
+  # the linear-model one was the last to rely on this default -- so the
+  # fallback is defensive code, and the contract it upholds is pinned
+  # here rather than by whichever family happened to omit the field.
+  s <- spicy:::.desc_assemble(
+    rows = list(list(
+      label = "x",
+      values = list(M = 1),
+      variable = "x",
+      level = NA_character_,
+      role = "summary",
+      indent = 0L
+    )),
+    col_names = "M",
+    col_meta = list(M = list(token = "m", precision = 2L)),
+    format_spec = list(decimal_mark = ".", digits = 2L)
+  )
+  expect_identical(s$col_meta$M$display_label, "M")
+})
+
 test_that("a display column outside the linear-model spec aborts the typed view", {
   # The display builder's column set is closed. A column that reaches
   # the typed view without an entry in the spec must FAIL, not be
