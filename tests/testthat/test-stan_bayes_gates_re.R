@@ -4,6 +4,7 @@
 # test-regression_frame_stan.R).
 
 .tiny_stan_glmer <- function() {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   sh <- sochealth
@@ -20,6 +21,7 @@
 
 
 test_that("p_adjust is refused for all-Bayesian tables", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -95,6 +97,7 @@ test_that("stan_glmer renders an RE block, not per-group b[] rows", {
 
 
 test_that("the pd token renders the probability of direction (finding d)", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -127,6 +130,7 @@ test_that("the pd token renders the probability of direction (finding d)", {
 
 
 test_that("all-Bayesian defaults drop p and label the interval CrI", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -165,6 +169,7 @@ test_that("all-Bayesian defaults drop p and label the interval CrI", {
 
 
 test_that("Bayesian fit statistics: r2_bayes default, loo pair opt-in", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("loo")
@@ -217,6 +222,7 @@ test_that("Bayesian fit statistics: r2_bayes default, loo pair opt-in", {
 
 
 test_that("waic token and the PSIS-LOO SE footer render", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("loo")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -253,6 +259,7 @@ test_that("waic token and the PSIS-LOO SE footer render", {
 
 
 test_that("diagnostic columns render and the convergence guard fires", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   # A deliberately under-sampled fit: 1 chain x 400 iter -> 200
@@ -301,6 +308,7 @@ test_that("diagnostic columns render and the convergence guard fires", {
 
 # Phase 3 matrix – rd-core:bayes-diagnostics-guard (clean-fit half)
 test_that("a clean Bayesian fit adds neither guard footer nor warning", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   # Well-sampled easy posterior: 2 chains x 1000 iter -> 1000 retained
@@ -374,6 +382,7 @@ test_that("ci_method = 'hdi' is refused for frequentist fits (CI-runnable)", {
 
 
 test_that("a factor predictor tabulates: schema, MAD SD, reference row", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   d <- mtcars
@@ -417,6 +426,7 @@ test_that("a factor predictor tabulates: schema, MAD SD, reference row", {
 
 
 test_that("ci_method = 'hdi' computes the Kruschke HDI, header included", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -468,6 +478,7 @@ test_that("ci_method = 'hdi' computes the Kruschke HDI, header included", {
 
 
 test_that("exponentiate is draws-native: SE = MAD SD of exp(draws)", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -508,6 +519,7 @@ test_that("exponentiate is draws-native: SE = MAD SD of exp(draws)", {
 
 
 test_that("non-MCMC algorithms are refused with a refit hint", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   fit_vb <- suppressWarnings(rstanarm::stan_glm(
     mpg ~ wt,
@@ -525,6 +537,7 @@ test_that("non-MCMC algorithms are refused with a refit hint", {
 
 
 test_that("robust vcov on a Bayesian fit gets the principled refusal", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   fit <- suppressWarnings(rstanarm::stan_glm(
     am ~ wt,
@@ -549,6 +562,7 @@ test_that("robust vcov on a Bayesian fit gets the principled refusal", {
 
 
 test_that("mixed table: pd dashes, r2_bayes fills per model, CrI footer", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -589,6 +603,7 @@ test_that("mixed table: pd dashes, r2_bayes fills per model, CrI footer", {
 
 
 test_that("Pareto-k and p_waic diagnostics are surfaced, not silenced", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("loo")
@@ -724,6 +739,7 @@ test_that("ci_method = 'hdi' reaches the random-effects block", {
 
 
 test_that("nested grouping factors keep their variance rows (stanreg)", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   set.seed(9)
@@ -754,6 +770,7 @@ test_that("nested grouping factors keep their variance rows (stanreg)", {
 
 
 test_that("mixed-table loo note keeps its Model prefix", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("loo")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -779,6 +796,7 @@ test_that("mixed-table loo note keeps its Model prefix", {
 
 
 test_that("a Bayesian probit is titled probit, not logistic", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   fit <- suppressWarnings(rstanarm::stan_glm(
     am ~ wt,
@@ -801,6 +819,7 @@ test_that("a Bayesian probit is titled probit, not logistic", {
 
 
 test_that("structured outputs carry the CrI / HDI interval label", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   fit <- suppressWarnings(rstanarm::stan_glm(
     am ~ wt,
@@ -830,6 +849,7 @@ test_that("structured outputs carry the CrI / HDI interval label", {
 # ---- MCSE column (Bayesian Workflow sec. 11.6) ------------------------------
 
 test_that("the mcse column matches posterior::mcse_median, exp included", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
@@ -884,6 +904,7 @@ test_that("the mcse column matches posterior::mcse_median, exp included", {
 # ---- Draws-native Bayesian AME (finding M2 resolved) ------------------------
 
 test_that("Bayesian AME summarizes the avg_slopes draws exactly", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("marginaleffects")
@@ -948,6 +969,7 @@ test_that("Bayesian AME summarizes the avg_slopes draws exactly", {
 
 
 test_that("Bayesian AME gates: ame_p refused all-Bayes, dashes mixed", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("marginaleffects")
   skip_if_not_installed("collapse")
@@ -989,6 +1011,7 @@ test_that("Bayesian AME gates: ame_p refused all-Bayes, dashes mixed", {
 # ---- Draws-native standardized betas (posthoc / basic / smart) --------------
 
 test_that("Bayesian beta is an exact affine rescale (effectsize oracle)", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("effectsize")
@@ -1139,6 +1162,7 @@ test_that("Bayesian beta is an exact affine rescale (effectsize oracle)", {
 
 
 test_that("Bayesian beta: glm convention, exp/HDI interplay, refusals", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   d <- mtcars
@@ -1236,6 +1260,7 @@ test_that("Bayesian beta: glm convention, exp/HDI interplay, refusals", {
 
 
 test_that("diagnostic columns keep their conventions in every engine", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   set.seed(1)
@@ -1460,6 +1485,7 @@ test_that("brmsfit out-of-scope fits refuse standardized with the reason", {
 
 
 test_that("multilevel and non-GLM stanreg fits refuse standardized", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit_m <- suppressWarnings(rstanarm::stan_glmer(
@@ -1503,6 +1529,7 @@ test_that("multilevel and non-GLM stanreg fits refuse standardized", {
 # and vignettes-news:bayes-tidy-na-p (lot T4)
 
 test_that("a converged fit prints no diagnostics footer and fires no guard warning", {
+  skip_on_ci()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   fit <- suppressWarnings(rstanarm::stan_glm(
