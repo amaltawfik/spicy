@@ -259,3 +259,24 @@ test_that("continuation panels name the estimand of an orphaned companion column
   expect_true(any(grepl("dRisk (365)", hdr2, fixed = TRUE)))
   expect_false(any(grepl("95% CI (dRisk", out2, fixed = TRUE)))
 })
+
+
+test_that("a missing cell renders blank without desyncing the table", {
+  # `stringr::str_pad(NA, w)` returns NA rather than a padded blank, and
+  # `build_line()` adds that NA to its running bar position, so ONE
+  # missing value used to leave its row unpadded and put every separator
+  # of the table at NA -- a header rule with two crossings. Missing is
+  # normalised to empty at the door of the renderer, for every family.
+  df <- data.frame(
+    Category = c("one", "two"),
+    Values = c("a", NA_character_),
+    Freq. = c("1", "2"),
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  txt <- strsplit(spicy:::build_ascii_table(df), "\n", fixed = TRUE)[[1L]]
+
+  expect_false(any(grepl("NA", txt, fixed = TRUE)))
+  expect_length(gregexpr("┼", txt[2L], fixed = TRUE)[[1L]], 1L)
+  expect_length(unique(crayon::col_nchar(txt, type = "width")), 1L)
+})

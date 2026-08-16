@@ -203,7 +203,17 @@ build_ascii_table <- function(
   spanners <- .validate_spanners(spanners, ncol(x))
 
   df <- as.data.frame(x, check.names = FALSE)
-  df[] <- lapply(df, as.character)
+  # A missing cell is an EMPTY cell. `stringr::str_pad(NA, w)` returns NA
+  # rather than a padded blank, and `build_line()` then adds NA to its
+  # running position, so a single missing value used to leave the row
+  # unpadded AND put every separator bar of the table at NA -- a header
+  # rule with two crossings, columns out of register. Normalised once,
+  # here, for every family that reaches the ASCII renderer.
+  df[] <- lapply(df, function(z) {
+    z <- as.character(z)
+    z[is.na(z)] <- ""
+    z
+  })
 
   # `display_labels`, when supplied, override `colnames(df)` for the
   # printed header text. The data.frame's actual colnames are still

@@ -31,7 +31,11 @@ resolve_variable_labels <- function(data, cols, labels = NULL) {
         return(labels[[nm]])
       }
       lab <- attr(data[[nm]], "label", exact = TRUE)
-      if (is.null(lab) || !nzchar(lab)) nm else lab
+      # Absent, empty, or MISSING all fall back to the column name. `NA`
+      # is a real value of the attribute in a partly-labelled import, and
+      # `nzchar(NA)` is TRUE, so it used to travel into the table's stub
+      # as the string "NA".
+      if (is.null(lab) || is.na(lab) || !nzchar(lab)) nm else lab
     },
     character(1L),
     USE.NAMES = FALSE

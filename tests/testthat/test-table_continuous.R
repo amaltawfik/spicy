@@ -916,6 +916,55 @@ test_that("a table without `by` draws no variable separator in the console", {
   expect_true(any(grepl("╌", by_group, fixed = TRUE)))
 })
 
+test_that("a missing variable label falls back to the column name", {
+  # `nzchar(NA)` is TRUE, so a partly-labelled import used to send the
+  # attribute's NA into the table's stub. Downstream that was worse than
+  # a wrong word: `nchar(NA)` is NA, which turned the padding decision
+  # (`if (normal_width > console_w)`) into "missing value where
+  # TRUE/FALSE needed", and once that was fixed the NA reached
+  # `str_pad()`, which returns NA rather than a padded blank, leaving the
+  # row unpadded and every separator bar of the table at NA.
+  #
+  # Assertions on the RENDERED table, not on the absence of an error:
+  # the label falls back to the column name, the header rule has exactly
+  # one crossing, and every line is the same width.
+  d <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
+  attr(d$x, "label") <- NA_character_
+  # `table_continuous()` prints as it builds; swallow that copy so the
+  # assertions read exactly one rendering.
+  invisible(capture.output(out <- table_continuous(d, select = c(x, y))))
+  txt <- capture.output(print(out))
+
+  expect_false(any(grepl("NA", txt, fixed = TRUE)))
+  grid <- txt[grepl("│", txt, fixed = TRUE) | grepl("─", txt, fixed = TRUE)]
+  expect_length(grid, 4L) # header, rule, two body rows
+  expect_match(grid[3L], "^ x ")
+  expect_match(grid[4L], "^ y ")
+  # One crossing on the rule: the first-column separator. NA-desynced
+  # bars used to add a second.
+  expect_length(gregexpr("┼", grid[2L], fixed = TRUE)[[1L]], 1L)
+  # Every line the same display width: the row is padded.
+  expect_length(unique(crayon::col_nchar(grid, type = "width")), 1L)
+})
+
+test_that("a wide-character label does not overflow a narrow console", {
+  # `nchar()` counts CHARACTERS, the renderer lays out COLUMNS. A CJK
+  # label is twice as wide as it is long, so the padding decision used to
+  # under-measure it and emit a table wider than the console. Measured on
+  # the same `crayon::col_nchar(type = "width")` the renderer uses, the
+  # table fits. Eight glyphs = sixteen columns; at width 28 the old
+  # measure produced 29 columns of output.
+  d <- data.frame(x = c(1, 2, 3))
+  attr(d$x, "label") <- strrep("身", 8L)
+  txt <- withr::with_options(list(width = 28L), {
+    invisible(capture.output(
+      out <- table_continuous(d, select = x, show_columns = "m")
+    ))
+    capture.output(print(out))
+  })
+  expect_lte(max(crayon::col_nchar(txt, type = "width")), 28L)
+  expect_true(any(grepl(strrep("身", 8L), txt, fixed = TRUE)))
+})
 
 # ---- validation ----
 

@@ -115,14 +115,23 @@ print.spicy_continuous_table <- function(x, ...) {
   # (gutter) chars, plus 1 char for the vertical separator after
   # column 1; `padding` is added to each w[i].
   #
-  # Measured on what is PRINTED -- the labels, not the keys: measuring
-  # the keys while printing the labels would leave this decision
-  # disagreeing with the header the reader actually gets.
+  # Measured the way `ascii_table_widths()` measures, by display WIDTH
+  # rather than character count: `nchar()` counts a CJK glyph as one and
+  # the renderer lays it out as two, so a wide label made this decision
+  # under-measure the table and emit it wider than the console.
+  # `nchar(NA_character_)` is NA on top of that, which turned the
+  # comparison below into "missing value where TRUE/FALSE needed".
   padding <- 2L
   col_widths <- vapply(
     seq_along(display_df),
     function(i) {
-      max(nchar(c(header_labels[i], as.character(display_df[[i]]))))
+      max(
+        crayon::col_nchar(
+          c(header_labels[i], as.character(display_df[[i]])),
+          type = "width"
+        ),
+        na.rm = TRUE
+      )
     },
     numeric(1)
   )

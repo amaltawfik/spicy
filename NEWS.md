@@ -349,6 +349,17 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * Printing a `table_categorical()` table with an empty cell no longer
   fails with "missing value where TRUE/FALSE needed"; column widths are
   measured as they are displayed.
+* A variable whose `label` attribute is `NA` falls back to the column
+  name in `table_categorical()`, `table_continuous()` and
+  `table_continuous_lm()`. The stub used to read `NA`, and
+  `table_continuous()` failed outright with "missing value where
+  TRUE/FALSE needed".
+* A missing cell no longer disturbs the console layout of any table: it
+  renders as an empty cell instead of leaving its row unpadded and every
+  separator of the table out of register.
+* A variable label written in wide characters (CJK, emoji) no longer
+  overflows a narrow console in `table_continuous()`: column widths are
+  measured as they are displayed rather than counted as characters.
 * An empty or non-string `clipboard_delim` raises a classed error instead
   of silently building an unusable payload.
 * A `table_categorical()` variable label that happens to start with the
