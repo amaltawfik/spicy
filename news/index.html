@@ -100,6 +100,8 @@
 <li>
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code> rejects <code>p_digits</code> below 1 with a classed error; such values were silently rendered with 3 decimals.</li>
 <li>
+<code>table_categorical(output = "long")</code> always names the association column <code>effect_size</code> and adds <code>effect_size_type</code> giving each row’s measure (<code>"cramer_v"</code>, <code>"phi"</code>, …); the column used to be named after the measure. Replace <code>out[["Cramer's V"]]</code> with <code>out$effect_size</code>. The <code>"data.frame"</code> output is unchanged.</li>
+<li>
 <code>table_categorical(output = "flextable")</code> no longer writes a <code>.docx</code> when <code>word_path</code> is supplied; the combination warns (<code>spicy_ignored_arg</code>). Use <code><a href="https://davidgohel.github.io/flextable/reference/save_as_docx.html" class="external-link">flextable::save_as_docx()</a></code>.</li>
 <li>
 <code>standardized = "smart"</code> scales continuous inputs by 2 SD and leaves binary inputs unscaled. The rule was applied inverted since 0.12.0, halving every continuous “smart” beta.</li>
@@ -222,6 +224,7 @@
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>The significance-star legend of <code>table_regression(stars = TRUE)</code> follows the table’s <code>decimal_mark</code>: a comma table now reads <code>p &lt; ,001</code>, not <code>p &lt; .001</code>.</li>
 <li>The confidence interval of an association measure in <code><a href="../reference/table_categorical.html">table_categorical()</a></code> separates its bounds with <code>;</code> under <code>decimal_mark = ","</code>, as every other interval in the package already did; <code>0,45 [0,31, 0,59]</code> was ambiguous.</li>
+<li>Printing a <code><a href="../reference/table_categorical.html">table_categorical()</a></code> table with an empty cell no longer fails with “missing value where TRUE/FALSE needed”; column widths are measured as they are displayed.</li>
 <li>An empty or non-string <code>clipboard_delim</code> raises a classed error instead of silently building an unusable payload.</li>
 <li>A <code><a href="../reference/table_categorical.html">table_categorical()</a></code> variable label that happens to start with the indent string is no longer mistaken for a level row: every output now reads the block geometry from the table’s typed row roles instead of parsing the label text back.</li>
 <li>The descriptive tables’ <code>output = "clipboard"</code> shares the regression validator’s pre-flight: on a system without a clipboard (headless session) they fail with the same clear <code>spicy_unsupported</code> error instead of an internal one from further down.</li>

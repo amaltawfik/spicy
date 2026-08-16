@@ -429,8 +429,13 @@ pair of <code>n</code> / <code>\%</code> columns per group level (plus <code>Tot
 association measure column.
 When <code>by = NULL</code>, the columns are <code>Variable</code>, <code>Level</code>, <code>n</code>, <code>\%</code>.</p></li>
 <li><p><code>"long"</code>: a long <code>data.frame</code> with columns <code>variable</code>,
-<code>level</code>, <code>n</code>, <code>pct</code> (plus <code>group</code>, <code>chi2</code>, <code>df</code>, <code>p</code>, and the
-association measure column when <code>by</code> is used).</p></li>
+<code>level</code>, <code>n</code>, <code>pct</code> (plus <code>group</code>, <code>chi2</code>, <code>df</code>, <code>p</code> when <code>by</code> is
+used). The association measure is always called <code>effect_size</code>,
+whichever measure it is, and <code>effect_size_type</code> names that measure
+per row (<code>"cramer_v"</code>, <code>"phi"</code>, ...), or is <code>NA</code> on the rows of a
+variable given <code>assoc_measure = "none"</code>. The wide outputs instead
+name the column after the measure, or <code>Effect size</code> when the row
+variables do not share one.</p></li>
 <li><p><code>"tinytable"</code>: a <code>tinytable</code> object.</p></li>
 <li><p><code>"gt"</code>: a <code>gt_tbl</code> object.</p></li>
 <li><p><code>"flextable"</code>: a <code>flextable</code> object.</p></li>
@@ -873,22 +878,22 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 13 Regular physical activity       Yes Female 286 46.129032 0.0451784  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 14 Regular physical activity       Yes   Male 264 45.517241 0.0451784  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 15 Regular physical activity       Yes  Total 550 45.833333 0.0451784  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            p         Phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  0.7125196 0.010749501</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 0.8316763 0.006135851</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 0.8316763 0.006135851</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 0.8316763 0.006135851</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 0.8316763 0.006135851</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 0.8316763 0.006135851</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 0.8316763 0.006135851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            p effect_size effect_size_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 0.8316763 0.006135851              phi</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Rendered HTML / docx objects -- best viewed inside a</span></span></span>

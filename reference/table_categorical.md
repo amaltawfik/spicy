@@ -368,8 +368,13 @@ Depends on `output`:
   `Variable`, `Level`, `n`, `\%`.
 
 - `"long"`: a long `data.frame` with columns `variable`, `level`, `n`,
-  `pct` (plus `group`, `chi2`, `df`, `p`, and the association measure
-  column when `by` is used).
+  `pct` (plus `group`, `chi2`, `df`, `p` when `by` is used). The
+  association measure is always called `effect_size`, whichever measure
+  it is, and `effect_size_type` names that measure per row
+  (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a variable
+  given `assoc_measure = "none"`. The wide outputs instead name the
+  column after the measure, or `Effect size` when the row variables do
+  not share one.
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -833,22 +838,22 @@ table_categorical(
 #> 13 Regular physical activity       Yes Female 286 46.129032 0.0451784  1
 #> 14 Regular physical activity       Yes   Male 264 45.517241 0.0451784  1
 #> 15 Regular physical activity       Yes  Total 550 45.833333 0.0451784  1
-#>            p         Phi
-#> 1  0.7125196 0.010749501
-#> 2  0.7125196 0.010749501
-#> 3  0.7125196 0.010749501
-#> 4  0.7125196 0.010749501
-#> 5  0.7125196 0.010749501
-#> 6  0.7125196 0.010749501
-#> 7  0.7125196 0.010749501
-#> 8  0.7125196 0.010749501
-#> 9  0.7125196 0.010749501
-#> 10 0.8316763 0.006135851
-#> 11 0.8316763 0.006135851
-#> 12 0.8316763 0.006135851
-#> 13 0.8316763 0.006135851
-#> 14 0.8316763 0.006135851
-#> 15 0.8316763 0.006135851
+#>            p effect_size effect_size_type
+#> 1  0.7125196 0.010749501              phi
+#> 2  0.7125196 0.010749501              phi
+#> 3  0.7125196 0.010749501              phi
+#> 4  0.7125196 0.010749501              phi
+#> 5  0.7125196 0.010749501              phi
+#> 6  0.7125196 0.010749501              phi
+#> 7  0.7125196 0.010749501              phi
+#> 8  0.7125196 0.010749501              phi
+#> 9  0.7125196 0.010749501              phi
+#> 10 0.8316763 0.006135851              phi
+#> 11 0.8316763 0.006135851              phi
+#> 12 0.8316763 0.006135851              phi
+#> 13 0.8316763 0.006135851              phi
+#> 14 0.8316763 0.006135851              phi
+#> 15 0.8316763 0.006135851              phi
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

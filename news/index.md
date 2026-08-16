@@ -96,6 +96,11 @@
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   rejects `p_digits` below 1 with a classed error; such values were
   silently rendered with 3 decimals.
+- `table_categorical(output = "long")` always names the association
+  column `effect_size` and adds `effect_size_type` giving each row’s
+  measure (`"cramer_v"`, `"phi"`, …); the column used to be named after
+  the measure. Replace `out[["Cramer's V"]]` with `out$effect_size`. The
+  `"data.frame"` output is unchanged.
 - `table_categorical(output = "flextable")` no longer writes a `.docx`
   when `word_path` is supplied; the combination warns
   (`spicy_ignored_arg`). Use
@@ -445,6 +450,10 @@ instead of rendering an empty column.
   separates its bounds with `;` under `decimal_mark = ","`, as every
   other interval in the package already did; `0,45 [0,31, 0,59]` was
   ambiguous.
+- Printing a
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  table with an empty cell no longer fails with “missing value where
+  TRUE/FALSE needed”; column widths are measured as they are displayed.
 - An empty or non-string `clipboard_delim` raises a classed error
   instead of silently building an unusable payload.
 - A
