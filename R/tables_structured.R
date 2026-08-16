@@ -712,7 +712,19 @@
       n = list(token = "n", precision = 0L),
       # A sum of weights, not a count -- displayed at the table's
       # numeric precision, like the console does.
-      weighted_n = list(token = "weighted_n", precision = as.integer(digits))
+      weighted_n = list(token = "weighted_n", precision = as.integer(digits)),
+      # Second half of the closed set: the spec knows this column but
+      # this function has no branch for what it IS. Without the default
+      # `switch()` would return NULL and the column would enter the
+      # contract with no token at all -- the silent mislabelling the
+      # abort above exists to prevent.
+      spicy_abort(
+        sprintf(
+          "Internal: unrecognised continuous-lm column token %s.",
+          shQuote(ent$token)
+        ),
+        class = "spicy_internal_invariant"
+      )
     )
     # The header a reader sees, from the same spec the engines read: the
     # typed view is one consumer of the label layer, never its source.

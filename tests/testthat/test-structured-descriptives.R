@@ -653,6 +653,34 @@ test_that("a display column outside the linear-model spec aborts the typed view"
     ),
     class = "spicy_internal_invariant"
   )
+
+  # Second half of the closed set: a column the spec DOES know, whose
+  # token this function has no branch for. Without the `switch()`
+  # default it would enter `col_meta` with no token at all.
+  bogus <- spec
+  bogus[[2L]]$token <- "no_such_token"
+  expect_error(
+    spicy:::.build_continuous_lm_structured(
+      result = lg,
+      wide_raw = wide_raw,
+      wide_display = spicy:::build_wide_display_df_continuous_lm(
+        lg,
+        spec = spec
+      ),
+      digits = 2L,
+      fit_digits = 2L,
+      effect_size_digits = 2L,
+      p_digits = 3L,
+      decimal_mark = ".",
+      ci_level = 0.95,
+      show_statistic = TRUE,
+      effect_size = "none",
+      effect_size_ci = FALSE,
+      r2_type = "r2",
+      spec = bogus
+    ),
+    class = "spicy_internal_invariant"
+  )
 })
 
 test_that("a numeric predictor types a slope column", {
