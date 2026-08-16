@@ -318,10 +318,11 @@
   # with lots A and B and are not restated here.
   # Two holes: the mean glyph, then the `by` level (DATA). The glyph
   # travels as an ARGUMENT, resolved from `header_mean`, so one
-  # translation of "M" serves the whole package. Second key of value
-  # "%s (%s)" after `header_companion_qualified`, whose subject is an
-  # orphaned column qualified by its carrier -- one key per ROLE is the
-  # registry's rule, not one key per string.
+  # translation of "M" serves the whole package. Third key to carry the
+  # value "%s (%s)": the other two are `header_companion_qualified` (an
+  # orphaned column qualified by its carrier) and, further down this
+  # file, `note_group_comparison_item` (a test named in a note). One key
+  # per ROLE is the registry's rule, not one key per string.
   header_lm_mean_level = "%s (%s)",
   # Three holes: the increment glyph, then the two levels in the order
   # the subtraction reads. The " - " is typographic punctuation, not a
