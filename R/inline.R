@@ -92,6 +92,11 @@
 #' inline(tbl, age, column = "b")
 #' inline(tbl, sex, "Male", "{b} ({ci_label} {ci}; p {p})")
 #' inline(tbl, "n")
+# Deterministic double quotes for message text: shQuote() is shell
+# quoting and flips single/double by platform (regression_titlefooter
+# convention).
+.quote_val <- function(x) encodeString(as.character(x), quote = "\"")
+
 inline <- function(
   x,
   variable,
@@ -164,11 +169,11 @@ inline <- function(
   if (length(rows) == 0L) {
     spicy_abort(
       c(
-        sprintf("No variable %s in this table.", shQuote(var_chr)),
+        sprintf("No variable %s in this table.", .quote_val(var_chr)),
         "i" = paste0(
           "Available: ",
           paste(
-            shQuote(unique(stats::na.omit(s$body$.variable))),
+            .quote_val(unique(stats::na.omit(s$body$.variable))),
             collapse = ", "
           ),
           "."
@@ -183,11 +188,11 @@ inline <- function(
     if (has_levels && length(rows) > 1L) {
       spicy_abort(
         c(
-          sprintf("%s has levels: pick one with `level`.", shQuote(var_chr)),
+          sprintf("%s has levels: pick one with `level`.", .quote_val(var_chr)),
           "i" = paste0(
             "Available: ",
             paste(
-              shQuote(stats::na.omit(body$.level[rows])),
+              .quote_val(stats::na.omit(body$.level[rows])),
               collapse = ", "
             ),
             "."
@@ -207,10 +212,10 @@ inline <- function(
   if (length(hit) != 1L) {
     spicy_abort(
       c(
-        sprintf("No level %s for %s.", shQuote(level), shQuote(var_chr)),
+        sprintf("No level %s for %s.", .quote_val(level), .quote_val(var_chr)),
         "i" = paste0(
           "Available: ",
-          paste(shQuote(stats::na.omit(body$.level[rows])), collapse = ", "),
+          paste(.quote_val(stats::na.omit(body$.level[rows])), collapse = ", "),
           "."
         )
       ),
@@ -245,10 +250,10 @@ inline <- function(
   if (is.null(pick)) {
     spicy_abort(
       c(
-        sprintf("Unknown model %s.", shQuote(as.character(model))),
+        sprintf("Unknown model %s.", .quote_val(as.character(model))),
         "i" = paste0(
           "Available: ",
-          paste(shQuote(names(spans)), collapse = ", "),
+          paste(.quote_val(names(spans)), collapse = ", "),
           "."
         )
       ),
@@ -278,7 +283,7 @@ inline <- function(
       "No default column for this row: pick one with `column`.",
       "i" = paste0(
         "Available tokens: ",
-        paste(shQuote(setdiff(tokens, "")), collapse = ", "),
+        paste(.quote_val(setdiff(tokens, "")), collapse = ", "),
         "."
       )
     ),
@@ -316,10 +321,13 @@ inline <- function(
     ))
     spicy_abort(
       c(
-        sprintf("No column with token %s in this table.", shQuote(token)),
+        sprintf("No column with token %s in this table.", .quote_val(token)),
         "i" = paste0(
           "Available: ",
-          paste(shQuote(sort(setdiff(c(tokens, "ci"), ""))), collapse = ", "),
+          paste(
+            .quote_val(sort(setdiff(c(tokens, "ci"), ""))),
+            collapse = ", "
+          ),
           "."
         )
       ),
@@ -331,12 +339,12 @@ inline <- function(
       c(
         sprintf(
           "Token %s matches %d columns: pick one with `model`.",
-          shQuote(token),
+          .quote_val(token),
           length(hits)
         ),
         "i" = paste0(
           "Available: ",
-          paste(shQuote(names(s$spanners)), collapse = ", "),
+          paste(.quote_val(names(s$spanners)), collapse = ", "),
           "."
         )
       ),
@@ -348,7 +356,7 @@ inline <- function(
     spicy_abort(
       sprintf(
         "The %s cell of this row is undefined in the table (not estimable).",
-        shQuote(token)
+        .quote_val(token)
       ),
       class = "spicy_invalid_input"
     )
@@ -357,7 +365,7 @@ inline <- function(
     spicy_abort(
       sprintf(
         "This row is the reference category: it has no %s value.",
-        shQuote(token)
+        .quote_val(token)
       ),
       class = "spicy_invalid_input"
     )
@@ -365,7 +373,10 @@ inline <- function(
   out <- trimws(formatted[[hits]][row])
   if (!nzchar(out)) {
     spicy_abort(
-      sprintf("The %s cell of this row is empty in the table.", shQuote(token)),
+      sprintf(
+        "The %s cell of this row is empty in the table.",
+        .quote_val(token)
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -391,7 +402,7 @@ inline <- function(
         "Several confidence intervals match: pick a `model`.",
         "i" = paste0(
           "Available: ",
-          paste(shQuote(names(s$spanners)), collapse = ", "),
+          paste(.quote_val(names(s$spanners)), collapse = ", "),
           "."
         )
       ),
