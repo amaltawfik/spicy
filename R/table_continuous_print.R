@@ -52,8 +52,6 @@ print.spicy_continuous_table <- function(x, ...) {
   )
 
   has_group <- !is.null(group_var)
-  has_statistic <- "Test" %in% names(display_df)
-  has_p <- "p" %in% names(display_df)
   align_left <- if (has_group) c(1L, 2L) else 1L
   nc <- ncol(display_df)
   numeric_j <- setdiff(seq_len(nc), align_left)

@@ -41,6 +41,12 @@
 #     significance markers.
 
 # The value columns of a structured body, as an all-NA numeric row.
+#
+# `Variable` is prefixed OUTSIDE `col_names` on purpose: by the v3
+# contract `col_meta` indexes the VALUE columns, so the identity column
+# has no entry there and no `display_label` (see `.desc_assemble()`).
+# Its header is `header_variable` in every family, resolved by each
+# renderer -- an asymmetry of the contract, not an omission.
 .desc_empty_row <- function(col_names) {
   as.data.frame(
     c(
@@ -399,62 +405,11 @@
 
 # ---- table_continuous() ---------------------------------------------------
 
-# The `show_columns` token behind each displayed column, plus the
-# field of the compute frame that fills it. Single source for the
-# structured view, keyed by token so a new token is declared once.
-#   name    the display column name (a function of ci_pct for the
-#           interval bounds)
-#   field   the column of the long frame carrying the raw value
-#   digits  which format_spec entry drives the precision
-.continuous_token_columns <- function(ci_pct) {
-  list(
-    m = list(list(name = "M", field = "mean")),
-    sd = list(list(name = "SD", field = "sd")),
-    med = list(list(name = "Med", field = "median")),
-    iqr = list(list(name = "IQR", field = "iqr")),
-    # Composite: the body keeps the median, the display override
-    # carries the "Med [Q1, Q3]" string no single number expresses.
-    med_iqr = list(list(
-      name = "Med [Q1, Q3]",
-      field = "median",
-      composite = TRUE
-    )),
-    q1 = list(list(name = "Q1", field = "q1")),
-    q3 = list(list(name = "Q3", field = "q3")),
-    min = list(list(name = "Min", field = "min")),
-    max = list(list(name = "Max", field = "max")),
-    ci = list(
-      list(
-        name = paste0(ci_pct, " CI LL"),
-        field = "ci_lower",
-        ci_role = "LL"
-      ),
-      list(
-        name = paste0(ci_pct, " CI UL"),
-        field = "ci_upper",
-        ci_role = "UL"
-      )
-    ),
-    med_ci = list(
-      list(
-        name = paste0("Med ", ci_pct, " CI LL"),
-        field = "med_ci_lower",
-        ci_role = "LL"
-      ),
-      list(
-        name = paste0("Med ", ci_pct, " CI UL"),
-        field = "med_ci_upper",
-        ci_role = "UL"
-      )
-    ),
-    n = list(list(name = "n", field = "n", integer = TRUE)),
-    # Sum of weights (decision 17): a weighted count, generally
-    # non-integer, so it takes the table's regular precision.
-    weighted_n = list(
-      list(name = "Weighted n", field = "weighted_n", integer = FALSE)
-    )
-  )
-}
+# The column vocabulary (`.continuous_token_columns()`) lives in
+# R/table_continuous.R, beside the token ORDER it has to agree with.
+# `DESCRIPTION` has no `Collate` field, so files are sourced
+# alphabetically and this one is read AFTER it -- harmless, because the
+# vocabulary is a function, resolved when called rather than at build.
 
 # Structured view of a continuous summary table.
 #
@@ -480,8 +435,7 @@
   missing_group_label = NA_character_
 ) {
   has_group <- "group" %in% names(result)
-  ci_pct <- paste0(round(ci_level * 100), "%")
-  spec <- .continuous_token_columns(ci_pct)
+  spec <- .continuous_token_columns(ci_level)
 
   col_names <- character(0)
   col_meta <- list()
@@ -499,13 +453,7 @@
         precision = if (isTRUE(e$integer)) 0L else as.integer(digits),
         p_style = NULL,
         ci_role = e$ci_role,
-        ci_label = if (is.null(e$ci_role)) {
-          NULL
-        } else if (identical(tok, "med_ci")) {
-          paste0("Med ", ci_pct, " CI")
-        } else {
-          paste0(ci_pct, " CI")
-        }
+        ci_label = e$ci_key
       )
       col_source[[e$name]] <- e
     }
@@ -522,36 +470,38 @@
   }
 
   # Inference columns: present only when the display carries them.
-  if ("Test" %in% names(display_df)) {
-    col_names <- c(col_names, "Test")
+  # Membership tests on the display frame, KEY against key -- the names
+  # come from the same constants `build_display_df()` writes.
+  if (.CON_KEY_TEST %in% names(display_df)) {
+    col_names <- c(col_names, .CON_KEY_TEST)
     # The console prints the statistic inside its own gloss
     # ("t(1196.18) = 0.28"): the body keeps the statistic, the string
     # travels as a display override.
-    col_meta[["Test"]] <- list(token = "statistic", precision = 2L)
-    col_source[["Test"]] <- list(
-      name = "Test",
+    col_meta[[.CON_KEY_TEST]] <- list(token = "statistic", precision = 2L)
+    col_source[[.CON_KEY_TEST]] <- list(
+      name = .CON_KEY_TEST,
       field = "statistic",
       composite = TRUE
     )
   }
-  if ("p" %in% names(display_df)) {
-    col_names <- c(col_names, "p")
-    col_meta[["p"]] <- list(
+  if (.CON_KEY_P %in% names(display_df)) {
+    col_names <- c(col_names, .CON_KEY_P)
+    col_meta[[.CON_KEY_P]] <- list(
       token = "p",
       precision = as.integer(p_digits),
       p_style = .style_p_style_token(),
       threshold = 10^(-p_digits)
     )
-    col_source[["p"]] <- list(name = "p", field = "p.value")
+    col_source[[.CON_KEY_P]] <- list(name = .CON_KEY_P, field = "p.value")
   }
-  if ("ES" %in% names(display_df)) {
-    col_names <- c(col_names, "ES")
-    col_meta[["ES"]] <- list(
+  if (.CON_KEY_ES %in% names(display_df)) {
+    col_names <- c(col_names, .CON_KEY_ES)
+    col_meta[[.CON_KEY_ES]] <- list(
       token = "es",
       precision = as.integer(effect_size_digits)
     )
-    col_source[["ES"]] <- list(
-      name = "ES",
+    col_source[[.CON_KEY_ES]] <- list(
+      name = .CON_KEY_ES,
       field = "es_value",
       composite = TRUE
     )
@@ -593,7 +543,7 @@
       }
     }
     rows[[length(rows) + 1L]] <- list(
-      label = display_df$Variable[i],
+      label = display_df[[.CON_KEY_VARIABLE]][i],
       values = values,
       variable = var_name,
       level = if (has_group) result$group[i] else NA_character_,

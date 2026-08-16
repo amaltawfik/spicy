@@ -3292,6 +3292,30 @@ test_that("an existing table note is joined, never overwritten", {
 
 # ---- show_columns: statistic selection -----------------------------------
 
+test_that("the token order and the column vocabulary declare the same set", {
+  # `.continuous_column_tokens` is the ORDER of the columns,
+  # `.continuous_token_columns()` their NAMES. Two tables that must stay
+  # equal, and nothing else can catch a drift between them: a token
+  # present in one and absent from the other silently produces a display
+  # column the structured view never sees (`display_df[[nm]]` is NULL and
+  # `as.character(NULL)[i]` is NA), which is exactly how `weighted_n`
+  # entered the display frame in two edits instead of one.
+  expect_identical(
+    names(spicy:::.continuous_token_columns(0.95)),
+    spicy:::.continuous_column_tokens
+  )
+  # Thirteen tokens, fifteen columns: `ci` and `med_ci` expand to a pair.
+  entries <- unlist(
+    spicy:::.continuous_token_columns(0.95),
+    recursive = FALSE,
+    use.names = FALSE
+  )
+  expect_length(entries, 15L)
+  # Every entry names a column and the compute-frame field behind it.
+  expect_true(all(vapply(entries, function(e) nzchar(e$name), logical(1))))
+  expect_true(all(vapply(entries, function(e) nzchar(e$field), logical(1))))
+})
+
 test_that("show_columns = NULL reproduces the historical display exactly", {
   # The default must not move: the printed table shows M / SD / Min /
   # Max and none of the new statistics, and its note stays empty.

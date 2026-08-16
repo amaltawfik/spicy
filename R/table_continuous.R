@@ -1748,6 +1748,127 @@ order_continuous_tokens <- function(tokens) {
   .continuous_column_tokens[.continuous_column_tokens %in% tokens]
 }
 
+
+# ---- frozen column keys ----------------------------------------------------
+
+# Decision 13 (i18n stage 1.5, lot B). `table_continuous(output = )` hands
+# back the COMPUTE frame, so these strings are not a `data.frame` contract
+# -- but they are the names of the display frame, the `col_meta` index of
+# `as_structured()`, the flextable `col_keys`, the gt column ids and the
+# targets of the gt CSS selector. Frozen English, one constant per key,
+# compared key against key at every read path; the HEADER a reader sees is
+# a separate layer, resolved from the registry.
+.CON_KEY_VARIABLE <- "Variable"
+.CON_KEY_GROUP <- "Group"
+.CON_KEY_TEST <- "Test"
+.CON_KEY_P <- "p"
+.CON_KEY_ES <- "ES"
+.CON_KEY_N <- "n"
+.CON_KEY_WEIGHTED_N <- "Weighted n"
+# The bare bound keys an interval spanner leaves behind: `rename_ci_cols()`
+# turns "95% CI LL" into "LL" because the engines carry the coverage in the
+# spanner. Short KEYS, not labels -- see `rename_ci_cols()`.
+.CON_KEY_CI_LL <- "LL"
+.CON_KEY_CI_UL <- "UL"
+# The interval word inside a column KEY ("95% CI LL"). Deliberately NOT
+# `spicy_str("header_ci_label_confidence")`: that one names the header, and
+# a translated header must never move a public key. The two are pinned
+# equal in English by test-i18n.R.
+.CON_KEY_CI <- "CI"
+# The median interval prefixes its keys: two columns named "LL" would
+# collide.
+.CON_KEY_MED_PREFIX <- "Med "
+
+# The coverage percentage as it enters a frozen column key ("95%"). Four
+# sites built this string independently (the glosses, the display frame,
+# the exporter, the structured view); they now share one. The four other
+# constructions in the package belong to the LINEAR-MODEL family
+# (`.build_continuous_lm_structured()`, `table_continuous_lm_render.R`)
+# and are out of this lot's scope.
+.continuous_ci_pct <- function(ci_level) paste0(round(ci_level * 100), "%")
+
+# The `show_columns` token behind each displayed column, plus the field of
+# the compute frame that fills it. Single source for the display frame,
+# the structured view and every spanner layout, keyed by token so a new
+# token is declared once -- the gap `weighted_n` slipped through when the
+# vocabulary was declared in two files 800 lines apart.
+#
+# Thirteen tokens, fifteen columns: `ci` and `med_ci` each expand to a
+# bound pair. Per entry:
+#   name        the frozen display column name / `col_meta` key
+#   field       the column of the long frame carrying the raw value
+#   composite   no single number expresses the cell (display override)
+#   integer     a count: precision 0 rather than the table's `digits`
+#   ci_role     `.CON_KEY_CI_LL` / `.CON_KEY_CI_UL` for an interval bound
+#   short_name  the bare key `rename_ci_cols()` leaves for the engines
+#   ci_key      the frozen key of the interval the bound belongs to
+#
+# Lives beside `.continuous_column_tokens` (the ORDER of the columns) on
+# purpose: the order and the names of the columns are one object.
+.continuous_token_columns <- function(ci_level) {
+  ci_key <- paste0(.continuous_ci_pct(ci_level), " ", .CON_KEY_CI)
+  med_ci_key <- paste0(.CON_KEY_MED_PREFIX, ci_key)
+  bound <- function(key, role, short, field) {
+    list(
+      name = paste0(key, " ", role),
+      field = field,
+      ci_role = role,
+      short_name = short,
+      ci_key = key
+    )
+  }
+  list(
+    m = list(list(name = "M", field = "mean")),
+    sd = list(list(name = "SD", field = "sd")),
+    med = list(list(name = "Med", field = "median")),
+    iqr = list(list(name = "IQR", field = "iqr")),
+    # Composite: the body keeps the median, the display override
+    # carries the "Med [Q1, Q3]" string no single number expresses.
+    med_iqr = list(list(
+      name = "Med [Q1, Q3]",
+      field = "median",
+      composite = TRUE
+    )),
+    q1 = list(list(name = "Q1", field = "q1")),
+    q3 = list(list(name = "Q3", field = "q3")),
+    min = list(list(name = "Min", field = "min")),
+    max = list(list(name = "Max", field = "max")),
+    ci = list(
+      bound(ci_key, .CON_KEY_CI_LL, .CON_KEY_CI_LL, "ci_lower"),
+      bound(ci_key, .CON_KEY_CI_UL, .CON_KEY_CI_UL, "ci_upper")
+    ),
+    med_ci = list(
+      bound(
+        med_ci_key,
+        .CON_KEY_CI_LL,
+        paste0(.CON_KEY_MED_PREFIX, .CON_KEY_CI_LL),
+        "med_ci_lower"
+      ),
+      bound(
+        med_ci_key,
+        .CON_KEY_CI_UL,
+        paste0(.CON_KEY_MED_PREFIX, .CON_KEY_CI_UL),
+        "med_ci_upper"
+      )
+    ),
+    n = list(list(name = .CON_KEY_N, field = "n", integer = TRUE)),
+    # Sum of weights (decision 17): a weighted count, generally
+    # non-integer, so it takes the table's regular precision -- the
+    # `table_continuous_lm()` "Weighted n" convention.
+    weighted_n = list(
+      list(name = .CON_KEY_WEIGHTED_N, field = "weighted_n", integer = FALSE)
+    )
+  )
+}
+
+# The four interval-bound entries of the vocabulary, flat and in column
+# order. `rename_ci_cols()` and `desc_spanner_groups()` both need the
+# bound-key / short-key correspondence, and neither may re-type it.
+.continuous_ci_entries <- function(ci_level) {
+  spec <- .continuous_token_columns(ci_level)
+  unlist(spec[c("ci", "med_ci")], recursive = FALSE, use.names = FALSE)
+}
+
 # Internal: resolve `show_columns` to one ordered token vector per
 # variable plus their ordered union (the columns of the table).
 #
@@ -2459,19 +2580,26 @@ build_display_df <- function(
     s
   }
 
-  ci_pct <- paste0(round(ci_level * 100), "%")
   # European convention: with a comma decimal mark the list separator
   # inside brackets becomes ";" (same rule as the effect-size CI above).
+  # The composite HEADER keeps ", " whatever the decimal mark: it names
+  # the quartiles, it does not list two numbers.
   bracket_sep <- if (decimal_mark == ",") "; " else ", "
 
+  # `has_group` here and `has_group` in `print.spicy_continuous_table()`
+  # (`!is.null(group_var)`) are two spellings of one fact -- the column
+  # and the attribute are set together by `table_continuous()` -- and the
+  # console's separator rule now depends on the pair agreeing (see
+  # `compute_var_sep_rows()`).
   has_group <- "group" %in% names(result)
   has_computed <- "statistic" %in% names(result)
   has_es <- "es_value" %in% names(result)
 
-  ci_ll_name <- paste0(ci_pct, " CI LL")
-  ci_ul_name <- paste0(ci_pct, " CI UL")
-  med_ci_ll_name <- paste0("Med ", ci_pct, " CI LL")
-  med_ci_ul_name <- paste0("Med ", ci_pct, " CI UL")
+  # The column names come from the vocabulary, never re-typed here: a
+  # token declared in one place and spelled in another is how
+  # `weighted_n` reached the display frame without reaching the
+  # structured view.
+  spec <- .continuous_token_columns(ci_level)
 
   # Legacy callers pass `show_ci` / `show_n` and no tokens: rebuild the
   # historical column set from them so the default display is untouched.
@@ -2507,24 +2635,22 @@ build_display_df <- function(
     v
   }
 
-  df <- data.frame(
-    Variable = result$label,
-    stringsAsFactors = FALSE,
-    check.names = FALSE
+  df <- stats::setNames(
+    data.frame(
+      result$label,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    ),
+    .CON_KEY_VARIABLE
   )
   if (has_group) {
-    df$Group <- result$group
+    df[[.CON_KEY_GROUP]] <- result$group
   }
   for (tok in tokens_union) {
-    if (tok == "m") {
-      df[["M"]] <- blanked(fmt(result$mean), tok)
-    } else if (tok == "sd") {
-      df[["SD"]] <- blanked(fmt(result$sd), tok)
-    } else if (tok == "med") {
-      df[["Med"]] <- blanked(fmt(result$median), tok)
-    } else if (tok == "iqr") {
-      df[["IQR"]] <- blanked(fmt(result$iqr), tok)
-    } else if (tok == "med_iqr") {
+    entries <- spec[[tok]]
+    if (tok == "med_iqr") {
+      # Composite cell: three statistics in one string, so it cannot go
+      # through `fmt()` column by column.
       compact <- ifelse(
         is.na(result$median) | is.na(result$q1) | is.na(result$q3),
         spicy_str("cell_undefined"),
@@ -2537,28 +2663,15 @@ build_display_df <- function(
           "]"
         )
       )
-      df[["Med [Q1, Q3]"]] <- blanked(compact, tok)
-    } else if (tok == "q1") {
-      df[["Q1"]] <- blanked(fmt(result$q1), tok)
-    } else if (tok == "q3") {
-      df[["Q3"]] <- blanked(fmt(result$q3), tok)
-    } else if (tok == "min") {
-      df[["Min"]] <- blanked(fmt(result$min), tok)
-    } else if (tok == "max") {
-      df[["Max"]] <- blanked(fmt(result$max), tok)
-    } else if (tok == "ci") {
-      df[[ci_ll_name]] <- blanked(fmt(result$ci_lower), tok)
-      df[[ci_ul_name]] <- blanked(fmt(result$ci_upper), tok)
-    } else if (tok == "med_ci") {
-      df[[med_ci_ll_name]] <- blanked(fmt(result$med_ci_lower), tok)
-      df[[med_ci_ul_name]] <- blanked(fmt(result$med_ci_upper), tok)
+      df[[entries[[1L]]$name]] <- blanked(compact, tok)
     } else if (tok == "n") {
-      df[["n"]] <- blanked(as.character(result$n), tok)
-    } else if (tok == "weighted_n") {
-      # Sum of weights, formatted like the other statistics (it is a
-      # weighted count, generally non-integer) -- the table_continuous_lm
-      # "Weighted n" convention.
-      df[["Weighted n"]] <- blanked(fmt(result$weighted_n), tok)
+      # A count carries no decimals: the only statistic that skips
+      # `fmt()`.
+      df[[entries[[1L]]$name]] <- blanked(as.character(result$n), tok)
+    } else {
+      for (e in entries) {
+        df[[e$name]] <- blanked(fmt(result[[e$field]]), tok)
+      }
     }
   }
 
@@ -2567,13 +2680,13 @@ build_display_df <- function(
     vars <- result$variable
     for (i in seq_along(vars)) {
       if (i > 1L && vars[i] == vars[i - 1L]) {
-        df$Variable[i] <- ""
+        df[[.CON_KEY_VARIABLE]][i] <- ""
       }
     }
 
     # Add test columns if computed and requested
     if (has_computed && show_statistic) {
-      df$Test <- vapply(
+      df[[.CON_KEY_TEST]] <- vapply(
         seq_len(nrow(result)),
         function(i) {
           tt <- result$test_type[i]
@@ -2592,10 +2705,10 @@ build_display_df <- function(
       )
     }
     if (has_computed && show_p) {
-      df$p <- vapply(result$p.value, fmt_p, character(1))
+      df[[.CON_KEY_P]] <- vapply(result$p.value, fmt_p, character(1))
     }
     if (has_es && show_effect_size) {
-      df$ES <- vapply(
+      df[[.CON_KEY_ES]] <- vapply(
         seq_len(nrow(result)),
         function(i) {
           fmt_es(
@@ -2617,10 +2730,10 @@ build_display_df <- function(
 
 # --- internal: compute separator row indices (first row of each var block) ---
 compute_var_sep_rows <- function(display_df) {
-  if (!"Variable" %in% names(display_df)) {
+  if (!.CON_KEY_VARIABLE %in% names(display_df)) {
     return(integer(0)) # nocov
   }
-  vars <- display_df$Variable
+  vars <- display_df[[.CON_KEY_VARIABLE]]
   sep <- integer(0)
   for (i in seq_along(vars)) {
     if (i > 1L && nzchar(vars[i])) {
@@ -2634,12 +2747,15 @@ compute_var_sep_rows <- function(display_df) {
 # The engines below carry the CI level in the SPANNER, so the column
 # keys are the bare bounds. The median CI keeps its own keys: two
 # columns named "LL" would collide.
-rename_ci_cols <- function(display_df, ci_pct) {
+#
+# KEY to KEY, both sides read from the vocabulary. Freezing the short
+# names is what keeps the flextable `col_keys`, the gt column ids and the
+# `th[id="%s"]` CSS selector out of reach of a translated header.
+rename_ci_cols <- function(display_df, ci_level) {
   nms <- names(display_df)
-  nms[nms == paste0(ci_pct, " CI LL")] <- "LL"
-  nms[nms == paste0(ci_pct, " CI UL")] <- "UL"
-  nms[nms == paste0("Med ", ci_pct, " CI LL")] <- "Med LL"
-  nms[nms == paste0("Med ", ci_pct, " CI UL")] <- "Med UL"
+  for (e in .continuous_ci_entries(ci_level)) {
+    nms[nms == e$name] <- e$short_name
+  }
   names(display_df) <- nms
   display_df
 }
@@ -2649,11 +2765,17 @@ rename_ci_cols <- function(display_df, ci_pct) {
 # except the CI bound pairs, which share one spanner. Driven by the
 # actual column keys so any `show_columns` selection renders the same
 # way on every engine.
-desc_spanner_groups <- function(col_keys, ci_pct) {
-  pairs <- list(
-    c("LL", "UL", paste0(ci_pct, " CI")),
-    c("Med LL", "Med UL", paste0("Med ", ci_pct, " CI"))
-  )
+#
+# Each entry carries a `key` (the MECHANICS: gt spanner ids, lookups) and
+# a `label` (the TEXT a reader sees). The two are the same string in
+# English and free to diverge at stage 2.
+#
+# Structural danger kept as-is: the pairing requires the two bounds to be
+# ADJACENT and in LL-then-UL order. Any other layout degrades silently to
+# one-column spanners.
+desc_spanner_groups <- function(col_keys, ci_level) {
+  # One pair per interval token, LL then UL, in vocabulary order.
+  pairs <- .continuous_token_columns(ci_level)[c("ci", "med_ci")]
   groups <- list()
   i <- 1L
   n <- length(col_keys)
@@ -2661,13 +2783,17 @@ desc_spanner_groups <- function(col_keys, ci_pct) {
     matched <- FALSE
     for (p in pairs) {
       if (
-        identical(col_keys[i], p[1L]) &&
+        identical(col_keys[i], p[[1L]]$short_name) &&
           i < n &&
-          identical(col_keys[i + 1L], p[2L])
+          identical(col_keys[i + 1L], p[[2L]]$short_name)
       ) {
         groups[[length(groups) + 1L]] <- list(
-          label = p[3L],
-          cols = c(i, i + 1L)
+          key = p[[1L]]$ci_key,
+          label = p[[1L]]$ci_key,
+          cols = c(i, i + 1L),
+          # The bound headers under the spanner: the ROLE the vocabulary
+          # already records, not a regex over the column key.
+          bounds = c(p[[1L]]$ci_role, p[[2L]]$ci_role)
         )
         i <- i + 2L
         matched <- TRUE
@@ -2675,7 +2801,11 @@ desc_spanner_groups <- function(col_keys, ci_pct) {
       }
     }
     if (!matched) {
-      groups[[length(groups) + 1L]] <- list(label = col_keys[i], cols = i)
+      groups[[length(groups) + 1L]] <- list(
+        key = col_keys[i],
+        label = col_keys[i],
+        cols = i
+      )
       i <- i + 1L
     }
   }
@@ -2683,18 +2813,26 @@ desc_spanner_groups <- function(col_keys, ci_pct) {
 }
 
 # --- internal: build 2-row header vectors ---
-build_header_rows <- function(col_keys, ci_pct) {
+build_header_rows <- function(col_keys, ci_level) {
   nc <- length(col_keys)
   top <- col_keys
   bot <- rep("", nc)
-  for (g in desc_spanner_groups(col_keys, ci_pct)) {
+  for (g in desc_spanner_groups(col_keys, ci_level)) {
     top[g$cols] <- g$label
     if (length(g$cols) > 1L) {
-      bot[g$cols] <- col_keys[g$cols]
-      bot[g$cols] <- sub("^Med ", "", bot[g$cols])
+      bot[g$cols] <- g$bounds
     }
   }
   list(top = top, bottom = bot)
+}
+
+# --- internal: the legacy `align = "auto"` right-hand columns ---
+# One rule, four engines: the counts and the p-value right-align, every
+# other numeric column centres. Compared KEY against key -- `Variable` and
+# `Group` can never collide with these, they are excluded upstream by
+# position rather than by name.
+.continuous_right_cols <- function(col_keys) {
+  which(col_keys %in% c(.CON_KEY_N, .CON_KEY_P))
 }
 
 # --- internal: export to various formats ---
@@ -2714,17 +2852,7 @@ export_desc_table <- function(
   note = NULL
 ) {
   title_by <- attr(raw_result, "group_label", exact = TRUE)
-  ci_pct <- paste0(round(ci_level * 100), "%")
-  ci_ll <- paste0(ci_pct, " CI LL")
-  ci_ul <- paste0(ci_pct, " CI UL")
-  has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))
-  has_med_ci <- all(
-    paste0("Med ", ci_pct, " CI ", c("LL", "UL")) %in% names(display_df)
-  )
-  has_statistic <- "Test" %in% names(display_df)
-  has_p <- "p" %in% names(display_df)
-  has_es <- "ES" %in% names(display_df)
-  has_n <- "n" %in% names(display_df)
+  has_p <- .CON_KEY_P %in% names(display_df)
   sep_rows <- compute_var_sep_rows(display_df)
 
   # Pre-pad numeric cells with figure-spaces (U+2007, digit-width) so
@@ -2771,16 +2899,14 @@ export_desc_table <- function(
     options(tinytable_print_output = "html")
     on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
-    display_df <- rename_ci_cols(display_df, ci_pct)
+    display_df <- rename_ci_cols(display_df, ci_level)
     nc <- ncol(display_df)
     col_keys <- names(display_df)
-    groups_spec <- desc_spanner_groups(col_keys, ci_pct)
-    ll_pos <- which(col_keys == "LL")
-    ul_pos <- which(col_keys == "UL")
+    groups_spec <- desc_spanner_groups(col_keys, ci_level)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner. Absent CI columns simply contribute no pair.
-    sub_labels <- build_header_rows(col_keys, ci_pct)$bottom
+    sub_labels <- build_header_rows(col_keys, ci_level)$bottom
     colnames(display_df) <- sub_labels
 
     # gspec walks the actual column keys in order, so any
@@ -2825,13 +2951,7 @@ export_desc_table <- function(
     } else {
       # "auto": legacy per-column rule -- right for n/p (when present),
       # center for the rest.
-      right_j <- integer(0)
-      if (has_n) {
-        right_j <- c(right_j, gspec[["n"]])
-      }
-      if (has_p) {
-        right_j <- c(right_j, gspec[["p"]])
-      }
+      right_j <- .continuous_right_cols(col_keys)
       center_j <- setdiff(numeric_j, right_j)
       if (length(center_j) > 0L) {
         tt <- tinytable::style_tt(tt, j = center_j, align = "c")
@@ -2906,14 +3026,14 @@ export_desc_table <- function(
       spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
     }
 
-    display_df <- rename_ci_cols(display_df, ci_pct)
+    display_df <- rename_ci_cols(display_df, ci_level)
     gt_col_keys <- names(display_df)
-    groups_spec <- desc_spanner_groups(gt_col_keys, ci_pct)
+    groups_spec <- desc_spanner_groups(gt_col_keys, ci_level)
     tbl <- gt::gt(display_df)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner.
-    gt_bottom <- build_header_rows(gt_col_keys, ci_pct)$bottom
+    gt_bottom <- build_header_rows(gt_col_keys, ci_level)$bottom
     label_list <- as.list(gt_bottom)
     names(label_list) <- gt_col_keys
     tbl <- gt::cols_label(tbl, .list = label_list)
@@ -2923,7 +3043,9 @@ export_desc_table <- function(
         tbl,
         label = g$label,
         columns = gt_col_keys[g$cols],
-        id = paste0("spn_", g$label)
+        # The id is MACHINE state (`left_spanners` below reads it back),
+        # so it is built from the key, never from the printed label.
+        id = paste0("spn_", g$key)
       )
     }
 
@@ -2932,11 +3054,11 @@ export_desc_table <- function(
     # uniform-width pre-padded strings (same strategy as
     # table_regression() / table_continuous_lm()); "center" / "right"
     # use gt::cols_align() literally.
-    tbl <- gt::cols_align(tbl, align = "left", columns = "Variable")
+    tbl <- gt::cols_align(tbl, align = "left", columns = .CON_KEY_VARIABLE)
     if (has_group) {
-      tbl <- gt::cols_align(tbl, align = "left", columns = "Group")
+      tbl <- gt::cols_align(tbl, align = "left", columns = .CON_KEY_GROUP)
     }
-    left_cols <- c("Variable", if (has_group) "Group")
+    left_cols <- c(.CON_KEY_VARIABLE, if (has_group) .CON_KEY_GROUP)
     numeric_cols <- setdiff(names(display_df), left_cols)
     if (use_decimal && length(numeric_cols) > 0L) {
       # Cells were pre-padded with figure-spaces upstream; centring
@@ -2949,8 +3071,10 @@ export_desc_table <- function(
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
     } else {
       # "auto": legacy per-column rule. Center descriptive / CI cols,
-      # right-align n / p (when present).
-      right_cols <- intersect(c("n", "p"), numeric_cols)
+      # right-align n / p (when present). `numeric_cols` has already
+      # dropped the two label columns, so the predicate walks it
+      # directly and keeps the column order it is given.
+      right_cols <- numeric_cols[.continuous_right_cols(numeric_cols)]
       center_cols <- setdiff(numeric_cols, right_cols)
       if (length(center_cols) > 0L) {
         tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
@@ -2960,9 +3084,9 @@ export_desc_table <- function(
       }
     }
 
-    left_spanners <- "spn_Variable"
+    left_spanners <- paste0("spn_", .CON_KEY_VARIABLE)
     if (has_group) {
-      left_spanners <- c(left_spanners, "spn_Group")
+      left_spanners <- c(left_spanners, paste0("spn_", .CON_KEY_GROUP))
     }
     tbl <- gt::tab_style(
       tbl,
@@ -3096,11 +3220,11 @@ export_desc_table <- function(
     if (output == "word" && !requireNamespace("officer", quietly = TRUE)) {
       spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
     }
-    display_df <- rename_ci_cols(display_df, ci_pct)
+    display_df <- rename_ci_cols(display_df, ci_level)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_pct)
-    groups_spec <- desc_spanner_groups(col_keys, ci_pct)
+    hdrs <- build_header_rows(col_keys, ci_level)
+    groups_spec <- desc_spanner_groups(col_keys, ci_level)
 
     map <- data.frame(
       col_keys = col_keys,
@@ -3162,10 +3286,7 @@ export_desc_table <- function(
       )
     } else {
       # "auto": legacy per-column rule.
-      right_j <- which(col_keys == "n")
-      if (has_p) {
-        right_j <- c(right_j, which(col_keys == "p"))
-      }
+      right_j <- .continuous_right_cols(col_keys)
       center_j <- setdiff(numeric_j, right_j)
       if (length(center_j) > 0L) {
         ft <- flextable::align(
@@ -3252,11 +3373,11 @@ export_desc_table <- function(
       )
     }
 
-    display_df <- rename_ci_cols(display_df, ci_pct)
+    display_df <- rename_ci_cols(display_df, ci_level)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_pct)
-    groups_spec <- desc_spanner_groups(col_keys, ci_pct)
+    hdrs <- build_header_rows(col_keys, ci_level)
+    groups_spec <- desc_spanner_groups(col_keys, ci_level)
     ci_pairs <- Filter(function(g) length(g$cols) > 1L, groups_spec)
 
     wb <- openxlsx2::wb_workbook()
@@ -3305,15 +3426,10 @@ export_desc_table <- function(
     last_row <- bot_header_row + nrow(display_df)
 
     # Alignment. Right-align n / p (when present); centre everything
-    # else except the left-side label columns.
+    # else except the left-side label columns. Excel is the one engine
+    # with no `align` branch: this rule applies at every `align` value.
     left_cols <- if (has_group) 1:2 else 1L
-    right_cols <- integer(0)
-    if (any(col_keys == "n")) {
-      right_cols <- c(right_cols, which(col_keys == "n"))
-    }
-    if (has_p) {
-      right_cols <- c(right_cols, which(col_keys == "p"))
-    }
+    right_cols <- .continuous_right_cols(col_keys)
     center_cols <- setdiff(seq_len(nc), c(left_cols, right_cols))
     all_rows <- top_header_row:last_row
 
@@ -3415,10 +3531,10 @@ export_desc_table <- function(
   if (output == "clipboard") {
     .spicy_clip_preflight()
 
-    display_df <- rename_ci_cols(display_df, ci_pct)
+    display_df <- rename_ci_cols(display_df, ci_level)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_pct)
+    hdrs <- build_header_rows(col_keys, ci_level)
 
     # The sub-label row carries the LL / UL labels of the CI pairs;
     # with no CI column it is empty and is dropped rather than
