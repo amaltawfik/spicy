@@ -2221,6 +2221,53 @@ test_that("glance() returns NA test/ES, populated n_total without by", {
   expect_equal(broom::glance(out_cc)$n_total, 1175L)
 })
 
+test_that("print() survives a typed view that outlived its display frame", {
+  # The shape guard on `display_labels`, not merely `is.null(structured)`:
+  # here the typed view is PRESENT while `display_df` is gone, so the
+  # printer falls back to the raw wide frame -- which carries `Level`,
+  # `Chi2` and `df` the typed view does not. Handing that frame the typed
+  # labels aborts in spicy_print_table(); reverting the guard to
+  # `is.null(s)` alone fails this test.
+  out <- table_categorical(sochealth, select = smoking, by = education)
+  degraded <- out
+  attr(degraded, "display_df") <- NULL
+  expect_no_error(txt <- capture.output(print(degraded)))
+  expect_true(any(grepl("Chi2", txt, fixed = TRUE)))
+})
+
+test_that("an empty display cell does not break the width decision", {
+  # The width decision measures printed width, so a missing cell is two
+  # columns wide, not an NA that turns `if (width > console)` into an
+  # error.
+  out <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    align = "right"
+  )
+  dd <- attr(out, "display_df")
+  dd[[2L]][1L] <- NA_character_
+  attr(out, "display_df") <- dd
+  expect_no_error(capture.output(print(out)))
+})
+
+test_that("glance() names the measure column from the typed view", {
+  out <- table_categorical(sochealth, select = smoking, by = education)
+  expect_identical(broom::glance(out)$assoc_type, "Cramer's V")
+  # Stripped of its typed view, the exclusion rule answers the same.
+  bare <- out
+  attr(bare, "structured") <- NULL
+  expect_identical(broom::glance(bare)$assoc_type, "Cramer's V")
+  # A table with no measure has no assoc column to find on either route.
+  none <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = education,
+    assoc_measure = "none"
+  )
+  expect_true(is.na(broom::glance(none)$assoc_type))
+})
+
 test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
   out <- table_categorical(
     sochealth,

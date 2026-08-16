@@ -341,6 +341,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `table_categorical()` separates its bounds with `;` under
   `decimal_mark = ","`, as every other interval in the package already
   did; `0,45 [0,31, 0,59]` was ambiguous.
+* Printing a `table_categorical()` table with an empty cell no longer
+  fails with "missing value where TRUE/FALSE needed"; column widths are
+  measured as they are displayed.
 * An empty or non-string `clipboard_delim` raises a classed error instead
   of silently building an unusable payload.
 * A `table_categorical()` variable label that happens to start with the

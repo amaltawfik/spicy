@@ -70,16 +70,49 @@ print.spicy_categorical_table <- function(x, ...) {
     .categorical_sep_rows_typed(s)
   }
 
+  # The header a reader sees is the col_meta display_label, never the
+  # frozen column key (decision 13). Guarded on SHAPE like `sep_rows`
+  # above, not merely on `s` being present: `spicy_print_table()` aborts
+  # on a label vector that does not match the frame, and a degraded
+  # object that fell back to `x` (wide_raw, with `Level` / `Chi2` / `df`
+  # the typed view has not) must still print.
+  header_labels <- if (is.null(s)) {
+    NULL
+  } else {
+    labs <- c(
+      spicy_str("header_variable"),
+      vapply(
+        .struct_value_cols(s$body),
+        function(nm) s$col_meta[[nm]]$display_label %||% nm,
+        character(1),
+        USE.NAMES = FALSE
+      )
+    )
+    if (length(labs) == ncol(display_df)) labs else NULL
+  }
+
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
   # Each column in build_ascii_table uses: 1 (gutter) + w[i] + 1
   # (gutter) chars, plus 1 char for the vertical separator after
   # column 1; `padding` is added to each w[i].
+  #
+  # Measured on what is PRINTED -- the labels, not the keys -- and
+  # measured the way `ascii_table_widths()` measures, by display width
+  # rather than character count: a header wider than its key would
+  # otherwise make this decision disagree with the renderer's own.
   padding <- 2L
+  width_headers <- header_labels %||% names(display_df)
   col_widths <- vapply(
     seq_along(display_df),
     function(i) {
-      max(nchar(c(names(display_df)[i], as.character(display_df[[i]]))))
+      max(
+        crayon::col_nchar(
+          c(width_headers[i], as.character(display_df[[i]])),
+          type = "width"
+        ),
+        na.rm = TRUE
+      )
     },
     numeric(1)
   )
@@ -101,7 +134,8 @@ print.spicy_categorical_table <- function(x, ...) {
     bottom_line = FALSE,
     align_left_cols = align_left,
     align_center_cols = align_center,
-    group_sep_rows = sep_rows
+    group_sep_rows = sep_rows,
+    display_labels = header_labels
   )
 
   invisible(x)
@@ -349,10 +383,12 @@ glance.spicy_categorical_table <- function(x, ...) {
     )
   }
   # The cross-tab path stores `chi2`, `df`, `p` (added by parse_stats)
-  # plus an association-measure column whose name is the human label
-  # set by `cross_tab()` (`"Cramer's V"`, `"Phi"`, `"Gamma"`,
-  # `"Kendall's Tau-b"`, ...). Treat as the measure any column that
-  # is not in the standard set.
+  # plus an association-measure column named for the measure
+  # (`"Cramer's V"`, `"Phi"`, `"Kendall's Tau-b"`, ...). Which column
+  # that is comes from the typed view, which carries the `assoc` token
+  # on it -- the name is READ, not guessed from a list of the names it
+  # is not. The exclusion rule stays as the fallback for a degraded
+  # object stripped of its typed view.
   has_test <- "p" %in% names(long)
   std_cols <- c(
     "variable",
@@ -368,11 +404,17 @@ glance.spicy_categorical_table <- function(x, ...) {
     "ci_lower",
     "ci_upper"
   )
-  measure_cols <- setdiff(names(long), std_cols)
-  measure_col <- if (length(measure_cols) > 0L) {
-    measure_cols[1]
+  st <- attr(x, "structured", exact = TRUE)
+  measure_col <- if (!is.null(st) && !is.null(st$col_meta)) {
+    is_assoc <- vapply(
+      st$col_meta,
+      function(m) identical(m$token, "assoc"),
+      logical(1)
+    )
+    if (any(is_assoc)) names(st$col_meta)[is_assoc][[1L]] else NA_character_
   } else {
-    NA_character_
+    measure_cols <- setdiff(names(long), std_cols)
+    if (length(measure_cols) > 0L) measure_cols[[1L]] else NA_character_
   }
   has_assoc <- !is.na(measure_col)
   has_assoc_ci <- all(c("ci_lower", "ci_upper") %in% names(long))
