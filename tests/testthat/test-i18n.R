@@ -106,6 +106,61 @@ test_that("every frozen categorical key equals its English display label", {
   expect_identical(.assoc_key("no_such_measure"), "no_such_measure")
 })
 
+test_that("every frozen continuous key equals its English display label", {
+  # Same contract as the categorical test above, for lot B. The column
+  # NAME is a rendering key (flextable col_keys, gt ids, the gt CSS
+  # selector) and an `as_structured()` key; the header is a separate
+  # layer. They hold the same string in English, and only this test can
+  # see them part company -- `expect_named()` pins the keys, the console
+  # snapshots pin the headers, and both stay green through a drift.
+  couples <- list(
+    list(.CON_KEY_VARIABLE, "header_variable"),
+    list(.CON_KEY_GROUP, "header_group"),
+    list(.CON_KEY_TEST, "header_test"),
+    list(.CON_KEY_P, "header_p"),
+    list(.CON_KEY_ES, "header_effect_size_short"),
+    list(.CON_KEY_N, "header_n_lower"),
+    list(.CON_KEY_WEIGHTED_N, "header_weighted_n"),
+    list(.CON_KEY_CI_LL, "header_ci_ll"),
+    list(.CON_KEY_CI_UL, "header_ci_ul"),
+    # The interval word INSIDE a column key ("95% CI LL"). It is not the
+    # header key: a translated "CI" must never move a public key.
+    list(.CON_KEY_CI, "header_ci_label_confidence")
+  )
+  for (cp in couples) {
+    expect_identical(cp[[1L]], spicy_str(cp[[2L]]), info = cp[[2L]])
+  }
+  # The median prefix is a composition rule, not a constant: `paste0()`
+  # on the key side, the registry word plus a space on the label side.
+  expect_identical(.CON_KEY_MED_PREFIX, paste0(spicy_str("header_median"), " "))
+
+  # The vocabulary itself: fifteen columns, each of which must carry a
+  # label equal to its key, and each interval bound a spanner header
+  # equal to the interval key it belongs to.
+  entries <- unlist(
+    .continuous_token_columns(0.95),
+    recursive = FALSE,
+    use.names = FALSE
+  )
+  expect_identical(
+    vapply(entries, function(e) e$name, character(1)),
+    vapply(entries, function(e) e$label, character(1))
+  )
+  bounds <- Filter(function(e) !is.null(e$ci_role), entries)
+  expect_length(bounds, 4L)
+  expect_identical(
+    vapply(bounds, function(e) e$ci_key, character(1)),
+    vapply(bounds, function(e) e$ci_label, character(1))
+  )
+  expect_identical(
+    vapply(bounds, function(e) e$ci_role, character(1)),
+    vapply(bounds, function(e) e$short_label, character(1))
+  )
+  # `.continuous_labels()` is a total function of its input: an unknown
+  # key comes back unchanged, so a degraded object still prints.
+  expect_identical(.continuous_labels("no such column", 0.95), "no such column")
+})
+
 test_that("spicy_str() errors hard on an unknown key", {
   expect_error(spicy_str("no_such_key_exists"))
 })

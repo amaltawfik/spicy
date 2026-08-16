@@ -450,10 +450,16 @@
       col_names <- c(col_names, e$name)
       col_meta[[e$name]] <- list(
         token = tok,
+        # The entry NAME is the frozen key a consumer indexes into; the
+        # `display_label` is the header a renderer prints. `ci_label` is
+        # text too -- `inline()` writes it into a sentence -- so it
+        # follows the registry while the neighbouring column name does
+        # not: an assumed asymmetry of the typed contract.
+        display_label = e$label,
         precision = if (isTRUE(e$integer)) 0L else as.integer(digits),
         p_style = NULL,
         ci_role = e$ci_role,
-        ci_label = e$ci_key
+        ci_label = e$ci_label
       )
       col_source[[e$name]] <- e
     }
@@ -477,7 +483,11 @@
     # The console prints the statistic inside its own gloss
     # ("t(1196.18) = 0.28"): the body keeps the statistic, the string
     # travels as a display override.
-    col_meta[[.CON_KEY_TEST]] <- list(token = "statistic", precision = 2L)
+    col_meta[[.CON_KEY_TEST]] <- list(
+      token = "statistic",
+      display_label = spicy_str("header_test"),
+      precision = 2L
+    )
     col_source[[.CON_KEY_TEST]] <- list(
       name = .CON_KEY_TEST,
       field = "statistic",
@@ -488,6 +498,7 @@
     col_names <- c(col_names, .CON_KEY_P)
     col_meta[[.CON_KEY_P]] <- list(
       token = "p",
+      display_label = spicy_str("header_p"),
       precision = as.integer(p_digits),
       p_style = .style_p_style_token(),
       threshold = 10^(-p_digits)
@@ -498,6 +509,7 @@
     col_names <- c(col_names, .CON_KEY_ES)
     col_meta[[.CON_KEY_ES]] <- list(
       token = "es",
+      display_label = spicy_str("header_effect_size_short"),
       precision = as.integer(effect_size_digits)
     )
     col_source[[.CON_KEY_ES]] <- list(

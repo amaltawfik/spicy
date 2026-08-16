@@ -1787,6 +1787,17 @@ order_continuous_tokens <- function(tokens) {
 # and are out of this lot's scope.
 .continuous_ci_pct <- function(ci_level) paste0(round(ci_level * 100), "%")
 
+# The interval HEADER a reader sees ("95% CI"), the label twin of
+# `.continuous_ci_pct()`. Same template the regression and categorical
+# families use, so the coverage / word order is translatable in one move.
+.continuous_ci_label <- function(ci_level) {
+  spicy_fmt(
+    "header_ci_spanner",
+    round(ci_level * 100),
+    spicy_str("header_ci_label_confidence")
+  )
+}
+
 # The `show_columns` token behind each displayed column, plus the field of
 # the compute frame that fills it. Single source for the display frame,
 # the structured view and every spanner layout, keyed by token so a new
@@ -1802,63 +1813,174 @@ order_continuous_tokens <- function(tokens) {
 #   ci_role     `.CON_KEY_CI_LL` / `.CON_KEY_CI_UL` for an interval bound
 #   short_name  the bare key `rename_ci_cols()` leaves for the engines
 #   ci_key      the frozen key of the interval the bound belongs to
+#   label       the HEADER a reader sees, resolved from the registry
+#   short_label the header printed under the spanner
+#   ci_label    the header of the interval the bound belongs to
 #
 # Lives beside `.continuous_column_tokens` (the ORDER of the columns) on
 # purpose: the order and the names of the columns are one object.
+#
+# The labels are resolved in the BODY, never in a top-level constant: a
+# constant would read the registry once at build time and no translation
+# could ever move it.
 .continuous_token_columns <- function(ci_level) {
   ci_key <- paste0(.continuous_ci_pct(ci_level), " ", .CON_KEY_CI)
   med_ci_key <- paste0(.CON_KEY_MED_PREFIX, ci_key)
-  bound <- function(key, role, short, field) {
+  ci_hdr <- .continuous_ci_label(ci_level)
+  med_hdr <- spicy_str("header_median")
+  # "Med 95% CI": the same statistic-then-interval template the
+  # regression family uses for "f2 95% CI".
+  med_ci_hdr <- spicy_fmt("header_with_ci_suffix", med_hdr, ci_hdr)
+  role_labels <- c(
+    spicy_str("header_ci_ll"),
+    spicy_str("header_ci_ul")
+  )
+  names(role_labels) <- c(.CON_KEY_CI_LL, .CON_KEY_CI_UL)
+  bound <- function(key, hdr, role, short, field) {
     list(
       name = paste0(key, " ", role),
+      label = spicy_fmt("header_ci_bound", hdr, role_labels[[role]]),
       field = field,
       ci_role = role,
       short_name = short,
-      ci_key = key
+      short_label = role_labels[[role]],
+      ci_key = key,
+      ci_label = hdr
     )
   }
   list(
-    m = list(list(name = "M", field = "mean")),
-    sd = list(list(name = "SD", field = "sd")),
-    med = list(list(name = "Med", field = "median")),
-    iqr = list(list(name = "IQR", field = "iqr")),
+    m = list(list(
+      name = "M",
+      label = spicy_str("header_mean"),
+      field = "mean"
+    )),
+    sd = list(list(
+      name = "SD",
+      label = spicy_str("header_sd"),
+      field = "sd"
+    )),
+    med = list(list(name = "Med", label = med_hdr, field = "median")),
+    iqr = list(list(
+      name = "IQR",
+      label = spicy_str("header_iqr"),
+      field = "iqr"
+    )),
     # Composite: the body keeps the median, the display override
     # carries the "Med [Q1, Q3]" string no single number expresses.
+    # The header composes from the same three atoms.
     med_iqr = list(list(
       name = "Med [Q1, Q3]",
+      label = spicy_fmt(
+        "header_med_iqr_composite",
+        med_hdr,
+        spicy_str("header_q1"),
+        spicy_str("header_q3")
+      ),
       field = "median",
       composite = TRUE
     )),
-    q1 = list(list(name = "Q1", field = "q1")),
-    q3 = list(list(name = "Q3", field = "q3")),
-    min = list(list(name = "Min", field = "min")),
-    max = list(list(name = "Max", field = "max")),
+    q1 = list(list(
+      name = "Q1",
+      label = spicy_str("header_q1"),
+      field = "q1"
+    )),
+    q3 = list(list(
+      name = "Q3",
+      label = spicy_str("header_q3"),
+      field = "q3"
+    )),
+    min = list(list(
+      name = "Min",
+      label = spicy_str("header_min"),
+      field = "min"
+    )),
+    max = list(list(
+      name = "Max",
+      label = spicy_str("header_max"),
+      field = "max"
+    )),
     ci = list(
-      bound(ci_key, .CON_KEY_CI_LL, .CON_KEY_CI_LL, "ci_lower"),
-      bound(ci_key, .CON_KEY_CI_UL, .CON_KEY_CI_UL, "ci_upper")
+      bound(ci_key, ci_hdr, .CON_KEY_CI_LL, .CON_KEY_CI_LL, "ci_lower"),
+      bound(ci_key, ci_hdr, .CON_KEY_CI_UL, .CON_KEY_CI_UL, "ci_upper")
     ),
     med_ci = list(
       bound(
         med_ci_key,
+        med_ci_hdr,
         .CON_KEY_CI_LL,
         paste0(.CON_KEY_MED_PREFIX, .CON_KEY_CI_LL),
         "med_ci_lower"
       ),
       bound(
         med_ci_key,
+        med_ci_hdr,
         .CON_KEY_CI_UL,
         paste0(.CON_KEY_MED_PREFIX, .CON_KEY_CI_UL),
         "med_ci_upper"
       )
     ),
-    n = list(list(name = .CON_KEY_N, field = "n", integer = TRUE)),
+    n = list(list(
+      name = .CON_KEY_N,
+      label = spicy_str("header_n_lower"),
+      field = "n",
+      integer = TRUE
+    )),
     # Sum of weights (decision 17): a weighted count, generally
     # non-integer, so it takes the table's regular precision -- the
     # `table_continuous_lm()` "Weighted n" convention.
     weighted_n = list(
-      list(name = .CON_KEY_WEIGHTED_N, field = "weighted_n", integer = FALSE)
+      list(
+        name = .CON_KEY_WEIGHTED_N,
+        label = spicy_str("header_weighted_n"),
+        field = "weighted_n",
+        integer = FALSE
+      )
     )
   )
+}
+
+# The HEADER behind each frozen column key, as one named vector: the five
+# keys outside the statistics vocabulary, then every vocabulary entry
+# under its full key AND under the short key `rename_ci_cols()` leaves.
+.continuous_label_map <- function(ci_level) {
+  map <- c(
+    spicy_str("header_variable"),
+    spicy_str("header_group"),
+    spicy_str("header_test"),
+    spicy_str("header_p"),
+    spicy_str("header_effect_size_short")
+  )
+  names(map) <- c(
+    .CON_KEY_VARIABLE,
+    .CON_KEY_GROUP,
+    .CON_KEY_TEST,
+    .CON_KEY_P,
+    .CON_KEY_ES
+  )
+  for (entries in .continuous_token_columns(ci_level)) {
+    for (e in entries) {
+      map[[e$name]] <- e$label
+      if (!is.null(e$short_name)) {
+        map[[e$short_name]] <- e$short_label
+      }
+    }
+  }
+  map
+}
+
+# Resolve a vector of frozen column keys to the headers a reader sees.
+# An unknown key returns itself: a degraded object still prints, and the
+# result is a vector of the same length as its input by construction --
+# which is why the console needs no shape guard here.
+.continuous_labels <- function(col_keys, ci_level) {
+  map <- .continuous_label_map(ci_level)
+  out <- unname(map[col_keys])
+  # Subset assignment rather than `ifelse()`: the latter returns
+  # `logical(0)` on an empty input, which would break the length
+  # guarantee at the one edge the caller cannot reach today.
+  miss <- is.na(out)
+  out[miss] <- col_keys[miss]
+  out
 }
 
 # The four interval-bound entries of the vocabulary, flat and in column
@@ -2112,16 +2234,31 @@ build_test_note <- function(test_used, auto_rank, n_groups) {
 # those: "IQR" is used in the literature for both the interval and its
 # width, and an order-statistic CI is not a t interval.
 build_column_glosses <- function(tokens, result, ci_level) {
-  ci_pct <- paste0(round(ci_level * 100), "%")
+  # Each gloss names its own column: the header travels as an argument,
+  # resolved from the vocabulary, never re-typed in the note's value.
+  spec <- .continuous_token_columns(ci_level)
+  label_of <- function(tok) spec[[tok]][[1L]]$label
   parts <- character(0)
   if ("iqr" %in% tokens) {
-    parts <- c(parts, spicy_str("note_gloss_iqr"))
+    parts <- c(
+      parts,
+      spicy_fmt(
+        "note_gloss_iqr",
+        label_of("iqr"),
+        label_of("q3"),
+        label_of("q1")
+      )
+    )
   }
   if ("med_iqr" %in% tokens) {
-    parts <- c(parts, spicy_str("note_gloss_med_iqr"))
+    parts <- c(parts, spicy_fmt("note_gloss_med_iqr", label_of("med_iqr")))
   }
   if ("med_ci" %in% tokens) {
-    gloss <- spicy_fmt("note_gloss_med_ci", ci_pct)
+    gloss <- spicy_fmt(
+      "note_gloss_med_ci",
+      spec[["med_ci"]][[1L]]$ci_label,
+      .continuous_ci_pct(ci_level)
+    )
     if (any(is.na(result$med_ci_lower))) {
       gloss <- paste(
         gloss,
@@ -2776,6 +2913,7 @@ rename_ci_cols <- function(display_df, ci_level) {
 desc_spanner_groups <- function(col_keys, ci_level) {
   # One pair per interval token, LL then UL, in vocabulary order.
   pairs <- .continuous_token_columns(ci_level)[c("ci", "med_ci")]
+  labels <- .continuous_labels(col_keys, ci_level)
   groups <- list()
   i <- 1L
   n <- length(col_keys)
@@ -2789,11 +2927,11 @@ desc_spanner_groups <- function(col_keys, ci_level) {
       ) {
         groups[[length(groups) + 1L]] <- list(
           key = p[[1L]]$ci_key,
-          label = p[[1L]]$ci_key,
+          label = p[[1L]]$ci_label,
           cols = c(i, i + 1L),
           # The bound headers under the spanner: the ROLE the vocabulary
           # already records, not a regex over the column key.
-          bounds = c(p[[1L]]$ci_role, p[[2L]]$ci_role)
+          bounds = c(p[[1L]]$short_label, p[[2L]]$short_label)
         )
         i <- i + 2L
         matched <- TRUE
@@ -2803,7 +2941,7 @@ desc_spanner_groups <- function(col_keys, ci_level) {
     if (!matched) {
       groups[[length(groups) + 1L]] <- list(
         key = col_keys[i],
-        label = col_keys[i],
+        label = labels[i],
         cols = i
       )
       i <- i + 1L
@@ -2815,7 +2953,7 @@ desc_spanner_groups <- function(col_keys, ci_level) {
 # --- internal: build 2-row header vectors ---
 build_header_rows <- function(col_keys, ci_level) {
   nc <- length(col_keys)
-  top <- col_keys
+  top <- .continuous_labels(col_keys, ci_level)
   bot <- rep("", nc)
   for (g in desc_spanner_groups(col_keys, ci_level)) {
     top[g$cols] <- g$label
@@ -2911,6 +3049,13 @@ export_desc_table <- function(
 
     # gspec walks the actual column keys in order, so any
     # `show_columns` selection renders with the right spanners.
+    #
+    # Indexed by the LABEL, not the key: `tinytable::group_tt(j = )`
+    # takes the printed text as the list name, so there is no choice.
+    # The constraint that follows is upstream's, and it is a stage-2
+    # hazard: two columns whose headers TRANSLATE to the same string
+    # collapse into one entry and a column disappears from the header.
+    # Same hazard as A10 in the categorical family.
     gspec <- list()
     for (g in groups_spec) {
       gspec[[g$label]] <- g$cols
@@ -3236,6 +3381,15 @@ export_desc_table <- function(
 
     ft <- flextable::flextable(display_df)
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
+    # Spanner geometry by equality of TEXT: `merge_h()` merges adjacent
+    # header cells holding the same string, and `map$top` now carries the
+    # resolved labels where it used to carry the keys. Second
+    # label-indexed mechanism of the family after `gspec` above, and the
+    # same stage-2 hazard: two neighbouring columns whose headers
+    # translate alike would merge into a phantom spanner.
+    # `map$col_keys` stays the frozen key, so only the header geometry is
+    # exposed. Kept as-is -- replacing it with explicit `merge_at()`
+    # calls changes the mechanism and has to be proven on its own.
     ft <- flextable::merge_h(ft, part = "header")
 
     bd <- spicy_fp_border(color = "black", width = 1)

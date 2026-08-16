@@ -255,6 +255,49 @@
   note_prefix_emphasis = "Note.",
   note_assoc_measure_item = "%s: %s",
 
+  # -- table_continuous(): column headers ------------------------------------
+  # The column NAME and the `col_meta` key stay frozen English -- they are
+  # the rendering contract (flextable col_keys, gt ids, the gt CSS
+  # selector) and the `as_structured()` contract. These keys name only the
+  # HEADER a reader sees. `header_variable` is shared with lot A.
+  header_group = "Group",
+  header_mean = "M",
+  header_sd = "SD",
+  header_median = "Med",
+  header_iqr = "IQR",
+  header_q1 = "Q1",
+  header_q3 = "Q3",
+  header_min = "Min",
+  header_max = "Max",
+  # Composite: the median and its two quartiles in one cell. Composed from
+  # `header_median` / `header_q1` / `header_q3`, never a monolithic
+  # "Med [Q1, Q3]", so one translation of "Med" serves the whole family.
+  # The brackets stay in the template: they punctuate a header, they are
+  # not the interval brackets a journal style may redefine (the cell's own
+  # brackets are literal too, and its separator follows `decimal_mark`
+  # while the header's does not).
+  header_med_iqr_composite = "%s [%s, %s]",
+  header_test = "Test",
+  # The SHORT effect-size header of `table_continuous()`. Deliberately NOT
+  # `header_effect_size` ("Effect size", lot A): two strings, two columns,
+  # two families.
+  header_effect_size_short = "ES",
+  # The bounds of an interval carried by a SPANNER. Deliberately not
+  # `header_ci_lower` / `header_ci_upper` ("CI lower" / "CI upper", lot A),
+  # which name standalone columns with no spanner above them.
+  header_ci_ll = "LL",
+  header_ci_ul = "UL",
+  # Two holes: the interval header ("95% CI"), then the bound. The order is
+  # the reverse of `header_with_ci_suffix` (statistic, then interval), so a
+  # language must be able to decline them apart. Fourth key of value
+  # "%s %s" -- one key per ROLE is the registry's rule, not one per string.
+  header_ci_bound = "%s %s",
+  # The weighted-count COLUMN header, distinct from `label_weighted_n`, the
+  # fit-statistic ROW label of `table_regression()`: same string today, two
+  # roles, and a language may want one word in a stub and another over a
+  # column.
+  header_weighted_n = "Weighted n",
+
   # -- table_continuous(): tests and glosses --------------------------------
   test_wilcoxon_rank_sum = "Wilcoxon rank-sum test",
   test_kruskal_wallis = "Kruskal-Wallis test",
@@ -267,10 +310,15 @@
   note_group_comparison = "Group comparison: %s.",
   note_group_comparison_item = "%s (%s)",
   cell_undefined = "--",
-  note_gloss_iqr = "IQR = interquartile range (Q3 - Q1).",
-  note_gloss_med_iqr = "Med [Q1, Q3] = median [first quartile, third quartile].",
-  # The same coverage percentage appears twice: positional form, mandatory.
-  note_gloss_med_ci = "Med %1$s CI = exact order-statistic confidence interval for the median (coverage at least %1$s).",
+  # A gloss names the header it glosses: the header travels as an
+  # ARGUMENT, resolved from the very key the column header uses, so a
+  # translated header can never leave the note quoting the English one.
+  # `note_gloss_iqr` takes IQR, then Q3 and Q1 in the order the
+  # subtraction reads.
+  note_gloss_iqr = "%s = interquartile range (%s - %s).",
+  note_gloss_med_iqr = "%s = median [first quartile, third quartile].",
+  # Two holes: the median-interval header, then the coverage percentage.
+  note_gloss_med_ci = "%1$s = exact order-statistic confidence interval for the median (coverage at least %2$s).",
   note_gloss_med_ci_undefined = "\"%s\" where the sample is too small for this level.",
 
   # -- table_regression(): standard-error and interval notes ----------------
