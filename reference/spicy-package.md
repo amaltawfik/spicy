@@ -65,6 +65,9 @@ on the **stable** surface.
   [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 
+- Inline citation:
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+
 - Table styles:
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md),
   [`spicy_style_names()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)

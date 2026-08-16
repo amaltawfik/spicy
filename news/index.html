@@ -145,6 +145,8 @@
 <div class="section level3">
 <h3 id="new-functions-development-version">New functions<a class="anchor" aria-label="anchor" href="#new-functions-development-version"></a></h3>
 <ul><li>
+<code><a href="../reference/inline.html">inline()</a></code> cites one table cell in running Quarto / R Markdown text: the returned string is exactly the displayed cell – same decimals, <em>p</em> style, interval punctuation, journal style – so a number quoted in a sentence can never drift from the number printed in the table. Rows are addressed by variable / level identity (never by display label), columns by their typed token, <code>"ci"</code> composes the interval, <code>{token}</code> patterns build full fragments (<code>"{b} ({ci_label} {ci}; p {p})"</code>), and every misaddressing errors with the list of available choices.</li>
+<li>
 <code><a href="../reference/table_regression_uv.html">table_regression_uv()</a></code>: univariable screening tables – one fit per predictor, one row block each, merged side by side with the multivariable model. Supports <code>lm</code> (the linear default), <code>glm</code> (selected by <code>family</code>, in any form <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> accepts), and <code>coxph</code> (<code>outcome = Surv(time, status)</code>).</li>
 <li>In the linear screen, a binary-looking outcome proceeds as a linear probability model, in a classed warning pointing to <code>vcov = "HC3"</code> and <code>method = "glm"</code>. A per-predictor <code>N</code> column shows by default, with a note when Ns differ, and <code>complete_cases = TRUE</code> forces the common sample.</li>
 <li>Univariable intercepts are hidden by default; <code>show_intercept = TRUE</code> adds each fit’s own. <code>p_adjust</code> covers the whole screen, and <code>exponentiate</code>, <code>vcov</code> / <code>cluster</code> (the footer names the cluster column), <code>labels</code>, the output engines and <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code> work as in <code><a href="../reference/table_regression.html">table_regression()</a></code>.</li>
@@ -353,6 +355,8 @@
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
 <ul><li>
+<code>excel_sheet</code> defaults to <code>NULL</code> in the four table functions and resolves to the same sheet names as before (<code>"Regression"</code>, <code>"Categorical"</code>, <code>"Descriptives"</code>, <code>"Linear models"</code>). Behaviour is unchanged; an explicit name still wins.</li>
+<li>
 <code>table_continuous(by = )</code> titles the table <code>Descriptive statistics by &lt;label&gt;</code>: the grouping variable is stated in the console header and in every rendered caption, like the other <code>by</code> tables of the family.</li>
 <li>
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> discloses excluded missing values in the table note – per variable, with a deduplicated row total, and rows dropped for a missing <code>by</code> – instead of dropping them silently.</li>

@@ -43,7 +43,7 @@ table_categorical(
   add_multilevel_header = TRUE,
   blank_na_wide = FALSE,
   excel_path = NULL,
-  excel_sheet = "Categorical",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   user_na = TRUE,
@@ -313,7 +313,8 @@ table_categorical(
 
 - excel_sheet:
 
-  Sheet name for Excel export. Defaults to `"Categorical"`.
+  Sheet name for Excel export. `NULL` (the default) uses
+  `"Categorical"`.
 
 - clipboard_delim:
 

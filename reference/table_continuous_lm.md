@@ -60,7 +60,7 @@ table_continuous_lm(
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
-  excel_sheet = "Linear models",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   verbose = FALSE,
@@ -577,7 +577,8 @@ table_continuous_lm(
 
 - excel_sheet:
 
-  Sheet name for `output = "excel"` (default: `"Linear models"`).
+  Sheet name for `output = "excel"`. `NULL` (the default) uses
+  `"Linear models"`.
 
 - clipboard_delim:
 

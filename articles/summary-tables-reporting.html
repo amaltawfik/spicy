@@ -850,6 +850,35 @@ whole document. <code><a href="../reference/spicy_style.html">?spicy_style</a></
 rule with the sentence it comes from.</p>
 </div>
 <div class="section level2">
+<h2 id="citing-table-values-in-the-text">Citing table values in the text<a class="anchor" aria-label="anchor" href="#citing-table-values-in-the-text"></a>
+</h2>
+<p>The number a sentence quotes should be the number the table prints —
+retyping it is how a manuscript ends up saying 3.9 where the table says
+3.90, or keeping a <em>p</em> value a revision changed.
+<code><a href="../reference/inline.html">inline()</a></code> returns one cell of a spicy table as text,
+formatted by the same machinery that formatted the table:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
+<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">sex</span>, <span class="st">"Male"</span>, <span class="st">"b"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "3.90"</span></span></code></pre></div>
+<p>so in Quarto you write <code>`r inline(tbl, sex, "Male", "b")`</code>
+inside the sentence. A <code>{token}</code> pattern quotes a full
+fragment in one call:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">sex</span>, <span class="st">"Male"</span>, <span class="st">"{b} ({ci_label} {ci}; p {p})"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "3.90 (95% CI [2.14, 5.65]; p &lt;.001)"</span></span></code></pre></div>
+<p>Two properties carry the guarantee. The text follows the table: under
+<code>style = "jama"</code> or <code>decimal_mark = ","</code> the cited
+string changes with the printed one. And the addressing survives
+relabeling: rows are found by the source variable and level — not by the
+displayed label — so <code>labels = c(sex = "Administrative sex")</code>
+changes the table, not your calls. Misaddressing never fails silently:
+an unknown variable, level, or column token errors with the list of
+available choices, and a reference or non-estimable cell refuses with
+its reason instead of pasting a dash into a sentence.</p>
+</div>
+<div class="section level2">
 <h2 id="post-process-the-returned-table-object">Post-process the returned table object<a class="anchor" aria-label="anchor" href="#post-process-the-returned-table-object"></a>
 </h2>
 <p>All four summary-table helpers return regular <code>gt</code>,
@@ -859,7 +888,7 @@ keep styling them with the native package API. This includes
 changes what the rendering engine produces.</p>
 <p>Use <code>gt::</code> functions when you want to keep the
 <code>gt</code> workflow:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -1516,7 +1545,7 @@ changes what the rendering engine produces.</p>
 </div>
 <p>Use <code>tinytable::</code> functions when you want lightweight
 table-specific styling:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -1715,7 +1744,7 @@ table-specific styling:</p>
 toward Office or HTML document output. The example is shown as code here
 because the dark pkgdown theme is not a reliable preview of the final
 <code>flextable</code> HTML rendering:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"flextable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>

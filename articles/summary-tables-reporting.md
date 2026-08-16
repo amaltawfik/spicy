@@ -704,6 +704,42 @@ sets one for a whole document.
 [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
 lists every style and every rule with the sentence it comes from.
 
+## Citing table values in the text
+
+The number a sentence quotes should be the number the table prints —
+retyping it is how a manuscript ends up saying 3.9 where the table says
+3.90, or keeping a *p* value a revision changed.
+[`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+returns one cell of a spicy table as text, formatted by the same
+machinery that formatted the table:
+
+``` r
+
+fit <- lm(wellbeing_score ~ age + sex, data = sochealth)
+tbl <- table_regression(fit)
+inline(tbl, sex, "Male", "b")
+#> [1] "3.90"
+```
+
+so in Quarto you write `` `r inline(tbl, sex, "Male", "b")` `` inside
+the sentence. A `{token}` pattern quotes a full fragment in one call:
+
+``` r
+
+inline(tbl, sex, "Male", "{b} ({ci_label} {ci}; p {p})")
+#> [1] "3.90 (95% CI [2.14, 5.65]; p <.001)"
+```
+
+Two properties carry the guarantee. The text follows the table: under
+`style = "jama"` or `decimal_mark = ","` the cited string changes with
+the printed one. And the addressing survives relabeling: rows are found
+by the source variable and level — not by the displayed label — so
+`labels = c(sex = "Administrative sex")` changes the table, not your
+calls. Misaddressing never fails silently: an unknown variable, level,
+or column token errors with the list of available choices, and a
+reference or non-estimable cell refuses with its reason instead of
+pasting a dash into a sentence.
+
 ## Post-process the returned table object
 
 All four summary-table helpers return regular `gt`, `tinytable`, or

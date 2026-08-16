@@ -56,7 +56,7 @@ table_continuous(
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
-  excel_sheet = "Descriptives",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   verbose = FALSE,
@@ -365,7 +365,8 @@ table_continuous(
 
 - excel_sheet:
 
-  Sheet name for `output = "excel"` (default: `"Descriptives"`).
+  Sheet name for `output = "excel"`. `NULL` (the default) uses
+  `"Descriptives"`.
 
 - clipboard_delim:
 

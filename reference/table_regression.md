@@ -59,7 +59,7 @@ table_regression(
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
-  excel_sheet = "Regression",
+  excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
   word_template = NULL,
@@ -764,7 +764,8 @@ table_regression(
 
 - excel_sheet:
 
-  Sheet name when writing to Excel. Default `"Regression"`.
+  Sheet name when writing to Excel. `NULL` (the default) uses
+  `"Regression"`.
 
 - clipboard_delim:
 

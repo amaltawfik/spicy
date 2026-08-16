@@ -644,6 +644,9 @@ slm$col_meta[["M (Male)"]]
 #> 
 #> $level
 #> [1] "Male"
+#> 
+#> $display_label
+#> [1] "M (Male)"
 ```
 
 ## Building your own renderer

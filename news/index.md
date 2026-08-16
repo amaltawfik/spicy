@@ -189,6 +189,15 @@ instead of rendering an empty column.
 
 ### New functions
 
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites one table cell in running Quarto / R Markdown text: the returned
+  string is exactly the displayed cell – same decimals, *p* style,
+  interval punctuation, journal style – so a number quoted in a sentence
+  can never drift from the number printed in the table. Rows are
+  addressed by variable / level identity (never by display label),
+  columns by their typed token, `"ci"` composes the interval, `{token}`
+  patterns build full fragments (`"{b} ({ci_label} {ci}; p {p})"`), and
+  every misaddressing errors with the list of available choices.
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
   univariable screening tables – one fit per predictor, one row block
   each, merged side by side with the multivariable model. Supports `lm`
@@ -820,6 +829,10 @@ instead of rendering an empty column.
 
 ### Minor improvements
 
+- `excel_sheet` defaults to `NULL` in the four table functions and
+  resolves to the same sheet names as before (`"Regression"`,
+  `"Categorical"`, `"Descriptives"`, `"Linear models"`). Behaviour is
+  unchanged; an explicit name still wins.
 - `table_continuous(by = )` titles the table
   `Descriptive statistics by <label>`: the grouping variable is stated
   in the console header and in every rendered caption, like the other

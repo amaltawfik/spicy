@@ -71,6 +71,8 @@
   : Univariable screening table (with optional multivariable merge)
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   : Extract the typed (structured) view of a spicy table
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md) :
+  Cite a table cell in inline text
 
 ## Table styles
 
