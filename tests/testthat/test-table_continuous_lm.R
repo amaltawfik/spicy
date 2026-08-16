@@ -796,6 +796,30 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
     ),
     setNames(data.frame(1, 2, check.names = FALSE), c("LL", "UL"))
   )
+  # Neither bound present: legitimate (`ci = FALSE`), so the frame comes
+  # back untouched.
+  expect_named(
+    spicy:::rename_ci_cols_lm(
+      setNames(data.frame(1, 2, check.names = FALSE), c("Variable", "p")),
+      "95% CI LL",
+      "95% CI UL"
+    ),
+    c("Variable", "p")
+  )
+  # Exactly one bound present: the frame and the coverage disagree, and
+  # every consumer downstream is guarded by a `has_ci` that would read
+  # FALSE and hide the mismatch. It must fail here instead.
+  expect_error(
+    spicy:::rename_ci_cols_lm(
+      setNames(
+        data.frame(1, 2, check.names = FALSE),
+        c("Variable", "95% CI LL")
+      ),
+      "95% CI LL",
+      "95% CI UL"
+    ),
+    class = "spicy_internal_invariant"
+  )
   hdr <- spicy:::build_header_rows_lm(c("Variable", "LL", "UL"), "95%")
   expect_equal(hdr$top, c("Variable", "95% CI", "95% CI"))
   expect_equal(hdr$bottom, c("", "LL", "UL"))

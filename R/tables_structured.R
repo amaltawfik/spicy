@@ -636,20 +636,20 @@
   vars <- unique(result$variable)
   first_block <- result[result$variable == vars[1L], , drop = FALSE]
   by_type <- unique(first_block$predictor_type)[1L]
-  ci_pct <- paste0(round(ci_level * 100), "%")
-  ci_ll_name <- paste0(ci_pct, " CI LL")
-  ci_ul_name <- paste0(ci_pct, " CI UL")
+  ci_pct <- .lm_ci_pct(ci_level)
+  ci_ll_name <- .lm_key_ci_ll(ci_pct)
+  ci_ul_name <- .lm_key_ci_ul(ci_pct)
 
   # Displayed columns, in the order build_wide_display_df_continuous_lm()
   # emits them. Keyed on the display frame so the two can never differ
   # in width or order.
-  col_names <- setdiff(names(wide_display), "Variable")
+  col_names <- setdiff(names(wide_display), .LM_KEY_VARIABLE)
   col_meta <- list()
   ci_pairs <- list()
   composite <- character(0)
 
   emmean_cols <- if (identical(by_type, "categorical")) {
-    stats::setNames(paste0("M (", first_block$level, ")"), first_block$level)
+    stats::setNames(.lm_key_emmean(first_block$level), first_block$level)
   } else {
     character(0)
   }
@@ -687,15 +687,20 @@
       list(
         token = "ci",
         precision = as.integer(digits),
-        ci_role = if (identical(nm, ci_ll_name)) "LL" else "UL",
+        ci_role = if (identical(nm, ci_ll_name)) {
+          .LM_KEY_CI_LL
+        } else {
+          .LM_KEY_CI_UL
+        },
+        # A cross-reference to the other bound: a KEY, never a label.
         ci_pair = if (identical(nm, ci_ll_name)) ci_ul_name else ci_ll_name,
-        ci_label = paste0(ci_pct, " CI")
+        ci_label = paste0(ci_pct, " ", .LM_KEY_CI)
       )
-    } else if (identical(nm, "B")) {
+    } else if (identical(nm, .LM_KEY_B)) {
       list(token = "b", precision = as.integer(digits))
     } else if (!is.null(test_header) && identical(nm, test_header)) {
       list(token = "statistic", precision = as.integer(digits))
-    } else if (identical(nm, "p")) {
+    } else if (identical(nm, .LM_KEY_P)) {
       list(
         token = "p",
         precision = as.integer(p_digits),
@@ -716,16 +721,18 @@
         precision = as.integer(effect_size_digits),
         effect_size = effect_size
       )
-    } else if (identical(nm, "n")) {
+    } else if (identical(nm, .LM_KEY_N)) {
       list(token = "n", precision = 0L)
-    } else if (identical(nm, "Weighted n")) {
+    } else if (identical(nm, .LM_KEY_WEIGHTED_N)) {
       # A sum of weights, not a count -- displayed at the table's
       # numeric precision, like the console does.
       list(token = "weighted_n", precision = as.integer(digits))
     } else {
       # The display builder's column set is closed; a column added
       # there without a branch here must FAIL here, not be silently
-      # mislabelled with someone else's token.
+      # mislabelled with someone else's token. Every comparison above
+      # is KEY against key, so this abort never sees a translated
+      # header pass by -- it is the safety net of that very rule.
       spicy_abort(
         sprintf(
           "Internal: unrecognised continuous-lm display column %s.",
@@ -738,7 +745,7 @@
   }
   if (all(c(ci_ll_name, ci_ul_name) %in% col_names)) {
     ci_pairs <- list(list(
-      label = paste0(ci_pct, " CI"),
+      label = paste0(ci_pct, " ", .LM_KEY_CI),
       cols = .desc_col_index(col_names, c(ci_ll_name, ci_ul_name))
     ))
   }
@@ -760,7 +767,7 @@
       }
     }
     rows[[length(rows) + 1L]] <- list(
-      label = wide_display$Variable[i],
+      label = wide_display[[.LM_KEY_VARIABLE]][i],
       values = values,
       variable = vars[i],
       level = NA_character_,
