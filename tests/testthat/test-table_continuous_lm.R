@@ -864,6 +864,81 @@ test_that("a wide-character label does not split the console into panels", {
   }
 })
 
+test_that("the console and every engine print the registry header, not the key", {
+  # At the English default a label and its frozen key are the SAME
+  # string, so nothing else in the suite can tell whether this family
+  # reads the label layer at all -- the console goldens and the
+  # byte-identity corpus stay green with the whole wiring severed.
+  # Repainting the labels makes the difference visible.
+  #
+  # `.lm_spec_labels()` is mocked rather than `.lm_labels()` on purpose:
+  # it is the value `table_continuous_lm()` hands to the exporter as
+  # `labels =`, so the mock also dies if that argument is dropped, while
+  # a mock of the resolver would keep decorating a NULL carrier.
+  orig <- spicy:::.lm_spec_labels
+  local_mocked_bindings(
+    .lm_spec_labels = function(spec) {
+      out <- orig(spec)
+      stats::setNames(paste0("<", out, ">"), names(out))
+    },
+    .package = "spicy"
+  )
+  d <- data.frame(
+    y = c(1, 2, 3, 10, 11, 12),
+    g = factor(c("a", "a", "a", "b", "b", "b"))
+  )
+
+  # 1. Console (`display_labels` reaches spicy_print_table()).
+  txt <- withr::with_options(list(width = 200L), {
+    invisible(capture.output(out <- table_continuous_lm(d, select = y, by = g)))
+    capture.output(print(out))
+  })
+  expect_true(any(grepl("<Variable>", txt, fixed = TRUE)))
+  expect_true(any(grepl("<M (a)>", txt, fixed = TRUE)))
+  # The frozen key no longer stands alone in the header row.
+  expect_false(any(grepl(" Variable ", txt, fixed = TRUE)))
+
+  # 2. The two-row header builder: flextable / Word, Excel and the
+  #    clipboard all print `hdrs$top`.
+  ft <- table_continuous_lm(d, select = y, by = g, output = "flextable")
+  hdr <- unlist(ft$header$dataset, use.names = FALSE)
+  expect_true(any(grepl("<Variable>", hdr, fixed = TRUE)))
+  expect_true(any(grepl("<M (a)>", hdr, fixed = TRUE)))
+
+  cap <- new.env(parent = emptyenv())
+  with_mocked_bindings(
+    table_continuous_lm(d, select = y, by = g, output = "clipboard"),
+    clipr_available = function(...) TRUE,
+    write_clip = function(content, ...) {
+      cap$text <- content
+      invisible(content)
+    },
+    .package = "clipr"
+  )
+  expect_true(any(grepl("<M (a)>", cap$text, fixed = TRUE)))
+
+  # 3. The two engines that resolve column by column through `lab()`.
+  skip_if_not_installed("gt")
+  g_tbl <- table_continuous_lm(d, select = y, by = g, output = "gt")
+  spanners <- vapply(
+    as.data.frame(g_tbl[["_spanners"]])$spanner_label,
+    function(z) as.character(z)[[1L]],
+    character(1)
+  )
+  expect_true("<Variable>" %in% spanners)
+  expect_true("<M (a)>" %in% spanners)
+  # The gt column ids stay on the frozen keys: only the labels moved.
+  expect_true("Variable" %in% as.data.frame(g_tbl[["_boxhead"]])$var)
+
+  skip_if_not_installed("tinytable")
+  tt <- table_continuous_lm(d, select = y, by = g, output = "tinytable")
+  # `group_tt()` stores the spanner texts as the row of `group_data_j`;
+  # the names it keeps are the bare bound keys the exporter left.
+  spans <- unlist(tt@group_data_j, use.names = FALSE)
+  expect_true(any(grepl("<Variable>", spans, fixed = TRUE)))
+  expect_true(any(grepl("<M (a)>", spans, fixed = TRUE)))
+})
+
 test_that("table_continuous_lm internal covariance helper covers fallback branches", {
   fit <- lm(mpg ~ wt, data = mtcars)
   fit_singular <- lm(mpg ~ wt + I(2 * wt), data = mtcars)
