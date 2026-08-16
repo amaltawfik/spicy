@@ -28,12 +28,23 @@ test_that("table_categorical returns expected long raw structure", {
   )
 
   expect_s3_class(out, "data.frame")
-  # 2x2 + 2x2 -> auto rule now picks Phi (was Cramer's V before 0.11.0;
-  # see NEWS).
+  # The long measure column has a stable name; the measure it holds is
+  # a key in `effect_size_type`. 2x2 + 2x2 -> auto rule picks phi (was
+  # cramer_v before 0.11.0; see NEWS).
   expect_true(all(
-    c("variable", "level", "group", "n", "pct", "p", "Phi") %in%
+    c(
+      "variable",
+      "level",
+      "group",
+      "n",
+      "pct",
+      "p",
+      "effect_size",
+      "effect_size_type"
+    ) %in%
       names(out)
   ))
+  expect_identical(unique(out$effect_size_type), "phi")
   expect_true(nrow(out) > 0)
 })
 
@@ -526,8 +537,18 @@ test_that("table_categorical default column is Cramer's V", {
     labels = c(v1 = "Var 1"),
     output = "long"
   )
-  # 2x2 -> auto rule now picks Phi (see NEWS for 0.11.0).
-  expect_true("Phi" %in% names(out))
+  # 2x2 -> auto rule now picks phi (see NEWS for 0.11.0).
+  expect_true("effect_size" %in% names(out))
+  expect_identical(unique(out$effect_size_type), "phi")
+  # The wide output still names the column after the measure.
+  wide <- table_categorical(
+    df,
+    "v1",
+    "grp",
+    labels = c(v1 = "Var 1"),
+    output = "data.frame"
+  )
+  expect_true("Phi" %in% names(wide))
 })
 
 test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (mixed -> Effect size header)", {
@@ -539,9 +560,19 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
     by = sex,
     output = "long"
   )
-  expect_true("Effect size" %in% names(out))
+  # Long: one stable column, the per-row measure keys beside it.
+  expect_true("effect_size" %in% names(out))
+  expect_setequal(unique(out$effect_size_type), c("phi", "cramer_v"))
   expect_false("Phi" %in% names(out))
   expect_false("Cramer's V" %in% names(out))
+  # Wide: the mixed case collapses to the generic header.
+  wide <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    output = "data.frame"
+  )
+  expect_true("Effect size" %in% names(wide))
 })
 
 test_that("table_categorical accepts a named per-variable `assoc_measure`", {
@@ -579,7 +610,8 @@ test_that("table_categorical accepts unnamed positional `assoc_measure` and vali
     assoc_measure = c("phi", "cramer_v"),
     output = "long"
   )
-  expect_true("Effect size" %in% names(out))
+  expect_true("effect_size" %in% names(out))
+  expect_setequal(unique(out$effect_size_type), c("phi", "cramer_v"))
 
   # Length mismatch (positional vec longer than select) -> actionable error.
   # NB: length-1 unnamed is treated as a uniform single-string application,
@@ -676,8 +708,17 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     assoc_measure = "gamma",
     output = "long"
   )
-  expect_true("Goodman-Kruskal Gamma" %in% names(out))
+  expect_identical(unique(out$effect_size_type), "gamma")
   expect_false("Cramer's V" %in% names(out))
+  wide <- table_categorical(
+    df,
+    "v1",
+    "grp",
+    labels = c(v1 = "Var 1"),
+    assoc_measure = "gamma",
+    output = "data.frame"
+  )
+  expect_true("Goodman-Kruskal Gamma" %in% names(wide))
 })
 
 test_that("assoc_ci adds CI columns in wide raw output", {
@@ -2221,6 +2262,28 @@ test_that("glance() returns NA test/ES, populated n_total without by", {
   expect_equal(broom::glance(out_cc)$n_total, 1175L)
 })
 
+test_that("a row whose variable asked for no measure has no effect_size_type", {
+  # The only route to the NA arm: a mixed vector where one variable opts
+  # out. Its rows still sit in the shared `effect_size` column -- empty --
+  # but they name no measure.
+  out <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    labels = c(smoking = "Smoking", education = "Education"),
+    assoc_measure = c(smoking = "none", education = "cramer_v"),
+    output = "long"
+  )
+  expect_true(all(c("effect_size", "effect_size_type") %in% names(out)))
+  expect_true(all(is.na(out$effect_size_type[out$variable == "Smoking"])))
+  expect_true(all(is.na(out$effect_size[out$variable == "Smoking"])))
+  expect_identical(
+    unique(out$effect_size_type[out$variable == "Education"]),
+    "cramer_v"
+  )
+  expect_false(any(is.na(out$effect_size[out$variable == "Education"])))
+})
+
 test_that("print() survives a typed view that outlived its display frame", {
   # The shape guard on `display_labels`, not merely `is.null(structured)`:
   # here the typed view is PRESENT while `display_df` is gone, so the
@@ -2678,7 +2741,8 @@ test_that("ordinal measures respect the declared order under default drop_na", {
     by = self_rated_health,
     output = "long"
   )
-  expect_equal(unique(out[["Kendall's Tau-b"]]), 0.2045524108, tolerance = 1e-9)
+  expect_equal(unique(out$effect_size), 0.2045524108, tolerance = 1e-9)
+  expect_identical(unique(out$effect_size_type), "tau_b")
   expect_equal(unique(out$chi2), 73.2444140723, tolerance = 1e-9)
 })
 
@@ -2714,16 +2778,13 @@ test_that("ordinal measures are drop_na-invariant on NA-free ordered data", {
       drop_na = TRUE,
       output = "long"
     )
-    col <- setdiff(
-      names(l_show),
-      c("variable", "level", "group", "n", "pct", "chi2", "df", "p")
-    )
-    expect_identical(unique(l_show[[col]]), unique(l_drop[[col]]))
+    expect_identical(unique(l_show$effect_size), unique(l_drop$effect_size))
+    expect_identical(unique(l_show$effect_size_type), m)
   }
   # And the auto tau-b matches the integer-rank oracle.
   l_auto <- table_categorical(d, select = xo, by = yo, output = "long")
   expect_equal(
-    unique(l_auto[["Kendall's Tau-b"]]),
+    unique(l_auto$effect_size),
     stats::cor(as.integer(d$xo), as.integer(d$yo), method = "kendall"),
     tolerance = 1e-12
   )
@@ -3060,8 +3121,8 @@ test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
     user_na = FALSE,
     output = "long"
   )
-  expect_true("Cramer's V" %in% names(auto))
-  expect_false(any(is.na(auto[["Cramer's V"]])))
+  expect_identical(unique(auto$effect_size_type), "cramer_v")
+  expect_false(any(is.na(auto$effect_size)))
   # With user_na = TRUE the table is a true 2x2: phi works and is
   # exact against the chi-squared oracle.
   ok <- table_categorical(
@@ -3079,8 +3140,9 @@ test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
       correct = FALSE
     )
   )
+  expect_identical(unique(ok$effect_size_type), "phi")
   expect_equal(
-    ok$Phi[1],
+    ok$effect_size[1],
     unname(sqrt(chi$statistic / sum(keep))),
     tolerance = 1e-10
   )

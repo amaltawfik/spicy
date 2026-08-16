@@ -604,8 +604,13 @@
 #'     association measure column.
 #'     When `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
 #'   \item `"long"`: a long `data.frame` with columns `variable`,
-#'     `level`, `n`, `pct` (plus `group`, `chi2`, `df`, `p`, and the
-#'     association measure column when `by` is used).
+#'     `level`, `n`, `pct` (plus `group`, `chi2`, `df`, `p` when `by` is
+#'     used). The association measure is always called `effect_size`,
+#'     whichever measure it is, and `effect_size_type` names that measure
+#'     per row (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a
+#'     variable given `assoc_measure = "none"`. The wide outputs instead
+#'     name the column after the measure, or `Effect size` when the row
+#'     variables do not share one.
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.
@@ -1240,11 +1245,14 @@ table_categorical <- function(
     }
   }
 
-  parse_stats <- function(ct_obj) {
+  # `measure_key` is the measure the caller ASKED this row for, as a key
+  # ("cramer_v", ..., or "none"). It rides through in `measure` so the
+  # long output can publish it per row: reading it back off the
+  # cross_tab() object would mean recognising a display label.
+  parse_stats <- function(ct_obj, measure_key = NA_character_) {
     # Read numeric attributes set by cross_tab()
     p_val <- attr(ct_obj, "p_value")
     v_val <- attr(ct_obj, "assoc_value")
-    m_name <- attr(ct_obj, "assoc_measure")
     chi2_val <- attr(ct_obj, "chi2")
     df_val <- attr(ct_obj, "df")
     ar <- attr(ct_obj, "assoc_result")
@@ -1264,7 +1272,7 @@ table_categorical <- function(
         p = p_val,
         p_op = "=",
         v = v_val,
-        measure = m_name %||% "Cramer's V",
+        measure = measure_key,
         chi2 = chi2_val %||% NA_real_,
         df = df_val %||% NA_real_,
         ci_lower = ci_lo,
@@ -1325,7 +1333,7 @@ table_categorical <- function(
       p = p_val,
       p_op = p_op,
       v = v_val,
-      measure = "Cramer's V",
+      measure = measure_key,
       chi2 = NA_real_,
       df = NA_real_,
       ci_lower = NA_real_,
@@ -2400,9 +2408,9 @@ table_categorical <- function(
         assoc_measure = this_measure,
         assoc_ci = assoc_ci
       ))
-      parse_stats(ct_stats)
+      parse_stats(ct_stats, this_measure)
     } else {
-      parse_stats(ct_pct)
+      parse_stats(ct_pct, this_measure)
     }
 
     # The console cross_tab object is read structurally: column 1 is
@@ -2493,8 +2501,15 @@ table_categorical <- function(
         if (show_assoc) {
           # Defer the rename `.assoc` -> measure_col to post-loop, where
           # we know whether all rows used the same measure (uniform
-          # column header) or a mix (collapsed to "Effect size").
+          # column header) or a mix (collapsed to the generic name).
           row_df$.assoc <- st$v
+          # The measure this row actually carries. A row whose variable
+          # asked for none has a value but no type.
+          row_df$.assoc_type <- if (identical(st$measure, "none")) {
+            NA_character_
+          } else {
+            st$measure
+          }
         }
         rows[[rr]] <- row_df
         rr <- rr + 1L
@@ -2539,6 +2554,7 @@ table_categorical <- function(
       p = numeric(0),
       p_op = character(0),
       .assoc = numeric(0),
+      .assoc_type = character(0),
       ci_lower = numeric(0),
       ci_upper = numeric(0),
       stringsAsFactors = FALSE,
@@ -2551,6 +2567,7 @@ table_categorical <- function(
     names(long_raw)[names(long_raw) == ".assoc"] <- measure_col
   } else {
     long_raw$.assoc <- NULL
+    long_raw$.assoc_type <- NULL
   }
 
   if (nrow(long_raw) > 0) {
@@ -2600,8 +2617,19 @@ table_categorical <- function(
       out$ci_lower <- NULL
       out$ci_upper <- NULL
     }
+    if (show_assoc) {
+      # The long format is the machine-readable one: its measure column
+      # has a STABLE name, and the measure each row carries travels
+      # beside it as a key. Renaming, not assigning, so both keep the
+      # position they were built in.
+      names(out)[names(out) == measure_col] <- "effect_size"
+      names(out)[names(out) == ".assoc_type"] <- "effect_size_type"
+    }
     return(out)
   }
+  # Only the long output publishes the per-row measure key; the display
+  # and export routes below read the measure column by name.
+  long_raw$.assoc_type <- NULL
 
   # ---------------- WIDE RAW ----------------
   make_wide_raw <- function(ldf) {

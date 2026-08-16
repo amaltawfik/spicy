@@ -24,45 +24,29 @@ test_that("ordinal assoc_measure values produce their column names end-to-end", 
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
   )
-  expect_true(
-    "Stuart's Tau-c" %in%
-      names(
-        table_categorical(
-          df,
-          "v1",
-          "grp",
-          labels = c(v1 = "V1"),
-          assoc_measure = "tau_c",
-          output = "long"
-        )
-      )
-  )
-  expect_true(
-    "Somers' D" %in%
-      names(
-        table_categorical(
-          df,
-          "v1",
-          "grp",
-          labels = c(v1 = "V1"),
-          assoc_measure = "somers_d",
-          output = "long"
-        )
-      )
-  )
-  expect_true(
-    "Lambda" %in%
-      names(
-        table_categorical(
-          df,
-          "v1",
-          "grp",
-          labels = c(v1 = "V1"),
-          assoc_measure = "lambda",
-          output = "long"
-        )
-      )
-  )
+  # The wide output names the column after the measure; the long output
+  # names it `effect_size` and reports the measure as a key.
+  for (m in c("tau_c", "somers_d", "lambda")) {
+    wide <- table_categorical(
+      df,
+      "v1",
+      "grp",
+      labels = c(v1 = "V1"),
+      assoc_measure = m,
+      output = "data.frame"
+    )
+    expect_true(spicy:::.assoc_label(m) %in% names(wide))
+    long <- table_categorical(
+      df,
+      "v1",
+      "grp",
+      labels = c(v1 = "V1"),
+      assoc_measure = m,
+      output = "long"
+    )
+    expect_true("effect_size" %in% names(long))
+    expect_identical(unique(long$effect_size_type), m)
+  }
 })
 
 # ---- .resolve_assoc_measures(): input-shape branches ----------------------
@@ -80,8 +64,8 @@ test_that("assoc_measure = NULL defaults to auto resolution", {
     assoc_measure = NULL,
     output = "long"
   )
-  # 2x2 -> auto picks Phi
-  expect_true("Phi" %in% names(out))
+  # 2x2 -> auto picks phi
+  expect_identical(unique(out$effect_size_type), "phi")
 })
 
 test_that("non-character assoc_measure is rejected", {
@@ -155,8 +139,10 @@ test_that("single-level select variable yields NA stats (note fallback)", {
     output = "long"
   )
   expect_true(all(is.na(out$p)))
-  expect_true("Cramer's V" %in% names(out))
-  expect_true(all(is.na(out[["Cramer's V"]])))
+  expect_true("effect_size" %in% names(out))
+  expect_true(all(is.na(out$effect_size)))
+  # The requested measure is reported even where its value is NA.
+  expect_identical(unique(out$effect_size_type), "cramer_v")
 })
 
 test_that("single-level select variable renders blank p / assoc cells (default)", {

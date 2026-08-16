@@ -277,8 +277,13 @@ pair of \code{n} / \verb{\\\%} columns per group level (plus \code{Total} when
 association measure column.
 When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
 \item \code{"long"}: a long \code{data.frame} with columns \code{variable},
-\code{level}, \code{n}, \code{pct} (plus \code{group}, \code{chi2}, \code{df}, \code{p}, and the
-association measure column when \code{by} is used).
+\code{level}, \code{n}, \code{pct} (plus \code{group}, \code{chi2}, \code{df}, \code{p} when \code{by} is
+used). The association measure is always called \code{effect_size},
+whichever measure it is, and \code{effect_size_type} names that measure
+per row (\code{"cramer_v"}, \code{"phi"}, ...), or is \code{NA} on the rows of a
+variable given \code{assoc_measure = "none"}. The wide outputs instead
+name the column after the measure, or \verb{Effect size} when the row
+variables do not share one.
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.

@@ -54,6 +54,11 @@
   name. Unnamed positional vectors error with a hint.
 * `table_categorical()` rejects `p_digits` below 1 with a classed error;
   such values were silently rendered with 3 decimals.
+* `table_categorical(output = "long")` always names the association column
+  `effect_size` and adds `effect_size_type` giving each row's measure
+  (`"cramer_v"`, `"phi"`, ...); the column used to be named after the
+  measure. Replace `out[["Cramer's V"]]` with `out$effect_size`. The
+  `"data.frame"` output is unchanged.
 * `table_categorical(output = "flextable")` no longer writes a `.docx` when
   `word_path` is supplied; the combination warns (`spicy_ignored_arg`). Use
   `flextable::save_as_docx()`.
