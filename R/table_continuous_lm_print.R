@@ -37,6 +37,23 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   show_ci <- attr(x, "show_ci") %||% TRUE
   align <- attr(x, "align") %||% "decimal"
 
+  # One spec for the frame and for its headers, from the attributes
+  # read above -- the same object `table_continuous_lm()` hands to the
+  # exporters, rebuilt here because print() may be called on a stored
+  # table long after that call returned.
+  spec <- .lm_column_spec(
+    x,
+    ci_level = ci_level,
+    show_statistic = show_statistic,
+    show_p_value = show_p_value,
+    show_n = show_n,
+    show_weighted_n = show_weighted_n,
+    effect_size = effect_size,
+    effect_size_ci = show_effect_size_ci,
+    r2_type = r2_type,
+    ci = show_ci
+  )
+
   display_df <- build_wide_display_df_continuous_lm(
     x,
     digits = digits,
@@ -52,8 +69,16 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     effect_size = effect_size,
     effect_size_ci = show_effect_size_ci,
     r2_type = r2_type,
-    ci = show_ci
+    ci = show_ci,
+    spec = spec
   )
+
+  # The header a reader sees is the registry label, never the frozen
+  # column key. No shape guard is needed, unlike the categorical
+  # console: `.lm_labels()` maps `names(display_df)` to a vector of the
+  # same length by construction, so `spicy_print_table()`'s abort on a
+  # mismatched label vector is unreachable from here.
+  header_labels <- .lm_labels(names(display_df), .lm_spec_labels(spec))
 
   align_left <- 1L
   if (identical(align, "decimal")) {
@@ -80,11 +105,14 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   # Each column in build_ascii_table uses: 1 (gutter) + w[i] + 1
   # (gutter) chars, plus 1 char for the vertical separator after
   # column 1; `padding` is added to each w[i].
+  # Measured on what is PRINTED -- the labels, not the keys: measuring
+  # the keys while printing the labels would leave this decision
+  # disagreeing with the header the reader actually gets.
   padding <- 2L
   col_widths <- vapply(
     seq_along(display_df),
     function(i) {
-      max(nchar(c(names(display_df)[i], as.character(display_df[[i]]))))
+      max(nchar(c(header_labels[i], as.character(display_df[[i]]))))
     },
     numeric(1)
   )
@@ -109,7 +137,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     bottom_line = FALSE,
     align_left_cols = align_left,
     align_center_cols = align_center,
-    group_sep_rows = integer(0)
+    group_sep_rows = integer(0),
+    display_labels = header_labels
   )
 
   invisible(x)
