@@ -515,14 +515,40 @@ test_that("a statistic that applies but has no value is `undefined`", {
   s <- as_structured(tbl)
 
   # The one-observation group has no SD and no interval: the console
-  # prints "--", the contract says `undefined`, and the override keeps
-  # the console's own glyph.
+  # prints `cell_undefined` ("--"), the contract says `undefined`, and
+  # the override keeps the console's own glyph.
   expect_identical(spicy:::.struct_cell_status(s, "SD"), c("", "undefined"))
-  expect_identical(s$col_meta$SD$display_cells, c(NA, "--"))
+  expect_identical(
+    s$col_meta$SD$display_cells,
+    c(NA, spicy_str("cell_undefined"))
+  )
   expect_identical(
     spicy:::.struct_cell_status(s, "95% CI LL"),
     c("", "undefined")
   )
+  expect_faithful(s, con_display(tbl), skip_cols = "Group")
+})
+
+test_that("the undefined cell is recognised through the registry", {
+  # The producer writes the glyph from `cell_undefined` and the typed
+  # view recognises it from the same key. While the registry says "--"
+  # a literal on the reading side passes every test above, so move the
+  # registry and watch: with a literal, `cell_status` silently loses the
+  # `undefined` semantics for every consumer of `as_structured()`, the
+  # display override goes with it, and the typed view falls through to
+  # the shared renderer -- which prints its own, different glyph.
+  orig <- spicy_str
+  local_mocked_bindings(
+    spicy_str = function(key, ...) {
+      if (identical(key, "cell_undefined")) "—" else orig(key, ...)
+    }
+  )
+  df <- data.frame(g = c("a", "a", "b"), v = c(1, 2, 5))
+  tbl <- quiet(table_continuous(df, v, by = g))
+  s <- as_structured(tbl)
+
+  expect_identical(spicy:::.struct_cell_status(s, "SD"), c("", "undefined"))
+  expect_identical(s$col_meta$SD$display_cells, c(NA, "—"))
   expect_faithful(s, con_display(tbl), skip_cols = "Group")
 })
 

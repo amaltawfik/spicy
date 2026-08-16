@@ -545,11 +545,24 @@
           display[[nm]] <- shown_str
         }
       }
-      # The console writes "--" where a statistic applies to the row
-      # but no number expresses it (a standard deviation on n = 1, an
-      # interval on an empty group). That is the `undefined` cell of
-      # the contract; the override keeps the console's own glyph.
-      if (identical(shown_str, "--")) {
+      # The console writes `cell_undefined` where a statistic applies to
+      # the row but no number expresses it (a standard deviation on
+      # n = 1, an interval on an empty group). That is the `undefined`
+      # cell of the contract, and the override keeps the console's own
+      # glyph.
+      #
+      # Recognised through the REGISTRY, never through a literal. Both
+      # sides of this comparison are written by `build_display_df()`
+      # from `spicy_str("cell_undefined")`, so a literal here holds only
+      # while the registry value happens to be "--". The day it moves,
+      # a literal would silently drop `cell_status` for every consumer
+      # of `as_structured()` AND drop the display override with it --
+      # and the typed view would then fall through to the shared
+      # renderer, which prints its own, DIFFERENT undefined glyph
+      # (U+2013, `.cell_to_string()`). This override is the only thing
+      # holding those two glyphs together; unifying them is a rendering
+      # change for the regression family and is not made here.
+      if (identical(shown_str, spicy_str("cell_undefined"))) {
         status[[nm]] <- "undefined"
         display[[nm]] <- shown_str
       }
