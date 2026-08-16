@@ -820,7 +820,7 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
     ),
     class = "spicy_internal_invariant"
   )
-  hdr <- spicy:::build_header_rows_lm(c("Variable", "LL", "UL"), "95%")
+  hdr <- spicy:::build_header_rows_lm(c("Variable", "LL", "UL"), "95% CI")
   expect_equal(hdr$top, c("Variable", "95% CI", "95% CI"))
   expect_equal(hdr$bottom, c("", "LL", "UL"))
   expect_match(spicy:::get_delta_label_lm(block), "versicolor - setosa")

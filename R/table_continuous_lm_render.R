@@ -71,6 +71,257 @@
 # id can never be typed out a second time and drift.
 .lm_spanner_id <- function(key) paste0("spn_", make.names(key))
 
+# ---- the label layer -------------------------------------------------------
+# The twin of every key builder above. Same shape, same punctuation, the
+# words read from the registry. Resolved in a function BODY, never in a
+# top-level constant: a constant would read the registry once at build
+# time and no translation could ever move it.
+
+# The interval HEADER a reader sees ("95% CI"). Same template the
+# regression, categorical and continuous families use, so the coverage /
+# word order is translatable in one move.
+#
+# The percentage is ROUNDED, exactly as the column key is: at
+# `ci_level = 0.975` both read "98%" over a 97.5% interval. The defect
+# is real and shared with `table_continuous()`; it is not corrected
+# here, where it would silently change published headers.
+.lm_ci_label <- function(ci_level) {
+  spicy_fmt(
+    "header_ci_spanner",
+    round(ci_level * 100),
+    spicy_str("header_ci_label_confidence")
+  )
+}
+
+# The header of one `by` level's marginal mean ("M (Female)"). The level
+# is DATA and travels as an argument, so a level containing a percent
+# sign is safe.
+.lm_label_emmean <- function(level) {
+  spicy_fmt("header_lm_mean_level", spicy_str("header_mean"), level)
+}
+
+# The header of the difference between the two `by` levels.
+.lm_label_delta <- function(block) {
+  spicy_fmt(
+    "header_lm_delta",
+    spicy_str("symbol_delta"),
+    block$level[2],
+    block$level[1]
+  )
+}
+
+# The glyph table of `.lm_test_render()`'s label twin.
+.lm_test_glyph_labels <- function() {
+  c(
+    z = spicy_str("symbol_z"),
+    chi2 = spicy_str("symbol_chi_sq"),
+    t = spicy_str("symbol_t"),
+    F = spicy_str("symbol_f")
+  )
+}
+
+# The header of the test statistic. One format body with
+# `get_test_header_lm()`, two glyph tables.
+.lm_test_label <- function(block, show_statistic = TRUE, exact = TRUE) {
+  .lm_test_render(
+    .lm_test_parts(block, show_statistic, exact),
+    .lm_test_glyph_labels()
+  )
+}
+
+# The header of the goodness-of-fit column. An unknown token passes
+# through unchanged, exactly as its key twin does.
+.lm_r2_label <- function(r2_type = "r2") {
+  switch(
+    r2_type,
+    r2 = spicy_str("symbol_r2"),
+    adj_r2 = spicy_str("header_lm_adj_r2"),
+    r2_type
+  )
+}
+
+# The header of the effect-size column, same pass-through default.
+.lm_es_label <- function(effect_size = "f2") {
+  switch(
+    effect_size,
+    f2 = spicy_str("symbol_f2_partial"),
+    d = spicy_str("symbol_cohens_d"),
+    g = spicy_str("symbol_hedges_g"),
+    omega2 = spicy_str("symbol_omega_sq_partial"),
+    effect_size
+  )
+}
+
+# ---- the column spec -------------------------------------------------------
+# The ordered columns of one bivariate linear-model table: one entry per
+# column, carrying the frozen KEY, the LABEL a reader sees and the
+# semantic TOKEN. Built ONCE per table and read by the raw frame, the
+# display frame, the typed view and the six exporters, so no consumer
+# re-derives a column name: the four header generators used to be called
+# 3, 4, 5 and 5 times per table, and the marginal-mean key was retyped
+# at five sites.
+#
+# `raw_only` marks the two effect-size interval columns: they exist in
+# `output = "data.frame"` and nowhere else, so they never reach a header.
+.lm_column_spec <- function(
+  x,
+  ci_level = 0.95,
+  show_statistic = TRUE,
+  show_p_value = TRUE,
+  show_n = TRUE,
+  show_weighted_n = FALSE,
+  effect_size = "none",
+  effect_size_ci = FALSE,
+  r2_type = "r2",
+  ci = TRUE
+) {
+  vars <- unique(x$variable)
+  first_block <- x[x$variable == vars[1], , drop = FALSE]
+  by_type <- unique(first_block$predictor_type)[1]
+  ci_pct <- .lm_ci_pct(ci_level)
+  ci_hdr <- .lm_ci_label(ci_level)
+  include_es <- !identical(effect_size, "none")
+  include_r2 <- !identical(r2_type, "none")
+
+  spec <- list()
+  add <- function(key, label, token, ...) {
+    spec[[length(spec) + 1L]] <<- c(
+      list(key = key, label = label, token = token),
+      list(...)
+    )
+  }
+  add(.LM_KEY_VARIABLE, spicy_str("header_variable"), "variable")
+
+  add_bounds <- function() {
+    ll_key <- .lm_key_ci_ll(ci_pct)
+    ul_key <- .lm_key_ci_ul(ci_pct)
+    ll_lab <- spicy_str("header_ci_ll")
+    ul_lab <- spicy_str("header_ci_ul")
+    add(
+      ll_key,
+      spicy_fmt("header_ci_bound", ci_hdr, ll_lab),
+      "ci",
+      ci_role = .LM_KEY_CI_LL,
+      short_label = ll_lab,
+      ci_pair = ul_key,
+      ci_label = ci_hdr
+    )
+    add(
+      ul_key,
+      spicy_fmt("header_ci_bound", ci_hdr, ul_lab),
+      "ci",
+      ci_role = .LM_KEY_CI_UL,
+      short_label = ul_lab,
+      ci_pair = ll_key,
+      ci_label = ci_hdr
+    )
+  }
+
+  if (identical(by_type, "categorical")) {
+    for (lev in first_block$level) {
+      add(.lm_key_emmean(lev), .lm_label_emmean(lev), "emmean", level = lev)
+    }
+    if (nrow(first_block) == 2L) {
+      add(
+        get_delta_label_lm(first_block),
+        .lm_label_delta(first_block),
+        "delta"
+      )
+      if (isTRUE(ci)) {
+        add_bounds()
+      }
+    }
+  } else {
+    add(.LM_KEY_B, spicy_str("header_b"), "b")
+    if (isTRUE(ci)) {
+      add_bounds()
+    }
+  }
+
+  test_key <- get_test_header_lm(x, show_statistic, exact = TRUE)
+  if (!is.null(test_key)) {
+    add(
+      test_key,
+      .lm_test_label(x, show_statistic, exact = TRUE),
+      "statistic"
+    )
+  }
+  if (show_p_value) {
+    add(.LM_KEY_P, spicy_str("header_p"), "p")
+  }
+  if (include_r2) {
+    add(format_r2_header_lm(r2_type), .lm_r2_label(r2_type), "r2")
+  }
+  if (include_es) {
+    add(
+      format_effect_size_header_lm(effect_size),
+      .lm_es_label(effect_size),
+      "es",
+      effect_size = effect_size
+    )
+    if (isTRUE(effect_size_ci)) {
+      # No display twin: an internal identifier published in the wide
+      # contract. Its own key IS its label -- there is no header to
+      # translate.
+      add(.LM_KEY_ES_CI_LL, .LM_KEY_ES_CI_LL, "es_ci", raw_only = TRUE)
+      add(.LM_KEY_ES_CI_UL, .LM_KEY_ES_CI_UL, "es_ci", raw_only = TRUE)
+    }
+  }
+  if (show_n) {
+    add(.LM_KEY_N, spicy_str("header_n_lower"), "n")
+  }
+  if (show_weighted_n) {
+    add(.LM_KEY_WEIGHTED_N, spicy_str("header_weighted_n"), "weighted_n")
+  }
+  spec
+}
+
+# The frozen keys of a spec, in column order.
+.lm_spec_keys <- function(spec) {
+  vapply(spec, function(e) e$key, character(1))
+}
+
+# The headers of a spec as one vector NAMED by frozen key -- the carrier
+# every engine reads, since `col_meta` reaches only the default output.
+# Each interval bound appears twice: under its full key and under the
+# short key `rename_ci_cols_lm()` leaves behind.
+.lm_spec_labels <- function(spec) {
+  labels <- vapply(spec, function(e) e$label, character(1))
+  names(labels) <- .lm_spec_keys(spec)
+  for (e in spec) {
+    if (!is.null(e$ci_role)) {
+      labels[[e$ci_role]] <- e$short_label
+    }
+  }
+  labels
+}
+
+# The key of the single column carrying `token`, or NULL when the table
+# has none.
+.lm_spec_key <- function(spec, token) {
+  for (e in spec) {
+    if (identical(e$token, token)) {
+      return(e$key)
+    }
+  }
+  NULL
+}
+
+# Resolve frozen column keys to the headers a reader sees. An unknown
+# key returns itself, and `NULL` labels are the identity: the exporter
+# is also reached with hand-built frames carrying columns no spec can
+# produce. The result has the length of its input by construction, so
+# no consumer needs a shape guard.
+.lm_labels <- function(col_keys, labels = NULL) {
+  if (is.null(labels)) {
+    return(col_keys)
+  }
+  out <- unname(labels[col_keys])
+  miss <- is.na(out)
+  out[miss] <- col_keys[miss]
+  out
+}
+
 build_wide_raw_continuous_lm <- function(
   x,
   show_statistic = TRUE,
@@ -81,7 +332,8 @@ build_wide_raw_continuous_lm <- function(
   effect_size_ci = FALSE,
   r2_type = "r2",
   ci = TRUE,
-  ci_level = 0.95
+  ci_level = 0.95,
+  spec = NULL
 ) {
   vars <- unique(x$variable)
   first_block <- x[x$variable == vars[1], , drop = FALSE]
@@ -92,6 +344,26 @@ build_wide_raw_continuous_lm <- function(
   include_es <- !identical(effect_size, "none")
   include_es_ci <- include_es && isTRUE(effect_size_ci)
   include_r2 <- !identical(r2_type, "none")
+  # `spec` is normally computed once by `table_continuous_lm()` and
+  # shared with the display frame, the typed view and the exporters;
+  # absent, it is derived here from the very same arguments.
+  spec <- spec %||%
+    .lm_column_spec(
+      x,
+      ci_level = ci_level,
+      show_statistic = show_statistic,
+      show_p_value = show_p_value,
+      show_n = show_n,
+      show_weighted_n = show_weighted_n,
+      effect_size = effect_size,
+      effect_size_ci = effect_size_ci,
+      r2_type = r2_type,
+      ci = ci
+    )
+  test_header <- .lm_spec_key(spec, "statistic")
+  r2_header <- .lm_spec_key(spec, "r2")
+  es_header <- .lm_spec_key(spec, "es")
+  delta_name <- .lm_spec_key(spec, "delta")
 
   out <- data.frame(
     Variable = vapply(
@@ -103,47 +375,13 @@ build_wide_raw_continuous_lm <- function(
     stringsAsFactors = FALSE
   )
 
-  if (identical(by_type, "categorical")) {
-    for (lev in first_block$level) {
-      out[[.lm_key_emmean(lev)]] <- NA_real_
+  # The column set and its ORDER come from the spec, so the raw frame,
+  # the display frame and the typed view cannot disagree about either.
+  for (ent in spec) {
+    if (identical(ent$key, .LM_KEY_VARIABLE)) {
+      next
     }
-    if (nrow(first_block) == 2L) {
-      out[[get_delta_label_lm(first_block)]] <- NA_real_
-      if (isTRUE(ci)) {
-        out[[ci_ll_name]] <- NA_real_
-        out[[ci_ul_name]] <- NA_real_
-      }
-    }
-  } else {
-    out[[.LM_KEY_B]] <- NA_real_
-    if (isTRUE(ci)) {
-      out[[ci_ll_name]] <- NA_real_
-      out[[ci_ul_name]] <- NA_real_
-    }
-  }
-
-  test_header <- get_test_header_lm(x, show_statistic, exact = TRUE)
-  if (!is.null(test_header)) {
-    out[[test_header]] <- NA_real_
-  }
-  if (show_p_value) {
-    out[[.LM_KEY_P]] <- NA_real_
-  }
-  if (include_r2) {
-    out[[format_r2_header_lm(r2_type)]] <- NA_real_
-  }
-  if (include_es) {
-    out[[format_effect_size_header_lm(effect_size)]] <- NA_real_
-    if (include_es_ci) {
-      out[[.LM_KEY_ES_CI_LL]] <- NA_real_
-      out[[.LM_KEY_ES_CI_UL]] <- NA_real_
-    }
-  }
-  if (show_n) {
-    out[[.LM_KEY_N]] <- NA_integer_
-  }
-  if (show_weighted_n) {
-    out[[.LM_KEY_WEIGHTED_N]] <- NA_real_
+    out[[ent$key]] <- if (identical(ent$token, "n")) NA_integer_ else NA_real_
   }
 
   for (i in seq_along(vars)) {
@@ -159,7 +397,6 @@ build_wide_raw_continuous_lm <- function(
         out[i, .lm_key_emmean(block$level[j])] <- block$emmean[j]
       }
       if (nrow(block) == 2L) {
-        delta_name <- get_delta_label_lm(block)
         out[[delta_name]][i] <- block$estimate[test_row]
         if (isTRUE(ci)) {
           out[[ci_ll_name]][i] <- block$estimate_ci_lower[test_row]
@@ -181,10 +418,10 @@ build_wide_raw_continuous_lm <- function(
       out[[.LM_KEY_P]][i] <- block$p.value[test_row]
     }
     if (include_r2) {
-      out[[format_r2_header_lm(r2_type)]][i] <- get_r2_value_lm(block, r2_type)
+      out[[r2_header]][i] <- get_r2_value_lm(block, r2_type)
     }
     if (include_es) {
-      out[[format_effect_size_header_lm(effect_size)]][i] <- block$es_value[1]
+      out[[es_header]][i] <- block$es_value[1]
       if (include_es_ci) {
         out[[.LM_KEY_ES_CI_LL]][i] <- block$es_ci_lower[1]
         out[[.LM_KEY_ES_CI_UL]][i] <- block$es_ci_upper[1]
@@ -216,19 +453,36 @@ build_wide_display_df_continuous_lm <- function(
   ci = TRUE,
   fit_digits = 2L,
   effect_size_digits = 2L,
-  p_digits = 3L
+  p_digits = 3L,
+  spec = NULL
 ) {
   vars <- unique(x$variable)
-  first_block <- x[x$variable == vars[1], , drop = FALSE]
-  by_type <- unique(first_block$predictor_type)[1]
+  by_type <- unique(x[x$variable == vars[1], , drop = FALSE]$predictor_type)[1]
   ci_pct <- .lm_ci_pct(ci_level)
   ci_ll_name <- .lm_key_ci_ll(ci_pct)
   ci_ul_name <- .lm_key_ci_ul(ci_pct)
   include_es <- !identical(effect_size, "none")
   include_es_ci <- include_es && isTRUE(effect_size_ci)
   include_r2 <- !identical(r2_type, "none")
-  r2_header <- format_r2_header_lm(r2_type)
-  es_header <- format_effect_size_header_lm(effect_size)
+  # See the raw builder: one spec per table, computed upstream when
+  # there is one.
+  spec <- spec %||%
+    .lm_column_spec(
+      x,
+      ci_level = ci_level,
+      show_statistic = show_statistic,
+      show_p_value = show_p_value,
+      show_n = show_n,
+      show_weighted_n = show_weighted_n,
+      effect_size = effect_size,
+      effect_size_ci = effect_size_ci,
+      r2_type = r2_type,
+      ci = ci
+    )
+  test_header <- .lm_spec_key(spec, "statistic")
+  r2_header <- .lm_spec_key(spec, "r2")
+  es_header <- .lm_spec_key(spec, "es")
+  delta_name <- .lm_spec_key(spec, "delta")
 
   out <- data.frame(
     Variable = vapply(
@@ -240,43 +494,13 @@ build_wide_display_df_continuous_lm <- function(
     stringsAsFactors = FALSE
   )
 
-  if (identical(by_type, "categorical")) {
-    for (lev in first_block$level) {
-      out[[.lm_key_emmean(lev)]] <- ""
+  # Same spec, same order as the raw frame, minus the two raw-only
+  # effect-size bounds, which have no displayed twin.
+  for (ent in spec) {
+    if (identical(ent$key, .LM_KEY_VARIABLE) || isTRUE(ent$raw_only)) {
+      next
     }
-    if (nrow(first_block) == 2L) {
-      out[[get_delta_label_lm(first_block)]] <- ""
-      if (isTRUE(ci)) {
-        out[[ci_ll_name]] <- ""
-        out[[ci_ul_name]] <- ""
-      }
-    }
-  } else {
-    out[[.LM_KEY_B]] <- ""
-    if (isTRUE(ci)) {
-      out[[ci_ll_name]] <- ""
-      out[[ci_ul_name]] <- ""
-    }
-  }
-
-  test_header <- get_test_header_lm(x, show_statistic, exact = TRUE)
-  if (!is.null(test_header)) {
-    out[[test_header]] <- ""
-  }
-  if (show_p_value) {
-    out[[.LM_KEY_P]] <- ""
-  }
-  if (include_r2) {
-    out[[r2_header]] <- ""
-  }
-  if (include_es) {
-    out[[es_header]] <- ""
-  }
-  if (show_n) {
-    out[[.LM_KEY_N]] <- ""
-  }
-  if (show_weighted_n) {
-    out[[.LM_KEY_WEIGHTED_N]] <- ""
+    out[[ent$key]] <- ""
   }
 
   for (i in seq_along(vars)) {
@@ -293,7 +517,6 @@ build_wide_display_df_continuous_lm <- function(
         )
       }
       if (nrow(block) == 2L) {
-        delta_name <- get_delta_label_lm(block)
         out[[delta_name]][i] <- format_number(
           block$estimate[test_row],
           digits,
@@ -408,11 +631,18 @@ export_continuous_lm_table <- function(
   clipboard_delim,
   word_path,
   note = NULL,
-  title = NULL
+  title = NULL,
+  labels = NULL
 ) {
   ci_pct <- .lm_ci_pct(ci_level)
   ci_ll <- .lm_key_ci_ll(ci_pct)
   ci_ul <- .lm_key_ci_ul(ci_pct)
+  # The headers, keyed by frozen column key. `col_meta$display_label`
+  # cannot serve here: the typed view is built only for the default
+  # output, and this function receives the display frame alone. NULL
+  # (a frame nobody's spec produced) is the identity.
+  lab <- function(keys) .lm_labels(keys, labels)
+  ci_spanner_label <- .lm_ci_label(ci_level)
   # Membership, not a flag from upstream: the exporter is also reached
   # with a hand-built frame that carries no interval at all.
   has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))
@@ -476,8 +706,8 @@ export_continuous_lm_table <- function(
 
     sub_labels <- rep("", nc)
     if (has_ci) {
-      sub_labels[ll_pos] <- .LM_KEY_CI_LL
-      sub_labels[ul_pos] <- .LM_KEY_CI_UL
+      sub_labels[ll_pos] <- lab(.LM_KEY_CI_LL)
+      sub_labels[ul_pos] <- lab(.LM_KEY_CI_UL)
     }
     colnames(display_df) <- sub_labels
 
@@ -490,10 +720,10 @@ export_continuous_lm_table <- function(
       if (has_ci && col_keys[j] %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)) {
         next
       }
-      gspec[[col_keys[j]]] <- j
+      gspec[[lab(col_keys[j])]] <- j
     }
     if (has_ci) {
-      gspec[[paste0(ci_pct, " ", .LM_KEY_CI)]] <- c(ll_pos, ul_pos)
+      gspec[[ci_spanner_label]] <- c(ll_pos, ul_pos)
     }
 
     # `notes = note` keeps native footnote rendering for the LaTeX /
@@ -609,10 +839,10 @@ export_continuous_lm_table <- function(
 
     label_list <- stats::setNames(as.list(rep("", length(col_keys))), col_keys)
     if (has_ci && .LM_KEY_CI_LL %in% col_keys) {
-      label_list[[.LM_KEY_CI_LL]] <- .LM_KEY_CI_LL
+      label_list[[.LM_KEY_CI_LL]] <- lab(.LM_KEY_CI_LL)
     }
     if (has_ci && .LM_KEY_CI_UL %in% col_keys) {
-      label_list[[.LM_KEY_CI_UL]] <- .LM_KEY_CI_UL
+      label_list[[.LM_KEY_CI_UL]] <- lab(.LM_KEY_CI_UL)
     }
     tbl <- gt::cols_label(tbl, .list = label_list)
 
@@ -624,7 +854,7 @@ export_continuous_lm_table <- function(
       # punctuation ("M (a b)" / "M (a.b)"), a pre-existing hazard.
       tbl <- gt::tab_spanner(
         tbl,
-        label = col,
+        label = lab(col),
         columns = col,
         id = .lm_spanner_id(col)
       )
@@ -632,7 +862,7 @@ export_continuous_lm_table <- function(
     if (has_ci) {
       tbl <- gt::tab_spanner(
         tbl,
-        label = paste0(ci_pct, " ", .LM_KEY_CI),
+        label = ci_spanner_label,
         columns = c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)
       )
     }
@@ -790,7 +1020,7 @@ export_continuous_lm_table <- function(
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
-    hdrs <- build_header_rows_lm(col_keys, ci_pct)
+    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels)
     map <- data.frame(
       col_keys = col_keys,
       top = hdrs$top,
@@ -947,7 +1177,7 @@ export_continuous_lm_table <- function(
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows_lm(col_keys, ci_pct)
+    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels)
     ci_j <- which(col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL))
 
     wb <- openxlsx2::wb_workbook()
@@ -1101,7 +1331,7 @@ export_continuous_lm_table <- function(
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
-    hdrs <- build_header_rows_lm(col_keys, ci_pct)
+    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels)
     # The sub-label row carries the LL / UL labels of the CI pair;
     # with no CI column it is empty and is dropped rather than
     # pasted as a blank line (same rule as `clipboard_payload()`).
@@ -1151,14 +1381,17 @@ rename_ci_cols_lm <- function(display_df, ci_ll, ci_ul) {
   display_df
 }
 
-build_header_rows_lm <- function(col_keys, ci_pct) {
+# The two printed header rows of the flextable / Word, Excel and
+# clipboard routes -- the only place those three read a header from, and
+# the place the Excel column WIDTHS are measured on. `top` used to be
+# `col_keys` verbatim: this is the seam between key and text.
+build_header_rows_lm <- function(col_keys, ci_spanner_label, labels = NULL) {
   nc <- length(col_keys)
-  is_bound <- col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)
-  top <- col_keys
-  top[is_bound] <- paste0(ci_pct, " ", .LM_KEY_CI)
+  top <- .lm_labels(col_keys, labels)
+  top[col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)] <- ci_spanner_label
   bottom <- rep("", nc)
-  bottom[col_keys == .LM_KEY_CI_LL] <- .LM_KEY_CI_LL
-  bottom[col_keys == .LM_KEY_CI_UL] <- .LM_KEY_CI_UL
+  bottom[col_keys == .LM_KEY_CI_LL] <- .lm_labels(.LM_KEY_CI_LL, labels)
+  bottom[col_keys == .LM_KEY_CI_UL] <- .lm_labels(.LM_KEY_CI_UL, labels)
   list(top = top, bottom = bottom)
 }
 

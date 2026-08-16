@@ -161,6 +161,176 @@ test_that("every frozen continuous key equals its English display label", {
   expect_identical(.continuous_labels("no such column", 0.95), "no such column")
 })
 
+test_that("every frozen linear-model key equals its English display label", {
+  # Same contract as the two tests above, for lot C. Here the key layer
+  # is unusually load-bearing: it names the public `data.frame` columns,
+  # the flextable `col_keys`, the gt spanner ids and the `th[id="%s"]`
+  # CSS selector. Only this test can see a key part company with its
+  # header -- `%in% names(...)` pins the keys, the console snapshots pin
+  # the headers, and both stay green through a drift.
+  couples <- list(
+    list(.LM_KEY_VARIABLE, "header_variable"),
+    list(.LM_KEY_B, "header_b"),
+    list(.LM_KEY_P, "header_p"),
+    list(.LM_KEY_N, "header_n_lower"),
+    list(.LM_KEY_WEIGHTED_N, "header_weighted_n"),
+    list(.LM_KEY_CI_LL, "header_ci_ll"),
+    list(.LM_KEY_CI_UL, "header_ci_ul"),
+    list(.LM_KEY_MEAN, "header_mean"),
+    list(.LM_KEY_DELTA, "symbol_delta"),
+    # The interval word INSIDE a column key ("95% CI LL"), not the
+    # header key: a translated "CI" must never move a public key.
+    list(.LM_KEY_CI, "header_ci_label_confidence")
+  )
+  for (cp in couples) {
+    expect_identical(cp[[1L]], spicy_str(cp[[2L]]), info = cp[[2L]])
+  }
+
+  # The four composition rules: `paste0()` on the key side, a registry
+  # template on the label side.
+  expect_identical(.lm_key_emmean("Female"), .lm_label_emmean("Female"))
+  blk <- data.frame(level = c("Female", "Male"), stringsAsFactors = FALSE)
+  expect_identical(get_delta_label_lm(blk), .lm_label_delta(blk))
+  expect_identical(.lm_key_ci_ll("95%"), "95% CI LL")
+  expect_identical(.lm_key_ci_ul("95%"), "95% CI UL")
+  expect_identical(.lm_ci_label(0.95), "95% CI")
+
+  # The two glyph tables of `.lm_test_render()`: one frozen, one from
+  # the registry, equal at the English default and named alike.
+  expect_identical(.LM_TEST_GLYPHS, .lm_test_glyph_labels())
+
+  # Every branch of the test header, through BOTH twins. The shared
+  # format body makes the punctuation impossible to drift; this covers
+  # the glyphs and the pass-through default.
+  mk <- function(tt, df1 = 1, df2 = 10) {
+    data.frame(
+      test_type = tt,
+      df1 = df1,
+      df2 = df2,
+      statistic = 2,
+      predictor_type = "categorical",
+      estimate = c(NA, 1),
+      level = c("A", "B"),
+      stringsAsFactors = FALSE
+    )
+  }
+  blocks <- list(
+    mk("z"),
+    mk("chi2"),
+    mk("t"),
+    mk("t", df2 = 45.34),
+    mk("t", df2 = Inf),
+    mk("F", df1 = 2, df2 = 30),
+    mk("wald_custom")
+  )
+  for (b in blocks) {
+    for (ex in c(TRUE, FALSE)) {
+      expect_identical(
+        get_test_header_lm(b, TRUE, ex),
+        .lm_test_label(b, TRUE, ex),
+        info = paste(b$test_type[[1L]], ex)
+      )
+    }
+  }
+  # Both twins pass an unknown token through unchanged.
+  for (tok in c("r2", "adj_r2", "no_such_r2")) {
+    expect_identical(format_r2_header_lm(tok), .lm_r2_label(tok), info = tok)
+  }
+  for (tok in c("f2", "d", "g", "omega2", "no_such_es")) {
+    expect_identical(
+      format_effect_size_header_lm(tok),
+      .lm_es_label(tok),
+      info = tok
+    )
+  }
+
+  # The spec IS the column set: its keys and their order must equal the
+  # display frame's, which is the invariant the typed view's abort used
+  # to protect by matching strings one branch at a time.
+  d <- data.frame(
+    a = c(1, 2, 3, 10, 11, 12),
+    b = c(2, 4, 6, 8, 10, 13),
+    g = factor(c("x", "x", "x", "y", "y", "y")),
+    w = c(1, 1, 2, 1, 3, 0.5)
+  )
+  lg <- table_continuous_lm(
+    d,
+    select = c(a, b),
+    by = g,
+    weights = w,
+    statistic = TRUE,
+    effect_size = "f2",
+    r2 = "adj_r2",
+    show_weighted_n = TRUE,
+    output = "long"
+  )
+  spec <- .lm_column_spec(
+    lg,
+    show_statistic = TRUE,
+    effect_size = "f2",
+    effect_size_ci = TRUE,
+    r2_type = "adj_r2",
+    show_weighted_n = TRUE
+  )
+  wide <- build_wide_display_df_continuous_lm(
+    lg,
+    show_statistic = TRUE,
+    effect_size = "f2",
+    effect_size_ci = TRUE,
+    r2_type = "adj_r2",
+    show_weighted_n = TRUE,
+    spec = spec
+  )
+  raw <- build_wide_raw_continuous_lm(
+    lg,
+    show_statistic = TRUE,
+    effect_size = "f2",
+    effect_size_ci = TRUE,
+    r2_type = "adj_r2",
+    show_weighted_n = TRUE,
+    spec = spec
+  )
+  keys <- .lm_spec_keys(spec)
+  # The absolute order too: the spec is now the ONE place that decides
+  # it, for the public frame, the typed view and every engine.
+  expect_identical(
+    keys,
+    c(
+      "Variable",
+      "M (x)",
+      "M (y)",
+      "Δ (y - x)",
+      "95% CI LL",
+      "95% CI UL",
+      "t(4)",
+      "p",
+      "Adj. R²",
+      "f²",
+      "effect_size_ci_lower",
+      "effect_size_ci_upper",
+      "n",
+      "Weighted n"
+    )
+  )
+  expect_identical(keys, names(raw))
+  expect_identical(
+    keys[!vapply(spec, function(e) isTRUE(e$raw_only), logical(1))],
+    names(wide)
+  )
+  # Every displayed column carries a header equal to its key in English.
+  shown <- Filter(function(e) !isTRUE(e$raw_only), spec)
+  expect_identical(
+    vapply(shown, function(e) e$key, character(1)),
+    vapply(shown, function(e) e$label, character(1))
+  )
+  # `.lm_labels()` is a total function of its input: an unknown key and
+  # a NULL label map both come back unchanged, so a hand-built frame
+  # still exports.
+  labs <- .lm_spec_labels(spec)
+  expect_identical(.lm_labels("Estimate", labs), "Estimate")
+  expect_identical(.lm_labels(c("Estimate", "p"), NULL), c("Estimate", "p"))
+})
+
 test_that("spicy_str() errors hard on an unknown key", {
   expect_error(spicy_str("no_such_key_exists"))
 })

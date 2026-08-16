@@ -1644,6 +1644,24 @@ table_continuous_lm <- function(
     return(result)
   }
 
+  # The ordered columns of this table -- frozen key, displayed header,
+  # semantic token -- resolved ONCE and handed to every consumer below.
+  # `col_meta$display_label` cannot be the carrier: the typed view is
+  # built only for `output = "default"`, and the exporters receive the
+  # display frame alone.
+  spec <- .lm_column_spec(
+    result,
+    ci_level = ci_level,
+    show_statistic = statistic,
+    show_p_value = p_value,
+    show_n = show_n,
+    show_weighted_n = show_weighted_n,
+    effect_size = effect_size,
+    effect_size_ci = effect_size_ci,
+    r2_type = r2,
+    ci = ci
+  )
+
   wide_raw <- build_wide_raw_continuous_lm(
     result,
     show_statistic = statistic,
@@ -1654,7 +1672,8 @@ table_continuous_lm <- function(
     effect_size_ci = effect_size_ci,
     r2_type = r2,
     ci = ci,
-    ci_level = ci_level
+    ci_level = ci_level,
+    spec = spec
   )
   if (identical(output, "data.frame")) {
     return(wide_raw)
@@ -1675,7 +1694,8 @@ table_continuous_lm <- function(
     effect_size = effect_size,
     effect_size_ci = effect_size_ci,
     r2_type = r2,
-    ci = ci
+    ci = ci,
+    spec = spec
   )
 
   if (identical(output, "default")) {
@@ -1695,7 +1715,8 @@ table_continuous_lm <- function(
       show_statistic = statistic,
       effect_size = effect_size,
       effect_size_ci = effect_size_ci,
-      r2_type = r2
+      r2_type = r2,
+      spec = spec
     )
     class(result) <- c(
       "spicy_continuous_lm_table",
@@ -1717,7 +1738,8 @@ table_continuous_lm <- function(
     clipboard_delim = clipboard_delim,
     word_path = word_path,
     note = .tclm_note_text(result),
-    title = .continuous_lm_title(by_label)
+    title = .continuous_lm_title(by_label),
+    labels = .lm_spec_labels(spec)
   )
 }
 

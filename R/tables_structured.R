@@ -631,11 +631,10 @@
   show_statistic,
   effect_size,
   effect_size_ci,
-  r2_type
+  r2_type,
+  spec
 ) {
   vars <- unique(result$variable)
-  first_block <- result[result$variable == vars[1L], , drop = FALSE]
-  by_type <- unique(first_block$predictor_type)[1L]
   ci_pct <- .lm_ci_pct(ci_level)
   ci_ll_name <- .lm_key_ci_ll(ci_pct)
   ci_ul_name <- .lm_key_ci_ul(ci_pct)
@@ -648,91 +647,20 @@
   ci_pairs <- list()
   composite <- character(0)
 
-  emmean_cols <- if (identical(by_type, "categorical")) {
-    stats::setNames(.lm_key_emmean(first_block$level), first_block$level)
-  } else {
-    character(0)
-  }
-  delta_col <- if (
-    identical(by_type, "categorical") && nrow(first_block) == 2L
-  ) {
-    get_delta_label_lm(first_block)
-  } else {
-    NA_character_
-  }
-  test_header <- get_test_header_lm(result, show_statistic, exact = TRUE)
-  r2_header <- if (identical(r2_type, "none")) {
-    NA_character_
-  } else {
-    format_r2_header_lm(r2_type)
-  }
-  es_header <- if (identical(effect_size, "none")) {
-    NA_character_
-  } else {
-    format_effect_size_header_lm(effect_size)
-  }
+  # The same spec both frames were built from, indexed by frozen key.
+  # The five column names this function used to re-derive (the marginal
+  # means, the delta, the test, the fit statistic, the effect size) now
+  # come from it.
+  spec_by_key <- stats::setNames(spec, .lm_spec_keys(spec))
 
   for (nm in col_names) {
-    meta <- if (nm %in% emmean_cols) {
-      # Estimated marginal mean of one `by` level: the level is DATA
-      # on the column, so a consumer never parses "M (Male)" back.
-      list(
-        token = "emmean",
-        precision = as.integer(digits),
-        level = names(emmean_cols)[match(nm, emmean_cols)]
-      )
-    } else if (identical(nm, delta_col)) {
-      list(token = "delta", precision = as.integer(digits))
-    } else if (nm %in% c(ci_ll_name, ci_ul_name)) {
-      list(
-        token = "ci",
-        precision = as.integer(digits),
-        ci_role = if (identical(nm, ci_ll_name)) {
-          .LM_KEY_CI_LL
-        } else {
-          .LM_KEY_CI_UL
-        },
-        # A cross-reference to the other bound: a KEY, never a label.
-        ci_pair = if (identical(nm, ci_ll_name)) ci_ul_name else ci_ll_name,
-        ci_label = paste0(ci_pct, " ", .LM_KEY_CI)
-      )
-    } else if (identical(nm, .LM_KEY_B)) {
-      list(token = "b", precision = as.integer(digits))
-    } else if (!is.null(test_header) && identical(nm, test_header)) {
-      list(token = "statistic", precision = as.integer(digits))
-    } else if (identical(nm, .LM_KEY_P)) {
-      list(
-        token = "p",
-        precision = as.integer(p_digits),
-        p_style = .style_p_style_token(),
-        threshold = 10^(-p_digits)
-      )
-    } else if (identical(nm, r2_header)) {
-      list(token = "r2", precision = as.integer(fit_digits))
-    } else if (identical(nm, es_header)) {
-      # With `effect_size_ci`, the console inlines the interval in the
-      # same cell ("g = 0.14 [0.02, 0.25]"): a composite the body
-      # cannot hold, so it travels as a display override.
-      if (isTRUE(effect_size_ci)) {
-        composite <- c(composite, nm)
-      }
-      list(
-        token = "es",
-        precision = as.integer(effect_size_digits),
-        effect_size = effect_size
-      )
-    } else if (identical(nm, .LM_KEY_N)) {
-      list(token = "n", precision = 0L)
-    } else if (identical(nm, .LM_KEY_WEIGHTED_N)) {
-      # A sum of weights, not a count -- displayed at the table's
-      # numeric precision, like the console does.
-      list(token = "weighted_n", precision = as.integer(digits))
-    } else {
+    ent <- spec_by_key[[nm]]
+    if (is.null(ent)) {
       # The display builder's column set is closed; a column added
-      # there without a branch here must FAIL here, not be silently
-      # mislabelled with someone else's token. Every comparison above
-      # is KEY against key, so this abort never sees a translated
-      # header pass by -- it is the safety net of that very rule.
+      # there without an entry in the spec must FAIL here, not be
+      # silently mislabelled with someone else's token. The lookup is
+      # KEY against key, so this abort never sees a translated header
+      # pass by -- it is the safety net of that very rule.
       spicy_abort(
         sprintf(
           "Internal: unrecognised continuous-lm display column %s.",
@@ -741,11 +669,59 @@
         class = "spicy_internal_invariant"
       )
     }
+    meta <- switch(
+      ent$token,
+      # Estimated marginal mean of one `by` level: the level is DATA
+      # on the column, so a consumer never parses "M (Male)" back.
+      emmean = list(
+        token = "emmean",
+        precision = as.integer(digits),
+        level = ent$level
+      ),
+      delta = list(token = "delta", precision = as.integer(digits)),
+      ci = list(
+        token = "ci",
+        precision = as.integer(digits),
+        ci_role = ent$ci_role,
+        # A cross-reference to the other bound: a KEY, never a label.
+        ci_pair = ent$ci_pair,
+        ci_label = ent$ci_label
+      ),
+      b = list(token = "b", precision = as.integer(digits)),
+      statistic = list(token = "statistic", precision = as.integer(digits)),
+      p = list(
+        token = "p",
+        precision = as.integer(p_digits),
+        p_style = .style_p_style_token(),
+        threshold = 10^(-p_digits)
+      ),
+      r2 = list(token = "r2", precision = as.integer(fit_digits)),
+      es = {
+        # With `effect_size_ci`, the console inlines the interval in
+        # the same cell ("g = 0.14 [0.02, 0.25]"): a composite the body
+        # cannot hold, so it travels as a display override.
+        if (isTRUE(effect_size_ci)) {
+          composite <- c(composite, nm)
+        }
+        list(
+          token = "es",
+          precision = as.integer(effect_size_digits),
+          effect_size = effect_size
+        )
+      },
+      n = list(token = "n", precision = 0L),
+      # A sum of weights, not a count -- displayed at the table's
+      # numeric precision, like the console does.
+      weighted_n = list(token = "weighted_n", precision = as.integer(digits))
+    )
+    # The header a reader sees, from the same spec the engines read: the
+    # typed view is one consumer of the label layer, never its source.
+    meta$display_label <- ent$label
     col_meta[[nm]] <- meta
   }
   if (all(c(ci_ll_name, ci_ul_name) %in% col_names)) {
     ci_pairs <- list(list(
-      label = paste0(ci_pct, " ", .LM_KEY_CI),
+      label = spec_by_key[[ci_ll_name]]$ci_label,
       cols = .desc_col_index(col_names, c(ci_ll_name, ci_ul_name))
     ))
   }

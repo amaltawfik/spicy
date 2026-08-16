@@ -147,8 +147,18 @@
   # may want to gloss differently without a side effect.
   symbol_t = "t",
   symbol_z = "z",
+  # The global Wald F of `table_continuous_lm()`; the three other test
+  # glyphs of that family are `symbol_t` / `symbol_z` / `symbol_chi_sq`.
+  symbol_f = "F",
   symbol_chi_sq = "\u03C7\u00B2",
   symbol_beta = "\u03B2",
+  # The increment glyph a difference-of-means header opens with. Not
+  # `fitstat_change_prefix` ("\u0394%s"), which is a template for a
+  # nested-comparison ROW label.
+  symbol_delta = "\u0394",
+  # The two standardised mean differences of `table_continuous_lm()`.
+  symbol_cohens_d = "d",
+  symbol_hedges_g = "g",
   symbol_eta_sq_partial = "\u03B7\u00B2",
   symbol_omega_sq_global = "\u03C9\u00B2",
   symbol_omega_sq_partial = "\u03C9\u00B2",
@@ -297,6 +307,32 @@
   # roles, and a language may want one word in a stub and another over a
   # column.
   header_weighted_n = "Weighted n",
+
+  # -- table_continuous_lm(): column headers ---------------------------------
+  # The column NAME and the `col_meta` key stay frozen English -- they are
+  # the rendering contract (flextable col_keys, gt ids, the gt CSS
+  # selector) and the `as_structured()` contract. These keys name only the
+  # HEADER a reader sees. `header_variable`, `header_b`, `header_p`,
+  # `header_n_lower`, `header_weighted_n`, `header_mean`, `header_ci_ll` /
+  # `header_ci_ul`, `header_ci_bound` and `header_ci_spanner` are shared
+  # with lots A and B and are not restated here.
+  # Two holes: the mean glyph, then the `by` level (DATA). The glyph
+  # travels as an ARGUMENT, resolved from `header_mean`, so one
+  # translation of "M" serves the whole package. Second key of value
+  # "%s (%s)" after `header_companion_qualified`, whose subject is an
+  # orphaned column qualified by its carrier -- one key per ROLE is the
+  # registry's rule, not one key per string.
+  header_lm_mean_level = "%s (%s)",
+  # Three holes: the increment glyph, then the two levels in the order
+  # the subtraction reads. The " - " is typographic punctuation, not a
+  # word, so it stays in the template.
+  header_lm_delta = "%s (%s - %s)",
+  # The adjusted coefficient of determination as a COLUMN header of
+  # `table_continuous_lm()`, distinct from `fitstat_adj_r2`, the
+  # fit-statistic ROW label of `table_regression()`: same string, two
+  # roles, and a language may want one word in a stub and another over a
+  # column -- as `header_weighted_n` / `label_weighted_n` already do.
+  header_lm_adj_r2 = "Adj. R\u00B2",
 
   # -- table_continuous(): tests and glosses --------------------------------
   test_wilcoxon_rank_sum = "Wilcoxon rank-sum test",

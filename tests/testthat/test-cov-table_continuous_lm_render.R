@@ -253,6 +253,13 @@ test_that("get_test_header_lm prints t() when the Satterthwaite df is non-finite
     stringsAsFactors = FALSE
   )
   expect_equal(spicy:::get_test_header_lm(block, TRUE, TRUE), "t()")
+  # Pinned at the seam too: `.lm_test_parts()` must carry the non-finite
+  # df through to the formatter. Dropping it there would render "t", and
+  # it would render "t" in BOTH twins at once -- so the key/label
+  # equality test in test-i18n.R could not see the change.
+  parts <- spicy:::.lm_test_parts(block, TRUE, TRUE)
+  expect_identical(parts$df2, Inf)
+  expect_equal(spicy:::.lm_test_label(block, TRUE, TRUE), "t()")
 })
 
 test_that("get_test_header_lm returns the raw test type for an unrecognised test", {
