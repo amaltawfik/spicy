@@ -595,6 +595,44 @@ test_that("as_structured() types a two-level bivariate model table", {
   expect_faithful(s, lm_display(tbl))
 })
 
+test_that("a display column outside the linear-model spec aborts the typed view", {
+  # The display builder's column set is closed. A column that reaches
+  # the typed view without an entry in the spec must FAIL, not be
+  # mislabelled with someone else's token -- the safety net of the rule
+  # that every comparison in this family is key against key. Reachable
+  # only from inside the package, so it is pinned directly.
+  lg <- quiet(table_continuous_lm(
+    sh_desc(),
+    bmi,
+    by = sex,
+    output = "long"
+  ))
+  spec <- spicy:::.lm_column_spec(lg)
+  wide_raw <- spicy:::build_wide_raw_continuous_lm(lg, spec = spec)
+  wide_display <- spicy:::build_wide_display_df_continuous_lm(lg, spec = spec)
+  wide_display[["Estimate"]] <- ""
+
+  expect_error(
+    spicy:::.build_continuous_lm_structured(
+      result = lg,
+      wide_raw = wide_raw,
+      wide_display = wide_display,
+      digits = 2L,
+      fit_digits = 2L,
+      effect_size_digits = 2L,
+      p_digits = 3L,
+      decimal_mark = ".",
+      ci_level = 0.95,
+      show_statistic = TRUE,
+      effect_size = "none",
+      effect_size_ci = FALSE,
+      r2_type = "r2",
+      spec = spec
+    ),
+    class = "spicy_internal_invariant"
+  )
+})
+
 test_that("a numeric predictor types a slope column", {
   sh <- sh_desc()
   tbl <- quiet(table_continuous_lm(sh, c(bmi, wellbeing_score), by = age))
