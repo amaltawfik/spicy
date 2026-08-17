@@ -277,6 +277,33 @@
   # effect's group). DATA, never translated.
   fitstat_n_groups = "N (%s)",
 
+  # -- table_regression(): subordinate block footers -------------------------
+  # Every one of these names its block through a HOLE filled with
+  # `label_block_*`, so a translated block header can never leave its
+  # own footer quoting the English word.
+  note_thresholds_rows_gloss = "%s: latent-scale category cut-points",
+  # Two holes: the block caption, then the rendered cut-point list.
+  note_thresholds_compact = "%s: %s.",
+  note_scale_effects_gloss = "%s: covariate effects on the log standard deviation of the latent response",
+  # Two holes: the block caption and the estimation method (REML / ML,
+  # an identifier). Deliberately NOT `header_companion_qualified`, which
+  # carries the same value for an unrelated role -- the console header
+  # of an orphaned companion column.
+  note_re_method = "%s (%s)",
+  # The random-effects footer line, with and without its LR test. The
+  # colon and the full stop are the joiners the line is built from.
+  note_re_line = "%s.",
+  note_re_line_lrt = "%s: %s.",
+  # Component-block glosses. One hole: the block caption. The
+  # zero-inflation gloss is shared by glmmTMB and pscl - one component,
+  # one sentence.
+  note_component_gloss_zero_inflation = "%s component: log-odds of a structural (excess) zero.",
+  note_component_gloss_dispersion = "%s component: log scale.",
+  note_component_gloss_hurdle_binomial = "%s component: log-odds of a nonzero count.",
+  # Two holes: the block caption, then the censoring distribution (an
+  # identifier from the fit).
+  note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",
+
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = odds ratio",
   note_abbrev_irr = "IRR = incidence rate ratio",

@@ -826,7 +826,10 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
       function(f) isTRUE(f$info$extras$exp_applied),
       frames
     )
-    gloss <- "Thresholds: latent-scale category cut-points"
+    gloss <- spicy_fmt(
+      "note_thresholds_rows_gloss",
+      spicy_str("label_block_thresholds")
+    )
     if (length(exp_frames) > 0L) {
       # The cut-point scale is the LINK scale, which is not log-odds
       # for every exponentiating link: cumulative cloglog thresholds
@@ -957,7 +960,11 @@ build_gee_footer_block_from_frames <- function(frames) {
     },
     character(1)
   )
-  paste0("Thresholds: ", paste(parts, collapse = ", "), ".")
+  spicy_fmt(
+    "note_thresholds_compact",
+    spicy_str("label_block_thresholds"),
+    paste(parts, collapse = ", ")
+  )
 }
 
 
@@ -1631,9 +1638,13 @@ format_p_value_for_panel <- function(p) {
     !is.na(method_tag) &&
     nzchar(method_tag)
   header <- if (has_method) {
-    sprintf("Random effects (%s)", method_tag)
+    spicy_fmt(
+      "note_re_method",
+      spicy_str("label_block_random_effects"),
+      method_tag
+    )
   } else {
-    "Random effects"
+    spicy_str("label_block_random_effects")
   }
 
   lrt <- re$null_lrt
@@ -1653,9 +1664,9 @@ format_p_value_for_panel <- function(p) {
     return(NULL)
   }
   if (is.null(lrt_part)) {
-    return(paste0(header, "."))
+    return(spicy_fmt("note_re_line", header))
   }
-  paste0(header, ": ", lrt_part, ".")
+  spicy_fmt("note_re_line_lrt", header, lrt_part)
 }
 
 
@@ -2331,9 +2342,9 @@ build_scale_effects_footer_block_from_frames <- function(frames) {
   if (!has_scale) {
     return(NULL)
   }
-  gloss <- paste0(
-    "Scale effects: covariate effects on the log standard deviation of the ",
-    "latent response"
+  gloss <- spicy_fmt(
+    "note_scale_effects_gloss",
+    spicy_str("label_block_scale_effects")
   )
   exp_any <- any(vapply(
     frames,

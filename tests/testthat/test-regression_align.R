@@ -296,14 +296,9 @@ test_that("the block identity strings are typed in one place", {
       carriers <- c(carriers, basename(f))
     }
   }
-  # regression_align.R declares the identities; i18n.R holds the English
-  # CAPTION defaults, which are the same strings today and the ones that
-  # move at stage 2 -- that is the whole point of the two layers.
-  # regression_titlefooter.R still re-types "Random effects" inside a
-  # footer SENTENCE; that sentence moves to the registry with the rest of
-  # the block footers, and this list loses its third entry then.
-  expect_setequal(
-    carriers,
-    c("regression_align.R", "i18n.R", "regression_titlefooter.R")
-  )
+  # Two files, and only two: regression_align.R declares the identities,
+  # i18n.R holds the English CAPTION defaults. They are the same strings
+  # today and only the second set moves at stage 2 -- that is the whole
+  # point of keeping them apart.
+  expect_setequal(carriers, c("regression_align.R", "i18n.R"))
 })

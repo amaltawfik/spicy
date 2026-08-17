@@ -317,7 +317,10 @@ as_regression_frame.glmmTMB <- function(
         label = .REG_BLOCK_ZI,
         link = "logit",
         exp_ok = TRUE,
-        gloss = "Zero-inflation component: log-odds of a structural (excess) zero.",
+        gloss = spicy_fmt(
+          "note_component_gloss_zero_inflation",
+          spicy_str("label_block_zero_inflation")
+        ),
         ci_level = ci_level
       )
   }
@@ -339,7 +342,10 @@ as_regression_frame.glmmTMB <- function(
         label = .REG_BLOCK_DISP,
         link = "log",
         exp_ok = FALSE,
-        gloss = "Dispersion component: log scale.",
+        gloss = spicy_fmt(
+          "note_component_gloss_dispersion",
+          spicy_str("label_block_dispersion")
+        ),
         ci_level = ci_level
       )
   }

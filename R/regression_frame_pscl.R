@@ -536,15 +536,22 @@ as_regression_frame.zeroinfl <- function(
 
   gloss <- if (is_hurdle) {
     if (identical(zero_dist, "binomial")) {
-      "Zero hurdle component: log-odds of a nonzero count."
+      spicy_fmt(
+        "note_component_gloss_hurdle_binomial",
+        spicy_str("label_block_zero_hurdle")
+      )
     } else {
-      sprintf(
-        "Zero hurdle component: right-censored %s on the log scale.",
+      spicy_fmt(
+        "note_component_gloss_hurdle_censored",
+        spicy_str("label_block_zero_hurdle"),
         zero_dist
       )
     }
   } else {
-    "Zero-inflation component: log-odds of a structural (excess) zero."
+    spicy_fmt(
+      "note_component_gloss_zero_inflation",
+      spicy_str("label_block_zero_inflation")
+    )
   }
 
   list(
