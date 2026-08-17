@@ -6,8 +6,9 @@ description: >
   cluster-robust / bootstrap / jackknife standard errors, case
   weights, additive covariate adjustment (G-computation or
   equal-weight), four effect-size families (f2, Cohen's d, Hedges'
-  g, Hays' omega2) with noncentral CIs, and APA-style output to
-  console, gt, tinytable, flextable, Excel, Word, or clipboard.
+  g, Hays' omega2) with noncentral CIs, and journal-styled output
+  (APA by default; JAMA, NEJM, The Lancet, ... by name) to console,
+  gt, tinytable, flextable, Excel, Word, or clipboard.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -43,7 +44,12 @@ a linear-model workflow with heteroskedasticity-consistent or
 cluster-robust standard errors, bootstrap / jackknife variance,
 case weights, additive covariate adjustment, or one of four
 effect-size families (`f2`, Cohen's *d*, Hedges' *g*, Hays'
-\(\omega^2\)) with noncentral CIs.
+\(\omega^2\)) with noncentral CIs. Formatting follows APA
+conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
+`"annals"`, `"aer"`) switches the whole table to that journal's
+published rules — the *House styles* section of
+`vignette("summary-tables-reporting")` shows each style and the
+guideline sentence behind every rule.
 
 ## Basic usage
 

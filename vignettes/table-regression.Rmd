@@ -1,8 +1,9 @@
 ---
 title: "Publication-ready regression tables"
 description: >
-  Coefficient tables for fitted regression models in R with APA-aligned
-  formatting: classical, heteroskedasticity-consistent and
+  Coefficient tables for fitted regression models in R with
+  journal-grade formatting (APA by default; JAMA, NEJM, The Lancet,
+  Annals, or AER by name): classical, heteroskedasticity-consistent and
   cluster-robust variance, five standardisation methods, partial
   effect sizes with noncentral-F CIs, average marginal effects,
   multiple-comparison adjustment, side-by-side and hierarchical
@@ -42,6 +43,14 @@ leading zero, factor levels grouped under their parent variable,
 fit statistics at the foot of the table, and a self-documenting
 note line that names the variance estimator and any
 methodological choice that affected the rendered values.
+
+APA is the default, not a limit: `style = "nejm"` re-types every
+p-value to the New England Journal of Medicine's statistical
+reporting guideline, `style = "lancet"` writes The Lancet's midline
+decimal point and en-dash intervals, and `"jama"`, `"annals"`, and
+`"aer"` apply their journals' rules the same way. Every rule a
+style encodes is sourced: `?spicy_style` quotes the sentence of
+the author guideline it comes from.
 
 The function is **fit-first**: you pass already-fitted models,
 not raw data and a formula. The same object exports cleanly to a
@@ -111,6 +120,18 @@ Reading the table:
   p = .130 — the interval spans effects from slightly negative to
   about a tenth of a point per year, so the data do not establish
   an adjusted age gradient.
+
+One argument re-typesets the same table for another journal — here
+NEJM's statistical-reporting rules: leading zero kept, two decimals
+above 0.01, floor `<0.001`:
+
+```{r basic-nejm}
+table_regression(fit, style = "nejm")
+```
+
+The complete tour of the named styles — what each journal
+specifies, with the guideline sentence behind every rule — is in
+the *House styles* section of `vignette("summary-tables-reporting")`.
 
 ## Standardised coefficients
 

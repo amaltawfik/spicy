@@ -3,7 +3,9 @@ title: "Categorical summary tables"
 description: >
   Build categorical summary tables in R with table_categorical(),
   including grouped cross-tabulations, effect sizes, confidence
-  intervals, and export to gt, tinytable, flextable, Excel, or Word.
+  intervals, and export to gt, tinytable, flextable, Excel, or Word —
+  APA formatting by default, named journal styles (JAMA, NEJM,
+  The Lancet, ...) by argument.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -35,7 +37,12 @@ reports and articles in social science and data science research. With
 \(p\)-values, effect sizes, confidence intervals, and multi-level
 headers. Without `by`, it produces one-way frequency-style tables for
 the selected variables. Export to gt, tinytable, flextable, Excel, or
-Word. This vignette walks through the main features.
+Word. Formatting follows APA conventions by default; `style = "jama"`
+(or `"nejm"`, `"lancet"`, `"annals"`, `"aer"`) switches the whole
+table to that journal's published rules — the *House styles* section
+of `vignette("summary-tables-reporting")` shows each style and the
+guideline sentence behind every rule. This vignette walks through the
+main features.
 
 ## Basic usage
 

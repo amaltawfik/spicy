@@ -3,7 +3,9 @@ title: "Continuous summary tables"
 description: >
   Build continuous summary tables in R with table_continuous(),
   including grouped descriptives, group-comparison tests, effect sizes,
-  and export to console, gt, tinytable, flextable, Excel, or Word.
+  and export to console, gt, tinytable, flextable, Excel, or Word —
+  APA formatting by default, named journal styles (JAMA, NEJM,
+  The Lancet, ...) by argument.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -33,7 +35,12 @@ library(spicy)
 by a categorical grouping variable. It is designed for readable summary
 tables in the console and for publication-ready outputs in rendered
 documents. When `by` is supplied, it can also add group-comparison
-tests, test statistics, and effect sizes.
+tests, test statistics, and effect sizes. Formatting follows APA
+conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
+`"annals"`, `"aer"`) switches the whole table to that journal's
+published rules — the *House styles* section of
+`vignette("summary-tables-reporting")` shows each style and the
+guideline sentence behind every rule.
 
 ## Basic usage
 
