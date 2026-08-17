@@ -340,6 +340,26 @@ test_that("a keep / drop pattern matching no term warns spicy_no_match", {
     table_regression(fit, keep = c("wt", "Poids")),
     class = "spicy_no_match"
   )
+
+  # A regex metacharacter survives into the message. `shQuote()` pasted
+  # the backslash raw and the condition formatter then ate it, so a user
+  # who wrote `keep = "\\bnope\\b"` was told that "nope" matched no term
+  # -- a pattern they had not written. `.quote_val()` escapes it, so the
+  # message carries the escaped form and the reader is shown the pattern
+  # they typed.
+  cond <- tryCatch(
+    {
+      table_regression(fit, keep = "\\bnope\\b")
+      NULL
+    },
+    warning = function(w) w
+  )
+  expect_s3_class(cond, "spicy_no_match")
+  expect_true(grepl(
+    encodeString("\\bnope\\b", quote = "\""),
+    conditionMessage(cond),
+    fixed = TRUE
+  ))
 })
 
 
