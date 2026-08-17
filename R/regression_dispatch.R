@@ -167,11 +167,16 @@ output_long <- function(aligned) {
 # outputs that draw their own spanner row (gt, flextable, tinytable,
 # excel, word) display the model label above the sub-columns, so the
 # in-column prefix would be redundant.
+#
+# The pattern is escaped by `.escape_regex()`, the package's one such
+# helper. The local copy this used to call was the same character class
+# minus the backslash, so a model label containing one produced a
+# pattern that quietly matched nothing.
 .strip_spanner_prefix <- function(body, spanners) {
   for (lbl in names(spanners)) {
     idx <- spanners[[lbl]]
     prefix <- paste0(lbl, ": ")
-    pat <- paste0("^", regex_escape(prefix))
+    pat <- paste0("^", .escape_regex(prefix))
     names(body)[idx] <- sub(pat, "", names(body)[idx])
   }
   body
@@ -3147,12 +3152,4 @@ print.spicy_regression_table <- function(x, ...) {
     )
   )
   invisible(x)
-}
-
-# Internal: escape regex metacharacters in a string so it can be used
-# as a literal pattern. Used for stripping the "Label: " prefix from
-# sub-column names without surprises if a model label happens to
-# contain "." or "+".
-regex_escape <- function(s) {
-  gsub("([.\\+*?\\^$()\\[\\]{}|])", "\\\\\\1", s, perl = TRUE)
 }
