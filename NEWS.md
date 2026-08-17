@@ -344,6 +344,16 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `inline()` refuses to cite an interval whose cells are a reference
+  level or an undefined statistic, as it already did for `b`, `se` and
+  `p` and as `?inline` documents; it used to return `[–, –]`.
+* `inline()` addresses each interval by its own token, so a table
+  carrying more than one -- `ci` with `med_ci`, or `ci` with `ame_ci`
+  -- can cite either. Both used to raise an ambiguity error naming
+  `model`, which does not apply to a single-model or descriptive
+  table, and `column = "ci"` on a `table_categorical()` now errors
+  with the available tokens instead of composing the association
+  interval of a row that has none.
 * The significance-star legend of `table_regression(stars = TRUE)` follows
   the table's `decimal_mark`: a comma table now reads `p < ,001`, not
   `p < .001`.

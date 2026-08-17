@@ -43,7 +43,9 @@
 #' The column is a **token** of the typed contract (`"b"`, `"se"`,
 #' `"p"`, `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... -- see
 #' `as_structured()`'s `col_meta`), never a display header. `"ci"`
-#' composes the interval with the style's brackets and separator. In
+#' composes the interval with the style's brackets and separator, and
+#' so does every other interval token the table carries (`"med_ci"`,
+#' `"ame_ci"`, `"assoc_ci"`): each addresses its own bounds. In
 #' a multi-model table, `model` selects the model by its spanner
 #' label or position; in a `by` table, the spanners are the groups,
 #' so `model` selects the group the same way.
@@ -291,19 +293,37 @@ inline <- function(
   )
 }
 
+# Refuse a cell the table itself says carries no value. `inline()`
+# exists to keep a number quoted in running text in step with the table,
+# so pasting the placeholder of a reference or undefined cell into a
+# sentence is the one thing it must not do -- which is what `?inline`
+# promises. Shared by the scalar path and by BOTH bounds of an interval:
+# the interval path used to skip this and render "[<dash>, <dash>]".
+.inline_refuse_status <- function(status, token) {
+  if (identical(status, "undefined")) {
+    spicy_abort(
+      sprintf(
+        "The %s cell of this row is undefined in the table (not estimable).",
+        .quote_val(token)
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (identical(status, "reference")) {
+    spicy_abort(
+      sprintf(
+        "This row is the reference category: it has no %s value.",
+        .quote_val(token)
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
+
 # One formatted cell by (row, token), the interval composed like the
 # console composes it.
 .inline_cell <- function(s, formatted, row, token, cols) {
-  if (identical(token, "ci")) {
-    pair <- .inline_ci_pair(s, cols)
-    lo <- trimws(formatted[[pair[1L]]][row])
-    hi <- trimws(formatted[[pair[2L]]][row])
-    br <- .style_ci_brackets()
-    sep <- .style_ci_sep(
-      ci_bracket_separator(s$format_spec$decimal_mark)
-    )
-    return(paste0(br[[1L]], lo, sep, hi, br[[2L]]))
-  }
   hits <- cols[
     vapply(
       cols,
@@ -325,7 +345,7 @@ inline <- function(
         "i" = paste0(
           "Available: ",
           paste(
-            .quote_val(sort(setdiff(c(tokens, "ci"), ""))),
+            .quote_val(sort(setdiff(tokens, ""))),
             collapse = ", "
           ),
           "."
@@ -333,6 +353,29 @@ inline <- function(
       ),
       class = "spicy_invalid_input"
     )
+  }
+  # An interval token names its two BOUNDS, not two competing columns.
+  # Selecting by token FIRST is what keeps "ci" apart from "ame_ci",
+  # "med_ci" and "assoc_ci": those are different estimands, not
+  # different models, and the old role-only scan reported them as an
+  # ambiguity `model` could settle -- on tables that have no models.
+  roles <- vapply(
+    hits,
+    function(nm) s$col_meta[[nm]]$ci_role %||% "",
+    character(1)
+  )
+  if (length(hits) >= 2L && all(nzchar(roles))) {
+    pair <- .inline_ci_pair(s, hits)
+    for (nm in pair) {
+      .inline_refuse_status(.struct_cell_status(s, nm)[row], token)
+    }
+    lo <- trimws(formatted[[pair[1L]]][row])
+    hi <- trimws(formatted[[pair[2L]]][row])
+    br <- .style_ci_brackets()
+    sep <- .style_ci_sep(
+      ci_bracket_separator(s$format_spec$decimal_mark)
+    )
+    return(paste0(br[[1L]], lo, sep, hi, br[[2L]]))
   }
   if (length(hits) > 1L) {
     spicy_abort(
@@ -351,25 +394,7 @@ inline <- function(
       class = "spicy_invalid_input"
     )
   }
-  status <- .struct_cell_status(s, hits)[row]
-  if (identical(status, "undefined")) {
-    spicy_abort(
-      sprintf(
-        "The %s cell of this row is undefined in the table (not estimable).",
-        .quote_val(token)
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
-  if (identical(status, "reference")) {
-    spicy_abort(
-      sprintf(
-        "This row is the reference category: it has no %s value.",
-        .quote_val(token)
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
+  .inline_refuse_status(.struct_cell_status(s, hits)[row], token)
   out <- trimws(formatted[[hits]][row])
   if (!nzchar(out)) {
     spicy_abort(
@@ -383,8 +408,10 @@ inline <- function(
   out
 }
 
-# The CI bound pair among `cols`: from ci_pairs when the family
-# records them, else the col_meta ci_role fields.
+# The two bounds among `cols`, which the caller has already narrowed to
+# ONE interval token. A remaining ambiguity is therefore a genuine
+# multi-model (or multi-group) one, and `model` is the remedy the
+# message names -- `s$spanners` is populated exactly on those tables.
 .inline_ci_pair <- function(s, cols) {
   roles <- vapply(
     cols,

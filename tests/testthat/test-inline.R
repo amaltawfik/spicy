@@ -134,3 +134,103 @@ test_that("the missing category is addressed by role, not label", {
   miss_row <- which(s$body$.row_role == "missing")
   expect_identical(out, as.character(s$body$n[miss_row]))
 })
+
+
+test_that("inline() refuses an interval whose bounds have no value", {
+  # `?inline` promises that a cell the table shows as undefined refuses
+  # with the reason rather than pasting a placeholder into a sentence.
+  # The scalar columns kept that promise; the interval did not -- it
+  # composed the two placeholder cells and returned "[-, -]", which is
+  # exactly the sentence `inline()` exists to prevent. Both bounds are
+  # checked, with the same classed error and the same wording as the
+  # scalar path.
+  tr <- table_regression(
+    lm(wellbeing_score ~ age + sex, data = spicy::sochealth),
+    factor_layout = "grouped",
+    reference_style = "row"
+  )
+  for (col in c("b", "se", "p", "ci")) {
+    expect_error(
+      inline(tr, sex, "Female", column = col),
+      "reference category",
+      class = "spicy_invalid_input"
+    )
+  }
+
+  tb <- suppressWarnings(table_continuous(
+    data.frame(x = 42),
+    show_columns = c("m", "sd", "ci", "n")
+  ))
+  for (col in c("sd", "ci")) {
+    expect_error(
+      inline(tb, x, column = col),
+      "undefined",
+      class = "spicy_invalid_input"
+    )
+  }
+  # The guard is on the CELL, not on the column: a row that does have an
+  # interval still returns it.
+  expect_match(inline(tr, age, column = "ci"), "^\\[.*\\]$")
+})
+
+test_that("an interval token names its own bounds, not a rival estimand", {
+  # "ci", "med_ci", "ame_ci" and "assoc_ci" are different estimands. The
+  # bound lookup used to ignore the token and scan every LL / UL column,
+  # so a table carrying two intervals reported an ambiguity and told the
+  # reader to "pick a `model`" -- on tables that have no models, with an
+  # empty list of choices ("Available: ."). Selecting by token first
+  # makes each interval addressable and leaves the model message for the
+  # one case where it is true.
+  d <- spicy::sochealth
+  two <- suppressWarnings(table_continuous(
+    d,
+    select = bmi,
+    show_columns = c("m", "ci", "med", "med_ci")
+  ))
+  ci <- inline(two, bmi, column = "ci")
+  med_ci <- inline(two, bmi, column = "med_ci")
+  expect_match(ci, "^\\[.*\\]$")
+  expect_match(med_ci, "^\\[.*\\]$")
+  expect_false(identical(ci, med_ci))
+
+  # Same shape on the regression side: the coefficient interval and the
+  # AME interval are both addressable in one single-model table.
+  g <- suppressWarnings(table_regression(
+    glm(I(bmi > 30) ~ age + sex, data = d, family = stats::binomial()),
+    show_columns = c("b", "ci", "p", "ame", "ame_ci")
+  ))
+  expect_match(inline(g, age, column = "ci"), "^\\[.*\\]$")
+  expect_match(inline(g, age, column = "ame_ci"), "^\\[.*\\]$")
+
+  # A table with no "ci" token now says so, and lists what it does
+  # have, instead of quietly composing the association interval of a
+  # row that has none.
+  cat_tbl <- suppressWarnings(table_categorical(
+    d,
+    select = sex,
+    by = smoking,
+    assoc_ci = TRUE
+  ))
+  expect_error(
+    inline(cat_tbl, sex, "Male", column = "ci"),
+    "No column with token",
+    class = "spicy_invalid_input"
+  )
+
+  # The genuine ambiguity survives, and it still names the models --
+  # this is the only shape where `model` is the remedy, and the only one
+  # where the spanner labels exist to be listed.
+  mm <- table_regression(
+    list(
+      lm(bmi ~ age, data = d),
+      lm(bmi ~ age + sex, data = d)
+    ),
+    show_columns = c("b", "ci")
+  )
+  expect_error(
+    inline(mm, age, column = "ci"),
+    "Model 1",
+    class = "spicy_invalid_input"
+  )
+  expect_match(inline(mm, age, column = "ci", model = "Model 2"), "^\\[")
+})

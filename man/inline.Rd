@@ -50,7 +50,9 @@ token as \code{variable} (\code{inline(tbl, "n")}, \code{inline(tbl, "r2")}).
 The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 \code{"p"}, \code{"ci"}, \code{"or"}, \code{"ame"}, \code{"n"}, \code{"pct"}, \code{"m"}, ... -- see
 \code{as_structured()}'s \code{col_meta}), never a display header. \code{"ci"}
-composes the interval with the style's brackets and separator. In
+composes the interval with the style's brackets and separator, and
+so does every other interval token the table carries (\code{"med_ci"},
+\code{"ame_ci"}, \code{"assoc_ci"}): each addresses its own bounds. In
 a multi-model table, \code{model} selects the model by its spanner
 label or position; in a \code{by} table, the spanners are the groups,
 so \code{model} selects the group the same way.
