@@ -284,7 +284,7 @@
         ll <- .CAT_KEY_CI_LL
         ul <- .CAT_KEY_CI_UL
         col_names <- c(col_names, ll, ul)
-        ci_label <- paste0(formatC(assoc_ci_level * 100, format = "g"), "% CI")
+        ci_label <- paste0(.ci_pct_str(assoc_ci_level), "% CI")
         for (nm in c(ll, ul)) {
           col_meta[[nm]] <- list(
             token = "assoc_ci",

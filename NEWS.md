@@ -347,6 +347,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `inline()` refuses to cite an interval whose cells are a reference
   level or an undefined statistic, as it already did for `b`, `se` and
   `p` and as `?inline` documents; it used to return `[–, –]`.
+* `table_continuous()` and `table_continuous_lm()` label an interval
+  with its own coverage: `ci_level = 0.975` reads `97.5% CI`, not
+  `98% CI`. The percentage was rounded to a whole number, in the
+  spanner, in the column names of the `data.frame` output and in the
+  median-interval note. Levels with a whole-number percentage (0.90,
+  0.95, 0.99, ...) are unchanged.
 * `table_categorical()` refuses a `by` variable with no non-missing
   level (`spicy_invalid_data`) instead of building a table with two
   unnamed columns and no rows, which the rendering engines then failed

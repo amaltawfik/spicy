@@ -1785,7 +1785,7 @@ order_continuous_tokens <- function(tokens) {
 # constructions in the package belong to the LINEAR-MODEL family
 # (`.build_continuous_lm_structured()`, `table_continuous_lm_render.R`)
 # and are out of this lot's scope.
-.continuous_ci_pct <- function(ci_level) paste0(round(ci_level * 100), "%")
+.continuous_ci_pct <- function(ci_level) paste0(.ci_pct_str(ci_level), "%")
 
 # The interval HEADER a reader sees ("95% CI"), the label twin of
 # `.continuous_ci_pct()`. Same template the regression and categorical
@@ -1793,7 +1793,7 @@ order_continuous_tokens <- function(tokens) {
 .continuous_ci_label <- function(ci_level) {
   spicy_fmt(
     "header_ci_spanner",
-    round(ci_level * 100),
+    .ci_pct_str(ci_level),
     spicy_str("header_ci_label_confidence")
   )
 }

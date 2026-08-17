@@ -585,7 +585,7 @@ build_column_spec <- function(
   if (is.null(estimand_horizons)) {
     estimand_horizons <- list()
   }
-  ci_pct <- formatC(ci_level * 100, format = "g")
+  ci_pct <- .ci_pct_str(ci_level)
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
       rep(NA_character_, length(model_ids)),

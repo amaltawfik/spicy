@@ -42,7 +42,7 @@
 # The coverage percentage as it enters a frozen column key ("95%"). Four
 # sites built this string independently (both frames, the exporter, the
 # typed view); they now share one.
-.lm_ci_pct <- function(ci_level) paste0(round(ci_level * 100), "%")
+.lm_ci_pct <- function(ci_level) paste0(.ci_pct_str(ci_level), "%")
 
 # The two interval-bound column keys ("95% CI LL" / "95% CI UL").
 .lm_key_ci_ll <- function(ci_pct) {
@@ -81,14 +81,13 @@
 # regression, categorical and continuous families use, so the coverage /
 # word order is translatable in one move.
 #
-# The percentage is ROUNDED, exactly as the column key is: at
-# `ci_level = 0.975` both read "98%" over a 97.5% interval. The defect
-# is real and shared with `table_continuous()`; it is not corrected
-# here, where it would silently change published headers.
+# The percentage comes from `.ci_pct_str()`, the same producer the
+# column key uses -- key and header cannot disagree about the coverage
+# they announce.
 .lm_ci_label <- function(ci_level) {
   spicy_fmt(
     "header_ci_spanner",
-    round(ci_level * 100),
+    .ci_pct_str(ci_level),
     spicy_str("header_ci_label_confidence")
   )
 }

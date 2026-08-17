@@ -294,6 +294,21 @@ ci_bracket_separator <- function(decimal_mark) {
   .style_ci_sep(if (identical(decimal_mark, ",")) "; " else ", ")
 }
 
+# Internal: the coverage percentage of an interval, as it enters both
+# the frozen column key ("95% CI LL") and the header a reader sees
+# ("95% CI"). One producer for the five families that display one.
+#
+# `round()` -- what the two descriptive families used -- turned
+# `ci_level = 0.975` into "98%": a 97.5% interval labelled 98%, in the
+# spanner, in the column names of the `data.frame` output, and in the
+# note. %g prints the percentage exactly and still drops trailing
+# zeros, so every level that HAS an exact integer percentage keeps it:
+# 0.9 -> "90", 0.95 -> "95", 0.99 -> "99". It also absorbs the binary
+# representation (`0.29 * 100` is 28.999999999999996, not 29).
+.ci_pct_str <- function(level) {
+  formatC(level * 100, format = "g")
+}
+
 # Internal: decimal-align the LL and UL inside a column of
 # bracketed CI strings (`"[LL, UL]"`). The default
 # `decimal_align_strings()` aligns on the FIRST decimal point it

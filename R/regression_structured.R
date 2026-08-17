@@ -340,7 +340,7 @@ build_structured_body <- function(
   # flextable / tinytable / Excel) display this string as the interval
   # spanner, so hardcoding "CI" here would contradict the console and
   # the documented relabel.
-  ci_pct <- formatC(ci_level * 100, format = "g")
+  ci_pct <- .ci_pct_str(ci_level)
   # The same template the console header uses: one producer of "95% CI"
   # for the seven engines that display it as an interval spanner.
   ci_label_str <- spicy_fmt("header_ci_spanner", ci_pct, ci_label)

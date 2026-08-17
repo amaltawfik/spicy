@@ -3952,3 +3952,64 @@ test_that("the by table titles itself 'Descriptive statistics by <label>'", {
   out1 <- capture.output(print(table_continuous(sochealth, select = bmi)))
   expect_true(any(grepl("^Descriptive statistics$", trimws(out1))))
 })
+
+
+# ---- the interval percentage is exact, not rounded ------------------------
+
+test_that("a fractional ci_level keeps its own percentage everywhere", {
+  d <- spicy::sochealth
+  # 97.5% was displayed as "98%" -- in the spanner, in the column names
+  # of the data.frame output, and in the median-CI gloss -- because the
+  # percentage was round()ed.
+  con <- suppressWarnings(table_continuous(
+    d,
+    select = age,
+    ci_level = 0.975,
+    show_columns = c("m", "ci", "med", "med_ci"),
+    output = "data.frame"
+  ))
+  s <- as_structured(suppressWarnings(table_continuous(
+    d,
+    select = age,
+    ci_level = 0.975,
+    show_columns = c("m", "ci", "med", "med_ci")
+  )))
+  labs <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
+  expect_setequal(labs, c("97.5% CI", "Med 97.5% CI"))
+  expect_false(any(grepl("98%", names(s$col_meta), fixed = TRUE)))
+  expect_true(any(grepl("97.5%", names(s$col_meta), fixed = TRUE)))
+  # The gloss reads the same producer.
+  note <- attr(con, "note") %||% ""
+  expect_false(grepl("98%", note, fixed = TRUE))
+
+  # 99.9%, the other direction from the same rounding.
+  s999 <- as_structured(suppressWarnings(table_continuous(
+    d,
+    select = age,
+    ci_level = 0.999,
+    show_columns = c("m", "ci")
+  )))
+  expect_true(any(grepl("99.9%", names(s999$col_meta), fixed = TRUE)))
+  expect_false(any(grepl("100%", names(s999$col_meta), fixed = TRUE)))
+
+  # Same in the linear-model family, key AND header.
+  lm_s <- as_structured(suppressWarnings(table_continuous_lm(
+    d,
+    select = age,
+    by = sex,
+    ci_level = 0.975
+  )))
+  expect_true(any(grepl("97.5% CI", names(lm_s$col_meta), fixed = TRUE)))
+  lm_labs <- unique(unlist(lapply(lm_s$col_meta, function(m) m$ci_label)))
+  expect_true("97.5% CI" %in% lm_labs)
+
+  # The levels with an exact integer percentage are untouched, and
+  # print no trailing zero.
+  expect_identical(spicy:::.ci_pct_str(0.95), "95")
+  expect_identical(spicy:::.ci_pct_str(0.9), "90")
+  expect_identical(spicy:::.ci_pct_str(0.99), "99")
+  expect_identical(spicy:::.ci_pct_str(0.975), "97.5")
+  expect_identical(spicy:::.ci_pct_str(0.999), "99.9")
+  # 0.29 * 100 is 28.999999999999996 in binary floating point.
+  expect_identical(spicy:::.ci_pct_str(0.29), "29")
+})
