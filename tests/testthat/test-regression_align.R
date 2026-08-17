@@ -228,3 +228,80 @@ test_that("pivot_aligned_wide – two models, side-by-side columns", {
       names(wide)
   ))
 })
+
+
+# ---- Subordinate-block identity ------------------------------------------
+
+test_that("the seven block constants are exactly .REG_BLOCK_TERMS", {
+  # The scalars name the blocks that only ONE site cares about (the
+  # cloglog refusal reads NPO, the residual rule reads RE, the scale
+  # gloss reads SCALE); the vector is what every membership test reads.
+  # If a scalar drifted away from the vector, its site would stop
+  # matching the very rows the vector sorts and rules off -- silently,
+  # since a `%in%` that finds nothing raises nothing.
+  scalars <- c(
+    spicy:::.REG_BLOCK_ZI,
+    spicy:::.REG_BLOCK_HURDLE,
+    spicy:::.REG_BLOCK_DISP,
+    spicy:::.REG_BLOCK_SCALE,
+    spicy:::.REG_BLOCK_NPO,
+    spicy:::.REG_BLOCK_THRESH,
+    spicy:::.REG_BLOCK_RE
+  )
+  expect_setequal(scalars, spicy:::.REG_BLOCK_TERMS)
+  expect_length(spicy:::.REG_BLOCK_TERMS, 7L)
+  expect_false(anyDuplicated(spicy:::.REG_BLOCK_TERMS) > 0L)
+
+  expect_true(all(spicy:::.reg_is_block(spicy:::.REG_BLOCK_TERMS)))
+  expect_false(spicy:::.reg_is_block("Thresholds "))
+  # NA is the value `factor_term` carries for every row belonging to no
+  # factor group, so the predicate has to answer FALSE, not NA.
+  expect_identical(
+    spicy:::.reg_is_block(c(NA_character_, "Thresholds", "wt")),
+    c(FALSE, TRUE, FALSE)
+  )
+  expect_identical(spicy:::.reg_is_block(character(0)), logical(0))
+})
+
+test_that("the block identity strings are typed in one place", {
+  # The seven strings are an identity matched at nine sites across six
+  # files. At the English default a literal re-typed at ONE of them is
+  # byte-identical, so no rendering test can see it come back -- and
+  # then stage 2 translates six sites out of seven. This is the only
+  # guard that bites, so it reads the SOURCES: the R parser hands back
+  # every string constant, roxygen and comments excluded by
+  # construction.
+  #
+  # Same skip contract as the "no dead keys" test of test-i18n.R: an
+  # installed package has an R/ directory with no .R source in it.
+  r_dir <- testthat::test_path("..", "..", "R")
+  skip_if_not(
+    file.exists(file.path(r_dir, "regression_align.R")),
+    "package sources not available"
+  )
+  files <- list.files(r_dir, pattern = "[.][Rr]$", full.names = TRUE)
+  carriers <- character(0)
+  for (f in files) {
+    pd <- utils::getParseData(parse(f, keep.source = TRUE))
+    lits <- pd$text[pd$token == "STR_CONST"]
+    lits <- vapply(
+      lits,
+      function(s) {
+        tryCatch(eval(str2lang(s)), error = function(e) NA_character_)
+      },
+      character(1),
+      USE.NAMES = FALSE
+    )
+    if (any(lits %in% spicy:::.REG_BLOCK_TERMS)) {
+      carriers <- c(carriers, basename(f))
+    }
+  }
+  # regression_align.R declares them. regression_titlefooter.R still
+  # re-types "Random effects" inside a footer SENTENCE; that sentence
+  # moves to the registry with the rest of the block footers, and this
+  # list loses its second entry then.
+  expect_setequal(
+    carriers,
+    c("regression_align.R", "regression_titlefooter.R")
+  )
+})

@@ -314,7 +314,7 @@ as_regression_frame.glmmTMB <- function(
       .glmmTMB_component_block(
         fit,
         component = "zi",
-        label = "Zero-inflation",
+        label = .REG_BLOCK_ZI,
         link = "logit",
         exp_ok = TRUE,
         gloss = "Zero-inflation component: log-odds of a structural (excess) zero.",
@@ -336,7 +336,7 @@ as_regression_frame.glmmTMB <- function(
       .glmmTMB_component_block(
         fit,
         component = "disp",
-        label = "Dispersion",
+        label = .REG_BLOCK_DISP,
         link = "log",
         exp_ok = FALSE,
         gloss = "Dispersion component: log scale.",

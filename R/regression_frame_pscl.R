@@ -489,7 +489,7 @@ as_regression_frame.zeroinfl <- function(
     }
   }
 
-  label_chr <- if (is_hurdle) "Zero hurdle" else "Zero-inflation"
+  label_chr <- if (is_hurdle) .REG_BLOCK_HURDLE else .REG_BLOCK_ZI
   rows <- data.frame(
     term = paste0("zero_", nm),
     label = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),

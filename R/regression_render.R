@@ -275,18 +275,7 @@ render_regression_table <- function(
       # Rule off each subordinate block (ordinal `Thresholds`, partial-PO
       # `Non-proportional effects`) from the rows above, mirroring the
       # coefficients / fit-stats divide.
-      if (
-        rt$factor_term %in%
-          c(
-            "Thresholds",
-            "Non-proportional effects",
-            "Scale effects",
-            "Random effects",
-            "Zero-inflation",
-            "Zero hurdle",
-            "Dispersion"
-          )
-      ) {
+      if (.reg_is_block(rt$factor_term)) {
         thr_sep <- c(thr_sep, length(rows) + 1L)
       }
       rows[[length(rows) + 1L]] <- build_factor_header_row(
@@ -1387,19 +1376,7 @@ format_term_label <- function(
   # effects, random-effect variance components) always render their display
   # label, even in the flat layout: their `term` is an internal key (e.g.
   # "re::Subject::Days") or a bare cut-point, not a coefficient name.
-  if (
-    !is.na(term_row$factor_term) &&
-      term_row$factor_term %in%
-        c(
-          "Thresholds",
-          "Non-proportional effects",
-          "Scale effects",
-          "Random effects",
-          "Zero-inflation",
-          "Zero hurdle",
-          "Dispersion"
-        )
-  ) {
+  if (.reg_is_block(term_row$factor_term)) {
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term

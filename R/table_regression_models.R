@@ -66,14 +66,14 @@
       "`feglm`: OR / IRR",
       "-"
     ),
-    c("Mixed effects", "lmerMod", "lme4::lmer()", "yes", "-", "Random effects"),
+    c("Mixed effects", "lmerMod", "lme4::lmer()", "yes", "-", .REG_BLOCK_RE),
     c(
       "Mixed effects",
       "glmerMod",
       "lme4::glmer()",
       "yes",
       "OR / IRR (link)",
-      "Random effects"
+      .REG_BLOCK_RE
     ),
     c(
       "Mixed effects",
@@ -81,9 +81,9 @@
       "glmmTMB::glmmTMB()",
       "yes",
       "link-dependent (IRR for count families)",
-      "Random effects; Zero-inflation; Dispersion"
+      paste(c(.REG_BLOCK_RE, .REG_BLOCK_ZI, .REG_BLOCK_DISP), collapse = "; ")
     ),
-    c("Mixed effects", "lme", "nlme::lme()", "yes", "-", "Random effects"),
+    c("Mixed effects", "lme", "nlme::lme()", "yes", "-", .REG_BLOCK_RE),
     c("Mixed effects", "gls", "nlme::gls()", "yes", "-", "-"),
     c(
       "Population-averaged (GEE)",
@@ -99,7 +99,7 @@
       "MASS::polr()",
       "per category",
       "OR (logit)",
-      "Thresholds"
+      .REG_BLOCK_THRESH
     ),
     c(
       "Ordinal",
@@ -107,7 +107,7 @@
       "ordinal::clm()",
       "per category",
       "OR (logit)",
-      "Thresholds; Non-proportional effects"
+      paste(c(.REG_BLOCK_THRESH, .REG_BLOCK_NPO), collapse = "; ")
     ),
     c(
       "Categorical",
@@ -131,7 +131,7 @@
       "pscl::zeroinfl()",
       "yes (combined response)",
       "IRR (count) + OR (logit zero part)",
-      "Zero-inflation"
+      .REG_BLOCK_ZI
     ),
     c(
       "Counts, two-part",
@@ -139,7 +139,7 @@
       "pscl::hurdle()",
       "yes (combined response)",
       "IRR (count) + OR (logit zero part)",
-      "Zero hurdle"
+      .REG_BLOCK_HURDLE
     ),
     c("Survival", "coxph", "survival::coxph()", "RMST / risk diff", "HR", "-"),
     c(
@@ -200,7 +200,7 @@
       "rstanarm::stan_glm(), rstanarm::stan_glmer()",
       "yes (draws)",
       "link-dependent",
-      "Random effects (if multilevel)"
+      paste0(.REG_BLOCK_RE, " (if multilevel)")
     ),
     c(
       "Bayesian",
@@ -208,7 +208,7 @@
       "brms::brm()",
       "yes (draws)",
       "link-dependent",
-      "Random effects (if multilevel)"
+      paste0(.REG_BLOCK_RE, " (if multilevel)")
     )
   )
   out <- as.data.frame(df, stringsAsFactors = FALSE)

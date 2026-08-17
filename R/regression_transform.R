@@ -132,16 +132,7 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
   # into a statistically incoherent subset (e.g. a correlation without its
   # variances). The whole-block switches are `show_thresholds` / `show_re`.
   ca <- aligned$coefs_aligned
-  subordinate <- ca$factor_term %in%
-    c(
-      "Thresholds",
-      "Non-proportional effects",
-      "Scale effects",
-      "Random effects",
-      "Zero-inflation",
-      "Zero hurdle",
-      "Dispersion"
-    ) |
+  subordinate <- .reg_is_block(ca$factor_term) |
     (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
   final_mask <- final_mask | subordinate
   # Intercepts are exempt from keep / drop matching: `show_intercept`

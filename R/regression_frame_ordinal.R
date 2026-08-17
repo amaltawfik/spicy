@@ -718,7 +718,7 @@ as_regression_frame.clm <- function(
     }
     out[[length(out) + 1L]] <- data.frame(
       term = paste0("scale_", names(zeta)[i]),
-      parent_var = "Scale effects",
+      parent_var = .REG_BLOCK_SCALE,
       label = names(zeta)[i],
       factor_level_pos = i,
       is_ref = FALSE,
@@ -780,7 +780,7 @@ as_regression_frame.clm <- function(
       pos <- pos + 1L
       out[[length(out) + 1L]] <- data.frame(
         term = cname,
-        parent_var = "Non-proportional effects",
+        parent_var = .REG_BLOCK_NPO,
         label = paste0(t, " @ ", .prettify_threshold_label(cut)),
         factor_level_pos = pos,
         is_ref = FALSE,
@@ -962,7 +962,7 @@ as_regression_frame.clm <- function(
   z <- stats::qnorm(0.5 + ci_level / 2)
   new <- data.frame(
     term = thr$term,
-    parent_var = "Thresholds",
+    parent_var = .REG_BLOCK_THRESH,
     label = .prettify_threshold_label(thr$term),
     factor_level_pos = seq_len(nrow(thr)),
     is_ref = FALSE,

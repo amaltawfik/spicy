@@ -1,3 +1,61 @@
+# ---- Subordinate blocks: the frozen identity ------------------------------
+#
+# A subordinate block -- ordinal cut-points, partial-PO effects, the scale
+# equation of a heteroskedastic clm, mixed variance components, the two-part
+# count components -- is named by an English string that travels the whole
+# pipeline as `coefs$parent_var` and, after alignment, as `factor_term`.
+#
+# That string is the block's IDENTITY, not its caption. Seven producers
+# write it (the ordinal / glmmTMB / pscl frames, the random-effects
+# builder), nine sites match on it (the bottom-of-table sort below, the
+# refs-first exemption, the section rule, the row-label branch, the
+# keep / drop exemption, the cloglog refusal, the scale-effects gloss), and
+# it is PUBLISHED as data by `broom::tidy()` (the `factor_term` column) and
+# by `as_structured()` (`.variable`). It is frozen English and never
+# translated; the caption a reader sees is resolved from it at render time
+# by `.reg_block_label()`.
+#
+# The literals used to be re-typed at every one of those sites -- four lists
+# of seven, plus three scalars, 52 occurrences in all -- so nothing in the
+# source said that the sort list and the membership list had to hold the
+# same seven strings. They diverged once already: the sort list was missing
+# `Non-proportional effects` until 25bf3966, which let a multi-model table
+# interleave that block among a later model's predictors.
+#
+# The ORDER of `.REG_BLOCK_TERMS` is load-bearing: it IS the bottom-of-table
+# order (`align_frames()` walks it, moving each block in turn to the end).
+# Every other consumer uses it as a SET, through `.reg_is_block()`.
+.REG_BLOCK_TERMS <- c(
+  "Zero-inflation",
+  "Zero hurdle",
+  "Dispersion",
+  "Scale effects",
+  # Before Thresholds, matching the single-model layout.
+  "Non-proportional effects",
+  "Thresholds",
+  "Random effects"
+)
+.REG_BLOCK_ZI <- "Zero-inflation"
+.REG_BLOCK_HURDLE <- "Zero hurdle"
+.REG_BLOCK_DISP <- "Dispersion"
+.REG_BLOCK_SCALE <- "Scale effects"
+.REG_BLOCK_NPO <- "Non-proportional effects"
+.REG_BLOCK_THRESH <- "Thresholds"
+.REG_BLOCK_RE <- "Random effects"
+
+# TRUE where `x` names a subordinate block. Vectorised, and FALSE on NA:
+# `factor_term` is NA for every row that belongs to no factor group.
+#
+# Known limitation, pre-existing and unchanged here: a user variable
+# literally named `Thresholds` (or any of the other six) is treated as a
+# block by every one of these sites -- exempted from `keep` / `drop`,
+# sorted to the bottom, preceded by a section rule. The identity is a
+# string, so a collision is indistinguishable from the real thing.
+.reg_is_block <- function(x) {
+  !is.na(x) & x %in% .REG_BLOCK_TERMS
+}
+
+
 # Frame-aware sibling of compute_canonical_term_order(). Reads
 # frames[[i]]$coefs$term instead of extracts[[i]]$coefs$term. The
 # `term` column name is identical in both schemas, so the body of
@@ -231,24 +289,12 @@ align_frames <- function(
   term_order <- group_factor_terms(term_order, coefs_long)
 
   # Subordinate blocks always sort to the very bottom, after every predictor,
-  # in a fixed order: Thresholds (ordinal cut-points) then Random effects
-  # (mixed variance components). Their synthetic parents (created only by the
+  # in the fixed order of `.REG_BLOCK_TERMS` -- that constant's order IS the
+  # final bottom-of-table order. Their synthetic parents (created only by the
   # show_thresholds / show_re paths) would otherwise land at their
   # first-appearance position, which in a multi-model table can fall ahead of a
   # predictor a later model introduces.
-  for (blk in c(
-    "Zero-inflation",
-    "Zero hurdle",
-    "Dispersion",
-    "Scale effects",
-    # Before Thresholds, matching the single-model layout (the block
-    # order here IS the final bottom-of-table order). Its omission let
-    # a multi-model table interleave the block among a later model's
-    # predictors.
-    "Non-proportional effects",
-    "Thresholds",
-    "Random effects"
-  )) {
+  for (blk in .REG_BLOCK_TERMS) {
     blk_terms <- unique(coefs_long$term[coefs_long$factor_term %in% blk])
     if (length(blk_terms) > 0L) {
       blk_in_order <- intersect(term_order, blk_terms)
@@ -256,7 +302,7 @@ align_frames <- function(
       # in a multi-model table the first-appearance order would otherwise
       # interleave a residual before a later model's slope / correlation
       # rows (spec section 5: residual closes the block).
-      if (identical(blk, "Random effects")) {
+      if (identical(blk, .REG_BLOCK_RE)) {
         is_resid <- startsWith(blk_in_order, "re::Residual::")
         blk_in_order <- c(blk_in_order[!is_resid], blk_in_order[is_resid])
       }
@@ -424,16 +470,7 @@ group_factor_terms <- function(term_order, coefs_long) {
     # factor_term) keep their builder-supplied row order (factor_level_pos =
     # a sequence): the refs-first rule below is a per-FACTOR convention and
     # would float every reference row to the top of the whole block.
-    is_block <- ft %in%
-      c(
-        "Thresholds",
-        "Non-proportional effects",
-        "Scale effects",
-        "Random effects",
-        "Zero-inflation",
-        "Zero hurdle",
-        "Dispersion"
-      )
+    is_block <- .reg_is_block(ft)
     group_meta <- if (is_block) {
       group_meta[
         order(group_meta$factor_level_pos, na.last = TRUE),

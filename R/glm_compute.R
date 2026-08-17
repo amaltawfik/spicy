@@ -586,7 +586,9 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
     # cannot honestly mix exp(-B) HRs with exp(+a) baseline ratios, so
     # the exotic combination is refused rather than mislabelled.
     pv <- coefs$parent_var %||% rep(NA_character_, nrow(coefs))
-    if (any(pv %in% "Non-proportional effects")) {
+    # Deliberately the ONE block, not `.reg_is_block()`: the refusal is
+    # about the threshold-side parametrisation of partial-PO terms.
+    if (any(pv %in% .REG_BLOCK_NPO)) {
       spicy_abort(
         c(
           paste0(

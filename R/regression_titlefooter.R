@@ -1350,6 +1350,9 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
       next
     }
     for (blk in f$info$extras$component_blocks %||% list()) {
+      # Deduplicate on the block's IDENTITY, never on the gloss text: two
+      # models contributing the same block must produce one footer line,
+      # and that decision has to survive a translated caption.
       key <- blk$label
       if (key %in% seen) {
         next
@@ -1431,6 +1434,11 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 
     new <- data.frame(
       term = rows$term,
+      # THE relay from the frame layer to the coefs layer: a component
+      # block's `label` field (written by the glmmTMB / pscl frames from
+      # `.REG_BLOCK_ZI` / `_HURDLE` / `_DISP`) becomes the `parent_var`
+      # that every downstream site matches on. It is an identity string
+      # on both sides, so nothing is resolved here.
       parent_var = blk$label,
       label = rows$label,
       factor_level_pos = seq_len(nrow(rows)),
@@ -1530,7 +1538,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 
   new <- data.frame(
     term = key,
-    parent_var = "Random effects",
+    parent_var = .REG_BLOCK_RE,
     label = label,
     factor_level_pos = seq_len(nrow(vc)),
     is_ref = FALSE,
@@ -2314,7 +2322,9 @@ build_scale_effects_footer_block_from_frames <- function(frames) {
     frames,
     function(f) {
       ft <- f$coefs$parent_var
-      !is.null(ft) && any(ft %in% "Scale effects")
+      # Deliberately the ONE block, not `.reg_is_block()`: this gloss
+      # explains the scale equation and nothing else.
+      !is.null(ft) && any(ft %in% .REG_BLOCK_SCALE)
     },
     logical(1)
   ))
