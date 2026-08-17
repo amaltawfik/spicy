@@ -1643,6 +1643,13 @@ build_fit_stats_rows <- function(
 .REG_FE_YES <- "Yes"
 .REG_FE_NO <- "No"
 
+# Caption of the fixed-effects disclosure block, for both bodies. The
+# block renders with the `factor_header` role, so it takes the same
+# punctuation template as every other block header.
+.reg_fe_block_header <- function() {
+  spicy_fmt("label_block_header", spicy_str("label_block_fixed_effects"))
+}
+
 # The displayed cell for one presence token. The empty token (a
 # non-fixest model, where the concept is undefined) passes through
 # untouched, so a blank cell stays blank.
@@ -1652,11 +1659,6 @@ build_fit_stats_rows <- function(
 # body in silence: its encoder matches on the token, would fall to its
 # NA default, and every FE cell in all six rich engines would come out
 # empty without a single condition raised.
-# Caption of the fixed-effects disclosure block, for both bodies.
-.reg_fe_block_header <- function() {
-  spicy_fmt("label_block_header", spicy_str("label_block_fixed_effects"))
-}
-
 .reg_fe_cell_label <- function(tok) {
   if (identical(tok, .REG_FE_YES)) {
     return(spicy_str("cell_yes"))

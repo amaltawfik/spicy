@@ -823,10 +823,10 @@ output_gt <- function(rendered) {
   # flush its caption left, and used to rebuild the id from
   # `orig_names[1L]`. That worked only while the caption and the key
   # were the same string: the moment column 1's label comes from the
-  # registry the two derivations part, gt does not error on an unknown
-  # spanner id, and the caption silently re-centres over a left-aligned
-  # column. `for` does not open a scope in R, so a plain `<-` writes
-  # this frame's binding.
+  # registry the two derivations part, and
+  # `gt::cells_column_spanners()` aborts on an id no spanner carries --
+  # taking `output = "gt"` down with it. `for` does not open a scope in
+  # R, so a plain `<-` writes this frame's binding.
   col1_span_id <- NA_character_
   for (j in seq_along(orig_names)) {
     if (j %in% ci_cols_set) {
