@@ -259,6 +259,12 @@
   # `%` inside either is safe: both arrive as sprintf arguments.
   label_ref_annotation = "%s [ref: %s]",
   label_vs_annotation = "%s [vs %s]",
+  # The two cells of the fixed-effects disclosure block (the etable /
+  # esttab standard). Only the CAPTION is here: the token the two bodies
+  # exchange is `.REG_FE_YES` / `.REG_FE_NO`, frozen, because the typed
+  # body reads it back to encode 1 / 0.
+  cell_yes = "Yes",
+  cell_no = "No",
 
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = odds ratio",

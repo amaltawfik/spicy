@@ -249,3 +249,70 @@ test_that("mixed-model n_groups still renders, one row per factor", {
   expect_match(out2[grep("N (plate)", out2, fixed = TRUE)], "24")
   expect_match(out2[grep("N (sample)", out2, fixed = TRUE)], "6")
 })
+
+
+test_that("both bodies caption the disclosure through one helper", {
+  # The disclosure is a triangle: the shared cell builder writes a
+  # token, the typed body reads that token back to encode 1 / 0, and
+  # then re-produces text at format time. At the English default the
+  # token and the caption are the same string, so nothing else can tell
+  # whether either body resolves a caption at all -- and a naive
+  # translation of the builder would empty every FE cell of the six
+  # rich engines without raising a thing.
+  skip_if_not_installed("fixest")
+  d <- data.frame(
+    y = as.numeric(1:40),
+    x = rep(seq(1, 10), 4),
+    g = factor(rep(c("a", "b", "c", "d"), each = 10)),
+    stringsAsFactors = FALSE
+  )
+  fit <- fixest::feols(y ~ x | g, data = d)
+  build <- function() {
+    table_regression(fit, show_fit_stats = c("nobs", "fixed_effects"))
+  }
+  # The token layer is untouched by the mock: it is the wire format.
+  local_mocked_bindings(.reg_fe_cell_label = function(tok) {
+    paste0("<", tok, ">")
+  })
+  cells <- spicy:::.fixed_effects_cells(list(M1 = "g"), "M1")
+  expect_identical(unname(cells$cells["g", ]), "Yes")
+
+  txt <- capture.output(print(build()))
+  expect_true(any(grepl("<Yes>", txt, fixed = TRUE)))
+
+  s <- as_structured(build())
+  body <- spicy:::.format_structured_to_string_body(s)
+  expect_true(any(vapply(
+    body,
+    function(col) any(col == "<Yes>", na.rm = TRUE),
+    logical(1)
+  )))
+  # The typed body still carries the NUMBER, not the caption.
+  fe_row <- which(trimws(s$body$Variable) == "g")
+  expect_length(fe_row, 1L)
+  vals <- unlist(s$body[fe_row, spicy:::.struct_value_cols(s$body)])
+  expect_true(any(vals == 1))
+})
+
+
+test_that("the disclosure token is frozen, not resolved", {
+  # The complement of the test above, and the one that matters most:
+  # `.fixed_effects_cells()` must NOT read the registry. Its output is a
+  # wire format the typed body decodes; resolving it there would be
+  # byte-identical in English and would empty every fixed-effects cell
+  # of the six rich engines the day a caption changes -- with no
+  # condition raised, because the decoder simply falls to its NA
+  # default. Mocking the registry itself is what makes that visible.
+  local_mocked_bindings(spicy_str = function(key) paste0("[", key, "]"))
+  cells <- spicy:::.fixed_effects_cells(
+    list(M1 = c("a", "b"), M2 = "a", M3 = NULL),
+    c("M1", "M2", "M3")
+  )
+  expect_identical(unname(cells$cells["a", ]), c("Yes", "Yes", ""))
+  expect_identical(unname(cells$cells["b", ]), c("Yes", "No", ""))
+  # The caption layer, by contrast, does read it -- and passes the
+  # non-fixest blank through untouched.
+  expect_identical(spicy:::.reg_fe_cell_label("Yes"), "[cell_yes]")
+  expect_identical(spicy:::.reg_fe_cell_label("No"), "[cell_no]")
+  expect_identical(spicy:::.reg_fe_cell_label(""), "")
+})

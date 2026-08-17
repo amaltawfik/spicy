@@ -1551,7 +1551,7 @@ build_fit_stats_rows <- function(
           if (is.na(target_col)) {
             next
           }
-          cells[[target_col]] <- fe$cells[fct, m_id]
+          cells[[target_col]] <- .reg_fe_cell_label(fe$cells[fct, m_id])
         }
         rows <- push_row(rows, cells)
       }
@@ -1636,6 +1636,32 @@ build_fit_stats_rows <- function(
 }
 
 
+# The two presence TOKENS of the fixed-effects disclosure. Frozen: the
+# typed body re-reads them to encode 1 / 0, so they are a wire format
+# between the two bodies, not text. `.reg_fe_cell_label()` below is what
+# a reader sees.
+.REG_FE_YES <- "Yes"
+.REG_FE_NO <- "No"
+
+# The displayed cell for one presence token. The empty token (a
+# non-fixest model, where the concept is undefined) passes through
+# untouched, so a blank cell stays blank.
+#
+# This is the ONE place either body turns a token into text. Translating
+# `.fixed_effects_cells()` instead would look right and break the typed
+# body in silence: its encoder matches on the token, would fall to its
+# NA default, and every FE cell in all six rich engines would come out
+# empty without a single condition raised.
+.reg_fe_cell_label <- function(tok) {
+  if (identical(tok, .REG_FE_YES)) {
+    return(spicy_str("cell_yes"))
+  }
+  if (identical(tok, .REG_FE_NO)) {
+    return(spicy_str("cell_no"))
+  }
+  tok
+}
+
 # Union of absorbed-intercept factors across models (first-appearance
 # order over the model order) and the per-model presence cells:
 # "Yes" (absorbed), "No" (fixest model without this factor -- incl. a
@@ -1644,6 +1670,9 @@ build_fit_stats_rows <- function(
 # the union is empty. fixef_by_model carries character(0) for a no-FE
 # fixest fit and NULL for non-fixest models -- that distinction drives
 # No vs blank.
+#
+# The cells are TOKENS, never captions: `build_structured_fit_stats_rows()`
+# reads them back to encode 1 / 0 for the typed body.
 .fixed_effects_cells <- function(fixef_by_model, model_ids) {
   fl <- fixef_by_model %||% list()
   fe_union <- character(0)
@@ -1665,7 +1694,7 @@ build_fit_stats_rows <- function(
     if (is.null(fv)) {
       next
     }
-    cells[, m_id] <- ifelse(fe_union %in% fv, "Yes", "No")
+    cells[, m_id] <- ifelse(fe_union %in% fv, .REG_FE_YES, .REG_FE_NO)
   }
   list(factors = fe_union, cells = cells)
 }

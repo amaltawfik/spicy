@@ -1293,7 +1293,15 @@ build_structured_body <- function(
             next
           }
           cell <- fe$cells[fct, m_id]
-          row[[target_col]] <- switch(cell, Yes = 1, No = 0, NA_real_)
+          # Token against token, never against a caption: this is what
+          # makes translating the disclosure safe.
+          row[[target_col]] <- if (identical(cell, .REG_FE_YES)) {
+            1
+          } else if (identical(cell, .REG_FE_NO)) {
+            0
+          } else {
+            NA_real_
+          }
           col_overrides[[target_col]] <- list(
             fit_stat = tk,
             precision = 0L,
@@ -1682,7 +1690,7 @@ build_structured_body <- function(
   # console-from-structured) must DISPLAY the etable / esttab text
   # standard -- a raw "1" would read like a coefficient.
   if (identical(cfmt$fit_stat, "fixed_effects")) {
-    return(if (val >= 0.5) "Yes" else "No")
+    return(.reg_fe_cell_label(if (val >= 0.5) .REG_FE_YES else .REG_FE_NO))
   }
   # Significant-digits columns (MCSE): mirror the console renderer's
   # formatC g-style -- a fixed decimal count misleads across
