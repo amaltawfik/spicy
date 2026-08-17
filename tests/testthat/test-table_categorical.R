@@ -3511,3 +3511,55 @@ test_that(".css_escape_string leaves an ordinary label untouched", {
   expect_identical(spicy:::.css_escape_string("a\\b"), "a\\\\b")
   expect_identical(spicy:::.css_escape_string("a\nb"), "a\\00000Ab")
 })
+
+
+# ---- by with no non-missing level -----------------------------------------
+
+test_that("an all-missing `by` is refused instead of growing phantom columns", {
+  d <- data.frame(
+    x = factor(rep(c("a", "b"), 10)),
+    g = rep(NA_character_, 20),
+    stringsAsFactors = FALSE
+  )
+  err <- tryCatch(
+    table_categorical(
+      d,
+      select = x,
+      by = g,
+      drop_na = TRUE,
+      include_total = FALSE
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_data")
+  msg <- conditionMessage(err)
+  expect_match(msg, "`by = g` has no non-missing level", fixed = TRUE)
+  expect_match(msg, "drop_na = FALSE", fixed = TRUE)
+  # Same refusal with the margin on: the margin is not a group.
+  expect_error(
+    table_categorical(d, select = x, by = g, drop_na = TRUE),
+    class = "spicy_invalid_data"
+  )
+  # A factor with no levels left takes the same route.
+  d_f <- d
+  d_f$g <- factor(d$g)
+  expect_error(
+    table_categorical(
+      d_f,
+      select = x,
+      by = g,
+      drop_na = TRUE,
+      include_total = FALSE
+    ),
+    class = "spicy_invalid_data"
+  )
+
+  # The remedy the message names really works, and the columns it
+  # produces are named -- the defect was `paste0(character(0), " n")`
+  # returning " n", so the table grew a ' n' / ' %' pair with no rows.
+  keep <- suppressWarnings(
+    table_categorical(d, select = x, by = g, drop_na = FALSE)
+  )
+  expect_true(all(nzchar(trimws(names(keep)))))
+  expect_identical(nrow(keep), 2L)
+})

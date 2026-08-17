@@ -2243,6 +2243,27 @@ table_categorical <- function(
   if (!drop_na && any(is.na(g0))) {
     group_levels <- unique(c(group_levels, missing_label))
   }
+  # No group left to tabulate: every observation is missing `by` and
+  # the missing category is not being shown. The group columns are keyed
+  # `paste0(<level>, " n")`, and `paste0(character(0), " n")` is " n" --
+  # R recycles the zero-length side to "" -- so the table used to grow a
+  # pair of phantom columns named " n" and " %", with no rows under
+  # them. tinytable then refused a zero-row table, gt refused two empty
+  # column names, and flextable died on a recycling mismatch: three
+  # different errors, none of them naming the cause.
+  if (length(group_levels) == 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`by = %s` has no non-missing level: every observation is missing it.",
+          by_name
+        ),
+        "i" = "There is no group for the table to compare.",
+        "i" = "`drop_na = FALSE` tabulates the missing observations as their own category."
+      ),
+      class = "spicy_invalid_data"
+    )
+  }
   # Internal KEY for the margin column, never a label: it is a value of
   # `long$group`, the prefix of a public column name ("Total n") and the
   # `total_group` attribute, and every site that recognises the margin --
