@@ -361,12 +361,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   spanner, in the column names of the `data.frame` output and in the
   median-interval note. Levels with a whole-number percentage (0.90,
   0.95, 0.99, ...) are unchanged.
-* `table_categorical()` refuses a `by` variable with no non-missing
-  level (`spicy_invalid_data`) instead of building a table with two
+* `table_categorical()` refuses a `by` variable with no level to
+  tabulate (`spicy_invalid_data`) instead of building a table with two
   unnamed columns and no rows, which the rendering engines then failed
-  on with three unrelated errors. The message points at
-  `drop_na = FALSE`, which tabulates the missing observations as their
-  own category.
+  on with three unrelated errors. When every observation is missing
+  `by`, the message points at `drop_na = FALSE`, which tabulates them
+  as their own category.
 * `table_categorical(by = , output = "gt")` renders when a `by` level
   contains a double quote. The level names the group columns, which
   are addressed by a CSS attribute selector, and the unescaped quote

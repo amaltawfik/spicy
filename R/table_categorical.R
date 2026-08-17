@@ -2243,23 +2243,32 @@ table_categorical <- function(
   if (!drop_na && any(is.na(g0))) {
     group_levels <- unique(c(group_levels, missing_label))
   }
-  # No group left to tabulate: every observation is missing `by` and
-  # the missing category is not being shown. The group columns are keyed
+  # No group left to tabulate. The group columns are keyed
   # `paste0(<level>, " n")`, and `paste0(character(0), " n")` is " n" --
   # R recycles the zero-length side to "" -- so the table used to grow a
   # pair of phantom columns named " n" and " %", with no rows under
   # them. tinytable then refused a zero-row table, gt refused two empty
   # column names, and flextable died on a recycling mismatch: three
   # different errors, none of them naming the cause.
+  #
+  # Two shapes reach here and the message must fit BOTH: every
+  # observation missing `by` (where `drop_na = FALSE` is a real remedy,
+  # verified), and no observation at all (where it is not -- the same
+  # refusal fires either way, so offering it would be a lie).
   if (length(group_levels) == 0L) {
     spicy_abort(
       c(
-        sprintf(
-          "`by = %s` has no non-missing level: every observation is missing it.",
-          by_name
-        ),
-        "i" = "There is no group for the table to compare.",
-        "i" = "`drop_na = FALSE` tabulates the missing observations as their own category."
+        sprintf("`by = %s` has no level to tabulate.", by_name),
+        "x" = if (length(g0) == 0L) {
+          "The data has no rows."
+        } else {
+          "Every observation is missing it."
+        },
+        if (any(is.na(g0))) {
+          c(
+            "i" = "`drop_na = FALSE` tabulates the missing observations as their own category."
+          )
+        }
       ),
       class = "spicy_invalid_data"
     )

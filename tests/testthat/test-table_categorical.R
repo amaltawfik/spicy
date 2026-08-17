@@ -3533,7 +3533,8 @@ test_that("an all-missing `by` is refused instead of growing phantom columns", {
   )
   expect_s3_class(err, "spicy_invalid_data")
   msg <- conditionMessage(err)
-  expect_match(msg, "`by = g` has no non-missing level", fixed = TRUE)
+  expect_match(msg, "`by = g` has no level to tabulate.", fixed = TRUE)
+  expect_match(msg, "Every observation is missing it.", fixed = TRUE)
   expect_match(msg, "drop_na = FALSE", fixed = TRUE)
   # Same refusal with the margin on: the margin is not a group.
   expect_error(
@@ -3562,4 +3563,30 @@ test_that("an all-missing `by` is refused instead of growing phantom columns", {
   )
   expect_true(all(nzchar(trimws(names(keep)))))
   expect_identical(nrow(keep), 2L)
+})
+
+test_that("the refusal states the reason the DATA gives, not a generic one", {
+  # Two shapes reach the same refusal and the message must fit both.
+  # Zero rows: nothing is missing `by`, there is simply nothing -- and
+  # `drop_na = FALSE` is NOT a remedy here (it raises the same error),
+  # so the message must not offer it.
+  d0 <- data.frame(
+    x = factor(character(0), levels = c("a", "b")),
+    g = character(0),
+    stringsAsFactors = FALSE
+  )
+  err0 <- tryCatch(
+    table_categorical(d0, select = x, by = g, drop_na = TRUE),
+    error = function(e) e
+  )
+  expect_s3_class(err0, "spicy_invalid_data")
+  msg0 <- conditionMessage(err0)
+  expect_match(msg0, "The data has no rows.", fixed = TRUE)
+  expect_false(grepl("Every observation is missing it.", msg0, fixed = TRUE))
+  expect_false(grepl("drop_na = FALSE", msg0, fixed = TRUE))
+  # And it really is not a remedy.
+  expect_error(
+    table_categorical(d0, select = x, by = g, drop_na = FALSE),
+    class = "spicy_invalid_data"
+  )
 })
