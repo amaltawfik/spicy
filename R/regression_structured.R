@@ -1305,7 +1305,7 @@ build_structured_body <- function(
       # rows carry the factor name bare (indented like any factor
       # level). The internal "FE: <factor>" key never reaches a reader.
       hdr <- empty_row
-      hdr$Variable <- "Fixed effects:"
+      hdr$Variable <- .reg_fe_block_header()
       rows[[length(rows) + 1L]] <- list(
         row = hdr,
         col_overrides = list(),
@@ -1367,7 +1367,7 @@ build_structured_body <- function(
       }
       for (fct in fct_union) {
         row <- empty_row
-        row$Variable <- sprintf("N (%s)", fct)
+        row$Variable <- spicy_fmt("fitstat_n_groups", fct)
         col_overrides <- list()
         for (m_id in model_ids) {
           target_col <- first_struct_col_per_model[[m_id]]
@@ -1609,7 +1609,7 @@ build_structured_body <- function(
   } # nocov
 
   row <- empty_row
-  row$Variable <- "Outcome"
+  row$Variable <- spicy_str("row_outcome")
   list(row = row, labels_by_col = labels_by_col)
 }
 

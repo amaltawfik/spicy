@@ -1458,7 +1458,7 @@ build_outcome_row <- function(outcome_labels, model_ids, label_map, col_spec) {
   names(first_col_per_model) <- model_ids
   all_data_cols <- vapply(col_spec, `[[`, character(1), "col_name")
 
-  cells <- list(Variable = "Outcome")
+  cells <- list(Variable = spicy_str("row_outcome"))
   for (col in all_data_cols) {
     cells[[col]] <- ""
   }
@@ -1543,7 +1543,7 @@ build_fit_stats_rows <- function(
       if (is.null(fe)) {
         next
       }
-      rows <- push_row(rows, blank_cells("Fixed effects:"))
+      rows <- push_row(rows, blank_cells(.reg_fe_block_header()))
       for (fct in fe$factors) {
         cells <- blank_cells(paste0("  ", fct))
         for (m_id in model_ids) {
@@ -1575,7 +1575,7 @@ build_fit_stats_rows <- function(
         next
       }
       for (fct in fct_union) {
-        cells <- blank_cells(sprintf("N (%s)", fct))
+        cells <- blank_cells(spicy_fmt("fitstat_n_groups", fct))
         for (m_id in model_ids) {
           target_col <- first_col_per_model[[m_id]]
           if (is.na(target_col)) {
@@ -1652,6 +1652,11 @@ build_fit_stats_rows <- function(
 # body in silence: its encoder matches on the token, would fall to its
 # NA default, and every FE cell in all six rich engines would come out
 # empty without a single condition raised.
+# Caption of the fixed-effects disclosure block, for both bodies.
+.reg_fe_block_header <- function() {
+  spicy_fmt("label_block_header", spicy_str("label_block_fixed_effects"))
+}
+
 .reg_fe_cell_label <- function(tok) {
   if (identical(tok, .REG_FE_YES)) {
     return(spicy_str("cell_yes"))

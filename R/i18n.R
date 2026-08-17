@@ -265,6 +265,17 @@
   # body reads it back to encode 1 / 0.
   cell_yes = "Yes",
   cell_no = "No",
+  # The fixed-effects disclosure is rendered as a block header (role
+  # `factor_header` in the typed body), so its caption goes through
+  # `label_block_header` like every other block rather than carrying
+  # its own colon -- one typographic rule for one visual role.
+  label_block_fixed_effects = "Fixed effects",
+  # The row that names the modelled outcome when a multi-outcome
+  # table shows one per column.
+  row_outcome = "Outcome",
+  # One hole: the grouping factor (a fixest absorbed factor, a random
+  # effect's group). DATA, never translated.
+  fitstat_n_groups = "N (%s)",
 
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = odds ratio",
