@@ -344,13 +344,24 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
-* `inline()` refuses to cite an interval whose cells are a reference
-  level or an undefined statistic, as it already did for `b`, `se` and
-  `p` and as `?inline` documents; it used to return `[–, –]`. An
-  interval whose bounds are simply blank -- `column = "assoc_ci"` on a
-  level row of `table_categorical()`, where the association sits on the
-  variable row -- refuses with the same wording as the scalar token
-  instead of returning `[, ]`.
+* `inline()` addresses each interval by its own token, so a table
+  carrying more than one -- `ci` with `med_ci`, or `ci` with `ame_ci`
+  -- can cite either. Both used to raise an ambiguity error naming
+  `model`, which does not apply to a single-model or descriptive
+  table, and `column = "ci"` on a `table_categorical()` now errors
+  with the available tokens instead of composing the association
+  interval of a row that has none.
+* `inline()` reads `{ci_label}` from the interval the pattern quotes:
+  `"{med} ({ci_label} {med_ci})"` on a table showing both intervals
+  now says `Med 95% CI`, the header the table itself displays, instead
+  of the mean interval's `95% CI`.
+* `inline()` refuses to cite an interval it cannot compose, as it
+  already did for `b`, `se` and `p` and as `?inline` documents: cells
+  that are a reference level or an undefined statistic (it used to
+  return `[–, –]`), and cells that are simply blank, such as
+  `column = "assoc_ci"` on a level row of `table_categorical()`, where
+  the association sits on the variable row (it used to return `[, ]`).
+  The wording is the one the scalar tokens already used.
 * `table_continuous_lm(by = , output = "gt")` renders when two `by`
   levels differ only in punctuation or in a non-ASCII character
   (`"a b"` / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and
@@ -358,9 +369,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `table_continuous()` and `table_continuous_lm()` label an interval
   with its own coverage: `ci_level = 0.975` reads `97.5% CI`, not
   `98% CI`. The percentage was rounded to a whole number, in the
-  spanner, in the column names of the `data.frame` output and in the
-  median-interval note. Levels with a whole-number percentage (0.90,
-  0.95, 0.99, ...) are unchanged.
+  console header, in the rendered spanner, in the median-interval note,
+  and -- for `table_continuous_lm()`, whose interval columns carry it
+  -- in the column names of the `data.frame` output. Levels with a
+  whole-number percentage (0.90, 0.95, 0.99, ...) are unchanged.
 * `table_categorical()` refuses a `by` variable with no level to
   tabulate (`spicy_invalid_data`) instead of building a table with two
   unnamed columns and no rows, which the rendering engines then failed
@@ -371,17 +383,6 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   contains a double quote. The level names the group columns, which
   are addressed by a CSS attribute selector, and the unescaped quote
   aborted gt's style compiler ("unterminated attribute selector").
-* `inline()` reads `{ci_label}` from the interval the pattern quotes:
-  `"{med} ({ci_label} {med_ci})"` on a table showing both intervals
-  now says `Med 95% CI`, the header the table itself displays, instead
-  of the mean interval's `95% CI`.
-* `inline()` addresses each interval by its own token, so a table
-  carrying more than one -- `ci` with `med_ci`, or `ci` with `ame_ci`
-  -- can cite either. Both used to raise an ambiguity error naming
-  `model`, which does not apply to a single-model or descriptive
-  table, and `column = "ci"` on a `table_categorical()` now errors
-  with the available tokens instead of composing the association
-  interval of a row that has none.
 * The significance-star legend of `table_regression(stars = TRUE)` follows
   the table's `decimal_mark`: a comma table now reads `p < ,001`, not
   `p < .001`.
@@ -696,6 +697,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Minor improvements
 
+* `as_structured()` no longer carries a `measure` field in the
+  `col_meta` of a `table_categorical()` association column. It was
+  undocumented and its value was the name of the element holding it
+  (`col_meta$"Effect size"$measure` was `"Effect size"`); the column's
+  token and `display_label` are unchanged.
 * Error messages quote a value the same way on every platform: `"value"`,
   with double quotes, on Windows, macOS and Linux alike. The messages used
   shell quoting, which renders `'value'` on Unix, so an error read
