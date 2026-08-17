@@ -116,7 +116,7 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
       sprintf(
         "Cluster column `%s` not found in `data`: %s.",
         arg,
-        shQuote(val)
+        .quote_val(val)
       ),
       class = "spicy_missing_column"
     )
@@ -275,7 +275,7 @@ resolve_covariates_argument <- function(
       sprintf(
         "`%s` not found in `data`: %s.",
         arg,
-        paste(shQuote(missing_cols), collapse = ", ")
+        paste(.quote_val(missing_cols), collapse = ", ")
       ),
       class = "spicy_missing_column"
     )
@@ -297,7 +297,7 @@ resolve_covariates_argument <- function(
           "numeric, integer, logical, factor, or character."
         ),
         arg,
-        paste(shQuote(cov_names[bad_class]), collapse = ", ")
+        paste(.quote_val(cov_names[bad_class]), collapse = ", ")
       ),
       class = "spicy_invalid_input"
     )
@@ -341,7 +341,7 @@ resolve_covariates_argument <- function(
         sprintf(
           "`%s` cannot use column name(s) reserved by the internal model fit: %s.",
           arg,
-          paste(shQuote(reserved), collapse = ", ")
+          paste(.quote_val(reserved), collapse = ", ")
         ),
         "i" = "Rename the column in `data` (e.g. via `dplyr::rename()`) before passing it as a covariate."
       ),

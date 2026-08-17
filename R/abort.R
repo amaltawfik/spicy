@@ -27,6 +27,16 @@ spicy_abort <- function(
 }
 
 
+# Quote a value for message text. `shQuote()` is SHELL quoting: it
+# renders '...' on Unix and "..." on Windows, so the same error would
+# read differently depending on where it was raised -- and a test that
+# pins the quotes can only be green on one platform. `encodeString()`
+# gives double quotes everywhere, and escapes an embedded quote or
+# backslash instead of pasting it raw. Every message in the package
+# that quotes a value goes through here.
+.quote_val <- function(x) encodeString(as.character(x), quote = "\"")
+
+
 # Symmetric helper for non-fatal conditions. Wraps `rlang::warn()`
 # to attach the package-wide `spicy_warning` parent class. Callers
 # pass the leaf class (e.g., `"spicy_ignored_arg"`); this helper
@@ -324,7 +334,7 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
           sprintf(
             "`%s` formula references unknown variable(s): %s.",
             arg_label,
-            paste(shQuote(src$missing), collapse = ", ")
+            paste(.quote_val(src$missing), collapse = ", ")
           ),
           "i" = paste0(
             "Looked in: model.frame(fit)",
@@ -332,7 +342,7 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
             if (length(src$available)) {
               paste0(
                 ". Available there: ",
-                paste(shQuote(src$available), collapse = ", ")
+                paste(.quote_val(src$available), collapse = ", ")
               )
             } else {
               "."
@@ -351,7 +361,7 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
     src <- cluster_lookup_data(fit, cluster)
     if (length(src$missing)) {
       avail <- if (length(src$available)) {
-        paste(shQuote(src$available), collapse = ", ")
+        paste(.quote_val(src$available), collapse = ", ")
       } else {
         "<no data attached to the fit>"
       }

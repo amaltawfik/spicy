@@ -161,7 +161,7 @@ extract_ame_satterthwaite <- function(
       c(
         sprintf(
           "Formula contains function-call predictor(s): %s.",
-          paste(shQuote(bad), collapse = ", ")
+          paste(.quote_val(bad), collapse = ", ")
         ),
         "i" = paste0(
           "Closed-form contrast construction is not applicable for ",

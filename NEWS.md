@@ -668,6 +668,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Minor improvements
 
+* Error messages quote a value the same way on every platform: `"value"`,
+  with double quotes, on Windows, macOS and Linux alike. The messages used
+  shell quoting, which renders `'value'` on Unix, so an error read
+  differently depending on where it was raised.
 * A cell with no number -- a statistic that does not apply to the row, a
   reference level -- prints an en dash (`–`) in every table.
   `table_continuous()`, `assoc_measures()` and the association printers

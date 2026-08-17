@@ -2032,7 +2032,7 @@ resolve_continuous_show_columns <- function(
       spicy_abort(
         sprintf(
           "`show_columns` names variable(s) more than once: %s.",
-          paste(shQuote(unique(nms[duplicated(nms)])), collapse = ", ")
+          paste(.quote_val(unique(nms[duplicated(nms)])), collapse = ", ")
         ),
         class = "spicy_invalid_input"
       )
@@ -2043,11 +2043,11 @@ resolve_continuous_show_columns <- function(
         c(
           sprintf(
             "`show_columns` names variable(s) absent from the table: %s.",
-            paste(shQuote(unknown), collapse = ", ")
+            paste(.quote_val(unknown), collapse = ", ")
           ),
           "i" = sprintf(
             "Summarized variables: %s.",
-            paste(shQuote(variables), collapse = ", ")
+            paste(.quote_val(variables), collapse = ", ")
           )
         ),
         class = "spicy_invalid_input"

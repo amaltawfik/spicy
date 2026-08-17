@@ -375,7 +375,7 @@
       "`re_test` must be one of \"none\", \"lrt\", or \"rlrt\".",
       "x" = sprintf(
         "You supplied %s.",
-        paste(encodeString(as.character(x), quote = "\""), collapse = ", ")
+        paste(.quote_val(x), collapse = ", ")
       ),
       "i" = paste0(
         "There is deliberately no Wald test: a variance's null hypothesis ",
@@ -403,7 +403,7 @@
         "`re_ci` must be \"wald\" or \"profile\".",
         "x" = sprintf(
           "You supplied %s.",
-          paste(encodeString(as.character(x), quote = "\""), collapse = ", ")
+          paste(.quote_val(x), collapse = ", ")
         )
       ),
       class = "spicy_invalid_input"

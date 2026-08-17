@@ -258,7 +258,7 @@ validate_models_input <- function(models) {
           c(
             sprintf(
               "Duplicate name(s) in `models` list: %s.",
-              paste(shQuote(dupes), collapse = ", ")
+              paste(.quote_val(dupes), collapse = ", ")
             ),
             "i" = paste0(
               "Names of the models list are used as model IDs and ",
@@ -628,11 +628,11 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       c(
         sprintf(
           "Unknown `vcov` type(s): %s.",
-          paste(shQuote(bad), collapse = ", ")
+          paste(.quote_val(bad), collapse = ", ")
         ),
         "i" = sprintf(
           "Valid types: %s.",
-          paste(shQuote(valid_vcov), collapse = ", ")
+          paste(.quote_val(valid_vcov), collapse = ", ")
         )
       ),
       class = "spicy_invalid_input"
@@ -1074,7 +1074,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are not defined for `glm` models.",
-            paste(shQuote(bad), collapse = ", ")
+            paste(.quote_val(bad), collapse = ", ")
           ),
           "i" = paste0(
             "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
@@ -1107,7 +1107,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are not defined for `glm` models.",
-            paste(shQuote(bad_fit), collapse = ", ")
+            paste(.quote_val(bad_fit), collapse = ", ")
           ),
           "i" = paste0(
             "Use the pseudo-R\u00B2 family instead: `\"pseudo_r2_mcfadden\"` ",
@@ -1145,7 +1145,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are for `glm` models only.",
-            paste(shQuote(bad_fit), collapse = ", ")
+            paste(.quote_val(bad_fit), collapse = ", ")
           ),
           "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
         ),
@@ -1180,7 +1180,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are not defined for %s models.",
-            paste(shQuote(r2_cols), collapse = ", "),
+            paste(.quote_val(r2_cols), collapse = ", "),
             paste(sprintf("`%s`", eff_classes), collapse = " / ")
           ),
           "i" = paste0(
@@ -1224,7 +1224,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are defined only for Bayesian fits.",
-            paste(shQuote(bayes_fit_req), collapse = ", ")
+            paste(.quote_val(bayes_fit_req), collapse = ", ")
           ),
           "i" = paste0(
             "They are computed from the posterior draws ",
@@ -1243,7 +1243,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` need the loo package.",
-            paste(shQuote(loo_req), collapse = ", ")
+            paste(.quote_val(loo_req), collapse = ", ")
           ),
           "i" = "Install loo: `install.packages(\"loo\")`."
         ),
@@ -1264,7 +1264,7 @@ validate_class_appropriate_tokens <- function(
         paste0(
           "Token(s) ",
           paste(
-            shQuote(intersect(c("p", "t", "ame_p"), show_columns)),
+            .quote_val(intersect(c("p", "t", "ame_p"), show_columns)),
             collapse = ", "
           ),
           " in `show_columns` are not defined for Bayesian fits."
@@ -1317,7 +1317,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are shown only when every model is Bayesian.",
-            paste(shQuote(diag_cols), collapse = ", ")
+            paste(.quote_val(diag_cols), collapse = ", ")
           ),
           "i" = paste0(
             "R-hat, ESS and MCSE are sampler diagnostics of ",
@@ -1363,7 +1363,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are not defined for Bayesian fits.",
-            paste(shQuote(bad_fit), collapse = ", ")
+            paste(.quote_val(bad_fit), collapse = ", ")
           ),
           "i" = paste0(
             "Posterior fits have no likelihood-based information ",
@@ -1388,7 +1388,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are defined only for negative-binomial fits (`MASS::glm.nb`).",
-            paste(shQuote(disp_tokens), collapse = ", ")
+            paste(.quote_val(disp_tokens), collapse = ", ")
           ),
           "i" = paste0(
             "theta is the NB2 dispersion (V = mu + mu\u00B2/theta) and ",
@@ -1466,7 +1466,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are defined only for fixest fits.",
-            paste(shQuote(fixest_tokens), collapse = ", ")
+            paste(.quote_val(fixest_tokens), collapse = ", ")
           ),
           "i" = paste0(
             "'fixed_effects' discloses the absorbed fixed effects ",
@@ -1493,7 +1493,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are defined only for GEE fits (`geepack::geeglm`).",
-            paste(shQuote(gee_tokens), collapse = ", ")
+            paste(.quote_val(gee_tokens), collapse = ", ")
           ),
           "i" = paste0(
             "'qic' / 'qicu' are the quasi-likelihood information ",
@@ -1534,7 +1534,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are not defined for GEE fits (`geeglm`).",
-            paste(shQuote(bad_fit), collapse = ", ")
+            paste(.quote_val(bad_fit), collapse = ", ")
           ),
           "i" = paste0(
             "GEE is estimated by quasi-likelihood: no likelihood, so ",
@@ -1563,7 +1563,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are not defined for GEE fits (`geeglm`).",
-            paste(shQuote(bad_cols), collapse = ", ")
+            paste(.quote_val(bad_cols), collapse = ", ")
           ),
           "i" = paste0(
             "The partial likelihood-ratio chi-square and the ",
@@ -1606,7 +1606,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_fit_stats` are not defined for mixed-effects models.",
-            paste(shQuote(bad_fit), collapse = ", ")
+            paste(.quote_val(bad_fit), collapse = ", ")
           ),
           "i" = paste0(
             "Classical / pseudo R^2 do not apply to mixed-effects models. ",
@@ -1636,7 +1636,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are not defined for mixed-effects models.",
-            paste(shQuote(bad_cols), collapse = ", ")
+            paste(.quote_val(bad_cols), collapse = ", ")
           ),
           "i" = paste0(
             "Variance-explained partials do not apply to mixed models. For a ",
@@ -1663,7 +1663,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are not defined for Cox models.",
-            paste(shQuote(bad), collapse = ", ")
+            paste(.quote_val(bad), collapse = ", ")
           ),
           "i" = paste0(
             "Average marginal effects on a Cox proportional-hazards fit are ",
@@ -1737,7 +1737,7 @@ validate_class_appropriate_tokens <- function(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are not available for mlogit models.",
-            paste(shQuote(bad), collapse = ", ")
+            paste(.quote_val(bad), collapse = ", ")
           ),
           "i" = paste0(
             "marginaleffects computes predictions but not slopes (average ",
@@ -1827,7 +1827,7 @@ expand_show_columns <- function(tokens, bayesian = FALSE) {
         sprintf(
           "  `\"%s\"` -> %s",
           old,
-          paste(shQuote(new_tok), collapse = " + ")
+          paste(.quote_val(new_tok), collapse = " + ")
         )
       },
       character(1)
@@ -1898,7 +1898,7 @@ validate_token_vector <- function(x, valid, arg) {
       sprintf(
         "`%s` contains duplicate token(s): %s.",
         arg,
-        paste(shQuote(dups), collapse = ", ")
+        paste(.quote_val(dups), collapse = ", ")
       ),
       class = "spicy_invalid_input"
     )
@@ -1910,11 +1910,11 @@ validate_token_vector <- function(x, valid, arg) {
         sprintf(
           "Unknown token(s) in `%s`: %s.",
           arg,
-          paste(shQuote(bad), collapse = ", ")
+          paste(.quote_val(bad), collapse = ", ")
         ),
         "i" = sprintf(
           "Valid tokens: %s.",
-          paste(shQuote(valid), collapse = ", ")
+          paste(.quote_val(valid), collapse = ", ")
         )
       ),
       class = "spicy_invalid_input"
@@ -1966,7 +1966,7 @@ validate_token_vector <- function(x, valid, arg) {
       "`re_scale` must be one of \"sd\" or \"variance\".",
       "x" = sprintf(
         "You supplied %s.",
-        paste(encodeString(as.character(x), quote = "\""), collapse = ", ")
+        paste(.quote_val(x), collapse = ", ")
       )
     ),
     class = "spicy_invalid_input"
@@ -2094,10 +2094,10 @@ validate_p_adjust <- function(p_adjust) {
   if (!p_adjust %in% .spicy_p_adjust_methods) {
     spicy_abort(
       c(
-        sprintf("Unknown `p_adjust` method: %s.", shQuote(p_adjust)),
+        sprintf("Unknown `p_adjust` method: %s.", .quote_val(p_adjust)),
         "i" = sprintf(
           "Valid methods: %s.",
-          paste(shQuote(.spicy_p_adjust_methods), collapse = ", ")
+          paste(.quote_val(.spicy_p_adjust_methods), collapse = ", ")
         )
       ),
       class = "spicy_invalid_input"
@@ -2255,7 +2255,7 @@ validate_model_labels <- function(model_labels, models) {
       c(
         sprintf(
           "Duplicate value(s) in `model_labels`: %s.",
-          paste(shQuote(dupes), collapse = ", ")
+          paste(.quote_val(dupes), collapse = ", ")
         ),
         "i" = paste0(
           "Each model column needs a distinct label so the wide ",
@@ -2343,15 +2343,15 @@ validate_predictor_labels <- function(labels, models) {
       c(
         sprintf(
           "Some `labels` keys are not term or coefficient names: %s.",
-          paste(shQuote(unknown), collapse = ", ")
+          paste(.quote_val(unknown), collapse = ", ")
         ),
         "i" = sprintf(
           "Available term labels: %s.",
-          paste(shQuote(all_terms), collapse = ", ")
+          paste(.quote_val(all_terms), collapse = ", ")
         ),
         "i" = sprintf(
           "Available coefficient names: %s.",
-          paste(shQuote(all_coefs), collapse = ", ")
+          paste(.quote_val(all_coefs), collapse = ", ")
         )
       ),
       class = "spicy_invalid_input"

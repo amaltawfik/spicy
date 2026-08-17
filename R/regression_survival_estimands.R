@@ -54,7 +54,7 @@
     spicy_abort(
       sprintf(
         "Column(s) %s of the model formula are not in the recovered data.",
-        paste(shQuote(missing_vars), collapse = ", ")
+        paste(.quote_val(missing_vars), collapse = ", ")
       ),
       class = "spicy_invalid_input"
     )

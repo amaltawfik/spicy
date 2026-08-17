@@ -10,11 +10,6 @@
 #     fidelity tests pin against the console, so a number quoted in
 #     the text can never drift from the number printed in the table.
 
-# Deterministic double quotes for message text: shQuote() is shell
-# quoting and flips single/double by platform (regression_titlefooter
-# convention).
-.quote_val <- function(x) encodeString(as.character(x), quote = "\"")
-
 #' Cite a table cell in inline text
 #'
 #' @description

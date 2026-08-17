@@ -96,10 +96,13 @@ test_that("expand_show_columns – legacy uppercase token errors with replacemen
   msg <- conditionMessage(err)
   # Migration message names both legacy tokens and points at the new ones.
   expect_match(msg, "Legacy uppercase")
-  # Quote style is platform-dependent (shQuote renders '...' on Unix vs
-  # "..." on Windows), so assert the token text, not the surrounding quotes.
   expect_match(msg, "AME")
   expect_match(msg, "ame")
+  # The replacement token is quoted through `.quote_val()`, so the quotes
+  # are the same on every platform and CAN be pinned. (Under `shQuote()`
+  # this assertion was green on Windows and red on Unix, which is why the
+  # quotes used to be left out of the pin.)
+  expect_match(msg, "-> \"ame\"", fixed = TRUE)
 })
 
 

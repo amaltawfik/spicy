@@ -99,13 +99,13 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
         sprintf(
           "%s pattern(s) %s matched no coefficient term.",
           if (is.null(keep)) "`drop`" else "`keep`",
-          paste(shQuote(dead), collapse = ", ")
+          paste(.quote_val(dead), collapse = ", ")
         ),
         "i" = paste0(
           "Patterns match term names as in `stats::coef()` (e.g. ",
           "\"sexMale\", \"factor(cyl)8\"), never display labels. ",
           "The terms of this table: ",
-          paste(shQuote(utils::head(unique(terms), 12L)), collapse = ", "),
+          paste(.quote_val(utils::head(unique(terms), 12L)), collapse = ", "),
           if (length(unique(terms)) > 12L) ", ..." else "",
           "."
         )

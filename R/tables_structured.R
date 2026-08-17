@@ -664,7 +664,7 @@
       spicy_abort(
         sprintf(
           "Internal: unrecognised continuous-lm display column %s.",
-          shQuote(nm)
+          .quote_val(nm)
         ),
         class = "spicy_internal_invariant"
       )
@@ -721,7 +721,7 @@
       spicy_abort(
         sprintf(
           "Internal: unrecognised continuous-lm column token %s.",
-          shQuote(ent$token)
+          .quote_val(ent$token)
         ),
         class = "spicy_internal_invariant"
       )

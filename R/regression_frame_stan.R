@@ -543,7 +543,7 @@ as_regression_frame.brmsfit <- function(
           paste0(
             "Standardized coefficients: the recovered brms ",
             "design matrix does not carry column(s) ",
-            paste(shQuote(unmatched), collapse = ", "),
+            paste(.quote_val(unmatched), collapse = ", "),
             "."
           ),
           "i" = paste0(

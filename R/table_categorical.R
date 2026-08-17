@@ -239,7 +239,7 @@
         sprintf(
           "`assoc_measure = \"%s\"` is not one of: %s.",
           assoc_measure,
-          paste(shQuote(valid), collapse = ", ")
+          paste(.quote_val(valid), collapse = ", ")
         ),
         class = "spicy_invalid_input"
       )
@@ -254,7 +254,7 @@
       spicy_abort(
         sprintf(
           "`assoc_measure` keys not found in `select`: %s.",
-          paste(shQuote(bad_names), collapse = ", ")
+          paste(.quote_val(bad_names), collapse = ", ")
         ),
         class = "spicy_invalid_input"
       )
@@ -264,7 +264,7 @@
       spicy_abort(
         sprintf(
           "`assoc_measure` value(s) not recognised: %s.",
-          paste(shQuote(bad_vals), collapse = ", ")
+          paste(.quote_val(bad_vals), collapse = ", ")
         ),
         class = "spicy_invalid_input"
       )
@@ -290,7 +290,7 @@
       spicy_abort(
         sprintf(
           "`assoc_measure` value(s) not recognised: %s.",
-          paste(shQuote(bad_vals), collapse = ", ")
+          paste(.quote_val(bad_vals), collapse = ", ")
         ),
         class = "spicy_invalid_input"
       )
