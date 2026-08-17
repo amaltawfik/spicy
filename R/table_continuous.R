@@ -1363,7 +1363,6 @@ table_continuous <- function(
       groups[is.na(groups)] <- missing_label
       missing_group_label <- missing_label
     }
-    n_groups <- length(group_levels)
     rows <- list()
     for (i in seq_along(numeric_cols)) {
       nm <- numeric_cols[i]
@@ -2996,7 +2995,6 @@ export_desc_table <- function(
   note = NULL
 ) {
   title_by <- attr(raw_result, "group_label", exact = TRUE)
-  has_p <- .CON_KEY_P %in% names(display_df)
   sep_rows <- compute_var_sep_rows(display_df)
 
   # Pre-pad numeric cells with figure-spaces (U+2007, digit-width) so

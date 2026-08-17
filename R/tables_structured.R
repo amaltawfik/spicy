@@ -278,7 +278,6 @@
         precision = as.integer(v_digits),
         p_style = .style_p_style_token(),
         value_range = c(-1, 1),
-        measure = measure_col,
         display_label = measure_label %||% measure_col
       )
       if (assoc_ci) {
