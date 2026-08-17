@@ -10,14 +10,8 @@
 #     calling the helper directly.
 #   * compute_effect_size(): the `type = NULL` auto-resolution block and
 #     the unknown-type abort.
-#   * export_desc_table(): the legacy "auto" per-column alignment arm of
-#     each rendering engine (tinytable / gt / flextable), unreachable
-#     from table_continuous() because `align` is match.arg()'d to
-#     decimal/center/right, but still selectable when the internal
-#     exporter is called with align = "auto".
 #
-# Each block makes a real assertion; engine-specific blocks are gated by
-# skip_if_not_installed().
+# Each block makes a real assertion.
 
 # ---- resolve_effect_size_choice() ---------------------------------------
 
@@ -160,98 +154,4 @@ test_that("compute_effect_size aborts on an unknown effect-size type", {
     spicy:::compute_effect_size(x, g, 2L, "welch", 0.95, type = "bogus"),
     class = "spicy_invalid_input"
   )
-})
-
-
-# ---- export_desc_table(): legacy "auto" alignment arm -------------------
-
-# Helper: build the (result, display_df) pair the internal exporter
-# consumes, from a grouped fit carrying n / statistic / p / ES columns so
-# the per-column "auto" alignment rule visits every branch.
-make_desc_inputs <- function() {
-  result <- table_continuous(
-    iris,
-    select = c(Sepal.Length, Sepal.Width),
-    by = Species,
-    statistic = TRUE,
-    p_value = TRUE,
-    effect_size = "auto",
-    output = "data.frame"
-  )
-  display_df <- spicy:::build_display_df(
-    result,
-    digits = 2L,
-    decimal_mark = ".",
-    ci_level = 0.95,
-    show_p = TRUE,
-    show_statistic = TRUE,
-    show_n = TRUE,
-    show_ci = TRUE,
-    show_effect_size = TRUE,
-    show_effect_size_ci = TRUE,
-    effect_size_digits = 2L,
-    p_digits = 3L
-  )
-  list(result = result, display_df = display_df)
-}
-
-test_that("export_desc_table tinytable honours the legacy 'auto' alignment", {
-  skip_if_not_installed("tinytable")
-  inputs <- make_desc_inputs()
-  tt <- spicy:::export_desc_table(
-    inputs$display_df,
-    inputs$result,
-    output = "tinytable",
-    ci_level = 0.95,
-    align = "auto",
-    decimal_mark = ".",
-    has_group = TRUE,
-    show_n = TRUE,
-    excel_path = NULL,
-    excel_sheet = "Descriptives",
-    clipboard_delim = "\t",
-    word_path = NULL
-  )
-  expect_true(methods::is(tt, "tinytable"))
-})
-
-test_that("export_desc_table gt honours the legacy 'auto' alignment", {
-  skip_if_not_installed("gt")
-  inputs <- make_desc_inputs()
-  tbl <- spicy:::export_desc_table(
-    inputs$display_df,
-    inputs$result,
-    output = "gt",
-    ci_level = 0.95,
-    align = "auto",
-    decimal_mark = ".",
-    has_group = TRUE,
-    show_n = TRUE,
-    excel_path = NULL,
-    excel_sheet = "Descriptives",
-    clipboard_delim = "\t",
-    word_path = NULL
-  )
-  expect_s3_class(tbl, "gt_tbl")
-})
-
-test_that("export_desc_table flextable honours the legacy 'auto' alignment", {
-  skip_if_not_installed("flextable")
-  skip_if_not_installed("officer")
-  inputs <- make_desc_inputs()
-  ft <- spicy:::export_desc_table(
-    inputs$display_df,
-    inputs$result,
-    output = "flextable",
-    ci_level = 0.95,
-    align = "auto",
-    decimal_mark = ".",
-    has_group = TRUE,
-    show_n = TRUE,
-    excel_path = NULL,
-    excel_sheet = "Descriptives",
-    clipboard_delim = "\t",
-    word_path = NULL
-  )
-  expect_s3_class(ft, "flextable")
 })

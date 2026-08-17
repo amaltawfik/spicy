@@ -3219,14 +3219,6 @@ table_categorical <- function(
       tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
     } else if (identical(align, "right") && length(numeric_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
-    } else {
-      # nocov start: `align` is match.arg()-constrained to
-      # decimal/center/right, each matched by a branch above, so this
-      # "auto" legacy per-column else-arm is unreachable. Defensive.
-      # "auto": legacy per-column rule.
-      tbl <- gt::cols_align(tbl, align = "center", columns = grp_cols)
-      tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
-      # nocov end
     }
     # Left-align the Variable spanner label
     tbl <- gt::tab_style(

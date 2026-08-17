@@ -2965,15 +2965,18 @@ build_header_rows <- function(col_keys, ci_level) {
 }
 
 # --- internal: the count / p-value right-hand columns ---
-# One rule, four engines: the counts and the p-value right-align, every
-# other numeric column centres. Compared KEY against key -- `Variable` and
-# `Group` can never collide with these, they are excluded upstream by
-# position rather than by name.
+# The counts and the p-value right-align, every other numeric column
+# centres. Compared KEY against key -- `Variable` and `Group` can never
+# collide with these, they are excluded upstream by position rather than
+# by name.
 #
 # "Weighted n" is a count and aligns with `n`, the rule
-# `table_continuous_lm()` has always applied. Three engines reach this
-# only through the legacy `align = "auto"` arm; Excel has no `align`
-# branch and applies it at every `align` value.
+# `table_continuous_lm()` has always applied. Excel is now the ONLY
+# caller: the three HTML/Word engines used to reach the rule through
+# their `align = "auto"` else-arm, which was dead once `"auto"` was
+# removed from the public enum. Excel has no `align` branch at all and
+# applies this per-column rule at every `align` value -- an engine-parity
+# defect of its own, deliberately left standing here.
 .continuous_right_cols <- function(col_keys) {
   which(col_keys %in% c(.CON_KEY_N, .CON_KEY_WEIGHTED_N, .CON_KEY_P))
 }
@@ -3097,17 +3100,6 @@ export_desc_table <- function(
       for (rj in numeric_j) {
         tt <- tinytable::style_tt(tt, j = rj, align = "r")
       }
-    } else {
-      # "auto": legacy per-column rule -- right for n/p (when present),
-      # center for the rest.
-      right_j <- .continuous_right_cols(col_keys)
-      center_j <- setdiff(numeric_j, right_j)
-      if (length(center_j) > 0L) {
-        tt <- tinytable::style_tt(tt, j = center_j, align = "c")
-      }
-      for (rj in right_j) {
-        tt <- tinytable::style_tt(tt, j = rj, align = "r")
-      }
     }
 
     # Spanner alignment
@@ -3218,19 +3210,6 @@ export_desc_table <- function(
       tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
     } else if (identical(align, "right") && length(numeric_cols) > 0L) {
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
-    } else {
-      # "auto": legacy per-column rule. Center descriptive / CI cols,
-      # right-align n / p (when present). `numeric_cols` has already
-      # dropped the two label columns, so the predicate walks it
-      # directly and keeps the column order it is given.
-      right_cols <- numeric_cols[.continuous_right_cols(numeric_cols)]
-      center_cols <- setdiff(numeric_cols, right_cols)
-      if (length(center_cols) > 0L) {
-        tbl <- gt::cols_align(tbl, align = "center", columns = center_cols)
-      }
-      if (length(right_cols) > 0L) {
-        tbl <- gt::cols_align(tbl, align = "right", columns = right_cols)
-      }
     }
 
     left_spanners <- paste0("spn_", .CON_KEY_VARIABLE)
@@ -3442,32 +3421,6 @@ export_desc_table <- function(
         part = "body",
         align = "right"
       )
-    } else {
-      # "auto": legacy per-column rule.
-      right_j <- .continuous_right_cols(col_keys)
-      center_j <- setdiff(numeric_j, right_j)
-      if (length(center_j) > 0L) {
-        ft <- flextable::align(
-          ft,
-          j = center_j,
-          part = "all",
-          align = "center"
-        )
-      }
-      if (length(right_j) > 0L) {
-        ft <- flextable::align(
-          ft,
-          j = right_j,
-          part = "header",
-          align = "center"
-        )
-        ft <- flextable::align(
-          ft,
-          j = right_j,
-          part = "body",
-          align = "right"
-        )
-      }
     }
 
     # APA borders. An intermediate header line is drawn under each
