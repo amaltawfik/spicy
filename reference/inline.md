@@ -78,9 +78,12 @@ the corresponding cell, so one call quotes a full sentence fragment:
 
     inline(tbl, smoking, "Yes", "{or} ({ci_label} {ci}; p = {p})")
 
-`{ci_label}` inserts the table's interval label (`95% CI`). Note that
-`{p}` carries the floor operator when the table does (`<.001`), so write
-`p {p}` rather than `p = {p}` in patterns that may hit the floor.
+`{ci_label}` inserts the interval label of the interval the pattern
+cites (`95% CI`, or `Med 95% CI` in a pattern quoting `{med_ci}`) – the
+first one when it cites several, the table's first when it cites none.
+Note that `{p}` carries the floor operator when the table does
+(`<.001`), so write `p {p}` rather than `p = {p}` in patterns that may
+hit the floor.
 
 ## Errors
 

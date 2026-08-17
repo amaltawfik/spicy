@@ -153,8 +153,10 @@ so <code>model</code> selects the group the same way.</p>
 by the corresponding cell, so one call quotes a full sentence
 fragment:</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">inline</span>(tbl, smoking, <span class="st">"Yes"</span>, <span class="st">"{or} ({ci_label} {ci}; p = {p})"</span>)</span></code></pre><p></p></div>
-<p><code>{ci_label}</code> inserts the table's interval label (<code>95% CI</code>). Note
-that <code>{p}</code> carries the floor operator when the table does
+<p><code>{ci_label}</code> inserts the interval label of the interval the pattern
+cites (<code>95% CI</code>, or <code>Med 95% CI</code> in a pattern quoting <code>{med_ci}</code>) –
+the first one when it cites several, the table's first when it cites
+none. Note that <code>{p}</code> carries the floor operator when the table does
 (<code>&lt;.001</code>), so write <code>p {p}</code> rather than <code>p = {p}</code> in patterns that
 may hit the floor.</p>
     </div>
