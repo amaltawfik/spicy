@@ -4,6 +4,15 @@
 
 ### Breaking changes
 
+- The adjusted R-squared reads `Adj. R²` everywhere. In
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  it is the label of a fit-statistic row and of the `ΔAdj. R²` change
+  row; in
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  it is also a column name, so code selecting that column must use the
+  new spelling (`Adj.R²` had no space).
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  already used it.
 - Declared missing values are now honored package-wide: codes a survey
   file declares missing (`na_values` / `na_range`, tagged NAs) count as
   missing in
@@ -454,6 +463,27 @@ instead of rendering an empty column.
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   table with an empty cell no longer fails with “missing value where
   TRUE/FALSE needed”; column widths are measured as they are displayed.
+- A variable whose `label` attribute is `NA` falls back to the column
+  name in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  The stub used to read `NA`, and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  failed outright with “missing value where TRUE/FALSE needed”.
+- A missing cell no longer disturbs the console layout of any table: it
+  renders as an empty cell instead of leaving its row unpadded and every
+  separator of the table out of register.
+- A variable label written in wide characters (CJK, emoji) no longer
+  overflows a narrow console in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
+  column widths are measured as they are displayed rather than counted
+  as characters.
+- The same measure now governs
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  which used to split such a table across two panels on a console wide
+  enough for one.
 - An empty or non-string `clipboard_delim` raises a classed error
   instead of silently building an unusable payload.
 - A
@@ -846,6 +876,11 @@ instead of rendering an empty column.
   `Descriptive statistics by <label>`: the grouping variable is stated
   in the console header and in every rendered caption, like the other
   `by` tables of the family.
+- The `Weighted n` column of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  right-aligns with `n` instead of being centred, matching
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  Visible in Excel workbooks at every `align` value.
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   discloses excluded missing values in the table note – per variable,
   with a deduplicated row total, and rows dropped for a missing `by` –

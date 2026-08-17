@@ -204,7 +204,7 @@ s$body                               # raw numeric body
 #> 6            8 -6.0708597 1.6522878  -9.455418  -2.686301 9.991893e-04
 #> 7            n 32.0000000        NA         NA         NA           NA
 #> 8           R²  0.8374325        NA         NA         NA           NA
-#> 9       Adj.R²  0.8200146        NA         NA         NA           NA
+#> 9      Adj. R²  0.8200146        NA         NA         NA           NA
 #>     .variable .level     .row_role .indent
 #> 1 (Intercept)   <NA>          coef       0
 #> 2          wt   <NA>          coef       0

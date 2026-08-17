@@ -164,7 +164,7 @@ cuts across all of them — how to code, test, and present categorical
 <p>Pass a fitted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> object. The default rendering returns
 a single-model table with <code>B</code>, <code>SE</code>,
 <code>95% CI</code>, and <code>p</code> columns and a fit-statistics
-footer (<code>n</code>, <code>R²</code>, <code>Adj.R²</code>):</p>
+footer (<code>n</code>, <code>R²</code>, <code>Adj. R²</code>):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -183,7 +183,7 @@ footer (<code>n</code>, <code>R²</code>, <code>Adj.R²</code>):</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
@@ -284,7 +284,7 @@ token is auto-injected into <code>show_columns</code> immediately after
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                        </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                     </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                     </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
@@ -354,7 +354,7 @@ reuse this copy throughout the vignette:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                                     </span></span>
 <span><span class="co">#&gt;  R²                       <span style="color: #9E9E9E;">│</span>    0.22                                  </span></span>
-<span><span class="co">#&gt;  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                                  </span></span>
+<span><span class="co">#&gt;  Adj. R²                  <span style="color: #9E9E9E;">│</span>    0.22                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>  ω² 95% CI   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────</span></span></span>
@@ -458,7 +458,7 @@ shortcut <code>"all_ame"</code> expands to the full set.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                              </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
@@ -523,7 +523,7 @@ into the spanner automatically:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                  1163                 </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02              </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                  0.02              </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                  0.02              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
@@ -608,7 +608,7 @@ For a time-to-event screen the same call takes
 change-statistic rows</strong> (APA Table 7.13 / Stata
 <code>esttab</code> / SPSS Model Summary convention). Each adjacent pair
 (M2 vs M1, M3 vs M2, …) contributes one column of change stats below
-<code>R² / Adj.R²</code>; the first model column gets en-dashes (no
+<code>R² / Adj. R²</code>; the first model column gets en-dashes (no
 previous model to compare to).</p>
 <p>Hierarchical regression requires every model in the sequence to share
 the same analytic sample: identical <code>nobs</code> and an identical
@@ -644,7 +644,7 @@ front:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                  1163                   1163           </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
 <span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>     –                   +0.00                  +0.02        </span></span>
 <span><span class="co">#&gt;  F-change        <span style="color: #9E9E9E;">│</span>     –                   +2.28                 +28.13        </span></span>
 <span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>     –                     .132                  &lt;.001       </span></span>
@@ -729,7 +729,7 @@ default (Long and Ervin 2000):</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
@@ -790,7 +790,7 @@ dynamic column choice).</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                                               </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                            </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                            </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                            </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CR2), clusters by region.</span></span></span>
@@ -842,7 +842,7 @@ same as in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                                 </span></span>
 <span><span class="co">#&gt;  R²                       <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
-<span><span class="co">#&gt;  Adj.R²                   <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
+<span><span class="co">#&gt;  Adj. R²                  <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
@@ -908,7 +908,7 @@ combine with logical OR.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n           <span style="color: #9E9E9E;">│</span> 1163                                 </span></span>
 <span><span class="co">#&gt;  R²          <span style="color: #9E9E9E;">│</span>    0.23                              </span></span>
-<span><span class="co">#&gt;  Adj.R²      <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
+<span><span class="co">#&gt;  Adj. R²     <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
@@ -930,7 +930,7 @@ combine with logical OR.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                                 </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.23                              </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
@@ -966,7 +966,7 @@ named numeric vector for custom thresholds:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1175                                    </span></span>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
-<span><span class="co">#&gt;  Adj.R²          <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
@@ -1016,7 +1016,7 @@ European decimal notation and automatically changes the CI separator to
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                                 <span style="color: #9E9E9E;">│</span> 1200                                 </span></span>
 <span><span class="co">#&gt;  R²                                <span style="color: #9E9E9E;">│</span>    0,22                              </span></span>
-<span><span class="co">#&gt;  Adj.R²                            <span style="color: #9E9E9E;">│</span>    0,22                              </span></span>
+<span><span class="co">#&gt;  Adj. R²                           <span style="color: #9E9E9E;">│</span>    0,22                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
@@ -1039,7 +1039,7 @@ The table title becomes family-aware (“Logistic regression”, “Poisson
 regression”, “Probit regression”, …) and the default fit-statistics
 block swaps in <code>nobs</code>, <code>pseudo_r2_mcfadden</code>,
 <code>pseudo_r2_nagelkerke</code>, and <code>AIC</code> instead of
-<code>R²</code> and <code>Adj.R²</code>.</p>
+<code>R²</code> and <code>Adj. R²</code>.</p>
 <p>We illustrate with a logistic regression of <code>smoking</code> on
 <code>sex</code>, <code>age</code>, and <code>education</code> from
 <code>sochealth</code>, reusing <code>sh</code> — the copy of
@@ -2165,7 +2165,7 @@ R²
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
-Adj.R²
+Adj. R²
 </td>
 <td headers="B" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
    0.02

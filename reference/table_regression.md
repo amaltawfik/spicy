@@ -1542,7 +1542,7 @@ for the low-level renderer. Inferential infrastructure (internal):
 fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 
 # Default APA layout: B / SE / 95% CI / p plus the n / R^2 /
-# Adj.R^2 fit-stats footer. Factor reference level is annotated
+# Adj. R^2 fit-stats footer. Factor reference level is annotated
 # with `(ref.)` and shows an en dash in the statistic columns.
 table_regression(fit)
 #> Linear regression: wellbeing_score
@@ -1560,7 +1560,7 @@ table_regression(fit)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -1584,7 +1584,7 @@ table_regression(fit, standardized = "refit")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                        
 #>  R²              │    0.02                                     
-#>  Adj.R²          │    0.02                                     
+#>  Adj. R²         │    0.02                                     
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -1612,7 +1612,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                        
 #>  R²              │    0.02                                     
-#>  Adj.R²          │    0.02                                     
+#>  Adj. R²         │    0.02                                     
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -1636,7 +1636,7 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                              
 #>  R²              │    0.02                                           
-#>  Adj.R²          │    0.02                                           
+#>  Adj. R²         │    0.02                                           
 #> 
 #>  Variable        │ 95% CI (AME)   p (AME) 
 #> ─────────────────┼────────────────────────
@@ -1674,7 +1674,7 @@ table_regression(fit, vcov = "CR2", cluster = ~region)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region.
@@ -1694,7 +1694,7 @@ table_regression(fit, vcov = "CR2", cluster = "region")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region.
@@ -1714,7 +1714,7 @@ table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region:age_group.
@@ -1753,7 +1753,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                  1175                   1175           
 #>  R²              │    0.00                  0.02                   0.02        
-#>  Adj.R²          │    0.00                  0.02                   0.02        
+#>  Adj. R²         │    0.00                  0.02                   0.02        
 #>  ΔR²             │     –                   +0.02                  +0.00        
 #>  F-change        │     –                  +18.26                  +2.41        
 #>  p (change)      │     –                    <.001                   .121       
@@ -1799,7 +1799,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                  1175                  1175          
 #>  R²              │    0.02                  0.02                  0.02       
-#>  Adj.R²          │    0.02                  0.02                  0.02       
+#>  Adj. R²         │    0.02                  0.02                  0.02       
 #> 
 #>                     CR2  
 #>                    ───── 

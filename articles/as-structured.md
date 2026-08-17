@@ -72,7 +72,7 @@ tbl
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -111,7 +111,7 @@ s$body
 #> 8              Yes   -1.71871310 1.10751281 -3.89164426  0.4542181
 #> 9                n 1175.00000000         NA          NA         NA
 #> 10              R²    0.01901139         NA          NA         NA
-#> 11          Adj.R²    0.01649818         NA          NA         NA
+#> 11         Adj. R²    0.01649818         NA          NA         NA
 #>                p   .variable .level     .row_role .indent
 #> 1  1.591088e-216 (Intercept)   <NA>          coef       0
 #> 2   1.301575e-01         age   <NA>          coef       0
@@ -148,7 +148,7 @@ s$body[, c("Variable", ".variable", ".level", ".row_role", ".indent")]
 #> 8              Yes     smoking    Yes         level       1
 #> 9                n        nobs   <NA>      fit_stat       0
 #> 10              R²          r2   <NA>      fit_stat       0
-#> 11          Adj.R²      adj_r2   <NA>      fit_stat       0
+#> 11         Adj. R²      adj_r2   <NA>      fit_stat       0
 ```
 
 `.variable` is the source variable (or, on a fit-statistics row, the
@@ -389,7 +389,7 @@ s2$body[, c(1, s2$spanners$Extended)]
 #> 9              bmi   -0.64943694   0.12243755  1.354657e-07
 #> 10               n 1163.00000000           NA            NA
 #> 11              R²    0.04260253           NA            NA
-#> 12          Adj.R²    0.03929546           NA            NA
+#> 12         Adj. R²    0.03929546           NA            NA
 ```
 
 ## Cells a number cannot express
@@ -702,7 +702,7 @@ render_kable(tbl)
 | Yes           | -1.72 | 1.11 |      -3.89 |       0.45 | 0.121 |
 | n             |  1175 |      |            |            |       |
 | R²            |  0.02 |      |            |            |       |
-| Adj.R²        |  0.02 |      |            |            |       |
+| Adj. R²       |  0.02 |      |            |            |       |
 
 Anything more ambitious – a
 [`DT::datatable()`](https://rdrr.io/pkg/DT/man/datatable.html) with

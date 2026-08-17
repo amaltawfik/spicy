@@ -200,7 +200,7 @@ table_regression(ols, show_columns = c("b", "se", "p"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 7185                 
 #>  R²          │    0.13              
-#>  Adj.R²      │    0.13              
+#>  Adj. R²     │    0.13              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -291,7 +291,7 @@ table_regression(list(OLS = ols, Multilevel = m_ri),
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                      │  7185                   7185                 
 #>  R²                     │     0.13                    –                
-#>  Adj.R²                 │     0.13                    –                
+#>  Adj. R²                │     0.13                    –                
 #>  N (School)             │                          160                 
 #>  ICC                    │      –                     0.11              
 #>  R² (marginal)          │      –                     0.08              

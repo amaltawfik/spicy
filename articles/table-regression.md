@@ -59,7 +59,7 @@ categorical *predictors* — and has its own vignette:
 
 Pass a fitted [`lm()`](https://rdrr.io/r/stats/lm.html) object. The
 default rendering returns a single-model table with `B`, `SE`, `95% CI`,
-and `p` columns and a fit-statistics footer (`n`, `R²`, `Adj.R²`):
+and `p` columns and a fit-statistics footer (`n`, `R²`, `Adj. R²`):
 
 ``` r
 
@@ -80,7 +80,7 @@ table_regression(fit)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -169,7 +169,7 @@ table_regression(fit, standardized = "refit")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                        
 #>  R²              │    0.02                                     
-#>  Adj.R²          │    0.02                                     
+#>  Adj. R²         │    0.02                                     
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -242,7 +242,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                     
 #>  R²                       │    0.22                                  
-#>  Adj.R²                   │    0.22                                  
+#>  Adj. R²                  │    0.22                                  
 #> 
 #>  Variable                 │  ω² 95% CI   
 #> ──────────────────────────┼──────────────
@@ -343,7 +343,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                              
 #>  R²              │    0.02                                           
-#>  Adj.R²          │    0.02                                           
+#>  Adj. R²         │    0.02                                           
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -410,7 +410,7 @@ table_regression(list(m_wellbeing, m_bmi))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                  1163                 
 #>  R²              │    0.02                  0.02              
-#>  Adj.R²          │    0.02                  0.02              
+#>  Adj. R²         │    0.02                  0.02              
 #> 
 #> Note. Linear regression models.
 #> Std. errors: classical (OLS).
@@ -496,7 +496,7 @@ same call takes `method = "coxph"` with a
 Set `nested = TRUE` to add **in-table change-statistic rows** (APA Table
 7.13 / Stata `esttab` / SPSS Model Summary convention). Each adjacent
 pair (M2 vs M1, M3 vs M2, …) contributes one column of change stats
-below `R² / Adj.R²`; the first model column gets en-dashes (no previous
+below `R² / Adj. R²`; the first model column gets en-dashes (no previous
 model to compare to).
 
 Hierarchical regression requires every model in the sequence to share
@@ -537,7 +537,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1163                  1163                   1163           
 #>  R²              │    0.02                  0.02                   0.04        
-#>  Adj.R²          │    0.02                  0.02                   0.04        
+#>  Adj. R²         │    0.02                  0.02                   0.04        
 #>  ΔR²             │     –                   +0.00                  +0.02        
 #>  F-change        │     –                   +2.28                 +28.13        
 #>  p (change)      │     –                     .132                  <.001       
@@ -621,7 +621,7 @@ table_regression(fit, vcov = "HC3")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: heteroskedasticity-robust (HC3).
@@ -679,7 +679,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1163                                               
 #>  R²              │    0.02                                            
-#>  Adj.R²          │    0.02                                            
+#>  Adj. R²         │    0.02                                            
 #> 
 #> Note. Linear regression.
 #> Std. errors: cluster-robust (CR2), clusters by region.
@@ -734,7 +734,7 @@ table_regression(fit, p_adjust = "bonferroni")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                 
 #>  R²                       │    0.22                              
-#>  Adj.R²                   │    0.22                              
+#>  Adj. R²                  │    0.22                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -798,7 +798,7 @@ table_regression(fit, keep = c("^smoking", "^bmi$"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 1163                                 
 #>  R²          │    0.23                              
-#>  Adj.R²      │    0.22                              
+#>  Adj. R²     │    0.22                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -823,7 +823,7 @@ table_regression(fit, drop = "^education")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1163                                 
 #>  R²              │    0.23                              
-#>  Adj.R²          │    0.22                              
+#>  Adj. R²         │    0.22                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -861,7 +861,7 @@ table_regression(fit, stars = TRUE)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                    
 #>  R²              │    0.02                                 
-#>  Adj.R²          │    0.02                                 
+#>  Adj. R²         │    0.02                                 
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -912,7 +912,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                 │ 1200                                 
 #>  R²                                │    0,22                              
-#>  Adj.R²                            │    0,22                              
+#>  Adj. R²                           │    0,22                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -936,7 +936,7 @@ table follows Stata’s `glm` default rather than
 title becomes family-aware (“Logistic regression”, “Poisson regression”,
 “Probit regression”, …) and the default fit-statistics block swaps in
 `nobs`, `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, and `AIC` instead
-of `R²` and `Adj.R²`.
+of `R²` and `Adj. R²`.
 
 We illustrate with a logistic regression of `smoking` on `sex`, `age`,
 and `education` from `sochealth`, reusing `sh` — the copy of `sochealth`

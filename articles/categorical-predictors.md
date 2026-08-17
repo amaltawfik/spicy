@@ -53,7 +53,7 @@ table_regression(fit)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1200                                 
 #>  R²                 │    0.01                              
-#>  Adj.R²             │    0.01                              
+#>  Adj. R²            │    0.01                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -99,7 +99,7 @@ table_regression(fit_u, keep = "employment_status")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                   │ 1200                                 
 #>  R²                  │    0.01                              
-#>  Adj.R²              │    0.01                              
+#>  Adj. R²             │    0.01                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -166,7 +166,7 @@ table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1200            1200            
 #>  R²                 │    0.00            0.01         
-#>  Adj.R²             │    0.00            0.01         
+#>  Adj. R²            │    0.00            0.01         
 #>  ΔR²                │     –             +0.01         
 #>  F-change           │     –             +3.13         
 #>  p (change)         │     –               .025        
@@ -229,7 +229,7 @@ table_regression(list(r0, r1), nested = TRUE, show_columns = c("b", "p"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                │ 1200            1200            
 #>  R²               │    0.00            0.01         
-#>  Adj.R²           │    0.00            0.00         
+#>  Adj. R²          │    0.00            0.00         
 #>  ΔR²              │     –             +0.00         
 #>  F-change         │     –             +0.89         
 #>  p (change)       │     –               .485        
@@ -276,7 +276,7 @@ table_regression(fit_srh, show_columns = c("b", "se", "p"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1180                 
 #>  R²                 │    0.35              
-#>  Adj.R²             │    0.34              
+#>  Adj. R²            │    0.34              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -393,7 +393,7 @@ table_regression(list(s_lin, s_fac), nested = TRUE,
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n             │ 1180            1180            
 #>  R²            │    0.33            0.35         
-#>  Adj.R²        │    0.33            0.34         
+#>  Adj. R²       │    0.33            0.34         
 #>  ΔR²           │     –             +0.01         
 #>  F-change      │     –            +12.96         
 #>  p (change)    │     –              <.001        
@@ -462,7 +462,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 1180                                 
 #>  R²          │    0.35                              
-#>  Adj.R²      │    0.34                              
+#>  Adj. R²     │    0.34                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -612,7 +612,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                  │ 1200                                 
 #>  R²                                 │    0.01                              
-#>  Adj.R²                             │    0.01                              
+#>  Adj. R²                            │    0.01                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).

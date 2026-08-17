@@ -398,7 +398,7 @@ table_regression(fit, style = "jama")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 32                                 
 #>  R²          │  0.83                              
-#>  Adj.R²      │  0.81                              
+#>  Adj. R²     │  0.81                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -415,7 +415,7 @@ table_regression(fit, style = "jama", p_digits = 4)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 32                                  
 #>  R²          │  0.83                               
-#>  Adj.R²      │  0.81                               
+#>  Adj. R²     │  0.81                               
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -433,7 +433,7 @@ table_regression(fit, style = spicy_style(decimal_mark = ",",
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 32                                  
 #>  R²          │  0,83                               
-#>  Adj.R²      │  0,81                               
+#>  Adj. R²     │  0,81                               
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
@@ -450,7 +450,7 @@ table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 32                                     
 #>  R²          │  0·83                                  
-#>  Adj.R²      │  0·81                                  
+#>  Adj. R²     │  0·81                                  
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).

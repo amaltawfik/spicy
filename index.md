@@ -486,7 +486,7 @@ table_regression(fit)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R²              │    0.02                              
-#>  Adj.R²          │    0.02                              
+#>  Adj. R²         │    0.02                              
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
