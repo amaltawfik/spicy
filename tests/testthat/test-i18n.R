@@ -331,6 +331,46 @@ test_that("every frozen linear-model key equals its English display label", {
   expect_identical(.lm_labels(c("Estimate", "p"), NULL), c("Estimate", "p"))
 })
 
+test_that("every frozen block identity equals its English caption", {
+  # Same contract as the three descriptive blocks above, for lot D. Here
+  # the key layer is a ROW identity rather than a column name: it is
+  # `coefs$parent_var`, the `factor_term` column of `broom::tidy()` and
+  # the `.variable` of the typed view, and nine sites match on it. Only
+  # this test can see an identity part company with its caption -- the
+  # identity is pinned by `expect_identical(tr$parent_var, ...)` tests,
+  # the caption by the console goldens, and both stay green through a
+  # drift.
+  expect_setequal(.REG_BLOCK_TERMS, names(.REG_BLOCK_STR_KEYS))
+  for (blk in .REG_BLOCK_TERMS) {
+    expect_identical(
+      .reg_block_label(blk),
+      spicy_str(.REG_BLOCK_STR_KEYS[[blk]]),
+      info = blk
+    )
+    expect_identical(.reg_block_label(blk), blk, info = blk)
+  }
+  # A total function of its input: a real factor variable is its own
+  # caption, and so is a vector or a missing value, so every header can
+  # be sent through it unguarded.
+  expect_identical(.reg_block_label("education"), "education")
+  expect_identical(.reg_block_label(NA_character_), NA_character_)
+  expect_identical(
+    .reg_block_label(c("Thresholds", "x")),
+    c("Thresholds", "x")
+  )
+
+  # The two annotation templates hold their punctuation, and a `%` in
+  # the DATA travels as an argument.
+  expect_identical(
+    .reg_factor_header_text("100%", NULL, "annotation", "a%sb"),
+    "100%: [ref: a%sb]"
+  )
+  expect_identical(
+    spicy_fmt("label_vs_annotation", "100%", "a%sb"),
+    "100% [vs a%sb]"
+  )
+})
+
 test_that("spicy_str() errors hard on an unknown key", {
   expect_error(spicy_str("no_such_key_exists"))
 })

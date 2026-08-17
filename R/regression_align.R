@@ -55,6 +55,34 @@
   !is.na(x) & x %in% .REG_BLOCK_TERMS
 }
 
+# The identity -> registry key map. One key per block: the block's
+# CAPTION is a separate layer from its identity, and only the caption is
+# ever translated.
+.REG_BLOCK_STR_KEYS <- c(
+  "Zero-inflation" = "label_block_zero_inflation",
+  "Zero hurdle" = "label_block_zero_hurdle",
+  "Dispersion" = "label_block_dispersion",
+  "Scale effects" = "label_block_scale_effects",
+  "Non-proportional effects" = "label_block_non_proportional",
+  "Thresholds" = "label_block_thresholds",
+  "Random effects" = "label_block_random_effects"
+)
+
+# The caption a reader sees for one `factor_term`. A block resolves
+# through the registry; anything else -- a real factor variable -- is its
+# own caption and comes back unchanged, so this is a total function of
+# its input and safe to call on every header.
+.reg_block_label <- function(term) {
+  if (
+    length(term) == 1L &&
+      !is.na(term) &&
+      term %in% names(.REG_BLOCK_STR_KEYS)
+  ) {
+    return(spicy_str(.REG_BLOCK_STR_KEYS[[term]]))
+  }
+  term
+}
+
 
 # Frame-aware sibling of compute_canonical_term_order(). Reads
 # frames[[i]]$coefs$term instead of extracts[[i]]$coefs$term. The

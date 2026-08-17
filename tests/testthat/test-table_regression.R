@@ -2243,3 +2243,42 @@ test_that("eta2 and omega2 CI cells are identical; reference row stays blank", {
     expect_false(any(grepl("[0-9]", df[[cl]][ref_rows])))
   }
 })
+
+
+# ============================================================================
+# the block caption layer
+# ============================================================================
+
+test_that("both bodies print the block caption, not the block identity", {
+  # At the English default the identity and the caption are the same
+  # string, so nothing else in the suite can tell whether either body
+  # reads the caption layer at all. Mocking the resolver makes the
+  # difference visible -- and it has to be visible in BOTH bodies: the
+  # console renders the character body, the six rich engines render the
+  # typed one, and those were two independent producers of this cell
+  # until `.reg_factor_header_text()`.
+  skip_if_not_installed("ordinal")
+  d <- data.frame(
+    y = factor(
+      rep(c("low", "mid", "high"), 30),
+      levels = c("low", "mid", "high"),
+      ordered = TRUE
+    ),
+    x = rep(seq(1, 9), 10),
+    stringsAsFactors = FALSE
+  )
+  fit <- ordinal::clm(y ~ x, data = d)
+  local_mocked_bindings(.reg_block_label = function(term) {
+    paste0("<", term, ">")
+  })
+
+  txt <- capture.output(print(table_regression(fit, show_thresholds = TRUE)))
+  expect_true(any(grepl("<Thresholds>:", txt, fixed = TRUE)))
+  expect_false(any(grepl(" Thresholds:", txt, fixed = TRUE)))
+
+  s <- as_structured(table_regression(fit, show_thresholds = TRUE))
+  expect_true(any(s$body$Variable == "<Thresholds>:"))
+  # The IDENTITY is untouched: the typed view still publishes the frozen
+  # English word, which is what user code matches on.
+  expect_true(any(s$body$.variable == "Thresholds"))
+})

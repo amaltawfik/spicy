@@ -599,7 +599,11 @@ build_structured_body <- function(
     ) {
       ref_lvl_flat <- ref_level_map[[rt$factor_term]]
       if (!is.na(ref_lvl_flat) && nzchar(ref_lvl_flat)) {
-        new_row$Variable <- paste0(new_row$Variable, " [vs ", ref_lvl_flat, "]")
+        new_row$Variable <- spicy_fmt(
+          "label_vs_annotation",
+          new_row$Variable,
+          ref_lvl_flat
+        )
         current_factor <- rt$factor_term
       }
     }
@@ -1579,19 +1583,16 @@ build_structured_body <- function(
   ref_level_map,
   labels
 ) {
-  # Mirrors build_factor_header_row()'s Variable cell content.
-  lbl <- resolve_label(factor_term, labels)
-  base <- paste0(lbl, ":")
-  if (
-    identical(reference_style, "annotation") &&
-      factor_term %in% names(ref_level_map)
-  ) {
-    ref_lvl <- ref_level_map[[factor_term]]
-    if (!is.na(ref_lvl) && nzchar(ref_lvl)) {
-      return(paste0(base, " [ref: ", ref_lvl, "]"))
-    }
+  # The typed body's arm of `.reg_factor_header_text()`. Only the lookup
+  # differs: the renderer receives the resolved level (NA when the map has
+  # no entry, assigned where it walks the term meta), this one holds the
+  # map and resolves it here.
+  ref_level <- if (factor_term %in% names(ref_level_map)) {
+    ref_level_map[[factor_term]]
+  } else {
+    NA_character_
   }
-  base
+  .reg_factor_header_text(factor_term, labels, reference_style, ref_level)
 }
 
 

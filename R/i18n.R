@@ -238,6 +238,28 @@
   fitstat_f_change = "F-change",
   fitstat_p_change = "p (change)",
 
+  # -- table_regression(): subordinate block captions ------------------------
+  # The English word is the block's IDENTITY (`coefs$parent_var`, matched
+  # by `.REG_BLOCK_TERMS`, published by `tidy()` and `as_structured()`)
+  # and stays frozen there. These keys name only the CAPTION a reader
+  # sees, resolved at render time by `.reg_block_label()`.
+  label_block_thresholds = "Thresholds",
+  label_block_non_proportional = "Non-proportional effects",
+  label_block_scale_effects = "Scale effects",
+  label_block_random_effects = "Random effects",
+  label_block_zero_inflation = "Zero-inflation",
+  label_block_zero_hurdle = "Zero hurdle",
+  label_block_dispersion = "Dispersion",
+  # One hole: the block's (or the factor variable's) caption. The colon
+  # is typography, not a word, and it belongs to the template because
+  # its spacing is language-dependent -- it closes up against the word
+  # in English and takes a thin space in French.
+  label_block_header = "%s:",
+  # Two holes: the header (or the row label) and the reference level. A
+  # `%` inside either is safe: both arrive as sprintf arguments.
+  label_ref_annotation = "%s [ref: %s]",
+  label_vs_annotation = "%s [vs %s]",
+
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = odds ratio",
   note_abbrev_irr = "IRR = incidence rate ratio",

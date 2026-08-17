@@ -337,7 +337,11 @@ render_regression_table <- function(
     ) {
       ref_lvl_flat <- ref_level_map[[rt$factor_term]]
       if (!is.na(ref_lvl_flat) && nzchar(ref_lvl_flat)) {
-        new_row$Variable <- paste0(new_row$Variable, " [vs ", ref_lvl_flat, "]")
+        new_row$Variable <- spicy_fmt(
+          "label_vs_annotation",
+          new_row$Variable,
+          ref_lvl_flat
+        )
         annotation_lifted_for <- c(annotation_lifted_for, rt$factor_term)
       }
     }
@@ -1841,9 +1845,22 @@ format_fit_stat_value <- function(
 
 # ---- Factor header row ---------------------------------------------------
 
-build_factor_header_row <- function(
+# THE producer of a factor / block header's Variable cell.
+#
+# Two bodies print this string: the character body the console renders
+# (build_factor_header_row(), just below) and the typed body the six rich
+# engines read (.resolve_factor_header_label(), regression_structured.R).
+# They used to build it independently -- the comment on the second one
+# said "Mirrors build_factor_header_row()'s Variable cell content", which
+# is the whole problem: a mirror is a copy that nothing keeps true. They
+# agree by construction now.
+#
+# Resolution order, the package-wide rule for a display label: a user
+# override for this key, then the registry, then the key itself. The
+# `%` in a user label or in a reference level is safe -- both travel as
+# sprintf ARGUMENTS, never as the template.
+.reg_factor_header_text <- function(
   factor_term,
-  col_spec,
   labels,
   reference_style = "row",
   ref_level = NA_character_
@@ -1851,9 +1868,9 @@ build_factor_header_row <- function(
   display <- if (!is.null(labels) && factor_term %in% names(labels)) {
     labels[[factor_term]]
   } else {
-    factor_term
+    .reg_block_label(factor_term)
   }
-  header <- paste0(display, ":")
+  header <- spicy_fmt("label_block_header", display)
   # Q5 \u2013 annotation mode bakes "[ref: <level>]" into the factor
   # header so the reference level remains readable even though the
   # ref ROW was dropped during alignment.
@@ -1862,8 +1879,24 @@ build_factor_header_row <- function(
       !is.na(ref_level) &&
       nzchar(ref_level)
   ) {
-    header <- paste0(header, " [ref: ", ref_level, "]")
+    return(spicy_fmt("label_ref_annotation", header, ref_level))
   }
+  header
+}
+
+build_factor_header_row <- function(
+  factor_term,
+  col_spec,
+  labels,
+  reference_style = "row",
+  ref_level = NA_character_
+) {
+  header <- .reg_factor_header_text(
+    factor_term,
+    labels,
+    reference_style,
+    ref_level
+  )
   cells <- list(Variable = header)
   for (cs in col_spec) {
     cells[[cs$col_name]] <- ""
