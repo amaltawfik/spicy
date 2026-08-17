@@ -104,7 +104,6 @@ inline <- function(
   model = NULL
 ) {
   s <- as_structured(x)
-  body <- s$body
   formatted <- .format_structured_to_string_body(s)
 
   var_chr <- .inline_variable_chr(rlang::enquo(variable))

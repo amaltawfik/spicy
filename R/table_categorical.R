@@ -3499,11 +3499,9 @@ table_categorical <- function(
     ci_headers <- c(spicy_str("header_ci_lower"), spicy_str("header_ci_upper"))
     top_header_flat_ex <- c(top_header_flat, ci_headers)
     bot_header_ex <- c(bot_header, "", "")
-    top_header_span_ex <- c(top_header_span, ci_headers)
   } else {
     top_header_flat_ex <- top_header_flat
     bot_header_ex <- bot_header
-    top_header_span_ex <- top_header_span
   }
 
   # ---------------- clipboard matrix ----------------

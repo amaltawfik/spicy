@@ -89,14 +89,11 @@ print.spicy_continuous_lm_table <- function(x, ...) {
         decimal_mark = decimal_mark
       )
     }
-    right_cols <- integer(0)
     align_center <- numeric_cols
   } else if (identical(align, "center")) {
-    right_cols <- integer(0)
     align_center <- setdiff(seq_along(display_df), align_left)
   } else {
-    # "right": all numeric columns right-aligned.
-    right_cols <- setdiff(seq_along(display_df), align_left)
+    # "right": all numeric columns right-aligned, so nothing is centred.
     align_center <- integer(0)
   }
 
