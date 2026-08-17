@@ -23,7 +23,10 @@ tests/testthat/testthat-problems.rds
 # removes it. `git add -A` then commits the failure as if it were the
 # reference -- twice during the i18n campaign. The accepted snapshot
 # is <name>.md; the .new.md is never an artifact worth versioning.
-tests/testthat/_snaps/*.new.md
+# `**` also matches zero directories, so this covers both the flat
+# files and the `_snaps/<variant>/` subdirectories testthat creates for
+# `expect_snapshot(variant = )` and `expect_snapshot_file()`.
+tests/testthat/_snaps/**/*.new.md
 # Session-generated working notes (specs, findings, drafts) stay
 # local; the tracked dev/ scripts and design docs remain versioned.
 dev/*_spec.md
