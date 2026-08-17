@@ -229,7 +229,7 @@ inline <- function(
 # single-model table keeps every column; on a multi-model table the
 # choice is required as soon as a token is ambiguous across models.
 .inline_model_cols <- function(s, model) {
-  all_cols <- setdiff(names(s$col_meta), "Variable")
+  all_cols <- setdiff(names(s$col_meta), .REG_KEY_VARIABLE)
   spans <- s$spanners
   if (is.null(model)) {
     return(all_cols)
@@ -315,7 +315,7 @@ inline <- function(
   ]
   if (length(hits) == 0L) {
     tokens <- unique(vapply(
-      setdiff(names(s$col_meta), "Variable"),
+      setdiff(names(s$col_meta), .REG_KEY_VARIABLE),
       function(nm) s$col_meta[[nm]]$token %||% "",
       character(1)
     ))

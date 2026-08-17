@@ -173,6 +173,18 @@
 # index (spanners, ci_pairs, engine loops) keeps its meaning.
 .STRUCT_META_COLS <- c(".variable", ".level", ".row_role", ".indent")
 
+# The label column's KEY. It is a rendering contract -- the flextable
+# `col_key`, the gt column id, the `col_meta` index, the first column of
+# every `as_structured()` body -- and it is the only value column key
+# that carries no `col_meta` entry, because it holds no statistic. Its
+# HEADER is `header_variable`, resolved at render time.
+#
+# The four families share the string and each names it for its own file
+# set (`.CAT_KEY_VARIABLE`, `.CON_KEY_VARIABLE`, `.LM_KEY_VARIABLE`); the
+# two `.struct_*` helpers just below are shared by all four, and read
+# this one.
+.REG_KEY_VARIABLE <- "Variable"
+
 # The row roles a v3 body may carry. Regression roles first, then the
 # three the descriptive families add (R/tables_structured.R). The
 # vocabulary is EXTENDED, never re-worded: a role says what a row IS,
@@ -204,13 +216,13 @@
 # that iterates "the numeric columns" goes through this, so adding an
 # identity column never has to be reflected in a loop bound again.
 .struct_value_cols <- function(body) {
-  setdiff(names(body), c("Variable", .STRUCT_META_COLS))
+  setdiff(names(body), c(.REG_KEY_VARIABLE, .STRUCT_META_COLS))
 }
 
 # The body as engines lay it out: the label column plus the value
 # columns, identity columns dropped.
 .struct_display_body <- function(body) {
-  body[, c("Variable", .struct_value_cols(body)), drop = FALSE]
+  body[, c(.REG_KEY_VARIABLE, .struct_value_cols(body)), drop = FALSE]
 }
 
 # Row indices whose label is displayed indented (factor levels, the

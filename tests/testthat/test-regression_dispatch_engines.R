@@ -981,3 +981,30 @@ test_that("output = 'excel' renders the en-dash on class-alien fit-stat cells", 
   expect_false("\u2013" %in% n_vals)
   expect_identical(sum(!is.na(suppressWarnings(as.numeric(n_vals)))), 2L)
 })
+
+
+test_that("the gt caption of column 1 keeps its left-alignment rule", {
+  # The producer of a column spanner's id and the `tab_style()` that
+  # addresses column 1's spanner sit two hundred lines apart and used to
+  # derive the id independently -- one from the caption, one from the
+  # column key. They agreed only while those were the same string.
+  # `gt::cells_column_spanners()` aborts on an id no spanner carries
+  # (`resolver_stop_on_character`), so the divergence would take
+  # `output = "gt"` down entirely rather than quietly dropping a rule.
+  # This states the invariant that keeps it impossible: every spanner a
+  # style addresses is a spanner the table actually has.
+  skip_if_not_installed("gt")
+  for (f in list(
+    lm(mpg ~ wt, data = mt),
+    lm(mpg ~ wt + cyl, data = mt)
+  )) {
+    g <- table_regression(f, output = "gt")
+    ids <- as.data.frame(g$`_spanners`)$spanner_id
+    styles <- as.data.frame(g$`_styles`)
+    addressed <- unique(styles$grpname[styles$locname == "columns_groups"])
+    expect_true(all(addressed %in% ids))
+    col1 <- ids[startsWith(ids, "col_span_1_")]
+    expect_length(col1, 1L)
+    expect_true(col1 %in% addressed)
+  }
+})

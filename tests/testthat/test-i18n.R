@@ -371,6 +371,27 @@ test_that("every frozen block identity equals its English caption", {
   )
 })
 
+test_that("every frozen regression column key equals its display label", {
+  # The label column is the one body column with no `col_meta` entry, so
+  # its header cannot come from the display_label layer the other columns
+  # use: six sites resolve it from the registry instead, and only this
+  # test can see the key and the header part company.
+  expect_identical(.REG_KEY_VARIABLE, spicy_str("header_variable"))
+
+  # `.lookup_display_label()` is a total function of its input: an
+  # unknown column comes back as its own key, so a hand-built body still
+  # exports.
+  expect_identical(
+    .lookup_display_label("no such column", list()),
+    "no such column"
+  )
+  expect_identical(.lookup_display_label(.REG_KEY_VARIABLE, list()), "Variable")
+  expect_identical(
+    .lookup_display_label("B", list(B = list(display_label = "Beta"))),
+    "Beta"
+  )
+})
+
 test_that("spicy_str() errors hard on an unknown key", {
   expect_error(spicy_str("no_such_key_exists"))
 })

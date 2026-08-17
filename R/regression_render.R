@@ -427,7 +427,7 @@ render_regression_table <- function(
   # the print engine via the `align` attribute and applied at
   # output-dispatch time.
   if (identical(align, "decimal")) {
-    data_cols <- setdiff(names(body), "Variable")
+    data_cols <- setdiff(names(body), .REG_KEY_VARIABLE)
     # Detect CI-only columns by inspecting the col_spec: a CI col
     # has fields == c("ci_low", "ci_high"). Map col_name -> field-set
     # for the per-column dispatch.

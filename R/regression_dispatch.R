@@ -260,6 +260,14 @@ output_long <- function(aligned) {
   if (!is.null(m_ll)) {
     return(m_ll$display_label %||% nm)
   }
+  # The label column is the one body column with no `col_meta` entry:
+  # it carries no statistic, so nothing ever wrote one for it. Its
+  # header comes from the registry, not from its key -- without this
+  # the console, the Excel sheet and the clipboard would each print
+  # the frozen key while every other engine printed the label.
+  if (identical(nm, .REG_KEY_VARIABLE)) {
+    return(spicy_str("header_variable"))
+  }
   nm
 }
 
@@ -436,6 +444,12 @@ output_tinytable <- function(rendered) {
   # keeps the rule arithmetic below true by construction.
   # (CI columns were already renamed to LL / UL above.)
   col_label <- function(j) {
+    # Column 1 is the label column: no `col_meta` entry, header from
+    # the registry. Both callers below reach it -- the no-spanner
+    # branch as a column label, the spanner branch as a 1-wide group.
+    if (j == 1L) {
+      return(spicy_str("header_variable"))
+    }
     # Look up `col_meta` by the ORIGINAL prefixed col name (e.g.
     # "Step 1: p.2") because `col_meta` is keyed on the structured
     # col names, NOT on the post-strip body colnames. Use the
@@ -799,6 +813,16 @@ output_gt <- function(rendered) {
     nm
   }
   # nocov end
+  # The id of column 1's spanner, captured where it is MADE. A
+  # `tab_style()` two hundred lines below has to address that spanner to
+  # flush its caption left, and used to rebuild the id from
+  # `orig_names[1L]`. That worked only while the caption and the key
+  # were the same string: the moment column 1's label comes from the
+  # registry the two derivations part, gt does not error on an unknown
+  # spanner id, and the caption silently re-centres over a left-aligned
+  # column. `for` does not open a scope in R, so a plain `<-` writes
+  # this frame's binding.
+  col1_span_id <- NA_character_
   for (j in seq_along(orig_names)) {
     if (j %in% ci_cols_set) {
       next
@@ -809,17 +833,21 @@ output_gt <- function(rendered) {
     # `display_label`.
     lbl <- struct$col_meta[[orig_names[j]]]$display_label
     bare <- if (j == 1L) {
-      orig_names[1L]
+      spicy_str("header_variable")
     } else if (!is.null(lbl) && nzchar(lbl)) {
       lbl
     } else {
       strip_prefix(orig_names[j]) # nocov -- legacy: display_label always set
     }
+    span_id <- paste0("col_span_", j, "_", make.names(bare))
+    if (j == 1L) {
+      col1_span_id <- span_id
+    }
     tbl <- gt::tab_spanner(
       tbl,
       label = bare,
       columns = orig_names[j],
-      id = paste0("col_span_", j, "_", make.names(bare))
+      id = span_id
     )
   }
   # CI 2-wide spanner ("95% CI") over each LL/UL pair.
@@ -1013,9 +1041,7 @@ output_gt <- function(rendered) {
   tbl <- gt::tab_style(
     tbl,
     style = gt::cell_text(align = "left", weight = "normal"),
-    locations = gt::cells_column_spanners(
-      spanners = paste0("col_span_1_", make.names(orig_names[1L]))
-    )
+    locations = gt::cells_column_spanners(spanners = col1_span_id)
   )
   # Belt-and-braces CI bracket: in addition to the inline
   # `border-top: 1px #333333` applied to the LL / UL column-labels
@@ -1462,7 +1488,11 @@ output_flextable <- function(rendered) {
   # carries the labels themselves.
   display_labels <- as.list(orig_names)
   names(display_labels) <- orig_names
-  display_labels[[orig_names[1L]]] <- if (has_ci_spanner) "" else "Variable"
+  display_labels[[orig_names[1L]]] <- if (has_ci_spanner) {
+    ""
+  } else {
+    spicy_str("header_variable")
+  }
   for (j in seq_len(n_cols)) {
     if (j == 1L) {
       next
@@ -1525,7 +1555,7 @@ output_flextable <- function(rendered) {
     sub_key_at_col <- paste0("col", seq_len(n_cols))
     for (j in seq_len(n_cols)) {
       if (j == 1L) {
-        sub_label_at_col[j] <- "Variable"
+        sub_label_at_col[j] <- spicy_str("header_variable")
       } else if (j %in% ci_col_set) {
         for (k in seq_along(ci_spanners)) {
           if (j %in% ci_spanners[[k]]$cols) {
