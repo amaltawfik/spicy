@@ -408,9 +408,11 @@
   # Index-based model reference: frame-layer messages raised before the
   # display labels exist (e.g. the geeglm cluster refusal).
   note_model_prefix = "Model %d: %s",
-  # The name of a model with no user-supplied label; also what a footer
-  # line prints for it, so custom `model_labels` substitute cleanly.
-  note_model_name = "Model %d",
+  # The name of a model with no user-supplied label. It is the DEFAULT
+  # column spanner as well as what a footer line prints for it, so
+  # custom `model_labels` substitute cleanly in both places -- which
+  # is why it is `label_`, not `note_`. One hole: the model index.
+  label_model_name = "Model %d",
   # Footer per-model lines cite the label the column spanners display
   # (.model_line() in regression_titlefooter.R): "Baseline: ..." when
   # the user labelled the models, "Model 1: ..." otherwise.

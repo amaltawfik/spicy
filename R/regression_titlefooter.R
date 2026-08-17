@@ -174,7 +174,7 @@ capitalize_first <- function(s) {
 # the dispatcher stamped one (user-supplied `model_labels` / list
 # names), the historical "Model <idx>" otherwise.
 .model_ref <- function(frames, idx) {
-  frames[[idx]]$info$model_label %||% spicy_fmt("note_model_name", idx)
+  frames[[idx]]$info$model_label %||% spicy_fmt("label_model_name", idx)
 }
 
 # One per-model footer line: "<label>: <text>". The default label IS

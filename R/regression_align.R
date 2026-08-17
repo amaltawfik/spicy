@@ -555,7 +555,7 @@ pivot_aligned_wide <- function(
   model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
   if (is.null(model_labels)) {
-    model_labels <- paste0("Model ", seq_len(n_models))
+    model_labels <- spicy_fmt("label_model_name", seq_len(n_models))
   } else if (length(model_labels) != n_models) {
     spicy_abort(
       sprintf(

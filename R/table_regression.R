@@ -2965,7 +2965,7 @@ table_regression <- function(
   } else if (!is.null(names(models)) && any(nzchar(names(models)))) {
     nms <- names(models)
     missing_idx <- which(!nzchar(nms))
-    nms[missing_idx] <- paste0("Model ", missing_idx)
+    nms[missing_idx] <- spicy_fmt("label_model_name", missing_idx)
     nms
   } else {
     NULL

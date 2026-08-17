@@ -142,7 +142,7 @@ render_regression_table <- function(
     model_labels <- if (n_models == 1L) {
       ""
     } else {
-      paste0("Model ", seq_len(n_models))
+      spicy_fmt("label_model_name", seq_len(n_models))
     }
   }
   if (length(model_labels) != n_models) {
