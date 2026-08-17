@@ -180,7 +180,7 @@ test_that("AME extraction triggered by ame_ci / ame_p / ame_se (not only 'ame')"
       0L,
       label = sprintf(
         "show_columns = c(%s)",
-        paste(shQuote(cols), collapse = ", ")
+        paste(spicy:::.quote_val(cols), collapse = ", ")
       )
     )
   }
