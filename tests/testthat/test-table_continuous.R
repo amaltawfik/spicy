@@ -146,13 +146,52 @@ test_that("table_continuous n=1 gives NA for sd and CI", {
   expect_true(is.na(out$ci_upper))
 })
 
-test_that("table_continuous display uses -- for NA values", {
+test_that("the undefined glyph sets the width of the column it lands in", {
+  # Decision 23 replaced a two-character placeholder with a
+  # one-character one, and the placeholder takes part in the
+  # integer-part width `decimal_align_strings()` computes for its
+  # column. A column whose widest integer part WAS the placeholder
+  # therefore tightens by one character and every number in it shifts.
+  # That is a consequence of the decision, not a defect -- but nothing
+  # else in the suite renders a `by` table with an undefined cell, so
+  # without this the next change to the aligner moves it again unseen.
+  d <- data.frame(x = c(1, 2, 3, 42), g = factor(c("A", "A", "A", "B")))
+  line_width <- function(w) {
+    withr::with_options(
+      list(width = w),
+      max(nchar(capture.output(print(table_continuous(d, by = g)))))
+    )
+  }
+  expect_identical(
+    vapply(c(200L, 80L, 60L), line_width, integer(1)),
+    c(93L, 73L, 56L)
+  )
+
+  # And the mechanism, independent of the absolute layout: with a
+  # two-character placeholder the same table is exactly one character
+  # wider at every console width. This is what says the glyph is
+  # load-bearing for the width, rather than pinning three numbers that
+  # an unrelated layout change may legitimately move.
+  orig <- spicy_str
+  local_mocked_bindings(
+    spicy_str = function(key, ...) {
+      if (identical(key, "cell_undefined")) "--" else orig(key, ...)
+    }
+  )
+  expect_identical(
+    vapply(c(200L, 80L, 60L), line_width, integer(1)),
+    c(94L, 74L, 57L)
+  )
+})
+
+test_that("table_continuous display uses the undefined glyph for NA", {
   df <- data.frame(x = 42)
   out <- table_continuous(df)
   display <- spicy:::build_display_df(out, 2L, ".", 0.95)
-  expect_equal(display$SD[1], "--")
-  expect_equal(display[["95% CI LL"]][1], "--")
-  expect_equal(display[["95% CI UL"]][1], "--")
+  # Decision 23: the en dash, from `cell_undefined`, in every family.
+  expect_equal(display$SD[1], "–")
+  expect_equal(display[["95% CI LL"]][1], spicy_str("cell_undefined"))
+  expect_equal(display[["95% CI UL"]][1], spicy_str("cell_undefined"))
 })
 
 # ---- column selection ----
@@ -3493,7 +3532,7 @@ test_that("med_ci is the exact order-statistic interval, NA at small n", {
       show_columns = c("med", "med_ci")
     )
   )
-  expect_true(any(grepl("--", printed, fixed = TRUE)))
+  expect_true(any(grepl("–", printed, fixed = TRUE)))
   expect_true(any(grepl("too small for this level", printed, fixed = TRUE)))
 })
 

@@ -1020,7 +1020,7 @@ build_body_row <- function(
       isTRUE(long_row$is_reference[1L]) &&
         !identical(cs$token, "n_events")
     ) {
-      cells[[cs$col_name]] <- "\u2013" # en-dash
+      cells[[cs$col_name]] <- spicy_str("cell_undefined")
       next
     }
     # Variance-component cells no number expresses (see
@@ -1030,7 +1030,7 @@ build_body_row <- function(
     # build_structured_body(), so the character body and the typed body
     # can no longer disagree about where the dash goes.
     if (.vc_cell_undefined(long_row, cs, re_columns)) {
-      cells[[cs$col_name]] <- "\u2013"
+      cells[[cs$col_name]] <- spicy_str("cell_undefined")
       next
     }
     cells[[cs$col_name]] <- format_cell_value(
@@ -1166,7 +1166,7 @@ format_cell_value <- function(
     est <- long_row$estimate[1]
     df_val <- long_row$df[1]
     if (is.na(est)) {
-      return("\u2013")
+      return(spicy_str("cell_undefined"))
     }
     val_str <- format_number(est, digits_to_use, decimal_mark)
     df_str <- if (is.na(df_val)) "" else paste0(" (", as.integer(df_val), ")")
@@ -1197,7 +1197,7 @@ format_cell_value <- function(
     lo <- long_row$ci_low[1]
     hi <- long_row$ci_high[1]
     if (is.na(lo) || is.na(hi)) {
-      return("\u2013")
+      return(spicy_str("cell_undefined"))
     }
     ci_sep <- ci_bracket_separator(decimal_mark)
     ci_brackets <- .style_ci_brackets()
@@ -1281,7 +1281,7 @@ format_cell_value <- function(
     return(format_number(val, digits_to_use, decimal_mark))
   }
   if (is.na(val)) {
-    return("\u2013")
+    return(spicy_str("cell_undefined"))
   }
 
   if (field == "p_value") {
@@ -1811,7 +1811,7 @@ format_fit_stat_value <- function(
     if (identical(token, "n_events")) {
       return("")
     }
-    return("\u2013")
+    return(spicy_str("cell_undefined"))
   }
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {

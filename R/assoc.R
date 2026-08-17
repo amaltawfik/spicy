@@ -162,7 +162,7 @@ print.spicy_assoc_detail <- function(
     function(nm) {
       v <- x[[nm]]
       if (is.na(v)) {
-        return("--")
+        return(spicy_str("cell_undefined"))
       }
       if (nm == "p_value") {
         # APA-style: `<.001` / `.045`, no leading zero. Same helper
@@ -1997,7 +1997,11 @@ print.spicy_assoc_table <- function(
   ...
 ) {
   fmt_num <- function(v) {
-    ifelse(is.na(v), "--", formatC(v, format = "f", digits = digits))
+    ifelse(
+      is.na(v),
+      spicy_str("cell_undefined"),
+      formatC(v, format = "f", digits = digits)
+    )
   }
   # APA-style p-value via the shared `format_p_value()` helper:
   # `<.001` / `.045`, no leading zero. `vapply` rather than `ifelse`
@@ -2007,7 +2011,7 @@ print.spicy_assoc_table <- function(
       v,
       function(p) {
         if (is.na(p)) {
-          "--"
+          spicy_str("cell_undefined")
         } else {
           format_p_value(p, decimal_mark = ".", digits = 3L)
         }

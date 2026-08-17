@@ -869,12 +869,18 @@ test_that("somers_d warns when denom = 0", {
   expect_warning(somers_d(tab, "column"), "undefined")
 })
 
-test_that("print.spicy_assoc_detail formats NA as --", {
+test_that("print.spicy_assoc_detail formats NA as the undefined glyph", {
   tab <- matrix(c(5L, 0L, 3L, 2L), 2, 2)
   class(tab) <- "table"
   res <- yule_q(tab, detail = TRUE)
   out <- capture.output(print(res))
-  expect_true(any(grepl("--", out)))
+  # Decision 23: one glyph for the package, the en dash, from the
+  # registry. Pinned both ways -- the key so the site keeps reading
+  # it, the literal so the DECISION is what a reader of this test
+  # sees.
+  expect_true(any(grepl(spicy_str("cell_undefined"), out, fixed = TRUE)))
+  expect_true(any(grepl("–", out, fixed = TRUE)))
+  expect_false(any(grepl("--", out, fixed = TRUE)))
 })
 
 test_that("print.spicy_assoc_detail formats small p-values in APA style (<.001)", {

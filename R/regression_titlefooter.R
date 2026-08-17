@@ -1722,7 +1722,9 @@ build_singular_footer_block_from_frames <- function(frames) {
       "the boundary (0); their Wald SE and CI are omitted."
     ))
   }
-  "Rank-deficient model: dropped coefficient(s) shown as \u2013."
+  # The note names the glyph the cells carry, so it takes it as an
+  # argument rather than re-typing it.
+  spicy_fmt("note_rank_deficient", spicy_str("cell_undefined"))
 }
 
 .is_mixed_frame <- function(frame) {

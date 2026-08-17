@@ -303,6 +303,8 @@
   # Two holes: the block caption, then the censoring distribution (an
   # identifier from the fit).
   note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",
+  # One hole: the undefined-cell glyph the note is pointing at.
+  note_rank_deficient = "Rank-deficient model: dropped coefficient(s) shown as %s.",
 
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = odds ratio",
@@ -412,7 +414,14 @@
   test_welch_oneway_anova = "Welch one-way ANOVA",
   note_group_comparison = "Group comparison: %s.",
   note_group_comparison_item = "%s (%s)",
-  cell_undefined = "--",
+  # The cell of a statistic that applies but has no number (an SD on
+  # n = 1, an interval on an empty group) and of a reference level.
+  # One glyph for the whole package: U+2013, the Chicago / NEJM / JAMA
+  # tabular convention (decision 23). The regression family rendered it
+  # already and now reads it from here too, so the descriptive families
+  # and the typed view can no longer show a different mark from the one
+  # `.cell_to_string()` prints.
+  cell_undefined = "\u2013",
   # A gloss names the header it glosses: the header travels as an
   # ARGUMENT, resolved from the very key the column header uses, so a
   # translated header can never leave the note quoting the English one.

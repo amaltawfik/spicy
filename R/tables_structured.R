@@ -553,15 +553,15 @@
       #
       # Recognised through the REGISTRY, never through a literal. Both
       # sides of this comparison are written by `build_display_df()`
-      # from `spicy_str("cell_undefined")`, so a literal here holds only
-      # while the registry value happens to be "--". The day it moves,
-      # a literal would silently drop `cell_status` for every consumer
-      # of `as_structured()` AND drop the display override with it --
-      # and the typed view would then fall through to the shared
-      # renderer, which prints its own, DIFFERENT undefined glyph
-      # (U+2013, `.cell_to_string()`). This override is the only thing
-      # holding those two glyphs together; unifying them is a rendering
-      # change for the regression family and is not made here.
+      # from `spicy_str("cell_undefined")`; a literal here would hold
+      # only while the registry value happened to match it, and the day
+      # it moved it would silently drop `cell_status` for every consumer
+      # of `as_structured()` and the display override with it.
+      #
+      # The glyph is now one key for the whole package (decision 23), so
+      # this override no longer has to reconcile two of them: the shared
+      # renderer `.cell_to_string()` prints the same `cell_undefined`
+      # mark this branch recognises.
       if (identical(shown_str, spicy_str("cell_undefined"))) {
         status[[nm]] <- "undefined"
         display[[nm]] <- shown_str

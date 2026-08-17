@@ -301,11 +301,11 @@
       assoc_measures(tab)
     Output
       Measure                            Estimate     SE  CI lower  CI upper     p 
-      Cramer's V                            0.154     --     0.000     0.340  .304 
-      Contingency Coefficient               0.152     --        --        --  .304 
+      Cramer's V                            0.154      –     0.000     0.340  .304 
+      Contingency Coefficient               0.152      –         –         –  .304 
       Lambda symmetric                      0.050  0.037     0.000     0.123  .179 
       Lambda R|C                            0.100  0.073     0.000     0.244  .174 
-      Lambda C|R                            0.000  0.000     0.000     0.000    -- 
+      Lambda C|R                            0.000  0.000     0.000     0.000     – 
       Goodman-Kruskal's Tau R|C             0.024  0.030     0.000     0.082  .424 
       Goodman-Kruskal's Tau C|R             0.008  0.011     0.000     0.030  .454 
       Uncertainty Coefficient symmetric     0.014  0.018     0.000     0.050  .430 
@@ -323,5 +323,5 @@
       cramer_v(tab, detail = TRUE)
     Output
       Estimate  SE  CI lower  CI upper     p
-         0.154  --     0.000     0.340  .304
+         0.154   –     0.000     0.340  .304
 

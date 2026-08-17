@@ -658,6 +658,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Minor improvements
 
+* A cell with no number -- a statistic that does not apply to the row, a
+  reference level -- prints an en dash (`–`) in every table.
+  `table_continuous()`, `assoc_measures()` and the association printers
+  used `--`; `table_regression()` already used the en dash. The typed
+  view of `as_structured()` carries it in `display_cells`. Where that
+  placeholder was what set a column's width, the column tightens by one
+  character.
 * `excel_sheet` defaults to `NULL` in the four table functions and
   resolves to the same sheet names as before (`"Regression"`,
   `"Categorical"`, `"Descriptives"`, `"Linear models"`). Behaviour is

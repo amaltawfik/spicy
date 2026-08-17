@@ -1708,7 +1708,7 @@ build_structured_body <- function(
   # SE of a variance component, a fit statistic undefined for this
   # model's class in a mixed table).
   if (nzchar(status)) {
-    return("\u2013")
+    return(spicy_str("cell_undefined"))
   }
   cfmt <- .resolve_cell_fmt(col_meta_entry, row_idx)
   if (is.na(val)) {
@@ -1775,10 +1775,10 @@ build_structured_body <- function(
 .pad_for_decimal_align <- function(body, struct) {
   decimal_mark <- struct$format_spec$decimal_mark
   fig_space <- "\u2007" # U+2007 figure space (digit-width)
-  na_dash <- "\u2013" # U+2013 en dash (Phase 7c14 typography:
-  # was em dash before; en dash is the
-  # Chicago / NEJM / JAMA tabular "not
-  # applicable" glyph).
+  # The undefined / reference glyph, from the registry: the padder has
+  # to recognise the very mark the cell formatter wrote (Chicago /
+  # NEJM / JAMA tabular "not applicable").
+  na_dash <- spicy_str("cell_undefined")
 
   for (j in seq_along(body)) {
     if (j == 1L) {
