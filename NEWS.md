@@ -346,7 +346,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 * `inline()` refuses to cite an interval whose cells are a reference
   level or an undefined statistic, as it already did for `b`, `se` and
-  `p` and as `?inline` documents; it used to return `[–, –]`.
+  `p` and as `?inline` documents; it used to return `[–, –]`. An
+  interval whose bounds are simply blank -- `column = "assoc_ci"` on a
+  level row of `table_categorical()`, where the association sits on the
+  variable row -- refuses with the same wording as the scalar token
+  instead of returning `[, ]`.
 * `table_continuous_lm(by = , output = "gt")` renders when two `by`
   levels differ only in punctuation or in a non-ASCII character
   (`"a b"` / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and

@@ -277,3 +277,53 @@ test_that("{ci_label} names the interval the pattern quotes", {
     "^3.90 \\(95% CI \\[2.14, 5.65\\]\\)$"
   )
 })
+
+
+test_that("an interval with blank bounds refuses like the scalar does", {
+  d <- spicy::sochealth
+  ct <- suppressWarnings(table_categorical(
+    d,
+    select = sex,
+    by = smoking,
+    assoc_ci = TRUE
+  ))
+  # The association measure and its interval sit on the VARIABLE row;
+  # a level row carries neither. `{assoc}` refused already, because the
+  # scalar path checks for a blank cell -- `{assoc_ci}` composed the
+  # brackets around two blanks and returned "[, ]". The lot D status
+  # guard could not catch it: a blank bound carries no status at all.
+  err <- tryCatch(
+    inline(ct, sex, "Male", column = "assoc_ci"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "The \"assoc_ci\" cell of this row is empty in the table.",
+    fixed = TRUE
+  )
+  # Word for word the scalar refusal on the same row: one producer.
+  err_scalar <- tryCatch(
+    inline(ct, sex, "Male", column = "assoc"),
+    error = function(e) e
+  )
+  expect_identical(
+    sub("assoc_ci", "assoc", conditionMessage(err), fixed = TRUE),
+    conditionMessage(err_scalar)
+  )
+  # In a pattern too, where the dash used to be pasted into a sentence.
+  expect_error(
+    inline(ct, sex, "Male", "{assoc} ({assoc_ci})"),
+    class = "spicy_invalid_input"
+  )
+
+  # A populated interval is untouched, on both families.
+  tbl <- .il_quiet(table_regression(.il_fit()))
+  expect_match(inline(tbl, age, column = "ci"), "^[[]")
+  two <- suppressWarnings(table_continuous(
+    d,
+    select = bmi,
+    show_columns = c("m", "ci", "med", "med_ci")
+  ))
+  expect_match(inline(two, bmi, column = "med_ci"), "^[[]")
+})

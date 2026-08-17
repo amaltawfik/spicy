@@ -317,6 +317,24 @@ inline <- function(
   invisible(NULL)
 }
 
+# Refuse a cell the table leaves BLANK -- no number, and no status
+# saying why. The scalar path always had this guard; the interval path
+# did not, so a token whose bounds are empty on this row composed the
+# brackets around nothing and returned "[, ]". One producer, so the two
+# paths cannot word the same refusal differently.
+.inline_refuse_empty <- function(txt, token) {
+  if (!nzchar(txt)) {
+    spicy_abort(
+      sprintf(
+        "The %s cell of this row is empty in the table.",
+        .quote_val(token)
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
+
 # One formatted cell by (row, token), the interval composed like the
 # console composes it.
 .inline_cell <- function(s, formatted, row, token, cols) {
@@ -367,6 +385,12 @@ inline <- function(
     }
     lo <- trimws(formatted[[pair[1L]]][row])
     hi <- trimws(formatted[[pair[2L]]][row])
+    # A blank bound carries no status to refuse on, so the status guard
+    # above lets it through: an association interval on a LEVEL row of
+    # `table_categorical()` (the measure sits on the variable row) used
+    # to compose as "[, ]".
+    .inline_refuse_empty(lo, token)
+    .inline_refuse_empty(hi, token)
     br <- .style_ci_brackets()
     sep <- .style_ci_sep(
       ci_bracket_separator(s$format_spec$decimal_mark)
@@ -392,15 +416,7 @@ inline <- function(
   }
   .inline_refuse_status(.struct_cell_status(s, hits)[row], token)
   out <- trimws(formatted[[hits]][row])
-  if (!nzchar(out)) {
-    spicy_abort(
-      sprintf(
-        "The %s cell of this row is empty in the table.",
-        .quote_val(token)
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
+  .inline_refuse_empty(out, token)
   out
 }
 
