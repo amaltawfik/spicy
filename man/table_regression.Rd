@@ -651,7 +651,15 @@ of padding.}
 row labels. Names are coefficient term names (from
 \code{\link[stats:terms]{stats::terms()}}); values are the displayed labels. E.g.
 \code{c("age" = "Age (years)", "sexM" = "Male (vs Female)")}.
-Default \code{NULL} (use raw term names).}
+Default \code{NULL} (use raw term names).
+
+The names are model identifiers, not display text: they are the
+term and coefficient names R itself produces, and they keep that
+form regardless of the language the table is rendered in. A name
+that is neither a term label nor a coefficient name is rejected,
+so the header of a subordinate block -- \verb{Random effects},
+\code{Thresholds}, \code{Zero-inflation}, ... -- cannot be relabelled here;
+those headers are set by the package.}
 
 \item{title, note}{Override or suppress the auto-built caption /
 methodological footer. Three modes per argument:
