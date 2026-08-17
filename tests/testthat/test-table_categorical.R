@@ -3476,3 +3476,38 @@ test_that("the association CI separator follows the decimal mark", {
   expect_true(any(grepl("; ", merged, fixed = TRUE)))
   expect_false(any(grepl("[0-9], [0-9]", merged)))
 })
+
+
+# ---- gt: the group-column CSS selector escapes its ids -------------------
+
+test_that("a quote in a `by` level no longer breaks the gt render", {
+  skip_if_not_installed("gt")
+  d <- data.frame(
+    sex = factor(rep(c("F", "M"), 20)),
+    grp = factor(rep(c('a"b', "plain"), each = 20)),
+    stringsAsFactors = FALSE
+  )
+  g <- table_categorical(d, select = sex, by = grp, output = "gt")
+  # The APA intermediate rule is addressed by a `th[id="..."]` attribute
+  # selector built from the group columns, which are named after the
+  # `by` levels. Unescaped, the quote closed the CSS string and gt's
+  # sass compiler aborted the whole render.
+  html <- expect_no_error(
+    as.character(gt::as_raw_html(g, inline_css = FALSE))
+  )
+  # The rule reaches the quote-bearing column: sass renormalises the
+  # escaped double quote to a single-quoted CSS string, which matches
+  # the id gt wrote into the DOM.
+  expect_true(grepl("th[id='a\"b_n']", html, fixed = TRUE))
+  expect_true(grepl('scope="col" id="a&quot;b_n"', html, fixed = TRUE))
+})
+
+test_that(".css_escape_string leaves an ordinary label untouched", {
+  expect_identical(
+    spicy:::.css_escape_string(c("plain_n", "Total_pct", "\u00e9t\u00e9_n")),
+    c("plain_n", "Total_pct", "\u00e9t\u00e9_n")
+  )
+  expect_identical(spicy:::.css_escape_string('a"b'), 'a\\"b')
+  expect_identical(spicy:::.css_escape_string("a\\b"), "a\\\\b")
+  expect_identical(spicy:::.css_escape_string("a\nb"), "a\\00000Ab")
+})

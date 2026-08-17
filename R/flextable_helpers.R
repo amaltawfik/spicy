@@ -35,6 +35,26 @@
   tbl
 }
 
+
+# Escape a value for interpolation INSIDE a double-quoted CSS string,
+# as in the `th[id="..."]` attribute selectors the gt branches build.
+# Most of those ids are frozen ASCII keys, but the categorical group
+# columns are named after the `by` levels, which are user data: a level
+# holding a double quote closed the string early and gt's own sass
+# compiler aborted the whole render ("unterminated attribute selector
+# for id").
+#
+# CSS escapes with a backslash, like R, so the backslash goes first. A
+# newline cannot appear literally in a CSS string; the six-hex-digit
+# form needs no terminating space and so cannot swallow a following
+# one.
+.css_escape_string <- function(x) {
+  x <- gsub("\\", "\\\\", x, fixed = TRUE)
+  x <- gsub('"', '\\"', x, fixed = TRUE)
+  x <- gsub("\n", "\\00000A", x, fixed = TRUE)
+  gsub("\r", "\\00000D", x, fixed = TRUE)
+}
+
 # Set the caption every Word (.docx) route writes above its table: the
 # APA auto-numbered "Table 1: <title>" paragraph. `run_autonum()`
 # writes a Word SEQ field, so the numbers renumber themselves when the

@@ -3300,12 +3300,18 @@ table_categorical <- function(
 
     # 3) opt_css rules (override gt's hidden borders in normal
     #    renderers: RStudio viewer, Quarto, pkgdown)
-    # Build CSS selector for group-column <th> elements
+    # Build CSS selector for group-column <th> elements. These ids carry
+    # the `by` level labels, i.e. user data, so they are escaped for the
+    # CSS string they land in (`.css_escape_string()`); the CI selectors
+    # of the two other descriptive families interpolate frozen keys.
     grp_css_sel <- paste(
       vapply(
         grp_cols,
         function(id) {
-          sprintf('.gt_table thead tr:last-child th[id="%s"]', id)
+          sprintf(
+            '.gt_table thead tr:last-child th[id="%s"]',
+            .css_escape_string(id)
+          )
         },
         character(1)
       ),

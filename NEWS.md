@@ -347,6 +347,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `inline()` refuses to cite an interval whose cells are a reference
   level or an undefined statistic, as it already did for `b`, `se` and
   `p` and as `?inline` documents; it used to return `[–, –]`.
+* `table_categorical(by = , output = "gt")` renders when a `by` level
+  contains a double quote. The level names the group columns, which
+  are addressed by a CSS attribute selector, and the unescaped quote
+  aborted gt's style compiler ("unterminated attribute selector").
 * `inline()` reads `{ci_label}` from the interval the pattern quotes:
   `"{med} ({ci_label} {med_ci})"` on a table showing both intervals
   now says `Med 95% CI`, the header the table itself displays, instead
