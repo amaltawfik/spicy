@@ -391,8 +391,8 @@ inline <- function(
     function(nm) s$col_meta[[nm]]$ci_role %||% "",
     character(1)
   )
-  lo <- cols[roles == "LL"]
-  hi <- cols[roles == "UL"]
+  lo <- cols[roles == .REG_CI_ROLE_LL]
+  hi <- cols[roles == .REG_CI_ROLE_UL]
   if (length(lo) == 1L && length(hi) == 1L) {
     return(c(lo, hi))
   }

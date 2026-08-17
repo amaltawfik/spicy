@@ -185,6 +185,23 @@
 # this one.
 .REG_KEY_VARIABLE <- "Variable"
 
+# The two interval bounds. `.REG_CI_ROLE_*` is the `col_meta$ci_role`
+# TOKEN -- read back by `as_structured()`'s pair builder and by
+# `inline()` to find the two halves of an interval -- and it doubles as
+# the suffix of the sub-column NAME that `.reg_ci_sub_name()` builds
+# ("95% CI: LL"), which is part of the `as_structured()` contract.
+# Neither is ever translated; the bound a reader sees comes from
+# `header_ci_ll` / `header_ci_ul`.
+.REG_CI_ROLE_LL <- "LL"
+.REG_CI_ROLE_UL <- "UL"
+
+# Sub-column name of one interval bound in the typed body. FROZEN: user
+# code indexes `col_meta` and the string body by it, and the char-body
+# reader reconstructs it to find the interval's shared display label.
+.reg_ci_sub_name <- function(col_name, role) {
+  paste0(col_name, ": ", role)
+}
+
 # The row roles a v3 body may carry. Regression roles first, then the
 # three the descriptive families add (R/tables_structured.R). The
 # vocabulary is EXTENDED, never re-worded: a role says what a row IS,
@@ -324,7 +341,9 @@ build_structured_body <- function(
   # spanner, so hardcoding "CI" here would contradict the console and
   # the documented relabel.
   ci_pct <- formatC(ci_level * 100, format = "g")
-  ci_label_str <- paste0(ci_pct, "% ", ci_label)
+  # The same template the console header uses: one producer of "95% CI"
+  # for the seven engines that display it as an interval spanner.
+  ci_label_str <- spicy_fmt("header_ci_spanner", ci_pct, ci_label)
 
   expanded <- list() # list of (struct_col_name, source_field, meta)
   for (cs in col_spec) {
@@ -332,13 +351,13 @@ build_structured_body <- function(
       length(cs$fields) == 2L &&
         identical(cs$fields, c("ci_low", "ci_high"))
     ) {
-      ll_name <- paste0(cs$col_name, ": LL")
-      ul_name <- paste0(cs$col_name, ": UL")
+      ll_name <- .reg_ci_sub_name(cs$col_name, .REG_CI_ROLE_LL)
+      ul_name <- .reg_ci_sub_name(cs$col_name, .REG_CI_ROLE_UL)
       expanded[[length(expanded) + 1L]] <- list(
         name = ll_name,
         source = "ci_low",
         cs = cs,
-        ci_role = "LL",
+        ci_role = .REG_CI_ROLE_LL,
         ci_pair = ul_name,
         ci_label = ci_label_str
       )
@@ -346,7 +365,7 @@ build_structured_body <- function(
         name = ul_name,
         source = "ci_high",
         cs = cs,
-        ci_role = "UL",
+        ci_role = .REG_CI_ROLE_UL,
         ci_pair = ll_name,
         ci_label = ci_label_str
       )
@@ -764,7 +783,7 @@ build_structured_body <- function(
   # ---- CI pairs ---------------------------------------------------------
   ci_pairs <- list()
   for (e in expanded) {
-    if (identical(e$ci_role, "LL")) {
+    if (identical(e$ci_role, .REG_CI_ROLE_LL)) {
       ll_idx <- match(e$name, struct_col_names) + 1L # +1 for Variable
       ul_idx <- match(e$ci_pair, struct_col_names) + 1L
       ci_pairs[[length(ci_pairs) + 1L]] <- list(

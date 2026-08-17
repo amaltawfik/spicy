@@ -377,6 +377,19 @@ test_that("every frozen regression column key equals its display label", {
   # use: six sites resolve it from the registry instead, and only this
   # test can see the key and the header part company.
   expect_identical(.REG_KEY_VARIABLE, spicy_str("header_variable"))
+  # The interval bound is a TOKEN (`col_meta$ci_role`, read back by the
+  # pair builder and by `inline()`) as well as the suffix of a public
+  # sub-column name; its header is a separate layer that happens to be
+  # the same two letters today. Lot D consumes lot B's keys rather than
+  # posing a second pair.
+  expect_identical(.REG_CI_ROLE_LL, spicy_str("header_ci_ll"))
+  expect_identical(.REG_CI_ROLE_UL, spicy_str("header_ci_ul"))
+  # The sub-column name is a composition rule, frozen on both sides.
+  expect_identical(.reg_ci_sub_name("95% CI", .REG_CI_ROLE_LL), "95% CI: LL")
+  expect_identical(
+    .reg_ci_sub_name("M1: 95% CI", .REG_CI_ROLE_UL),
+    "M1: 95% CI: UL"
+  )
 
   # `.lookup_display_label()` is a total function of its input: an
   # unknown column comes back as its own key, so a hand-built body still

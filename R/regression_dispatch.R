@@ -238,8 +238,8 @@ output_long <- function(aligned) {
   bot <- rep("", n)
   for (cs in ci_spanners) {
     if (length(cs$cols) >= 2L) {
-      bot[cs$cols[1L]] <- "LL"
-      bot[cs$cols[2L]] <- "UL"
+      bot[cs$cols[1L]] <- spicy_str("header_ci_ll")
+      bot[cs$cols[2L]] <- spicy_str("header_ci_ul")
     }
   }
   list(top = top, bottom = bot)
@@ -256,7 +256,7 @@ output_long <- function(aligned) {
   if (!is.null(m)) {
     return(m$display_label %||% nm)
   }
-  m_ll <- col_meta[[paste0(nm, ": LL")]]
+  m_ll <- col_meta[[.reg_ci_sub_name(nm, .REG_CI_ROLE_LL)]]
   if (!is.null(m_ll)) {
     return(m_ll$display_label %||% nm)
   }
@@ -408,8 +408,8 @@ output_tinytable <- function(rendered) {
   }
   for (cs in ci_spanners) {
     if (length(cs$cols) >= 2L) {
-      names(body)[cs$cols[1L]] <- "LL"
-      names(body)[cs$cols[2L]] <- "UL"
+      names(body)[cs$cols[1L]] <- spicy_str("header_ci_ll")
+      names(body)[cs$cols[2L]] <- spicy_str("header_ci_ul")
     }
   }
   ci_cols_set <- unlist(lapply(ci_spanners, function(cs) cs$cols))
@@ -785,8 +785,8 @@ output_gt <- function(rendered) {
   label_list <- stats::setNames(as.list(rep("", n_cols)), orig_names)
   for (cs in ci_spanners) {
     if (length(cs$cols) >= 2L) {
-      label_list[[orig_names[cs$cols[1L]]]] <- "LL"
-      label_list[[orig_names[cs$cols[2L]]]] <- "UL"
+      label_list[[orig_names[cs$cols[1L]]]] <- spicy_str("header_ci_ll")
+      label_list[[orig_names[cs$cols[2L]]]] <- spicy_str("header_ci_ul")
     }
   }
   tbl <- gt::cols_label(tbl, .list = label_list)
@@ -1502,11 +1502,11 @@ output_flextable <- function(rendered) {
     } else if (j %in% ci_col_set) {
       for (cs in ci_spanners) {
         if (identical(cs$cols[1L], j)) {
-          display_labels[[orig_names[j]]] <- "LL"
+          display_labels[[orig_names[j]]] <- spicy_str("header_ci_ll")
           break
         }
         if (identical(cs$cols[2L], j)) {
-          display_labels[[orig_names[j]]] <- "UL"
+          display_labels[[orig_names[j]]] <- spicy_str("header_ci_ul")
           break
         }
       }
