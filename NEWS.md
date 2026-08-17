@@ -347,6 +347,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `inline()` refuses to cite an interval whose cells are a reference
   level or an undefined statistic, as it already did for `b`, `se` and
   `p` and as `?inline` documents; it used to return `[–, –]`.
+* `table_continuous_lm(by = , output = "gt")` renders when two `by`
+  levels differ only in punctuation or in a non-ASCII character
+  (`"a b"` / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and
+  gt refused the table.
 * `table_continuous()` and `table_continuous_lm()` label an interval
   with its own coverage: `ci_level = 0.975` reads `97.5% CI`, not
   `98% CI`. The percentage was rounded to a whole number, in the

@@ -66,10 +66,22 @@
   which(col_keys %in% c(.LM_KEY_N, .LM_KEY_WEIGHTED_N, .LM_KEY_P))
 }
 
-# The gt spanner id of a column. Generated from the frozen KEY at both
-# the site that creates the spanner and the site that styles it, so the
-# id can never be typed out a second time and drift.
-.lm_spanner_id <- function(key) paste0("spn_", make.names(key))
+# The gt spanner ids of a set of columns, NAMED by their column key.
+# Generated from the frozen KEYS, never from the labels, and read from
+# this one vector by both the site that creates the spanners and the
+# site that styles one, so an id can never be typed out a second time
+# and drift.
+#
+# `make.names()` is lossy -- "M (a b)" and "M (a.b)" both become
+# "M..a.b.", and so do "M (R²)" and "M (R³)" -- and gt aborts on a
+# duplicate spanner id, taking the whole table down. `make.unique()`
+# breaks the tie; it leaves a set with no collision exactly as it was.
+.lm_spanner_ids <- function(keys) {
+  stats::setNames(
+    make.unique(paste0("spn_", make.names(keys)), sep = "_"),
+    keys
+  )
+}
 
 # ---- the label layer -------------------------------------------------------
 # The twin of every key builder above. Same shape, same punctuation, the
@@ -846,16 +858,16 @@ export_continuous_lm_table <- function(
     tbl <- gt::cols_label(tbl, .list = label_list)
 
     single_cols <- setdiff(col_keys, c(.LM_KEY_CI_LL, .LM_KEY_CI_UL))
+    # The ids are DOM state that `cells_column_spanners()` addresses
+    # below: generated from the frozen KEYS, never from the labels, and
+    # generated ONCE so the two sites cannot disagree.
+    span_ids <- .lm_spanner_ids(single_cols)
     for (col in single_cols) {
-      # The id is generated from the frozen KEY, never from the label:
-      # it is a DOM id the CSS below and `cells_column_spanners()`
-      # address. `make.names()` can collide two keys that differ only in
-      # punctuation ("M (a b)" / "M (a.b)"), a pre-existing hazard.
       tbl <- gt::tab_spanner(
         tbl,
         label = lab(col),
         columns = col,
-        id = .lm_spanner_id(col)
+        id = span_ids[[col]]
       )
     }
     if (has_ci) {
@@ -941,7 +953,7 @@ export_continuous_lm_table <- function(
       tbl,
       style = gt::cell_text(align = "left"),
       locations = gt::cells_column_spanners(
-        spanners = .lm_spanner_id(.LM_KEY_VARIABLE)
+        spanners = span_ids[[.LM_KEY_VARIABLE]]
       )
     )
 

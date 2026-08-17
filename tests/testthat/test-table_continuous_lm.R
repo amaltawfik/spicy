@@ -4762,3 +4762,49 @@ test_that("declared missing values are disclosed separately (decision 14)", {
     fixed = TRUE
   )
 })
+
+
+# ---- gt spanner ids survive a make.names() collision ----------------------
+
+test_that("two `by` levels that differ only in punctuation still render", {
+  skip_if_not_installed("gt")
+  set.seed(1)
+  d <- data.frame(
+    y = rnorm(40),
+    g = factor(rep(c("a b", "a.b"), each = 20)),
+    stringsAsFactors = FALSE
+  )
+  # The marginal-mean columns are keyed "M (a b)" / "M (a.b)", and
+  # make.names() maps BOTH to "M..a.b.". gt aborts on a duplicate
+  # spanner id, so the whole table used to be unrenderable.
+  g1 <- suppressWarnings(table_continuous_lm(
+    d,
+    select = y,
+    by = g,
+    output = "gt"
+  ))
+  html <- expect_no_error(as.character(gt::as_raw_html(g1)))
+  # Both group spanners are present, each with its own label.
+  expect_true(grepl("M (a b)", html, fixed = TRUE))
+  expect_true(grepl("M (a.b)", html, fixed = TRUE))
+
+  # Same collision through a non-ASCII level.
+  d2 <- d
+  d2$g <- factor(rep(c("R\u00B2", "R\u00B3"), each = 20))
+  expect_no_error(as.character(gt::as_raw_html(suppressWarnings(
+    table_continuous_lm(d2, select = y, by = g, output = "gt")
+  ))))
+})
+
+test_that(".lm_spanner_ids is stable where nothing collides", {
+  keys <- c("Variable", "M (Female)", "M (Male)", "p", "n")
+  ids <- spicy:::.lm_spanner_ids(keys)
+  # Named by key: the producer and the styling site read one object.
+  expect_identical(names(ids), keys)
+  # Unchanged from the plain make.names() form when there is no tie.
+  expect_identical(unname(ids), paste0("spn_", make.names(keys)))
+  # And unique when there is one.
+  tied <- spicy:::.lm_spanner_ids(c("M (a b)", "M (a.b)"))
+  expect_identical(length(unique(tied)), 2L)
+  expect_identical(unname(tied[1]), "spn_M..a.b.")
+})
