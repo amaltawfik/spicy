@@ -44,10 +44,18 @@
 # compiler aborted the whole render ("unterminated attribute selector
 # for id").
 #
-# CSS escapes with a backslash, like R, so the backslash goes first. A
-# newline cannot appear literally in a CSS string; the six-hex-digit
-# form needs no terminating space and so cannot swallow a following
-# one.
+# CSS escapes with a backslash, like R, so the backslash goes first.
+#
+# The newline is escaped for SYNTAX only -- a literal newline cannot
+# appear in a CSS string -- and not because the rule would then land.
+# It does not, either way, and the six-hex-digit form is not the shield
+# it looks like: gt maps a newline in an id to "-" before the DOM sees
+# it (`id="a-b_n"`), while sass re-serialises our `\00000A` to the short
+# `\ab` form, which swallows the character that follows and compiles to
+# `th[id="a<U+00AB>_n"]`. Measured, both. So a `by` level holding a
+# newline loses this border rule with or without the escape; what the
+# escape prevents is the stylesheet failing to parse, which for the
+# double quote was the whole render.
 .css_escape_string <- function(x) {
   x <- gsub("\\", "\\\\", x, fixed = TRUE)
   x <- gsub('"', '\\"', x, fixed = TRUE)
