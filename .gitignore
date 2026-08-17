@@ -18,6 +18,12 @@ Rplots.pdf
 # testthat scratch (auto-regenerated per run)
 tests/testthat/_problems/
 tests/testthat/testthat-problems.rds
+# A failing snapshot writes <name>.new.md next to the reference and
+# leaves it there unless snapshot_accept() (or the next green run)
+# removes it. `git add -A` then commits the failure as if it were the
+# reference -- twice during the i18n campaign. The accepted snapshot
+# is <name>.md; the .new.md is never an artifact worth versioning.
+tests/testthat/_snaps/*.new.md
 # Session-generated working notes (specs, findings, drafts) stay
 # local; the tracked dev/ scripts and design docs remain versioned.
 dev/*_spec.md
