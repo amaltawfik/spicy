@@ -1781,10 +1781,9 @@ order_continuous_tokens <- function(tokens) {
 
 # The coverage percentage as it enters a frozen column key ("95%"). Four
 # sites built this string independently (the glosses, the display frame,
-# the exporter, the structured view); they now share one. The four other
-# constructions in the package belong to the LINEAR-MODEL family
-# (`.build_continuous_lm_structured()`, `table_continuous_lm_render.R`)
-# and are out of this lot's scope.
+# the exporter, the structured view); they now share one, and the
+# percentage itself comes from `.ci_pct_str()`, which every family that
+# displays a coverage reads.
 .continuous_ci_pct <- function(ci_level) paste0(.ci_pct_str(ci_level), "%")
 
 # The interval HEADER a reader sees ("95% CI"), the label twin of
