@@ -140,7 +140,9 @@ token as <code>variable</code> (<code>inline(tbl, "n")</code>, <code>inline(tbl,
 <p>The column is a <strong>token</strong> of the typed contract (<code>"b"</code>, <code>"se"</code>,
 <code>"p"</code>, <code>"ci"</code>, <code>"or"</code>, <code>"ame"</code>, <code>"n"</code>, <code>"pct"</code>, <code>"m"</code>, ... – see
 <code><a href="as_structured.html">as_structured()</a></code>'s <code>col_meta</code>), never a display header. <code>"ci"</code>
-composes the interval with the style's brackets and separator. In
+composes the interval with the style's brackets and separator, and
+so does every other interval token the table carries (<code>"med_ci"</code>,
+<code>"ame_ci"</code>, <code>"assoc_ci"</code>): each addresses its own bounds. In
 a multi-model table, <code>model</code> selects the model by its spanner
 label or position; in a <code>by</code> table, the spanners are the groups,
 so <code>model</code> selects the group the same way.</p>

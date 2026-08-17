@@ -83,9 +83,9 @@ and
 [`somers_d()`](https://amaltawfik.github.io/spicy/reference/somers_d.md).
 
 Measures that are undefined on the given table appear as `NA` rows
-(printed as `--`). The classed warnings the individual functions raise
-(e.g. `spicy_undefined_stat`) are re-emitted once per distinct message
-after the table is assembled, so condition handlers and
+(printed as an en dash). The classed warnings the individual functions
+raise (e.g. `spicy_undefined_stat`) are re-emitted once per distinct
+message after the table is assembled, so condition handlers and
 [`suppressWarnings()`](https://rdrr.io/r/base/warning.html) behave as
 they do for the individual functions.
 
@@ -133,11 +133,11 @@ Other association measures:
 tab <- table(sochealth$smoking, sochealth$education)
 assoc_measures(tab)
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136     --     0.079     0.191  <.001 
-#> Contingency Coefficient               0.134     --        --        --  <.001 
-#> Lambda symmetric                      0.000  0.000     0.000     0.000     -- 
-#> Lambda R|C                            0.000  0.000     0.000     0.000     -- 
-#> Lambda C|R                            0.000  0.000     0.000     0.000     -- 
+#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Contingency Coefficient               0.134      –         –         –  <.001 
+#> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
+#> Lambda R|C                            0.000  0.000     0.000     0.000      – 
+#> Lambda C|R                            0.000  0.000     0.000     0.000      – 
 #> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 
 #> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 
 #> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 
@@ -150,11 +150,11 @@ assoc_measures(tab)
 #> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  <.001 
 assoc_measures(tab, type = "nominal")
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136     --     0.079     0.191  <.001 
-#> Contingency Coefficient               0.134     --        --        --  <.001 
-#> Lambda symmetric                      0.000  0.000     0.000     0.000     -- 
-#> Lambda R|C                            0.000  0.000     0.000     0.000     -- 
-#> Lambda C|R                            0.000  0.000     0.000     0.000     -- 
+#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Contingency Coefficient               0.134      –         –         –  <.001 
+#> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
+#> Lambda R|C                            0.000  0.000     0.000     0.000      – 
+#> Lambda C|R                            0.000  0.000     0.000     0.000      – 
 #> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 
 #> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 
 #> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 

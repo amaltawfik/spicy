@@ -51,11 +51,11 @@ computes all available measures at once:
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136     --     0.079     0.191  <.001 
-#> Contingency Coefficient               0.134     --        --        --  <.001 
-#> Lambda symmetric                      0.000  0.000     0.000     0.000     -- 
-#> Lambda R|C                            0.000  0.000     0.000     0.000     -- 
-#> Lambda C|R                            0.000  0.000     0.000     0.000     -- 
+#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Contingency Coefficient               0.134      –         –         –  <.001 
+#> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
+#> Lambda R|C                            0.000  0.000     0.000     0.000      – 
+#> Lambda C|R                            0.000  0.000     0.000     0.000      – 
 #> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 
 #> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 
 #> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 
@@ -107,14 +107,14 @@ Pass `detail = TRUE` for the confidence interval and p-value. The
 p-value tests the null hypothesis of no association using the Pearson
 chi-squared test. The chi-squared-based measures (Cramer’s V, Phi, the
 contingency coefficient) have no standard asymptotic standard error, so
-the `SE` column prints `--` for them; the rank-based measures later in
+the `SE` column prints `–` for them; the rank-based measures later in
 this vignette report their asymptotic SE in that column.
 
 ``` r
 
 cramer_v(tbl, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper      p
-#>    0.136  --     0.079     0.191  <.001
+#>    0.136   –     0.079     0.191  <.001
 ```
 
 ### Phi coefficient
@@ -134,7 +134,7 @@ the two binary variables explicitly (e.g., `cor(x, y)` after coding both
 tbl_22 <- xtabs(~ smoking + physical_activity, data = sochealth)
 phi(tbl_22, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper     p
-#>    0.006  --     0.000     0.063  .839
+#>    0.006   –     0.000     0.063  .839
 ```
 
 ### Contingency coefficient
@@ -148,7 +148,7 @@ across tables of different sizes. The p-value tests H0: no association
 
 contingency_coef(tbl, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper      p
-#>    0.134  --        --        --  <.001
+#>    0.134   –         –         –  <.001
 ```
 
 ## Ordinal variables
@@ -272,8 +272,8 @@ lambda_gk(tbl_ord, detail = TRUE)
 #> Estimate     SE  CI lower  CI upper     p
 #>    0.012  0.014     0.000     0.039  .389
 lambda_gk(tbl_ord, direction = "row", detail = TRUE)
-#> Estimate     SE  CI lower  CI upper   p
-#>    0.000  0.000     0.000     0.000  --
+#> Estimate     SE  CI lower  CI upper  p
+#>    0.000  0.000     0.000     0.000  –
 ```
 
 The row-dependent result illustrates a well-known caveat: Lambda can
@@ -283,7 +283,7 @@ predictor. That is exactly what happens here – “Good” is the modal
 health category at every education level, so the row-dependent Lambda is
 exactly 0 even though the same table shows a clear association (Cramer’s
 V = 0.176, chi-squared p \< .001). When the estimate is zero its
-asymptotic SE is zero as well, and no test is printed (`--`). Otherwise
+asymptotic SE is zero as well, and no test is printed (`–`). Otherwise
 the p-value tests H0: Lambda = 0 (Wald z-test).
 
 ### Goodman-Kruskal Tau
@@ -409,10 +409,10 @@ on the smoking-by-education table from the beginning of the vignette:
 
 cramer_v(tbl, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper      p
-#>    0.136  --     0.079     0.191  <.001
+#>    0.136   –     0.079     0.191  <.001
 cramer_v(tbl, detail = TRUE, conf_level = 0.99)
 #> Estimate  SE  CI lower  CI upper      p
-#>    0.136  --     0.061     0.209  <.001
+#>    0.136   –     0.061     0.209  <.001
 ```
 
 To drop the confidence interval, pass `conf_level = NULL`; the result
@@ -422,7 +422,7 @@ keeps the estimate, the SE column, and the p-value:
 
 cramer_v(tbl, detail = TRUE, conf_level = NULL)
 #> Estimate  SE      p
-#>    0.136  --  <.001
+#>    0.136   –  <.001
 ```
 
 ## Controlling decimal places
@@ -439,7 +439,7 @@ columns. The p-value follows APA-style formatting independent of
 
 cramer_v(tbl, detail = TRUE, digits = 4)
 #> Estimate  SE  CI lower  CI upper      p
-#>   0.1357  --    0.0791    0.1914  <.001
+#>   0.1357   –    0.0791    0.1914  <.001
 ```
 
 The same `digits` argument works for
@@ -449,11 +449,11 @@ The same `digits` argument works for
 
 assoc_measures(tbl, digits = 2)
 #> Measure                            Estimate    SE  CI lower  CI upper      p 
-#> Cramer's V                             0.14    --      0.08      0.19  <.001 
-#> Contingency Coefficient                0.13    --        --        --  <.001 
-#> Lambda symmetric                       0.00  0.00      0.00      0.00     -- 
-#> Lambda R|C                             0.00  0.00      0.00      0.00     -- 
-#> Lambda C|R                             0.00  0.00      0.00      0.00     -- 
+#> Cramer's V                             0.14     –      0.08      0.19  <.001 
+#> Contingency Coefficient                0.13     –         –         –  <.001 
+#> Lambda symmetric                       0.00  0.00      0.00      0.00      – 
+#> Lambda R|C                             0.00  0.00      0.00      0.00      – 
+#> Lambda C|R                             0.00  0.00      0.00      0.00      – 
 #> Goodman-Kruskal's Tau R|C              0.02  0.01      0.00      0.03   .023 
 #> Goodman-Kruskal's Tau C|R              0.01  0.00      0.00      0.01   .022 
 #> Uncertainty Coefficient symmetric      0.01  0.00      0.00      0.02   .021 
@@ -474,7 +474,7 @@ without recalculating:
 res <- cramer_v(tbl, detail = TRUE)
 print(res, digits = 5)
 #> Estimate  SE  CI lower  CI upper      p
-#>  0.13567  --   0.07909   0.19137  <.001
+#>  0.13567   –   0.07909   0.19137  <.001
 ```
 
 ## See also

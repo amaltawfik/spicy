@@ -65,9 +65,11 @@ The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... – see
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)'s
 `col_meta`), never a display header. `"ci"` composes the interval with
-the style's brackets and separator. In a multi-model table, `model`
-selects the model by its spanner label or position; in a `by` table, the
-spanners are the groups, so `model` selects the group the same way.
+the style's brackets and separator, and so does every other interval
+token the table carries (`"med_ci"`, `"ame_ci"`, `"assoc_ci"`): each
+addresses its own bounds. In a multi-model table, `model` selects the
+model by its spanner label or position; in a `by` table, the spanners
+are the groups, so `model` selects the group the same way.
 
 ## Patterns
 

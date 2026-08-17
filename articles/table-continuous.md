@@ -10,7 +10,12 @@ summarizes continuous variables either overall or by a categorical
 grouping variable. It is designed for readable summary tables in the
 console and for publication-ready outputs in rendered documents. When
 `by` is supplied, it can also add group-comparison tests, test
-statistics, and effect sizes.
+statistics, and effect sizes. Formatting follows APA conventions by
+default; `style = "jama"` (or `"nejm"`, `"lancet"`, `"annals"`, `"aer"`)
+switches the whole table to that journal’s published rules — the *House
+styles* section of
+[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+shows each style and the guideline sentence behind every rule.
 
 ## Basic usage
 

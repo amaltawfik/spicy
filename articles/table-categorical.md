@@ -11,8 +11,13 @@ social science and data science research. With `by`, it produces grouped
 cross-tabulation tables with chi-squared \\p\\-values, effect sizes,
 confidence intervals, and multi-level headers. Without `by`, it produces
 one-way frequency-style tables for the selected variables. Export to gt,
-tinytable, flextable, Excel, or Word. This vignette walks through the
-main features.
+tinytable, flextable, Excel, or Word. Formatting follows APA conventions
+by default; `style = "jama"` (or `"nejm"`, `"lancet"`, `"annals"`,
+`"aer"`) switches the whole table to that journal’s published rules —
+the *House styles* section of
+[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+shows each style and the guideline sentence behind every rule. This
+vignette walks through the main features.
 
 ## Basic usage
 

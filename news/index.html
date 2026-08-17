@@ -223,7 +223,11 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li>The significance-star legend of <code>table_regression(stars = TRUE)</code> follows the table’s <code>decimal_mark</code>: a comma table now reads <code>p &lt; ,001</code>, not <code>p &lt; .001</code>.</li>
+<ul><li>
+<code><a href="../reference/inline.html">inline()</a></code> refuses to cite an interval whose cells are a reference level or an undefined statistic, as it already did for <code>b</code>, <code>se</code> and <code>p</code> and as <code><a href="../reference/inline.html">?inline</a></code> documents; it used to return <code>[–, –]</code>.</li>
+<li>
+<code><a href="../reference/inline.html">inline()</a></code> addresses each interval by its own token, so a table carrying more than one – <code>ci</code> with <code>med_ci</code>, or <code>ci</code> with <code>ame_ci</code> – can cite either. Both used to raise an ambiguity error naming <code>model</code>, which does not apply to a single-model or descriptive table, and <code>column = "ci"</code> on a <code><a href="../reference/table_categorical.html">table_categorical()</a></code> now errors with the available tokens instead of composing the association interval of a row that has none.</li>
+<li>The significance-star legend of <code>table_regression(stars = TRUE)</code> follows the table’s <code>decimal_mark</code>: a comma table now reads <code>p &lt; ,001</code>, not <code>p &lt; .001</code>.</li>
 <li>The confidence interval of an association measure in <code><a href="../reference/table_categorical.html">table_categorical()</a></code> separates its bounds with <code>;</code> under <code>decimal_mark = ","</code>, as every other interval in the package already did; <code>0,45 [0,31, 0,59]</code> was ambiguous.</li>
 <li>Printing a <code><a href="../reference/table_categorical.html">table_categorical()</a></code> table with an empty cell no longer fails with “missing value where TRUE/FALSE needed”; column widths are measured as they are displayed.</li>
 <li>A variable whose <code>label</code> attribute is <code>NA</code> falls back to the column name in <code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>. The stub used to read <code>NA</code>, and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> failed outright with “missing value where TRUE/FALSE needed”.</li>
@@ -362,7 +366,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
-<ul><li>
+<ul><li>A cell with no number – a statistic that does not apply to the row, a reference level – prints an en dash (<code>–</code>) in every table. <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code> and the association printers used <code>--</code>; <code><a href="../reference/table_regression.html">table_regression()</a></code> already used the en dash. The typed view of <code><a href="../reference/as_structured.html">as_structured()</a></code> carries it in <code>display_cells</code>. Where that placeholder was what set a column’s width, the column tightens by one character.</li>
+<li>
 <code>excel_sheet</code> defaults to <code>NULL</code> in the four table functions and resolves to the same sheet names as before (<code>"Regression"</code>, <code>"Categorical"</code>, <code>"Descriptives"</code>, <code>"Linear models"</code>). Behaviour is unchanged; an explicit name still wins.</li>
 <li>
 <code>table_continuous(by = )</code> titles the table <code>Descriptive statistics by &lt;label&gt;</code>: the grouping variable is stated in the console header and in every rendered caption, like the other <code>by</code> tables of the family.</li>

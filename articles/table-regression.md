@@ -15,6 +15,14 @@ variable, fit statistics at the foot of the table, and a
 self-documenting note line that names the variance estimator and any
 methodological choice that affected the rendered values.
 
+APA is the default, not a limit: `style = "nejm"` re-types every p-value
+to the New England Journal of Medicine’s statistical reporting
+guideline, `style = "lancet"` writes The Lancet’s midline decimal point
+and en-dash intervals, and `"jama"`, `"annals"`, and `"aer"` apply their
+journals’ rules the same way. Every rule a style encodes is sourced:
+[`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+quotes the sentence of the author guideline it comes from.
+
 The function is **fit-first**: you pass already-fitted models, not raw
 data and a formula. The same object exports cleanly to a long
 broom-canonical frame
@@ -106,6 +114,39 @@ Reading the table:
   0.05, 95% CI \[-0.01, 0.11\], p = .130 — the interval spans effects
   from slightly negative to about a tenth of a point per year, so the
   data do not establish an adjusted age gradient.
+
+One argument re-typesets the same table for another journal — here
+NEJM’s statistical-reporting rules: leading zero kept, two decimals
+above 0.01, floor `<0.001`:
+
+``` r
+
+table_regression(fit, style = "nejm")
+#> Linear regression: wellbeing_score
+#> 
+#>  Variable        │    B      SE       95% CI        p    
+#> ─────────────────┼───────────────────────────────────────
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <0.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   0.13  
+#>  sex:            │                                       
+#>    Female (ref.) │     –     –          –           –    
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <0.001 
+#>  smoking:        │                                       
+#>    No (ref.)     │     –     –          –           –    
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   0.12  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                  
+#>  R²              │    0.02                               
+#>  Adj. R²         │    0.02                               
+#> 
+#> Note. Linear regression.
+#> Std. errors: classical (OLS).
+```
+
+The complete tour of the named styles — what each journal specifies,
+with the guideline sentence behind every rule — is in the *House styles*
+section of
+[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md).
 
 ## Standardised coefficients
 

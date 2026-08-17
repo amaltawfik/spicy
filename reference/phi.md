@@ -89,5 +89,5 @@ phi(tab)
 #> [1] 0.0107495
 phi(tab, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper     p
-#>    0.011  --     0.000     0.068  .713
+#>    0.011   –     0.000     0.068  .713
 ```

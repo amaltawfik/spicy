@@ -140,7 +140,7 @@ and (for 2x2 tables) <code><a href="phi.html">phi()</a></code> and <code><a href
 <p>The ordinal family includes <code><a href="gamma_gk.html">gamma_gk()</a></code>, <code><a href="kendall_tau_b.html">kendall_tau_b()</a></code>,
 <code><a href="kendall_tau_c.html">kendall_tau_c()</a></code>, and <code><a href="somers_d.html">somers_d()</a></code>.</p>
 <p>Measures that are undefined on the given table appear as <code>NA</code>
-rows (printed as <code>--</code>). The classed warnings the individual
+rows (printed as an en dash). The classed warnings the individual
 functions raise (e.g. <code>spicy_undefined_stat</code>) are re-emitted
 once per distinct message after the table is assembled, so
 condition handlers and <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings()</a></code> behave as they do
@@ -183,11 +183,11 @@ Statistics</em>. R package.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">smoking</span>, <span class="va">sochealth</span><span class="op">$</span><span class="va">education</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">assoc_measures</span><span class="op">(</span><span class="va">tab</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Measure                            Estimate     SE  CI lower  CI upper      p </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cramer's V                            0.136     --     0.079     0.191  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Contingency Coefficient               0.134     --        --        --  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda symmetric                      0.000  0.000     0.000     0.000     -- </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda R|C                            0.000  0.000     0.000     0.000     -- </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda C|R                            0.000  0.000     0.000     0.000     -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cramer's V                            0.136      –     0.079     0.191  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Contingency Coefficient               0.134      –         –         –  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda symmetric                      0.000  0.000     0.000     0.000      – </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda R|C                            0.000  0.000     0.000     0.000      – </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda C|R                            0.000  0.000     0.000     0.000      – </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 </span>
@@ -200,11 +200,11 @@ Statistics</em>. R package.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  &lt;.001 </span>
 <span class="r-in"><span><span class="fu">assoc_measures</span><span class="op">(</span><span class="va">tab</span>, type <span class="op">=</span> <span class="st">"nominal"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Measure                            Estimate     SE  CI lower  CI upper      p </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cramer's V                            0.136     --     0.079     0.191  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Contingency Coefficient               0.134     --        --        --  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda symmetric                      0.000  0.000     0.000     0.000     -- </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda R|C                            0.000  0.000     0.000     0.000     -- </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda C|R                            0.000  0.000     0.000     0.000     -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cramer's V                            0.136      –     0.079     0.191  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Contingency Coefficient               0.134      –         –         –  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda symmetric                      0.000  0.000     0.000     0.000      – </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda R|C                            0.000  0.000     0.000     0.000      – </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lambda C|R                            0.000  0.000     0.000     0.000      – </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 </span>

@@ -802,7 +802,14 @@ of padding.</p></dd>
 row labels. Names are coefficient term names (from
 <code><a href="https://rdrr.io/r/stats/terms.html" class="external-link">stats::terms()</a></code>); values are the displayed labels. E.g.
 <code>c("age" = "Age (years)", "sexM" = "Male (vs Female)")</code>.
-Default <code>NULL</code> (use raw term names).</p></dd>
+Default <code>NULL</code> (use raw term names).</p>
+<p>The names are model identifiers, not display text: they are the
+term and coefficient names R itself produces, and they keep that
+form regardless of the language the table is rendered in. A name
+that is neither a term label nor a coefficient name is rejected,
+so the header of a subordinate block – <code>Random effects</code>,
+<code>Thresholds</code>, <code>Zero-inflation</code>, ... – cannot be relabelled here;
+those headers are set by the package.</p></dd>
 
 
 <dt id="arg-title-note">title, note<a class="anchor" aria-label="anchor" href="#arg-title-note"></a></dt>

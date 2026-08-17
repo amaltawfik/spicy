@@ -15,7 +15,12 @@ table. This is the right choice when you want to stay in a linear-model
 workflow with heteroskedasticity-consistent or cluster-robust standard
 errors, bootstrap / jackknife variance, case weights, additive covariate
 adjustment, or one of four effect-size families (`f2`, Cohen’s *d*,
-Hedges’ *g*, Hays’ \\\omega^2\\) with noncentral CIs.
+Hedges’ *g*, Hays’ \\\omega^2\\) with noncentral CIs. Formatting follows
+APA conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
+`"annals"`, `"aer"`) switches the whole table to that journal’s
+published rules — the *House styles* section of
+[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+shows each style and the guideline sentence behind every rule.
 
 ## Basic usage
 

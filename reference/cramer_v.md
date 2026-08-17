@@ -93,8 +93,8 @@ cramer_v(tab)
 #> [1] 0.1356677
 cramer_v(tab, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper      p
-#>    0.136  --     0.079     0.191  <.001
+#>    0.136   –     0.079     0.191  <.001
 cramer_v(tab, detail = TRUE, conf_level = NULL)
 #> Estimate  SE      p
-#>    0.136  --  <.001
+#>    0.136   –  <.001
 ```

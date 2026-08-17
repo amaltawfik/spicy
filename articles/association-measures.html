@@ -210,11 +210,11 @@ once:</p>
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Measure                            Estimate     SE  CI lower  CI upper      p </span></span>
-<span><span class="co">#&gt; Cramer's V                            0.136     --     0.079     0.191  &lt;.001 </span></span>
-<span><span class="co">#&gt; Contingency Coefficient               0.134     --        --        --  &lt;.001 </span></span>
-<span><span class="co">#&gt; Lambda symmetric                      0.000  0.000     0.000     0.000     -- </span></span>
-<span><span class="co">#&gt; Lambda R|C                            0.000  0.000     0.000     0.000     -- </span></span>
-<span><span class="co">#&gt; Lambda C|R                            0.000  0.000     0.000     0.000     -- </span></span>
+<span><span class="co">#&gt; Cramer's V                            0.136      –     0.079     0.191  &lt;.001 </span></span>
+<span><span class="co">#&gt; Contingency Coefficient               0.134      –         –         –  &lt;.001 </span></span>
+<span><span class="co">#&gt; Lambda symmetric                      0.000  0.000     0.000     0.000      – </span></span>
+<span><span class="co">#&gt; Lambda R|C                            0.000  0.000     0.000     0.000      – </span></span>
+<span><span class="co">#&gt; Lambda C|R                            0.000  0.000     0.000     0.000      – </span></span>
 <span><span class="co">#&gt; Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 </span></span>
 <span><span class="co">#&gt; Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 </span></span>
 <span><span class="co">#&gt; Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 </span></span>
@@ -262,13 +262,13 @@ of the information in the data.</p>
 p-value. The p-value tests the null hypothesis of no association using
 the Pearson chi-squared test. The chi-squared-based measures (Cramer’s
 V, Phi, the contingency coefficient) have no standard asymptotic
-standard error, so the <code>SE</code> column prints <code>--</code> for
+standard error, so the <code>SE</code> column prints <code>–</code> for
 them; the rank-based measures later in this vignette report their
 asymptotic SE in that column.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;    0.136  --     0.079     0.191  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;    0.136   –     0.079     0.191  &lt;.001</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="phi-coefficient">Phi coefficient<a class="anchor" aria-label="anchor" href="#phi-coefficient"></a>
@@ -288,7 +288,7 @@ test).</p>
 <code class="sourceCode R"><span><span class="va">tbl_22</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">physical_activity</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/phi.html">phi</a></span><span class="op">(</span><span class="va">tbl_22</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper     p</span></span>
-<span><span class="co">#&gt;    0.006  --     0.000     0.063  .839</span></span></code></pre></div>
+<span><span class="co">#&gt;    0.006   –     0.000     0.063  .839</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="contingency-coefficient">Contingency coefficient<a class="anchor" aria-label="anchor" href="#contingency-coefficient"></a>
@@ -300,7 +300,7 @@ association (Pearson chi-squared test).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/contingency_coef.html">contingency_coef</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;    0.134  --        --        --  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;    0.134   –         –         –  &lt;.001</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -414,8 +414,8 @@ self-rated health (the row variable):</p>
 <span><span class="co">#&gt; Estimate     SE  CI lower  CI upper     p</span></span>
 <span><span class="co">#&gt;    0.012  0.014     0.000     0.039  .389</span></span>
 <span><span class="fu"><a href="../reference/lambda_gk.html">lambda_gk</a></span><span class="op">(</span><span class="va">tbl_ord</span>, direction <span class="op">=</span> <span class="st">"row"</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Estimate     SE  CI lower  CI upper   p</span></span>
-<span><span class="co">#&gt;    0.000  0.000     0.000     0.000  --</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimate     SE  CI lower  CI upper  p</span></span>
+<span><span class="co">#&gt;    0.000  0.000     0.000     0.000  –</span></span></code></pre></div>
 <p>The row-dependent result illustrates a well-known caveat: Lambda can
 equal zero even when the variables are associated, if the modal category
 of the dependent variable does not change across the categories of the
@@ -423,7 +423,7 @@ predictor. That is exactly what happens here – “Good” is the modal
 health category at every education level, so the row-dependent Lambda is
 exactly 0 even though the same table shows a clear association (Cramer’s
 V = 0.176, chi-squared p &lt; .001). When the estimate is zero its
-asymptotic SE is zero as well, and no test is printed (<code>--</code>).
+asymptotic SE is zero as well, and no test is printed (<code>–</code>).
 Otherwise the p-value tests H0: Lambda = 0 (Wald z-test).</p>
 </div>
 <div class="section level3">
@@ -538,16 +538,16 @@ vignette:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;    0.136  --     0.079     0.191  &lt;.001</span></span>
+<span><span class="co">#&gt;    0.136   –     0.079     0.191  &lt;.001</span></span>
 <span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="fl">0.99</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;    0.136  --     0.061     0.209  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;    0.136   –     0.061     0.209  &lt;.001</span></span></code></pre></div>
 <p>To drop the confidence interval, pass <code>conf_level = NULL</code>;
 the result keeps the estimate, the SE column, and the p-value:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, conf_level <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE      p</span></span>
-<span><span class="co">#&gt;    0.136  --  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;    0.136   –  &lt;.001</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="controlling-decimal-places">Controlling decimal places<a class="anchor" aria-label="anchor" href="#controlling-decimal-places"></a>
@@ -563,17 +563,17 @@ places with the leading zero stripped (<code>.045</code>) or
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;   0.1357  --    0.0791    0.1914  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;   0.1357   –    0.0791    0.1914  &lt;.001</span></span></code></pre></div>
 <p>The same <code>digits</code> argument works for
 <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code>:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Measure                            Estimate    SE  CI lower  CI upper      p </span></span>
-<span><span class="co">#&gt; Cramer's V                             0.14    --      0.08      0.19  &lt;.001 </span></span>
-<span><span class="co">#&gt; Contingency Coefficient                0.13    --        --        --  &lt;.001 </span></span>
-<span><span class="co">#&gt; Lambda symmetric                       0.00  0.00      0.00      0.00     -- </span></span>
-<span><span class="co">#&gt; Lambda R|C                             0.00  0.00      0.00      0.00     -- </span></span>
-<span><span class="co">#&gt; Lambda C|R                             0.00  0.00      0.00      0.00     -- </span></span>
+<span><span class="co">#&gt; Cramer's V                             0.14     –      0.08      0.19  &lt;.001 </span></span>
+<span><span class="co">#&gt; Contingency Coefficient                0.13     –         –         –  &lt;.001 </span></span>
+<span><span class="co">#&gt; Lambda symmetric                       0.00  0.00      0.00      0.00      – </span></span>
+<span><span class="co">#&gt; Lambda R|C                             0.00  0.00      0.00      0.00      – </span></span>
+<span><span class="co">#&gt; Lambda C|R                             0.00  0.00      0.00      0.00      – </span></span>
 <span><span class="co">#&gt; Goodman-Kruskal's Tau R|C              0.02  0.01      0.00      0.03   .023 </span></span>
 <span><span class="co">#&gt; Goodman-Kruskal's Tau C|R              0.01  0.00      0.00      0.01   .022 </span></span>
 <span><span class="co">#&gt; Uncertainty Coefficient symmetric      0.01  0.00      0.00      0.02   .021 </span></span>
@@ -590,7 +590,7 @@ precision without recalculating:</p>
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, digits <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
-<span><span class="co">#&gt;  0.13567  --   0.07909   0.19137  &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;  0.13567   –   0.07909   0.19137  &lt;.001</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

@@ -216,11 +216,11 @@ contingency table to
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136     --     0.079     0.191  <.001 
-#> Contingency Coefficient               0.134     --        --        --  <.001 
-#> Lambda symmetric                      0.000  0.000     0.000     0.000     -- 
-#> Lambda R|C                            0.000  0.000     0.000     0.000     -- 
-#> Lambda C|R                            0.000  0.000     0.000     0.000     -- 
+#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Contingency Coefficient               0.134      –         –         –  <.001 
+#> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
+#> Lambda R|C                            0.000  0.000     0.000     0.000      – 
+#> Lambda C|R                            0.000  0.000     0.000     0.000      – 
 #> Goodman-Kruskal's Tau R|C             0.018  0.008     0.003     0.034   .023 
 #> Goodman-Kruskal's Tau C|R             0.008  0.003     0.001     0.014   .022 
 #> Uncertainty Coefficient symmetric     0.011  0.005     0.002     0.021   .021 
@@ -245,7 +245,7 @@ interval and p-value:
 
 cramer_v(tbl, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper      p
-#>    0.136  --     0.079     0.191  <.001
+#>    0.136   –     0.079     0.191  <.001
 ```
 
 ## Summary tables

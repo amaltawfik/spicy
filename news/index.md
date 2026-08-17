@@ -451,6 +451,20 @@ instead of rendering an empty column.
 
 ### Bug fixes
 
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  refuses to cite an interval whose cells are a reference level or an
+  undefined statistic, as it already did for `b`, `se` and `p` and as
+  [`?inline`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  documents; it used to return `[–, –]`.
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  addresses each interval by its own token, so a table carrying more
+  than one – `ci` with `med_ci`, or `ci` with `ame_ci` – can cite
+  either. Both used to raise an ambiguity error naming `model`, which
+  does not apply to a single-model or descriptive table, and
+  `column = "ci"` on a
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  now errors with the available tokens instead of composing the
+  association interval of a row that has none.
 - The significance-star legend of `table_regression(stars = TRUE)`
   follows the table’s `decimal_mark`: a comma table now reads
   `p < ,001`, not `p < .001`.
@@ -868,6 +882,16 @@ instead of rendering an empty column.
 
 ### Minor improvements
 
+- A cell with no number – a statistic that does not apply to the row, a
+  reference level – prints an en dash (`–`) in every table.
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
+  and the association printers used `--`;
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  already used the en dash. The typed view of
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  carries it in `display_cells`. Where that placeholder was what set a
+  column’s width, the column tightens by one character.
 - `excel_sheet` defaults to `NULL` in the four table functions and
   resolves to the same sheet names as before (`"Regression"`,
   `"Categorical"`, `"Descriptives"`, `"Linear models"`). Behaviour is
