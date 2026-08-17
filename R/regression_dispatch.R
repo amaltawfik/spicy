@@ -2170,7 +2170,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   }
   # `na.strings = ""` so NA numeric cells render as blank (not "#N/A");
   # below we overwrite reference-row and below-threshold cells with
-  # text overrides ("--" / "<.001").
+  # text overrides (the `cell_undefined` glyph / "<.001").
   wb <- openxlsx2::wb_add_data(
     wb,
     sheet = excel_sheet,

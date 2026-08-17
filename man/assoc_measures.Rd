@@ -63,7 +63,7 @@ The ordinal family includes \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=ke
 \code{\link[=kendall_tau_c]{kendall_tau_c()}}, and \code{\link[=somers_d]{somers_d()}}.
 
 Measures that are undefined on the given table appear as \code{NA}
-rows (printed as \verb{--}). The classed warnings the individual
+rows (printed as an en dash). The classed warnings the individual
 functions raise (e.g. \code{spicy_undefined_stat}) are re-emitted
 once per distinct message after the table is assembled, so
 condition handlers and \code{suppressWarnings()} behave as they do

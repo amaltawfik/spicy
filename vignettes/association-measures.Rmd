@@ -106,7 +106,7 @@ Pass `detail = TRUE` for the confidence interval and p-value. The
 p-value tests the null hypothesis of no association using the Pearson
 chi-squared test. The chi-squared-based measures (Cramer's V, Phi, the
 contingency coefficient) have no standard asymptotic standard error, so
-the `SE` column prints `--` for them; the rank-based measures later in
+the `SE` column prints `–` for them; the rank-based measures later in
 this vignette report their asymptotic SE in that column.
 
 ```{r cramer-detail}
@@ -252,7 +252,7 @@ categories of the predictor. That is exactly what happens here --
 row-dependent Lambda is exactly 0 even though the same table shows a
 clear association (Cramer's V = 0.176, chi-squared p < .001). When the
 estimate is zero its asymptotic SE is zero as well, and no test is
-printed (`--`). Otherwise the p-value tests H0: Lambda = 0 (Wald
+printed (`–`). Otherwise the p-value tests H0: Lambda = 0 (Wald
 z-test).
 
 ### Goodman-Kruskal Tau

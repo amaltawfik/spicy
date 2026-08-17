@@ -51,8 +51,9 @@
 # measures + `assoc_measures()`). `NULL` is the documented opt-out
 # (omit the CI); anything else must be a single number strictly
 # inside (0, 1). Out-of-range values used to flow silently into
-# `qnorm()`, yielding `Inf` / `NaN` confidence bounds (printed as
-# `--`, indistinguishable from a legitimately unavailable CI); the
+# `qnorm()`, yielding `Inf` / `NaN` confidence bounds (printed as the
+# undefined-cell en dash, indistinguishable from a legitimately
+# unavailable CI); the
 # common percent-scale mistake (`conf_level = 95`) gets an
 # actionable hint. Same contract as `validate_ci_level()` on the
 # regression side.
@@ -1749,7 +1750,7 @@ somers_d <- function(
 #' [kendall_tau_c()], and [somers_d()].
 #'
 #' Measures that are undefined on the given table appear as `NA`
-#' rows (printed as `--`). The classed warnings the individual
+#' rows (printed as an en dash). The classed warnings the individual
 #' functions raise (e.g. `spicy_undefined_stat`) are re-emitted
 #' once per distinct message after the table is assembled, so
 #' condition handlers and `suppressWarnings()` behave as they do

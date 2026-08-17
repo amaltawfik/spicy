@@ -459,7 +459,8 @@ others keep the mean:
 
 The table's columns are the union of the requested tokens; a cell of
 a column the variable did not ask for is left blank (structurally
-empty, not \code{"--"}, which is reserved for an undefined statistic).
+empty, not an en dash, which is reserved for an undefined
+statistic).
 
 The table tests what it shows. A variable displaying a median
 without a mean takes the rank-based test -- Wilcoxon rank-sum for
@@ -478,7 +479,7 @@ and deterministic -- no bootstrap, no seed -- and its coverage is at
 least nominal, the same convention as SAS \verb{PROC UNIVARIATE}
 (\code{CIPCTLDF}) and \code{DescTools::MedianCI(method = "exact")}. Below
 about six observations no interval reaches the requested level; the
-cells then show \code{"--"} rather than a false interval.
+cells then show an en dash rather than a false interval.
 
 \code{"ci"} is the confidence interval \emph{of the mean}: requested without
 \code{"m"} it is dropped with a warning pointing at \code{"med_ci"}, and
@@ -526,7 +527,7 @@ packages per output engine are documented under \verb{@param align},
 Non-numeric columns are silently dropped (set \code{verbose = TRUE} to
 see which columns were excluded). When a constant column is
 passed, its statistics are reported exactly: SD is \code{0.00} and the
-CI degenerates to \verb{[m, m]}. \code{"--"} cells appear only when a
+CI degenerates to \verb{[m, m]}. An en-dash cell appears only when a
 statistic is undefined (fewer than two valid observations).
 }
 

@@ -371,8 +371,8 @@ align_ci_strings <- function(values, decimal_mark = ".", pad_char = " ") {
       if (!nzchar(raw)) {
         out[i] <- strrep(pad_char, ci_width)
       } else {
-        # Center single-glyph fallback (e.g., en-dash "--") within
-        # the CI column width so reference / blank rows stay
+        # Center single-glyph fallback (the undefined-cell en dash)
+        # within the CI column width so reference / blank rows stay
         # rectangular and visually anchored. `safe_glyph_width()`
         # falls back to byte length when the locale cannot resolve
         # display width.
