@@ -347,6 +347,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `inline()` refuses to cite an interval whose cells are a reference
   level or an undefined statistic, as it already did for `b`, `se` and
   `p` and as `?inline` documents; it used to return `[–, –]`.
+* `inline()` reads `{ci_label}` from the interval the pattern quotes:
+  `"{med} ({ci_label} {med_ci})"` on a table showing both intervals
+  now says `Med 95% CI`, the header the table itself displays, instead
+  of the mean interval's `95% CI`.
 * `inline()` addresses each interval by its own token, so a table
   carrying more than one -- `ci` with `med_ci`, or `ci` with `ame_ci`
   -- can cite either. Both used to raise an ambiguity error naming

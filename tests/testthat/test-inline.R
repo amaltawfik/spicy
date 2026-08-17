@@ -234,3 +234,46 @@ test_that("an interval token names its own bounds, not a rival estimand", {
   )
   expect_match(inline(mm, age, column = "ci", model = "Model 2"), "^\\[")
 })
+
+
+test_that("{ci_label} names the interval the pattern quotes", {
+  # Residue of the lot D fix, one layer up: the bound lookup learned to
+  # select by token, but the LABEL still returned the first `ci_label`
+  # in column order. A table showing both intervals heads them "95% CI"
+  # and "Med 95% CI" -- so a sentence quoting the median interval was
+  # given the mean's label, contradicting the table three lines above it.
+  d <- spicy::sochealth
+  two <- suppressWarnings(table_continuous(
+    d,
+    select = bmi,
+    show_columns = c("m", "ci", "med", "med_ci")
+  ))
+  s <- as_structured(two)
+  labels <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
+  # The premise: this table really does carry two different labels.
+  expect_setequal(labels, c("95% CI", "Med 95% CI"))
+
+  expect_match(
+    inline(two, bmi, column = "{m} ({ci_label} {ci})"),
+    "^[0-9.]+ \\(95% CI \\["
+  )
+  expect_match(
+    inline(two, bmi, column = "{med} ({ci_label} {med_ci})"),
+    "^[0-9.]+ \\(Med 95% CI \\["
+  )
+  # Two intervals in one sentence: the first one cited takes the label,
+  # which is the one a reader pairs it with.
+  expect_match(
+    inline(two, bmi, column = "{med} ({ci_label} {med_ci}), M {m} {ci}"),
+    "^[0-9.]+ \\(Med 95% CI \\["
+  )
+  # A pattern citing no interval keeps the plain scan.
+  expect_identical(inline(two, bmi, column = "{ci_label}"), "95% CI")
+
+  # One interval, one label: unchanged.
+  tbl <- .il_quiet(table_regression(.il_fit()))
+  expect_match(
+    inline(tbl, sex, "Male", "{b} ({ci_label} {ci})"),
+    "^3.90 \\(95% CI \\[2.14, 5.65\\]\\)$"
+  )
+})

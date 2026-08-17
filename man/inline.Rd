@@ -66,8 +66,10 @@ fragment:
 \if{html}{\out{<div class="sourceCode">}}\preformatted{inline(tbl, smoking, "Yes", "\{or\} (\{ci_label\} \{ci\}; p = \{p\})")
 }\if{html}{\out{</div>}}
 
-\code{{ci_label}} inserts the table's interval label (\verb{95\% CI}). Note
-that \code{{p}} carries the floor operator when the table does
+\code{{ci_label}} inserts the interval label of the interval the pattern
+cites (\verb{95\% CI}, or \verb{Med 95\% CI} in a pattern quoting \code{{med_ci}}) --
+the first one when it cites several, the table's first when it cites
+none. Note that \code{{p}} carries the floor operator when the table does
 (\verb{<.001}), so write \verb{p \{p\}} rather than \code{p = {p}} in patterns that
 may hit the floor.
 }

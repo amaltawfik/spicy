@@ -55,8 +55,10 @@
 #' inline(tbl, smoking, "Yes", "{or} ({ci_label} {ci}; p = {p})")
 #' ```
 #'
-#' `{ci_label}` inserts the table's interval label (`95% CI`). Note
-#' that `{p}` carries the floor operator when the table does
+#' `{ci_label}` inserts the interval label of the interval the pattern
+#' cites (`95% CI`, or `Med 95% CI` in a pattern quoting `{med_ci}`) --
+#' the first one when it cites several, the table's first when it cites
+#' none. Note that `{p}` carries the floor operator when the table does
 #' (`<.001`), so write `p {p}` rather than `p = {p}` in patterns that
 #' may hit the floor.
 #'
@@ -443,11 +445,18 @@ inline <- function(
     pattern,
     gregexpr("\\{[^{}]+\\}", pattern)
   )[[1L]]
+  names_cited <- substring(tokens, 2L, nchar(tokens) - 1L)
+  # The interval tokens this pattern cites, IN PATTERN ORDER, so
+  # `{ci_label}` can name the interval the sentence is actually
+  # quoting.
+  cited_intervals <- unique(names_cited[
+    vapply(names_cited, .inline_is_interval, logical(1), s = s, cols = cols)
+  ])
   out <- pattern
   for (tk in unique(tokens)) {
     name <- substring(tk, 2L, nchar(tk) - 1L)
     value <- if (identical(name, "ci_label")) {
-      .inline_ci_label(s, cols)
+      .inline_ci_label(s, cols, cited_intervals)
     } else {
       .inline_cell(s, formatted, row, name, cols)
     }
@@ -456,9 +465,38 @@ inline <- function(
   out
 }
 
+# Does `token` address an interval (a pair of bounds) in this table?
+.inline_is_interval <- function(token, s, cols) {
+  for (nm in cols) {
+    m <- s$col_meta[[nm]]
+    if (identical(m$token %||% "", token) && nzchar(m$ci_role %||% "")) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
+
 # The displayed interval label ("95% CI"), read from the col_meta of
 # the CI bounds.
-.inline_ci_label <- function(s, cols) {
+#
+# A table can carry two intervals with DIFFERENT labels: `show_columns =
+# c("m", "ci", "med", "med_ci")` heads them "95% CI" and "Med 95% CI",
+# and the console says so. The label therefore belongs to the interval
+# the pattern quotes, not to whichever bound comes first in the column
+# order -- the same token-blindness the interval lookup itself carried
+# until 7fe6fd94, one layer up. `want` is the pattern's interval tokens
+# in the order it cites them; the first one wins, which is the interval
+# a reader pairs with the label. A pattern citing none (`"{b}
+# {ci_label}"`) keeps the plain scan.
+.inline_ci_label <- function(s, cols, want = character(0)) {
+  for (tk in want) {
+    for (nm in cols) {
+      m <- s$col_meta[[nm]]
+      if (identical(m$token %||% "", tk) && !is.null(m$ci_label)) {
+        return(m$ci_label)
+      }
+    }
+  }
   for (nm in cols) {
     lbl <- s$col_meta[[nm]]$ci_label
     if (!is.null(lbl)) {
