@@ -198,7 +198,10 @@ test_that("partial omega2 CI is NA when the point estimate is unavailable", {
   # (a zero/infinite error variance is caught upstream as a non-finite
   # F), so the point estimate is stubbed out to enter the arm.
   m <- stats::lm(mpg ~ wt + hp, data = mtcars)
-  local_mocked_bindings(compute_lm_partial_omega2 = function(...) NA_real_)
+  local_mocked_bindings(
+    compute_lm_partial_omega2 = function(...) NA_real_,
+    .package = "spicy"
+  )
   expect_identical(
     spicy:::compute_omega2_ci_lm(m, ci_level = 0.95, focal_term = "hp"),
     c(NA_real_, NA_real_)
@@ -459,15 +462,14 @@ test_that(".spicy_contrast_suffixes retries a contrast function on the level cou
   out <- suppressWarnings(
     spicy:::.spicy_contrast_suffixes(fake, list(g = c("a", "b", "c")))
   )
+  # The retried call returned a matrix with no colnames, so the single
+  # suffix is the column index. Reaching this value at all proves the
+  # label call failed and the count call succeeded.
   expect_identical(out, list(g = "1"))
-  # Preconditions: the first call really fails and the second really
-  # returns a matrix. (The error message is locale-dependent, so the
-  # failure is detected by its absence of a value.)
-  expect_null(tryCatch(
-    suppressWarnings(chol(c("a", "b", "c"))),
-    error = function(e) NULL
-  ))
-  expect_true(is.matrix(chol(3)))
+  # `chol` is only the stand-in generator, and its own behaviour
+  # belongs to base R: it is not re-asserted here. What this test owns
+  # is the helper's output -- the line above, and the line below.
+  #
   # An unresolvable spec is skipped entirely (no entry, no error).
   bad <- structure(
     list(contrasts = list(g = "no_such_contrast_fn")),
@@ -566,7 +568,8 @@ test_that("mixed-model rows degrade gracefully when factor metadata fails", {
   expect_identical(ok$coefs_beta$label[ok$coefs_beta$term == "grpodd"], "odd")
 
   local_mocked_bindings(
-    detect_factor_term_meta = function(...) stop("factor metadata unavailable")
+    detect_factor_term_meta = function(...) stop("factor metadata unavailable"),
+    .package = "spicy"
   )
   degraded <- suppressWarnings(
     spicy:::.compute_beta_rows_for_mixed(fit, ci_level = 0.95)
@@ -596,7 +599,8 @@ test_that("mixed partial chi-square rows degrade gracefully when factor metadata
   expect_identical(ok$parent_var[ok$term == "grpodd"], "grp")
 
   local_mocked_bindings(
-    detect_factor_term_meta = function(...) stop("factor metadata unavailable")
+    detect_factor_term_meta = function(...) stop("factor metadata unavailable"),
+    .package = "spicy"
   )
   degraded <- suppressWarnings(spicy:::.compute_partial_chi2_rows_for_mixed(
     fit

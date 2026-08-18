@@ -164,15 +164,14 @@ test_that(".gam_smooth_terms returns NA statistic and p when the s.table lacks t
 
 test_that(".gam_info leaves pseudo_r2 NULL when summary() reports no deviance explained", {
   # mgcv::summary.gam() always computes dev.expl arithmetically, so the
-  # is.null() guard needs a stand-in summary method. S3 dispatch from inside
-  # the package namespace searches the global environment (namespace ->
-  # imports -> base -> globalenv), so registering it there is enough.
-  assign(
-    "summary.spicycovfakegam",
-    function(object, ...) list(r.sq = 0.5, s.table = NULL),
-    envir = globalenv()
+  # is.null() guard needs a stand-in summary method. Registering it in the
+  # S3 methods table (rather than in globalenv) keeps it visible to
+  # dispatch from inside the package namespace AND scoped to this test.
+  testthat::local_mocked_s3_method(
+    "summary",
+    "spicycovfakegam",
+    function(object, ...) list(r.sq = 0.5, s.table = NULL)
   )
-  withr::defer(rm("summary.spicycovfakegam", envir = globalenv()))
 
   f <- stats::as.formula("y ~ x")
   fake <- structure(

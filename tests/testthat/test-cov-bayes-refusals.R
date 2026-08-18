@@ -335,10 +335,18 @@ test_that("`p_adjust` is refused when every model is Bayesian", {
   )
   expect_match(msg, "show_columns = \"pd\"", fixed = TRUE)
 
-  # `p_adjust = "none"` is the default and must not trip the gate --
-  # it fails later, on the mock's missing draws, not here.
-  err_none <- expect_error(table_regression(fake_stanreg(), p_adjust = "none"))
-  expect_false(grepl("no p-values to adjust", conditionMessage(err_none)))
+  # `p_adjust = "none"` is the default and must NOT trip the gate. The
+  # mock still fails further downstream (it has no draws to render),
+  # but that failure is a bare base-R error whose message is
+  # locale-dependent, so the assertion is on the gate's own condition
+  # class: catching only `spicy_invalid_input` leaves NULL when the
+  # gate stayed silent, and would return the condition if it fired.
+  gate_fired <- tryCatch(
+    table_regression(fake_stanreg(), p_adjust = "none"),
+    spicy_invalid_input = function(e) e,
+    error = function(e) NULL
+  )
+  expect_null(gate_fired)
 })
 
 

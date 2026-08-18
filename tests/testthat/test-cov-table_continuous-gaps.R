@@ -127,7 +127,8 @@ test_that("an effect size that errors degrades to NA cells with a classed warnin
   # injected. The contract under test is the DEGRADATION: a named,
   # classed warning and NA cells instead of a crash.
   testthat::local_mocked_bindings(
-    compute_effect_size = function(...) stop("synthetic effect-size failure")
+    compute_effect_size = function(...) stop("synthetic effect-size failure"),
+    .package = "spicy"
   )
   expect_warning(
     out <- table_continuous(

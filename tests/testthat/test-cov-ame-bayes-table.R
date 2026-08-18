@@ -24,7 +24,11 @@ skip_if_no_me_bayes_ame <- function() {
 }
 
 # Capture the first spicy_fallback warning while muffling it, so both the
-# condition class and the message fragments can be asserted.
+# condition class and the message fragments can be asserted. The trailing
+# `warning` handler muffles the upstream noise these paths also raise
+# (marginaleffects announces "does not include draws" on its own); it is
+# established SECOND, so a spicy_fallback is claimed by the handler above
+# and never reaches it.
 catch_fallback_bayes_ame <- function(expr) {
   cond <- NULL
   val <- withCallingHandlers(
@@ -33,6 +37,9 @@ catch_fallback_bayes_ame <- function(expr) {
       if (is.null(cond)) {
         cond <<- w
       }
+      invokeRestart("muffleWarning")
+    },
+    warning = function(w) {
       invokeRestart("muffleWarning")
     }
   )
@@ -172,7 +179,20 @@ test_that(".compute_bayes_ame_table keeps the avg_slopes summary when there are 
   s <- as.data.frame(suppressWarnings(
     marginaleffects::avg_slopes(fit, conf_level = 0.9)
   ))
-  out <- suppressWarnings(spicy:::.compute_bayes_ame_table(fit, 0.9))
+  # The draw-less path is not silent: it announces the degradation with
+  # a classed warning, and that announcement IS the contract here (the
+  # SE column will be en-dashed downstream). marginaleffects raises its
+  # own "does not include draws" warning first, so the spicy one is
+  # picked out by class rather than by order.
+  res <- catch_fallback_bayes_ame(spicy:::.compute_bayes_ame_table(fit, 0.9))
+  expect_s3_class(res$cond, "spicy_fallback")
+  expect_match(
+    conditionMessage(res$cond),
+    "AME draws could not be extracted",
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(res$cond), "en-dashed", fixed = TRUE)
+  out <- res$value
   expect_identical(out$term, as.character(s$term))
   expect_identical(out$contrast, as.character(s$contrast))
   expect_equal(out$estimate, s$estimate, tolerance = 1e-12)
@@ -233,9 +253,18 @@ test_that(".compute_bayes_ame_table summarises posterior draws as median, MAD SD
       info = tm
     )
   }
-  # Exact literal for the symmetric term: seq(-6, -1, length.out = 40) has
-  # median -3.5, and the summary really did move off avg_slopes' estimate.
+  # Exact literals for the symmetric term, hand-derived rather than
+  # recomputed with the same function the code calls.
+  # seq(-6, -1, length.out = 40) is an arithmetic grid of step
+  # h = 5/39 about its midpoint -3.5, so:
+  #   median = -3.5
+  #   the 40 absolute deviations are (k - 0.5) h for k = 1..20, each
+  #   twice; their median averages the 20th and 21st smallest, i.e.
+  #   (9.5 h + 10.5 h) / 2 = 10 h = 50/39
+  #   MAD SD = 1.4826 * 50/39 = 1.90076923076923...
   expect_equal(out$estimate[out$term == "wt"], -3.5)
+  expect_equal(out$std.error[out$term == "wt"], 1.4826 * 50 / 39)
+  expect_equal(out$std.error[out$term == "wt"], 1.9007692307692305)
   expect_false(isTRUE(all.equal(out$estimate, s$estimate)))
   expect_true(all(is.na(out$statistic)))
   expect_true(all(is.na(out$p.value)))
@@ -335,13 +364,27 @@ test_that(".compute_bayes_ame_table keys posterior draws by outcome group", {
   expect_identical(out$group, as.character(s$group))
   # Every (term, group) cell picked up ITS block: median = i * 100 exactly.
   expect_equal(out$estimate, (seq_len(nrow(s)) * 100))
-  expect_equal(out$std.error, rep(stats::mad(c(-2, -1, 0, 1, 2)), nrow(s)))
+  # MAD SD of c(-2, -1, 0, 1, 2): median 0, absolute deviations
+  # (2, 1, 0, 1, 2) with median 1, so 1.4826 * 1 = 1.4826.
+  expect_equal(out$std.error, rep(1.4826, nrow(s)))
+  # Both bounds move with the block, not just the lower one: the
+  # type-7 quantiles of c(-2, -1, 0, 1, 2) at 5% / 95% are -1.8 / 1.8.
+  expect_equal(out$conf.low, (seq_len(nrow(s)) * 100) - 1.8)
+  expect_equal(out$conf.high, (seq_len(nrow(s)) * 100) + 1.8)
   expect_equal(
     out$conf.low,
     (seq_len(nrow(s)) * 100) +
       unname(stats::quantile(
         c(-2, -1, 0, 1, 2),
         0.05
+      ))
+  )
+  expect_equal(
+    out$conf.high,
+    (seq_len(nrow(s)) * 100) +
+      unname(stats::quantile(
+        c(-2, -1, 0, 1, 2),
+        0.95
       ))
   )
 })
