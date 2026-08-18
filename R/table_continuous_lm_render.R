@@ -76,7 +76,24 @@
 # "M..a.b.", and so do "M (R²)" and "M (R³)" -- and gt aborts on a
 # duplicate spanner id, taking the whole table down. `make.unique()`
 # breaks the tie; it leaves a set with no collision exactly as it was.
+#
+# `make.unique()` cannot save a set whose KEYS already repeat: the two
+# entries would then share a name, `span_ids[[key]]` would return the
+# same id twice, and gt's duplicate-id abort would be back. The keys are
+# built from `by` levels, which are unique factor levels, so this cannot
+# happen today -- but the caller reads the result BY NAME, and a name
+# that resolves to two things is the failure this helper exists to
+# prevent. Refuse here rather than let gt refuse the table.
 .lm_spanner_ids <- function(keys) {
+  if (anyDuplicated(keys)) {
+    spicy_abort(
+      sprintf(
+        "Spanner keys must be unique; %s repeats.",
+        .quote_val(keys[anyDuplicated(keys)])
+      ),
+      class = "spicy_internal_invariant"
+    )
+  }
   stats::setNames(
     make.unique(paste0("spn_", make.names(keys)), sep = "_"),
     keys

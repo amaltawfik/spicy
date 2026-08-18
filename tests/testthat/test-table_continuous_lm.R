@@ -4808,3 +4808,21 @@ test_that(".lm_spanner_ids is stable where nothing collides", {
   expect_identical(length(unique(tied)), 2L)
   expect_identical(unname(tied[1]), "spn_M..a.b.")
 })
+
+test_that(".lm_spanner_ids refuses keys that already repeat", {
+  # `make.unique()` breaks a tie between DERIVED ids, not between the
+  # keys themselves: repeated keys would name two entries the same, and
+  # the by-name lookup at the styling site would hand gt one id twice --
+  # the abort this helper exists to prevent. Unreachable through the
+  # public surface (the keys are unique factor levels), so the guard is
+  # asserted on the helper directly.
+  expect_error(
+    spicy:::.lm_spanner_ids(c("M (x)", "M (x)")),
+    class = "spicy_internal_invariant"
+  )
+  expect_error(
+    spicy:::.lm_spanner_ids(c("M (x)", "M (x)")),
+    "M (x)",
+    fixed = TRUE
+  )
+})
