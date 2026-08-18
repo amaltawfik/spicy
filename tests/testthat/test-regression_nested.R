@@ -235,6 +235,18 @@ test_that("table_regression - nested glm injects Δχ² / p (change) rows", {
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
   expect_true("Δχ²" %in% vars)
   expect_true("p (change)" %in% vars)
+  # Positive control: these two are the lm change rows, so the negatives
+  # below cannot quietly stop matching when either label is renamed.
+  lm_vars <- trimws(
+    as.data.frame(
+      table_regression(
+        list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt)),
+        nested = TRUE
+      ),
+      stringsAsFactors = FALSE
+    )$Variable
+  )
+  expect_true(all(c("ΔR²", "F-change") %in% lm_vars))
   expect_false("ΔR²" %in% vars)
   expect_false("F-change" %in% vars)
 })
@@ -250,6 +262,15 @@ test_that("table_regression - user can override change tokens via show_fit_stats
   expect_true("ΔAIC" %in% vars)
   expect_true("ΔBIC" %in% vars)
   expect_true("p (change)" %in% vars)
+  # Positive control: the same two fits with the DEFAULT tokens do carry
+  # the rows this override is asserted to have replaced.
+  default_vars <- trimws(
+    as.data.frame(
+      table_regression(fits, nested = TRUE),
+      stringsAsFactors = FALSE
+    )$Variable
+  )
+  expect_true(all(c("ΔR²", "F-change") %in% default_vars))
   expect_false("ΔR²" %in% vars)
   expect_false("F-change" %in% vars)
 })

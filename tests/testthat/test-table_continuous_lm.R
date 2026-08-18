@@ -190,6 +190,22 @@ test_that("table_continuous_lm ignores weighted n when weights are absent", {
     "show_weighted_n"
   )
 
+  # Positive control: "Weighted n" IS a column name when weights are
+  # present, so the negative below is about the missing weights and not
+  # about a header that has quietly been renamed.
+  wd <- iris
+  wd$w <- seq_len(nrow(wd)) / 10
+  expect_true(
+    "Weighted n" %in%
+      names(table_continuous_lm(
+        wd,
+        select = Sepal.Length,
+        by = Species,
+        weights = w,
+        show_weighted_n = TRUE,
+        output = "data.frame"
+      ))
+  )
   expect_false("Weighted n" %in% names(out))
 })
 
@@ -349,6 +365,20 @@ test_that("table_continuous_lm data.frame output puts >2 categorical levels in c
   expect_false(any(grepl("CI", names(out))))
   expect_true("F(2, 147)" %in% names(out))
   expect_true("p" %in% names(out))
+  # Positive control: "f²" IS a column name when the effect size is
+  # asked for, so its absence here is the default at work and not a
+  # renamed header quietly disarming the assertion.
+  expect_true(
+    "f²" %in%
+      names(table_continuous_lm(
+        iris,
+        select = Sepal.Length,
+        by = Species,
+        statistic = TRUE,
+        effect_size = "f2",
+        output = "data.frame"
+      ))
+  )
   expect_false("f²" %in% names(out))
   expect_true("R²" %in% names(out))
   expect_equal(out$Variable[1], "Sepal.Length")
@@ -388,6 +418,21 @@ test_that("table_continuous_lm data.frame output honors optional columns", {
     effect_size = "none",
     output = "data.frame"
   )
+
+  # Positive control: all four ARE column names when every optional
+  # column is switched on. Four negative memberships on typed-out
+  # headers assert nothing the day any of them is renamed.
+  all_on <- table_continuous_lm(
+    sochealth,
+    select = c(wellbeing_score, bmi),
+    by = sex,
+    statistic = TRUE,
+    p_value = TRUE,
+    show_n = TRUE,
+    effect_size = "f2",
+    output = "data.frame"
+  )
+  expect_true(all(c("t", "p", "n", "f²") %in% names(all_on)))
 
   expect_false("t" %in% names(out))
   expect_false("p" %in% names(out))

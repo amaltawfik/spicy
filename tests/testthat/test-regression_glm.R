@@ -380,6 +380,17 @@ test_that("exponentiate: lm ⇒ no transform + spicy_ignored_arg warning", {
   )
   # B column kept its raw value
   expect_true("B" %in% names(out))
+  # Positive control: the absent header has to be a real one, or this
+  # negative membership goes quiet the day the ratio header is renamed.
+  expect_true(
+    "OR" %in%
+      names(
+        table_regression(
+          glm(am ~ mpg, data = mt, family = binomial),
+          exponentiate = TRUE
+        )
+      )
+  )
   expect_false("OR" %in% names(out))
   td <- broom::tidy(out)
   expect_equal(

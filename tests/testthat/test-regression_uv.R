@@ -217,6 +217,21 @@ test_that("the structured body carries no empty fit-stat rows either", {
   )
   st <- attr(df, "structured")
   expect_false(any(st$body$.row_role == "fit_stat"))
+  # Positive control for the label half: `.row_role` is drift-proof, the
+  # two typed-out stubs are not. Pin that both name real fit-stat rows
+  # when the screen is asked for them.
+  with_stats <- attr(
+    table_regression_uv(
+      d,
+      outcome = wellbeing_score,
+      method = "lm",
+      predictors = c(age, bmi),
+      show_fit_stats = c("nobs", "aic"),
+      output = "data.frame"
+    ),
+    "structured"
+  )
+  expect_true(all(c("n", "AIC") %in% trimws(with_stats$body$Variable)))
   expect_false(any(st$body$Variable %in% c("n", "AIC")))
 
   skip_if_not_installed("tinytable")

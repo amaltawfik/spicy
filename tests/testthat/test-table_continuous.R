@@ -451,6 +451,19 @@ test_that("table_continuous p_value adds p column without Test column", {
     show_statistic = FALSE
   )
   expect_true("p" %in% names(display))
+  # Positive control: "Test" has to be a header the builder can produce,
+  # or this negative stops asserting anything the day it is renamed.
+  expect_true(
+    "Test" %in%
+      names(spicy:::build_display_df(
+        out,
+        2L,
+        ".",
+        0.95,
+        show_p = TRUE,
+        show_statistic = TRUE
+      ))
+  )
   expect_false("Test" %in% names(display))
 })
 
@@ -493,6 +506,19 @@ test_that("table_continuous statistic alone shows Test column without p", {
     show_statistic = TRUE
   )
   expect_true("Test" %in% names(display))
+  # Positive control, mirroring the sibling test: "p" is a header the
+  # builder produces when asked, so its absence here means something.
+  expect_true(
+    "p" %in%
+      names(spicy:::build_display_df(
+        out,
+        2L,
+        ".",
+        0.95,
+        show_p = TRUE,
+        show_statistic = TRUE
+      ))
+  )
   expect_false("p" %in% names(display))
 })
 
@@ -1302,6 +1328,18 @@ test_that("table_continuous gt with p_value only has p spanner but not Test", {
   spanners <- out[["_spanners"]]
   labels <- unlist(spanners$spanner_label)
   expect_true("p" %in% labels)
+  # Positive control: the same table WITH `statistic` does carry a
+  # "Test" spanner, so the negative below is about the toggle and not
+  # about a label that has quietly moved.
+  with_stat <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    p_value = TRUE,
+    statistic = TRUE,
+    output = "gt"
+  )
+  expect_true("Test" %in% unlist(with_stat[["_spanners"]]$spanner_label))
   expect_false("Test" %in% labels)
 })
 
@@ -1513,6 +1551,20 @@ test_that("build_display_df ungrouped has correct column names", {
   display <- spicy:::build_display_df(out, 2L, ".", 0.90)
   expect_true("90% CI LL" %in% names(display))
   expect_true("90% CI UL" %in% names(display))
+  # Positive control: "Group" is the header a grouped table carries, so
+  # its absence here says the ungrouped shape drops the column rather
+  # than that the header has been renamed.
+  grouped <- table_continuous(
+    data.frame(x = 1:10, g = rep(1:2, 5)),
+    by = g,
+    output = "data.frame"
+  )
+  expect_true(
+    "Group" %in%
+      names(
+        spicy:::build_display_df(grouped, 2L, ".", 0.95)
+      )
+  )
   expect_false("Group" %in% names(display))
 })
 
@@ -1862,6 +1914,17 @@ test_that("table_continuous effect_size=TRUE alone adds es but not test columns"
     show_effect_size = TRUE
   )
   expect_true("ES" %in% names(display))
+  # Positive control: both headers ARE produced when asked for, so the
+  # two negatives below cannot go quiet on a rename.
+  with_both <- spicy:::build_display_df(
+    out,
+    2L,
+    ".",
+    0.95,
+    show_p = TRUE,
+    show_statistic = TRUE
+  )
+  expect_true(all(c("Test", "p") %in% names(with_both)))
   expect_false("Test" %in% names(display))
   expect_false("p" %in% names(display))
 })
@@ -2616,18 +2679,30 @@ test_that("show_n = FALSE drops the n column from the rendered display df", {
     show_n = FALSE
   )
   expect_false(attr(out, "show_n"))
-  display <- spicy:::build_display_df(
-    out,
+  args <- list(
     digits = 2,
     decimal_mark = ".",
     ci_level = 0.95,
     show_p = TRUE,
     show_statistic = FALSE,
-    show_n = FALSE,
     show_ci = TRUE,
     show_effect_size = FALSE,
     show_effect_size_ci = FALSE,
     p_digits = 3L
+  )
+  display <- do.call(
+    spicy:::build_display_df,
+    c(list(out), args, list(show_n = FALSE))
+  )
+  # Positive control: the same builder DOES produce the "n" header at
+  # `show_n = TRUE`, so the negative is about the toggle rather than a
+  # header that has silently been renamed.
+  expect_true(
+    "n" %in%
+      names(do.call(
+        spicy:::build_display_df,
+        c(list(out), args, list(show_n = TRUE))
+      ))
   )
   expect_false("n" %in% names(display))
 })
@@ -2841,18 +2916,29 @@ test_that("ci = FALSE structurally removes CI cols from the build_display_df out
 
 test_that("show_n = FALSE structurally removes n col from build_display_df output", {
   out <- table_continuous(sleep, select = extra, by = group, show_n = FALSE)
-  display <- spicy:::build_display_df(
-    out,
+  args <- list(
     digits = 2,
     decimal_mark = ".",
     ci_level = 0.95,
     show_p = TRUE,
     show_statistic = FALSE,
-    show_n = FALSE,
     show_ci = TRUE,
     show_effect_size = FALSE,
     show_effect_size_ci = FALSE,
     p_digits = 3L
+  )
+  display <- do.call(
+    spicy:::build_display_df,
+    c(list(out), args, list(show_n = FALSE))
+  )
+  # Positive control, as in the sibling test: the header exists at
+  # `show_n = TRUE`.
+  expect_true(
+    "n" %in%
+      names(do.call(
+        spicy:::build_display_df,
+        c(list(out), args, list(show_n = TRUE))
+      ))
   )
   expect_false("n" %in% names(display))
 })

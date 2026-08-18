@@ -303,6 +303,21 @@ test_that("cross_tab default column percent includes Total and N rows", {
 })
 
 test_that("cross_tab show_n = FALSE omits N row/column", {
+  # Positive control: `expect_false("N" %in% ...)` stops asserting
+  # anything the day the count header is renamed -- it just stops
+  # matching. Pin that `show_n = TRUE` DOES put the header where each
+  # negative below looks for it.
+  kept_row <- cross_tab(mtcars, cyl, gear, percent = "row", output = "default")
+  expect_true("N" %in% names(kept_row))
+  kept_col <- cross_tab(
+    mtcars,
+    cyl,
+    gear,
+    percent = "column",
+    output = "default"
+  )
+  expect_true("N" %in% kept_col$Values)
+
   res <- cross_tab(
     mtcars,
     cyl,

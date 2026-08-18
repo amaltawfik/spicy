@@ -660,6 +660,16 @@ test_that("DV smart spanner uses the bare variable name (NOT attr('label'))", {
   fit_b <- lm(x ~ y, data = df)
 
   out <- table_regression(list(fit_a, fit_b))
+  # Positive control: explicit `outcome_labels` DO produce the row, so
+  # this negative membership on a typed-out row label cannot go quiet
+  # the day the label is renamed.
+  expect_true(
+    "Outcome" %in%
+      table_regression(
+        list(fit_a, fit_b),
+        outcome_labels = c("A", "B")
+      )$Variable
+  )
   expect_false("Outcome" %in% out$Variable)
   spans <- attr(out, "spanners")
   expect_equal(names(spans), c("y", "x"))
@@ -673,6 +683,15 @@ test_that("outcome auto-row identical-DV check uses variable name (not label)", 
   fit1 <- lm(y ~ x, data = df)
   fit2 <- lm(y ~ I(x^2), data = df)
   out <- table_regression(list(fit1, fit2))
+  # Positive control, as elsewhere in this block: the row exists when
+  # it is asked for.
+  expect_true(
+    "Outcome" %in%
+      table_regression(
+        list(fit1, fit2),
+        outcome_labels = c("A", "B")
+      )$Variable
+  )
   expect_false("Outcome" %in% out$Variable)
 })
 
@@ -755,6 +774,16 @@ test_that("outcome_labels – single model: row never shown (DV is in title)", {
   out_null <- table_regression(fit, outcome_labels = NULL)
   out_chr <- table_regression(fit, outcome_labels = "Custom")
   out_F <- table_regression(fit, outcome_labels = FALSE)
+  # Positive control: the row label is real -- a two-model table with
+  # explicit labels carries it -- so these three negatives keep biting
+  # if it is ever renamed.
+  expect_true(
+    "Outcome" %in%
+      table_regression(
+        list(fit, lm(hp ~ wt, data = mt)),
+        outcome_labels = c("A", "B")
+      )$Variable
+  )
   expect_false("Outcome" %in% out_null$Variable)
   expect_false("Outcome" %in% out_chr$Variable)
   expect_false("Outcome" %in% out_F$Variable)
@@ -764,6 +793,14 @@ test_that("outcome_labels – multi-model identical DVs: NULL hides the row", {
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
+  # Positive control: explicit labels put the row back.
+  expect_true(
+    "Outcome" %in%
+      table_regression(
+        list(m1, m2),
+        outcome_labels = c("A", "B")
+      )$Variable
+  )
   expect_false("Outcome" %in% out$Variable)
 })
 
@@ -774,6 +811,14 @@ test_that("outcome_labels – multi-model differing DVs: NULL lifts DVs into spa
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp))
+  # Positive control: explicit labels put the row back.
+  expect_true(
+    "Outcome" %in%
+      table_regression(
+        list(m_mpg, m_hp),
+        outcome_labels = c("A", "B")
+      )$Variable
+  )
   expect_false("Outcome" %in% out$Variable)
   spans <- attr(out, "spanners")
   expect_equal(names(spans), c("mpg", "hp"))
@@ -796,6 +841,15 @@ test_that("outcome_labels – FALSE suppresses the row even with differing DVs",
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp), outcome_labels = FALSE)
+  # Positive control: the same two fits WITH labels carry the row, so
+  # `FALSE` is what suppresses it here.
+  expect_true(
+    "Outcome" %in%
+      table_regression(
+        list(m_mpg, m_hp),
+        outcome_labels = c("A", "B")
+      )$Variable
+  )
   expect_false("Outcome" %in% out$Variable)
 })
 
@@ -955,6 +1009,14 @@ test_that("spanner – multi-model unnamed + distinct DVs: DV smart default", {
   spans <- attr(out, "spanners")
   expect_equal(names(spans), c("mpg", "hp"))
   # Outcome row is folded into the spanner -> not in the body.
+  # Positive control: explicit labels unfold it again.
+  expect_true(
+    "Outcome" %in%
+      table_regression(
+        list(m_mpg, m_hp),
+        outcome_labels = c("A", "B")
+      )$Variable
+  )
   expect_false("Outcome" %in% out$Variable)
 })
 

@@ -563,6 +563,31 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
   # Long: one stable column, the per-row measure keys beside it.
   expect_true("effect_size" %in% names(out))
   expect_setequal(unique(out$effect_size_type), c("phi", "cramer_v"))
+  # Positive control: both display names ARE wide column names on a
+  # single-measure table, so these two negatives cannot quietly stop
+  # matching the day either measure is renamed.
+  expect_true(
+    "Phi" %in%
+      names(
+        table_categorical(
+          sochealth,
+          select = smoking,
+          by = sex,
+          output = "data.frame"
+        )
+      )
+  )
+  expect_true(
+    "Cramer's V" %in%
+      names(
+        table_categorical(
+          sochealth,
+          select = smoking,
+          by = education,
+          output = "data.frame"
+        )
+      )
+  )
   expect_false("Phi" %in% names(out))
   expect_false("Cramer's V" %in% names(out))
   # Wide: the mixed case collapses to the generic header.
@@ -709,6 +734,19 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     output = "long"
   )
   expect_identical(unique(out$effect_size_type), "gamma")
+  # Positive control for the negative below: "Cramer's V" has to be a
+  # real wide column name, or renaming the measure disarms it silently.
+  expect_true(
+    "Cramer's V" %in%
+      names(
+        table_categorical(
+          sochealth,
+          select = smoking,
+          by = education,
+          output = "data.frame"
+        )
+      )
+  )
   expect_false("Cramer's V" %in% names(out))
   wide <- table_categorical(
     df,
@@ -736,6 +774,18 @@ test_that("assoc_ci adds CI columns in wide raw output", {
 })
 
 test_that("assoc_ci = FALSE omits CI columns in wide raw output", {
+  # Positive control: the two bound headers ARE column names with
+  # `assoc_ci = TRUE`, so the negatives below keep biting if either is
+  # renamed instead of silently ceasing to match.
+  with_ci <- table_categorical(
+    sochealth,
+    "smoking",
+    "education",
+    output = "data.frame",
+    assoc_ci = TRUE
+  )
+  expect_true(all(c("CI lower", "CI upper") %in% names(with_ci)))
+
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -771,6 +821,21 @@ test_that("assoc_ci shows inline CI in rendered formats", {
   )
   dat <- gt_out[["_data"]]
   expect_match(dat$assoc_col[1], "\\[")
+  # Positive control: the bound header is a real column name on the
+  # data.frame route, so this negative is about the gt route inlining
+  # the interval -- not about a header that has quietly been renamed.
+  expect_true(
+    "CI lower" %in%
+      names(
+        table_categorical(
+          sochealth,
+          "smoking",
+          "education",
+          output = "data.frame",
+          assoc_ci = TRUE
+        )
+      )
+  )
   expect_false("CI lower" %in% names(dat))
 })
 # ---- levels_keep ---------------------------------------------------------
@@ -1162,7 +1227,20 @@ test_that("table_categorical assoc_measure = 'none' omits association column", {
     assoc_measure = "none",
     output = "long"
   )
-  expect_false("Cramer's V" %in% names(out))
+  # This used to assert that a column named after the measure was
+  # absent. The long output names its association column `effect_size`
+  # whatever the measure is, so no such column can ever exist and the
+  # assertion was vacuous by construction, not merely fragile to a
+  # rename. The columns the output CAN carry are what carries it now,
+  # with a positive control on the same call minus `assoc_measure`.
+  kept <- table_categorical(
+    sochealth,
+    "smoking",
+    "education",
+    output = "long"
+  )
+  expect_true(all(c("effect_size", "effect_size_type") %in% names(kept)))
+  expect_false(any(c("effect_size", "effect_size_type") %in% names(out)))
 })
 test_that("table_categorical with assoc_ci includes CI columns in raw long", {
   out <- table_categorical(
@@ -1444,8 +1522,18 @@ test_that("table_categorical grouped with assoc_measure = none", {
     assoc_measure = "none",
     output = "long"
   )
-  # No association measure column
-  expect_false("Cramer's V" %in% names(out))
+  # No association measure column. As in the test above, the long
+  # output never names one after the measure, so the stable column
+  # names are what carries this; the positive control is the same call
+  # with the default measure.
+  kept <- table_categorical(
+    data = sochealth,
+    select = smoking,
+    by = sex,
+    output = "long"
+  )
+  expect_true(all(c("effect_size", "effect_size_type") %in% names(kept)))
+  expect_false(any(c("effect_size", "effect_size_type") %in% names(out)))
 })
 
 test_that("table_categorical grouped empty after dropping NA", {
@@ -2410,7 +2498,20 @@ test_that("tidy() respects include_total = FALSE without spurious Total rows", {
     include_total = FALSE
   )
   td <- broom::tidy(out)
+  # Positive control: "Total" IS a group of the long view when the
+  # margin is kept, so this negative cannot go quiet the day the margin
+  # label is renamed.
+  expect_true(
+    "Total" %in%
+      table_categorical(
+        sochealth,
+        select = smoking,
+        by = sex,
+        output = "long"
+      )$group
+  )
   expect_false("Total" %in% td$group)
+  expect_setequal(unique(td$group), c("Female", "Male"))
 })
 
 test_that("p_digits drives the small-p threshold in table_categorical()", {

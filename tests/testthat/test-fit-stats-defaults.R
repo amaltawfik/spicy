@@ -124,6 +124,10 @@ test_that("mixed lm + glm alien fit-stat cells render an en-dash", {
   expect_identical(trimws(d[[ols_col]][vars == "R² (McFadden)"]), dash)
   expect_identical(trimws(d[[ols_col]][vars == "R² (Nagelkerke)"]), dash)
   # A stat BOTH classes define keeps its two values (no dash).
+  # The row selector is a typed-out label: rename it and `vars == "AIC"`
+  # selects nothing, `dash %in% character(0)` is FALSE, and the two
+  # assertions below pass while testing nothing. Pin the row first.
+  expect_true("AIC" %in% vars)
   expect_false(dash %in% trimws(d[[ols_col]][vars == "AIC"]))
   expect_false(dash %in% trimws(d[[logit_col]][vars == "AIC"]))
   # The body's absent-term cells stay BLANK (dash is a fit-stat signal,
