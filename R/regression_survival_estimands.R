@@ -373,13 +373,12 @@
   }
   if (!is.character(fit$dist)) {
     spicy_abort(
-      # nocov start
       sprintf(
         "RMST / risk-difference columns need a named survreg distribution (%s).",
         model_id
       ),
       class = "spicy_invalid_input"
-    ) # nocov end
+    )
   }
   invisible(NULL)
 }
