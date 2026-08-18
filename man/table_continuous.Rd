@@ -229,7 +229,7 @@ Either \code{"."} (default) or \code{","}.}
 
 \item{align}{Horizontal alignment of numeric columns in the printed
 ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable}, \code{word},
-and \code{clipboard} outputs. The first column (\code{Variable}) and
+\code{excel}, and \code{clipboard} outputs. The first column (\code{Variable}) and
 \code{Group} (when present) are always left-aligned. One of:
 \itemize{
 \item \code{"decimal"} (default): align numeric columns on the decimal
@@ -250,10 +250,13 @@ next to an unpadded number).
 \item \code{"right"}: right-align all numeric columns.
 }
 
-The \code{excel} output uses the engine's default alignment in any
-case: cell-string padding does not align decimals under
-proportional fonts. Same default and semantics as
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}.}
+\code{"center"} and \code{"right"} reach the \code{excel} output too. \code{"decimal"}
+does not: Excel cells are written unpadded, because cell-string
+padding does not align decimals under a proportional font, so the
+workbook keeps the engine's own convention instead -- counts and
+the \emph{p}-value right-aligned, the other numeric columns centred.
+Same default and same three values as \code{\link[=table_continuous_lm]{table_continuous_lm()}},
+whose \code{excel} output still uses that convention at every \code{align}.}
 
 \item{output}{Output format. One of:
 \itemize{

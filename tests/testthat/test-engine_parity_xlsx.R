@@ -108,6 +108,29 @@
   )
 }
 
+# The horizontal alignment a cell declares ("left" / "center" / "right",
+# or NA when it declares none), read through the same style chain.
+.xl_halign <- function(path, refs) {
+  wb <- openxlsx2::wb_load(path)
+  cc <- wb$worksheets[[1L]]$sheet_data$cc
+  vapply(
+    refs,
+    function(ref) {
+      s <- cc$c_s[cc$r == ref]
+      if (length(s) == 0L || !nzchar(s[1L])) {
+        return(NA_character_)
+      }
+      xf <- wb$styles_mgr$styles$cellXfs[[as.integer(s[1L]) + 1L]]
+      if (!grepl('horizontal="', xf, fixed = TRUE)) {
+        return(NA_character_)
+      }
+      sub('.*horizontal="([a-z]+)".*', "\\1", xf)
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+}
+
 # The bottom-border weight a cell declares ("thin", "hair", or NA),
 # read through the style chain: cell -> cellXfs -> borders.
 .xl_bottom_border <- function(path, ref) {
@@ -672,4 +695,37 @@ test_that("excel_sheet = NULL resolves to the family sheet names (decision 16)",
   wb <- openxlsx2::wb_load(path)
   expect_identical(wb$get_sheet_names()[[1L]], "Mine")
   unlink(path)
+})
+
+
+test_that("align reaches the Excel output of table_continuous()", {
+  .xl_skip()
+  d <- .xl_data()
+  # Columns A..I: Variable, Group, M, SD, Min, Max, CI LL, CI UL, n.
+  # Row 5 is the first body row (title 1, spanner 3, sub-header 4).
+  body <- paste0(LETTERS[1:9], "5")
+  halign <- function(al) {
+    path <- tempfile(fileext = ".xlsx")
+    on.exit(unlink(path), add = TRUE)
+    suppressMessages(table_continuous(
+      d,
+      select = bmi,
+      by = sex,
+      output = "excel",
+      excel_path = path,
+      align = al
+    ))
+    .xl_halign(path, body)
+  }
+  # The label columns never move.
+  # "decimal": the workbook is unpadded, so it keeps the engine's own
+  # convention -- the count right, the rest centred.
+  expect_identical(
+    halign("decimal"),
+    c("left", "left", rep("center", 6L), "right")
+  )
+  # "center" and "right" used to be silent no-ops here while every
+  # other engine honoured them.
+  expect_identical(halign("center"), c("left", "left", rep("center", 7L)))
+  expect_identical(halign("right"), c("left", "left", rep("right", 7L)))
 })

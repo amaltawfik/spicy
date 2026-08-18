@@ -497,6 +497,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `table_categorical(output = "excel")` writes blank cells on
   variable-header rows. They used to be Excel error cells (`#N/A`), which
   spread the error to any `SUM()` over the column.
+* `table_continuous(align = , output = "excel")` reaches the workbook:
+  `"center"` centres every numeric column and `"right"` right-aligns
+  them, as they already did on the console and in the `tinytable`, `gt`,
+  `flextable` and `word` outputs. Both were silently ignored. The
+  default `"decimal"` is unchanged -- Excel cells are unpadded, so it
+  keeps the engine's convention of right-aligning the counts and the
+  *p*-value and centring the rest. See `?table_continuous`.
 * `table_categorical()` and `table_continuous()` carry their title and
   their missing-value / association notes to `output = "excel"`, like every
   other output; `table_continuous_lm()` gains the title. The table starts

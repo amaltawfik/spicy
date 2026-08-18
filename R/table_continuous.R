@@ -188,7 +188,7 @@
 #'   Either `"."` (default) or `","`.
 #' @param align Horizontal alignment of numeric columns in the printed
 #'   ASCII table and in the `tinytable`, `gt`, `flextable`, `word`,
-#'   and `clipboard` outputs. The first column (`Variable`) and
+#'   `excel`, and `clipboard` outputs. The first column (`Variable`) and
 #'   `Group` (when present) are always left-aligned. One of:
 #'   - `"decimal"` (default): align numeric columns on the decimal
 #'     mark, the standard scientific-publication convention used by
@@ -207,10 +207,13 @@
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
-#'   The `excel` output uses the engine's default alignment in any
-#'   case: cell-string padding does not align decimals under
-#'   proportional fonts. Same default and semantics as
-#'   [table_continuous_lm()].
+#'   `"center"` and `"right"` reach the `excel` output too. `"decimal"`
+#'   does not: Excel cells are written unpadded, because cell-string
+#'   padding does not align decimals under a proportional font, so the
+#'   workbook keeps the engine's own convention instead -- counts and
+#'   the *p*-value right-aligned, the other numeric columns centred.
+#'   Same default and same three values as [table_continuous_lm()],
+#'   whose `excel` output still uses that convention at every `align`.
 #' @param output Output format. One of:
 #'   - `"default"`: a printed ASCII table, returned invisibly.
 #'   - `"data.frame"` / `"long"`: a plain `data.frame` with one row
@@ -2973,9 +2976,10 @@ build_header_rows <- function(col_keys, ci_level) {
 # `table_continuous_lm()` has always applied. Excel is now the ONLY
 # caller: the three HTML/Word engines used to reach the rule through
 # their `align = "auto"` else-arm, which was dead once `"auto"` was
-# removed from the public enum. Excel has no `align` branch at all and
-# applies this per-column rule at every `align` value -- an engine-parity
-# defect of its own, deliberately left standing here.
+# removed from the public enum. Excel reaches it at `align = "decimal"`
+# only -- its cells are unpadded, so the default has no decimal stack to
+# centre and keeps this convention instead; `"center"` and `"right"`
+# take the same literal alignment they take everywhere else.
 .continuous_right_cols <- function(col_keys) {
   which(col_keys %in% c(.CON_KEY_N, .CON_KEY_WEIGHTED_N, .CON_KEY_P))
 }
@@ -3535,12 +3539,32 @@ export_desc_table <- function(
     }
     last_row <- bot_header_row + nrow(display_df)
 
-    # Alignment. Right-align n / p (when present); centre everything
-    # else except the left-side label columns. Excel is the one engine
-    # with no `align` branch: this rule applies at every `align` value.
+    # Alignment. The label columns (Variable, and Group when present)
+    # are always left-aligned; the numeric columns follow `align`, the
+    # same column-level rule the other engines apply through
+    # `cols_align()` / `style_tt(j = )`:
+    #
+    #   "center" -- every numeric column centres;
+    #   "right"  -- every numeric column right-aligns;
+    #   "decimal" (default) -- Excel cells are NOT figure-space padded
+    #     (padding does not align decimals under a proportional font),
+    #     so there is nothing to centre into a decimal stack. This value
+    #     keeps the engine's own convention instead: the counts and the
+    #     p-value right-align, the rest centres. That is the rule
+    #     `.continuous_right_cols()` names, and Excel is its one caller.
+    #
+    # The spanner row is styled with the body here, as it always has
+    # been; the HTML engines centre it independently.
     left_cols <- if (has_group) 1:2 else 1L
-    right_cols <- .continuous_right_cols(col_keys)
-    center_cols <- setdiff(seq_len(nc), c(left_cols, right_cols))
+    numeric_cols <- setdiff(seq_len(nc), left_cols)
+    right_cols <- if (use_decimal) {
+      .continuous_right_cols(col_keys)
+    } else if (identical(align, "right")) {
+      numeric_cols
+    } else {
+      integer(0)
+    }
+    center_cols <- setdiff(numeric_cols, right_cols)
     all_rows <- top_header_row:last_row
 
     wb <- openxlsx2::wb_add_cell_style(
