@@ -22,7 +22,9 @@ Details), or publication-ready tables ("tinytable", "gt",
 This is the descriptive companion to table_continuous_lm(). The
 two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look
-uniform side by side. Use table_continuous_lm() when you need
+uniform side by side – with one exception, documented under
+align: only table_continuous() carries align into the excel
+output. Use table_continuous_lm() when you need
 robust SE, weighted contrasts, fitted means, or covariate
 adjustment.'><meta property="og:description" content='Computes descriptive statistics (mean, SD, min, max, confidence interval
 of the mean, n) for one or many continuous variables selected with
@@ -41,7 +43,9 @@ Details), or publication-ready tables ("tinytable", "gt",
 This is the descriptive companion to table_continuous_lm(). The
 two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look
-uniform side by side. Use table_continuous_lm() when you need
+uniform side by side – with one exception, documented under
+align: only table_continuous() carries align into the excel
+output. Use table_continuous_lm() when you need
 robust SE, weighted contrasts, fitted means, or covariate
 adjustment.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -124,7 +128,9 @@ Details), or publication-ready tables (<code>"tinytable"</code>, <code>"gt"</cod
 <p>This is the descriptive companion to <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. The
 two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look
-uniform side by side. Use <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> when you need
+uniform side by side – with one exception, documented under
+<code>align</code>: only <code>table_continuous()</code> carries <code>align</code> into the <code>excel</code>
+output. Use <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> when you need
 robust SE, weighted contrasts, fitted means, or covariate
 adjustment.</p>
     </div>
@@ -397,7 +403,7 @@ Either <code>"."</code> (default) or <code>","</code>.</p></dd>
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
 <dd><p>Horizontal alignment of numeric columns in the printed
 ASCII table and in the <code>tinytable</code>, <code>gt</code>, <code>flextable</code>, <code>word</code>,
-and <code>clipboard</code> outputs. The first column (<code>Variable</code>) and
+<code>excel</code>, and <code>clipboard</code> outputs. The first column (<code>Variable</code>) and
 <code>Group</code> (when present) are always left-aligned. One of:</p><ul><li><p><code>"decimal"</code> (default): align numeric columns on the decimal
 mark, the standard scientific-publication convention used by
 SPSS, SAS, and LaTeX <code>siunitx</code>. Numeric cells are pre-padded
@@ -414,10 +420,13 @@ its cells travel unpadded (a padded number pastes as text
 next to an unpadded number).</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
-</ul><p>The <code>excel</code> output uses the engine's default alignment in any
-case: cell-string padding does not align decimals under
-proportional fonts. Same default and semantics as
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></dd>
+</ul><p><code>"center"</code> and <code>"right"</code> reach the <code>excel</code> output too. <code>"decimal"</code>
+does not: Excel cells are written unpadded, because cell-string
+padding does not align decimals under a proportional font, so the
+workbook keeps the engine's own convention instead – counts and
+the <em>p</em>-value right-aligned, the other numeric columns centred.
+Same default and same three values as <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>,
+whose <code>excel</code> output still uses that convention at every <code>align</code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>

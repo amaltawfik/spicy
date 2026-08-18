@@ -252,14 +252,20 @@ table_categorical(
 
   - `"right"`: right-align all numeric columns.
 
-  The `excel` output uses the engine's default alignment in any case:
-  cell-string padding does not align decimals under proportional fonts,
-  and Excel's native right-alignment combined with the per-column
-  `numfmt` already produces dot-aligned columns. Same default and
-  semantics as
+  In the `excel` output, `"center"` centres the numeric columns and
+  `"right"` is the same rendering as the default: cell-string padding
+  does not align decimals under a proportional font, so `"decimal"`
+  right-aligns instead, which combined with the per-column `numfmt`
+  already produces dot-aligned columns. Same default and same three
+  values as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   /
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  whose workbooks resolve `"decimal"` differently:
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  right-aligns only the counts and the *p*-value there, and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  applies that convention at every `align`.
 
 - output:
 

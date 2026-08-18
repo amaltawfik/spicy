@@ -1130,7 +1130,11 @@ suppressed. If DVs match, the labels default to
 <li><p><code>model_labels = c("A", "B")</code> overrides everything.</p></li>
 </ul><p>Duplicate explicit names in the list are rejected
 (<code>spicy_invalid_input</code>) – they would silently collide in the
-internal model_id key.</p>
+internal model_id key. So is a name that collides with the
+auto-filled label of another slot (<code>list("Model 2" = m1, m2)</code>):
+two models under one spanner cannot be told apart in the table,
+nor addressed by <code><a href="inline.html">inline()</a></code>. Rename the model, or pass
+<code>model_labels</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="inference-and-standard-errors">Inference and standard errors<a class="anchor" aria-label="anchor" href="#inference-and-standard-errors"></a></h2>

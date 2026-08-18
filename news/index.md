@@ -451,6 +451,43 @@ instead of rendering an empty column.
 
 ### Bug fixes
 
+- Standard errors, confidence intervals, and p-values from
+  `vcov = "jackknife"` and `vcov = "bootstrap"` (cluster variants and
+  `ci_method = "boot_percentile"` included) were wrong for binomial and
+  quasibinomial models fitted with a two-column
+  `cbind(successes, failures)` response: every resampling refit
+  re-applied the binomial totals to the weights, so replicates were
+  effectively fitted with squared weights. The error grows with the
+  spread of the totals (from under 1% up to over 30% in our checks).
+  Fits with a 0/1, factor, or proportion-plus-weights response were
+  never affected.
+- `R² (McFadden)` and `R² (Nagelkerke)` – shown by default for logistic
+  models – were wrong for binomial models fitted with a two-column
+  `cbind(successes, failures)` response, and badly so: the
+  intercept-only refit behind both statistics re-applied the binomial
+  totals to the weights, so the null model was effectively fitted with
+  squared weights (McFadden read 0.92 where the true value was 0.32 in
+  our checks). Fits with a 0/1, factor, or proportion-plus-weights
+  response were never affected.
+- `standardized = "refit"` on a glm whose response is a pre-built
+  two-column matrix column (`d$Y <- cbind(s, f)`; `glm(Y ~ ...)`)
+  refitted with those same doubled weights and reported slightly wrong
+  standardized coefficients; it now refits on the proportion scale with
+  the correct weights. The inline `cbind(...)` form keeps its documented
+  fallback to `"posthoc"`.
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses two models that would share a column label. A name colliding
+  with the `"Model <position>"` label another slot takes by default –
+  `list("Model 2" = m1, m2)` – used to draw two column groups nothing
+  could tell apart, differently in each output engine, and made
+  `inline(model = )` cite a different model than the one asked for. The
+  error names the label and both positions.
+- An `NA` in `names(models)` no longer crashes
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  deep in the renderer: it is treated as an unnamed slot and auto-filled
+  like an empty name. A multi-valued `model` in
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  gets a classed error instead of a base R condition failure.
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   addresses each interval by its own token, so a table carrying more
   than one – `ci` with `med_ci`, or `ci` with `ame_ci` – can cite
@@ -490,6 +527,10 @@ instead of rendering an empty column.
   whose interval columns carry it – in the column names of the
   `data.frame` output. Levels with a whole-number percentage (0.90,
   0.95, 0.99, …) are unchanged.
+- A printed interval column pushed onto a continuation panel by a width
+  split names its estimand at a fractional `ci_level` too: it reads
+  `97.5% CI (B)` where it used to repeat the bare `97.5% CI`. Only
+  whole-number coverages were recognised.
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   refuses a `by` variable with no level to tabulate
   (`spicy_invalid_data`) instead of building a table with two unnamed
@@ -524,7 +565,11 @@ instead of rendering an empty column.
   failed outright with “missing value where TRUE/FALSE needed”.
 - A missing cell no longer disturbs the console layout of any table: it
   renders as an empty cell instead of leaving its row unpadded and every
-  separator of the table out of register.
+  separator of the table out of register. A missing column *name* – `NA`
+  in [`names()`](https://rdrr.io/r/base/names.html), or in
+  `spicy_print_table(display_labels = )` – does the same thing to the
+  header and is now blank too, on every panel of a table wide enough to
+  be split.
 - A variable label written in wide characters (CJK, emoji) no longer
   overflows a narrow console in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
@@ -639,6 +684,14 @@ instead of rendering an empty column.
 - `table_categorical(output = "excel")` writes blank cells on
   variable-header rows. They used to be Excel error cells (`#N/A`),
   which spread the error to any `SUM()` over the column.
+- `table_continuous(align = , output = "excel")` reaches the workbook:
+  `"center"` centres every numeric column and `"right"` right-aligns
+  them, as they already did on the console and in the `tinytable`, `gt`,
+  `flextable` and `word` outputs. Both were silently ignored. The
+  default `"decimal"` is unchanged – Excel cells are unpadded, so it
+  keeps the engine’s convention of right-aligning the counts and the
+  *p*-value and centring the rest. See
+  [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)

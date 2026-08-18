@@ -21,7 +21,8 @@ This is the descriptive companion to
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 The two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look uniform
-side by side. Use
+side by side – with one exception, documented under `align`: only
+`table_continuous()` carries `align` into the `excel` output. Use
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 when you need robust SE, weighted contrasts, fitted means, or covariate
 adjustment.
@@ -305,9 +306,9 @@ table_continuous(
 - align:
 
   Horizontal alignment of numeric columns in the printed ASCII table and
-  in the `tinytable`, `gt`, `flextable`, `word`, and `clipboard`
-  outputs. The first column (`Variable`) and `Group` (when present) are
-  always left-aligned. One of:
+  in the `tinytable`, `gt`, `flextable`, `word`, `excel`, and
+  `clipboard` outputs. The first column (`Variable`) and `Group` (when
+  present) are always left-aligned. One of:
 
   - `"decimal"` (default): align numeric columns on the decimal mark,
     the standard scientific-publication convention used by SPSS, SAS,
@@ -329,10 +330,14 @@ table_continuous(
 
   - `"right"`: right-align all numeric columns.
 
-  The `excel` output uses the engine's default alignment in any case:
-  cell-string padding does not align decimals under proportional fonts.
-  Same default and semantics as
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  `"center"` and `"right"` reach the `excel` output too. `"decimal"`
+  does not: Excel cells are written unpadded, because cell-string
+  padding does not align decimals under a proportional font, so the
+  workbook keeps the engine's own convention instead – counts and the
+  *p*-value right-aligned, the other numeric columns centred. Same
+  default and same three values as
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  whose `excel` output still uses that convention at every `align`.
 
 - output:
 

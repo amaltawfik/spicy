@@ -1067,7 +1067,11 @@ model's sub-columns:
 
 Duplicate explicit names in the list are rejected
 (`spicy_invalid_input`) – they would silently collide in the internal
-model_id key.
+model_id key. So is a name that collides with the auto-filled label of
+another slot (`list("Model 2" = m1, m2)`): two models under one spanner
+cannot be told apart in the table, nor addressed by
+[`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md).
+Rename the model, or pass `model_labels`.
 
 ## Inference and standard errors
 

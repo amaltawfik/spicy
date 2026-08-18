@@ -324,12 +324,15 @@ its cells travel unpadded (a padded number pastes as text
 next to an unpadded number).</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
-</ul><p>The <code>excel</code> output uses the engine's default alignment in any
-case: cell-string padding does not align decimals under
-proportional fonts, and Excel's native right-alignment combined
-with the per-column <code>numfmt</code> already produces dot-aligned
-columns. Same default and semantics as <code><a href="table_continuous.html">table_continuous()</a></code> /
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p></dd>
+</ul><p>In the <code>excel</code> output, <code>"center"</code> centres the numeric columns and
+<code>"right"</code> is the same rendering as the default: cell-string padding
+does not align decimals under a proportional font, so <code>"decimal"</code>
+right-aligns instead, which combined with the per-column <code>numfmt</code>
+already produces dot-aligned columns. Same default and same three
+values as <code><a href="table_continuous.html">table_continuous()</a></code> / <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, whose
+workbooks resolve <code>"decimal"</code> differently: <code><a href="table_continuous.html">table_continuous()</a></code>
+right-aligns only the counts and the <em>p</em>-value there, and
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> applies that convention at every <code>align</code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
