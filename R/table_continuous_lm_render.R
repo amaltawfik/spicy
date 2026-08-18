@@ -877,8 +877,12 @@ export_continuous_lm_table <- function(
     single_cols <- setdiff(col_keys, c(.LM_KEY_CI_LL, .LM_KEY_CI_UL))
     # The ids are DOM state that `cells_column_spanners()` addresses
     # below: generated from the frozen KEYS, never from the labels, and
-    # generated ONCE so the two sites cannot disagree.
-    span_ids <- .lm_spanner_ids(single_cols)
+    # generated ONCE so the two sites cannot disagree. The interval
+    # spanner is in the same vector under `.LM_KEY_CI`: left without an
+    # id, gt derives one from the LABEL, so a translated table or a
+    # fractional `ci_level` would move the id ("95% CI" -> "97.5% CI").
+    # The other two descriptive families already name every spanner.
+    span_ids <- .lm_spanner_ids(c(single_cols, .LM_KEY_CI))
     for (col in single_cols) {
       tbl <- gt::tab_spanner(
         tbl,
@@ -891,7 +895,8 @@ export_continuous_lm_table <- function(
       tbl <- gt::tab_spanner(
         tbl,
         label = ci_spanner_label,
-        columns = c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)
+        columns = c(.LM_KEY_CI_LL, .LM_KEY_CI_UL),
+        id = span_ids[[.LM_KEY_CI]]
       )
     }
 

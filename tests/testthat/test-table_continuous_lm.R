@@ -4796,6 +4796,37 @@ test_that("two `by` levels that differ only in punctuation still render", {
   ))))
 })
 
+test_that("every gt spanner id in the family comes from a key", {
+  skip_if_not_installed("gt")
+  set.seed(2)
+  d <- data.frame(y = rnorm(40), g = rep(c("A", "B"), 20))
+  ids_at <- function(lv) {
+    h <- as.character(gt::as_raw_html(
+      table_continuous_lm(d, select = y, by = g, ci_level = lv, output = "gt"),
+      inline_css = FALSE
+    ))
+    grep(
+      "^spn_|CI",
+      unique(unlist(regmatches(
+        h,
+        gregexpr('(?<=id=")[^"]*', h, perl = TRUE)
+      ))),
+      value = TRUE
+    )
+  }
+  # The interval spanner used to be the one id gt derived from a LABEL,
+  # so it read "95% CI" and moved with `ci_level`. Every id is `spn_<key>`
+  # now, and the same set comes back at a fractional coverage.
+  expect_true("spn_CI" %in% ids_at(0.95))
+  expect_identical(ids_at(0.975), ids_at(0.95))
+  expect_false(any(grepl("%", ids_at(0.975), fixed = TRUE)))
+  # The displayed label still follows the coverage.
+  h <- as.character(gt::as_raw_html(
+    table_continuous_lm(d, select = y, by = g, ci_level = 0.975, output = "gt")
+  ))
+  expect_true(grepl(">97.5% CI<", h, fixed = TRUE))
+})
+
 test_that(".lm_spanner_ids is stable where nothing collides", {
   keys <- c("Variable", "M (Female)", "M (Male)", "p", "n")
   ids <- spicy:::.lm_spanner_ids(keys)
