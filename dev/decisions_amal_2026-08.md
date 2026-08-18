@@ -359,3 +359,22 @@ réels (« median (IQR x–y) »). Réemployer ci_brackets serait une
 erreur de catégorie. L'implémentation lot B (littéraux gelés) est
 confirmée ; si un thème de revue nommé exige un jour un format IQR,
 il recevra son propre token (iqr_brackets), pas un réemploi.
+
+## 26. IC d'effet en sorties brutes : es_ci_* partout — DÉCIDÉ 2026-08-19
+
+Le wide de table_continuous_lm() renomme effect_size_ci_lower/upper
+→ es_ci_lower/es_ci_upper : les noms du long, dérivés du TOKEN gelé
+es_ci du vocabulaire. Une grandeur, un nom, aligné sur le canon. Le
+snake_case reste le signal documenté « colonne brute sans miroir
+affiché » (les autres colonnes wide portent les noms d'affichage).
+Break pre-1.0, NEWS + migration une ligne. (Registre item 11 clos.)
+
+## 27. Le pourcentage de couverture suit decimal_mark — DÉCIDÉ 2026-08-19
+
+« 97.5% CI » sous decimal_mark = "," devient « 97,5% CI » : c'est un
+nombre dans une étiquette, le lecteur qui a demandé la virgule la
+veut partout — cohérent avec le style fr et le point médian Lancet.
+Aucun changement aux niveaux entiers (95, 99). Toutes les familles
+(descriptives + régression + {ci_label} d'inline). Témoins à
+0.975+virgule; byte-identité au point et aux niveaux entiers.
+(Registre n°19 clos.)
