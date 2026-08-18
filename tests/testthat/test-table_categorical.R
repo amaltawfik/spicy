@@ -563,9 +563,12 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
   # Long: one stable column, the per-row measure keys beside it.
   expect_true("effect_size" %in% names(out))
   expect_setequal(unique(out$effect_size_type), c("phi", "cramer_v"))
-  # Positive control: both display names ARE wide column names on a
-  # single-measure table, so these two negatives cannot quietly stop
-  # matching the day either measure is renamed.
+  # The long output's column names do not depend on the measure at all,
+  # so a negative membership on "Phi" / "Cramer's V" over `names(out)`
+  # could not fail at any setting. The WIDE output is where a measure
+  # names a column -- single-measure tables carry the measure's own
+  # name, and only the mixed case collapses to the generic header --
+  # so that is where both halves of this assertion belong.
   expect_true(
     "Phi" %in%
       names(
@@ -588,8 +591,6 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
         )
       )
   )
-  expect_false("Phi" %in% names(out))
-  expect_false("Cramer's V" %in% names(out))
   # Wide: the mixed case collapses to the generic header.
   wide <- table_categorical(
     sochealth,
@@ -597,6 +598,7 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
     by = sex,
     output = "data.frame"
   )
+  expect_false(any(c("Phi", "Cramer's V") %in% names(wide)))
   expect_true("Effect size" %in% names(wide))
 })
 
@@ -734,8 +736,10 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     output = "long"
   )
   expect_identical(unique(out$effect_size_type), "gamma")
-  # Positive control for the negative below: "Cramer's V" has to be a
-  # real wide column name, or renaming the measure disarms it silently.
+  # As above: the long output never names a column after the measure,
+  # so the exclusion has to be asserted on the wide one, where the
+  # default measure WOULD have produced "Cramer's V". The positive
+  # control is the same table's own column name.
   expect_true(
     "Cramer's V" %in%
       names(
@@ -747,7 +751,6 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
         )
       )
   )
-  expect_false("Cramer's V" %in% names(out))
   wide <- table_categorical(
     df,
     "v1",
@@ -756,6 +759,7 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     assoc_measure = "gamma",
     output = "data.frame"
   )
+  expect_false("Cramer's V" %in% names(wide))
   expect_true("Goodman-Kruskal Gamma" %in% names(wide))
 })
 
