@@ -559,6 +559,13 @@ spicy_fmt <- function(key, ...) {
 # that recognises them must move together. The credible / confidence labels are
 # the two the historical pattern covered; `header_ci_label_hdi` is deliberately
 # NOT included, to keep today's behaviour byte-for-byte.
+#
+# The coverage is matched as digits with at most one decimal point,
+# because that is what `.ci_pct_str()` writes into the header it has to
+# recognise: `formatC(level * 100, format = "g")`. `[0-9]+` alone missed
+# every fractional level -- `97.5% CI` at `ci_level = 0.975` -- and an
+# orphaned interval column silently kept its bare header instead of
+# naming its carrier.
 .companion_header_pattern <- function() {
   ci_alt <- paste(
     vapply(
@@ -570,7 +577,7 @@ spicy_fmt <- function(key, ...) {
   )
   ci_pat <- spicy_fmt(
     "header_ci_spanner",
-    "[0-9]+",
+    "[0-9]+(?:[.][0-9]+)?",
     paste0("(?:", ci_alt, ")")
   )
   paste0(

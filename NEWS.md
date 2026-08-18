@@ -373,6 +373,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   and -- for `table_continuous_lm()`, whose interval columns carry it
   -- in the column names of the `data.frame` output. Levels with a
   whole-number percentage (0.90, 0.95, 0.99, ...) are unchanged.
+* A printed interval column pushed onto a continuation panel by a width
+  split names its estimand at a fractional `ci_level` too: it reads
+  `97.5% CI (B)` where it used to repeat the bare `97.5% CI`. Only
+  whole-number coverages were recognised.
 * `table_categorical()` refuses a `by` variable with no level to
   tabulate (`spicy_invalid_data`) instead of building a table with two
   unnamed columns and no rows, which the rendering engines then failed

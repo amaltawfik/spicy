@@ -261,6 +261,37 @@ test_that("continuation panels name the estimand of an orphaned companion column
 })
 
 
+test_that("an orphaned interval names its carrier at a fractional coverage", {
+  # The pattern that recognises a companion header interpolated `[0-9]+`
+  # for the coverage, so it matched "95% CI" and missed "97.5% CI": at a
+  # fractional `ci_level` the orphan silently kept its bare header and
+  # the reader lost which estimand it belonged to.
+  set.seed(1)
+  d <- data.frame(
+    bmi = rnorm(60, 25, 3),
+    a_very_long_predictor_name_indeed = rnorm(60)
+  )
+  fit <- stats::lm(bmi ~ a_very_long_predictor_name_indeed, data = d)
+  op <- options(width = 46)
+  on.exit(options(op), add = TRUE)
+  panel_header <- function(level) {
+    out <- capture.output(print(table_regression(
+      fit,
+      ci_level = level,
+      show_columns = c("b", "ci")
+    )))
+    grep("CI", out, value = TRUE)
+  }
+  expect_true(any(grepl("95% CI (B)", panel_header(0.95), fixed = TRUE)))
+  expect_true(any(grepl("97.5% CI (B)", panel_header(0.975), fixed = TRUE)))
+  # And the pattern itself, at the two shapes `.ci_pct_str()` emits.
+  rx <- spicy:::.companion_header_pattern()
+  expect_true(grepl(rx, "95% CI"))
+  expect_true(grepl(rx, "97.5% CI"))
+  expect_false(grepl(rx, "95% CI (B)"))
+})
+
+
 test_that("a missing cell renders blank without desyncing the table", {
   # `stringr::str_pad(NA, w)` returns NA rather than a padded blank, and
   # `build_line()` adds that NA to its running bar position, so ONE
