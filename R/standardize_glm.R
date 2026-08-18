@@ -144,6 +144,22 @@ standardize_refit_glm <- function(
   # silently re-evaluate against the caller's raw unscaled vectors.
   formula <- strip_formula_env(stats::formula(fit))
   fam <- stats::family(fit)
+  # A PRE-BUILT two-column matrix column (`d$Y <- cbind(s, f)`, then
+  # `glm(Y ~ ...)`) re-evaluates fine against `mf`, but the caller's
+  # `weights` are POST-initialize (user weights times the row totals):
+  # refitting on the matrix re-ran the binomial `initialize` and
+  # standardised against a fit with effective weights = totals^2. Swap
+  # the response column to the stored-y representation
+  # (`.glm_stored_response()`, R/glm_compute.R) -- the passed weights
+  # are exactly the proportion-form weights. An INLINE `cbind()` never
+  # reaches this: its response column is named after the whole
+  # expression, `resp_name` misses it, re-evaluation fails, and the
+  # warned posthoc fallback below handles it as before.
+  if (!is.null(mf[[resp_name]])) {
+    cv <- .glm_stored_response(mf[[resp_name]], fam, weights)
+    mf[[resp_name]] <- cv$y
+    weights <- cv$wt
+  }
   args <- list(formula = formula, family = fam, data = mf)
   if (!is.null(weights)) {
     args$weights <- weights

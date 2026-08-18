@@ -344,3 +344,68 @@ test_that("smart (Gelman) glm: factor dummies untouched, continuous x 2 SD", {
     tolerance = 1e-12
   )
 })
+
+
+# ---- Refit on a pre-built two-column matrix response ----------------------
+
+test_that("refit on a pre-built matrix response uses the proportion form", {
+  # A stored matrix column (`d$Y <- cbind(s, f)`) re-evaluates fine
+  # against the frame, but the caller's weights are POST-initialize
+  # (the row totals): the refit used to re-run the binomial initialize
+  # on the matrix and standardise against an effective-weights =
+  # totals^2 fit -- beta_x 0.82544298761936219 instead of the pin
+  # std_refit_beta_x_CORRECT = 0.82153410378826597
+  # (vcov_cbind_oracle_pins.csv).
+  set.seed(42)
+  n <- 40
+  d <- data.frame(
+    x = rnorm(n),
+    g = factor(rep(c("A", "B"), each = 20)),
+    tot = sample(3:12, n, TRUE)
+  )
+  d$succ <- rbinom(n, d$tot, plogis(-0.2 + 0.6 * d$x + 0.5 * (d$g == "B")))
+  dm <- d
+  dm$Y <- cbind(succ = d$succ, fail = d$tot - d$succ)
+  fm <- glm(Y ~ x + g, family = binomial, data = dm)
+
+  out <- NULL
+  expect_no_warning(
+    out <- spicy:::standardize_glm(fm, method = "refit", weights = NULL)
+  )
+  expect_identical(attr(out, "used_method"), "refit")
+  beta_x <- out$estimate[out$term == "x"]
+  expect_equal(beta_x, 0.82153410378826597, tolerance = 1e-12)
+
+  # Live oracle: the full matrix-form glm on the z-scored predictor --
+  # the refit target this method defines (Long & Freese
+  # x-standardization). Point estimate and classical SE must both
+  # match it.
+  dm2 <- dm
+  dm2$x <- as.numeric(scale(dm2$x))
+  fstd <- glm(Y ~ x + g, family = binomial, data = dm2)
+  expect_equal(beta_x, coef(fstd)[["x"]], tolerance = 1e-10)
+  expect_equal(
+    out$se[out$term == "x"],
+    sqrt(stats::vcov(fstd)["x", "x"]),
+    tolerance = 1e-8
+  )
+  # Negative control: the totals^2 estimate is gone.
+  expect_gt(abs(beta_x - 0.82544298761936219), 1e-6)
+
+  # The INLINE cbind() form is untouched: re-evaluation still fails
+  # into the documented posthoc fallback.
+  fit_inline <- glm(
+    cbind(succ, tot - succ) ~ x + g,
+    family = binomial,
+    data = d
+  )
+  expect_warning(
+    out_i <- spicy:::standardize_glm(
+      fit_inline,
+      method = "refit",
+      weights = NULL
+    ),
+    class = "spicy_fallback"
+  )
+  expect_identical(attr(out_i, "used_method"), "posthoc")
+})

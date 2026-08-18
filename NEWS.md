@@ -361,6 +361,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   (McFadden read 0.92 where the true value was 0.32 in our checks). Fits
   with a 0/1, factor, or proportion-plus-weights response were never
   affected.
+* `standardized = "refit"` on a glm whose response is a pre-built
+  two-column matrix column (`d$Y <- cbind(s, f)`; `glm(Y ~ ...)`)
+  refitted with those same doubled weights and reported slightly wrong
+  standardized coefficients; it now refits on the proportion scale with
+  the correct weights. The inline `cbind(...)` form keeps its documented
+  fallback to `"posthoc"`.
 * `table_regression()` refuses two models that would share a column
   label. A name colliding with the `"Model <position>"` label another
   slot takes by default -- `list("Model 2" = m1, m2)` -- used to draw
