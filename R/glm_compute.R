@@ -735,28 +735,17 @@ compute_glm_type2_lrt <- function(fit, term_label) {
       storage.mode(y) <- "double"
     }
     # `glm(..., y = FALSE)` + a two-column `cbind(successes, failures)`
-    # response: `fit$prior.weights` stores the POST-initialize weights
-    # (original weights times the row totals -- the binomial
-    # `initialize` multiplies them in), while `model.response()` gives
-    # back the raw matrix. Feeding the matrix to `glm.fit()` with those
-    # weights would run `initialize` again and square the totals
-    # (effective weights = tot^2), inflating every chi-square. Rebuild
-    # the stored-y representation instead -- y = successes / total with
-    # the post-initialize weights unchanged -- so this fallback is
-    # identical to the `fit$y` path. (`stats::drop1.glm()` has the same
-    # naive reconstruction and the same defect on this input, so it is
-    # NOT mirrored here.)
-    if (
-      is.matrix(y) &&
-        ncol(y) == 2L &&
-        fit$family$family %in% c("binomial", "quasibinomial")
-    ) {
-      tot <- y[, 1L] + y[, 2L]
-      y <- ifelse(tot == 0, 0, y[, 1L] / tot)
-      if (is.null(wt)) {
-        wt <- tot # nocov -- glm always stores prior.weights
-      }
-    }
+    # response: `model.response()` gives back the raw matrix while
+    # `fit$prior.weights` already stores the POST-initialize weights --
+    # the exact input `.glm_stored_response()` exists for (feeding the
+    # matrix to `glm.fit()` would square the totals; this site was the
+    # in-house precedent before the conversion became the shared
+    # helper). The converted fallback is identical to the `fit$y` path.
+    # (`stats::drop1.glm()` has the same naive reconstruction and the
+    # same defect on this input, so it is NOT mirrored here.)
+    cv <- .glm_stored_response(y, fit$family, wt)
+    y <- cv$y
+    wt <- cv$wt
   }
   if (is.null(wt)) {
     wt <- rep.int(1, n)
