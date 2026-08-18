@@ -188,6 +188,10 @@ test_that("the char body and the typed view span the same models", {
     expect_identical(struct_seen, sort(struct_seen), info = nm)
     expect_identical(anyDuplicated(char_seen), 0L, info = nm)
     expect_identical(anyDuplicated(struct_seen), 0L, info = nm)
+    # And covering: a spanner shortened on one side only would leave a
+    # data column bare there while the other side still rules it.
+    expect_identical(char_seen, seq_len(ncol(x))[-1L], info = nm)
+    expect_identical(struct_seen, seq_len(length(struct_id))[-1L], info = nm)
   }
 })
 

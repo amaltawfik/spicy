@@ -559,8 +559,8 @@ render_regression_table <- function(
 # position 1, which is excluded from every spanner).
 build_model_spanners <- function(body, col_spec, label_map) {
   # nocov start - defensive: empty col_spec is rejected upstream by
-  # validate_show_columns(); empty / single-element label_map yields
-  # the early-return on lines 322-324 anyway.
+  # validate_show_columns(); a single-model label_map is handled by
+  # the `<= 1` distinct-label early return below.
   if (length(col_spec) == 0L) {
     return(NULL)
   }
