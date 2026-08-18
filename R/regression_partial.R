@@ -357,8 +357,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     error = function(e) NULL
   )
   if (is.null(fixed_form)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   bhat <- tryCatch(
     if (inherits(fit, "glmmTMB")) {
@@ -374,8 +374,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     error = function(e) NULL
   )
   if (is.null(bhat) || length(bhat) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   V <- tryCatch(
     {
@@ -386,8 +386,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
       if (inherits(fit, "glmmTMB")) {
         v_cond <- tryCatch(v$cond, error = function(e) NULL)
         if (is.null(v_cond)) {
-          v_cond <- tryCatch(v[["cond"]], error = function(e) NULL)
-        } # nocov: v$cond never NULL for glmmTMB
+          v_cond <- tryCatch(v[["cond"]], error = function(e) NULL) # nocov: v$cond never NULL for glmmTMB
+        }
         if (!is.null(v_cond)) v <- v_cond
       }
       as.matrix(v)
@@ -395,8 +395,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     error = function(e) NULL
   )
   if (is.null(V) || nrow(V) != length(bhat)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   data <- tryCatch(
     if (inherits(fit, c("lme", "gls"))) {
@@ -411,8 +411,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     error = function(e) NULL
   )
   if (is.null(mm) || ncol(mm) != length(bhat)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   assign_idx <- attr(mm, "assign")
   trm <- stats::terms(fixed_form)
@@ -473,8 +473,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     }
     eff <- chi2_cache[[as.character(term_idx)]]
     if (is.null(eff)) {
-      next
-    } # nocov: cache entry only NULL via the unreachable chi2-fail arm
+      next # nocov: cache entry only NULL via the unreachable chi2-fail arm
+    }
 
     nm <- names(bhat)[i]
     fmeta <- factor_meta[[nm]]
@@ -501,8 +501,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     )
   }
   if (length(rows) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   do.call(rbind, rows)
 }
 

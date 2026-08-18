@@ -288,8 +288,8 @@ as_regression_frame.rlm <- function(
     return(NA_character_)
   }
   if (!spicy_pkg_available("MASS")) {
-    return(NA_character_)
-  } # nocov
+    return(NA_character_) # nocov
+  }
   if (identical(psi, MASS::psi.huber)) {
     return("Huber")
   }

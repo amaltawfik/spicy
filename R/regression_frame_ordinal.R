@@ -316,8 +316,8 @@ as_regression_frame.clm <- function(
   # NULL here; the branch is kept for structural symmetry with .clm_coefs
   # (where partial-PO clm fits do reach it).
   if (!is.null(nonprop)) {
-    coefs <- .rbind_union(coefs, nonprop)
-  } # nocov
+    coefs <- .rbind_union(coefs, nonprop) # nocov
+  }
   .ordinal_maybe_profile_ci(coefs, fit, ci_level, ci_method)
 }
 
@@ -498,13 +498,13 @@ as_regression_frame.clm <- function(
     error = function(e) NULL # nocov
   )
   if (is.null(vc)) {
-    return(thr)
-  } # nocov
+    return(thr) # nocov
+  }
   vc <- as.matrix(vc)
   idx <- match(thr$term, rownames(vc))
   if (anyNA(idx)) {
-    return(thr)
-  } # nocov
+    return(thr) # nocov
+  }
   thr$std_error <- unname(sqrt(diag(vc)[idx]))
   thr$statistic <- thr$estimate / thr$std_error
   thr$p_value <- 2 * stats::pnorm(-abs(thr$statistic))
@@ -712,9 +712,12 @@ as_regression_frame.clm <- function(
       stat <- unname(sm_scale[i, "z value"])
       p <- unname(sm_scale[i, "Pr(>|z|)"])
     } else {
+      # nocov start -- summary.clm always reports Std. Error for the
+      # scale block (sm_scale is NULL only via the unreachable arm above)
       se <- NA_real_
       stat <- NA_real_
-      p <- NA_real_ # nocov
+      p <- NA_real_
+      # nocov end
     }
     out[[length(out) + 1L]] <- data.frame(
       term = paste0("scale_", names(zeta)[i]),
@@ -772,10 +775,12 @@ as_regression_frame.clm <- function(
         stat <- unname(sm[cname, "z value"])
         p <- unname(sm[cname, "Pr(>|z|)"])
       } else {
-        # nocov
+        # nocov start -- summary.clm names nominal rows `<cut>.<term>`
+        # exactly, so the lookup always succeeds on a partial-PO fit
         se <- NA_real_
         stat <- NA_real_
-        p <- NA_real_ # nocov
+        p <- NA_real_
+        # nocov end
       }
       pos <- pos + 1L
       out[[length(out) + 1L]] <- data.frame(

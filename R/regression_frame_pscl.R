@@ -452,8 +452,8 @@ as_regression_frame.zeroinfl <- function(
 ) {
   smz <- summary(fit)$coefficients$zero
   if (is.null(smz) || nrow(smz) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   nm <- rownames(smz)
   est <- unname(smz[, "Estimate"])
@@ -510,8 +510,8 @@ as_regression_frame.zeroinfl <- function(
     present <- lvls[paste0(v, lvls) %in% nm]
     ref <- setdiff(lvls, present)
     if (length(ref) == length(lvls)) {
-      next
-    } # factor absent from zero coefs   # nocov
+      next # nocov -- factor absent from zero coefs
+    }
     if (length(ref) >= 1L) {
       rows <- rbind(
         rows,

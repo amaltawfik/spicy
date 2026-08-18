@@ -570,8 +570,8 @@ build_model_spanners <- function(body, col_spec, label_map) {
     return(NULL)
   }
   if (!any(nzchar(labels))) {
-    return(NULL)
-  } # nocov - single-model has labels = ""; multi-model always has nzchar names via auto-fill
+    return(NULL) # nocov - single-model has labels = ""; multi-model always has nzchar names via auto-fill
+  }
 
   # One model_id per body column, in body order: the spec's columns
   # placed where the body actually put them, everything else (the

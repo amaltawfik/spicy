@@ -129,8 +129,8 @@ as_regression_frame.svyglm <- function(
   # (length(residuals) - rank via df.residual.default); this z-fallback
   # assignment is a defensive guard for a degenerate fit we can't construct.
   if (is.null(dfr) || !is.finite(dfr)) {
-    dfr <- Inf
-  } # nocov
+    dfr <- Inf # nocov
+  }
   df_vec <- rep(as.numeric(dfr), length(est))
 
   # Wald CI with t. Falls back to z if df is Inf.

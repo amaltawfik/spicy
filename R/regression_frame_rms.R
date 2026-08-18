@@ -308,11 +308,13 @@ as_regression_frame.Glm <- function(
   # cph has no intercept (baseline hazard absorbs it); drop the row
   # if rms reports one (defensive -- usually it doesn't).
   if (inherits(fit, "cph") && "(Intercept)" %in% nm) {
-    keep <- nm != "(Intercept)" # nocov
+    # nocov start
+    keep <- nm != "(Intercept)"
     est <- est[keep]
     se <- se[keep]
-    nm <- nm[keep] # nocov
-    nm_raw <- nm_raw[keep] # nocov
+    nm <- nm[keep]
+    nm_raw <- nm_raw[keep]
+    # nocov end
   }
 
   # Inference: ols uses Wald-t with df.residual; lrm / cph / Glm use
@@ -333,8 +335,8 @@ as_regression_frame.Glm <- function(
     # Defensive: a genuine rms::ols() fit always carries a finite
     # df.residual, so this NULL/non-finite fallback is never reached.
     if (is.null(dfr) || !is.finite(dfr)) {
-      dfr <- Inf
-    } # nocov
+      dfr <- Inf # nocov
+    }
     stat <- est / se
     p_value <- 2 * stats::pt(-abs(stat), df = dfr)
     df <- rep(as.numeric(dfr), length(est))
@@ -614,8 +616,8 @@ as_regression_frame.Glm <- function(
       } else {
         # Defensive: stats::family() always returns the stored family for a
         # genuine rms::Glm() fit, so this gaussian fallback is never reached.
-        list(family = "gaussian", link = "identity")
-      } # nocov
+        list(family = "gaussian", link = "identity") # nocov
+      }
     }
   )
 }

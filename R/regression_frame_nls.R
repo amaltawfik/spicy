@@ -78,8 +78,8 @@ as_regression_frame.nls <- function(
   # numeric for a fitted nls, and the tryCatch above already maps any
   # error to Inf, so this NULL/non-finite normaliser is never exercised.
   if (is.null(dfr) || !is.finite(dfr)) {
-    dfr <- Inf
-  } # nocov
+    dfr <- Inf # nocov
+  }
   df <- rep(as.numeric(dfr), length(est))
   t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
   ci_lower <- est - t_crit * se

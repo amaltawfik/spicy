@@ -1577,8 +1577,8 @@ build_structured_body <- function(
     return(NULL)
   }
   if (!is.character(outcome_labels)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   if (length(model_ids) <= 1L) {
     return(NULL)
   }
@@ -1599,13 +1599,13 @@ build_structured_body <- function(
   for (i in seq_along(model_ids)) {
     target <- first_col_per_model[[model_ids[i]]]
     if (is.na(target)) {
-      next
-    } # nocov
+      next # nocov
+    }
     labels_by_col[[target]] <- outcome_labels[i]
   }
   if (length(labels_by_col) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   row <- empty_row
   row$Variable <- spicy_str("row_outcome")

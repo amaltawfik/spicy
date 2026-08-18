@@ -65,12 +65,12 @@
 .explode_multinom_frame <- function(frame) {
   cf <- frame$coefs
   if (is.null(cf$outcome_level)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   present <- unique(cf$outcome_level[!is.na(cf$outcome_level)])
   if (length(present) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   ref <- frame$info$extras$reference_outcome %||% NA_character_
   lev <- frame$info$extras$response_levels %||% present
@@ -85,8 +85,8 @@
   cats <- c(setdiff(lev, ref), if (!is.na(ref) && ref %in% present) ref)
   cats <- cats[cats %in% present]
   if (!length(cats)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   pseudo <- vector("list", length(cats))
   for (k in seq_along(cats)) {

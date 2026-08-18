@@ -683,8 +683,8 @@ extract_beta_rows <- function(
     error = function(e) NULL
   )
   if (is.null(data)) {
-    return(NULL)
-  } # nocov (model.frame/getData errors on real fits)
+    return(NULL) # nocov (model.frame/getData errors on real fits)
+  }
 
   # Identify the response variable -- non-Gaussian families (binomial,
   # poisson, ...) require y bounded / integer-valued, so we standardise
@@ -742,8 +742,8 @@ extract_beta_rows <- function(
     {
       call_copy <- stats::getCall(fit)
       if (is.null(call_copy)) {
-        return(NULL)
-      } # nocov (real fits always carry a call)
+        return(NULL) # nocov (real fits always carry a call)
+      }
       if (inherits(fit, "lmerModLmerTest") || inherits(fit, "lmerMod")) {
         call_copy[[1L]] <- quote(lme4::lmer)
         call_copy <- match.call(lme4::lmer, call_copy)
@@ -793,8 +793,8 @@ extract_beta_rows <- function(
     error = function(e) NULL
   )
   if (is.null(bhat) || length(bhat) == 0L) {
-    return(NULL)
-  } # nocov (fixef extraction never errors/empties on a converged refit)
+    return(NULL) # nocov (fixef extraction never errors/empties on a converged refit)
+  }
 
   V <- tryCatch(
     {
@@ -813,8 +813,8 @@ extract_beta_rows <- function(
     error = function(e) NULL
   )
   if (is.null(V) || nrow(V) != length(bhat)) {
-    return(NULL)
-  } # nocov (vcov is square + conformable on a converged refit)
+    return(NULL) # nocov (vcov is square + conformable on a converged refit)
+  }
 
   se <- sqrt(diag(V))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)

@@ -372,16 +372,16 @@ attach_nested_stats_to_frames <- function(frames, fits) {
   }
   comp <- compute_nested_comparisons(fits)
   if (nrow(comp) == 0L) {
-    return(frames)
-  } # nocov -- >= 2 fits always yield >= 1 comparison row
+    return(frames) # nocov -- >= 2 fits always yield >= 1 comparison row
+  }
   na_row <- comp[1L, , drop = FALSE]
   na_row[1L, ] <- NA
   change_cols <- setdiff(names(comp), "comparison")
   for (i in seq_along(frames)) {
     fs <- frames[[i]]$info$fit_stats
     if (is.null(fs)) {
-      next
-    } # nocov
+      next # nocov
+    }
     pair_row <- if (i == 1L) na_row else comp[i - 1L, , drop = FALSE]
     for (col in change_cols) {
       fs[[col]] <- pair_row[[col]][1L]

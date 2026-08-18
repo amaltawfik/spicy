@@ -414,12 +414,12 @@ compute_pseudo_r2_nagelkerke <- function(fit, ll_null = NULL) {
 compute_intercept_only_loglik_glm <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(mf)) {
-    return(NA_real_)
-  } # nocov: a converged glm always carries a model.frame
+    return(NA_real_) # nocov: a converged glm always carries a model.frame
+  }
   y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
   if (is.null(y)) {
-    return(NA_real_)
-  } # nocov: a glm model.frame always has a response column
+    return(NA_real_) # nocov: a glm model.frame always has a response column
+  }
   fam <- stats::family(fit)
   weights <- tryCatch(stats::weights(fit), error = function(e) NULL)
   offset_vec <- tryCatch(stats::model.offset(mf), error = function(e) NULL)
@@ -441,7 +441,7 @@ compute_intercept_only_loglik_glm <- function(fit) {
   )
   if (is.null(null_fit)) {
     return(NA_real_)
-  } # nocov: intercept-only refit of a valid response always converges
+  }
   tryCatch(as.numeric(stats::logLik(null_fit)), error = function(e) NA_real_)
 }
 

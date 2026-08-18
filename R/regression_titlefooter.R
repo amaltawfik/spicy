@@ -1062,8 +1062,8 @@ build_survival_footer_block_from_frames <- function(frames) {
     parts <- c(parts, sprintf("scale = %.2f", scale))
   }
   if (length(parts) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   paste0(paste(parts, collapse = "; "), ".")
 }
 
@@ -1080,8 +1080,8 @@ build_survival_footer_block_from_frames <- function(frames) {
     parts <- c(parts, aux_str)
   }
   if (length(parts) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   paste0(paste(parts, collapse = "; "), ".")
 }
 
@@ -1423,8 +1423,8 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
   for (blk in blocks) {
     rows <- blk$coefs
     if (is.null(rows) || nrow(rows) == 0L) {
-      next
-    } # nocov
+      next # nocov
+    }
 
     est <- rows$estimate
     se <- rows$std_error

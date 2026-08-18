@@ -146,8 +146,8 @@ as_regression_frame.gam <- function(
     # Defensive: df.residual() on a valid estimated-scale gam always returns
     # a finite scalar; this only guards an unexpected NULL/Inf and is unreachable.
     if (is.null(dfr) || !is.finite(dfr)) {
-      dfr <- Inf
-    } # nocov
+      dfr <- Inf # nocov
+    }
     df <- rep(as.numeric(dfr), length(est))
     t_crit <- stats::qt(0.5 + ci_level / 2, df = dfr)
     ci_lower <- est - t_crit * se

@@ -436,8 +436,8 @@ compute_menard_sd_y_star <- function(fit) {
   # variance -- otherwise a perfectly valid binomial fit would yield
   # SD(Y*) = NA and trigger the misleading "family outside scope" caveat.
   if (is.null(eta_hat)) {
-    return(NA_real_)
-  } # nocov: NULL arm unreachable (see above).
+    return(NA_real_) # nocov: NULL arm unreachable (see above).
+  }
   eta_hat <- eta_hat[is.finite(eta_hat)]
   if (length(eta_hat) < 2L) {
     return(NA_real_)

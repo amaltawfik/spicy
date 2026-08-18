@@ -200,8 +200,8 @@ as_regression_frame.glmerMod <- function(
   }
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
   if (is.null(fam)) {
-    return(list(coefs = coefs, info = info))
-  } # nocov
+    return(list(coefs = coefs, info = info)) # nocov
+  }
   if (identical(fam$link, "identity")) {
     return(list(coefs = coefs, info = info))
   }
@@ -635,8 +635,8 @@ as_regression_frame.glmerMod <- function(
     variances <- diag(g_vc)
     sds <- attr(g_vc, "stddev")
     if (is.null(sds)) {
-      sds <- sqrt(variances)
-    } # nocov
+      sds <- sqrt(variances) # nocov
+    }
     nms <- if (!is.null(names(variances)) && length(names(variances))) {
       names(variances)
     } else {
@@ -728,8 +728,8 @@ as_regression_frame.glmerMod <- function(
   }
   vc <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
   if (is.null(vc)) {
-    return(vc_df)
-  } # nocov
+    return(vc_df) # nocov
+  }
 
   rows_extra <- list()
   for (group in names(vc)) {
@@ -814,8 +814,8 @@ as_regression_frame.glmerMod <- function(
     df
   }
   if (nrow(vc_df) == 0L) {
-    return(na_block(vc_df))
-  } # nocov
+    return(na_block(vc_df)) # nocov
+  }
   # Singular fits: a boundary variance has no meaningful interval and
   # profiling routinely fails there; keep the Wald path's precedence
   # (the singular table note explains the omission).
@@ -945,11 +945,11 @@ as_regression_frame.glmerMod <- function(
     df
   }
   if (nrow(vc_df) == 0L) {
-    return(na_block(vc_df))
-  } # nocov
+    return(na_block(vc_df)) # nocov
+  }
   if (!spicy_pkg_available("merDeriv")) {
-    return(na_block(vc_df))
-  } # nocov
+    return(na_block(vc_df)) # nocov
+  }
   if (isTRUE(lme4::isSingular(fit))) {
     return(na_block(vc_df))
   }
@@ -972,8 +972,8 @@ as_regression_frame.glmerMod <- function(
     error = function(e) NULL
   )
   if (is.null(v)) {
-    return(na_block(vc_df))
-  } # nocov
+    return(na_block(vc_df)) # nocov
+  }
 
   # merDeriv returns a Matrix package object (dgeMatrix); coerce to a
   # plain matrix so base::diag() dispatches correctly.
@@ -1063,18 +1063,18 @@ as_regression_frame.glmerMod <- function(
         pair_str <- vc_df$term[k]
         parts <- strsplit(pair_str, ", ", fixed = TRUE)[[1L]]
         if (length(parts) != 2L) {
-          next
-        } # nocov
+          next # nocov
+        }
         if (!g_name %in% names(vc_list)) {
-          next
-        } # nocov
+          next # nocov
+        }
         g_vc <- as.matrix(vc_list[[g_name]])
         g_nms <- rownames(g_vc)
         i_idx <- match(parts[1L], g_nms)
         j_idx <- match(parts[2L], g_nms)
         if (is.na(i_idx) || is.na(j_idx) || i_idx >= j_idx) {
-          next
-        } # nocov
+          next # nocov
+        }
 
         n_g_block <- nrow(g_vc)
         var_i_pos <- .vech_colmajor_pos(n_g_block, i_idx, i_idx)
@@ -1083,8 +1083,8 @@ as_regression_frame.glmerMod <- function(
         block_off <- group_offsets[[g_name]]
         full_pos <- n_fixed + block_off + c(var_i_pos, cov_pos, var_j_pos)
         if (max(full_pos) > nrow(v)) {
-          next
-        } # nocov
+          next # nocov
+        }
 
         Sigma_3 <- v[full_pos, full_pos, drop = FALSE]
         var_i <- g_vc[i_idx, i_idx]
@@ -1093,12 +1093,12 @@ as_regression_frame.glmerMod <- function(
         if (
           !is.finite(var_i) || !is.finite(var_j) || var_i <= 0 || var_j <= 0
         ) {
-          next
-        } # nocov
+          next # nocov
+        }
         rho <- cov_ij / sqrt(var_i * var_j)
         if (!is.finite(rho)) {
-          next
-        } # nocov
+          next # nocov
+        }
 
         grad <- c(
           -rho / (2 * var_i),
@@ -1107,8 +1107,8 @@ as_regression_frame.glmerMod <- function(
         )
         var_rho <- as.numeric(t(grad) %*% Sigma_3 %*% grad)
         if (!is.finite(var_rho) || var_rho < 0) {
-          next
-        } # nocov
+          next # nocov
+        }
         se_rho <- sqrt(var_rho)
 
         vc_df$std_error[k] <- se_rho
@@ -1214,8 +1214,8 @@ as_regression_frame.glmerMod <- function(
   }
   var_r <- group_rows$variance[1L]
   if (!is.finite(var_r)) {
-    return(NA_real_)
-  } # nocov
+    return(NA_real_) # nocov
+  }
 
   resid_row <- vc_df[vc_df$group == "Residual", , drop = FALSE]
   var_e <- if (nrow(resid_row) == 1L) {
@@ -1241,8 +1241,8 @@ as_regression_frame.glmerMod <- function(
   }
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
   if (is.null(fam)) {
-    return(NA_real_)
-  } # nocov
+    return(NA_real_) # nocov
+  }
   if (identical(fam$family, "binomial")) {
     # cbind(succ, fail) / matrix-response binomial: the closed-form
     # pi^2/3 only applies to single-trial Bernoulli. For trial-weighted
@@ -1271,12 +1271,12 @@ as_regression_frame.glmerMod <- function(
     # insight::.variance_distributional() is tight: 1e-10).
     null <- .nakagawa_null_params(fit, fam)
     if (!is.finite(null$intercept) || !is.finite(null$var_g)) {
-      return(NA_real_)
-    } # nocov
+      return(NA_real_) # nocov
+    }
     lambda <- exp(null$intercept + 0.5 * null$var_g)
     if (!is.finite(lambda) || lambda <= 0) {
-      return(NA_real_)
-    } # nocov
+      return(NA_real_) # nocov
+    }
     return(log1p(1 / lambda))
   }
   NA_real_

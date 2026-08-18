@@ -803,8 +803,8 @@ detect_factor_term_meta <- function(fit) {
       {
         d <- eval(fit$call$data, envir = fit$call_env %||% parent.frame())
         if (is.null(d)) {
-          return(NULL)
-        } # nocov: feols() requires `data`; eval() yields a df or errors (caught below)
+          return(NULL) # nocov: feols() requires `data`; eval() yields a df or errors (caught below)
+        }
         stats::.getXlevels(stats::terms(fit), d)
       },
       error = function(e) NULL
@@ -832,8 +832,8 @@ detect_factor_term_meta <- function(fit) {
       {
         d <- nlme::getData(fit)
         if (is.null(d)) {
-          return(NULL)
-        } # nocov: lme/gls require `data`; getData() returns a df or errors (caught below)
+          return(NULL) # nocov: lme/gls require `data`; getData() returns a df or errors (caught below)
+        }
         stats::.getXlevels(stats::terms(fit), d)
       },
       error = function(e) NULL

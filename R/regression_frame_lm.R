@@ -586,8 +586,8 @@ as_regression_frame.glm <- function(fit, ...) {
 .attach_event_counts <- function(frame, fit, ev = NULL) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(mf)) {
-    return(frame)
-  } # nocov
+    return(frame) # nocov
+  }
   if (is.null(ev)) {
     fam <- tryCatch(stats::family(fit)$family, error = function(e) "")
     if (!fam %in% c("binomial", "quasibinomial")) {

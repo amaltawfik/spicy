@@ -283,8 +283,8 @@ build_ame_contrasts_for_predictor <- function(fit, v) {
     # "contrasts can be applied only to factors with 2 or more levels"),
     # so this guard is not reachable from a fitted model.
     if (length(lvls) < 2L) {
-      return(list())
-    } # nocov
+      return(list()) # nocov
+    }
     ref <- lvls[1]
     out <- list()
     for (lvl in lvls[-1]) {
@@ -1125,7 +1125,7 @@ extract_ame_glm <- function(
       d <- dr$draw[key_dr == key_out[k]]
       if (length(d) < 2L) {
         next
-      } # nocov
+      }
       out$estimate[k] <- stats::median(d)
       out$std.error[k] <- stats::mad(d)
       ci <- if (isTRUE(hdi)) {
@@ -1287,8 +1287,8 @@ extract_ame_glm <- function(
     }
     add <- lapply(ref_i, function(r) {
       if (!(coefs$parent_var[r] %in% ame_parents)) {
-        return(NULL)
-      } # nocov
+        return(NULL) # nocov
+      }
       ref_out <- if ("outcome_level" %in% names(coefs)) {
         coefs$outcome_level[r]
       } else {

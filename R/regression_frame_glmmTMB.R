@@ -416,7 +416,7 @@ as_regression_frame.glmmTMB <- function(
   })
   if (is.null(sm) || nrow(sm) == 0L) {
     return(NULL)
-  } # nocov
+  }
 
   nm <- rownames(sm)
   est <- unname(sm[, "Estimate"])
@@ -474,8 +474,8 @@ as_regression_frame.glmmTMB <- function(
     present <- lvls[paste0(v, lvls) %in% nm]
     ref <- setdiff(lvls, present)
     if (length(ref) == length(lvls)) {
-      next
-    } # nocov
+      next # nocov
+    }
     if (length(ref) >= 1L) {
       rows <- rbind(
         rows,
@@ -562,8 +562,8 @@ as_regression_frame.glmmTMB <- function(
     variances <- diag(g_vc)
     sds <- attr(g_vc, "stddev")
     if (is.null(sds)) {
-      sds <- sqrt(variances)
-    } # nocov
+      sds <- sqrt(variances) # nocov
+    }
     nms <- if (!is.null(names(variances)) && length(names(variances))) {
       names(variances)
     } else {
@@ -705,11 +705,11 @@ as_regression_frame.glmmTMB <- function(
     df
   }
   if (nrow(vc_df) == 0L) {
-    return(na_block(vc_df))
-  } # nocov
+    return(na_block(vc_df)) # nocov
+  }
   if (!spicy_pkg_available("glmmTMB")) {
-    return(na_block(vc_df))
-  } # nocov
+    return(na_block(vc_df)) # nocov
+  }
 
   ci_sd <- tryCatch(
     stats::confint(fit, method = "Wald", parm = "theta_", level = ci_level),
@@ -717,7 +717,7 @@ as_regression_frame.glmmTMB <- function(
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) {
     return(na_block(vc_df))
-  } # nocov
+  }
   ci_sd <- as.matrix(ci_sd)
 
   vc_df$std_error <- NA_real_
@@ -759,8 +759,8 @@ as_regression_frame.glmmTMB <- function(
       }
       idx <- which(rownames(ci_sd) %in% cands)
       if (length(idx) != 1L) {
-        next
-      } # nocov
+        next # nocov
+      }
       cor_lower <- ci_sd[idx, 1L]
       cor_upper <- ci_sd[idx, 2L]
       vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
@@ -776,8 +776,8 @@ as_regression_frame.glmmTMB <- function(
     pattern <- paste0("^Std.Dev.", gsub("([()])", "\\\\\\1", t), "\\|", g, "$")
     idx <- grep(pattern, rownames(ci_sd))
     if (length(idx) != 1L) {
-      next
-    } # nocov
+      next # nocov
+    }
     sd_est <- ci_sd[idx, "Estimate"]
     sd_lower <- ci_sd[idx, 1L]
     sd_upper <- ci_sd[idx, 2L]

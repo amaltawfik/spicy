@@ -45,12 +45,12 @@
 .re_term_tests_lrt <- function(fit) {
   f <- tryCatch(stats::formula(fit), error = function(e) NULL)
   if (is.null(f)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   bars <- tryCatch(.re_findbars(f), error = function(e) NULL)
   if (is.null(bars) || length(bars) == 0L) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   ll_full <- as.numeric(stats::logLik(fit))
 
   out <- list()
@@ -121,7 +121,7 @@
   }
   if (length(out) == 0L) {
     return(NULL)
-  } # nocov
+  }
   do.call(rbind, out)
 }
 
@@ -156,8 +156,8 @@
     error = function(e) NULL
   )
   if (is.null(new_f)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
 
   tryCatch(
     suppressWarnings(suppressMessages(stats::update(fit, formula = new_f))),
@@ -201,8 +201,8 @@
     error = function(e) NULL
   )
   if (is.null(tt)) {
-    return(unsupported())
-  } # nocov
+    return(unsupported()) # nocov
+  }
   slopes <- attr(tt, "term.labels")
   has_int <- attr(tt, "intercept") == 1L
   n_terms_bar <- length(slopes) + as.integer(has_int)
@@ -245,11 +245,13 @@
     # captured call is unqualified `lme(...)`): requalify to nlme::lme first,
     # exactly like .null_lrt_lme().
     red <- if (is.null(new_rnd)) {
-      NULL
+      # Unreachable: new_rnd is assembled by paste0() from the term
+      # labels of the fitted random structure, and as.formula() on that
+      # deparse-built string cannot fail.
+      NULL # nocov
     } else {
       tryCatch(
         {
-          # nocov
           call_copy <- fit$call
           call_copy[[1L]] <- quote(nlme::lme)
           call_copy$random <- new_rnd
@@ -295,7 +297,7 @@
   }
   if (length(out) == 0L) {
     return(NULL)
-  } # nocov
+  }
   do.call(rbind, out)
 }
 
@@ -339,8 +341,8 @@
   }
   res <- tryCatch(RLRsim::exactRLRT(fit), error = function(e) NULL)
   if (is.null(res)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   if (is_lmer) {
     vc <- lme4::VarCorr(fit)
     grp <- names(vc)[1L]

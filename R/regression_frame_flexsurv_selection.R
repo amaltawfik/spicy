@@ -91,8 +91,8 @@ as_regression_frame.flexsurvreg <- function(
 .flexsurv_coefs <- function(fit, ci_level) {
   res <- fit$res
   if (is.null(res)) {
-    return(.empty_coefs_frame())
-  } # nocov
+    return(.empty_coefs_frame()) # nocov
+  }
 
   all_names <- rownames(res)
   # The auxiliary distribution parameters (shape, scale, rate, ...) are
@@ -454,8 +454,8 @@ as_regression_frame.selection <- function(
     )
   }
   if (length(blocks) == 0L) {
-    return(.empty_coefs_frame())
-  } # nocov
+    return(.empty_coefs_frame()) # nocov
+  }
   do.call(rbind, blocks)
 }
 

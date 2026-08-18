@@ -568,11 +568,11 @@ as_regression_frame.gls <- function(
   )
   if (is.null(ci_obj) || is.null(ci_obj$reStruct)) {
     return(vc_df)
-  } # nocov
+  }
   group_ci <- ci_obj$reStruct[[group_nm]]
   if (is.null(group_ci)) {
-    return(vc_df)
-  } # nocov
+    return(vc_df) # nocov
+  }
 
   cor_rows <- grep("^cor\\(", rownames(group_ci), value = TRUE)
   if (length(cor_rows) == 0L) {
@@ -638,8 +638,8 @@ as_regression_frame.gls <- function(
   }
   # nocov end
   if (nrow(vc_df) == 0L) {
-    return(na_block(vc_df))
-  } # nocov
+    return(na_block(vc_df)) # nocov
+  }
 
   ci_obj <- tryCatch(
     nlme::intervals(fit, level = ci_level, which = "var-cov"),
@@ -647,7 +647,7 @@ as_regression_frame.gls <- function(
   )
   if (is.null(ci_obj)) {
     return(na_block(vc_df))
-  } # nocov
+  }
 
   vc_df$std_error <- NA_real_
   vc_df$ci_lower <- NA_real_
@@ -674,8 +674,8 @@ as_regression_frame.gls <- function(
       # separators via exact-string matching.
       group_ci <- ci_obj$reStruct[[g]]
       if (is.null(group_ci)) {
-        next
-      } # nocov
+        next # nocov
+      }
       comps <- strsplit(t, ", ", fixed = TRUE)[[1L]]
       targets <- if (length(comps) == 2L) {
         paste0(
@@ -693,8 +693,8 @@ as_regression_frame.gls <- function(
       }
       row_idx <- which(rownames(group_ci) %in% targets)[1L]
       if (is.na(row_idx)) {
-        next
-      } # nocov
+        next # nocov
+      }
       cor_lower <- group_ci[row_idx, "lower"]
       cor_upper <- group_ci[row_idx, "upper"]
       vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
@@ -707,21 +707,21 @@ as_regression_frame.gls <- function(
     if (identical(g, "Residual")) {
       sigma_ci <- ci_obj$sigma
       if (is.null(sigma_ci) || length(sigma_ci) != 3L) {
-        next
-      } # nocov
+        next # nocov
+      }
       sd_est <- unname(sigma_ci["est."])
       sd_lower <- unname(sigma_ci["lower"])
       sd_upper <- unname(sigma_ci["upper"])
     } else {
       group_ci <- ci_obj$reStruct[[g]]
       if (is.null(group_ci)) {
-        next
-      } # nocov
+        next # nocov
+      }
       target <- paste0("sd(", t, ")")
       row_idx <- match(target, rownames(group_ci))
       if (is.na(row_idx)) {
-        next
-      } # nocov
+        next # nocov
+      }
       sd_est <- group_ci[row_idx, "est."]
       sd_lower <- group_ci[row_idx, "lower"]
       sd_upper <- group_ci[row_idx, "upper"]

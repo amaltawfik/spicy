@@ -2151,7 +2151,11 @@ median_order_ci <- function(x, ci_level) {
   alpha <- 1 - ci_level
   k <- stats::qbinom(alpha / 2, n, 0.5)
   while (k >= 1L && stats::pbinom(k - 1L, n, 0.5) > alpha / 2) {
-    k <- k - 1L
+    # Unreachable by qbinom()'s contract: it returns the SMALLEST k with
+    # pbinom(k, n, 0.5) >= alpha / 2, so pbinom(k - 1, ...) < alpha / 2
+    # on entry. The correction loop only guards a drifted qbinom
+    # convention.
+    k <- k - 1L # nocov
   }
   if (k < 1L) {
     return(c(NA_real_, NA_real_))
@@ -3696,5 +3700,5 @@ export_desc_table <- function(
   spicy_abort(
     paste0("Unknown output format: ", output),
     class = "spicy_invalid_input"
-  ) # nocov
+  )
 }

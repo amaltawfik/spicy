@@ -385,8 +385,8 @@ as_regression_frame.brmsfit <- function(
   }
   ff <- f$formula
   if (!inherits(ff, "formula")) {
-    return("unrecoverable")
-  } # nocov
+    return("unrecoverable") # nocov
+  }
   # Group-level terms (bars). reformulas is the lme4-family parser
   # spicy already Suggests.
   bars <- tryCatch(reformulas::findbars(ff), error = function(e) NULL)
@@ -490,8 +490,8 @@ as_regression_frame.brmsfit <- function(
     # (probed 2026-07-21, dev/brmsfit_beta_spec.md). Factor metadata
     # comes from the formula / data pair.
     if (!spicy_pkg_available("insight")) {
+      # nocov start
       spicy_abort(
-        # nocov start
         c(
           paste0(
             "Standardized coefficients for brmsfit need ",
@@ -515,8 +515,8 @@ as_regression_frame.brmsfit <- function(
     )
   }
   if (is.null(mm) || is.null(colnames(mm)) || is.null(factor_cols)) {
+    # nocov start
     spicy_abort(
-      # nocov start
       c(
         paste0(
           "Standardized coefficients need the fit's design ",
@@ -712,8 +712,8 @@ as_regression_frame.brmsfit <- function(
   n <- length(x)
   k <- ceiling(level * n)
   if (k >= n) {
-    return(c(x[1L], x[n]))
-  } # nocov
+    return(c(x[1L], x[n])) # nocov
+  }
   widths <- x[(k + 1L):n] - x[seq_len(n - k)]
   i <- which.min(widths)
   c(x[i], x[i + k])
@@ -762,7 +762,6 @@ as_regression_frame.brmsfit <- function(
   draws_names <- if (brms_b_prefix) {
     if (is.null(draws_var_map)) {
       spicy_abort(
-        # nocov
         "Internal: brmsfit path requires draws_var_map.",
         class = "spicy_internal"
       )
@@ -797,8 +796,8 @@ as_regression_frame.brmsfit <- function(
     function(i) {
       d <- drm[, i]
       if (length(d) == 0L) {
-        return(NA_real_)
-      } # nocov
+        return(NA_real_) # nocov
+      }
       p_pos <- mean(d > 0)
       p_neg <- mean(d < 0)
       max(p_pos, p_neg)
@@ -1440,8 +1439,8 @@ as_regression_frame.brmsfit <- function(
 .stan_dv <- function(fit) {
   f <- tryCatch(stats::formula(fit), error = function(e) NULL)
   if (is.null(f)) {
-    return(NA_character_)
-  } # nocov
+    return(NA_character_) # nocov
+  }
   if (inherits(f, "brmsformula")) {
     f <- f$formula
   }
@@ -1501,8 +1500,8 @@ as_regression_frame.brmsfit <- function(
 ) {
   draws <- tryCatch(posterior::as_draws_matrix(fit), error = function(e) NULL)
   if (is.null(draws)) {
-    return(empty_random_effects())
-  } # nocov
+    return(empty_random_effects()) # nocov
+  }
   vars <- colnames(draws)
   lo <- (1 - ci_level) / 2
   hi <- 1 - lo
@@ -1607,13 +1606,13 @@ as_regression_frame.brmsfit <- function(
       v1 <- paste0("Sigma[", grp[i], ":", t1[i], ",", t1[i], "]")
       v2 <- paste0("Sigma[", grp[i], ":", t2[i], ",", t2[i], "]")
       if (!v1 %in% vars || !v2 %in% vars) {
-        next
-      } # nocov
+        next # nocov
+      }
       denom <- sqrt(pmax(draws[, v1], 0) * pmax(draws[, v2], 0))
       ok <- denom > 0
       if (!any(ok)) {
-        next
-      } # nocov
+        next # nocov
+      }
       add_row(
         grp[i],
         paste0(t1[i], " \u00d7 ", t2[i]),
@@ -1659,8 +1658,8 @@ as_regression_frame.brmsfit <- function(
   }
 
   if (length(rows) == 0L) {
-    return(empty_random_effects())
-  } # nocov
+    return(empty_random_effects()) # nocov
+  }
   vc_df <- do.call(rbind, rows)
   list(
     variance_components = vc_df,
@@ -1704,8 +1703,8 @@ as_regression_frame.brmsfit <- function(
 .stan_convergence_note <- function(fit, class_name) {
   draws <- tryCatch(posterior::as_draws_array(fit), error = function(e) NULL)
   if (is.null(draws)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   # suppressWarnings: on very short chains summarise_draws emits raw
   # base "ESS capped" warnings that duplicate what the guard itself
   # reports and would leak through spicy's classed-warning handlers.
@@ -1716,8 +1715,8 @@ as_regression_frame.brmsfit <- function(
     error = function(e) NULL
   )
   if (is.null(sm)) {
-    return(NULL)
-  } # nocov
+    return(NULL) # nocov
+  }
   max_rhat <- suppressWarnings(max(sm$rhat, na.rm = TRUE))
   min_ess <- suppressWarnings(min(c(sm$ess_bulk, sm$ess_tail), na.rm = TRUE))
   # ESS bar: 100 per chain (Vehtari et al. 2021 recommend rank-plot
@@ -1800,12 +1799,14 @@ as_regression_frame.brmsfit <- function(
     }
     # Partial diagnostics are disclosed, not warned about: R-hat /
     # ESS pass, but the reader must know the check was incomplete.
+    # nocov start
     return(paste0(
-      "Sampler diagnostics: R-hat and ESS within ", # nocov start
+      "Sampler diagnostics: R-hat and ESS within ",
       "targets; ",
       unavailable,
       "."
-    )) # nocov end
+    ))
+    # nocov end
   }
   note <- paste0(
     "Sampler diagnostics: ",
