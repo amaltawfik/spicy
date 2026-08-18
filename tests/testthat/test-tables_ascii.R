@@ -284,11 +284,24 @@ test_that("an orphaned interval names its carrier at a fractional coverage", {
   }
   expect_true(any(grepl("95% CI (B)", panel_header(0.95), fixed = TRUE)))
   expect_true(any(grepl("97.5% CI (B)", panel_header(0.975), fixed = TRUE)))
-  # And the pattern itself, at the two shapes `.ci_pct_str()` emits.
+  # And the pattern itself, against the whole of what `.ci_pct_str()`
+  # can emit: the producer has no scientific branch, so every coverage
+  # is digits with at most one decimal point.
   rx <- spicy:::.companion_header_pattern()
   expect_true(grepl(rx, "95% CI"))
   expect_true(grepl(rx, "97.5% CI"))
   expect_false(grepl(rx, "95% CI (B)"))
+  levels <- c(0.5, 0.9, 0.95, 0.975, 0.99, 0.999, 0.29, 1e-3, 1e-5, 1e-6, 1e-9)
+  pct <- vapply(levels, spicy:::.ci_pct_str, character(1))
+  expect_true(all(grepl("^[0-9]+([.][0-9]+)?$", pct)))
+  expect_true(all(grepl(rx, paste0(pct, "% CI"))))
+  # The level that used to escape into scientific notation.
+  expect_identical(spicy:::.ci_pct_str(1e-6), "0.0001")
+  # ... and the ordinary levels are untouched.
+  expect_identical(
+    vapply(c(0.9, 0.95, 0.975, 0.99, 0.29), spicy:::.ci_pct_str, character(1)),
+    c("90", "95", "97.5", "99", "29")
+  )
 })
 
 

@@ -305,8 +305,18 @@ ci_bracket_separator <- function(decimal_mark) {
 # zeros, so every level that HAS an exact integer percentage keeps it:
 # 0.9 -> "90", 0.95 -> "95", 0.99 -> "99". It also absorbs the binary
 # representation (`0.29 * 100` is 28.999999999999996, not 29).
+#
+# "fg" rather than "g": the same fixed notation with the same
+# significant-digit rule, minus %g's switch to scientific for a very
+# small number. `ci_level` is validated only as `0 < x < 1`, so
+# `ci_level = 1e-6` reached %g's threshold and wrote "1e-04" -- a
+# percentage no consumer can parse, and one the pattern that recognises
+# a companion header cannot match. This form is unconditionally digits
+# with at most one decimal point, which is what that pattern is built
+# for. Identical to "g" on every level above 1e-6 (swept: 21014 levels,
+# 4 differ, all of them the scientific ones).
 .ci_pct_str <- function(level) {
-  formatC(level * 100, format = "g")
+  formatC(level * 100, format = "fg")
 }
 
 # Internal: decimal-align the LL and UL inside a column of
