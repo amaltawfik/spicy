@@ -695,7 +695,6 @@ as_regression_frame.gls <- function(
       if (is.na(row_idx)) {
         next
       } # nocov
-      cor_est <- group_ci[row_idx, "est."]
       cor_lower <- group_ci[row_idx, "lower"]
       cor_upper <- group_ci[row_idx, "upper"]
       vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)

@@ -637,7 +637,6 @@ as_regression_frame.glmerMod <- function(
     if (is.null(sds)) {
       sds <- sqrt(variances)
     } # nocov
-    corr_mat <- attr(g_vc, "correlation")
     nms <- if (!is.null(names(variances)) && length(names(variances))) {
       names(variances)
     } else {

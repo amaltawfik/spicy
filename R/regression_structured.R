@@ -1428,7 +1428,6 @@ build_structured_body <- function(
     } else {
       NULL
     }
-    is_change_p <- identical(tk, "p_change")
 
     for (m_id in model_ids) {
       # Display-blank models (multinom category pseudo-columns, the

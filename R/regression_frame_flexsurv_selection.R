@@ -437,7 +437,6 @@ as_regression_frame.selection <- function(
 
   selection_idx <- seq_len(n_sel)
   outcome_idx <- seq_len(n_out) + n_sel
-  aux_idx <- setdiff(seq_len(nrow(est_mat)), c(selection_idx, outcome_idx))
 
   blocks <- list()
   if (length(selection_idx) > 0L) {

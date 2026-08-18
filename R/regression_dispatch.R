@@ -396,8 +396,6 @@ output_tinytable <- function(rendered) {
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
   level_rows <- .struct_indent_rows(struct)
-  format_spec <- struct$format_spec
-  decimal_mark <- format_spec$decimal_mark
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner <- length(ci_spanners) > 0L
 
@@ -419,7 +417,6 @@ output_tinytable <- function(rendered) {
   }
   ci_cols_set <- unlist(lapply(ci_spanners, function(cs) cs$cols))
   body_names_orig <- names(body)
-  n_rows <- nrow(body)
 
   # Factor-level rows carry the console's two-space indent in the
   # Variable cell, and the engine indents them again below
@@ -768,8 +765,6 @@ output_gt <- function(rendered) {
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
   level_rows <- .struct_indent_rows(struct)
-  format_spec <- struct$format_spec
-  decimal_mark <- format_spec$decimal_mark
 
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner <- length(ci_spanners) > 0L
@@ -2079,7 +2074,6 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   #   * sub-column header row (Variable, B, SE, LL, UL, p, ...)
   current_row <- start_row
   model_row_excel <- NA_integer_
-  ci_row_excel <- NA_integer_
 
   write_spanner_row <- function(wb, label_at_col, row) {
     df <- as.data.frame(

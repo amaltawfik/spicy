@@ -761,7 +761,6 @@ as_regression_frame.glmmTMB <- function(
       if (length(idx) != 1L) {
         next
       } # nocov
-      cor_est <- ci_sd[idx, "Estimate"]
       cor_lower <- ci_sd[idx, 1L]
       cor_upper <- ci_sd[idx, 2L]
       vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
