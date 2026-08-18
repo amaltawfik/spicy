@@ -354,6 +354,34 @@ compute_pseudo_r2_nagelkerke <- function(fit, ll_null = NULL) {
   cox_snell / upper
 }
 
+# Internal: stored-y representation of a glm response, for refits.
+# A two-column binomial / quasibinomial `cbind(successes, failures)`
+# response must never be passed back to `glm()` / `glm.fit()` together
+# with the fit's stored weights: `stats::weights(fit)` and
+# `fit$prior.weights` hold the POST-initialize weights (user weights
+# times the row totals -- the binomial `initialize` multiplies the
+# totals in; see the Note in `?glm`), and re-running `initialize` on
+# the matrix multiplies the totals in AGAIN, so the refit runs on
+# effective weights = totals^2. Convert once to the representation
+# `glm.fit` stores after initialize -- y = successes / total (rows
+# with total 0 get y = 0, the `add1.glm` convention), weights kept
+# as passed (or the totals when none resolved) -- and a refit
+# reproduces the original fit exactly. Vector and factor responses,
+# other families, and wider matrices pass through untouched.
+# Reference: R bug #19128 (`stats::drop1.glm` shares this defect).
+.glm_stored_response <- function(y, family, wt = NULL) {
+  if (
+    is.matrix(y) &&
+      ncol(y) == 2L &&
+      family$family %in% c("binomial", "quasibinomial")
+  ) {
+    tot <- y[, 1L] + y[, 2L]
+    list(y = ifelse(tot == 0, 0, y[, 1L] / tot), wt = wt %||% tot)
+  } else {
+    list(y = y, wt = wt)
+  }
+}
+
 # Log-likelihood of the intercept-only ("null") model for a glm,
 # robust to:
 #   * formula transforms on the response (`I(round(y))`, `log(y)`,
@@ -376,6 +404,12 @@ compute_pseudo_r2_nagelkerke <- function(fit, ll_null = NULL) {
 #
 # Workaround: extract the *evaluated* response, weights, and
 # offset from the model frame and refit on a fresh data.frame.
+# A two-column `cbind()` response is converted to the stored-y
+# representation first (`.glm_stored_response()` above): the
+# extracted weights are already post-initialize (the row totals),
+# so refitting on the raw matrix re-ran the binomial `initialize`
+# and evaluated ll_null under effective weights = totals^2 --
+# McFadden read 0.92 instead of 0.32 on real grouped data.
 # Falls back to NA on any failure.
 compute_intercept_only_loglik_glm <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
@@ -389,6 +423,10 @@ compute_intercept_only_loglik_glm <- function(fit) {
   fam <- stats::family(fit)
   weights <- tryCatch(stats::weights(fit), error = function(e) NULL)
   offset_vec <- tryCatch(stats::model.offset(mf), error = function(e) NULL)
+
+  cv <- .glm_stored_response(y, fam, weights)
+  y <- cv$y
+  weights <- cv$wt
 
   args <- list(formula = y ~ 1, family = fam, data = data.frame(y = y))
   if (!is.null(weights)) {

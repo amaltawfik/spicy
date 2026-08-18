@@ -344,6 +344,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `R² (McFadden)` and `R² (Nagelkerke)` -- shown by default for logistic
+  models -- were wrong for binomial models fitted with a two-column
+  `cbind(successes, failures)` response, and badly so: the intercept-only
+  refit behind both statistics re-applied the binomial totals to the
+  weights, so the null model was effectively fitted with squared weights
+  (McFadden read 0.92 where the true value was 0.32 in our checks). Fits
+  with a 0/1, factor, or proportion-plus-weights response were never
+  affected.
 * `table_regression()` refuses two models that would share a column
   label. A name colliding with the `"Model <position>"` label another
   slot takes by default -- `list("Model 2" = m1, m2)` -- used to draw

@@ -1628,14 +1628,91 @@ test_that("AUDIT B2: pseudo_r2_* work with formula-wrapped response", {
   fit_log <- glm(I(log(mpg)) ~ wt, data = mt, family = gaussian)
   expect_true(is.finite(spicy:::compute_pseudo_r2_mcfadden(fit_log)))
 
-  # cbind() form (binomial proportions): not common in spicy's
-  # use cases but should not crash.
+  # cbind() form (grouped binomial): the intercept-only refit used to
+  # pass the response MATRIX back to glm() together with the
+  # post-initialize weights (the row totals), so the binomial
+  # initialize re-applied the totals (effective weights = totals^2)
+  # and ll_null was silently wrong. Assert the real value against the
+  # direct intercept-only oracle, not mere absence of error.
   d <- data.frame(s = c(2, 5, 7, 3, 1), n = c(10, 12, 15, 8, 9), x = 1:5)
   fit_cb <- suppressWarnings(
     glm(cbind(s, n - s) ~ x, data = d, family = binomial)
   )
-  # Just check it runs without error (value may be NA if quirky)
-  expect_no_error(spicy:::compute_pseudo_r2_mcfadden(fit_cb))
+  ll_null <- as.numeric(stats::logLik(
+    glm(cbind(s, n - s) ~ 1, data = d, family = binomial)
+  ))
+  expect_equal(
+    spicy:::compute_intercept_only_loglik_glm(fit_cb),
+    ll_null,
+    tolerance = 1e-12
+  )
+  expect_equal(
+    spicy:::compute_pseudo_r2_mcfadden(fit_cb),
+    1 - as.numeric(stats::logLik(fit_cb)) / ll_null,
+    tolerance = 1e-12
+  )
+})
+
+test_that("pseudo-R2 on a cbind() fit match the proportion-form oracle", {
+  # Oracle pins from the cbind double-weighting dossier
+  # (vcov_cbind_oracle_pins.csv, 17 digits): llnull_forme_matrice_VRAI,
+  # mcfadden_CORRECT, nagelkerke_spicy_fit_pr_CORRECT, and the
+  # negative-control pins llnull_spicy_ACTUEL_FAUX /
+  # mcfadden_spicy_ACTUEL_FAUX (the totals^2 regime this test guards
+  # against).
+  set.seed(42)
+  n <- 40
+  d <- data.frame(
+    x = rnorm(n),
+    g = factor(rep(c("A", "B"), each = 20)),
+    tot = sample(3:12, n, TRUE)
+  )
+  d$succ <- rbinom(n, d$tot, plogis(-0.2 + 0.6 * d$x + 0.5 * (d$g == "B")))
+  d$prop <- d$succ / d$tot
+  fit_cb <- glm(cbind(succ, tot - succ) ~ x + g, family = binomial, data = d)
+  fit_pr <- glm(prop ~ x + g, family = binomial, data = d, weights = tot)
+
+  ll_null <- spicy:::compute_intercept_only_loglik_glm(fit_cb)
+  expect_equal(ll_null, -83.21304014662627, tolerance = 1e-12)
+  expect_equal(
+    spicy:::compute_pseudo_r2_mcfadden(fit_cb),
+    0.32396695353665972,
+    tolerance = 1e-12
+  )
+  expect_equal(
+    spicy:::compute_pseudo_r2_nagelkerke(fit_cb),
+    0.75194673902763853,
+    tolerance = 1e-12
+  )
+  # Invariance: the cbind and proportion-plus-weights forms of the SAME
+  # model must report the same pseudo-R2.
+  expect_equal(
+    spicy:::compute_pseudo_r2_mcfadden(fit_cb),
+    spicy:::compute_pseudo_r2_mcfadden(fit_pr),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    spicy:::compute_pseudo_r2_nagelkerke(fit_cb),
+    spicy:::compute_pseudo_r2_nagelkerke(fit_pr),
+    tolerance = 1e-12
+  )
+  # Negative control: the totals^2 signature must no longer match.
+  expect_gt(abs(ll_null - (-719.22608518147433)), 1)
+  expect_gt(
+    abs(spicy:::compute_pseudo_r2_mcfadden(fit_cb) - 0.92178430928070987),
+    0.1
+  )
+
+  # Default user surface: both R2 rows are shown by default on a logit
+  # table and must render identically for the two forms.
+  tab_cb <- table_regression(fit_cb)
+  tab_pr <- table_regression(fit_pr)
+  for (row in c("R² (McFadden)", "R² (Nagelkerke)")) {
+    expect_identical(
+      tab_cb[["B"]][tab_cb$Variable == row],
+      tab_pr[["B"]][tab_pr$Variable == row]
+    )
+  }
 })
 
 test_that("AUDIT: spicy_caveat conditions inherit from spicy_warning", {

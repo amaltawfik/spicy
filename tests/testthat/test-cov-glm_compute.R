@@ -257,3 +257,48 @@ test_that("compute_coef_inference (glm path): CR2 with non-finite Satterthwaite 
     tolerance = 1e-10
   )
 })
+
+
+# ---- .glm_stored_response(): stored-y conversion for refits ---------------
+
+test_that(".glm_stored_response converts a 2-column binomial matrix", {
+  y <- cbind(s = c(1, 0, 3), f = c(4, 0, 2))
+
+  # No weights resolved: the post-initialize weights ARE the totals.
+  cv <- spicy:::.glm_stored_response(y, binomial())
+  expect_identical(cv$y, c(0.2, 0, 0.6)) # total-0 row -> y = 0 (add1.glm)
+  expect_identical(cv$wt, c(5, 0, 5))
+
+  # Weights passed (already post-initialize): kept untouched.
+  cv_w <- spicy:::.glm_stored_response(y, binomial(), wt = c(10, 0, 10))
+  expect_identical(cv_w$y, c(0.2, 0, 0.6))
+  expect_identical(cv_w$wt, c(10, 0, 10))
+
+  # quasibinomial shares the multiplying initialize -> converted too.
+  cv_q <- spicy:::.glm_stored_response(y, quasibinomial())
+  expect_identical(cv_q$y, c(0.2, 0, 0.6))
+})
+
+test_that(".glm_stored_response passes everything else through untouched", {
+  # Vector response: no-op, weights kept as passed (NULL included).
+  yv <- c(0, 1, 1)
+  cv <- spicy:::.glm_stored_response(yv, binomial(), wt = c(2, 2, 2))
+  expect_identical(cv$y, yv)
+  expect_identical(cv$wt, c(2, 2, 2))
+  expect_null(spicy:::.glm_stored_response(yv, binomial())$wt)
+
+  # Non-binomial family: a matrix is not the grouped-binomial encoding.
+  ym <- cbind(c(1, 2), c(3, 4))
+  cv_p <- spicy:::.glm_stored_response(ym, poisson())
+  expect_identical(cv_p$y, ym)
+
+  # Wrong width: one- and three-column matrices pass through.
+  expect_identical(
+    spicy:::.glm_stored_response(ym[, 1L, drop = FALSE], binomial())$y,
+    ym[, 1L, drop = FALSE]
+  )
+  expect_identical(
+    spicy:::.glm_stored_response(cbind(ym, 5:6), binomial())$y,
+    cbind(ym, 5:6)
+  )
+})
