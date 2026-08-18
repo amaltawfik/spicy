@@ -49,13 +49,27 @@
 # The newline is escaped for SYNTAX only -- a literal newline cannot
 # appear in a CSS string -- and not because the rule would then land.
 # It does not, either way, and the six-hex-digit form is not the shield
-# it looks like: gt maps a newline in an id to "-" before the DOM sees
-# it (`id="a-b_n"`), while sass re-serialises our `\00000A` to the short
-# `\ab` form, which swallows the character that follows and compiles to
-# `th[id="a<U+00AB>_n"]`. Measured, both. So a `by` level holding a
-# newline loses this border rule with or without the escape; what the
-# escape prevents is the stylesheet failing to parse, which for the
-# double quote was the whole render.
+# it looks like: sass re-serialises our `\00000A` to the short `\ab`
+# form, which swallows the character that follows and compiles to
+# `th[id="a<U+00AB>_n"]`. Measured.
+#
+# The target id is not the level in the first place. gt passes every id
+# through `gt:::valid_html_id()`, which prefixes "a" to anything not
+# starting `[A-z]` and then collapses each run of WHITESPACE to a single
+# "-". The newline is not special to it: measured on gt 1.3.0, a level
+# "a b" lands as `Upper-secondary_n` against our `th[id="Upper
+# secondary_n"]` exactly as "a\nb" does, and an accented level lands as
+# `aété_n` against `th[id="été_n"]`. So an ordinary SPACE in a `by`
+# level already costs this rule -- the newline is one case of a general
+# mismatch, not a corner. Mirroring the mapping means copying an
+# unexported internal, `[A-z]` quirk included, into a selector that
+# raises nothing when it stops matching; the row's border is drawn by
+# gt's own `tab_style()` as well, so what is lost is the override that
+# carries it into the viewers where gt's inline styles do not survive.
+# Left to a decision, recorded in the register.
+#
+# What the escape does prevent is the stylesheet failing to parse, which
+# for the double quote took the whole render down.
 .css_escape_string <- function(x) {
   x <- gsub("\\", "\\\\", x, fixed = TRUE)
   x <- gsub('"', '\\"', x, fixed = TRUE)
