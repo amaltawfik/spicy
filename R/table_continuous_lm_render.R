@@ -113,13 +113,15 @@
 # regression, categorical and continuous families use, so the coverage /
 # word order is translatable in one move.
 #
-# The percentage comes from `.ci_pct_str()`, the same producer the
-# column key uses -- key and header cannot disagree about the coverage
-# they announce.
-.lm_ci_label <- function(ci_level) {
+# The percentage comes from `.ci_pct_display()`, the display twin of
+# the `.ci_pct_str()` the column key uses -- key and header cannot
+# disagree about the coverage they announce, and the header's decimal
+# point follows `decimal_mark` (decision 27) while the key's stays a
+# period.
+.lm_ci_label <- function(ci_level, decimal_mark = ".") {
   spicy_fmt(
     "header_ci_spanner",
-    .ci_pct_str(ci_level),
+    .ci_pct_display(ci_level, decimal_mark),
     spicy_str("header_ci_label_confidence")
   )
 }
@@ -204,13 +206,14 @@
   effect_size = "none",
   effect_size_ci = FALSE,
   r2_type = "r2",
-  ci = TRUE
+  ci = TRUE,
+  decimal_mark = "."
 ) {
   vars <- unique(x$variable)
   first_block <- x[x$variable == vars[1], , drop = FALSE]
   by_type <- unique(first_block$predictor_type)[1]
   ci_pct <- .lm_ci_pct(ci_level)
-  ci_hdr <- .lm_ci_label(ci_level)
+  ci_hdr <- .lm_ci_label(ci_level, decimal_mark)
   include_es <- !identical(effect_size, "none")
   include_r2 <- !identical(r2_type, "none")
 
@@ -508,7 +511,8 @@ build_wide_display_df_continuous_lm <- function(
       effect_size = effect_size,
       effect_size_ci = effect_size_ci,
       r2_type = r2_type,
-      ci = ci
+      ci = ci,
+      decimal_mark = decimal_mark
     )
   test_header <- .lm_spec_key(spec, "statistic")
   r2_header <- .lm_spec_key(spec, "r2")
@@ -673,7 +677,7 @@ export_continuous_lm_table <- function(
   # output, and this function receives the display frame alone. NULL
   # (a frame nobody's spec produced) is the identity.
   lab <- function(keys) .lm_labels(keys, labels)
-  ci_spanner_label <- .lm_ci_label(ci_level)
+  ci_spanner_label <- .lm_ci_label(ci_level, decimal_mark)
   # Membership, not a flag from upstream: the exporter is also reached
   # with a hand-built frame that carries no interval at all.
   has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))

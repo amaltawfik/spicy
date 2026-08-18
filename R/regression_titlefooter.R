@@ -113,7 +113,11 @@ build_regression_footer_from_frames <- function(
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
-    build_ci_method_footer_block_from_frames(frames, show_columns),
+    build_ci_method_footer_block_from_frames(
+      frames,
+      show_columns,
+      decimal_mark = decimal_mark
+    ),
     build_mixed_inference_footer_block_from_frames(frames),
     build_gee_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(
@@ -377,14 +381,23 @@ build_vcov_footer_block_from_frames <- function(frames) {
 # guarantees ci_method == "profile" reaches only glm / polr / clm.
 build_ci_method_footer_block_from_frames <- function(
   frames,
-  show_columns = character(0)
+  show_columns = character(0),
+  decimal_mark = "."
 ) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
+  # The coverage quoted in a note is display text like the header it
+  # glosses: its decimal point follows `decimal_mark` (decision 27).
+  # The historical rounding (1 decimal) is kept as-is; only the mark
+  # of an already-fractional percentage moves.
   .pct <- function(idx) {
     lvl <- frames[[idx]]$info$ci_level %||% 0.95
-    sub("\\.0$", "", format(round(100 * lvl, 1), nsmall = 0))
+    out <- sub("\\.0$", "", format(round(100 * lvl, 1), nsmall = 0))
+    if (identical(decimal_mark, ".")) {
+      return(out)
+    }
+    sub(".", decimal_mark, out, fixed = TRUE)
   }
   lines <- character(0)
   is_profile <- vapply(

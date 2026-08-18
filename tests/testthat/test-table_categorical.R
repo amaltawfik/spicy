@@ -801,6 +801,26 @@ test_that("assoc_ci = FALSE omits CI columns in wide raw output", {
   expect_false("CI upper" %in% names(out))
 })
 
+test_that("the association CI label ignores decimal_mark at its integer coverage", {
+  # Decision 27 witness, categorical family: the association interval is
+  # pinned at 95% upstream, an integer percentage with no decimal point,
+  # so the label is byte-identical under any mark.
+  s_of <- function(mk) {
+    as_structured(table_categorical(
+      sochealth,
+      "smoking",
+      "education",
+      assoc_ci = TRUE,
+      decimal_mark = mk
+    ))
+  }
+  lab_of <- function(s) {
+    unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
+  }
+  expect_identical(lab_of(s_of(",")), "95% CI")
+  expect_identical(lab_of(s_of(",")), lab_of(s_of(".")))
+})
+
 test_that("assoc_ci adds CI columns in long raw output", {
   out <- table_categorical(
     sochealth,

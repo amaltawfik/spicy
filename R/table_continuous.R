@@ -1630,7 +1630,7 @@ table_continuous <- function(
     build_weights_note(),
     build_missing_note(),
     build_test_note(test_used, auto_rank, n_test_groups),
-    build_column_glosses(tokens_union, result, ci_level)
+    build_column_glosses(tokens_union, result, ci_level, decimal_mark)
   ))
 
   if (output %in% c("data.frame", "long")) {
@@ -1794,10 +1794,13 @@ order_continuous_tokens <- function(tokens) {
 # The interval HEADER a reader sees ("95% CI"), the label twin of
 # `.continuous_ci_pct()`. Same template the regression and categorical
 # families use, so the coverage / word order is translatable in one move.
-.continuous_ci_label <- function(ci_level) {
+# The percentage is DISPLAY text, so it follows `decimal_mark`
+# ("97,5% CI" under the comma, decision 27); the key twin above keeps
+# the period.
+.continuous_ci_label <- function(ci_level, decimal_mark = ".") {
   spicy_fmt(
     "header_ci_spanner",
-    .ci_pct_str(ci_level),
+    .ci_pct_display(ci_level, decimal_mark),
     spicy_str("header_ci_label_confidence")
   )
 }
@@ -1827,10 +1830,13 @@ order_continuous_tokens <- function(tokens) {
 # The labels are resolved in the BODY, never in a top-level constant: a
 # constant would read the registry once at build time and no translation
 # could ever move it.
-.continuous_token_columns <- function(ci_level) {
+# `decimal_mark` moves only the LABEL fields (the coverage percentage
+# is display text, decision 27); `name` / `ci_key` / `short_name` are
+# frozen keys and keep the period whatever the mark.
+.continuous_token_columns <- function(ci_level, decimal_mark = ".") {
   ci_key <- paste0(.continuous_ci_pct(ci_level), " ", .CON_KEY_CI)
   med_ci_key <- paste0(.CON_KEY_MED_PREFIX, ci_key)
-  ci_hdr <- .continuous_ci_label(ci_level)
+  ci_hdr <- .continuous_ci_label(ci_level, decimal_mark)
   med_hdr <- spicy_str("header_median")
   # "Med 95% CI": the same statistic-then-interval template the
   # regression family uses for "f2 95% CI".
@@ -1946,7 +1952,7 @@ order_continuous_tokens <- function(tokens) {
 # The HEADER behind each frozen column key, as one named vector: the five
 # keys outside the statistics vocabulary, then every vocabulary entry
 # under its full key AND under the short key `rename_ci_cols()` leaves.
-.continuous_label_map <- function(ci_level) {
+.continuous_label_map <- function(ci_level, decimal_mark = ".") {
   map <- c(
     spicy_str("header_variable"),
     spicy_str("header_group"),
@@ -1961,7 +1967,7 @@ order_continuous_tokens <- function(tokens) {
     .CON_KEY_P,
     .CON_KEY_ES
   )
-  for (entries in .continuous_token_columns(ci_level)) {
+  for (entries in .continuous_token_columns(ci_level, decimal_mark)) {
     for (e in entries) {
       map[[e$name]] <- e$label
       if (!is.null(e$short_name)) {
@@ -1976,8 +1982,8 @@ order_continuous_tokens <- function(tokens) {
 # An unknown key returns itself: a degraded object still prints, and the
 # result is a vector of the same length as its input by construction --
 # which is why the console needs no shape guard here.
-.continuous_labels <- function(col_keys, ci_level) {
-  map <- .continuous_label_map(ci_level)
+.continuous_labels <- function(col_keys, ci_level, decimal_mark = ".") {
+  map <- .continuous_label_map(ci_level, decimal_mark)
   out <- unname(map[col_keys])
   # Subset assignment rather than `ifelse()`: the latter returns
   # `logical(0)` on an empty input, which would break the length
@@ -2241,10 +2247,10 @@ build_test_note <- function(test_used, auto_rank, n_groups) {
 # Gloss the abbreviations the displayed columns introduce, and only
 # those: "IQR" is used in the literature for both the interval and its
 # width, and an order-statistic CI is not a t interval.
-build_column_glosses <- function(tokens, result, ci_level) {
+build_column_glosses <- function(tokens, result, ci_level, decimal_mark = ".") {
   # Each gloss names its own column: the header travels as an argument,
   # resolved from the vocabulary, never re-typed in the note's value.
-  spec <- .continuous_token_columns(ci_level)
+  spec <- .continuous_token_columns(ci_level, decimal_mark)
   label_of <- function(tok) spec[[tok]][[1L]]$label
   parts <- character(0)
   if ("iqr" %in% tokens) {
@@ -2262,10 +2268,13 @@ build_column_glosses <- function(tokens, result, ci_level) {
     parts <- c(parts, spicy_fmt("note_gloss_med_iqr", label_of("med_iqr")))
   }
   if ("med_ci" %in% tokens) {
+    # The coverage quoted in the note is display text like the header
+    # above it: same producer, same `decimal_mark` (decision 27). The
+    # "%" travels outside the producer, as in `.continuous_ci_pct()`.
     gloss <- spicy_fmt(
       "note_gloss_med_ci",
       spec[["med_ci"]][[1L]]$ci_label,
-      .continuous_ci_pct(ci_level)
+      paste0(.ci_pct_display(ci_level, decimal_mark), "%")
     )
     if (any(is.na(result$med_ci_lower))) {
       gloss <- paste(
@@ -2918,10 +2927,12 @@ rename_ci_cols <- function(display_df, ci_level) {
 # Structural danger kept as-is: the pairing requires the two bounds to be
 # ADJACENT and in LL-then-UL order. Any other layout degrades silently to
 # one-column spanners.
-desc_spanner_groups <- function(col_keys, ci_level) {
-  # One pair per interval token, LL then UL, in vocabulary order.
-  pairs <- .continuous_token_columns(ci_level)[c("ci", "med_ci")]
-  labels <- .continuous_labels(col_keys, ci_level)
+desc_spanner_groups <- function(col_keys, ci_level, decimal_mark = ".") {
+  # One pair per interval token, LL then UL, in vocabulary order. The
+  # matching below is KEY against key (`short_name`, `ci_key`), so the
+  # mark moves only the labels the groups carry.
+  pairs <- .continuous_token_columns(ci_level, decimal_mark)[c("ci", "med_ci")]
+  labels <- .continuous_labels(col_keys, ci_level, decimal_mark)
   groups <- list()
   i <- 1L
   n <- length(col_keys)
@@ -2959,11 +2970,11 @@ desc_spanner_groups <- function(col_keys, ci_level) {
 }
 
 # --- internal: build 2-row header vectors ---
-build_header_rows <- function(col_keys, ci_level) {
+build_header_rows <- function(col_keys, ci_level, decimal_mark = ".") {
   nc <- length(col_keys)
-  top <- .continuous_labels(col_keys, ci_level)
+  top <- .continuous_labels(col_keys, ci_level, decimal_mark)
   bot <- rep("", nc)
-  for (g in desc_spanner_groups(col_keys, ci_level)) {
+  for (g in desc_spanner_groups(col_keys, ci_level, decimal_mark)) {
     top[g$cols] <- g$label
     if (length(g$cols) > 1L) {
       bot[g$cols] <- g$bounds
@@ -3056,11 +3067,11 @@ export_desc_table <- function(
     display_df <- rename_ci_cols(display_df, ci_level)
     nc <- ncol(display_df)
     col_keys <- names(display_df)
-    groups_spec <- desc_spanner_groups(col_keys, ci_level)
+    groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner. Absent CI columns simply contribute no pair.
-    sub_labels <- build_header_rows(col_keys, ci_level)$bottom
+    sub_labels <- build_header_rows(col_keys, ci_level, decimal_mark)$bottom
     colnames(display_df) <- sub_labels
 
     # gspec walks the actual column keys in order, so any
@@ -3178,12 +3189,12 @@ export_desc_table <- function(
 
     display_df <- rename_ci_cols(display_df, ci_level)
     gt_col_keys <- names(display_df)
-    groups_spec <- desc_spanner_groups(gt_col_keys, ci_level)
+    groups_spec <- desc_spanner_groups(gt_col_keys, ci_level, decimal_mark)
     tbl <- gt::gt(display_df)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner.
-    gt_bottom <- build_header_rows(gt_col_keys, ci_level)$bottom
+    gt_bottom <- build_header_rows(gt_col_keys, ci_level, decimal_mark)$bottom
     label_list <- as.list(gt_bottom)
     names(label_list) <- gt_col_keys
     tbl <- gt::cols_label(tbl, .list = label_list)
@@ -3360,8 +3371,8 @@ export_desc_table <- function(
     display_df <- rename_ci_cols(display_df, ci_level)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_level)
-    groups_spec <- desc_spanner_groups(col_keys, ci_level)
+    hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
+    groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
 
     map <- data.frame(
       col_keys = col_keys,
@@ -3496,8 +3507,8 @@ export_desc_table <- function(
     display_df <- rename_ci_cols(display_df, ci_level)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_level)
-    groups_spec <- desc_spanner_groups(col_keys, ci_level)
+    hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
+    groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
     ci_pairs <- Filter(function(g) length(g$cols) > 1L, groups_spec)
 
     wb <- openxlsx2::wb_workbook()
@@ -3674,7 +3685,7 @@ export_desc_table <- function(
     display_df <- rename_ci_cols(display_df, ci_level)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_level)
+    hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
 
     # The sub-label row carries the LL / UL labels of the CI pairs;
     # with no CI column it is empty and is dropped rather than

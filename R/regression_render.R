@@ -226,7 +226,8 @@ render_regression_table <- function(
     ame_categories = ame_cats_by_model,
     models_with_n = models_with_n,
     models_with_r2 = models_with_r2,
-    estimand_horizons = aligned$estimand_horizons
+    estimand_horizons = aligned$estimand_horizons,
+    decimal_mark = decimal_mark
   )
 
   # One render row per unique term (in canonical order).
@@ -604,7 +605,8 @@ build_column_spec <- function(
   ame_categories = NULL,
   models_with_n = NULL,
   models_with_r2 = NULL,
-  estimand_horizons = NULL
+  estimand_horizons = NULL,
+  decimal_mark = "."
 ) {
   # NULL (direct/legacy callers): keep the "n" column for every model.
   if (is.null(models_with_n)) {
@@ -616,7 +618,13 @@ build_column_spec <- function(
   if (is.null(estimand_horizons)) {
     estimand_horizons <- list()
   }
-  ci_pct <- .ci_pct_str(ci_level)
+  # The coverage percentage follows `decimal_mark` (decision 27). In
+  # this family the interval header IS the column's programmatic name
+  # (`col_name` = deduplicated header text, and the structured
+  # sub-columns derive from it), so the whole composition moves
+  # together -- there is no frozen-key twin here, unlike the
+  # descriptive families.
+  ci_pct <- .ci_pct_display(ci_level, decimal_mark)
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
       rep(NA_character_, length(model_ids)),

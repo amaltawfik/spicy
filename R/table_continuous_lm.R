@@ -1659,7 +1659,8 @@ table_continuous_lm <- function(
     effect_size = effect_size,
     effect_size_ci = effect_size_ci,
     r2_type = r2,
-    ci = ci
+    ci = ci,
+    decimal_mark = decimal_mark
   )
 
   wide_raw <- build_wide_raw_continuous_lm(

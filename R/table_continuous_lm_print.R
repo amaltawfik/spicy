@@ -51,7 +51,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     effect_size = effect_size,
     effect_size_ci = show_effect_size_ci,
     r2_type = r2_type,
-    ci = show_ci
+    ci = show_ci,
+    decimal_mark = decimal_mark
   )
 
   display_df <- build_wide_display_df_continuous_lm(

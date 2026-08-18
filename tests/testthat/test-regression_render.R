@@ -268,6 +268,34 @@ test_that("render – decimal_mark = ',' uses comma + ';' CI separator", {
   expect_match(wt_row$`95% CI`, ";") # CI separator switch
 })
 
+test_that("render – the coverage percentage follows decimal_mark (decision 27)", {
+  aligned <- mk_aligned(list(mpg ~ wt), list("M1"))
+  rt <- spicy:::render_regression_table(
+    aligned,
+    ci_level = 0.975,
+    decimal_mark = ","
+  )
+  # In this family the interval header IS the column's programmatic name
+  # (col_name = deduplicated header text), so the whole composition
+  # moves together: body column, structured sub-columns, labels.
+  expect_true("97,5% CI" %in% names(rt))
+  s <- attr(rt, "structured")
+  expect_true("97,5% CI: LL" %in% names(s$col_meta))
+  labs <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
+  expect_identical(labs, "97,5% CI")
+  expect_identical(
+    unique(vapply(s$ci_pairs, function(p) p$label, character(1))),
+    "97,5% CI"
+  )
+  expect_false(any(grepl("97.5", names(s$col_meta), fixed = TRUE)))
+  # Integer coverage: byte-identical whatever the mark.
+  rt95 <- spicy:::render_regression_table(aligned, decimal_mark = ",")
+  expect_true("95% CI" %in% names(rt95))
+  # Fractional coverage under the period: exactly the lot F spelling.
+  rtdot <- spicy:::render_regression_table(aligned, ci_level = 0.975)
+  expect_true("97.5% CI" %in% names(rtdot))
+})
+
 
 # ============================================================================
 # Empty input

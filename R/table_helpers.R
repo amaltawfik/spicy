@@ -319,6 +319,26 @@ ci_bracket_separator <- function(decimal_mark) {
   formatC(level * 100, format = "fg")
 }
 
+# Internal: the coverage percentage as a READER sees it -- in a header,
+# a spanner, a note -- with its decimal point following `decimal_mark`
+# (decision 27): "97.5% CI" over cells reading "49,38" becomes
+# "97,5% CI", and the Lancet midline dot carries through
+# ("97[U+00B7]5%").
+# The percentage is a number in a label, so the reader who asked for a
+# mark gets it there too. Only the DISPLAY layer reads this producer:
+# the frozen column keys ("97.5% CI LL") keep `.ci_pct_str()`'s period,
+# like every other programmatic name. `.ci_pct_str()` writes at most
+# one decimal point (fixed "fg", no scientific branch), so one fixed
+# substitution is exact, and every level with an integer percentage is
+# byte-identical under any mark.
+.ci_pct_display <- function(level, decimal_mark = ".") {
+  out <- .ci_pct_str(level)
+  if (identical(decimal_mark, ".")) {
+    return(out)
+  }
+  sub(".", decimal_mark, out, fixed = TRUE)
+}
+
 # Internal: decimal-align the LL and UL inside a column of
 # bracketed CI strings (`"[LL, UL]"`). The default
 # `decimal_align_strings()` aligns on the FIRST decimal point it

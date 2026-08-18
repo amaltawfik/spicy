@@ -314,6 +314,21 @@ test_that("lancet on a real table: dot, floor, en dash", {
   expect_match(txt, "–") # en dash between the CI bounds
 })
 
+test_that("lancet: the coverage percentage takes the midline dot too", {
+  # Decision 27: "97·5% CI" -- the percentage is a number in a
+  # label, and the Lancet mark reaches it like every other number.
+  txt <- console(table_regression(
+    fixed_fit(),
+    style = "lancet",
+    ci_level = 0.975
+  ))
+  expect_match(txt, "97·5% CI", fixed = TRUE)
+  expect_false(grepl("97.5% CI", txt, fixed = TRUE))
+  # An integer coverage has no decimal: the header is byte-identical.
+  txt95 <- console(table_regression(fixed_fit(), style = "lancet"))
+  expect_match(txt95, "95% CI", fixed = TRUE)
+})
+
 test_that("annals: 3 decimals up to 0.20, 2 above, leading zero kept", {
   # "For P values between 0.001 and 0.20, please report the value to
   #  the nearest thousandth. For P values greater than 0.20, please

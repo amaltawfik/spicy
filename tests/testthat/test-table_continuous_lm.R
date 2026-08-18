@@ -4888,6 +4888,41 @@ test_that("every gt spanner id in the family comes from a key", {
   expect_true(grepl(">97.5% CI<", h, fixed = TRUE))
 })
 
+test_that("the lm coverage percentage follows decimal_mark (decision 27)", {
+  set.seed(2)
+  d <- data.frame(y = rnorm(40), g = rep(c("A", "B"), 20))
+  tl <- table_continuous_lm(
+    d,
+    select = y,
+    by = g,
+    ci_level = 0.975,
+    decimal_mark = ","
+  )
+  out <- paste(capture.output(print(tl)), collapse = "\n")
+  expect_match(out, "97,5% CI LL", fixed = TRUE)
+  expect_false(grepl("97.5%", out, fixed = TRUE))
+  s <- as_structured(tl)
+  # Labels carry the comma; the frozen keys keep the period.
+  labs <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
+  expect_identical(labs, "97,5% CI")
+  expect_true("97.5% CI LL" %in% names(s$col_meta))
+  expect_false(any(grepl("97,5", names(s$col_meta), fixed = TRUE)))
+  # The gt spanner shows the comma over the same frozen ids.
+  skip_if_not_installed("gt")
+  h <- as.character(gt::as_raw_html(
+    table_continuous_lm(
+      d,
+      select = y,
+      by = g,
+      ci_level = 0.975,
+      decimal_mark = ",",
+      output = "gt"
+    )
+  ))
+  expect_true(grepl(">97,5% CI<", h, fixed = TRUE))
+  expect_false(grepl(">97.5% CI<", h, fixed = TRUE))
+})
+
 test_that(".lm_spanner_ids is stable where nothing collides", {
   keys <- c("Variable", "M (Female)", "M (Male)", "p", "n")
   ids <- spicy:::.lm_spanner_ids(keys)

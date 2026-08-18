@@ -767,6 +767,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   view of `as_structured()` carries it in `display_cells`. Where that
   placeholder was what set a column's width, the column tightens by one
   character.
+* The coverage percentage of an interval header follows `decimal_mark`:
+  at `ci_level = 0.975` with `decimal_mark = ","` the spanner, the
+  column headers, the CI notes and `inline()`'s `{ci_label}` read
+  `97,5% CI` (and `97·5% CI` under the Lancet style) in all four table
+  families and every engine. Integer coverages (90, 95, 99) and the
+  default period are byte-identical, and the frozen column names of the
+  descriptive families keep the period (`97.5% CI LL`).
 * `excel_sheet` defaults to `NULL` in the four table functions and
   resolves to the same sheet names as before (`"Regression"`,
   `"Categorical"`, `"Descriptives"`, `"Linear models"`). Behaviour is

@@ -952,7 +952,7 @@ test_that("the console prints the registry header, not the column key", {
   # visible: dropping `display_labels` from the spicy_print_table() call
   # fails this test and only this one.
   local_mocked_bindings(
-    .continuous_labels = function(col_keys, ci_level) {
+    .continuous_labels = function(col_keys, ci_level, decimal_mark = ".") {
       paste0("<", col_keys, ">")
     }
   )
@@ -4098,4 +4098,61 @@ test_that("a fractional ci_level keeps its own percentage everywhere", {
   expect_identical(spicy:::.ci_pct_str(0.999), "99.9")
   # 0.29 * 100 is 28.999999999999996 in binary floating point.
   expect_identical(spicy:::.ci_pct_str(0.29), "29")
+})
+
+
+test_that("the coverage percentage follows decimal_mark (decision 27)", {
+  d <- spicy::sochealth
+  # "97.5% CI" over cells reading "49,38": the percentage is a number in
+  # a label, so the reader who asked for the comma gets it there too.
+  tc <- suppressWarnings(table_continuous(
+    d,
+    select = age,
+    by = sex,
+    ci_level = 0.975,
+    decimal_mark = ",",
+    show_columns = c("m", "ci", "med", "med_ci")
+  ))
+  out <- paste(capture.output(print(tc)), collapse = "\n")
+  # The console header and the med-CI gloss carry the comma.
+  expect_match(out, "97,5% CI LL", fixed = TRUE)
+  expect_match(out, "coverage at least 97,5%", fixed = TRUE)
+  expect_false(grepl("97.5%", out, fixed = TRUE))
+  # The label layer the engines and inline() read carries it too ...
+  s <- as_structured(tc)
+  labs <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
+  expect_setequal(labs, c("97,5% CI", "Med 97,5% CI"))
+  disp <- unlist(lapply(s$col_meta, function(m) m$display_label))
+  expect_true("97,5% CI LL" %in% disp)
+  expect_setequal(
+    vapply(s$ci_pairs, function(p) p$label, character(1)),
+    c("97,5% CI", "Med 97,5% CI")
+  )
+  # ... while the frozen keys keep the period, whatever the mark.
+  expect_true("97.5% CI LL" %in% names(s$col_meta))
+  expect_false(any(grepl("97,5", names(s$col_meta), fixed = TRUE)))
+  # A real engine reads the same labels through `decimal_mark`.
+  skip_if_not_installed("flextable")
+  ft <- suppressWarnings(table_continuous(
+    d,
+    select = age,
+    by = sex,
+    ci_level = 0.975,
+    decimal_mark = ",",
+    show_columns = c("m", "ci"),
+    output = "flextable"
+  ))
+  expect_true("97,5% CI" %in% unlist(ft$header$dataset))
+
+  # An integer coverage has no decimal point: byte-identical labels
+  # under any mark -- the lot F behaviour, pinned per mark.
+  expect_identical(
+    spicy:::.continuous_labels("95% CI LL", 0.95, ","),
+    spicy:::.continuous_labels("95% CI LL", 0.95, ".")
+  )
+  # And the fractional-PERIOD case stays exactly as lot F pinned it.
+  expect_identical(
+    spicy:::.continuous_labels("97.5% CI LL", 0.975, "."),
+    "97.5% CI LL"
+  )
 })

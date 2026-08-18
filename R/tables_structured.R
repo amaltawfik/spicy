@@ -284,7 +284,14 @@
         ll <- .CAT_KEY_CI_LL
         ul <- .CAT_KEY_CI_UL
         col_names <- c(col_names, ll, ul)
-        ci_label <- paste0(.ci_pct_str(assoc_ci_level), "% CI")
+        # Display text: the coverage percentage follows `decimal_mark`
+        # (decision 27). Today `assoc_ci_level` is pinned at 0.95
+        # upstream, so the substitution is byte-inert -- until the level
+        # is ever exposed, when this line is already right.
+        ci_label <- paste0(
+          .ci_pct_display(assoc_ci_level, decimal_mark),
+          "% CI"
+        )
         for (nm in c(ll, ul)) {
           col_meta[[nm]] <- list(
             token = "assoc_ci",
@@ -434,7 +441,7 @@
   missing_group_label = NA_character_
 ) {
   has_group <- "group" %in% names(result)
-  spec <- .continuous_token_columns(ci_level)
+  spec <- .continuous_token_columns(ci_level, decimal_mark)
 
   col_names <- character(0)
   col_meta <- list()

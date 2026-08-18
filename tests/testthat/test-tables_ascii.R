@@ -274,27 +274,47 @@ test_that("an orphaned interval names its carrier at a fractional coverage", {
   fit <- stats::lm(bmi ~ a_very_long_predictor_name_indeed, data = d)
   op <- options(width = 46)
   on.exit(options(op), add = TRUE)
-  panel_header <- function(level) {
+  panel_header <- function(level, mark = ".") {
     out <- capture.output(print(table_regression(
       fit,
       ci_level = level,
+      decimal_mark = mark,
       show_columns = c("b", "ci")
     )))
     grep("CI", out, value = TRUE)
   }
   expect_true(any(grepl("95% CI (B)", panel_header(0.95), fixed = TRUE)))
   expect_true(any(grepl("97.5% CI (B)", panel_header(0.975), fixed = TRUE)))
-  # And the pattern itself, against the whole of what `.ci_pct_str()`
-  # can emit: the producer has no scientific branch, so every coverage
-  # is digits with at most one decimal point.
+  # Decision 27: the header now carries the display mark, and the
+  # pattern must keep recognising it -- the orphan names its carrier
+  # under the comma exactly as it does under the period.
+  expect_true(any(grepl(
+    "97,5% CI (B)",
+    panel_header(0.975, ","),
+    fixed = TRUE
+  )))
+  # And the pattern itself, against the whole of what
+  # `.ci_pct_display()` can emit: the producer has no scientific
+  # branch, so every coverage is digits with at most one decimal mark
+  # (period, comma, or the Lancet midline dot).
   rx <- spicy:::.companion_header_pattern()
   expect_true(grepl(rx, "95% CI"))
   expect_true(grepl(rx, "97.5% CI"))
+  expect_true(grepl(rx, "97,5% CI"))
+  expect_true(grepl(rx, "97·5% CI"))
   expect_false(grepl(rx, "95% CI (B)"))
   levels <- c(0.5, 0.9, 0.95, 0.975, 0.99, 0.999, 0.29, 1e-3, 1e-5, 1e-6, 1e-9)
   pct <- vapply(levels, spicy:::.ci_pct_str, character(1))
   expect_true(all(grepl("^[0-9]+([.][0-9]+)?$", pct)))
   expect_true(all(grepl(rx, paste0(pct, "% CI"))))
+  for (mk in c(",", "·")) {
+    pct_mk <- vapply(
+      levels,
+      function(l) spicy:::.ci_pct_display(l, mk),
+      character(1)
+    )
+    expect_true(all(grepl(rx, paste0(pct_mk, "% CI"))))
+  }
   # The level that used to escape into scientific notation.
   expect_identical(spicy:::.ci_pct_str(1e-6), "0.0001")
   # ... and the ordinary levels are untouched.

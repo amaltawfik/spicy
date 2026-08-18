@@ -400,6 +400,29 @@ test_that("{ci_label} names the interval the pattern quotes", {
 })
 
 
+test_that("{ci_label} follows the table's decimal_mark (decision 27)", {
+  # The cited label is the table's label: a comma table says
+  # "97,5% CI" in its header, so the sentence quoting it does too.
+  d <- spicy::sochealth
+  tc <- suppressWarnings(table_continuous(
+    d,
+    select = bmi,
+    ci_level = 0.975,
+    decimal_mark = ",",
+    show_columns = c("m", "ci")
+  ))
+  expect_identical(inline(tc, bmi, column = "{ci_label}"), "97,5% CI")
+  # The fractional-period case stays as lot F pinned it.
+  tc_dot <- suppressWarnings(table_continuous(
+    d,
+    select = bmi,
+    ci_level = 0.975,
+    show_columns = c("m", "ci")
+  ))
+  expect_identical(inline(tc_dot, bmi, column = "{ci_label}"), "97.5% CI")
+})
+
+
 test_that("an interval with blank bounds refuses like the scalar does", {
   d <- spicy::sochealth
   ct <- suppressWarnings(table_categorical(

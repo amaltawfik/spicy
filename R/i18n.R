@@ -560,12 +560,18 @@ spicy_fmt <- function(key, ...) {
 # the two the historical pattern covered; `header_ci_label_hdi` is deliberately
 # NOT included, to keep today's behaviour byte-for-byte.
 #
-# The coverage is matched as digits with at most one decimal point,
-# because that is the whole of what `.ci_pct_str()` can write into the
-# header it has to recognise -- `formatC(level * 100, format = "fg")`
-# has no scientific branch. `[0-9]+` alone missed every fractional
-# level -- `97.5% CI` at `ci_level = 0.975` -- and an orphaned interval
-# column silently kept its bare header instead of naming its carrier.
+# The coverage is matched as digits with at most one decimal MARK,
+# because that is the whole of what `.ci_pct_display()` can write into
+# the header it has to recognise -- `formatC(level * 100, format =
+# "fg")` has no scientific branch, and the display layer only ever
+# substitutes the single decimal point. `[0-9]+` alone missed every
+# fractional level -- `97.5% CI` at `ci_level = 0.975` -- and an
+# orphaned interval column silently kept its bare header instead of
+# naming its carrier. The mark class covers the marks the package
+# writes (decision 27): the period, the comma, and the Lancet midline
+# dot (U+00B7). An exotic single-character mark outside the class
+# degrades the same way any unrecognised header does: the orphan keeps
+# its bare header.
 .companion_header_pattern <- function() {
   ci_alt <- paste(
     vapply(
@@ -577,7 +583,7 @@ spicy_fmt <- function(key, ...) {
   )
   ci_pat <- spicy_fmt(
     "header_ci_spanner",
-    "[0-9]+(?:[.][0-9]+)?",
+    "[0-9]+(?:[.,\u00B7][0-9]+)?",
     paste0("(?:", ci_alt, ")")
   )
   paste0(

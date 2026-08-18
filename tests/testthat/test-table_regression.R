@@ -447,6 +447,28 @@ test_that("decimal_mark – multi-character errors spicy_invalid_input", {
   )
 })
 
+test_that("decimal_mark – the CI note quotes the coverage with the mark", {
+  # Decision 27, note surface: "97,5% CIs: profile likelihood." -- the
+  # coverage in a footer follows the same mark as the header it glosses.
+  fit <- suppressWarnings(glm(am ~ wt, data = mt, family = binomial()))
+  tbl <- table_regression(
+    fit,
+    ci_level = 0.975,
+    decimal_mark = ",",
+    ci_method = "profile"
+  )
+  note <- attr(tbl, "note")
+  expect_match(note, "97,5% CIs: profile likelihood.", fixed = TRUE)
+  expect_false(grepl("97.5", note, fixed = TRUE))
+  # The period stays the period, exactly as before.
+  tbl_dot <- table_regression(fit, ci_level = 0.975, ci_method = "profile")
+  expect_match(
+    attr(tbl_dot, "note"),
+    "97.5% CIs: profile likelihood.",
+    fixed = TRUE
+  )
+})
+
 test_that("reference_label – empty string errors spicy_invalid_input", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
