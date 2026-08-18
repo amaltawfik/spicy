@@ -232,6 +232,12 @@ inline <- function(
   if (is.null(model)) {
     return(all_cols)
   }
+  if (length(model) != 1L) {
+    spicy_abort(
+      sprintf("`model` must be a single value, not length %d.", length(model)),
+      class = "spicy_invalid_input"
+    )
+  }
   if (is.null(spans)) {
     spicy_abort(
       "`model` was supplied but this table has no model spanners.",

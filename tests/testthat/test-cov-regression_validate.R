@@ -404,3 +404,33 @@ test_that("validate_output_resources - clipboard OK when available is a no-op", 
     )
   )
 })
+
+
+test_that(".resolve_model_labels – an NA name is an unnamed slot", {
+  models <- list(lm(mpg ~ wt, mtcars), lm(mpg ~ hp, mtcars))
+  # nzchar(NA) is TRUE: without the normalisation the NA survives as a
+  # label and subscripting breaks downstream (unclassed base error).
+  resolved <- spicy:::.resolve_model_labels(
+    stats::setNames(models, c(NA, "B")),
+    NULL
+  )
+  expect_identical(resolved, c(spicy_fmt("label_model_name", 1L), "B"))
+  # All-NA names collapse to the unnamed case entirely.
+  expect_null(spicy:::.resolve_model_labels(
+    stats::setNames(models, c(NA_character_, NA_character_)),
+    NULL
+  ))
+})
+
+
+test_that("an NA model name renders as an auto-filled slot end to end", {
+  models <- list(lm(mpg ~ wt, mtcars), lm(mpg ~ hp, mtcars))
+  names(models) <- c(NA, "B")
+  tbl <- suppressWarnings(table_regression(models))
+  invisible(utils::capture.output(print(tbl)))
+  s <- as_structured(tbl)
+  expect_identical(
+    names(s$spanners),
+    c(spicy_fmt("label_model_name", 1L), "B")
+  )
+})

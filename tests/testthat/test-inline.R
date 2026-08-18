@@ -448,3 +448,23 @@ test_that("an interval with blank bounds refuses like the scalar does", {
   ))
   expect_match(inline(two, bmi, column = "med_ci"), "^[[]")
 })
+
+
+test_that("a multi-valued `model` is refused, not vectorised into `if`", {
+  d <- as.data.frame(sochealth)
+  tbl <- .il_quiet(table_regression(list(
+    A = lm(wellbeing_score ~ age, d),
+    B = lm(wellbeing_score ~ age + sex, d)
+  )))
+  err <- tryCatch(
+    inline(tbl, age, column = "b", model = c("A", "B")),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "single value")
+  err <- tryCatch(
+    inline(tbl, age, column = "b", model = 1:2),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+})

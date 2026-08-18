@@ -237,6 +237,13 @@ validate_models_input <- function(models) {
     )
   }
 
+  # An NA name is an unnamed slot. nzchar(NA) is TRUE, so every
+  # downstream `all(nzchar(names(models)))` predicate would otherwise
+  # accept it -- as a display label, and worse, as a model id.
+  if (!is.null(names(models))) {
+    names(models)[is.na(names(models))] <- ""
+  }
+
   # Step 1c: when the list is named, names must be unique. Duplicate
   # names would silently collide in the long-format model_id key,
   # causing one fit to overwrite the other in extract / align /
@@ -2283,6 +2290,9 @@ validate_model_labels <- function(model_labels, models) {
     return(model_labels)
   }
   nms <- names(models)
+  # An NA name is an unnamed slot: nzchar(NA) is TRUE, so without this
+  # the NA survives as a label and breaks subscripting downstream.
+  nms[is.na(nms)] <- ""
   if (is.null(nms) || !any(nzchar(nms))) {
     return(NULL)
   }

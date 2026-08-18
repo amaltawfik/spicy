@@ -350,6 +350,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   two column groups nothing could tell apart, differently in each
   output engine, and made `inline(model = )` cite a different model
   than the one asked for. The error names the label and both positions.
+* An `NA` in `names(models)` no longer crashes `table_regression()`
+  deep in the renderer: it is treated as an unnamed slot and
+  auto-filled like an empty name. A multi-valued `model` in
+  `inline()` gets a classed error instead of a base R condition
+  failure.
 * `inline()` addresses each interval by its own token, so a table
   carrying more than one -- `ci` with `med_ci`, or `ci` with `ame_ci`
   -- can cite either. Both used to raise an ambiguity error naming
