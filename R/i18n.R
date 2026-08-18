@@ -532,15 +532,6 @@ spicy_fmt <- function(key, ...) {
   gsub("([][{}()*+?.\\\\^$|])", "\\\\\\1", x)
 }
 
-# Pattern matching a "companion" column header -- a sub-column that only means
-# something next to the estimate column it belongs to (SE, p, the CI spanner).
-# `spicy_print_table()` uses it when a width split orphans such a column on a
-# continuation panel, to name the estimand it belongs to.
-#
-# Built from the registry rather than typed out: the labels and the pattern
-# that recognises them must move together. The credible / confidence labels are
-# the two the historical pattern covered; `header_ci_label_hdi` is deliberately
-# NOT included, to keep today's behaviour byte-for-byte.
 # Split a rendered note into (emphasised prefix, remainder), or NULL when the
 # note does not open with the prefix. The rich engines (tinytable, gt,
 # flextable / Word) italicise the first element and leave the second in
@@ -559,6 +550,15 @@ spicy_fmt <- function(key, ...) {
   paste0("^", .escape_regex(spicy_str("note_prefix_emphasis")))
 }
 
+# Pattern matching a "companion" column header -- a sub-column that only means
+# something next to the estimate column it belongs to (SE, p, the CI spanner).
+# `spicy_print_table()` uses it when a width split orphans such a column on a
+# continuation panel, to name the estimand it belongs to.
+#
+# Built from the registry rather than typed out: the labels and the pattern
+# that recognises them must move together. The credible / confidence labels are
+# the two the historical pattern covered; `header_ci_label_hdi` is deliberately
+# NOT included, to keep today's behaviour byte-for-byte.
 .companion_header_pattern <- function() {
   ci_alt <- paste(
     vapply(
