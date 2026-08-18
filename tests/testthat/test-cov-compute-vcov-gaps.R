@@ -165,12 +165,13 @@ test_that("compute_lm_type2_f_stat handles an empty base model", {
 })
 
 test_that("compute_lm_type2_f_stat returns NULL when the partial F is not finite", {
-  # y == z exactly -> the residual sum of squares is EXACTLY zero (not
-  # merely small), so the error mean square is 0 and the partial F is
-  # Inf. A non-finite statistic is refused rather than reported.
-  dperf <- data.frame(y = c(1, 2, 3, 4, 5, 6), z = c(1, 2, 3, 4, 5, 6))
-  mperf <- stats::lm(y ~ z, data = dperf)
-  expect_identical(stats::deviance(mperf), 0)
+  # A saturated fit: two points, two parameters, zero residual degrees
+  # of freedom. The error mean square divides by df2 = 0, so the
+  # partial F cannot be finite -- STRUCTURALLY, on every platform. (A
+  # perfect fit on more points is not portable: whether its deviance
+  # is exactly 0 or 1e-30 depends on the BLAS, and CI proved it.)
+  mperf <- stats::lm(y ~ z, data = data.frame(y = c(1, 3), z = c(1, 3)))
+  expect_identical(stats::df.residual(mperf), 0L)
   expect_null(spicy:::compute_lm_type2_f_stat(mperf, "z"))
 })
 
