@@ -344,6 +344,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* Standard errors, confidence intervals, and p-values from
+  `vcov = "jackknife"` and `vcov = "bootstrap"` (cluster variants and
+  `ci_method = "boot_percentile"` included) were wrong for binomial and
+  quasibinomial models fitted with a two-column
+  `cbind(successes, failures)` response: every resampling refit re-applied
+  the binomial totals to the weights, so replicates were effectively
+  fitted with squared weights. The error grows with the spread of the
+  totals (from under 1% up to over 30% in our checks). Fits with a 0/1,
+  factor, or proportion-plus-weights response were never affected.
 * `R² (McFadden)` and `R² (Nagelkerke)` -- shown by default for logistic
   models -- were wrong for binomial models fitted with a two-column
   `cbind(successes, failures)` response, and badly so: the intercept-only

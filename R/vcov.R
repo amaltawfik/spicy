@@ -237,6 +237,21 @@ compute_resample_vcov_bootstrap <- function(
   is_glm <- inherits(fit, "glm")
   fam <- if (is_glm) stats::family(fit) else NULL
   glm_ctrl <- if (is_glm) fit$control %||% stats::glm.control() else NULL
+  if (is_glm) {
+    # A two-column cbind(successes, failures) binomial response must not
+    # reach glm.fit() as a matrix: `weights` here are POST-initialize
+    # (user weights times the row totals), and the binomial `initialize`
+    # would multiply the totals in again on EVERY replicate, so each
+    # refit ran on effective weights = totals^2 (SE errors growing with
+    # the spread of the totals -- past 30% on real data). Convert once
+    # to the stored-y representation (`.glm_stored_response()`,
+    # R/glm_compute.R) before any resampling: `resp` becomes the
+    # proportion vector and no valid glm response is a matrix past this
+    # point (non-binomial families reject matrices at fit time).
+    cv <- .glm_stored_response(resp, fam, weights)
+    resp <- cv$y
+    weights <- cv$wt
+  }
   refit_coefs <- function(boot_idx) {
     x_b <- mm[boot_idx, , drop = FALSE]
     w_b <- if (is.null(weights)) {
@@ -246,15 +261,10 @@ compute_resample_vcov_bootstrap <- function(
     }
     off_b <- if (is.null(off)) NULL else off[boot_idx]
     z <- if (is_glm) {
-      y_b <- if (is.matrix(resp)) {
-        resp[boot_idx, , drop = FALSE]
-      } else {
-        resp[boot_idx]
-      }
       tryCatch(
         suppressWarnings(stats::glm.fit(
           x = x_b,
-          y = y_b,
+          y = resp[boot_idx],
           weights = w_b,
           offset = off_b,
           family = fam,
@@ -387,6 +397,14 @@ compute_resample_vcov_jackknife <- function(
   is_glm <- inherits(fit, "glm")
   fam <- if (is_glm) stats::family(fit) else NULL
   glm_ctrl <- if (is_glm) fit$control %||% stats::glm.control() else NULL
+  if (is_glm) {
+    # cbind() binomial response -> stored-y representation before any
+    # leave-out refit (see `compute_resample_vcov_bootstrap` above for
+    # the totals^2 mechanism this prevents).
+    cv <- .glm_stored_response(resp, fam, weights)
+    resp <- cv$y
+    weights <- cv$wt
+  }
   refit_coefs <- function(jack_idx) {
     x_g <- mm[jack_idx, , drop = FALSE]
     w_g <- if (is.null(weights)) {
@@ -396,15 +414,10 @@ compute_resample_vcov_jackknife <- function(
     }
     off_g <- if (is.null(off)) NULL else off[jack_idx]
     z <- if (is_glm) {
-      y_g <- if (is.matrix(resp)) {
-        resp[jack_idx, , drop = FALSE]
-      } else {
-        resp[jack_idx]
-      }
       tryCatch(
         suppressWarnings(stats::glm.fit(
           x = x_g,
-          y = y_g,
+          y = resp[jack_idx],
           weights = w_g,
           offset = off_g,
           family = fam,
