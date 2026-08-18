@@ -1944,21 +1944,13 @@ build_structured_body <- function(
   }
   # nocov end
 
-  out <- list()
-  for (lbl in labels) {
-    if (!nzchar(lbl)) {
-      next
-    }
-    # Find struct cols whose source col_spec belongs to a model with this label.
-    matching <- integer(0)
-    for (i in seq_along(expanded)) {
-      m_id <- expanded[[i]]$cs$model_id
-      if (identical(label_map[[m_id]], lbl)) {
-        matching <- c(matching, i + 1L) # +1 for Variable
-      }
-    }
-    if (length(matching) > 0L) out[[lbl]] <- matching
-  }
+  # One model_id per structured column, in column order, behind a
+  # leading NA for the Variable column the indices count.
+  model_id_at_col <- c(
+    NA_character_,
+    vapply(expanded, function(e) e$cs$model_id, character(1))
+  )
+  out <- .model_spanner_ranges(model_id_at_col, label_map)
   # nocov start: every label in `labels` comes from a model that is also
   # in `expanded`, so each label matches at least its own model and `out`
   # can never be empty here for a consistent label_map. Defensive guard.

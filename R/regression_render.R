@@ -504,6 +504,52 @@ render_regression_table <- function(
 
 # ---- Multi-model column spanners -----------------------------------------
 
+# The column groups of a multi-model table, keyed on `model_id` and
+# built by POSITION. A model owns the columns whose model_id it is; the
+# label is only ever written on top, once the range is fixed. Two models
+# can therefore never end up sharing a range, whatever their labels say.
+#
+# This is the shared body of the two spanner builders -- the char body's
+# (below) and the typed view's (`.build_structured_spanners()`). They
+# used to carry a loop each, keyed on the LABEL, and disagreed the
+# moment two labels coincided: one assigned `out[[label]]` twice and
+# kept the last model, the other unioned both models into one
+# non-contiguous set. `validate_resolved_model_labels()` now makes that
+# input unreachable; this makes the divergence unrepresentable.
+#
+# `model_id_at_col`: one entry per OUTPUT column, in output order,
+# naming the model that column belongs to -- NA for the columns that
+# belong to none (the leading "Variable" column, and anything the
+# caller could not place). The returned indices index that vector, so
+# each caller passes the shape its own consumer reads.
+#
+# Result order is column order, which is model order: gt numbers its
+# spanner ids `model_span_<k>` and flextable keys `model<k>` off this
+# position.
+.model_spanner_ranges <- function(model_id_at_col, label_map) {
+  placed <- !is.na(model_id_at_col)
+  out <- list()
+  labs <- character(0)
+  for (m_id in unique(model_id_at_col[placed])) {
+    lbl <- label_map[[m_id]]
+    if (!nzchar(lbl)) {
+      next
+    }
+    idx <- which(placed & model_id_at_col == m_id)
+    # Spanners must be contiguous; build_column_spec emits columns in
+    # model order so this holds by construction. Defensive check kept
+    # so a future reordering surfaces loudly rather than handing an
+    # engine a set it will improvise over.
+    if (any(diff(idx) != 1L)) {
+      next
+    }
+    out[[length(out) + 1L]] <- as.integer(idx)
+    labs <- c(labs, lbl)
+  }
+  names(out) <- labs
+  out
+}
+
 # Compute the column-group spanner spec consumed by the print method
 # and the rich-output dispatchers. Returns NULL when there is nothing
 # to span (single model, or all model labels empty).
@@ -527,31 +573,16 @@ build_model_spanners <- function(body, col_spec, label_map) {
     return(NULL)
   } # nocov - single-model has labels = ""; multi-model always has nzchar names via auto-fill
 
-  body_names <- names(body)
+  # One model_id per body column, in body order: the spec's columns
+  # placed where the body actually put them, everything else (the
+  # "Variable" column, any spec column the body dropped) left NA.
   spec_names <- vapply(col_spec, `[[`, character(1), "col_name")
   spec_model <- vapply(col_spec, `[[`, character(1), "model_id")
+  pos <- match(spec_names, names(body))
+  model_id_at_col <- rep(NA_character_, ncol(body))
+  model_id_at_col[pos[!is.na(pos)]] <- spec_model[!is.na(pos)]
 
-  out <- list()
-  for (m_id in unique(spec_model)) {
-    m_lbl <- label_map[[m_id]]
-    if (!nzchar(m_lbl)) {
-      next
-    } # nocov - same as line 324 guard
-    cols_in_model <- spec_names[spec_model == m_id]
-    idx <- match(cols_in_model, body_names)
-    idx <- idx[!is.na(idx)]
-    if (!length(idx)) {
-      next
-    } # nocov - cols_in_model always survive in body_names by construction
-    idx <- sort(idx)
-    # Spanners must be contiguous; build_column_spec emits columns in
-    # model order so this holds by construction. Defensive check kept
-    # so a future reordering surfaces loudly.
-    if (any(diff(idx) != 1L)) {
-      next
-    } # nocov
-    out[[m_lbl]] <- as.integer(idx)
-  }
+  out <- .model_spanner_ranges(model_id_at_col, label_map)
   if (!length(out)) NULL else out
 }
 

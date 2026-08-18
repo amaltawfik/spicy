@@ -520,9 +520,11 @@ output_tinytable <- function(rendered) {
   # Multi-model: stack the Model spanner row on TOP of the per-col
   # spanner row added above. tinytable's `group_tt(j = spanners)`
   # accepts a named list `model_label = col_range` directly when
-  # labels are unique (Model spanner labels are always unique --
-  # they come from `names(spanners)` which deduplicates by
-  # design).
+  # labels are unique -- and they are, because
+  # `validate_resolved_model_labels()` refuses a table whose models
+  # would share one. A named list does NOT deduplicate: it silently
+  # keeps the first entry per name, which is exactly the collapse that
+  # guard exists to prevent, so no ZWSP workaround is owed here.
   if (has_model_spanner) {
     tt <- tinytable::group_tt(tt, j = spanners)
   }
