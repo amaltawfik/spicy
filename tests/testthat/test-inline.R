@@ -123,6 +123,127 @@ test_that("a multi-model table requires and honours `model`", {
   expect_identical(inline(tbl, age, column = "b", model = 1), b_a)
 })
 
+test_that("`model = k` addresses the k-th model, by identity", {
+  # `model = k` used to resolve to `names(spans)[[k]]` and then re-enter
+  # the list BY NAME. That is the k-th model only while no two labels
+  # coincide -- and `[[` by name returns the first match, so when they
+  # did, a sentence quoted a different model's coefficient with no
+  # warning. Position is now kept, and this pins it against the model
+  # identity rather than against the spanner order.
+  # Three specifications whose `wt` coefficient separates at the
+  # displayed precision (-5.34 / -3.88 / -5.05), so no k can pass by
+  # landing on a neighbour that happens to print the same.
+  d <- mtcars
+  fits <- list(
+    lm(mpg ~ wt, data = d),
+    lm(mpg ~ wt + hp, data = d),
+    lm(mpg ~ wt + qsec, data = d)
+  )
+  tbl <- .il_quiet(table_regression(fits))
+  s <- as_structured(tbl)
+  ids <- vapply(
+    s$col_meta,
+    function(e) e$model_id %||% NA_character_,
+    character(1)
+  )
+  model_ids <- unique(stats::na.omit(unname(ids)))
+  expect_length(model_ids, 3L)
+
+  formatted <- spicy:::.format_structured_to_string_body(s)
+  wt_row <- which(s$body$.variable == "wt")
+
+  for (k in seq_along(model_ids)) {
+    # The columns the k-th model owns, straight from the public
+    # per-column identity -- never from the spanner label.
+    cols <- names(ids)[!is.na(ids) & ids == model_ids[[k]]]
+    b_col <- cols[vapply(
+      cols,
+      function(cn) identical(s$col_meta[[cn]]$token, "b"),
+      logical(1)
+    )]
+    expect_length(b_col, 1L)
+    expect_identical(
+      inline(tbl, wt, column = "b", model = k),
+      trimws(formatted[[b_col]][wt_row])
+    )
+  }
+
+  # The three values are genuinely different, so the loop above cannot
+  # pass by every k returning the same cell.
+  vals <- vapply(
+    seq_along(model_ids),
+    function(k) inline(tbl, wt, column = "b", model = k),
+    character(1)
+  )
+  expect_identical(anyDuplicated(vals), 0L)
+
+  # Addressing by label still works and agrees with the position.
+  spans <- attr(tbl, "spanners")
+  for (k in seq_along(spans)) {
+    expect_identical(
+      inline(tbl, wt, column = "b", model = names(spans)[[k]]),
+      vals[[k]]
+    )
+  }
+})
+
+test_that("`model = k` does not go out to the label and back", {
+  # The property, isolated. `table_regression()` now refuses a table
+  # whose models would share a label, so the failure this guards cannot
+  # be reached through the front door -- which is exactly why the guard
+  # has to be tested at the seam. Rename the spanners of a real
+  # three-model table so that 1 and 3 collide, and ask for the third:
+  # resolving `names(spans)[[3]]` and then `spans[[that]]` returns the
+  # FIRST match, i.e. model 1's columns. Position cannot.
+  d <- mtcars
+  tbl <- .il_quiet(table_regression(list(
+    lm(mpg ~ wt, data = d),
+    lm(mpg ~ wt + hp, data = d),
+    lm(mpg ~ wt + qsec, data = d)
+  )))
+  s <- as_structured(tbl)
+  expect_length(s$spanners, 3L)
+  names(s$spanners) <- c("Same", "Other", "Same")
+
+  cols <- lapply(1:3, function(k) spicy:::.inline_model_cols(s, k))
+  # Three models, three disjoint column sets -- k picks the k-th.
+  expect_length(unique(unlist(cols)), length(unlist(cols)))
+  expect_false(identical(cols[[1L]], cols[[3L]]))
+  # And each set is the one the structured spanner at that POSITION
+  # names, mapped out of the Variable-counting index space.
+  body_cols <- names(spicy:::.struct_display_body(s$body))
+  for (k in 1:3) {
+    expect_identical(cols[[k]], body_cols[s$spanners[[k]]])
+  }
+})
+
+test_that("an out-of-range or unknown `model` is refused, unchanged", {
+  d <- as.data.frame(sochealth)
+  tbl <- .il_quiet(table_regression(list(
+    lm(wellbeing_score ~ age, data = d),
+    lm(wellbeing_score ~ age + sex, data = d)
+  )))
+  for (bad in list(0, 3, "Nope")) {
+    err <- tryCatch(
+      inline(tbl, age, column = "b", model = bad),
+      error = identity
+    )
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(conditionMessage(err), "Unknown model")
+    expect_match(
+      conditionMessage(err),
+      "\"Model 1\", \"Model 2\"",
+      fixed = TRUE
+    )
+  }
+  # A single-model table has no spanners: `model` does not apply at all,
+  # and that refusal is a different one.
+  one <- .il_quiet(table_regression(lm(wellbeing_score ~ age, data = d)))
+  err <- tryCatch(inline(one, age, column = "b", model = 1), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "no model spanners")
+})
+
 test_that("the missing category is addressed by role, not label", {
   d <- as.data.frame(sochealth)
   d$smoking <- as.character(d$smoking)

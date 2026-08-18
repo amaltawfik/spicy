@@ -238,12 +238,18 @@ inline <- function(
       class = "spicy_invalid_input"
     )
   }
+  # `model = k` addresses the k-th MODEL. Since `.model_spanner_ranges()`
+  # emits one entry per model, in model order, the k-th entry of `spans`
+  # IS the k-th model -- so resolve the POSITION and keep it. Going out
+  # to the label and back (`names(spans)[[k]]`, then `spans[[label]]`)
+  # re-entered the list by name, and `[[` by name returns the FIRST
+  # match: on a table whose labels collided it handed back a different
+  # model's columns, silently, in running text.
   pick <- if (is.numeric(model)) {
-    if (model < 1L || model > length(spans)) NULL else names(spans)[[model]]
-  } else if (model %in% names(spans)) {
-    model
+    if (model < 1L || model > length(spans)) NULL else as.integer(model)
   } else {
-    NULL
+    m <- match(model, names(spans))
+    if (is.na(m)) NULL else m
   }
   if (is.null(pick)) {
     spicy_abort(
@@ -260,7 +266,7 @@ inline <- function(
   }
   # Spanner indices count the Variable column; col_meta keys do not.
   body_cols <- names(.struct_display_body(s$body))
-  body_cols[s$spanners[[pick]]]
+  body_cols[spans[[pick]]]
 }
 
 # The default column for a bare inline(tbl, var, level): the row's
