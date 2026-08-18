@@ -311,3 +311,42 @@ test_that("a missing cell renders blank without desyncing the table", {
   expect_length(gregexpr("┼", txt[2L], fixed = TRUE)[[1L]], 1L)
   expect_length(unique(crayon::col_nchar(txt, type = "width")), 1L)
 })
+
+
+test_that("a missing column name renders blank without desyncing the table", {
+  # Same defect, the header lane: the column name is padded by the same
+  # `str_pad()` as the cells. Two routes reach it -- `names(x)` and the
+  # `display_labels` override -- and both used to put the rule at NA.
+  df <- data.frame(a = c("1", "2"), b = c("3", "4"), stringsAsFactors = FALSE)
+
+  named_na <- df
+  names(named_na) <- c(NA_character_, "b")
+  txt <- strsplit(spicy:::build_ascii_table(named_na), "\n", fixed = TRUE)[[1L]]
+  expect_false(any(grepl("NA", txt, fixed = TRUE)))
+  expect_length(gregexpr("┼", txt[2L], fixed = TRUE)[[1L]], 1L)
+  expect_length(unique(crayon::col_nchar(txt, type = "width")), 1L)
+
+  txt2 <- strsplit(
+    spicy:::build_ascii_table(df, display_labels = c(NA_character_, "B")),
+    "\n",
+    fixed = TRUE
+  )[[1L]]
+  expect_false(any(grepl("NA", txt2, fixed = TRUE)))
+  expect_length(gregexpr("┼", txt2[2L], fixed = TRUE)[[1L]], 1L)
+  expect_length(unique(crayon::col_nchar(txt2, type = "width")), 1L)
+
+  # The panel splitter goes through the same door, so every panel of a
+  # wide table is in register too.
+  wide <- as.data.frame(
+    matrix(as.character(1:40), nrow = 2L),
+    stringsAsFactors = FALSE
+  )
+  names(wide) <- c(NA_character_, paste0("col_long_name_", 2:20))
+  out <- capture.output(spicy_print_table(wide, max_width = 60))
+  expect_false(any(grepl("NA", out, fixed = TRUE)))
+  rules <- grep("┼", out, fixed = TRUE, value = TRUE)
+  expect_true(length(rules) > 1L)
+  for (r in rules) {
+    expect_length(gregexpr("┼", r, fixed = TRUE)[[1L]], 1L)
+  }
+})

@@ -404,7 +404,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   TRUE/FALSE needed".
 * A missing cell no longer disturbs the console layout of any table: it
   renders as an empty cell instead of leaving its row unpadded and every
-  separator of the table out of register.
+  separator of the table out of register. A missing column *name* --
+  `NA` in `names()`, or in `spicy_print_table(display_labels = )` --
+  does the same thing to the header and is now blank too, on every
+  panel of a table wide enough to be split.
 * A variable label written in wide characters (CJK, emoji) no longer
   overflows a narrow console in `table_continuous()`: column widths are
   measured as they are displayed rather than counted as characters.

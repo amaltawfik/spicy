@@ -235,6 +235,18 @@ build_ascii_table <- function(
     }
     names(df) <- as.character(display_labels)
   }
+  # The header text is padded by the same `str_pad()` as the cells and
+  # breaks the same way, so it is normalised at the same door -- AFTER
+  # `display_labels`, which is the second route in. A missing column
+  # name (`names(x)` carrying NA, or an NA in `display_labels`) used to
+  # reach `build_line()` and desync every rule of every panel, exactly
+  # as a missing cell did. Audited alongside: the other cell routes are
+  # already clean. The typed view's `display_cells` overrides and the
+  # engine fill loops go through the families' own formatters, which
+  # emit "" or the undefined-cell glyph, never NA -- measured on the
+  # regression string body, the padded body, and the descriptive
+  # display frames.
+  names(df)[is.na(names(df))] <- ""
 
   w <- ascii_table_widths(df, padding)
 
