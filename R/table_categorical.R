@@ -530,12 +530,15 @@
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
-#'   The `excel` output uses the engine's default alignment in any
-#'   case: cell-string padding does not align decimals under
-#'   proportional fonts, and Excel's native right-alignment combined
-#'   with the per-column `numfmt` already produces dot-aligned
-#'   columns. Same default and semantics as [table_continuous()] /
-#'   [table_continuous_lm()].
+#'   In the `excel` output, `"center"` centres the numeric columns and
+#'   `"right"` is the same rendering as the default: cell-string padding
+#'   does not align decimals under a proportional font, so `"decimal"`
+#'   right-aligns instead, which combined with the per-column `numfmt`
+#'   already produces dot-aligned columns. Same default and same three
+#'   values as [table_continuous()] / [table_continuous_lm()], whose
+#'   workbooks resolve `"decimal"` differently: `table_continuous()`
+#'   right-aligns only the counts and the *p*-value there, and
+#'   `table_continuous_lm()` applies that convention at every `align`.
 #' @param output Output format. One of:
 #'   - `"default"` (a printed ASCII table, returned invisibly)
 #'   - `"data.frame"` (a wide numeric `data.frame`)

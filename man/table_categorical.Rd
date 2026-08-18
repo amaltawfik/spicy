@@ -192,12 +192,15 @@ next to an unpadded number).
 \item \code{"right"}: right-align all numeric columns.
 }
 
-The \code{excel} output uses the engine's default alignment in any
-case: cell-string padding does not align decimals under
-proportional fonts, and Excel's native right-alignment combined
-with the per-column \code{numfmt} already produces dot-aligned
-columns. Same default and semantics as \code{\link[=table_continuous]{table_continuous()}} /
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}.}
+In the \code{excel} output, \code{"center"} centres the numeric columns and
+\code{"right"} is the same rendering as the default: cell-string padding
+does not align decimals under a proportional font, so \code{"decimal"}
+right-aligns instead, which combined with the per-column \code{numfmt}
+already produces dot-aligned columns. Same default and same three
+values as \code{\link[=table_continuous]{table_continuous()}} / \code{\link[=table_continuous_lm]{table_continuous_lm()}}, whose
+workbooks resolve \code{"decimal"} differently: \code{table_continuous()}
+right-aligns only the counts and the \emph{p}-value there, and
+\code{table_continuous_lm()} applies that convention at every \code{align}.}
 
 \item{output}{Output format. One of:
 \itemize{

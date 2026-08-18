@@ -21,7 +21,9 @@
 #' This is the descriptive companion to [table_continuous_lm()]. The
 #' two functions share their layout, alignment, and reporting precision
 #' so descriptive and model-based analyses of the same data look
-#' uniform side by side. Use [table_continuous_lm()] when you need
+#' uniform side by side -- with one exception, documented under
+#' `align`: only `table_continuous()` carries `align` into the `excel`
+#' output. Use [table_continuous_lm()] when you need
 #' robust SE, weighted contrasts, fitted means, or covariate
 #' adjustment.
 #'

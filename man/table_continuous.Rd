@@ -381,7 +381,9 @@ Details), or publication-ready tables (\code{"tinytable"}, \code{"gt"},
 This is the descriptive companion to \code{\link[=table_continuous_lm]{table_continuous_lm()}}. The
 two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look
-uniform side by side. Use \code{\link[=table_continuous_lm]{table_continuous_lm()}} when you need
+uniform side by side -- with one exception, documented under
+\code{align}: only \code{table_continuous()} carries \code{align} into the \code{excel}
+output. Use \code{\link[=table_continuous_lm]{table_continuous_lm()}} when you need
 robust SE, weighted contrasts, fitted means, or covariate
 adjustment.
 }
