@@ -994,7 +994,11 @@ suppressed. If DVs match, the labels default to
 
 Duplicate explicit names in the list are rejected
 (\code{spicy_invalid_input}) -- they would silently collide in the
-internal model_id key.
+internal model_id key. So is a name that collides with the
+auto-filled label of another slot (\code{list("Model 2" = m1, m2)}):
+two models under one spanner cannot be told apart in the table,
+nor addressed by \code{\link[=inline]{inline()}}. Rename the model, or pass
+\code{model_labels}.
 }
 
 \section{Inference and standard errors}{

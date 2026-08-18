@@ -214,7 +214,11 @@
 #'
 #' Duplicate explicit names in the list are rejected
 #' (`spicy_invalid_input`) -- they would silently collide in the
-#' internal model_id key.
+#' internal model_id key. So is a name that collides with the
+#' auto-filled label of another slot (`list("Model 2" = m1, m2)`):
+#' two models under one spanner cannot be told apart in the table,
+#' nor addressed by [inline()]. Rename the model, or pass
+#' `model_labels`.
 #'
 #' # Inference and standard errors
 #'
@@ -2207,6 +2211,15 @@ table_regression <- function(
   validate_keep_drop(keep, drop)
   validate_logical_scalar(exponentiate, "exponentiate")
   validate_model_labels(model_labels, models)
+  # Step 22b: the labels the columns will actually carry, resolved and
+  # checked here so a collision fails before the extraction loop rather
+  # than surfacing as two indistinguishable column groups. The
+  # multinomial columns layout cannot reach it (single model, so the
+  # resolved vector has one element).
+  validate_resolved_model_labels(
+    .resolve_model_labels(models, model_labels),
+    models
+  )
   if (!mn_columns_active) {
     # Multinomial columns layout: `outcome_labels` relabels the
     # category spanners instead of the per-model Outcome row; its
@@ -2960,23 +2973,16 @@ table_regression <- function(
     ca$factor_term
   ))
 
-  # Q1 precedence (explicit > names(list) > default), resolved here so
-  # the FOOTER can cite the same labels the column spanners display.
-  # The multinomial columns layout is excluded: its "models" are
-  # outcome categories and its footer never prints per-model lines.
-  # NULL means default labels; .model_line() then prints "Model %d",
-  # byte-identical to the historical footer.
+  # The same resolved vector step 22b guarded, so the FOOTER cites the
+  # labels the column spanners display. The multinomial columns layout
+  # is excluded: its "models" are outcome categories and its footer
+  # never prints per-model lines. NULL means default labels;
+  # .model_line() then prints "Model %d", byte-identical to the
+  # historical footer.
   named_model_labels <- if (mn_exploded) {
     NULL
-  } else if (!is.null(model_labels)) {
-    model_labels
-  } else if (!is.null(names(models)) && any(nzchar(names(models)))) {
-    nms <- names(models)
-    missing_idx <- which(!nzchar(nms))
-    nms[missing_idx] <- spicy_fmt("label_model_name", missing_idx)
-    nms
   } else {
-    NULL
+    .resolve_model_labels(models, model_labels)
   }
 
   # Footer: model-facing themes read `frames` (one entry per model);

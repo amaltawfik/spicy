@@ -196,6 +196,65 @@ test_that("validate_model_labels – empty-string element errors", {
 
 
 # ============================================================================
+# .resolve_model_labels() / validate_resolved_model_labels() – the Q1
+# producer and the guard that reads it
+# ============================================================================
+
+test_that(".resolve_model_labels – Q1 precedence, one producer", {
+  fit1 <- lm(mpg ~ wt, data = mt)
+  fit2 <- lm(mpg ~ cyl, data = mt)
+  models <- list(fit1, fit2)
+
+  # Explicit labels win over everything, unchanged.
+  expect_identical(
+    spicy:::.resolve_model_labels(
+      stats::setNames(models, c("A", "B")),
+      c("X", "Y")
+    ),
+    c("X", "Y")
+  )
+  # No names at all -> NULL (the renderer generates its own).
+  expect_null(spicy:::.resolve_model_labels(models, NULL))
+  # Names present but all empty -> also NULL.
+  expect_null(
+    spicy:::.resolve_model_labels(stats::setNames(models, c("", "")), NULL)
+  )
+  # Partial naming auto-fills the empty slots by POSITION.
+  expect_identical(
+    spicy:::.resolve_model_labels(stats::setNames(models, c("", "B")), NULL),
+    c("Model 1", "B")
+  )
+  expect_identical(
+    spicy:::.resolve_model_labels(stats::setNames(models, c("A", "")), NULL),
+    c("A", "Model 2")
+  )
+})
+
+test_that("validate_resolved_model_labels – passes NULL and distinct vectors", {
+  models <- list(lm(mpg ~ wt, data = mt), lm(mpg ~ cyl, data = mt))
+  expect_null(spicy:::validate_resolved_model_labels(NULL, models))
+  expect_null(
+    spicy:::validate_resolved_model_labels(c("A", "B"), models)
+  )
+  # A single label cannot collide with itself.
+  expect_null(
+    spicy:::validate_resolved_model_labels("A", models[1L])
+  )
+})
+
+test_that("validate_resolved_model_labels – reports the first repeated label", {
+  models <- stats::setNames(
+    list(lm(mpg ~ wt, data = mt), lm(mpg ~ cyl, data = mt)),
+    c("A", "")
+  )
+  expect_error(
+    spicy:::validate_resolved_model_labels(c("A", "A"), models),
+    class = "spicy_invalid_input"
+  )
+})
+
+
+# ============================================================================
 # validate_outcome_labels – non-character guard
 # ============================================================================
 

@@ -649,6 +649,115 @@ test_that("duplicate values in `model_labels` error spicy_invalid_input", {
   )
 })
 
+test_that("a typed name colliding with an auto-filled label is refused", {
+  # The two guards above compare `model_labels` with itself and
+  # `names(models)` with itself. Neither compares a typed name with the
+  # "Model <position>" label the auto-fill writes into the unnamed
+  # slots -- so `list("Model 2" = m1, m2)` used to render two models
+  # under one spanner (or, when every label collapsed, under none).
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ hp, data = mt)
+  m3 <- lm(mpg ~ drat, data = mt)
+
+  # Total collision: 2 models, 1 label.
+  expect_error(
+    table_regression(list("Model 2" = m1, m2)),
+    class = "spicy_invalid_input"
+  )
+  # Adjacent collision: models 1 and 2 of 3.
+  expect_error(
+    table_regression(list(m1, "Model 1" = m2, m3)),
+    class = "spicy_invalid_input"
+  )
+  # Non-adjacent collision: models 1 and 3 of 3. This is the shape that
+  # produced a non-contiguous column set in the typed view, which each
+  # engine then rendered its own way.
+  expect_error(
+    table_regression(list(m1, m2, "Model 1" = m3)),
+    class = "spicy_invalid_input"
+  )
+
+  # Partial naming without a collision keeps working -- the guard must
+  # not cost the feature it protects.
+  expect_equal(
+    names(attr(table_regression(list("Step 1" = m1, m2)), "spanners")),
+    c("Step 1", "Model 2")
+  )
+})
+
+test_that("the collision message names the label and both positions", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ hp, data = mt)
+  m3 <- lm(mpg ~ drat, data = mt)
+
+  # The user typed only ONE of the two colliding labels, so the message
+  # has to say where the other one came from.
+  err <- expect_error(table_regression(list("Model 2" = m1, m2)))
+  msg <- conditionMessage(err)
+  expect_match(msg, "Model labels must be unique", fixed = TRUE)
+  expect_match(msg, '"Model 2" repeats', fixed = TRUE)
+  expect_match(msg, "the name of model 1", fixed = TRUE)
+  expect_match(msg, "the default label of model 2", fixed = TRUE)
+  expect_match(msg, "`model_labels`", fixed = TRUE)
+
+  # Provenance follows the positions, it is not hardcoded in order.
+  err2 <- expect_error(table_regression(list(m1, m2, "Model 1" = m3)))
+  expect_match(
+    conditionMessage(err2),
+    "the default label of model 1 and the name of model 3",
+    fixed = TRUE
+  )
+})
+
+test_that("the collision is detected against the registry, not a literal", {
+  # The auto-fill writes `spicy_fmt("label_model_name", i)`. Under a
+  # localized registry the colliding string is a different one, and the
+  # guard must still see it -- proof it compares resolved labels rather
+  # than matching "Model %d" by hand.
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ hp, data = mt)
+  base_str <- spicy_str
+  local_mocked_bindings(
+    spicy_str = function(key) {
+      if (identical(key, "label_model_name")) "Modele %d" else base_str(key)
+    }
+  )
+  expect_error(
+    table_regression(list("Modele 2" = m1, m2)),
+    class = "spicy_invalid_input"
+  )
+  # And the English literal is no longer a collision under that registry.
+  expect_equal(
+    names(attr(table_regression(list("Model 2" = m1, m2)), "spanners")),
+    c("Model 2", "Modele 2")
+  )
+})
+
+test_that("the collision is refused before any model is extracted", {
+  # Fail-fast: the refusal belongs with the other argument validation,
+  # not after n expensive extractions.
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ hp, data = mt)
+  calls <- 0L
+  local_mocked_bindings(
+    as_regression_frame.lm = function(fit, ...) {
+      calls <<- calls + 1L
+      stop("extraction must not be reached")
+    }
+  )
+  # Control: without the collision the same mock IS reached, so the
+  # counter is measuring the extraction loop and not a typo.
+  expect_error(table_regression(list(m1, m2)), "must not be reached")
+  expect_identical(calls, 1L)
+
+  calls <- 0L
+  expect_error(
+    table_regression(list("Model 2" = m1, m2)),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(calls, 0L)
+})
+
 test_that("DV smart spanner uses the bare variable name (NOT attr('label'))", {
   # With distinct DVs and no explicit labels, the response variable
   # NAME is lifted into the spanner -- not `attr("label")`, which

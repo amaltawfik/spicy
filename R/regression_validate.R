@@ -2268,6 +2268,70 @@ validate_model_labels <- function(model_labels, models) {
   invisible(NULL)
 }
 
+# The Q1 precedence (explicit `model_labels` > `names(models)` > default),
+# resolved in ONE place so the guard below, the column spanners and the
+# table footer all read the same vector. NULL means "no user labels" and
+# leaves the renderer free to generate its own ("Model 1, ...", or the
+# response-variable names when those are distinct).
+#
+# Partial naming auto-fills the unnamed slots from the registry, which is
+# the only way a duplicate can survive the two guards above: the name the
+# user typed and the label the auto-fill writes are compared against each
+# other nowhere else.
+.resolve_model_labels <- function(models, model_labels) {
+  if (!is.null(model_labels)) {
+    return(model_labels)
+  }
+  nms <- names(models)
+  if (is.null(nms) || !any(nzchar(nms))) {
+    return(NULL)
+  }
+  missing_idx <- which(!nzchar(nms))
+  nms[missing_idx] <- spicy_fmt("label_model_name", missing_idx)
+  nms
+}
+
+# Step 22b: the RESOLVED labels, one spanner per label. `model_labels`
+# (step 22) and `names(models)` (step 1c) are each deduplicated on their
+# own, but neither sees the other: `list("Model 2" = m1, m2)` auto-fills
+# slot 2 to the label slot 1 was typed with. Two models then land under
+# one spanner, where the char body overwrites, the typed view unions, and
+# `inline(model = )` cites whichever the lookup happens to reach.
+#
+# Refused rather than rendered, on the jurisprudence of the three guards
+# it joins: two indistinguishable column groups cannot be addressed, and
+# `render_regression_table()` already gives up the response-variable
+# labels rather than print an ambiguous "mpg / mpg / hp".
+validate_resolved_model_labels <- function(resolved, models) {
+  if (is.null(resolved) || !anyDuplicated(resolved)) {
+    return(invisible(NULL))
+  }
+  dupe <- resolved[[anyDuplicated(resolved)]]
+  hit <- which(resolved == dupe)
+  nms <- names(models) %||% character(length(models))
+  spicy_abort(
+    c(
+      sprintf("Model labels must be unique; %s repeats.", .quote_val(dupe)),
+      "x" = sprintf(
+        "It is %s.",
+        paste(
+          sprintf(
+            "the %s of model %d",
+            ifelse(nzchar(nms[hit]), "name", "default label"),
+            hit
+          ),
+          collapse = " and "
+        )
+      ),
+      "i" = paste0(
+        "Name every model, or pass `model_labels`, so that each ",
+        "column group carries a distinct label."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
 # Step 23: outcome_labels (NULL | FALSE | character vector of length(models))
 validate_outcome_labels <- function(outcome_labels, models) {
   if (is.null(outcome_labels) || isFALSE(outcome_labels)) {
