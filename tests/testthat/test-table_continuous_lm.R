@@ -1525,13 +1525,29 @@ test_that("effect_size_ci = TRUE adds numeric LL/UL columns in wide raw", {
     output = "data.frame"
   )
 
+  # Decision 26: the wide raw bounds carry the LONG output's names,
+  # derived from the frozen `es_ci` token. The 0.12.x names are gone.
   expect_true(all(
-    c("d", "effect_size_ci_lower", "effect_size_ci_upper") %in% names(out)
+    c("d", "es_ci_lower", "es_ci_upper") %in% names(out)
   ))
-  expect_type(out$effect_size_ci_lower, "double")
-  expect_type(out$effect_size_ci_upper, "double")
-  expect_lt(out$effect_size_ci_lower[1], out$d[1])
-  expect_gt(out$effect_size_ci_upper[1], out$d[1])
+  expect_false(any(
+    c("effect_size_ci_lower", "effect_size_ci_upper") %in% names(out)
+  ))
+  expect_type(out$es_ci_lower, "double")
+  expect_type(out$es_ci_upper, "double")
+  expect_lt(out$es_ci_lower[1], out$d[1])
+  expect_gt(out$es_ci_upper[1], out$d[1])
+  # One quantity, one name: the wide bounds equal the long bounds.
+  lng <- table_continuous_lm(
+    df,
+    select = Sepal.Length,
+    by = Species,
+    effect_size = "d",
+    effect_size_ci = TRUE,
+    output = "long"
+  )
+  expect_identical(out$es_ci_lower[1], lng$es_ci_lower[1])
+  expect_identical(out$es_ci_upper[1], lng$es_ci_upper[1])
 })
 
 test_that("effect_size_ci = TRUE warns and resets when effect_size is none", {

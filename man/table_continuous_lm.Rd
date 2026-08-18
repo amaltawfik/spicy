@@ -338,8 +338,8 @@ appropriate noncentral distribution (noncentral t for \code{"d"} / \code{"g"};
 noncentral F for \code{"omega2"} / \code{"f2"}). The CI level is taken from
 \code{ci_level}. In the long output (\code{output = "long"}), the bounds are always
 present in \code{es_ci_lower} / \code{es_ci_upper} (numeric). In the wide raw
-output (\code{output = "data.frame"}), the bounds appear as numeric columns
-\code{effect_size_ci_lower} / \code{effect_size_ci_upper}. In the printed ASCII
+output (\code{output = "data.frame"}), the bounds appear under the same
+names, \code{es_ci_lower} / \code{es_ci_upper} (numeric). In the printed ASCII
 table and rendered outputs (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
 \code{"word"}, \code{"excel"}, \code{"clipboard"}), the effect-size column shows the
 value followed by the CI in brackets (e.g. \code{0.18 [0.07, 0.30]}). Defaults
@@ -480,7 +480,7 @@ the underlying long \code{data.frame} with class
 outcome and numeric columns for means (categorical \code{by}) or slope
 (numeric \code{by}), optional contrast and CI, optional test statistic,
 \code{p}, fit statistic (\verb{\eqn{R^2}{R^2}} or adjusted \verb{\eqn{R^2}{R^2}}), effect size, optional
-\code{effect_size_ci_lower} / \code{effect_size_ci_upper} (when
+\code{es_ci_lower} / \code{es_ci_upper} (when
 \code{effect_size_ci = TRUE}), \code{n}, and \verb{Weighted n}.
 \item \code{"long"}: a raw \code{data.frame} with one block per outcome and 28
 columns covering identification (\code{variable}, \code{label},

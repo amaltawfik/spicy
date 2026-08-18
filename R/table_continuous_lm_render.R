@@ -14,9 +14,12 @@
 .LM_KEY_N <- "n"
 .LM_KEY_WEIGHTED_N <- "Weighted n"
 # The two snake_case columns of the raw frame: they have no display twin
-# and never reach a header.
-.LM_KEY_ES_CI_LL <- "effect_size_ci_lower"
-.LM_KEY_ES_CI_UL <- "effect_size_ci_upper"
+# and never reach a header. Their names are the LONG output's names,
+# derived from the frozen `es_ci` token (decision 26): one quantity, one
+# name, in both raw shapes. The snake_case itself stays the documented
+# signal "raw column without a displayed mirror".
+.LM_KEY_ES_CI_LL <- "es_ci_lower"
+.LM_KEY_ES_CI_UL <- "es_ci_upper"
 # The bare bound keys the exporters use: `rename_ci_cols_lm()` turns
 # "95% CI LL" into "LL" because the engines carry the coverage in the
 # spanner above the pair.

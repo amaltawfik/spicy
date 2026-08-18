@@ -67,6 +67,10 @@
 * `table_categorical(output = "flextable")` no longer writes a `.docx` when
   `word_path` is supplied; the combination warns (`spicy_ignored_arg`). Use
   `flextable::save_as_docx()`.
+* `table_continuous_lm(output = "data.frame")` names the effect-size
+  interval bounds `es_ci_lower` / `es_ci_upper` -- the same names the
+  `"long"` output has always used. Replace `out$effect_size_ci_lower` /
+  `out$effect_size_ci_upper` with `out$es_ci_lower` / `out$es_ci_upper`.
 * `standardized = "smart"` scales continuous inputs by 2 SD and leaves
   binary inputs unscaled. The rule was applied inverted since 0.12.0,
   halving every continuous "smart" beta.

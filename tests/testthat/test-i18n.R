@@ -306,8 +306,8 @@ test_that("every frozen linear-model key equals its English display label", {
       "p",
       "Adj. R²",
       "f²",
-      "effect_size_ci_lower",
-      "effect_size_ci_upper",
+      "es_ci_lower",
+      "es_ci_upper",
       "n",
       "Weighted n"
     )
