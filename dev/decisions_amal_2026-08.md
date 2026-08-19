@@ -429,3 +429,18 @@ et documentée vs gtsummary (qui pondère par défaut). Avec §28
 (fonctions _svy dédiées), D1 (qrule math + "spicy" opt-in), B4
 (survey >= 4.5 motivé), le chantier survey est à ZÉRO décision
 ouverte — spec: scratchpad survey_design_spec.md (révisée post-revue).
+
+## 31. D19 baptisée : table_outcome() — DÉCIDÉ 2026-08-19
+
+La forme inverse (une variable continue résumée dans les niveaux de
+plusieurs catégorielles empilées — l'équivalent gtsummary::
+tbl_continuous, idée D19 d'Amal) s'appellera table_outcome().
+Signature type : table_outcome(data, outcome = bmi, by = c(sex,
+smoking, region)). Raisonnement de grammaire : ce n'est PAS un
+régime (pas de suffixe — table_continuous_by_svy() combinatoire
+proscrit) mais un CONTENU de table, donc nom de base propre, qui
+recevra son _svy selon la grammaire §28. « outcome » nomme la
+vedette, évite le faux-ami gtsummary::tbl_strata (qui signifie tout
+autre chose), et s'étend le jour où l'outcome pourra être catégoriel
+(dispatch par type). Pipeline : recon → revue de spec → arbitrages →
+implémentation.
