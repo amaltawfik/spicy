@@ -2404,8 +2404,16 @@ validate_predictor_labels <- function(labels, models) {
   # falls back to the per-term label (factor variable). So both
   # flavours of key are useful: term keys rename factor headers,
   # coef keys rename individual contrast rows.
+  # `terms()` is not universal: nls, flexsurvreg, selection and brmsfit
+  # fits carry no terms component, and an unguarded call died there with
+  # base R's "no 'terms' component nor attribute" -- refusing every
+  # `labels =` key on classes whose coefficient names are perfectly
+  # good keys. Fall back to the coefficient names alone (below).
   all_terms <- unique(unlist(lapply(models, function(fit) {
-    attr(stats::terms(fit), "term.labels")
+    tryCatch(
+      attr(stats::terms(fit), "term.labels"),
+      error = function(e) character(0)
+    )
   })))
   # Fixed-effect coefficient names via the polymorphic helper:
   # names(coef(fit)) is wrong for several classes (merMod returns the
@@ -2426,10 +2434,18 @@ validate_predictor_labels <- function(labels, models) {
           "Some `labels` keys are not term or coefficient names: %s.",
           paste(.quote_val(unknown), collapse = ", ")
         ),
-        "i" = sprintf(
-          "Available term labels: %s.",
-          paste(.quote_val(all_terms), collapse = ", ")
-        ),
+        # The term-labels line is dropped when the fit has no terms
+        # component at all (nls, flexsurvreg, selection, brmsfit):
+        # "Available term labels: ." would name an empty set as if it
+        # were the answer.
+        if (length(all_terms) > 0L) {
+          c(
+            "i" = sprintf(
+              "Available term labels: %s.",
+              paste(.quote_val(all_terms), collapse = ", ")
+            )
+          )
+        },
         "i" = sprintf(
           "Available coefficient names: %s.",
           paste(.quote_val(all_coefs), collapse = ", ")

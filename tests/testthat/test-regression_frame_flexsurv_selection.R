@@ -263,3 +263,21 @@ test_that("selection advertises no AME and refuses the ame column", {
     class = "spicy_invalid_input"
   )
 })
+
+
+# ---- Label overrides (register 55) ---------------------------------------
+
+test_that("flexsurvreg accepts `labels =` keyed on coefficient names", {
+  # Neither class carries a `terms` component; the label validator used
+  # to die on `stats::terms()` before any label could be applied.
+  fit <- .fit_flexsurv_weibull()
+  out <- table_regression(fit, labels = c(age = "Age (years)"))
+  expect_true("Age (years)" %in% out$Variable)
+  expect_false("age" %in% out$Variable)
+})
+
+test_that("selection accepts `labels =` keyed on coefficient names", {
+  fit <- .fit_selection_heckman()
+  out <- table_regression(fit, labels = c(educ = "Years of education"))
+  expect_true(any(grepl("Years of education", out$Variable, fixed = TRUE)))
+})

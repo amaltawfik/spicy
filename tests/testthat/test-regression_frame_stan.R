@@ -432,3 +432,18 @@ test_that("stanreg: weighted fit's AME equals avg_slopes(wts = ) (draws path)", 
     1e-6
   )
 })
+
+
+# ---- Label overrides (register 55) ---------------------------------------
+
+test_that("brmsfit accepts `labels =` keyed on coefficient names", {
+  # brmsfit carries no `terms` component; the label validator used to
+  # call `stats::terms()` unguarded and died before applying anything.
+  # Local-only, like every other brms fixture here (skip_on_ci).
+  fit <- .fit_brms_basic()
+  out <- suppressWarnings(
+    table_regression(fit, labels = c(Days = "Days of deprivation"))
+  )
+  expect_true("Days of deprivation" %in% out$Variable)
+  expect_false("Days" %in% out$Variable)
+})
