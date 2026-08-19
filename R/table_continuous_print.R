@@ -275,11 +275,21 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #' and `label` the human-readable label.
 #'
 #' `glance()` returns one row per outcome with the omnibus group
-#' comparison (when `by` is used) and the requested effect size.
-#' Columns: `outcome`, `label`, `test_type`, `statistic`, `df`,
-#' `df.residual`, `p.value`, `es_type`, `es_value`, `es_ci_lower`,
-#' `es_ci_upper`, `n_total`. Without `by`, only `outcome`, `label`,
-#' and `n_total` are populated; the other columns are `NA`.
+#' comparison (when `by` is used), the requested effect size and the
+#' balance diagnostic. Columns: `outcome`, `label`, `test_type`,
+#' `statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`,
+#' `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `n_total`.
+#' Without `by`, only `outcome`, `label`, and `n_total` are populated;
+#' the other columns are `NA`. The schema is fixed: `smd_type` /
+#' `smd_value` are present whether or not `smd = TRUE`, like every
+#' other comparison column here, and are `NA` when the table carries
+#' no standardized mean difference. They sit before `n_total`, so
+#' index this frame by NAME rather than by position.
+#'
+#' `glance.spicy_categorical_table()` does **not** carry the SMD: each
+#' family documents its own broom contract, and the categorical one
+#' publishes the association measure alone. On a mixed balance table,
+#' read the categorical SMD from `output = "long"`.
 #'
 #' @param x A `spicy_continuous_table` returned by [table_continuous()].
 #' @param ... Currently ignored. Present for compatibility with the
@@ -378,6 +388,15 @@ glance.spicy_continuous_table <- function(x, ...) {
     # inside it: they are different denominators (Austin's mean of the
     # two group variances, not the degrees-of-freedom pooled SD) and
     # must never be read for one another.
+    #
+    # Present unconditionally, NA without `by` -- the rule EVERY
+    # comparison column of this function already follows (`test_type`,
+    # `p.value`, `es_type` are all NA on a one-way table, and the
+    # roxygen above states that as the contract). This is deliberately
+    # NOT the compute frame's rule, where a one-way frame carries no
+    # comparison column at all: a broom summary is a fixed one-row
+    # schema that consumers rbind, and making these two the only
+    # conditional pair here would break that for its own sake.
     smd_type = if (has_smd) per_outcome$smd_type else NA_character_,
     smd_value = if (has_smd) per_outcome$smd_value else NA_real_,
     n_total = per_outcome$n_total,

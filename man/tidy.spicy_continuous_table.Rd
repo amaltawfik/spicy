@@ -35,11 +35,21 @@ empirical mean), \code{std.error} (\code{sd / sqrt(n)}), \code{conf.low},
 and \code{label} the human-readable label.
 
 \code{glance()} returns one row per outcome with the omnibus group
-comparison (when \code{by} is used) and the requested effect size.
-Columns: \code{outcome}, \code{label}, \code{test_type}, \code{statistic}, \code{df},
-\code{df.residual}, \code{p.value}, \code{es_type}, \code{es_value}, \code{es_ci_lower},
-\code{es_ci_upper}, \code{n_total}. Without \code{by}, only \code{outcome}, \code{label},
-and \code{n_total} are populated; the other columns are \code{NA}.
+comparison (when \code{by} is used), the requested effect size and the
+balance diagnostic. Columns: \code{outcome}, \code{label}, \code{test_type},
+\code{statistic}, \code{df}, \code{df.residual}, \code{p.value}, \code{es_type}, \code{es_value},
+\code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, \code{n_total}.
+Without \code{by}, only \code{outcome}, \code{label}, and \code{n_total} are populated;
+the other columns are \code{NA}. The schema is fixed: \code{smd_type} /
+\code{smd_value} are present whether or not \code{smd = TRUE}, like every
+other comparison column here, and are \code{NA} when the table carries
+no standardized mean difference. They sit before \code{n_total}, so
+index this frame by NAME rather than by position.
+
+\code{glance.spicy_categorical_table()} does \strong{not} carry the SMD: each
+family documents its own broom contract, and the categorical one
+publishes the association measure alone. On a mixed balance table,
+read the categorical SMD from \code{output = "long"}.
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} for the raw

@@ -191,9 +191,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `?table_continuous` and `?table_categorical`.
 * The grouped raw outputs of `table_continuous()` (`"data.frame"` /
   `"long"`) always carry `smd_type` and `smd_value`, `NA` when
-  `smd = FALSE`, so the schema does not move with the argument. The
-  categorical `"long"` output gains `smd` / `smd_type` only when they
-  are requested, as its association columns do.
+  `smd = FALSE`, so the schema does not move with the argument.
+  `glance()` on a `spicy_continuous_table` gains the same two columns,
+  before `n_total` and present even without `by` (`NA` there, like its
+  other comparison columns) -- index that frame by name, not by
+  position. The categorical `"long"` output gains `smd` / `smd_type`
+  only when they are requested, as its association columns do;
+  `glance()` on a `spicy_categorical_table` does not carry the SMD.
 * `table_continuous()` weighted group comparisons now say that they
   refuse tests and effect sizes specifically, and point at
   `smd = TRUE`, which passes under weights.
