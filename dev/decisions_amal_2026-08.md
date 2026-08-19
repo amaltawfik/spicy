@@ -378,3 +378,22 @@ Aucun changement aux niveaux entiers (95, 99). Toutes les familles
 (descriptives + régression + {ci_label} d'inline). Témoins à
 0.975+virgule; byte-identité au point et aux niveaux entiers.
 (Registre n°19 clos.)
+
+## 28. API survey : fonctions dédiées table_*_svy — DÉCIDÉ 2026-08-19
+
+Le design d'enquête entre par DEUX NOUVELLES fonctions
+table_continuous_svy() / table_categorical_svy() (suffixe-régime,
+motif de _lm : un régime d'estimation = une fonction), PAS par
+polymorphisme des fonctions existantes. Arguments décisifs, dans
+l'ordre : (1) horloges de gel indépendantes — table_continuous est
+presque Stable, un design bolté rouvrirait sa stabilisation; les
+_svy naissent Stabilising sans toucher les autres; (2) le contrat
+structurel bat le refus runtime — pas de weights= exprimable, mais
+deff=/méthodes svyciprop/statistique Rao-Scott exposées proprement;
+(3) précédent interne _lm + externe gtsummary (7 ans sans explosion);
+(4) l'erreur enseignante : un design passé à table_continuous() =
+refus classé pointant _svy. GARDE-FOU obligatoire : coquilles sur
+cœur compute partagé unique (leçon des bâtisseurs divergents).
+table_regression() garde svyglm/svyolr/svycoxph (fit-first, cohérent).
+L'asymétrie data-first/fit-first des familles est AFFIRMÉE comme
+choix de design, pas accident.
