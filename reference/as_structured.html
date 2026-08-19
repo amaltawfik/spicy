@@ -198,8 +198,9 @@ p-style, CI level, etc.).</p></li>
 <code>col_meta</code> tokens and the row roles they emit differ.</p><ul><li><p><code><a href="table_categorical.html">table_categorical()</a></code> – one <code>"factor_header"</code> row per variable
 then one <code>"level"</code> (or <code>"missing"</code>) row per category, exactly as
 the console lays them out. Tokens: <code>"n"</code>, <code>"pct"</code>, <code>"p"</code>,
-<code>"assoc"</code> (the association measure) and <code>"assoc_ci"</code> (its
-bounds). In a <code>by</code> table each group owns an <code>n</code> / <code>%</code> pair with
+<code>"assoc"</code> (the association measure), <code>"assoc_ci"</code> (its bounds)
+and <code>"smd"</code> (the standardized mean difference, when
+<code>smd = TRUE</code>). In a <code>by</code> table each group owns an <code>n</code> / <code>%</code> pair with
 its own spanner, and the margin column is flagged
 <code>col_meta$&lt;col&gt;$total</code>, never matched on the label <code>"Total"</code>.</p></li>
 <li><p><code><a href="table_continuous.html">table_continuous()</a></code> – one <code>"summary"</code> row per variable, or one
@@ -207,8 +208,11 @@ its own spanner, and the margin column is flagged
 group), with the level in <code>.level</code>. Tokens are the
 <code>show_columns</code> vocabulary itself (<code>"m"</code>, <code>"sd"</code>, <code>"med"</code>,
 <code>"iqr"</code>, <code>"med_iqr"</code>, <code>"q1"</code>, <code>"q3"</code>, <code>"min"</code>, <code>"max"</code>, <code>"ci"</code>,
-<code>"med_ci"</code>, <code>"n"</code>) plus <code>"statistic"</code>, <code>"p"</code> and <code>"es"</code> for the
-group comparison. A statistic another variable displays is
+<code>"med_ci"</code>, <code>"n"</code>, <code>"weighted_n"</code>) plus <code>"statistic"</code>, <code>"p"</code>,
+<code>"es"</code> and <code>"smd"</code> for the group comparison – the last four are
+<code>col_meta</code> tokens without being <code>show_columns</code> values, because
+they belong to a comparison BETWEEN groups rather than to any one
+group. A statistic another variable displays is
 <em>absent</em> (<code>NA</code>, no status); one that applies but has no value is
 <code>"undefined"</code>.</p></li>
 <li><p><code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> – one <code>"summary"</code> row per outcome.

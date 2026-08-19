@@ -46,6 +46,7 @@ table_continuous(
   show_columns = NULL,
   effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
   effect_size_ci = FALSE,
+  smd = FALSE,
   ci = TRUE,
   labels = NULL,
   ci_level = 0.95,
@@ -253,6 +254,17 @@ table_continuous(
   function warns and promotes `effect_size` to `"auto"` so the requested
   CI can be shown. Defaults to `FALSE`.
 
+- smd:
+
+  Logical. If `TRUE`, adds an `SMD` column holding the standardized mean
+  difference between the two groups of `by`, the balance diagnostic of
+  the Table 1 literature. Requires exactly two groups; signed, group 1
+  minus group 2 in the order the table displays them; no confidence
+  interval and no p-value, by design. It is independent of `p_value` and
+  of `effect_size`: turning it on turns nothing else off. Rounded with
+  `effect_size_digits`. See the "Standardized mean difference" section
+  below. Defaults to `FALSE`.
+
 - ci:
 
   Logical. If `TRUE`, includes the mean confidence interval columns
@@ -443,6 +455,10 @@ Depends on `output`:
   - `es_value`, `es_ci_lower`, `es_ci_upper` – effect-size estimate and
     confidence interval bounds.
 
+  A `by` frame ALSO carries `smd_type` and `smd_value` unconditionally –
+  `NA` throughout when `smd = FALSE` – so the schema a pipeline indexes
+  into does not move with an argument (the `weighted_n` rule).
+  `smd_type` names the kernel the value came from: `"continuous"` here.
   The two names `"data.frame"` and `"long"` are synonyms (the
   descriptive output is naturally already long). Pick whichever reads
   better in your code.
@@ -619,6 +635,75 @@ For Cohen's *d*, Hays' \\\omega^2\\, and Cohen's *f*\\^2\\ (derived from
 a fitted, possibly weighted [`lm()`](https://rdrr.io/r/stats/lm.html)),
 use the model-based companion
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+
+## Standardized mean difference
+
+`smd = TRUE` adds an `SMD` column with the balance diagnostic of the
+Table 1 literature, in Austin's form (Austin 2009, *Stat Med*
+28:3083-3107; Austin 2011, *Multivar Behav Res* 46:399-424):
+
+\$\$\mathrm{SMD} = \frac{\bar{x}\_1 - \bar{x}\_2}{\sqrt{(s_1^2 + s_2^2)
+/ 2}}\$\$
+
+The denominator is the root **mean of the two group variances**, each at
+\\n - 1\\, not the degrees-of-freedom pooled SD. At **equal** group
+sizes those two denominators are the same, so the SMD is exactly Cohen's
+*d*; at unequal sizes they part company (on a 4-versus-3 split the SMD
+is \\-0.51\\ and *d* is \\-0.54\\).
+
+`effect_size = "hedges_g"`, two columns to the left, is a third number:
+*g* applies the small-sample correction *J* on top of *d*, so it
+**never** equals the SMD. At equal group sizes the ratio \\g /
+\mathrm{SMD}\\ is exactly *J* – 0.80 at *n* = 3 per group, 0.96 at *n* =
+10 – approaching 1 only as the sample grows. Read each for what it is;
+do not recompute one from the other. (The divergence is nameable
+upstream: `cobalt::col_w_smd(s.d.denom = "pooled")` reproduces this
+column, `s.d.denom = "hedges"` reproduces `hedges_g`.)
+
+Conventions, all deliberate:
+
+- **Signed**, group 1 minus group 2 in the order the table displays the
+  groups – the two groups sit side by side, so a bare magnitude would
+  make the reader re-derive a direction the row already gives.
+  (`tableone` publishes the magnitude; `cobalt` and `arsenal` sign it
+  the other way, guessing the second level as "treated".) The threshold
+  in the table note is read on \\\|\mathrm{SMD}\|\\; the column keeps
+  the sign. No conditional formatting: spicy never highlights a
+  threshold.
+
+- **No confidence interval and no p-value, ever.** The SMD is a
+  descriptive diagnostic; attaching an interval to it reintroduces the
+  test reasoning the balance literature asks the reader to drop. This is
+  not a missing feature.
+
+- **Exactly two groups.** A `by` with three or more is refused rather
+  than averaged over pairs: an average has no published reading, and it
+  can sit under the usual threshold while one pair sits well over it.
+
+- **Complete cases on the observed groups.** A `drop_na = FALSE`
+  "(Missing)" group is displayed and never enters the diagnostic,
+  exactly as the test and the effect size behave.
+
+- **Independent of `p_value`.** Turning the SMD on turns nothing else
+  off. The balance-table idiom is `smd = TRUE, p_value = FALSE`; you
+  have to write both.
+
+Under `weights`, the means and variances are the weighted ones the `M`
+and `SD` columns already display – the frequency convention of the
+*Weights* section, from the same producer, so the column cannot
+contradict its neighbours. One consequence follows and is intended: a
+frequency weight is a number of copies, so the weighted SMD is **not
+invariant to the scale of the weights** (multiplying every weight by ten
+moves it, as it moves the `SD` column). `rescale = TRUE` normalises the
+weights to sum to *n*, restores scale invariance, and is the form to use
+for sampling weights until the dedicated survey-design functions land.
+
+A cell is an en-dash when the diagnostic applies but cannot be
+estimated: both groups constant at different values (an infinite
+standardized distance, disclosed by a warning), or a group with too
+little data to have a variance (silent – the `SD` cell beside it already
+says so). Two groups constant at the *same* value are perfectly balanced
+and print `0.00`.
 
 ## Display conventions
 
@@ -997,11 +1082,16 @@ table_continuous(
 #> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6
 #> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7
 #> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2
-#>     n weighted_n test_type statistic      df1 df2      p.value
-#> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02
-#> 2 572         NA      <NA>        NA       NA  NA           NA
-#> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05
-#> 4 580         NA      <NA>        NA       NA  NA           NA
+#>     n weighted_n test_type statistic      df1 df2      p.value smd_type
+#> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02     <NA>
+#> 2 572         NA      <NA>        NA       NA  NA           NA     <NA>
+#> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05     <NA>
+#> 4 580         NA      <NA>        NA       NA  NA           NA     <NA>
+#>   smd_value
+#> 1        NA
+#> 2        NA
+#> 3        NA
+#> 4        NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

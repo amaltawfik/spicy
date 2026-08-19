@@ -34,6 +34,7 @@ table_categorical(
   v_digits = 2,
   assoc_measure = "auto",
   assoc_ci = FALSE,
+  smd = FALSE,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
@@ -222,6 +223,17 @@ table_categorical(
   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`). Defaults
   to `FALSE`.
 
+- smd:
+
+  Logical. If `TRUE`, adds an `SMD` column holding the standardized mean
+  difference between the two groups of `by`, the balance diagnostic of
+  the Table 1 literature. Requires exactly two groups; the value sits on
+  the variable row beside `p`, never on a level row. Signed for a
+  two-category variable (group 1 minus group 2 on the second category),
+  unsigned for three or more, where it is a distance. No confidence
+  interval and no p-value, by design. Rounded with `v_digits`. See the
+  "Standardized mean difference" section below. Defaults to `FALSE`.
+
 - decimal_mark:
 
   Decimal separator (`"."` or `","`). Defaults to `"."`.
@@ -380,7 +392,10 @@ Depends on `output`:
   (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a variable
   given `assoc_measure = "none"`. The wide outputs instead name the
   column after the measure, or `Effect size` when the row variables do
-  not share one.
+  not share one. With `smd = TRUE` this output also carries `smd` and
+  `smd_type` (`"binary"` or `"multinomial"`, the kernel the value came
+  from); the wide outputs name that column `SMD`. Like the association
+  columns, both are ABSENT when the statistic is not requested.
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -426,6 +441,82 @@ fitted means) on continuous outcomes, see
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 For descriptive (empirical) comparisons on continuous outcomes, see
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+
+## Standardized mean difference
+
+`smd = TRUE` adds an `SMD` column with the balance diagnostic of the
+Table 1 literature, on the variable row beside `p`. For a two-category
+variable it is the Bernoulli form,
+
+\$\$\mathrm{SMD} = \frac{p_1 - p_2}{\sqrt{(p_1(1-p_1) + p_2(1-p_2)) /
+2}}\$\$
+
+with \\p\\ the proportion of the SECOND category, **signed**, group 1
+minus group 2 in the order the table displays them. Note the
+denominator: the Bernoulli variance \\p(1-p)\\ at *n*, not
+[`var()`](https://rdrr.io/r/stats/cor.html) at \\n-1\\, which would be
+19% off on a small table.
+
+"Second category" is the order the table shows, which is worth knowing
+for a **logical** variable: spicy displays `TRUE` then `FALSE`, so the
+sign is taken on `FALSE`, where `tableone` and `cobalt` coerce with
+[`factor()`](https://rdrr.io/r/base/factor.html) (`FALSE`, `TRUE`) and
+take it on `TRUE` – the same magnitude with the opposite sign. Convert
+to a factor with the level order you want if the direction matters.
+
+For three or more categories it is the multivariate form of Yang and
+Dalton (2012, SAS Global Forum 335-2012),
+
+\$\$\mathrm{SMD} = \sqrt{T' S^{-} T}\$\$
+
+with \\T\\ the difference of the two profiles of proportions (first
+category dropped) and \\S\\ the mean of their multinomial covariance
+matrices. This is a Mahalanobis distance: it is **unsigned**, it is
+**not bounded by 1**, and \\S^{-}\\ is a pseudo-inverse, because a
+declared-but-unobserved category makes \\S\\ singular and
+[`solve()`](https://rdrr.io/pkg/Matrix/man/solve-methods.html) would
+abort where the pseudo-inverse returns exactly the value that category's
+absence implies. Which kernel a row took is published as `smd_type` in
+the `"long"` output, and the unsigned reading is stated in the table
+note whenever a variable has more than two categories. The `MASS`
+package is needed for this arm only.
+
+Two profiles with **no category in common** have an infinite
+standardized distance. The pseudo-inverse would quietly publish a finite
+number there, so the cell is an en-dash and a classed warning says why.
+The same applies when each group is constant on a different category,
+where the naive route publishes `0` – "perfectly balanced" for the most
+imbalanced variable possible.
+
+Conventions shared with
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
+exactly two groups (three or more are refused, not averaged over pairs);
+complete cases on the observed groups, so a `drop_na = FALSE`
+"(Missing)" level is displayed and never enters the diagnostic; no
+confidence interval and no p-value, by design. Under `weights` the
+profiles are the weighted proportions, which makes this column agree
+with both the frequency and the survey-design readings – a profile of
+proportions is invariant to a global rescaling of the weights, so
+`rescale` cannot move it. (Only the continuous arm has a convention to
+choose there.)
+
+The `SMD` cell keeps its leading zero where the association cell drops
+it: the APA strip belongs to a bounded measure, and this one is not
+bounded. The two columns therefore print `0.45` and `.45` side by side,
+on purpose.
+
+Two limits of the current grammar. This function has no `p_value`
+argument, so the p column cannot be switched off here as it can in
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md);
+a complete balance table mixing continuous and categorical variables
+will show a categorical p beside a continuous column you removed. And
+[`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+cannot quote this `SMD` cell: like `p` and the association measure, it
+lives on the variable row, which
+[`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+cannot address on a variable that has levels. The continuous `SMD` cell
+is quotable (`inline(tbl, x, "A", column = "smd")`); for the categorical
+one, read `output = "long"`.
 
 ## Display conventions
 

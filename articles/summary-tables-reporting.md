@@ -460,6 +460,94 @@ This is the better summary-table path when the article is already
 organized around simple linear models, weighted analyses, or robust
 standard errors.
 
+### A balance table instead of a significance table
+
+When the two groups are trial arms or a treated / control contrast, the
+baseline table is read for *balance*, and the convention of that
+literature is the standardized mean difference rather than the
+*p*-value. Both descriptive families take `smd = TRUE`, with the same
+meaning and the same refusals:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(age, bmi, wellbeing_score),
+  by = sex,
+  smd = TRUE,
+  p_value = FALSE
+)
+#> Descriptive statistics by Sex
+#> 
+#>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
+#> ───────────────────────────────┼────────────────────────────────────────────────
+#>  Age (years)                   │ Female  49.38  14.91  25.00   75.00    48.20   
+#>                                │ Male    49.14  14.50  25.00   75.00    47.96   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Body mass index               │ Female  25.69   3.78  16.00   38.90    25.39   
+#>                                │ Male    26.20   3.64  16.00   37.70    25.90   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
+#>                                │ Male    71.05  16.23  18.70  100.00    69.73   
+#> 
+#>  Variable                      │ Group   95% CI UL   n    SMD  
+#> ───────────────────────────────┼───────────────────────────────
+#>  Age (years)                   │ Female    50.55    620   0.02 
+#>                                │ Male      50.32    580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Body mass index               │ Female    25.98    616  -0.14 
+#>                                │ Male      26.50    572        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  -0.25 
+#>                                │ Male      72.37    580        
+#> 
+#> Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+```
+
+``` r
+
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  smd = TRUE
+)
+#> Categorical table by sex
+#> 
+#>  Variable                  │ Female n  Female %  Male n  Male %  Total n 
+#> ───────────────────────────┼─────────────────────────────────────────────
+#>  Current smoker            │                                             
+#>    No                      │   475       76.6     451     77.8     926   
+#>    Yes                     │   131       21.1     118     20.3     249   
+#>    (Missing)               │    14        2.3      11      1.9      25   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                                             
+#>    No                      │   334       53.9     316     54.5     650   
+#>    Yes                     │   286       46.1     264     45.5     550   
+#> 
+#>  Variable                  │ Total %   p    Phi  SMD  
+#> ───────────────────────────┼──────────────────────────
+#>  Current smoker            │          .713  .01  0.02 
+#>    No                      │  77.2                    
+#>    Yes                     │  20.8                    
+#>    (Missing)               │   2.1                    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │          .832  .01  0.01 
+#>    No                      │  54.2                    
+#>    Yes                     │  45.8                    
+#> 
+#> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+```
+
+Exactly two groups, no confidence interval and no *p*-value on the
+column itself, and the usual rule of thumb (\|SMD\| \> 0.1) quoted in
+the table note without any cell being highlighted. Note the asymmetry
+between the two calls:
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+can drop its *p* column,
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+currently cannot.
+
 ### The coefficient table
 
 Once the substantive model is fitted,

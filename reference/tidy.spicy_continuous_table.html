@@ -120,11 +120,20 @@ empirical mean), <code>std.error</code> (<code>sd / sqrt(n)</code>), <code>conf.
 <code>min</code>, <code>max</code>, <code>sd</code>. The <code>outcome</code> column carries the variable name
 and <code>label</code> the human-readable label.</p>
 <p><code>glance()</code> returns one row per outcome with the omnibus group
-comparison (when <code>by</code> is used) and the requested effect size.
-Columns: <code>outcome</code>, <code>label</code>, <code>test_type</code>, <code>statistic</code>, <code>df</code>,
-<code>df.residual</code>, <code>p.value</code>, <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>,
-<code>es_ci_upper</code>, <code>n_total</code>. Without <code>by</code>, only <code>outcome</code>, <code>label</code>,
-and <code>n_total</code> are populated; the other columns are <code>NA</code>.</p>
+comparison (when <code>by</code> is used), the requested effect size and the
+balance diagnostic. Columns: <code>outcome</code>, <code>label</code>, <code>test_type</code>,
+<code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code>, <code>es_type</code>, <code>es_value</code>,
+<code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, <code>n_total</code>.
+Without <code>by</code>, only <code>outcome</code>, <code>label</code>, and <code>n_total</code> are populated;
+the other columns are <code>NA</code>. The schema is fixed: <code>smd_type</code> /
+<code>smd_value</code> are present whether or not <code>smd = TRUE</code>, like every
+other comparison column here, and are <code>NA</code> when the table carries
+no standardized mean difference. They sit before <code>n_total</code>, so
+index this frame by NAME rather than by position.</p>
+<p><code><a href="tidy.spicy_categorical_table.html">glance.spicy_categorical_table()</a></code> does <strong>not</strong> carry the SMD: each
+family documents its own broom contract, and the categorical one
+publishes the association measure alone. On a mixed balance table,
+read the categorical SMD from <code>output = "long"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

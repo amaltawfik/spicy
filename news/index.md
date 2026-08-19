@@ -246,6 +246,38 @@ instead of rendering an empty column.
 ### New features
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gain `smd = TRUE`, an `SMD` column with the standardized mean
+  difference between the two groups of `by` – the balance diagnostic of
+  a Table 1. It is signed (group 1 minus group 2, in display order) for
+  a continuous or two-category variable and unsigned for a variable with
+  more, where it is a multivariate distance; it carries no confidence
+  interval and no p-value; and it requires exactly two groups. It works
+  under `weights` and is rounded with `effect_size_digits` / `v_digits`,
+  so the journal styles reach it. Do not read it for
+  `effect_size = "hedges_g"`: the SMD is Cohen’s *d* when the two groups
+  are the same size, while *g* applies the small-sample correction on
+  top and so never equals it. See the “Standardized mean difference”
+  section of
+  [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+- The grouped raw outputs of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  (`"data.frame"` / `"long"`) always carry `smd_type` and `smd_value`,
+  `NA` when `smd = FALSE`, so the schema does not move with the
+  argument. `glance()` on a `spicy_continuous_table` gains the same two
+  columns, before `n_total` and present even without `by` (`NA` there,
+  like its other comparison columns) – index that frame by name, not by
+  position. The categorical `"long"` output gains `smd` / `smd_type`
+  only when they are requested, as its association columns do;
+  `glance()` on a `spicy_categorical_table` does not carry the SMD.
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  weighted group comparisons now say that they refuse tests and effect
+  sizes specifically, and point at `smd = TRUE`, which passes under
+  weights.
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `weights` and `rescale`: weighted mean, SD, quantiles, extremes
   and mean CI under a documented convention (integer weights reproduce
   the row-expanded data exactly, all weights 1 reproduce the unweighted
@@ -972,6 +1004,15 @@ instead of rendering an empty column.
   wider than 2^53.
   [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   still works.
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  on a
+  [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html)
+  fit gives a clear refusal instead of failing with
+  `No AIC for survey models` after printing six lines of design
+  description. Design-based Cox models are not supported yet;
+  `summary(fit)` and
+  [`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
+  cover them meanwhile.
 
 ### Minor improvements
 

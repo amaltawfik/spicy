@@ -122,6 +122,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  v_digits <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  assoc_measure <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  assoc_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  smd <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>,</span>
@@ -300,6 +301,19 @@ In rendered formats (<code>"gt"</code>, <code>"tinytable"</code>, <code>"flextab
 Defaults to <code>FALSE</code>.</p></dd>
 
 
+<dt id="arg-smd">smd<a class="anchor" aria-label="anchor" href="#arg-smd"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, adds an <code>SMD</code> column holding the
+standardized mean difference between the two groups of <code>by</code>,
+the balance diagnostic of the Table 1 literature. Requires
+exactly two groups; the value sits on the variable row beside
+<code>p</code>, never on a level row. Signed for a two-category variable
+(group 1 minus group 2 on the second category), unsigned for
+three or more, where it is a distance. No confidence interval
+and no p-value, by design. Rounded with <code>v_digits</code>. See the
+"Standardized mean difference" section below. Defaults to
+<code>FALSE</code>.</p></dd>
+
+
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
 <dd><p>Decimal separator (<code>"."</code> or <code>","</code>). Defaults to <code>"."</code>.</p></dd>
 
@@ -438,7 +452,11 @@ whichever measure it is, and <code>effect_size_type</code> names that measure
 per row (<code>"cramer_v"</code>, <code>"phi"</code>, ...), or is <code>NA</code> on the rows of a
 variable given <code>assoc_measure = "none"</code>. The wide outputs instead
 name the column after the measure, or <code>Effect size</code> when the row
-variables do not share one.</p></li>
+variables do not share one. With <code>smd = TRUE</code> this output also
+carries <code>smd</code> and <code>smd_type</code> (<code>"binary"</code> or <code>"multinomial"</code>,
+the kernel the value came from); the wide outputs name that
+column <code>SMD</code>. Like the association columns, both are ABSENT
+when the statistic is not requested.</p></li>
 <li><p><code>"tinytable"</code>: a <code>tinytable</code> object.</p></li>
 <li><p><code>"gt"</code>: a <code>gt_tbl</code> object.</p></li>
 <li><p><code>"flextable"</code>: a <code>flextable</code> object.</p></li>
@@ -474,6 +492,68 @@ each variable with no inferential statistics.</p>
 fitted means) on continuous outcomes, see <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.
 For descriptive (empirical) comparisons on continuous outcomes, see
 <code><a href="table_continuous.html">table_continuous()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="standardized-mean-difference">Standardized mean difference<a class="anchor" aria-label="anchor" href="#standardized-mean-difference"></a></h2>
+    <p><code>smd = TRUE</code> adds an <code>SMD</code> column with the balance diagnostic of
+the Table 1 literature, on the variable row beside <code>p</code>. For a
+two-category variable it is the Bernoulli form,</p>
+<p>$$\mathrm{SMD} = \frac{p_1 - p_2}{\sqrt{(p_1(1-p_1) +
+p_2(1-p_2)) / 2}}$$</p>
+<p>with \(p\) the proportion of the SECOND category, <strong>signed</strong>,
+group 1 minus group 2 in the order the table displays them. Note
+the denominator: the Bernoulli variance \(p(1-p)\) at <em>n</em>, not
+<code><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var()</a></code> at \(n-1\), which would be 19% off on a small table.</p>
+<p>"Second category" is the order the table shows, which is worth
+knowing for a <strong>logical</strong> variable: spicy displays <code>TRUE</code> then
+<code>FALSE</code>, so the sign is taken on <code>FALSE</code>, where <code>tableone</code> and
+<code>cobalt</code> coerce with <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code> (<code>FALSE</code>, <code>TRUE</code>) and take it on
+<code>TRUE</code> – the same magnitude with the opposite sign. Convert to a
+factor with the level order you want if the direction matters.</p>
+<p>For three or more categories it is the multivariate form of Yang
+and Dalton (2012, SAS Global Forum 335-2012),</p>
+<p>$$\mathrm{SMD} = \sqrt{T' S^{-} T}$$</p>
+<p>with \(T\) the difference of the two profiles of proportions
+(first category dropped) and \(S\) the mean of their multinomial
+covariance matrices. This is a Mahalanobis distance: it is
+<strong>unsigned</strong>, it is <strong>not bounded by 1</strong>, and \(S^{-}\) is a
+pseudo-inverse, because a declared-but-unobserved category makes
+\(S\) singular and <code><a href="https://rdrr.io/pkg/Matrix/man/solve-methods.html" class="external-link">solve()</a></code> would abort where the
+pseudo-inverse returns exactly the value that category's absence
+implies. Which kernel a row took is published as <code>smd_type</code> in the
+<code>"long"</code> output, and the unsigned reading is stated in the table
+note whenever a variable has more than two categories. The
+<code>MASS</code> package is needed for this arm only.</p>
+<p>Two profiles with <strong>no category in common</strong> have an infinite
+standardized distance. The pseudo-inverse would quietly publish a
+finite number there, so the cell is an en-dash and a classed
+warning says why. The same applies when each group is constant on
+a different category, where the naive route publishes <code>0</code> –
+"perfectly balanced" for the most imbalanced variable possible.</p>
+<p>Conventions shared with <code><a href="table_continuous.html">table_continuous()</a></code>: exactly two groups
+(three or more are refused, not averaged over pairs); complete
+cases on the observed groups, so a <code>drop_na = FALSE</code> "(Missing)"
+level is displayed and never enters the diagnostic; no confidence
+interval and no p-value, by design. Under <code>weights</code> the profiles
+are the weighted proportions, which makes this column agree with
+both the frequency and the survey-design readings – a profile of
+proportions is invariant to a global rescaling of the weights, so
+<code>rescale</code> cannot move it. (Only the continuous arm has a
+convention to choose there.)</p>
+<p>The <code>SMD</code> cell keeps its leading zero where the association cell
+drops it: the APA strip belongs to a bounded measure, and this one
+is not bounded. The two columns therefore print <code>0.45</code> and <code>.45</code>
+side by side, on purpose.</p>
+<p>Two limits of the current grammar. This function has no <code>p_value</code>
+argument, so the p column cannot be switched off here as it can in
+<code><a href="table_continuous.html">table_continuous()</a></code>; a complete balance table mixing continuous
+and categorical variables will show a categorical p beside a
+continuous column you removed. And <code><a href="inline.html">inline()</a></code> cannot quote this
+<code>SMD</code> cell: like <code>p</code> and the association measure, it lives on the
+variable row, which <code><a href="inline.html">inline()</a></code> cannot address on a variable that
+has levels. The continuous <code>SMD</code> cell is quotable
+(<code>inline(tbl, x, "A", column = "smd")</code>); for the categorical one,
+read <code>output = "long"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="display-conventions">Display conventions<a class="anchor" aria-label="anchor" href="#display-conventions"></a></h2>

@@ -398,14 +398,118 @@ table_continuous(
 #> 4         55.5         60.2 261         NA welch_anova 144.35083   2 638.5873
 #> 5         68.1         70.9 539         NA        <NA>        NA  NA       NA
 #> 6         76.2         78.5 400         NA        <NA>        NA  NA       NA
-#>        p.value es_type  es_value es_ci_lower es_ci_upper
-#> 1 1.467916e-34  eta_sq 0.1307679  0.09667861   0.1654516
-#> 2           NA    <NA>        NA          NA          NA
-#> 3           NA    <NA>        NA          NA          NA
-#> 4 1.888362e-52  eta_sq 0.2081970  0.16901207   0.2461732
-#> 5           NA    <NA>        NA          NA          NA
-#> 6           NA    <NA>        NA          NA          NA
+#>        p.value es_type  es_value es_ci_lower es_ci_upper smd_type smd_value
+#> 1 1.467916e-34  eta_sq 0.1307679  0.09667861   0.1654516     <NA>        NA
+#> 2           NA    <NA>        NA          NA          NA     <NA>        NA
+#> 3           NA    <NA>        NA          NA          NA     <NA>        NA
+#> 4 1.888362e-52  eta_sq 0.2081970  0.16901207   0.2461732     <NA>        NA
+#> 5           NA    <NA>        NA          NA          NA     <NA>        NA
+#> 6           NA    <NA>        NA          NA          NA     <NA>        NA
 ```
+
+## Balance: the standardized mean difference
+
+A baseline table comparing two arms is usually read for *balance*, not
+for significance. `smd = TRUE` adds the standardized mean difference of
+the Table 1 literature, and the idiomatic balance table drops the *p*
+column at the same time:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(age, bmi, wellbeing_score),
+  by = sex,
+  smd = TRUE,
+  p_value = FALSE
+)
+#> Descriptive statistics by Sex
+#> 
+#>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
+#> ───────────────────────────────┼────────────────────────────────────────────────
+#>  Age (years)                   │ Female  49.38  14.91  25.00   75.00    48.20   
+#>                                │ Male    49.14  14.50  25.00   75.00    47.96   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Body mass index               │ Female  25.69   3.78  16.00   38.90    25.39   
+#>                                │ Male    26.20   3.64  16.00   37.70    25.90   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
+#>                                │ Male    71.05  16.23  18.70  100.00    69.73   
+#> 
+#>  Variable                      │ Group   95% CI UL   n    SMD  
+#> ───────────────────────────────┼───────────────────────────────
+#>  Age (years)                   │ Female    50.55    620   0.02 
+#>                                │ Male      50.32    580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Body mass index               │ Female    25.98    616  -0.14 
+#>                                │ Male      26.50    572        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  -0.25 
+#>                                │ Male      72.37    580        
+#> 
+#> Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+```
+
+The two arguments are independent — turning the SMD on turns nothing
+else off, so you have to write both. The rule of thumb the table note
+quotes is \|SMD\| \> 0.1; spicy prints the number and never highlights
+it.
+
+The column is **signed**, group 1 minus group 2 in the order the table
+displays the groups, so the direction of an imbalance is readable
+without going back to the two means. It requires exactly two groups: a
+`by` with three or more is refused rather than averaged over pairs,
+because an average over pairs has no published reading and can sit under
+0.1 while one pair sits well over it.
+
+### It is not the effect size
+
+The SMD and Hedges’ *g* look alike and are never the same number. On
+`sochealth` the two agree to two decimals, which hides the point, so
+here they are on a small unbalanced sample where they cannot hide:
+
+``` r
+
+small <- sochealth[c(1:6, 601:604), c("sex", "bmi")]
+table_continuous(
+  small,
+  select = bmi,
+  by = sex,
+  smd = TRUE,
+  effect_size = "hedges_g",
+  effect_size_digits = 4
+)
+#> Descriptive statistics by Sex
+#> 
+#>  Variable        │ Group     M     SD    Min    Max   95% CI LL  95% CI UL  n 
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  Body mass index │ Female  25.03  3.74  19.50  29.10    21.57      28.49    7 
+#>                  │ Male    30.20  3.03  27.80  33.60    22.68      37.72    3 
+#> 
+#>  Variable        │ Group   p (n)      ES         SMD   
+#> ─────────────────┼─────────────────────────────────────
+#>  Body mass index │ Female  .072   g = -1.3057  -1.5194 
+#>                  │ Male                                
+#> 
+#> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+```
+
+Both standardize a mean difference, but by different denominators.
+Austin’s SMD divides by the root **mean of the two group variances**;
+*g* divides by the degrees-of-freedom pooled SD and then multiplies by
+the small-sample correction *J*. Two consequences, both worth knowing:
+
+- At **equal** group sizes the two denominators coincide, so the SMD
+  *is* Cohen’s *d*. At unequal sizes it is not.
+- *g* is never the SMD, at any sample size. With equal groups the ratio
+  *g* / SMD is exactly *J*: 0.80 at *n* = 3 per group, 0.96 at *n* = 10,
+  approaching 1 only as the sample grows. Reading one for the other
+  costs 20% on a small trial.
+
+Read each for what it is: the SMD is a balance diagnostic, *g* is an
+effect size. It also follows that the SMD carries **no confidence
+interval and no *p*-value** — attaching one would put back the test
+reasoning the balance literature asks the reader to drop.
 
 ## Selecting variables
 
@@ -515,19 +619,19 @@ table_continuous(
 #> 10 1.0            2            3 261         NA welch_anova 101.31672   2
 #> 11 1.0            3            4 532         NA        <NA>        NA  NA
 #> 12 2.0            4            4 399         NA        <NA>        NA  NA
-#>         df2      p.value
-#> 1  652.0775 1.063917e-44
-#> 2        NA           NA
-#> 3        NA           NA
-#> 4  651.9434 1.398117e-40
-#> 5        NA           NA
-#> 6        NA           NA
-#> 7  617.9668 1.969764e-32
-#> 8        NA           NA
-#> 9        NA           NA
-#> 10 648.7723 5.105889e-39
-#> 11       NA           NA
-#> 12       NA           NA
+#>         df2      p.value smd_type smd_value
+#> 1  652.0775 1.063917e-44     <NA>        NA
+#> 2        NA           NA     <NA>        NA
+#> 3        NA           NA     <NA>        NA
+#> 4  651.9434 1.398117e-40     <NA>        NA
+#> 5        NA           NA     <NA>        NA
+#> 6        NA           NA     <NA>        NA
+#> 7  617.9668 1.969764e-32     <NA>        NA
+#> 8        NA           NA     <NA>        NA
+#> 9        NA           NA     <NA>        NA
+#> 10 648.7723 5.105889e-39     <NA>        NA
+#> 11       NA           NA     <NA>        NA
+#> 12       NA           NA     <NA>        NA
 ```
 
 Use `exclude` when you want a broad selection with one or two explicit
@@ -706,9 +810,9 @@ correspondence are in the Weights section of
 
 Two things are deliberately refused under weights rather than silently
 wrong: the median confidence interval (an order-statistic interval with
-no weighted version), and the group tests — a *t*-test printed next to
-weighted descriptives would itself be unweighted. For weighted group
-comparisons,
+no weighted version), and the group tests and effect sizes — a *t*-test
+printed next to weighted descriptives would itself be unweighted. For
+weighted group comparisons,
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 takes the same `weights` argument and fits them properly:
 
@@ -726,6 +830,51 @@ table_continuous(
 # Weighted group comparison: the model-based tool
 table_continuous_lm(sochealth, select = bmi, by = sex, weights = weight)
 ```
+
+The standardized mean difference is the exception, and passes under
+weights:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(age, bmi),
+  by = sex,
+  weights = weight,
+  rescale = TRUE,
+  smd = TRUE,
+  p_value = FALSE
+)
+#> Descriptive statistics by Sex
+#> 
+#>  Variable        │ Group     M     SD     Min    Max   95% CI LL  95% CI UL 
+#> ─────────────────┼──────────────────────────────────────────────────────────
+#>  Age (years)     │ Female  45.14  14.48  25.00  75.00    44.03      46.25   
+#>                  │ Male    44.86  13.96  25.00  75.00    43.68      46.03   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Body mass index │ Female  25.51   3.75  16.00  38.90    25.22      25.80   
+#>                  │ Male    25.98   3.61  16.00  37.70    25.67      26.29   
+#> 
+#>  Variable        │ Group    n    SMD  
+#> ─────────────────┼────────────────────
+#>  Age (years)     │ Female  620   0.02 
+#>                  │ Male    580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Body mass index │ Female  616  -0.13 
+#>                  │ Male    572        
+#> 
+#> Statistics weighted by weight. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+```
+
+It is a descriptive balance diagnostic with no *p* and no interval —
+which is precisely why the balance literature substitutes it for the
+test — and it is computed from the same weighted means and variances the
+M and SD columns display, so it cannot be unweighted inference sitting
+next to weighted descriptives. One consequence of that shared producer:
+without `rescale`, the weighted SMD inherits the frequency reading and
+is *not* invariant to the scale of the weights, exactly as the SD column
+is not. With `rescale = TRUE` it is. For a survey weight, use
+`rescale = TRUE`.
 
 ## Custom labels
 
@@ -863,12 +1012,13 @@ broom::tidy(out)
 # (test_type, statistic, df, df.residual, p.value, es_type, es_value,
 # es_ci_lower / es_ci_upper, n_total).
 broom::glance(out)
-#> # A tibble: 2 × 12
+#> # A tibble: 2 × 14
 #>   outcome   label test_type statistic    df df.residual p.value es_type es_value
 #>   <chr>     <chr> <chr>         <dbl> <dbl>       <dbl>   <dbl> <chr>      <dbl>
 #> 1 bmi       Body… welch_t       -2.38 1184.          NA 1.76e-2 NA            NA
 #> 2 wellbein… WHO-… welch_t       -4.33 1169.          NA 1.65e-5 NA            NA
-#> # ℹ 3 more variables: es_ci_lower <dbl>, es_ci_upper <dbl>, n_total <int>
+#> # ℹ 5 more variables: es_ci_lower <dbl>, es_ci_upper <dbl>, smd_type <chr>,
+#> #   smd_value <dbl>, n_total <int>
 
 # Or just unbox to a plain data.frame (long-format underlying data)
 head(as.data.frame(out))
@@ -882,11 +1032,16 @@ head(as.data.frame(out))
 #> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6
 #> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7
 #> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2
-#>     n weighted_n test_type statistic      df1 df2      p.value
-#> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02
-#> 2 572         NA      <NA>        NA       NA  NA           NA
-#> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05
-#> 4 580         NA      <NA>        NA       NA  NA           NA
+#>     n weighted_n test_type statistic      df1 df2      p.value smd_type
+#> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02     <NA>
+#> 2 572         NA      <NA>        NA       NA  NA           NA     <NA>
+#> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05     <NA>
+#> 4 580         NA      <NA>        NA       NA  NA           NA     <NA>
+#>   smd_value
+#> 1        NA
+#> 2        NA
+#> 3        NA
+#> 4        NA
 ```
 
 ## Output formats

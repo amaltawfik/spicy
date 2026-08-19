@@ -153,6 +153,7 @@ adjustment.</p>
 <span>  show_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"auto"</span>, <span class="st">"hedges_g"</span>, <span class="st">"eta_sq"</span>, <span class="st">"r_rb"</span>, <span class="st">"epsilon_sq"</span><span class="op">)</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  smd <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -347,6 +348,18 @@ and promotes <code>effect_size</code> to <code>"auto"</code> so the requested CI
 be shown. Defaults to <code>FALSE</code>.</p></dd>
 
 
+<dt id="arg-smd">smd<a class="anchor" aria-label="anchor" href="#arg-smd"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, adds an <code>SMD</code> column holding the
+standardized mean difference between the two groups of <code>by</code>,
+the balance diagnostic of the Table 1 literature. Requires
+exactly two groups; signed, group 1 minus group 2 in the order
+the table displays them; no confidence interval and no p-value,
+by design. It is independent of <code>p_value</code> and of
+<code>effect_size</code>: turning it on turns nothing else off. Rounded
+with <code>effect_size_digits</code>. See the "Standardized mean
+difference" section below. Defaults to <code>FALSE</code>.</p></dd>
+
+
 <dt id="arg-ci">ci<a class="anchor" aria-label="anchor" href="#arg-ci"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, includes the mean confidence
 interval columns (<code>&lt;level&gt;% CI LL</code> / <code>&lt;level&gt;% CI UL</code>) and their
@@ -513,7 +526,12 @@ or <code>effect_size != "none"</code>, additional columns are appended
 <code>effect_size != "none"</code>.</p></li>
 <li><p><code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code> – effect-size
 estimate and confidence interval bounds.</p></li>
-</ul><p>The two names <code>"data.frame"</code> and <code>"long"</code> are synonyms (the
+</ul><p>A <code>by</code> frame ALSO carries <code>smd_type</code> and <code>smd_value</code>
+unconditionally – <code>NA</code> throughout when <code>smd = FALSE</code> – so the
+schema a pipeline indexes into does not move with an argument
+(the <code>weighted_n</code> rule). <code>smd_type</code> names the kernel the value
+came from: <code>"continuous"</code> here.
+The two names <code>"data.frame"</code> and <code>"long"</code> are synonyms (the
 descriptive output is naturally already long). Pick whichever
 reads better in your code.</p></li>
 <li><p><code>"tinytable"</code>: a <code>tinytable</code> object.</p></li>
@@ -643,6 +661,68 @@ are closed-form and deterministic).</p>
 <p>For Cohen's <em>d</em>, Hays' \(\omega^2\), and Cohen's <em>f</em>\(^2\)
 (derived from a fitted, possibly weighted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>), use the
 model-based companion <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="standardized-mean-difference">Standardized mean difference<a class="anchor" aria-label="anchor" href="#standardized-mean-difference"></a></h2>
+    <p><code>smd = TRUE</code> adds an <code>SMD</code> column with the balance diagnostic of
+the Table 1 literature, in Austin's form (Austin 2009, <em>Stat Med</em>
+28:3083-3107; Austin 2011, <em>Multivar Behav Res</em> 46:399-424):</p>
+<p>$$\mathrm{SMD} = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{(s_1^2 +
+s_2^2) / 2}}$$</p>
+<p>The denominator is the root <strong>mean of the two group variances</strong>,
+each at \(n - 1\), not the degrees-of-freedom pooled SD. At
+<strong>equal</strong> group sizes those two denominators are the same, so the
+SMD is exactly Cohen's <em>d</em>; at unequal sizes they part company (on
+a 4-versus-3 split the SMD is \(-0.51\) and <em>d</em> is \(-0.54\)).</p>
+<p><code>effect_size = "hedges_g"</code>, two columns to the left, is a third
+number: <em>g</em> applies the small-sample correction <em>J</em> on top of <em>d</em>,
+so it <strong>never</strong> equals the SMD. At equal group sizes the ratio
+\(g / \mathrm{SMD}\) is exactly <em>J</em> – 0.80 at <em>n</em> = 3 per group,
+0.96 at <em>n</em> = 10 – approaching 1 only as the sample grows. Read
+each for what it is; do not recompute one from the other. (The
+divergence is nameable upstream:
+<code>cobalt::col_w_smd(s.d.denom = "pooled")</code> reproduces this column,
+<code>s.d.denom = "hedges"</code> reproduces <code>hedges_g</code>.)</p>
+<p>Conventions, all deliberate:</p>
+<ul><li><p><strong>Signed</strong>, group 1 minus group 2 in the order the table
+displays the groups – the two groups sit side by side, so a
+bare magnitude would make the reader re-derive a direction the
+row already gives. (<code>tableone</code> publishes the magnitude;
+<code>cobalt</code> and <code>arsenal</code> sign it the other way, guessing the
+second level as "treated".) The threshold in the table note is
+read on \(|\mathrm{SMD}|\); the column keeps the sign. No
+conditional formatting: spicy never highlights a threshold.</p></li>
+<li><p><strong>No confidence interval and no p-value, ever.</strong> The SMD
+is a descriptive diagnostic; attaching an interval to it
+reintroduces the test reasoning the balance literature asks
+the reader to drop. This is not a missing feature.</p></li>
+<li><p><strong>Exactly two groups.</strong> A <code>by</code> with three or more is
+refused rather than averaged over pairs: an average has no
+published reading, and it can sit under the usual threshold
+while one pair sits well over it.</p></li>
+<li><p><strong>Complete cases on the observed groups.</strong> A
+<code>drop_na = FALSE</code> "(Missing)" group is displayed and never
+enters the diagnostic, exactly as the test and the effect size
+behave.</p></li>
+<li><p><strong>Independent of <code>p_value</code>.</strong> Turning the SMD on turns
+nothing else off. The balance-table idiom is
+<code>smd = TRUE, p_value = FALSE</code>; you have to write both.</p></li>
+</ul><p>Under <code>weights</code>, the means and variances are the weighted ones the
+<code>M</code> and <code>SD</code> columns already display – the frequency convention
+of the <em>Weights</em> section, from the same producer, so the column
+cannot contradict its neighbours. One consequence follows and is
+intended: a frequency weight is a number of copies, so the
+weighted SMD is <strong>not invariant to the scale of the weights</strong>
+(multiplying every weight by ten moves it, as it moves the <code>SD</code>
+column). <code>rescale = TRUE</code> normalises the weights to sum to <em>n</em>,
+restores scale invariance, and is the form to use for sampling
+weights until the dedicated survey-design functions land.</p>
+<p>A cell is an en-dash when the diagnostic applies but cannot be
+estimated: both groups constant at different values (an infinite
+standardized distance, disclosed by a warning), or a group with
+too little data to have a variance (silent – the <code>SD</code> cell beside
+it already says so). Two groups constant at the <em>same</em> value are
+perfectly balanced and print <code>0.00</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="display-conventions">Display conventions<a class="anchor" aria-label="anchor" href="#display-conventions"></a></h2>
@@ -1011,11 +1091,16 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     n weighted_n test_type statistic      df1 df2      p.value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 572         NA      &lt;NA&gt;        NA       NA  NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 580         NA      &lt;NA&gt;        NA       NA  NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     n weighted_n test_type statistic      df1 df2      p.value smd_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 572         NA      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 580         NA      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   smd_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Rendered HTML / docx objects -- best viewed inside a</span></span></span>

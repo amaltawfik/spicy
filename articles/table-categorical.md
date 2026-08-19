@@ -421,6 +421,75 @@ table_categorical(
 #> 3 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716
 ```
 
+## Balance: the standardized mean difference
+
+For a baseline table read as a balance check rather than a significance
+test, `smd = TRUE` adds the standardized mean difference between the two
+groups of `by`, on the variable row beside `p`:
+
+``` r
+
+table_categorical(
+  sochealth,
+  select = c(smoking, self_rated_health),
+  by = sex,
+  smd = TRUE
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  Current smoker    │                                                       .713 
+#>    No              │   475       76.6     451     77.8     926     77.2         
+#>    Yes             │   131       21.1     118     20.3     249     20.8         
+#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Self-rated health │                                                       .849 
+#>    Poor            │    31        5.0      30      5.2      61      5.1         
+#>    Fair            │   143       23.1     123     21.2     266     22.2         
+#>    Good            │   282       45.5     276     47.6     558     46.5         
+#>    Very good       │   154       24.8     141     24.3     295     24.6         
+#>    (Missing)       │    10        1.6      10      1.7      20      1.7         
+#> 
+#>  Variable          │ Effect size  SMD  
+#> ───────────────────┼───────────────────
+#>  Current smoker    │     .01      0.02 
+#>    No              │                   
+#>    Yes             │                   
+#>    (Missing)       │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Self-rated health │     .03      0.05 
+#>    Poor            │                   
+#>    Fair            │                   
+#>    Good            │                   
+#>    Very good       │                   
+#>    (Missing)       │                   
+#> 
+#> Note. Phi: Current smoker; Cramer's V: Self-rated health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.
+```
+
+Two categories give the Bernoulli form, **signed**, group 1 minus group
+2 in the order the table displays them. Three or more give the
+multivariate (Mahalanobis) distance between the two profiles of
+proportions: a distance, so it has no sign and no upper bound of 1 — the
+table note says so whenever such a variable is present, and the `"long"`
+output names the kernel each row took in `smd_type`.
+
+Exactly two groups are required, as in
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+The `"(Missing)"` level of `drop_na = FALSE` is displayed and never
+enters the diagnostic. There is no confidence interval and no *p*-value
+on this column by design. Under `weights` the profiles are the weighted
+proportions, and because a profile of proportions is unchanged by a
+global rescaling of the weights, `rescale` cannot move this column.
+
+One limit worth knowing before you build a full balance table:
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+has no `p_value` argument, so its *p* column cannot be switched off the
+way `table_continuous(p_value = FALSE)` switches off its own. A mixed
+balance table will show a categorical *p* beside a continuous column you
+removed.
+
 ## Weighted tables
 
 Pass survey weights with the `weights` argument. By default

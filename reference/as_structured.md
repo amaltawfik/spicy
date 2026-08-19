@@ -123,9 +123,10 @@ The three descriptive families return the same schema; only the
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   – one `"factor_header"` row per variable then one `"level"` (or
   `"missing"`) row per category, exactly as the console lays them out.
-  Tokens: `"n"`, `"pct"`, `"p"`, `"assoc"` (the association measure) and
-  `"assoc_ci"` (its bounds). In a `by` table each group owns an `n` /
-  `%` pair with its own spanner, and the margin column is flagged
+  Tokens: `"n"`, `"pct"`, `"p"`, `"assoc"` (the association measure),
+  `"assoc_ci"` (its bounds) and `"smd"` (the standardized mean
+  difference, when `smd = TRUE`). In a `by` table each group owns an `n`
+  / `%` pair with its own spanner, and the margin column is flagged
   `col_meta$<col>$total`, never matched on the label `"Total"`.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -133,10 +134,12 @@ The three descriptive families return the same schema; only the
   `by` (`"missing"` for the missing-`by` group), with the level in
   `.level`. Tokens are the `show_columns` vocabulary itself (`"m"`,
   `"sd"`, `"med"`, `"iqr"`, `"med_iqr"`, `"q1"`, `"q3"`, `"min"`,
-  `"max"`, `"ci"`, `"med_ci"`, `"n"`) plus `"statistic"`, `"p"` and
-  `"es"` for the group comparison. A statistic another variable displays
-  is *absent* (`NA`, no status); one that applies but has no value is
-  `"undefined"`.
+  `"max"`, `"ci"`, `"med_ci"`, `"n"`, `"weighted_n"`) plus
+  `"statistic"`, `"p"`, `"es"` and `"smd"` for the group comparison –
+  the last four are `col_meta` tokens without being `show_columns`
+  values, because they belong to a comparison BETWEEN groups rather than
+  to any one group. A statistic another variable displays is *absent*
+  (`NA`, no status); one that applies but has no value is `"undefined"`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   – one `"summary"` row per outcome. Tokens: `"emmean"` (a marginal

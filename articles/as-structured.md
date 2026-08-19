@@ -560,8 +560,11 @@ sc$col_meta[["Total n"]]$total
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 puts one row per variable, or one row per level of `by` — the level
-lives in `.level`, with role `"group"`. The `col_meta` tokens are the
-`show_columns` vocabulary itself:
+lives in `.level`, with role `"group"`. The `col_meta` tokens cover the
+`show_columns` vocabulary and add one per group-comparison column:
+`"statistic"`, `"p"`, `"es"`, `"smd"`. Those four are not `show_columns`
+values and cannot be, because every token of that vocabulary is a
+statistic OF a group, while these compare two:
 
 ``` r
 

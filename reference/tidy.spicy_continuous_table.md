@@ -48,11 +48,21 @@ confidence interval at `ci_level`), `n`, `min`, `max`, `sd`. The
 human-readable label.
 
 `glance()` returns one row per outcome with the omnibus group comparison
-(when `by` is used) and the requested effect size. Columns: `outcome`,
-`label`, `test_type`, `statistic`, `df`, `df.residual`, `p.value`,
-`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`, `n_total`. Without
-`by`, only `outcome`, `label`, and `n_total` are populated; the other
-columns are `NA`.
+(when `by` is used), the requested effect size and the balance
+diagnostic. Columns: `outcome`, `label`, `test_type`, `statistic`, `df`,
+`df.residual`, `p.value`, `es_type`, `es_value`, `es_ci_lower`,
+`es_ci_upper`, `smd_type`, `smd_value`, `n_total`. Without `by`, only
+`outcome`, `label`, and `n_total` are populated; the other columns are
+`NA`. The schema is fixed: `smd_type` / `smd_value` are present whether
+or not `smd = TRUE`, like every other comparison column here, and are
+`NA` when the table carries no standardized mean difference. They sit
+before `n_total`, so index this frame by NAME rather than by position.
+
+[`glance.spicy_categorical_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
+does **not** carry the SMD: each family documents its own broom
+contract, and the categorical one publishes the association measure
+alone. On a mixed balance table, read the categorical SMD from
+`output = "long"`.
 
 ## See also
 

@@ -548,6 +548,73 @@ section). In the default console table and in the wide data formats
 <span><span class="co">#&gt; 3 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="balance-the-standardized-mean-difference">Balance: the standardized mean difference<a class="anchor" aria-label="anchor" href="#balance-the-standardized-mean-difference"></a>
+</h2>
+<p>For a baseline table read as a balance check rather than a
+significance test, <code>smd = TRUE</code> adds the standardized mean
+difference between the two groups of <code>by</code>, on the variable
+row beside <code>p</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">self_rated_health</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  smd <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %   p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker    <span style="color: #9E9E9E;">│</span>                                                       .713 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>   475       76.6     451     77.8     926     77.2         </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>   131       21.1     118     20.3     249     20.8         </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>    14        2.3      11      1.9      25      2.1         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>                                                       .849 </span></span>
+<span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>    31        5.0      30      5.2      61      5.1         </span></span>
+<span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>   143       23.1     123     21.2     266     22.2         </span></span>
+<span><span class="co">#&gt;    Good            <span style="color: #9E9E9E;">│</span>   282       45.5     276     47.6     558     46.5         </span></span>
+<span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>   154       24.8     141     24.3     295     24.6         </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>    10        1.6      10      1.7      20      1.7         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Effect size  SMD  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼───────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker    <span style="color: #9E9E9E;">│</span>     .01      0.02 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Self-rated health <span style="color: #9E9E9E;">│</span>     .03      0.05 </span></span>
+<span><span class="co">#&gt;    Poor            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Fair            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Good            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Phi: Current smoker; Cramer's V: Self-rated health. SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.</span></span></span></code></pre></div>
+<p>Two categories give the Bernoulli form, <strong>signed</strong>,
+group 1 minus group 2 in the order the table displays them. Three or
+more give the multivariate (Mahalanobis) distance between the two
+profiles of proportions: a distance, so it has no sign and no upper
+bound of 1 — the table note says so whenever such a variable is present,
+and the <code>"long"</code> output names the kernel each row took in
+<code>smd_type</code>.</p>
+<p>Exactly two groups are required, as in
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code>. The <code>"(Missing)"</code> level of
+<code>drop_na = FALSE</code> is displayed and never enters the
+diagnostic. There is no confidence interval and no <em>p</em>-value on
+this column by design. Under <code>weights</code> the profiles are the
+weighted proportions, and because a profile of proportions is unchanged
+by a global rescaling of the weights, <code>rescale</code> cannot move
+this column.</p>
+<p>One limit worth knowing before you build a full balance table:
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> has no <code>p_value</code> argument,
+so its <em>p</em> column cannot be switched off the way
+<code>table_continuous(p_value = FALSE)</code> switches off its own. A
+mixed balance table will show a categorical <em>p</em> beside a
+continuous column you removed.</p>
+</div>
+<div class="section level2">
 <h2 id="weighted-tables">Weighted tables<a class="anchor" aria-label="anchor" href="#weighted-tables"></a>
 </h2>
 <p>Pass survey weights with the <code>weights</code> argument. By
@@ -558,7 +625,7 @@ the number of observations (here 1200, against a raw weight sum of
 display time – the SPSS Crosstabs convention – while the machine formats
 (<code>"data.frame"</code>, <code>"long"</code>) carry the exact
 fractional weighted counts:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -613,7 +680,7 @@ variable keeps its own complete cases (on itself and on
 same table – this is available-case analysis per cross-table, not
 listwise deletion over the whole selection. The removal is disclosed in
 a table note rather than silent:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">income_group</span>,</span>
@@ -659,7 +726,7 @@ respectively, in the same table.</p>
 <p>Use <code>levels_keep</code> to display only specific levels. The
 order you specify controls the display order, which is useful for
 placing “(Missing)” first to highlight missingness:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">income_group</span>,</span>
@@ -703,7 +770,7 @@ filter the data before calling <code><a href="../reference/table_categorical.htm
 </h2>
 <p>Control the number of digits for percentages, p-values, and the
 association measure:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">smoking</span>,</span>
@@ -764,7 +831,7 @@ latter centres each cell on its own value rather than on the decimal
 mark, which would be inconsistent with the other engines.</p>
 <p><code>"center"</code> and <code>"right"</code> apply literal
 alignment:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -803,7 +870,7 @@ coerced to a plain <code>data.frame</code> / <code>tbl_df</code>
 (stripping the spicy formatting attributes) or piped into
 <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> for any
 downstream tidyverse-stats workflow:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -868,7 +935,7 @@ downstream tidyverse-stats workflow:</p>
 <p>The rendered formats produce publication-ready tables for HTML and
 Word workflows. The <code>"gt"</code> format produces a table with
 APA-style borders, column spanners, and decimal alignment:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -1545,7 +1612,7 @@ APA-style borders, column spanners, and decimal alignment:</p>
 <p>The <code>"tinytable"</code> format applies the same layout
 conventions through the lightweight tinytable engine (here a two-group
 table by sex):</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
@@ -1710,7 +1777,7 @@ table by sex):</p>
 <!-- hack to avoid NA insertion in last line -->
 <p>With <code>assoc_ci = TRUE</code>, the rendered formats show the
 confidence interval inline after the association measure:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
@@ -2347,7 +2414,7 @@ confidence interval inline after the association measure:</p>
 </table>
 </div>
 <p>For Excel export, provide a file path:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
@@ -2356,7 +2423,7 @@ confidence interval inline after the association measure:</p>
 <span>  excel_path <span class="op">=</span> <span class="st">"my_table.xlsx"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>For Word, use <code>output = "word"</code>:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
@@ -2366,7 +2433,7 @@ confidence interval inline after the association measure:</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>You can also copy directly to the clipboard for pasting into a
 spreadsheet or a text editor:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span><span class="op">)</span>,</span>
