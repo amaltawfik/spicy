@@ -368,3 +368,17 @@ test_that("the base adapters read the same producers the table displays", {
     c(NA_real_, NA_real_)
   )
 })
+
+
+test_that("a variable with fewer than two categories does not reach ginv", {
+  # `MASS::ginv()` aborts on a zero-dimension matrix, and dropping the
+  # reference level of a one-category profile leaves exactly that.
+  # `table_categorical()` tabulates a single-level factor as a real
+  # one-row block, so this is reachable from the public surface, not a
+  # theoretical edge.
+  expect_error(MASS::ginv(matrix(0, 0, 0)))
+  expect_identical(.smd_multinomial(1, 1), 0)
+  expect_identical(.smd_pair_dispatch(1, 1, "multinomial"), 0)
+  expect_true(is.na(.smd_multinomial(numeric(0), numeric(0))))
+  expect_null(.smd_undefined_reason(.smd_multinomial(1, 1)))
+})

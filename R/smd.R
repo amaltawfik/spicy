@@ -117,6 +117,15 @@
   if (anyNA(P1) || anyNA(P2)) {
     return(NA_real_)
   }
+  # Fewer than two categories leaves NOTHING once the reference is
+  # dropped, and `MASS::ginv()` aborts on a zero-dimension matrix
+  # ("a dimension is zero"). A one-category variable puts both groups
+  # at 100% of it -- perfect balance, 0. No categories at all has
+  # nothing to estimate. Reachable: `table_categorical()` tabulates a
+  # single-level factor as a real one-row block.
+  if (length(P1) < 2L) {
+    return(if (length(P1) == 1L) 0 else NA_real_)
+  }
   .check_MASS_for_smd()
   keep <- -1L
   tvec <- (P1 - P2)[keep]

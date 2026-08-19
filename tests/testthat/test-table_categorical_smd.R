@@ -466,3 +466,34 @@ test_that("the SMD is the last column on every engine, and moves no other", {
     }
   }
 })
+
+
+test_that("a single-level variable is perfectly balanced, not an error", {
+  skip_if_not_installed("MASS")
+  # One category means both groups are 100% of it. Before the guard in
+  # `.smd_multinomial()` this aborted inside `MASS::ginv()` on a
+  # zero-dimension matrix, taking the whole table with it.
+  d <- data.frame(
+    g = factor(c("A", "A", "A", "B", "B", "B")),
+    one = factor(rep("only", 6L)),
+    bin = factor(c("no", "no", "yes", "yes", "yes", "no"))
+  )
+  r <- table_categorical(
+    d,
+    select = c(one, bin),
+    by = g,
+    smd = TRUE,
+    output = "long"
+  )
+  expect_identical(r$smd[r$variable == "one"][[1L]], 0)
+  txt <- paste(
+    capture.output(print(table_categorical(
+      d,
+      select = one,
+      by = g,
+      smd = TRUE
+    ))),
+    collapse = "\n"
+  )
+  expect_match(txt, "0.00", fixed = TRUE)
+})
