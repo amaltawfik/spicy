@@ -517,15 +517,16 @@ test_that("inline() cites a continuous SMD cell, byte for byte", {
   expect_identical(inline(tbl, x, "A", column = "smd"), "-0.51")
 
   # Non-regression: `"smd"` is not in the default column preference,
-  # and must not be. A bare `inline(tbl, x, "A")` still cites the mean.
-  expect_identical(
+  # and must not be. A bare `inline(tbl, x, "A")` cites the MEAN --
+  # asserted against the value, not against another inline() call:
+  # comparing two inline() calls agrees with itself whatever the
+  # default resolves to, which is how "n" passed for the mean here.
+  expect_identical(inline(tbl, x, "A"), "3.00")
+  expect_identical(inline(tbl, x, "A"), inline(tbl, x, "A", column = "m"))
+  expect_false(identical(
     inline(tbl, x, "A"),
-    .il_quiet(inline(
-      table_continuous(d, select = x, by = g, p_value = FALSE),
-      x,
-      "A"
-    ))
-  )
+    inline(tbl, x, "A", column = "n")
+  ))
 
   # KNOWN FAMILY LIMIT, pinned so it is not mistaken for a regression:
   # in a categorical table the SMD -- like `p` and the association
@@ -542,4 +543,52 @@ test_that("inline() cites a continuous SMD cell, byte for byte", {
   expect_error(inline(ct, bin, column = "smd"), "pick one with")
   expect_error(inline(ct, bin, "no", column = "smd"), "empty")
   expect_error(inline(ct, bin, column = "assoc"), "pick one with")
+})
+
+
+test_that("a bare inline() cites the family's primary estimate", {
+  # The documented default (`?inline`, `column = NULL`): the coefficient
+  # for the two model families, the mean for the continuous one, the
+  # count for the categorical one. Asserted against the VALUES, per
+  # family, so no family can drift onto a neighbouring column unnoticed
+  # -- which is exactly what happened to the continuous one, whose mean
+  # token is "m" while the preference list looked for "mean" and found
+  # "n" first.
+  d <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B"), levels = c("A", "B")),
+    x = c(1, 2, 4, 5, 2, 3, 8)
+  )
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B"), levels = c("A", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+
+  # Continuous: the mean (M = 3.00 in group A), not the group's n (4).
+  tc <- .il_quiet(table_continuous(d, select = x, by = g, p_value = FALSE))
+  expect_identical(inline(tc, x, "A"), "3.00")
+  expect_identical(inline(tc, x, "A"), inline(tc, x, "A", column = "m"))
+  expect_identical(inline(tc, x, "A", column = "n"), "4")
+
+  # And with no `by`: still the mean over all seven observations.
+  tc1 <- .il_quiet(table_continuous(d, select = x))
+  expect_identical(inline(tc1, x), inline(tc1, x, column = "m"))
+  expect_false(identical(inline(tc1, x), inline(tc1, x, column = "n")))
+
+  # Categorical: the count. (With `by`, "n" spans the groups, so the
+  # bare call asks for a `model` rather than guessing one.)
+  tk1 <- .il_quiet(table_categorical(dc, select = bin))
+  expect_identical(inline(tk1, bin, "no"), inline(tk1, bin, "no", column = "n"))
+  expect_identical(inline(tk1, bin, "no"), "4")
+  tk <- .il_quiet(table_categorical(dc, select = bin, by = g))
+  expect_error(inline(tk, bin, "no"), "pick one with `model`")
+
+  # Regression: the coefficient.
+  tr <- table_regression(lm(mpg ~ wt, data = mtcars))
+  expect_identical(inline(tr, wt), inline(tr, wt, column = "b"))
+  expect_identical(inline(tr, wt), "-5.34")
+
+  # Linear-model descriptive table: the coefficient, not its n.
+  tl <- .il_quiet(table_continuous_lm(mtcars, select = "mpg", by = "am"))
+  expect_identical(inline(tl, mpg), inline(tl, mpg, column = "b"))
+  expect_false(identical(inline(tl, mpg), inline(tl, mpg, column = "n")))
 })

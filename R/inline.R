@@ -80,7 +80,13 @@
 #'   `"(Missing)"` addresses the missing-value category by role.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
-#'   unambiguous.
+#'   unambiguous: the family's primary estimate. That is the
+#'   coefficient (`"b"`, or the exponentiated scale the table displays
+#'   -- `"or"`, `"irr"`, `"hr"`, ...) for [table_regression()] and
+#'   [table_continuous_lm()], the mean (`"m"`) for
+#'   [table_continuous()], and the count (`"n"`) for
+#'   [table_categorical()]. A row carrying none of them refuses and
+#'   lists its tokens.
 #' @param model In a multi-model table, the model: its label (as
 #'   displayed in the column spanners) or its position.
 #'
@@ -277,13 +283,24 @@ inline <- function(
 
 # The default column for a bare inline(tbl, var, level): the row's
 # single estimate-like token when unambiguous.
+#
+# The order is a PREFERENCE over estimate-like tokens, most specific
+# first: the exponentiated regression scales, then the coefficient,
+# then the descriptive mean, and only then the count -- which is the
+# estimate of a categorical table and the fallback of everything else.
+#
+# `"m"`, not `"mean"`: the continuous family's mean column carries the
+# token "m" (see the `show_columns` table in `?table_continuous`), so
+# the old "mean" entry matched nothing and "n" -- one place earlier --
+# won instead. A bare `inline()` on a descriptive table quoted the
+# group's N where the sentence meant its mean.
 .inline_default_token <- function(s, row, cols) {
   tokens <- unique(vapply(
     cols[cols %in% names(s$col_meta)],
     function(nm) s$col_meta[[nm]]$token %||% "",
     character(1)
   ))
-  for (cand in c("or", "irr", "hr", "rr", "mr", "exp", "b", "n", "mean")) {
+  for (cand in c("or", "irr", "hr", "rr", "mr", "exp", "b", "m", "n")) {
     if (cand %in% tokens) {
       return(cand)
     }

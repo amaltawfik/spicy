@@ -19,7 +19,13 @@ fit-statistic token (\code{"n"}, \code{"r2"}, ...).}
 
 \item{column}{A column token, or a \code{{token}} pattern. \code{NULL} (the
 default) returns the estimate-like column of the row when it is
-unambiguous.}
+unambiguous: the family's primary estimate. That is the
+coefficient (\code{"b"}, or the exponentiated scale the table displays
+-- \code{"or"}, \code{"irr"}, \code{"hr"}, ...) for \code{\link[=table_regression]{table_regression()}} and
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, the mean (\code{"m"}) for
+\code{\link[=table_continuous]{table_continuous()}}, and the count (\code{"n"}) for
+\code{\link[=table_categorical]{table_categorical()}}. A row carrying none of them refuses and
+lists its tokens.}
 
 \item{model}{In a multi-model table, the model: its label (as
 displayed in the column spanners) or its position.}

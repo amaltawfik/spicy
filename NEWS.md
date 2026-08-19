@@ -785,6 +785,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   component: `nls()`, `flexsurv::flexsurvreg()`,
   `sampleSelection::selection()`, and `brms::brm()`. Keys are matched
   against the coefficient names there.
+* `inline()` without `column` cited the wrong cell on a
+  `table_continuous()` table: it returned the group's `n` where the
+  sentence meant its mean. The default column is the family's primary
+  estimate, now documented per family in `?inline`: the coefficient for
+  `table_regression()` and `table_continuous_lm()`, the mean for
+  `table_continuous()`, the count for `table_categorical()`.
 
 ## Minor improvements
 
