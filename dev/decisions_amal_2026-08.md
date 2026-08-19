@@ -397,3 +397,21 @@ cœur compute partagé unique (leçon des bâtisseurs divergents).
 table_regression() garde svyglm/svyolr/svycoxph (fit-first, cohérent).
 L'asymétrie data-first/fit-first des familles est AFFIRMÉE comme
 choix de design, pas accident.
+
+## 29. SMD — les trois choix de produit — DÉCIDÉ 2026-08-19
+
+(A) PAS d'intervalle de confiance, jamais par défaut ni opt-in : le
+SMD vaut par son indépendance à n (convention Table-1/Austin);
+révisable sur exigence de revue. (B) by > 2 groupes : refus classé à
+message NEUTRE (porte ouverte), la forme toutes-paires (convention
+cobalt, chaque groupe vs référence) entre au registre comme extension
+possible. (C) le seuil de la glose (« |SMD| > 0.1 ») SUIT
+decimal_mark — principe §27, nombre dans une étiquette (« 0,1 » sous
+virgule, « 0·1 » sous Lancet). Conventions de calcul héritées de la
+spec (scratchpad smd_spec.md) : Austin sqrt((s1²+s2²)/2) — PAS le
+pooled-ddl de hedges_g, divergence nommée via cobalt
+s.d.denom="hedges" —, binaire p(1-p)/n, Yang-Dalton en ginv()
+(prévalence nulle), signe = groupe1 − groupe2 en ordre affiché,
+pondéré = convention fréquentielle D17, API smd = FALSE en argument
+(pas jeton), clé gelée "SMD", algèbre paramétrée par estimateurs
+(R/smd.R) pour héritage _svy (§28).
