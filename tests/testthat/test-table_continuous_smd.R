@@ -159,7 +159,8 @@ test_that("the SMD is computed on the weighted moments the table displays", {
     p_value = FALSE,
     output = "long"
   )
-  expect_equal(rr$smd_value[[1L]], -0.12392769374077624, tolerance = 1e-15)
+  # 1e-12: the macOS libm lands one ULP away on the rescale product.
+  expect_equal(rr$smd_value[[1L]], -0.12392769374077624, tolerance = 1e-12)
   # ... and without it the weights carry their own scale, on purpose.
   d10 <- d
   d10$w <- d$w * 10

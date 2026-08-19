@@ -321,7 +321,9 @@ test_that("the weighted SMD is not scale-invariant in the weights, by design", {
   expect_equal(
     smd_of(.prep_variable_weights(d$x, d$w, rescale = TRUE)),
     -0.1239276937407762374521,
-    tolerance = 1e-15
+    # 1e-12, not tighter: the rescale product w*n/W accumulates one
+    # ULP apart on the macOS libm (CI measured ...64 vs ...62).
+    tolerance = 1e-12
   )
 })
 
