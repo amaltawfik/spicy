@@ -113,8 +113,9 @@ The three descriptive families return the same schema; only the
 \item \code{\link[=table_categorical]{table_categorical()}} -- one \code{"factor_header"} row per variable
 then one \code{"level"} (or \code{"missing"}) row per category, exactly as
 the console lays them out. Tokens: \code{"n"}, \code{"pct"}, \code{"p"},
-\code{"assoc"} (the association measure) and \code{"assoc_ci"} (its
-bounds). In a \code{by} table each group owns an \code{n} / \verb{\%} pair with
+\code{"assoc"} (the association measure), \code{"assoc_ci"} (its bounds)
+and \code{"smd"} (the standardized mean difference, when
+\code{smd = TRUE}). In a \code{by} table each group owns an \code{n} / \verb{\%} pair with
 its own spanner, and the margin column is flagged
 \verb{col_meta$<col>$total}, never matched on the label \code{"Total"}.
 \item \code{\link[=table_continuous]{table_continuous()}} -- one \code{"summary"} row per variable, or one
@@ -122,8 +123,11 @@ its own spanner, and the margin column is flagged
 group), with the level in \code{.level}. Tokens are the
 \code{show_columns} vocabulary itself (\code{"m"}, \code{"sd"}, \code{"med"},
 \code{"iqr"}, \code{"med_iqr"}, \code{"q1"}, \code{"q3"}, \code{"min"}, \code{"max"}, \code{"ci"},
-\code{"med_ci"}, \code{"n"}) plus \code{"statistic"}, \code{"p"} and \code{"es"} for the
-group comparison. A statistic another variable displays is
+\code{"med_ci"}, \code{"n"}, \code{"weighted_n"}) plus \code{"statistic"}, \code{"p"},
+\code{"es"} and \code{"smd"} for the group comparison -- the last four are
+\code{col_meta} tokens without being \code{show_columns} values, because
+they belong to a comparison BETWEEN groups rather than to any one
+group. A statistic another variable displays is
 \emph{absent} (\code{NA}, no status); one that applies but has no value is
 \code{"undefined"}.
 \item \code{\link[=table_continuous_lm]{table_continuous_lm()}} -- one \code{"summary"} row per outcome.

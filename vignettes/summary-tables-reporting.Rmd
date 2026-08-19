@@ -234,6 +234,39 @@ This is the better summary-table path when the article is already
 organized around simple linear models, weighted analyses, or robust
 standard errors.
 
+### A balance table instead of a significance table
+
+When the two groups are trial arms or a treated / control contrast,
+the baseline table is read for *balance*, and the convention of that
+literature is the standardized mean difference rather than the
+*p*-value. Both descriptive families take `smd = TRUE`, with the same
+meaning and the same refusals:
+
+```{r report-balance-continuous}
+table_continuous(
+  sochealth,
+  select = c(age, bmi, wellbeing_score),
+  by = sex,
+  smd = TRUE,
+  p_value = FALSE
+)
+```
+
+```{r report-balance-categorical}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  smd = TRUE
+)
+```
+
+Exactly two groups, no confidence interval and no *p*-value on the
+column itself, and the usual rule of thumb (|SMD| > 0.1) quoted in the
+table note without any cell being highlighted. Note the asymmetry
+between the two calls: `table_continuous()` can drop its *p* column,
+`table_categorical()` currently cannot.
+
 ### The coefficient table
 
 Once the substantive model is fitted, `table_regression()` produces

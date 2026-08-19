@@ -176,6 +176,26 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* `table_continuous()` and `table_categorical()` gain `smd = TRUE`, an
+  `SMD` column with the standardized mean difference between the two
+  groups of `by` -- the balance diagnostic of a Table 1. It is signed
+  (group 1 minus group 2, in display order) for a continuous or
+  two-category variable and unsigned for a variable with more, where it
+  is a multivariate distance; it carries no confidence interval and no
+  p-value; and it requires exactly two groups. It works under `weights`
+  and is rounded with `effect_size_digits` / `v_digits`, so the journal
+  styles reach it. Do not read it for `effect_size = "hedges_g"`: the
+  two standardize by different denominators and coincide only at equal
+  group sizes. See the "Standardized mean difference" section of
+  `?table_continuous` and `?table_categorical`.
+* The grouped raw outputs of `table_continuous()` (`"data.frame"` /
+  `"long"`) always carry `smd_type` and `smd_value`, `NA` when
+  `smd = FALSE`, so the schema does not move with the argument. The
+  categorical `"long"` output gains `smd` / `smd_type` only when they
+  are requested, as its association columns do.
+* `table_continuous()` weighted group comparisons now say that they
+  refuse tests and effect sizes specifically, and point at
+  `smd = TRUE`, which passes under weights.
 * `table_continuous()` gains `weights` and `rescale`: weighted mean,
   SD, quantiles, extremes and mean CI under a documented convention
   (integer weights reproduce the row-expanded data exactly, all

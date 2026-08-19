@@ -159,6 +159,59 @@ table_continuous(
 )
 ```
 
+## Balance: the standardized mean difference
+
+A baseline table comparing two arms is usually read for *balance*, not
+for significance. `smd = TRUE` adds the standardized mean difference
+of the Table 1 literature, and the idiomatic balance table drops the
+*p* column at the same time:
+
+```{r smd}
+table_continuous(
+  sochealth,
+  select = c(age, bmi, wellbeing_score),
+  by = sex,
+  smd = TRUE,
+  p_value = FALSE
+)
+```
+
+The two arguments are independent — turning the SMD on turns nothing
+else off, so you have to write both. The rule of thumb the table note
+quotes is |SMD| > 0.1; spicy prints the number and never highlights
+it.
+
+The column is **signed**, group 1 minus group 2 in the order the table
+displays the groups, so the direction of an imbalance is readable
+without going back to the two means. It requires exactly two groups: a
+`by` with three or more is refused rather than averaged over pairs,
+because an average over pairs has no published reading and can sit
+under 0.1 while one pair sits well over it.
+
+### It is not the effect size
+
+The SMD and Hedges' *g* look alike and are not the same number:
+
+```{r smd-vs-g}
+table_continuous(
+  sochealth,
+  select = bmi,
+  by = sex,
+  smd = TRUE,
+  effect_size = "hedges_g"
+)
+```
+
+Both standardize a mean difference, but by different denominators.
+Austin's SMD divides by the root **mean of the two group variances**;
+*g* divides by the degrees-of-freedom pooled SD and applies the *J*
+correction. They coincide exactly when the two groups are the same
+size and part company as soon as they are not. Read each for what it
+is: the SMD is a balance diagnostic, *g* is an effect size. It also
+follows that the SMD carries **no confidence interval and no
+*p*-value** — attaching one would put back the test reasoning the
+balance literature asks the reader to drop.
+
 ## Selecting variables
 
 `select` supports tidyselect helpers:
@@ -265,10 +318,10 @@ cross-software correspondence are in the Weights section of
 
 Two things are deliberately refused under weights rather than
 silently wrong: the median confidence interval (an order-statistic
-interval with no weighted version), and the group tests — a *t*-test
-printed next to weighted descriptives would itself be unweighted.
-For weighted group comparisons, `table_continuous_lm()` takes the
-same `weights` argument and fits them properly:
+interval with no weighted version), and the group tests and effect
+sizes — a *t*-test printed next to weighted descriptives would itself
+be unweighted. For weighted group comparisons, `table_continuous_lm()`
+takes the same `weights` argument and fits them properly:
 
 ```{r weights-by, eval = FALSE}
 # Weighted descriptives by group: turn the test columns off
@@ -283,6 +336,31 @@ table_continuous(
 # Weighted group comparison: the model-based tool
 table_continuous_lm(sochealth, select = bmi, by = sex, weights = weight)
 ```
+
+The standardized mean difference is the exception, and passes under
+weights:
+
+```{r weights-smd}
+table_continuous(
+  sochealth,
+  select = c(age, bmi),
+  by = sex,
+  weights = weight,
+  rescale = TRUE,
+  smd = TRUE,
+  p_value = FALSE
+)
+```
+
+It is a descriptive balance diagnostic with no *p* and no interval —
+which is precisely why the balance literature substitutes it for the
+test — and it is computed from the same weighted means and variances
+the M and SD columns display, so it cannot be unweighted inference
+sitting next to weighted descriptives. One consequence of that shared
+producer: without `rescale`, the weighted SMD inherits the frequency
+reading and is *not* invariant to the scale of the weights, exactly as
+the SD column is not. With `rescale = TRUE` it is. For a survey weight,
+use `rescale = TRUE`.
 
 ## Custom labels
 

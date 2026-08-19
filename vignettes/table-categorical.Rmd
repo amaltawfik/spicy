@@ -234,6 +234,41 @@ table_categorical(
 )
 ```
 
+## Balance: the standardized mean difference
+
+For a baseline table read as a balance check rather than a
+significance test, `smd = TRUE` adds the standardized mean difference
+between the two groups of `by`, on the variable row beside `p`:
+
+```{r smd}
+table_categorical(
+  sochealth,
+  select = c(smoking, self_rated_health),
+  by = sex,
+  smd = TRUE
+)
+```
+
+Two categories give the Bernoulli form, **signed**, group 1 minus
+group 2 in the order the table displays them. Three or more give the
+multivariate (Mahalanobis) distance between the two profiles of
+proportions: a distance, so it has no sign and no upper bound of 1 —
+the table note says so whenever such a variable is present, and the
+`"long"` output names the kernel each row took in `smd_type`.
+
+Exactly two groups are required, as in `table_continuous()`. The
+`"(Missing)"` level of `drop_na = FALSE` is displayed and never enters
+the diagnostic. There is no confidence interval and no *p*-value on
+this column by design. Under `weights` the profiles are the weighted
+proportions, and because a profile of proportions is unchanged by a
+global rescaling of the weights, `rescale` cannot move this column.
+
+One limit worth knowing before you build a full balance table:
+`table_categorical()` has no `p_value` argument, so its *p* column
+cannot be switched off the way `table_continuous(p_value = FALSE)`
+switches off its own. A mixed balance table will show a categorical
+*p* beside a continuous column you removed.
+
 ## Weighted tables
 
 Pass survey weights with the `weights` argument. By default
