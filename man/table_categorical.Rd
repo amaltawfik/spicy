@@ -22,6 +22,7 @@ table_categorical(
   v_digits = 2,
   assoc_measure = "auto",
   assoc_ci = FALSE,
+  smd = FALSE,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
@@ -167,6 +168,17 @@ In rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"},
 \code{"word"}), the CI is shown inline (e.g., \code{.14 [.08, .19]}).
 Defaults to \code{FALSE}.}
 
+\item{smd}{Logical. If \code{TRUE}, adds an \code{SMD} column holding the
+standardized mean difference between the two groups of \code{by},
+the balance diagnostic of the Table 1 literature. Requires
+exactly two groups; the value sits on the variable row beside
+\code{p}, never on a level row. Signed for a two-category variable
+(group 1 minus group 2 on the second category), unsigned for
+three or more, where it is a distance. No confidence interval
+and no p-value, by design. Rounded with \code{v_digits}. See the
+"Standardized mean difference" section below. Defaults to
+\code{FALSE}.}
+
 \item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
 
 \item{align}{Horizontal alignment of numeric columns in the
@@ -286,7 +298,11 @@ whichever measure it is, and \code{effect_size_type} names that measure
 per row (\code{"cramer_v"}, \code{"phi"}, ...), or is \code{NA} on the rows of a
 variable given \code{assoc_measure = "none"}. The wide outputs instead
 name the column after the measure, or \verb{Effect size} when the row
-variables do not share one.
+variables do not share one. With \code{smd = TRUE} this output also
+carries \code{smd} and \code{smd_type} (\code{"binary"} or \code{"multinomial"},
+the kernel the value came from); the wide outputs name that
+column \code{SMD}. Like the association columns, both are ABSENT
+when the statistic is not requested.
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
@@ -340,6 +356,66 @@ For model-based comparisons (cluster-robust SE, weighted contrasts,
 fitted means) on continuous outcomes, see \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
 For descriptive (empirical) comparisons on continuous outcomes, see
 \code{\link[=table_continuous]{table_continuous()}}.
+}
+
+\section{Standardized mean difference}{
+\code{smd = TRUE} adds an \code{SMD} column with the balance diagnostic of
+the Table 1 literature, on the variable row beside \code{p}. For a
+two-category variable it is the Bernoulli form,
+
+\deqn{\mathrm{SMD} = \frac{p_1 - p_2}{\sqrt{(p_1(1-p_1) +
+p_2(1-p_2)) / 2}}}
+
+with \eqn{p} the proportion of the SECOND category, \strong{signed},
+group 1 minus group 2 in the order the table displays them. Note
+the denominator: the Bernoulli variance \eqn{p(1-p)} at \emph{n}, not
+\code{var()} at \eqn{n-1}, which would be 19\% off on a small table.
+
+For three or more categories it is the multivariate form of Yang
+and Dalton (2012, SAS Global Forum 335-2012),
+
+\deqn{\mathrm{SMD} = \sqrt{T' S^{-} T}}
+
+with \eqn{T} the difference of the two profiles of proportions
+(first category dropped) and \eqn{S} the mean of their multinomial
+covariance matrices. This is a Mahalanobis distance: it is
+\strong{unsigned}, it is \strong{not bounded by 1}, and \eqn{S^{-}} is a
+pseudo-inverse, because a declared-but-unobserved category makes
+\eqn{S} singular and \code{solve()} would abort where the
+pseudo-inverse returns exactly the value that category's absence
+implies. Which kernel a row took is published as \code{smd_type} in the
+\code{"long"} output, and the unsigned reading is stated in the table
+note whenever a variable has more than two categories. The
+\code{MASS} package is needed for this arm only.
+
+Two profiles with \strong{no category in common} have an infinite
+standardized distance. The pseudo-inverse would quietly publish a
+finite number there, so the cell is an en-dash and a classed
+warning says why. The same applies when each group is constant on
+a different category, where the naive route publishes \code{0} --
+"perfectly balanced" for the most imbalanced variable possible.
+
+Conventions shared with \code{\link[=table_continuous]{table_continuous()}}: exactly two groups
+(three or more are refused, not averaged over pairs); complete
+cases on the observed groups, so a \code{drop_na = FALSE} "(Missing)"
+level is displayed and never enters the diagnostic; no confidence
+interval and no p-value, by design. Under \code{weights} the profiles
+are the weighted proportions, which makes this column agree with
+both the frequency and the survey-design readings -- a profile of
+proportions is invariant to a global rescaling of the weights, so
+\code{rescale} cannot move it. (Only the continuous arm has a
+convention to choose there.)
+
+The \code{SMD} cell keeps its leading zero where the association cell
+drops it: the APA strip belongs to a bounded measure, and this one
+is not bounded. The two columns therefore print \code{0.45} and \code{.45}
+side by side, on purpose.
+
+One limit of the current grammar: this function has no \code{p_value}
+argument, so the p column cannot be switched off here as it can in
+\code{\link[=table_continuous]{table_continuous()}}. A complete balance table mixing continuous
+and categorical variables will show a categorical p beside a
+continuous column you removed.
 }
 
 \section{Display conventions}{

@@ -70,6 +70,14 @@
 .CAT_KEY_CI_LL <- "CI lower"
 .CAT_KEY_CI_UL <- "CI upper"
 .CAT_KEY_EFFECT_SIZE <- "Effect size"
+# The standardized-mean-difference column. A NEW KIND of key for this
+# family: `.CAT_KEY_EFFECT_SIZE` above is not a fixed column name (the
+# measure column is named after the measure when a single one is used,
+# and only collapses to the generic name on mixed measures), so "SMD" is
+# the first effect column here with a name that never moves -- and it
+# sits right beside one that does. Its header is `header_smd`, the ONE
+# registry key shared with `.CON_KEY_SMD` of the continuous family.
+.CAT_KEY_SMD <- "SMD"
 
 # The `<group> n` / `<group> %` key pair. `paste0()`, not `sprintf()`:
 # these compose a KEY, so the composition rule must not change with the
@@ -508,6 +516,16 @@
 #'   In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
 #'   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`).
 #'   Defaults to `FALSE`.
+#' @param smd Logical. If `TRUE`, adds an `SMD` column holding the
+#'   standardized mean difference between the two groups of `by`,
+#'   the balance diagnostic of the Table 1 literature. Requires
+#'   exactly two groups; the value sits on the variable row beside
+#'   `p`, never on a level row. Signed for a two-category variable
+#'   (group 1 minus group 2 on the second category), unsigned for
+#'   three or more, where it is a distance. No confidence interval
+#'   and no p-value, by design. Rounded with `v_digits`. See the
+#'   "Standardized mean difference" section below. Defaults to
+#'   `FALSE`.
 #' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
 #' @param align Horizontal alignment of numeric columns in the
 #'   printed ASCII table and in the `tinytable`, `gt`, `flextable`,
@@ -613,7 +631,11 @@
 #'     per row (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a
 #'     variable given `assoc_measure = "none"`. The wide outputs instead
 #'     name the column after the measure, or `Effect size` when the row
-#'     variables do not share one.
+#'     variables do not share one. With `smd = TRUE` this output also
+#'     carries `smd` and `smd_type` (`"binary"` or `"multinomial"`,
+#'     the kernel the value came from); the wide outputs name that
+#'     column `SMD`. Like the association columns, both are ABSENT
+#'     when the statistic is not requested.
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.
@@ -654,6 +676,66 @@
 #' fitted means) on continuous outcomes, see [table_continuous_lm()].
 #' For descriptive (empirical) comparisons on continuous outcomes, see
 #' [table_continuous()].
+#'
+#' # Standardized mean difference
+#'
+#' `smd = TRUE` adds an `SMD` column with the balance diagnostic of
+#' the Table 1 literature, on the variable row beside `p`. For a
+#' two-category variable it is the Bernoulli form,
+#'
+#' \deqn{\mathrm{SMD} = \frac{p_1 - p_2}{\sqrt{(p_1(1-p_1) +
+#' p_2(1-p_2)) / 2}}}
+#'
+#' with \eqn{p} the proportion of the SECOND category, **signed**,
+#' group 1 minus group 2 in the order the table displays them. Note
+#' the denominator: the Bernoulli variance \eqn{p(1-p)} at *n*, not
+#' `var()` at \eqn{n-1}, which would be 19% off on a small table.
+#'
+#' For three or more categories it is the multivariate form of Yang
+#' and Dalton (2012, SAS Global Forum 335-2012),
+#'
+#' \deqn{\mathrm{SMD} = \sqrt{T' S^{-} T}}
+#'
+#' with \eqn{T} the difference of the two profiles of proportions
+#' (first category dropped) and \eqn{S} the mean of their multinomial
+#' covariance matrices. This is a Mahalanobis distance: it is
+#' **unsigned**, it is **not bounded by 1**, and \eqn{S^{-}} is a
+#' pseudo-inverse, because a declared-but-unobserved category makes
+#' \eqn{S} singular and `solve()` would abort where the
+#' pseudo-inverse returns exactly the value that category's absence
+#' implies. Which kernel a row took is published as `smd_type` in the
+#' `"long"` output, and the unsigned reading is stated in the table
+#' note whenever a variable has more than two categories. The
+#' `MASS` package is needed for this arm only.
+#'
+#' Two profiles with **no category in common** have an infinite
+#' standardized distance. The pseudo-inverse would quietly publish a
+#' finite number there, so the cell is an en-dash and a classed
+#' warning says why. The same applies when each group is constant on
+#' a different category, where the naive route publishes `0` --
+#' "perfectly balanced" for the most imbalanced variable possible.
+#'
+#' Conventions shared with [table_continuous()]: exactly two groups
+#' (three or more are refused, not averaged over pairs); complete
+#' cases on the observed groups, so a `drop_na = FALSE` "(Missing)"
+#' level is displayed and never enters the diagnostic; no confidence
+#' interval and no p-value, by design. Under `weights` the profiles
+#' are the weighted proportions, which makes this column agree with
+#' both the frequency and the survey-design readings -- a profile of
+#' proportions is invariant to a global rescaling of the weights, so
+#' `rescale` cannot move it. (Only the continuous arm has a
+#' convention to choose there.)
+#'
+#' The `SMD` cell keeps its leading zero where the association cell
+#' drops it: the APA strip belongs to a bounded measure, and this one
+#' is not bounded. The two columns therefore print `0.45` and `.45`
+#' side by side, on purpose.
+#'
+#' One limit of the current grammar: this function has no `p_value`
+#' argument, so the p column cannot be switched off here as it can in
+#' [table_continuous()]. A complete balance table mixing continuous
+#' and categorical variables will show a categorical p beside a
+#' continuous column you removed.
 #'
 #' # Display conventions
 #'
@@ -852,6 +934,7 @@ table_categorical <- function(
   v_digits = 2,
   assoc_measure = "auto",
   assoc_ci = FALSE,
+  smd = FALSE,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   output = c(
@@ -919,6 +1002,19 @@ table_categorical <- function(
   if (has_group) {
     by_name <- resolve_single_column_selection(by_quo, data, "by")
   }
+  # Validated HERE rather than beside the other logicals below: the
+  # refusal of a `by`-less `smd` reads it a few lines from now, and a
+  # non-logical value must not reach `&&` first.
+  if (!is.logical(smd) || length(smd) != 1 || is.na(smd)) {
+    spicy_abort("`smd` must be TRUE/FALSE.", class = "spicy_invalid_input")
+  }
+  if (smd && !has_group) {
+    spicy_warn(
+      "`smd` is ignored when `by` is not used: a standardized mean difference compares two groups.",
+      class = "spicy_ignored_arg"
+    )
+  }
+  do_smd <- smd && has_group
 
   select_quo <- rlang::enquo(select)
   select_val <- tryCatch(
@@ -1403,6 +1499,28 @@ table_categorical <- function(
     # leading-zero policy as a p-value: dropped by default (APA), kept
     # under a style that says so (`p_style = "standard"`).
     s <- .strip_leading_zero(s, ".", .style_p_leading_zero())
+    if (decimal_mark != ".") {
+      s <- sub("\\.", decimal_mark, s)
+    }
+    s
+  }
+
+  # The SMD takes the same precision as the association measure and
+  # NOT its leading-zero policy: that policy exists because a bounded
+  # measure can never reach 1, and the SMD of a variable with three or
+  # more categories is a Mahalanobis distance with no upper bound
+  # (1.11 and 2.45 on the pinned fixtures). Stripping the zero would
+  # also make the printed cell disagree with the typed view, which
+  # carries `p_style = NULL` for exactly this reason.
+  #
+  # An en-dash, not an empty cell, when the value is NA: the diagnostic
+  # APPLIES to the row and cannot be estimated (decision 23), unlike
+  # the level rows below it, which are structurally blank.
+  fmt_smd <- function(v) {
+    if (is.na(v)) {
+      return(spicy_str("cell_undefined"))
+    }
+    s <- formatC(v, format = "f", digits = v_digits)
     if (decimal_mark != ".") {
       s <- sub("\\.", decimal_mark, s)
     }
@@ -2232,6 +2350,28 @@ table_categorical <- function(
     unique(as.character(g0[!is.na(g0)]))
   }
   group_levels <- as.character(group_levels)
+  # The REAL groups of the table, captured here and used by the SMD --
+  # BEFORE the "(Missing)" level is appended below and BEFORE the margin
+  # key joins the vector. Both would otherwise inflate the count and
+  # refuse a legitimate two-group table (`include_total = TRUE` is the
+  # default, so the naive count is off by one on EVERY grouped table),
+  # and a `setdiff()` by name would be defeated by a user level
+  # homonymous with either -- both of which are auto-renamed on
+  # collision, precisely because they are display strings.
+  real_group_levels <- group_levels
+  if (do_smd && length(real_group_levels) != 2L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`smd = TRUE` requires exactly two groups in `by` (found %d).",
+          length(real_group_levels)
+        ),
+        "i" = "The standardized mean difference is a two-group balance diagnostic (Austin 2009); there is no published reading of an average over pairs.",
+        "i" = "Compare two groups at a time, e.g. filter `by` to a pair of levels."
+      ),
+      class = "spicy_not_implemented"
+    )
+  }
   # Pin the group-level ORDER on a factor built once, here, so the
   # internal cross_tab() calls can never re-sort it (the pre-0.13.0
   # as.character() round-trip alphabetized ordered `by` factors and
@@ -2446,6 +2586,67 @@ table_categorical <- function(
       parse_stats(ct_pct, this_measure)
     }
 
+    # --- standardized mean difference ---
+    # Complete cases on the OBSERVED groups and the observed levels,
+    # the same restriction the association statistics take above: a
+    # "(Missing)" display level is shown and never tested. The profiles
+    # are built here from `x` / `g` / `w` directly and NEVER from
+    # `cross_tab()`, whose last column is the margin.
+    #
+    # `rescale` does not enter: a profile of proportions is invariant to
+    # a global rescaling of the weights, and the Bernoulli and
+    # multinomial variances are functions of the proportions alone. The
+    # weighted categorical SMD therefore matches the survey-design
+    # convention as well as the frequency one -- the two only part
+    # company on the continuous arm.
+    smd_val <- NA_real_
+    smd_kind <- NA_character_
+    if (do_smd) {
+      cc <- !is.na(x) & !is.na(g)
+      if (has_missing_level) {
+        cc <- cc & x != missing_label & g != missing_label
+      }
+      if (!is.null(w)) {
+        cc <- cc & !is.na(w) & w > 0
+      }
+      # The kernel follows the DECLARED level count, not the observed
+      # one: a three-level factor with an empty level is a three-level
+      # factor, and its SMD is an unsigned distance whether or not the
+      # sample happened to fill every level. Signedness must not depend
+      # on the draw.
+      smd_kind <- .smd_categorical_type(length(var_level_order))
+      profiles <- lapply(real_group_levels, function(lev) {
+        idx <- which(cc & as.character(g) == lev)
+        .smd_props_base(
+          x[idx],
+          var_level_order,
+          if (is.null(w)) NULL else w[idx]
+        )
+      })
+      est <- if (identical(smd_kind, "binary")) {
+        # P(second level), the `propTables[, -1]` convention.
+        lapply(profiles, function(p) p[[2L]])
+      } else {
+        profiles
+      }
+      smd_raw <- .smd_pair_dispatch(est[[1L]], est[[2L]], smd_kind)
+      reason <- .smd_undefined_reason(smd_raw)
+      if (!is.null(reason)) {
+        spicy_warn(
+          sprintf(
+            if (identical(reason, "constant_levels")) {
+              "The standardized mean difference is undefined for `%s`: each group is constant on a different category, so the standardized distance is infinite. Its cell is NA."
+            } else {
+              "The standardized mean difference is undefined for `%s`: the two groups have no overlapping categories, so the standardized distance is infinite. Its cell is NA."
+            },
+            select_names[i]
+          ),
+          class = "spicy_undefined_stat"
+        )
+      }
+      smd_val <- as.numeric(smd_raw)
+    }
+
     # The console cross_tab object is read structurally: column 1 is
     # the row identifier and the LAST column is the margin (either may
     # have been auto-renamed on collision with a user level), and the
@@ -2544,6 +2745,13 @@ table_categorical <- function(
             st$measure
           }
         }
+        if (do_smd) {
+          row_df$.smd <- smd_val
+          # Which kernel produced it -- and therefore whether it is
+          # signed. `"binary"` is signed (group 1 minus group 2 on the
+          # second level); `"multinomial"` is a distance and never is.
+          row_df$.smd_type <- smd_kind
+        }
         rows[[rr]] <- row_df
         rr <- rr + 1L
       }
@@ -2576,6 +2784,33 @@ table_categorical <- function(
     .assoc_label("cramer_v")
   }
   assoc_note_text <- .assoc_note_apa(assoc_measures_per_row, labels)
+  # The SMD gloss rides in the STATISTICS note slot beside the
+  # association gloss, so all six output routes carry it from one
+  # place. The multivariate sentence appears only when at least one
+  # variable has more than two levels -- it explains an unsigned
+  # column, and there is nothing to explain when every column is
+  # signed.
+  if (do_smd) {
+    smd_note_text <- build_smd_note(TRUE, real_group_levels, decimal_mark)
+    if (
+      any(vapply(
+        select_names,
+        function(v) {
+          nlevels(.tab_factor(resolve_user_na(data[[v]]))) > 2L
+        },
+        logical(1)
+      ))
+    ) {
+      smd_note_text <- paste(
+        smd_note_text,
+        spicy_fmt("note_gloss_smd_multinomial", spicy_str("header_smd"))
+      )
+    }
+    assoc_note_text <- paste(
+      c(assoc_note_text[nzchar(assoc_note_text)], smd_note_text),
+      collapse = " "
+    )
+  }
 
   if (length(rows) == 0) {
     long_raw <- data.frame(
@@ -2590,6 +2825,8 @@ table_categorical <- function(
       .assoc_type = character(0),
       ci_lower = numeric(0),
       ci_upper = numeric(0),
+      .smd = numeric(0),
+      .smd_type = character(0),
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
@@ -2601,6 +2838,14 @@ table_categorical <- function(
   } else {
     long_raw$.assoc <- NULL
     long_raw$.assoc_type <- NULL
+  }
+  if (!do_smd) {
+    # This family DROPS an unrequested optional column rather than
+    # carrying it as NA -- the rule it already applies to `.assoc`, and
+    # the opposite of the continuous frame's. Each frame keeps the
+    # precedent of its own family.
+    long_raw$.smd <- NULL
+    long_raw$.smd_type <- NULL
   }
 
   if (nrow(long_raw) > 0) {
@@ -2658,11 +2903,19 @@ table_categorical <- function(
       names(out)[names(out) == measure_col] <- "effect_size"
       names(out)[names(out) == ".assoc_type"] <- "effect_size_type"
     }
+    if (do_smd) {
+      # `smd` / `smd_type`, mirroring `effect_size` / `effect_size_type`
+      # beside them -- NOT the `smd_value` of the continuous frame,
+      # whose neighbour is `es_value`. Each frame mirrors its own.
+      names(out)[names(out) == ".smd"] <- "smd"
+      names(out)[names(out) == ".smd_type"] <- "smd_type"
+    }
     return(out)
   }
   # Only the long output publishes the per-row measure key; the display
   # and export routes below read the measure column by name.
   long_raw$.assoc_type <- NULL
+  long_raw$.smd_type <- NULL
 
   # ---------------- WIDE RAW ----------------
   make_wide_raw <- function(ldf) {
@@ -2679,6 +2932,11 @@ table_categorical <- function(
     }
     if (show_assoc && assoc_ci) {
       cols <- c(cols, .CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
+    }
+    if (do_smd) {
+      # This frame carries DISPLAY names ("Cramer's V", never
+      # `effect_size`), so the SMD enters it under its frozen key.
+      cols <- c(cols, .CAT_KEY_SMD)
     }
     if (nrow(ldf) == 0) {
       return(as.data.frame(
@@ -2715,6 +2973,9 @@ table_categorical <- function(
       if (show_assoc && assoc_ci) {
         r[[.CAT_KEY_CI_LL]] <- if (nrow(sv)) sv$ci_lower[1] else NA_real_
         r[[.CAT_KEY_CI_UL]] <- if (nrow(sv)) sv$ci_upper[1] else NA_real_
+      }
+      if (do_smd) {
+        r[[.CAT_KEY_SMD]] <- if (nrow(sv)) sv$.smd[1] else NA_real_
       }
 
       out[[k]] <- as.data.frame(
@@ -2758,6 +3019,22 @@ table_categorical <- function(
   if (show_assoc && assoc_ci) {
     report_cols <- c(report_cols, .CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
   }
+  if (do_smd) {
+    report_cols <- c(report_cols, .CAT_KEY_SMD)
+  }
+  # How many trailing columns are statistics rather than counts. Every
+  # engine below indexes its last columns from the right (the p column,
+  # the measure, the CI bounds, and now the SMD), so the arithmetic is
+  # done ONCE here instead of being re-derived five times -- an Excel
+  # `text_cols` or a tinytable `stat_j` that forgot the new column would
+  # format the wrong cells, silently.
+  n_stat_cols <- 1L +
+    as.integer(show_assoc) +
+    2L * as.integer(show_assoc && assoc_ci) +
+    as.integer(do_smd)
+  # The same count once the CI bounds have been merged into the measure
+  # cell, which every rendered engine does before laying out.
+  n_stat_cols_merged <- 1L + as.integer(show_assoc) + as.integer(do_smd)
 
   # Group headers, resolved once: user levels are data, the margin is
   # the single entry that carries a word of ours.
@@ -2820,6 +3097,11 @@ table_categorical <- function(
       if (show_assoc) {
         r0[[measure_col]] <- fmt_v(sv[[measure_col]][1])
       }
+      if (do_smd) {
+        # The variable row carries it, like `p` and the association
+        # measure: it is a statistic of the variable, not of a level.
+        r0[[.CAT_KEY_SMD]] <- fmt_smd(sv$.smd[1])
+      }
       if (show_assoc && assoc_ci) {
         if (mode == "char") {
           r0[[.CAT_KEY_CI_LL]] <- fmt_v(sv$ci_lower[1])
@@ -2864,6 +3146,12 @@ table_categorical <- function(
         if (show_assoc) {
           r1[[measure_col]] <- ""
         }
+        if (do_smd) {
+          # Written explicitly rather than inherited from the
+          # `rep("", ...)` initialisation above: a level row carries no
+          # SMD by CONTRACT, not by accident of construction.
+          r1[[.CAT_KEY_SMD]] <- ""
+        }
         out[[z]] <- as.data.frame(
           r1,
           stringsAsFactors = FALSE,
@@ -2899,7 +3187,8 @@ table_categorical <- function(
     measure_col = measure_col,
     measure_label = measure_label,
     show_assoc = show_assoc,
-    assoc_ci = assoc_ci
+    assoc_ci = assoc_ci,
+    show_smd = do_smd
   )
 
   if (output == "default") {
@@ -2979,6 +3268,12 @@ table_categorical <- function(
     top_header_flat <- c(top_header_flat, measure_label)
     bot_header <- c(bot_header, "")
   }
+  smd_label <- spicy_str("header_smd")
+  if (do_smd) {
+    top_header_span <- c(top_header_span, smd_label)
+    top_header_flat <- c(top_header_flat, smd_label)
+    bot_header <- c(bot_header, "")
+  }
   grp_j <- 2:(1 + 2 * length(group_levels))
 
   # ---------------- tinytable ----------------
@@ -3017,7 +3312,7 @@ table_categorical <- function(
         c(spicy_str("header_n_lower"), spicy_str("header_percent_symbol")),
         times = length(group_levels)
       ),
-      rep("", 1L + as.integer(show_assoc))
+      rep("", n_stat_cols_merged)
     )
 
     # Spanners. A `group_tt()` spec is indexed BY its label, so two equal
@@ -3030,12 +3325,15 @@ table_categorical <- function(
         group_labels
       ),
       setNames(
-        list(ncol(dat_tt) - if (show_assoc) 1L else 0L),
+        list(ncol(dat_tt) - n_stat_cols_merged + 1L),
         spicy_str("header_p")
       )
     )
     if (show_assoc) {
-      gspec[[measure_label]] <- ncol(dat_tt)
+      gspec[[measure_label]] <- ncol(dat_tt) - as.integer(do_smd)
+    }
+    if (do_smd) {
+      gspec[[smd_label]] <- ncol(dat_tt)
     }
 
     tt <- tinytable::tt(
@@ -3056,11 +3354,7 @@ table_categorical <- function(
     # apply literal alignment.
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     data_j <- 2:(1 + 2 * length(group_levels))
-    stat_j <- if (show_assoc) {
-      (ncol(dat_tt) - 1):ncol(dat_tt)
-    } else {
-      ncol(dat_tt)
-    }
+    stat_j <- (ncol(dat_tt) - n_stat_cols_merged + 1L):ncol(dat_tt)
     tt_align <- switch(
       align,
       decimal = "c",
@@ -3172,10 +3466,13 @@ table_categorical <- function(
       col_ids[2 * gi] <- paste0(group_levels[gi], "_n")
       col_ids[2 * gi + 1] <- paste0(group_levels[gi], "_pct")
     }
-    p_col_pos <- ncol(dat_gt) - if (show_assoc) 1L else 0L
+    p_col_pos <- ncol(dat_gt) - n_stat_cols_merged + 1L
     col_ids[p_col_pos] <- .CAT_KEY_P
     if (show_assoc) {
-      col_ids[ncol(dat_gt)] <- "assoc_col"
+      col_ids[ncol(dat_gt) - as.integer(do_smd)] <- "assoc_col"
+    }
+    if (do_smd) {
+      col_ids[ncol(dat_gt)] <- "smd_col"
     }
     names(dat_gt) <- col_ids
 
@@ -3195,6 +3492,9 @@ table_categorical <- function(
     label_list[[.CAT_KEY_P]] <- ""
     if (show_assoc) {
       label_list[["assoc_col"]] <- ""
+    }
+    if (do_smd) {
+      label_list[["smd_col"]] <- ""
     }
     tbl <- gt::cols_label(tbl, .list = label_list)
 
@@ -3231,6 +3531,14 @@ table_categorical <- function(
         id = "spn_v"
       )
     }
+    if (do_smd) {
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = smd_label,
+        columns = "smd_col",
+        id = "spn_smd"
+      )
+    }
 
     # Alignment. The Variable column is always left-aligned; numeric
     # columns honour the `align` argument: "decimal" centres
@@ -3244,6 +3552,9 @@ table_categorical <- function(
     right_cols <- .CAT_KEY_P
     if (show_assoc) {
       right_cols <- c(right_cols, "assoc_col")
+    }
+    if (do_smd) {
+      right_cols <- c(right_cols, "smd_col")
     }
     numeric_cols <- c(grp_cols, right_cols)
     if (identical(align, "decimal") && length(numeric_cols) > 0L) {
@@ -3447,7 +3758,7 @@ table_categorical <- function(
     # Centre n/% labels and spanner labels in header
     ft <- flextable::align(ft, j = grp_j, part = "header", align = "center")
     # Right-align p and association measure in header
-    stat_j <- if (show_assoc) (ncol(df) - 1):ncol(df) else ncol(df)
+    stat_j <- (ncol(df) - n_stat_cols_merged + 1L):ncol(df)
     ft <- flextable::align(ft, j = stat_j, part = "header", align = "right")
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
@@ -3509,8 +3820,23 @@ table_categorical <- function(
   # Extend headers with CI columns for data/export formats
   if (assoc_ci) {
     ci_headers <- c(spicy_str("header_ci_lower"), spicy_str("header_ci_upper"))
-    top_header_flat_ex <- c(top_header_flat, ci_headers)
-    bot_header_ex <- c(bot_header, "", "")
+    # INSERTED before the SMD header, not appended after it: the CI
+    # bounds sit between the measure and the SMD in `report_cols`, so
+    # appending would print "SMD" over a CI column and a bound header
+    # over the SMD -- headers and body silently out of step. With no
+    # SMD column the split is at the end and this is the old append.
+    cut_at <- length(top_header_flat) - as.integer(do_smd)
+    top_header_flat_ex <- c(
+      top_header_flat[seq_len(cut_at)],
+      ci_headers,
+      top_header_flat[-seq_len(cut_at)]
+    )
+    bot_header_ex <- c(
+      bot_header[seq_len(cut_at)],
+      "",
+      "",
+      bot_header[-seq_len(cut_at)]
+    )
   } else {
     top_header_flat_ex <- top_header_flat
     bot_header_ex <- bot_header
@@ -3588,6 +3914,9 @@ table_categorical <- function(
       body_xl[[.CAT_KEY_CI_LL]] <- report_wide_char[[.CAT_KEY_CI_LL]]
       body_xl[[.CAT_KEY_CI_UL]] <- report_wide_char[[.CAT_KEY_CI_UL]]
     }
+    if (do_smd) {
+      body_xl[[.CAT_KEY_SMD]] <- report_wide_char[[.CAT_KEY_SMD]]
+    }
 
     # `na.strings = ""` so the empty cells of a variable-header row
     # stay blank. Without it openxlsx2 writes Excel ERROR cells
@@ -3643,14 +3972,11 @@ table_categorical <- function(
         dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 2:nc),
         horizontal = num_horiz
       )
-      # Text columns (p, assoc, CI) -- force text format
-      text_cols <- if (show_assoc && assoc_ci) {
-        (nc - 3):nc
-      } else if (show_assoc) {
-        c(nc - 1, nc)
-      } else {
-        nc
-      }
+      # Text columns (p, assoc, CI, SMD) -- force text format. Counted
+      # from the RIGHT, so every optional trailing column has to be in
+      # the count or the sheet formats the wrong cells: `n_stat_cols`
+      # is that count, computed once beside `report_cols`.
+      text_cols <- (nc - n_stat_cols + 1L):nc
       wb <- openxlsx2::wb_add_numfmt(
         wb,
         dims = openxlsx2::wb_dims(

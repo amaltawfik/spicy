@@ -85,13 +85,20 @@ test_that("every frozen categorical key equals its English display label", {
     list(.CAT_KEY_CI_LL, "header_ci_lower"),
     list(.CAT_KEY_CI_UL, "header_ci_upper"),
     list(.CAT_KEY_EFFECT_SIZE, "header_effect_size"),
+    # The first effect column of this family with a FIXED name: the
+    # measure column beside it is named after the measure and only
+    # collapses to `.CAT_KEY_EFFECT_SIZE` on mixed measures.
+    list(.CAT_KEY_SMD, "header_smd"),
     list("n", "header_n_lower"),
     list("%", "header_percent_symbol")
   )
   for (cp in couples) {
     expect_identical(cp[[1L]], spicy_str(cp[[2L]]), info = cp[[2L]])
   }
-  # The ninth couple is a composition rule, not a constant: `paste0()` on
+  # One string, one role, both families: the SMD header is the single
+  # registry key the continuous and the categorical table share.
+  expect_identical(.CAT_KEY_SMD, .CON_KEY_SMD)
+  # The tenth couple is a composition rule, not a constant: `paste0()` on
   # the key side, the registry template on the label side.
   expect_identical(.cat_key_n("G"), .cat_label_n("G"))
   expect_identical(.cat_key_pct("G"), .cat_label_pct("G"))

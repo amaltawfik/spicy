@@ -447,6 +447,9 @@
   # because `spicy_fmt()` substitutes no decimal mark. The "-" between
   # the group labels is punctuation, like `header_lm_delta`'s.
   note_gloss_smd = "%1$s = standardized mean difference (%2$s - %3$s); |%1$s| > %4$s is the usual imbalance threshold.",
+  # Why one column of the table has no sign while its neighbours do.
+  # Only shown when a variable has more than two categories.
+  note_gloss_smd_multinomial = "For a variable with more than two categories the %s is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.",
 
   # -- table_regression(): standard-error and interval notes ----------------
   note_adjusted_for = "Adjusted for %s (%s).",

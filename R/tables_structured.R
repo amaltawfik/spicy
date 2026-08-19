@@ -211,7 +211,8 @@
   measure_label = NULL,
   show_assoc = FALSE,
   assoc_ci = FALSE,
-  assoc_ci_level = 0.95
+  assoc_ci_level = 0.95,
+  show_smd = FALSE
 ) {
   has_group <- !is.null(group_levels)
 
@@ -314,6 +315,20 @@
         ))
       }
     }
+    if (show_smd) {
+      col_names <- c(col_names, .CAT_KEY_SMD)
+      # Unlike the association column beside it, no `p_style` and no
+      # `value_range`: the SMD of a variable with three or more
+      # categories is a Mahalanobis distance and is not bounded by 1.
+      # A visible consequence, and an accepted one: in the same table
+      # "Effect size" prints .45 (APA leading zero stripped, bounded
+      # measure) while "SMD" prints 0.45.
+      col_meta[[.CAT_KEY_SMD]] <- list(
+        token = "smd",
+        precision = as.integer(v_digits),
+        display_label = spicy_str("header_smd")
+      )
+    }
   } else {
     col_names <- c("n", "%")
     col_meta[["n"]] <- num_meta(
@@ -353,6 +368,9 @@
             header_values[[.CAT_KEY_CI_LL]] <- sv$ci_lower[1L]
             header_values[[.CAT_KEY_CI_UL]] <- sv$ci_upper[1L]
           }
+        }
+        if (show_smd) {
+          header_values[[.CAT_KEY_SMD]] <- sv$.smd[1L]
         }
       }
       rows[[length(rows) + 1L]] <- list(

@@ -402,7 +402,19 @@ glance.spicy_categorical_table <- function(x, ...) {
     "p",
     "p_op",
     "ci_lower",
-    "ci_upper"
+    "ci_upper",
+    # The SMD must be listed here even though this method does not
+    # publish it: the fallback below takes the FIRST leftover column as
+    # the association measure, so an unlisted `smd` on a degraded
+    # object (one stripped of its typed view) would be published under
+    # `assoc_value` / `assoc_type` -- a balance diagnostic wearing the
+    # name of an association measure. Both spellings: the long output
+    # publishes `smd`, the attached `long_data` keeps the internal
+    # `.smd`.
+    "smd",
+    "smd_type",
+    ".smd",
+    ".smd_type"
   )
   st <- attr(x, "structured", exact = TRUE)
   measure_col <- if (!is.null(st) && !is.null(st$col_meta)) {
