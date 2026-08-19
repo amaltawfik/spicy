@@ -457,3 +457,11 @@ fondé sur la source APA TableSetup (« brief but descriptive ») et
 sa table-type (« Sociodemographic Characteristics of Participants
 at Baseline » : contenu décrit, variables jamais énumérées); la
 stratification est visible au talon, title= porte le contexte final.
+
+### 32bis. table_outcome E6 : « Overall » — DÉCIDÉ 2026-08-19
+
+Deux mots, deux sémantiques documentées : « Total » reste la marge de
+COMPTAGE (label_total/header_margin_total, livré); « Overall » est la
+ligne de STATISTIQUES d'ensemble (moyennes/médianes — un total de
+moyennes ne veut rien dire), nouvelle clé row_overall. Familier aux
+utilisateurs tbl_continuous.
