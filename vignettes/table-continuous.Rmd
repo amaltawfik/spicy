@@ -190,27 +190,38 @@ under 0.1 while one pair sits well over it.
 
 ### It is not the effect size
 
-The SMD and Hedges' *g* look alike and are not the same number:
+The SMD and Hedges' *g* look alike and are never the same number. On
+`sochealth` the two agree to two decimals, which hides the point, so
+here they are on a small unbalanced sample where they cannot hide:
 
 ```{r smd-vs-g}
+small <- sochealth[c(1:6, 601:604), c("sex", "bmi")]
 table_continuous(
-  sochealth,
+  small,
   select = bmi,
   by = sex,
   smd = TRUE,
-  effect_size = "hedges_g"
+  effect_size = "hedges_g",
+  effect_size_digits = 4
 )
 ```
 
 Both standardize a mean difference, but by different denominators.
 Austin's SMD divides by the root **mean of the two group variances**;
-*g* divides by the degrees-of-freedom pooled SD and applies the *J*
-correction. They coincide exactly when the two groups are the same
-size and part company as soon as they are not. Read each for what it
-is: the SMD is a balance diagnostic, *g* is an effect size. It also
-follows that the SMD carries **no confidence interval and no
-*p*-value** — attaching one would put back the test reasoning the
-balance literature asks the reader to drop.
+*g* divides by the degrees-of-freedom pooled SD and then multiplies by
+the small-sample correction *J*. Two consequences, both worth knowing:
+
+- At **equal** group sizes the two denominators coincide, so the SMD
+  *is* Cohen's *d*. At unequal sizes it is not.
+- *g* is never the SMD, at any sample size. With equal groups the
+  ratio *g* / SMD is exactly *J*: 0.80 at *n* = 3 per group, 0.96 at
+  *n* = 10, approaching 1 only as the sample grows. Reading one for
+  the other costs 20% on a small trial.
+
+Read each for what it is: the SMD is a balance diagnostic, *g* is an
+effect size. It also follows that the SMD carries **no confidence
+interval and no *p*-value** — attaching one would put back the test
+reasoning the balance literature asks the reader to drop.
 
 ## Selecting variables
 

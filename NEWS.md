@@ -185,8 +185,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   p-value; and it requires exactly two groups. It works under `weights`
   and is rounded with `effect_size_digits` / `v_digits`, so the journal
   styles reach it. Do not read it for `effect_size = "hedges_g"`: the
-  two standardize by different denominators and coincide only at equal
-  group sizes. See the "Standardized mean difference" section of
+  SMD is Cohen's *d* when the two groups are the same size, while *g*
+  applies the small-sample correction on top and so never equals it.
+  See the "Standardized mean difference" section of
   `?table_continuous` and `?table_categorical`.
 * The grouped raw outputs of `table_continuous()` (`"data.frame"` /
   `"long"`) always carry `smd_type` and `smd_value`, `NA` when

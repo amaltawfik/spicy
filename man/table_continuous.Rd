@@ -549,15 +549,20 @@ the Table 1 literature, in Austin's form (Austin 2009, \emph{Stat Med}
 s_2^2) / 2}}}
 
 The denominator is the root \strong{mean of the two group variances},
-each at \eqn{n - 1}. It is \strong{not} the degrees-of-freedom pooled
-SD that Cohen's \emph{d} and Hedges' \emph{g} use, which
-\code{effect_size = "hedges_g"} puts two columns to the left: the two
-are different published conventions and coincide only at equal
-group sizes. On a 4-versus-3 split the SMD is \eqn{-0.51} where
-\emph{g} is \eqn{-0.45}. Never read one for the other, and never
-recompute one from the other. (The same divergence is nameable
-upstream: \code{cobalt::col_w_smd(s.d.denom = "pooled")} reproduces
-this column, \code{s.d.denom = "hedges"} reproduces \code{hedges_g}.)
+each at \eqn{n - 1}, not the degrees-of-freedom pooled SD. At
+\strong{equal} group sizes those two denominators are the same, so the
+SMD is exactly Cohen's \emph{d}; at unequal sizes they part company (on
+a 4-versus-3 split the SMD is \eqn{-0.51} and \emph{d} is \eqn{-0.54}).
+
+\code{effect_size = "hedges_g"}, two columns to the left, is a third
+number: \emph{g} applies the small-sample correction \emph{J} on top of \emph{d},
+so it \strong{never} equals the SMD. At equal group sizes the ratio
+\eqn{g / \mathrm{SMD}} is exactly \emph{J} -- 0.80 at \emph{n} = 3 per group,
+0.96 at \emph{n} = 10 -- approaching 1 only as the sample grows. Read
+each for what it is; do not recompute one from the other. (The
+divergence is nameable upstream:
+\code{cobalt::col_w_smd(s.d.denom = "pooled")} reproduces this column,
+\code{s.d.denom = "hedges"} reproduces \code{hedges_g}.)
 
 Conventions, all deliberate:
 

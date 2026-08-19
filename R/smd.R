@@ -11,9 +11,14 @@
 #                      V(P)_ii = p_i(1 - p_i), V(P)_ij = -p_i p_j
 #
 # The continuous denominator is the root MEAN of the two GROUP variances
-# (each at n - 1). It is NOT the degrees-of-freedom pooled SD of
-# Cohen's d / Hedges' g, which `effect_size = "hedges_g"` uses: the two
-# coincide only at equal group sizes. The binary denominator is the
+# (each at n - 1), NOT the degrees-of-freedom pooled SD. Measured, at
+# equal group sizes the two denominators are the same and the SMD IS
+# Cohen's d, `identical()`; at unequal sizes they part (-0.510 vs -0.538
+# on the pinned 4-versus-3 fixture). `effect_size = "hedges_g"` is a
+# third number again: it applies the J correction on top of d, so it
+# NEVER equals the SMD -- the ratio g / SMD is exactly J at equal n
+# (0.800 at n = 3 per group, 0.958 at n = 10, verified to 1e-12), and
+# converges to 1 only asymptotically. The binary denominator is the
 # Bernoulli variance p(1-p), at n, never `var()` at n - 1 (19% apart on
 # the pinned example). Triangulated 2026-08-19 against tableone 0.13.2
 # (`ExtractSmd`) and cobalt 4.6.3 (`col_w_smd`), which agree with every
