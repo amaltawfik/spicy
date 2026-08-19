@@ -544,7 +544,7 @@ test_that(".rms_info falls back to all.vars() for a cph whose LHS cannot be depa
 
 # ---- 19. svyglm: robust vcov relabels the footer ------------------------
 
-test_that("svyglm frame relabels the vcov when a robust estimator is requested", {
+test_that("the svyglm frame keeps the design label and refuses anything else", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   des <- survey::svydesign(
@@ -560,9 +560,12 @@ test_that("svyglm frame relabels the vcov when a robust estimator is requested",
   fr0 <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr0$info$vcov_kind, "survey-Taylor")
 
-  # Anything else must be relabelled by the shared robust labeller, even
-  # though table_regression()'s gate never lets CR* through for svyglm.
-  fr <- as_regression_frame(fit, vcov = "HC1", model_id = "M1")
-  expect_identical(fr$info$vcov_label, "heteroskedasticity-robust (HC1)")
-  expect_identical(fr$info$vcov_kind, "HC1")
+  # This block used to pin the shared robust labeller relabelling the
+  # footer for `vcov = "HC1"`. That label could only ever have named an
+  # estimator the design forbids: the frame is now refused before any
+  # matrix is formed, so there is nothing left to relabel.
+  expect_error(
+    as_regression_frame(fit, vcov = "HC1", model_id = "M1"),
+    class = "spicy_unsupported_vcov"
+  )
 })

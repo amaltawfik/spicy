@@ -10,6 +10,21 @@
 #   * compute_wald_test(): multi-coefficient Wald F / chi^2.
 #   * compute_satt_df_per_coef(): clubSandwich Satterthwaite df map.
 
+# Fits whose variance is fixed by a SAMPLING DESIGN, not by the working
+# model: survey::svyglm() (Taylor linearisation), its replicate-weights
+# sibling svrepglm, svyolr and svycoxph. For these the design carries the
+# strata, the clusters, the finite population correction and any
+# calibration, and stats::vcov(fit) already IS the (design-)robust
+# variance. Every other estimator in the vcov vocabulary re-derives a
+# variance from the working model and therefore ignores the design --
+# silently and by orders of magnitude, in both directions (see the guard
+# in compute_model_vcov()). svrepglm / svyolr / svycoxph are listed
+# explicitly rather than relying on inheritance so the predicate reads as
+# the statement it is.
+.is_design_fit <- function(fit) {
+  inherits(fit, c("svyglm", "svrepglm", "svyolr", "svycoxph"))
+}
+
 compute_model_vcov <- function(
   fit,
   type = "classical",
@@ -24,6 +39,56 @@ compute_model_vcov <- function(
   # below would refuse it).
   if (inherits(fit, "rq")) {
     return(.rq_vcov(fit, type = type, cluster = cluster, boot_n = boot_n)$cov)
+  }
+  # Survey-design guard: for a design fit the DESIGN is the variance
+  # authority, so every estimator that re-derives a variance from the
+  # working model is refused here -- BEFORE the branches below, which all
+  # return a silently wrong matrix for these classes:
+  #   * HC0-HC4 reach sandwich::vcovHC.glm, whose meat is built from the
+  #     working residuals of the quasi-likelihood fit and whose bread is
+  #     scaled by the SUM OF THE SAMPLING WEIGHTS instead of n. Measured on
+  #     svyglm(api00 ~ ell, dclus1): SE 51864 (HC3) against 26.90
+  #     design-correct -- a factor of ~1900, upward.
+  #   * bootstrap / jackknife pass the inherits(fit, c("lm", "glm")) test
+  #     below and resample ROWS, which destroys the cluster structure the
+  #     design declares. Same fit: SE 10.9 against 26.90 -- a factor of
+  #     ~0.4, downward, i.e. anti-conservative.
+  #   * CR* would dispatch to clubSandwich's glm method (no vcovCR.svyglm
+  #     exists), ignoring strata, FPC and calibration.
+  # The public entry point already refuses these in
+  # validate_vcov_cluster_lists() (.robust_vcov_support() grants a design
+  # fit "classical" only); this guard closes the direct / internal route
+  # -- as_regression_frame(fit, vcov = ) and .apply_robust_vcov_to_coefs()
+  # -- which bypasses that gate. "model" and "survey-Taylor" are the
+  # frame-level aliases of the design-based default: they never reach here
+  # (.apply_robust_vcov_to_coefs() short-circuits them) and are listed so
+  # that a direct caller keeps the "Unknown `vcov` type" answer they have
+  # always had, rather than being told the design refuses them.
+  if (
+    .is_design_fit(fit) &&
+      !type %in% c("classical", "model", "survey-Taylor")
+  ) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`vcov = \"%s\"` is not available for a survey-design fit (`%s`).",
+          type,
+          class(fit)[1L]
+        ),
+        "i" = paste0(
+          "The survey design is the variance authority: strata, clusters, ",
+          "finite population correction and calibration are already carried ",
+          "by the fit's own variance (Taylor linearisation or replicate ",
+          "weights), which is what the default reports."
+        ),
+        "i" = paste0(
+          "To change the variance estimator, change the DESIGN -- ",
+          "survey::svydesign(ids = , strata = , fpc = ) or ",
+          "survey::as.svrepdesign() -- and refit."
+        )
+      ),
+      class = "spicy_unsupported_vcov"
+    )
   }
   # D2(a) guard: the resamplers refit the model with stats::lm() / stats::glm(),
   # so for any other class they would silently fit a WRONG model on the
@@ -143,11 +208,15 @@ compute_model_vcov <- function(
       return(sandwich::vcovCL(fit, cluster = cluster))
     }
     # No clubSandwich backend: glmmTMB silently dispatches to
-    # vcovCR.default (numerically invalid SEs) and svyglm to vcovCR.glm
-    # (ignores the survey design). The validate gate refuses these up
-    # front; guard here too so a direct as_regression_frame() or
-    # internal caller can never reach those matrices.
-    if (inherits(fit, c("glmmTMB", "svyglm"))) {
+    # vcovCR.default and returns numerically invalid SEs. The validate
+    # gate refuses it up front; guard here too so a direct
+    # as_regression_frame() or internal caller can never reach that
+    # matrix. (svyglm has the same gap -- no vcovCR.svyglm, so the call
+    # would land on vcovCR.glm and ignore the design -- but it never
+    # reaches this branch: the survey-design guard at the top of
+    # compute_model_vcov() refuses CR* along with every other
+    # model-derived estimator, and names the design as the authority.)
+    if (inherits(fit, "glmmTMB")) {
       spicy_abort(
         sprintf(
           "`vcov = \"%s\"` is not available for `%s` models.",

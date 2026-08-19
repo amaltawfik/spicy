@@ -39,11 +39,12 @@ as_regression_frame.svyglm <- function(
   .check_survey_available()
 
   coefs <- .svyglm_coefs(fit, ci_level = ci_level)
-  # vcov can only be "model"/"classical" here (the design-based
-  # Taylor / replicate variance): CR* is refused for svyglm by both the
-  # validate gate and compute_model_vcov() -- clubSandwich has no
-  # vcovCR.svyglm, so the call would silently dispatch to vcovCR.glm
-  # and ignore the design. The shared applier is a no-op on this path.
+  # `vcov` can only be the design-based default here ("survey-Taylor" /
+  # "model" / "classical"): the design is the variance authority, so
+  # compute_model_vcov() refuses every model-derived estimator for a
+  # survey-design fit, and the shared applier reaches it for anything
+  # else. The applier is therefore either a no-op or an abort -- which
+  # is why nothing below relabels info$vcov_label for a robust request.
   coefs <- .apply_robust_vcov_to_coefs(
     coefs,
     fit,
@@ -70,9 +71,6 @@ as_regression_frame.svyglm <- function(
     ci_method = ci_method,
     model_id = model_id
   )
-  if (!vcov %in% c("model", "classical", "survey-Taylor")) {
-    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_)
-  }
 
   new_regression_frame(coefs, info, fit)
 }
