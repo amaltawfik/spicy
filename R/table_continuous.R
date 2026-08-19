@@ -1474,7 +1474,11 @@ table_continuous <- function(
             length(real_group_levels)
           ),
           "i" = "The standardized mean difference is a two-group balance diagnostic (Austin 2009); there is no published reading of an average over pairs.",
-          "i" = "Compare two groups at a time, e.g. filter `by` to a pair of levels."
+          # The count is of DECLARED levels, so a subset() that left an
+          # empty level behind lands here too -- and filtering again
+          # would not help. Name `droplevels()`, or the hint sends the
+          # commonest caller in a circle.
+          "i" = "Compare two groups at a time: filter `by` to a pair of levels, and `droplevels()` if a declared level is now empty."
         ),
         class = "spicy_not_implemented"
       )

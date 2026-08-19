@@ -691,6 +691,13 @@
 #' the denominator: the Bernoulli variance \eqn{p(1-p)} at *n*, not
 #' `var()` at \eqn{n-1}, which would be 19% off on a small table.
 #'
+#' "Second category" is the order the table shows, which is worth
+#' knowing for a **logical** variable: spicy displays `TRUE` then
+#' `FALSE`, so the sign is taken on `FALSE`, where `tableone` and
+#' `cobalt` coerce with `factor()` (`FALSE`, `TRUE`) and take it on
+#' `TRUE` -- the same magnitude with the opposite sign. Convert to a
+#' factor with the level order you want if the direction matters.
+#'
 #' For three or more categories it is the multivariate form of Yang
 #' and Dalton (2012, SAS Global Forum 335-2012),
 #'
@@ -731,11 +738,16 @@
 #' is not bounded. The two columns therefore print `0.45` and `.45`
 #' side by side, on purpose.
 #'
-#' One limit of the current grammar: this function has no `p_value`
+#' Two limits of the current grammar. This function has no `p_value`
 #' argument, so the p column cannot be switched off here as it can in
-#' [table_continuous()]. A complete balance table mixing continuous
+#' [table_continuous()]; a complete balance table mixing continuous
 #' and categorical variables will show a categorical p beside a
-#' continuous column you removed.
+#' continuous column you removed. And [inline()] cannot quote this
+#' `SMD` cell: like `p` and the association measure, it lives on the
+#' variable row, which `inline()` cannot address on a variable that
+#' has levels. The continuous `SMD` cell is quotable
+#' (`inline(tbl, x, "A", column = "smd")`); for the categorical one,
+#' read `output = "long"`.
 #'
 #' # Display conventions
 #'
@@ -2367,7 +2379,9 @@ table_categorical <- function(
           length(real_group_levels)
         ),
         "i" = "The standardized mean difference is a two-group balance diagnostic (Austin 2009); there is no published reading of an average over pairs.",
-        "i" = "Compare two groups at a time, e.g. filter `by` to a pair of levels."
+        # See the continuous twin: the count is of DECLARED levels, so
+        # the hint has to name `droplevels()` as well as filtering.
+        "i" = "Compare two groups at a time: filter `by` to a pair of levels, and `droplevels()` if a declared level is now empty."
       ),
       class = "spicy_not_implemented"
     )
@@ -2907,6 +2921,16 @@ table_categorical <- function(
       # `smd` / `smd_type`, mirroring `effect_size` / `effect_size_type`
       # beside them -- NOT the `smd_value` of the continuous frame,
       # whose neighbour is `es_value`. Each frame mirrors its own.
+      #
+      # RULED, knowingly: one quantity therefore has two raw names
+      # across the two families. The alternative -- one name everywhere
+      # -- would make this column the only one here NOT matching its
+      # neighbour, and the inter-family split it would fix predates the
+      # SMD: `es_value`/`es_type` versus `effect_size`/`effect_size_type`
+      # are already two spellings of one idea. Aligning all three pairs
+      # is a pre-1.0 naming decision of its own, on the register; doing
+      # it for the newest pair alone would leave the older two split
+      # and add a third convention.
       names(out)[names(out) == ".smd"] <- "smd"
       names(out)[names(out) == ".smd_type"] <- "smd_type"
     }

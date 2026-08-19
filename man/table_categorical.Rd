@@ -371,6 +371,13 @@ group 1 minus group 2 in the order the table displays them. Note
 the denominator: the Bernoulli variance \eqn{p(1-p)} at \emph{n}, not
 \code{var()} at \eqn{n-1}, which would be 19\% off on a small table.
 
+"Second category" is the order the table shows, which is worth
+knowing for a \strong{logical} variable: spicy displays \code{TRUE} then
+\code{FALSE}, so the sign is taken on \code{FALSE}, where \code{tableone} and
+\code{cobalt} coerce with \code{factor()} (\code{FALSE}, \code{TRUE}) and take it on
+\code{TRUE} -- the same magnitude with the opposite sign. Convert to a
+factor with the level order you want if the direction matters.
+
 For three or more categories it is the multivariate form of Yang
 and Dalton (2012, SAS Global Forum 335-2012),
 
@@ -411,11 +418,16 @@ drops it: the APA strip belongs to a bounded measure, and this one
 is not bounded. The two columns therefore print \code{0.45} and \code{.45}
 side by side, on purpose.
 
-One limit of the current grammar: this function has no \code{p_value}
+Two limits of the current grammar. This function has no \code{p_value}
 argument, so the p column cannot be switched off here as it can in
-\code{\link[=table_continuous]{table_continuous()}}. A complete balance table mixing continuous
+\code{\link[=table_continuous]{table_continuous()}}; a complete balance table mixing continuous
 and categorical variables will show a categorical p beside a
-continuous column you removed.
+continuous column you removed. And \code{\link[=inline]{inline()}} cannot quote this
+\code{SMD} cell: like \code{p} and the association measure, it lives on the
+variable row, which \code{inline()} cannot address on a variable that
+has levels. The continuous \code{SMD} cell is quotable
+(\code{inline(tbl, x, "A", column = "smd")}); for the categorical one,
+read \code{output = "long"}.
 }
 
 \section{Display conventions}{
