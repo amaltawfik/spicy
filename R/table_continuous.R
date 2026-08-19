@@ -930,15 +930,29 @@ table_continuous <- function(
     # comparison lives in table_continuous_lm(weights = ). Hard
     # refusal rather than silently unweighted inference next to
     # weighted descriptives.
+    #
+    # What this refusal protects is INFERENCE: a p-value, a test
+    # statistic, an effect size read against an interval. A balance
+    # diagnostic is a different object, and the standardized mean
+    # difference is deliberately outside the condition below: it
+    # carries no p and no interval (that absence is the reason the
+    # Table 1 literature substitutes it for the test), and it is
+    # computed from the very weighted means and variances the M and SD
+    # columns display -- one shared producer,
+    # `.prep_variable_weights()`. It therefore cannot be "silently
+    # unweighted inference next to weighted descriptives", which is
+    # exactly what this refusal exists to prevent.
     if (has_group && (do_test || do_es)) {
       spicy_abort(
         c(
-          "Weighted group tests are not implemented.",
+          "Weighted group TESTS and effect sizes are not implemented.",
           "i" = paste0(
             "Set `p_value = FALSE` (and `statistic = FALSE`, ",
             "`effect_size = \"none\"`) for weighted descriptives ",
-            "by group, or use `table_continuous_lm(weights = )` ",
-            "for weighted comparisons."
+            "by group. `smd = TRUE` IS available under weights (a ",
+            "descriptive balance diagnostic, not a test); use ",
+            "`table_continuous_lm(weights = )` for weighted ",
+            "comparisons."
           )
         ),
         class = "spicy_not_implemented"

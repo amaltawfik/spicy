@@ -195,6 +195,47 @@ test_that("the decision-17 refusals are hard and actionable", {
   )
 })
 
+test_that("the weighted-inference refusal names TESTS, not every comparison", {
+  # The refusal of decision 17 protects INFERENCE (a p, a statistic, an
+  # effect size read against an interval). It must say so, because a
+  # weighted balance diagnostic is deliberately outside it. Both halves
+  # are witnessed: what the message claims, and what the guard still
+  # refuses.
+  d <- .wt_data()
+  d$g <- rep(c("a", "b"), length.out = 7)
+  msg <- tryCatch(
+    table_continuous(d, select = x, by = g, weights = wa),
+    spicy_not_implemented = function(e) conditionMessage(e)
+  )
+  expect_match(msg, "Weighted group TESTS and effect sizes", fixed = TRUE)
+  expect_match(msg, "`smd = TRUE` IS available under weights", fixed = TRUE)
+  expect_match(msg, "not a test", fixed = TRUE)
+  # The effect-size half is still refused, p_value = FALSE or not: an
+  # effect size is inference here, and switching the p off does not
+  # make it a diagnostic.
+  expect_error(
+    table_continuous(
+      d,
+      select = x,
+      by = g,
+      weights = wa,
+      p_value = FALSE,
+      effect_size = "hedges_g"
+    ),
+    class = "spicy_not_implemented"
+  )
+  # And the way out the message states really is a way out.
+  expect_no_error(suppressWarnings(table_continuous(
+    d,
+    select = x,
+    by = g,
+    weights = wa,
+    p_value = FALSE,
+    effect_size = "none",
+    output = "long"
+  )))
+})
+
 test_that("rescale under by normalises per variable, never per group", {
   # Doubling the weights of ONE group must not change that group's
   # rescaled statistics relative to a global rescale -- the relative
