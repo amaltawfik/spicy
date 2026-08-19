@@ -316,7 +316,11 @@ ci_bracket_separator <- function(decimal_mark) {
 # for. Identical to "g" on every level above 1e-6 (swept: 21014 levels,
 # 4 differ, all of them the scientific ones).
 .ci_pct_str <- function(level) {
-  formatC(level * 100, format = "fg")
+  # decimal.mark pinned: formatC honours options(OutDec) otherwise,
+  # and this is the FROZEN-KEY producer -- a user's OutDec must never
+  # leak into a column name (.ci_pct_display() owns the reader-facing
+  # mark).
+  formatC(level * 100, format = "fg", decimal.mark = ".")
 }
 
 # Internal: the coverage percentage as a READER sees it -- in a header,

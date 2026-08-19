@@ -4156,3 +4156,19 @@ test_that("the coverage percentage follows decimal_mark (decision 27)", {
     "97.5% CI LL"
   )
 })
+
+
+test_that("a user's options(OutDec) never leaks into the frozen keys", {
+  withr::local_options(OutDec = ",")
+  # The frozen-key producer must pin its own decimal mark: formatC
+  # honours OutDec otherwise, and a column NAME depending on a user
+  # option would break every [["97.5% CI LL"]] lookup.
+  expect_identical(spicy:::.ci_pct_str(0.975), "97.5")
+  tbl <- suppressWarnings(table_continuous(
+    data.frame(x = c(1.5, 2.5, 3.5, 4.5)),
+    select = x,
+    ci_level = 0.975
+  ))
+  s <- as_structured(tbl)
+  expect_true("97.5% CI LL" %in% names(s$col_meta))
+})
