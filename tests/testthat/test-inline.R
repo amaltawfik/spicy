@@ -592,3 +592,51 @@ test_that("a bare inline() cites the family's primary estimate", {
   expect_identical(inline(tl, mpg), inline(tl, mpg, column = "b"))
   expect_false(identical(inline(tl, mpg), inline(tl, mpg, column = "n")))
 })
+
+test_that("a bare inline() on a median-only table cites the median, not n", {
+  # Register 55's failure mode in its non-parametric costume: a
+  # median-only row carries no "m", and the preference list used to
+  # fall through to the count. The median tokens now sit between "m"
+  # and "n" -- bare before bracketed, so an explicit `med` column wins
+  # over its `med_iqr` companion when the table shows both.
+  d <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B"), levels = c("A", "B")),
+    x = c(1, 2, 4, 5, 2, 3, 8)
+  )
+  tm <- .il_quiet(table_continuous(
+    d,
+    select = x,
+    by = g,
+    show_columns = c("n", "med"),
+    p_value = FALSE
+  ))
+  expect_identical(inline(tm, x, "A"), inline(tm, x, "A", column = "med"))
+  expect_identical(inline(tm, x, "A"), "3.00")
+  expect_identical(inline(tm, x, "A", column = "n"), "4")
+
+  tq <- .il_quiet(table_continuous(
+    d,
+    select = x,
+    by = g,
+    show_columns = c("n", "med_iqr"),
+    p_value = FALSE
+  ))
+  expect_identical(
+    inline(tq, x, "A"),
+    inline(tq, x, "A", column = "med_iqr")
+  )
+  expect_false(identical(inline(tq, x, "A"), "4"))
+})
+
+test_that("an exponentiated table's bare inline() still finds token 'b'", {
+  # The OR header does not rename the token: an exponentiated
+  # regression column carries "b" whatever its header says, and the
+  # preference list holds no scale-named entries ("or", "irr", "hr")
+  # because no table ever emits them.
+  tr <- table_regression(
+    glm(am ~ wt, data = mtcars, family = binomial),
+    exponentiate = TRUE
+  )
+  expect_identical(inline(tr, wt), inline(tr, wt, column = "b"))
+  expect_error(inline(tr, wt, column = "or"), "No column with token")
+})

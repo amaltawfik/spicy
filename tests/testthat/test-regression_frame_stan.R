@@ -437,8 +437,8 @@ test_that("stanreg: weighted fit's AME equals avg_slopes(wts = ) (draws path)", 
 # ---- Label overrides (register 55) ---------------------------------------
 
 test_that("brmsfit accepts `labels =` keyed on coefficient names", {
-  # brmsfit carries no `terms` component; the label validator used to
-  # call `stats::terms()` unguarded and died before applying anything.
+  # `stats::terms()` raises on the fit itself; the label validator used
+  # to call it unguarded and died before applying anything.
   # Local-only, like every other brms fixture here (skip_on_ci).
   fit <- .fit_brms_basic()
   out <- suppressWarnings(
@@ -446,4 +446,17 @@ test_that("brmsfit accepts `labels =` keyed on coefficient names", {
   )
   expect_true("Days of deprivation" %in% out$Variable)
   expect_false("Days" %in% out$Variable)
+})
+
+test_that("brmsfit accepts `labels =` keyed on a factor term", {
+  # The factor header is the one label a coefficient key cannot reach.
+  # brmsfit carries its terms on the unwrapped brmsformula: the
+  # validator must read them through `.spicy_get_terms()`, like the
+  # renderer that displays the `treatment:` header. Local-only.
+  fit <- .fit_brms_factor()
+  out <- suppressWarnings(
+    table_regression(fit, labels = c(treatment = "Arm"))
+  )
+  expect_true("Arm:" %in% out$Variable)
+  expect_false("treatment:" %in% out$Variable)
 })

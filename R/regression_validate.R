@@ -2404,14 +2404,16 @@ validate_predictor_labels <- function(labels, models) {
   # falls back to the per-term label (factor variable). So both
   # flavours of key are useful: term keys rename factor headers,
   # coef keys rename individual contrast rows.
-  # `terms()` is not universal: nls, flexsurvreg, selection and brmsfit
-  # fits carry no terms component, and an unguarded call died there with
-  # base R's "no 'terms' component nor attribute" -- refusing every
-  # `labels =` key on classes whose coefficient names are perfectly
-  # good keys. Fall back to the coefficient names alone (below).
+  # .spicy_get_terms(), not stats::terms(): the renderer detects factor
+  # headers through that helper, so the validator must accept exactly
+  # the terms the display shows -- flexsurvreg carries its terms on the
+  # model.frame and brmsfit on the unwrapped brmsformula, and a bare
+  # stats::terms() call refused the only label those headers can take.
+  # Classes with no terms at all (nls, selection) return NULL here and
+  # are keyed on the coefficient names alone (below).
   all_terms <- unique(unlist(lapply(models, function(fit) {
     tryCatch(
-      attr(stats::terms(fit), "term.labels"),
+      attr(.spicy_get_terms(fit), "term.labels"),
       error = function(e) character(0)
     )
   })))

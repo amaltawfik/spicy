@@ -81,9 +81,10 @@
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
-#'   coefficient (`"b"`, or the exponentiated scale the table displays
-#'   -- `"or"`, `"irr"`, `"hr"`, ...) for [table_regression()] and
-#'   [table_continuous_lm()], the mean (`"m"`) for
+#'   coefficient for [table_regression()] and [table_continuous_lm()]
+#'   -- always token `"b"`: an exponentiated table changes its header
+#'   to OR, IRR or HR, never its token -- the mean (`"m"`) or, on a
+#'   median-only table, the median (`"med"`, `"med_iqr"`) for
 #'   [table_continuous()], and the count (`"n"`) for
 #'   [table_categorical()]. A row carrying none of them refuses and
 #'   lists its tokens.
@@ -285,9 +286,12 @@ inline <- function(
 # single estimate-like token when unambiguous.
 #
 # The order is a PREFERENCE over estimate-like tokens, most specific
-# first: the exponentiated regression scales, then the coefficient,
-# then the descriptive mean, and only then the count -- which is the
-# estimate of a categorical table and the fallback of everything else.
+# first: the regression coefficient (an exponentiated table still
+# carries the token "b" -- only its HEADER says OR, IRR or HR, so
+# scale-named tokens would be dead entries), then the descriptive
+# centre (mean before median, bare median before its bracketed
+# variant), and only then the count -- the estimate of a categorical
+# table and the fallback of everything else.
 #
 # `"m"`, not `"mean"`: the continuous family's mean column carries the
 # token "m" (see the `show_columns` table in `?table_continuous`), so
@@ -300,7 +304,7 @@ inline <- function(
     function(nm) s$col_meta[[nm]]$token %||% "",
     character(1)
   ))
-  for (cand in c("or", "irr", "hr", "rr", "mr", "exp", "b", "m", "n")) {
+  for (cand in c("b", "m", "med", "med_iqr", "n")) {
     if (cand %in% tokens) {
       return(cand)
     }

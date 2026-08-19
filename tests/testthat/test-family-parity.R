@@ -112,85 +112,108 @@ test_that("the shared `labels` formal actually renames a row everywhere", {
   )
 })
 
-test_that("`labels =` reaches the display for every regression frame family", {
-  # Anti-regression witness for register 55. Two distinct holes let a
-  # `labels =` override vanish without an error or a warning:
-  #   * table_regression() shadowed the user's `labels` with per-model
-  #     names inside the mixed-fit warning blocks (merMod only);
-  #   * validate_predictor_labels() called `stats::terms()` unguarded,
-  #     which errors on the classes that carry no terms component.
-  # One label per family, asserted on the DISPLAYED Variable column, so
-  # a future regression in any shared application site reddens here even
-  # if the per-family files are not run.
-  #
-  # The cap is lowered so the merMod case actually TRIPS the warning
-  # block that used to do the shadowing (sleepstudy has n = 180); read
-  # only on the mixed path, so the other families are unaffected.
-  withr::local_options(list(spicy.re_se_max_n = 50L))
-  fams <- list(
-    lm = list(function() lm(mpg ~ wt, data = mtcars), c(wt = "Weight")),
-    glm = list(
-      function() glm(am ~ wt, data = mtcars, family = binomial),
-      c(wt = "Weight")
-    ),
-    nls = list(
-      function() {
-        nls(
-          conc ~ A * exp(-k * time),
-          data = datasets::Indometh,
-          start = list(A = 2, k = 0.5)
-        )
-      },
-      c(k = "Decay rate")
-    ),
-    coxph = list(
-      function() {
-        skip_if_not_installed("survival")
-        survival::coxph(
-          survival::Surv(time, status) ~ age,
-          data = survival::lung
-        )
-      },
-      c(age = "Age (years)")
-    ),
-    polr = list(
-      function() {
-        skip_if_not_installed("MASS")
-        MASS::polr(
-          Sat ~ Infl + Cont,
-          weights = Freq,
-          data = MASS::housing,
-          Hess = TRUE
-        )
-      },
-      c(Cont = "Contact")
-    ),
-    lmer = list(
-      function() {
-        skip_if_not_installed("lme4")
-        lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-      },
-      c(Days = "Days of deprivation")
-    )
+# Anti-regression witnesses for register 55. Two distinct holes let a
+# `labels =` override vanish without an error or a warning:
+#   * table_regression() shadowed the user's `labels` with per-model
+#     names inside the mixed-fit warning blocks (merMod only);
+#   * validate_predictor_labels() called `stats::terms()` unguarded --
+#     then guarded, it still saw no terms on the classes whose terms
+#     live off the fit (flexsurvreg, brmsfit), until it was routed
+#     through `.spicy_get_terms()`, the helper the renderer uses.
+# One label per family, asserted on the DISPLAYED Variable column, so
+# a future regression in any shared application site reddens here even
+# if the per-family files are not run. One test_that() per family: a
+# missing Suggests package skips that family alone, not the block.
+#
+# The cap is lowered so the merMod cases actually TRIP the warning
+# block that used to do the shadowing (sleepstudy has n = 180); read
+# only on the mixed path, so the other families are unaffected.
+parity_fams <- list(
+  lm = list(
+    pkgs = character(0),
+    fit = function() lm(mpg ~ wt, data = mtcars),
+    lbl = c(wt = "Weight")
+  ),
+  glm = list(
+    pkgs = character(0),
+    fit = function() glm(am ~ wt, data = mtcars, family = binomial),
+    lbl = c(wt = "Weight")
+  ),
+  nls = list(
+    pkgs = character(0),
+    fit = function() {
+      nls(
+        conc ~ A * exp(-k * time),
+        data = datasets::Indometh,
+        start = list(A = 2, k = 0.5)
+      )
+    },
+    lbl = c(k = "Decay rate")
+  ),
+  coxph = list(
+    pkgs = "survival",
+    fit = function() {
+      survival::coxph(
+        survival::Surv(time, status) ~ age,
+        data = survival::lung
+      )
+    },
+    lbl = c(age = "Age (years)")
+  ),
+  polr = list(
+    pkgs = "MASS",
+    fit = function() {
+      MASS::polr(
+        Sat ~ Infl + Cont,
+        weights = Freq,
+        data = MASS::housing,
+        Hess = TRUE
+      )
+    },
+    lbl = c(Cont = "Contact")
+  ),
+  lmer = list(
+    pkgs = "lme4",
+    fit = function() {
+      lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+    },
+    lbl = c(Days = "Days of deprivation")
+  ),
+  # lmerTest returns an lmerModLmerTest, the third class named by the
+  # warning-block filter -- witnessed on its own, not assumed from lmer.
+  lmerTest = list(
+    pkgs = c("lme4", "lmerTest"),
+    fit = function() {
+      lmerTest::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+    },
+    lbl = c(Days = "Days of deprivation")
   )
-  for (nm in names(fams)) {
-    fit <- fams[[nm]][[1L]]()
-    lbl <- fams[[nm]][[2L]]
-    out <- suppressWarnings(table_regression(fit, labels = lbl))
+)
+for (nm in names(parity_fams)) {
+  test_that(paste0("`labels =` reaches the display for class: ", nm), {
+    fam <- parity_fams[[nm]]
+    for (pkg in fam$pkgs) {
+      skip_if_not_installed(pkg)
+    }
+    withr::local_options(list(spicy.re_se_max_n = 50L))
+    out <- suppressWarnings(table_regression(fam$fit(), labels = fam$lbl))
     # Substring, not equality: a factor key renames the group HEADER
     # ("Contact:"), a numeric key renames a plain row.
     expect_true(
-      any(grepl(unname(lbl[1L]), out$Variable, fixed = TRUE)),
+      any(grepl(unname(fam$lbl[1L]), out$Variable, fixed = TRUE)),
       info = paste0("`labels` did not reach the display for class: ", nm)
     )
     # And the raw term name is gone from where the label landed --
     # as a plain row or as a factor header.
     expect_false(
-      any(c(names(lbl)[1L], paste0(names(lbl)[1L], ":")) %in% out$Variable),
+      any(
+        c(names(fam$lbl)[1L], paste0(names(fam$lbl)[1L], ":")) %in%
+          out$Variable
+      ),
       info = paste0("raw term name still displayed for class: ", nm)
     )
-  }
-})
+  })
+}
 
 test_that("every table class exposes working broom tidy()/glance() methods", {
   skip_if_not_installed("broom")

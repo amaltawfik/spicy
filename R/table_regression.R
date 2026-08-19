@@ -1169,9 +1169,9 @@
 #'   so the header of a subordinate block -- `Random effects`,
 #'   `Thresholds`, `Zero-inflation`, ... -- cannot be relabelled here;
 #'   those headers are set by the package. Classes that carry no
-#'   `terms` component (`nls()`, `flexsurv::flexsurvreg()`,
-#'   `sampleSelection::selection()`, `brms::brm()`) are keyed on their
-#'   coefficient (or parameter) names alone.
+#'   `terms` component at all (`nls()`,
+#'   `sampleSelection::selection()`) are keyed on their coefficient
+#'   (or parameter) names alone.
 #'
 #'   With several models, a name is checked against the union of their
 #'   terms: a key naming a term only one model has is legal, and the
@@ -2024,11 +2024,7 @@ table_regression <- function(
       logical(1)
     )
     if (any(overridden)) {
-      mod_labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
-        names(models)
-      } else {
-        paste("Model", seq_along(models))
-      }
+      mod_labels <- .model_display_names(models)
       spicy_warn(
         c(
           paste0(
@@ -2700,14 +2696,7 @@ table_regression <- function(
     logical(1)
   )
   if (any(singular_mixed)) {
-    # `mod_labels`, never `labels`: `labels` is the user's per-coefficient
-    # row-label vector, still needed by the renderer downstream. Shadowing
-    # it here silently dropped every `labels =` override on mixed fits.
-    mod_labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
-      names(models)
-    } else {
-      paste("Model", seq_along(models))
-    }
+    mod_labels <- .model_display_names(models)
     spicy_warn(
       c(
         sprintf(
@@ -2736,12 +2725,7 @@ table_regression <- function(
     logical(1)
   )
   if (any(re_se_skipped)) {
-    # `mod_labels`, never `labels` -- see the singular block above.
-    mod_labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
-      names(models)
-    } else {
-      paste("Model", seq_along(models))
-    }
+    mod_labels <- .model_display_names(models)
     spicy_warn(
       c(
         sprintf(
@@ -3152,4 +3136,18 @@ table_regression <- function(
     word_path = word_path,
     word_template = word_template
   )
+}
+
+# Display names for a list of fitted models: their names when all are
+# named, positional "Model k" otherwise. Every warning that cites a
+# model goes through here, and binds the result to `mod_labels` --
+# never `labels`, the user's per-coefficient row-label vector still
+# needed by the renderer downstream: shadowing it in a warning block
+# once silently dropped every `labels =` override on mixed fits.
+.model_display_names <- function(models) {
+  if (!is.null(names(models)) && all(nzchar(names(models)))) {
+    names(models)
+  } else {
+    paste("Model", seq_along(models))
+  }
 }

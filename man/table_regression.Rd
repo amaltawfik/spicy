@@ -660,9 +660,9 @@ that is neither a term label nor a coefficient name is rejected,
 so the header of a subordinate block -- \verb{Random effects},
 \code{Thresholds}, \code{Zero-inflation}, ... -- cannot be relabelled here;
 those headers are set by the package. Classes that carry no
-\code{terms} component (\code{nls()}, \code{flexsurv::flexsurvreg()},
-\code{sampleSelection::selection()}, \code{brms::brm()}) are keyed on their
-coefficient (or parameter) names alone.
+\code{terms} component at all (\code{nls()},
+\code{sampleSelection::selection()}) are keyed on their coefficient
+(or parameter) names alone.
 
 With several models, a name is checked against the union of their
 terms: a key naming a term only one model has is legal, and the
