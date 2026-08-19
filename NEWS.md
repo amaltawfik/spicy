@@ -775,6 +775,16 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   instead of failing with `No AIC for survey models` after printing six
   lines of design description. Design-based Cox models are not supported
   yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
+* `table_regression(labels = )` now applies to every supported model class.
+  It was silently ignored -- no error, no warning, raw term names printed --
+  on `lme4::lmer()`, `lme4::glmer()`, and `lmerTest::lmer()` fits whenever
+  the table also reported a singular fit or variance-component standard
+  errors skipped above the `spicy.re_se_max_n` cap.
+* `table_regression(labels = )` no longer errors with
+  `no terms component nor attribute` on models that carry no `terms`
+  component: `nls()`, `flexsurv::flexsurvreg()`,
+  `sampleSelection::selection()`, and `brms::brm()`. Keys are matched
+  against the coefficient names there.
 
 ## Minor improvements
 
