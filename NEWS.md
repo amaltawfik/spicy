@@ -773,7 +773,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `97,5% CI` (and `97·5% CI` under the Lancet style) in all four table
   families and every engine. Integer coverages (90, 95, 99) and the
   default period are byte-identical, and the frozen column names of the
-  descriptive families keep the period (`97.5% CI LL`).
+  descriptive families keep the period (`97.5% CI LL`). In the
+  regression family the header is the column's programmatic name, so
+  at a fractional coverage under a non-default mark the
+  `as_structured()` and `data.frame` column names move with it --
+  code that must not depend on `decimal_mark` should read
+  `broom::tidy()` or `output = "long"`, whose names never change.
 * `excel_sheet` defaults to `NULL` in the four table functions and
   resolves to the same sheet names as before (`"Regression"`,
   `"Categorical"`, `"Descriptives"`, `"Linear models"`). Behaviour is
