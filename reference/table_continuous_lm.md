@@ -441,13 +441,13 @@ table_continuous_lm(
   for `"omega2"` / `"f2"`). The CI level is taken from `ci_level`. In
   the long output (`output = "long"`), the bounds are always present in
   `es_ci_lower` / `es_ci_upper` (numeric). In the wide raw output
-  (`output = "data.frame"`), the bounds appear as numeric columns
-  `effect_size_ci_lower` / `effect_size_ci_upper`. In the printed ASCII
-  table and rendered outputs (`"tinytable"`, `"gt"`, `"flextable"`,
-  `"word"`, `"excel"`, `"clipboard"`), the effect-size column shows the
-  value followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`).
-  Defaults to `FALSE`. When `effect_size = "none"`, this argument is
-  ignored with a warning.
+  (`output = "data.frame"`), the bounds appear under the same names,
+  `es_ci_lower` / `es_ci_upper` (numeric). In the printed ASCII table
+  and rendered outputs (`"tinytable"`, `"gt"`, `"flextable"`, `"word"`,
+  `"excel"`, `"clipboard"`), the effect-size column shows the value
+  followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`). Defaults to
+  `FALSE`. When `effect_size = "none"`, this argument is ignored with a
+  warning.
 
 - r2:
 
@@ -629,8 +629,8 @@ Depends on `output`:
   numeric columns for means (categorical `by`) or slope (numeric `by`),
   optional contrast and CI, optional test statistic, `p`, fit statistic
   (`\eqn{R^2}{R^2}` or adjusted `\eqn{R^2}{R^2}`), effect size, optional
-  `effect_size_ci_lower` / `effect_size_ci_upper` (when
-  `effect_size_ci = TRUE`), `n`, and `Weighted n`.
+  `es_ci_lower` / `es_ci_upper` (when `effect_size_ci = TRUE`), `n`, and
+  `Weighted n`.
 
 - `"long"`: a raw `data.frame` with one block per outcome and 28 columns
   covering identification (`variable`, `label`, `predictor_type`,

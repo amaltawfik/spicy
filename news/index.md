@@ -114,6 +114,10 @@
   when `word_path` is supplied; the combination warns
   (`spicy_ignored_arg`). Use
   [`flextable::save_as_docx()`](https://davidgohel.github.io/flextable/reference/save_as_docx.html).
+- `table_continuous_lm(output = "data.frame")` names the effect-size
+  interval bounds `es_ci_lower` / `es_ci_upper` – the same names the
+  `"long"` output has always used. Replace `out$effect_size_ci_lower` /
+  `out$effect_size_ci_upper` with `out$es_ci_lower` / `out$es_ci_upper`.
 - `standardized = "smart"` scales continuous inputs by 2 SD and leaves
   binary inputs unscaled. The rule was applied inverted since 0.12.0,
   halving every continuous “smart” beta.
@@ -994,6 +998,22 @@ instead of rendering an empty column.
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   carries it in `display_cells`. Where that placeholder was what set a
   column’s width, the column tightens by one character.
+- The coverage percentage of an interval header follows `decimal_mark`:
+  at `ci_level = 0.975` with `decimal_mark = ","` the spanner, the
+  column headers, the CI notes and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)’s
+  `{ci_label}` read `97,5% CI` (and `97·5% CI` under the Lancet style)
+  in all four table families and every engine. Integer coverages (90,
+  95, 99) and the default period are byte-identical, and the frozen
+  column names of the descriptive families keep the period
+  (`97.5% CI LL`). In the regression family the header is the column’s
+  programmatic name, so at a fractional coverage under a non-default
+  mark the
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  and `data.frame` column names move with it – code that must not depend
+  on `decimal_mark` should read
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) or
+  `output = "long"`, whose names never change.
 - `excel_sheet` defaults to `NULL` in the four table functions and
   resolves to the same sheet names as before (`"Regression"`,
   `"Categorical"`, `"Descriptives"`, `"Linear models"`). Behaviour is

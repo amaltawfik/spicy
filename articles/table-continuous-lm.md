@@ -564,8 +564,8 @@ table_continuous_lm(
 #> wellbeing_score WHO-5 wellbeing index (0-100) 69.36317 67.64538    -1.717793
 #>                 95% CI LL 95% CI UL         p          R²          g
 #> wellbeing_score -3.906437 0.4708504 0.1238546 0.002017481 -0.1098571
-#>                 effect_size_ci_lower effect_size_ci_upper    n
-#> wellbeing_score           -0.2497291           0.03006164 1175
+#>                 es_ci_lower es_ci_upper    n
+#> wellbeing_score  -0.2497291  0.03006164 1175
 ```
 
 ``` r
