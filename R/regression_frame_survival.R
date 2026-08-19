@@ -35,6 +35,12 @@
 #   survreg dist=lognormal   -> "Log-normal AFT regression"
 #   survreg dist=exponential -> "Exponential AFT regression"
 #   etc.
+#
+# Subclasses that do NOT belong here: survey::svycoxph() inherits "coxph"
+# and would dispatch to the method below, but it is a design-weighted fit
+# with no likelihood; it is intercepted by as_regression_frame.svycoxph()
+# in R/regression_frame_svyglm.R. rms::cph() also inherits "coxph" and has
+# its own method in R/regression_frame_rms.R.
 # ---------------------------------------------------------------------------
 
 #' `as_regression_frame()` method for `coxph` fits.

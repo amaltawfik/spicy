@@ -1,11 +1,16 @@
 # ---------------------------------------------------------------------------
-# Guards for survey-design fits: the design is the variance authority.
+# Guards for survey-design fits: the design is the variance authority, and
+# a design-weighted Cox fit is refused by class instead of dying inside the
+# coxph extractor.
 #
-# compute_model_vcov() returned a silently wrong matrix for every
-# model-derived estimator on svyglm / svrepglm -- HC3 gave SE 51864 against
-# 26.90 design-correct, jackknife 10.89: the first ~1900x too big, the
-# second ~0.4x, i.e. anti-conservative. No test went through that route,
-# which is why the hole survived CI.
+# Both guards close routes that produced a WRONG or an unusable answer:
+#   * compute_model_vcov() returned a silently wrong matrix for every
+#     model-derived estimator on svyglm / svrepglm (HC3: SE 51864 against
+#     26.90 design-correct; jackknife: 10.89 -- the first ~1900x too big,
+#     the second ~0.4x, i.e. anti-conservative);
+#   * svycoxph dispatched to as_regression_frame.coxph() by inheritance and
+#     failed with an unclassed simpleError ("No AIC for survey models")
+#     after printing six lines of design description.
 # ---------------------------------------------------------------------------
 
 # ---- Fixtures -------------------------------------------------------------
@@ -253,4 +258,62 @@ test_that("classes that are not design fits keep their own refusals", {
   )
   expect_match(conditionMessage(err), "resampling", fixed = TRUE)
   expect_false(grepl("variance authority", conditionMessage(err), fixed = TRUE))
+})
+
+
+# ---- Guard B: svycoxph is refused by class, silently ------------------------
+
+test_that("svycoxph gets a classed refusal instead of an internal error", {
+  fit <- .svycoxph_guard_fit()
+  expect_s3_class(fit, "coxph") # the inheritance that caused the crash
+  for (call in list(
+    function() as_regression_frame(fit),
+    function() table_regression(fit)
+  )) {
+    err <- expect_error(call(), class = "spicy_unsupported_class")
+    # The taxonomy parent must be present so a caller can catch every
+    # spicy refusal uniformly (the old failure was a bare simpleError).
+    expect_s3_class(err, "spicy_error")
+    msg <- conditionMessage(err)
+    expect_match(msg, "svycoxph", fixed = TRUE)
+    expect_match(msg, "regTermTest", fixed = TRUE)
+    # The internal failure must be gone, not merely re-wrapped.
+    expect_false(grepl("No AIC", msg, fixed = TRUE))
+  }
+})
+
+test_that("svycoxph refusal prints nothing on the way out", {
+  # survey's summary.svycoxph prints the design; the coxph extractor
+  # called it twice, so the old failure emitted six lines of design
+  # description before the error. Refusing before the extractor runs
+  # leaves the console untouched.
+  fit <- .svycoxph_guard_fit()
+  expect_length(
+    capture.output(try(as_regression_frame(fit), silent = TRUE)),
+    0L
+  )
+  expect_length(capture.output(try(table_regression(fit), silent = TRUE)), 0L)
+})
+
+test_that("plain coxph is untouched by the svycoxph method", {
+  # The refusal must not shadow the class it inherits from: a plain
+  # coxph frame still builds and still reports survival's own numbers
+  # exactly.
+  skip_if_not_installed("survival")
+  fit <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
+  fr <- as_regression_frame(fit)
+  b <- .svy_guard_b_rows(fr)
+  sm <- summary(fit)$coefficients
+  expect_identical(b$term, rownames(sm))
+  expect_equal(b$estimate, unname(sm[, "coef"]), tolerance = 1e-14)
+  expect_equal(b$std_error, unname(sm[, "se(coef)"]), tolerance = 1e-14)
+  expect_equal(b$p_value, unname(sm[, "Pr(>|z|)"]), tolerance = 1e-14)
+  expect_identical(fr$info$class, "coxph")
+  expect_identical(fr$info$fit_stats$n_events, as.integer(fit$nevent))
+  out <- table_regression(fit, output = "data.frame")
+  expect_s3_class(out, "data.frame")
+  expect_gt(nrow(out), 0L)
 })

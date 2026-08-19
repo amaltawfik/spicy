@@ -771,6 +771,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   with a classed error (`spicy_invalid_data`) naming the fix: convert with
   `as.integer()` / `as.numeric()`, or `as.character()` for codes wider than
   2^53. `count_n()` still works.
+* `table_regression()` on a `survey::svycoxph()` fit gives a clear refusal
+  instead of failing with `No AIC for survey models` after printing six
+  lines of design description. Design-based Cox models are not supported
+  yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
 
 ## Minor improvements
 

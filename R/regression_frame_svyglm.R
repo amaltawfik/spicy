@@ -1,4 +1,8 @@
 # ---------------------------------------------------------------------------
+# as_regression_frame() methods for survey-design fits: the supported one
+# (svyglm / svrepglm) and the explicit refusal for svycoxph, which would
+# otherwise be swallowed by inheritance (see the bottom of this file).
+#
 # Phase 2: as_regression_frame() method for survey::svyglm() fits.
 #
 # `svyglm` inherits from `glm` and `lm`, so without an explicit method
@@ -73,6 +77,53 @@ as_regression_frame.svyglm <- function(
   )
 
   new_regression_frame(coefs, info, fit)
+}
+
+
+# ---- Design-based Cox: explicit refusal -----------------------------------
+
+# class(svycoxph_fit) is c("svycoxph", "coxph"), so WITHOUT this method the
+# fit dispatches to as_regression_frame.coxph() by inheritance, walks into
+# the coxph extractor and dies there: .coxph_info() calls stats::AIC(fit),
+# and survey's extractAIC method stops with the unclassed
+# "No AIC for survey models" -- preceded by six lines of design description
+# printed as a side effect by the two summary(fit) calls the coxph path
+# makes (survey's summary.svycoxph prints the design). A caller could
+# neither catch the failure by class nor keep the console clean.
+#
+# The refusal is deliberate rather than provisional. A design-based Cox
+# table is not a coxph table with a different vcov: the coefficients come
+# from a design-weighted partial likelihood, the variance from the design,
+# there is no likelihood (hence no AIC / BIC / logLik and no Cox-Snell R2),
+# and the canonical global test is survey::regTermTest(), not the three
+# likelihood-ratio tests a coxph footer reports. Shipping half of that now
+# would be worse than saying so.
+#
+#' `as_regression_frame()` method for `svycoxph` fits (refusal).
+#'
+#' @keywords internal
+#' @noRd
+#' @export
+as_regression_frame.svycoxph <- function(fit, ...) {
+  spicy_abort(
+    c(
+      sprintf(
+        "table_regression() does not support model class %s yet.",
+        sQuote("svycoxph")
+      ),
+      "i" = paste0(
+        "Design-based Cox models arrive with the survey-design work; ",
+        "a partial table now would report likelihood statistics that do ",
+        "not exist for a design-weighted fit."
+      ),
+      "i" = paste0(
+        "For now, `summary(fit)` gives the design-based coefficient ",
+        "table and `survey::regTermTest(fit, ~term)` the design-based ",
+        "Wald test."
+      )
+    ),
+    class = "spicy_unsupported_class"
+  )
 }
 
 
