@@ -491,3 +491,55 @@ test_that("a multi-valued `model` is refused, not vectorised into `if`", {
   )
   expect_s3_class(err, "spicy_invalid_input")
 })
+
+
+test_that("inline() cites a continuous SMD cell, byte for byte", {
+  # The mechanism is generic: `inline()` builds the typed view and
+  # derives its vocabulary from `col_meta$token`, with no hard-coded
+  # list of columns -- so a new column becomes citable with no work,
+  # provided its cell is NOT a display override. The SMD's is a bare
+  # number, so the string quoted in a sentence IS the string in the
+  # table.
+  d <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B"), levels = c("A", "B")),
+    x = c(1, 2, 4, 5, 2, 3, 8)
+  )
+  tbl <- .il_quiet(table_continuous(
+    d,
+    select = x,
+    by = g,
+    smd = TRUE,
+    p_value = FALSE
+  ))
+  s <- as_structured(tbl)
+  formatted <- spicy:::.format_structured_to_string_body(s)
+  expect_identical(inline(tbl, x, "A", column = "smd"), formatted$SMD[[1L]])
+  expect_identical(inline(tbl, x, "A", column = "smd"), "-0.51")
+
+  # Non-regression: `"smd"` is not in the default column preference,
+  # and must not be. A bare `inline(tbl, x, "A")` still cites the mean.
+  expect_identical(
+    inline(tbl, x, "A"),
+    .il_quiet(inline(
+      table_continuous(d, select = x, by = g, p_value = FALSE),
+      x,
+      "A"
+    ))
+  )
+
+  # KNOWN FAMILY LIMIT, pinned so it is not mistaken for a regression:
+  # in a categorical table the SMD -- like `p` and the association
+  # measure, neither of which is citable today either -- lives only on
+  # the `factor_header` row, whose `.level` is NA, and
+  # `.inline_resolve_row()` refuses `level = NULL` as soon as the
+  # variable has levels. Unblocking it would unblock all three at once
+  # and is a lot of its own.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = bin, by = g, smd = TRUE))
+  expect_error(inline(ct, bin, column = "smd"), "pick one with")
+  expect_error(inline(ct, bin, "no", column = "smd"), "empty")
+  expect_error(inline(ct, bin, column = "assoc"), "pick one with")
+})
