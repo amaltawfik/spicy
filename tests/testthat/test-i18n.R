@@ -119,6 +119,13 @@ test_that("every frozen continuous key equals its English display label", {
     list(.CON_KEY_TEST, "header_test"),
     list(.CON_KEY_P, "header_p"),
     list(.CON_KEY_ES, "header_effect_size_short"),
+    # Added BY HAND, and it has to be: the derived half of this test
+    # below walks `.continuous_token_columns()`, which covers every
+    # token column automatically -- and `smd` is deliberately not a
+    # token but an argument (a two-group comparison has no business
+    # among the per-group descriptives). The manual entry is the direct
+    # corollary of that API decision.
+    list(.CON_KEY_SMD, "header_smd"),
     list(.CON_KEY_N, "header_n_lower"),
     list(.CON_KEY_WEIGHTED_N, "header_weighted_n"),
     list(.CON_KEY_CI_LL, "header_ci_ll"),

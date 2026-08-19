@@ -33,6 +33,7 @@ print.spicy_continuous_table <- function(x, ...) {
   show_ci <- attr(x, "show_ci") %||% TRUE
   show_effect_size <- isTRUE(attr(x, "show_effect_size"))
   show_effect_size_ci <- isTRUE(attr(x, "show_effect_size_ci"))
+  show_smd <- isTRUE(attr(x, "show_smd"))
 
   display_df <- build_display_df(
     x,
@@ -47,6 +48,7 @@ print.spicy_continuous_table <- function(x, ...) {
     show_ci = show_ci,
     show_effect_size = show_effect_size,
     show_effect_size_ci = show_effect_size_ci,
+    show_smd = show_smd,
     tokens_union = attr(x, "show_columns"),
     tokens_by_var = attr(x, "show_columns_by_var")
   )
@@ -341,6 +343,7 @@ glance.spicy_continuous_table <- function(x, ...) {
   has_group <- "group" %in% names(long)
   has_test <- "test_type" %in% names(long)
   has_es <- "es_value" %in% names(long)
+  has_smd <- "smd_value" %in% names(long)
 
   if (has_group) {
     # Sum n across groups for n_total; pick the test / ES from the
@@ -371,6 +374,12 @@ glance.spicy_continuous_table <- function(x, ...) {
     es_value = if (has_es) per_outcome$es_value else NA_real_,
     es_ci_lower = if (has_es) per_outcome$es_ci_lower else NA_real_,
     es_ci_upper = if (has_es) per_outcome$es_ci_upper else NA_real_,
+    # The balance diagnostic travels beside the effect size, never
+    # inside it: they are different denominators (Austin's mean of the
+    # two group variances, not the degrees-of-freedom pooled SD) and
+    # must never be read for one another.
+    smd_type = if (has_smd) per_outcome$smd_type else NA_character_,
+    smd_value = if (has_smd) per_outcome$smd_value else NA_real_,
     n_total = per_outcome$n_total,
     stringsAsFactors = FALSE,
     check.names = FALSE

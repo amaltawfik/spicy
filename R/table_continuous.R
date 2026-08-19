@@ -156,6 +156,15 @@
 #'   left at the default `effect_size = "none"`, the function warns
 #'   and promotes `effect_size` to `"auto"` so the requested CI can
 #'   be shown. Defaults to `FALSE`.
+#' @param smd Logical. If `TRUE`, adds an `SMD` column holding the
+#'   standardized mean difference between the two groups of `by`,
+#'   the balance diagnostic of the Table 1 literature. Requires
+#'   exactly two groups; signed, group 1 minus group 2 in the order
+#'   the table displays them; no confidence interval and no p-value,
+#'   by design. It is independent of `p_value` and of
+#'   `effect_size`: turning it on turns nothing else off. Rounded
+#'   with `effect_size_digits`. See the "Standardized mean
+#'   difference" section below. Defaults to `FALSE`.
 #' @param ci Logical. If `TRUE`, includes the mean confidence
 #'   interval columns (`<level>% CI LL` / `<level>% CI UL`) and their
 #'   spanner in the printed ASCII table and in every rendered output
@@ -284,6 +293,11 @@
 #'       \item `es_value`, `es_ci_lower`, `es_ci_upper` -- effect-size
 #'         estimate and confidence interval bounds.
 #'     }
+#'     A `by` frame ALSO carries `smd_type` and `smd_value`
+#'     unconditionally -- `NA` throughout when `smd = FALSE` -- so the
+#'     schema a pipeline indexes into does not move with an argument
+#'     (the `weighted_n` rule). `smd_type` names the kernel the value
+#'     came from: `"continuous"` here.
 #'     The two names `"data.frame"` and `"long"` are synonyms (the
 #'     descriptive output is naturally already long). Pick whichever
 #'     reads better in your code.
@@ -449,6 +463,72 @@
 #' For Cohen's *d*, Hays' \eqn{\omega^2}, and Cohen's *f*\eqn{^2}
 #' (derived from a fitted, possibly weighted `lm()`), use the
 #' model-based companion [table_continuous_lm()].
+#'
+#' # Standardized mean difference
+#'
+#' `smd = TRUE` adds an `SMD` column with the balance diagnostic of
+#' the Table 1 literature, in Austin's form (Austin 2009, *Stat Med*
+#' 28:3083-3107; Austin 2011, *Multivar Behav Res* 46:399-424):
+#'
+#' \deqn{\mathrm{SMD} = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{(s_1^2 +
+#' s_2^2) / 2}}}
+#'
+#' The denominator is the root **mean of the two group variances**,
+#' each at \eqn{n - 1}. It is **not** the degrees-of-freedom pooled
+#' SD that Cohen's *d* and Hedges' *g* use, which
+#' `effect_size = "hedges_g"` puts two columns to the left: the two
+#' are different published conventions and coincide only at equal
+#' group sizes. On a 4-versus-3 split the SMD is \eqn{-0.51} where
+#' *g* is \eqn{-0.45}. Never read one for the other, and never
+#' recompute one from the other. (The same divergence is nameable
+#' upstream: `cobalt::col_w_smd(s.d.denom = "pooled")` reproduces
+#' this column, `s.d.denom = "hedges"` reproduces `hedges_g`.)
+#'
+#' Conventions, all deliberate:
+#'
+#' \itemize{
+#'   \item **Signed**, group 1 minus group 2 in the order the table
+#'     displays the groups -- the two groups sit side by side, so a
+#'     bare magnitude would make the reader re-derive a direction the
+#'     row already gives. (`tableone` publishes the magnitude;
+#'     `cobalt` and `arsenal` sign it the other way, guessing the
+#'     second level as "treated".) The threshold in the table note is
+#'     read on \eqn{|\mathrm{SMD}|}; the column keeps the sign. No
+#'     conditional formatting: spicy never highlights a threshold.
+#'   \item **No confidence interval and no p-value, ever.** The SMD
+#'     is a descriptive diagnostic; attaching an interval to it
+#'     reintroduces the test reasoning the balance literature asks
+#'     the reader to drop. This is not a missing feature.
+#'   \item **Exactly two groups.** A `by` with three or more is
+#'     refused rather than averaged over pairs: an average has no
+#'     published reading, and it can sit under the usual threshold
+#'     while one pair sits well over it.
+#'   \item **Complete cases on the observed groups.** A
+#'     `drop_na = FALSE` "(Missing)" group is displayed and never
+#'     enters the diagnostic, exactly as the test and the effect size
+#'     behave.
+#'   \item **Independent of `p_value`.** Turning the SMD on turns
+#'     nothing else off. The balance-table idiom is
+#'     `smd = TRUE, p_value = FALSE`; you have to write both.
+#' }
+#'
+#' Under `weights`, the means and variances are the weighted ones the
+#' `M` and `SD` columns already display -- the frequency convention
+#' of the *Weights* section, from the same producer, so the column
+#' cannot contradict its neighbours. One consequence follows and is
+#' intended: a frequency weight is a number of copies, so the
+#' weighted SMD is **not invariant to the scale of the weights**
+#' (multiplying every weight by ten moves it, as it moves the `SD`
+#' column). `rescale = TRUE` normalises the weights to sum to *n*,
+#' restores scale invariance, and is the form to use for sampling
+#' weights until the dedicated survey-design functions land.
+#'
+#' A cell is an en-dash when the diagnostic applies but cannot be
+#' estimated: both groups constant at different values (an infinite
+#' standardized distance, disclosed by a warning), or a group with
+#' too little data to have a variance (silent -- the `SD` cell beside
+#' it already says so). Two groups constant at the *same* value are
+#' perfectly balanced and print `0.00`.
 #'
 #' # Display conventions
 #'
@@ -659,6 +739,7 @@ table_continuous <- function(
     "epsilon_sq"
   ),
   effect_size_ci = FALSE,
+  smd = FALSE,
   ci = TRUE,
   labels = NULL,
   ci_level = 0.95,
@@ -757,6 +838,7 @@ table_continuous <- function(
   for (.lname in c(
     "statistic",
     "effect_size_ci",
+    "smd",
     "show_n",
     "ci",
     "regex",
@@ -865,6 +947,13 @@ table_continuous <- function(
       class = "spicy_ignored_arg"
     )
   }
+  if (smd && !has_group) {
+    spicy_warn(
+      "`smd` is ignored when `by` is not used: a standardized mean difference compares two groups.",
+      class = "spicy_ignored_arg"
+    )
+  }
+  do_smd <- smd && has_group
   if (!drop_na && !has_group) {
     spicy_warn(
       "`drop_na = FALSE` is ignored when `by` is not used: a continuous summary has no \"(Missing)\" display row. NAs are always excluded from each variable's statistics and disclosed in the table note.",
@@ -1328,6 +1417,9 @@ table_continuous <- function(
   # its KEY: the label itself is a display string, auto-renamed on
   # collision with a real group value.
   missing_group_label <- NA_character_
+  # The two group levels the SMD subtracts, in display order. Empty
+  # without `by`, where the column does not exist.
+  real_group_levels <- character(0)
 
   if (has_group) {
     # `by` follows the same `user_na` contract as the summarized
@@ -1360,6 +1452,27 @@ table_continuous <- function(
       # with table_categorical() / cross_tab() (audit phase 2,
       # finding 17). Factors keep their declared level order above.
       unique(groups[!is.na(groups)])
+    }
+    # The REAL groups of the table, captured at their construction site
+    # and BEFORE the "(Missing)" pseudo-level is appended below. The SMD
+    # counts on this, and on nothing derived by name: a user level
+    # homonymous with the missing label would make a `setdiff()` on the
+    # augmented vector lie, and the missing label is itself auto-renamed
+    # on collision. One missing `by` value must not turn a two-group
+    # table into a refused three-group one.
+    real_group_levels <- as.character(group_levels)
+    if (do_smd && length(real_group_levels) != 2L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "`smd = TRUE` requires exactly two groups in `by` (found %d).",
+            length(real_group_levels)
+          ),
+          "i" = "The standardized mean difference is a two-group balance diagnostic (Austin 2009); there is no published reading of an average over pairs.",
+          "i" = "Compare two groups at a time, e.g. filter `by` to a pair of levels."
+        ),
+        class = "spicy_not_implemented"
+      )
     }
     if (!drop_na && n_na_groups > 0L) {
       # Display label for the missing-`by` group, guarded against a
@@ -1535,6 +1648,50 @@ table_continuous <- function(
       # carry into a by table.
       w_var <- .prep_variable_weights(work[[nm]], weights_vec, rescale)
 
+      # --- standardized mean difference ---
+      # Complete cases on the OBSERVED groups, like the test and the
+      # effect size above: a "(Missing)" display group never enters a
+      # balance diagnostic. The moments come from the same producer the
+      # M and SD columns read -- the same `w_var`, rescale included --
+      # so the SMD can never contradict the two columns to its left.
+      smd_row <- data.frame(
+        smd_type = NA_character_,
+        smd_value = NA_real_,
+        stringsAsFactors = FALSE
+      )
+      if (do_smd) {
+        gv <- as.character(groups_obs)
+        moments <- lapply(real_group_levels, function(g) {
+          idx <- which(gv == g)
+          .smd_moments_base(
+            work[[nm]][idx],
+            if (is.null(w_var)) NULL else w_var[idx]
+          )
+        })
+        smd_val <- .smd_pair_dispatch(
+          moments[[1L]],
+          moments[[2L]],
+          "continuous"
+        )
+        reason <- .smd_undefined_reason(smd_val)
+        if (!is.null(reason)) {
+          spicy_warn(
+            sprintf(
+              "The standardized mean difference is undefined for `%s`: neither group varies and their means differ, so the standardized distance is infinite. Its cell is NA.",
+              nm
+            ),
+            class = "spicy_undefined_stat"
+          )
+        }
+        smd_row$smd_type <- "continuous"
+        smd_row$smd_value <- as.numeric(smd_val)
+      }
+      smd_na_row <- data.frame(
+        smd_type = NA_character_,
+        smd_value = NA_real_,
+        stringsAsFactors = FALSE
+      )
+
       for (j in seq_along(group_levels)) {
         g <- group_levels[j]
         idx <- which(groups == g)
@@ -1568,6 +1725,14 @@ table_continuous <- function(
         if (do_es) {
           desc <- cbind(desc, if (j == 1L) es_row else es_na_row)
         }
+        # Unconditional, unlike the test and effect-size blocks above:
+        # a grouped compute frame carries `smd_type` / `smd_value`
+        # whether or not `smd = TRUE`, NA when it is off. That is the
+        # `weighted_n` rule of decision 17 -- a stable schema a
+        # pipeline can index into -- applied to the one comparison
+        # column added since. (The older comparison columns keep their
+        # own conditional rule; a one-way frame still has none of them.)
+        desc <- cbind(desc, if (j == 1L) smd_row else smd_na_row)
         rows[[length(rows) + 1L]] <- desc
       }
     }
@@ -1622,6 +1787,7 @@ table_continuous <- function(
   attr(result, "show_ci") <- ci
   attr(result, "show_effect_size") <- has_es_request && has_group
   attr(result, "show_effect_size_ci") <- effect_size_ci && has_group
+  attr(result, "show_smd") <- do_smd
   attr(result, "effect_size") <- effect_size
   attr(result, "show_columns") <- tokens_union
   attr(result, "show_columns_by_var") <- tokens_by_var
@@ -1644,7 +1810,8 @@ table_continuous <- function(
     build_weights_note(),
     build_missing_note(),
     build_test_note(test_used, auto_rank, n_test_groups),
-    build_column_glosses(tokens_union, result, ci_level, decimal_mark)
+    build_column_glosses(tokens_union, result, ci_level, decimal_mark),
+    build_smd_note(do_smd, real_group_levels, decimal_mark)
   ))
 
   if (output %in% c("data.frame", "long")) {
@@ -1670,6 +1837,7 @@ table_continuous <- function(
       show_statistic = attr(result, "show_statistic"),
       show_effect_size = attr(result, "show_effect_size"),
       show_effect_size_ci = attr(result, "show_effect_size_ci"),
+      show_smd = attr(result, "show_smd"),
       tokens_union = tokens_union,
       tokens_by_var = tokens_by_var
     )
@@ -1714,6 +1882,7 @@ table_continuous <- function(
       show_statistic = attr(result, "show_statistic"),
       show_effect_size = attr(result, "show_effect_size"),
       show_effect_size_ci = attr(result, "show_effect_size_ci"),
+      show_smd = attr(result, "show_smd"),
       tokens_union = tokens_union,
       tokens_by_var = tokens_by_var
     ),
@@ -1782,6 +1951,10 @@ order_continuous_tokens <- function(tokens) {
 .CON_KEY_TEST <- "Test"
 .CON_KEY_P <- "p"
 .CON_KEY_ES <- "ES"
+# The standardized-mean-difference column. Its header comes from
+# `header_smd`, the ONE registry key both descriptive families share --
+# `.CAT_KEY_SMD` is its categorical twin and holds the same string.
+.CON_KEY_SMD <- "SMD"
 .CON_KEY_N <- "n"
 .CON_KEY_WEIGHTED_N <- "Weighted n"
 # The bare bound keys an interval spanner leaves behind: `rename_ci_cols()`
@@ -1972,14 +2145,20 @@ order_continuous_tokens <- function(tokens) {
     spicy_str("header_group"),
     spicy_str("header_test"),
     spicy_str("header_p"),
-    spicy_str("header_effect_size_short")
+    spicy_str("header_effect_size_short"),
+    # Without this entry `.continuous_labels()` would fall back to
+    # `out[miss] <- col_keys[miss]`: the column would print "SMD"
+    # correctly, no test would fail, and the header would be
+    # permanently untranslatable. The i18n trap of this lot.
+    spicy_str("header_smd")
   )
   names(map) <- c(
     .CON_KEY_VARIABLE,
     .CON_KEY_GROUP,
     .CON_KEY_TEST,
     .CON_KEY_P,
-    .CON_KEY_ES
+    .CON_KEY_ES,
+    .CON_KEY_SMD
   )
   for (entries in .continuous_token_columns(ci_level, decimal_mark)) {
     for (e in entries) {
@@ -2302,6 +2481,30 @@ build_column_glosses <- function(tokens, result, ci_level, decimal_mark = ".") {
     return(NULL)
   }
   paste(parts, collapse = " ")
+}
+
+# Gloss the SMD column. Not part of `build_column_glosses()` above: that
+# one walks the `show_columns` vocabulary, and `smd` is deliberately an
+# ARGUMENT rather than a token (a token would file a two-group
+# comparison among the per-group descriptives).
+#
+# Four holes: the header it glosses, the two group labels in the order
+# the subtraction reads, and the imbalance threshold. The threshold is a
+# displayed NUMBER, so it follows `decimal_mark` (decision 29-C) through
+# `format_number()` -- `spicy_fmt()` substitutes no decimal mark, so a
+# literal "0.1" in the template would print a period inside a
+# comma-marked table.
+build_smd_note <- function(show_smd, group_levels, decimal_mark = ".") {
+  if (!show_smd) {
+    return(NULL)
+  }
+  spicy_fmt(
+    "note_gloss_smd",
+    spicy_str("header_smd"),
+    group_levels[[1L]],
+    group_levels[[2L]],
+    format_number(0.1, digits = 1L, decimal_mark = decimal_mark)
+  )
 }
 
 
@@ -2665,6 +2868,7 @@ build_display_df <- function(
   show_ci = TRUE,
   show_effect_size = FALSE,
   show_effect_size_ci = FALSE,
+  show_smd = FALSE,
   effect_size_digits = 2L,
   p_digits = 3L,
   tokens_union = NULL,
@@ -2762,6 +2966,11 @@ build_display_df <- function(
   has_group <- "group" %in% names(result)
   has_computed <- "statistic" %in% names(result)
   has_es <- "es_value" %in% names(result)
+  # The SMD fields are part of every grouped frame's schema, so their
+  # presence is not the question: `smd_type` is NA on every row when
+  # the column was not asked for, and non-NA on the carrying row when
+  # it was.
+  has_smd <- "smd_value" %in% names(result)
 
   # The column names come from the vocabulary, never re-typed here: a
   # token declared in one place and spelled in another is how
@@ -2888,6 +3097,25 @@ build_display_df <- function(
           )
         },
         character(1)
+      )
+    }
+    # LAST, and that is a constraint rather than a preference. The
+    # console re-labels an orphaned "companion" column on a
+    # continuation panel by looking LEFT for its carrier
+    # (`R/tables_ascii.R`): "SMD" is not a companion, but inserting it
+    # BETWEEN `Test` and `p` would re-label an orphaned `p` as
+    # "p (SMD)", silently wrong.
+    if (has_smd && show_smd) {
+      # A bare number: the ES column prefixes a glyph because it
+      # changes measure from row to row, whereas the SMD is always the
+      # same quantity and its name is in the header (tableone renders
+      # it the same way). Only the first row of each variable block
+      # carries it; an undefined cell shows the `cell_undefined` dash,
+      # as `fmt()` does everywhere else.
+      df[[.CON_KEY_SMD]] <- ifelse(
+        is.na(result$smd_type),
+        "",
+        fmt(result$smd_value, effect_size_digits)
       )
     }
   }

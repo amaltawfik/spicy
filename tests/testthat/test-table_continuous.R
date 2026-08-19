@@ -2823,6 +2823,8 @@ test_that("glance() returns one row per outcome with omnibus test + ES", {
       "es_value",
       "es_ci_lower",
       "es_ci_upper",
+      "smd_type",
+      "smd_value",
       "n_total"
     )
   )
@@ -3411,6 +3413,8 @@ test_that("tidy/glance column sets are frozen (stabilising contract)", {
       "es_value",
       "es_ci_lower",
       "es_ci_upper",
+      "smd_type",
+      "smd_value",
       "n_total"
     )
   )

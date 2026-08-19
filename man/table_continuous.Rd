@@ -20,6 +20,7 @@ table_continuous(
   show_columns = NULL,
   effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
   effect_size_ci = FALSE,
+  smd = FALSE,
   ci = TRUE,
   labels = NULL,
   ci_level = 0.95,
@@ -188,6 +189,16 @@ left at the default \code{effect_size = "none"}, the function warns
 and promotes \code{effect_size} to \code{"auto"} so the requested CI can
 be shown. Defaults to \code{FALSE}.}
 
+\item{smd}{Logical. If \code{TRUE}, adds an \code{SMD} column holding the
+standardized mean difference between the two groups of \code{by},
+the balance diagnostic of the Table 1 literature. Requires
+exactly two groups; signed, group 1 minus group 2 in the order
+the table displays them; no confidence interval and no p-value,
+by design. It is independent of \code{p_value} and of
+\code{effect_size}: turning it on turns nothing else off. Rounded
+with \code{effect_size_digits}. See the "Standardized mean
+difference" section below. Defaults to \code{FALSE}.}
+
 \item{ci}{Logical. If \code{TRUE}, includes the mean confidence
 interval columns (\verb{<level>\% CI LL} / \verb{<level>\% CI UL}) and their
 spanner in the printed ASCII table and in every rendered output
@@ -332,6 +343,11 @@ or \code{effect_size != "none"}, additional columns are appended
 \item \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper} -- effect-size
 estimate and confidence interval bounds.
 }
+A \code{by} frame ALSO carries \code{smd_type} and \code{smd_value}
+unconditionally -- \code{NA} throughout when \code{smd = FALSE} -- so the
+schema a pipeline indexes into does not move with an argument
+(the \code{weighted_n} rule). \code{smd_type} names the kernel the value
+came from: \code{"continuous"} here.
 The two names \code{"data.frame"} and \code{"long"} are synonyms (the
 descriptive output is naturally already long). Pick whichever
 reads better in your code.
@@ -522,6 +538,72 @@ are closed-form and deterministic).
 For Cohen's \emph{d}, Hays' \eqn{\omega^2}, and Cohen's \emph{f}\eqn{^2}
 (derived from a fitted, possibly weighted \code{lm()}), use the
 model-based companion \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
+}
+
+\section{Standardized mean difference}{
+\code{smd = TRUE} adds an \code{SMD} column with the balance diagnostic of
+the Table 1 literature, in Austin's form (Austin 2009, \emph{Stat Med}
+28:3083-3107; Austin 2011, \emph{Multivar Behav Res} 46:399-424):
+
+\deqn{\mathrm{SMD} = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{(s_1^2 +
+s_2^2) / 2}}}
+
+The denominator is the root \strong{mean of the two group variances},
+each at \eqn{n - 1}. It is \strong{not} the degrees-of-freedom pooled
+SD that Cohen's \emph{d} and Hedges' \emph{g} use, which
+\code{effect_size = "hedges_g"} puts two columns to the left: the two
+are different published conventions and coincide only at equal
+group sizes. On a 4-versus-3 split the SMD is \eqn{-0.51} where
+\emph{g} is \eqn{-0.45}. Never read one for the other, and never
+recompute one from the other. (The same divergence is nameable
+upstream: \code{cobalt::col_w_smd(s.d.denom = "pooled")} reproduces
+this column, \code{s.d.denom = "hedges"} reproduces \code{hedges_g}.)
+
+Conventions, all deliberate:
+
+\itemize{
+\item \strong{Signed}, group 1 minus group 2 in the order the table
+displays the groups -- the two groups sit side by side, so a
+bare magnitude would make the reader re-derive a direction the
+row already gives. (\code{tableone} publishes the magnitude;
+\code{cobalt} and \code{arsenal} sign it the other way, guessing the
+second level as "treated".) The threshold in the table note is
+read on \eqn{|\mathrm{SMD}|}; the column keeps the sign. No
+conditional formatting: spicy never highlights a threshold.
+\item \strong{No confidence interval and no p-value, ever.} The SMD
+is a descriptive diagnostic; attaching an interval to it
+reintroduces the test reasoning the balance literature asks
+the reader to drop. This is not a missing feature.
+\item \strong{Exactly two groups.} A \code{by} with three or more is
+refused rather than averaged over pairs: an average has no
+published reading, and it can sit under the usual threshold
+while one pair sits well over it.
+\item \strong{Complete cases on the observed groups.} A
+\code{drop_na = FALSE} "(Missing)" group is displayed and never
+enters the diagnostic, exactly as the test and the effect size
+behave.
+\item \strong{Independent of \code{p_value}.} Turning the SMD on turns
+nothing else off. The balance-table idiom is
+\verb{smd = TRUE, p_value = FALSE}; you have to write both.
+}
+
+Under \code{weights}, the means and variances are the weighted ones the
+\code{M} and \code{SD} columns already display -- the frequency convention
+of the \emph{Weights} section, from the same producer, so the column
+cannot contradict its neighbours. One consequence follows and is
+intended: a frequency weight is a number of copies, so the
+weighted SMD is \strong{not invariant to the scale of the weights}
+(multiplying every weight by ten moves it, as it moves the \code{SD}
+column). \code{rescale = TRUE} normalises the weights to sum to \emph{n},
+restores scale invariance, and is the form to use for sampling
+weights until the dedicated survey-design functions land.
+
+A cell is an en-dash when the diagnostic applies but cannot be
+estimated: both groups constant at different values (an infinite
+standardized distance, disclosed by a warning), or a group with
+too little data to have a variance (silent -- the \code{SD} cell beside
+it already says so). Two groups constant at the \emph{same} value are
+perfectly balanced and print \code{0.00}.
 }
 
 \section{Display conventions}{

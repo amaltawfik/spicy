@@ -524,6 +524,26 @@
       composite = TRUE
     )
   }
+  if (.CON_KEY_SMD %in% names(display_df)) {
+    col_names <- c(col_names, .CON_KEY_SMD)
+    # No `p_style` and no `value_range`: the SMD of a k-level variable
+    # is a Mahalanobis distance and is NOT bounded by 1 (1.11 and 2.45
+    # on the pinned fixtures), so the APA leading-zero strip and the
+    # [-1, 1] check the association column carries would both be wrong
+    # here. `.validate_structured()` only range-checks when `p_style`
+    # is non-NULL, so leaving it NULL settles both at once.
+    col_meta[[.CON_KEY_SMD]] <- list(
+      token = "smd",
+      display_label = spicy_str("header_smd"),
+      precision = as.integer(effect_size_digits)
+    )
+    # NOT composite: the cell is the bare number, so the typed body and
+    # the printed cell are the same value and `inline()` can cite it.
+    col_source[[.CON_KEY_SMD]] <- list(
+      name = .CON_KEY_SMD,
+      field = "smd_value"
+    )
+  }
 
   rows <- list()
   for (i in seq_len(nrow(result))) {

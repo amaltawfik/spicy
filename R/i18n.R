@@ -360,6 +360,11 @@
   # `header_effect_size` ("Effect size", lot A): two strings, two columns,
   # two families.
   header_effect_size_short = "ES",
+  # The standardized-mean-difference column, ONE key for BOTH descriptive
+  # families: unlike the effect-size headers above, this is a single
+  # quantity playing a single role, so the continuous and the categorical
+  # table put the same word over it.
+  header_smd = "SMD",
   # The bounds of an interval carried by a SPANNER. Deliberately not
   # `header_ci_lower` / `header_ci_upper` ("CI lower" / "CI upper", lot A),
   # which name standalone columns with no spanner above them.
@@ -432,6 +437,16 @@
   # Two holes: the median-interval header, then the coverage percentage.
   note_gloss_med_ci = "%1$s = exact order-statistic confidence interval for the median (coverage at least %2$s).",
   note_gloss_med_ci_undefined = "\"%s\" where the sample is too small for this level.",
+  # The SMD gloss is the first one named after something other than a
+  # `show_columns` token -- the direct corollary of the API decision
+  # that `smd` is an ARGUMENT and not a token. Four holes: the glossed
+  # header, the two group labels in the order the subtraction reads,
+  # then the THRESHOLD. That last one is a displayed number, so it
+  # follows `decimal_mark` (decision 29-C) and is built by
+  # `format_number()` at the call site -- never written "0.1" here,
+  # because `spicy_fmt()` substitutes no decimal mark. The "-" between
+  # the group labels is punctuation, like `header_lm_delta`'s.
+  note_gloss_smd = "%1$s = standardized mean difference (%2$s - %3$s); |%1$s| > %4$s is the usual imbalance threshold.",
 
   # -- table_regression(): standard-error and interval notes ----------------
   note_adjusted_for = "Adjusted for %s (%s).",
