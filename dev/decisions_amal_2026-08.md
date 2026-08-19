@@ -415,3 +415,17 @@ s.d.denom="hedges" —, binaire p(1-p)/n, Yang-Dalton en ginv()
 pondéré = convention fréquentielle D17, API smd = FALSE en argument
 (pas jeton), clé gelée "SMD", algèbre paramétrée par estimateurs
 (R/smd.R) pour héritage _svy (§28).
+
+## 30. Survey — le batch final de trois — DÉCIDÉ 2026-08-19
+
+(D2) degf(design) PARTOUT pour les IC design-based (t aux ddl du
+design; écart assumé avec le seul confint() défaut de survey qui
+prend la normale — déclaré au pied). (D3) svycoxph en t, homogène
+avec svyglm (l'objet expose degf.resid; une table mixte t/z non
+déclarée serait pire que l'écart avec summary.svycoxph — pied).
+(D6) colonne n = effectifs OBSERVÉS, weighted_n à part (motif D17);
+en-tête « N = 183 (weighted 6 194) » = LES DEUX; divergence assumée
+et documentée vs gtsummary (qui pondère par défaut). Avec §28
+(fonctions _svy dédiées), D1 (qrule math + "spicy" opt-in), B4
+(survey >= 4.5 motivé), le chantier survey est à ZÉRO décision
+ouverte — spec: scratchpad survey_design_spec.md (révisée post-revue).
