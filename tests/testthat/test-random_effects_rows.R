@@ -385,6 +385,32 @@ test_that("raising the size cap restores the variance-component SEs", {
   expect_false(grepl("SE and CI not computed", out, fixed = TRUE))
 })
 
+test_that("the size-cap warning does not swallow `labels =` (register 55)", {
+  # Regression witness. The warning block used to build its per-model
+  # names into a local called `labels`, shadowing the user's
+  # per-coefficient label vector for the rest of the pipeline: every
+  # `labels =` override was silently dropped on any mixed fit large
+  # enough to trip the variance-component SE size cap.
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+
+  withr::local_options(list(spicy.re_se_max_n = 50L)) # sleepstudy n = 180
+
+  expect_warning(
+    tr <- table_regression(fit, labels = c(Days = "Days of deprivation")),
+    class = "spicy_caveat"
+  )
+  expect_true("Days of deprivation" %in% tr$Variable)
+  expect_false("Days" %in% tr$Variable)
+  # The warning still names the model, not the coefficient label.
+  w <- tryCatch(
+    table_regression(fit, labels = c(Days = "Days of deprivation")),
+    warning = function(w) w
+  )
+  expect_match(conditionMessage(w), "Model 1", fixed = TRUE)
+})
+
 ## ---- 12. Profile-likelihood CIs for variance components (re_ci) -----------
 
 test_that("re_ci = 'profile' matches the confint profile oracle exactly", {

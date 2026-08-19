@@ -1168,7 +1168,14 @@
 #'   that is neither a term label nor a coefficient name is rejected,
 #'   so the header of a subordinate block -- `Random effects`,
 #'   `Thresholds`, `Zero-inflation`, ... -- cannot be relabelled here;
-#'   those headers are set by the package.
+#'   those headers are set by the package. Classes that carry no
+#'   `terms` component (`nls()`, `flexsurv::flexsurvreg()`,
+#'   `sampleSelection::selection()`, `brms::brm()`) are keyed on their
+#'   coefficient (or parameter) names alone.
+#'
+#'   With several models, a name is checked against the union of their
+#'   terms: a key naming a term only one model has is legal, and the
+#'   label lands on the rows where that term exists.
 #' @param title,note Override or suppress the auto-built caption /
 #'   methodological footer. Three modes per argument:
 #'   \itemize{
@@ -2693,7 +2700,10 @@ table_regression <- function(
     logical(1)
   )
   if (any(singular_mixed)) {
-    labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
+    # `mod_labels`, never `labels`: `labels` is the user's per-coefficient
+    # row-label vector, still needed by the renderer downstream. Shadowing
+    # it here silently dropped every `labels =` override on mixed fits.
+    mod_labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
       names(models)
     } else {
       paste("Model", seq_along(models))
@@ -2702,7 +2712,7 @@ table_regression <- function(
       c(
         sprintf(
           "Singular fit (%s): a random-effect variance component is estimated at exactly zero.",
-          paste(labels[singular_mixed], collapse = ", ")
+          paste(mod_labels[singular_mixed], collapse = ", ")
         ),
         "i" = paste0(
           "Consider simplifying the random structure (drop the ",
@@ -2726,7 +2736,8 @@ table_regression <- function(
     logical(1)
   )
   if (any(re_se_skipped)) {
-    labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
+    # `mod_labels`, never `labels` -- see the singular block above.
+    mod_labels <- if (!is.null(names(models)) && all(nzchar(names(models)))) {
       names(models)
     } else {
       paste("Model", seq_along(models))
@@ -2738,7 +2749,7 @@ table_regression <- function(
             "Variance-component SEs and CIs skipped for %s: n exceeds ",
             "`options(\"spicy.re_se_max_n\")` = %s."
           ),
-          paste(labels[re_se_skipped], collapse = ", "),
+          paste(mod_labels[re_se_skipped], collapse = ", "),
           format(.re_se_size_cap(), big.mark = ",")
         ),
         "i" = paste0(
