@@ -122,8 +122,11 @@ build <strong>Table 1</strong> (sample characteristics) and
 <strong>Table 2</strong> (group comparisons);</li>
 <li>
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> extends Table 2 to the
-linear-model regime when group means need robust SE, case weights, or
-covariate adjustment;</li>
+linear-model regime when group means need robust or cluster-robust SE,
+covariate adjustment, or group tests under case weights — the
+descriptive families take <code>weights =</code> natively for the
+estimates themselves, and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> points here
+the moment weighted <em>means</em> are to be tested;</li>
 <li>
 <code><a href="../reference/table_regression.html">table_regression()</a></code> builds <strong>Table 3</strong> (the
 coefficient table) from one or several fitted models — <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>

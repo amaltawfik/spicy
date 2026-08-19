@@ -15,7 +15,11 @@ sequence used in empirical articles:
   comparisons);
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   extends Table 2 to the linear-model regime when group means need
-  robust SE, case weights, or covariate adjustment;
+  robust or cluster-robust SE, covariate adjustment, or group tests
+  under case weights — the descriptive families take `weights =`
+  natively for the estimates themselves, and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  points here the moment weighted *means* are to be tested;
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   builds **Table 3** (the coefficient table) from one or several fitted
   models — [`lm()`](https://rdrr.io/r/stats/lm.html) /
