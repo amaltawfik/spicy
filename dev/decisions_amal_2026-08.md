@@ -444,3 +444,16 @@ vedette, évite le faux-ami gtsummary::tbl_strata (qui signifie tout
 autre chose), et s'étend le jour où l'outcome pourra être catégoriel
 (dispatch par type). Pipeline : recon → revue de spec → arbitrages →
 implémentation.
+
+## 32. table_outcome — D-A et D-B — DÉCIDÉ 2026-08-19
+
+(D-A) PAS de colonne SMD en v1 : effect_size couvre le besoin
+standardisé par bloc; la lecture Table-1 n'existe pas sur l'axe
+inversé; §29-B rendrait la colonne dentelée dès 3+ niveaux. Schéma
+laissé OUVERT (smd_type/smd_value portés NA dans le cadre de calcul
+et glance() dès la v1 — l'ajout futur ne cassera rien). (D-B) titre
+par défaut « Descriptive statistics of %s » (l'outcome seul) —
+fondé sur la source APA TableSetup (« brief but descriptive ») et
+sa table-type (« Sociodemographic Characteristics of Participants
+at Baseline » : contenu décrit, variables jamais énumérées); la
+stratification est visible au talon, title= porte le contexte final.
