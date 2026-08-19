@@ -109,7 +109,7 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     c(
       sprintf(
         "table_regression() does not support model class %s yet.",
-        sQuote("svycoxph")
+        sQuote(class(fit)[1L])
       ),
       "i" = paste0(
         "Design-based Cox models arrive with the survey-design work; ",

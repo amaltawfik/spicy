@@ -60,13 +60,13 @@ compute_model_vcov <- function(
   # fit "classical" only); this guard closes the direct / internal route
   # -- as_regression_frame(fit, vcov = ) and .apply_robust_vcov_to_coefs()
   # -- which bypasses that gate. "model" and "survey-Taylor" are the
-  # frame-level aliases of the design-based default: they never reach here
-  # (.apply_robust_vcov_to_coefs() short-circuits them) and are listed so
-  # that a direct caller keeps the "Unknown `vcov` type" answer they have
-  # always had, rather than being told the design refuses them.
+  # frame-level aliases of the design-based default never reach here
+  # (.apply_robust_vcov_to_coefs() short-circuits them). The guard fires
+  # only on KNOWN estimators (.VCOV_MODES) so an unknown token keeps the
+  # "Unknown `vcov` type" answer it has always had.
   if (
     .is_design_fit(fit) &&
-      !type %in% c("classical", "model", "survey-Taylor")
+      type %in% setdiff(.VCOV_MODES, "classical")
   ) {
     spicy_abort(
       c(

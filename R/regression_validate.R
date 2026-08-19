@@ -204,6 +204,29 @@
 # lm objects ARE lists internally (with $coefficients, $residuals,
 # etc.). The trick: a *plain* list has class identical to `"list"`;
 # a model fit has model classes (lm, glm, merMod, ...) layered on top.
+# Canonical vcov vocabulary (Q7), single producer: consumed by the
+# upfront validation below and by the survey-design guard in
+# compute_model_vcov() (which must fire only on KNOWN estimators so an
+# unknown token keeps its "Unknown `vcov` type" answer).
+.VCOV_MODES <- c(
+  "classical",
+  paste0("HC", 0:5),
+  paste0("CR", 0:3),
+  # Stata `regress, vce(cluster)` convention: CR1S scaling with
+  # t(G - 1) inference. lm only (Stata's ML commands use a
+  # DIFFERENT convention -- G/(G-1) scaling with z -- so claiming
+  # the Stata name for glm would be a misattribution).
+  "CR1S",
+  "bootstrap",
+  "jackknife",
+  # quantreg::rq estimator family (refused for every
+  # other class by the Step-6c capability gate).
+  "nid",
+  "iid",
+  "ker",
+  "rank"
+)
+
 validate_models_input <- function(models) {
   # Step 1: handle NULL upfront (R's `inherits` and `is.list` both
   # return FALSE on NULL, so it would otherwise slip through)
@@ -558,27 +581,11 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     )
   }
 
-  # Canonical vcov vocabulary (Q7). Validated upfront so an unknown
-  # type is caught with a clear error instead of letting `sandwich` /
-  # `clubSandwich` warn-and-fallback at compute time.
-  valid_vcov <- c(
-    "classical",
-    paste0("HC", 0:5),
-    paste0("CR", 0:3),
-    # Stata `regress, vce(cluster)` convention: CR1S scaling with
-    # t(G - 1) inference. lm only (Stata's ML commands use a
-    # DIFFERENT convention -- G/(G-1) scaling with z -- so claiming
-    # the Stata name for glm would be a misattribution).
-    "CR1S",
-    "bootstrap",
-    "jackknife",
-    # quantreg::rq estimator family (refused for every
-    # other class by the Step-6c capability gate).
-    "nid",
-    "iid",
-    "ker",
-    "rank"
-  )
+  # Canonical vcov vocabulary (Q7): the shared constant. Validated
+  # upfront so an unknown type is caught with a clear error instead of
+  # letting `sandwich` / `clubSandwich` warn-and-fallback at compute
+  # time.
+  valid_vcov <- .VCOV_MODES
 
   # Step 6: vcov list length + element type
   if (is.list(vcov)) {

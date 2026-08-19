@@ -68,14 +68,24 @@
 # ---- Guard A: every model-derived vcov is refused on a design fit ----------
 
 test_that("compute_model_vcov() refuses HC* and the resamplers on design fits", {
-  # 14 witnesses: 7 estimators x 2 design classes. None of them went
+  # 18 witnesses: 9 estimators x 2 design classes. None of them went
   # through a test before -- which is exactly why the hole survived CI.
   # svrepglm inherits "svyglm", so it reaches the guard by inheritance;
   # it is exercised explicitly because the two classes carry different
   # variance machinery (Taylor linearisation vs replicate weights) and
   # both returned wrong -- and DIFFERENT -- matrices.
   fits <- .svy_guard_fits()
-  estimators <- c("HC0", "HC1", "HC2", "HC3", "HC4", "bootstrap", "jackknife")
+  estimators <- c(
+    "HC0",
+    "HC1",
+    "HC2",
+    "HC3",
+    "HC4",
+    "HC5",
+    "CR1S",
+    "bootstrap",
+    "jackknife"
+  )
   for (cls in names(fits)) {
     for (est in estimators) {
       err <- expect_error(
@@ -316,4 +326,34 @@ test_that("plain coxph is untouched by the svycoxph method", {
   out <- table_regression(fit, output = "data.frame")
   expect_s3_class(out, "data.frame")
   expect_gt(nrow(out), 0L)
+})
+
+
+test_that("an unknown vcov token keeps its own answer on a design fit", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dclus1 <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    fpc = ~fpc,
+    data = apiclus1
+  )
+  fit <- survey::svyglm(api00 ~ ell, design = dclus1)
+  # The design guard fires on KNOWN estimators only. An unprefixed
+  # unknown token keeps the historical "Unknown `vcov` type" error,
+  # not the design message.
+  err <- tryCatch(
+    spicy:::compute_model_vcov(fit, "garbage"),
+    error = identity
+  )
+  expect_match(conditionMessage(err), "Unknown `vcov` type", fixed = TRUE)
+  expect_false(grepl("variance authority", conditionMessage(err)))
+  # An HC-prefixed unknown keeps ITS historical answer too: sandwich
+  # errors, the HC arm's fallback warns and returns stats::vcov() --
+  # which on a design fit IS the design variance.
+  expect_warning(
+    v9 <- spicy:::compute_model_vcov(fit, "HC9"),
+    class = "spicy_fallback"
+  )
+  expect_identical(v9, stats::vcov(fit))
 })
