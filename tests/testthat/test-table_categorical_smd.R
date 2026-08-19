@@ -136,6 +136,36 @@ test_that("the SMD sits on the variable row, never on a level row", {
   expect_false(grepl("is therefore unsigned", bin_only, fixed = TRUE))
 })
 
+test_that("the RENDERED level rows carry an empty SMD cell, by contract", {
+  skip_if_not_installed("MASS")
+  # The typed view and the long frame are checked above, but neither
+  # touches `report_wide`, the frame the console and every engine
+  # actually print. That is the frame whose blanking line the code
+  # claims is written "by CONTRACT" -- and replacing that `""` with
+  # `"x"` used to leave the whole battery green while the printed
+  # table showed an x under SMD on every level row.
+  d <- .smd_cat_data()
+  tb <- table_categorical(d, select = c(bin, k3), by = g, smd = TRUE)
+  disp <- attr(tb, "display_df")
+  roles <- as_structured(tb)$body$.row_role
+  expect_identical(nrow(disp), length(roles))
+  cells <- disp[[.CAT_KEY_SMD]]
+  # Every variable row carries a number ...
+  expect_true(all(nzchar(cells[roles == "factor_header"])))
+  # ... and every other row is the empty string, not a blank-looking
+  # value and not a repeat of the variable row's number.
+  expect_identical(
+    cells[roles != "factor_header"],
+    rep("", sum(roles != "factor_header"))
+  )
+  # The same seen through the console, so a change of frame does not
+  # quietly move the property out from under this test.
+  txt <- capture.output(print(tb))
+  level_lines <- grep("^\\s+(no|yes|a|b|c)\\s", txt, value = TRUE)
+  expect_gt(length(level_lines), 0L)
+  expect_false(any(grepl("-0.92|1.11", level_lines, fixed = FALSE)))
+})
+
 test_that("the raw frames name the SMD by their own convention", {
   skip_if_not_installed("MASS")
   d <- .smd_cat_data()

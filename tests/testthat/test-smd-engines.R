@@ -54,55 +54,92 @@
   paste(capture.output(print(obj)), collapse = "\n")
 }
 
-test_that("smd = FALSE is byte-identical on every route of both families", {
+test_that("the default rendering is frozen under snapshot", {
+  # An earlier version of this file compared `table_*(..., output = o)`
+  # with `table_*(..., smd = FALSE, output = o)` and called the result
+  # a byte-identity witness. `smd = FALSE` IS the default: those are
+  # the same call, so the test could not fail whatever the branch did.
+  #
+  # What actually protects the default is a frozen artefact. These
+  # snapshots are the `smd = FALSE` rendering of both families; a lot
+  # that disturbs it has to move them, deliberately and visibly.
   d <- .smd_eng_data()
-  engines <- c("default", "data.frame", "long", "flextable")
-  if (requireNamespace("tinytable", quietly = TRUE)) {
-    engines <- c(engines, "tinytable")
-  }
-  if (requireNamespace("gt", quietly = TRUE)) {
-    engines <- c(engines, "gt")
-  }
+  expect_snapshot(table_continuous(d, select = c(x, y), by = g))
+  expect_snapshot(table_categorical(d, select = c(bin, k3), by = g))
+})
+
+test_that("smd = TRUE changes nothing but the column it adds", {
+  skip_if_not_installed("MASS")
+  d <- .smd_eng_data()
+  # The real form of the property the vacuous test above used to claim:
+  # take the `smd = TRUE` output, remove the SMD column, and require
+  # what is left to equal the default output exactly. This DOES fail if
+  # the branch perturbs any other cell.
+  con_off <- table_continuous(d, select = c(x, y), by = g, output = "long")
+  con_on <- table_continuous(
+    d,
+    select = c(x, y),
+    by = g,
+    smd = TRUE,
+    output = "long"
+  )
+  # The two schema columns are in both frames (decision 17's stable
+  # schema); everything OUTSIDE them must be untouched.
+  shared <- setdiff(names(con_off), c("smd_type", "smd_value"))
+  expect_identical(con_on[shared], con_off[shared])
+  expect_identical(names(con_on), names(con_off))
+  # ... and under `smd = FALSE` the two schema columns are all NA.
+  expect_true(all(is.na(con_off$smd_type)))
+  expect_true(all(is.na(con_off$smd_value)))
+
+  cat_off <- table_categorical(
+    d,
+    select = c(bin, k3),
+    by = g,
+    output = "data.frame"
+  )
+  cat_on <- table_categorical(
+    d,
+    select = c(bin, k3),
+    by = g,
+    smd = TRUE,
+    output = "data.frame"
+  )
+  expect_identical(cat_on[names(cat_off)], cat_off)
+  expect_identical(names(cat_on), c(names(cat_off), .CAT_KEY_SMD))
+
   skip_if_not_installed("flextable")
-
-  for (out in engines) {
-    con_ref <- .smd_fingerprint(table_continuous(
-      d,
-      select = c(x, y),
-      by = g,
-      output = out
-    ))
-    con_now <- .smd_fingerprint(table_continuous(
-      d,
-      select = c(x, y),
-      by = g,
-      smd = FALSE,
-      output = out
-    ))
-    expect_identical(con_now, con_ref, info = paste("continuous", out))
-
-    cat_ref <- .smd_fingerprint(table_categorical(
-      d,
-      select = c(bin, k3),
-      by = g,
-      output = out
-    ))
-    cat_now <- .smd_fingerprint(table_categorical(
-      d,
-      select = c(bin, k3),
-      by = g,
-      smd = FALSE,
-      output = out
-    ))
-    expect_identical(cat_now, cat_ref, info = paste("categorical", out))
+  for (fam in c("continuous", "categorical")) {
+    off <- if (fam == "continuous") {
+      table_continuous(d, select = c(x, y), by = g, output = "flextable")
+    } else {
+      table_categorical(d, select = c(bin, k3), by = g, output = "flextable")
+    }
+    on <- if (fam == "continuous") {
+      table_continuous(
+        d,
+        select = c(x, y),
+        by = g,
+        smd = TRUE,
+        output = "flextable"
+      )
+    } else {
+      table_categorical(
+        d,
+        select = c(bin, k3),
+        by = g,
+        smd = TRUE,
+        output = "flextable"
+      )
+    }
+    keep <- names(off$body$dataset)
+    expect_identical(on$body$dataset[keep], off$body$dataset[keep], info = fam)
+    expect_identical(
+      names(on$body$dataset),
+      c(keep, "SMD"),
+      info = fam
+    )
   }
-  # The one place the default DOES move, disclosed: the grouped
-  # continuous compute frame carries the two new schema columns, NA
-  # throughout. Nothing else in that frame changes.
-  fr <- table_continuous(d, select = c(x, y), by = g, output = "long")
-  expect_true(all(c("smd_type", "smd_value") %in% names(fr)))
-  expect_true(all(is.na(fr$smd_type)))
-  expect_true(all(is.na(fr$smd_value)))
 })
 
 test_that("smd = TRUE adds exactly one column, headed SMD, on every engine", {
