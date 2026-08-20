@@ -55,13 +55,24 @@ test_that("docx target: a descriptive gt gains the note at knit time", {
     by = sex,
     output = "gt"
   )
-  # The descriptive builders attach the note as an attribute only (the
-  # shared HTML post-processor styles it); the knit path adds the
-  # native source note pandoc needs.
-  expect_length(g[["_source_notes"]], 0L)
+  # The descriptive builders carry the note natively (a saved gt must
+  # not lose it -- the review's F4); the knit path must therefore NOT
+  # add a second copy. Once, on every pandoc target, is the contract.
+  expect_length(g[["_source_notes"]], 1L)
   out <- .with_pandoc_to("docx", knitr::knit_print(g))
   s <- paste(as.character(out), collapse = "")
-  expect_match(s, "Missing values removed", fixed = TRUE)
+  expect_identical(
+    length(gregexpr("Missing values removed", s, fixed = TRUE)[[1L]]),
+    1L
+  )
+  s2 <- paste(
+    as.character(.with_pandoc_to("html", knitr::knit_print(g))),
+    collapse = ""
+  )
+  expect_identical(
+    length(gregexpr("Missing values removed", s2, fixed = TRUE)[[1L]]),
+    1L
+  )
 })
 
 test_that("HTML target keeps the styled-note post-processing", {
