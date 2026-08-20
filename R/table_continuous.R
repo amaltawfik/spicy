@@ -1308,106 +1308,8 @@ table_continuous <- function(
   var_labels <- resolve_variable_labels(data, numeric_cols, labels)
 
   # --- computation ---
-  # Every statistic is computed for every variable (the cost is nil);
-  # `show_columns` selects what the table displays. The quantiles use
-  # stats::quantile()'s default type 7, so `med` / `q1` / `q3` equal
-  # stats::median() / stats::quantile() on the same vector.
-  compute_one <- function(x, ci_level, w = NULL) {
-    empty_row <- function() {
-      data.frame(
-        mean = NA_real_,
-        sd = NA_real_,
-        min = NA_real_,
-        max = NA_real_,
-        ci_lower = NA_real_,
-        ci_upper = NA_real_,
-        median = NA_real_,
-        q1 = NA_real_,
-        q3 = NA_real_,
-        iqr = NA_real_,
-        med_ci_lower = NA_real_,
-        med_ci_upper = NA_real_,
-        n = 0L,
-        weighted_n = NA_real_,
-        stringsAsFactors = FALSE
-      )
-    }
-    if (!is.null(w)) {
-      # Weighted branch (decision 17, frequency-expansion convention;
-      # see R/weighted_stats.R for the formulas and their
-      # triangulation). Rows with NA or zero weight carry zero
-      # copies: they leave every statistic, min/max included. The
-      # mean CI uses SE = s/sqrt(W) with df = W - 1 -- for integer
-      # weights this IS the t interval of the expanded data, and
-      # with all weights 1 it collapses to the unweighted interval.
-      # The order-statistic median CI has no weighted version (the
-      # med_ci token is refused up front); its fields stay NA.
-      keep <- !is.na(x) & !is.na(w) & w > 0
-      x_valid <- x[keep]
-      w_valid <- w[keep]
-      n <- length(x_valid)
-      if (n == 0L) {
-        return(empty_row())
-      }
-      big_w <- sum(w_valid)
-      m <- .wtd_mean(x_valid, w_valid)
-      s <- .wtd_sd(x_valid, w_valid)
-      se <- if (!is.na(s)) s / sqrt(big_w) else NA_real_
-      alpha <- 1 - ci_level
-      t_crit <- if (big_w > 1) {
-        stats::qt(1 - alpha / 2, df = big_w - 1)
-      } else {
-        NA_real_
-      }
-      qs <- .wtd_quantile7(x_valid, w_valid, probs = c(0.25, 0.5, 0.75))
-      return(data.frame(
-        mean = m,
-        sd = s,
-        min = min(x_valid),
-        max = max(x_valid),
-        ci_lower = if (!is.na(se)) m - t_crit * se else NA_real_,
-        ci_upper = if (!is.na(se)) m + t_crit * se else NA_real_,
-        median = qs[2L],
-        q1 = qs[1L],
-        q3 = qs[3L],
-        iqr = qs[3L] - qs[1L],
-        med_ci_lower = NA_real_,
-        med_ci_upper = NA_real_,
-        n = n,
-        weighted_n = big_w,
-        stringsAsFactors = FALSE
-      ))
-    }
-    x_valid <- x[!is.na(x)]
-    n <- length(x_valid)
-    if (n == 0L) {
-      return(empty_row())
-    }
-    m <- mean(x_valid)
-    s <- if (n > 1L) stats::sd(x_valid) else NA_real_
-    se <- if (n > 1L) s / sqrt(n) else NA_real_
-    alpha <- 1 - ci_level
-    t_crit <- if (n > 1L) stats::qt(1 - alpha / 2, df = n - 1L) else NA_real_
-    qs <- unname(stats::quantile(x_valid, probs = c(0.25, 0.75), names = FALSE))
-    med_ci <- median_order_ci(x_valid, ci_level)
-    data.frame(
-      mean = m,
-      sd = s,
-      min = min(x_valid),
-      max = max(x_valid),
-      ci_lower = if (n > 1L) m - t_crit * se else NA_real_,
-      ci_upper = if (n > 1L) m + t_crit * se else NA_real_,
-      median = stats::median(x_valid),
-      q1 = qs[1L],
-      q3 = qs[2L],
-      iqr = qs[2L] - qs[1L],
-      med_ci_lower = med_ci[1L],
-      med_ci_upper = med_ci[2L],
-      n = n,
-      weighted_n = NA_real_,
-      stringsAsFactors = FALSE
-    )
-  }
+  # Statistics per vector: `.continuous_compute_one()`, shared with
+  # `table_outcome()`.
 
   # Test actually used per variable, for the disclosure note: the table
   # must say which test each row carries when they differ. NA where no
@@ -1704,7 +1606,11 @@ table_continuous <- function(
       for (j in seq_along(group_levels)) {
         g <- group_levels[j]
         idx <- which(groups == g)
-        desc <- compute_one(work[[nm]][idx], ci_level, w = w_var[idx])
+        desc <- .continuous_compute_one(
+          work[[nm]][idx],
+          ci_level,
+          w = w_var[idx]
+        )
         desc <- cbind(
           data.frame(
             variable = nm,
@@ -1749,7 +1655,7 @@ table_continuous <- function(
   } else {
     rows <- lapply(seq_along(numeric_cols), function(i) {
       x_i <- work[[numeric_cols[i]]]
-      desc <- compute_one(
+      desc <- .continuous_compute_one(
         x_i,
         ci_level,
         w = .prep_variable_weights(x_i, weights_vec, rescale)
@@ -2340,6 +2246,116 @@ resolve_continuous_show_columns <- function(
   }
   list(per_var = per_var, union = union_tokens)
 }
+
+# --- internal: every statistic of one vector ------------------------------
+# Every statistic is computed for every variable (the cost is nil);
+# `show_columns` selects what the table displays. The quantiles use
+# stats::quantile()'s default type 7, so `med` / `q1` / `q3` equal
+# stats::median() / stats::quantile() on the same vector.
+#
+# A FILE-level function rather than a closure of `table_continuous()`:
+# `table_outcome()` computes the same statistics on the same vectors,
+# and a second copy of the weighted branch is the one thing the two
+# tables must not have. It captures nothing -- `.wtd_mean()` /
+# `.wtd_sd()` / `.wtd_quantile7()` / `median_order_ci()` and its own
+# `empty_row()` are all it reads.
+.continuous_compute_one <- function(x, ci_level, w = NULL) {
+  empty_row <- function() {
+    data.frame(
+      mean = NA_real_,
+      sd = NA_real_,
+      min = NA_real_,
+      max = NA_real_,
+      ci_lower = NA_real_,
+      ci_upper = NA_real_,
+      median = NA_real_,
+      q1 = NA_real_,
+      q3 = NA_real_,
+      iqr = NA_real_,
+      med_ci_lower = NA_real_,
+      med_ci_upper = NA_real_,
+      n = 0L,
+      weighted_n = NA_real_,
+      stringsAsFactors = FALSE
+    )
+  }
+  if (!is.null(w)) {
+    # Weighted branch (decision 17, frequency-expansion convention;
+    # see R/weighted_stats.R for the formulas and their
+    # triangulation). Rows with NA or zero weight carry zero
+    # copies: they leave every statistic, min/max included. The
+    # mean CI uses SE = s/sqrt(W) with df = W - 1 -- for integer
+    # weights this IS the t interval of the expanded data, and
+    # with all weights 1 it collapses to the unweighted interval.
+    # The order-statistic median CI has no weighted version (the
+    # med_ci token is refused up front); its fields stay NA.
+    keep <- !is.na(x) & !is.na(w) & w > 0
+    x_valid <- x[keep]
+    w_valid <- w[keep]
+    n <- length(x_valid)
+    if (n == 0L) {
+      return(empty_row())
+    }
+    big_w <- sum(w_valid)
+    m <- .wtd_mean(x_valid, w_valid)
+    s <- .wtd_sd(x_valid, w_valid)
+    se <- if (!is.na(s)) s / sqrt(big_w) else NA_real_
+    alpha <- 1 - ci_level
+    t_crit <- if (big_w > 1) {
+      stats::qt(1 - alpha / 2, df = big_w - 1)
+    } else {
+      NA_real_
+    }
+    qs <- .wtd_quantile7(x_valid, w_valid, probs = c(0.25, 0.5, 0.75))
+    return(data.frame(
+      mean = m,
+      sd = s,
+      min = min(x_valid),
+      max = max(x_valid),
+      ci_lower = if (!is.na(se)) m - t_crit * se else NA_real_,
+      ci_upper = if (!is.na(se)) m + t_crit * se else NA_real_,
+      median = qs[2L],
+      q1 = qs[1L],
+      q3 = qs[3L],
+      iqr = qs[3L] - qs[1L],
+      med_ci_lower = NA_real_,
+      med_ci_upper = NA_real_,
+      n = n,
+      weighted_n = big_w,
+      stringsAsFactors = FALSE
+    ))
+  }
+  x_valid <- x[!is.na(x)]
+  n <- length(x_valid)
+  if (n == 0L) {
+    return(empty_row())
+  }
+  m <- mean(x_valid)
+    s <- if (n > 1L) stats::sd(x_valid) else NA_real_
+  se <- if (n > 1L) s / sqrt(n) else NA_real_
+  alpha <- 1 - ci_level
+  t_crit <- if (n > 1L) stats::qt(1 - alpha / 2, df = n - 1L) else NA_real_
+  qs <- unname(stats::quantile(x_valid, probs = c(0.25, 0.75), names = FALSE))
+  med_ci <- median_order_ci(x_valid, ci_level)
+  data.frame(
+    mean = m,
+    sd = s,
+    min = min(x_valid),
+    max = max(x_valid),
+    ci_lower = if (n > 1L) m - t_crit * se else NA_real_,
+    ci_upper = if (n > 1L) m + t_crit * se else NA_real_,
+    median = stats::median(x_valid),
+    q1 = qs[1L],
+    q3 = qs[2L],
+    iqr = qs[2L] - qs[1L],
+    med_ci_lower = med_ci[1L],
+    med_ci_upper = med_ci[2L],
+    n = n,
+    weighted_n = NA_real_,
+    stringsAsFactors = FALSE
+  )
+}
+
 
 # --- internal: exact order-statistic CI of the median ----------------------
 # Inverts the sign (binomial) test: the interval [x(k), x(n-k+1)] with
