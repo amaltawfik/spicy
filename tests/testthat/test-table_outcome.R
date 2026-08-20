@@ -308,3 +308,243 @@ test_that("overall = FALSE drops the marginal row and nothing else", {
     tolerance = 1e-12
   )
 })
+
+
+# ============================================================================
+# The display frame and the console
+# ============================================================================
+
+.to_sh <- function() as.data.frame(spicy::sochealth)
+
+.to_quiet <- function(expr) {
+  invisible(utils::capture.output(res <- suppressWarnings(expr)))
+  res
+}
+
+test_that("the console lays out one stub column and indented levels", {
+  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, smoking)))
+  df <- attr(tbl, "display_df")
+  expect_identical(names(df)[[1L]], "Variable")
+  expect_identical(
+    df$Variable,
+    c(
+      "Overall",
+      "Sex",
+      "  Female",
+      "  Male",
+      "Current smoker",
+      "  No",
+      "  Yes",
+      "  (Missing)"
+    )
+  )
+  # The marginal row is NOT indented: it is the whole sample, not a
+  # level of the block below it.
+  expect_false(startsWith(df$Variable[[1L]], " "))
+})
+
+test_that("a statistic sits on the row it belongs to", {
+  tbl <- .to_quiet(table_outcome(
+    .to_sh(),
+    bmi,
+    by = c(sex, smoking),
+    statistic = TRUE,
+    effect_size = "auto"
+  ))
+  df <- attr(tbl, "display_df")
+  header <- which(tbl$.row_role == "factor_header")
+  levels_i <- which(tbl$.row_role %in% c("level", "missing"))
+  overall <- which(tbl$.row_role == "summary")
+
+  # Block statistics: on the header rows, and blank everywhere else --
+  # the marginal row included, which is not a group comparison.
+  expect_true(all(nzchar(df$p[header])))
+  expect_true(all(!nzchar(df$p[levels_i])))
+  expect_true(all(!nzchar(df$p[overall])))
+  expect_true(all(nzchar(df$Test[header])))
+  expect_true(all(nzchar(df$ES[header])))
+
+  # Outcome statistics: on the level rows and the marginal row, blank
+  # on the headers -- a structural blank, NOT the undefined dash.
+  expect_true(all(nzchar(df$M[levels_i])))
+  expect_true(all(nzchar(df$M[overall])))
+  expect_true(all(identical(unique(df$M[header]), "")))
+  expect_true(all(identical(unique(df$n[header]), "")))
+  expect_false(any(grepl(
+    spicy_str("cell_undefined"),
+    df$M[header],
+    fixed = TRUE
+  )))
+})
+
+test_that("a rule opens every block, the first one included", {
+  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, smoking)))
+  geom <- spicy:::.outcome_body_geometry(tbl)
+  # Rows 2 and 5 open a block. The rule above row 2 is the one a
+  # rank-based predicate would drop -- the table opens on a `summary`
+  # row, not on a header.
+  expect_identical(
+    spicy:::.struct_block_sep_rows(list(body = geom)),
+    c(2L, 5L)
+  )
+  expect_identical(
+    spicy:::.struct_indent_rows(list(body = geom)),
+    c(3L, 4L, 6L, 7L, 8L)
+  )
+})
+
+test_that("the note discloses the comparison, the missing and the shape", {
+  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, region)))
+  note <- attr(tbl, "note")
+  # The outcome's own missing values, once, globally -- this is the
+  # sentence that reconciles the Overall count with the raw data.
+  expect_match(note, "Missing values removed: bmi (12).", fixed = TRUE)
+  # Two blocks, two different tests: the note names both.
+  expect_match(note, "Welch one-way ANOVA (region)", fixed = TRUE)
+  expect_match(note, "Welch t-test (sex)", fixed = TRUE)
+  # The honest sentence about what the table does NOT do.
+  expect_match(note, "not adjusted for one another", fixed = TRUE)
+  expect_match(note, "Overall = the whole analytic sample", fixed = TRUE)
+})
+
+test_that("the disclosures follow the arguments that cause them", {
+  d <- .to_sh()
+  # `drop_na = TRUE`: one sentence per `by` variable that lost rows.
+  tbl <- .to_quiet(table_outcome(d, bmi, by = smoking, drop_na = TRUE))
+  expect_match(attr(tbl, "note"), "Rows with missing smoking removed: 25.")
+  # `overall = FALSE`: no sentence about a row that is not there.
+  tbl2 <- .to_quiet(table_outcome(d, bmi, by = sex, overall = FALSE))
+  expect_false(grepl("whole analytic sample", attr(tbl2, "note"), fixed = TRUE))
+  # No comparison: no sentence about blocks that compare nothing.
+  tbl3 <- .to_quiet(table_outcome(d, bmi, by = sex, p_value = FALSE))
+  expect_false(grepl("not adjusted", attr(tbl3, "note"), fixed = TRUE))
+  expect_false(grepl("Group comparison", attr(tbl3, "note"), fixed = TRUE))
+})
+
+test_that("the table tests what it shows", {
+  # A median without a mean switches the default to the rank family,
+  # globally -- there is one outcome, so this is a scalar decision.
+  tbl <- .to_quiet(table_outcome(
+    .to_sh(),
+    bmi,
+    by = sex,
+    show_columns = c("med_iqr", "n")
+  ))
+  expect_match(attr(tbl, "note"), "Wilcoxon rank-sum test", fixed = TRUE)
+  # An explicit `test` is sovereign, and says so.
+  expect_warning(
+    table_outcome(
+      .to_sh(),
+      bmi,
+      by = sex,
+      show_columns = c("med_iqr", "n"),
+      test = "welch"
+    ),
+    class = "spicy_caveat"
+  )
+})
+
+test_that("refusals are classed and name the cause", {
+  d <- .to_sh()
+  err <- tryCatch(table_outcome(d, sex, by = smoking), error = identity)
+  # NOT `invalid_input`: a categorical outcome is a shape the API must
+  # keep room for, not a mistake.
+  expect_s3_class(err, "spicy_not_implemented")
+  expect_match(conditionMessage(err), "table_categorical()", fixed = TRUE)
+
+  err <- tryCatch(table_outcome(d, c(bmi, age), by = sex), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "table_continuous(select = , by = )",
+    fixed = TRUE
+  )
+
+  # The membership guard: without it a typo travels as a NULL column
+  # and fails far from its cause.
+  err <- tryCatch(table_outcome(d, bmi, by = c("sexe")), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "sexe", fixed = TRUE)
+  expect_match(conditionMessage(err), "Available:", fixed = TRUE)
+
+  err <- tryCatch(table_outcome(d, bmi, by = NULL), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "at least one column", fixed = TRUE)
+
+  err <- tryCatch(table_outcome(d, bmi, by = c(sex, bmi)), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "cannot contain the outcome",
+    fixed = TRUE
+  )
+
+  err <- tryCatch(
+    table_outcome(d, bmi, by = sex, show_columns = list(bmi = "m")),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "character vector", fixed = TRUE)
+
+  err <- tryCatch(
+    table_outcome(d, bmi, by = sex, show_columns = c("m", "weighted_n")),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+})
+
+test_that("a high-cardinality grouping is announced, never refused", {
+  # The family refuses no numeric `by`; it says what it sees. The
+  # threshold is arbitrary and the Rd says so.
+  expect_warning(
+    tbl <- table_outcome(.to_sh(), bmi, by = age),
+    class = "spicy_caveat"
+  )
+  expect_s3_class(tbl, "spicy_outcome_table")
+})
+
+test_that("the raw outputs are the plain compute frame", {
+  d <- .to_sh()
+  raw <- .to_quiet(table_outcome(d, bmi, by = sex, output = "long"))
+  expect_s3_class(raw, "data.frame")
+  expect_false(inherits(raw, "spicy_outcome_table"))
+  expect_true(all(
+    c("variable", "label", "level", "mean", "sd", "n", "p.value") %in%
+      names(raw)
+  ))
+  # The schema is FIXED: the SMD columns are present and NA from the
+  # first version, so adding the statistic later cannot break a
+  # pipeline that indexes into the frame.
+  expect_true(all(c("smd_type", "smd_value") %in% names(raw)))
+  expect_true(all(is.na(raw$smd_value)))
+  expect_identical(
+    .to_quiet(table_outcome(d, bmi, by = sex, output = "data.frame")),
+    raw
+  )
+})
+
+test_that("the console shape is pinned", {
+  skip_on_cran()
+  d <- .to_sh()
+  expect_snapshot(print(suppressWarnings(
+    table_outcome(d, bmi, by = c(sex, smoking))
+  )))
+  expect_snapshot(print(suppressWarnings(
+    table_outcome(
+      d,
+      bmi,
+      by = c(sex, region),
+      statistic = TRUE,
+      effect_size = "auto"
+    )
+  )))
+  expect_snapshot(print(suppressWarnings(
+    table_outcome(
+      d,
+      bmi,
+      by = sex,
+      overall = FALSE,
+      show_columns = c("med_iqr", "n")
+    )
+  )))
+})
