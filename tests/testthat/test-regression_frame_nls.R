@@ -211,3 +211,28 @@ test_that("nls coefs match parameters::model_parameters() (oracle)", {
     )
   }
 })
+
+
+# ---- Label overrides (register 55) ---------------------------------------
+
+test_that("nls accepts `labels =` keyed on parameter names", {
+  # `stats::terms()` has no method for nls, and the label validator used
+  # to call it unguarded: every `labels =` key was refused with base R's
+  # "no 'terms' component nor attribute" before reaching the table. The
+  # validator now falls back to the coefficient (parameter) names.
+  fit <- .fit_nls_mm()
+  out <- table_regression(fit, labels = c(k = "Decay rate"))
+  expect_true("Decay rate" %in% out$Variable)
+  expect_false("k" %in% out$Variable)
+  # An unknown key is still refused, and the message names the
+  # parameters that ARE available.
+  err <- expect_error(
+    table_regression(fit, labels = c(nope = "X")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "Available coefficient names",
+    fixed = TRUE
+  )
+})

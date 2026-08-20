@@ -80,7 +80,14 @@
 #'   `"(Missing)"` addresses the missing-value category by role.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
-#'   unambiguous.
+#'   unambiguous: the family's primary estimate. That is the
+#'   coefficient for [table_regression()] and [table_continuous_lm()]
+#'   -- always token `"b"`: an exponentiated table changes its header
+#'   to OR, IRR or HR, never its token -- the mean (`"m"`) or, on a
+#'   median-only table, the median (`"med"`, `"med_iqr"`) for
+#'   [table_continuous()], and the count (`"n"`) for
+#'   [table_categorical()]. A row carrying none of them refuses and
+#'   lists its tokens.
 #' @param model In a multi-model table, the model: its label (as
 #'   displayed in the column spanners) or its position.
 #'
@@ -277,13 +284,27 @@ inline <- function(
 
 # The default column for a bare inline(tbl, var, level): the row's
 # single estimate-like token when unambiguous.
+#
+# The order is a PREFERENCE over estimate-like tokens, most specific
+# first: the regression coefficient (an exponentiated table still
+# carries the token "b" -- only its HEADER says OR, IRR or HR, so
+# scale-named tokens would be dead entries), then the descriptive
+# centre (mean before median, bare median before its bracketed
+# variant), and only then the count -- the estimate of a categorical
+# table and the fallback of everything else.
+#
+# `"m"`, not `"mean"`: the continuous family's mean column carries the
+# token "m" (see the `show_columns` table in `?table_continuous`), so
+# the old "mean" entry matched nothing and "n" -- one place earlier --
+# won instead. A bare `inline()` on a descriptive table quoted the
+# group's N where the sentence meant its mean.
 .inline_default_token <- function(s, row, cols) {
   tokens <- unique(vapply(
     cols[cols %in% names(s$col_meta)],
     function(nm) s$col_meta[[nm]]$token %||% "",
     character(1)
   ))
-  for (cand in c("or", "irr", "hr", "rr", "mr", "exp", "b", "n", "mean")) {
+  for (cand in c("b", "m", "med", "med_iqr", "n")) {
     if (cand %in% tokens) {
       return(cand)
     }

@@ -263,3 +263,41 @@ test_that("selection advertises no AME and refuses the ame column", {
     class = "spicy_invalid_input"
   )
 })
+
+
+# ---- Label overrides (register 55) ---------------------------------------
+
+test_that("flexsurvreg accepts `labels =` keyed on coefficient names", {
+  # `stats::terms()` raises on the fit itself; the label validator used
+  # to die there before any label could be applied.
+  fit <- .fit_flexsurv_weibull()
+  out <- table_regression(fit, labels = c(age = "Age (years)"))
+  expect_true("Age (years)" %in% out$Variable)
+  expect_false("age" %in% out$Variable)
+})
+
+test_that("flexsurvreg accepts `labels =` keyed on a factor term", {
+  # The factor header is the one label a coefficient key cannot reach.
+  # flexsurvreg carries its terms on the model.frame, not the fit: the
+  # validator must read them through `.spicy_get_terms()` -- the same
+  # helper the renderer uses to detect the header it displays --
+  # or the displayed `sexf:` header is unreachable by any key.
+  skip_if_not_installed("flexsurv")
+  skip_if_not_installed("survival")
+  d <- survival::lung
+  d$sexf <- factor(d$sex, levels = c(1, 2), labels = c("Male", "Female"))
+  fit <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age + sexf,
+    data = d,
+    dist = "weibull"
+  )
+  out <- table_regression(fit, labels = c(sexf = "Sex"))
+  expect_true("Sex:" %in% out$Variable)
+  expect_false("sexf:" %in% out$Variable)
+})
+
+test_that("selection accepts `labels =` keyed on coefficient names", {
+  fit <- .fit_selection_heckman()
+  out <- table_regression(fit, labels = c(educ = "Years of education"))
+  expect_true(any(grepl("Years of education", out$Variable, fixed = TRUE)))
+})

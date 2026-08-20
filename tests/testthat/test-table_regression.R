@@ -620,6 +620,29 @@ test_that("labels – mixed term + coef-style keys both honoured", {
   expect_true("  Six" %in% out$Variable)
 })
 
+test_that("labels – a key that exists in only ONE model applies there only", {
+  # Mundlak-style comparison: the within / between decomposition exists
+  # in the second model only. `labels` keys are validated against the
+  # UNION of every model's terms, so naming a term absent from model 1
+  # is legal, and the label lands on the rows where the term exists.
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- lm(mpg ~ wt + hp, data = mt)
+  out <- table_regression(
+    list(Naive = m1, Adjusted = m2),
+    labels = c(wt = "Weight", hp = "Horsepower")
+  )
+  expect_true("Weight" %in% out$Variable)
+  expect_true("Horsepower" %in% out$Variable)
+  # The Horsepower row is empty under the model that lacks the term.
+  hp_row <- out[out$Variable == "Horsepower", , drop = FALSE]
+  expect_identical(nrow(hp_row), 1L)
+  # A key absent from EVERY model is still a hard error.
+  expect_error(
+    table_regression(list(m1, m2), labels = c(nope = "X")),
+    class = "spicy_invalid_input"
+  )
+})
+
 test_that("align – 'decimal' is default; padding applied to numeric cols", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)

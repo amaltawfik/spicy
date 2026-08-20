@@ -136,3 +136,19 @@ test_that("singular fit advice arrives as a build-time spicy_caveat warning", {
   note <- paste(attr(out, "note"), collapse = "\n")
   expect_false(grepl("consider simplifying", note, ignore.case = TRUE))
 })
+
+
+# ---- 5. The singular warning must not eat `labels =` (register 55) --------
+
+test_that("the singular-fit warning does not swallow `labels =`", {
+  # The warning block built its per-model names into a local called
+  # `labels`, shadowing the user's per-coefficient label vector for the
+  # rest of the pipeline.
+  fit <- .fit_singular_glmer()
+  skip_if(!lme4::isSingular(fit), "glmer fit was not singular this round")
+  out <- suppressWarnings(
+    table_regression(fit, labels = c(mpg = "Fuel economy"))
+  )
+  expect_true("Fuel economy" %in% out$Variable)
+  expect_false("mpg" %in% out$Variable)
+})

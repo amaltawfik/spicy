@@ -775,7 +775,6 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   instead of failing with `No AIC for survey models` after printing six
   lines of design description. Design-based Cox models are not supported
   yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
-
 ## Minor improvements
 
 * `as_structured()` no longer carries a `measure` field in the
