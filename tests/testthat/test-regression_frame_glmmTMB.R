@@ -632,7 +632,15 @@ test_that("a non-converged glmmTMB fit prints no NaN uncertainty", {
   raw <- suppressWarnings(
     stats::confint(fit, method = "Wald", parm = "theta_")
   )
-  expect_true(any(is.nan(as.matrix(raw)))) # what the guard has to absorb
+  # What the guard has to absorb -- IF this platform produces it. The
+  # one-iteration stop-point is optimizer- and platform-dependent
+  # (macOS lands on an invertible information matrix and returns
+  # finite bounds); the guard itself is exercised deterministically on
+  # every platform by the synthetic unit test below.
+  skip_if(
+    !any(is.nan(as.matrix(raw))),
+    "this platform's stop-point yields finite Wald bounds"
+  )
 
   # suppressWarnings: glmmTMB's own summary() warns on this fit's
   # degenerate Hessian. That noise is left visible to users -- a broken
