@@ -46,6 +46,7 @@
   excel_sheet_categorical = "Categorical",
   excel_sheet_continuous = "Descriptives",
   excel_sheet_continuous_lm = "Linear models",
+  excel_sheet_outcome = "Outcome",
 
   # -- table titles: descriptive families -----------------------------------
   title_categorical = "Categorical table",
@@ -54,6 +55,11 @@
   title_continuous_by = "Descriptive statistics by %s",
   title_continuous_lm_by = "Continuous outcomes by %s",
   title_continuous_lm_by_fallback = "Predictor",
+  # `table_outcome()` names the OUTCOME and nothing else. The grouping
+  # variables are the rows of the table, so listing them in the title
+  # would repeat the stub -- and a table with six blocks has no title
+  # left. Decision 32.
+  title_outcome = "Descriptive statistics of %s",
   title_freq = "Frequency table: %s",
   # Three holes: row variable, the (possibly empty) cross fragment, the
   # percentage suffix. `y` is optional in `cross_tab()`, so the " x <y>" part
@@ -419,6 +425,23 @@
   test_welch_oneway_anova = "Welch one-way ANOVA",
   note_group_comparison = "Group comparison: %s.",
   note_group_comparison_item = "%s (%s)",
+
+  # -- table_outcome(): the marginal row and the two disclosures ------------
+  # NOT `label_total` / `header_margin_total`, which both read "Total".
+  # Two words for two things (decision 32bis): "Total" is the word of a
+  # COUNT margin -- the column of `table_categorical()` where
+  # frequencies add up -- while this row is the whole analytic sample,
+  # where a mean is recomputed and nothing is added. Calling a mean a
+  # total would be a reading error.
+  row_overall = "Overall",
+  # The honest sentence a stack of blocks needs: each block is its own
+  # one-way comparison, and the table adjusts none of them for any
+  # other.
+  note_outcome_blocks = paste0(
+    "Each block compares %s across the levels of one variable; ",
+    "blocks are not adjusted for one another."
+  ),
+  note_outcome_overall = "Overall = the whole analytic sample.",
   # The cell of a statistic that applies but has no number (an SD on
   # n = 1, an interval on an empty group) and of a reference level.
   # One glyph for the whole package: U+2013, the Chicago / NEJM / JAMA
