@@ -152,3 +152,117 @@ test_that("the singular-fit warning does not swallow `labels =`", {
   expect_true("Fuel economy" %in% out$Variable)
   expect_false("mpg" %in% out$Variable)
 })
+
+
+# ---- 6. glmmTMB and lme reach the same footer and warning ---------------
+
+# Neither engine exposes an isSingular(); their frames read the boundary
+# off the variance components themselves (see .glmmTMB_is_singular /
+# .lme_is_singular). These are the end-to-end witnesses that the footer
+# block and the build-time caveat fire for them, exactly as for lmer.
+
+.fit_singular_glmmTMB <- function() {
+  skip_if_not_installed("glmmTMB")
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  suppressWarnings(glmmTMB::glmmTMB(
+    am ~ mpg + (1 | cyl),
+    data = d,
+    family = binomial
+  ))
+}
+
+.fit_singular_lme <- function() {
+  skip_if_not_installed("nlme")
+  d <- mtcars
+  d$gearf <- factor(d$gear)
+  nlme::lme(mpg ~ wt + hp, data = d, random = ~ 1 | gearf)
+}
+
+.fit_clean_glmmTMB <- function() {
+  skip_if_not_installed("glmmTMB")
+  glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+}
+
+.fit_clean_lme <- function() {
+  skip_if_not_installed("nlme")
+  nlme::lme(
+    distance ~ age + Sex,
+    data = nlme::Orthodont,
+    random = ~ 1 | Subject
+  )
+}
+
+test_that("singular glmmTMB gets the mixed-effects singular footer", {
+  fit <- .fit_singular_glmmTMB()
+  combined <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit)))),
+    collapse = "\n"
+  )
+  expect_match(
+    combined,
+    "estimated at the boundary (0); their Wald SE and CI are omitted",
+    fixed = TRUE
+  )
+  expect_false(grepl("Rank-deficient model", combined, fixed = TRUE))
+})
+
+test_that("singular lme gets the mixed-effects singular footer", {
+  fit <- .fit_singular_lme()
+  combined <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit)))),
+    collapse = "\n"
+  )
+  expect_match(
+    combined,
+    "estimated at the boundary (0); their Wald SE and CI are omitted",
+    fixed = TRUE
+  )
+  expect_false(grepl("Rank-deficient model", combined, fixed = TRUE))
+})
+
+test_that("healthy glmmTMB / lme fits stay free of the singular footer", {
+  for (fit in list(.fit_clean_glmmTMB(), .fit_clean_lme())) {
+    combined <- paste(
+      capture.output(print(suppressWarnings(table_regression(fit)))),
+      collapse = "\n"
+    )
+    expect_false(
+      grepl("Singular fit:", combined, fixed = TRUE),
+      info = paste("class:", class(fit)[1L])
+    )
+  }
+})
+
+test_that("singular glmmTMB / lme raise the build-time caveat warning", {
+  for (fit in list(.fit_singular_glmmTMB(), .fit_singular_lme())) {
+    caveat_seen <- FALSE
+    withCallingHandlers(
+      table_regression(fit),
+      spicy_caveat = function(c) {
+        caveat_seen <<- TRUE
+        invokeRestart("muffleWarning")
+      },
+      warning = function(w) invokeRestart("muffleWarning")
+    )
+    expect_true(caveat_seen, info = paste("class:", class(fit)[1L]))
+  }
+})
+
+test_that("a healthy mixed fit raises no singular caveat", {
+  for (fit in list(.fit_clean_glmmTMB(), .fit_clean_lme())) {
+    caveat <- NULL
+    withCallingHandlers(
+      table_regression(fit),
+      spicy_caveat = function(c) {
+        caveat <<- conditionMessage(c)
+        invokeRestart("muffleWarning")
+      },
+      warning = function(w) invokeRestart("muffleWarning")
+    )
+    expect_false(
+      isTRUE(grepl("Singular fit", caveat %||% "", fixed = TRUE)),
+      info = paste("class:", class(fit)[1L])
+    )
+  }
+})
