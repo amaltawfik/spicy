@@ -88,7 +88,7 @@ Suggests:
     brms (>= 2.20),
     loo (>= 2.6),
     rstan,
-    survey (>= 4.4),
+    survey (>= 4.5),
     survival (>= 3.5),
     officer,
     openxlsx2,

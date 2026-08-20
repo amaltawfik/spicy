@@ -188,6 +188,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* Handing a `survey` design object to `table_continuous()`,
+  `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now
+  errors with the function to call instead, rather than with
+  `` `data` must be a data.frame ``. The design-based standard errors,
+  degrees of freedom and tests cannot be recovered from the weights
+  alone, so the answer is a different function, not a coercion.
+
 * `table_continuous()` and `table_categorical()` gain `smd = TRUE`, an
   `SMD` column with the standardized mean difference between the two
   groups of `by` -- the balance diagnostic of a Table 1. It is signed

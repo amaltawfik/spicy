@@ -474,6 +474,41 @@
   # Only shown when a variable has more than two categories.
   note_gloss_smd_multinomial = "For a variable with more than two categories the %s is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.",
 
+  # -- survey twins: the self-documenting design footer ---------------------
+  # A design-based table must say what design produced it, or its
+  # standard errors are unreadable. Three sentences, assembled by
+  # `.design_note_lines()`: the scheme and its degrees of freedom, the
+  # variance method, and the reference distribution.
+  #
+  # `note_design_line` is the joiner of the first sentence -- the
+  # semicolon and the full stop are punctuation whose spacing is
+  # language-dependent, so they belong to the template.
+  note_design_line = "Design: %s; %s.",
+  note_design_stratified = "stratified (%s)",
+  note_design_cluster = "cluster (%s)",
+  note_design_srs = "simple random sample",
+  note_design_stages = "%d sampling stages",
+  note_design_psu = "%d PSU",
+  note_design_fpc = "with finite population correction",
+  note_design_calibrated = "calibrated / post-stratified",
+  # Two holes: the replicate type (JK1 / JKn / BRR / bootstrap -- an
+  # identifier from the design, never translated) and the count.
+  note_design_replicate = "replicate weights (%s), %d replicates",
+  note_design_degf = "%d degrees of freedom",
+  # A `by =` table has one domain per group, and survey recomputes the
+  # degrees of freedom on the PSU and strata each domain retains: the
+  # span is the honest summary of a column of numbers the footer cannot
+  # list.
+  note_design_degf_varying = "degrees of freedom vary by group (%d to %d)",
+  note_se_taylor = "Standard errors: Taylor linearisation (survey).",
+  note_se_replicate = "Standard errors: replicate weights (survey).",
+  note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
+  # Both counts, because neither alone is enough (decision 28): the
+  # first is the robustness information, the second is the population
+  # the estimates describe. Both are DISPLAYED numbers and therefore
+  # arrive already formatted under `decimal_mark`.
+  note_design_n = "N = %s (weighted %s).",
+
   # -- table_regression(): standard-error and interval notes ----------------
   note_adjusted_for = "Adjusted for %s (%s).",
   # Argument-token VALUES inserted verbatim into a sentence: the token stays
