@@ -354,7 +354,11 @@ as_regression_frame.glmmTMB <- function(
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular = FALSE,
+    # Boundary fit (see .glmmTMB_is_singular): drives the footer note and
+    # the orchestrator's build-time caveat, exactly as lme4::isSingular()
+    # does for merMod. singular_terms stays empty: the diagnostic is
+    # model-level, not per-coefficient.
+    has_singular = .glmmTMB_is_singular(fit),
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
@@ -540,6 +544,89 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
+# Boundary ("singular") fit: a random-effect covariance block has
+# collapsed onto the edge of the parameter space -- a variance at 0, or a
+# correlation at +/-1. glmmTMB ships no isSingular() of its own (unlike
+# lme4, which the merMod frame calls).
+#
+# Convention:
+#   * criterion   det(V / sigma^2) < tolerance for a random-effect
+#                 covariance block V, i.e. the block is (numerically) not
+#                 of full rank once expressed on the scale of the model's
+#                 own residual dispersion. det() rather than the diagonal
+#                 so that a boundary CORRELATION counts too -- the second
+#                 regime lme4::isSingular() flags.
+#   * tolerance   1e-5, on the RELATIVE variance scale. For a 1x1 block
+#                 that is sd/sigma < 3.2e-3, looser than the 1e-4 of
+#                 lme4::isSingular() on the same quantity: deliberately,
+#                 because neither engine can reach an exact 0 (glmmTMB
+#                 optimises log-SD, nlme log-Cholesky), so the verdict has
+#                 to be taken slightly off the boundary.
+#   * components  ALL of them (cond / zi / disp). A collapsed grouping
+#                 factor in the zero-inflation model is as much a
+#                 boundary estimate as one in the conditional model, and
+#                 both render in the same table.
+# The residual variance is not a random-effect block and is excluded (it
+# is not in VarCorr's per-component lists).
+#
+# DIVERGENCE FROM performance::check_singularity.glmmTMB(), deliberate.
+# That function applies det(V) < 1e-5 to V on the ABSOLUTE variance
+# scale, which makes its verdict depend on the units of the response and
+# on the number of random terms: Reaction ~ Days + (Days | Subject) on
+# sleepstudy is not singular, the same fit on Reaction / 1000 is declared
+# singular, and a fit whose variance really has collapsed stops being
+# detected once the response is scaled up. Dividing by sigma^2 is the
+# parameterisation lme4::isSingular() itself works in, so the three mixed
+# engines answer the same question and the answer survives a change of
+# units. Cross-checking with performance() will therefore disagree on
+# Gaussian fits whose sigma is far from 1.
+#
+# The divisor is sigma^2 only where sigma IS the residual scale of the
+# linear predictor: VarCorr marks that per component with useSc / sc.
+# glmmTMB's sigma() also returns the dispersion parameter of nbinom1 /
+# nbinom2 / Gamma / beta fits, which is not a scale for the random
+# effects (useSc is FALSE there, and the variance is already unitless on
+# the link scale), and it returns NA when dispersion is modelled -- both
+# fall back to 1, i.e. to the absolute scale.
+.glmmTMB_is_singular <- function(fit, tolerance = 1e-5) {
+  vc <- tryCatch(glmmTMB::VarCorr(fit), error = function(e) NULL)
+  if (is.null(vc)) {
+    return(FALSE) # nocov  (VarCorr() does not error for a valid fit)
+  }
+  any(vapply(
+    c("cond", "zi", "disp"),
+    function(cmp) {
+      blocks <- vc[[cmp]]
+      if (length(blocks) == 0L) {
+        return(FALSE)
+      }
+      scale2 <- .glmmTMB_re_scale2(blocks)
+      any(vapply(
+        blocks,
+        function(v) isTRUE(det(as.matrix(v) / scale2) < tolerance),
+        logical(1)
+      ))
+    },
+    logical(1)
+  ))
+}
+
+
+# The squared scale a component's random-effect covariance is measured
+# against: sigma^2 when VarCorr says the component has a residual scale
+# (useSc, Gaussian-like families), 1 otherwise -- including the modelled
+# dispersion case, where sc is NA because no single residual scale
+# exists.
+.glmmTMB_re_scale2 <- function(blocks) {
+  sc <- attr(blocks, "sc")
+  use_sc <- isTRUE(attr(blocks, "useSc")) &&
+    length(sc) == 1L &&
+    isTRUE(is.finite(sc)) &&
+    isTRUE(sc > 0)
+  if (use_sc) sc^2 else 1
+}
+
+
 # Extract conditional-component random-effects metadata.
 .glmmTMB_random_effects <- function(
   fit,
@@ -631,7 +718,12 @@ as_regression_frame.glmmTMB <- function(
     vc_df$is_correlation <- FALSE
   }
   ci_sd <- tryCatch(
-    stats::confint(fit, method = "Wald", parm = "theta_"),
+    # suppressWarnings on the merMod precedent (.merMod_attach_profile_ci):
+    # on a degenerate Hessian glmmTMB's confint takes the square root of a
+    # negative variance and warns "NaNs produced". The NaN itself is
+    # handled -- .glmmTMB_blank_degenerate_vc() drops the row -- and the
+    # fit's real problem is reported by its own convergence warning.
+    suppressWarnings(stats::confint(fit, method = "Wald", parm = "theta_")),
     error = function(e) NULL
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) {
@@ -710,9 +802,20 @@ as_regression_frame.glmmTMB <- function(
   if (!spicy_pkg_available("glmmTMB")) {
     return(na_block(vc_df)) # nocov
   }
+  # Boundary fit: the Wald machinery still answers, with a degenerate
+  # [0, Inf] interval and an infinite SE (the information matrix is
+  # singular there). Suppress both, on the merMod precedent -- the
+  # singular footer states the omission.
+  if (.glmmTMB_is_singular(fit)) {
+    return(na_block(vc_df))
+  }
 
   ci_sd <- tryCatch(
-    stats::confint(fit, method = "Wald", parm = "theta_", level = ci_level),
+    # suppressWarnings: see the sibling call in
+    # .glmmTMB_append_correlation_rows().
+    suppressWarnings(
+      stats::confint(fit, method = "Wald", parm = "theta_", level = ci_level)
+    ),
     error = function(e) NULL
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) {
@@ -789,6 +892,33 @@ as_regression_frame.glmmTMB <- function(
     vc_df$ci_lower[i] <- max(0, sd_lower)^2
     vc_df$ci_upper[i] <- sd_upper^2
     vc_df$ci_method[i] <- "wald"
+  }
+  .glmmTMB_blank_degenerate_vc(vc_df)
+}
+
+
+# Second line of defence, independent of the singular flag: a Wald
+# quantity that came back non-finite says nothing and must not reach the
+# table. It happens without singularity -- a fit stopped before
+# convergence keeps its starting values, whose information matrix is
+# meaningless, and confint() then returns NaN (glmmTMB) or an open
+# [0, Inf] bound. Blanking the row renders it as the undefined glyph,
+# like any other unavailable cell, instead of printing NaN or Inf.
+#
+# What this does NOT catch is a finite but absurd interval (an SE many
+# orders of magnitude above its estimate). No threshold separates those
+# from legitimate ones without an arbitrary constant, so they stay the
+# business of the boundary flag -- which now detects them at any scale
+# of the response (see .glmmTMB_is_singular).
+.glmmTMB_blank_degenerate_vc <- function(vc_df) {
+  bad <- !is.finite(vc_df$std_error) |
+    !is.finite(vc_df$ci_lower) |
+    !is.finite(vc_df$ci_upper)
+  if (any(bad)) {
+    vc_df$std_error[bad] <- NA_real_
+    vc_df$ci_lower[bad] <- NA_real_
+    vc_df$ci_upper[bad] <- NA_real_
+    vc_df$ci_method[bad] <- NA_character_
   }
   vc_df
 }

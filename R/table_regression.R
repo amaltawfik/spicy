@@ -2697,18 +2697,44 @@ table_regression <- function(
   )
   if (any(singular_mixed)) {
     mod_labels <- .model_display_names(models)
+    # "exactly zero" would be false for three of the five classes: only
+    # lme4 drives a collapsed component onto 0 itself. glmmTMB optimises
+    # the log-SD and nlme the log-Cholesky factor, where an exact 0 sits
+    # at -Inf, so the estimate lands NEAR the boundary; and the
+    # correlation regime (|r| = 1) has no zero variance at all.
+    advice <- paste0(
+      "Consider simplifying the random structure (drop the ",
+      "offending term), or test whether it belongs with ",
+      "`re_test = \"lrt\"`."
+    )
+    # `isSingular()` is lme4's, and lme4 is a Suggests: point there only
+    # for the fits it can actually be run on, or the reader is sent to a
+    # package they may not have, documenting a criterion that is not the
+    # one applied to their model.
+    singular_classes <- vapply(
+      frames[singular_mixed],
+      function(fr) fr$info$class %||% "",
+      character(1)
+    )
+    if (
+      all(singular_classes %in% c("lmerMod", "lmerModLmerTest", "glmerMod"))
+    ) {
+      advice <- paste0(
+        advice,
+        " See `help(\"isSingular\", package = \"lme4\")`."
+      )
+    }
     spicy_warn(
       c(
         sprintf(
-          "Singular fit (%s): a random-effect variance component is estimated at exactly zero.",
+          paste0(
+            "Singular fit (%s): the random-effect structure is estimated ",
+            "at or near the boundary of the parameter space -- a variance ",
+            "of 0, or a correlation of +/-1."
+          ),
           paste(mod_labels[singular_mixed], collapse = ", ")
         ),
-        "i" = paste0(
-          "Consider simplifying the random structure (drop the ",
-          "offending term), or test whether it belongs with ",
-          "`re_test = \"lrt\"`. See `help(\"isSingular\", package = ",
-          "\"lme4\")`."
-        )
+        "i" = advice
       ),
       class = "spicy_caveat"
     )

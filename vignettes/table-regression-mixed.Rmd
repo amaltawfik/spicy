@@ -395,9 +395,12 @@ block per factor, no extra syntax.
 ## When the fit is singular
 
 The boundary is not only a testing problem — estimates land *on* it.
-When a variance component is estimated at exactly zero (`lme4` calls
-this a **singular fit**), its Wald SE and CI are meaningless, so
-`table_regression()` omits them and says why in the footer:
+When a variance component collapses onto zero, or a random-effect
+correlation onto ±1 (`lme4` calls this a **singular fit**), the Wald SE
+and CI are meaningless, so `table_regression()` omits them and says why
+in the footer. The same check runs on `glmmTMB` and `nlme::lme` fits,
+whose optimisers work on a log scale and therefore land *near* the
+boundary rather than exactly on it:
 
 ```{r singular, message = FALSE, warning = FALSE}
 # (the accompanying console warning is suppressed in this rendering)

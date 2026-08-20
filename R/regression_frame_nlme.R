@@ -356,7 +356,11 @@ as_regression_frame.gls <- function(
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular = FALSE,
+    # Boundary fit (see .lme_is_singular): drives the footer note and the
+    # orchestrator's build-time caveat, exactly as lme4::isSingular()
+    # does for merMod. singular_terms stays empty: the diagnostic is
+    # model-level, not per-coefficient.
+    has_singular = .lme_is_singular(fit),
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
@@ -423,6 +427,9 @@ as_regression_frame.gls <- function(
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
+    # gls has no random-effect structure to collapse, and nlme::gls()
+    # refuses a rank-deficient design outright, so neither singular
+    # regime can arise: the flag is a constant here, not a stub.
     has_singular = FALSE,
     singular_terms = character(0),
     has_weights = FALSE,
@@ -481,6 +488,60 @@ as_regression_frame.gls <- function(
     sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
     nobs = as.integer(stats::nobs(fit))
   )
+}
+
+
+# Boundary ("singular") fit: a random-effect covariance block has
+# collapsed onto the edge of the parameter space -- a variance at 0, or a
+# correlation at +/-1. nlme ships no isSingular() of its own (unlike
+# lme4, which the merMod frame calls).
+#
+# The criterion is the glmmTMB frame's, on the same relative scale:
+# det(V / sigma^2) < 1e-5 for a random-effect covariance block V. nlme
+# hands it over ready-made -- fit$modelStruct$reStruct IS the covariance
+# relative to sigma^2, which is also lme4's parameterisation, so the
+# blocks are read as they come. Multiplying them back by sigma^2 (what
+# nlme::getVarCov() does to report absolute variances) is exactly the
+# step that must NOT be taken here.
+#
+# One block per nesting level, residual excluded by construction
+# (reStruct holds the random effects only). det() rather than the
+# diagonal so a boundary correlation counts as well as a collapsed
+# variance.
+#
+# DIVERGENCE FROM performance::check_singularity.lme(), deliberate and
+# larger than for glmmTMB, since that method is the weaker one in
+# performance on three counts:
+#   * it reads diag(nlme::getVarCov(fit)), which ERRORS on any fit with
+#     more than one level of nesting; the reStruct walk answers there;
+#   * it tests the diagonal, so a random-effect correlation pinned at
+#     +/-1 with healthy variances is not singular for lme while it is for
+#     lmer -- performance's own merMod and glmmTMB methods use det();
+#   * it tests absolute variances, so its verdict moves when the response
+#     is rescaled: on Orthodont, distance / 20 with a random slope is
+#     flagged while distance is not, and a genuinely collapsed component
+#     stops being flagged once the response is scaled up.
+# Verdicts therefore differ from performance's on Gaussian fits whose
+# sigma is far from 1. They track lme4::isSingular(), which is what the
+# table note promises the reader.
+#
+# nlme optimises on the log-Cholesky scale, where an exact zero variance
+# sits at -Inf: a collapsed component lands NEAR 0, never on it, and the
+# tolerance is what turns "near" into a verdict. Non-finite variances
+# (det() = NA) fail the comparison and read as not singular; a fit that
+# stopped before converging is a separate diagnostic, carried by the
+# engine's own warning -- and its variance components lose their SE and
+# CI through .lme_blank_degenerate_vc(), not through this flag.
+.lme_is_singular <- function(fit, tolerance = 1e-5) {
+  blocks <- as.matrix(fit$modelStruct$reStruct)
+  if (!is.list(blocks)) {
+    return(FALSE) # nocov  (an lme fit always carries a reStruct)
+  }
+  any(vapply(
+    blocks,
+    function(v) isTRUE(det(as.matrix(v)) < tolerance),
+    logical(1)
+  ))
 }
 
 
@@ -640,6 +701,15 @@ as_regression_frame.gls <- function(
   if (nrow(vc_df) == 0L) {
     return(na_block(vc_df)) # nocov
   }
+  # Boundary fit: this guard does real work. nlme::intervals() does not
+  # consistently refuse one -- it errors ("Non-positive definite
+  # approximate variance-covariance") on some boundary fits and returns a
+  # degenerate [0, Inf] on others, which would reach the table as an
+  # interval. Suppress on the flag instead, the merMod precedent, so the
+  # singular footer's claim holds by construction rather than by luck.
+  if (.lme_is_singular(fit)) {
+    return(na_block(vc_df))
+  }
 
   ci_obj <- tryCatch(
     nlme::intervals(fit, level = ci_level, which = "var-cov"),
@@ -731,6 +801,28 @@ as_regression_frame.gls <- function(
     vc_df$ci_lower[i] <- max(0, sd_lower)^2
     vc_df$ci_upper[i] <- sd_upper^2
     vc_df$ci_method[i] <- "wald"
+  }
+  .lme_blank_degenerate_vc(vc_df)
+}
+
+
+# Second line of defence, independent of the singular flag: a Wald
+# quantity that came back non-finite says nothing and must not reach the
+# table. nlme::intervals() returns an open [0, Inf] bound on a component
+# it cannot bound, which squares to an infinite variance-scale CI.
+# Blanking the row renders it as the undefined glyph, like any other
+# unavailable cell. Twin of .glmmTMB_blank_degenerate_vc(); the same
+# limitation applies (a finite but absurd interval is the boundary
+# flag's business, not this guard's).
+.lme_blank_degenerate_vc <- function(vc_df) {
+  bad <- !is.finite(vc_df$std_error) |
+    !is.finite(vc_df$ci_lower) |
+    !is.finite(vc_df$ci_upper)
+  if (any(bad)) {
+    vc_df$std_error[bad] <- NA_real_
+    vc_df$ci_lower[bad] <- NA_real_
+    vc_df$ci_upper[bad] <- NA_real_
+    vc_df$ci_method[bad] <- NA_character_
   }
   vc_df
 }

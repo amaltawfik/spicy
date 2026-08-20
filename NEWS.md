@@ -297,6 +297,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * Variance-component SEs are omitted on large mixed fits, above
   `options("spicy.re_se_max_n")` (default 1000), with a note and a warning
   giving the override.
+* `glmmTMB` and `lme` fits report a singular (boundary) random-effect
+  structure the way `lmer` / `glmer` ones do: a table note, a warning, and
+  no SE or CI on the collapsed variance components. For `glmmTMB` the check
+  covers the zero-inflation and dispersion components too.
 * Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
   `clm`) takes its SEs, z, p and CIs from the same sandwich as the slopes.
 * AME columns are available for many more classes, and per outcome category
