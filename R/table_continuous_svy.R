@@ -284,7 +284,7 @@ order_continuous_svy_tokens <- function(tokens) {
       )
       if (is.null(r$ddf)) {
         # Two groups: `statistic` is the t, `parameter` its df.
-        empty_fill(
+        .svy_test_row(
           "design_t",
           as.numeric(r$statistic),
           as.numeric(r$parameter),
@@ -295,7 +295,7 @@ order_continuous_svy_tokens <- function(tokens) {
         # Three or more: the documented swap. survey refers
         # `parameter / statistic` to F(statistic, ddf).
         ndf <- as.numeric(r$statistic)
-        empty_fill(
+        .svy_test_row(
           "design_f",
           as.numeric(r$parameter) / ndf,
           ndf,
@@ -305,7 +305,7 @@ order_continuous_svy_tokens <- function(tokens) {
       }
     } else if (k == 2L) {
       tt <- survey::svyttest(form, sub)
-      empty_fill(
+      .svy_test_row(
         "design_t",
         as.numeric(tt$statistic),
         as.numeric(tt$parameter),
@@ -318,7 +318,7 @@ order_continuous_svy_tokens <- function(tokens) {
         fit,
         stats::as.formula(paste0("~`", group_var, "`"))
       )
-      empty_fill(
+      .svy_test_row(
         "design_f",
         as.numeric(rt$Ftest),
         as.numeric(rt$df),
@@ -335,7 +335,7 @@ order_continuous_svy_tokens <- function(tokens) {
 
 # The five columns of a computed comparison, filled in one place so no
 # branch above can put the numerator df in the denominator's slot.
-empty_fill <- function(type, statistic, df1, df2, p) {
+.svy_test_row <- function(type, statistic, df1, df2, p) {
   data.frame(
     test_type = type,
     statistic = statistic,
@@ -857,7 +857,13 @@ table_continuous_svy <- function(
             if (j == 1L) {
               test_row
             } else {
-              empty_fill(NA_character_, NA_real_, NA_real_, NA_real_, NA_real_)
+              .svy_test_row(
+                NA_character_,
+                NA_real_,
+                NA_real_,
+                NA_real_,
+                NA_real_
+              )
             }
           )
         }

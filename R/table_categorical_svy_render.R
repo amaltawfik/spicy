@@ -54,9 +54,10 @@
 # The header a reader sees over one statistic column, WITHOUT its
 # block: the block name is the spanner above it.
 #
-# `full = TRUE` is the standalone form, for a column that carries no
-# spanner over it: an interval bound then has to name its own coverage
-# ("95% CI LL"), because "LL" alone over a lone column names nothing.
+# Passing `ci_level` asks for the STANDALONE form, for a column that
+# carries no spanner over it: an interval bound then has to name its
+# own coverage ("95% CI LL"), because "LL" alone over a lone column
+# names nothing.
 .cat_svy_base_label <- function(base, ci_level = NULL, decimal_mark = ".") {
   bound <- function(role_key) {
     role <- spicy_str(role_key)

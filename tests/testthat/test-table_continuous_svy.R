@@ -728,7 +728,21 @@ test_that("the ignored-argument warnings fire where they should", {
     ),
     class = "spicy_ignored_arg"
   )
-  expect_true(is.na(out$ci_lower) || TRUE)
+  # The pruned token leaves the SD alone on display, while `ci_lower`
+  # stays a field of the compute schema -- a stable frame a pipeline
+  # can index into, holding the value the table does not show.
+  expect_true("ci_lower" %in% names(out))
+  expect_identical(
+    attr(
+      suppressWarnings(table_continuous_svy(
+        d,
+        select = api00,
+        show_columns = c("sd", "ci")
+      )),
+      "show_columns"
+    ),
+    "sd"
+  )
 })
 
 test_that("`regex` and `exclude` select the way the sibling does", {

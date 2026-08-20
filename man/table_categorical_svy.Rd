@@ -123,7 +123,7 @@ they are looking at.
 
 \code{proportion_ci = TRUE} adds the interval of each percentage.
 \code{ci_method} chooses among the seven \code{survey::svyciprop()} offers;
-the default \code{"logit"} is bounded inside \link{0, 100}, which the Wald
+the default \code{"logit"} is bounded inside 0 to 100, which the Wald
 interval (\code{"mean"}) is not. The percentage itself always comes from
 \code{survey::svymean()}, so it does not move when \code{ci_method} does.
 }

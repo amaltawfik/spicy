@@ -209,7 +209,7 @@
 #'
 #' `proportion_ci = TRUE` adds the interval of each percentage.
 #' `ci_method` chooses among the seven `survey::svyciprop()` offers;
-#' the default `"logit"` is bounded inside [0, 100], which the Wald
+#' the default `"logit"` is bounded inside 0 to 100, which the Wald
 #' interval (`"mean"`) is not. The percentage itself always comes from
 #' `survey::svymean()`, so it does not move when `ci_method` does.
 #'

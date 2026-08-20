@@ -126,9 +126,7 @@
   spicy_abort(
     c(
       sprintf("`%s()` expects a survey design object, not a data.frame.", fn),
-      "i" = sprintf(
-        "Build one first: `survey::svydesign(ids = , strata = , weights = , fpc = , data = )`, or `survey::as.svrepdesign()` for replicate weights."
-      ),
+      "i" = "Build one first: `survey::svydesign(ids = , strata = , weights = , fpc = , data = )`, or `survey::as.svrepdesign()` for replicate weights.",
       "i" = sprintf(
         "For a data.frame with frequency weights and no design, use `%s()`.",
         plain_fn

@@ -50,7 +50,10 @@ test_that("a single observation has a mean and no standard deviation", {
   ))
   expect_identical(out$n, 1L)
   expect_equal(out$mean, 5)
-  expect_true(is.na(out$sd) || out$sd == 0)
+  # `svyvar()` on one observation divides by n - 1 = 0 and gives NaN,
+  # which the guard turns into an absent number: the cell is the
+  # undefined dash, not a zero that would read as "no dispersion".
+  expect_true(is.na(out$sd))
 })
 
 test_that("a categorical variable with no observation is refused, not blank", {
