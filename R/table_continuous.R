@@ -1759,13 +1759,16 @@ table_continuous <- function(
     return(
       export_desc_table(
         display_df,
-        result,
         output = output,
         ci_level = ci_level,
+        # Two stub columns with `by`: this family names the group in a
+        # column of its own. The KEYS, because gt addresses both the
+        # columns and their spanner ids by frozen name.
+        stub_keys = c(.CON_KEY_VARIABLE, if (has_group) .CON_KEY_GROUP),
         align = align,
         decimal_mark = decimal_mark,
-        has_group = has_group,
         show_n = show_n,
+        title = .continuous_title(attr(result, "group_label", exact = TRUE)),
         excel_path = excel_path,
         excel_sheet = excel_sheet,
         clipboard_delim = clipboard_delim,
@@ -3342,21 +3345,42 @@ build_header_rows <- function(col_keys, ci_level, decimal_mark = ".") {
 # --- internal: export to various formats ---
 export_desc_table <- function(
   display_df,
-  raw_result,
   output,
   ci_level,
+  stub_keys,
   align = "decimal",
   decimal_mark = ".",
-  has_group,
   show_n = TRUE,
+  sep_rows = NULL,
+  indent_rows = integer(0),
+  indent_text = "  ",
+  indent_text_excel_clipboard = strrep("\u00A0", 6),
+  title = NULL,
   excel_path,
   excel_sheet,
   clipboard_delim,
   word_path,
   note = NULL
 ) {
-  title_by <- attr(raw_result, "group_label", exact = TRUE)
-  sep_rows <- compute_var_sep_rows(display_df)
+  # The title is the CALLER's: each family words it from its own
+  # registry key, and this function must never invent one. Refusing
+  # here rather than defaulting keeps a family that forgets it from
+  # shipping six untitled engines.
+  if (is.null(title) || !nzchar(title)) {
+    spicy_abort(
+      "Internal: export_desc_table() needs the caller's title.",
+      class = "spicy_internal_invariant"
+    )
+  }
+  # Block geometry, supplied by families whose rows are blocks and
+  # derived from the label column otherwise.
+  if (is.null(sep_rows)) {
+    sep_rows <- compute_var_sep_rows(display_df)
+  }
+  # The stub: one label column ("Variable"), or two when a family puts
+  # the group in a column of its own. The KEYS, not a count -- gt
+  # addresses both its columns and its spanner ids by frozen name.
+  has_indent <- length(indent_rows) > 0L
 
   # Pre-pad numeric cells with figure-spaces (U+2007, digit-width) so
   # that every string in a column has the same width with the decimal
@@ -3381,7 +3405,7 @@ export_desc_table <- function(
     c("flextable", "word", "gt", "tinytable")
 
   if (use_decimal && needs_padding_engine) {
-    left_skip <- if (has_group) 2L else 1L
+    left_skip <- length(stub_keys)
     numeric_cols <- setdiff(seq_along(display_df), seq_len(left_skip))
     for (j in numeric_cols) {
       display_df[[j]] <- decimal_align_strings(
@@ -3407,6 +3431,18 @@ export_desc_table <- function(
     col_keys <- names(display_df)
     groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
 
+    # Block indentation, part one of three: the LABEL. tinytable's own
+    # `indent` is a LaTeX/typst-side setting, so the HTML body needs
+    # the prefix in the string as well; the console's `indent_text` is
+    # swapped for four non-breaking spaces, which survive HTML
+    # whitespace collapsing. Same recipe as the categorical family.
+    if (has_indent) {
+      display_df[[1L]][indent_rows] <- paste0(
+        strrep("\u00A0", 4),
+        substring(display_df[[1L]][indent_rows], nchar(indent_text) + 1L)
+      )
+    }
+
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner. Absent CI columns simply contribute no pair.
     sub_labels <- build_header_rows(col_keys, ci_level, decimal_mark)$bottom
@@ -3428,7 +3464,7 @@ export_desc_table <- function(
 
     tt <- tinytable::tt(
       display_df,
-      caption = .continuous_title(title_by),
+      caption = title,
       notes = note
     )
     tt <- tinytable::group_tt(tt, j = gspec)
@@ -3439,11 +3475,9 @@ export_desc_table <- function(
     # `align` argument: "decimal" -> centre uniform-width pre-padded
     # strings (same strategy as table_regression() / table_continuous_lm());
     # "center" / "right" -> their literal alignment.
-    left_j <- 1L
-    tt <- tinytable::style_tt(tt, j = 1, align = "l")
-    if (has_group) {
-      tt <- tinytable::style_tt(tt, j = 2, align = "l")
-      left_j <- c(left_j, 2L)
+    left_j <- seq_along(stub_keys)
+    for (lj in left_j) {
+      tt <- tinytable::style_tt(tt, j = lj, align = "l")
     }
     numeric_j <- setdiff(seq_len(nc), left_j)
     if (use_decimal && length(numeric_j) > 0L) {
@@ -3516,6 +3550,20 @@ export_desc_table <- function(
       )
     }
 
+    # Block indentation, parts two and three: the LaTeX/typst indent
+    # and the HTML padding. The label prefix alone does not indent an
+    # HTML cell whose leading whitespace the browser collapses, and
+    # the style alone does not reach the non-HTML backends.
+    if (has_indent) {
+      tt <- tinytable::style_tt(tt, i = indent_rows, j = 1, indent = 1)
+      tt <- tinytable::style_tt(
+        tt,
+        i = indent_rows,
+        j = 1,
+        html_css = "padding-left: 0.8em;"
+      )
+    }
+
     return(tt)
   }
 
@@ -3528,6 +3576,16 @@ export_desc_table <- function(
     display_df <- rename_ci_cols(display_df, ci_level)
     gt_col_keys <- names(display_df)
     groups_spec <- desc_spanner_groups(gt_col_keys, ci_level, decimal_mark)
+    # Block indentation: gt renders the label cell as HTML, so the
+    # console's prefix is swapped for four non-breaking spaces --
+    # the same recipe as the categorical family, and the reason a
+    # plain-space prefix would collapse away.
+    if (has_indent) {
+      display_df[[1L]][indent_rows] <- paste0(
+        strrep("\u00A0", 4),
+        substring(display_df[[1L]][indent_rows], nchar(indent_text) + 1L)
+      )
+    }
     tbl <- gt::gt(display_df)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
@@ -3553,11 +3611,10 @@ export_desc_table <- function(
     # uniform-width pre-padded strings (same strategy as
     # table_regression() / table_continuous_lm()); "center" / "right"
     # use gt::cols_align() literally.
-    tbl <- gt::cols_align(tbl, align = "left", columns = .CON_KEY_VARIABLE)
-    if (has_group) {
-      tbl <- gt::cols_align(tbl, align = "left", columns = .CON_KEY_GROUP)
+    for (sk in stub_keys) {
+      tbl <- gt::cols_align(tbl, align = "left", columns = sk)
     }
-    left_cols <- c(.CON_KEY_VARIABLE, if (has_group) .CON_KEY_GROUP)
+    left_cols <- stub_keys
     numeric_cols <- setdiff(names(display_df), left_cols)
     if (use_decimal && length(numeric_cols) > 0L) {
       # Cells were pre-padded with figure-spaces upstream; centring
@@ -3570,10 +3627,7 @@ export_desc_table <- function(
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
     }
 
-    left_spanners <- paste0("spn_", .CON_KEY_VARIABLE)
-    if (has_group) {
-      left_spanners <- c(left_spanners, paste0("spn_", .CON_KEY_GROUP))
-    }
+    left_spanners <- paste0("spn_", stub_keys)
     tbl <- gt::tab_style(
       tbl,
       style = gt::cell_text(align = "left"),
@@ -3697,7 +3751,7 @@ export_desc_table <- function(
 
     # The same title the five other engines print. gt was the last
     # engine of the descriptive families to carry none.
-    tbl <- .spicy_gt_apa_title(tbl, .continuous_title(title_by))
+    tbl <- .spicy_gt_apa_title(tbl, title)
 
     return(.spicy_gt_attach_note(tbl, note))
   }
@@ -3715,6 +3769,17 @@ export_desc_table <- function(
     nc <- length(col_keys)
     hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
     groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
+
+    # Block indentation: flextable indents with `padding.left` below,
+    # so the console's prefix comes OFF the label first. One
+    # indentation is the design; keeping both would double it, and the
+    # padding is the one that survives every backend (HTML and docx).
+    if (has_indent) {
+      display_df[[1L]][indent_rows] <- substring(
+        display_df[[1L]][indent_rows],
+        nchar(indent_text) + 1L
+      )
+    }
 
     map <- data.frame(
       col_keys = col_keys,
@@ -3740,7 +3805,7 @@ export_desc_table <- function(
     bd <- spicy_fp_border(color = "black", width = 1)
     bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
 
-    left_j <- if (has_group) 1:2 else 1L
+    left_j <- seq_along(stub_keys)
     numeric_j <- setdiff(seq_len(nc), left_j)
 
     ft <- flextable::align(ft, j = left_j, part = "all", align = "left")
@@ -3812,6 +3877,18 @@ export_desc_table <- function(
       )
     }
 
+    # Block indentation, the engine half: the label lost its prefix
+    # above, flextable puts it back as real padding.
+    if (has_indent) {
+      ft <- flextable::padding(
+        ft,
+        i = indent_rows,
+        j = 1,
+        part = "body",
+        padding.left = 14
+      )
+    }
+
     ft <- flextable::autofit(ft)
     ft <- .spicy_ft_attach_note(ft, note)
 
@@ -3823,13 +3900,13 @@ export_desc_table <- function(
         )
       }
       # Same title the console prints, from the same helper.
-      ft <- .spicy_ft_word_caption(ft, .continuous_title(title_by))
+      ft <- .spicy_ft_word_caption(ft, title)
       flextable::save_as_docx(ft, path = word_path)
       return(invisible(word_path))
     }
 
     # Same title the console prints, from the same helper.
-    ft <- .spicy_ft_html_caption(ft, .continuous_title(title_by))
+    ft <- .spicy_ft_html_caption(ft, title)
     class(ft) <- c("spicy_flextable", class(ft))
     return(ft)
   }
@@ -3853,6 +3930,21 @@ export_desc_table <- function(
     groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
     ci_pairs <- Filter(function(g) length(g$cols) > 1L, groups_spec)
 
+    # Block indentation: Excel has no indent style here, so the
+    # indentation IS the label -- the console's prefix is swapped for
+    # the wider one. `indent_rows` are the typed indented rows, never
+    # rows sniffed back from the prefix: `make_stronger_indent()`
+    # strips leading characters, so a row that carries no prefix would
+    # lose its own first letters.
+    if (has_indent) {
+      display_df[[1L]] <- make_stronger_indent(
+        display_df[[1L]],
+        indent_text,
+        indent_text_excel_clipboard,
+        indent_rows
+      )
+    }
+
     wb <- openxlsx2::wb_workbook()
     wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
 
@@ -3860,7 +3952,7 @@ export_desc_table <- function(
     # two header rows two lines below.
     wb <- openxlsx2::wb_add_data(
       wb,
-      x = .continuous_title(title_by),
+      x = title,
       start_row = 1
     )
     top_header_row <- 3L
@@ -3914,7 +4006,7 @@ export_desc_table <- function(
     #
     # The spanner row is styled with the body here, as it always has
     # been; the HTML engines centre it independently.
-    left_cols <- if (has_group) 1:2 else 1L
+    left_cols <- seq_along(stub_keys)
     numeric_cols <- setdiff(seq_len(nc), left_cols)
     right_cols <- if (use_decimal) {
       .continuous_right_cols(col_keys)
@@ -4029,6 +4121,17 @@ export_desc_table <- function(
     nc <- length(col_keys)
     hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
 
+    # Block indentation: the payload is parsed text, so like Excel its
+    # indentation is the label itself.
+    if (has_indent) {
+      display_df[[1L]] <- make_stronger_indent(
+        display_df[[1L]],
+        indent_text,
+        indent_text_excel_clipboard,
+        indent_rows
+      )
+    }
+
     # The sub-label row carries the LL / UL labels of the CI pairs;
     # with no CI column it is empty and is dropped rather than
     # pasted as a blank line (same rule as `clipboard_payload()`).
@@ -4042,7 +4145,7 @@ export_desc_table <- function(
     txt <- .clipboard_payload_desc(
       clip_mat,
       clipboard_delim,
-      title = .continuous_title(title_by),
+      title = title,
       note = note
     )
     clipr::write_clip(txt)
