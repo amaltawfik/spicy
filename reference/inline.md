@@ -72,6 +72,12 @@ its displayed (possibly deduplicated) label, through its row role. Fit
 statistics are addressed by their token as `variable`
 (`inline(tbl, "n")`, `inline(tbl, "r2")`).
 
+A statistic that belongs to a whole variable rather than to one of its
+levels sits on the variable's own row: the *p* of a
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+block, its association measure, its SMD. Leave `level` out to cite it
+(`inline(tbl, smoking, column = "p")`).
+
 The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... – see
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)'s

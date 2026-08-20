@@ -754,6 +754,11 @@ collapses the per-tag breakdown back into the regular `NA` count.
 
 ## See also
 
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+for the transposed shape – ONE continuous outcome across the levels of
+SEVERAL groupings, one block of rows per grouping. Several outcomes
+across one grouping is this function; one outcome across one or more
+groupings is that one;
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 for the model-based companion (heteroskedasticity-consistent SE,
 cluster-robust SE, weighted contrasts, fitted means);

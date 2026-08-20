@@ -207,6 +207,16 @@ instead of rendering an empty column.
 
 ### New functions
 
+- [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  summarizes one continuous outcome across the levels of several
+  categorical variables, stacked as blocks – the inverse layout of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  Each block reports a group comparison (`p`, optional test statistic
+  and effect size), and an `Overall` row gives the marginal summary.
+  Statistics are chosen with the same `show_columns` tokens as
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and every output engine is available. See
+  [`vignette("table-outcome")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md).
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites one table cell in running Quarto / R Markdown text: the returned
   string is exactly the displayed cell – same decimals, *p* style,
@@ -215,7 +225,14 @@ instead of rendering an empty column.
   addressed by variable / level identity (never by display label),
   columns by their typed token, `"ci"` composes the interval, `{token}`
   patterns build full fragments (`"{b} ({ci_label} {ci}; p {p})"`), and
-  every misaddressing errors with the list of available choices.
+  every misaddressing errors with the list of available choices. A
+  statistic that belongs to a whole variable rather than to one of its
+  levels – the *p* of a
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  block, its association measure, its SMD – is cited without a `level`.
+  A variable carrying a real level named `"(Missing)"` is addressed by
+  that name, and the auto-renamed missing category by its own
+  (`"(Missing_1)"`).
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
   univariable screening tables – one fit per predictor, one row block
   each, merged side by side with the multivariable model. Supports `lm`
@@ -398,6 +415,10 @@ instead of rendering an empty column.
 - Variance-component SEs are omitted on large mixed fits, above
   `options("spicy.re_se_max_n")` (default 1000), with a note and a
   warning giving the override.
+- `glmmTMB` and `lme` fits report a singular (boundary) random-effect
+  structure the way `lmer` / `glmer` ones do: a table note, a warning,
+  and no SE or CI on the collapsed variance components. For `glmmTMB`
+  the check covers the zero-inflation and dispersion components too.
 - Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
   `clm`) takes its SEs, z, p and CIs from the same sandwich as the
   slopes.
@@ -486,6 +507,34 @@ instead of rendering an empty column.
   out.
 
 ### Bug fixes
+
+- `output = "gt"` tables carry their table note into the saved file.
+  [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html),
+  [`gt::as_raw_html()`](https://gt.rstudio.com/reference/as_raw_html.html)
+  and a non-interactive [`print()`](https://rdrr.io/r/base/print.html)
+  used to produce a table without the missing-value disclosure, the test
+  note or the column glosses the console prints. The interactive HTML
+  display is unchanged: the note still renders outside the table grid,
+  once.
+
+- `output = "tinytable"` escapes cell text in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
+  A level or variable label containing markup was rendered as markup: a
+  label holding `</td></tr><tr><td>` split its own row, so the HTML
+  table had more rows than the object and the statistics were
+  redistributed across them, and a label holding a script element was
+  emitted live. gt and flextable already escaped.
+
+- `output = "gt"` tables from
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  carry their title, like the other output engines.
 
 - Standard errors, confidence intervals, and p-values from
   `vcov = "jackknife"` and `vcov = "bootstrap"` (cluster variants and

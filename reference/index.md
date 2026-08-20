@@ -65,6 +65,8 @@
   : Continuous summary table
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   : Continuous-outcome linear-model table
+- [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  : Describe one continuous outcome across several groupings
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)

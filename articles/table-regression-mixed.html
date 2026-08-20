@@ -60,6 +60,7 @@
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
@@ -666,10 +667,13 @@ machinery: one block per factor, no extra syntax.</p>
 <h2 id="when-the-fit-is-singular">When the fit is singular<a class="anchor" aria-label="anchor" href="#when-the-fit-is-singular"></a>
 </h2>
 <p>The boundary is not only a testing problem — estimates land
-<em>on</em> it. When a variance component is estimated at exactly zero
-(<code>lme4</code> calls this a <strong>singular fit</strong>), its Wald
-SE and CI are meaningless, so <code><a href="../reference/table_regression.html">table_regression()</a></code> omits them
-and says why in the footer:</p>
+<em>on</em> it. When a variance component collapses onto zero, or a
+random-effect correlation onto ±1 (<code>lme4</code> calls this a
+<strong>singular fit</strong>), the Wald SE and CI are meaningless, so
+<code><a href="../reference/table_regression.html">table_regression()</a></code> omits them and says why in the footer.
+The same check runs on <code>glmmTMB</code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>
+fits, whose optimisers work on a log scale and therefore land
+<em>near</em> the boundary rather than exactly on it:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># (the accompanying console warning is suppressed in this rendering)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>
@@ -700,7 +704,7 @@ and says why in the footer:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.</span></span></span></code></pre></div>
 <p>The chi-bar-squared test reads p = 1.000 — the boundary case. The
 likelihood-ratio statistic is exactly zero, and half of the
 chi-bar-squared null distribution is a point mass <em>at</em> zero, so
@@ -1033,7 +1037,7 @@ variable is centered on it:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = 0.431.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Within-between: Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap).</span></span></span></code></pre></div>
 <p>Reading the table:</p>
 <ul>

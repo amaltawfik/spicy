@@ -1138,6 +1138,12 @@ table_continuous(
   [`vignette("table-categorical", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   for grouped tables of categorical variables.
 - See
+  [`vignette("table-outcome", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md)
+  for the transposed shape: ONE continuous outcome described across the
+  levels of SEVERAL groupings, one block of rows per grouping. Several
+  outcomes across one grouping is this article; one outcome across one
+  or more groupings is that one.
+- See
   [`vignette("table-continuous-lm", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
   for model-based continuous summary tables with robust standard errors
   or case weights.

@@ -42,6 +42,7 @@ Smokers had higher odds (`r inline(tbl, smoking, "Yes", "or")`).
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
@@ -144,6 +145,10 @@ labels before erroring. The missing-value category is addressed by
 <code>level = "(Missing)"</code> whatever its displayed (possibly deduplicated)
 label, through its row role. Fit statistics are addressed by their
 token as <code>variable</code> (<code>inline(tbl, "n")</code>, <code>inline(tbl, "r2")</code>).</p>
+<p>A statistic that belongs to a whole variable rather than to one of
+its levels sits on the variable's own row: the <em>p</em> of a
+<code><a href="table_categorical.html">table_categorical()</a></code> block, its association measure, its SMD. Leave
+<code>level</code> out to cite it (<code>inline(tbl, smoking, column = "p")</code>).</p>
 <p>The column is a <strong>token</strong> of the typed contract (<code>"b"</code>, <code>"se"</code>,
 <code>"p"</code>, <code>"ci"</code>, <code>"or"</code>, <code>"ame"</code>, <code>"n"</code>, <code>"pct"</code>, <code>"m"</code>, ... – see
 <code><a href="as_structured.html">as_structured()</a></code>'s <code>col_meta</code>), never a display header. <code>"ci"</code>

@@ -57,7 +57,8 @@ on the **stable** surface.
 - Summary table builders:
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
 
 - Regression tables:
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),

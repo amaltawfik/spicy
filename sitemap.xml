@@ -12,6 +12,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-categorical.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-continuous.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/articles/table-outcome.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-regression-counts.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/articles/table-regression-gee.html</loc></url>
@@ -28,6 +29,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_lm_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_outcome_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/as_flextable.spicy_flextable.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/as_structured.html</loc></url>
@@ -60,6 +62,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_flextable.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_freq_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_gt.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_outcome_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_regression_frame.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/print.spicy_style.html</loc></url>
@@ -73,6 +76,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_categorical.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_continuous.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_continuous_lm.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_outcome.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_models.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_uv.html</loc></url>
@@ -80,6 +84,7 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_table.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_outcome_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/tidy.spicy_regression_table.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/uncertainty_coef.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/varlist.html</loc></url>

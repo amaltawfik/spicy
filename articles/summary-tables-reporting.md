@@ -46,6 +46,7 @@ Use the function that matches the unit you want to report:
 | [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared test, association measure (`phi`, `cramer_v`, `tau_b`, …), confidence interval |
 | [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges’ *g*, η², rank-biserial *r*, ε²) |
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
+| [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | ONE numeric outcome across the levels of SEVERAL categorical variables | `outcome` (one), `by` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
 | [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted models — 36 classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed, ordinal, survival and Bayesian engines (see [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
 In practice, follow the APA sequence:
@@ -58,6 +59,11 @@ In practice, follow the APA sequence:
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   for BMI, well-being, or income — Table 1 continuous descriptors and
   Table 2 unadjusted group comparisons;
+- transpose to
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  when the question is about ONE outcome and many groupings rather than
+  many outcomes and one grouping – a well-being score described by sex,
+  by education and by region, block after block;
 - switch to
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   when the same comparison must account for case weights, robust SE, or
@@ -69,13 +75,12 @@ In practice, follow the APA sequence:
   standardised coefficients, marginal effects, or nested model
   comparisons.
 
-The first three functions live inside a `select` / `by` data-frame
-grammar;
+The first four functions live inside a data-frame selection grammar;
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 is **fit-first** — you build the model the usual R way
 ([`lm()`](https://rdrr.io/r/stats/lm.html),
 [`glm()`](https://rdrr.io/r/stats/glm.html), or any other supported
-engine) and hand the object in. All four share the post-construction
+engine) and hand the object in. All five share the post-construction
 grammar (`output`, `labels`, `decimal_mark`, `align`, and the digits
 controls), so swapping functions never breaks your rendering pipeline.
 

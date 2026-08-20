@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="The structured view: programmatic access to spicy tables">
-<meta name="description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, and `table_continuous_lm()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all four families.
+<meta name="description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, and `table_outcome()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all five families.
 ">
-<meta property="og:description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, and `table_continuous_lm()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all four families.
+<meta property="og:description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, and `table_outcome()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all five families.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -60,6 +60,7 @@
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
@@ -126,9 +127,10 @@ tables it is the very contract spicy’s own output engines (Excel, gt,
 tinytable, flextable, clipboard) consume internally – nothing about it
 is second-class – and the descriptive families
 (<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>) expose the same schema, covered at
-the end of this vignette. The tour below uses a regression table;
-everything it shows reads identically on the other three.</p>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_outcome.html">table_outcome()</a></code>) expose
+the same schema, covered at the end of this vignette. The tour below
+uses a regression table; everything it shows reads identically on the
+other four.</p>
 <p>Two sibling tools serve different needs, and choosing well saves
 work. <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns the <em>statistical</em> long
 form – one row per term and estimate type per model, with
@@ -533,13 +535,13 @@ coefficients and it renders the way it prints.</p>
 <h2 id="the-descriptive-tables">The descriptive tables<a class="anchor" aria-label="anchor" href="#the-descriptive-tables"></a>
 </h2>
 <p>Everything above extends beyond regression. The same accessor reads
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and returns the same schema – the
-same identity columns, the same <code>cell_status</code>, the same
-<code>display_cells</code> mechanism for composite cells. A consumer
-written for one family reads the other three.
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code> lays out one factor header row per
-variable and one row per category:</p>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="../reference/table_outcome.html">table_outcome()</a></code>, and
+returns the same schema – the same identity columns, the same
+<code>cell_status</code>, the same <code>display_cells</code> mechanism
+for composite cells. A consumer written for one family reads the other
+four. <code><a href="../reference/table_categorical.html">table_categorical()</a></code> lays out one factor header row
+per variable and one row per category:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
@@ -693,6 +695,42 @@ which level it carries, so nothing has to parse
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $display_label</span></span>
 <span><span class="co">#&gt; [1] "M (Male)"</span></span></code></pre></div>
+<p><code><a href="../reference/table_outcome.html">table_outcome()</a></code> is the one shape where three roles share
+<code>.indent == 0</code>: a <code>"summary"</code> row for the whole
+analytic sample, a <code>"factor_header"</code> row per grouping, and
+the indented <code>"level"</code> rows under it. A consumer that read “a
+level is anything that is not a header” would swallow the marginal row;
+the <code>.indent</code> field is the one to read, and it is why the
+block geometry of all three descriptive families is computed from
+it:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">so</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">ot</span><span class="op">)</span></span>
+<span><span class="va">so</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".level"</span>, <span class="st">".row_role"</span>, <span class="st">".indent"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;         Variable .variable    .level     .row_role .indent</span></span>
+<span><span class="co">#&gt; 1        Overall       bmi      &lt;NA&gt;       summary       0</span></span>
+<span><span class="co">#&gt; 2            Sex       sex      &lt;NA&gt; factor_header       0</span></span>
+<span><span class="co">#&gt; 3         Female       sex    Female         level       1</span></span>
+<span><span class="co">#&gt; 4           Male       sex      Male         level       1</span></span>
+<span><span class="co">#&gt; 5 Current smoker   smoking      &lt;NA&gt; factor_header       0</span></span>
+<span><span class="co">#&gt; 6             No   smoking        No         level       1</span></span>
+<span><span class="co">#&gt; 7            Yes   smoking       Yes         level       1</span></span>
+<span><span class="co">#&gt; 8      (Missing)   smoking (Missing)       missing       1</span></span></code></pre></div>
+<p>The statistics of the BLOCK sit on its header row and the statistics
+of the OUTCOME on the level rows, so a cell that is blank on one of them
+is an absence, not an undefined value – <code>cell_status</code> stays
+empty there, and is reserved for what the table itself marks:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">so</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"M"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;         Variable        M          p</span></span>
+<span><span class="co">#&gt; 1        Overall 25.93148         NA</span></span>
+<span><span class="co">#&gt; 2            Sex       NA 0.01760093</span></span>
+<span><span class="co">#&gt; 3         Female 25.68506         NA</span></span>
+<span><span class="co">#&gt; 4           Male 26.19685         NA</span></span>
+<span><span class="co">#&gt; 5 Current smoker       NA 0.90266806</span></span>
+<span><span class="co">#&gt; 6             No 25.96393         NA</span></span>
+<span><span class="co">#&gt; 7            Yes 25.93226         NA</span></span>
+<span><span class="co">#&gt; 8      (Missing) 24.73600         NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="building-your-own-renderer">Building your own renderer<a class="anchor" aria-label="anchor" href="#building-your-own-renderer"></a>
@@ -703,7 +741,7 @@ formats at its <code>col_meta</code> precision, and the
 <code>fit_stat_overrides</code> seen earlier supply the per-row
 exceptions – that is what renders the <code>n</code> row as
 <code>1175</code> rather than <code>1175.00</code>:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">render_kable</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span>  <span class="co"># Value columns only: the dot-prefixed identity columns describe the</span></span>

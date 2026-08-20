@@ -21,10 +21,11 @@ internally – nothing about it is second-class – and the descriptive
 families
 ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md))
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md))
 expose the same schema, covered at the end of this vignette. The tour
 below uses a regression table; everything it shows reads identically on
-the other three.
+the other four.
 
 Two sibling tools serve different needs, and choosing well saves work.
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
@@ -474,12 +475,13 @@ coefficients and it renders the way it prints.
 
 Everything above extends beyond regression. The same accessor reads
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 and
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
 and returns the same schema – the same identity columns, the same
 `cell_status`, the same `display_cells` mechanism for composite cells. A
-consumer written for one family reads the other three.
+consumer written for one family reads the other four.
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 lays out one factor header row per variable and one row per category:
 
@@ -650,6 +652,49 @@ slm$col_meta[["M (Male)"]]
 #> 
 #> $display_label
 #> [1] "M (Male)"
+```
+
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+is the one shape where three roles share `.indent == 0`: a `"summary"`
+row for the whole analytic sample, a `"factor_header"` row per grouping,
+and the indented `"level"` rows under it. A consumer that read “a level
+is anything that is not a header” would swallow the marginal row; the
+`.indent` field is the one to read, and it is why the block geometry of
+all three descriptive families is computed from it:
+
+``` r
+
+ot <- table_outcome(sochealth, bmi, by = c(sex, smoking))
+so <- as_structured(ot)
+so$body[, c("Variable", ".variable", ".level", ".row_role", ".indent")]
+#>         Variable .variable    .level     .row_role .indent
+#> 1        Overall       bmi      <NA>       summary       0
+#> 2            Sex       sex      <NA> factor_header       0
+#> 3         Female       sex    Female         level       1
+#> 4           Male       sex      Male         level       1
+#> 5 Current smoker   smoking      <NA> factor_header       0
+#> 6             No   smoking        No         level       1
+#> 7            Yes   smoking       Yes         level       1
+#> 8      (Missing)   smoking (Missing)       missing       1
+```
+
+The statistics of the BLOCK sit on its header row and the statistics of
+the OUTCOME on the level rows, so a cell that is blank on one of them is
+an absence, not an undefined value – `cell_status` stays empty there,
+and is reserved for what the table itself marks:
+
+``` r
+
+so$body[, c("Variable", "M", "p")]
+#>         Variable        M          p
+#> 1        Overall 25.93148         NA
+#> 2            Sex       NA 0.01760093
+#> 3         Female 25.68506         NA
+#> 4           Male 26.19685         NA
+#> 5 Current smoker       NA 0.90266806
+#> 6             No 25.96393         NA
+#> 7            Yes 25.93226         NA
+#> 8      (Missing) 24.73600         NA
 ```
 
 ## Building your own renderer

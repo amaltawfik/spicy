@@ -60,6 +60,7 @@
     <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
@@ -195,6 +196,17 @@ case weights, additive covariate adjustment, four effect-size measures
 with noncentral CIs</td>
 </tr>
 <tr class="even">
+<td align="left"><code><a href="../reference/table_outcome.html">table_outcome()</a></code></td>
+<td align="left">ONE numeric outcome across the levels of SEVERAL
+categorical variables</td>
+<td align="left">
+<code>outcome</code> (one), <code>by</code> (many)</td>
+<td align="left">One group comparison per block, an <code>Overall</code>
+marginal row, the same statistic tokens as
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code>
+</td>
+</tr>
+<tr class="odd">
 <td align="left"><code><a href="../reference/table_regression.html">table_regression()</a></code></td>
 <td align="left">One or several fitted models — 36 classes, from
 <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> / <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> to mixed, ordinal, survival and
@@ -216,6 +228,10 @@ or activity — APA Table 1 categorical descriptors;</li>
 <li>use <code><a href="../reference/table_continuous.html">table_continuous()</a></code> for BMI, well-being, or income —
 Table 1 continuous descriptors and Table 2 unadjusted group
 comparisons;</li>
+<li>transpose to <code><a href="../reference/table_outcome.html">table_outcome()</a></code> when the question is about
+ONE outcome and many groupings rather than many outcomes and one
+grouping – a well-being score described by sex, by education and by
+region, block after block;</li>
 <li>switch to <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> when the same
 comparison must account for case weights, robust SE, or covariate
 adjustment;</li>
@@ -224,14 +240,13 @@ model is fitted — APA Table 3 with all predictors, factor groupings,
 reference rows, and (optionally) standardised coefficients, marginal
 effects, or nested model comparisons.</li>
 </ul>
-<p>The first three functions live inside a <code>select</code> /
-<code>by</code> data-frame grammar; <code><a href="../reference/table_regression.html">table_regression()</a></code> is
-<strong>fit-first</strong> — you build the model the usual R way
-(<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>, or any other supported engine)
-and hand the object in. All four share the post-construction grammar
-(<code>output</code>, <code>labels</code>, <code>decimal_mark</code>,
-<code>align</code>, and the digits controls), so swapping functions
-never breaks your rendering pipeline.</p>
+<p>The first four functions live inside a data-frame selection grammar;
+<code><a href="../reference/table_regression.html">table_regression()</a></code> is <strong>fit-first</strong> — you
+build the model the usual R way (<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>,
+or any other supported engine) and hand the object in. All five share
+the post-construction grammar (<code>output</code>, <code>labels</code>,
+<code>decimal_mark</code>, <code>align</code>, and the digits controls),
+so swapping functions never breaks your rendering pipeline.</p>
 </div>
 <div class="section level2">
 <h2 id="a-shared-interface">A shared interface<a class="anchor" aria-label="anchor" href="#a-shared-interface"></a>
@@ -1487,7 +1502,7 @@ changes what the rendering engine produces.</p>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
-<td colspan="11" class="gt_heading gt_title gt_font_normal" style>Health behaviors by education</td>
+<td colspan="11" class="gt_heading gt_title gt_font_normal" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">Health behaviors by education</td>
     </tr>
 <tr class="gt_heading">
 <td colspan="11" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>Categorical summary table</td>

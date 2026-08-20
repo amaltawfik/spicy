@@ -571,10 +571,14 @@ per factor, no extra syntax.
 ## When the fit is singular
 
 The boundary is not only a testing problem — estimates land *on* it.
-When a variance component is estimated at exactly zero (`lme4` calls
-this a **singular fit**), its Wald SE and CI are meaningless, so
+When a variance component collapses onto zero, or a random-effect
+correlation onto ±1 (`lme4` calls this a **singular fit**), the Wald SE
+and CI are meaningless, so
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-omits them and says why in the footer:
+omits them and says why in the footer. The same check runs on `glmmTMB`
+and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) fits, whose
+optimisers work on a log scale and therefore land *near* the boundary
+rather than exactly on it:
 
 ``` r
 
@@ -607,7 +611,7 @@ table_regression(sfit)
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.
-#> Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.
+#> Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.
 ```
 
 The chi-bar-squared test reads p = 1.000 — the boundary case. The
@@ -965,7 +969,7 @@ table_regression(
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = 0.431.
 #> Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.
-#> Within-between: Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.
+#> Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.
 #> Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap).
 ```
 

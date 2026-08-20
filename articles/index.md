@@ -62,6 +62,15 @@
   The Lancet, … by name) to console, gt, tinytable, flextable, Excel,
   Word, or clipboard.
 
+- [One outcome across several
+  groupings](https://amaltawfik.github.io/spicy/articles/table-outcome.md):
+
+  Build the transposed summary table in R with table_outcome(): one
+  continuous outcome described across the levels of several categorical
+  variables, one block of rows per variable, a group comparison per
+  block, and a marginal Overall row — with the same statistic vocabulary
+  and the same output engines as table_continuous().
+
 - [Publication-ready regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.md):
 
@@ -94,12 +103,13 @@
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   and
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   output: a numeric body with per-row identity columns, per-column
   metadata, per-cell status, and the format specification. Filter rows
   programmatically, aggregate raw values, or build a custom renderer –
-  against one schema for all four families.
+  against one schema for all five families.
 
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):

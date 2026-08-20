@@ -510,6 +510,9 @@ sochealth |>
   and
   [`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
   — the APA Table 1 / 2 builders.
+- [`vignette("table-outcome")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md)
+  — one continuous outcome across several groupings, one block of rows
+  per grouping.
 - [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
   — model-based group comparisons (robust SE, weights, covariate
   adjustment).
