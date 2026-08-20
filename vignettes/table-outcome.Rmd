@@ -331,8 +331,8 @@ head(table_outcome(sochealth, bmi, by = sex, output = "long"), 4)
 carrying that block's own comparison:
 
 ```{r broom}
-generics::tidy(tbl)
-generics::glance(tbl)
+broom::tidy(tbl)
+broom::glance(tbl)
 ```
 
 Two identity columns rather than one, and deliberately: `outcome` is

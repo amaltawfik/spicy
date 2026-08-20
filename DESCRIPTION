@@ -42,6 +42,7 @@ Imports:
     tidyselect,
     utils
 Suggests:
+    bit64,
     boot,
     broom,
     car,

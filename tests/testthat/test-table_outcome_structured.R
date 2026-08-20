@@ -199,7 +199,7 @@ test_that("coercion strips the rendering attributes, keeps provenance", {
 
 test_that("tidy() returns the described rows only", {
   tbl <- .tos_tbl(bmi, by = c(sex, smoking))
-  td <- generics::tidy(tbl)
+  td <- broom::tidy(tbl)
   expect_identical(
     names(td),
     c(
@@ -238,7 +238,7 @@ test_that("tidy() returns the described rows only", {
 
 test_that("glance() returns one row per block", {
   tbl <- .tos_tbl(bmi, by = c(sex, smoking), effect_size = "auto")
-  gl <- generics::glance(tbl)
+  gl <- broom::glance(tbl)
   expect_identical(
     names(gl),
     c(
@@ -280,12 +280,12 @@ test_that("the glance schema is fixed, SMD columns included", {
   # `smd_type` / `smd_value` are present and NA from the first
   # version: adding the statistic later must not break a pipeline that
   # indexes this frame.
-  gl <- generics::glance(.tos_tbl(bmi, by = sex))
+  gl <- broom::glance(.tos_tbl(bmi, by = sex))
   expect_true(all(c("smd_type", "smd_value") %in% names(gl)))
   expect_true(all(is.na(gl$smd_type)))
   expect_true(all(is.na(gl$smd_value)))
   # And the same schema with no comparison at all.
-  gl2 <- generics::glance(.tos_tbl(bmi, by = sex, p_value = FALSE))
+  gl2 <- broom::glance(.tos_tbl(bmi, by = sex, p_value = FALSE))
   expect_identical(names(gl2), names(gl))
   expect_true(all(is.na(gl2$p.value)))
 })
@@ -298,7 +298,7 @@ test_that("a block with no comparison still gets its glance row", {
     stringsAsFactors = FALSE
   )
   tbl <- .tos_quiet(table_outcome(d, y, by = c(one, g)))
-  gl <- generics::glance(tbl)
+  gl <- broom::glance(tbl)
   expect_identical(nrow(gl), 2L)
   expect_true(is.na(gl$p.value[gl$variable == "one"]))
   expect_false(is.na(gl$p.value[gl$variable == "g"]))

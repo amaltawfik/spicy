@@ -257,7 +257,7 @@ NULL
 }
 
 #' @rdname tidy.spicy_outcome_table
-#' @exportS3Method generics::tidy
+#' @exportS3Method broom::tidy
 tidy.spicy_outcome_table <- function(x, ...) {
   outcome <- attr(x, "outcome", exact = TRUE)
   long <- unclass_spicy_outcome_table(x)
@@ -287,7 +287,7 @@ tidy.spicy_outcome_table <- function(x, ...) {
 }
 
 #' @rdname tidy.spicy_outcome_table
-#' @exportS3Method generics::glance
+#' @exportS3Method broom::glance
 glance.spicy_outcome_table <- function(x, ...) {
   outcome <- attr(x, "outcome", exact = TRUE)
   long <- unclass_spicy_outcome_table(x)
