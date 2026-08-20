@@ -49,6 +49,11 @@ row-wise summaries.
 - **Categorical and continuous summary tables** with
   `table_categorical()` and `table_continuous()`, overall or by
   group.
+- **Outcome-first summary tables** with `table_outcome()`: one
+  continuous outcome described across several groupings, one block
+  of rows per grouping variable, a group comparison per block, and a
+  marginal `Overall` row -- the transpose of `table_continuous()`,
+  with the same statistic vocabulary and output engines.
 - **Model-based continuous summary tables** with
   `table_continuous_lm()` for linear-model reporting: classical /
   HC* / cluster-robust / bootstrap / jackknife variance, four
@@ -342,6 +347,17 @@ tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 for regression tables across model families, and [Summary tables for
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
+
+The same numbers can be laid out outcome-first: one outcome,
+several groupings, one block per grouping.
+
+```{r eval=TRUE}
+table_outcome(
+  sochealth,
+  outcome = bmi,
+  by = c(sex, smoking)
+)
+```
 
 ### Row-wise summaries
 
