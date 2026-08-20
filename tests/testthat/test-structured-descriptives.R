@@ -839,3 +839,100 @@ test_that("descriptive col_meta carries display_label, defaulting to the key", {
     expect_identical(unname(labels), names(s$col_meta))
   }
 })
+
+
+# ============================================================================
+# Block geometry, shared across the descriptive families
+# ============================================================================
+
+test_that("the shared block predicates agree with the categorical answers", {
+  # `.struct_block_sep_rows()` / `.struct_indent_rows()` generalise the
+  # two categorical helpers. The generalisation must be BYTE-IDENTICAL
+  # on everything delivered, and the categorical corpus is what proves
+  # it: its body always opens on a factor header (so "not the first
+  # row" and "not the first header" coincide), and its only non-header
+  # rows are the indented ones (so the role complement and `.indent >
+  # 0` coincide).
+  sh <- sh_desc()
+  corpus <- list(
+    quiet(table_categorical(sh, c(sex, smoking))),
+    quiet(table_categorical(sh, c(sex, smoking), by = education)),
+    quiet(table_categorical(sh, c(sex, smoking), by = education, smd = FALSE)),
+    quiet(table_categorical(sh, education)),
+    quiet(table_categorical(sh, c(sex, smoking), indent_text = ">> "))
+  )
+  for (tbl in corpus) {
+    s <- as_structured(tbl)
+    # Against the retired ROLE-based definitions, verbatim.
+    expect_identical(
+      spicy:::.struct_block_sep_rows(s),
+      which(s$body$.row_role == "factor_header")[-1L]
+    )
+    expect_identical(
+      spicy:::.struct_indent_rows(s),
+      which(s$body$.row_role != "factor_header")
+    )
+    # And against the independent STRING oracle, which parses the
+    # console labels rather than reading the roles.
+    expect_identical(
+      spicy:::.struct_block_sep_rows(s),
+      spicy:::.categorical_var_sep_rows(
+        attr(tbl, "display_df")$Variable,
+        attr(tbl, "indent_text") %||% "  "
+      )
+    )
+  }
+})
+
+test_that("a body that opens on a summary row keeps its first rule", {
+  # The reason the generalisation is not cosmetic. A body whose first
+  # row is a marginal `summary` row above the blocks: the rank-based
+  # predicate drops the rule between that row and the first block, and
+  # the role-complement predicate indents the marginal row as if it
+  # were a level of the block below.
+  mock <- list(
+    body = data.frame(
+      Variable = c("Overall", "Sex", "  Female", "  Male", "Smoker", "  No"),
+      .variable = c("bmi", "sex", "sex", "sex", "smoking", "smoking"),
+      .level = c(NA, NA, "Female", "Male", NA, "No"),
+      .row_role = c(
+        "summary",
+        "factor_header",
+        "level",
+        "level",
+        "factor_header",
+        "level"
+      ),
+      .indent = c(0L, 0L, 1L, 1L, 0L, 1L),
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_identical(spicy:::.struct_block_sep_rows(mock), c(2L, 5L))
+  expect_identical(spicy:::.struct_indent_rows(mock), c(3L, 4L, 6L))
+
+  # The retired definitions, side by side, so the difference is on the
+  # record rather than in a comment.
+  expect_identical(
+    which(mock$body$.row_role == "factor_header")[-1L],
+    5L
+  )
+  expect_identical(
+    which(mock$body$.row_role != "factor_header"),
+    c(1L, 3L, 4L, 6L)
+  )
+})
+
+test_that("an empty body yields no block rows and no indented rows", {
+  mock <- list(
+    body = data.frame(
+      Variable = character(0),
+      .variable = character(0),
+      .level = character(0),
+      .row_role = character(0),
+      .indent = integer(0),
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_identical(spicy:::.struct_block_sep_rows(mock), integer(0))
+  expect_identical(spicy:::.struct_indent_rows(mock), integer(0))
+})

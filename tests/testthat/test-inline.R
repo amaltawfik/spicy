@@ -244,16 +244,35 @@ test_that("an out-of-range or unknown `model` is refused, unchanged", {
   expect_match(conditionMessage(err), "no model spanners")
 })
 
-test_that("the missing category is addressed by role, not label", {
+test_that("a real level named (Missing) wins over the role shortcut", {
+  # This block used to assert the opposite, and it was pinning a bug.
+  # With a REAL level literally named "(Missing)", the missing category
+  # auto-renames itself "(Missing_1)" and the table shows both rows;
+  # resolving "(Missing)" by role handed back the OTHER row's number,
+  # silently. Identity now comes first, so the address a reader types
+  # reaches the row a reader sees.
   d <- as.data.frame(sochealth)
   d$smoking <- as.character(d$smoking)
   d$smoking[d$smoking == "Yes"] <- "(Missing)"
   tc <- .il_quiet(table_categorical(d, select = smoking, drop_na = FALSE))
-  # The real missing row (displayed "(Missing_1)") answers to the key.
-  out <- inline(tc, smoking, "(Missing)", "n")
   s <- as_structured(tc)
+  real_row <- which(s$body$.level == "(Missing)")
   miss_row <- which(s$body$.row_role == "missing")
-  expect_identical(out, as.character(s$body$n[miss_row]))
+  # The fixture is only worth anything if the two rows differ.
+  expect_length(real_row, 1L)
+  expect_length(miss_row, 1L)
+  expect_false(identical(real_row, miss_row))
+  expect_false(identical(s$body$n[real_row], s$body$n[miss_row]))
+
+  expect_identical(
+    inline(tc, smoking, "(Missing)", "n"),
+    as.character(s$body$n[real_row])
+  )
+  # The auto-renamed missing row keeps its own address.
+  expect_identical(
+    inline(tc, smoking, "(Missing_1)", "n"),
+    as.character(s$body$n[miss_row])
+  )
 })
 
 
@@ -528,21 +547,23 @@ test_that("inline() cites a continuous SMD cell, byte for byte", {
     inline(tbl, x, "A", column = "n")
   ))
 
-  # KNOWN FAMILY LIMIT, pinned so it is not mistaken for a regression:
-  # in a categorical table the SMD -- like `p` and the association
-  # measure, neither of which is citable today either -- lives only on
-  # the `factor_header` row, whose `.level` is NA, and
-  # `.inline_resolve_row()` refuses `level = NULL` as soon as the
-  # variable has levels. Unblocking it would unblock all three at once
-  # and is a lot of its own.
+  # A statistic that lives on the BLOCK is addressed without a level:
+  # in a categorical table the SMD, the association measure and the
+  # group comparison's `p` all sit on the `factor_header` row, whose
+  # `.level` is NA. `level = NULL` resolves there, because those tokens
+  # are filled on the header and blank on every level row of the block.
+  #
+  # The middle line is the witness that this did not spill over: an
+  # EXPLICIT level still addresses the level row, where the SMD is
+  # blank, and still refuses.
   dc <- data.frame(
     g = factor(c("A", "A", "A", "A", "B", "B", "B")),
     bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
   )
   ct <- .il_quiet(table_categorical(dc, select = bin, by = g, smd = TRUE))
-  expect_error(inline(ct, bin, column = "smd"), "pick one with")
+  expect_identical(inline(ct, bin, column = "smd"), "-0.92")
   expect_error(inline(ct, bin, "no", column = "smd"), "empty")
-  expect_error(inline(ct, bin, column = "assoc"), "pick one with")
+  expect_identical(inline(ct, bin, column = "assoc"), ".42")
 })
 
 
@@ -639,4 +660,173 @@ test_that("an exponentiated table's bare inline() still finds token 'b'", {
   )
   expect_identical(inline(tr, wt), inline(tr, wt, column = "b"))
   expect_error(inline(tr, wt, column = "or"), "No column with token")
+})
+
+test_that("a block statistic is cited without a level", {
+  # `table_categorical()` puts the statistics OF THE VARIABLE on the
+  # block's header row: the group comparison's `p`, the association
+  # measure, the SMD. Those rows carry no `.level`, so they can only be
+  # addressed by leaving `level` out.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = bin, by = g))
+  s <- as_structured(ct)
+  formatted <- spicy:::.format_structured_to_string_body(s)
+  hdr <- which(s$body$.row_role == "factor_header")
+
+  # The cell, byte for byte against the table's own header row.
+  expect_identical(inline(ct, bin, column = "p"), trimws(formatted$p[hdr]))
+  # A pattern is a set of tokens, and the rule reads all of them.
+  expect_identical(
+    inline(ct, bin, column = "{p}"),
+    trimws(formatted$p[hdr])
+  )
+  # A level statistic is NOT reachable that way: `n` is filled on every
+  # level row, so the address stays ambiguous and the refusal stands --
+  # the LEVEL refusal, listing the levels.
+  err <- tryCatch(inline(ct, bin, column = "n"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "pick one with `level`")
+  expect_match(conditionMessage(err), "\"no\"")
+  # A level still addresses its own row.
+  expect_identical(inline(ct, bin, "no", column = "n", model = "A"), "3")
+})
+
+test_that("a mixed pattern does not resolve to the block header", {
+  # `{p}` lives on the header, `{n}` on the levels: no single row
+  # answers the whole pattern, so the address stays ambiguous.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = bin, by = g))
+  expect_error(inline(ct, bin, column = "{p} ({n})"), "pick one with")
+})
+
+test_that("an empty block statistic refuses with its own reason", {
+  # A single-level variable gives the chi-squared nothing to compare:
+  # its `p` is blank on the header AND on the level. Pointing at the
+  # levels would name a remedy that cannot help, so the refusal says
+  # what actually happened.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    one = factor(rep("yes", 7L))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = one, by = g))
+  err <- tryCatch(inline(ct, one, column = "p"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "empty for")
+  expect_match(conditionMessage(err), "group comparison did not run")
+})
+
+test_that("the header rule needs the statistic blank on every level", {
+  # Both halves of the rule are load-bearing, and only one of them can
+  # be witnessed through a real table (the other needs a body where a
+  # token is filled on the header AND on a level -- no family emits
+  # one today). Feed the predicate that body directly.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = bin, by = g))
+  s <- as_structured(ct)
+  formatted <- spicy:::.format_structured_to_string_body(s)
+  cols <- spicy:::.inline_model_cols(s, NULL)
+  rows <- which(s$body$.variable == "bin")
+  hdr <- rows[s$body$.row_role[rows] == "factor_header"]
+
+  # As the table stands, `p` resolves to the header.
+  expect_identical(
+    spicy:::.inline_header_row(s, formatted, rows, "bin", "p", cols),
+    hdr
+  )
+  # Fill `p` on a level row too: the header is no longer the only
+  # possible answer, so the rule must decline and let the caller be
+  # told to pick a level.
+  spilled <- formatted
+  spilled$p[setdiff(rows, hdr)[1L]] <- ".270"
+  expect_null(
+    spicy:::.inline_header_row(s, spilled, rows, "bin", "p", cols)
+  )
+})
+
+
+test_that("a real level named (Missing) is not shadowed by the role", {
+  # F1, adversarial review of the table-outcome train. The role
+  # shortcut used to run FIRST, so a variable carrying a real level
+  # literally named "(Missing)" -- which makes the missing category
+  # auto-rename itself "(Missing_1)" -- returned the OTHER row's
+  # number. Silently: no error, no warning, and the table on screen
+  # showed both rows with different values.
+  #
+  # Pinned across all three families that share `.inline_resolve_row()`,
+  # and on VALUES that differ between the two rows, so a regression
+  # cannot pass by agreeing with itself.
+  g <- factor(
+    c(rep("(Missing)", 5L), rep("a", 3L), rep(NA, 2L)),
+    levels = c("(Missing)", "a")
+  )
+  d <- data.frame(g = g, y = seq_along(g))
+
+  to <- .il_quiet(table_outcome(d, y, by = g))
+  shown <- attr(to, "display_df")
+  expect_identical(
+    trimws(shown$Variable),
+    c("Overall", "g", "(Missing)", "a", "(Missing_1)")
+  )
+  expect_identical(trimws(shown$n), c("10", "", "5", "3", "2"))
+  expect_identical(inline(to, g, "(Missing)", "n"), "5")
+  expect_identical(inline(to, g, "(Missing_1)", "n"), "2")
+
+  ct <- .il_quiet(table_categorical(d, select = g))
+  expect_identical(inline(ct, g, "(Missing)", "n"), "5")
+  expect_identical(inline(ct, g, "(Missing_1)", "n"), "2")
+
+  cn <- .il_quiet(table_continuous(
+    d,
+    select = y,
+    by = g,
+    p_value = FALSE,
+    drop_na = FALSE
+  ))
+  expect_identical(inline(cn, y, "(Missing)", "n"), "5")
+  expect_identical(inline(cn, y, "(Missing_1)", "n"), "2")
+})
+
+test_that("the missing category is still addressed by its documented name", {
+  # The other half: with no collision, `level = "(Missing)"` reaches
+  # the missing row exactly as `?inline` promises -- the exact match
+  # and the role shortcut agree there, because the missing row's
+  # `.level` IS its displayed label.
+  d <- data.frame(
+    g = factor(c("a", "a", "a", "b", "b", NA, NA)),
+    y = c(1, 2, 3, 10, 20, 30, 40)
+  )
+  to <- .il_quiet(table_outcome(d, y, by = g))
+  expect_identical(inline(to, g, "(Missing)", "n"), "2")
+  ct <- .il_quiet(table_categorical(d, select = g))
+  expect_identical(inline(ct, g, "(Missing)", "n"), "2")
+  cn <- .il_quiet(table_continuous(
+    d,
+    select = y,
+    by = g,
+    p_value = FALSE,
+    # This family drops the missing group by default; the address
+    # under test only exists when the row is shown.
+    drop_na = FALSE
+  ))
+  expect_identical(inline(cn, y, "(Missing)", "n"), "2")
+})
+
+test_that("the role fallback survives a translated missing label", {
+  # Why the role shortcut exists at all: under a translated registry
+  # the displayed label is no longer "(Missing)", and the documented
+  # address must still work. Exercised through the predicate, which is
+  # the only thing the registry moves.
+  expect_true(spicy:::.inline_addresses_missing("(Missing)"))
+  expect_true(spicy:::.inline_addresses_missing(spicy_str("row_missing_level")))
+  expect_false(spicy:::.inline_addresses_missing("a"))
+  expect_false(spicy:::.inline_addresses_missing("(Missing_1)"))
 })

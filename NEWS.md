@@ -146,6 +146,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New functions
 
+* `table_outcome()` summarizes one continuous outcome across the levels
+  of several categorical variables, stacked as blocks -- the inverse
+  layout of `table_continuous()`. Each block reports a group comparison
+  (`p`, optional test statistic and effect size), and an `Overall` row
+  gives the marginal summary. Statistics are chosen with the same
+  `show_columns` tokens as `table_continuous()`, and every output engine
+  is available. See `vignette("table-outcome")`.
 * `inline()` cites one table cell in running Quarto / R Markdown text:
   the returned string is exactly the displayed cell -- same decimals,
   *p* style, interval punctuation, journal style -- so a number quoted
@@ -154,7 +161,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   label), columns by their typed token, `"ci"` composes the interval,
   `{token}` patterns build full fragments
   (`"{b} ({ci_label} {ci}; p {p})"`), and every misaddressing errors
-  with the list of available choices.
+  with the list of available choices. A statistic that belongs to a
+  whole variable rather than to one of its levels -- the *p* of a
+  `table_categorical()` block, its association measure, its SMD -- is
+  cited without a `level`. A variable carrying a real level named
+  `"(Missing)"` is addressed by that name, and the auto-renamed
+  missing category by its own (`"(Missing_1)"`).
 * `table_regression_uv()`: univariable screening tables -- one fit per
   predictor, one row block each, merged side by side with the multivariable
   model. Supports `lm` (the linear default), `glm` (selected by `family`, in
@@ -377,6 +389,23 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `output = "gt"` tables carry their table note into the saved file.
+  `gt::gtsave()`, `gt::as_raw_html()` and a non-interactive `print()` used
+  to produce a table without the missing-value disclosure, the test note or
+  the column glosses the console prints. The interactive HTML display is
+  unchanged: the note still renders outside the table grid, once.
+
+* `output = "tinytable"` escapes cell text in `table_categorical()`,
+  `table_continuous()`, `table_continuous_lm()` and `table_outcome()`. A
+  level or variable label containing markup was rendered as markup: a label
+  holding `</td></tr><tr><td>` split its own row, so the HTML table had more
+  rows than the object and the statistics were redistributed across them,
+  and a label holding a script element was emitted live. gt and flextable
+  already escaped.
+
+* `output = "gt"` tables from `table_categorical()`, `table_continuous()`
+  and `table_continuous_lm()` carry their title, like the other output
+  engines.
 * Standard errors, confidence intervals, and p-values from
   `vcov = "jackknife"` and `vcov = "bootstrap"` (cluster variants and
   `ci_method = "boot_percentile"` included) were wrong for binomial and

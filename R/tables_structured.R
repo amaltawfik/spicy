@@ -178,6 +178,37 @@
   match(cols, col_names) + 1L
 }
 
+# Rows that OPEN a block: every factor header that is not the FIRST
+# row of the body. The console rules each of them off from the block
+# above, and the six engines draw the same light rule.
+#
+# Positional on row 1, never on the RANK of the first header. The two
+# agree on a categorical body, whose first row is always a
+# `factor_header` -- `.build_categorical_structured()` pushes the
+# header before the level loop, for the first variable like the rest.
+# They part company on a body that opens on something else: a
+# `summary` row above the blocks. Reading the rank there drops the
+# rule between that row and the first block -- the one rule such a
+# table most needs.
+.struct_block_sep_rows <- function(structured) {
+  setdiff(which(structured$body$.row_role == "factor_header"), 1L)
+}
+
+# Rows to indent: the literal reading of the field the v3 contract
+# declares for exactly this.
+#
+# Not the complement of a role. `which(.row_role != "factor_header")`
+# means "a level" only while a body has two roles; a third role at
+# indent 0 -- again, a `summary` row above the blocks -- falls into
+# the complement and gets indented like a level of the block below it.
+# On Excel and the clipboard the damage is worse than cosmetic:
+# `make_stronger_indent()` strips `nchar(indent_text)` leading
+# characters from every row it is handed, so a label that never had
+# the prefix loses its own first letters.
+.struct_indent_rows <- function(structured) {
+  which(structured$body$.indent > 0L)
+}
+
 
 # ---- table_categorical() --------------------------------------------------
 
@@ -435,30 +466,26 @@
 # alphabetically and this one is read AFTER it -- harmless, because the
 # vocabulary is a function, resolved when called rather than at build.
 
-# Structured view of a continuous summary table.
+# The COLUMN half of a continuous structured view: the column names,
+# their `col_meta`, and the per-column source map the row half reads.
 #
-# One row per displayed row of the console table: a `summary` row per
-# variable without `by`, one `group` row per level of `by` with it --
-# `missing` for the missing-`by` group, whose label is a display
-# string and whose role is the key.
+# Shared by `table_continuous()` and `table_outcome()`, which display
+# the same vocabulary of tokens and differ only in the geometry of
+# their rows. A second copy would be a second place for a token to
+# gain a precision, a `ci_pair` or a `display_label` -- and the typed
+# contract is exactly what a consumer indexes into by those names.
 #
-# `display_df` is the very frame the print method renders: the
-# composite cells ("Med [Q1, Q3]", the test statistic, the effect
-# size) are read from it, so the typed view and the console can never
-# word the same cell differently.
-.build_continuous_structured <- function(
-  result,
+# `display_df` is read for MEMBERSHIP only (which inference columns
+# the table carries), key against key.
+.continuous_struct_columns <- function(
   display_df,
   tokens_union,
-  tokens_by_var,
   digits,
   effect_size_digits,
   p_digits,
   decimal_mark,
-  ci_level,
-  missing_group_label = NA_character_
+  ci_level
 ) {
-  has_group <- "group" %in% names(result)
   spec <- .continuous_token_columns(ci_level, decimal_mark)
 
   col_names <- character(0)
@@ -562,6 +589,55 @@
       field = "smd_value"
     )
   }
+
+  list(
+    spec = spec,
+    col_names = col_names,
+    col_meta = col_meta,
+    ci_pairs = ci_pairs,
+    col_source = col_source
+  )
+}
+
+# Structured view of a continuous summary table.
+#
+# One row per displayed row of the console table: a `summary` row per
+# variable without `by`, one `group` row per level of `by` with it --
+# `missing` for the missing-`by` group, whose label is a display
+# string and whose role is the key.
+#
+# `display_df` is the very frame the print method renders: the
+# composite cells ("Med [Q1, Q3]", the test statistic, the effect
+# size) are read from it, so the typed view and the console can never
+# word the same cell differently.
+.build_continuous_structured <- function(
+  result,
+  display_df,
+  tokens_union,
+  tokens_by_var,
+  digits,
+  effect_size_digits,
+  p_digits,
+  decimal_mark,
+  ci_level,
+  missing_group_label = NA_character_
+) {
+  has_group <- "group" %in% names(result)
+  # The column half is shared with `table_outcome()`.
+  cols <- .continuous_struct_columns(
+    display_df = display_df,
+    tokens_union = tokens_union,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level
+  )
+  spec <- cols$spec
+  col_names <- cols$col_names
+  col_meta <- cols$col_meta
+  ci_pairs <- cols$ci_pairs
+  col_source <- cols$col_source
 
   rows <- list()
   for (i in seq_len(nrow(result))) {
@@ -824,5 +900,113 @@
       ci_level = ci_level
     ),
     ci_pairs = ci_pairs
+  )
+}
+
+
+# ---- table_outcome() ------------------------------------------------------
+
+# Structured view of an outcome table.
+#
+# Same COLUMNS as a continuous table -- `.continuous_struct_columns()`
+# builds them, so the two families cannot name a token differently --
+# and the block geometry of a categorical one: a `summary` row for the
+# whole analytic sample, then per grouping a `factor_header` row
+# carrying the block's own statistics and one `level` (or `missing`)
+# row per displayed level.
+#
+# Three roles sit at `.indent == 0` here, which is why the shared
+# geometry predicates read `.indent` rather than the complement of a
+# role.
+#
+# The structural blanks are ABSENCES, never `undefined` cells: a
+# descriptive statistic on a block header and a block statistic on a
+# level row do not apply to that row, they are not values the table
+# failed to compute. The `undefined` status is reserved for what the
+# console itself marks with the undefined glyph -- an SD on n = 1, an
+# interval on an empty level.
+.build_outcome_structured <- function(
+  result,
+  display_df,
+  tokens,
+  digits,
+  effect_size_digits,
+  p_digits,
+  decimal_mark,
+  ci_level
+) {
+  cols <- .continuous_struct_columns(
+    display_df = display_df,
+    tokens_union = tokens,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level
+  )
+  spec <- cols$spec
+  col_names <- cols$col_names
+  col_meta <- cols$col_meta
+  col_source <- cols$col_source
+
+  # Which columns a row is entitled to: the block's own statistics
+  # belong to its header row, the outcome's to every other row.
+  block_tokens <- c("statistic", "p", "es", "smd")
+
+  rows <- list()
+  for (i in seq_len(nrow(result))) {
+    role <- result$.row_role[i]
+    is_header <- identical(role, "factor_header")
+    values <- list()
+    display <- character(0)
+    status <- character(0)
+    for (nm in col_names) {
+      tok <- col_meta[[nm]]$token
+      if (identical(tok %in% block_tokens, !is_header)) {
+        next
+      }
+      src <- col_source[[nm]]
+      val <- result[[src$field]][i]
+      if (!is.null(val) && length(val) == 1L) {
+        values[[nm]] <- as.numeric(val)
+      }
+      shown_str <- as.character(display_df[[nm]][i])
+      if (isTRUE(src$composite) && nzchar(shown_str)) {
+        display[[nm]] <- shown_str
+      }
+      if (identical(shown_str, spicy_str("cell_undefined"))) {
+        status[[nm]] <- "undefined"
+        display[[nm]] <- shown_str
+      }
+    }
+    rows[[length(rows) + 1L]] <- list(
+      label = display_df[[.CON_KEY_VARIABLE]][i],
+      values = values,
+      # The marginal row is the OUTCOME's row: `inline(tbl, <outcome>)`
+      # cites the marginal mean, which is the most natural citation
+      # this table offers.
+      variable = result$variable[i],
+      level = result$level[i],
+      role = role,
+      indent = if (role %in% c("level", "missing")) 1L else 0L,
+      display = display,
+      status = status
+    )
+  }
+
+  .desc_assemble(
+    rows,
+    col_names = col_names,
+    col_meta = col_meta,
+    format_spec = list(
+      decimal_mark = decimal_mark,
+      digits = as.integer(digits),
+      p_digits = as.integer(p_digits),
+      effect_size_digits = as.integer(effect_size_digits),
+      p_style = .style_p_style_token(),
+      p_threshold = .style_p_floor(p_digits),
+      ci_level = ci_level
+    ),
+    ci_pairs = cols$ci_pairs
   )
 }

@@ -1539,17 +1539,6 @@ table_categorical <- function(
     s
   }
 
-  # `rows` are the level rows, read from the typed roles of the
-  # structured view -- not sniffed back from the indent prefix, so a
-  # variable label starting with `base_indent` keeps its label.
-  make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
-    if (length(rows)) {
-      suffix <- substring(x[rows], nchar(base_indent) + 1L)
-      x[rows] <- paste0(strong_indent, suffix)
-    }
-    x
-  }
-
   # Pre-pad numeric (i.e. non-Variable) columns of a display data
   # frame with figure-spaces (U+2007, digit-width) so the decimal
   # mark falls at the same horizontal position across each column.
@@ -1903,11 +1892,13 @@ table_categorical <- function(
 
       tt <- tinytable::tt(
         dat_tt,
-        escape = FALSE,
         caption = .categorical_title(NULL),
         notes = missing_note
       )
       tt <- .spicy_tt_bare(tt)
+      # User data reaches the cells (level labels, variable labels):
+      # escape it, like every other engine of the family does.
+      tt <- .spicy_tt_escape(tt)
       tt <- tinytable::style_tt(tt, j = 1, align = "l")
       tt_align <- switch(
         align,
@@ -2058,6 +2049,8 @@ table_categorical <- function(
           locations = gt::cells_body(rows = sr - 1L)
         )
       }
+      # The same title the five other engines print.
+      tbl <- .spicy_gt_apa_title(tbl, .categorical_title(NULL))
       return(.spicy_gt_attach_note(tbl, missing_note))
     }
 
@@ -3362,7 +3355,6 @@ table_categorical <- function(
 
     tt <- tinytable::tt(
       dat_tt,
-      escape = FALSE,
       caption = .categorical_title(by_name),
       # The association-measure gloss belongs to the rendered table as
       # much as to the console: it names which measure each row
@@ -3371,6 +3363,9 @@ table_categorical <- function(
     )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- .spicy_tt_bare(tt)
+    # User data reaches the cells (level labels, variable labels):
+    # escape it, like every other engine of the family does.
+    tt <- .spicy_tt_escape(tt)
 
     # Alignment. Honour the `align` argument: "decimal" centres
     # uniform-width pre-padded strings (same strategy as
@@ -3712,6 +3707,9 @@ table_categorical <- function(
       sep = "\n"
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
+
+    # The same title the five other engines print.
+    tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_name))
 
     return(.spicy_gt_attach_note(tbl, missing_note))
   }

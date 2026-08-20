@@ -26,15 +26,73 @@
 # `print.spicy_gt()` / `knit_print.spicy_gt()`, which inject it as a
 # `<div>` outside the table in HTML and fall back to the native source
 # note for non-HTML knit targets.
+# The note is attached TWICE, on purpose -- the same reasoning
+# `output_gt()` records for the regression family.
+#
+# 1. `gt::tab_source_note()` puts it on the gt object itself, so it
+#    survives every route to a rendered table: `gt::gtsave()`,
+#    `gt::as_raw_html()`, `as_latex()`, `as_word()`, a non-interactive
+#    `print()`. Without it those deliverables shipped a TITLED table
+#    stripped of the disclosure the console prints -- which missing
+#    values were removed, which test each block ran, that the blocks
+#    are not adjusted for one another. The twin of the title hole, on
+#    the same engine.
+# 2. The `spicy_gt` tag routes it through `print.spicy_gt()` /
+#    `knit_print.spicy_gt()`, which inject it as a `<div>` OUTSIDE the
+#    table in HTML -- gt's own `<tfoot>` colspan cell widens the table
+#    in narrow viewports. Those methods drop the native note when they
+#    take over, so the two never print together.
 .spicy_gt_attach_note <- function(tbl, note) {
   if (is.null(note) || !nzchar(note)) {
     return(tbl)
   }
+  # One line, like the regression family: `.spicy_gt_drop_source_note()`
+  # matches this row on its TEXT to remove it from the HTML path, and a
+  # note carrying a newline would not match itself.
+  tbl <- gt::tab_source_note(
+    tbl,
+    source_note = gsub("\n", " ", note, fixed = TRUE)
+  )
   attr(tbl, "spicy_note") <- note
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl
 }
 
+
+# Set the title every gt route prints above its table: the same title
+# the console announces, laid out the APA way.
+#
+# APA Manual 7 Section 7.10-Section 7.11: caption is flush-left. gt's
+# default centers the title; override via `cell_text(align = "left")`
+# on `cells_title("title")`. Also drop the title's bottom border --
+# the spanner row below already carries the outer top rule via
+# `gt_columns_top_border`, so keeping the title's `gt_bottom_border`
+# would render a redundant double line.
+#
+# Single source for `table_regression()` and the descriptive families,
+# like `.spicy_ft_word_caption()` / `.spicy_ft_html_caption()` beside
+# it: a table that announces itself on screen must announce itself in
+# every engine, and the two layouts must not drift apart.
+#
+# `title = NULL` / "" returns the table untouched.
+.spicy_gt_apa_title <- function(tbl, title) {
+  if (is.null(title) || !nzchar(title)) {
+    return(tbl)
+  }
+  tbl <- gt::tab_header(tbl, title = title)
+  gt::tab_style(
+    tbl,
+    style = list(
+      gt::cell_text(align = "left"),
+      gt::cell_borders(
+        sides = "bottom",
+        color = "transparent",
+        weight = gt::px(0)
+      )
+    ),
+    locations = gt::cells_title(groups = "title")
+  )
+}
 
 # Escape a value for interpolation INSIDE a double-quoted CSS string,
 # as in the `th[id="..."]` attribute selectors the gt branches build.

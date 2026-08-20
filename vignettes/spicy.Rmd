@@ -223,6 +223,8 @@ sochealth |>
 
 - `vignette("table-categorical")` and `vignette("table-continuous")`
   — the APA Table 1 / 2 builders.
+- `vignette("table-outcome")` — one continuous outcome across
+  several groupings, one block of rows per grouping.
 - `vignette("table-continuous-lm")` — model-based group comparisons
   (robust SE, weights, covariate adjustment).
 

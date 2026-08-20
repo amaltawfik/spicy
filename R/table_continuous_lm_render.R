@@ -773,6 +773,9 @@ export_continuous_lm_table <- function(
     )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- .spicy_tt_bare(tt)
+    # User data reaches the cells (level labels, variable labels):
+    # escape it, like every other engine of the family does.
+    tt <- .spicy_tt_escape(tt)
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     if (ncol(display_df) > 1L) {
       numeric_j <- setdiff(seq_len(nc), 1L)
@@ -1032,6 +1035,9 @@ export_continuous_lm_table <- function(
       sep = "\n"
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
+
+    # The same title the five other engines print.
+    tbl <- .spicy_gt_apa_title(tbl, title)
 
     # Note: NOT added via gt's native `tab_source_note()` (its
     # `<tfoot>` colspan cell widens the table in narrow viewports;

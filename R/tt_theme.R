@@ -294,3 +294,30 @@
     fixed = TRUE
   )
 }
+
+# HTML-escape the parts of a tinytable that carry USER DATA.
+#
+# tinytable passes cell text through to the backend unescaped, so a
+# level label, a variable label or a caption that looks like markup is
+# parsed as markup. The consequences are not cosmetic: a label holding
+# `</td></tr><tr><td>` closes its own cell and row and the engine
+# renders a table with MORE rows than the object has, silently
+# redistributing the statistics; a label holding `<script>` is emitted
+# live into the document. gt and flextable escape; tinytable is the
+# one engine that does not.
+#
+# The slot list is `table_regression()`'s, and `"notes"` is left OUT of
+# it on purpose. The note is package prose, not user data, and
+# escaping it broke Typst compilation: the typst escape set covers
+# `[` / `]`, so a note carrying markup such as `#text(8pt)[...]` came
+# out as `\#text(8pt)\[...\]`, leaving `text()` without a body. Cell
+# escaping still applies, so real CI brackets stay protected.
+#
+# LaTeX and Typst do their own escaping; this is a no-op there.
+.spicy_tt_escape <- function(x) {
+  tinytable::format_tt(
+    x,
+    i = c("colnames", "caption", "~groupi", "groupi", "groupj", "cells"),
+    escape = TRUE
+  )
+}

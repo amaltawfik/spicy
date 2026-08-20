@@ -352,10 +352,10 @@ test_that("export_desc_table refuses an unknown output engine", {
   expect_error(
     spicy:::export_desc_table(
       display_df = display_df,
-      raw_result = data.frame(variable = "mpg", stringsAsFactors = FALSE),
       output = "bogus",
       ci_level = 0.95,
-      has_group = FALSE,
+      stub_keys = "Variable",
+      title = "Descriptive statistics",
       excel_path = NULL,
       excel_sheet = "Sheet1",
       clipboard_delim = "\t",

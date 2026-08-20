@@ -549,11 +549,7 @@ output_tinytable <- function(rendered) {
   #   4. spanner-row centring.
   #   5. APA borders LAST.
   tt <- .spicy_tt_bare(tt)
-  tt <- tinytable::format_tt(
-    tt,
-    i = c("colnames", "caption", "~groupi", "groupi", "groupj", "cells"),
-    escape = TRUE
-  )
+  tt <- .spicy_tt_escape(tt)
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
@@ -1084,27 +1080,9 @@ output_gt <- function(rendered) {
     )
   }
 
-  if (!is.null(title) && nzchar(title)) {
-    tbl <- gt::tab_header(tbl, title = title)
-    # APA Manual 7 Section 7.10-Section 7.11: caption is flush-left. gt's default
-    # centers the title; override via `cell_text(align = "left")` on
-    # `cells_title("title")`. Also drop the title's bottom border --
-    # the spanner row below already carries the outer top rule via
-    # `gt_columns_top_border`, so keeping the title's
-    # `gt_bottom_border` would render a redundant double line.
-    tbl <- gt::tab_style(
-      tbl,
-      style = list(
-        gt::cell_text(align = "left"),
-        gt::cell_borders(
-          sides = "bottom",
-          color = "transparent",
-          weight = gt::px(0)
-        )
-      ),
-      locations = gt::cells_title(groups = "title")
-    )
-  }
+  # The APA title layout lives in `.spicy_gt_apa_title()` (one recipe
+  # for every family that draws a gt table).
+  tbl <- .spicy_gt_apa_title(tbl, title)
   # The note is attached TWICE, on purpose.
   #
   # 1. `gt::tab_source_note()` puts it on the gt object itself, so it
@@ -1336,13 +1314,12 @@ knit_print.spicy_gt <- function(x, ...) {
   class(x) <- setdiff(class(x), "spicy_gt")
   # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
   # pandoc DROPS raw HTML, so the as_raw_html path below rendered an
-  # empty document (dev/quarto_word_rendering_spec.md). Regression
-  # tables already carry the note as a native source note (see
-  # output_gt), so nothing to do; the descriptive builders attach the
-  # attribute only (.spicy_gt_attach_note), so add it here -- where
-  # the viewport-width concern of the HTML path does not apply --
-  # before delegating to gt's own format-aware rendering. Outside a
-  # knit (pandoc target NULL) keep the historical HTML path.
+  # empty document (dev/quarto_word_rendering_spec.md). Both families
+  # now carry the note as a native source note -- regression via
+  # `output_gt()`, the descriptive ones via `.spicy_gt_attach_note()` --
+  # so the guard below finds one and nothing is added twice. It stays
+  # as the safety net for a gt object that reached here without one.
+  # Outside a knit (pandoc target NULL) keep the historical HTML path.
   pandoc_to <- knitr::opts_knit$get("rmarkdown.pandoc.to")
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
     has_source_note <- length(x[["_source_notes"]]) > 0L
@@ -2956,7 +2933,8 @@ as_structured <- function(x) {
     spicy_regression_table = "table_regression()",
     spicy_categorical_table = "table_categorical()",
     spicy_continuous_table = "table_continuous()",
-    spicy_continuous_lm_table = "table_continuous_lm()"
+    spicy_continuous_lm_table = "table_continuous_lm()",
+    spicy_outcome_table = "table_outcome()"
   )
   # spicy release that gave each family its structured view -- a table
   # pickled by an older one carries no attribute at all.
@@ -2964,7 +2942,8 @@ as_structured <- function(x) {
     spicy_regression_table = "0.12.0",
     spicy_categorical_table = "0.13.0",
     spicy_continuous_table = "0.13.0",
-    spicy_continuous_lm_table = "0.13.0"
+    spicy_continuous_lm_table = "0.13.0",
+    spicy_outcome_table = "0.13.0"
   )
   family <- names(builders)[names(builders) %in% class(x)]
   if (length(family) == 0L) {

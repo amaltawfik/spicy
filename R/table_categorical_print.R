@@ -171,12 +171,19 @@ print.spicy_categorical_table <- function(x, ...) {
 # structured view instead of parsed back from the label strings. The
 # typed answer survives a variable label that starts with the indent
 # string; every rendering / export route uses these two.
+#
+# Both are now the shared predicates of `R/tables_structured.R`, which
+# every family that lays its rows out in blocks reads. Kept as names
+# because they are the vocabulary of this file's call sites, and
+# because the categorical body is the one that PROVES the two
+# definitions agree: its first row is always a factor header, and its
+# only non-header rows are the indented ones.
 .categorical_sep_rows_typed <- function(structured) {
-  which(structured$body$.row_role == "factor_header")[-1L]
+  .struct_block_sep_rows(structured)
 }
 
 .categorical_level_rows_typed <- function(structured) {
-  which(structured$body$.row_role != "factor_header")
+  .struct_indent_rows(structured)
 }
 
 # Internal: the note of a categorical summary table -- the drop_na
