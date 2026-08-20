@@ -189,6 +189,27 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 }
 
 
+# Internal: the `data` gate of the summary-table family.
+#
+# The four builders (`table_categorical()`, `table_continuous()`,
+# `table_continuous_lm()`, `table_outcome()`) all opened on the same
+# copied-and-pasted two lines. One helper on the
+# `.check_integer64_columns(data, cols, fn)` pattern -- it takes the
+# calling function's name too -- so the family's first refusal is
+# written once and every later branch enters it once as well.
+#
+# `fn` is the caller's name, for the messages the branches below add;
+# the plain non-data.frame message is deliberately unchanged and
+# unparameterised (`expect_error(..., "data. must be a data.frame")`
+# pins it as a literal in two test files).
+.check_data_frame <- function(data, fn) {
+  if (!is.data.frame(data)) {
+    spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
+  }
+  invisible(data)
+}
+
+
 # Internal: column-selection sibling of `.check_integer64()` for the
 # summary-table family (table_categorical / table_continuous /
 # table_continuous_lm). Checks the named columns of `data` and
