@@ -385,6 +385,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `output = "gt"` tables carry their table note into the saved file.
+  `gt::gtsave()`, `gt::as_raw_html()` and a non-interactive `print()` used
+  to produce a table without the missing-value disclosure, the test note or
+  the column glosses the console prints. The interactive HTML display is
+  unchanged: the note still renders outside the table grid, once.
+
 * `output = "tinytable"` escapes cell text in `table_categorical()`,
   `table_continuous()`, `table_continuous_lm()` and `table_outcome()`. A
   level or variable label containing markup was rendered as markup: a label

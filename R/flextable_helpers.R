@@ -26,10 +26,33 @@
 # `print.spicy_gt()` / `knit_print.spicy_gt()`, which inject it as a
 # `<div>` outside the table in HTML and fall back to the native source
 # note for non-HTML knit targets.
+# The note is attached TWICE, on purpose -- the same reasoning
+# `output_gt()` records for the regression family.
+#
+# 1. `gt::tab_source_note()` puts it on the gt object itself, so it
+#    survives every route to a rendered table: `gt::gtsave()`,
+#    `gt::as_raw_html()`, `as_latex()`, `as_word()`, a non-interactive
+#    `print()`. Without it those deliverables shipped a TITLED table
+#    stripped of the disclosure the console prints -- which missing
+#    values were removed, which test each block ran, that the blocks
+#    are not adjusted for one another. The twin of the title hole, on
+#    the same engine.
+# 2. The `spicy_gt` tag routes it through `print.spicy_gt()` /
+#    `knit_print.spicy_gt()`, which inject it as a `<div>` OUTSIDE the
+#    table in HTML -- gt's own `<tfoot>` colspan cell widens the table
+#    in narrow viewports. Those methods drop the native note when they
+#    take over, so the two never print together.
 .spicy_gt_attach_note <- function(tbl, note) {
   if (is.null(note) || !nzchar(note)) {
     return(tbl)
   }
+  # One line, like the regression family: `.spicy_gt_drop_source_note()`
+  # matches this row on its TEXT to remove it from the HTML path, and a
+  # note carrying a newline would not match itself.
+  tbl <- gt::tab_source_note(
+    tbl,
+    source_note = gsub("\n", " ", note, fixed = TRUE)
+  )
   attr(tbl, "spicy_note") <- note
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl

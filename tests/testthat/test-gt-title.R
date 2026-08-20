@@ -144,3 +144,70 @@ test_that("the gt title equals the title the console prints", {
   )
   expect_identical(.gt_title(gt_cat), console_first_line(cat_tbl))
 })
+
+# ---- the note travels with the file, like the title -----------------------
+
+test_that("the saved gt file carries the note, not only the title", {
+  # The exact twin of the title hole this file opened on. The note was
+  # a `spicy_note` ATTRIBUTE, materialised only by `print.spicy_gt()` /
+  # `knit_print.spicy_gt()`. Every other route -- `gtsave()`,
+  # `as_raw_html()`, a non-interactive `print()` -- shipped a titled
+  # table stripped of the disclosure the console prints: which missing
+  # values were removed, which test each block ran, that the blocks are
+  # not adjusted for one another.
+  skip_if_no_gt()
+  d <- spicy::sochealth
+  builders <- list(
+    outcome = function() {
+      table_outcome(d, bmi, by = c(sex, smoking), output = "gt")
+    },
+    continuous = function() {
+      table_continuous(d, select = "bmi", by = "sex", output = "gt")
+    }
+  )
+  for (nm in names(builders)) {
+    tbl <- suppressWarnings(builders[[nm]]())
+    note <- attr(tbl, "spicy_note", exact = TRUE)
+    expect_true(nzchar(note), info = nm)
+    # Native source note present, exactly one.
+    expect_length(tbl[["_source_notes"]], 1L)
+
+    f <- withr::local_tempfile(fileext = ".html")
+    gt::gtsave(tbl, f)
+    saved <- paste(readLines(f, warn = FALSE), collapse = "\n")
+    expect_true(
+      grepl("Missing values removed", saved, fixed = TRUE),
+      info = paste(nm, "gtsave")
+    )
+    # And the title is still there: the two travel together now.
+    expect_true(grepl("Descriptive statistics", saved, fixed = TRUE))
+    expect_true(grepl(
+      "Missing values removed",
+      as.character(gt::as_raw_html(tbl)),
+      fixed = TRUE
+    ))
+  }
+})
+
+test_that("the HTML display path still prints the note once", {
+  # The native source note and the out-of-grid `<div>` must never
+  # print together: `.spicy_gt_drop_source_note()` removes the
+  # `<tfoot>` row by matching its TEXT, which is why the note is
+  # written there as a single line.
+  skip_if_no_gt()
+  tbl <- suppressWarnings(table_outcome(
+    spicy::sochealth,
+    bmi,
+    by = sex,
+    output = "gt"
+  ))
+  note <- attr(tbl, "spicy_note", exact = TRUE)
+  html <- spicy:::.spicy_gt_html_postprocess(
+    as.character(gt::as_raw_html(tbl, inline_css = FALSE)),
+    note
+  )
+  expect_identical(
+    lengths(gregexpr("Missing values removed", html, fixed = TRUE)),
+    1L
+  )
+})

@@ -1314,13 +1314,12 @@ knit_print.spicy_gt <- function(x, ...) {
   class(x) <- setdiff(class(x), "spicy_gt")
   # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
   # pandoc DROPS raw HTML, so the as_raw_html path below rendered an
-  # empty document (dev/quarto_word_rendering_spec.md). Regression
-  # tables already carry the note as a native source note (see
-  # output_gt), so nothing to do; the descriptive builders attach the
-  # attribute only (.spicy_gt_attach_note), so add it here -- where
-  # the viewport-width concern of the HTML path does not apply --
-  # before delegating to gt's own format-aware rendering. Outside a
-  # knit (pandoc target NULL) keep the historical HTML path.
+  # empty document (dev/quarto_word_rendering_spec.md). Both families
+  # now carry the note as a native source note -- regression via
+  # `output_gt()`, the descriptive ones via `.spicy_gt_attach_note()` --
+  # so the guard below finds one and nothing is added twice. It stays
+  # as the safety net for a gt object that reached here without one.
+  # Outside a knit (pandoc target NULL) keep the historical HTML path.
   pandoc_to <- knitr::opts_knit$get("rmarkdown.pandoc.to")
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
     has_source_note <- length(x[["_source_notes"]]) > 0L
