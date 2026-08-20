@@ -98,7 +98,13 @@ print.spicy_outcome_table <- function(x, ...) {
 # `structure()` or a `[` that dropped the attribute).
 .outcome_rendered_df <- function(x) {
   cached <- attr(x, "display_df", exact = TRUE)
-  if (!is.null(cached)) {
+  # The cache is only usable while it still describes THIS object.
+  # `[.data.frame` copies every attribute onto the subset, so
+  # `print(x[1:4, ])` used to render the eight original rows -- with
+  # the block rules recomputed from the four-row subset, so the body
+  # and its rules did not even agree with each other. A row count is
+  # the cheapest thing that tells the two apart.
+  if (!is.null(cached) && identical(nrow(cached), nrow(x))) {
     return(cached)
   }
   .outcome_display_df(

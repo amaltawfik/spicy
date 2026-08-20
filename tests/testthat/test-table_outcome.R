@@ -548,3 +548,56 @@ test_that("the console shape is pinned", {
     )
   )))
 })
+
+
+# ============================================================================
+# State and disclosure: what the object prints, and what the note promises
+# ============================================================================
+
+test_that("printing a subset prints the subset", {
+  # `[.data.frame` copies every attribute onto the result, including
+  # the cached display frame. `print(x[1:4, ])` used to render the
+  # eight ORIGINAL rows -- and the block rules were recomputed from the
+  # four-row subset, so the printed body did not even agree with its
+  # own rules.
+  x <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, smoking)))
+  body_lines <- function(obj) {
+    lines <- utils::capture.output(print(obj))
+    # Body rows are the ones with the stub separator, minus the header.
+    sum(grepl("\u2502", lines, fixed = TRUE)) - 1L
+  }
+  expect_identical(body_lines(x), 8L)
+  expect_identical(body_lines(x[1:4, ]), 4L)
+  expect_identical(body_lines(utils::head(x, 3L)), 3L)
+  # The rebuilt frame is the subset's own.
+  expect_identical(nrow(spicy:::.outcome_rendered_df(x[1:4, ])), 4L)
+  # And an untouched object still uses its cache.
+  expect_identical(
+    spicy:::.outcome_rendered_df(x),
+    attr(x, "display_df", exact = TRUE)
+  )
+})
+
+test_that("the block note is owed only when a block compared", {
+  # `.outcome_test_note()` reads the RESULT; this half read the
+  # REQUEST, so a table whose every block was too thin to compare
+  # printed an empty `p` column under a note promising that "each
+  # block compares ...".
+  d <- data.frame(
+    score = c(4, 5, 6, 7, 9, 11, 12, 14, 20),
+    arm = c("A", "A", "A", "A", "B", "B", "B", "B", "C"),
+    stringsAsFactors = FALSE
+  )
+  thin <- .to_quiet(table_outcome(d, score, by = arm))
+  # Nothing was compared: the p column is empty top to bottom.
+  expect_true(all(!nzchar(attr(thin, "display_df")$p)))
+  expect_false(grepl("Each block compares", attr(thin, "note"), fixed = TRUE))
+  expect_false(grepl("Group comparison", attr(thin, "note"), fixed = TRUE))
+  # The marginal-row gloss is a different sentence and stays.
+  expect_match(attr(thin, "note"), "whole analytic sample", fixed = TRUE)
+
+  # A table that did compare still says so.
+  real <- .to_quiet(table_outcome(.to_sh(), bmi, by = sex))
+  expect_match(attr(real, "note"), "Each block compares", fixed = TRUE)
+  expect_match(attr(real, "note"), "Group comparison", fixed = TRUE)
+})

@@ -1001,7 +1001,14 @@ table_outcome <- function(
     decimal_mark = decimal_mark,
     test_used = test_used,
     n_groups = n_groups,
-    show_comparison = do_test && (p_value || statistic || do_es),
+    # The RESULT, not the request. A table whose every block was too
+    # thin to compare shows an empty `p` column, and a note promising
+    # that "each block compares ..." describes something the reader
+    # cannot see. `.outcome_test_note()` already reads the result; the
+    # two halves of the same note must not contradict each other.
+    show_comparison = do_test &&
+      (p_value || statistic || do_es) &&
+      any(!is.na(test_used)),
     overall = overall
   )
 
