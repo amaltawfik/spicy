@@ -333,6 +333,42 @@ test_that("`by` cuts one domain per group, each with its own df", {
   expect_identical(out$n, c(144L, 14L, 25L))
 })
 
+test_that("a calibrated domain counts only the rows it kept", {
+  # `[` on a CALIBRATED design does not drop the excluded rows: it
+  # sets their probability to Inf, i.e. their weight to zero, and the
+  # domain still has 183 rows. Every count of the twin therefore
+  # filters on a positive weight -- the definition `survey:::svyvar()`
+  # uses for its own `n`. Without that filter `n` would read 183 on
+  # every row of this table, and `weighted_n` would be the whole
+  # population three times over.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  cal <- survey::calibrate(
+    survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = apiclus1,
+      fpc = ~fpc
+    ),
+    ~stype,
+    pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+  )
+  sub <- .design_subset(cal, cal$variables$stype == "E")
+  expect_identical(nrow(sub), 183L)
+  expect_identical(sum(.design_weights(sub) > 0), 144L)
+
+  out <- .svyc_long(cal, select = api00, by = stype)
+  expect_identical(out$n, c(144L, 14L, 25L))
+  # The calibration targets, recovered: this is what a post-stratified
+  # domain's weights sum to.
+  expect_equal(out$weighted_n, c(4421, 755, 1018), tolerance = 1e-8)
+  expect_match(
+    attr(table_continuous_svy(cal, select = api00), "missing_note"),
+    "calibrated / post-stratified",
+    fixed = TRUE
+  )
+})
+
 test_that("the footer gives the df span when the groups disagree", {
   tbl <- table_continuous_svy(.svyc_design("clus1"), select = api00, by = stype)
   expect_match(

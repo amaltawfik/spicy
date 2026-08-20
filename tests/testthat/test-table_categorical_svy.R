@@ -212,6 +212,28 @@ test_that("`by` gives one column block per domain plus the margin", {
   expect_equal(no_total[["Yes %"]], out[["Yes %"]], tolerance = 1e-12)
 })
 
+test_that("a calibrated domain counts only the rows it kept", {
+  # Same trap as the continuous twin: `[` on a calibrated design keeps
+  # the excluded rows at weight zero, so a count that did not filter
+  # on a positive weight would read the whole sample in every block.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  cal <- survey::calibrate(
+    survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = apiclus1,
+      fpc = ~fpc
+    ),
+    ~stype,
+    pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+  )
+  out <- .svycat_long(cal, select = awards, by = stype)
+  expect_identical(sum(out[["E n"]], na.rm = TRUE), 144L)
+  expect_identical(sum(out[["H n"]], na.rm = TRUE), 14L)
+  expect_identical(sum(out[["Total n"]], na.rm = TRUE), 183L)
+})
+
 test_that("a replicate design gives the same percentages, its own intervals", {
   lin <- .svycat_long(
     .svycat_design("clus1"),

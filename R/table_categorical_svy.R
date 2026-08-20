@@ -41,10 +41,15 @@
   if (is.na(g) || !nzchar(g)) base else paste0(g, " ", base)
 }
 
+#
+# The "%" is a LITERAL, exactly as `.cat_key_pct()` types it in the
+# sibling family: this is a frozen KEY, and a key must never be read
+# from the registry -- the day a language translates the glyph, every
+# `out[["Yes %"]]` in user code would stop resolving. The two are
+# pinned equal at the English default by test-i18n.R, which is where
+# that correspondence belongs.
 .cat_svy_key_n <- function(g) .cat_svy_qualify(g, .CON_KEY_N)
-.cat_svy_key_pct <- function(g) {
-  .cat_svy_qualify(g, spicy_str("header_percent_symbol"))
-}
+.cat_svy_key_pct <- function(g) .cat_svy_qualify(g, "%")
 
 # The five statistics survey's `svychisq()` offers that this table
 # reports, and the two it refuses.
