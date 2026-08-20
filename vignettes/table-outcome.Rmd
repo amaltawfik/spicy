@@ -218,7 +218,7 @@ table_outcome(
 
 Negation (`by = -c(x, y)`) is **not** recommended, and the reason is
 worth a paragraph. It sweeps in every remaining column, and a numeric
-one becomes a block with one LEVEL per distinct value, in order of
+one becomes a block with one *level* per distinct value, in order of
 first appearance — a single block sixty rows long, where a reader
 expects a handful of categories. The comparison still runs, so the
 block is not empty; it is unreadable, which is worse, because it looks
