@@ -56,6 +56,15 @@ changes):
 \item Omnibus association overview: \code{\link[=assoc_measures]{assoc_measures()}}
 }
 
+\strong{Experimental} (new in this cycle; the shape of the table and
+the names of the design-specific arguments may still move, with a
+\code{NEWS.md} entry, on their OWN clock rather than the parent
+family's):
+\itemize{
+\item Survey-design summary tables:
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}
+}
+
 \strong{Internal API} (not part of the public surface; can change
 without notice -- avoid calling directly from downstream code):
 \itemize{

@@ -147,6 +147,20 @@
   note_expected_advice = ". Consider %s or set globally via %s.",
   note_kv_pair = "%s = %s",
 
+  # -- headers shared by more than one family --------------------------------
+  # The standard-error header. It lived in the `table_regression()`
+  # block until `table_continuous_svy()` displayed the same quantity
+  # under the same name: one key per ROLE, and the role here is "the
+  # header over a standard error", not "a column of the regression
+  # table". Duplicating it would let the two families drift into two
+  # translations of one word.
+  header_se = "SE",
+  # The design-effect header of the survey twins: the ratio of the
+  # design-based variance to the variance a simple random sample of the
+  # same size would give. Abbreviated, like `header_effect_size_short`,
+  # because it sits over a narrow numeric column; the note spells it out.
+  header_deff = "DEff",
+
   # -- mathematical glyphs: frozen, never translated ------------------------
   # One key per GLYPH, all roles confined -- except where the same glyph
   # names two different statistics (global vs partial), which the package
@@ -179,7 +193,6 @@
   header_n_upper = "N",
   header_events_n = "Events/N",
   header_b = "B",
-  header_se = "SE",
   header_p = "p",
   header_pd = "pd",
   header_rhat = "R-hat",
@@ -508,6 +521,28 @@
   # the estimates describe. Both are DISPLAYED numbers and therefore
   # arrive already formatted under `decimal_mark`.
   note_design_n = "N = %s (weighted %s).",
+  # What replaces `note_design_df_used` when the caller overrode the
+  # design's own degrees of freedom: the footer must not go on claiming
+  # a number the table did not use.
+  note_design_df_supplied = "Confidence intervals and tests use the degrees of freedom supplied in `df`.",
+  # The group comparison runs on the observed groups only, so its
+  # domain can carry degrees of freedom none of the displayed rows
+  # does. Said only when the two really differ.
+  note_design_df_test_differs = "The group comparison uses %d degrees of freedom (observed groups only).",
+  # One hole: the rule in force, an identifier from survey ("math",
+  # "hf7", ...) or "spicy" -- never translated.
+  note_quantile_rule = "Quantiles: qrule = \"%s\" (survey).",
+  note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
+  # Abbreviation glosses of the two design-only columns, each naming
+  # the header it glosses through a hole so a translated header can
+  # never leave the note quoting the English one.
+  note_gloss_deff = "%s = design effect (design-based variance / simple-random-sample variance at the same n).",
+  note_gloss_se = "%s = design-based standard error of the mean.",
+  # The design-based comparisons, named for `note_group_comparison`.
+  test_design_t = "design-based t-test",
+  test_design_wald = "design-based Wald test",
+  test_design_wilcoxon = "design-based Wilcoxon rank-sum test",
+  test_design_kruskal = "design-based Kruskal-Wallis test",
 
   # -- table_regression(): standard-error and interval notes ----------------
   note_adjusted_for = "Adjusted for %s (%s).",

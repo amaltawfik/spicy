@@ -1878,6 +1878,14 @@ order_continuous_tokens <- function(tokens) {
 .CON_KEY_SMD <- "SMD"
 .CON_KEY_N <- "n"
 .CON_KEY_WEIGHTED_N <- "Weighted n"
+# The two statistics only a DESIGN can produce, keyed here beside the
+# rest of the vocabulary because that is where the family declares its
+# columns -- `table_continuous()` never selects them (they are absent
+# from `.continuous_column_tokens`, which is both its display order and
+# its `show_columns` validator), and `table_continuous_svy()` orders
+# them through its own token vector.
+.CON_KEY_SE <- "SE"
+.CON_KEY_DEFF <- "DEff"
 # The bare bound keys an interval spanner leaves behind: `rename_ci_cols()`
 # turns "95% CI LL" into "LL" because the engines carry the coverage in the
 # spanner. Short KEYS, not labels -- see `rename_ci_cols()`.
@@ -1977,6 +1985,14 @@ order_continuous_tokens <- function(tokens) {
       label = spicy_str("header_sd"),
       field = "sd"
     )),
+    # Design-only, declared here so `.continuous_label_map()` resolves
+    # their headers from the registry like every other column of the
+    # family. Reached only through `table_continuous_svy()`.
+    se = list(list(
+      name = .CON_KEY_SE,
+      label = spicy_str("header_se"),
+      field = "se"
+    )),
     med = list(list(name = "Med", label = med_hdr, field = "median")),
     iqr = list(list(
       name = "IQR",
@@ -2053,7 +2069,12 @@ order_continuous_tokens <- function(tokens) {
         field = "weighted_n",
         integer = FALSE
       )
-    )
+    ),
+    deff = list(list(
+      name = .CON_KEY_DEFF,
+      label = spicy_str("header_deff"),
+      field = "deff"
+    ))
   )
 }
 
@@ -2928,6 +2949,21 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
     }
     if (test_type == "wilcoxon") {
       paste0("W = ", s)
+    } else if (test_type == "design_t") {
+      # Design degrees of freedom are a COUNT of PSU minus strata, so
+      # they print as an integer -- unlike the Welch t below, whose df
+      # is a Satterthwaite fraction. Two branches rather than one
+      # because the difference is real, not cosmetic.
+      paste0("t(", formatC(df1, format = "f", digits = 0L), ") = ", s)
+    } else if (test_type == "design_f") {
+      paste0(
+        "F(",
+        formatC(df1, format = "f", digits = 0L),
+        ", ",
+        formatC(df2, format = "f", digits = 0L),
+        ") = ",
+        s
+      )
     } else if (test_type == "kruskal") {
       d <- formatC(df1, format = "f", digits = 0L)
       paste0("H(", d, ") = ", s)

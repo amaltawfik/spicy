@@ -146,6 +146,20 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New functions
 
+* `table_continuous_svy()` summarizes continuous variables from a
+  `survey` design object -- `survey::svydesign()` or
+  `survey::as.svrepdesign()` -- instead of a data frame. Every
+  statistic is computed by survey: `svymean()` for the mean, its
+  standard error and its design effect, `svyvar()` for the standard
+  deviation, `svyquantile()` for the quantiles, and `svyttest()` /
+  `regTermTest()` / `svyranktest()` for the group comparison. Intervals
+  and tests use the design degrees of freedom, `by =` gives each group
+  its own domain (and its own df), and the table note states the
+  design, the variance method and the sample size in both counts.
+  `show_columns` takes the tokens of `table_continuous()` plus `"se"`
+  and `"deff"`; every output engine, `as_structured()` and `inline()`
+  work as usual.
+
 * `table_outcome()` summarizes one continuous outcome across the levels
   of several categorical variables, stacked as blocks -- the inverse
   layout of `table_continuous()`. Each block reports a group comparison

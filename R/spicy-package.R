@@ -50,6 +50,15 @@
 #'   \item Omnibus association overview: [assoc_measures()]
 #' }
 #'
+#' **Experimental** (new in this cycle; the shape of the table and
+#' the names of the design-specific arguments may still move, with a
+#' `NEWS.md` entry, on their OWN clock rather than the parent
+#' family's):
+#' \itemize{
+#'   \item Survey-design summary tables:
+#'         [table_continuous_svy()]
+#' }
+#'
 #' **Internal API** (not part of the public surface; can change
 #' without notice -- avoid calling directly from downstream code):
 #' \itemize{

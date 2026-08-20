@@ -2934,7 +2934,8 @@ as_structured <- function(x) {
     spicy_categorical_table = "table_categorical()",
     spicy_continuous_table = "table_continuous()",
     spicy_continuous_lm_table = "table_continuous_lm()",
-    spicy_outcome_table = "table_outcome()"
+    spicy_outcome_table = "table_outcome()",
+    spicy_continuous_svy_table = "table_continuous_svy()"
   )
   # spicy release that gave each family its structured view -- a table
   # pickled by an older one carries no attribute at all.
@@ -2943,7 +2944,8 @@ as_structured <- function(x) {
     spicy_categorical_table = "0.13.0",
     spicy_continuous_table = "0.13.0",
     spicy_continuous_lm_table = "0.13.0",
-    spicy_outcome_table = "0.13.0"
+    spicy_outcome_table = "0.13.0",
+    spicy_continuous_svy_table = "0.13.0"
   )
   family <- names(builders)[names(builders) %in% class(x)]
   if (length(family) == 0L) {
