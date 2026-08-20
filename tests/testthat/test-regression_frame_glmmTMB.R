@@ -390,3 +390,124 @@ test_that("glmmTMB binomial coefs match parameters::model_parameters() (oracle)"
     )
   }
 })
+
+
+# ---- 11. Boundary (singular) fits ----------------------------------------
+
+# glmmTMB has no isSingular() of its own; the convention is
+# performance::check_singularity()'s -- det(V) < 1e-5 for any
+# random-effect covariance block, over all three components. Every
+# verdict below is triangulated against that oracle.
+
+.fit_glmmTMB_singular <- function() {
+  skip_if_not_installed("glmmTMB")
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  # Three groups, no between-group signal: the random intercept
+  # collapses onto 0 (the glmmTMB twin of the classic singular glmer).
+  suppressWarnings(glmmTMB::glmmTMB(
+    am ~ mpg + (1 | cyl),
+    data = d,
+    family = binomial
+  ))
+}
+
+.fit_glmmTMB_singular_zi <- function() {
+  skip_if_not_installed("glmmTMB")
+  # Healthy random intercept in the conditional model, collapsed one in
+  # the zero-inflation model: only the "all components" convention sees it.
+  set.seed(2026)
+  n_g <- 25L
+  d <- data.frame(g = factor(rep(seq_len(n_g), each = 12L)))
+  d$x <- rnorm(nrow(d))
+  b <- rnorm(n_g, sd = 1.2)
+  lambda <- exp(0.4 + 0.3 * d$x + b[as.integer(d$g)])
+  d$y <- rpois(nrow(d), lambda) * rbinom(nrow(d), 1L, 0.75)
+  suppressWarnings(glmmTMB::glmmTMB(
+    y ~ x + (1 | g),
+    ziformula = ~ 1 + (1 | g),
+    family = poisson,
+    data = d
+  ))
+}
+
+test_that("glmmTMB singular fit sets extras$has_singular (and a healthy one does not)", {
+  fit <- .fit_glmmTMB_singular()
+  expect_true(spicy:::.glmmTMB_is_singular(fit))
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_true(fr$info$extras$has_singular)
+  expect_identical(fr$info$extras$singular_terms, character(0))
+  expect_invisible(spicy:::validate_regression_frame(fr))
+
+  clean <- .fit_glmmTMB_gauss()
+  expect_false(spicy:::.glmmTMB_is_singular(clean))
+  expect_false(
+    as_regression_frame(clean, model_id = "M1")$info$extras$has_singular
+  )
+})
+
+test_that("glmmTMB singularity matches performance::check_singularity (oracle)", {
+  skip_if_not_installed("performance")
+  fits <- list(
+    singular = .fit_glmmTMB_singular(),
+    singular_zi = .fit_glmmTMB_singular_zi(),
+    gauss = .fit_glmmTMB_gauss(),
+    binom = .fit_glmmTMB_binom(),
+    zi = .fit_glmmTMB_zi()
+  )
+  for (nm in names(fits)) {
+    expect_identical(
+      spicy:::.glmmTMB_is_singular(fits[[nm]]),
+      isTRUE(performance::check_singularity(fits[[nm]])),
+      info = paste("oracle mismatch on fixture:", nm)
+    )
+  }
+})
+
+test_that("glmmTMB singularity covers the zero-inflation component", {
+  skip_if_not_installed("performance")
+  fit <- .fit_glmmTMB_singular_zi()
+  # The oracle's per-term breakdown: conditional healthy, zi collapsed.
+  per_term <- performance::check_singularity(fit, check = "terms")
+  expect_false(any(per_term$cond))
+  expect_true(any(per_term$zi))
+  # A conditional-only walk would miss it; the frame does not.
+  expect_true(
+    as_regression_frame(fit, model_id = "M1")$info$extras$has_singular
+  )
+})
+
+test_that("glmmTMB singular fit: the boundary VC keeps no Wald SE or CI", {
+  fit <- .fit_glmmTMB_singular()
+  # Left to itself the Wald machinery answers [0, Inf] with an infinite
+  # SE -- the numbers the singular note says are omitted.
+  raw <- suppressWarnings(stats::confint(fit, method = "Wald", parm = "theta_"))
+  expect_true(any(!is.finite(as.matrix(raw))))
+
+  vc <- as_regression_frame(
+    fit,
+    model_id = "M1"
+  )$info$random_effects$variance_components
+  expect_true(all(is.na(vc$std_error)))
+  expect_true(all(is.na(vc$ci_lower)))
+  expect_true(all(is.na(vc$ci_upper)))
+  expect_true(all(is.na(vc$ci_method)))
+  # The estimate itself still renders: only its uncertainty is withheld.
+  expect_true(all(is.finite(vc$variance)))
+})
+
+test_that("glmmTMB singularity tolerance sits between the two regimes", {
+  fit <- .fit_glmmTMB_singular()
+  block <- glmmTMB::VarCorr(fit)$cond[[1L]]
+  # Collapsed by orders of magnitude, not by a hair's breadth: the
+  # verdict does not hang on the exact tolerance.
+  expect_lt(det(as.matrix(block)), 1e-7)
+  clean_block <- glmmTMB::VarCorr(.fit_glmmTMB_gauss())$cond[[1L]]
+  expect_gt(det(as.matrix(clean_block)), 1)
+  # An explicit tolerance argument is honoured in both directions.
+  expect_false(spicy:::.glmmTMB_is_singular(fit, tolerance = 1e-20))
+  expect_true(spicy:::.glmmTMB_is_singular(
+    .fit_glmmTMB_gauss(),
+    tolerance = 1e6
+  ))
+})

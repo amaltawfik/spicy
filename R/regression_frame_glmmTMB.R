@@ -354,7 +354,11 @@ as_regression_frame.glmmTMB <- function(
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular = FALSE,
+    # Boundary fit (see .glmmTMB_is_singular): drives the footer note and
+    # the orchestrator's build-time caveat, exactly as lme4::isSingular()
+    # does for merMod. singular_terms stays empty: the diagnostic is
+    # model-level, not per-coefficient.
+    has_singular = .glmmTMB_is_singular(fit),
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
@@ -540,6 +544,51 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
+# Boundary ("singular") fit: a random-effect covariance block has
+# collapsed onto the edge of the parameter space -- a variance at 0, or a
+# correlation at +/-1. glmmTMB ships no isSingular() of its own (unlike
+# lme4, which the merMod frame calls), so the convention below is the one
+# users can cross-check: performance::check_singularity.glmmTMB().
+#
+# Convention, verbatim from that oracle:
+#   * criterion   det(V) < tolerance for a random-effect covariance
+#                 block V, i.e. the block is (numerically) not of full
+#                 rank. det() rather than the diagonal so that a boundary
+#                 CORRELATION counts too -- the second regime
+#                 lme4::isSingular() flags, which keeps the three mixed
+#                 engines' verdicts mutually consistent.
+#   * tolerance   1e-5, on the ABSOLUTE variance scale (VarCorr is not
+#                 rescaled by sigma). Deliberately the oracle's, so that
+#                 performance::check_singularity(fit) and this table's
+#                 footer can never contradict each other on one fit.
+#   * components  ALL of them (cond / zi / disp). A collapsed grouping
+#                 factor in the zero-inflation model is as much a
+#                 boundary estimate as one in the conditional model, and
+#                 both render in the same table.
+# The residual variance is not a random-effect block and is excluded (it
+# is not in VarCorr's per-component lists).
+#
+# A fit whose optimisation failed carries non-finite variances: det() is
+# then NA and the isTRUE() comparison is FALSE, so a broken fit is never
+# reported as singular -- it carries the engine's own convergence
+# warning, which is the accurate diagnosis.
+.glmmTMB_is_singular <- function(fit, tolerance = 1e-5) {
+  vc <- tryCatch(glmmTMB::VarCorr(fit), error = function(e) NULL)
+  if (is.null(vc)) {
+    return(FALSE) # nocov  (VarCorr() does not error for a valid fit)
+  }
+  blocks <- unlist(
+    lapply(c("cond", "zi", "disp"), function(cmp) vc[[cmp]]),
+    recursive = FALSE
+  )
+  any(vapply(
+    blocks,
+    function(v) isTRUE(det(as.matrix(v)) < tolerance),
+    logical(1)
+  ))
+}
+
+
 # Extract conditional-component random-effects metadata.
 .glmmTMB_random_effects <- function(
   fit,
@@ -709,6 +758,13 @@ as_regression_frame.glmmTMB <- function(
   }
   if (!spicy_pkg_available("glmmTMB")) {
     return(na_block(vc_df)) # nocov
+  }
+  # Boundary fit: the Wald machinery still answers, with a degenerate
+  # [0, Inf] interval and an infinite SE (the information matrix is
+  # singular there). Suppress both, on the merMod precedent -- the
+  # singular footer states the omission.
+  if (.glmmTMB_is_singular(fit)) {
+    return(na_block(vc_df))
   }
 
   ci_sd <- tryCatch(
