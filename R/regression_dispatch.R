@@ -549,11 +549,7 @@ output_tinytable <- function(rendered) {
   #   4. spanner-row centring.
   #   5. APA borders LAST.
   tt <- .spicy_tt_bare(tt)
-  tt <- tinytable::format_tt(
-    tt,
-    i = c("colnames", "caption", "~groupi", "groupi", "groupj", "cells"),
-    escape = TRUE
-  )
+  tt <- .spicy_tt_escape(tt)
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
