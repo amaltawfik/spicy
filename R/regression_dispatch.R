@@ -1084,27 +1084,9 @@ output_gt <- function(rendered) {
     )
   }
 
-  if (!is.null(title) && nzchar(title)) {
-    tbl <- gt::tab_header(tbl, title = title)
-    # APA Manual 7 Section 7.10-Section 7.11: caption is flush-left. gt's default
-    # centers the title; override via `cell_text(align = "left")` on
-    # `cells_title("title")`. Also drop the title's bottom border --
-    # the spanner row below already carries the outer top rule via
-    # `gt_columns_top_border`, so keeping the title's
-    # `gt_bottom_border` would render a redundant double line.
-    tbl <- gt::tab_style(
-      tbl,
-      style = list(
-        gt::cell_text(align = "left"),
-        gt::cell_borders(
-          sides = "bottom",
-          color = "transparent",
-          weight = gt::px(0)
-        )
-      ),
-      locations = gt::cells_title(groups = "title")
-    )
-  }
+  # The APA title layout lives in `.spicy_gt_apa_title()` (one recipe
+  # for every family that draws a gt table).
+  tbl <- .spicy_gt_apa_title(tbl, title)
   # The note is attached TWICE, on purpose.
   #
   # 1. `gt::tab_source_note()` puts it on the gt object itself, so it
