@@ -2331,7 +2331,7 @@ resolve_continuous_show_columns <- function(
     return(empty_row())
   }
   m <- mean(x_valid)
-    s <- if (n > 1L) stats::sd(x_valid) else NA_real_
+  s <- if (n > 1L) stats::sd(x_valid) else NA_real_
   se <- if (n > 1L) s / sqrt(n) else NA_real_
   alpha <- 1 - ci_level
   t_crit <- if (n > 1L) stats::qt(1 - alpha / 2, df = n - 1L) else NA_real_
@@ -2881,23 +2881,23 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
   unname(stats::quantile(boot_vals, probs = c(alpha / 2, 1 - alpha / 2)))
 }
 
-# --- internal: build formatted display data frame ---
-build_display_df <- function(
-  result,
+# --- internal: the cell formatters of the descriptive display -------------
+# One producer for every string the continuous vocabulary prints: the
+# plain number, the p-value, the test gloss, the effect-size gloss, and
+# the list separator that goes inside brackets under a comma decimal
+# mark. `table_continuous()` and `table_outcome()` share it, so a
+# convention settled once -- decision 25's frozen brackets, decision
+# 27's decimal mark -- cannot hold in one table and not in the other.
+#
+# Returned as a list of closures rather than called here: the callers
+# need them at several points of their own body, and the arguments
+# they close over (`digits`, `decimal_mark`, ...) are constants of the
+# table.
+.continuous_cell_formatters <- function(
   digits,
-  decimal_mark,
-  ci_level,
-  show_p = FALSE,
-  show_statistic = FALSE,
-  show_n = TRUE,
-  show_ci = TRUE,
-  show_effect_size = FALSE,
-  show_effect_size_ci = FALSE,
-  show_smd = FALSE,
   effect_size_digits = 2L,
   p_digits = 3L,
-  tokens_union = NULL,
-  tokens_by_var = NULL
+  decimal_mark = "."
 ) {
   fmt <- function(v, d = digits) {
     out <- formatC(v, format = "f", digits = d)
@@ -2983,6 +2983,101 @@ build_display_df <- function(
   # the quartiles, it does not list two numbers.
   bracket_sep <- if (decimal_mark == ",") "; " else ", "
 
+  list(
+    fmt = fmt,
+    fmt_p = fmt_p,
+    fmt_test = fmt_test,
+    fmt_es = fmt_es,
+    bracket_sep = bracket_sep
+  )
+}
+
+# --- internal: the token columns of the descriptive display ---------------
+# The statistic columns of a continuous display frame, in token order,
+# as a named list the caller writes into its frame.
+#
+# Two cells here are byte-critical and exist ONCE for that reason: the
+# `med_iqr` composite (three numbers, frozen brackets, a separator that
+# follows the decimal mark) and `n` (the only statistic that skips
+# `fmt()`, because a count carries no decimals). Rewriting either in a
+# sibling family is how two tables come to word the same cell
+# differently.
+#
+# `blanked` is the caller's structural-blank rule: `table_continuous()`
+# blanks a statistic the variable does not display (per-variable
+# `show_columns`), `table_outcome()` has a single set of tokens and
+# passes the identity.
+.continuous_stat_cells <- function(
+  result,
+  tokens,
+  spec,
+  fmts,
+  blanked = function(v, token) v
+) {
+  fmt <- fmts$fmt
+  bracket_sep <- fmts$bracket_sep
+  out <- list()
+  for (tok in tokens) {
+    entries <- spec[[tok]]
+    if (tok == "med_iqr") {
+      # Composite cell: three statistics in one string, so it cannot go
+      # through `fmt()` column by column.
+      compact <- ifelse(
+        is.na(result$median) | is.na(result$q1) | is.na(result$q3),
+        spicy_str("cell_undefined"),
+        paste0(
+          fmt(result$median),
+          " [",
+          fmt(result$q1),
+          bracket_sep,
+          fmt(result$q3),
+          "]"
+        )
+      )
+      out[[entries[[1L]]$name]] <- blanked(compact, tok)
+    } else if (tok == "n") {
+      # A count carries no decimals: the only statistic that skips
+      # `fmt()`.
+      out[[entries[[1L]]$name]] <- blanked(as.character(result$n), tok)
+    } else {
+      for (e in entries) {
+        out[[e$name]] <- blanked(fmt(result[[e$field]]), tok)
+      }
+    }
+  }
+  out
+}
+
+# --- internal: build formatted display data frame ---
+build_display_df <- function(
+  result,
+  digits,
+  decimal_mark,
+  ci_level,
+  show_p = FALSE,
+  show_statistic = FALSE,
+  show_n = TRUE,
+  show_ci = TRUE,
+  show_effect_size = FALSE,
+  show_effect_size_ci = FALSE,
+  show_smd = FALSE,
+  effect_size_digits = 2L,
+  p_digits = 3L,
+  tokens_union = NULL,
+  tokens_by_var = NULL
+) {
+  # Every cell string of the family comes from one producer.
+  fmts <- .continuous_cell_formatters(
+    digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark
+  )
+  fmt <- fmts$fmt
+  fmt_p <- fmts$fmt_p
+  fmt_test <- fmts$fmt_test
+  fmt_es <- fmts$fmt_es
+
   # `has_group` here and `has_group` in `print.spicy_continuous_table()`
   # (`!is.null(group_var)`) are two spellings of one fact -- the column
   # and the attribute are set together by `table_continuous()` -- and the
@@ -3048,33 +3143,9 @@ build_display_df <- function(
   if (has_group) {
     df[[.CON_KEY_GROUP]] <- result$group
   }
-  for (tok in tokens_union) {
-    entries <- spec[[tok]]
-    if (tok == "med_iqr") {
-      # Composite cell: three statistics in one string, so it cannot go
-      # through `fmt()` column by column.
-      compact <- ifelse(
-        is.na(result$median) | is.na(result$q1) | is.na(result$q3),
-        spicy_str("cell_undefined"),
-        paste0(
-          fmt(result$median),
-          " [",
-          fmt(result$q1),
-          bracket_sep,
-          fmt(result$q3),
-          "]"
-        )
-      )
-      df[[entries[[1L]]$name]] <- blanked(compact, tok)
-    } else if (tok == "n") {
-      # A count carries no decimals: the only statistic that skips
-      # `fmt()`.
-      df[[entries[[1L]]$name]] <- blanked(as.character(result$n), tok)
-    } else {
-      for (e in entries) {
-        df[[e$name]] <- blanked(fmt(result[[e$field]]), tok)
-      }
-    }
+  cells <- .continuous_stat_cells(result, tokens_union, spec, fmts, blanked)
+  for (nm in names(cells)) {
+    df[[nm]] <- cells[[nm]]
   }
 
   if (has_group) {
