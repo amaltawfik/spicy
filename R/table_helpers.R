@@ -434,3 +434,28 @@ align_ci_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   }
   out
 }
+
+# Internal: deepen the indentation of the rows a block table indents,
+# for the two engines that have no indent style of their own.
+#
+# Excel and the clipboard render a plain string, so their indentation
+# IS the label: the base prefix the console uses is swapped for a
+# wider one. `rows` are the rows to indent, read from the typed roles
+# of the structured view -- never sniffed back from the prefix, so a
+# variable label that happens to start with `base_indent` keeps its
+# label.
+#
+# That argument is load-bearing in the other direction too:
+# `substring()` strips `nchar(base_indent)` leading characters from
+# every row it is handed, so handing it a row that carries no prefix
+# eats the row's own first letters.
+#
+# Shared by `table_categorical()` and `table_outcome()`; it captures
+# nothing beyond its four arguments.
+make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
+  if (length(rows)) {
+    suffix <- substring(x[rows], nchar(base_indent) + 1L)
+    x[rows] <- paste0(strong_indent, suffix)
+  }
+  x
+}

@@ -1539,17 +1539,6 @@ table_categorical <- function(
     s
   }
 
-  # `rows` are the level rows, read from the typed roles of the
-  # structured view -- not sniffed back from the indent prefix, so a
-  # variable label starting with `base_indent` keeps its label.
-  make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
-    if (length(rows)) {
-      suffix <- substring(x[rows], nchar(base_indent) + 1L)
-      x[rows] <- paste0(strong_indent, suffix)
-    }
-    x
-  }
-
   # Pre-pad numeric (i.e. non-Variable) columns of a display data
   # frame with figure-spaces (U+2007, digit-width) so the decimal
   # mark falls at the same horizontal position across each column.
