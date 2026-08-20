@@ -394,10 +394,13 @@ test_that("glmmTMB binomial coefs match parameters::model_parameters() (oracle)"
 
 # ---- 11. Boundary (singular) fits ----------------------------------------
 
-# glmmTMB has no isSingular() of its own; the convention is
-# performance::check_singularity()'s -- det(V) < 1e-5 for any
-# random-effect covariance block, over all three components. Every
-# verdict below is triangulated against that oracle.
+# glmmTMB has no isSingular() of its own. The criterion is
+# det(V / sigma^2) < 1e-5 for any random-effect covariance block, over
+# all three components (cond / zi / disp). Being relative, it is
+# invariant to the units of the response -- the property that ties the
+# verdict to lme4::isSingular() rather than to
+# performance::check_singularity.glmmTMB(), which tests absolute
+# variances and is pinned as a documented divergence below.
 
 .fit_glmmTMB_singular <- function() {
   skip_if_not_installed("glmmTMB")
@@ -446,8 +449,13 @@ test_that("glmmTMB singular fit sets extras$has_singular (and a healthy one does
   )
 })
 
-test_that("glmmTMB singularity matches performance::check_singularity (oracle)", {
+test_that("glmmTMB singularity agrees with the oracle where the scale is neutral", {
   skip_if_not_installed("performance")
+  # Non-Gaussian families have no residual scale (VarCorr's useSc is
+  # FALSE, sigma is 1 or a dispersion parameter), so the criterion
+  # reduces to performance::check_singularity.glmmTMB()'s exactly, and
+  # the oracle is a genuine one there. The Gaussian fixtures below are
+  # included because their sigma leaves the verdict unchanged.
   fits <- list(
     singular = .fit_glmmTMB_singular(),
     singular_zi = .fit_glmmTMB_singular_zi(),
@@ -462,6 +470,95 @@ test_that("glmmTMB singularity matches performance::check_singularity (oracle)",
       info = paste("oracle mismatch on fixture:", nm)
     )
   }
+})
+
+test_that("glmmTMB singularity is invariant to the scale of the response", {
+  skip_if_not_installed("lme4")
+  # A healthy Gaussian fit stays healthy when the response is divided by
+  # 1000, and a collapsed component stays collapsed when it is multiplied
+  # by 100. lme4::isSingular() on the equivalent lmer fit says the same
+  # at both scales.
+  ss <- lme4::sleepstudy
+  ss_small <- ss
+  ss_small$Reaction <- ss_small$Reaction / 1000
+  for (d in list(ss, ss_small)) {
+    fit <- glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject), data = d)
+    expect_false(spicy:::.glmmTMB_is_singular(fit))
+  }
+
+  set.seed(7)
+  n_g <- 15L
+  d0 <- data.frame(g = factor(rep(seq_len(n_g), each = 6L)))
+  d0$x <- rnorm(nrow(d0))
+  d0$y <- 1 + 0.5 * d0$x + rnorm(nrow(d0)) # no between-group variance
+  for (k in c(1, 100)) {
+    d <- d0
+    d$y <- d$y * k
+    fit <- suppressWarnings(glmmTMB::glmmTMB(y ~ x + (1 | g), data = d))
+    twin <- suppressMessages(suppressWarnings(
+      lme4::lmer(y ~ x + (1 | g), data = d)
+    ))
+    expect_true(
+      spicy:::.glmmTMB_is_singular(fit),
+      info = paste("collapsed component missed at scale", k)
+    )
+    expect_true(lme4::isSingular(twin), info = paste("twin at scale", k))
+  }
+})
+
+test_that("the divergence from performance::check_singularity.glmmTMB is deliberate", {
+  skip_if_not_installed("performance")
+  skip_if_not_installed("lme4")
+  # performance tests absolute variances: a perfectly ordinary fit whose
+  # response happens to be small is declared singular. Pinned to OUR
+  # verdict, with lme4::isSingular() on the equivalent lmer fit as the
+  # tiebreaker.
+  d <- lme4::sleepstudy
+  d$Reaction <- d$Reaction / 1000
+  fit <- glmmTMB::glmmTMB(Reaction ~ Days + (Days | Subject), data = d)
+  twin <- suppressMessages(suppressWarnings(
+    lme4::lmer(Reaction ~ Days + (Days | Subject), data = d)
+  ))
+  expect_true(performance::check_singularity(fit))
+  expect_false(lme4::isSingular(twin))
+  expect_false(spicy:::.glmmTMB_is_singular(fit))
+})
+
+test_that(".glmmTMB_re_scale2 only divides by a genuine residual scale", {
+  skip_if_not_installed("glmmTMB")
+  # Gaussian: sigma IS the residual scale of the linear predictor.
+  gauss <- glmmTMB::VarCorr(.fit_glmmTMB_gauss())$cond
+  expect_true(attr(gauss, "useSc"))
+  expect_equal(
+    spicy:::.glmmTMB_re_scale2(gauss),
+    attr(gauss, "sc")^2,
+    tolerance = 1e-12
+  )
+  # nbinom2: sigma() returns the dispersion parameter, which is NOT a
+  # scale for the random effects -- VarCorr says so with useSc = FALSE,
+  # and the divisor stays 1.
+  data(Salamanders, package = "glmmTMB", envir = environment())
+  nb <- glmmTMB::glmmTMB(
+    count ~ mined + (1 | site),
+    data = Salamanders,
+    family = glmmTMB::nbinom2
+  )
+  nb_vc <- glmmTMB::VarCorr(nb)$cond
+  expect_false(isTRUE(attr(nb_vc, "useSc")))
+  expect_true(abs(stats::sigma(nb) - 1) > 0.1) # would have moved the verdict
+  expect_identical(spicy:::.glmmTMB_re_scale2(nb_vc), 1)
+  # A modelled dispersion has no single residual scale: sc is NA and the
+  # divisor falls back to 1 rather than poisoning det() with NA.
+  disp <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (1 | Subject),
+    dispformula = ~Days,
+    data = lme4::sleepstudy
+  )
+  disp_vc <- glmmTMB::VarCorr(disp)$cond
+  expect_true(isTRUE(attr(disp_vc, "useSc")))
+  expect_true(is.na(attr(disp_vc, "sc")))
+  expect_identical(spicy:::.glmmTMB_re_scale2(disp_vc), 1)
+  expect_false(spicy:::.glmmTMB_is_singular(disp))
 })
 
 test_that("glmmTMB singularity covers the zero-inflation component", {
@@ -498,16 +595,74 @@ test_that("glmmTMB singular fit: the boundary VC keeps no Wald SE or CI", {
 
 test_that("glmmTMB singularity tolerance sits between the two regimes", {
   fit <- .fit_glmmTMB_singular()
-  block <- glmmTMB::VarCorr(fit)$cond[[1L]]
+  vc <- glmmTMB::VarCorr(fit)$cond
+  rel <- det(as.matrix(vc[[1L]]) / spicy:::.glmmTMB_re_scale2(vc))
   # Collapsed by orders of magnitude, not by a hair's breadth: the
   # verdict does not hang on the exact tolerance.
-  expect_lt(det(as.matrix(block)), 1e-7)
-  clean_block <- glmmTMB::VarCorr(.fit_glmmTMB_gauss())$cond[[1L]]
-  expect_gt(det(as.matrix(clean_block)), 1)
-  # An explicit tolerance argument is honoured in both directions.
-  expect_false(spicy:::.glmmTMB_is_singular(fit, tolerance = 1e-20))
+  expect_lt(rel, 1e-7)
+  clean_vc <- glmmTMB::VarCorr(.fit_glmmTMB_gauss())$cond
+  expect_gt(
+    det(as.matrix(clean_vc[[1L]]) / spicy:::.glmmTMB_re_scale2(clean_vc)),
+    1
+  )
+  # An explicit tolerance argument is honoured. Only the loosening
+  # direction is asserted: how far below the tolerance the optimiser
+  # happened to stop is not a property of the fit.
   expect_true(spicy:::.glmmTMB_is_singular(
     .fit_glmmTMB_gauss(),
     tolerance = 1e6
   ))
+})
+
+test_that("a non-converged glmmTMB fit prints no NaN uncertainty", {
+  skip_if_not_installed("glmmTMB")
+  # Stopped after one iteration: the fit sits on its starting values, its
+  # information matrix is meaningless and confint() returns NaN. The
+  # boundary flag does NOT catch this (the starting variances are 1, not
+  # 0) -- the degeneracy guard does, independently.
+  fit <- suppressWarnings(glmmTMB::glmmTMB(
+    Reaction ~ Days + (Days | Subject),
+    data = lme4::sleepstudy,
+    control = glmmTMB::glmmTMBControl(
+      optCtrl = list(iter.max = 1L, eval.max = 1L)
+    )
+  ))
+  skip_if(fit$fit$convergence == 0L, "fit converged after all")
+  expect_false(spicy:::.glmmTMB_is_singular(fit))
+  raw <- suppressWarnings(
+    stats::confint(fit, method = "Wald", parm = "theta_")
+  )
+  expect_true(any(is.nan(as.matrix(raw)))) # what the guard has to absorb
+
+  # suppressWarnings: glmmTMB's own summary() warns on this fit's
+  # degenerate Hessian. That noise is left visible to users -- a broken
+  # fit should be loud -- and only muted here.
+  vc <- suppressWarnings(
+    as_regression_frame(fit, model_id = "M1")
+  )$info$random_effects$variance_components
+  expect_false(any(is.nan(vc$std_error)))
+  expect_false(any(is.nan(vc$ci_lower)))
+  expect_false(any(is.nan(vc$ci_upper)))
+  expect_true(all(is.na(vc$ci_method[is.na(vc$std_error)])))
+})
+
+test_that(".glmmTMB_blank_degenerate_vc drops non-finite Wald quantities", {
+  vc <- data.frame(
+    group = c("g", "g", "Residual"),
+    term = c("(Intercept)", "x", ""),
+    variance = c(1, 2, 3),
+    std_error = c(NaN, 0.5, Inf),
+    ci_lower = c(0, 0.1, 0),
+    ci_upper = c(Inf, 0.9, 10),
+    ci_method = c("wald", "wald", "wald"),
+    stringsAsFactors = FALSE
+  )
+  out <- spicy:::.glmmTMB_blank_degenerate_vc(vc)
+  expect_identical(is.na(out$std_error), c(TRUE, FALSE, TRUE))
+  expect_identical(is.na(out$ci_upper), c(TRUE, FALSE, TRUE))
+  expect_identical(out$ci_method, c(NA, "wald", NA))
+  expect_identical(out$std_error[2L], 0.5)
+  expect_identical(out$variance, c(1, 2, 3))
+  # Idempotent: a frame that is already clean comes back unchanged.
+  expect_identical(spicy:::.glmmTMB_blank_degenerate_vc(out), out)
 })

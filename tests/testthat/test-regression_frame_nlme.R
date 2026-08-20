@@ -460,12 +460,13 @@ test_that("gls AME columns are populated (registry: AME yes)", {
 
 # ---- 13. lme: boundary (singular) fits -----------------------------------
 
-# nlme has no isSingular() of its own. The convention is
-# performance::check_singularity()'s -- a random-effect variance below
-# 1e-5 -- read off every nesting level's covariance block through
-# det(), so that a boundary correlation counts and a nested fit still
-# gets an answer. Verdicts are triangulated against that oracle wherever
-# it can answer.
+# nlme has no isSingular() of its own. The criterion is
+# det(V / sigma^2) < 1e-5 per nesting level, read straight off the
+# reStruct blocks (already relative to sigma^2). Being relative, it is
+# invariant to the units of the response -- the property that ties the
+# verdict to lme4::isSingular() rather than to
+# performance::check_singularity.lme(), which tests absolute variances
+# and is pinned as a documented divergence below.
 
 .fit_lme_singular <- function() {
   skip_if_not_installed("nlme")
@@ -496,8 +497,45 @@ test_that("lme singular fit sets extras$has_singular (and a healthy one does not
   )
 })
 
-test_that("lme singularity matches performance::check_singularity (oracle)", {
+test_that("lme singularity is invariant to the scale of the response", {
+  # The property the absolute-variance criterion did not have. A boundary
+  # fit stays a boundary fit when the response is multiplied by 100, and
+  # a healthy one stays healthy when it is divided by 20 -- lme4 says the
+  # same on the equivalent lmer fit at every scale.
+  skip_if_not_installed("lme4")
+  for (k in c(1, 100, 10000)) {
+    d <- mtcars
+    d$gearf <- factor(d$gear)
+    d$mpg <- d$mpg * k
+    fit <- nlme::lme(mpg ~ wt + hp, data = d, random = ~ 1 | gearf)
+    twin <- suppressMessages(suppressWarnings(
+      lme4::lmer(mpg ~ wt + hp + (1 | gearf), data = d)
+    ))
+    expect_true(
+      spicy:::.lme_is_singular(fit),
+      info = paste("collapsed component missed at scale", k)
+    )
+    expect_true(lme4::isSingular(twin), info = paste("twin at scale", k))
+  }
+  for (k in c(1, 1 / 20, 1 / 100)) {
+    d <- nlme::Orthodont
+    d$distance <- d$distance * k
+    fit <- nlme::lme(distance ~ age, data = d, random = ~ age | Subject)
+    twin <- suppressMessages(suppressWarnings(
+      lme4::lmer(distance ~ age + (age | Subject), data = d)
+    ))
+    expect_false(
+      spicy:::.lme_is_singular(fit),
+      info = paste("healthy fit flagged at scale", k)
+    )
+    expect_false(lme4::isSingular(twin), info = paste("twin at scale", k))
+  }
+})
+
+test_that("lme singularity agrees with the oracle where the scale is neutral", {
   skip_if_not_installed("performance")
+  # On fits whose sigma is near 1 the relative and absolute rules
+  # coincide, and performance::check_singularity() is a genuine oracle.
   fits <- list(
     singular = .fit_lme_singular(),
     basic = .fit_lme_basic(),
@@ -514,6 +552,39 @@ test_that("lme singularity matches performance::check_singularity (oracle)", {
       info = paste("oracle mismatch on fixture:", nm)
     )
   }
+})
+
+test_that("the divergence from performance::check_singularity.lme is deliberate", {
+  skip_if_not_installed("performance")
+  skip_if_not_installed("lme4")
+  # performance tests absolute variances, so its verdict moves with the
+  # units of the response. Both cases below are pinned to OUR verdict,
+  # with lme4::isSingular() on the equivalent lmer fit as the tiebreaker.
+
+  # (a) Healthy fit, response divided by 100: performance says singular.
+  d <- nlme::Orthodont
+  d$distance <- d$distance / 100
+  fit <- nlme::lme(distance ~ age, data = d, random = ~ age | Subject)
+  twin <- suppressMessages(suppressWarnings(
+    lme4::lmer(distance ~ age + (age | Subject), data = d)
+  ))
+  expect_true(performance::check_singularity(fit))
+  expect_false(lme4::isSingular(twin))
+  expect_false(spicy:::.lme_is_singular(fit))
+
+  # (b) Collapsed component, response multiplied by 100: performance
+  # stops seeing it, and the table would print the Wald SE of a boundary
+  # estimate.
+  d2 <- mtcars
+  d2$gearf <- factor(d2$gear)
+  d2$mpg <- d2$mpg * 100
+  fit2 <- nlme::lme(mpg ~ wt + hp, data = d2, random = ~ 1 | gearf)
+  twin2 <- suppressMessages(suppressWarnings(
+    lme4::lmer(mpg ~ wt + hp + (1 | gearf), data = d2)
+  ))
+  expect_false(performance::check_singularity(fit2))
+  expect_true(lme4::isSingular(twin2))
+  expect_true(spicy:::.lme_is_singular(fit2))
 })
 
 test_that("lme singularity answers for nested fits, where the oracle cannot", {
@@ -543,23 +614,67 @@ test_that("lme singular fit: the boundary VC keeps no Wald SE or CI", {
   expect_true(all(is.finite(vc$variance)))
 })
 
-test_that("lme singularity reads the absolute (sigma-scaled) covariance", {
+test_that("lme singularity reads the reStruct blocks relative to sigma^2", {
   fit <- .fit_lme_singular()
-  # The reStruct blocks are relative to sigma^2; scaling them back is
-  # what nlme::getVarCov() itself does, so the two agree exactly.
-  block <- as.matrix(fit$modelStruct$reStruct)[[1L]] * fit$sigma^2
+  block <- as.matrix(fit$modelStruct$reStruct)[[1L]]
+  # The blocks ARE the covariance relative to sigma^2: multiplying back
+  # is what nlme::getVarCov() does to report absolute variances, and that
+  # is precisely the step the criterion must not take.
   expect_equal(
-    as.numeric(block),
+    as.numeric(block * fit$sigma^2),
     as.numeric(nlme::getVarCov(fit)),
     tolerance = 1e-12
   )
   # Collapsed by orders of magnitude, not by a hair's breadth.
   expect_lt(det(block), 1e-6)
   clean <- .fit_lme_basic()
-  expect_gt(det(as.matrix(clean$modelStruct$reStruct)[[1L]] * clean$sigma^2), 1)
-  # An explicit tolerance argument is honoured in both directions.
-  expect_false(spicy:::.lme_is_singular(fit, tolerance = 1e-20))
-  expect_true(spicy:::.lme_is_singular(.fit_lme_basic(), tolerance = 1e6))
+  expect_gt(det(as.matrix(clean$modelStruct$reStruct)[[1L]]), 1)
+  # An explicit tolerance argument is honoured. Only the loosening
+  # direction is asserted: how far below the tolerance the optimiser
+  # happened to stop is not a property of the fit.
+  expect_true(spicy:::.lme_is_singular(clean, tolerance = 1e6))
+})
+
+test_that("an lme correlation pinned at 1 counts as singular (pdCompSymm)", {
+  # pdCompSymm with a single covariate gives var == cov, i.e. a
+  # correlation of exactly 1: a rank-1 block with healthy variances. No
+  # variance is at 0, which is why the note speaks of the boundary of the
+  # parameter space rather than of a zero variance.
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = list(Subject = nlme::pdCompSymm(~age))
+  )
+  block <- as.matrix(fit$modelStruct$reStruct)[[1L]]
+  expect_gt(min(diag(block)), 1e-3)
+  expect_true(spicy:::.lme_is_singular(fit))
+  expect_true(
+    as_regression_frame(fit, model_id = "M1")$info$extras$has_singular
+  )
+})
+
+test_that(".lme_blank_degenerate_vc drops non-finite Wald quantities", {
+  # Independent of the boundary flag: whatever their origin, NaN or Inf
+  # cells must not reach the table.
+  vc <- data.frame(
+    group = c("g", "g", "Residual"),
+    term = c("(Intercept)", "x", ""),
+    variance = c(1, 2, 3),
+    std_error = c(NaN, 0.5, Inf),
+    ci_lower = c(0, 0.1, 0),
+    ci_upper = c(Inf, 0.9, 10),
+    ci_method = c("wald", "wald", "wald"),
+    stringsAsFactors = FALSE
+  )
+  out <- spicy:::.lme_blank_degenerate_vc(vc)
+  expect_identical(is.na(out$std_error), c(TRUE, FALSE, TRUE))
+  expect_identical(is.na(out$ci_upper), c(TRUE, FALSE, TRUE))
+  expect_identical(out$ci_method, c(NA, "wald", NA))
+  # The healthy row passes through untouched, estimates are never lost.
+  expect_identical(out$std_error[2L], 0.5)
+  expect_identical(out$variance, c(1, 2, 3))
+  # Idempotent: a frame that is already clean comes back unchanged.
+  expect_identical(spicy:::.lme_blank_degenerate_vc(out), out)
 })
 
 test_that("gls carries no singular flag (no random structure to collapse)", {
