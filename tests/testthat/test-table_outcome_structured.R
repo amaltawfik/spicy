@@ -1,0 +1,175 @@
+# The typed (structured) view of `table_outcome()`.
+#
+# Same contract as the three other descriptive families, and the same
+# three properties: identity (every row says what it is), fidelity
+# (rendering the typed body reproduces the console cell for cell), and
+# addressability (`inline()` reaches a level's mean AND the block's own
+# p, which is what this shape needed the addressing fix for).
+
+.tos_quiet <- function(expr) {
+  invisible(utils::capture.output(res <- suppressWarnings(expr)))
+  res
+}
+
+.tos_tbl <- function(...) {
+  .tos_quiet(table_outcome(as.data.frame(spicy::sochealth), ...))
+}
+
+test_that("as_structured() accepts the family", {
+  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  s <- as_structured(tbl)
+  expect_type(s, "list")
+  expect_identical(s$version, spicy:::.spicy_structured_version())
+  expect_null(s$stars)
+  expect_null(s$spanners)
+  expect_identical(s$outcome_labels_by_col, character(0))
+  # The refusal names every supported family, this one included.
+  err <- tryCatch(as_structured(mtcars), error = identity)
+  expect_match(conditionMessage(err), "spicy_outcome_table", fixed = TRUE)
+})
+
+test_that("every row says what it is", {
+  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  s <- as_structured(tbl)
+  expect_identical(
+    s$body$.row_role,
+    c(
+      "summary",
+      "factor_header",
+      "level",
+      "level",
+      "factor_header",
+      "level",
+      "level",
+      "missing"
+    )
+  )
+  # Three roles at indent 0, which is exactly why the shared geometry
+  # predicates read `.indent` and not the complement of a role.
+  expect_identical(s$body$.indent, c(0L, 0L, 1L, 1L, 0L, 1L, 1L, 1L))
+  expect_identical(
+    s$body$.variable,
+    c("bmi", "sex", "sex", "sex", "smoking", "smoking", "smoking", "smoking")
+  )
+  # The marginal row belongs to the OUTCOME, so a bare citation of the
+  # outcome lands on it.
+  expect_identical(s$body$.level[[1L]], NA_character_)
+  # The missing display level is keyed by its ROLE, not by its label.
+  expect_identical(s$body$.row_role[[8L]], "missing")
+  # All four roles are contract vocabulary: no extension.
+  expect_true(all(s$body$.row_role %in% spicy:::.STRUCT_ROW_ROLES))
+})
+
+test_that("the typed body renders the console body, cell for cell", {
+  corpus <- list(
+    .tos_tbl(bmi, by = c(sex, smoking)),
+    .tos_tbl(bmi, by = c(sex, region), statistic = TRUE, effect_size = "auto"),
+    .tos_tbl(bmi, by = sex, show_columns = c("med_iqr", "med_ci", "n")),
+    .tos_tbl(bmi, by = sex, overall = FALSE, decimal_mark = ",")
+  )
+  for (tbl in corpus) {
+    s <- as_structured(tbl)
+    rendered <- spicy:::.format_structured_to_string_body(s)
+    shown <- attr(tbl, "display_df")
+    expect_identical(names(rendered), names(shown))
+    for (nm in names(shown)) {
+      expect_identical(trimws(rendered[[nm]]), trimws(shown[[nm]]))
+    }
+  }
+})
+
+test_that("the structural blanks are absences, not undefined cells", {
+  tbl <- .tos_tbl(bmi, by = c(sex, smoking), statistic = TRUE)
+  s <- as_structured(tbl)
+  header <- which(s$body$.row_role == "factor_header")
+  levels_i <- which(s$body$.indent > 0L)
+  # A descriptive statistic does not apply to a block header, and a
+  # block statistic does not apply to a level: NA in the body, and NO
+  # `cell_status` -- "undefined" means "applies here and has no value".
+  expect_true(all(is.na(s$body$M[header])))
+  expect_true(all(is.na(s$body$p[levels_i])))
+  status <- s$cell_status
+  if (!is.null(status) && "M" %in% names(status)) {
+    expect_true(all(!nzchar(status$M[header])))
+  }
+  if (!is.null(status) && "p" %in% names(status)) {
+    expect_true(all(!nzchar(status$p[levels_i])))
+  }
+})
+
+test_that("an undefined cell keeps its status", {
+  # A level holding one observation has no SD: the console prints the
+  # undefined glyph and the typed view says why.
+  d <- data.frame(
+    y = c(1, 2, 4, 5, 2, 3, 8),
+    g = factor(c("A", "A", "A", "A", "A", "A", "B"))
+  )
+  tbl <- .tos_quiet(table_outcome(d, y, by = g, p_value = FALSE))
+  s <- as_structured(tbl)
+  solo <- which(s$body$.level == "B")
+  expect_identical(s$cell_status$SD[solo], "undefined")
+  expect_identical(
+    spicy:::.format_structured_to_string_body(s)$SD[solo],
+    spicy_str("cell_undefined")
+  )
+})
+
+test_that("inline() reaches a level and a block", {
+  tbl <- .tos_tbl(bmi, by = c(sex, smoking), effect_size = "auto")
+  s <- as_structured(tbl)
+  rendered <- spicy:::.format_structured_to_string_body(s)
+
+  # A level's own statistic.
+  expect_identical(inline(tbl, sex, "Female", "m"), trimws(rendered$M[[3L]]))
+  # The block's statistics, addressed WITHOUT a level -- they live on
+  # the header row, which carries none.
+  expect_identical(inline(tbl, sex, column = "p"), trimws(rendered$p[[2L]]))
+  expect_identical(inline(tbl, sex, column = "{p}"), trimws(rendered$p[[2L]]))
+  expect_identical(inline(tbl, sex, column = "es"), trimws(rendered$ES[[2L]]))
+  # The missing display level, by role.
+  expect_identical(
+    inline(tbl, smoking, "(Missing)", "m"),
+    trimws(rendered$M[[8L]])
+  )
+})
+
+test_that("a bare inline() on the outcome cites the marginal mean", {
+  # Watch on the neighbouring train: `.inline_default_token()` looks for
+  # the token "m", and the count precedes it in the preference list. If
+  # that ever drifts back, the most natural citation this table offers
+  # would quote an N where the sentence means a mean.
+  tbl <- .tos_tbl(bmi, by = sex)
+  expect_identical(inline(tbl, bmi), "25.93")
+  expect_identical(inline(tbl, bmi), inline(tbl, bmi, column = "m"))
+  expect_false(identical(inline(tbl, bmi), inline(tbl, bmi, column = "n")))
+})
+
+test_that("the interval composes from its own bounds", {
+  tbl <- .tos_tbl(bmi, by = sex)
+  expect_match(inline(tbl, sex, "Female", "ci"), "^\\[.+, .+\\]$")
+  expect_match(inline(tbl, bmi, column = "ci"), "^\\[.+, .+\\]$")
+})
+
+test_that("addressing survives custom labels", {
+  d <- as.data.frame(spicy::sochealth)
+  plain <- .tos_quiet(table_outcome(d, bmi, by = sex))
+  relabelled <- .tos_quiet(table_outcome(
+    d,
+    bmi,
+    by = sex,
+    labels = c(sex = "Administrative sex", bmi = "BMI")
+  ))
+  expect_identical(
+    inline(relabelled, sex, "Female", "m"),
+    inline(plain, sex, "Female", "m")
+  )
+  # The label reached the title and the stub, though.
+  expect_identical(
+    attr(relabelled, "outcome_label"),
+    "BMI"
+  )
+  expect_identical(
+    attr(relabelled, "display_df")$Variable[[2L]],
+    "Administrative sex"
+  )
+})

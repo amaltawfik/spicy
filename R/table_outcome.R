@@ -970,6 +970,19 @@ table_outcome <- function(
     indent_text = indent_text
   )
   attr(result, "display_df") <- display_df
+  # Typed view: the numbers come from the compute frame, the composite
+  # cells from the very display frame the console renders, so the two
+  # can never word a cell differently.
+  attr(result, "structured") <- .build_outcome_structured(
+    result = result,
+    display_df = display_df,
+    tokens = tokens,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level
+  )
   result
 }
 
