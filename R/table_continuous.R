@@ -3350,17 +3350,34 @@ desc_spanner_groups <- function(col_keys, ci_level, decimal_mark = ".") {
 }
 
 # --- internal: build 2-row header vectors ---
-build_header_rows <- function(col_keys, ci_level, decimal_mark = ".") {
+# The two-row header of any descriptive engine: the resolved headers,
+# with a spanner label written across the columns it covers and the
+# per-column sub-headers underneath it.
+#
+# Parameterised on the two resolvers rather than on the continuous
+# vocabulary, so a family whose spanners are its `by` groups builds its
+# header through the same function. `build_header_rows()` is the
+# continuous specialisation and keeps its own name and signature: it is
+# the one every existing caller uses.
+build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
   nc <- length(col_keys)
-  top <- .continuous_labels(col_keys, ci_level, decimal_mark)
+  top <- labels_fn(col_keys)
   bot <- rep("", nc)
-  for (g in desc_spanner_groups(col_keys, ci_level, decimal_mark)) {
+  for (g in spanners_fn(col_keys)) {
     top[g$cols] <- g$label
     if (length(g$cols) > 1L) {
       bot[g$cols] <- g$bounds
     }
   }
   list(top = top, bottom = bot)
+}
+
+build_header_rows <- function(col_keys, ci_level, decimal_mark = ".") {
+  build_header_rows_from(
+    col_keys,
+    function(keys) .continuous_labels(keys, ci_level, decimal_mark),
+    function(keys) desc_spanner_groups(keys, ci_level, decimal_mark)
+  )
 }
 
 # --- internal: the count / p-value right-hand columns ---
@@ -3399,7 +3416,8 @@ export_desc_table <- function(
   excel_sheet,
   clipboard_delim,
   word_path,
-  note = NULL
+  note = NULL,
+  header_layout = NULL
 ) {
   # The title is the CALLER's: each family words it from its own
   # registry key, and this function must never invent one. Refusing
@@ -3411,6 +3429,23 @@ export_desc_table <- function(
       class = "spicy_internal_invariant"
     )
   }
+  # The header layer, parameterised. Three closures -- how a bound key
+  # is shortened for the engines, what header a key prints, and which
+  # columns share a spanner -- because the SIX engines below each call
+  # them and none of them may re-derive one. `NULL` is the continuous
+  # vocabulary, i.e. the behaviour of every caller until now, byte for
+  # byte; `table_categorical_svy()` supplies its own, whose spanners are
+  # its `by` groups rather than its interval bounds.
+  hl_rename <- header_layout$rename %||%
+    function(df) rename_ci_cols(df, ci_level)
+  hl_spanners <- header_layout$spanners %||%
+    function(keys) desc_spanner_groups(keys, ci_level, decimal_mark)
+  hl_labels <- header_layout$labels %||%
+    function(keys) .continuous_labels(keys, ci_level, decimal_mark)
+  hl_headers <- function(keys) {
+    build_header_rows_from(keys, hl_labels, hl_spanners)
+  }
+
   # Block geometry, supplied by families whose rows are blocks and
   # derived from the label column otherwise.
   if (is.null(sep_rows)) {
@@ -3465,10 +3500,10 @@ export_desc_table <- function(
     options(tinytable_print_output = "html")
     on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
-    display_df <- rename_ci_cols(display_df, ci_level)
+    display_df <- hl_rename(display_df)
     nc <- ncol(display_df)
     col_keys <- names(display_df)
-    groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
+    groups_spec <- hl_spanners(col_keys)
 
     # Block indentation, part one of three: the LABEL. tinytable's own
     # `indent` is a LaTeX/typst-side setting, so the HTML body needs
@@ -3484,7 +3519,7 @@ export_desc_table <- function(
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner. Absent CI columns simply contribute no pair.
-    sub_labels <- build_header_rows(col_keys, ci_level, decimal_mark)$bottom
+    sub_labels <- hl_headers(col_keys)$bottom
     colnames(display_df) <- sub_labels
 
     # gspec walks the actual column keys in order, so any
@@ -3615,9 +3650,9 @@ export_desc_table <- function(
       spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
     }
 
-    display_df <- rename_ci_cols(display_df, ci_level)
+    display_df <- hl_rename(display_df)
     gt_col_keys <- names(display_df)
-    groups_spec <- desc_spanner_groups(gt_col_keys, ci_level, decimal_mark)
+    groups_spec <- hl_spanners(gt_col_keys)
     # Block indentation: gt renders the label cell as HTML, so the
     # console's prefix is swapped for four non-breaking spaces --
     # the same recipe as the categorical family, and the reason a
@@ -3632,7 +3667,7 @@ export_desc_table <- function(
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner.
-    gt_bottom <- build_header_rows(gt_col_keys, ci_level, decimal_mark)$bottom
+    gt_bottom <- hl_headers(gt_col_keys)$bottom
     label_list <- as.list(gt_bottom)
     names(label_list) <- gt_col_keys
     tbl <- gt::cols_label(tbl, .list = label_list)
@@ -3806,11 +3841,11 @@ export_desc_table <- function(
     if (output == "word" && !requireNamespace("officer", quietly = TRUE)) {
       spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
     }
-    display_df <- rename_ci_cols(display_df, ci_level)
+    display_df <- hl_rename(display_df)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
-    groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
+    hdrs <- hl_headers(col_keys)
+    groups_spec <- hl_spanners(col_keys)
 
     # Block indentation: flextable indents with `padding.left` below,
     # so the console's prefix comes OFF the label first. One
@@ -3965,11 +4000,11 @@ export_desc_table <- function(
       )
     }
 
-    display_df <- rename_ci_cols(display_df, ci_level)
+    display_df <- hl_rename(display_df)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
-    groups_spec <- desc_spanner_groups(col_keys, ci_level, decimal_mark)
+    hdrs <- hl_headers(col_keys)
+    groups_spec <- hl_spanners(col_keys)
     ci_pairs <- Filter(function(g) length(g$cols) > 1L, groups_spec)
 
     # Block indentation: Excel has no indent style here, so the
@@ -4158,10 +4193,10 @@ export_desc_table <- function(
   if (output == "clipboard") {
     .spicy_clip_preflight()
 
-    display_df <- rename_ci_cols(display_df, ci_level)
+    display_df <- hl_rename(display_df)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows(col_keys, ci_level, decimal_mark)
+    hdrs <- hl_headers(col_keys)
 
     # Block indentation: the payload is parsed text, so like Excel its
     # indentation is the label itself.
