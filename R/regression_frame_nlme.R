@@ -356,7 +356,11 @@ as_regression_frame.gls <- function(
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
-    has_singular = FALSE,
+    # Boundary fit (see .lme_is_singular): drives the footer note and the
+    # orchestrator's build-time caveat, exactly as lme4::isSingular()
+    # does for merMod. singular_terms stays empty: the diagnostic is
+    # model-level, not per-coefficient.
+    has_singular = .lme_is_singular(fit),
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
@@ -423,6 +427,9 @@ as_regression_frame.gls <- function(
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
+    # gls has no random-effect structure to collapse, and nlme::gls()
+    # refuses a rank-deficient design outright, so neither singular
+    # regime can arise: the flag is a constant here, not a stub.
     has_singular = FALSE,
     singular_terms = character(0),
     has_weights = FALSE,
@@ -481,6 +488,57 @@ as_regression_frame.gls <- function(
     sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
     nobs = as.integer(stats::nobs(fit))
   )
+}
+
+
+# Boundary ("singular") fit: a random-effect covariance block has
+# collapsed onto the edge of the parameter space -- a variance at 0, or a
+# correlation at +/-1. nlme ships no isSingular() of its own (unlike
+# lme4, which the merMod frame calls).
+#
+# performance::check_singularity() does cover the class, and its rule --
+# a random-effect variance below 1e-5 -- is the convention adopted here,
+# with two deliberate generalisations of its implementation:
+#
+#   * It reads diag(nlme::getVarCov(fit)), which errors on any fit with
+#     more than one level of nesting ("not implemented for multiple
+#     levels of nesting"). We walk the reStruct blocks instead and apply
+#     getVarCov's own construction to each level: the reStruct matrices
+#     are the covariances RELATIVE to sigma^2, so the absolute
+#     covariance of a level is as.matrix(reStruct[[i]]) * sigma^2. For a
+#     single-level fit the two are the same matrix, so the verdicts
+#     agree wherever the oracle can answer at all.
+#   * det(V) < tolerance rather than min(diag(V)) < tolerance: the
+#     determinant is the direct statement of "this block is not of full
+#     rank", so a boundary CORRELATION (|r| = 1 with non-zero variances)
+#     counts as singular too. That is the second regime
+#     lme4::isSingular() flags for lmer, and what the glmmTMB frame and
+#     performance's own merMod / glmmTMB methods use; the lme method is
+#     the weaker one in performance, not the reference.
+#
+# The tolerance stays 1e-5 on the ABSOLUTE variance scale (as in
+# performance), never a relative one, so a user cross-checking with
+# performance::check_singularity() sees the same verdict. The residual
+# variance is not a random-effect block and is excluded by construction
+# (reStruct holds the random effects only).
+#
+# nlme optimises on the log-Cholesky scale, so a collapsed component
+# lands near 0 rather than exactly on it (an exact 0 is at -Inf there);
+# the tolerance is what turns "near" into a verdict. A fit whose
+# optimisation failed carries non-finite variances: det() is then NA and
+# the isTRUE() comparison is FALSE, so a broken fit is never reported as
+# singular -- it carries nlme's own convergence error instead.
+.lme_is_singular <- function(fit, tolerance = 1e-5) {
+  blocks <- as.matrix(fit$modelStruct$reStruct)
+  sigma2 <- fit$sigma^2
+  if (!is.list(blocks) || !is.finite(sigma2)) {
+    return(FALSE) # nocov  (an lme fit always carries both)
+  }
+  any(vapply(
+    blocks,
+    function(v) isTRUE(det(as.matrix(v) * sigma2) < tolerance),
+    logical(1)
+  ))
 }
 
 
@@ -639,6 +697,14 @@ as_regression_frame.gls <- function(
   # nocov end
   if (nrow(vc_df) == 0L) {
     return(na_block(vc_df)) # nocov
+  }
+  # Boundary fit: nlme::intervals() refuses one anyway ("Non-positive
+  # definite approximate variance-covariance"), but the omission is a
+  # contract, not an accident of the engine -- state it here, on the
+  # merMod precedent, so the singular footer's claim holds by
+  # construction.
+  if (.lme_is_singular(fit)) {
+    return(na_block(vc_df))
   }
 
   ci_obj <- tryCatch(

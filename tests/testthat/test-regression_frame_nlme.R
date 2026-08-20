@@ -456,3 +456,113 @@ test_that("gls AME columns are populated (registry: AME yes)", {
   expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
   expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
 })
+
+
+# ---- 13. lme: boundary (singular) fits -----------------------------------
+
+# nlme has no isSingular() of its own. The convention is
+# performance::check_singularity()'s -- a random-effect variance below
+# 1e-5 -- read off every nesting level's covariance block through
+# det(), so that a boundary correlation counts and a nested fit still
+# gets an answer. Verdicts are triangulated against that oracle wherever
+# it can answer.
+
+.fit_lme_singular <- function() {
+  skip_if_not_installed("nlme")
+  d <- mtcars
+  d$gearf <- factor(d$gear)
+  # Three gear groups, fully explained by weight and horsepower: the
+  # random intercept collapses onto 0.
+  nlme::lme(mpg ~ wt + hp, data = d, random = ~ 1 | gearf)
+}
+
+.fit_lme_nested <- function() {
+  skip_if_not_installed("nlme")
+  nlme::lme(pixel ~ day, data = nlme::Pixel, random = ~ 1 | Dog / Side)
+}
+
+test_that("lme singular fit sets extras$has_singular (and a healthy one does not)", {
+  fit <- .fit_lme_singular()
+  expect_true(spicy:::.lme_is_singular(fit))
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_true(fr$info$extras$has_singular)
+  expect_identical(fr$info$extras$singular_terms, character(0))
+  expect_invisible(spicy:::validate_regression_frame(fr))
+
+  clean <- .fit_lme_basic()
+  expect_false(spicy:::.lme_is_singular(clean))
+  expect_false(
+    as_regression_frame(clean, model_id = "M1")$info$extras$has_singular
+  )
+})
+
+test_that("lme singularity matches performance::check_singularity (oracle)", {
+  skip_if_not_installed("performance")
+  fits <- list(
+    singular = .fit_lme_singular(),
+    basic = .fit_lme_basic(),
+    slope = nlme::lme(
+      distance ~ age,
+      data = nlme::Orthodont,
+      random = ~ age | Subject
+    )
+  )
+  for (nm in names(fits)) {
+    expect_identical(
+      spicy:::.lme_is_singular(fits[[nm]]),
+      isTRUE(performance::check_singularity(fits[[nm]])),
+      info = paste("oracle mismatch on fixture:", nm)
+    )
+  }
+})
+
+test_that("lme singularity answers for nested fits, where the oracle cannot", {
+  skip_if_not_installed("performance")
+  fit <- .fit_lme_nested()
+  # nlme::getVarCov() -- performance's route -- refuses more than one
+  # level of nesting; the reStruct walk covers both levels.
+  expect_error(nlme::getVarCov(fit))
+  expect_length(as.matrix(fit$modelStruct$reStruct), 2L)
+  expect_false(spicy:::.lme_is_singular(fit))
+  expect_false(
+    as_regression_frame(fit, model_id = "M1")$info$extras$has_singular
+  )
+})
+
+test_that("lme singular fit: the boundary VC keeps no Wald SE or CI", {
+  fit <- .fit_lme_singular()
+  vc <- as_regression_frame(
+    fit,
+    model_id = "M1"
+  )$info$random_effects$variance_components
+  expect_true(all(is.na(vc$std_error)))
+  expect_true(all(is.na(vc$ci_lower)))
+  expect_true(all(is.na(vc$ci_upper)))
+  expect_true(all(is.na(vc$ci_method)))
+  # The estimate itself still renders: only its uncertainty is withheld.
+  expect_true(all(is.finite(vc$variance)))
+})
+
+test_that("lme singularity reads the absolute (sigma-scaled) covariance", {
+  fit <- .fit_lme_singular()
+  # The reStruct blocks are relative to sigma^2; scaling them back is
+  # what nlme::getVarCov() itself does, so the two agree exactly.
+  block <- as.matrix(fit$modelStruct$reStruct)[[1L]] * fit$sigma^2
+  expect_equal(
+    as.numeric(block),
+    as.numeric(nlme::getVarCov(fit)),
+    tolerance = 1e-12
+  )
+  # Collapsed by orders of magnitude, not by a hair's breadth.
+  expect_lt(det(block), 1e-6)
+  clean <- .fit_lme_basic()
+  expect_gt(det(as.matrix(clean$modelStruct$reStruct)[[1L]] * clean$sigma^2), 1)
+  # An explicit tolerance argument is honoured in both directions.
+  expect_false(spicy:::.lme_is_singular(fit, tolerance = 1e-20))
+  expect_true(spicy:::.lme_is_singular(.fit_lme_basic(), tolerance = 1e6))
+})
+
+test_that("gls carries no singular flag (no random structure to collapse)", {
+  fr <- as_regression_frame(.fit_gls_plain(), model_id = "M1")
+  expect_false(fr$info$extras$has_singular)
+})
