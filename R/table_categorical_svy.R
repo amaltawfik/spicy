@@ -95,6 +95,16 @@
   if (!any(ok & !is.na(x))) {
     return(out)
   }
+  # A variable with ONE level is 100% by construction, and survey
+  # cannot say so: `svymean(~f)` builds a model matrix and aborts with
+  # "contrasts can be applied only to factors with 2 or more levels".
+  # The percentage is not estimated here, it is arithmetic; its
+  # interval and its design effect are not estimable at all, and stay
+  # undefined.
+  if (nlevels(design$variables[[var]]) == 1L) {
+    out$pct[[1L]] <- 1
+    return(out)
+  }
   form <- .svy_formula(var)
   m <- .svy_try(survey::svymean(
     form,
