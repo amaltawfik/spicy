@@ -432,6 +432,29 @@
 #' form is accepted here: there is one outcome, so a per-variable list
 #' would name nothing.
 #'
+#' # Weights
+#'
+#' `weights` applies the frequency-expansion convention of the family:
+#' all weights 1 reproduces the unweighted table, and integer weights
+#' reproduce the table of the data duplicated that many times. Rows
+#' with a missing or zero weight leave the analytic sample, and the
+#' note says how many did.
+#'
+#' `rescale = TRUE` normalises the weights over the outcome's whole
+#' surviving sample, once, never per level -- a per-level rescale
+#' would destroy the relative weights across levels, which is the
+#' entire information a sampling weight carries into this table. The
+#' means are unchanged by it; the standard deviations move, because
+#' their denominator is `sum(w) - 1`.
+#'
+#' A weighted table refuses the group comparison. The estimates and
+#' their interval have no weighted version here, and a p-value or an
+#' effect size silently computed unweighted beside weighted
+#' descriptives is the one thing that must not happen: set `p_value =
+#' FALSE` (and `statistic = FALSE`, `effect_size = "none"`), or use
+#' [table_continuous_lm()] for a weighted comparison. The
+#' order-statistic median interval is refused for the same reason.
+#'
 #' # Blocks and the group comparison
 #'
 #' Every block is a separate ONE-WAY comparison of the outcome across

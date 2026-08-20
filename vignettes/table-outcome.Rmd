@@ -1,0 +1,418 @@
+---
+title: "One outcome across several groupings"
+description: >
+  Build the transposed summary table in R with table_outcome(): one
+  continuous outcome described across the levels of several
+  categorical variables, one block of rows per variable, a group
+  comparison per block, and a marginal Overall row — with the same
+  statistic vocabulary and the same output engines as
+  table_continuous().
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{One outcome across several groupings}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+
+source("_pkgdown-helpers.R")
+```
+
+```{r setup}
+library(spicy)
+```
+
+`table_outcome()` answers one question: **how does this outcome vary
+across these groupings?** It fixes a single continuous outcome and
+stacks the groupings underneath it, one block of rows per grouping.
+
+That is the transpose of `table_continuous()`, which fixes a single
+grouping and stacks the outcomes. The two tables hold the same
+numbers when there is one of each; they differ in what a reader can
+scan down the page, and the choice is a reporting decision rather
+than a technical one.
+
+## Which shape do I need?
+
+The rule fits on one line.
+
+- **Several outcomes across one grouping** — `table_continuous(select
+  = , by = )`. The classic Table 1: age, BMI and well-being compared
+  between two arms.
+- **One outcome across one or several groupings** —
+  `table_outcome(outcome = , by = )`. The classic "correlates of"
+  table: who has a higher BMI — men or women, smokers or not, which
+  region?
+
+Both are legitimate with a single `by`. If you already know that more
+groupings are coming, start here: adding a variable to `by` adds a
+block, and nothing else in the call changes.
+
+## A first table
+
+```{r first}
+table_outcome(sochealth, outcome = bmi, by = c(sex, smoking))
+```
+
+Four things to notice, because each is a decision:
+
+1. **The title names the outcome.** The groupings are the rows, so a
+   title listing them would repeat the stub — and with six blocks
+   there would be no title left.
+2. **One stub column.** The block header carries the *variable*; its
+   levels are indented underneath. Nothing else is a label column.
+3. **The `p` sits on the block header**, not on a level, because the
+   comparison belongs to the whole block.
+4. **The first row is `Overall`**, the marginal summary of the whole
+   analytic sample.
+
+## The `Overall` row and the denominators
+
+The `Overall` row is what makes the blocks readable together: it is
+the common denominator every block partitions.
+
+Under the default `drop_na = FALSE`, that statement is exact. Each
+block shows a `(Missing)` level for the rows whose grouping value is
+missing, so the block's counts add up to the `Overall` count —
+whatever the grouping.
+
+```{r denominators}
+tbl <- table_outcome(sochealth, bmi, by = c(sex, smoking))
+raw <- as.data.frame(tbl)
+
+# The marginal count.
+raw$n[raw$.row_role == "summary"]
+
+# And each block's, summed over its displayed levels.
+described <- raw[raw$.row_role %in% c("level", "missing"), ]
+tapply(described$n, described$variable, sum)
+```
+
+The outcome's own missing values are removed **once, globally**,
+before any block, and the note says how many. That is the sentence
+that reconciles the `Overall` count with the raw data — 1188 here,
+not 1200.
+
+`drop_na = TRUE` removes each block's missing-grouping rows instead of
+showing them. The blocks then no longer share a denominator, and the
+note reports the loss per variable:
+
+```{r dropna}
+table_outcome(sochealth, bmi, by = smoking, drop_na = TRUE)
+```
+
+### Why "Overall" and not "Total"
+
+The two words are not interchangeable, and spicy keeps them apart.
+
+*Total* is the word of a **count margin**: the column of
+`table_categorical()` where frequencies add up, and where the margin
+literally is the sum of the cells beside it. *Overall* is the whole
+**analytic sample**: a row where a mean is recomputed over every
+observation, and where nothing is added to anything. A mean is not a
+total, and calling it one would be a reading error carried into every
+translation of the table.
+
+## Choosing the statistics
+
+`show_columns` takes exactly the tokens `table_continuous()` takes,
+with the same meanings — `"m"`, `"sd"`, `"med"`, `"iqr"`,
+`"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`, `"med_ci"`,
+`"n"`, `"weighted_n"`. See the *Choosing which statistics to show*
+section of `vignette("table-continuous")` for the vocabulary itself;
+nothing about it changes here.
+
+```{r tokens}
+table_outcome(
+  sochealth,
+  bmi,
+  by = c(sex, education),
+  show_columns = c("med_iqr", "n")
+)
+```
+
+Only the character-vector form is accepted. The per-variable named
+list of `table_continuous()` would name nothing here: there is one
+outcome.
+
+One consequence of that vocabulary is worth stating, because it is
+automatic. **The table tests what it shows.** A display carrying a
+median without a mean switches the default comparison to the
+rank-based family — the Wilcoxon rank-sum test with two levels, the
+Kruskal-Wallis test with three or more — so the table never tests a
+mean it does not print. The note above says so. An explicit `test =`
+is sovereign and warns instead.
+
+## The group comparison, block by block
+
+Every block is a **separate one-way comparison** of the outcome across
+the levels of that variable. Nothing in this table adjusts one block
+for another, and the note under the table says so in as many words.
+
+```{r blocks}
+table_outcome(
+  sochealth,
+  bmi,
+  by = c(sex, region),
+  statistic = TRUE,
+  effect_size = "auto"
+)
+```
+
+Read that table as a set of bivariate descriptions. It is not a model,
+and the blocks are not independent of one another: sex and region are
+correlated in any real sample, so a difference visible in one block
+may be another block's difference seen through a third variable. When
+the question is "does this hold when the others are accounted for",
+the table you want is `table_regression()`, or
+`table_continuous_lm()` with covariates.
+
+Each block chooses its own test from its own level count. With
+`test = "welch"` — the default — a two-level block gets the Welch
+*t*-test and a three-or-more-level block gets the Welch one-way
+ANOVA, which is why the note above names both. `effect_size = "auto"`
+follows the test the block actually ran: Hedges' *g* beside a
+*t*-test, eta-squared beside an ANOVA, their rank homologues beside a
+rank test. A column can therefore mix measures from row to row, and
+each cell prefixes its own glyph.
+
+A block that cannot be compared degrades **alone**. Fewer than two
+observed levels, or a level holding a single observation, and that
+block keeps empty statistics while its neighbours are untouched.
+
+```{r degraded}
+thin <- data.frame(
+  score = c(4, 5, 6, 7, 9, 11, 12, 14),
+  arm = c("A", "A", "A", "A", "B", "B", "B", "B"),
+  site = rep("only one site", 8)
+)
+table_outcome(thin, score, by = c(arm, site))
+```
+
+## Choosing the `by` columns
+
+`by` is a tidyselect expression, and the canonical forms are an
+explicit enumeration or `where(is.factor)`:
+
+```{r where-factor}
+table_outcome(
+  sochealth,
+  wellbeing_score,
+  by = where(is.factor),
+  show_columns = c("m", "sd", "n")
+)
+```
+
+Negation (`by = -c(x, y)`) is **not** recommended, and the reason is
+worth a paragraph. It sweeps in every remaining column, and a numeric
+one opens a block per distinct value, in order of first appearance —
+a table of sixty one-row blocks, each with nothing to compare. A
+variable producing more than twenty levels raises a warning for that
+reason. The threshold is arbitrary and the help page says so; the
+warning is a nudge, never a refusal, because the family refuses no
+numeric grouping.
+
+The order of the blocks is the order you write, and the order of the
+levels inside a block is the variable's own: a factor keeps its
+declared level order (empty levels included — a level nobody chose is
+information about the instrument), anything else takes the order of
+first appearance.
+
+## Weights
+
+`weights` follows the frequency-expansion convention of the family:
+all weights 1 reproduces the unweighted table, integer weights
+reproduce the table of the data duplicated that many times.
+
+```{r weights}
+table_outcome(
+  sochealth,
+  bmi,
+  by = sex,
+  weights = weight,
+  p_value = FALSE,
+  show_columns = c("m", "sd", "n", "weighted_n")
+)
+```
+
+Two things that call is doing on purpose.
+
+`p_value = FALSE` is **required**. A weighted table refuses the group
+comparison: the tests here have no weighted version, and a *p*-value
+computed unweighted beside weighted descriptives would be silently
+wrong in the one place a reader cannot check. For a weighted
+comparison, use `table_continuous_lm(weights = )`.
+
+`weighted_n` shows the sum of weights beside the raw count, because
+the two answer different questions — how many people the estimate
+represents, and how many rows carried it.
+
+`rescale = TRUE` normalises the weights over the outcome's whole
+surviving sample, once, never per level. A per-level rescale would
+destroy the relative weights *across* levels, which is the entire
+information a sampling weight carries into this table.
+
+## Citing a cell in running text
+
+Every cell is addressable by identity, so a number quoted in a
+sentence cannot drift from the number printed in the table. A level's
+statistic needs its level; a **block's** statistic — the *p*, the
+effect size, the test — has no level to name, and is addressed
+without one.
+
+```{r inline}
+tbl <- table_outcome(sochealth, bmi, by = c(sex, smoking))
+
+inline(tbl, sex, "Female", "m")
+inline(tbl, sex, column = "p")
+inline(tbl, bmi)
+```
+
+The last call is the most natural citation this table offers: a bare
+`inline()` on the outcome cites the marginal mean, from the `Overall`
+row.
+
+Patterns compose several cells into one fragment, and follow the same
+rule — every token must live on the same row:
+
+```{r inline-pattern}
+inline(tbl, sex, "Female", "{m} ({ci_label} {ci})")
+inline(tbl, smoking, column = "{p}")
+```
+
+## Downstream: the raw frame and the broom views
+
+`output = "long"` returns the compute frame: one row per displayed
+row, with `.row_role` saying what each row is.
+
+```{r long}
+head(table_outcome(sochealth, bmi, by = sex, output = "long"), 4)
+```
+
+`tidy()` returns the described rows — the marginal row and one row per
+(grouping x level) — and `glance()` returns one row per **block**,
+carrying that block's own comparison:
+
+```{r broom}
+generics::tidy(tbl)
+generics::glance(tbl)
+```
+
+Two identity columns rather than one, and deliberately: `outcome` is
+constant down the frame, `variable` names the block. A single column
+would have to mean two different things depending on the row.
+
+The `glance()` schema is fixed. `smd_type` and `smd_value` are present
+and `NA` from the first version, so the day a standardized mean
+difference enters this table it cannot break a pipeline that indexes
+the frame. Index by name, never by position.
+
+## Comparison with `gtsummary::tbl_continuous()`
+
+`gtsummary::tbl_continuous(data, variable = Y, include = c(A, B))`
+builds the same shape. Where the two differ, each difference is a
+decision:
+
+- **the outcome is named** — in our title, on every engine; in
+  gtsummary the column header reads `N = 200` and the outcome appears
+  nowhere;
+- **a marginal row** — we open on `Overall`, gtsummary has none;
+- **missing groupings are shown** — a `(Missing)` level, so the block
+  counts still add up; at its defaults gtsummary renders no such row;
+- **the comparison is on by default** — gtsummary adds it with
+  `add_p()`;
+- **the quartiles are R's** — `med` / `q1` / `q3` equal
+  `stats::median()` and `stats::quantile()` on the same vector (type
+  7, R's default), while gtsummary computes type 2, the
+  averaged-order-statistic definition of SAS and SPSS. The medians
+  always agree; the quartiles need not;
+- **the composite cell** reads `Med [Q1, Q3]` with frozen brackets,
+  and its separator becomes a semicolon under a comma decimal mark,
+  where a comma would otherwise serve two roles at once.
+
+## Output engines
+
+Everything above renders identically through six engines. The console
+is the reference; the others reproduce it cell for cell, indentation
+and block rules included.
+
+```{r engines-list, eval = FALSE}
+table_outcome(sochealth, bmi, by = c(sex, smoking), output = "gt")
+table_outcome(sochealth, bmi, by = c(sex, smoking), output = "tinytable")
+table_outcome(sochealth, bmi, by = c(sex, smoking), output = "flextable")
+table_outcome(
+  sochealth,
+  bmi,
+  by = c(sex, smoking),
+  output = "excel",
+  excel_path = "bmi.xlsx"
+)
+table_outcome(
+  sochealth,
+  bmi,
+  by = c(sex, smoking),
+  output = "word",
+  word_path = "bmi.docx"
+)
+table_outcome(sochealth, bmi, by = c(sex, smoking), output = "clipboard")
+```
+
+A journal style moves the defaults of the whole table, exactly as it
+does elsewhere in the family:
+
+```{r style}
+table_outcome(
+  sochealth,
+  bmi,
+  by = sex,
+  style = "jama",
+  show_columns = c("m", "sd", "n")
+)
+```
+
+## Rendered output
+
+```{r gt, eval = build_rich_tables}
+pkgdown_dark_gt(
+  table_outcome(
+    sochealth,
+    bmi,
+    by = c(sex, education),
+    effect_size = "auto",
+    output = "gt"
+  )
+)
+```
+
+```{r tinytable, eval = build_rich_tables}
+table_outcome(
+  sochealth,
+  wellbeing_score,
+  by = c(sex, smoking),
+  show_columns = c("med_iqr", "n"),
+  output = "tinytable"
+)
+```
+
+## See also
+
+- `vignette("table-continuous", package = "spicy")` for the
+  transposed shape — several outcomes across one grouping — and for
+  the statistic vocabulary in full.
+- `vignette("table-categorical", package = "spicy")` for categorical
+  outcomes.
+- `vignette("as-structured", package = "spicy")` for the typed view
+  behind this table, and the geometry fields (`.row_role`, `.indent`)
+  a custom renderer reads.
+- `vignette("summary-tables-reporting", package = "spicy")` for the
+  cross-function reporting workflow.

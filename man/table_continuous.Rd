@@ -821,6 +821,11 @@ table_continuous(
 
 }
 \seealso{
+\code{\link[=table_outcome]{table_outcome()}} for the transposed shape -- ONE
+continuous outcome across the levels of SEVERAL groupings, one
+block of rows per grouping. Several outcomes across one grouping
+is this function; one outcome across one or more groupings is
+that one;
 \code{\link[=table_continuous_lm]{table_continuous_lm()}} for the model-based companion
 (heteroskedasticity-consistent SE, cluster-robust SE, weighted
 contrasts, fitted means);

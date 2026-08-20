@@ -548,7 +548,12 @@
 #' statistic is undefined (fewer than two valid observations).
 #'
 #' @family spicy tables
-#' @seealso [table_continuous_lm()] for the model-based companion
+#' @seealso [table_outcome()] for the transposed shape -- ONE
+#'   continuous outcome across the levels of SEVERAL groupings, one
+#'   block of rows per grouping. Several outcomes across one grouping
+#'   is this function; one outcome across one or more groupings is
+#'   that one;
+#'   [table_continuous_lm()] for the model-based companion
 #'   (heteroskedasticity-consistent SE, cluster-robust SE, weighted
 #'   contrasts, fitted means);
 #'   [table_categorical()] for categorical variables;
