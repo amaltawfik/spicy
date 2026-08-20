@@ -436,9 +436,15 @@
 #'
 #' `weights` applies the frequency-expansion convention of the family:
 #' all weights 1 reproduces the unweighted table, and integer weights
-#' reproduce the table of the data duplicated that many times. Rows
-#' with a missing or zero weight leave the analytic sample, and the
-#' note says how many did.
+#' reproduce the STATISTICS of the data duplicated that many times --
+#' `n` stays the raw count of rows that carried the weights. Rows
+#' with a missing or zero weight leave the analytic sample; the note
+#' counts the missing ones.
+#'
+#' `rescale` is the switch between the two readings of a weight: the
+#' frequency reading above, and the sampling-weight reading, where the
+#' weights are normalised to sum to the sample size. See the Weights
+#' section of [table_continuous()] for the choice in full.
 #'
 #' `rescale = TRUE` normalises the weights over the outcome's whole
 #' surviving sample, once, never per level -- a per-level rescale
@@ -489,11 +495,15 @@
 #'
 #' The canonical form is `by = where(is.factor)`, or an explicit
 #' enumeration. Negation (`by = -c(x, y)`) is not recommended: it
-#' sweeps in every remaining column, and a numeric one opens a block
-#' per distinct value, in order of first appearance. A variable
-#' producing more than 20 levels raises a warning for that reason --
-#' an arbitrary threshold, but a table of sixty one-row blocks is not
-#' a table.
+#' sweeps in every remaining column, and a numeric one becomes a block
+#' with one LEVEL per distinct value, in order of first appearance. A
+#' variable producing more than 20 levels raises a warning for that
+#' reason -- an arbitrary threshold, but a sixty-row block where a
+#' reader expects a handful of categories is not a table.
+#'
+#' A `haven_labelled` column used as `by` shows its numeric CODES, not
+#' its value labels, as it does in [table_continuous()]. Convert it
+#' first (`haven::as_factor()`) to get the labels in the stub.
 #'
 #' @param data A data frame.
 #' @param outcome The continuous outcome, unquoted or as a string.
