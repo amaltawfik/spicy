@@ -62,7 +62,7 @@ the names of the design-specific arguments may still move, with a
 family's):
 \itemize{
 \item Survey-design summary tables:
-\code{\link[=table_continuous_svy]{table_continuous_svy()}}
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}}
 }
 
 \strong{Internal API} (not part of the public surface; can change

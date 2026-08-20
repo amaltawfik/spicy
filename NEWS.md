@@ -160,6 +160,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   and `"deff"`; every output engine, `as_structured()` and `inline()`
   work as usual.
 
+* `table_categorical_svy()` is the categorical half of the same pair:
+  counts and estimated percentages from a `survey` design, with the
+  block layout of `table_categorical()`. `survey::svymean()` estimates
+  the percentages and their design effects, `survey::svyciprop()`
+  their confidence intervals (`proportion_ci = TRUE`, seven methods),
+  and `survey::svychisq()` tests the association -- Rao-Scott
+  corrected by default. `n` is the observed count; the note gives the
+  estimated population beside it.
+
 * `table_outcome()` summarizes one continuous outcome across the levels
   of several categorical variables, stacked as blocks -- the inverse
   layout of `table_continuous()`. Each block reports a group comparison

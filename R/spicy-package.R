@@ -56,7 +56,7 @@
 #' family's):
 #' \itemize{
 #'   \item Survey-design summary tables:
-#'         [table_continuous_svy()]
+#'         [table_continuous_svy()], [table_categorical_svy()]
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change

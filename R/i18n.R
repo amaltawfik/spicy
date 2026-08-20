@@ -543,6 +543,22 @@
   test_design_wald = "design-based Wald test",
   test_design_wilcoxon = "design-based Wilcoxon rank-sum test",
   test_design_kruskal = "design-based Kruskal-Wallis test",
+  # The five `survey::svychisq()` statistics the categorical twin
+  # reports. Named apart rather than templated on a token: they are
+  # five different tests, and a sentence naming one must be
+  # translatable without carrying the other four.
+  test_design_rao_scott = "design-based Pearson chi-square (Rao-Scott second-order correction)",
+  test_design_rao_scott_chisq = "design-based Pearson chi-square (Rao-Scott correction, chi-square reference)",
+  test_design_wald_chisq = "design-based Wald test of the cell proportions",
+  test_design_adj_wald = "design-based adjusted Wald test of the cell proportions",
+  test_design_saddlepoint = "design-based saddlepoint chi-square",
+  # One hole: the method name, a survey identifier ("logit",
+  # "wilson", ...), never translated.
+  note_ci_prop_method = "Percentage CIs: %s (survey::svyciprop).",
+  # The two glosses a design categorical table owes its reader: the
+  # percentage is an ESTIMATE and the count is not.
+  note_gloss_pct_svy = "%s = estimated percentage within the column (survey::svymean).",
+  note_gloss_n_svy = "%s = observed (unweighted) count.",
 
   # -- table_regression(): standard-error and interval notes ----------------
   note_adjusted_for = "Adjusted for %s (%s).",

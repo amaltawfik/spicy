@@ -3417,7 +3417,8 @@ export_desc_table <- function(
   clipboard_delim,
   word_path,
   note = NULL,
-  header_layout = NULL
+  header_layout = NULL,
+  clipboard_label = NULL
 ) {
   # The title is the CALLER's: each family words it from its own
   # registry key, and this function must never invent one. Refusing
@@ -4226,7 +4227,12 @@ export_desc_table <- function(
       note = note
     )
     clipr::write_clip(txt)
-    spicy_inform("Descriptive statistics copied to clipboard.")
+    # The families that go through this exporter are no longer only the
+    # continuous ones: a categorical design table announcing itself as
+    # "Descriptive statistics" names the wrong table.
+    spicy_inform(
+      clipboard_label %||% "Descriptive statistics copied to clipboard."
+    )
     return(invisible(display_df))
   }
 
