@@ -46,7 +46,8 @@ before 1.0 with a \code{NEWS.md} entry, but no silent behavioural
 changes):
 \itemize{
 \item Summary table builders: \code{\link[=table_categorical]{table_categorical()}},
-\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}}
+\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}},
+\code{\link[=table_outcome]{table_outcome()}}
 \item Regression tables: \code{\link[=table_regression]{table_regression()}},
 \code{\link[=table_regression_uv]{table_regression_uv()}}, \code{\link[=table_regression_models]{table_regression_models()}},
 \code{\link[=as_structured]{as_structured()}}

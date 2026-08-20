@@ -40,7 +40,8 @@
 #' changes):
 #' \itemize{
 #'   \item Summary table builders: [table_categorical()],
-#'         [table_continuous()], [table_continuous_lm()]
+#'         [table_continuous()], [table_continuous_lm()],
+#'         [table_outcome()]
 #'   \item Regression tables: [table_regression()],
 #'         [table_regression_uv()], [table_regression_models()],
 #'         [as_structured()]
