@@ -3474,6 +3474,9 @@ export_desc_table <- function(
     )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- .spicy_tt_bare(tt)
+    # User data reaches the cells (level labels, variable labels):
+    # escape it, like every other engine of the family does.
+    tt <- .spicy_tt_escape(tt)
 
     # Body alignment. The first column ("Variable") and "Group" (when
     # present) are always left-aligned; numeric columns honour the

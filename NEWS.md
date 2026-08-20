@@ -385,6 +385,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `output = "tinytable"` escapes cell text in `table_categorical()`,
+  `table_continuous()`, `table_continuous_lm()` and `table_outcome()`. A
+  level or variable label containing markup was rendered as markup: a label
+  holding `</td></tr><tr><td>` split its own row, so the HTML table had more
+  rows than the object and the statistics were redistributed across them,
+  and a label holding a script element was emitted live. gt and flextable
+  already escaped.
+
 * `output = "gt"` tables from `table_categorical()`, `table_continuous()`
   and `table_continuous_lm()` carry their title, like the other output
   engines.

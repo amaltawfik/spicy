@@ -1892,11 +1892,13 @@ table_categorical <- function(
 
       tt <- tinytable::tt(
         dat_tt,
-        escape = FALSE,
         caption = .categorical_title(NULL),
         notes = missing_note
       )
       tt <- .spicy_tt_bare(tt)
+      # User data reaches the cells (level labels, variable labels):
+      # escape it, like every other engine of the family does.
+      tt <- .spicy_tt_escape(tt)
       tt <- tinytable::style_tt(tt, j = 1, align = "l")
       tt_align <- switch(
         align,
@@ -3353,7 +3355,6 @@ table_categorical <- function(
 
     tt <- tinytable::tt(
       dat_tt,
-      escape = FALSE,
       caption = .categorical_title(by_name),
       # The association-measure gloss belongs to the rendered table as
       # much as to the console: it names which measure each row
@@ -3362,6 +3363,9 @@ table_categorical <- function(
     )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- .spicy_tt_bare(tt)
+    # User data reaches the cells (level labels, variable labels):
+    # escape it, like every other engine of the family does.
+    tt <- .spicy_tt_escape(tt)
 
     # Alignment. Honour the `align` argument: "decimal" centres
     # uniform-width pre-padded strings (same strategy as
