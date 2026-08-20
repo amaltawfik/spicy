@@ -173,3 +173,134 @@ test_that("addressing survives custom labels", {
     "Administrative sex"
   )
 })
+
+
+# ============================================================================
+# Coercion and the broom methods
+# ============================================================================
+
+test_that("coercion strips the rendering attributes, keeps provenance", {
+  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  plain <- as.data.frame(tbl)
+  expect_false(inherits(plain, "spicy_outcome_table"))
+  expect_identical(attr(plain, "outcome"), "bmi")
+  expect_identical(attr(plain, "by"), c("sex", "smoking"))
+  expect_null(attr(plain, "display_df"))
+  expect_null(attr(plain, "structured"))
+  # The original object is untouched and still prints.
+  expect_s3_class(tbl, "spicy_outcome_table")
+  expect_false(is.null(attr(tbl, "display_df")))
+
+  skip_if_not_installed("tibble")
+  tb <- tibble::as_tibble(tbl)
+  expect_s3_class(tb, "tbl_df")
+  expect_identical(nrow(tb), nrow(plain))
+})
+
+test_that("tidy() returns the described rows only", {
+  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  td <- generics::tidy(tbl)
+  expect_identical(
+    names(td),
+    c(
+      "outcome",
+      "variable",
+      "label",
+      "level",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "n",
+      "min",
+      "max",
+      "sd"
+    )
+  )
+  # Six described rows: the marginal one plus two blocks of two and
+  # three levels. The block headers describe nothing and are absent.
+  expect_identical(nrow(td), 6L)
+  # `outcome` is constant, `variable` changes: two identity columns
+  # because they mean two different things.
+  expect_identical(unique(td$outcome), "bmi")
+  expect_identical(unique(td$variable), c("bmi", "sex", "smoking"))
+  expect_true(is.na(td$level[[1L]]))
+
+  raw <- as.data.frame(tbl)
+  keep <- raw$.row_role != "factor_header"
+  expect_equal(td$estimate, raw$mean[keep], tolerance = 1e-12)
+  expect_equal(
+    td$std.error,
+    raw$sd[keep] / sqrt(raw$n[keep]),
+    tolerance = 1e-12
+  )
+})
+
+test_that("glance() returns one row per block", {
+  tbl <- .tos_tbl(bmi, by = c(sex, smoking), effect_size = "auto")
+  gl <- generics::glance(tbl)
+  expect_identical(
+    names(gl),
+    c(
+      "outcome",
+      "variable",
+      "label",
+      "n_levels",
+      "test_type",
+      "statistic",
+      "df",
+      "df.residual",
+      "p.value",
+      "es_type",
+      "es_value",
+      "es_ci_lower",
+      "es_ci_upper",
+      "smd_type",
+      "smd_value",
+      "n_total"
+    )
+  )
+  expect_identical(nrow(gl), 2L)
+  expect_identical(gl$variable, c("sex", "smoking"))
+  expect_identical(unique(gl$outcome), "bmi")
+  # `n_levels` counts DISPLAYED levels; `smoking` shows a missing one.
+  expect_identical(gl$n_levels, c(2L, 3L))
+  # Every block's count sums to the marginal count.
+  overall_n <- as.data.frame(tbl)$n[[1L]]
+  expect_true(all(gl$n_total == overall_n))
+
+  raw <- as.data.frame(tbl)
+  hdr <- raw[raw$.row_role == "factor_header", ]
+  expect_equal(gl$p.value, hdr$p.value, tolerance = 1e-12)
+  expect_equal(gl$statistic, hdr$statistic, tolerance = 1e-12)
+  expect_identical(gl$es_type, hdr$es_type)
+})
+
+test_that("the glance schema is fixed, SMD columns included", {
+  # `smd_type` / `smd_value` are present and NA from the first
+  # version: adding the statistic later must not break a pipeline that
+  # indexes this frame.
+  gl <- generics::glance(.tos_tbl(bmi, by = sex))
+  expect_true(all(c("smd_type", "smd_value") %in% names(gl)))
+  expect_true(all(is.na(gl$smd_type)))
+  expect_true(all(is.na(gl$smd_value)))
+  # And the same schema with no comparison at all.
+  gl2 <- generics::glance(.tos_tbl(bmi, by = sex, p_value = FALSE))
+  expect_identical(names(gl2), names(gl))
+  expect_true(all(is.na(gl2$p.value)))
+})
+
+test_that("a block with no comparison still gets its glance row", {
+  d <- data.frame(
+    y = c(1, 2, 3, 4, 10, 20, 30, 40),
+    one = rep("only", 8L),
+    g = c("a", "a", "a", "a", "b", "b", "b", "b"),
+    stringsAsFactors = FALSE
+  )
+  tbl <- .tos_quiet(table_outcome(d, y, by = c(one, g)))
+  gl <- generics::glance(tbl)
+  expect_identical(nrow(gl), 2L)
+  expect_true(is.na(gl$p.value[gl$variable == "one"]))
+  expect_false(is.na(gl$p.value[gl$variable == "g"]))
+  expect_identical(gl$n_levels, c(1L, 2L))
+})

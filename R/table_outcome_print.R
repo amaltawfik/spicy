@@ -128,3 +128,197 @@ print.spicy_outcome_table <- function(x, ...) {
     stringsAsFactors = FALSE
   )
 }
+
+# ---- Coercion to plain data.frame / tibble --------------------------------
+
+# Internal: drop the spicy classes and the rendering-only attributes,
+# keeping the data.frame contract plus the two provenance markers that
+# say what the table was about. Used by every coercion / broom method.
+unclass_spicy_outcome_table <- function(x) {
+  keep <- list(
+    outcome = attr(x, "outcome", exact = TRUE),
+    by = attr(x, "by", exact = TRUE)
+  )
+  for (nm in setdiff(names(attributes(x)), c("names", "row.names", "class"))) {
+    attr(x, nm) <- NULL
+  }
+  class(x) <- "data.frame"
+  for (nm in names(keep)) {
+    if (!is.null(keep[[nm]])) {
+      attr(x, nm) <- keep[[nm]]
+    }
+  }
+  x
+}
+
+#' Coerce a `spicy_outcome_table` to a plain data frame or tibble
+#'
+#' These S3 methods strip the `"spicy_outcome_table"` class and the
+#' rendering-only attributes from an object returned by
+#' [table_outcome()], so the underlying long-format data can be
+#' manipulated with downstream tools under the standard `data.frame` /
+#' `tbl_df` contract. The `"outcome"` and `"by"` attributes are kept as
+#' lightweight provenance markers. The original `x` is unaffected, and
+#' `print(x)` continues to render the formatted table.
+#'
+#' The returned data is identical to what `output = "long"` (or
+#' `output = "data.frame"`) returns directly from [table_outcome()].
+#'
+#' @param x A `spicy_outcome_table` returned by [table_outcome()].
+#' @param row.names,optional Standard [base::as.data.frame()]
+#'   arguments, currently ignored.
+#' @param ... Further arguments passed to [tibble::as_tibble()] (for
+#'   the tibble method) or ignored.
+#'
+#' @return A plain `data.frame` (or `tbl_df`), one row per displayed
+#'   row of the table.
+#'
+#' @seealso [tidy.spicy_outcome_table()], [glance.spicy_outcome_table()].
+#'
+#' @name as.data.frame.spicy_outcome_table
+#' @keywords internal
+NULL
+
+#' @rdname as.data.frame.spicy_outcome_table
+#' @exportS3Method base::as.data.frame
+as.data.frame.spicy_outcome_table <- function(
+  x,
+  row.names = NULL,
+  optional = FALSE,
+  ...
+) {
+  unclass_spicy_outcome_table(x)
+}
+
+#' @rdname as.data.frame.spicy_outcome_table
+#' @exportS3Method tibble::as_tibble
+as_tibble.spicy_outcome_table <- function(x, ...) {
+  if (!requireNamespace("tibble", quietly = TRUE)) {
+    spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
+  }
+  tibble::as_tibble(unclass_spicy_outcome_table(x), ...)
+}
+
+# ---- broom integration ----------------------------------------------------
+
+#' Tidying methods for a `spicy_outcome_table`
+#'
+#' Standard [broom::tidy()] and [broom::glance()] interfaces for an
+#' object returned by [table_outcome()].
+#'
+#' `tidy()` returns the DESCRIBED rows: the marginal Overall row and
+#' one row per (grouping x level). Columns: `outcome` (the outcome
+#' name, constant down the frame), `variable` (the grouping, or the
+#' outcome itself on the marginal row), `label`, `level` (`NA` on the
+#' marginal row), `estimate` (the mean), `std.error` (`sd / sqrt(n)`),
+#' `conf.low`, `conf.high`, `n`, `min`, `max`, `sd`.
+#'
+#' Two identity columns where the sibling has one, and deliberately:
+#' here the outcome is fixed and the variable changes, so a single
+#' `outcome` column would have to mean two different things down the
+#' frame. The schema reads without knowing which function produced it.
+#'
+#' `glance()` returns one row per grouping -- one BLOCK -- with that
+#' block's own comparison. Columns: `outcome`, `variable`, `label`,
+#' `n_levels`, `test_type`, `statistic`, `df`, `df.residual`,
+#' `p.value`, `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`,
+#' `smd_type`, `smd_value`, `n_total`.
+#'
+#' `n_levels` counts the levels the TABLE displays, so a missing-value
+#' display level counts; the comparison behind `test_type` runs on the
+#' observed levels only, as it does everywhere in the family.
+#'
+#' The schema is FIXED: `smd_type` / `smd_value` are present and `NA`
+#' from the first version, so the day a standardized mean difference
+#' enters this table it cannot break a pipeline that indexes the
+#' frame. Index by NAME rather than by position.
+#'
+#' @param x A `spicy_outcome_table` returned by [table_outcome()].
+#' @param ... Ignored, for S3 compatibility.
+#'
+#' @return A `tbl_df` (or `data.frame` when tibble is not installed).
+#'
+#' @name tidy.spicy_outcome_table
+#' @keywords internal
+NULL
+
+.outcome_as_tbl <- function(df) {
+  rownames(df) <- NULL
+  if (requireNamespace("tibble", quietly = TRUE)) {
+    return(tibble::as_tibble(df))
+  }
+  df
+}
+
+#' @rdname tidy.spicy_outcome_table
+#' @exportS3Method generics::tidy
+tidy.spicy_outcome_table <- function(x, ...) {
+  outcome <- attr(x, "outcome", exact = TRUE)
+  long <- unclass_spicy_outcome_table(x)
+  # The header rows describe nothing: they carry the block comparison,
+  # which is what `glance()` is for.
+  rows <- long[long$.row_role != "factor_header", , drop = FALSE]
+  .outcome_as_tbl(data.frame(
+    outcome = rep(outcome, nrow(rows)),
+    variable = rows$variable,
+    label = rows$label,
+    level = rows$level,
+    estimate = rows$mean,
+    std.error = ifelse(
+      is.na(rows$sd) | is.na(rows$n) | rows$n < 1L,
+      NA_real_,
+      rows$sd / sqrt(rows$n)
+    ),
+    conf.low = rows$ci_lower,
+    conf.high = rows$ci_upper,
+    n = as.integer(rows$n),
+    min = rows$min,
+    max = rows$max,
+    sd = rows$sd,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  ))
+}
+
+#' @rdname tidy.spicy_outcome_table
+#' @exportS3Method generics::glance
+glance.spicy_outcome_table <- function(x, ...) {
+  outcome <- attr(x, "outcome", exact = TRUE)
+  long <- unclass_spicy_outcome_table(x)
+  headers <- long[long$.row_role == "factor_header", , drop = FALSE]
+  lvl <- long[long$.row_role %in% c("level", "missing"), , drop = FALSE]
+  n_levels <- vapply(
+    headers$variable,
+    function(v) sum(lvl$variable == v),
+    integer(1),
+    USE.NAMES = FALSE
+  )
+  n_total <- vapply(
+    headers$variable,
+    function(v) as.integer(sum(lvl$n[lvl$variable == v], na.rm = TRUE)),
+    integer(1),
+    USE.NAMES = FALSE
+  )
+  .outcome_as_tbl(data.frame(
+    outcome = rep(outcome, nrow(headers)),
+    variable = headers$variable,
+    label = headers$label,
+    n_levels = n_levels,
+    test_type = headers$test_type,
+    statistic = headers$statistic,
+    df = headers$df1,
+    df.residual = headers$df2,
+    p.value = headers$p.value,
+    es_type = headers$es_type,
+    es_value = headers$es_value,
+    es_ci_lower = headers$es_ci_lower,
+    es_ci_upper = headers$es_ci_upper,
+    # Present and NA from the first version: a fixed schema is what
+    # makes adding the statistic later a non-breaking change.
+    smd_type = headers$smd_type,
+    smd_value = headers$smd_value,
+    n_total = n_total,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  ))
+}
