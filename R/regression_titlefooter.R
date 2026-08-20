@@ -1730,9 +1730,17 @@ build_singular_footer_block_from_frames <- function(frames) {
     # ("consider simplifying the random structure") is for the ANALYST
     # at build time, not the reader of a published table -- it moved to
     # the consolidated spicy_caveat warning in table_regression().
+    #
+    # "at the boundary (0)" named only one of the two boundary regimes
+    # and overstated the other: a collapsed component reaches 0 exactly
+    # only under lme4 (glmmTMB and nlme optimise a log scale and land
+    # near it), and a random-effect correlation pinned at +/-1 is a
+    # boundary estimate with no zero variance at all.
     return(paste0(
-      "Singular fit: random-effect variance component(s) estimated at ",
-      "the boundary (0); their Wald SE and CI are omitted."
+      "Singular fit: the random-effect structure is at or near the ",
+      "boundary of the parameter space (a variance of 0, or a ",
+      "correlation of +/-1); the Wald SE and CI of the variance ",
+      "components are omitted."
     ))
   }
   # The note names the glyph the cells carry, so it takes it as an
