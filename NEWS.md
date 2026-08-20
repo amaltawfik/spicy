@@ -373,6 +373,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `output = "gt"` tables from `table_categorical()`, `table_continuous()`
+  and `table_continuous_lm()` carry their title, like the other output
+  engines.
 * Standard errors, confidence intervals, and p-values from
   `vcov = "jackknife"` and `vcov = "bootstrap"` (cluster variants and
   `ci_method = "boot_percentile"` included) were wrong for binomial and

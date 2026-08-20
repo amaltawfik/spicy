@@ -3608,6 +3608,10 @@ export_desc_table <- function(
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
 
+    # The same title the five other engines print. gt was the last
+    # engine of the descriptive families to carry none.
+    tbl <- .spicy_gt_apa_title(tbl, .continuous_title(title_by))
+
     return(.spicy_gt_attach_note(tbl, note))
   }
 

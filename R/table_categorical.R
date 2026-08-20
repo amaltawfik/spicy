@@ -2058,6 +2058,8 @@ table_categorical <- function(
           locations = gt::cells_body(rows = sr - 1L)
         )
       }
+      # The same title the five other engines print.
+      tbl <- .spicy_gt_apa_title(tbl, .categorical_title(NULL))
       return(.spicy_gt_attach_note(tbl, missing_note))
     }
 
@@ -3712,6 +3714,9 @@ table_categorical <- function(
       sep = "\n"
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
+
+    # The same title the five other engines print.
+    tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_name))
 
     return(.spicy_gt_attach_note(tbl, missing_note))
   }

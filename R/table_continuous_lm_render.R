@@ -1033,6 +1033,9 @@ export_continuous_lm_table <- function(
     )
     tbl <- gt::opt_css(tbl, css = apa_css)
 
+    # The same title the five other engines print.
+    tbl <- .spicy_gt_apa_title(tbl, title)
+
     # Note: NOT added via gt's native `tab_source_note()` (its
     # `<tfoot>` colspan cell widens the table in narrow viewports;
     # same pathology as the tinytable / flextable tfoot). Instead
