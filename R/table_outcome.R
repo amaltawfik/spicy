@@ -777,6 +777,34 @@ table_outcome <- function(
       class = "spicy_invalid_input"
     )
   }
+  if (!is.null(weights_vec)) {
+    # NA weights are legal: those rows leave the analytic sample and
+    # the exclusion is disclosed. Only genuinely non-finite values are
+    # rejected.
+    if (any(is.infinite(weights_vec) | is.nan(weights_vec))) {
+      spicy_abort(
+        "`weights` must contain only finite values.",
+        class = "spicy_invalid_input"
+      )
+    }
+    if (any(weights_vec < 0, na.rm = TRUE)) {
+      spicy_abort(
+        "`weights` must be non-negative.",
+        class = "spicy_invalid_input"
+      )
+    }
+    if (all(is.na(weights_vec) | weights_vec == 0)) {
+      spicy_abort(
+        "`weights` must contain at least one positive value.",
+        class = "spicy_invalid_input"
+      )
+    }
+  } else if (isTRUE(rescale) && !missing(rescale)) {
+    spicy_warn(
+      "`rescale = TRUE` has no effect when `weights` is not supplied.",
+      class = "spicy_ignored_arg"
+    )
+  }
 
   # --- what the table shows and what it tests -----------------------------
   p_value <- if (is.null(p_value)) TRUE else p_value
@@ -793,6 +821,24 @@ table_outcome <- function(
   do_es <- has_es_request
   if (do_es && !do_test) {
     do_test <- TRUE
+  }
+  # Decision 17, verbatim from the sibling. The group tests and their
+  # effect sizes have no weighted version here, and the refusal
+  # protects INFERENCE: a p-value or an effect size read against an
+  # interval must not be silently unweighted beside weighted
+  # descriptives.
+  if (!is.null(weights_vec) && (do_test || do_es)) {
+    spicy_abort(
+      c(
+        "Weighted group TESTS and effect sizes are not implemented.",
+        "i" = paste0(
+          "Set `p_value = FALSE` (and `statistic = FALSE`, ",
+          "`effect_size = \"none\"`) for weighted descriptives; use ",
+          "`table_continuous_lm(weights = )` for weighted comparisons."
+        )
+      ),
+      class = "spicy_not_implemented"
+    )
   }
   if (
     test_explicit &&
