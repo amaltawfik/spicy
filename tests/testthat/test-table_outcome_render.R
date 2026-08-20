@@ -118,3 +118,139 @@ test_that("show_columns reaches the engines", {
     .tor_cells(attr(tbl, "display_df"))
   )
 })
+
+
+# ============================================================================
+# The office engines: flextable, Word, Excel, clipboard
+# ============================================================================
+
+test_that("flextable renders the console body and pads the levels", {
+  skip_if_not_installed("flextable")
+  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
+  ft <- .tor_tbl(bmi, by = c(sex, smoking), output = "flextable")
+  console <- attr(tbl, "display_df")
+  indent <- spicy:::.struct_indent_rows(as_structured(tbl))
+
+  # Flextable takes the console prefix OFF and pads instead: one
+  # indentation, and the one that survives docx.
+  body <- ft$body$dataset
+  expect_identical(
+    .tor_norm(body[[1L]]),
+    .tor_norm(sub("^  ", "", console$Variable))
+  )
+  pad <- ft$body$styles$pars$padding.left$data[, 1L]
+  expect_true(all(unname(pad[indent]) == 14))
+  expect_true(all(unname(pad[-indent]) < 14))
+  # The marginal row keeps its own label, in full.
+  expect_identical(body[[1L]][[1L]], "Overall")
+  # Every other cell is the console's.
+  expect_identical(
+    .tor_cells(body[-1L]),
+    .tor_cells(console[-1L])
+  )
+})
+
+test_that("the Word route writes a document with the console caption", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  f <- withr::local_tempfile(fileext = ".docx")
+  out <- .tor_tbl(bmi, by = sex, output = "word", word_path = f)
+  expect_identical(out, f)
+  expect_true(file.exists(f))
+  expect_gt(file.size(f), 0)
+})
+
+test_that("Excel keeps the marginal label whole and deepens the levels", {
+  skip_if_not_installed("openxlsx2")
+  f <- withr::local_tempfile(fileext = ".xlsx")
+  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
+  .tor_tbl(
+    bmi,
+    by = c(sex, smoking),
+    output = "excel",
+    excel_path = f,
+    indent_text_excel_clipboard = strrep("_", 6)
+  )
+  cells <- openxlsx2::wb_to_df(openxlsx2::wb_load(f), col_names = FALSE)
+  col <- as.character(cells[[1L]])
+  col <- col[!is.na(col)]
+  # The title first, then the header, then the eight body rows, then
+  # the note.
+  expect_identical(
+    col[[1L]],
+    spicy:::.outcome_title(attr(tbl, "outcome_label"))
+  )
+  start <- which(col == "Overall")
+  expect_length(start, 1L)
+  body <- col[start:(start + 7L)]
+  # `make_stronger_indent()` strips `nchar(indent_text)` leading
+  # characters from every row it is handed. Handing it the marginal
+  # row would return "erall": THAT is what this line guards.
+  expect_identical(body[[1L]], "Overall")
+  expect_identical(body[[2L]], "Sex")
+  expect_identical(body[[3L]], paste0(strrep("_", 6), "Female"))
+  expect_identical(body[[5L]], "Current smoker")
+  expect_identical(body[[8L]], paste0(strrep("_", 6), "(Missing)"))
+})
+
+test_that("the clipboard payload carries the title, the grid and the note", {
+  captured <- new.env(parent = emptyenv())
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(content, ...) {
+      captured$text <- content
+      invisible(content)
+    },
+    .package = "clipr"
+  )
+  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
+  .tor_tbl(
+    bmi,
+    by = c(sex, smoking),
+    output = "clipboard",
+    indent_text_excel_clipboard = strrep("_", 6)
+  )
+  lines <- strsplit(paste(captured$text, collapse = "\n"), "\n", fixed = TRUE)[[
+    1L
+  ]]
+  # The payload is a rectangular grid: the title row is padded with
+  # empty fields, so compare the FIELD, not the line.
+  expect_identical(
+    strsplit(lines[[1L]], "	", fixed = TRUE)[[1L]][[1L]],
+    spicy:::.outcome_title(attr(tbl, "outcome_label"))
+  )
+  cells <- vapply(
+    lines,
+    function(l) strsplit(l, "\t", fixed = TRUE)[[1L]][[1L]],
+    character(1),
+    USE.NAMES = FALSE
+  )
+  expect_true("Overall" %in% cells)
+  expect_true(paste0(strrep("_", 6), "Female") %in% cells)
+  # Nothing was truncated on the way through the indent surgery.
+  expect_false(any(cells %in% c("erall", "x", "ent smoker")))
+  expect_true(any(grepl("not adjusted for one another", lines, fixed = TRUE)))
+})
+
+test_that("every engine agrees with the console on the numbers", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("tinytable")
+  tbl <- .tor_tbl(bmi, by = c(sex, region), effect_size = "auto")
+  console <- .tor_cells(attr(tbl, "display_df")[-1L])
+  for (out in c("tinytable", "gt", "flextable")) {
+    rendered <- .tor_tbl(
+      bmi,
+      by = c(sex, region),
+      effect_size = "auto",
+      output = out
+    )
+    body <- switch(
+      out,
+      tinytable = rendered@data,
+      gt = rendered[["_data"]],
+      flextable = rendered$body$dataset
+    )
+    expect_identical(.tor_cells(body[-1L]), console)
+  }
+})

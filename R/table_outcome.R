@@ -499,8 +499,9 @@
 #'   formatting.
 #' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
 #'   `"right"`.
-#' @param output One of `"default"`, `"data.frame"`, `"long"`,
-#'   `"tinytable"` or `"gt"`.
+#' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
+#'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
+#'   `"excel"`, `"clipboard"`, `"word"`.
 #' @param indent_text,indent_text_excel_clipboard Level-row
 #'   indentation, for the console and for the plain-text engines.
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
@@ -549,7 +550,17 @@ table_outcome <- function(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
-  output = c("default", "data.frame", "long", "tinytable", "gt"),
+  output = c(
+    "default",
+    "data.frame",
+    "long",
+    "tinytable",
+    "gt",
+    "flextable",
+    "excel",
+    "clipboard",
+    "word"
+  ),
   indent_text = "  ",
   indent_text_excel_clipboard = strrep("\u00A0", 6),
   excel_path = NULL,
