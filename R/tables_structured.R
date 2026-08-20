@@ -178,6 +178,37 @@
   match(cols, col_names) + 1L
 }
 
+# Rows that OPEN a block: every factor header that is not the FIRST
+# row of the body. The console rules each of them off from the block
+# above, and the six engines draw the same light rule.
+#
+# Positional on row 1, never on the RANK of the first header. The two
+# agree on a categorical body, whose first row is always a
+# `factor_header` -- `.build_categorical_structured()` pushes the
+# header before the level loop, for the first variable like the rest.
+# They part company on a body that opens on something else: a
+# `summary` row above the blocks. Reading the rank there drops the
+# rule between that row and the first block -- the one rule such a
+# table most needs.
+.struct_block_sep_rows <- function(structured) {
+  setdiff(which(structured$body$.row_role == "factor_header"), 1L)
+}
+
+# Rows to indent: the literal reading of the field the v3 contract
+# declares for exactly this.
+#
+# Not the complement of a role. `which(.row_role != "factor_header")`
+# means "a level" only while a body has two roles; a third role at
+# indent 0 -- again, a `summary` row above the blocks -- falls into
+# the complement and gets indented like a level of the block below it.
+# On Excel and the clipboard the damage is worse than cosmetic:
+# `make_stronger_indent()` strips `nchar(indent_text)` leading
+# characters from every row it is handed, so a label that never had
+# the prefix loses its own first letters.
+.struct_indent_rows <- function(structured) {
+  which(structured$body$.indent > 0L)
+}
+
 
 # ---- table_categorical() --------------------------------------------------
 
