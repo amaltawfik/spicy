@@ -52,7 +52,9 @@ the design's variables.}
 \item{regex}{Treat \code{select} as a regular expression.}
 
 \item{drop_na}{Drop observations with a missing \code{by} value
-(default \code{TRUE}).}
+(default \code{TRUE}). With \code{FALSE} they form a \code{(Missing)} domain of
+their own -- an ordinary subpopulation, with its own degrees of
+freedom -- which is excluded from the group comparison.}
 
 \item{deff}{Show the design effect: \code{FALSE} (default), \code{TRUE}
 (against sampling without replacement) or \code{"replace"} (against
@@ -176,6 +178,12 @@ untouched. The note always says which rule produced the numbers.
 recomputes the degrees of freedom on the primary sampling units and
 strata each domain retains, so a grouped table generally carries a
 DIFFERENT df per row; the note gives the span when they differ.
+
+A group with a missing value is a domain like any other:
+\code{drop_na = FALSE} gives it a \code{(Missing)} row, with its own degrees
+of freedom. A domain reduced to one primary sampling unit has none,
+and its interval shows the undefined dash rather than an interval
+built on \code{qt(p, df = 0)}.
 
 The comparison is a single test on the whole design, not a set of
 pairwise ones: \code{survey::svyttest()} with two observed groups,

@@ -167,7 +167,15 @@ order_continuous_svy_tokens <- function(tokens) {
     # `df = Inf` in its formals -- the normal approximation -- while
     # every other interval survey computes uses `degf(design)`. On the
     # api cluster design (14 df) the two differ in the second decimal.
-    ci <- .svy_try(stats::confint(m, level = ci_level, df = df))
+    # A domain with no degrees of freedom -- one PSU, which is what a
+    # three-row "(Missing)" group can be -- has no interval. Guarded
+    # here rather than left to `qt(p, df = 0)`, which returns NaN and
+    # warns from inside survey.
+    ci <- if (is.finite(df) && df > 0) {
+      .svy_try(stats::confint(m, level = ci_level, df = df))
+    } else {
+      NULL
+    }
     if (!is.null(ci)) {
       out$ci_lower <- as.numeric(ci[1L, 1L])
       out$ci_upper <- as.numeric(ci[1L, 2L])
@@ -432,6 +440,12 @@ empty_fill <- function(type, statistic, df1, df2, p) {
 #' strata each domain retains, so a grouped table generally carries a
 #' DIFFERENT df per row; the note gives the span when they differ.
 #'
+#' A group with a missing value is a domain like any other:
+#' `drop_na = FALSE` gives it a `(Missing)` row, with its own degrees
+#' of freedom. A domain reduced to one primary sampling unit has none,
+#' and its interval shows the undefined dash rather than an interval
+#' built on `qt(p, df = 0)`.
+#'
 #' The comparison is a single test on the whole design, not a set of
 #' pairwise ones: `survey::svyttest()` with two observed groups,
 #' `survey::regTermTest()` on `survey::svyglm()` with three or more,
@@ -454,7 +468,9 @@ empty_fill <- function(type, statistic, df1, df2, p) {
 #' @param exclude Columns to drop from `select`.
 #' @param regex Treat `select` as a regular expression.
 #' @param drop_na Drop observations with a missing `by` value
-#'   (default `TRUE`).
+#'   (default `TRUE`). With `FALSE` they form a `(Missing)` domain of
+#'   their own -- an ordinary subpopulation, with its own degrees of
+#'   freedom -- which is excluded from the group comparison.
 #' @param deff Show the design effect: `FALSE` (default), `TRUE`
 #'   (against sampling without replacement) or `"replace"` (against
 #'   sampling with replacement, ignoring the finite population
@@ -778,35 +794,29 @@ table_continuous_svy <- function(
 
   # --- domains -------------------------------------------------------------
   var_labels <- resolve_variable_labels(vars, numeric_cols, labels)
-  meta <- .design_meta(design)
   by_na_dropped <- 0L
   group_levels <- character(0)
   domains <- list()
+  missing_group_label <- NA_character_
   if (has_group) {
-    g <- vars[[group_col_name]]
-    n_na_groups <- sum(is.na(g))
-    if (n_na_groups > 0L) {
-      # A design has no "(Missing)" display domain: a level built from
-      # rows the sampler never assigned to it is not a domain, and its
-      # degrees of freedom would be an artefact. They leave, and the
-      # note says so.
-      by_na_dropped <- n_na_groups
-      design <- .design_subset(design, !is.na(g))
+    geom <- .svy_by_levels(vars[[group_col_name]], drop_na)
+    group_levels <- geom$levels
+    missing_group_label <- geom$missing_label
+    if (drop_na && geom$n_na > 0L) {
+      by_na_dropped <- geom$n_na
+      design <- .design_subset(design, !is.na(vars[[group_col_name]]))
       vars <- design$variables
-      g <- vars[[group_col_name]]
-    }
-    group_levels <- if (is.factor(g)) {
-      levels(droplevels(g))
-    } else {
-      as.character(unique(g[!is.na(g)]))
+      geom <- .svy_by_levels(vars[[group_col_name]], drop_na)
+      group_levels <- geom$levels
     }
     for (lv in group_levels) {
-      domains[[lv]] <- .design_subset(
-        design,
-        as.character(vars[[group_col_name]]) == lv
-      )
+      domains[[lv]] <- .design_subset(design, geom$values == lv)
     }
   }
+  # AFTER the missing-`by` rows have gone: the "N = ..." sentence must
+  # count the analytic sample the table describes, not the one the
+  # design was built on.
+  meta <- .design_meta(design)
 
   # --- compute -------------------------------------------------------------
   degf_used <- numeric(0)
@@ -970,7 +980,8 @@ table_continuous_svy <- function(
     effect_size_digits = digits,
     p_digits = p_digits,
     decimal_mark = decimal_mark,
-    ci_level = ci_level
+    ci_level = ci_level,
+    missing_group_label = missing_group_label
   )
   result
 }

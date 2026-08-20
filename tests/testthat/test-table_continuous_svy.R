@@ -351,6 +351,51 @@ test_that("the footer gives the df span when the groups disagree", {
   )
 })
 
+test_that("`drop_na = FALSE` keeps the missing values as their own domain", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$stype[1:3] <- NA
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  out <- .svyc_long(des, select = api00, by = stype, drop_na = FALSE)
+  expect_identical(out$group, c("E", "H", "M", "(Missing)"))
+  expect_identical(out$n, c(142L, 13L, 25L, 3L))
+  # The three rows fall in ONE cluster, so the domain has no degrees of
+  # freedom and therefore no interval -- a dash, not an interval built
+  # on `qt(p, df = 0)`.
+  expect_identical(out$degf[[4L]], 0)
+  expect_true(is.na(out$ci_lower[[4L]]))
+  expect_false(is.na(out$mean[[4L]]))
+  # The role is the KEY, not the label: a translated or auto-renamed
+  # "(Missing)" still reads as `missing` in the typed view.
+  tbl <- table_continuous_svy(des, select = api00, by = stype, drop_na = FALSE)
+  expect_identical(
+    as_structured(tbl)$body$.row_role,
+    c("group", "group", "group", "missing")
+  )
+  # And the comparison runs on the OBSERVED groups only: the same
+  # p-value as the `drop_na = TRUE` table.
+  expect_equal(
+    out$p.value[[1L]],
+    .svyc_long(des, select = api00, by = stype)$p.value[[1L]],
+    tolerance = 1e-12
+  )
+})
+
+test_that("the sample-size sentence counts the analytic sample", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$stype[1:3] <- NA
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  # 180, not the 183 the design was built on: the three rows left.
+  expect_match(
+    attr(table_continuous_svy(des, select = api00, by = stype), "missing_note"),
+    "N = 180 (weighted 6092).",
+    fixed = TRUE
+  )
+})
+
 test_that("rows with a missing `by` leave the table and the note says so", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())

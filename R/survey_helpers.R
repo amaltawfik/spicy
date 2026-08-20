@@ -168,6 +168,50 @@
   stats::weights(design, type = "sampling")
 }
 
+# The display domains of a `by =` variable, and the vector that keys
+# them.
+#
+# Factors keep their DECLARED order, anything else takes the order of
+# first appearance -- the family convention `table_categorical()` /
+# `cross_tab()` / `table_outcome()` share. An EMPTY declared level is
+# dropped: a domain with no observation has no degrees of freedom and
+# every one of its cells would be the undefined dash.
+#
+# With `drop_na = FALSE` the missing values become a domain of their
+# own. That is legitimate under a design in a way a missing GROUP
+# LABEL is not a legitimate level: `design[is.na(g), ]` is an ordinary
+# subpopulation, with its own PSU, its own strata and therefore its own
+# degrees of freedom, which survey computes exactly as it does for any
+# other. The label is guarded against a collision with a real value the
+# way the rest of the family guards it -- the scan covers declared
+# levels as well as observed ones.
+.svy_by_levels <- function(g, drop_na) {
+  declared <- if (is.factor(g)) levels(g) else unique(g[!is.na(g)])
+  declared <- as.character(declared)
+  observed <- as.character(g[!is.na(g)])
+  declared <- declared[declared %in% observed]
+  n_na <- sum(is.na(g))
+  values <- as.character(g)
+  missing_label <- NA_character_
+  if (!drop_na && n_na > 0L) {
+    missing_label <- spicy_str("row_missing_level")
+    seen <- unique(c(observed, declared))
+    idx <- 1L
+    while (missing_label %in% seen) {
+      missing_label <- spicy_fmt("row_missing_level_dedup", idx)
+      idx <- idx + 1L
+    }
+    declared <- c(declared, missing_label)
+    values[is.na(values)] <- missing_label
+  }
+  list(
+    levels = declared,
+    values = values,
+    missing_label = missing_label,
+    n_na = n_na
+  )
+}
+
 # The design facts a table discloses, read through PUBLIC accessors
 # only: `survey:::is.calibrated()` / `survey:::is.pps()` say the same
 # things, but a `:::` call is not something to ship to CRAN.
