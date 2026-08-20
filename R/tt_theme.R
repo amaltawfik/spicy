@@ -20,8 +20,12 @@
   # dev/gouttiere_tinytable_group_tt.md). Strip it on every spicy
   # table: geometry belongs to the receiving document, whose `#set`
   # rules become effective again once nothing overrides them.
-  # Reported upstream; drop this when tinytable makes the gutter an
-  # option of group_tt().
+  # Fixed upstream in tinytable 0.18.0 (issue #674): group_tt(j = )
+  # no longer emits the gutter, so the sub() below matches nothing
+  # there. It stays as a no-op safety for older tinytables -- a hard
+  # >= 0.18.0 floor on an optional engine would refuse a whole output
+  # over a cosmetic gutter. Drop it when something else raises the
+  # tinytable floor past 0.18.0.
   tinytable::style_tt(x, finalize = function(tbl) {
     if (identical(tbl@output, "typst")) {
       tbl@table_string <- sub(

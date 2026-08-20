@@ -132,19 +132,25 @@ test_that("output = 'tinytable' escapes cells but leaves the note verbatim", {
 
 test_that("Typst output strips the forced column gutter on grouped headers", {
   skip_if_not_installed("tinytable")
-  # Witness: bare tinytable injects `column-gutter: 5pt` whenever a table
-  # has column groups -- an argument-level Typst value no document `#set`
-  # rule can override (dev/gouttiere_tinytable_group_tt.md). If this
-  # stops matching, tinytable fixed it upstream: retire the finalizer in
-  # .spicy_tt_bare() and this test.
+  # Witness on the raw engine, version-conditional: tinytable < 0.18.0
+  # injects `column-gutter: 5pt` whenever a table has column groups --
+  # an argument-level Typst value no document `#set` rule can override
+  # (dev/gouttiere_tinytable_group_tt.md); 0.18.0 fixed it upstream
+  # (issue #674). The finalizer in .spicy_tt_bare() stays as a no-op
+  # safety on the fixed versions, and the spicy-side assertions below
+  # must hold on every version.
   raw <- tinytable::group_tt(
     tinytable::tt(data.frame(a = 1, b = 2, c = 3)),
     j = list("Grp" = 2:3)
   )
-  expect_match(
-    tinytable::save_tt(raw, output = "typst"),
+  raw_gutter <- grepl(
     "column-gutter",
+    tinytable::save_tt(raw, output = "typst"),
     fixed = TRUE
+  )
+  expect_identical(
+    raw_gutter,
+    utils::packageVersion("tinytable") < "0.18.0"
   )
   # spicy tables leave gutter control to the receiving document, on both
   # the regression path and the descriptive path (shared finalizer).
