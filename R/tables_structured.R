@@ -466,30 +466,26 @@
 # alphabetically and this one is read AFTER it -- harmless, because the
 # vocabulary is a function, resolved when called rather than at build.
 
-# Structured view of a continuous summary table.
+# The COLUMN half of a continuous structured view: the column names,
+# their `col_meta`, and the per-column source map the row half reads.
 #
-# One row per displayed row of the console table: a `summary` row per
-# variable without `by`, one `group` row per level of `by` with it --
-# `missing` for the missing-`by` group, whose label is a display
-# string and whose role is the key.
+# Shared by `table_continuous()` and `table_outcome()`, which display
+# the same vocabulary of tokens and differ only in the geometry of
+# their rows. A second copy would be a second place for a token to
+# gain a precision, a `ci_pair` or a `display_label` -- and the typed
+# contract is exactly what a consumer indexes into by those names.
 #
-# `display_df` is the very frame the print method renders: the
-# composite cells ("Med [Q1, Q3]", the test statistic, the effect
-# size) are read from it, so the typed view and the console can never
-# word the same cell differently.
-.build_continuous_structured <- function(
-  result,
+# `display_df` is read for MEMBERSHIP only (which inference columns
+# the table carries), key against key.
+.continuous_struct_columns <- function(
   display_df,
   tokens_union,
-  tokens_by_var,
   digits,
   effect_size_digits,
   p_digits,
   decimal_mark,
-  ci_level,
-  missing_group_label = NA_character_
+  ci_level
 ) {
-  has_group <- "group" %in% names(result)
   spec <- .continuous_token_columns(ci_level, decimal_mark)
 
   col_names <- character(0)
@@ -593,6 +589,55 @@
       field = "smd_value"
     )
   }
+
+  list(
+    spec = spec,
+    col_names = col_names,
+    col_meta = col_meta,
+    ci_pairs = ci_pairs,
+    col_source = col_source
+  )
+}
+
+# Structured view of a continuous summary table.
+#
+# One row per displayed row of the console table: a `summary` row per
+# variable without `by`, one `group` row per level of `by` with it --
+# `missing` for the missing-`by` group, whose label is a display
+# string and whose role is the key.
+#
+# `display_df` is the very frame the print method renders: the
+# composite cells ("Med [Q1, Q3]", the test statistic, the effect
+# size) are read from it, so the typed view and the console can never
+# word the same cell differently.
+.build_continuous_structured <- function(
+  result,
+  display_df,
+  tokens_union,
+  tokens_by_var,
+  digits,
+  effect_size_digits,
+  p_digits,
+  decimal_mark,
+  ci_level,
+  missing_group_label = NA_character_
+) {
+  has_group <- "group" %in% names(result)
+  # The column half is shared with `table_outcome()`.
+  cols <- .continuous_struct_columns(
+    display_df = display_df,
+    tokens_union = tokens_union,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level
+  )
+  spec <- cols$spec
+  col_names <- cols$col_names
+  col_meta <- cols$col_meta
+  ci_pairs <- cols$ci_pairs
+  col_source <- cols$col_source
 
   rows <- list()
   for (i in seq_len(nrow(result))) {
