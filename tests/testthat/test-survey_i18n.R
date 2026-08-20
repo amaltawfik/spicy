@@ -76,14 +76,26 @@
   paste(capture.output(print(expr)), collapse = "\n")
 }
 
+# Run `code` with the whole registry translated.
+#
+# `with_mocked_bindings()`, not the `local_` form: a namespace binding
+# left swapped for the rest of a test file makes covr's exclusion pass
+# read a trace with no source reference (registered as incident 88).
+# The expression form puts the binding back before the block ends.
+.svy_i18n_with_fake <- function(code) {
+  with_mocked_bindings(
+    code,
+    .spicy_strings = .svy_i18n_fake("zézü"),
+    .package = "spicy"
+  )
+}
+
 test_that("no display string of the continuous twin is typed outside the registry", {
   d <- .svy_i18n_design()
   # é / ü: the two languages the registry will meet first, and
   # a reminder that a marker is not ASCII-only.
-  fake <- .svy_i18n_fake("zézü")
-  local_mocked_bindings(.spicy_strings = fake, .package = "spicy")
 
-  out <- .svy_i18n_render(table_continuous_svy(
+  out <- .svy_i18n_with_fake(.svy_i18n_render(table_continuous_svy(
     d,
     select = api00,
     by = stype,
@@ -91,7 +103,7 @@ test_that("no display string of the continuous twin is typed outside the registr
     deff = TRUE,
     statistic = TRUE,
     qrule = "spicy"
-  ))
+  )))
   expect_true(nzchar(out))
   # The translation really is in force.
   expect_match(out, "zézü", fixed = TRUE)
@@ -109,16 +121,14 @@ test_that("no display string of the categorical twin is typed outside the regist
   dat <- apiclus1
   dat$stype[1:4] <- NA
   d <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
-  fake <- .svy_i18n_fake("zézü")
-  local_mocked_bindings(.spicy_strings = fake, .package = "spicy")
 
-  out <- .svy_i18n_render(table_categorical_svy(
+  out <- .svy_i18n_with_fake(.svy_i18n_render(table_categorical_svy(
     d,
     select = stype,
     by = sch.wide,
     proportion_ci = TRUE,
     deff = TRUE
-  ))
+  )))
   expect_true(nzchar(out))
   expect_match(out, "zézü", fixed = TRUE)
   for (leak in .SVY_ENGLISH_LEAKS) {
@@ -142,16 +152,14 @@ test_that("the twins' frozen KEYS do not follow the translation", {
       proportion_ci = TRUE
     ))$col_meta
   )
-  fake <- .svy_i18n_fake("zézü")
-  local_mocked_bindings(.spicy_strings = fake, .package = "spicy")
-  after <- names(
+  after <- .svy_i18n_with_fake(names(
     as_structured(table_categorical_svy(
       d,
       select = stype,
       by = sch.wide,
       proportion_ci = TRUE
     ))$col_meta
-  )
+  ))
   # Not one key moves. This is the assertion that caught a `%` column
   # key composed from `spicy_str("header_percent_symbol")` instead of
   # the literal the sibling family types: at the English default the
@@ -164,14 +172,12 @@ test_that("the twins' frozen KEYS do not follow the translation", {
 
 test_that("the continuous twin's frozen keys are English whatever the headers", {
   d <- .svy_i18n_design()
-  fake <- .svy_i18n_fake("zézü")
-  local_mocked_bindings(.spicy_strings = fake, .package = "spicy")
-  s <- as_structured(table_continuous_svy(
+  s <- .svy_i18n_with_fake(as_structured(table_continuous_svy(
     d,
     select = api00,
     show_columns = c("m", "sd", "se", "ci", "n", "deff"),
     deff = TRUE
-  ))
+  )))
   expect_true(all(
     c("M", "SD", "SE", "95% CI LL", "95% CI UL", "n", "DEff") %in%
       names(s$col_meta)

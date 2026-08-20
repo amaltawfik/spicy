@@ -459,10 +459,13 @@ test_that("the design-only refusals fire, one per branch", {
 })
 
 test_that("the missing-Suggests guard covers this entry point too", {
-  local_mocked_bindings(spicy_pkg_available = function(pkg) FALSE)
-  expect_error(
-    table_categorical_svy(mtcars, select = cyl),
-    class = "spicy_missing_pkg"
+  with_mocked_bindings(
+    expect_error(
+      table_categorical_svy(mtcars, select = cyl),
+      class = "spicy_missing_pkg"
+    ),
+    spicy_pkg_available = function(pkg) FALSE,
+    .package = "spicy"
   )
 })
 

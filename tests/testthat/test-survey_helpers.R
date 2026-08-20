@@ -111,10 +111,17 @@ test_that("a data.frame at a `_svy` entry point is a regime error", {
 })
 
 test_that("the missing-Suggests guard fires for survey", {
-  local_mocked_bindings(spicy_pkg_available = function(pkg) FALSE)
-  err <- expect_error(
-    .require_survey("table_categorical_svy"),
-    class = "spicy_missing_pkg"
+  # `with_mocked_bindings()`, not the `local_` form: the expression
+  # form is the package's pattern for a spicy binding, and covr's
+  # exclusion pass chokes on a namespace binding left swapped for the
+  # rest of a test file (registered as incident 88).
+  err <- with_mocked_bindings(
+    expect_error(
+      .require_survey("table_categorical_svy"),
+      class = "spicy_missing_pkg"
+    ),
+    spicy_pkg_available = function(pkg) FALSE,
+    .package = "spicy"
   )
   expect_match(conditionMessage(err), "survey", fixed = TRUE)
   expect_match(conditionMessage(err), .SURVEY_MIN_VERSION, fixed = TRUE)
