@@ -35,6 +35,11 @@
 #' label, through its row role. Fit statistics are addressed by their
 #' token as `variable` (`inline(tbl, "n")`, `inline(tbl, "r2")`).
 #'
+#' A statistic that belongs to a whole variable rather than to one of
+#' its levels sits on the variable's own row: the *p* of a
+#' `table_categorical()` block, its association measure, its SMD. Leave
+#' `level` out to cite it (`inline(tbl, smoking, column = "p")`).
+#'
 #' The column is a **token** of the typed contract (`"b"`, `"se"`,
 #' `"p"`, `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... -- see
 #' `as_structured()`'s `col_meta`), never a display header. `"ci"`
@@ -114,12 +119,18 @@ inline <- function(
   formatted <- .format_structured_to_string_body(s)
 
   var_chr <- .inline_variable_chr(rlang::enquo(variable))
-  row <- .inline_resolve_row(s, var_chr, level)
+  # Two stages, and the order matters. The variable is resolved FIRST,
+  # so an unknown one still refuses before anything else; the ROW is
+  # resolved last, because on a block table which row answers depends
+  # on the column asked for (a `p` sits on the block header, a mean on
+  # a level), and `column` is only known once its default is filled in.
+  rows <- .inline_variable_rows(s, var_chr)
   cols <- .inline_model_cols(s, model)
 
   if (is.null(column)) {
-    column <- .inline_default_token(s, row, cols)
+    column <- .inline_default_token(s, cols)
   }
+  row <- .inline_resolve_row(s, formatted, rows, var_chr, level, column, cols)
   if (grepl("{", column, fixed = TRUE)) {
     return(.inline_pattern(s, formatted, row, column, cols))
   }
@@ -136,8 +147,10 @@ inline <- function(
   rlang::as_name(quo)
 }
 
-# Resolve the body row by identity, with the documented conveniences.
-.inline_resolve_row <- function(s, var_chr, level) {
+# The body rows of one variable, with the documented conveniences: a
+# fit statistic addressed by its token, and a display label accepted
+# where the source column name was expected.
+.inline_variable_rows <- function(s, var_chr) {
   body <- s$body
   rows <- which(body$.variable == var_chr)
 
@@ -187,10 +200,36 @@ inline <- function(
       class = "spicy_invalid_input"
     )
   }
+  rows
+}
+
+# Pick THE row among a variable's rows, from `level` and -- when no
+# level is given -- from the column the caller asked for.
+.inline_resolve_row <- function(
+  s,
+  formatted,
+  rows,
+  var_chr,
+  level,
+  column,
+  cols
+) {
+  body <- s$body
 
   has_levels <- any(!is.na(body$.level[rows]))
   if (is.null(level)) {
     if (has_levels && length(rows) > 1L) {
+      hdr <- .inline_header_row(
+        s,
+        formatted,
+        rows,
+        var_chr,
+        .inline_requested_tokens(column),
+        cols
+      )
+      if (!is.null(hdr)) {
+        return(hdr)
+      }
       spicy_abort(
         c(
           sprintf("%s has levels: pick one with `level`.", .quote_val(var_chr)),
@@ -228,6 +267,101 @@ inline <- function(
     )
   }
   hit
+}
+
+# The tokens a `column` argument asks for. A plain token asks for
+# itself; a pattern asks for every `{token}` it cites. `{ci_label}` is
+# not one: it names an interval, it addresses no cell.
+.inline_requested_tokens <- function(column) {
+  if (!grepl("{", column, fixed = TRUE)) {
+    return(column)
+  }
+  braced <- regmatches(column, gregexpr("\\{[^{}]+\\}", column))[[1L]]
+  setdiff(unique(substring(braced, 2L, nchar(braced) - 1L)), "ci_label")
+}
+
+# The columns of `cols` carrying `token` (a pair for an interval).
+.inline_token_cols <- function(s, cols, token) {
+  cols[
+    vapply(
+      cols,
+      function(nm) identical(s$col_meta[[nm]]$token %||% "", token),
+      logical(1)
+    )
+  ]
+}
+
+# The block HEADER row, when the caller's tokens can only be meant for
+# it -- or NULL when the question stays ambiguous.
+#
+# A block table (`table_categorical()`, `table_outcome()`) puts the
+# statistics OF THE VARIABLE on its `factor_header` row: the group
+# comparison's `p`, the association measure, the SMD. Those rows carry
+# no `.level`, so a caller who wants the block's `p` has no level to
+# name and used to be told to pick one -- a remedy that cannot help,
+# since no level row carries a `p` at all.
+#
+# The rule, and it is deliberately narrow: resolve to the header only
+# when EVERY token asked for is filled on the header AND blank on every
+# level row of the block. Both halves are load-bearing. Without the
+# second, a mean (filled on the levels too) would silently pick the
+# header instead of refusing; without the first, a block whose test did
+# not run would return the header's empty cell instead of saying so.
+#
+# A token the table does not carry is not this rule's business: it
+# falls through, and the caller gets the message they got before.
+.inline_header_row <- function(s, formatted, rows, var_chr, tokens, cols) {
+  body <- s$body
+  hdr <- rows[body$.row_role[rows] == "factor_header"]
+  if (length(hdr) != 1L || length(tokens) == 0L) {
+    return(NULL)
+  }
+  level_rows <- setdiff(rows, hdr)
+  on_header <- logical(length(tokens))
+  off_levels <- logical(length(tokens))
+  for (k in seq_along(tokens)) {
+    hits <- .inline_token_cols(s, cols, tokens[[k]])
+    if (length(hits) == 0L) {
+      return(NULL)
+    }
+    cells <- function(i) {
+      trimws(vapply(
+        hits,
+        function(nm) as.character(formatted[[nm]][i]),
+        character(1)
+      ))
+    }
+    on_header[[k]] <- all(nzchar(cells(hdr)))
+    off_levels[[k]] <- all(vapply(
+      level_rows,
+      function(i) !any(nzchar(cells(i))),
+      logical(1)
+    ))
+  }
+  if (all(on_header) && all(off_levels)) {
+    return(hdr)
+  }
+  # The statistic belongs to the header and is empty there: the block
+  # comparison did not run. Say that, rather than pointing at levels
+  # that carry the statistic even less.
+  if (!any(on_header) && all(off_levels)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "The %s cell is empty for %s.",
+          .quote_val(tokens[[1L]]),
+          .quote_val(var_chr)
+        ),
+        "i" = paste0(
+          "That statistic belongs to the variable's block and the ",
+          "group comparison did not run for it, so there is no ",
+          "value to cite."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  NULL
 }
 
 # The candidate columns after the `model` filter: NULL model on a
@@ -298,7 +432,7 @@ inline <- function(
 # the old "mean" entry matched nothing and "n" -- one place earlier --
 # won instead. A bare `inline()` on a descriptive table quoted the
 # group's N where the sentence meant its mean.
-.inline_default_token <- function(s, row, cols) {
+.inline_default_token <- function(s, cols) {
   tokens <- unique(vapply(
     cols[cols %in% names(s$col_meta)],
     function(nm) s$col_meta[[nm]]$token %||% "",

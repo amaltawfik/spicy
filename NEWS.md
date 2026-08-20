@@ -154,7 +154,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   label), columns by their typed token, `"ci"` composes the interval,
   `{token}` patterns build full fragments
   (`"{b} ({ci_label} {ci}; p {p})"`), and every misaddressing errors
-  with the list of available choices.
+  with the list of available choices. A statistic that belongs to a
+  whole variable rather than to one of its levels -- the *p* of a
+  `table_categorical()` block, its association measure, its SMD -- is
+  cited without a `level`.
 * `table_regression_uv()`: univariable screening tables -- one fit per
   predictor, one row block each, merged side by side with the multivariable
   model. Supports `lm` (the linear default), `glm` (selected by `family`, in

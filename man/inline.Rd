@@ -54,6 +54,11 @@ labels before erroring. The missing-value category is addressed by
 label, through its row role. Fit statistics are addressed by their
 token as \code{variable} (\code{inline(tbl, "n")}, \code{inline(tbl, "r2")}).
 
+A statistic that belongs to a whole variable rather than to one of
+its levels sits on the variable's own row: the \emph{p} of a
+\code{table_categorical()} block, its association measure, its SMD. Leave
+\code{level} out to cite it (\code{inline(tbl, smoking, column = "p")}).
+
 The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 \code{"p"}, \code{"ci"}, \code{"or"}, \code{"ame"}, \code{"n"}, \code{"pct"}, \code{"m"}, ... -- see
 \code{as_structured()}'s \code{col_meta}), never a display header. \code{"ci"}

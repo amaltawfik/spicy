@@ -528,21 +528,23 @@ test_that("inline() cites a continuous SMD cell, byte for byte", {
     inline(tbl, x, "A", column = "n")
   ))
 
-  # KNOWN FAMILY LIMIT, pinned so it is not mistaken for a regression:
-  # in a categorical table the SMD -- like `p` and the association
-  # measure, neither of which is citable today either -- lives only on
-  # the `factor_header` row, whose `.level` is NA, and
-  # `.inline_resolve_row()` refuses `level = NULL` as soon as the
-  # variable has levels. Unblocking it would unblock all three at once
-  # and is a lot of its own.
+  # A statistic that lives on the BLOCK is addressed without a level:
+  # in a categorical table the SMD, the association measure and the
+  # group comparison's `p` all sit on the `factor_header` row, whose
+  # `.level` is NA. `level = NULL` resolves there, because those tokens
+  # are filled on the header and blank on every level row of the block.
+  #
+  # The middle line is the witness that this did not spill over: an
+  # EXPLICIT level still addresses the level row, where the SMD is
+  # blank, and still refuses.
   dc <- data.frame(
     g = factor(c("A", "A", "A", "A", "B", "B", "B")),
     bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
   )
   ct <- .il_quiet(table_categorical(dc, select = bin, by = g, smd = TRUE))
-  expect_error(inline(ct, bin, column = "smd"), "pick one with")
+  expect_identical(inline(ct, bin, column = "smd"), "-0.92")
   expect_error(inline(ct, bin, "no", column = "smd"), "empty")
-  expect_error(inline(ct, bin, column = "assoc"), "pick one with")
+  expect_identical(inline(ct, bin, column = "assoc"), ".42")
 })
 
 
@@ -639,4 +641,94 @@ test_that("an exponentiated table's bare inline() still finds token 'b'", {
   )
   expect_identical(inline(tr, wt), inline(tr, wt, column = "b"))
   expect_error(inline(tr, wt, column = "or"), "No column with token")
+})
+
+test_that("a block statistic is cited without a level", {
+  # `table_categorical()` puts the statistics OF THE VARIABLE on the
+  # block's header row: the group comparison's `p`, the association
+  # measure, the SMD. Those rows carry no `.level`, so they can only be
+  # addressed by leaving `level` out.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = bin, by = g))
+  s <- as_structured(ct)
+  formatted <- spicy:::.format_structured_to_string_body(s)
+  hdr <- which(s$body$.row_role == "factor_header")
+
+  # The cell, byte for byte against the table's own header row.
+  expect_identical(inline(ct, bin, column = "p"), trimws(formatted$p[hdr]))
+  # A pattern is a set of tokens, and the rule reads all of them.
+  expect_identical(
+    inline(ct, bin, column = "{p}"),
+    trimws(formatted$p[hdr])
+  )
+  # A level statistic is NOT reachable that way: `n` is filled on every
+  # level row, so the address stays ambiguous and the refusal stands --
+  # the LEVEL refusal, listing the levels.
+  err <- tryCatch(inline(ct, bin, column = "n"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "pick one with `level`")
+  expect_match(conditionMessage(err), "\"no\"")
+  # A level still addresses its own row.
+  expect_identical(inline(ct, bin, "no", column = "n", model = "A"), "3")
+})
+
+test_that("a mixed pattern does not resolve to the block header", {
+  # `{p}` lives on the header, `{n}` on the levels: no single row
+  # answers the whole pattern, so the address stays ambiguous.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = bin, by = g))
+  expect_error(inline(ct, bin, column = "{p} ({n})"), "pick one with")
+})
+
+test_that("an empty block statistic refuses with its own reason", {
+  # A single-level variable gives the chi-squared nothing to compare:
+  # its `p` is blank on the header AND on the level. Pointing at the
+  # levels would name a remedy that cannot help, so the refusal says
+  # what actually happened.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    one = factor(rep("yes", 7L))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = one, by = g))
+  err <- tryCatch(inline(ct, one, column = "p"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "empty for")
+  expect_match(conditionMessage(err), "group comparison did not run")
+})
+
+test_that("the header rule needs the statistic blank on every level", {
+  # Both halves of the rule are load-bearing, and only one of them can
+  # be witnessed through a real table (the other needs a body where a
+  # token is filled on the header AND on a level -- no family emits
+  # one today). Feed the predicate that body directly.
+  dc <- data.frame(
+    g = factor(c("A", "A", "A", "A", "B", "B", "B")),
+    bin = factor(c("no", "no", "no", "yes", "yes", "no", "yes"))
+  )
+  ct <- .il_quiet(table_categorical(dc, select = bin, by = g))
+  s <- as_structured(ct)
+  formatted <- spicy:::.format_structured_to_string_body(s)
+  cols <- spicy:::.inline_model_cols(s, NULL)
+  rows <- which(s$body$.variable == "bin")
+  hdr <- rows[s$body$.row_role[rows] == "factor_header"]
+
+  # As the table stands, `p` resolves to the header.
+  expect_identical(
+    spicy:::.inline_header_row(s, formatted, rows, "bin", "p", cols),
+    hdr
+  )
+  # Fill `p` on a level row too: the header is no longer the only
+  # possible answer, so the rule must decline and let the caller be
+  # told to pick a level.
+  spilled <- formatted
+  spilled$p[setdiff(rows, hdr)[1L]] <- ".270"
+  expect_null(
+    spicy:::.inline_header_row(s, spilled, rows, "bin", "p", cols)
+  )
 })
