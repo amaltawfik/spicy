@@ -33,6 +33,13 @@ row-wise summaries.
   and
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   overall or by group.
+- **Outcome-first summary tables** with
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md):
+  one continuous outcome described across several groupings, one block
+  of rows per grouping variable, a group comparison per block, and a
+  marginal `Overall` row – the transpose of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  with the same statistic vocabulary and output engines.
 - **Model-based continuous summary tables** with
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   for linear-model reporting: classical / HC\* / cluster-robust /
@@ -304,7 +311,7 @@ cramer_v(tbl)
 # Detailed result with CI and p-value
 cramer_v(tbl, detail = TRUE)
 #> Estimate  SE  CI lower  CI upper      p
-#>    0.176  --     0.120     0.231  <.001
+#>    0.176   –     0.120     0.231  <.001
 ```
 
 See [Cramer’s V, Phi, and association
@@ -541,6 +548,34 @@ tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 for regression tables across model families, and [Summary tables for
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
+
+The same numbers can be laid out outcome-first: one outcome, several
+groupings, one block per grouping.
+
+``` r
+
+table_outcome(
+  sochealth,
+  outcome = bmi,
+  by = c(sex, smoking)
+)
+#> Descriptive statistics of Body mass index
+#> 
+#>  Variable       │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
+#> ────────────────┼─────────────────────────────────────────────────────────────
+#>  Overall        │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Sex            │                                                        .018 
+#>    Female       │ 25.69  3.78  16.00  38.90    25.39      25.98     616       
+#>    Male         │ 26.20  3.64  16.00  37.70    25.90      26.50     572       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Current smoker │                                                        .903 
+#>    No           │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
+#>    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
+#>    (Missing)    │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
+#> 
+#> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+```
 
 ### Row-wise summaries
 
