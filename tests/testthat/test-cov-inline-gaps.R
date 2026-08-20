@@ -94,15 +94,16 @@ test_that("an unknown `model` lists the available spanners", {
 # ============================================================================
 
 test_that("a row with no estimate-like token refuses a bare inline()", {
-  # Lines 279-289: `column = NULL` asks the row for its single
-  # estimate-like token; a table showing only a median and an SD has
-  # none of "or"/"irr"/"hr"/"rr"/"mr"/"exp"/"b"/"n"/"mean", so the
-  # refusal must list what the table does carry.
+  # `column = NULL` asks the row for its single estimate-like token;
+  # a table showing only dispersion and position spread -- none of
+  # "b"/"m"/"med"/"med_iqr"/"n" -- must refuse and list what the row
+  # does carry. (A median/SD row no longer qualifies: the median IS
+  # the estimate-like default of a median-only table.)
   d <- as.data.frame(sochealth)
   tw <- .cig_quiet(table_continuous(
     d,
     select = bmi,
-    show_columns = c("med", "sd")
+    show_columns = c("sd", "iqr")
   ))
   err <- tryCatch(inline(tw, bmi), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
@@ -113,11 +114,20 @@ test_that("a row with no estimate-like token refuses a bare inline()", {
   )
   expect_match(
     conditionMessage(err),
-    'Available tokens: "sd", "med".',
+    'Available tokens: "sd", "iqr".',
     fixed = TRUE
   )
   # Naming the column explicitly is the documented remedy, and works.
-  expect_match(inline(tw, bmi, column = "med"), "^[0-9.]+$")
+  expect_match(inline(tw, bmi, column = "iqr"), "^[0-9.]+$")
+
+  # And the row that USED to sit here as the refusal fixture now
+  # resolves: a median/SD table defaults to its median.
+  tm <- .cig_quiet(table_continuous(
+    d,
+    select = bmi,
+    show_columns = c("med", "sd")
+  ))
+  expect_identical(inline(tm, bmi), inline(tm, bmi, column = "med"))
 })
 
 
