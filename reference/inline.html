@@ -114,7 +114,14 @@ fit-statistic token (<code>"n"</code>, <code>"r2"</code>, ...).</p></dd>
 <dt id="arg-column">column<a class="anchor" aria-label="anchor" href="#arg-column"></a></dt>
 <dd><p>A column token, or a <code>{token}</code> pattern. <code>NULL</code> (the
 default) returns the estimate-like column of the row when it is
-unambiguous.</p></dd>
+unambiguous: the family's primary estimate. That is the
+coefficient for <code><a href="table_regression.html">table_regression()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>
+– always token <code>"b"</code>: an exponentiated table changes its header
+to OR, IRR or HR, never its token – the mean (<code>"m"</code>) or, on a
+median-only table, the median (<code>"med"</code>, <code>"med_iqr"</code>) for
+<code><a href="table_continuous.html">table_continuous()</a></code>, and the count (<code>"n"</code>) for
+<code><a href="table_categorical.html">table_categorical()</a></code>. A row carrying none of them refuses and
+lists its tokens.</p></dd>
 
 
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>

@@ -886,6 +886,153 @@ one, and the model collapses to the simpler fit on its own. The table
 serves all three positions: the components are always displayed with
 their uncertainty, and the test stays opt-in.
 
+## Within and between effects: the Mundlak decomposition
+
+A level-1 coefficient from the models above answers a question nobody
+asked. Regress well-being on BMI with a random intercept for region, and
+the BMI coefficient blends two different associations: how people who
+are *heavier than their region’s norm* differ from their neighbours (the
+**within** effect), and how regions with a *higher average BMI* differ
+from other regions (the **between** effect). Nothing forces those two to
+be equal — they need not even share a sign — yet the naive model reports
+their variance-weighted blend as if it were one number. Three
+literatures rediscovered this independently: multilevel analysis as
+*within- and between-group relations* (Snijders & Bosker 2012, §3.6 —
+their Figure 3.4, five ascending within-group lines crossed by a steep
+descending between-group line, is the picture to keep in mind),
+econometrics as the *correlated random effects* device (Mundlak 1978),
+and the French school of educational sociology as *l’analyse de
+contexte* (Bressoux 2010, ch. 6). Gelman, Hill & Vehtari (2020, §21.4)
+state the modern causal reading: including the group means of a level-1
+predictor adjusts for group-level unobserved confounders — the very
+thing a random intercept alone assumes away.
+
+The construction takes two lines. The group mean — constant within each
+region — enters as its own level-2 predictor, and the level-1 variable
+is centered on it:
+
+``` r
+
+sh <- as.data.frame(sochealth)
+sh$bmi_region <- ave(sh$bmi, sh$region, FUN = function(x) mean(x, na.rm = TRUE))
+sh$bmi_within <- sh$bmi - sh$bmi_region
+
+fit_naive <- lmer(
+  wellbeing_score ~ bmi + age + (1 | region),
+  data = sh
+)
+fit_wb <- lmer(
+  wellbeing_score ~ bmi_within + bmi_region + age + (1 | region),
+  data = sh
+)
+# (the accompanying singular-fit message is suppressed in this
+# rendering; the footer below reports it, and the text explains why
+# it is expected here)
+```
+
+``` r
+
+table_regression(
+  list("Naive" = fit_naive, "Within-between" = fit_wb),
+  show_columns = c("b", "se", "p")
+)
+#> Linear mixed-effects regression comparison: wellbeing_score
+#> 
+#>                                  Naive             Within-between     
+#>                           ────────────────────  ───────────────────── 
+#>  Variable               │    B      SE     p       B      SE      p   
+#> ────────────────────────┼─────────────────────────────────────────────
+#>  (Intercept)            │   82.16  3.34  <.001   -65.88  71.46   .357 
+#>  bmi                    │   -0.63  0.12  <.001                        
+#>  age                    │    0.07  0.03   .030     0.07   0.03   .034 
+#>  bmi_within             │                         -0.64   0.12  <.001 
+#>  bmi_region             │                          5.08   2.76   .066 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:        │                                             
+#>    σ region (Intercept) │    0.37   –     –        0.00    –     –    
+#>    σ (Residual)         │   15.45   –     –       15.43    –     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                      │ 1188                  1188                  
+#>  N (region)             │    6                     6                  
+#>  ICC                    │    0.00                  0.00               
+#>  R² (marginal)          │    0.02                  0.03               
+#>  R² (conditional)       │    0.02                  0.03               
+#>  AIC                    │ 9890.8                9884.6                
+#>  BIC                    │ 9916.2                9915.1                
+#> 
+#> Note. Linear mixed-effects regression models.
+#> Std. errors: Wald (model-based).
+#> p-values: Satterthwaite t-test (lmerTest).
+#> Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = 0.431.
+#> Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.
+#> Within-between: Singular fit: random-effect variance component(s) estimated at the boundary (0); their Wald SE and CI are omitted.
+#> Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap).
+```
+
+Reading the table:
+
+- The naive coefficient (−0.63) is the blend. It is numerically close to
+  the within effect here only because the within variance dominates; on
+  other data the blend can sit anywhere between the two components, or
+  outside either’s confidence interval.
+- `bmi_within` (−0.64): a person one BMI point above *their own region’s
+  average* scores 0.64 points lower on the WHO-5 — the individual-level
+  association, purged of regional composition.
+- `bmi_region` (+5.08): regions whose *average* BMI is one point higher
+  score five points *higher* on average — opposite in sign to the within
+  effect. This is Snijders & Bosker’s figure in numbers: ascending
+  within-lines, descending between-line. Whatever regional circumstance
+  raises mean BMI here travels with higher reported well-being; the
+  contextual association is not the personal one.
+- Its p-value (.066) is honest about the evidence base: a between effect
+  is estimated on the number of *groups*, not the number of people. Six
+  regions carry it, and 1,188 respondents cannot help (Maas & Hox 2005).
+  Treat the example as an illustration of the machinery, not as a
+  finding about regions.
+
+**The footer is part of the lesson.** The `Within-between` column’s
+chi-bar-squared line reports p = 1.000 and the region variance sits at
+the boundary: once `bmi_region` enters, nothing is left for the random
+intercept to absorb. That is not a malfunction — it is Mundlak’s
+equation `u_i = γ·x̄_i + a_i` doing exactly what it claims, the group
+means soaking up the group-level heterogeneity (see *When the fit is
+singular* above for the general reading of that footer).
+
+**The raw parameterization, and its trap.** Mundlak’s original form
+keeps the uncentered predictor and merely adds the mean:
+
+``` r
+
+fit_raw <- lmer(
+  wellbeing_score ~ bmi + bmi_region + age + (1 | region),
+  data = sh
+)
+round(fixef(fit_raw)[c("bmi", "bmi_region")], 3)
+#>        bmi bmi_region 
+#>     -0.643      5.721
+```
+
+The two parameterizations are the same model — same fit, same likelihood
+— but the coefficients answer different questions. Here `bmi` (−0.643)
+*is* the within effect, unchanged; the between effect is **not** the
+`bmi_region` coefficient (5.721) but the *sum* −0.643 + 5.721 = 5.077 —
+the value the centered form displays directly. The `bmi_region`
+coefficient in the raw form is the *contextual effect* — the
+between-minus-within difference, the quantity Bressoux’s tradition names
+and tests. Both forms are legitimate; report whichever your
+coefficients-as-displayed can be read without arithmetic, which is
+usually the centered one.
+
+Two closing notes. Mundlak’s classical result is that the within
+coefficient of this specification equals the fixed-effects
+(within-group) estimator — the correlated-random-effects bridge that
+reconciles the econometric distrust of random effects with the
+multilevel tradition (Mundlak 1978). And when the within effect itself
+may vary across groups, the specification extends to a random slope on
+the *centered* term — the “random effects within-between” model of Bell
+& Jones (2015), which is this section’s construction plus the *Random
+intercept or random slope?* decision above applied to `bmi_within`.
+
 ## Generalized linear mixed models
 
 [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fits render

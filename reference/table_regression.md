@@ -732,7 +732,14 @@ table_regression(
   neither a term label nor a coefficient name is rejected, so the header
   of a subordinate block – `Random effects`, `Thresholds`,
   `Zero-inflation`, ... – cannot be relabelled here; those headers are
-  set by the package.
+  set by the package. Classes that carry no `terms` component at all
+  ([`nls()`](https://rdrr.io/r/stats/nls.html),
+  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
+  are keyed on their coefficient (or parameter) names alone.
+
+  With several models, a name is checked against the union of their
+  terms: a key naming a term only one model has is legal, and the label
+  lands on the rows where that term exists.
 
 - title, note:
 

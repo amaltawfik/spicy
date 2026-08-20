@@ -38,7 +38,18 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 - column:
 
   A column token, or a `{token}` pattern. `NULL` (the default) returns
-  the estimate-like column of the row when it is unambiguous.
+  the estimate-like column of the row when it is unambiguous: the
+  family's primary estimate. That is the coefficient for
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  – always token `"b"`: an exponentiated table changes its header to OR,
+  IRR or HR, never its token – the mean (`"m"`) or, on a median-only
+  table, the median (`"med"`, `"med_iqr"`) for
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and the count (`"n"`) for
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  A row carrying none of them refuses and lists its tokens.
 
 - model:
 
