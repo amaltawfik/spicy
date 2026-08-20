@@ -261,3 +261,38 @@ test_that("align reaches the engines too", {
   numeric_align <- unlist(boxh$column_align[boxh$var != "Variable"])
   expect_true(all(numeric_align == "center"))
 })
+
+test_that("an effect size that throws degrades the block, not the table", {
+  # The last arm of `.outcome_block_inference()`: the effect-size
+  # producer RAISING, as opposed to returning a non-finite value
+  # (covered above). No input reaches it today -- `compute_effect_size()`
+  # returns NaN rather than raising on the degenerate cases -- so the
+  # producer is mocked. The behaviour under test is this function's:
+  # warn, name the block, blank its cells, leave the rest standing.
+  d <- data.frame(
+    y = c(1, 2, 3, 4, 10, 20, 30, 40),
+    g = c("a", "a", "a", "a", "b", "b", "b", "b"),
+    h = c("x", "x", "y", "y", "z", "z", "x", "y"),
+    stringsAsFactors = FALSE
+  )
+  local_mocked_bindings(
+    compute_effect_size = function(...) stop("no effect size here"),
+    .package = "spicy"
+  )
+  ws <- character(0)
+  tbl <- withCallingHandlers(
+    table_outcome(d, y, by = c(g, h), effect_size = "auto"),
+    warning = function(w) {
+      ws <<- c(ws, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_true(any(grepl("The effect size failed for `g`", ws, fixed = TRUE)))
+  expect_true(any(grepl("no effect size here", ws, fixed = TRUE)))
+  expect_true(all(is.na(tbl$es_value)))
+  # The comparison itself is untouched: only the effect size failed.
+  expect_false(any(is.na(tbl$p.value[tbl$.row_role == "factor_header"])))
+  expect_true(all(nzchar(attr(tbl, "display_df")$p[
+    tbl$.row_role == "factor_header"
+  ])))
+})
