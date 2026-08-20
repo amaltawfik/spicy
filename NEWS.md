@@ -164,7 +164,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   with the list of available choices. A statistic that belongs to a
   whole variable rather than to one of its levels -- the *p* of a
   `table_categorical()` block, its association measure, its SMD -- is
-  cited without a `level`.
+  cited without a `level`. A variable carrying a real level named
+  `"(Missing)"` is addressed by that name, and the auto-renamed
+  missing category by its own (`"(Missing_1)"`).
 * `table_regression_uv()`: univariable screening tables -- one fit per
   predictor, one row block each, merged side by side with the multivariable
   model. Supports `lm` (the linear default), `glm` (selected by `family`, in

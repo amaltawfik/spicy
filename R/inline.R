@@ -247,11 +247,21 @@ inline <- function(
     }
     return(rows[1L])
   }
-  hit <- if (identical(level, "(Missing)")) {
-    # By ROLE: the displayed label may be deduplicated or translated.
-    rows[body$.row_role[rows] == "missing"]
-  } else {
-    rows[!is.na(body$.level[rows]) & body$.level[rows] == level]
+  # IDENTITY FIRST, role second. The role shortcut exists because the
+  # missing category's displayed label can be translated, and a caller
+  # writing `level = "(Missing)"` should still reach it. But taken
+  # first it SHADOWED a real level literally named "(Missing)": the
+  # missing row is then auto-renamed "(Missing_1)", the table shows
+  # both, and `inline(tbl, g, "(Missing)")` quietly returned the other
+  # row's number -- the one thing this function must never do.
+  #
+  # So: match `.level` exactly, and fall back to the role only when
+  # nothing carries that level literally. With no collision the two
+  # agree (the missing row's `.level` IS its displayed label), and
+  # with a collision the reader's own reading wins.
+  hit <- rows[!is.na(body$.level[rows]) & body$.level[rows] == level]
+  if (length(hit) != 1L && .inline_addresses_missing(level)) {
+    hit <- rows[body$.row_role[rows] == "missing"]
   }
   if (length(hit) != 1L) {
     spicy_abort(
@@ -267,6 +277,16 @@ inline <- function(
     )
   }
   hit
+}
+
+# Is `level` an address for the missing-value category?
+#
+# Two spellings: the one `?inline` documents, and whatever the
+# registry currently displays. The second is what makes the role
+# fallback survive translation; the first is what a reader types.
+.inline_addresses_missing <- function(level) {
+  identical(level, "(Missing)") ||
+    identical(level, spicy_str("row_missing_level"))
 }
 
 # The tokens a `column` argument asks for. A plain token asks for
