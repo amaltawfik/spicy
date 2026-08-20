@@ -27,7 +27,7 @@ table_outcome(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
-  output = c("default", "data.frame", "long"),
+  output = c("default", "data.frame", "long", "tinytable", "gt"),
   indent_text = "  ",
   indent_text_excel_clipboard = strrep(" ", 6),
   excel_path = NULL,
@@ -82,7 +82,8 @@ formatting.}
 \item{align}{Numeric-cell alignment: \code{"decimal"}, \code{"center"} or
 \code{"right"}.}
 
-\item{output}{One of \code{"default"}, \code{"data.frame"} or \code{"long"}.}
+\item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"},
+\code{"tinytable"} or \code{"gt"}.}
 
 \item{indent_text, indent_text_excel_clipboard}{Level-row
 indentation, for the console and for the plain-text engines.}

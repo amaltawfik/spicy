@@ -499,7 +499,8 @@
 #'   formatting.
 #' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
 #'   `"right"`.
-#' @param output One of `"default"`, `"data.frame"` or `"long"`.
+#' @param output One of `"default"`, `"data.frame"`, `"long"`,
+#'   `"tinytable"` or `"gt"`.
 #' @param indent_text,indent_text_excel_clipboard Level-row
 #'   indentation, for the console and for the plain-text engines.
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
@@ -548,7 +549,7 @@ table_outcome <- function(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
-  output = c("default", "data.frame", "long"),
+  output = c("default", "data.frame", "long", "tinytable", "gt"),
   indent_text = "  ",
   indent_text_excel_clipboard = strrep("\u00A0", 6),
   excel_path = NULL,
@@ -969,6 +970,36 @@ table_outcome <- function(
     show_effect_size_ci = effect_size_ci,
     indent_text = indent_text
   )
+
+  if (!identical(output, "default")) {
+    # The block geometry is handed over rather than derived: the
+    # exporter's own fallback reads the label column, and every row of
+    # this shape carries a label. Both vectors come from the typed
+    # predicates the three descriptive families share.
+    geom <- list(body = .outcome_body_geometry(result))
+    return(export_desc_table(
+      display_df,
+      output = output,
+      ci_level = ci_level,
+      # ONE stub column: this shape has no group column. The keys, not
+      # a count -- gt addresses columns and spanner ids by name.
+      stub_keys = .CON_KEY_VARIABLE,
+      align = align,
+      decimal_mark = decimal_mark,
+      show_n = show_n,
+      sep_rows = .struct_block_sep_rows(geom),
+      indent_rows = .struct_indent_rows(geom),
+      indent_text = indent_text,
+      indent_text_excel_clipboard = indent_text_excel_clipboard,
+      title = .outcome_title(outcome_label),
+      excel_path = excel_path,
+      excel_sheet = excel_sheet,
+      clipboard_delim = clipboard_delim,
+      word_path = word_path,
+      note = note
+    ))
+  }
+
   attr(result, "display_df") <- display_df
   # Typed view: the numbers come from the compute frame, the composite
   # cells from the very display frame the console renders, so the two
