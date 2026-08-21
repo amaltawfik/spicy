@@ -504,3 +504,14 @@ exact (weight-averaged predict, |d|=0), validation population-connue
 (remplace le gate 15% démontré nuisible). Motif : première
 implémentation au monde + convention d'estimateur ouverte = jamais à
 moitié validé.
+
+## Décision 35 (partielle) — Arbitrages estimands design-based (2026-08-21)
+
+- **G acté** : designs calibrés/post-stratifiés/rakés = refus classé
+  nommé pour les estimands 0.14 (cause : as.svrepdesign() ne porte pas
+  la calibration ; message actionnable, porte ouverte à la A5).
+- **F EN INSTRUCTION** : convention de ties — Amal exige le dossier
+  d'expertise complet (recommandations des autorités ; pratique de
+  Stata/SAS/SPSS et des packages R de standardisation) avant de
+  trancher, avec disposition à REVOIR le choix Efron du moteur iid
+  livré si le consensus expert l'exige. « Le plus pro pour 15 ans. »
