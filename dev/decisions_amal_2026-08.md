@@ -489,3 +489,18 @@ utilisateurs tbl_continuous.
 - **A7** : refus classé de chisq_statistic saddlepoint/lincom sur
   design à réplication, citant le défaut survey signalé (pchisqsum
   sans ddf), levé quand survey corrige (n°94).
+
+## Décision 34 — Calendrier des estimands de survie design-based (2026-08-21)
+
+DÉCOUPAGE validé (position de la revue de spec, contre le 0.13 de la
+spec) : 0.13 ne prend que les gains gratuits (accélération n°116
+mesurée neutre, paramétrisation df, refus A5 affiné) ; 0.14 prend
+rmst_diff/risk_diff sous design, avec (a) la convention de ties
+tranchée PAR ÉCRIT avant implémentation (Breslow pondéré des outils
+survey vs Efron du fit — dossier à instruire), (b) la batterie
+renforcée par les découvertes de la revue : oracle de point-estimate
+exact (weight-averaged predict, |d|=0), validation population-connue
+(150 échantillons, couverture 0.93-0.95), gate SE JKn épinglée 1e-6
+(remplace le gate 15% démontré nuisible). Motif : première
+implémentation au monde + convention d'estimateur ouverte = jamais à
+moitié validé.
