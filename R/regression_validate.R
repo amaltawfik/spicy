@@ -1690,11 +1690,23 @@ validate_class_appropriate_tokens <- function(
             "on an ambiguous survival / hazard scale with unreliable standard ",
             "errors. Report hazard ratios instead with `exponentiate = TRUE`."
           ),
-          "i" = paste0(
-            "For absolute effects, use the survival estimand columns: ",
-            "`show_columns = c(\"b\", \"rmst\")` with `tau = `, or ",
-            "`\"risk_diff\"` with `at_time = ` (coxph)."
-          )
+          # A DESIGN-based Cox has no absolute-effect columns either --
+          # their bootstrap resamples rows and so ignores the strata and
+          # clusters -- so it is pointed at survey's own tools instead of
+          # at a second refusal.
+          "i" = if (all(vapply(models, .is_design_fit, logical(1)))) {
+            paste0(
+              "For a design-based Cox model, test a term with ",
+              "`survey::regTermTest(fit, ~term)` and read a marginal ",
+              "survival curve with `survey::svykm()`."
+            )
+          } else {
+            paste0(
+              "For absolute effects, use the survival estimand columns: ",
+              "`show_columns = c(\"b\", \"rmst\")` with `tau = `, or ",
+              "`\"risk_diff\"` with `at_time = ` (coxph)."
+            )
+          }
         ),
         class = "spicy_invalid_input"
       )

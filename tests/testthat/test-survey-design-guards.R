@@ -271,38 +271,41 @@ test_that("classes that are not design fits keep their own refusals", {
 })
 
 
-# ---- Guard B: svycoxph is refused by class, silently ------------------------
+# ---- Guard B: svycoxph never walks into the coxph extractor ----------------
 
-test_that("svycoxph gets a classed refusal instead of an internal error", {
+test_that("svycoxph takes its own route, not the one it inherits", {
+  # class(fit) is c("svycoxph", "coxph"): without a method of its own the
+  # fit dispatched to as_regression_frame.coxph(), whose .coxph_info()
+  # calls stats::AIC() bare -- survey answers "No AIC for survey models"
+  # -- after two summary() calls had printed the design.
   fit <- .svycoxph_guard_fit()
-  expect_s3_class(fit, "coxph") # the inheritance that caused the crash
-  for (call in list(
-    function() as_regression_frame(fit),
-    function() table_regression(fit)
-  )) {
-    err <- expect_error(call(), class = "spicy_unsupported_class")
-    # The taxonomy parent must be present so a caller can catch every
-    # spicy refusal uniformly (the old failure was a bare simpleError).
-    expect_s3_class(err, "spicy_error")
-    msg <- conditionMessage(err)
-    expect_match(msg, "svycoxph", fixed = TRUE)
-    expect_match(msg, "regTermTest", fixed = TRUE)
-    # The internal failure must be gone, not merely re-wrapped.
-    expect_false(grepl("No AIC", msg, fixed = TRUE))
-  }
+  expect_s3_class(fit, "coxph")
+  fr <- as_regression_frame(fit)
+  expect_identical(fr$info$class, "svycoxph")
+  # Nothing likelihood-shaped survives the crossing.
+  expect_true(is.na(fr$info$fit_stats$aic))
+  expect_error(stats::AIC(fit), "No AIC for survey models")
+  # And the title is not the plain-Cox one.
+  expect_match(
+    fr$info$extras$title_prefix,
+    "Survey-weighted",
+    fixed = TRUE
+  )
 })
 
-test_that("svycoxph refusal prints nothing on the way out", {
-  # survey's summary.svycoxph prints the design; the coxph extractor
-  # called it twice, so the old failure emitted six lines of design
-  # description before the error. Refusing before the extractor runs
-  # leaves the console untouched.
+test_that("building a svycoxph table prints nothing on the way", {
+  # survey's summary.svycoxph prints the design on every call; the coxph
+  # extractor called it twice, so the old failure emitted six lines of
+  # design description before erroring. Nothing on this route calls it.
   fit <- .svycoxph_guard_fit()
   expect_length(
-    capture.output(try(as_regression_frame(fit), silent = TRUE)),
+    capture.output(invisible(as_regression_frame(fit))),
     0L
   )
-  expect_length(capture.output(try(table_regression(fit), silent = TRUE)), 0L)
+  expect_length(
+    capture.output(invisible(table_regression(fit, output = "data.frame"))),
+    0L
+  )
 })
 
 test_that("plain coxph is untouched by the svycoxph method", {

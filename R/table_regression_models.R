@@ -176,6 +176,14 @@
       .REG_BLOCK_THRESH
     ),
     c(
+      "Survey-weighted",
+      "svycoxph",
+      "survey::svycoxph()",
+      "no",
+      "HR",
+      "-"
+    ),
+    c(
       "Additive, proportions, selection",
       "gam",
       "mgcv::gam(), mgcv::bam()",

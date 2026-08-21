@@ -27,13 +27,9 @@ test_that("the registry matches the as_regression_frame dispatch methods", {
     "spicy_uv_screen", # internal bundle built by
     # table_regression_uv(), not a
     # user-fitted model class
-    "gee", # refusal stub: gee::gee fits inherit glm and would
+    "gee" # refusal stub: gee::gee fits inherit glm and would
     # otherwise silently get naive SEs; the method points at
     # geepack::geeglm (the supported, registry-listed engine)
-    "svycoxph" # refusal stub: survey::svycoxph fits inherit coxph
-    # and would otherwise walk into the Cox extractor and die on
-    # extractAIC; design-based Cox is not supported, so it has no
-    # registry row
   )
   expect_true(
     all(reg$class %in% dispatched),

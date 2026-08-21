@@ -1024,7 +1024,7 @@ build_survival_footer_block_from_frames <- function(frames) {
 
 .format_survival_for_frame <- function(frame) {
   cls <- frame$info$class %||% ""
-  if (cls %in% c("coxph", "cph")) {
+  if (cls %in% c("coxph", "cph", "svycoxph")) {
     .format_coxph_survival(frame)
   } else if (cls == "survreg") {
     .format_survreg_survival(frame)

@@ -2797,7 +2797,10 @@ table_regression <- function(
         character(1)
       ))
       # Cox models have the ABSOLUTE estimand family instead: point
-      # there rather than leaving the reader without a next step.
+      # there rather than leaving the reader without a next step. (A
+      # DESIGN-based Cox never reaches here: the all-Cox token gate in
+      # validate_show_columns() refuses it first, with a hint of its own
+      # that points at survey rather than at estimands it also refuses.)
       hint_main <- if (any(classes == "coxph")) {
         paste0(
           "For a Cox model, the absolute-effect columns are the RMST ",

@@ -149,6 +149,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   Statistics that need a likelihood -- AIC, BIC, deviance, pseudo-R² -- are
   absent rather than approximated; the omnibus test is
   `survey::regTermTest()`.
+* Design-weighted Cox models (`survey::svycoxph()`, and replicate-weight
+  designs): hazard ratios, n and the number of events, concordance in the
+  note, and the design's residual degrees of freedom. RMST and
+  risk-difference columns are refused for these fits -- their uncertainty
+  comes from resampling subjects, which ignores the strata and clusters --
+  with a message naming the cause and pointing at `survey::svykm()`.
 
 ## New functions
 
