@@ -869,7 +869,19 @@ extract_ame_glm <- function(
 #
 # Returns a zero-row frame coefs subset on failure (missing
 # marginaleffects, `avg_slopes()` errors, fit class out of scope).
-.compute_ame_rows_for_frame <- function(fit, ci_level, vc = NULL, hdi = FALSE) {
+.compute_ame_rows_for_frame <- function(
+  fit,
+  ci_level,
+  vc = NULL,
+  hdi = FALSE,
+  df = Inf
+) {
+  # `df` is the reference distribution of the AME rows. Inf (the
+  # default, and every asymptotic class) means z and leaves the table
+  # exactly as it was; a finite value means t at that many degrees of
+  # freedom, and the same number reaches avg_slopes() so its statistic,
+  # p and interval all come from ONE distribution.
+  test_type <- if (is.finite(df)) "t" else "z"
   if (!spicy_pkg_available("marginaleffects")) {
     return(NULL)
   }
@@ -890,7 +902,7 @@ extract_ame_glm <- function(
         marginaleffects::avg_slopes(
           fit,
           conf_level = ci_level,
-          df = Inf,
+          df = df,
           vcov = vcarg,
           # Weighted fit: the AME is the weighted average of the
           # unit-level slopes (Rd Weights section) -- the fit's prior
@@ -1029,12 +1041,12 @@ extract_ame_glm <- function(
       estimate_type = "ame",
       estimate = as.numeric(ame_table$estimate[i]),
       std_error = as.numeric(ame_table$std.error[i]),
-      df = Inf,
+      df = df,
       statistic = as.numeric(ame_table$statistic[i]),
       p_value = as.numeric(ame_table$p.value[i]),
       ci_lower = as.numeric(ame_table$conf.low[i]),
       ci_upper = as.numeric(ame_table$conf.high[i]),
-      test_type = "z",
+      test_type = test_type,
       outcome_level = grp,
       stringsAsFactors = FALSE
     )
@@ -1201,7 +1213,8 @@ extract_ame_glm <- function(
   vcov_type = "model",
   cluster = NULL,
   hdi = FALSE,
-  vcov_matrix = NULL
+  vcov_matrix = NULL,
+  df = Inf
 ) {
   ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
   if (!any(ame_tokens %in% show_columns)) {
@@ -1243,7 +1256,13 @@ extract_ame_glm <- function(
       }
     )
   }
-  ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc, hdi = hdi)
+  ame_rows <- .compute_ame_rows_for_frame(
+    fit,
+    ci_level,
+    vc = vc,
+    hdi = hdi,
+    df = df
+  )
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) {
     return(coefs)
   }

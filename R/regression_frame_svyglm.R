@@ -58,14 +58,18 @@ as_regression_frame.svyglm <- function(
     test = "z"
   )
   # Design-based response-scale AME (marginaleffects::avg_slopes uses the
-  # survey design vcov).
+  # survey design vcov). `df =`: the AME rows sit under the same column
+  # headers as the coefficient rows and must answer to the same
+  # reference distribution -- the design's residual degrees of freedom,
+  # not the asymptotic normal marginaleffects defaults to.
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
     fit,
     ci_level,
     show_columns,
     vcov_type = vcov,
-    cluster = cluster
+    cluster = cluster,
+    df = .design_model_df(fit)
   )
   info <- .svyglm_info(
     fit,
@@ -171,18 +175,13 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     p_value <- 2 * stats::pt(-abs(stat), df = df_resid)
   } # nocov end
 
-  # df: survey's t-Wald uses df.residual(). For a sufficiently large
-  # design this is large; for highly-stratified designs it can be small.
-  dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-  # nocov: df.residual() on a valid svyglm always returns a finite count
-  # (length(residuals) - rank via df.residual.default); this z-fallback
-  # assignment is a defensive guard for a degenerate fit we can't construct.
-  if (is.null(dfr) || !is.finite(dfr)) {
-    dfr <- Inf # nocov
-  }
-  df_vec <- rep(as.numeric(dfr), length(est))
+  # df: survey's t-Wald uses df.residual(), which is what regTermTest()
+  # takes as its denominator too. Read through the shared accessor, which
+  # aborts rather than falling back to Inf: a silent z under a footer
+  # declaring a t is the failure mode worth refusing.
+  df_vec <- rep(.design_model_df(fit), length(est))
 
-  # Wald CI with t. Falls back to z if df is Inf.
+  # Wald CI with t at the design's residual degrees of freedom.
   crit <- stats::qt(0.5 + ci_level / 2, df = df_vec)
   ci_lower <- unname(est) - crit * se
   ci_upper <- unname(est) + crit * se

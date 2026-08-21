@@ -293,6 +293,61 @@
   sum(w)
 }
 
+# The residual degrees of freedom survey writes ON THE FIT, read, never
+# re-derived.
+#
+# The six design-fitting engines do not agree on the expression, and the
+# differences are not principled -- `svyolr` has no `+ 1`, `svycoxph`
+# has one with no intercept to cancel (a copy from `svyglm`, where it
+# does cancel):
+#
+#   svyglm.survey.design    degf(design) + 1 - length(coef(g))   df.residual
+#   svyglm.svyrep.design    idem                                 df.residual
+#   svyolr.survey.design2   degf(design) - length(beta)          df.residual
+#   svyolr.svyrep.design    idem                                 df.residual
+#   svycoxph.survey.design  degf(design) - length(coef(g)) + 1   degf.resid
+#   svycoxph.svyrep.design  degf(design) + 1 - length(coef())    degf.residual
+#
+# So the rule is one of READING: whatever survey posted is what
+# `regTermTest()` uses as its denominator, and a table whose row p and
+# omnibus p had different denominators would be indefensible.
+# Harmonising the formulas across classes is a regression, not a
+# tidy-up.
+#
+# Two slot names, one per Cox engine, and `$` cannot tell them apart:
+# `degf.resid` is a unique PREFIX of `degf.residual`, so `$` on a
+# replicate Cox fit silently partial-matches. `[[` is exact -- and
+# returns NULL on the other engine, which is why both are tried.
+#
+# Never a silent fall back to `Inf`: that would publish normal p-values
+# and intervals under a footer declaring a t.
+.design_model_df <- function(fit) {
+  df <- fit[["degf.resid"]]
+  if (is.null(df)) {
+    df <- fit[["degf.residual"]]
+  }
+  if (is.null(df)) {
+    df <- tryCatch(stats::df.residual(fit), error = function(e) NULL)
+  }
+  if (is.null(df) || length(df) != 1L || !is.finite(df) || df <= 0) {
+    spicy_abort(
+      c(
+        sprintf(
+          "The residual degrees of freedom of this `%s` fit could not be read.",
+          class(fit)[1L]
+        ),
+        "i" = paste0(
+          "survey stores them in `df.residual`, `degf.resid` or ",
+          "`degf.residual` depending on the engine; none of the three ",
+          "held a usable value."
+        )
+      ),
+      class = "spicy_internal"
+    )
+  }
+  as.numeric(df)
+}
+
 # The replicate schemes survey names in `design$type`. `"other"` is a
 # legal value of `svrepdesign(type = )` and is deliberately absent: it
 # identifies nothing, so the label drops the parenthesis rather than

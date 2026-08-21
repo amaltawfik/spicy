@@ -215,6 +215,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   uses -- replicate weights and their scheme, two-phase designs -- instead
   of always reporting Taylor linearisation.
 
+* Average marginal effects of a survey-weighted model use the design's
+  residual degrees of freedom, like the coefficient rows above them, so a
+  table no longer mixes a t and a normal under one `p` header.
+
 * Handing a `survey` design object to `table_continuous()`,
   `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now
   errors with the function to call instead, rather than with
