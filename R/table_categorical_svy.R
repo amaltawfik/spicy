@@ -88,7 +88,10 @@
   )
   x <- as.character(design$variables[[var]])
   w <- .design_weights(design)
-  ok <- !is.na(w) & w > 0
+  # `!= 0`, not `> 0`: a linear-calibrated design carries negative
+  # weights, and those rows were sampled. See the note above
+  # `.svy_var_stats()` in R/table_continuous_svy.R.
+  ok <- !is.na(w) & w != 0
   for (i in seq_len(k)) {
     out$n[[i]] <- sum(ok & !is.na(x) & x == levels[[i]])
   }

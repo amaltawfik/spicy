@@ -369,6 +369,58 @@ test_that("a calibrated domain counts only the rows it kept", {
   )
 })
 
+test_that("a negative calibration weight is an observation, not a hole", {
+  # `survey:::svyvar()` counts `weights(design, "sampling") != 0`, and
+  # LINEAR calibration routinely drives weights below zero -- that is
+  # what `calibrate(bounds = )` exists to prevent. A `> 0` filter drops
+  # those rows: it reported n = 155 on this design, a `Weighted n` of
+  # 6591.54 contradicting the "weighted 6194" of its own footer, and a
+  # `Max` of 789 for a sample whose maximum is 905. This is the only
+  # fixture that separates the two predicates.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  cal <- survey::calibrate(
+    survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = apiclus1,
+      fpc = ~fpc
+    ),
+    ~api99,
+    c(`(Intercept)` = 6194, api99 = 6194 * 500),
+    calfun = "linear"
+  )
+  w <- .design_weights(cal)
+  expect_identical(sum(w < 0), 28L)
+  expect_equal(min(w), -47.064232723491621, tolerance = 1e-12)
+
+  out <- .svyc_long(
+    cal,
+    select = api00,
+    show_columns = c("m", "sd", "se", "min", "max", "n", "weighted_n")
+  )
+  # survey's own n on this design is 183, and the twin now agrees.
+  expect_identical(
+    out$n,
+    sum(w != 0 & !is.na(cal$variables$api00))
+  )
+  expect_identical(out$n, 183L)
+  expect_equal(out$weighted_n, 6194.0000000000009, tolerance = 1e-12)
+  expect_equal(out$max, 905)
+  expect_equal(out$min, 411)
+  # The moments never moved -- survey always computed them on all 183
+  # rows, which is exactly why nothing alerted the reader.
+  expect_equal(out$mean, 547.43008125342669, tolerance = 1e-12)
+  expect_equal(out$sd, 43.545833331153375, tolerance = 1e-12)
+  expect_equal(out$se, 4.3269670987437925, tolerance = 1e-12)
+  # And the cell now agrees with the footer of its own table.
+  expect_match(
+    attr(table_continuous_svy(cal, select = api00), "missing_note"),
+    "N = 183 (weighted 6194).",
+    fixed = TRUE
+  )
+})
+
 test_that("the footer gives the df span when the groups disagree", {
   tbl <- table_continuous_svy(.svyc_design("clus1"), select = api00, by = stype)
   expect_match(

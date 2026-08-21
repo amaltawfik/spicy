@@ -234,6 +234,28 @@ test_that("a calibrated domain counts only the rows it kept", {
   expect_identical(sum(out[["Total n"]], na.rm = TRUE), 183L)
 })
 
+test_that("a negative calibration weight is counted, not dropped", {
+  # The categorical half of the same predicate: under `> 0` the counts
+  # read 119 / 14 / 22 and no longer summed to the sample.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  cal <- survey::calibrate(
+    survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = apiclus1,
+      fpc = ~fpc
+    ),
+    ~api99,
+    c(`(Intercept)` = 6194, api99 = 6194 * 500),
+    calfun = "linear"
+  )
+  expect_identical(sum(.design_weights(cal) < 0), 28L)
+  out <- .svycat_long(cal, select = stype)
+  expect_identical(out$n[-1L], c(144L, 14L, 25L))
+  expect_identical(sum(out$n, na.rm = TRUE), 183L)
+})
+
 test_that("a replicate design gives the same percentages, its own intervals", {
   lin <- .svycat_long(
     .svycat_design("clus1"),

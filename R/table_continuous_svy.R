@@ -108,9 +108,18 @@ order_continuous_svy_tokens <- function(tokens) {
 #
 # `n` is the count of rows with an observed value AND a non-zero
 # weight -- character for character the definition `survey:::svyvar()`
-# uses for its own `n`, and the only one that is right on a calibrated
-# domain, where `[` retains the excluded rows at weight zero instead of
-# dropping them.
+# uses for its own `n`
+# (`sum(weights(design, "sampling") != 0 & !is.na(x))`), and the only
+# one that is right on a calibrated domain, where `[` retains the
+# excluded rows at weight zero instead of dropping them.
+#
+# `!= 0`, NOT `> 0`. Linear calibration produces NEGATIVE weights --
+# that is what `survey::calibrate(bounds = )` exists to prevent -- and
+# a negative weight is a row the sampler drew and the calibration
+# down-weighted, not a row to hide. On a linear-calibrated api design
+# 28 of 183 rows go negative; `> 0` reported n = 155, a `Weighted n` of
+# 6591.54 that contradicted the "weighted 6194" of its own footer, and
+# a `Max` of 789 for a sample whose maximum is 905.
 #
 # Each delegation is guarded on its own: a variable whose domain is too
 # thin for a variance must not take the whole table down, and survey's
@@ -127,7 +136,7 @@ order_continuous_svy_tokens <- function(tokens) {
   form <- .svy_formula(var)
   x <- design$variables[[var]]
   w <- .design_weights(design)
-  keep <- !is.na(x) & !is.na(w) & w > 0
+  keep <- !is.na(x) & !is.na(w) & w != 0
   n <- sum(keep)
   out <- data.frame(
     mean = NA_real_,
