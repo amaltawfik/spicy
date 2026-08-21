@@ -66,6 +66,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Survival \tab \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \cr
    Survival \tab \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg()} \tab no \tab TR / HR (dist) \tab distribution parameters \cr
    Survey-weighted \tab \code{svyglm} \tab \code{survey::svyglm()} \tab yes (design-based) \tab OR / IRR \tab - \cr
+   Survey-weighted \tab \code{svyolr} \tab \code{survey::svyolr()} \tab per category (design-based) \tab OR (logit) \tab Thresholds \cr
    Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam()}, \code{mgcv::bam()} \tab yes \tab OR / IRR (link) \tab - \cr
    Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab - \cr
    Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab selection component \cr

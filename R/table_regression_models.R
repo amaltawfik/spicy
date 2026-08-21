@@ -168,6 +168,14 @@
       "-"
     ),
     c(
+      "Survey-weighted",
+      "svyolr",
+      "survey::svyolr()",
+      "per category (design-based)",
+      "OR (logit)",
+      .REG_BLOCK_THRESH
+    ),
+    c(
       "Additive, proportions, selection",
       "gam",
       "mgcv::gam(), mgcv::bam()",

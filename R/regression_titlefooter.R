@@ -959,7 +959,7 @@ build_gee_footer_block_from_frames <- function(frames) {
 
 .format_ordinal_thresholds_for_frame <- function(frame) {
   cls <- frame$info$class %||% ""
-  if (!cls %in% c("polr", "clm")) {
+  if (!cls %in% c("polr", "clm", "svyolr")) {
     return(NULL)
   }
   th <- frame$info$extras$thresholds

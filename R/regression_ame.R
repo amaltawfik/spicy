@@ -390,8 +390,8 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
   # comes from the delta method on the design vcov either way, which
   # reproduces the replicate variance of the whole AME to under 1%.
   if (.is_design_fit(fit)) {
-    n_obs <- tryCatch(nrow(stats::model.frame(fit)), error = function(e) NULL)
-    if (is.null(n_obs)) {
+    n_obs <- .design_fit_n_obs(fit)
+    if (is.na(n_obs)) {
       return(NULL) # nocov
     }
     return(.design_analytic_weights(fit, n_obs))

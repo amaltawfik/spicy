@@ -296,7 +296,7 @@ as_regression_frame.svycoxph <- function(fit, ...) {
   # We catch them defensively (the values are reported as NA when the
   # method isn't applicable) and suppress the noise so the renderer
   # footer stays clean.
-  n_obs <- as.integer(stats::nobs(fit))
+  n_obs <- .design_fit_n_obs(fit)
   fit_stats <- list(
     r_squared = NA_real_,
     adj_r_squared = NA_real_,

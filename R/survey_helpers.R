@@ -203,6 +203,35 @@
   stats::weights(design, type = "sampling")
 }
 
+# The number of observations a design fit actually used.
+#
+# Each class misreports it in its own direction, so none of them is asked
+# through `nobs()` blindly:
+#   * `nobs(svyolr)` is the SUM OF THE WEIGHTS -- survey sets
+#     `nobs = sum(wt)` and ships no method to correct it -- so the count
+#     comes from the fitted-probability matrix, one row per observation.
+#     Not from `model.frame()`: survey's `model.frame.svyolr()`
+#     re-evaluates the `design` argument by name from the call, in the
+#     formula's environment, and on a REPLICATE design that environment
+#     is survey's own -- the user's design object is not there and the
+#     call fails.
+#   * `nobs(svycoxph)` is the number of EVENTS (survival's deliberate
+#     convention); `fit$n` is the subject count.
+#   * `nobs(svyglm)` is the row count, which is what we want.
+.design_fit_n_obs <- function(fit) {
+  n <- if (inherits(fit, "svyolr")) {
+    NROW(fit$fitted.values)
+  } else if (inherits(fit, "coxph")) {
+    fit$n
+  } else {
+    tryCatch(stats::nobs(fit), error = function(e) NULL)
+  }
+  if (is.null(n) || length(n) != 1L || !is.finite(n)) {
+    return(NA_integer_) # nocov
+  }
+  as.integer(n)
+}
+
 # The design object restricted to the rows the FIT actually used.
 #
 # The four design-fitting functions do not agree on what they attach.

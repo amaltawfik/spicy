@@ -205,7 +205,7 @@ as_regression_frame.default <- function(fit, ...) {
         "gam / bam (mgcv), ols / lrm / cph / Glm (rms), ",
         "mlogit (mlogit), betareg (betareg), ",
         "flexsurvreg (flexsurv), selection (sampleSelection), nls (stats), ",
-        "svyglm, stanreg, brmsfit. ",
+        "svyglm / svyolr (survey), stanreg, brmsfit. ",
         "Robust mixed (robustlmm) and Bayesian-hierarchical (MCMCglmm) ",
         "are on the 2026-2027 roadmap."
       ),

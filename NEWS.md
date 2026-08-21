@@ -143,6 +143,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   friends); beta, Tobit, and two-part counts (`betareg`, `tobit`, `zeroinfl`
   / `hurdle`); plus `rlm`, `glm.nb`, `rq`, `gam` / `bam`, `nls`,
   `ols` / `lrm` / `Glm`, and `selection`.
+* Design-weighted ordinal models (`survey::svyolr()`): the cut-points as a
+  Thresholds block, per-category average marginal effects averaged over the
+  population, and the design's residual degrees of freedom for every row.
+  Statistics that need a likelihood -- AIC, BIC, deviance, pseudo-R² -- are
+  absent rather than approximated; the omnibus test is
+  `survey::regTermTest()`.
 
 ## New functions
 

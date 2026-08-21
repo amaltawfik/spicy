@@ -272,10 +272,21 @@ test_that("a mixed svyglm + glm table prints two comparable AIC values", {
     ))))),
     collapse = "\n"
   )
-  expect_match(out, "2002.2", fixed = TRUE)
-  expect_match(out, "2001.1", fixed = TRUE)
+  aic_line <- grep(
+    "AIC",
+    strsplit(
+      out,
+      "
+",
+      fixed = TRUE
+    )[[1L]],
+    value = TRUE
+  )
+  expect_length(aic_line, 1L)
+  expect_match(aic_line, "2002.2", fixed = TRUE)
+  expect_match(aic_line, "2001.1", fixed = TRUE)
   # The effective number of design parameters is not an AIC.
-  expect_false(grepl("AIC             │   4.6", out, fixed = TRUE))
+  expect_false(grepl("4.6", aic_line, fixed = TRUE))
 })
 
 test_that("an explicit aic token on a replicate design prints the criterion", {

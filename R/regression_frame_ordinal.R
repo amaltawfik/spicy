@@ -506,13 +506,26 @@ as_regression_frame.clm <- function(
     return(thr) # nocov
   }
   thr$std_error <- unname(sqrt(diag(vc)[idx]))
+  # Same law as the frame the thresholds arrived in: recomputing the p in
+  # `pnorm` here would put a normal p on a row whose interval is a t.
+  df <- thr$df %||% rep(Inf, nrow(thr))
   thr$statistic <- thr$estimate / thr$std_error
-  thr$p_value <- 2 * stats::pnorm(-abs(thr$statistic))
+  thr$p_value <- 2 * stats::pt(-abs(thr$statistic), df = df)
   thr
 }
 
 
-.polr_thresholds <- function(fit) {
+# The cut-points of a cumulative-link fit, with the reference
+# distribution of the block carried IN the frame.
+#
+# `df` / `test` default to the asymptotic normal every maximum-likelihood
+# cumulative-link fit uses, so polr and clm are byte-identical
+# (`2 * pt(-|t|, Inf)` IS `2 * pnorm(-|t|)`). A design-weighted fit passes
+# its own residual degrees of freedom, and then the statistic, the p and
+# the interval of a threshold row all come from that one distribution --
+# the whole point of parameterising here rather than at the row-building
+# step, which only ever computed the interval.
+.polr_thresholds <- function(fit, df = Inf, test = "z") {
   zeta <- fit$zeta %||% numeric(0)
   # nocov: polr requires >= 3 response levels, so zeta always has >= 2
   # thresholds; an empty zeta is structurally impossible for a valid fit.
@@ -523,14 +536,29 @@ as_regression_frame.clm <- function(
   zeta_names <- names(zeta)
   # zeta names are present in vcov rownames for polr.
   se <- sqrt(diag(V)[zeta_names])
-  stat <- unname(zeta) / unname(se)
-  p_value <- 2 * stats::pnorm(-abs(stat))
-  data.frame(
+  .threshold_frame(
     term = zeta_names,
     estimate = unname(zeta),
     std_error = unname(se),
+    df = df,
+    test = test
+  )
+}
+
+
+# One threshold frame, one reference distribution. `statistic` and
+# `p_value` are derived here so no caller can compute them under a law
+# the interval does not share.
+.threshold_frame <- function(term, estimate, std_error, df, test) {
+  stat <- estimate / std_error
+  data.frame(
+    term = term,
+    estimate = estimate,
+    std_error = std_error,
     statistic = stat,
-    p_value = p_value,
+    p_value = 2 * stats::pt(-abs(stat), df = df),
+    df = rep(as.numeric(df), length(term)),
+    test_type = rep(test, length(term)),
     stringsAsFactors = FALSE
   )
 }
@@ -943,6 +971,8 @@ as_regression_frame.clm <- function(
     std_error = se,
     statistic = stat,
     p_value = p_value,
+    df = rep(Inf, length(display)),
+    test_type = rep("z", length(display)),
     stringsAsFactors = FALSE
   )
 }
@@ -964,7 +994,13 @@ as_regression_frame.clm <- function(
   if (is.null(coefs$is_threshold)) {
     coefs$is_threshold <- FALSE
   }
-  z <- stats::qnorm(0.5 + ci_level / 2)
+  # The reference distribution travels WITH the thresholds: the
+  # statistic and the p were computed upstream under it, and the interval
+  # must not be built under another. `qt(p, Inf)` is `qnorm(p)` to the
+  # bit, so polr / clm are unchanged.
+  df <- thr$df %||% rep(Inf, nrow(thr))
+  test <- thr$test_type %||% rep("z", nrow(thr))
+  crit <- stats::qt(0.5 + ci_level / 2, df = df)
   new <- data.frame(
     term = thr$term,
     parent_var = .REG_BLOCK_THRESH,
@@ -974,12 +1010,12 @@ as_regression_frame.clm <- function(
     estimate_type = "B",
     estimate = thr$estimate,
     std_error = thr$std_error,
-    df = Inf,
+    df = df,
     statistic = thr$statistic,
     p_value = thr$p_value,
-    ci_lower = thr$estimate - z * thr$std_error,
-    ci_upper = thr$estimate + z * thr$std_error,
-    test_type = "z",
+    ci_lower = thr$estimate - crit * thr$std_error,
+    ci_upper = thr$estimate + crit * thr$std_error,
+    test_type = test,
     outcome_level = NA_character_,
     is_threshold = TRUE,
     stringsAsFactors = FALSE
