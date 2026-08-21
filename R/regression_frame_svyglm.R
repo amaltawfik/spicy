@@ -376,7 +376,7 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% "Design-based (Taylor linearisation)",
+    vcov_label = vcov_label %||% .design_vcov_label(fit),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,

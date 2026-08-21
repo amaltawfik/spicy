@@ -604,6 +604,23 @@
   note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
   note_vcov_jackknife_plain = "jackknife",
   note_vcov_wald_asymptotic = "Wald asymptotic (z)",
+  # The variance estimator of a fit under a sampling design, named by the
+  # MECHANISM the design actually uses -- not by the design's R class,
+  # which is never shown to a reader, and not by whether the descriptive
+  # twins support it (a without-replacement pps design is linearised and
+  # unsupported there). `note_vcov_design_taylor` holds the value the
+  # label had while it was a literal, so the linearised case stays
+  # byte-identical.
+  #
+  # One hole on the replicate line: the scheme identifier survey stores
+  # (JK1 / JKn / BRR / bootstrap / ...), never translated. The bare
+  # variant covers a design whose scheme is absent or `"other"` -- a
+  # legal value of `svrepdesign(type = )` that names nothing.
+  note_vcov_design_taylor = "Design-based (Taylor linearisation)",
+  note_vcov_design_replicate = "Design-based (replicate weights, %s)",
+  note_vcov_design_replicate_bare = "Design-based (replicate weights)",
+  note_vcov_design_twophase = "Design-based (two-phase design)",
+  note_vcov_design_bare = "Design-based",
   note_vcov_cluster_by = ", clusters by %s",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",

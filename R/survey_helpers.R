@@ -293,6 +293,57 @@
   sum(w)
 }
 
+# The replicate schemes survey names in `design$type`. `"other"` is a
+# legal value of `svrepdesign(type = )` and is deliberately absent: it
+# identifies nothing, so the label drops the parenthesis rather than
+# printing a word that means "unspecified". `"Fay"` is in survey's own
+# vocabulary but `as.svrepdesign(type = "Fay")` stores `"BRR"` (Fay's
+# method is BRR with a shrinkage factor); it is listed so a design built
+# another way still resolves.
+.SVYREP_TYPES <- c(
+  "BRR",
+  "Fay",
+  "JK1",
+  "JKn",
+  "bootstrap",
+  "subbootstrap",
+  "mrbbootstrap"
+)
+
+# The variance estimator a design fit actually uses, as the footer names
+# it. Indexed on the MECHANISM, which is the only thing the label is
+# about:
+#   * a two-phase design first, because `twophase2` also inherits
+#     `survey.design` and would otherwise be called linearised;
+#   * a replicate design by its scheme, or bare when the scheme is
+#     absent or `"other"`;
+#   * everything else built by `svydesign()` -- including calibrated,
+#     post-stratified and without-replacement pps designs, whose
+#     `ppsvar()` IS a linearisation -- by Taylor linearisation;
+#   * a detached or unknown design: "Design-based", never `class(des)`.
+#     An R class name is an implementation detail, not a variance
+#     estimator, and it is not something a reader of a table can act on.
+.design_vcov_label <- function(fit) {
+  des <- tryCatch(fit$survey.design, error = function(e) NULL)
+  if (is.null(des)) {
+    return(spicy_str("note_vcov_design_bare"))
+  }
+  if (inherits(des, c("twophase", "twophase2"))) {
+    return(spicy_str("note_vcov_design_twophase"))
+  }
+  if (inherits(des, "svyrep.design")) {
+    type <- as.character(des$type %||% NA_character_)
+    if (length(type) != 1L || is.na(type) || !type %in% .SVYREP_TYPES) {
+      return(spicy_str("note_vcov_design_replicate_bare"))
+    }
+    return(spicy_fmt("note_vcov_design_replicate", type))
+  }
+  if (inherits(des, "survey.design")) {
+    return(spicy_str("note_vcov_design_taylor"))
+  }
+  spicy_str("note_vcov_design_bare")
+}
+
 # The display domains of a `by =` variable, and the vector that keys
 # them.
 #

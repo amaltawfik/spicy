@@ -211,6 +211,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* `table_regression()` names the variance estimator the design actually
+  uses -- replicate weights and their scheme, two-phase designs -- instead
+  of always reporting Taylor linearisation.
+
 * Handing a `survey` design object to `table_continuous()`,
   `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now
   errors with the function to call instead, rather than with
