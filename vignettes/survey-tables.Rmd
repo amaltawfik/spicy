@@ -420,7 +420,9 @@ Two-phase, pps, database-backed and multiframe designs are refused
 with a classed error rather than approximated: the delegation map was
 measured on `svydesign()` and `as.svrepdesign()` designs, and a
 plausible wrong number is worse than a refusal. Call survey directly
-for those, and say which design you need.
+for those -- and if one of them matters for your work, an issue on the
+package's tracker saying which design you need is the fastest way to
+move it up the roadmap.
 
 ## References
 
