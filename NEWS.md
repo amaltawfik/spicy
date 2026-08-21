@@ -360,6 +360,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   level, continuous predictors the +1-unit contrast.
 * Stratified Cox fits keep each subject's own stratum baseline; stratified
   `survreg` fits are refused.
+* The baseline hazard behind these columns follows the tie handling of the
+  fit, as `survfit()` and `basehaz()` do: a `ties = "breslow"` fit gives a
+  Breslow baseline, the default Efron fit an Efron one. Documented in
+  `?table_regression` and `vignette("table-regression-survival")`.
 * New `show_columns` token `"n_events"`: event counts as `events/N` next to
   the estimates -- per factor level (reference row included), model totals
   on continuous rows -- for binomial outcomes (`glm`, `glmer`, `glmmTMB`)
