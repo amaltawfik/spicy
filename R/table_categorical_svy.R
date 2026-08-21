@@ -130,13 +130,25 @@
     }
   }
   if (isTRUE(proportion_ci) && is.finite(df) && df > 0) {
+    # The DOMAIN, not the design. The percentage comes from
+    # `svymean(na.rm = TRUE)`, which cuts to the complete cases
+    # internally; `svyciprop()` has no `na.rm` and, depending on the
+    # method, either routes through `svyglm()` (which drops the NA rows
+    # itself) or through `svymean()` without `na.rm` (which returns NA).
+    # Five of the seven methods -- "mean", "beta", "wilson", "asin",
+    # "xlogit" -- therefore returned a column of dashes on any variable
+    # with a missing value, under a footer promising those very
+    # intervals. The default "logit" is one of the two that survived,
+    # which is why nothing red showed. Cutting here puts the interval on
+    # the same rows the percentage describes.
+    dom_i <- .design_subset(design, !is.na(design$variables[[var]]))
     for (i in seq_len(k)) {
       if (is.na(out$pct[[i]])) {
         next
       }
       ci <- .svy_try(stats::confint(survey::svyciprop(
         .cat_svy_indicator(var, levels[[i]]),
-        design,
+        dom_i,
         method = ci_method,
         level = ci_level,
         df = df
@@ -162,7 +174,24 @@
 }
 
 # The design-based test of association, delegated whole.
+#
+# `design` is the COMPLETE-CASE domain the caller cut: `svychisq()` has
+# no `na.rm`, so on the full design it tested a table the percentages
+# above it did not describe. The statistic was unchanged, but the
+# reference distribution was not -- on a `stype` with 20 NA the
+# denominator degrees of freedom went from 15.68 to 19.95 and the
+# p-value from 0.06186 to 0.05710, silently.
+#
+# `droplevels()` on both variables is the other half of that rule, and
+# the reason the two families now test the same table: a `(Missing)`
+# display level, or a declared level nobody chose, is descriptive and
+# does not enter the null hypothesis -- the convention
+# `table_categorical()` has always applied.
 .cat_svy_test <- function(design, var, group_var, statistic) {
+  design$variables[[var]] <- droplevels(as.factor(design$variables[[var]]))
+  design$variables[[group_var]] <- droplevels(
+    as.factor(design$variables[[group_var]])
+  )
   form <- stats::as.formula(paste0("~`", var, "` + `", group_var, "`"))
   r <- .svy_try(survey::svychisq(form, design, statistic = statistic))
   if (is.null(r)) {
@@ -223,6 +252,13 @@
 #' referred to F(ndf, `survey::degf(design)`). It is survey's own
 #' default and the one Stata's `svy: tabulate` reports.
 #'
+#' It runs on the COMPLETE CASES of the two variables, and on their
+#' observed levels: a `(Missing)` row and a declared-but-unobserved
+#' level are descriptive, and neither belongs to the null hypothesis.
+#' The p-value is therefore the same whether `drop_na` shows those rows
+#' or removes them, and the intervals beside it describe the same
+#' domain -- the two families test the same table.
+#'
 #' `"Chisq"` shows the p-value only: survey adjusts the statistic in
 #' the `"F"` branch and only the p-value in the `"Chisq"` one, so the
 #' statistic there is not the one the p-value came from. `"Wald"`,
@@ -254,7 +290,9 @@
 #' @param include_total Add a `Total` column block with the whole
 #'   design's percentages (default `TRUE`, only with `by`).
 #' @param drop_na Drop missing values (default `FALSE`: they show as a
-#'   `(Missing)` level, excluded from the test).
+#'   `(Missing)` level). Shown or dropped, they never enter the test:
+#'   the p-value is computed on the complete cases either way, which is
+#'   the convention [table_categorical()] applies.
 #' @param proportion_ci Add the confidence interval of each percentage.
 #' @param ci_method Interval method passed to `survey::svyciprop()`:
 #'   `"logit"` (default), `"likelihood"`, `"asin"`, `"beta"`,
@@ -600,8 +638,15 @@ table_categorical_svy <- function(
       domains[[.cat_svy_block_id(b)]] <- dom
     }
     p_i <- if (p_value) {
+      # `vars` is the snapshot taken BEFORE the missing category was
+      # promoted to a level, so this mask is the genuine complete-case
+      # one: the `(Missing)` row is displayed and not tested, exactly as
+      # `table_categorical()` does it.
       .cat_svy_test(
-        .design_subset(design, !is.na(vars[[group_col_name]])),
+        .design_subset(
+          design,
+          !is.na(vars[[nm]]) & !is.na(vars[[group_col_name]])
+        ),
         nm,
         group_col_name,
         chisq_statistic

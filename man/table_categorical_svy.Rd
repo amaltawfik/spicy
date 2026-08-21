@@ -53,7 +53,9 @@ variables) or a named list (per variable).}
 design's percentages (default \code{TRUE}, only with \code{by}).}
 
 \item{drop_na}{Drop missing values (default \code{FALSE}: they show as a
-\code{(Missing)} level, excluded from the test).}
+\code{(Missing)} level). Shown or dropped, they never enter the test:
+the p-value is computed on the complete cases either way, which is
+the convention \code{\link[=table_categorical]{table_categorical()}} applies.}
 
 \item{proportion_ci}{Add the confidence interval of each percentage.}
 
@@ -133,6 +135,13 @@ interval (\code{"mean"}) is not. The percentage itself always comes from
 Pearson chi-square with the Rao-Scott second-order correction,
 referred to F(ndf, \code{survey::degf(design)}). It is survey's own
 default and the one Stata's \code{svy: tabulate} reports.
+
+It runs on the COMPLETE CASES of the two variables, and on their
+observed levels: a \code{(Missing)} row and a declared-but-unobserved
+level are descriptive, and neither belongs to the null hypothesis.
+The p-value is therefore the same whether \code{drop_na} shows those rows
+or removes them, and the intervals beside it describe the same
+domain -- the two families test the same table.
 
 \code{"Chisq"} shows the p-value only: survey adjusts the statistic in
 the \code{"F"} branch and only the p-value in the \code{"Chisq"} one, so the

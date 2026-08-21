@@ -311,6 +311,117 @@ test_that("missing values are a level of their own by default", {
   expect_equal(sum(dropped[["%"]][-1L]), 100, tolerance = 1e-9)
 })
 
+.svycat_holed <- function() {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$stype[1:20] <- NA
+  survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+}
+
+test_that("every ci_method returns an interval on a variable with NA", {
+  # `svyciprop()` has no `na.rm`. Handed the whole design it routes,
+  # depending on the method, either through `svyglm()` (which drops the
+  # NA rows itself) or through `svymean()` without `na.rm` (which
+  # returns NA) -- so five of the seven printed a column of dashes,
+  # under a footer naming the intervals it had not produced. Only
+  # "logit" and "likelihood" survived, and "logit" is the default,
+  # which is why nothing red showed.
+  d <- .svycat_holed()
+  for (m in c(
+    "logit",
+    "likelihood",
+    "asin",
+    "beta",
+    "mean",
+    "xlogit",
+    "wilson"
+  )) {
+    out <- .svycat_long(
+      d,
+      select = stype,
+      proportion_ci = TRUE,
+      ci_method = m,
+      drop_na = TRUE
+    )
+    expect_false(
+      any(is.na(out[["% CI lower"]][-1L])),
+      info = paste0("no lower bound for ci_method = ", m)
+    )
+    expect_false(
+      any(is.na(out[["% CI upper"]][-1L])),
+      info = paste0("no upper bound for ci_method = ", m)
+    )
+  }
+  # "wilson" is the method that justifies the `survey (>= 4.5)` floor,
+  # and it was one of the five. Pinned against survey on the domain.
+  wil <- .svycat_long(
+    d,
+    select = stype,
+    proportion_ci = TRUE,
+    ci_method = "wilson",
+    drop_na = TRUE
+  )
+  expect_equal(
+    c(wil[["% CI lower"]][[2L]], wil[["% CI upper"]][[2L]]),
+    c(68.155858166588729, 88.675138910321778),
+    tolerance = 1e-10
+  )
+})
+
+test_that("the p tests the rows the percentages describe", {
+  # `svychisq()` has no `na.rm` either. On the full design the
+  # statistic is right and the reference distribution is not: the
+  # denominator degrees of freedom follow `degf()`, which falls from 14
+  # to 11 on the domain, so the p-value moved from 0.06186 to 0.05710
+  # without a word.
+  d <- .svycat_holed()
+  dom <- survey::svychisq(
+    ~ stype + sch.wide,
+    subset(d, !is.na(stype))
+  )$p.value
+  uncut <- survey::svychisq(~ stype + sch.wide, d)$p.value
+  expect_equal(as.numeric(dom), 0.061856261403043983, tolerance = 1e-12)
+  expect_equal(as.numeric(uncut), 0.057098653216302274, tolerance = 1e-12)
+
+  kept <- .svycat_long(d, select = stype, by = sch.wide)
+  expect_equal(kept$p[[1L]], as.numeric(dom), tolerance = 1e-12)
+  expect_false(isTRUE(all.equal(kept$p[[1L]], as.numeric(uncut))))
+
+  # And the SAME table is tested whether the `(Missing)` row is shown
+  # or not: it is a descriptive row, not a category of the null
+  # hypothesis -- the convention `table_categorical()` has always
+  # applied. Before this, showing the row tested a 4x2 table (p =
+  # 0.0949) and hiding it tested an uncut 3x2 (p = 0.0571): two
+  # different hypotheses from one argument that only governs display.
+  dropped <- .svycat_long(d, select = stype, by = sch.wide, drop_na = TRUE)
+  expect_equal(kept$p[[1L]], dropped$p[[1L]], tolerance = 1e-12)
+  expect_identical(kept$level[[5L]], "(Missing)")
+  expect_false("(Missing)" %in% dropped$level)
+})
+
+test_that("a declared level nobody chose does not enter the test", {
+  # Same rule, the other way in: `droplevels()` inside the test keeps a
+  # ghost level out of the table being tested, so a level added to the
+  # factor and never observed cannot move the p.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  plain <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = dat,
+    fpc = ~fpc
+  )
+  dat$stype <- factor(as.character(dat$stype), levels = c("E", "H", "M", "Z"))
+  ghost <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  expect_equal(
+    .svycat_long(ghost, select = stype, by = sch.wide)$p[[1L]],
+    .svycat_long(plain, select = stype, by = sch.wide)$p[[1L]],
+    tolerance = 1e-12
+  )
+})
+
 test_that("`levels_keep` selects levels, as a vector or per variable", {
   d <- .svycat_design("clus1")
   out <- .svycat_long(d, select = stype, levels_keep = c("E", "M"))
