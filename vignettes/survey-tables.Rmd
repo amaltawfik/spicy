@@ -270,9 +270,11 @@ Three things in that footer are worth naming.
 
 The design line says what the design is and how many degrees of freedom
 the table's own tests use. That number is the *model's* residual df --
-`degf(dstrat)` minus the non-intercept parameters, which is what survey
-writes on the fit and what `survey::regTermTest()` takes as its
-denominator -- not the design's own:
+what survey writes on the fit, and what `survey::regTermTest()` takes as
+its denominator -- not the design's own. It is read, never re-derived:
+the engines of survey do not share one expression, and a Cox fit ends
+one degree of freedom above what the same arithmetic would give for a
+`svyglm`. For this linear fit:
 
 ```{r reg-df}
 c(design = degf(dstrat), model = df.residual(gl))

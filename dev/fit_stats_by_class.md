@@ -29,7 +29,7 @@ Columns:
 | `glm` | `stats::glm` | ✅ | OR / IRR / RR | — |
 | `svyglm` | `survey::svyglm` | ✅ (design-based) | OR / IRR | — |
 | `svyolr` | `survey::svyolr` | ✅ per category (design-based) | OR (logit) | Thresholds |
-| `svycoxph` | `survey::svycoxph` | — (no response scale) | HR | — |
+| `svycoxph` | `survey::svycoxph` | ❌ hazard scale; ❌ RMST / risk-diff (row bootstrap ignores the design) | HR | — |
 | `gam` | `mgcv::gam` | ✅ | OR / IRR (link) | 🔶 smooth-terms (edf) |
 | `lm_robust` / `iv_robust` | `estimatr::*` | ✅ | — | — |
 | `rq` | `quantreg::rq` | ✅ | — | — |

@@ -403,9 +403,12 @@
 #' Inference is Wald **t** at the degrees of freedom survey writes on
 #' the FIT -- `df.residual` for `svyglm` / `svyolr`, `degf.resid` or
 #' `degf.residual` for the two Cox engines -- which is what
-#' [survey::regTermTest()] takes as its denominator. That is the
-#' design's own degrees of freedom minus the non-intercept parameters,
-#' not `survey::degf(design)`; the footer names the design and prints
+#' [survey::regTermTest()] takes as its denominator. It is not
+#' `survey::degf(design)`, and it is not re-derived here: the six engines
+#' of survey do not share one expression and are not harmonised (a Cox
+#' fit carries `degf(design) - p + 1` although it has no intercept for
+#' the `+ 1` to cancel, so it ends one above the two other classes). The
+#' value is read off the object. The footer names the design and prints
 #' the number, and the average marginal effects answer to the same
 #' distribution as the coefficient rows.
 #'
