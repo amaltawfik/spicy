@@ -647,7 +647,9 @@ measured on
 [`svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html) and
 [`as.svrepdesign()`](https://rdrr.io/pkg/survey/man/as.svrepdesign.html)
 designs, and a plausible wrong number is worse than a refusal. Call
-survey directly for those, and say which design you need.
+survey directly for those – and if one of them matters for your work, an
+issue on the package’s tracker saying which design you need is the
+fastest way to move it up the roadmap.
 
 ## References
 
