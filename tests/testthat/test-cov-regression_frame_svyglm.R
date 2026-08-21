@@ -7,7 +7,7 @@
 #   * no-intercept factor model -> reference NOT dropped -> empty ref frame
 #   * .svyglm_family_title() arms: poisson / Gamma / inverse.gaussian /
 #     gaussian (identity) / default fall-through
-#   * .svyglm_weighted_n() / .svyglm_design_class() defensive NA branches
+#   * .design_weighted_n() / .svyglm_design_class() defensive NA branches
 #     for fits whose survey.design has been detached or stripped of weights
 # ---------------------------------------------------------------------------
 
@@ -101,21 +101,23 @@ test_that("svyglm Gamma fit: title_prefix uses the Gamma family label", {
 
 # ---- 4. Defensive NA branches for detached / weightless designs ----------
 
-test_that(".svyglm_weighted_n returns NA when survey.design is detached", {
+test_that(".design_weighted_n returns NA when survey.design is detached", {
   d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ ell, design = d)
+  n <- as.integer(stats::nobs(fit))
   fit$survey.design <- NULL
-  expect_identical(spicy:::.svyglm_weighted_n(fit), NA_real_)
+  expect_identical(spicy:::.design_weighted_n(fit, n), NA_real_)
 })
 
-test_that(".svyglm_weighted_n returns NA when the design carries no weights", {
+test_that(".design_weighted_n returns NA when the design carries no weights", {
   d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ ell, design = d)
+  n <- as.integer(stats::nobs(fit))
   # Strip the inclusion probabilities so weights(design) is length-0.
   des <- fit$survey.design
   des$prob <- numeric(0)
   fit$survey.design <- des
-  expect_identical(spicy:::.svyglm_weighted_n(fit), NA_real_)
+  expect_identical(spicy:::.design_weighted_n(fit, n), NA_real_)
 })
 
 test_that(".svyglm_design_class returns NA when survey.design is detached", {
@@ -129,4 +131,49 @@ test_that(".svyglm_design_class names the design class for an attached design", 
   d <- .cov_svy_design()
   fit <- survey::svyglm(api00 ~ ell, design = d)
   expect_match(spicy:::.svyglm_design_class(fit), "design", fixed = TRUE)
+})
+
+
+# ---- 5. A design glm with no information criterion at all ----------------
+
+test_that("a no-intercept quasibinomial svyglm has no AIC, and says nothing", {
+  # `extractAIC.svyglm` stops with "model has no intercept, null cannot
+  # have one". The gaussian no-intercept fixture above does NOT reach it:
+  # `is.svylm()` routes gaussians to `extractAIC_svylm`, whose body has
+  # no such stop. Change the family and the branch runs -- on an ordinary
+  # fit that nothing in the validator refuses.
+  d <- .cov_svy_design()
+  fit <- suppressWarnings(survey::svyglm(
+    sch.wide ~ 0 + stype,
+    design = d,
+    family = stats::quasibinomial()
+  ))
+  expect_error(stats::AIC(fit), "no intercept")
+  # Neither number exists, and neither is invented.
+  expect_identical(spicy:::.svyglm_aic(fit), NA_real_)
+  expect_identical(spicy:::.svyglm_eff_p(fit), NA_real_)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_invisible(spicy:::validate_regression_frame(fr))
+  expect_true(is.na(fr$info$fit_stats$aic))
+  expect_true(is.na(fr$info$fit_stats$eff_p))
+  # The table renders, with the counts and without an AIC row.
+  out <- paste(
+    utils::capture.output(print(table_regression(fit, show_columns = c("b")))),
+    collapse = "\n"
+  )
+  expect_false(grepl("AIC", out, fixed = TRUE))
+  expect_false(grepl("Effective parameters", out, fixed = TRUE))
+  expect_match(out, "Weighted n", fixed = TRUE)
+  expect_match(out, "residual degrees of freedom.", fixed = TRUE)
+  # And an explicit request for either token still prints no row.
+  out2 <- paste(
+    utils::capture.output(print(table_regression(
+      fit,
+      show_columns = c("b"),
+      show_fit_stats = c("nobs", "aic", "eff_p")
+    ))),
+    collapse = "\n"
+  )
+  expect_false(grepl("AIC", out2, fixed = TRUE))
+  expect_false(grepl("Effective parameters", out2, fixed = TRUE))
 })

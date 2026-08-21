@@ -122,6 +122,11 @@
 #'     `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 #'   \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
 #'     / glm dispersion), `"rmse"`.
+#'   \item Survey designs (`survey::svyglm` only): `"eff_p"`, the
+#'     effective number of parameters of the design (the first element
+#'     of survey's `extractAIC`, the sum of the Rao-Scott eigenvalues).
+#'     Opt-in and distinct from `"aic"`, which reports the design-based
+#'     AIC of Lumley & Scott (2015). Blank for other classes.
 #'   \item Bayesian fits only: `"r2_bayes"` (posterior-median
 #'     Bayesian \eqn{R^2}{R^2}, Gelman et al. 2019 -- in the
 #'     all-Bayesian default), `"elpd_loo"` and `"looic"` (PSIS-LOO
@@ -1724,8 +1729,19 @@ table_regression <- function(
     # refused by the class-aware token gate. Their own branch below
     # reports the cluster structure instead.
     is_gee <- vapply(models, inherits, logical(1), "geeglm")
+    # Survey-design fits inherit "glm" (svyglm) or "coxph" (svycoxph),
+    # and the sets those branches inject are wrong for them: there is no
+    # likelihood, so the pseudo-R^2 pair and the Cox AIC name statistics
+    # that do not exist. EXCLUDED from the predicates rather than
+    # answered before them -- the branches below are independent
+    # predicates that CONCATENATE, so an earlier one removes nothing.
+    # Same idiom as is_bayes / is_gee.
+    is_design <- vapply(models, .is_design_fit, logical(1))
     any_glm <- any(
-      vapply(models, inherits, logical(1), "glm") & !is_bayes & !is_gee
+      vapply(models, inherits, logical(1), "glm") &
+        !is_bayes &
+        !is_gee &
+        !is_design
     )
     any_lm_only <- any(
       vapply(
@@ -1850,13 +1866,9 @@ table_regression <- function(
     # of events (EpiRHandbook survival chapter; Stata stcox header).
     # n_events is NA outside the coxph frame, and the renderer skips
     # the row when no model carries a value.
-    any_coxph <- any(vapply(
-      models,
-      function(f) {
-        inherits(f, "coxph")
-      },
-      logical(1)
-    ))
+    any_coxph <- any(
+      vapply(models, inherits, logical(1), "coxph") & !is_design
+    )
     if (any_coxph) {
       show_fit_stats <- c(
         show_fit_stats,
@@ -1886,6 +1898,37 @@ table_regression <- function(
         "within_r2",
         if (any_fixest_glm) "pseudo_r2_mcfadden",
         "aic"
+      )
+    }
+    # Survey-design fits: the observed count AND the population it
+    # describes, because a table that shows one `n` under a design does
+    # not say which of the two it is -- the twins' header has said both
+    # since decision 28 ("N = 200 (weighted 6194)"). A design-based Cox
+    # adds the event count, the field convention beside a survival
+    # estimate; a design-based glm adds the design AIC of Lumley &
+    # Scott, the only information criterion published for that class.
+    # The other two design classes carry NA there, and an all-NA row is
+    # dropped by the renderer.
+    if (any(is_design)) {
+      show_fit_stats <- unique(c(
+        show_fit_stats,
+        "nobs",
+        "weighted_nobs",
+        if (any(vapply(models, inherits, logical(1), "coxph") & is_design)) {
+          "n_events"
+        },
+        if (any(vapply(models, inherits, logical(1), "glm") & is_design)) {
+          "aic"
+        }
+      ))
+      # The two counts are read together, so they are printed together:
+      # in a MIXED table a co-model's branch has already queued its own
+      # statistics, and appending would strand "Weighted n" below them.
+      rest <- show_fit_stats[show_fit_stats != "weighted_nobs"]
+      show_fit_stats <- append(
+        rest,
+        "weighted_nobs",
+        after = match("nobs", rest)
       )
     }
     # Universal safety net: a class matched by none of the branches above
@@ -2797,7 +2840,10 @@ table_regression <- function(
         character(1)
       ))
       # Cox models have the ABSOLUTE estimand family instead: point
-      # there rather than leaving the reader without a next step.
+      # there rather than leaving the reader without a next step. (A
+      # DESIGN-based Cox never reaches here: the all-Cox token gate in
+      # validate_show_columns() refuses it first, with a hint of its own
+      # that points at survey rather than at estimands it also refuses.)
       hint_main <- if (any(classes == "coxph")) {
         paste0(
           "For a Cox model, the absolute-effect columns are the RMST ",

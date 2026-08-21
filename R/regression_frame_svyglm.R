@@ -1,9 +1,7 @@
 # ---------------------------------------------------------------------------
-# as_regression_frame() methods for survey-design fits: the supported one
-# (svyglm / svrepglm) and the explicit refusal for svycoxph, which would
-# otherwise be swallowed by inheritance (see the bottom of this file).
-#
-# Phase 2: as_regression_frame() method for survey::svyglm() fits.
+# as_regression_frame() method for survey::svyglm() fits (and svrepglm,
+# which inherits it). The other two design classes have their own files:
+# R/regression_frame_svyolr.R and R/regression_frame_svycoxph.R.
 #
 # `svyglm` inherits from `glm` and `lm`, so without an explicit method
 # spicy's `as_regression_frame.lm()` would dispatch on inheritance and
@@ -42,6 +40,7 @@ as_regression_frame.svyglm <- function(
 ) {
   .check_survey_available()
 
+  df <- .design_model_df(fit)
   coefs <- .svyglm_coefs(fit, ci_level = ci_level)
   # `vcov` can only be the design-based default here ("survey-Taylor" /
   # "model" / "classical"): the design is the variance authority, so
@@ -58,14 +57,18 @@ as_regression_frame.svyglm <- function(
     test = "z"
   )
   # Design-based response-scale AME (marginaleffects::avg_slopes uses the
-  # survey design vcov).
+  # survey design vcov). `df =`: the AME rows sit under the same column
+  # headers as the coefficient rows and must answer to the same
+  # reference distribution -- the design's residual degrees of freedom,
+  # not the asymptotic normal marginaleffects defaults to.
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
     fit,
     ci_level,
     show_columns,
     vcov_type = vcov,
-    cluster = cluster
+    cluster = cluster,
+    df = df
   )
   info <- .svyglm_info(
     fit,
@@ -73,57 +76,11 @@ as_regression_frame.svyglm <- function(
     vcov_label = vcov_label,
     ci_level = ci_level,
     ci_method = ci_method,
-    model_id = model_id
+    model_id = model_id,
+    df = df
   )
 
   new_regression_frame(coefs, info, fit)
-}
-
-
-# ---- Design-based Cox: explicit refusal -----------------------------------
-
-# class(svycoxph_fit) is c("svycoxph", "coxph"), so WITHOUT this method the
-# fit dispatches to as_regression_frame.coxph() by inheritance, walks into
-# the coxph extractor and dies there: .coxph_info() calls stats::AIC(fit),
-# and survey's extractAIC method stops with the unclassed
-# "No AIC for survey models" -- preceded by six lines of design description
-# printed as a side effect by the two summary(fit) calls the coxph path
-# makes (survey's summary.svycoxph prints the design). A caller could
-# neither catch the failure by class nor keep the console clean.
-#
-# The refusal is deliberate rather than provisional. A design-based Cox
-# table is not a coxph table with a different vcov: the coefficients come
-# from a design-weighted partial likelihood, the variance from the design,
-# there is no likelihood (hence no AIC / BIC / logLik and no Cox-Snell R2),
-# and the canonical global test is survey::regTermTest(), not the three
-# likelihood-ratio tests a coxph footer reports. Shipping half of that now
-# would be worse than saying so.
-#
-#' `as_regression_frame()` method for `svycoxph` fits (refusal).
-#'
-#' @keywords internal
-#' @noRd
-#' @export
-as_regression_frame.svycoxph <- function(fit, ...) {
-  spicy_abort(
-    c(
-      sprintf(
-        "table_regression() does not support model class %s yet.",
-        sQuote(class(fit)[1L])
-      ),
-      "i" = paste0(
-        "Design-based Cox models arrive with the survey-design work; ",
-        "a partial table now would report likelihood statistics that do ",
-        "not exist for a design-weighted fit."
-      ),
-      "i" = paste0(
-        "For now, `summary(fit)` gives the design-based coefficient ",
-        "table and `survey::regTermTest(fit, ~term)` the design-based ",
-        "Wald test."
-      )
-    ),
-    class = "spicy_unsupported_class"
-  )
 }
 
 
@@ -171,18 +128,13 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     p_value <- 2 * stats::pt(-abs(stat), df = df_resid)
   } # nocov end
 
-  # df: survey's t-Wald uses df.residual(). For a sufficiently large
-  # design this is large; for highly-stratified designs it can be small.
-  dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-  # nocov: df.residual() on a valid svyglm always returns a finite count
-  # (length(residuals) - rank via df.residual.default); this z-fallback
-  # assignment is a defensive guard for a degenerate fit we can't construct.
-  if (is.null(dfr) || !is.finite(dfr)) {
-    dfr <- Inf # nocov
-  }
-  df_vec <- rep(as.numeric(dfr), length(est))
+  # df: survey's t-Wald uses df.residual(), which is what regTermTest()
+  # takes as its denominator too. Read through the shared accessor, which
+  # aborts rather than falling back to Inf: a silent z under a footer
+  # declaring a t is the failure mode worth refusing.
+  df_vec <- rep(.design_model_df(fit), length(est))
 
-  # Wald CI with t. Falls back to z if df is Inf.
+  # Wald CI with t at the design's residual degrees of freedom.
   crit <- stats::qt(0.5 + ci_level / 2, df = df_vec)
   ci_lower <- unname(est) - crit * se
   ci_upper <- unname(est) + crit * se
@@ -284,7 +236,8 @@ as_regression_frame.svycoxph <- function(fit, ...) {
   vcov_label,
   ci_level,
   ci_method,
-  model_id
+  model_id,
+  df
 ) {
   fam <- stats::family(fit)
   family_info <- list(family = fam$family, link = fam$link)
@@ -297,34 +250,35 @@ as_regression_frame.svycoxph <- function(fit, ...) {
   # We catch them defensively (the values are reported as NA when the
   # method isn't applicable) and suppress the noise so the renderer
   # footer stays clean.
+  n_obs <- .design_fit_n_obs(fit)
   fit_stats <- list(
     r_squared = NA_real_,
     adj_r_squared = NA_real_,
     pseudo_r2 = NULL,
-    aic = tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) {
-      NA_real_
-    }),
+    aic = .svyglm_aic(fit),
     bic = tryCatch(suppressWarnings(stats::BIC(fit)), error = function(e) {
       NA_real_
     }),
-    log_lik = tryCatch(
-      suppressWarnings(
-        as.numeric(stats::logLik(fit))
-      ),
-      error = function(e) NA_real_
-    ),
-    deviance = tryCatch(
-      suppressWarnings(stats::deviance(fit)),
-      error = function(e) NA_real_
-    ),
-    sigma = tryCatch(suppressWarnings(stats::sigma(fit)), error = function(e) {
-      NA_real_
-    }),
-    nobs = as.integer(stats::nobs(fit)),
+    # logLik / deviance / sigma DO return a number here, and none of the
+    # three describes the fit. `logLik.svyglm` warns "not fitted by
+    # maximum likelihood" and returns the weighted quasi-likelihood
+    # (-287669.8 on the api cluster design); the deviance is on the scale
+    # of the SUM OF THE WEIGHTS (575339.7 for 183 schools), so it grows
+    # with the population rather than with the misfit. They are posted as
+    # NA in the frame, not merely kept out of the default token set: an
+    # explicit `show_fit_stats` and a mixed table both go around the
+    # defaults.
+    log_lik = NA_real_,
+    deviance = NA_real_,
+    sigma = NA_real_,
+    nobs = n_obs,
+    # Opt-in, under its own name: the effective number of parameters of
+    # the design, which is what the AIC row showed until 0.13.
+    eff_p = .svyglm_eff_p(fit),
     # Sum of design weights: makes the "weighted_nobs" token render
     # (it was silently swallowed -- extras carried the value but the
     # fit-stats materialiser only reads fit_stats).
-    weighted_nobs = .svyglm_weighted_n(fit)
+    weighted_nobs = .design_weighted_n(fit, n_obs)
   )
 
   if (is.null(ci_method)) {
@@ -359,11 +313,15 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     has_singular = FALSE,
     singular_terms = character(0),
     has_weights = TRUE,
-    weighted_n = .svyglm_weighted_n(fit),
+    weighted_n = fit_stats$weighted_nobs,
     title_prefix = title_prefix,
     exp_applied = FALSE,
     exp_header = NA_character_,
-    design_class = .svyglm_design_class(fit)
+    design_class = .svyglm_design_class(fit),
+    # Footer disclosure: the sampling scheme, read off the ANALYTIC
+    # design, and the degrees of freedom the table's own tests use.
+    design_meta = .design_meta_or_null(.design_analytic(fit, n_obs)),
+    design_degf_resid = df
   )
 
   list(
@@ -371,13 +329,13 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     family = family_info,
     dv = dv,
     dv_label = dv_label,
-    n_obs = as.integer(stats::nobs(fit)),
+    n_obs = n_obs,
     n_groups = NULL,
     weights_kind = "sampling",
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% "Design-based (Taylor linearisation)",
+    vcov_label = vcov_label %||% .design_vcov_label(fit),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
@@ -415,24 +373,56 @@ as_regression_frame.svycoxph <- function(fit, ...) {
 }
 
 
-# Sum of design weights for the analytic sample. Returns NA when the
-# design object cannot be accessed (e.g., serialised fits with detached
-# design).
-.svyglm_weighted_n <- function(fit) {
-  tryCatch(
-    {
-      des <- fit$survey.design
-      if (is.null(des)) {
-        return(NA_real_)
-      }
-      w <- stats::weights(des)
-      if (is.null(w) || length(w) == 0L) {
-        return(NA_real_)
-      }
-      sum(w)
-    },
-    error = function(e) NA_real_
-  )
+# The information criterion of a design-based glm, as a SCALAR.
+#
+# `AIC.svyglm` does not honour the `stats::AIC` contract: it returns
+# survey's `extractAIC.svyglm` verbatim, a named vector of length three
+# -- `c(eff.p, AIC, deltabar)`. Stored whole, the downstream compactor
+# takes element 1, so the table printed the effective number of design
+# parameters (4.6) under the header "AIC" where the criterion itself is
+# 2002.2. The element is therefore read BY NAME, here, once.
+#
+# The value named "AIC" is Lumley & Scott's design-based AIC (deviance
+# plus k times the sum of the Rao-Scott eigenvalues), the criterion
+# written for model comparison under a complex design and the only
+# quantity of its kind published for this class. `BIC.svyglm` is not
+# its counterpart -- it requires a `maximal =` model and errors without
+# one -- so bic stays NA.
+# The effective number of parameters of the design: the first element of
+# survey's `extractAIC.svyglm` return, the sum of the Rao-Scott
+# eigenvalues. Real information, and free -- but it is not an AIC, which
+# is what it was published as.
+# Both accessors reach their absent branch on an ordinary fit, not on a
+# degenerate one: `extractAIC.svyglm` stops with "model has no intercept,
+# null cannot have one", so any non-gaussian fit without an intercept --
+# `svyglm(y ~ 0 + x, family = quasibinomial())` -- has no criterion and
+# no effective parameter count. (A gaussian one is routed to
+# `extractAIC_svylm`, which has no such stop, which is why the fixture
+# that already existed did not exercise this.) The table then renders
+# without an AIC row, which is the right answer and is pinned as one.
+.svyglm_eff_p <- function(fit) {
+  a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
+  if (is.null(a) || !is.numeric(a) || !("eff.p" %in% names(a))) {
+    return(NA_real_)
+  }
+  as.numeric(a[["eff.p"]])
+}
+
+
+.svyglm_aic <- function(fit) {
+  a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
+  if (is.null(a) || !is.numeric(a) || length(a) == 0L) {
+    return(NA_real_)
+  }
+  if ("AIC" %in% names(a)) {
+    return(as.numeric(a[["AIC"]]))
+  }
+  # A future survey that honours the contract returns a scalar; anything
+  # else is not an AIC we can name.
+  if (length(a) == 1L) {
+    return(as.numeric(a)) # nocov
+  }
+  NA_real_ # nocov
 }
 
 

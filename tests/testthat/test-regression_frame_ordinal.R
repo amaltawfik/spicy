@@ -124,9 +124,21 @@ test_that("polr: thresholds tibble has (k - 1) rows with finite p-values", {
   expect_identical(nrow(th), length(fit$lev) - 1L)
   expect_setequal(
     colnames(th),
-    c("term", "estimate", "std_error", "statistic", "p_value")
+    c(
+      "term",
+      "estimate",
+      "std_error",
+      "statistic",
+      "p_value",
+      "df",
+      "test_type"
+    )
   )
   expect_true(all(is.finite(th$p_value)))
+  # The block carries its own reference distribution: asymptotic normal
+  # for a maximum-likelihood cumulative-link fit.
+  expect_true(all(is.infinite(th$df)))
+  expect_true(all(th$test_type == "z"))
 })
 
 test_that("polr: threshold estimates match fit$zeta", {
@@ -324,4 +336,31 @@ test_that("clm coefs match parameters::model_parameters() (oracle)", {
       info = paste("oracle p mismatch on term:", nm)
     )
   }
+})
+
+
+test_that("clm cut-points declare the asymptotic normal they are computed under", {
+  skip_if_not_installed("ordinal")
+  fit <- .fit_clm_basic()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  th <- fr$info$extras$thresholds
+  expect_true(all(is.infinite(th$df)))
+  expect_true(all(th$test_type == "z"))
+  # The declared law and the numbers agree: statistic and p are ordinal's
+  # own Wald z, and the promoted rows take their interval from the same
+  # distribution.
+  expect_equal(
+    th$p_value,
+    2 * stats::pnorm(-abs(th$statistic)),
+    tolerance = 1e-12
+  )
+  rows <- spicy:::.append_threshold_rows(fr$coefs, th, 0.95)
+  thr_rows <- rows[rows$parent_var %in% spicy:::.REG_BLOCK_THRESH, ]
+  expect_true(all(thr_rows$test_type == "z"))
+  expect_true(all(is.infinite(thr_rows$df)))
+  expect_equal(
+    thr_rows$ci_upper,
+    th$estimate + stats::qnorm(0.975) * th$std_error,
+    tolerance = 1e-15
+  )
 })

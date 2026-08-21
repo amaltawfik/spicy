@@ -271,38 +271,41 @@ test_that("classes that are not design fits keep their own refusals", {
 })
 
 
-# ---- Guard B: svycoxph is refused by class, silently ------------------------
+# ---- Guard B: svycoxph never walks into the coxph extractor ----------------
 
-test_that("svycoxph gets a classed refusal instead of an internal error", {
+test_that("svycoxph takes its own route, not the one it inherits", {
+  # class(fit) is c("svycoxph", "coxph"): without a method of its own the
+  # fit dispatched to as_regression_frame.coxph(), whose .coxph_info()
+  # calls stats::AIC() bare -- survey answers "No AIC for survey models"
+  # -- after two summary() calls had printed the design.
   fit <- .svycoxph_guard_fit()
-  expect_s3_class(fit, "coxph") # the inheritance that caused the crash
-  for (call in list(
-    function() as_regression_frame(fit),
-    function() table_regression(fit)
-  )) {
-    err <- expect_error(call(), class = "spicy_unsupported_class")
-    # The taxonomy parent must be present so a caller can catch every
-    # spicy refusal uniformly (the old failure was a bare simpleError).
-    expect_s3_class(err, "spicy_error")
-    msg <- conditionMessage(err)
-    expect_match(msg, "svycoxph", fixed = TRUE)
-    expect_match(msg, "regTermTest", fixed = TRUE)
-    # The internal failure must be gone, not merely re-wrapped.
-    expect_false(grepl("No AIC", msg, fixed = TRUE))
-  }
+  expect_s3_class(fit, "coxph")
+  fr <- as_regression_frame(fit)
+  expect_identical(fr$info$class, "svycoxph")
+  # Nothing likelihood-shaped survives the crossing.
+  expect_true(is.na(fr$info$fit_stats$aic))
+  expect_error(stats::AIC(fit), "No AIC for survey models")
+  # And the title is not the plain-Cox one.
+  expect_match(
+    fr$info$extras$title_prefix,
+    "Survey-weighted",
+    fixed = TRUE
+  )
 })
 
-test_that("svycoxph refusal prints nothing on the way out", {
-  # survey's summary.svycoxph prints the design; the coxph extractor
-  # called it twice, so the old failure emitted six lines of design
-  # description before the error. Refusing before the extractor runs
-  # leaves the console untouched.
+test_that("building a svycoxph table prints nothing on the way", {
+  # survey's summary.svycoxph prints the design on every call; the coxph
+  # extractor called it twice, so the old failure emitted six lines of
+  # design description before erroring. Nothing on this route calls it.
   fit <- .svycoxph_guard_fit()
   expect_length(
-    capture.output(try(as_regression_frame(fit), silent = TRUE)),
+    capture.output(invisible(as_regression_frame(fit))),
     0L
   )
-  expect_length(capture.output(try(table_regression(fit), silent = TRUE)), 0L)
+  expect_length(
+    capture.output(invisible(table_regression(fit, output = "data.frame"))),
+    0L
+  )
 })
 
 test_that("plain coxph is untouched by the svycoxph method", {
@@ -326,6 +329,98 @@ test_that("plain coxph is untouched by the svycoxph method", {
   out <- table_regression(fit, output = "data.frame")
   expect_s3_class(out, "data.frame")
   expect_gt(nrow(out), 0L)
+})
+
+
+# ---- Guard C: the refusal reaches every design class, and survives ---------
+
+test_that("the vcov gate answers every design class with the design message", {
+  # The gate used to key on `inherits(fit, "svyglm")`, so a design-based
+  # Cox fell through to the generic "This class supports: classical.",
+  # which names no remedy. `.is_design_fit()` gives all of them the
+  # message that says where clustering belongs.
+  sc <- .svycoxph_guard_fit()
+  err <- expect_error(
+    table_regression(sc, vcov = "HC3"),
+    class = "spicy_unsupported_vcov"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "svycoxph", fixed = TRUE)
+  expect_match(msg, "svydesign", fixed = TRUE)
+  expect_false(grepl("This class supports", msg, fixed = TRUE))
+  # And the svyglm message is the one it has always been.
+  fits <- .svy_guard_fits()
+  err2 <- expect_error(
+    table_regression(fits$svyglm, vcov = "HC1"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(
+    conditionMessage(err2),
+    "`vcov = \"HC1\"` is not available for `svyglm` models.",
+    fixed = TRUE
+  )
+})
+
+test_that("the AME vcov step re-raises a spicy refusal instead of degrading", {
+  # `.attach_ame_to_frame_coefs()` wrapped compute_model_vcov() in a bare
+  # `error = function(e) NULL`. A refusal swallowed there leaves `vc =
+  # NULL`, avg_slopes() silently falls back to the fit's own variance --
+  # the DESIGN one -- and the footer labels it "HC3". Unreachable today
+  # only because the coefficient step aborts first; guarded so a future
+  # reordering cannot reopen it.
+  skip_if_not_installed("marginaleffects")
+  fits <- .svy_guard_fits()
+  coefs <- spicy:::.svyglm_coefs(fits$svyglm, ci_level = 0.95)
+  expect_error(
+    spicy:::.attach_ame_to_frame_coefs(
+      coefs,
+      fits$svyglm,
+      ci_level = 0.95,
+      show_columns = c("b", "ame"),
+      vcov_type = "HC3"
+    ),
+    class = "spicy_unsupported_vcov"
+  )
+  # A failure that is NOT a refusal still degrades to the model-based
+  # AME. Two of them: an unexpected engine error, and the classed
+  # "unknown vcov type" a class whose vocabulary is its own reaches this
+  # line with -- estimatr passes "robust", which IS the estimator its
+  # own variance already carries.
+  skip_if_not_installed("estimatr")
+  est <- estimatr::lm_robust(mpg ~ wt + hp, data = mtcars)
+  est_frame <- suppressWarnings(as_regression_frame(
+    est,
+    show_columns = c("b", "ame")
+  ))
+  expect_true(any(est_frame$coefs$estimate_type == "ame"))
+  expect_error(
+    spicy:::compute_model_vcov(est, type = "robust"),
+    class = "spicy_invalid_input"
+  )
+  testthat::local_mocked_bindings(
+    compute_model_vcov = function(...) stop("engine exploded")
+  )
+  out <- spicy:::.attach_ame_to_frame_coefs(
+    coefs,
+    fits$svyglm,
+    ci_level = 0.95,
+    show_columns = c("b", "ame"),
+    vcov_type = "HC3"
+  )
+  expect_true(any(out$estimate_type == "ame"))
+})
+
+test_that(".is_design_fit names the replicate Cox sibling explicitly", {
+  # Executable documentation, not a fix: `svrepcoxph` inherits
+  # `svycoxph`, so the predicate was already TRUE for it. Naming it keeps
+  # the list the statement the file says it is.
+  skip_if_not_installed("survey")
+  skip_if_not_installed("survival")
+  expect_true(spicy:::.is_design_fit(structure(
+    list(),
+    class = c("svrepcoxph", "svycoxph", "coxph")
+  )))
+  expect_false(spicy:::.is_design_fit(structure(list(), class = "coxph")))
 })
 
 

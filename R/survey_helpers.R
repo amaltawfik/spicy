@@ -203,6 +203,236 @@
   stats::weights(design, type = "sampling")
 }
 
+# The number of observations a design fit actually used.
+#
+# Each class misreports it in its own direction, so none of them is asked
+# through `nobs()` blindly:
+#   * `nobs(svyolr)` is the SUM OF THE WEIGHTS -- survey sets
+#     `nobs = sum(wt)` and ships no method to correct it -- so the count
+#     comes from the fitted-probability matrix, one row per observation.
+#     Not from `model.frame()`: survey's `model.frame.svyolr()`
+#     re-evaluates the `design` argument by name from the call, in the
+#     formula's environment, and on a REPLICATE design that environment
+#     is survey's own -- the user's design object is not there and the
+#     call fails.
+#   * `nobs(svycoxph)` is the number of EVENTS (survival's deliberate
+#     convention); `fit$n` is the subject count.
+#   * `nobs(svyglm)` is the row count, which is what we want.
+.design_fit_n_obs <- function(fit) {
+  n <- if (inherits(fit, "svyolr")) {
+    NROW(fit$fitted.values)
+  } else if (inherits(fit, "coxph")) {
+    fit$n
+  } else {
+    tryCatch(stats::nobs(fit), error = function(e) NULL)
+  }
+  if (is.null(n) || length(n) != 1L || !is.finite(n)) {
+    return(NA_integer_) # nocov
+  }
+  as.integer(n)
+}
+
+# The design object restricted to the rows the FIT actually used.
+#
+# The four design-fitting functions do not agree on what they attach.
+# `svyglm()` and `svyolr()` drop the incomplete rows before storing the
+# design, so `fit$survey.design` already IS the analytic sample;
+# `svycoxph()` stores the design first and reduces a local copy
+# afterwards, so it hands back the COMPLETE design -- 200 rows for a fit
+# on 180. Reading the weights or the degrees of freedom off that object
+# gives a number that is plausible, wrong, and about the wrong
+# population (6194 against 5487.27 on the apistrat fixture with 20
+# missing `ell`).
+#
+# So the alignment is checked, never assumed, against the row count the
+# caller knows (`n_obs`, the analytic n):
+#   * the attached design already has `n_obs` rows -> take it as it is
+#     (svyglm / svyolr / svrepglm), and never re-drop, which would
+#     remove the missing rows a SECOND time (180 -> 160);
+#   * a CALIBRATED design keeps its rows and sets their weight to zero
+#     (`[.survey.design2` on a calibrated object sets `prob = Inf`), so
+#     the count that matters is the number of non-zero sampling weights;
+#   * otherwise drop the fit's `na.action` rows and re-check;
+#   * if the result still does not line up, NULL -- the callers turn
+#     that into `NA`, never into a plausible wrong number.
+.design_analytic <- function(fit, n_obs) {
+  des <- tryCatch(fit$survey.design, error = function(e) NULL)
+  if (is.null(des) || !.is_survey_design(des)) {
+    return(NULL)
+  }
+  if (.design_aligns(des, n_obs)) {
+    return(des)
+  }
+  nas <- tryCatch(stats::na.action(fit), error = function(e) NULL)
+  if (length(nas) == 0L) {
+    return(NULL)
+  }
+  out <- tryCatch(.design_subset(des, -nas), error = function(e) NULL)
+  if (is.null(out) || !.design_aligns(out, n_obs)) {
+    return(NULL)
+  }
+  out
+}
+
+# Does this design describe exactly `n_obs` observations? Either by row
+# count, or -- on a calibrated design, whose subsetting zeroes weights
+# instead of dropping rows -- by the count of non-zero sampling weights.
+.design_aligns <- function(des, n_obs) {
+  # `identical()` on both sides, and `na.rm` on the count: a count that
+  # is not one -- NA, empty, longer than one -- then matches nothing at
+  # all, instead of matching an NA count and declaring the design
+  # aligned with a sample size nobody could name.
+  n_obs <- suppressWarnings(as.integer(n_obs))
+  if (identical(as.integer(nrow(des)), n_obs)) {
+    return(TRUE)
+  }
+  w <- tryCatch(.design_weights(des), error = function(e) NULL)
+  !is.null(w) && identical(sum(w != 0, na.rm = TRUE), n_obs)
+}
+
+# The sampling weights of the analytic sample, one per estimation row,
+# or NULL when they cannot be aligned. On a calibrated design the
+# zero-weight rows are the dropped ones, so removing them restores the
+# estimation-row order.
+.design_analytic_weights <- function(fit, n_obs) {
+  des <- .design_analytic(fit, n_obs)
+  if (is.null(des)) {
+    return(NULL)
+  }
+  w <- tryCatch(as.numeric(.design_weights(des)), error = function(e) NULL)
+  if (is.null(w) || length(w) == 0L) {
+    return(NULL)
+  }
+  if (length(w) != n_obs) {
+    w <- w[w != 0]
+  }
+  if (length(w) != n_obs || !all(is.finite(w))) {
+    return(NULL)
+  }
+  w
+}
+
+# Sum of the SAMPLING weights over the analytic sample: the population
+# the model describes. `NA_real_` when the design is detached or cannot
+# be aligned -- a weighted n is either the right population or absent.
+.design_weighted_n <- function(fit, n_obs) {
+  w <- .design_analytic_weights(fit, n_obs)
+  if (is.null(w)) {
+    return(NA_real_)
+  }
+  sum(w)
+}
+
+# The residual degrees of freedom survey writes ON THE FIT, read, never
+# re-derived.
+#
+# The six design-fitting engines do not agree on the expression, and the
+# differences are not principled -- `svyolr` has no `+ 1`, `svycoxph`
+# has one with no intercept to cancel (a copy from `svyglm`, where it
+# does cancel):
+#
+#   svyglm.survey.design    degf(design) + 1 - length(coef(g))   df.residual
+#   svyglm.svyrep.design    idem                                 df.residual
+#   svyolr.survey.design2   degf(design) - length(beta)          df.residual
+#   svyolr.svyrep.design    idem                                 df.residual
+#   svycoxph.survey.design  degf(design) - length(coef(g)) + 1   degf.resid
+#   svycoxph.svyrep.design  degf(design) + 1 - length(coef())    degf.residual
+#
+# So the rule is one of READING: whatever survey posted is what
+# `regTermTest()` uses as its denominator, and a table whose row p and
+# omnibus p had different denominators would be indefensible.
+# Harmonising the formulas across classes is a regression, not a
+# tidy-up.
+#
+# Two slot names, one per Cox engine, read with `[[` and both tried by
+# name. On survey 4.5 that is a precaution rather than a repair: `$`
+# would partial-match `degf.resid` to `degf.residual` and land on the
+# same number. The precaution is what survives the prefix ceasing to be
+# unique -- a slot that merely shares it answers `$` and would be
+# published as the residual df, and two such slots make `$` ambiguous
+# and return NULL. Nothing in survey promises otherwise, and the two
+# cases are under test.
+#
+# Never a silent fall back to `Inf`: that would publish normal p-values
+# and intervals under a footer declaring a t.
+.design_model_df <- function(fit) {
+  df <- fit[["degf.resid"]]
+  if (is.null(df)) {
+    df <- fit[["degf.residual"]]
+  }
+  if (is.null(df)) {
+    df <- tryCatch(stats::df.residual(fit), error = function(e) NULL)
+  }
+  if (is.null(df) || length(df) != 1L || !is.finite(df) || df <= 0) {
+    spicy_abort(
+      c(
+        sprintf(
+          "The residual degrees of freedom of this `%s` fit could not be read.",
+          class(fit)[1L]
+        ),
+        "i" = paste0(
+          "survey stores them in `df.residual`, `degf.resid` or ",
+          "`degf.residual` depending on the engine; none of the three ",
+          "held a usable value."
+        )
+      ),
+      class = "spicy_internal"
+    )
+  }
+  as.numeric(df)
+}
+
+# The replicate schemes survey names in `design$type`. `"other"` is a
+# legal value of `svrepdesign(type = )` and is deliberately absent: it
+# identifies nothing, so the label drops the parenthesis rather than
+# printing a word that means "unspecified". `"Fay"` is in survey's own
+# vocabulary but `as.svrepdesign(type = "Fay")` stores `"BRR"` (Fay's
+# method is BRR with a shrinkage factor); it is listed so a design built
+# another way still resolves.
+.SVYREP_TYPES <- c(
+  "BRR",
+  "Fay",
+  "JK1",
+  "JKn",
+  "bootstrap",
+  "subbootstrap",
+  "mrbbootstrap"
+)
+
+# The variance estimator a design fit actually uses, as the footer names
+# it. Indexed on the MECHANISM, which is the only thing the label is
+# about:
+#   * a two-phase design first, because `twophase2` also inherits
+#     `survey.design` and would otherwise be called linearised;
+#   * a replicate design by its scheme, or bare when the scheme is
+#     absent or `"other"`;
+#   * everything else built by `svydesign()` -- including calibrated,
+#     post-stratified and without-replacement pps designs, whose
+#     `ppsvar()` IS a linearisation -- by Taylor linearisation;
+#   * a detached or unknown design: "Design-based", never `class(des)`.
+#     An R class name is an implementation detail, not a variance
+#     estimator, and it is not something a reader of a table can act on.
+.design_vcov_label <- function(fit) {
+  des <- tryCatch(fit$survey.design, error = function(e) NULL)
+  if (is.null(des)) {
+    return(spicy_str("note_vcov_design_bare"))
+  }
+  if (inherits(des, c("twophase", "twophase2"))) {
+    return(spicy_str("note_vcov_design_twophase"))
+  }
+  if (inherits(des, "svyrep.design")) {
+    type <- as.character(des$type %||% NA_character_)
+    if (length(type) != 1L || is.na(type) || !type %in% .SVYREP_TYPES) {
+      return(spicy_str("note_vcov_design_replicate_bare"))
+    }
+    return(spicy_fmt("note_vcov_design_replicate", type))
+  }
+  if (inherits(des, "survey.design")) {
+    return(spicy_str("note_vcov_design_taylor"))
+  }
+  spicy_str("note_vcov_design_bare")
+}
+
 # The display domains of a `by =` variable, and the vector that keys
 # them.
 #
@@ -288,6 +518,26 @@
     n_obs = nrow(design),
     sum_weights = sum(.design_weights(design))
   )
+}
+
+# `.design_meta()` for the designs it was written for, NULL otherwise.
+#
+# It reads `design$cluster` / `design$strata` / `design$fpc` directly, so
+# a design that does not carry them -- a two-phase design, whose PSU
+# variable is empty -- fails inside it ("argument is of length zero"),
+# not at its door. A `svyglm` on a two-phase design is legal and renders
+# a table today, so the caller has to be able to ask without risking
+# that. Everything survey builds through `svydesign()` (including
+# calibrated, post-stratified and without-replacement pps designs) and
+# every replicate design is covered.
+.design_meta_or_null <- function(design) {
+  if (
+    is.null(design) ||
+      !inherits(design, c("svyrep.design", "survey.design2"))
+  ) {
+    return(NULL)
+  }
+  .design_meta(design)
 }
 
 # The clause naming the sampling scheme, e.g.

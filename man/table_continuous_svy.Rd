@@ -197,6 +197,14 @@ variance is the design's -- so \code{test = "student"} warns and behaves
 like \code{"welch"}.
 }
 
+\section{Stability}{
+This function is \strong{experimental} in the sense \code{?spicy} defines: it
+is new in this cycle, and the shape of the table and the names of
+its design-specific arguments may still move -- with a \code{NEWS.md}
+entry -- on their own clock rather than the parent family's. The
+numbers themselves are survey's and do not move with it.
+}
+
 \section{What is absent, and why}{
 \code{weights} and \code{rescale} (the weighting \emph{is} the design), \code{effect_size}
 and \code{smd} (no established design-based variance), and \code{data}.

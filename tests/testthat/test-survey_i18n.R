@@ -186,3 +186,42 @@ test_that("the continuous twin's frozen keys are English whatever the headers", 
   labels <- vapply(s$col_meta, function(m) m$display_label, character(1))
   expect_true(all(grepl("zézü", labels, fixed = TRUE)))
 })
+
+test_that("the design variance label of a regression footer comes from the registry", {
+  # Same rehearsal, one family: the "Std. errors:" line of a regression
+  # under a sampling design. Scoped to the variance-label vocabulary
+  # rather than the twins' whole leak list, because a regression title
+  # prefix ("Survey-weighted linear regression", "Cox proportional
+  # hazards regression", ...) is a literal for EVERY model class and is
+  # a separate piece of work.
+  d <- .svy_i18n_design()
+  fits <- list(
+    taylor = survey::svyglm(api00 ~ ell, design = d),
+    replicate = survey::svyglm(
+      api00 ~ ell,
+      design = survey::as.svrepdesign(d, type = "JK1")
+    )
+  )
+  for (nm in names(fits)) {
+    out <- .svy_i18n_with_fake(.svy_i18n_render(table_regression(fits[[nm]])))
+    expect_match(out, "z\u00e9z\u00fc", fixed = TRUE, info = nm)
+    for (leak in c(
+      "Design-based",
+      "Taylor linearisation",
+      "replicate weights",
+      "two-phase design",
+      # ...and the design line the same footer carries.
+      "Design:",
+      "cluster (",
+      "stratified (",
+      "with finite population correction",
+      "residual degrees of freedom",
+      "Tests use"
+    )) {
+      expect_false(
+        grepl(leak, out, fixed = TRUE),
+        info = paste(nm, leak)
+      )
+    }
+  }
+})

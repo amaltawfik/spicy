@@ -252,6 +252,10 @@
   fitstat_aicc = "AICc",
   fitstat_bic = "BIC",
   fitstat_deviance = "Deviance",
+  # survey's `extractAIC.svyglm` returns the effective number of
+  # parameters of the design beside the criterion itself. Opt-in, under
+  # its own name -- it was published under "AIC" until 0.13.
+  fitstat_eff_p = "Effective parameters",
   # Nested-comparison change tokens: one template over the base label.
   fitstat_change_prefix = "\u0394%s",
   fitstat_f_change = "F-change",
@@ -513,6 +517,17 @@
   # span is the honest summary of a column of numbers the footer cannot
   # list.
   note_design_degf_varying = "degrees of freedom vary by group (%d to %d)",
+  # A REGRESSION under a design tests at the degrees of freedom survey
+  # writes on the FIT -- the design's, minus the non-intercept parameters
+  # -- not at the design's own. Its own key, because printing
+  # `note_design_degf` there would name a number the table does not use
+  # (197 where the t has 193).
+  note_design_degf_resid = "%d residual degrees of freedom",
+  # Same disclosure when the sampling scheme cannot be described: a
+  # two-phase design has no single PSU or stratum variable to name, and
+  # the degrees of freedom are the part that makes the table
+  # reproducible.
+  note_design_degf_resid_only = "Tests use %d residual degrees of freedom.",
   note_se_taylor = "Standard errors: Taylor linearisation (survey).",
   note_se_replicate = "Standard errors: replicate weights (survey).",
   note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
@@ -604,6 +619,23 @@
   note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
   note_vcov_jackknife_plain = "jackknife",
   note_vcov_wald_asymptotic = "Wald asymptotic (z)",
+  # The variance estimator of a fit under a sampling design, named by the
+  # MECHANISM the design actually uses -- not by the design's R class,
+  # which is never shown to a reader, and not by whether the descriptive
+  # twins support it (a without-replacement pps design is linearised and
+  # unsupported there). `note_vcov_design_taylor` holds the value the
+  # label had while it was a literal, so the linearised case stays
+  # byte-identical.
+  #
+  # One hole on the replicate line: the scheme identifier survey stores
+  # (JK1 / JKn / BRR / bootstrap / ...), never translated. The bare
+  # variant covers a design whose scheme is absent or `"other"` -- a
+  # legal value of `svrepdesign(type = )` that names nothing.
+  note_vcov_design_taylor = "Design-based (Taylor linearisation)",
+  note_vcov_design_replicate = "Design-based (replicate weights, %s)",
+  note_vcov_design_replicate_bare = "Design-based (replicate weights)",
+  note_vcov_design_twophase = "Design-based (two-phase design)",
+  note_vcov_design_bare = "Design-based",
   note_vcov_cluster_by = ", clusters by %s",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",

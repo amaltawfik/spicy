@@ -168,6 +168,22 @@
       "-"
     ),
     c(
+      "Survey-weighted",
+      "svyolr",
+      "survey::svyolr()",
+      "per category (design-based)",
+      "OR (logit)",
+      .REG_BLOCK_THRESH
+    ),
+    c(
+      "Survey-weighted",
+      "svycoxph",
+      "survey::svycoxph()",
+      "no",
+      "HR",
+      "-"
+    ),
+    c(
       "Additive, proportions, selection",
       "gam",
       "mgcv::gam(), mgcv::bam()",
@@ -376,6 +392,59 @@
 #' `CR*` uses the Lin-Wei grouped-dfbeta sandwich
 #' (`coxph`) or `rms::robcov()` (`cph`, needs `x = TRUE, y = TRUE`).
 #' `nested = TRUE` compares nested Cox fits by likelihood-ratio test.
+#'
+#' @section Survey-design models:
+#' Fits from a `survey::svydesign()` or `survey::as.svrepdesign()`
+#' design -- `svyglm` (and its replicate sibling `svrepglm`), `svyolr`,
+#' `svycoxph` (and `svrepcoxph`) -- are read as design-based
+#' throughout: the coefficients, the variance and the reference
+#' distribution all come from survey.
+#'
+#' Inference is Wald **t** at the degrees of freedom survey writes on
+#' the FIT -- `df.residual` for `svyglm` / `svyolr`, `degf.resid` or
+#' `degf.residual` for the two Cox engines -- which is what
+#' [survey::regTermTest()] takes as its denominator. It is not
+#' `survey::degf(design)`, and it is not re-derived here: the six engines
+#' of survey do not share one expression and are not harmonised (a Cox
+#' fit carries `degf(design) - p + 1` although it has no intercept for
+#' the `+ 1` to cancel, so it ends one above the two other classes). The
+#' value is read off the object. The footer names the design and prints
+#' the number, and the average marginal effects answer to the same
+#' distribution as the coefficient rows.
+#'
+#' The average marginal effect is the Horvitz-Thompson estimator: the
+#' mean unit-level effect weighted by the sampling weights of the
+#' analytic sample, with its variance from the delta method on the
+#' design vcov.
+#'
+#' Counts are both reported: the observed `n` and the `Weighted n` the
+#' estimates describe. `svycoxph` adds the number of events, and its
+#' concordance goes to the footer.
+#'
+#' What is refused, and why: every model-derived variance (`HC*`,
+#' `CR*`, bootstrap, jackknife) -- the design is the variance
+#' authority, and the way to change the estimator is to change the
+#' design; every likelihood statistic (AIC, BIC, logLik, deviance,
+#' pseudo-R-squared) for `svyolr` and `svycoxph` -- there is no
+#' likelihood, and survey's own `deviance()` returns a sign-flipped
+#' likelihood-ratio statistic on one Cox engine and a bare zero on the
+#' other; the AME for `svycoxph`, on the same ground as for a plain Cox
+#' fit; and the `"rmst"` / `"risk_diff"` columns for `svycoxph`, whose
+#' uncertainty comes from resampling subjects and so ignores the strata
+#' and clusters the design declares (use [survey::svykm()] for a
+#' marginal curve).
+#'
+#' `nested = TRUE` is not refused, and does not compare: it puts the
+#' models side by side and adds no change statistic, because there is no
+#' likelihood to compare. To test a term under the design, use
+#' [survey::regTermTest()].
+#'
+#' `svyglm` keeps an `AIC` row: survey's `extractAIC.svyglm` computes
+#' the design-based AIC of Lumley & Scott (2015), the one information
+#' criterion published for this class, and
+#' `show_fit_stats = "eff_p"` reports the effective number of design
+#' parameters beside it. `BIC.svyglm` requires a maximal model and has
+#' no default, so it stays blank. See `vignette("survey-tables")`.
 #'
 #' @section Robust, IV, quantile and panel models:
 #' `estimatr` fits keep their own robust SEs (never overwritten);

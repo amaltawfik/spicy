@@ -18,11 +18,16 @@
 # variance. Every other estimator in the vcov vocabulary re-derives a
 # variance from the working model and therefore ignores the design --
 # silently and by orders of magnitude, in both directions (see the guard
-# in compute_model_vcov()). svrepglm / svyolr / svycoxph are listed
-# explicitly rather than relying on inheritance so the predicate reads as
-# the statement it is.
+# in compute_model_vcov()). The replicate-weight siblings and the two
+# non-glm classes are listed explicitly rather than relying on
+# inheritance so the predicate reads as the statement it is: this is
+# executable documentation, and `svrepglm` / `svrepcoxph` were already
+# caught through their parents.
 .is_design_fit <- function(fit) {
-  inherits(fit, c("svyglm", "svrepglm", "svyolr", "svycoxph"))
+  inherits(
+    fit,
+    c("svyglm", "svrepglm", "svyolr", "svycoxph", "svrepcoxph")
+  )
 }
 
 compute_model_vcov <- function(

@@ -524,6 +524,55 @@ test_that("the two unusable svychisq statistics are refused by name", {
   )
 })
 
+test_that("saddlepoint is refused on a replicate design and kept on a linearised one", {
+  # Same option, same survey function, two code paths: the linearised
+  # branch passes `ddf = d0 * nu` to pchisqsum(), the replicate branch
+  # passes no ddf at all, so its p-value comes out too small. Refused
+  # rather than served with a note.
+  rep_d <- .svycat_design("rep1")
+  err <- expect_error(
+    table_categorical_svy(
+      rep_d,
+      select = stype,
+      by = sch.wide,
+      chisq_statistic = "saddlepoint"
+    ),
+    class = "spicy_unsupported"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "replicate-weights design", fixed = TRUE)
+  expect_match(msg, "ddf", fixed = TRUE)
+  expect_match(msg, "too small", fixed = TRUE)
+  # The correct statistics are named, and they still work here.
+  expect_match(msg, "adjWald", fixed = TRUE)
+  expect_s3_class(
+    suppressWarnings(table_categorical_svy(
+      rep_d,
+      select = stype,
+      by = sch.wide,
+      chisq_statistic = "Wald"
+    )),
+    "data.frame"
+  )
+  # On a linearised design the same option is correct, and accepted.
+  lin <- .svycat_design("clus1")
+  expect_s3_class(
+    suppressWarnings(table_categorical_svy(
+      lin,
+      select = stype,
+      by = sch.wide,
+      chisq_statistic = "saddlepoint"
+    )),
+    "data.frame"
+  )
+  # The defect itself, in survey's source: one branch passes ddf, the
+  # other does not.
+  lin_src <- paste(deparse(survey:::svychisq.survey.design), collapse = " ")
+  rep_src <- paste(deparse(survey:::svychisq.svyrep.design), collapse = " ")
+  expect_match(lin_src, 'method = "saddlepoint", ddf', fixed = TRUE)
+  expect_false(grepl('method = "saddlepoint", ddf', rep_src, fixed = TRUE))
+})
+
 test_that("the design-only refusals fire, one per branch", {
   d <- .svycat_design("clus1")
   expect_error(

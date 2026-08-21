@@ -363,9 +363,6 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 #
 # Returns the prior-weights vector (aligned on the estimation rows)
 # or NULL when:
-#   * the fit is a svyglm / svrepglm: marginaleffects reads the survey
-#     design natively, so passing wts on top would interfere with the
-#     design-based mechanics;
 #   * the fit carries no weights, or non-numeric / non-finite ones
 #     (nlme's varFunc "weights" are a structure, not case weights);
 #   * the weights are constant (a constant-weight average equals the
@@ -382,8 +379,22 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 #     model frame's "(weights)" column, which is already
 #     estimation-row aligned.
 .spicy_ame_fit_wts <- function(fit) {
-  if (inherits(fit, c("svyglm", "svrepglm"))) {
-    return(NULL)
+  # Survey-design fits average over the POPULATION, not over the
+  # sample: the AME under a design is the Horvitz-Thompson estimator of
+  # the mean unit-level effect, so the averaging step carries the
+  # sampling weights of the analytic sample. marginaleffects does not
+  # read them from the design -- its own default is equal weights, and
+  # it says so in a warning -- so they are supplied here. Measured on
+  # apistrat (weights 15.10 / 20.36 / 44.21), the two averages differ by
+  # 3.45% on a continuous predictor. The variance is unaffected: it
+  # comes from the delta method on the design vcov either way, which
+  # reproduces the replicate variance of the whole AME to under 1%.
+  if (.is_design_fit(fit)) {
+    n_obs <- .design_fit_n_obs(fit)
+    if (is.na(n_obs)) {
+      return(NULL) # nocov
+    }
+    return(.design_analytic_weights(fit, n_obs))
   }
   w <- tryCatch(stats::weights(fit), error = function(e) NULL)
   if (is.numeric(w) && length(w) > 0L && anyNA(w)) {
@@ -858,7 +869,19 @@ extract_ame_glm <- function(
 #
 # Returns a zero-row frame coefs subset on failure (missing
 # marginaleffects, `avg_slopes()` errors, fit class out of scope).
-.compute_ame_rows_for_frame <- function(fit, ci_level, vc = NULL, hdi = FALSE) {
+.compute_ame_rows_for_frame <- function(
+  fit,
+  ci_level,
+  vc = NULL,
+  hdi = FALSE,
+  df = Inf
+) {
+  # `df` is the reference distribution of the AME rows. Inf (the
+  # default, and every asymptotic class) means z and leaves the table
+  # exactly as it was; a finite value means t at that many degrees of
+  # freedom, and the same number reaches avg_slopes() so its statistic,
+  # p and interval all come from ONE distribution.
+  test_type <- if (is.finite(df)) "t" else "z"
   if (!spicy_pkg_available("marginaleffects")) {
     return(NULL)
   }
@@ -879,11 +902,11 @@ extract_ame_glm <- function(
         marginaleffects::avg_slopes(
           fit,
           conf_level = ci_level,
-          df = Inf,
+          df = df,
           vcov = vcarg,
           # Weighted fit: the AME is the weighted average of the
-          # unit-level slopes (Rd Weights section). NULL (equal
-          # weights) for svyglm, whose design weighting is native.
+          # unit-level slopes (Rd Weights section) -- the fit's prior
+          # weights, or the sampling weights of a design fit.
           wts = .spicy_ame_fit_wts(fit) %||% FALSE
         )
       ))
@@ -1018,12 +1041,12 @@ extract_ame_glm <- function(
       estimate_type = "ame",
       estimate = as.numeric(ame_table$estimate[i]),
       std_error = as.numeric(ame_table$std.error[i]),
-      df = Inf,
+      df = df,
       statistic = as.numeric(ame_table$statistic[i]),
       p_value = as.numeric(ame_table$p.value[i]),
       ci_lower = as.numeric(ame_table$conf.low[i]),
       ci_upper = as.numeric(ame_table$conf.high[i]),
-      test_type = "z",
+      test_type = test_type,
       outcome_level = grp,
       stringsAsFactors = FALSE
     )
@@ -1190,7 +1213,8 @@ extract_ame_glm <- function(
   vcov_type = "model",
   cluster = NULL,
   hdi = FALSE,
-  vcov_matrix = NULL
+  vcov_matrix = NULL,
+  df = Inf
 ) {
   ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
   if (!any(ame_tokens %in% show_columns)) {
@@ -1210,12 +1234,42 @@ extract_ame_glm <- function(
       !is.null(vcov_type) &&
       !vcov_type %in% c("model", "classical", "survey-Taylor")
   ) {
+    # A spicy condition raised here is a REFUSAL, not a computation that
+    # happened to fail: the design-fit guard of compute_model_vcov()
+    # says a model-derived estimator must not be used on this fit.
+    # Swallowing it would leave `vc = NULL`, avg_slopes() would fall back
+    # to the fit's own (design-based) variance, and the footer would
+    # label design standard errors "HC3". Only genuinely unexpected
+    # errors degrade to the model-based AME.
+    #
+    # `spicy_unsupported_vcov` only, not every spicy condition: a class
+    # whose vcov vocabulary is its own reaches this line with a token
+    # compute_model_vcov() does not know (estimatr passes "robust",
+    # which is the fit's OWN estimator and already in its variance), and
+    # that is a legitimate degradation to the fit's vcov, not a refusal.
+    # A refusal says the matrix must not be built at all.
+    #
+    # One handler, testing the class inside it: a sibling
+    # `spicy_unsupported_vcov =` handler that re-raised would be caught
+    # by the `error =` handler of the same tryCatch, which still holds
+    # when the first one runs.
     vc <- tryCatch(
       compute_model_vcov(fit, type = vcov_type, cluster = cluster),
-      error = function(e) NULL
+      error = function(e) {
+        if (inherits(e, "spicy_unsupported_vcov")) {
+          stop(e)
+        }
+        NULL
+      }
     )
   }
-  ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc, hdi = hdi)
+  ame_rows <- .compute_ame_rows_for_frame(
+    fit,
+    ci_level,
+    vc = vc,
+    hdi = hdi,
+    df = df
+  )
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) {
     return(coefs)
   }

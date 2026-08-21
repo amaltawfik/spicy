@@ -139,10 +139,33 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   latter kept on the log scale under `exponentiate = TRUE`. An aliased
   `clm` predictor (rank-deficient design) renders as undefined, like an
   aliased `lm` or `glm` coefficient.
-* Survey (`svyglm`); robust / IV / panel (`estimatr`, `ivreg`, `feols` and
+* Robust / IV / panel (`estimatr`, `ivreg`, `feols` and
   friends); beta, Tobit, and two-part counts (`betareg`, `tobit`, `zeroinfl`
   / `hurdle`); plus `rlm`, `glm.nb`, `rq`, `gam` / `bam`, `nls`,
   `ols` / `lrm` / `Glm`, and `selection`.
+* Design-based generalized linear models (`survey::svyglm()`, and
+  replicate-weight designs): design-based standard errors, Wald t at the
+  design's residual degrees of freedom, and average marginal effects
+  averaged over the population the design describes rather than over the
+  sample. Both counts are reported -- the observed `n` and the
+  `Weighted n`, which is the sum of the sampling weights and not of the
+  first replicate's. The `AIC` row is survey's design-based criterion
+  (Lumley & Scott 2015), with `show_fit_stats = "eff_p"` for the effective
+  number of design parameters beside it; `BIC` needs a maximal model and
+  stays blank, and the deviance, log-likelihood and residual scale are
+  absent rather than reported on the scale of the sum of the weights.
+* Design-weighted ordinal models (`survey::svyolr()`): the cut-points as a
+  Thresholds block, per-category average marginal effects averaged over the
+  population, and the design's residual degrees of freedom for every row.
+  Statistics that need a likelihood -- AIC, BIC, deviance, pseudo-R² -- are
+  absent rather than approximated; the omnibus test is
+  `survey::regTermTest()`.
+* Design-weighted Cox models (`survey::svycoxph()`, and replicate-weight
+  designs): hazard ratios, n and the number of events, concordance in the
+  note, and the design's residual degrees of freedom. RMST and
+  risk-difference columns are refused for these fits -- their uncertainty
+  comes from resampling subjects, which ignores the strata and clusters --
+  with a message naming the cause and pointing at `survey::svykm()`.
 
 ## New functions
 
@@ -210,6 +233,34 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   and the official document they come from.
 
 ## New features
+
+* `table_regression()` names the variance estimator the design actually
+  uses: Taylor linearisation, replicate weights and their scheme, or a
+  two-phase design.
+
+* Average marginal effects of a survey-weighted model answer to the
+  design's residual degrees of freedom, like the coefficient rows above
+  them, so one `p` header covers one reference distribution.
+
+* A regression under a survey design reports both counts by default -- the
+  observed `n` and the `Weighted n` the estimates describe -- like the
+  descriptive tables.
+
+* The note of a survey regression names the sampling design and the residual
+  degrees of freedom its tests use, so the table can be read without the
+  design object at hand.
+
+* `show_fit_stats = "eff_p"` reports the effective number of parameters of a
+  `survey::svyglm()` design.
+
+* `table_categorical_svy()` refuses `chisq_statistic = "saddlepoint"` on a
+  replicate-weights design, where survey computes its p-value without the
+  denominator degrees of freedom and it comes out too small. The same option
+  on a `survey::svydesign()` design is correct and still accepted.
+
+* `vignette("survey-tables")` gains a section on regression under a design,
+  and `?table_continuous_svy` / `?table_categorical_svy` state that the two
+  are experimental.
 
 * Handing a `survey` design object to `table_continuous()`,
   `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now

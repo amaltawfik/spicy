@@ -147,6 +147,10 @@
     "aicc",
     "bic",
     "deviance",
+    # survey::svyglm only: the effective number of parameters of the
+    # design (the first element of survey's extractAIC), beside the
+    # design-based AIC of Lumley & Scott rather than instead of it.
+    "eff_p",
     # Nested-comparison change stats (APA Table 7.13 in-table rows).
     # `nested = TRUE` auto-injects a class-aware subset; the user
     # can request any of these explicitly in `show_fit_stats`.
@@ -790,12 +794,18 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       # belongs in the design (clubSandwich has no vcovCR.svyglm; the call
       # would silently dispatch to vcovCR.glm, ignoring strata, FPC and
       # calibration).
-      if (inherits(models[[i]], "svyglm")) {
+      # `.is_design_fit()`, not `inherits(fit, "svyglm")`: svyolr and
+      # svycoxph are refused on exactly the same principle and used to
+      # fall through to the generic "This class supports: classical."
+      # The class named is the fit's own, so a `svyglm` request keeps
+      # the message it has always had.
+      if (.is_design_fit(models[[i]])) {
         spicy_abort(
           c(
             sprintf(
-              "`vcov = \"%s\"` is not available for `svyglm` models.",
-              vt
+              "`vcov = \"%s\"` is not available for `%s` models.",
+              vt,
+              class(models[[i]])[1L]
             ),
             "i" = paste0(
               "The fit's own design-based (Taylor / replicate) ",
@@ -1684,11 +1694,23 @@ validate_class_appropriate_tokens <- function(
             "on an ambiguous survival / hazard scale with unreliable standard ",
             "errors. Report hazard ratios instead with `exponentiate = TRUE`."
           ),
-          "i" = paste0(
-            "For absolute effects, use the survival estimand columns: ",
-            "`show_columns = c(\"b\", \"rmst\")` with `tau = `, or ",
-            "`\"risk_diff\"` with `at_time = ` (coxph)."
-          )
+          # A DESIGN-based Cox has no absolute-effect columns either --
+          # their bootstrap resamples rows and so ignores the strata and
+          # clusters -- so it is pointed at survey's own tools instead of
+          # at a second refusal.
+          "i" = if (all(vapply(models, .is_design_fit, logical(1)))) {
+            paste0(
+              "For a design-based Cox model, test a term with ",
+              "`survey::regTermTest(fit, ~term)` and read a marginal ",
+              "survival curve with `survey::svykm()`."
+            )
+          } else {
+            paste0(
+              "For absolute effects, use the survival estimand columns: ",
+              "`show_columns = c(\"b\", \"rmst\")` with `tau = `, or ",
+              "`\"risk_diff\"` with `at_time = ` (coxph)."
+            )
+          }
         ),
         class = "spicy_invalid_input"
       )

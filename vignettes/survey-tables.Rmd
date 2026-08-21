@@ -124,6 +124,15 @@ of `regTermTest()` with three or more, and `svyranktest()` under
 distinction -- the variance is the design's -- so `test = "student"`
 warns and behaves like the default.
 
+The intervals are referred to those degrees of freedom, which is worth
+saying because survey's own shortcut is not: `svyby(vartype = "ci")`
+builds its interval with `confint.default`, i.e. a normal quantile, and
+so returns a slightly narrower interval than the tables here. The two
+differ by the ratio of `qnorm(0.975)` to `qt(0.975, degf(design))` --
+about 3% on the 14 degrees of freedom of `dclus1`. Neither is a
+mistake; they answer to different reference distributions, and this
+family answers to the design's.
+
 ## Categorical variables
 
 ```{r cat-basic}
@@ -246,6 +255,113 @@ c(
 Passing a design to `table_continuous()`, or a data frame to
 `table_continuous_svy()`, is an error naming the other function. There
 is no silent coercion in either direction.
+
+## Regression under a design
+
+`table_regression()` reads a design-based fit the same way, and
+delegates the same way: the coefficients, the variance and the degrees
+of freedom all come from survey.
+
+Three model classes are supported, on a linearised and on a
+replicate-weights design alike: `survey::svyglm()`, `survey::svyolr()`
+for a cumulative-link model, and `survey::svycoxph()` for a
+design-weighted Cox model.
+
+```{r reg-glm}
+gl <- svyglm(api00 ~ ell + meals + stype, design = dstrat)
+table_regression(gl)
+```
+
+Three things in that footer are worth naming.
+
+The design line says what the design is and how many degrees of freedom
+the table's own tests use. That number is the *model's* residual df --
+what survey writes on the fit, and what `survey::regTermTest()` takes as
+its denominator -- not the design's own. It is read, never re-derived:
+the engines of survey do not share one expression, and a Cox fit ends
+one degree of freedom above what the same arithmetic would give for a
+`svyglm`. For this linear fit:
+
+```{r reg-df}
+c(design = degf(dstrat), model = df.residual(gl))
+```
+
+The variance label names the estimator the design actually uses. On a
+replicate design there is no linearisation anywhere, and the footer says
+so:
+
+```{r reg-rep}
+table_regression(
+  svyglm(api00 ~ ell, design = rclus1),
+  show_columns = c("b", "ci", "p")
+)
+```
+
+And the counts are both there: the observed `n` and the `Weighted n`
+the estimates describe, the same pair the descriptive tables print in
+their header.
+
+### Ordinal and Cox fits
+
+A `svyolr()` fit gets its cut-points as a Thresholds block, and its
+average marginal effects one column per response category -- averaged
+over the population, not over the sample:
+
+```{r reg-olr}
+apistrat$grade <- ordered(cut(apistrat$api00, c(0, 600, 700, 1000)))
+dg <- svydesign(
+  id = ~1, strata = ~stype, weights = ~pw, data = apistrat, fpc = ~fpc
+)
+table_regression(svyolr(grade ~ ell + stype, design = dg))
+```
+
+A `svycoxph()` fit reports hazard ratios, the events, and the
+concordance:
+
+```{r reg-cox}
+data(pbc, package = "survival")
+pbc$randomized <- with(pbc, !is.na(trt) & trt > 0)
+bias <- glm(randomized ~ age * edema, data = pbc, family = binomial)
+pbc$sw <- 1 / predict(bias, type = "response")
+dpbc <- svydesign(
+  id = ~1, prob = ~sw, strata = ~edema, data = subset(pbc, randomized)
+)
+cx <- svycoxph(
+  survival::Surv(time, status > 0) ~ log(bili) + protime + albumin,
+  design = dpbc
+)
+table_regression(cx, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
+```
+
+### What a design fit refuses
+
+Statistics that need a likelihood are absent rather than approximated:
+`AIC()`, `BIC()`, `logLik()` and the pseudo-R-squared family are not
+defined for a design-weighted fit, and asking for them by token prints
+nothing rather than a number without an interpretation. The one
+exception is `svyglm`, whose `AIC` row is the design-based criterion of
+Lumley & Scott -- and `show_fit_stats = "eff_p"` reports the effective
+number of parameters of the design beside it.
+
+A robust variance is refused for every design class: the design is the
+variance authority, and the way to change the estimator is to change the
+design.
+
+```{r reg-refuse, error = TRUE}
+table_regression(gl, vcov = "HC3")
+```
+
+The RMST and risk-difference columns are refused for a design-based Cox
+fit. The estimands are not what is in question -- they are validated
+against exact oracles for an unweighted Cox model -- but their
+uncertainty comes from resampling subjects, and resampling rows ignores
+the strata and the clusters the design declares. Use `survey::svykm()`
+for a marginal survival curve, and `survey::regTermTest()` to test a
+term.
+
+Average marginal effects are refused for a Cox fit, design-based or not:
+a proportional-hazards model has no natural response scale to average an
+effect on.
 
 ## Quantiles
 

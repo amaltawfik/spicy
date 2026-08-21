@@ -19,9 +19,15 @@ ame_rows <- function(fr) {
     drop = FALSE
   ]
 }
-oracle_slopes <- function(fit) {
+# `df`: the reference distribution the class under test uses. Inf (the
+# asymptotic normal) for every likelihood class; a survey-design fit
+# answers to the degrees of freedom survey wrote on it, and its AME rows
+# must be compared against an oracle built under the same distribution.
+# `wts`: marginaleffects averages with equal weights unless told
+# otherwise, so a design fit's oracle carries the sampling weights.
+oracle_slopes <- function(fit, df = Inf, wts = FALSE) {
   as.data.frame(suppressWarnings(suppressMessages(
-    marginaleffects::avg_slopes(fit, conf_level = 0.95, df = Inf)
+    marginaleffects::avg_slopes(fit, conf_level = 0.95, df = df, wts = wts)
   )))
 }
 # Coef-style term id for each avg_slopes() row: bare variable name for
@@ -54,9 +60,10 @@ make_d <- function(seed = 1, n = 240) {
 
 # ---- single-outcome classes ----------------------------------------------
 
-xval_single <- function(fr, fit) {
+xval_single <- function(fr, fit, df = Inf, wts = FALSE) {
   a <- ame_rows(fr)
-  orc <- oracle_slopes(fit)
+  orc <- oracle_slopes(fit, df = df, wts = wts)
+  test_type <- if (is.finite(df)) "t" else "z"
   expect_false("group" %in% names(orc)) # single-outcome
   expect_gt(nrow(a), 0L)
   expect_false("outcome_level" %in% names(fr$coefs)) # frame stays lean
@@ -66,7 +73,7 @@ xval_single <- function(fr, fit) {
     orc$estimate[match("x1", orc$term)],
     tolerance = 1e-7
   )
-  expect_true(all(a$test_type == "z"))
+  expect_true(all(a$test_type == test_type))
   # EVERY AME row (numeric term + each factor level) pinned to its oracle
   # row, matched by coef-style term id -- estimate, SE, z, p, and CI.
   okey <- oracle_term_id(orc)
@@ -103,7 +110,15 @@ test_that("svyglm AME matches avg_slopes (design-based, single-outcome)", {
   d <- make_d()
   des <- survey::svydesign(id = ~1, data = d)
   fit <- survey::svyglm(yb ~ x1 + f, design = des, family = quasibinomial)
-  xval_single(as_regression_frame(fit, show_columns = c("b", "ame")), fit)
+  # A design fit is the one class here whose AME is NOT asymptotic and
+  # NOT a sample average: the oracle takes the design's residual degrees
+  # of freedom and the sampling weights of the analytic sample.
+  xval_single(
+    as_regression_frame(fit, show_columns = c("b", "ame")),
+    fit,
+    df = stats::df.residual(fit),
+    wts = spicy:::.spicy_ame_fit_wts(fit) %||% FALSE
+  )
 })
 
 test_that("survreg AME matches avg_slopes (single-outcome)", {

@@ -66,7 +66,10 @@ the convention \code{\link[=table_categorical]{table_categorical()}} applies.}
 \item{ci_level}{Coverage of the interval.}
 
 \item{chisq_statistic}{Statistic for \code{survey::svychisq()}: \code{"F"}
-(default), \code{"Chisq"}, \code{"Wald"}, \code{"adjWald"} or \code{"saddlepoint"}.}
+(default), \code{"Chisq"}, \code{"Wald"}, \code{"adjWald"} or \code{"saddlepoint"}.
+\code{"saddlepoint"} is refused on a replicate-weights design: survey
+computes its p-value without the denominator degrees of freedom
+there, so it comes out too small.}
 
 \item{deff}{Show the design effect of each percentage: \code{FALSE}
 (default), \code{TRUE} or \code{"replace"}.}
@@ -153,6 +156,14 @@ statistic there is not the one the p-value came from. \code{"Wald"},
 \code{"wls-score"} are refused, the first because its integration is
 documented as failing in the far tail (\code{?pchisqsum}), the second
 because it has no reporting convention here.
+}
+
+\section{Stability}{
+This function is \strong{experimental} in the sense \code{?spicy} defines: it
+is new in this cycle, and the shape of the table and the names of
+its design-specific arguments may still move -- with a \code{NEWS.md}
+entry -- on their own clock rather than the parent family's. The
+numbers themselves are survey's and do not move with it.
 }
 
 \section{What is absent, and why}{
