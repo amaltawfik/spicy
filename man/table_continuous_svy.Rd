@@ -64,8 +64,11 @@ correction).}
 \item{qrule}{Quantile rule: \code{"math"} (default), \code{"spicy"}, or
 anything \code{survey::svyquantile()} accepts, including a function.}
 
-\item{df}{Degrees of freedom for the intervals and the tests.
-\code{NULL} (default) uses \code{survey::degf()} on each domain.}
+\item{df}{Degrees of freedom for the intervals. \code{NULL} (default)
+uses \code{survey::degf()} on each domain. It does not reach the group
+comparison: \code{survey::svyttest()} and \code{survey::svyranktest()} have
+no \code{df} argument, so the test keeps the design's own degrees of
+freedom and the note says so.}
 
 \item{test}{Group comparison: \code{"welch"} (default), \code{"student"}
 (warns; identical under a design) or \code{"nonparametric"}.}

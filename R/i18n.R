@@ -522,9 +522,12 @@
   # arrive already formatted under `decimal_mark`.
   note_design_n = "N = %s (weighted %s).",
   # What replaces `note_design_df_used` when the caller overrode the
-  # design's own degrees of freedom: the footer must not go on claiming
-  # a number the table did not use.
-  note_design_df_supplied = "Confidence intervals and tests use the degrees of freedom supplied in `df`.",
+  # design's own degrees of freedom. It names the INTERVALS and nothing
+  # else, because that is all `df` reaches: `svyttest()`, `svychisq()`
+  # and `svyranktest()` have no `df` argument, so the tests keep the
+  # design's own. Promising both put three different numbers in one
+  # note -- the supplied df, the domain's, and the one the cell showed.
+  note_design_df_supplied = "Confidence intervals use %d degrees of freedom (supplied in `df`); the tests use the design's own.",
   # The group comparison runs on the observed groups only, so its
   # domain can carry degrees of freedom none of the displayed rows
   # does. Said only when the two really differ.

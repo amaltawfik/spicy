@@ -706,6 +706,22 @@ test_that("the clipboard payload carries the table", {
   expect_match(captured$text, "78.7", fixed = TRUE)
 })
 
+test_that("a domain with no degrees of freedom has no design effect", {
+  # `deff()` returns 0 on a single-PSU domain, not NA, so it printed
+  # "0.00" -- "no design effect at all" -- beside cells the same table
+  # was already dashing.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$sch.wide[1:3] <- NA
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  out <- .svycat_long(des, select = stype, by = sch.wide, deff = TRUE)
+  expect_true(all(is.na(out[["(Missing) DEff"]])))
+  # The percentage is still estimable and still shown.
+  expect_false(any(is.na(out[["(Missing) %"]][-1L])))
+  expect_false(any(is.na(out[["Yes DEff"]][-1L])))
+})
+
 test_that("the typed view keys every column by its block", {
   d <- .svycat_design("clus1")
   tbl <- table_categorical_svy(

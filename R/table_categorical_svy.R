@@ -76,7 +76,8 @@
   df,
   deff_mode,
   ci_method,
-  proportion_ci
+  proportion_ci,
+  degf_dom = df
 ) {
   k <- length(levels)
   out <- list(
@@ -122,7 +123,12 @@
     est <- stats::coef(m)
     idx <- match(paste0(var, levels), names(est))
     out$pct[!is.na(idx)] <- as.numeric(est)[idx[!is.na(idx)]]
-    if (!isFALSE(deff_mode)) {
+    # A domain with no degrees of freedom has no estimable variance,
+    # so it has no design effect either -- and `deff()` returns 0 there
+    # rather than NA, which prints as "0.00" and reads as "no design
+    # effect at all". The interval beside it is already dashed; this
+    # makes the two agree.
+    if (!isFALSE(deff_mode) && is.finite(degf_dom) && degf_dom > 0) {
       d <- .svy_try(survey::deff(m))
       if (!is.null(d)) {
         out$deff[!is.na(idx)] <- as.numeric(d)[idx[!is.na(idx)]]
@@ -303,7 +309,10 @@
 #' @param deff Show the design effect of each percentage: `FALSE`
 #'   (default), `TRUE` or `"replace"`.
 #' @param df Degrees of freedom for the intervals. `NULL` (default)
-#'   uses `survey::degf()` on each domain.
+#'   uses `survey::degf()` on each domain. It does not reach the test:
+#'   `survey::svychisq()` has no `df` argument, so the Rao-Scott
+#'   reference distribution keeps the design's own degrees of freedom
+#'   and the note says so.
 #' @param p_value Show the p-value column (defaults to `TRUE` with
 #'   `by`).
 #' @param percent_digits,p_digits,decimal_mark Number formatting.
@@ -666,15 +675,17 @@ table_categorical_svy <- function(
     })
     for (b in blocks) {
       dom <- domains[[.cat_svy_block_id(b)]]
+      dom_df <- .design_degf(dom)
       st <- .cat_svy_level_stats(
         dom,
         nm,
         levels_i,
         ci_level,
-        df_user %||% .design_degf(dom),
+        df_user %||% dom_df,
         deff,
         ci_method,
-        proportion_ci
+        proportion_ci,
+        degf_dom = dom_df
       )
       for (j in seq_along(levels_i)) {
         body[[j]][[.cat_svy_key_n(b)]] <- st$n[[j]]

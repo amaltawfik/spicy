@@ -611,22 +611,118 @@ test_that("a group too thin to compare leaves the test columns empty", {
 
 # ---- degrees of freedom supplied by the caller ----------------------------
 
-test_that("`df` overrides the design df, and the footer changes with it", {
+test_that("`df` moves the intervals, and only the intervals", {
+  # `df` reaches `confint()`. It cannot reach the group comparison:
+  # `svyttest()` and `svyranktest()` have no `df` argument. The note
+  # used to promise both, which put three different numbers in one
+  # paragraph -- the supplied df, the domain's, and the one the cell
+  # printed.
   d <- .svyc_design("clus1")
   out <- .svyc_long(d, select = api00, df = 100)
   expect_identical(out$degf, 100)
-  ref <- as.numeric(stats::confint(
-    survey::svymean(~api00, d),
-    df = 100
-  ))
+  ref <- as.numeric(stats::confint(survey::svymean(~api00, d), df = 100))
   expect_equal(c(out$ci_lower, out$ci_upper), ref, tolerance = 1e-12)
+
+  # The CELL: the interval moves, the p does not.
+  moved <- .svyc_long(
+    d,
+    select = api00,
+    by = sch.wide,
+    df = 3,
+    statistic = TRUE
+  )
+  plain <- .svyc_long(d, select = api00, by = sch.wide, statistic = TRUE)
+  expect_false(isTRUE(all.equal(moved$ci_lower[[1L]], plain$ci_lower[[1L]])))
+  expect_equal(moved$p.value[[1L]], plain$p.value[[1L]], tolerance = 1e-12)
+  expect_equal(
+    moved$p.value[[1L]],
+    0.054908817089046651,
+    tolerance = 1e-12
+  )
+
+  # The FOOTER: three sentences, three truths. The design line states
+  # the DESIGN's own degrees of freedom -- a fact the caller cannot
+  # change -- the interval sentence names the supplied number, and the
+  # comparison sentence names the df the test actually used, which is
+  # the 13 the cell shows and not the domain's 14.
   note <- attr(
-    table_continuous_svy(d, select = api00, df = 100),
+    table_continuous_svy(
+      d,
+      select = api00,
+      by = sch.wide,
+      df = 3,
+      statistic = TRUE
+    ),
     "missing_note"
   )
-  expect_match(note, "100 degrees of freedom", fixed = TRUE)
-  expect_match(note, "supplied in `df`", fixed = TRUE)
+  expect_match(note, "degrees of freedom vary by group (9 to 14)", fixed = TRUE)
+  expect_match(
+    note,
+    "Confidence intervals use 3 degrees of freedom (supplied in `df`); the tests use the design's own.",
+    fixed = TRUE
+  )
+  expect_match(
+    note,
+    "The group comparison uses 13 degrees of freedom",
+    fixed = TRUE
+  )
   expect_false(grepl("use the design degrees of freedom", note, fixed = TRUE))
+  expect_identical(moved$df1[[1L]], 13)
+})
+
+test_that("`df` does not reach the categorical test either", {
+  d <- .svyc_design("clus1")
+  a <- suppressWarnings(table_categorical_svy(
+    d,
+    select = stype,
+    by = sch.wide,
+    output = "long"
+  ))
+  b <- suppressWarnings(table_categorical_svy(
+    d,
+    select = stype,
+    by = sch.wide,
+    df = 3,
+    output = "long"
+  ))
+  expect_equal(a$p[[1L]], b$p[[1L]], tolerance = 1e-12)
+  expect_match(
+    attr(
+      table_categorical_svy(d, select = stype, by = sch.wide, df = 3),
+      "note"
+    ),
+    "the tests use the design's own",
+    fixed = TRUE
+  )
+})
+
+test_that("a domain with no degrees of freedom has no estimable variance", {
+  # `svymean()` returns SE = 0 on a single-PSU domain: there is no
+  # between-unit variation to measure. Printed as "0.00" beside a
+  # dashed interval it reads as a perfect estimate, which is the
+  # opposite of the truth. The standard error, the interval and the
+  # design effect go undefined together; the mean and the count stay.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$stype[1:3] <- NA
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  out <- .svyc_long(
+    des,
+    select = api00,
+    by = stype,
+    drop_na = FALSE,
+    deff = TRUE
+  )
+  expect_identical(out$degf[[4L]], 0)
+  expect_false(is.na(out$mean[[4L]]))
+  expect_identical(out$n[[4L]], 3L)
+  expect_true(is.na(out$se[[4L]]))
+  expect_true(is.na(out$ci_lower[[4L]]))
+  expect_true(is.na(out$deff[[4L]]))
+  # The estimable domains keep all three.
+  expect_false(is.na(out$se[[1L]]))
+  expect_false(is.na(out$deff[[1L]]))
 })
 
 # ---- refusals -------------------------------------------------------------

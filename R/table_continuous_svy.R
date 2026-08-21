@@ -131,7 +131,8 @@ order_continuous_svy_tokens <- function(tokens) {
   ci_level,
   df,
   deff_mode = FALSE,
-  qrule = "math"
+  qrule = "math",
+  degf_dom = df
 ) {
   form <- .svy_formula(var)
   x <- design$variables[[var]]
@@ -177,10 +178,18 @@ order_continuous_svy_tokens <- function(tokens) {
     # every other interval survey computes uses `degf(design)`. On the
     # api cluster design (14 df) the two differ in the second decimal.
     # A domain with no degrees of freedom -- one PSU, which is what a
-    # three-row "(Missing)" group can be -- has no interval. Guarded
-    # here rather than left to `qt(p, df = 0)`, which returns NaN and
-    # warns from inside survey.
-    ci <- if (is.finite(df) && df > 0) {
+    # three-row "(Missing)" group can be -- has no ESTIMABLE VARIANCE.
+    # `svymean()` still returns an SE, and it is 0: with a single
+    # sampling unit there is no between-unit variation to measure, and
+    # printing "0.00" beside a dashed interval reads as a perfect
+    # estimate. The standard error, the interval and the design effect
+    # all go undefined together; the mean and the count stay, because
+    # they are estimable.
+    estimable <- is.finite(degf_dom) && degf_dom > 0
+    if (!estimable) {
+      out$se <- NA_real_
+    }
+    ci <- if (estimable && is.finite(df) && df > 0) {
       .svy_try(stats::confint(m, level = ci_level, df = df))
     } else {
       NULL
@@ -189,7 +198,7 @@ order_continuous_svy_tokens <- function(tokens) {
       out$ci_lower <- as.numeric(ci[1L, 1L])
       out$ci_upper <- as.numeric(ci[1L, 2L])
     }
-    if (!isFALSE(deff_mode)) {
+    if (!isFALSE(deff_mode) && estimable) {
       d <- .svy_try(survey::deff(m))
       if (!is.null(d)) {
         out$deff <- as.numeric(d)[[1L]]
@@ -339,7 +348,16 @@ order_continuous_svy_tokens <- function(tokens) {
   if (is.null(res)) {
     return(list(row = empty, label = NA_character_, k = k))
   }
-  list(row = res, label = .svy_test_label(test, k), k = k, ddf = ddf)
+  # The df the TEST used, read off the row it produced -- not the
+  # domain's `degf`. `svyttest()` refers its t to `degf - 1` (13 where
+  # the domain has 14), so reporting `degf(sub)` named a number no test
+  # in the table had used.
+  list(
+    row = res,
+    label = .svy_test_label(test, k),
+    k = k,
+    ddf = if (identical(res$test_type, "design_t")) res$df1 else res$df2
+  )
 }
 
 # The five columns of a computed comparison, filled in one place so no
@@ -486,8 +504,11 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   correction).
 #' @param qrule Quantile rule: `"math"` (default), `"spicy"`, or
 #'   anything `survey::svyquantile()` accepts, including a function.
-#' @param df Degrees of freedom for the intervals and the tests.
-#'   `NULL` (default) uses `survey::degf()` on each domain.
+#' @param df Degrees of freedom for the intervals. `NULL` (default)
+#'   uses `survey::degf()` on each domain. It does not reach the group
+#'   comparison: `survey::svyttest()` and `survey::svyranktest()` have
+#'   no `df` argument, so the test keeps the design's own degrees of
+#'   freedom and the note says so.
 #' @param test Group comparison: `"welch"` (default), `"student"`
 #'   (warns; identical under a design) or `"nonparametric"`.
 #' @param p_value Show the p-value column (defaults to `TRUE` with
@@ -828,7 +849,12 @@ table_continuous_svy <- function(
   meta <- .design_meta(design)
 
   # --- compute -------------------------------------------------------------
+  # Two different numbers, and the footer needs both: `degf_used` is
+  # what each interval was referred to (the caller's `df` when given),
+  # `degf_dom_used` is what the domain itself carries. The design line
+  # states a fact about the DESIGN, so it reads the second.
   degf_used <- numeric(0)
+  degf_dom_used <- numeric(0)
   rows <- list()
   test_label <- NA_character_
   test_ddf <- NA_real_
@@ -847,9 +873,19 @@ table_continuous_svy <- function(
       for (j in seq_along(group_levels)) {
         lv <- group_levels[[j]]
         dom <- domains[[lv]]
-        dfj <- df_user %||% .design_degf(dom)
+        dom_df <- .design_degf(dom)
+        dfj <- df_user %||% dom_df
         degf_used <- c(degf_used, dfj)
-        desc <- .svy_var_stats(dom, nm, ci_level, dfj, deff, qrule)
+        degf_dom_used <- c(degf_dom_used, dom_df)
+        desc <- .svy_var_stats(
+          dom,
+          nm,
+          ci_level,
+          dfj,
+          deff,
+          qrule,
+          degf_dom = dom_df
+        )
         desc <- cbind(
           data.frame(
             variable = nm,
@@ -881,13 +917,22 @@ table_continuous_svy <- function(
     } else {
       dfj <- df_user %||% meta$degf
       degf_used <- c(degf_used, dfj)
+      degf_dom_used <- c(degf_dom_used, meta$degf)
       rows[[length(rows) + 1L]] <- cbind(
         data.frame(
           variable = nm,
           label = var_labels[[i]],
           stringsAsFactors = FALSE
         ),
-        .svy_var_stats(design, nm, ci_level, dfj, deff, qrule),
+        .svy_var_stats(
+          design,
+          nm,
+          ci_level,
+          dfj,
+          deff,
+          qrule,
+          degf_dom = meta$degf
+        ),
         degf = dfj
       )
     }
@@ -898,6 +943,7 @@ table_continuous_svy <- function(
   note <- .svy_continuous_note(
     meta = meta,
     degf_used = degf_used,
+    degf_dom_used = degf_dom_used,
     df_user = df_user,
     na_dropped = na_dropped,
     user_na_dropped = user_na_dropped,
@@ -1224,6 +1270,7 @@ table_continuous_svy <- function(
 .svy_continuous_note <- function(
   meta,
   degf_used,
+  degf_dom_used,
   df_user,
   na_dropped,
   user_na_dropped,
@@ -1262,21 +1309,21 @@ table_continuous_svy <- function(
   # grouped table refers each interval to its domain's degrees of
   # freedom, and a footer quoting the full design's would describe a
   # number no cell used.
-  degf_range <- if (length(degf_used) > 0L) {
-    range(degf_used)
+  degf_range <- if (length(degf_dom_used) > 0L) {
+    range(degf_dom_used)
   } else {
     NULL
   }
   lines <- .design_note_lines(meta, degf_range = degf_range)
   if (!is.null(df_user)) {
-    # The user overrode the design df: say so instead of claiming the
-    # design's own were used.
-    lines[[1L]] <- spicy_fmt(
-      "note_design_line",
-      .design_scheme_parts(meta),
-      spicy_fmt("note_design_degf", as.integer(df_user))
+    # The design line keeps stating the DESIGN's own degrees of freedom
+    # -- that is a fact about the design and the caller cannot change
+    # it. What the override moves is the reference distribution of the
+    # intervals, and the third sentence names the number it moved to.
+    lines[[3L]] <- spicy_fmt(
+      "note_design_df_supplied",
+      as.integer(df_user)
     )
-    lines[[3L]] <- spicy_str("note_design_df_supplied")
   }
   parts <- c(parts, lines)
   if (any(c("med", "med_iqr", "q1", "q3", "iqr") %in% tokens)) {

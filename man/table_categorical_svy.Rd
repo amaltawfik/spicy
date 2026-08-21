@@ -72,7 +72,10 @@ the convention \code{\link[=table_categorical]{table_categorical()}} applies.}
 (default), \code{TRUE} or \code{"replace"}.}
 
 \item{df}{Degrees of freedom for the intervals. \code{NULL} (default)
-uses \code{survey::degf()} on each domain.}
+uses \code{survey::degf()} on each domain. It does not reach the test:
+\code{survey::svychisq()} has no \code{df} argument, so the Rao-Scott
+reference distribution keeps the design's own degrees of freedom
+and the note says so.}
 
 \item{p_value}{Show the p-value column (defaults to \code{TRUE} with
 \code{by}).}
