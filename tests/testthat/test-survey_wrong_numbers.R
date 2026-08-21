@@ -403,3 +403,56 @@ test_that("an unalignable design yields NA, never a plausible total", {
   expect_null(.design_analytic(detached, 183L))
   expect_true(is.na(.design_weighted_n(detached, 183L)))
 })
+
+# ---- 6. The accessors' refusal branches, directly -------------------------
+
+test_that(".design_aligns answers only to a real observation count", {
+  d <- .wn_apiclus1_designs()
+  des <- d$linearized
+  expect_true(.design_aligns(des, 183L))
+  # A count that is not one: the answer is FALSE, never a comparison
+  # against NA.
+  expect_false(.design_aligns(des, NA_integer_))
+  expect_false(.design_aligns(des, integer(0)))
+  # A row count that does not match, and no zero weights to explain it.
+  expect_false(.design_aligns(des, 5L))
+})
+
+test_that(".design_analytic gives up rather than return the wrong rows", {
+  skip_if_not_installed("survey")
+  skip_if_not_installed("survival")
+  data(api, package = "survey", envir = environment())
+  d <- apistrat
+  d$ell[1:20] <- NA
+  d$t <- pmax(d$api00 - 400, 1)
+  d$ev <- as.integer(d$api00 > 650)
+  des <- survey::svydesign(
+    id = ~1,
+    strata = ~stype,
+    weights = ~pw,
+    data = d,
+    fpc = ~fpc
+  )
+  fit <- survey::svycoxph(survival::Surv(t, ev) ~ ell + stype, design = des)
+  # The design attached is the complete one (200), the fit used 180, and
+  # dropping the na.action rows gets there.
+  expect_equal(nrow(.design_analytic(fit, 180L)), 180L)
+  # Asked for a count neither the attached design nor the reduced one
+  # describes, it returns NULL -- it does not hand back 180 rows under a
+  # different name.
+  expect_null(.design_analytic(fit, 999L))
+  expect_true(is.na(.design_weighted_n(fit, 999L)))
+})
+
+test_that("a non-finite sampling weight is absent, not infinite", {
+  d <- .wn_apiclus1_designs()
+  fit <- survey::svyglm(api00 ~ ell + meals, design = d$linearized)
+  n <- as.integer(stats::nobs(fit))
+  des <- fit$survey.design
+  # A zero inclusion probability is an infinite weight. Summing it would
+  # print "Weighted n: Inf".
+  des$prob[1L] <- 0
+  fit$survey.design <- des
+  expect_null(.design_analytic_weights(fit, n))
+  expect_true(is.na(.design_weighted_n(fit, n)))
+})

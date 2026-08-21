@@ -278,15 +278,16 @@
 # count, or -- on a calibrated design, whose subsetting zeroes weights
 # instead of dropping rows -- by the count of non-zero sampling weights.
 .design_aligns <- function(des, n_obs) {
+  # `identical()` on both sides, and `na.rm` on the count: a count that
+  # is not one -- NA, empty, longer than one -- then matches nothing at
+  # all, instead of matching an NA count and declaring the design
+  # aligned with a sample size nobody could name.
   n_obs <- suppressWarnings(as.integer(n_obs))
-  if (length(n_obs) != 1L || is.na(n_obs)) {
-    return(FALSE)
-  }
   if (identical(as.integer(nrow(des)), n_obs)) {
     return(TRUE)
   }
   w <- tryCatch(.design_weights(des), error = function(e) NULL)
-  !is.null(w) && identical(sum(w != 0), n_obs)
+  !is.null(w) && identical(sum(w != 0, na.rm = TRUE), n_obs)
 }
 
 # The sampling weights of the analytic sample, one per estimation row,

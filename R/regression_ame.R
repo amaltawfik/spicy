@@ -1242,14 +1242,21 @@ extract_ame_glm <- function(
     # label design standard errors "HC3". Only genuinely unexpected
     # errors degrade to the model-based AME.
     #
+    # `spicy_unsupported_vcov` only, not every spicy condition: a class
+    # whose vcov vocabulary is its own reaches this line with a token
+    # compute_model_vcov() does not know (estimatr passes "robust",
+    # which is the fit's OWN estimator and already in its variance), and
+    # that is a legitimate degradation to the fit's vcov, not a refusal.
+    # A refusal says the matrix must not be built at all.
+    #
     # One handler, testing the class inside it: a sibling
-    # `spicy_error =` handler that re-raised would be caught by the
-    # `error =` handler of the same tryCatch, which still holds when
-    # the first one runs.
+    # `spicy_unsupported_vcov =` handler that re-raised would be caught
+    # by the `error =` handler of the same tryCatch, which still holds
+    # when the first one runs.
     vc <- tryCatch(
       compute_model_vcov(fit, type = vcov_type, cluster = cluster),
       error = function(e) {
-        if (inherits(e, "spicy_error")) {
+        if (inherits(e, "spicy_unsupported_vcov")) {
           stop(e)
         }
         NULL

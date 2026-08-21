@@ -249,18 +249,47 @@ test_that("no likelihood statistic is invented, on either engine", {
 test_that("the refusals survey raises differ by engine, and none is caught late", {
   cx <- .scox_fit()
   rcx <- .scox_rep_fit()
-  # Two engines, two messages -- and on the replicate engine logLik()
-  # does not even fail: it returns NA with a df attribute, which a
-  # trusting extractor would have published.
+  # Two engines, two messages. survey owns both AIC methods.
   expect_error(stats::AIC(cx), "No AIC for survey models")
   expect_error(stats::AIC(rcx))
-  expect_error(stats::logLik(cx))
-  ll <- stats::logLik(rcx)
-  expect_true(is.na(as.numeric(ll)))
-  # deviance(): a negative number on one engine, a bare 0 on the other.
-  # The zero is the dangerous one -- it looks like a result.
+  # The log-likelihood asymmetry lives in the SLOTS, and is asserted
+  # there rather than through logLik(): the linearised engine moves the
+  # value to `ll` and blanks `loglik`, the replicate engine writes
+  # `loglik <- c(NA, NA)` and never sets `ll`. Not through the generic,
+  # because a third package can re-register the method for this class
+  # and reverse which engine answers -- `performance` does exactly that
+  # (its `logLik.svycoxph` reads `object$ll[2]`, so with it loaded the
+  # linearised engine returns a number and the replicate one errors).
+  # Which is the reason the extractor never calls logLik() here at all.
+  expect_length(cx$ll, 2L)
+  expect_true(all(is.finite(cx$ll)))
+  expect_null(cx$loglik)
+  expect_null(rcx$ll)
+  expect_length(rcx$loglik, 2L)
+  expect_true(all(is.na(rcx$loglik)))
+  # deviance(): survey's own method, reading those slots -- a negative
+  # number on one engine, a bare 0 on the other. The zero is the
+  # dangerous one: it looks like a result.
   expect_lt(stats::deviance(cx), 0)
   expect_identical(stats::deviance(rcx), 0)
+  # Whichever of them answers, and whatever it answers, the frame
+  # publishes none of it.
+  for (fit in list(cx, rcx)) {
+    expect_true(is.na(as_regression_frame(fit)$info$fit_stats$log_lik))
+  }
+})
+
+test_that("a third package re-registering logLik cannot move the frame", {
+  # `performance::logLik.svycoxph` wins dispatch for this class as soon
+  # as performance is loaded, and returns a finite number on the
+  # linearised engine. The frame must not change when it is.
+  skip_if_not_installed("performance")
+  cx <- .scox_fit()
+  before <- as_regression_frame(cx)$info$fit_stats
+  loadNamespace("performance")
+  after <- as_regression_frame(cx)$info$fit_stats
+  expect_true(is.na(after$log_lik))
+  expect_identical(before, after)
 })
 
 test_that("an explicit fit-stat token cannot republish an absent number", {

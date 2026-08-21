@@ -381,7 +381,22 @@ test_that("the AME vcov step re-raises a spicy refusal instead of degrading", {
     ),
     class = "spicy_unsupported_vcov"
   )
-  # A non-spicy failure still degrades to the model-based AME, warning.
+  # A failure that is NOT a refusal still degrades to the model-based
+  # AME. Two of them: an unexpected engine error, and the classed
+  # "unknown vcov type" a class whose vocabulary is its own reaches this
+  # line with -- estimatr passes "robust", which IS the estimator its
+  # own variance already carries.
+  skip_if_not_installed("estimatr")
+  est <- estimatr::lm_robust(mpg ~ wt + hp, data = mtcars)
+  est_frame <- suppressWarnings(as_regression_frame(
+    est,
+    show_columns = c("b", "ame")
+  ))
+  expect_true(any(est_frame$coefs$estimate_type == "ame"))
+  expect_error(
+    spicy:::compute_model_vcov(est, type = "robust"),
+    class = "spicy_invalid_input"
+  )
   testthat::local_mocked_bindings(
     compute_model_vcov = function(...) stop("engine exploded")
   )
