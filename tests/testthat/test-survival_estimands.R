@@ -281,6 +281,126 @@ test_that("a finite df turns the estimand rows into a Wald-t", {
 })
 
 
+test_that("the standardization population can be weighted, and NULL is not", {
+  skip_if_not_installed("survival")
+  d <- .est_lung()
+  fit <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = d)
+  bl <- spicy:::.coxph_baseline(fit)
+
+  # NULL takes the expression it always took: the plain mean over
+  # subjects, recomputed here from predict() alone.
+  elp <- exp(stats::predict(fit, newdata = d, type = "lp", reference = "zero"))
+  expect_identical(
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, NULL),
+    vapply(bl$H0[, 1L], function(h) mean(exp(-h * elp)), numeric(1))
+  )
+  expect_identical(
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, NULL, w = NULL),
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, NULL)
+  )
+
+  # Weighted: integer weights are subject duplication, so the weighted
+  # average over `d` must equal the unweighted average over the data
+  # `d` expands to. That is the property a design weight has to have,
+  # and it is not the formula restated.
+  set.seed(4)
+  w <- sample(1:4, nrow(d), replace = TRUE)
+  expanded <- d[rep(seq_len(nrow(d)), w), , drop = FALSE]
+  expect_equal(
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, NULL, w = w),
+    spicy:::.coxph_standardized_survival(fit, expanded, bl$H0, NULL),
+    tolerance = 1e-12
+  )
+  # Constant weights are the unweighted average.
+  expect_equal(
+    spicy:::.coxph_standardized_survival(
+      fit,
+      d,
+      bl$H0,
+      NULL,
+      w = rep(2, nrow(d))
+    ),
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, NULL),
+    tolerance = 1e-12
+  )
+  # A weight that concentrates on one subject gives that subject's own
+  # curve, not the sample's.
+  one <- c(1, rep(0, nrow(d) - 1L))
+  expect_equal(
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, NULL, w = one),
+    exp(-bl$H0[, 1L] * elp[[1L]]),
+    tolerance = 1e-12
+  )
+})
+
+
+test_that("the bootstrap refit carries weights through the same environment", {
+  skip_if_not_installed("survival")
+  d <- .est_lung()
+  f <- survival::Surv(time, status) ~ age + sex
+  fit <- survival::coxph(f, data = d)
+
+  # NULL: the call the engine has always built, with no `weights` in
+  # it, and a basehaz() that resolves.
+  plain <- spicy:::.coxph_refit_on(f, d)
+  expect_identical(names(plain$call), c("", "formula", "data"))
+  expect_identical(plain$call$data, quote(.spicy_boot_data.))
+  expect_identical(unname(stats::coef(plain)), unname(stats::coef(fit)))
+  expect_s3_class(survival::basehaz(plain, centered = FALSE), "data.frame")
+
+  # Weighted: the weights are a SECOND slot in the same environment.
+  # Replacing the formula's environment is the mechanism, so a weights
+  # vector left in the caller's frame is invisible to coxph's own
+  # model.frame(), which evaluates the extra arguments there -- see the
+  # counter-witness at the end of this test.
+  set.seed(5)
+  w <- stats::runif(nrow(d), 0.5, 2)
+  wt <- spicy:::.coxph_refit_on(f, d, wboot = w)
+  expect_identical(names(wt$call), c("", "formula", "data", "weights"))
+  expect_identical(wt$call$weights, quote(.spicy_boot_w.))
+  ref <- survival::coxph(f, data = d, weights = w)
+  expect_equal(
+    unname(stats::coef(wt)),
+    unname(stats::coef(ref)),
+    tolerance = 1e-12
+  )
+  # The point of the environment: the baseline runs on the replicate.
+  bh <- survival::basehaz(wt, centered = FALSE)
+  expect_s3_class(bh, "data.frame")
+  expect_equal(
+    bh$hazard,
+    survival::basehaz(ref, centered = FALSE)$hazard,
+    tolerance = 1e-12
+  )
+  # ... and it is a different fit from the unweighted one.
+  expect_false(isTRUE(all.equal(
+    unname(stats::coef(wt)),
+    unname(stats::coef(plain))
+  )))
+
+  # The counter-witness: the same refit with the weights left in the
+  # caller's frame instead of the environment slot. coxph() evaluates
+  # its extra arguments in `environment(formula)`, which the helper has
+  # just replaced, so the vector is not found -- at the fit step, not
+  # at the baseline step.
+  local_weights_refit <- function(f, dboot) {
+    env <- new.env(parent = environment(f))
+    env$.spicy_boot_data. <- dboot
+    wv <- stats::runif(nrow(dboot), 0.5, 2)
+    f2 <- f
+    environment(f2) <- env
+    eval(
+      substitute(
+        survival::coxph(FF, data = .spicy_boot_data., weights = wv),
+        list(FF = f2)
+      ),
+      env
+    )
+  }
+  expect_error(local_weights_refit(f, d), "wv")
+})
+
+
 test_that("the step-function integral and landmark reader are exact", {
   # S = 1 on [0,2), 0.8 on [2,5), 0.5 on [5,9), 0.2 from 9.
   times <- c(2, 5, 9)

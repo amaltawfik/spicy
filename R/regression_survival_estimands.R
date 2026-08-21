@@ -176,17 +176,42 @@
 # fit, evaluated at the baseline grid. `H0` is the per-stratum matrix
 # from .coxph_baseline(); `s_idx` maps each row of `newdata` to its
 # stratum column (NULL = unstratified). Returns a vector S(times).
-.coxph_standardized_survival <- function(fit, newdata, H0, s_idx = NULL) {
+#
+# `w` are the weights of the standardization POPULATION -- the mix the
+# per-subject curves are averaged over, not the weights of the fit.
+# NULL is the unweighted average, and takes the same two expressions it
+# always did: a sampling design changes which population the estimand
+# is standardized to, and that is a separate argument from the one the
+# fit already carries.
+.coxph_standardized_survival <- function(
+  fit,
+  newdata,
+  H0,
+  s_idx = NULL,
+  w = NULL
+) {
   lp <- stats::predict(fit, newdata = newdata, type = "lp", reference = "zero")
   elp <- exp(lp)
   if (is.null(s_idx)) {
     # S matrix would be length(times) x n; average over subjects
     # without materializing it.
-    return(vapply(H0[, 1L], function(h) mean(exp(-h * elp)), numeric(1)))
+    if (is.null(w)) {
+      return(vapply(H0[, 1L], function(h) mean(exp(-h * elp)), numeric(1)))
+    }
+    sw <- sum(w)
+    return(vapply(
+      H0[, 1L],
+      function(h) sum(w * exp(-h * elp)) / sw,
+      numeric(1)
+    ))
   }
   # Stratified: each subject's curve uses their own stratum baseline.
   M <- H0[, s_idx, drop = FALSE]
-  rowMeans(exp(-sweep(M, 2L, elp, "*")))
+  S <- exp(-sweep(M, 2L, elp, "*"))
+  if (is.null(w)) {
+    return(rowMeans(S))
+  }
+  as.vector(S %*% w) / sum(w)
 }
 
 
@@ -529,13 +554,34 @@
 # live in an environment attached to the formula -- a plain
 # `coxph(f, data = data[idx, ])` leaves every replicate's basehaz()
 # unable to find `data` / `idx` and fails silently.
-.coxph_refit_on <- function(f, dboot) {
+#
+# `wboot` takes the same route, and it has to: replacing the formula's
+# environment is the whole mechanism here, so EVERYTHING the call
+# refers to must live in the replacement. coxph() resolves `weights`
+# through model.frame(), which evaluates the extra arguments in
+# `environment(formula)` -- a weights vector left in the caller's frame
+# is simply not there, and the replicate dies at the FIT step with
+# "object '<name>' not found" (measured), before any baseline is
+# computed. Two slots in the one environment, or neither: passing NULL
+# reproduces the unweighted call exactly, down to the call object the
+# fit records.
+.coxph_refit_on <- function(f, dboot, wboot = NULL) {
   env <- new.env(parent = environment(f) %||% baseenv())
   env$.spicy_boot_data. <- dboot
   f2 <- f
   environment(f2) <- env
+  if (is.null(wboot)) {
+    return(eval(
+      substitute(survival::coxph(FF, data = .spicy_boot_data.), list(FF = f2)),
+      env
+    ))
+  }
+  env$.spicy_boot_w. <- wboot
   eval(
-    substitute(survival::coxph(FF, data = .spicy_boot_data.), list(FF = f2)),
+    substitute(
+      survival::coxph(FF, data = .spicy_boot_data., weights = .spicy_boot_w.),
+      list(FF = f2)
+    ),
     env
   )
 }
