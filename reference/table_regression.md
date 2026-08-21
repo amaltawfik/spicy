@@ -983,6 +983,13 @@ restore it explicitly when needed).
 - Residual scale: `"sigma"` (lm \\\hat{\sigma}\\ / glm dispersion),
   `"rmse"`.
 
+- Survey designs
+  ([`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html) only):
+  `"eff_p"`, the effective number of parameters of the design (the first
+  element of survey's `extractAIC`, the sum of the Rao-Scott
+  eigenvalues). Opt-in and distinct from `"aic"`, which reports the
+  design-based AIC of Lumley & Scott (2015). Blank for other classes.
+
 - Bayesian fits only: `"r2_bayes"` (posterior-median Bayesian \\R^2\\,
   Gelman et al. 2019 – in the all-Bayesian default), `"elpd_loo"` and
   `"looic"` (PSIS-LOO expected log predictive density and its

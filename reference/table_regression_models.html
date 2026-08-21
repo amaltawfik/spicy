@@ -126,7 +126,7 @@ supported set. Feature requests are welcome on the issue tracker.</p>
     <div class="section level2">
     <h2 id="supported-classes">Supported classes<a class="anchor" aria-label="anchor" href="#supported-classes"></a></h2>
 
-<table class="table table"><tr><td>Family</td><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td></tr><tr><td>Linear and generalized linear</td><td><code>lm</code></td><td><code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>glm</code></td><td><code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>negbin</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code></td><td>yes</td><td>IRR</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>rlm</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>nls</code></td><td><code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls()</a></code></td><td>no</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>lm_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>iv_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>ivreg</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>tobit</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>rq</code></td><td><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>fixest</code></td><td><code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code></td><td>yes</td><td><code>feglm</code>: OR / IRR</td><td>-</td></tr><tr><td>Mixed effects</td><td><code>lmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmmTMB</code></td><td><code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code></td><td>yes</td><td>link-dependent (IRR for count families)</td><td>Random effects; Zero-inflation; Dispersion</td></tr><tr><td>Mixed effects</td><td><code>lme</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>gls</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/gls.html" class="external-link">nlme::gls()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Population-averaged (GEE)</td><td><code>geeglm</code></td><td><code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Ordinal</td><td><code>polr</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds</td></tr><tr><td>Ordinal</td><td><code>clm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds; Non-proportional effects</td></tr><tr><td>Categorical</td><td><code>multinom</code></td><td><code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code></td><td>per outcome</td><td>OR</td><td>per-outcome blocks</td></tr><tr><td>Categorical</td><td><code>mlogit</code></td><td><code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code></td><td>no</td><td>OR</td><td>per-alternative rows</td></tr><tr><td>Counts, two-part</td><td><code>zeroinfl</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero-inflation</td></tr><tr><td>Counts, two-part</td><td><code>hurdle</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero hurdle</td></tr><tr><td>Survival</td><td><code>coxph</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td><td>RMST / risk diff</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>survreg</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td><td>yes + RMST / risk diff</td><td>TR (log-scale distributions)</td><td>-</td></tr><tr><td>Survival</td><td><code>cph</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code></td><td>no</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>flexsurvreg</code></td><td><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td><td>no</td><td>TR / HR (dist)</td><td>distribution parameters</td></tr><tr><td>Survey-weighted</td><td><code>svyglm</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code></td><td>yes (design-based)</td><td>OR / IRR</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>gam</code></td><td><code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>, <code><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">mgcv::bam()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>betareg</code></td><td><code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code></td><td>yes</td><td>OR (mean link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>selection</code></td><td><code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code></td><td>no</td><td>-</td><td>selection component</td></tr><tr><td>rms</td><td><code>ols</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>rms</td><td><code>lrm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code></td><td>yes</td><td>OR</td><td>-</td></tr><tr><td>rms</td><td><code>Glm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm()</a></code></td><td>yes</td><td>link-dependent</td><td>-</td></tr><tr><td>Bayesian</td><td><code>stanreg</code></td><td><code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">rstanarm::stan_glm()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">rstanarm::stan_glmer()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr><tr><td>Bayesian</td><td><code>brmsfit</code></td><td><code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr></table></div>
+<table class="table table"><tr><td>Family</td><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td></tr><tr><td>Linear and generalized linear</td><td><code>lm</code></td><td><code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>glm</code></td><td><code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>negbin</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code></td><td>yes</td><td>IRR</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>rlm</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>nls</code></td><td><code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls()</a></code></td><td>no</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>lm_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>iv_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>ivreg</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>tobit</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>rq</code></td><td><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>fixest</code></td><td><code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code></td><td>yes</td><td><code>feglm</code>: OR / IRR</td><td>-</td></tr><tr><td>Mixed effects</td><td><code>lmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmmTMB</code></td><td><code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code></td><td>yes</td><td>link-dependent (IRR for count families)</td><td>Random effects; Zero-inflation; Dispersion</td></tr><tr><td>Mixed effects</td><td><code>lme</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>gls</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/gls.html" class="external-link">nlme::gls()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Population-averaged (GEE)</td><td><code>geeglm</code></td><td><code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Ordinal</td><td><code>polr</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds</td></tr><tr><td>Ordinal</td><td><code>clm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds; Non-proportional effects</td></tr><tr><td>Categorical</td><td><code>multinom</code></td><td><code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code></td><td>per outcome</td><td>OR</td><td>per-outcome blocks</td></tr><tr><td>Categorical</td><td><code>mlogit</code></td><td><code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code></td><td>no</td><td>OR</td><td>per-alternative rows</td></tr><tr><td>Counts, two-part</td><td><code>zeroinfl</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero-inflation</td></tr><tr><td>Counts, two-part</td><td><code>hurdle</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero hurdle</td></tr><tr><td>Survival</td><td><code>coxph</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td><td>RMST / risk diff</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>survreg</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td><td>yes + RMST / risk diff</td><td>TR (log-scale distributions)</td><td>-</td></tr><tr><td>Survival</td><td><code>cph</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code></td><td>no</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>flexsurvreg</code></td><td><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td><td>no</td><td>TR / HR (dist)</td><td>distribution parameters</td></tr><tr><td>Survey-weighted</td><td><code>svyglm</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code></td><td>yes (design-based)</td><td>OR / IRR</td><td>-</td></tr><tr><td>Survey-weighted</td><td><code>svyolr</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">survey::svyolr()</a></code></td><td>per category (design-based)</td><td>OR (logit)</td><td>Thresholds</td></tr><tr><td>Survey-weighted</td><td><code>svycoxph</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph()</a></code></td><td>no</td><td>HR</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>gam</code></td><td><code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>, <code><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">mgcv::bam()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>betareg</code></td><td><code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code></td><td>yes</td><td>OR (mean link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>selection</code></td><td><code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code></td><td>no</td><td>-</td><td>selection component</td></tr><tr><td>rms</td><td><code>ols</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>rms</td><td><code>lrm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code></td><td>yes</td><td>OR</td><td>-</td></tr><tr><td>rms</td><td><code>Glm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm()</a></code></td><td>yes</td><td>link-dependent</td><td>-</td></tr><tr><td>Bayesian</td><td><code>stanreg</code></td><td><code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">rstanarm::stan_glm()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">rstanarm::stan_glmer()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr><tr><td>Bayesian</td><td><code>brmsfit</code></td><td><code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr></table></div>
     <div class="section level2">
     <h2 id="shared-semantics-all-classes-">Shared semantics (all classes)<a class="anchor" aria-label="anchor" href="#shared-semantics-all-classes-"></a></h2>
 
@@ -252,6 +252,56 @@ closed-form AFT curves are standardized directly (stratified
 <code>nested = TRUE</code> compares nested Cox fits by likelihood-ratio test.</p>
     </div>
     <div class="section level2">
+    <h2 id="survey-design-models">Survey-design models<a class="anchor" aria-label="anchor" href="#survey-design-models"></a></h2>
+
+
+<p>Fits from a <code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">survey::svydesign()</a></code> or <code><a href="https://rdrr.io/pkg/survey/man/as.svrepdesign.html" class="external-link">survey::as.svrepdesign()</a></code>
+design – <code>svyglm</code> (and its replicate sibling <code>svrepglm</code>), <code>svyolr</code>,
+<code>svycoxph</code> (and <code>svrepcoxph</code>) – are read as design-based
+throughout: the coefficients, the variance and the reference
+distribution all come from survey.</p>
+<p>Inference is Wald <strong>t</strong> at the degrees of freedom survey writes on
+the FIT – <code>df.residual</code> for <code>svyglm</code> / <code>svyolr</code>, <code>degf.resid</code> or
+<code>degf.residual</code> for the two Cox engines – which is what
+<code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">survey::regTermTest()</a></code> takes as its denominator. It is not
+<code>survey::degf(design)</code>, and it is not re-derived here: the six engines
+of survey do not share one expression and are not harmonised (a Cox
+fit carries <code>degf(design) - p + 1</code> although it has no intercept for
+the <code>+ 1</code> to cancel, so it ends one above the two other classes). The
+value is read off the object. The footer names the design and prints
+the number, and the average marginal effects answer to the same
+distribution as the coefficient rows.</p>
+<p>The average marginal effect is the Horvitz-Thompson estimator: the
+mean unit-level effect weighted by the sampling weights of the
+analytic sample, with its variance from the delta method on the
+design vcov.</p>
+<p>Counts are both reported: the observed <code>n</code> and the <code>Weighted n</code> the
+estimates describe. <code>svycoxph</code> adds the number of events, and its
+concordance goes to the footer.</p>
+<p>What is refused, and why: every model-derived variance (<code>HC*</code>,
+<code>CR*</code>, bootstrap, jackknife) – the design is the variance
+authority, and the way to change the estimator is to change the
+design; every likelihood statistic (AIC, BIC, logLik, deviance,
+pseudo-R-squared) for <code>svyolr</code> and <code>svycoxph</code> – there is no
+likelihood, and survey's own <code><a href="https://rdrr.io/r/stats/deviance.html" class="external-link">deviance()</a></code> returns a sign-flipped
+likelihood-ratio statistic on one Cox engine and a bare zero on the
+other; the AME for <code>svycoxph</code>, on the same ground as for a plain Cox
+fit; and the <code>"rmst"</code> / <code>"risk_diff"</code> columns for <code>svycoxph</code>, whose
+uncertainty comes from resampling subjects and so ignores the strata
+and clusters the design declares (use <code><a href="https://rdrr.io/pkg/survey/man/svykm.html" class="external-link">survey::svykm()</a></code> for a
+marginal curve).</p>
+<p><code>nested = TRUE</code> is not refused, and does not compare: it puts the
+models side by side and adds no change statistic, because there is no
+likelihood to compare. To test a term under the design, use
+<code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">survey::regTermTest()</a></code>.</p>
+<p><code>svyglm</code> keeps an <code>AIC</code> row: survey's <code>extractAIC.svyglm</code> computes
+the design-based AIC of Lumley &amp; Scott (2015), the one information
+criterion published for this class, and
+<code>show_fit_stats = "eff_p"</code> reports the effective number of design
+parameters beside it. <code>BIC.svyglm</code> requires a maximal model and has
+no default, so it stays blank. See <code><a href="../articles/survey-tables.html">vignette("survey-tables")</a></code>.</p>
+    </div>
+    <div class="section level2">
     <h2 id="robust-iv-quantile-and-panel-models">Robust, IV, quantile and panel models<a class="anchor" aria-label="anchor" href="#robust-iv-quantile-and-panel-models"></a></h2>
 
 
@@ -336,14 +386,16 @@ errors and reliability caveats in the footer; compare models with
 <span class="r-out co"><span class="r-pr">#&gt;</span> 26                         Survival         cph</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 27                         Survival flexsurvreg</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 28                  Survey-weighted      svyglm</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29 Additive, proportions, selection         gam</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30 Additive, proportions, selection     betareg</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31 Additive, proportions, selection   selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32                              rms         ols</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33                              rms         lrm</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34                              rms         Glm</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35                         Bayesian     stanreg</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36                         Bayesian     brmsfit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                  Survey-weighted      svyolr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30                  Survey-weighted    svycoxph</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31 Additive, proportions, selection         gam</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32 Additive, proportions, selection     betareg</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33 Additive, proportions, selection   selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                              rms         ols</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                              rms         lrm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36                              rms         Glm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                         Bayesian     stanreg</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                         Bayesian     brmsfit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                                    engine</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                             stats::lm()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                            stats::glm()</span>
@@ -373,51 +425,55 @@ errors and reliability caveats in the footer; compare models with
 <span class="r-out co"><span class="r-pr">#&gt;</span> 26                                                             rms::cph()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 27                                                flexsurv::flexsurvreg()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 28                                                       survey::svyglm()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29                                               mgcv::gam(), mgcv::bam()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30                                                     betareg::betareg()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31                                           sampleSelection::selection()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                             rms::ols()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33                                                             rms::lrm()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34                                                             rms::Glm()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35                           rstanarm::stan_glm(), rstanarm::stan_glmer()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36                                                            brms::brm()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                        ame                            exponentiate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                      yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                      yes          OR / IRR / RR / MR / HR (link)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                      yes                                     IRR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                      yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                       no                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                      yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7                      yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                      yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9                      yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                     yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                     yes                       `feglm`: OR / IRR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                     yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                     yes                         OR / IRR (link)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14                     yes link-dependent (IRR for count families)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15                     yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16                     yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17                     yes          OR / IRR / RR / MR / HR (link)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18            per category                              OR (logit)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19            per category                              OR (logit)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20             per outcome                                      OR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21                      no                                      OR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22 yes (combined response)      IRR (count) + OR (logit zero part)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23 yes (combined response)      IRR (count) + OR (logit zero part)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24        RMST / risk diff                                      HR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25  yes + RMST / risk diff            TR (log-scale distributions)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26                      no                                      HR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27                      no                          TR / HR (dist)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28      yes (design-based)                                OR / IRR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29                     yes                         OR / IRR (link)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30                     yes                          OR (mean link)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31                      no                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32                     yes                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33                     yes                                      OR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34                     yes                          link-dependent</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35             yes (draws)                          link-dependent</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36             yes (draws)                          link-dependent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                                                       survey::svyolr()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30                                                     survey::svycoxph()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31                                               mgcv::gam(), mgcv::bam()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                     betareg::betareg()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                                           sampleSelection::selection()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                                                             rms::ols()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                                                             rms::lrm()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36                                                             rms::Glm()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                           rstanarm::stan_glm(), rstanarm::stan_glmer()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                                                            brms::brm()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            ame                            exponentiate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                          yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                          yes          OR / IRR / RR / MR / HR (link)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                          yes                                     IRR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                          yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                           no                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                          yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                          yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                          yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                          yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                         yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                         yes                       `feglm`: OR / IRR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                         yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                         yes                         OR / IRR (link)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                         yes link-dependent (IRR for count families)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                         yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                         yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                         yes          OR / IRR / RR / MR / HR (link)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                per category                              OR (logit)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                per category                              OR (logit)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20                 per outcome                                      OR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21                          no                                      OR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22     yes (combined response)      IRR (count) + OR (logit zero part)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23     yes (combined response)      IRR (count) + OR (logit zero part)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24            RMST / risk diff                                      HR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25      yes + RMST / risk diff            TR (log-scale distributions)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26                          no                                      HR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27                          no                          TR / HR (dist)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28          yes (design-based)                                OR / IRR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29 per category (design-based)                              OR (logit)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30                          no                                      HR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31                         yes                         OR / IRR (link)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                         yes                          OR (mean link)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                          no                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                         yes                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                         yes                                      OR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36                         yes                          link-dependent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                 yes (draws)                          link-dependent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                 yes (draws)                          link-dependent</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                        blocks</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                                           -</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                                           -</span>
@@ -447,14 +503,16 @@ errors and reliability caveats in the footer; compare models with
 <span class="r-out co"><span class="r-pr">#&gt;</span> 26                                          -</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 27                    distribution parameters</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 28                                          -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29                                          -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                                 Thresholds</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 30                                          -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31                        selection component</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31                                          -</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 32                                          -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33                                          -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                        selection component</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 34                                          -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35             Random effects (if multilevel)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36             Random effects (if multilevel)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                                          -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36                                          -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37             Random effects (if multilevel)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38             Random effects (if multilevel)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># All engines of one family:</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu">table_regression_models</span><span class="op">(</span><span class="op">)</span>, <span class="va">family</span> <span class="op">==</span> <span class="st">"Mixed effects"</span><span class="op">)</span></span></span>

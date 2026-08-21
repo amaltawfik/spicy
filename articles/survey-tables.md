@@ -164,6 +164,15 @@ three or more, and
 distinction – the variance is the design’s – so `test = "student"` warns
 and behaves like the default.
 
+The intervals are referred to those degrees of freedom, which is worth
+saying because survey’s own shortcut is not: `svyby(vartype = "ci")`
+builds its interval with `confint.default`, i.e. a normal quantile, and
+so returns a slightly narrower interval than the tables here. The two
+differ by the ratio of `qnorm(0.975)` to `qt(0.975, degf(design))` –
+about 3% on the 14 degrees of freedom of `dclus1`. Neither is a mistake;
+they answer to different reference distributions, and this family
+answers to the design’s.
+
 ## Categorical variables
 
 ``` r
@@ -348,6 +357,208 @@ or a data frame to
 is an error naming the other function. There is no silent coercion in
 either direction.
 
+## Regression under a design
+
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+reads a design-based fit the same way, and delegates the same way: the
+coefficients, the variance and the degrees of freedom all come from
+survey.
+
+Three model classes are supported, on a linearised and on a
+replicate-weights design alike:
+[`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html),
+[`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) for a
+cumulative-link model, and
+[`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) for
+a design-weighted Cox model.
+
+``` r
+
+gl <- svyglm(api00 ~ ell + meals + stype, design = dstrat)
+table_regression(gl)
+#> Survey-weighted linear regression: api00
+#> 
+#>  Variable    │    B      SE          95% CI          p   
+#> ─────────────┼───────────────────────────────────────────
+#>  (Intercept) │  865.99   8.54  [ 849.16,  882.83]  <.001 
+#>  ell         │   -0.56   0.34  [  -1.24,    0.12]   .104 
+#>  meals       │   -3.43   0.24  [  -3.90,   -2.96]  <.001 
+#>  stype:      │                                           
+#>    E (ref.)  │     –      –            –            –    
+#>    H         │ -128.29  10.40  [-148.81, -107.78]  <.001 
+#>    M         │  -60.46   9.76  [ -79.72,  -41.20]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │  200                                      
+#>  Weighted n  │ 6194                                      
+#>  AIC         │ 2197.8                                    
+#> 
+#> Note. Survey-weighted linear regression.
+#> Design: stratified (stype), with finite population correction; 193 residual degrees of freedom.
+#> Std. errors: Design-based (Taylor linearisation).
+```
+
+Three things in that footer are worth naming.
+
+The design line says what the design is and how many degrees of freedom
+the table’s own tests use. That number is the *model’s* residual df –
+what survey writes on the fit, and what
+[`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
+takes as its denominator – not the design’s own. It is read, never
+re-derived: the engines of survey do not share one expression, and a Cox
+fit ends one degree of freedom above what the same arithmetic would give
+for a `svyglm`. For this linear fit:
+
+``` r
+
+c(design = degf(dstrat), model = df.residual(gl))
+#> design  model 
+#>    197    193
+```
+
+The variance label names the estimator the design actually uses. On a
+replicate design there is no linearisation anywhere, and the footer says
+so:
+
+``` r
+
+table_regression(
+  svyglm(api00 ~ ell, design = rclus1),
+  show_columns = c("b", "ci", "p")
+)
+#> Survey-weighted linear regression: api00
+#> 
+#>  Variable    │    B          95% CI         p   
+#> ─────────────┼──────────────────────────────────
+#>  (Intercept) │  746.93  [684.12, 809.73]  <.001 
+#>  ell         │   -3.72  [ -4.77,  -2.67]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n           │  183                             
+#>  Weighted n  │ 6194                             
+#>  AIC         │ 2150.5                           
+#> 
+#> Note. Survey-weighted linear regression.
+#> Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom.
+#> Std. errors: Design-based (replicate weights, JK1).
+```
+
+And the counts are both there: the observed `n` and the `Weighted n` the
+estimates describe, the same pair the descriptive tables print in their
+header.
+
+### Ordinal and Cox fits
+
+A [`svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) fit gets its
+cut-points as a Thresholds block, and its average marginal effects one
+column per response category – averaged over the population, not over
+the sample:
+
+``` r
+
+apistrat$grade <- ordered(cut(apistrat$api00, c(0, 600, 700, 1000)))
+dg <- svydesign(
+  id = ~1, strata = ~stype, weights = ~pw, data = apistrat, fpc = ~fpc
+)
+table_regression(svyolr(grade ~ ell + stype, design = dg))
+#> Survey-weighted cumulative logit regression (proportional odds): grade
+#> 
+#>  Variable                  │    B      SE       95% CI        p   
+#> ───────────────────────────┼──────────────────────────────────────
+#>  ell                       │   -0.09  0.01  [-0.12, -0.07]  <.001 
+#>  stype:                    │                                      
+#>    E (ref.)                │     –     –          –          –    
+#>    H                       │   -1.86  0.37  [-2.60, -1.13]  <.001 
+#>    M                       │   -1.35  0.34  [-2.03, -0.68]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:               │                                      
+#>    (0,600] | (600,700]     │   -3.68  0.46  [-4.59, -2.78]  <.001 
+#>    (600,700] | (700,1e+03] │   -1.82  0.35  [-2.51, -1.14]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                         │  200                                 
+#>  Weighted n                │ 6194                                 
+#> 
+#> Note. Survey-weighted cumulative logit regression (proportional odds).
+#> Design: stratified (stype), with finite population correction; 194 residual degrees of freedom.
+#> Std. errors: Design-based (Taylor linearisation).
+#> Thresholds: latent-scale category cut-points.
+```
+
+A [`svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) fit
+reports hazard ratios, the events, and the concordance:
+
+``` r
+
+data(pbc, package = "survival")
+pbc$randomized <- with(pbc, !is.na(trt) & trt > 0)
+bias <- glm(randomized ~ age * edema, data = pbc, family = binomial)
+pbc$sw <- 1 / predict(bias, type = "response")
+dpbc <- svydesign(
+  id = ~1, prob = ~sw, strata = ~edema, data = subset(pbc, randomized)
+)
+cx <- svycoxph(
+  survival::Surv(time, status > 0) ~ log(bili) + protime + albumin,
+  design = dpbc
+)
+table_regression(cx, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
+#> Survey-weighted Cox proportional hazards regression: survival::Surv(time, status > 0)
+#> 
+#>  Variable   │   HR       95% CI       p   
+#> ────────────┼─────────────────────────────
+#>  log(bili)  │   2.43  [2.04, 2.90]  <.001 
+#>  protime    │   1.30  [1.10, 1.52]   .002 
+#>  albumin    │   0.34  [0.22, 0.52]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n          │ 312                         
+#>  Weighted n │ 235                         
+#>  N events   │ 144                         
+#> 
+#> Note. Survey-weighted Cox proportional hazards regression.
+#> Design: stratified (edema); 307 residual degrees of freedom.
+#> Std. errors: Design-based (Taylor linearisation).
+#> Concordance C = 0.81 (SE = 0.02).
+#> HR = hazard ratio.
+#> Coefficients exponentiated and displayed as HR; CI bounds exponentiated.
+```
+
+### What a design fit refuses
+
+Statistics that need a likelihood are absent rather than approximated:
+[`AIC()`](https://rdrr.io/r/stats/AIC.html),
+[`BIC()`](https://rdrr.io/r/stats/AIC.html),
+[`logLik()`](https://rdrr.io/r/stats/logLik.html) and the
+pseudo-R-squared family are not defined for a design-weighted fit, and
+asking for them by token prints nothing rather than a number without an
+interpretation. The one exception is `svyglm`, whose `AIC` row is the
+design-based criterion of Lumley & Scott – and
+`show_fit_stats = "eff_p"` reports the effective number of parameters of
+the design beside it.
+
+A robust variance is refused for every design class: the design is the
+variance authority, and the way to change the estimator is to change the
+design.
+
+``` r
+
+table_regression(gl, vcov = "HC3")
+#> Error in `validate_vcov_cluster_lists()`:
+#> ! `vcov = "HC3"` is not available for `svyglm` models.
+#> ℹ The fit's own design-based (Taylor / replicate) variance is already the robust variance for the declared design.
+#> ℹ To account for clustering, declare it in the design: survey::svydesign(ids = ~cluster, ...), then refit.
+```
+
+The RMST and risk-difference columns are refused for a design-based Cox
+fit. The estimands are not what is in question – they are validated
+against exact oracles for an unweighted Cox model – but their
+uncertainty comes from resampling subjects, and resampling rows ignores
+the strata and the clusters the design declares. Use
+[`survey::svykm()`](https://rdrr.io/pkg/survey/man/svykm.html) for a
+marginal survival curve, and
+[`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
+to test a term.
+
+Average marginal effects are refused for a Cox fit, design-based or not:
+a proportional-hazards model has no natural response scale to average an
+effect on.
+
 ## Quantiles
 
 `qrule` chooses the rule, and the footer always names the one in force.
@@ -444,3 +655,6 @@ survey directly for those, and say which design you need.
   Statistical Software*, 9(1), 1–19.
 - Lumley, T. (2010). *Complex surveys: A guide to analysis using R*.
   John Wiley & Sons.
+- Lumley, T., & Scott, A. (2015). AIC and BIC for modeling with complex
+  survey data. *Journal of Survey Statistics and Methodology*, 3(1),
+  1–18.

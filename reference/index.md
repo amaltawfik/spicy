@@ -67,10 +67,6 @@
   : Continuous-outcome linear-model table
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   : Describe one continuous outcome across several groupings
-- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  : Descriptive statistics from a survey design
-- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  : Categorical summary table from a survey design
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -79,6 +75,20 @@
   : Extract the typed (structured) view of a spicy table
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md) :
   Cite a table cell in inline text
+
+## Survey-design tables
+
+Experimental
+([`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)):
+new in this cycle, and the shape of the table and the names of the
+design-specific arguments may still move – with a `NEWS.md` entry – on
+their own clock rather than the parent family’s. Every number comes from
+survey (Lumley).
+
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  : Descriptive statistics from a survey design
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  : Categorical summary table from a survey design
 
 ## Table styles
 

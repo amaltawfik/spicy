@@ -63,6 +63,8 @@ A data frame with one row per supported engine and columns `family`,
 | Survival | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- |
 | Survival | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters |
 | Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- |
+| Survey-weighted | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds |
+| Survey-weighted | `svycoxph` | [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) | no | HR | \- |
 | Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- |
 | Additive, proportions, selection | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- |
 | Additive, proportions, selection | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component |
@@ -188,6 +190,64 @@ sandwich (`coxph`) or
 `x = TRUE, y = TRUE`). `nested = TRUE` compares nested Cox fits by
 likelihood-ratio test.
 
+## Survey-design models
+
+Fits from a
+[`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
+or
+[`survey::as.svrepdesign()`](https://rdrr.io/pkg/survey/man/as.svrepdesign.html)
+design – `svyglm` (and its replicate sibling `svrepglm`), `svyolr`,
+`svycoxph` (and `svrepcoxph`) – are read as design-based throughout: the
+coefficients, the variance and the reference distribution all come from
+survey.
+
+Inference is Wald **t** at the degrees of freedom survey writes on the
+FIT – `df.residual` for `svyglm` / `svyolr`, `degf.resid` or
+`degf.residual` for the two Cox engines – which is what
+[`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
+takes as its denominator. It is not `survey::degf(design)`, and it is
+not re-derived here: the six engines of survey do not share one
+expression and are not harmonised (a Cox fit carries
+`degf(design) - p + 1` although it has no intercept for the `+ 1` to
+cancel, so it ends one above the two other classes). The value is read
+off the object. The footer names the design and prints the number, and
+the average marginal effects answer to the same distribution as the
+coefficient rows.
+
+The average marginal effect is the Horvitz-Thompson estimator: the mean
+unit-level effect weighted by the sampling weights of the analytic
+sample, with its variance from the delta method on the design vcov.
+
+Counts are both reported: the observed `n` and the `Weighted n` the
+estimates describe. `svycoxph` adds the number of events, and its
+concordance goes to the footer.
+
+What is refused, and why: every model-derived variance (`HC*`, `CR*`,
+bootstrap, jackknife) – the design is the variance authority, and the
+way to change the estimator is to change the design; every likelihood
+statistic (AIC, BIC, logLik, deviance, pseudo-R-squared) for `svyolr`
+and `svycoxph` – there is no likelihood, and survey's own
+[`deviance()`](https://rdrr.io/r/stats/deviance.html) returns a
+sign-flipped likelihood-ratio statistic on one Cox engine and a bare
+zero on the other; the AME for `svycoxph`, on the same ground as for a
+plain Cox fit; and the `"rmst"` / `"risk_diff"` columns for `svycoxph`,
+whose uncertainty comes from resampling subjects and so ignores the
+strata and clusters the design declares (use
+[`survey::svykm()`](https://rdrr.io/pkg/survey/man/svykm.html) for a
+marginal curve).
+
+`nested = TRUE` is not refused, and does not compare: it puts the models
+side by side and adds no change statistic, because there is no
+likelihood to compare. To test a term under the design, use
+[`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html).
+
+`svyglm` keeps an `AIC` row: survey's `extractAIC.svyglm` computes the
+design-based AIC of Lumley & Scott (2015), the one information criterion
+published for this class, and `show_fit_stats = "eff_p"` reports the
+effective number of design parameters beside it. `BIC.svyglm` requires a
+maximal model and has no default, so it stays blank. See
+[`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md).
+
 ## Robust, IV, quantile and panel models
 
 `estimatr` fits keep their own robust SEs (never overwritten);
@@ -270,14 +330,16 @@ table_regression_models()
 #> 26                         Survival         cph
 #> 27                         Survival flexsurvreg
 #> 28                  Survey-weighted      svyglm
-#> 29 Additive, proportions, selection         gam
-#> 30 Additive, proportions, selection     betareg
-#> 31 Additive, proportions, selection   selection
-#> 32                              rms         ols
-#> 33                              rms         lrm
-#> 34                              rms         Glm
-#> 35                         Bayesian     stanreg
-#> 36                         Bayesian     brmsfit
+#> 29                  Survey-weighted      svyolr
+#> 30                  Survey-weighted    svycoxph
+#> 31 Additive, proportions, selection         gam
+#> 32 Additive, proportions, selection     betareg
+#> 33 Additive, proportions, selection   selection
+#> 34                              rms         ols
+#> 35                              rms         lrm
+#> 36                              rms         Glm
+#> 37                         Bayesian     stanreg
+#> 38                         Bayesian     brmsfit
 #>                                                                    engine
 #> 1                                                             stats::lm()
 #> 2                                                            stats::glm()
@@ -307,51 +369,55 @@ table_regression_models()
 #> 26                                                             rms::cph()
 #> 27                                                flexsurv::flexsurvreg()
 #> 28                                                       survey::svyglm()
-#> 29                                               mgcv::gam(), mgcv::bam()
-#> 30                                                     betareg::betareg()
-#> 31                                           sampleSelection::selection()
-#> 32                                                             rms::ols()
-#> 33                                                             rms::lrm()
-#> 34                                                             rms::Glm()
-#> 35                           rstanarm::stan_glm(), rstanarm::stan_glmer()
-#> 36                                                            brms::brm()
-#>                        ame                            exponentiate
-#> 1                      yes                                       -
-#> 2                      yes          OR / IRR / RR / MR / HR (link)
-#> 3                      yes                                     IRR
-#> 4                      yes                                       -
-#> 5                       no                                       -
-#> 6                      yes                                       -
-#> 7                      yes                                       -
-#> 8                      yes                                       -
-#> 9                      yes                                       -
-#> 10                     yes                                       -
-#> 11                     yes                       `feglm`: OR / IRR
-#> 12                     yes                                       -
-#> 13                     yes                         OR / IRR (link)
-#> 14                     yes link-dependent (IRR for count families)
-#> 15                     yes                                       -
-#> 16                     yes                                       -
-#> 17                     yes          OR / IRR / RR / MR / HR (link)
-#> 18            per category                              OR (logit)
-#> 19            per category                              OR (logit)
-#> 20             per outcome                                      OR
-#> 21                      no                                      OR
-#> 22 yes (combined response)      IRR (count) + OR (logit zero part)
-#> 23 yes (combined response)      IRR (count) + OR (logit zero part)
-#> 24        RMST / risk diff                                      HR
-#> 25  yes + RMST / risk diff            TR (log-scale distributions)
-#> 26                      no                                      HR
-#> 27                      no                          TR / HR (dist)
-#> 28      yes (design-based)                                OR / IRR
-#> 29                     yes                         OR / IRR (link)
-#> 30                     yes                          OR (mean link)
-#> 31                      no                                       -
-#> 32                     yes                                       -
-#> 33                     yes                                      OR
-#> 34                     yes                          link-dependent
-#> 35             yes (draws)                          link-dependent
-#> 36             yes (draws)                          link-dependent
+#> 29                                                       survey::svyolr()
+#> 30                                                     survey::svycoxph()
+#> 31                                               mgcv::gam(), mgcv::bam()
+#> 32                                                     betareg::betareg()
+#> 33                                           sampleSelection::selection()
+#> 34                                                             rms::ols()
+#> 35                                                             rms::lrm()
+#> 36                                                             rms::Glm()
+#> 37                           rstanarm::stan_glm(), rstanarm::stan_glmer()
+#> 38                                                            brms::brm()
+#>                            ame                            exponentiate
+#> 1                          yes                                       -
+#> 2                          yes          OR / IRR / RR / MR / HR (link)
+#> 3                          yes                                     IRR
+#> 4                          yes                                       -
+#> 5                           no                                       -
+#> 6                          yes                                       -
+#> 7                          yes                                       -
+#> 8                          yes                                       -
+#> 9                          yes                                       -
+#> 10                         yes                                       -
+#> 11                         yes                       `feglm`: OR / IRR
+#> 12                         yes                                       -
+#> 13                         yes                         OR / IRR (link)
+#> 14                         yes link-dependent (IRR for count families)
+#> 15                         yes                                       -
+#> 16                         yes                                       -
+#> 17                         yes          OR / IRR / RR / MR / HR (link)
+#> 18                per category                              OR (logit)
+#> 19                per category                              OR (logit)
+#> 20                 per outcome                                      OR
+#> 21                          no                                      OR
+#> 22     yes (combined response)      IRR (count) + OR (logit zero part)
+#> 23     yes (combined response)      IRR (count) + OR (logit zero part)
+#> 24            RMST / risk diff                                      HR
+#> 25      yes + RMST / risk diff            TR (log-scale distributions)
+#> 26                          no                                      HR
+#> 27                          no                          TR / HR (dist)
+#> 28          yes (design-based)                                OR / IRR
+#> 29 per category (design-based)                              OR (logit)
+#> 30                          no                                      HR
+#> 31                         yes                         OR / IRR (link)
+#> 32                         yes                          OR (mean link)
+#> 33                          no                                       -
+#> 34                         yes                                       -
+#> 35                         yes                                      OR
+#> 36                         yes                          link-dependent
+#> 37                 yes (draws)                          link-dependent
+#> 38                 yes (draws)                          link-dependent
 #>                                        blocks
 #> 1                                           -
 #> 2                                           -
@@ -381,14 +447,16 @@ table_regression_models()
 #> 26                                          -
 #> 27                    distribution parameters
 #> 28                                          -
-#> 29                                          -
+#> 29                                 Thresholds
 #> 30                                          -
-#> 31                        selection component
+#> 31                                          -
 #> 32                                          -
-#> 33                                          -
+#> 33                        selection component
 #> 34                                          -
-#> 35             Random effects (if multilevel)
-#> 36             Random effects (if multilevel)
+#> 35                                          -
+#> 36                                          -
+#> 37             Random effects (if multilevel)
+#> 38             Random effects (if multilevel)
 
 # All engines of one family:
 subset(table_regression_models(), family == "Mixed effects")

@@ -1051,6 +1051,11 @@ field convention; blank for other classes).</p></li>
 <code>"pseudo_r2_tjur"</code> (Tjur 2009; binomial only).</p></li>
 <li><p>Residual scale: <code>"sigma"</code> (lm \(\hat{\sigma}\)
 / glm dispersion), <code>"rmse"</code>.</p></li>
+<li><p>Survey designs (<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code> only): <code>"eff_p"</code>, the
+effective number of parameters of the design (the first element
+of survey's <code>extractAIC</code>, the sum of the Rao-Scott eigenvalues).
+Opt-in and distinct from <code>"aic"</code>, which reports the design-based
+AIC of Lumley &amp; Scott (2015). Blank for other classes.</p></li>
 <li><p>Bayesian fits only: <code>"r2_bayes"</code> (posterior-median
 Bayesian \(R^2\), Gelman et al. 2019 – in the
 all-Bayesian default), <code>"elpd_loo"</code> and <code>"looic"</code> (PSIS-LOO

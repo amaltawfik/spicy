@@ -187,7 +187,10 @@ the convention <code><a href="table_categorical.html">table_categorical()</a></c
 
 <dt id="arg-chisq-statistic">chisq_statistic<a class="anchor" aria-label="anchor" href="#arg-chisq-statistic"></a></dt>
 <dd><p>Statistic for <code><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">survey::svychisq()</a></code>: <code>"F"</code>
-(default), <code>"Chisq"</code>, <code>"Wald"</code>, <code>"adjWald"</code> or <code>"saddlepoint"</code>.</p></dd>
+(default), <code>"Chisq"</code>, <code>"Wald"</code>, <code>"adjWald"</code> or <code>"saddlepoint"</code>.
+<code>"saddlepoint"</code> is refused on a replicate-weights design: survey
+computes its p-value without the denominator degrees of freedom
+there, so it comes out too small.</p></dd>
 
 
 <dt id="arg-deff">deff<a class="anchor" aria-label="anchor" href="#arg-deff"></a></dt>
@@ -282,6 +285,14 @@ statistic there is not the one the p-value came from. <code>"Wald"</code>,
 <code>"wls-score"</code> are refused, the first because its integration is
 documented as failing in the far tail (<code>?pchisqsum</code>), the second
 because it has no reporting convention here.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="stability">Stability<a class="anchor" aria-label="anchor" href="#stability"></a></h2>
+    <p>This function is <strong>experimental</strong> in the sense <code><a href="spicy-package.html">?spicy</a></code> defines: it
+is new in this cycle, and the shape of the table and the names of
+its design-specific arguments may still move – with a <code>NEWS.md</code>
+entry – on their own clock rather than the parent family's. The
+numbers themselves are survey's and do not move with it.</p>
     </div>
     <div class="section level2">
     <h2 id="what-is-absent-and-why">What is absent, and why<a class="anchor" aria-label="anchor" href="#what-is-absent-and-why"></a></h2>

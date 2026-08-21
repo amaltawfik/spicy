@@ -112,6 +112,9 @@ table_categorical_svy(
   Statistic for
   [`survey::svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html):
   `"F"` (default), `"Chisq"`, `"Wald"`, `"adjWald"` or `"saddlepoint"`.
+  `"saddlepoint"` is refused on a replicate-weights design: survey
+  computes its p-value without the denominator degrees of freedom there,
+  so it comes out too small.
 
 - deff:
 
@@ -208,6 +211,15 @@ there is not the one the p-value came from. `"Wald"`, `"adjWald"` and
 the first because its integration is documented as failing in the far
 tail (`?pchisqsum`), the second because it has no reporting convention
 here.
+
+## Stability
+
+This function is **experimental** in the sense
+[`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
+defines: it is new in this cycle, and the shape of the table and the
+names of its design-specific arguments may still move – with a `NEWS.md`
+entry – on their own clock rather than the parent family's. The numbers
+themselves are survey's and do not move with it.
 
 ## What is absent, and why
 
