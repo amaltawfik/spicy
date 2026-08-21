@@ -392,10 +392,18 @@ as_regression_frame.svyglm <- function(
 # survey's `extractAIC.svyglm` return, the sum of the Rao-Scott
 # eigenvalues. Real information, and free -- but it is not an AIC, which
 # is what it was published as.
+# Both accessors reach their absent branch on an ordinary fit, not on a
+# degenerate one: `extractAIC.svyglm` stops with "model has no intercept,
+# null cannot have one", so any non-gaussian fit without an intercept --
+# `svyglm(y ~ 0 + x, family = quasibinomial())` -- has no criterion and
+# no effective parameter count. (A gaussian one is routed to
+# `extractAIC_svylm`, which has no such stop, which is why the fixture
+# that already existed did not exercise this.) The table then renders
+# without an AIC row, which is the right answer and is pinned as one.
 .svyglm_eff_p <- function(fit) {
   a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
   if (is.null(a) || !is.numeric(a) || !("eff.p" %in% names(a))) {
-    return(NA_real_) # nocov
+    return(NA_real_)
   }
   as.numeric(a[["eff.p"]])
 }
@@ -404,7 +412,7 @@ as_regression_frame.svyglm <- function(
 .svyglm_aic <- function(fit) {
   a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
   if (is.null(a) || !is.numeric(a) || length(a) == 0L) {
-    return(NA_real_) # nocov
+    return(NA_real_)
   }
   if ("AIC" %in% names(a)) {
     return(as.numeric(a[["AIC"]]))
