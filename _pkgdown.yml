@@ -159,12 +159,19 @@ reference:
       - table_continuous
       - table_continuous_lm
       - table_outcome
-      - table_continuous_svy
-      - table_categorical_svy
       - table_regression
       - table_regression_uv
       - as_structured
       - inline
+  - title: Survey-design tables
+    desc: >
+      Experimental (`?spicy`): new in this cycle, and the shape of the
+      table and the names of the design-specific arguments may still
+      move -- with a `NEWS.md` entry -- on their own clock rather than
+      the parent family's. Every number comes from survey (Lumley).
+    contents:
+      - table_continuous_svy
+      - table_categorical_svy
   - title: Table styles
     desc: >
       Journal and locale number-formatting themes, each encoding only

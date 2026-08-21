@@ -242,6 +242,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `show_fit_stats = "eff_p"` reports the effective number of parameters of a
   `survey::svyglm()` design.
 
+* `table_categorical_svy()` refuses `chisq_statistic = "saddlepoint"` on a
+  replicate-weights design, where survey computes its p-value without the
+  denominator degrees of freedom and it comes out too small. The same option
+  on a `survey::svydesign()` design is correct and still accepted.
+
+* `vignette("survey-tables")` gains a section on regression under a design,
+  and `?table_continuous_svy` / `?table_categorical_svy` state that the two
+  are experimental.
+
 * Handing a `survey` design object to `table_continuous()`,
   `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now
   errors with the function to call instead, rather than with

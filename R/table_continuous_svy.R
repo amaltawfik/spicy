@@ -481,6 +481,14 @@ order_continuous_svy_tokens <- function(tokens) {
 #' variance is the design's -- so `test = "student"` warns and behaves
 #' like `"welch"`.
 #'
+#' # Stability
+#'
+#' This function is **experimental** in the sense `?spicy` defines: it
+#' is new in this cycle, and the shape of the table and the names of
+#' its design-specific arguments may still move -- with a `NEWS.md`
+#' entry -- on their own clock rather than the parent family's. The
+#' numbers themselves are survey's and do not move with it.
+#'
 #' # What is absent, and why
 #'
 #' `weights` and `rescale` (the weighting *is* the design), `effect_size`

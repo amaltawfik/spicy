@@ -198,6 +198,53 @@ closed-form AFT curves are standardized directly (stratified
 \code{nested = TRUE} compares nested Cox fits by likelihood-ratio test.
 }
 
+\section{Survey-design models}{
+
+Fits from a \code{survey::svydesign()} or \code{survey::as.svrepdesign()}
+design -- \code{svyglm} (and its replicate sibling \code{svrepglm}), \code{svyolr},
+\code{svycoxph} (and \code{svrepcoxph}) -- are read as design-based
+throughout: the coefficients, the variance and the reference
+distribution all come from survey.
+
+Inference is Wald \strong{t} at the degrees of freedom survey writes on
+the FIT -- \code{df.residual} for \code{svyglm} / \code{svyolr}, \code{degf.resid} or
+\code{degf.residual} for the two Cox engines -- which is what
+\code{\link[survey:regTermTest]{survey::regTermTest()}} takes as its denominator. That is the
+design's own degrees of freedom minus the non-intercept parameters,
+not \code{survey::degf(design)}; the footer names the design and prints
+the number, and the average marginal effects answer to the same
+distribution as the coefficient rows.
+
+The average marginal effect is the Horvitz-Thompson estimator: the
+mean unit-level effect weighted by the sampling weights of the
+analytic sample, with its variance from the delta method on the
+design vcov.
+
+Counts are both reported: the observed \code{n} and the \verb{Weighted n} the
+estimates describe. \code{svycoxph} adds the number of events, and its
+concordance goes to the footer.
+
+What is refused, and why: every model-derived variance (\verb{HC*},
+\verb{CR*}, bootstrap, jackknife) -- the design is the variance
+authority, and the way to change the estimator is to change the
+design; every likelihood statistic (AIC, BIC, logLik, deviance,
+pseudo-R-squared, \code{nested = TRUE}) for \code{svyolr} and \code{svycoxph} --
+there is no likelihood, and survey's own \code{deviance()} returns a
+sign-flipped likelihood-ratio statistic on one Cox engine and a bare
+zero on the other; the AME for \code{svycoxph}, on the same ground as for
+a plain Cox fit; and the \code{"rmst"} / \code{"risk_diff"} columns for
+\code{svycoxph}, whose uncertainty comes from resampling subjects and so
+ignores the strata and clusters the design declares (use
+\code{\link[survey:svykm]{survey::svykm()}} for a marginal curve).
+
+\code{svyglm} keeps an \code{AIC} row: survey's \code{extractAIC.svyglm} computes
+the design-based AIC of Lumley & Scott (2015), the one information
+criterion published for this class, and
+\code{show_fit_stats = "eff_p"} reports the effective number of design
+parameters beside it. \code{BIC.svyglm} requires a maximal model and has
+no default, so it stays blank. See \code{vignette("survey-tables")}.
+}
+
 \section{Robust, IV, quantile and panel models}{
 
 \code{estimatr} fits keep their own robust SEs (never overwritten);

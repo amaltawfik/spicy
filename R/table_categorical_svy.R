@@ -273,6 +273,14 @@
 #' documented as failing in the far tail (`?pchisqsum`), the second
 #' because it has no reporting convention here.
 #'
+#' # Stability
+#'
+#' This function is **experimental** in the sense `?spicy` defines: it
+#' is new in this cycle, and the shape of the table and the names of
+#' its design-specific arguments may still move -- with a `NEWS.md`
+#' entry -- on their own clock rather than the parent family's. The
+#' numbers themselves are survey's and do not move with it.
+#'
 #' # What is absent, and why
 #'
 #' `weights` and `rescale` (the weighting *is* the design). `correct`
@@ -306,6 +314,9 @@
 #' @param ci_level Coverage of the interval.
 #' @param chisq_statistic Statistic for `survey::svychisq()`: `"F"`
 #'   (default), `"Chisq"`, `"Wald"`, `"adjWald"` or `"saddlepoint"`.
+#'   `"saddlepoint"` is refused on a replicate-weights design: survey
+#'   computes its p-value without the denominator degrees of freedom
+#'   there, so it comes out too small.
 #' @param deff Show the design effect of each percentage: `FALSE`
 #'   (default), `TRUE` or `"replace"`.
 #' @param df Degrees of freedom for the intervals. `NULL` (default)
@@ -415,6 +426,7 @@ table_categorical_svy <- function(
     .abort_cat_svy_statistic(chisq_statistic)
   }
   chisq_statistic <- spicy_match_arg(chisq_statistic)
+  .check_cat_svy_statistic_design(chisq_statistic, design)
   cfg <- .svy_validate_common(
     design = design,
     fn = "table_categorical_svy",
@@ -831,6 +843,55 @@ table_categorical_svy <- function(
       "i" = sprintf(
         "For the statistic itself, call `survey::svychisq(statistic = \"%s\")` directly.",
         statistic
+      )
+    ),
+    class = "spicy_unsupported"
+  )
+}
+
+# The saddlepoint approximation is correct on a linearised design and
+# wrong on a replicate one -- the same option, the same function, two
+# code paths in survey.
+#
+# Read in survey 4.5's source, side by side:
+#   svychisq.survey.design   pchisqsum(..., method = "saddlepoint", ddf = d0 * nu)
+#   svychisq.svyrep.design   pchisqsum(..., method = "saddlepoint")
+# The replicate branch drops the denominator degrees of freedom, so its
+# reference distribution has none and the p-value comes out too small.
+# Measured on the api JK1 fixture: 0.02365 against 0.02644 from the same
+# table under linearisation, in the anti-conservative direction.
+#
+# So the COMBINATION is refused rather than served with a note, which is
+# the same rule the package applies to itself: no broken survey path is
+# used, for what we offer as well as for what we test. `"lincom"`, the
+# other option with this defect, is already refused on every design.
+# Lifted the day survey passes `ddf` on that branch.
+.check_cat_svy_statistic_design <- function(statistic, design) {
+  if (
+    !identical(statistic, "saddlepoint") ||
+      !inherits(design, "svyrep.design")
+  ) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      paste0(
+        "`chisq_statistic = \"saddlepoint\"` is not available for a ",
+        "replicate-weights design."
+      ),
+      "x" = paste0(
+        "survey computes its p-value without the denominator degrees of ",
+        "freedom on this design class (`pchisqsum()` is called without ",
+        "`ddf`, which the linearised path supplies), so the p-value is ",
+        "too small."
+      ),
+      "i" = paste0(
+        "Use `\"F\"` (the default, Rao-Scott second-order), `\"Chisq\"`, ",
+        "`\"Wald\"` or `\"adjWald\"`, all of which are correct here."
+      ),
+      "i" = paste0(
+        "The same option on a `survey::svydesign()` design is correct and ",
+        "is accepted."
       )
     ),
     class = "spicy_unsupported"
