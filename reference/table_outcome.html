@@ -5,13 +5,13 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Describe one continuous outcome across several groupings — table_outcome"><meta name="description" content="Summarises ONE continuous outcome across the levels of SEVERAL
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Describe one continuous outcome across several groupings — table_outcome"><meta name="description" content="Summarises one continuous outcome across the levels of several
 categorical variables, one block of rows per variable. It is the
 inverse layout of table_continuous(), which puts several outcomes
 in rows and one grouping in columns.
 Each block reports the outcome's statistics level by level, plus its
 own group comparison on the block's header row, and an Overall row
-gives the marginal summary of the whole analytic sample."><meta property="og:description" content="Summarises ONE continuous outcome across the levels of SEVERAL
+gives the marginal summary of the whole analytic sample."><meta property="og:description" content="Summarises one continuous outcome across the levels of several
 categorical variables, one block of rows per variable. It is the
 inverse layout of table_continuous(), which puts several outcomes
 in rows and one grouping in columns.
@@ -82,7 +82,7 @@ gives the marginal summary of the whole analytic sample."><meta property="og:ima
     </div>
 
     <div class="ref-description section level2">
-    <p>Summarises ONE continuous outcome across the levels of SEVERAL
+    <p>Summarises <em>one</em> continuous outcome across the levels of <em>several</em>
 categorical variables, one block of rows per variable. It is the
 inverse layout of <code><a href="table_continuous.html">table_continuous()</a></code>, which puts several outcomes
 in rows and one grouping in columns.</p>
@@ -240,7 +240,7 @@ frame and the typed view attached. <code>output = "data.frame"</code> /
     </div>
     <div class="section level2">
     <h2 id="which-shape-do-i-need-">Which shape do I need?<a class="anchor" aria-label="anchor" href="#which-shape-do-i-need-"></a></h2>
-    <p>Several continuous variables across ONE grouping is
+    <p>Several continuous variables across <em>one</em> grouping is
 <code><a href="table_continuous.html">table_continuous()</a></code> (<code>select = </code>, <code>by = </code>). One continuous variable
 across one or several groupings is this function. A single <code>by</code> is
 legitimate here – it is the natural way in when you know more
@@ -282,7 +282,7 @@ order-statistic median interval is refused for the same reason.</p>
     </div>
     <div class="section level2">
     <h2 id="blocks-and-the-group-comparison">Blocks and the group comparison<a class="anchor" aria-label="anchor" href="#blocks-and-the-group-comparison"></a></h2>
-    <p>Every block is a separate ONE-WAY comparison of the outcome across
+    <p>Every block is a separate one-way comparison of the outcome across
 the levels of that variable. Nothing in this table adjusts one block
 for another, and the table note says so. Read the blocks as a set of
 bivariate descriptions, not as a model.</p>

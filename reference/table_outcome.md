@@ -1,6 +1,6 @@
 # Describe one continuous outcome across several groupings
 
-Summarises ONE continuous outcome across the levels of SEVERAL
+Summarises *one* continuous outcome across the levels of *several*
 categorical variables, one block of rows per variable. It is the inverse
 layout of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -157,7 +157,7 @@ compute frame unclassed.
 
 ## Which shape do I need?
 
-Several continuous variables across ONE grouping is
+Several continuous variables across *one* grouping is
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 (`select = `, `by = `). One continuous variable across one or several
 groupings is this function. A single `by` is legitimate here – it is the
@@ -206,7 +206,7 @@ refused for the same reason.
 
 ## Blocks and the group comparison
 
-Every block is a separate ONE-WAY comparison of the outcome across the
+Every block is a separate one-way comparison of the outcome across the
 levels of that variable. Nothing in this table adjusts one block for
 another, and the table note says so. Read the blocks as a set of
 bivariate descriptions, not as a model.

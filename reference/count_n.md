@@ -185,7 +185,7 @@ collapses the per-tag breakdown back into the regular `NA` count.
 
 ## See also
 
-[`datawizard::row_count()`](https://easystats.github.io/datawizard/reference/row_count.html)
+[`datawizard::row_count()`](https://rdrr.io/pkg/datawizard/man/row_count.html)
 for a closely related row-wise counter; `count_n()` adds element-wise
 type-safe matching, multi-value `count`, and special-value detection.
 
