@@ -165,6 +165,122 @@ test_that("truncating the baseline grid at the horizon changes nothing", {
 })
 
 
+test_that("the estimand rows' df parameter is inert at its Inf default", {
+  skip_if_not_installed("survival")
+  # (a) the arithmetic. The whole parameterisation rests on qt/pt at
+  # df = Inf being qnorm/pnorm to the last bit -- true, but arithmetic
+  # rather than a documented guarantee, so it is pinned rather than
+  # assumed. Nine coverage levels x eleven statistics, `identical()`.
+  cls <- c(0.5, 0.6, 0.68, 0.75, 0.8, 0.9, 0.95, 0.99, 0.999)
+  for (cl in cls) {
+    expect_identical(
+      stats::qt(1 - (1 - cl) / 2, df = Inf),
+      stats::qnorm(0.5 + cl / 2)
+    )
+  }
+  for (s in c(0, 1e-8, 0.001, 0.5, 1, 1.644854, 1.959964, 2.5, 3.5, 7, 40)) {
+    expect_identical(
+      2 * stats::pt(abs(s), df = Inf, lower.tail = FALSE),
+      2 * stats::pnorm(-abs(s))
+    )
+  }
+
+  # (b) the rows themselves, at the default: the normal-approximation
+  # bootstrap layering, recomputed from estimate and std_error.
+  d <- .est_lung()
+  fit <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = d)
+  set.seed(11)
+  res <- spicy:::.coxph_estimand_rows(
+    fit,
+    model_id = "M1",
+    outcome = NA_character_,
+    show_columns = c("rmst", "risk_diff"),
+    tau = 365,
+    at_time = 365,
+    ci_level = 0.9,
+    boot_n = 25
+  )
+  r <- res$rows
+  z <- stats::qnorm(0.5 + 0.9 / 2)
+  expect_identical(r$ci_lower, r$estimate - z * r$std_error)
+  expect_identical(r$ci_upper, r$estimate + z * r$std_error)
+  expect_identical(r$p_value, 2 * stats::pnorm(-abs(r$statistic)))
+  expect_identical(r$df, rep(Inf, nrow(r)))
+  expect_identical(unique(r$test_type), "z")
+})
+
+
+test_that("a finite df turns the estimand rows into a Wald-t", {
+  skip_if_not_installed("survival")
+  d <- .est_lung()
+  fit <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = d)
+  hooks <- list(
+    gates_fn = spicy:::.coxph_estimand_gates,
+    data_fn = spicy:::.coxph_estimand_data,
+    points_fn = spicy:::.coxph_estimand_points,
+    refit_fn = function(fit, dboot) {
+      spicy:::.coxph_refit_on(stats::formula(fit), dboot)
+    }
+  )
+  run <- function(df) {
+    set.seed(11)
+    do.call(
+      spicy:::.survival_estimand_rows,
+      c(
+        list(
+          fit = fit,
+          model_id = "M1",
+          show_columns = c("rmst", "risk_diff"),
+          tau = 365,
+          at_time = 365,
+          ci_level = 0.9,
+          boot_n = 25,
+          df = df
+        ),
+        hooks
+      )
+    )$rows
+  }
+  inf_rows <- run(Inf)
+  t_rows <- run(12)
+
+  # The point estimates and the bootstrap SEs are the same draw; only
+  # the reference distribution moves.
+  expect_identical(t_rows$estimate, inf_rows$estimate)
+  expect_identical(t_rows$std_error, inf_rows$std_error)
+  expect_identical(unique(t_rows$test_type), "t")
+  expect_identical(t_rows$df, rep(12, nrow(t_rows)))
+  crit <- stats::qt(1 - (1 - 0.9) / 2, df = 12)
+  expect_identical(t_rows$ci_lower, t_rows$estimate - crit * t_rows$std_error)
+  expect_identical(
+    t_rows$p_value,
+    2 * stats::pt(abs(t_rows$statistic), df = 12, lower.tail = FALSE)
+  )
+  # A t at 12 df is wider and less significant than the normal.
+  expect_true(all(
+    t_rows$ci_upper - t_rows$ci_lower >
+      inf_rows$ci_upper -
+        inf_rows$ci_lower
+  ))
+  expect_true(all(t_rows$p_value > inf_rows$p_value))
+
+  # And the default is the Inf branch: the harness called through the
+  # coxph entry point lands on the same rows.
+  set.seed(11)
+  via_coxph <- spicy:::.coxph_estimand_rows(
+    fit,
+    model_id = "M1",
+    outcome = NA_character_,
+    show_columns = c("rmst", "risk_diff"),
+    tau = 365,
+    at_time = 365,
+    ci_level = 0.9,
+    boot_n = 25
+  )$rows
+  expect_identical(via_coxph, inf_rows)
+})
+
+
 test_that("the step-function integral and landmark reader are exact", {
   # S = 1 on [0,2), 0.8 on [2,5), 0.5 on [5,9), 0.2 from 9.
   times <- c(2, 5, 9)

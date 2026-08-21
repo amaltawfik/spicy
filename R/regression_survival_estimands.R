@@ -599,6 +599,14 @@
 # estimand paths: gates, data recovery, point estimates, and the
 # resample-refit-recompute loop are identical; only the four hooks
 # differ per class.
+#
+# `df` are the degrees of freedom of the estimand rows' own test. The
+# default Inf is the normal-approximation layering the iid bootstrap
+# uses: `qt(p, Inf)` and `pt(q, Inf)` are `qnorm(p)` and `pnorm(q)` to
+# the last bit, so the parameterisation costs nothing at the default
+# (pinned by a witness, since it is arithmetic and not an API promise).
+# A finite value gives a Wald-t instead, and the rows say so through
+# `test_type`.
 .survival_estimand_rows <- function(
   fit,
   model_id,
@@ -607,6 +615,7 @@
   at_time = NULL,
   ci_level = 0.95,
   boot_n = 1000L,
+  df = Inf,
   gates_fn,
   data_fn,
   points_fn,
@@ -714,7 +723,10 @@
     boot_est[b, , "risk"] <- rep_pts$risk[m]
   }
 
-  z_crit <- stats::qnorm(0.5 + ci_level / 2)
+  # Spelling follows the AME precedent (regression_ame.R): the same two
+  # calls, so the two families' intervals cannot drift apart.
+  crit <- stats::qt(1 - (1 - ci_level) / 2, df = df)
+  test_type <- if (is.finite(df)) "t" else "z"
   build <- function(estimand_key, estimate_type) {
     est <- pts[[estimand_key]]
     reps <- matrix(boot_est[,, estimand_key], nrow = boot_n)
@@ -740,12 +752,13 @@
       estimate_type = estimate_type,
       estimate = est,
       std_error = unname(se),
-      df = Inf,
+      df = df,
       statistic = unname(stat),
-      p_value = 2 * stats::pnorm(-abs(unname(stat))),
-      ci_lower = est - z_crit * unname(se),
-      ci_upper = est + z_crit * unname(se),
-      test_type = "z",
+      p_value = 2 *
+        stats::pt(abs(unname(stat)), df = df, lower.tail = FALSE),
+      ci_lower = est - crit * unname(se),
+      ci_upper = est + crit * unname(se),
+      test_type = test_type,
       stringsAsFactors = FALSE
     )
   }
