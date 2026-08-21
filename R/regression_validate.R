@@ -790,12 +790,18 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
       # belongs in the design (clubSandwich has no vcovCR.svyglm; the call
       # would silently dispatch to vcovCR.glm, ignoring strata, FPC and
       # calibration).
-      if (inherits(models[[i]], "svyglm")) {
+      # `.is_design_fit()`, not `inherits(fit, "svyglm")`: svyolr and
+      # svycoxph are refused on exactly the same principle and used to
+      # fall through to the generic "This class supports: classical."
+      # The class named is the fit's own, so a `svyglm` request keeps
+      # the message it has always had.
+      if (.is_design_fit(models[[i]])) {
         spicy_abort(
           c(
             sprintf(
-              "`vcov = \"%s\"` is not available for `svyglm` models.",
-              vt
+              "`vcov = \"%s\"` is not available for `%s` models.",
+              vt,
+              class(models[[i]])[1L]
             ),
             "i" = paste0(
               "The fit's own design-based (Taylor / replicate) ",

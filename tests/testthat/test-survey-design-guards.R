@@ -329,6 +329,83 @@ test_that("plain coxph is untouched by the svycoxph method", {
 })
 
 
+# ---- Guard C: the refusal reaches every design class, and survives ---------
+
+test_that("the vcov gate answers every design class with the design message", {
+  # The gate used to key on `inherits(fit, "svyglm")`, so a design-based
+  # Cox fell through to the generic "This class supports: classical.",
+  # which names no remedy. `.is_design_fit()` gives all of them the
+  # message that says where clustering belongs.
+  sc <- .svycoxph_guard_fit()
+  err <- expect_error(
+    table_regression(sc, vcov = "HC3"),
+    class = "spicy_unsupported_vcov"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "svycoxph", fixed = TRUE)
+  expect_match(msg, "svydesign", fixed = TRUE)
+  expect_false(grepl("This class supports", msg, fixed = TRUE))
+  # And the svyglm message is the one it has always been.
+  fits <- .svy_guard_fits()
+  err2 <- expect_error(
+    table_regression(fits$svyglm, vcov = "HC1"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(
+    conditionMessage(err2),
+    "`vcov = \"HC1\"` is not available for `svyglm` models.",
+    fixed = TRUE
+  )
+})
+
+test_that("the AME vcov step re-raises a spicy refusal instead of degrading", {
+  # `.attach_ame_to_frame_coefs()` wrapped compute_model_vcov() in a bare
+  # `error = function(e) NULL`. A refusal swallowed there leaves `vc =
+  # NULL`, avg_slopes() silently falls back to the fit's own variance --
+  # the DESIGN one -- and the footer labels it "HC3". Unreachable today
+  # only because the coefficient step aborts first; guarded so a future
+  # reordering cannot reopen it.
+  skip_if_not_installed("marginaleffects")
+  fits <- .svy_guard_fits()
+  coefs <- spicy:::.svyglm_coefs(fits$svyglm, ci_level = 0.95)
+  expect_error(
+    spicy:::.attach_ame_to_frame_coefs(
+      coefs,
+      fits$svyglm,
+      ci_level = 0.95,
+      show_columns = c("b", "ame"),
+      vcov_type = "HC3"
+    ),
+    class = "spicy_unsupported_vcov"
+  )
+  # A non-spicy failure still degrades to the model-based AME, warning.
+  testthat::local_mocked_bindings(
+    compute_model_vcov = function(...) stop("engine exploded")
+  )
+  out <- spicy:::.attach_ame_to_frame_coefs(
+    coefs,
+    fits$svyglm,
+    ci_level = 0.95,
+    show_columns = c("b", "ame"),
+    vcov_type = "HC3"
+  )
+  expect_true(any(out$estimate_type == "ame"))
+})
+
+test_that(".is_design_fit names the replicate Cox sibling explicitly", {
+  # Executable documentation, not a fix: `svrepcoxph` inherits
+  # `svycoxph`, so the predicate was already TRUE for it. Naming it keeps
+  # the list the statement the file says it is.
+  skip_if_not_installed("survey")
+  skip_if_not_installed("survival")
+  expect_true(spicy:::.is_design_fit(structure(
+    list(),
+    class = c("svrepcoxph", "svycoxph", "coxph")
+  )))
+  expect_false(spicy:::.is_design_fit(structure(list(), class = "coxph")))
+})
+
+
 test_that("an unknown vcov token keeps its own answer on a design fit", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())

@@ -1221,9 +1221,26 @@ extract_ame_glm <- function(
       !is.null(vcov_type) &&
       !vcov_type %in% c("model", "classical", "survey-Taylor")
   ) {
+    # A spicy condition raised here is a REFUSAL, not a computation that
+    # happened to fail: the design-fit guard of compute_model_vcov()
+    # says a model-derived estimator must not be used on this fit.
+    # Swallowing it would leave `vc = NULL`, avg_slopes() would fall back
+    # to the fit's own (design-based) variance, and the footer would
+    # label design standard errors "HC3". Only genuinely unexpected
+    # errors degrade to the model-based AME.
+    #
+    # One handler, testing the class inside it: a sibling
+    # `spicy_error =` handler that re-raised would be caught by the
+    # `error =` handler of the same tryCatch, which still holds when
+    # the first one runs.
     vc <- tryCatch(
       compute_model_vcov(fit, type = vcov_type, cluster = cluster),
-      error = function(e) NULL
+      error = function(e) {
+        if (inherits(e, "spicy_error")) {
+          stop(e)
+        }
+        NULL
+      }
     )
   }
   ame_rows <- .compute_ame_rows_for_frame(fit, ci_level, vc = vc, hdi = hdi)
