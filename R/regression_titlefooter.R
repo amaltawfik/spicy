@@ -112,6 +112,10 @@ build_regression_footer_from_frames <- function(
   # single-model ("Multinomial logistic regression.", not "models.").
   themes <- list(
     build_regression_type_footer_block_from_frames(frames),
+    # Before the variance label, so a design table reads "what the design
+    # is" then "where the standard errors come from" -- the order the
+    # descriptive twins use.
+    build_design_footer_block_from_frames(frames),
     build_vcov_footer_block_from_frames(frames),
     build_ci_method_footer_block_from_frames(
       frames,
@@ -368,6 +372,72 @@ build_vcov_footer_block_from_frames <- function(frames) {
     character(1)
   )
   spicy_fmt("note_std_errors_multi", paste(per, collapse = "\n"))
+}
+
+
+# The sampling design a regression was fitted under, and the degrees of
+# freedom its tests actually use.
+#
+# Before this block, a regression table under a design said neither. Its
+# descriptive twin on the same design opens with
+#   "N = 200 (weighted 6194). Design: stratified (stype), with finite
+#    population correction; degrees of freedom vary by group (49 to 99)."
+# while the regression footer said only "Std. errors: Design-based
+# (Taylor linearisation)." -- so a reader could not tell that the design
+# was stratified, nor that the t had 193 degrees of freedom. That is a
+# reproducibility gap, not a question of density.
+#
+# The number is the MODEL's residual df (193), never the design's own
+# (197): the second is not what the table tests at, and printing it
+# beside a t of the first would make the footer contradict the body.
+#
+# Two guards, both necessary:
+#   * the scheme is described only when `.design_meta_or_null()` could
+#     read the design (a two-phase design has no PSU variable to name);
+#     otherwise the degrees of freedom are disclosed on their own, since
+#     they are the part that makes the table reproducible;
+#   * the meta comes from the ANALYTIC design (the frame stashes it),
+#     so a fit on 180 of 200 schools is not described by the 200.
+build_design_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  per_model <- lapply(seq_along(frames), function(i) {
+    txt <- .format_design_for_frame(frames[[i]])
+    if (is.null(txt)) NULL else list(idx = i, text = txt)
+  })
+  per_model <- Filter(Negate(is.null), per_model)
+  if (length(per_model) == 0L) {
+    return(NULL)
+  }
+  texts <- vapply(per_model, function(pm) pm$text, character(1))
+  # One line when every design fit says the same thing -- the common case
+  # of a single model, and of two models on one design.
+  if (length(unique(texts)) == 1L) {
+    return(texts[1L])
+  }
+  paste(
+    vapply(
+      per_model,
+      function(pm) .model_line(frames, pm$idx, pm$text),
+      character(1)
+    ),
+    collapse = "\n"
+  )
+}
+
+
+.format_design_for_frame <- function(frame) {
+  df <- frame$info$extras$design_degf_resid
+  if (is.null(df) || length(df) != 1L || !is.finite(df)) {
+    return(NULL)
+  }
+  meta <- frame$info$extras$design_meta
+  df_clause <- spicy_fmt("note_design_degf_resid", as.integer(df))
+  if (is.null(meta)) {
+    return(spicy_fmt("note_design_degf_resid_only", as.integer(df)))
+  }
+  spicy_fmt("note_design_line", .design_scheme_parts(meta), df_clause)
 }
 
 

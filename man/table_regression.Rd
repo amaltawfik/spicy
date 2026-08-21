@@ -908,6 +908,11 @@ field convention; blank for other classes).
 \code{"pseudo_r2_tjur"} (Tjur 2009; binomial only).
 \item Residual scale: \code{"sigma"} (lm \eqn{\hat{\sigma}}{sigma-hat}
 / glm dispersion), \code{"rmse"}.
+\item Survey designs (\code{survey::svyglm} only): \code{"eff_p"}, the
+effective number of parameters of the design (the first element
+of survey's \code{extractAIC}, the sum of the Rao-Scott eigenvalues).
+Opt-in and distinct from \code{"aic"}, which reports the design-based
+AIC of Lumley & Scott (2015). Blank for other classes.
 \item Bayesian fits only: \code{"r2_bayes"} (posterior-median
 Bayesian \eqn{R^2}{R^2}, Gelman et al. 2019 -- in the
 all-Bayesian default), \code{"elpd_loo"} and \code{"looic"} (PSIS-LOO

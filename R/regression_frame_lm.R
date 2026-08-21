@@ -421,6 +421,10 @@ as_regression_frame.glm <- function(fit, ...) {
     aicc = .scalar_or_na(fs$AICc %||% fs$aicc),
     bic = .scalar_or_na(fs$BIC %||% fs$bic),
     deviance = .scalar_or_na(fs$deviance),
+    # survey::svyglm only: the effective number of parameters of the
+    # design. NA everywhere else, so the row is dropped unless a design
+    # glm is in the table AND the token was asked for.
+    eff_p = .scalar_or_na(fs$eff_p),
     df_residual = .scalar_or_na(fs$df_residual)
   )
   # Nested-LRT change tokens (present only when attach_nested_stats_*

@@ -515,6 +515,26 @@
   )
 }
 
+# `.design_meta()` for the designs it was written for, NULL otherwise.
+#
+# It reads `design$cluster` / `design$strata` / `design$fpc` directly, so
+# a design that does not carry them -- a two-phase design, whose PSU
+# variable is empty -- fails inside it ("argument is of length zero"),
+# not at its door. A `svyglm` on a two-phase design is legal and renders
+# a table today, so the caller has to be able to ask without risking
+# that. Everything survey builds through `svydesign()` (including
+# calibrated, post-stratified and without-replacement pps designs) and
+# every replicate design is covered.
+.design_meta_or_null <- function(design) {
+  if (
+    is.null(design) ||
+      !inherits(design, c("svyrep.design", "survey.design2"))
+  ) {
+    return(NULL)
+  }
+  .design_meta(design)
+}
+
 # The clause naming the sampling scheme, e.g.
 # "stratified (stype), 200 PSU, with finite population correction" or
 # "replicate weights (JK1), 15 replicates".

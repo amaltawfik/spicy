@@ -40,6 +40,7 @@ as_regression_frame.svyglm <- function(
 ) {
   .check_survey_available()
 
+  df <- .design_model_df(fit)
   coefs <- .svyglm_coefs(fit, ci_level = ci_level)
   # `vcov` can only be the design-based default here ("survey-Taylor" /
   # "model" / "classical"): the design is the variance authority, so
@@ -67,7 +68,7 @@ as_regression_frame.svyglm <- function(
     show_columns,
     vcov_type = vcov,
     cluster = cluster,
-    df = .design_model_df(fit)
+    df = df
   )
   info <- .svyglm_info(
     fit,
@@ -75,7 +76,8 @@ as_regression_frame.svyglm <- function(
     vcov_label = vcov_label,
     ci_level = ci_level,
     ci_method = ci_method,
-    model_id = model_id
+    model_id = model_id,
+    df = df
   )
 
   new_regression_frame(coefs, info, fit)
@@ -234,7 +236,8 @@ as_regression_frame.svyglm <- function(
   vcov_label,
   ci_level,
   ci_method,
-  model_id
+  model_id,
+  df
 ) {
   fam <- stats::family(fit)
   family_info <- list(family = fam$family, link = fam$link)
@@ -256,20 +259,22 @@ as_regression_frame.svyglm <- function(
     bic = tryCatch(suppressWarnings(stats::BIC(fit)), error = function(e) {
       NA_real_
     }),
-    log_lik = tryCatch(
-      suppressWarnings(
-        as.numeric(stats::logLik(fit))
-      ),
-      error = function(e) NA_real_
-    ),
-    deviance = tryCatch(
-      suppressWarnings(stats::deviance(fit)),
-      error = function(e) NA_real_
-    ),
-    sigma = tryCatch(suppressWarnings(stats::sigma(fit)), error = function(e) {
-      NA_real_
-    }),
+    # logLik / deviance / sigma DO return a number here, and none of the
+    # three describes the fit. `logLik.svyglm` warns "not fitted by
+    # maximum likelihood" and returns the weighted quasi-likelihood
+    # (-287669.8 on the api cluster design); the deviance is on the scale
+    # of the SUM OF THE WEIGHTS (575339.7 for 183 schools), so it grows
+    # with the population rather than with the misfit. They are posted as
+    # NA in the frame, not merely kept out of the default token set: an
+    # explicit `show_fit_stats` and a mixed table both go around the
+    # defaults.
+    log_lik = NA_real_,
+    deviance = NA_real_,
+    sigma = NA_real_,
     nobs = n_obs,
+    # Opt-in, under its own name: the effective number of parameters of
+    # the design, which is what the AIC row showed until 0.13.
+    eff_p = .svyglm_eff_p(fit),
     # Sum of design weights: makes the "weighted_nobs" token render
     # (it was silently swallowed -- extras carried the value but the
     # fit-stats materialiser only reads fit_stats).
@@ -312,7 +317,11 @@ as_regression_frame.svyglm <- function(
     title_prefix = title_prefix,
     exp_applied = FALSE,
     exp_header = NA_character_,
-    design_class = .svyglm_design_class(fit)
+    design_class = .svyglm_design_class(fit),
+    # Footer disclosure: the sampling scheme, read off the ANALYTIC
+    # design, and the degrees of freedom the table's own tests use.
+    design_meta = .design_meta_or_null(.design_analytic(fit, n_obs)),
+    design_degf_resid = df
   )
 
   list(
@@ -379,6 +388,19 @@ as_regression_frame.svyglm <- function(
 # quantity of its kind published for this class. `BIC.svyglm` is not
 # its counterpart -- it requires a `maximal =` model and errors without
 # one -- so bic stays NA.
+# The effective number of parameters of the design: the first element of
+# survey's `extractAIC.svyglm` return, the sum of the Rao-Scott
+# eigenvalues. Real information, and free -- but it is not an AIC, which
+# is what it was published as.
+.svyglm_eff_p <- function(fit) {
+  a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
+  if (is.null(a) || !is.numeric(a) || !("eff.p" %in% names(a))) {
+    return(NA_real_) # nocov
+  }
+  as.numeric(a[["eff.p"]])
+}
+
+
 .svyglm_aic <- function(fit) {
   a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
   if (is.null(a) || !is.numeric(a) || length(a) == 0L) {

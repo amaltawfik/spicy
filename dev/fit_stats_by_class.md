@@ -28,6 +28,8 @@ Columns:
 | `lm` | `stats::lm` | ✅ | — | — |
 | `glm` | `stats::glm` | ✅ | OR / IRR / RR | — |
 | `svyglm` | `survey::svyglm` | ✅ (design-based) | OR / IRR | — |
+| `svyolr` | `survey::svyolr` | ✅ per category (design-based) | OR (logit) | Thresholds |
+| `svycoxph` | `survey::svycoxph` | — (no response scale) | HR | — |
 | `gam` | `mgcv::gam` | ✅ | OR / IRR (link) | 🔶 smooth-terms (edf) |
 | `lm_robust` / `iv_robust` | `estimatr::*` | ✅ | — | — |
 | `rq` | `quantreg::rq` | ✅ | — | — |
@@ -111,7 +113,10 @@ harmless.
 | Class(es) | Default | Notes |
 |---|---|---|
 | `lm` | `nobs, r2, adj_r2` | ✅ |
-| `glm` (+ `gam`, `svyglm` via `"glm"` inheritance) | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, AIC` | ✅ Tjur (binomial) optional |
+| `glm` (+ `gam`) | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, AIC` | ✅ Tjur (binomial) optional |
+| survey: `svyglm` | `nobs, weighted_nobs, aic` | ✅ EXCLUDED from `any_glm` (2026-08, survey P2): no likelihood, so no pseudo-R²; the `aic` is the design-based AIC of Lumley & Scott (2015), read by name from survey's three-element `extractAIC`. `eff_p` opt-in. |
+| survey: `svyolr` | `nobs, weighted_nobs` | ✅ no likelihood at all: AIC / BIC / logLik / deviance are NA in the frame, so an explicit token cannot republish them |
+| survey: `svycoxph` | `nobs, weighted_nobs, n_events` | ✅ EXCLUDED from `any_coxph`; concordance in the footer; `deviance()` is a sign-flipped LRT on one engine and 0 on the other |
 | mixed: `lmer`/`glmer`, `glmmTMB`, `lme` | `nobs, r2_marginal, r2_conditional, AIC, BIC` | ✅ Nakagawa R² |
 | ordinal: `polr`, `clm` | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, AIC` | ✅ McFadden = Stata `ologit`, Nagelkerke = SPSS PLUM; closed-form null LL |
 | **universal fallback** (any class not matched above) | `nobs, AIC` | ✅ safety net; no blank block |
@@ -125,7 +130,7 @@ harmless.
 | `survreg` | `nobs, logLik, AIC, scale` | BIC, LR χ² | scale, logLik tokens |
 | `betareg` | `nobs, pseudo_r2, AIC` | φ, BIC, logLik | betareg pseudo-R² + φ |
 | `gam` | `nobs, dev_explained, adj_r2, AIC` | REML/GCV, edf, scale | dev_explained, edf |
-| `svyglm` | `weighted_nobs, nobs, AIC` | design df, deviance | design-based set |
+| `svyglm` | SHIPPED 2026-08 (survey P2) as `nobs, weighted_nobs, aic`; see section 2. `deviance` deliberately NOT offered: it is on the scale of the sum of the weights. | `eff_p` | design-based set |
 | `mlogit` | `nobs, pseudo_r2_mcfadden, logLik, AIC` | Nagelkerke, LR χ² | McFadden mlogit |
 | `fixest` | feols: `nobs, r2, within_r2, AIC`; feglm: `nobs, pseudo_r2, AIC` | RMSE, BIC, #FE | within-R², #FE |
 | `rms` | ols→lm; lrm→`nobs, C, r2_nagelkerke, Brier`; cph→coxph; orm→ordinal | LR χ², Dxy, g | C-index, Nagelkerke, Brier |

@@ -231,6 +231,17 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   residual degrees of freedom, like the coefficient rows above them, so a
   table no longer mixes a t and a normal under one `p` header.
 
+* A regression under a survey design reports both counts by default -- the
+  observed `n` and the `Weighted n` the estimates describe -- as the
+  descriptive tables already did.
+
+* The note of a survey regression names the sampling design and the residual
+  degrees of freedom its tests use, so the table can be read without the
+  design object at hand.
+
+* `show_fit_stats = "eff_p"` reports the effective number of parameters of a
+  `survey::svyglm()` design.
+
 * Handing a `survey` design object to `table_continuous()`,
   `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now
   errors with the function to call instead, rather than with

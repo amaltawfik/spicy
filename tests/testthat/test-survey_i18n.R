@@ -209,7 +209,14 @@ test_that("the design variance label of a regression footer comes from the regis
       "Design-based",
       "Taylor linearisation",
       "replicate weights",
-      "two-phase design"
+      "two-phase design",
+      # ...and the design line the same footer carries.
+      "Design:",
+      "cluster (",
+      "stratified (",
+      "with finite population correction",
+      "residual degrees of freedom",
+      "Tests use"
     )) {
       expect_false(
         grepl(leak, out, fixed = TRUE),

@@ -1796,6 +1796,7 @@ fit_stat_label <- function(token) {
     aicc = spicy_str("fitstat_aicc"),
     bic = spicy_str("fitstat_bic"),
     deviance = spicy_str("fitstat_deviance"),
+    eff_p = spicy_str("fitstat_eff_p"),
     # Nested-comparison change tokens (APA Table 7.13)
     r2_change = delta(spicy_str("symbol_r2")),
     adj_r2_change = delta(spicy_str("fitstat_adj_r2")),

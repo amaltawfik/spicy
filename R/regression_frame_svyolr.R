@@ -220,7 +220,11 @@ as_regression_frame.svyolr <- function(
     exp_header = NA_character_,
     response_levels = as.character(fit$lev %||% character(0)),
     thresholds = .polr_thresholds(fit, df = df, test = "t"),
-    design_class = .svyglm_design_class(fit)
+    design_class = .svyglm_design_class(fit),
+    # Footer disclosure: the sampling scheme, read off the ANALYTIC
+    # design, and the degrees of freedom the table's own tests use.
+    design_meta = .design_meta_or_null(.design_analytic(fit, n_obs)),
+    design_degf_resid = df
   )
 
   list(

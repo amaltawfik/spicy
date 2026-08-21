@@ -252,6 +252,10 @@
   fitstat_aicc = "AICc",
   fitstat_bic = "BIC",
   fitstat_deviance = "Deviance",
+  # survey's `extractAIC.svyglm` returns the effective number of
+  # parameters of the design beside the criterion itself. Opt-in, under
+  # its own name -- it was published under "AIC" until 0.13.
+  fitstat_eff_p = "Effective parameters",
   # Nested-comparison change tokens: one template over the base label.
   fitstat_change_prefix = "\u0394%s",
   fitstat_f_change = "F-change",
@@ -513,6 +517,17 @@
   # span is the honest summary of a column of numbers the footer cannot
   # list.
   note_design_degf_varying = "degrees of freedom vary by group (%d to %d)",
+  # A REGRESSION under a design tests at the degrees of freedom survey
+  # writes on the FIT -- the design's, minus the non-intercept parameters
+  # -- not at the design's own. Its own key, because printing
+  # `note_design_degf` there would name a number the table does not use
+  # (197 where the t has 193).
+  note_design_degf_resid = "%d residual degrees of freedom",
+  # Same disclosure when the sampling scheme cannot be described: a
+  # two-phase design has no single PSU or stratum variable to name, and
+  # the degrees of freedom are the part that makes the table
+  # reproducible.
+  note_design_degf_resid_only = "Tests use %d residual degrees of freedom.",
   note_se_taylor = "Standard errors: Taylor linearisation (survey).",
   note_se_replicate = "Standard errors: replicate weights (survey).",
   note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
