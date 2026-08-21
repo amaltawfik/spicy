@@ -596,6 +596,46 @@ test_that("a table showing a median without a mean takes the rank test", {
   expect_equal(out$p.value[[1L]], 0.044015702394679203, tolerance = 1e-12)
 })
 
+test_that("a declared but unobserved `by` level does not reach the test", {
+  # `droplevels()` in `.svy_group_test()` carries the whole "observed
+  # groups" rule -- it is why `note_design_df_test_differs` exists --
+  # and no fixture separated it from its absence: removing it stayed
+  # green on all 90 blocks. A factor whose level nobody chose is the
+  # only shape that tells the two apart, and without the call the
+  # comparison sees three levels, one of them empty, and returns
+  # nothing at all.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$g <- factor(
+    ifelse(dat$sch.wide == "Yes", "a", "b"),
+    levels = c("a", "b", "ghost")
+  )
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  out <- .svyc_long(des, select = api00, by = g, statistic = TRUE)
+
+  # The ghost level is not a domain either: it has no observation, so
+  # it is not a row.
+  expect_identical(out$group, c("a", "b"))
+  # And the test is the two-group one, identical to survey's on the
+  # observed levels.
+  ref <- survey::svyttest(
+    api00 ~ droplevels(g),
+    survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  )
+  expect_identical(out$test_type[[1L]], "design_t")
+  expect_equal(
+    out$statistic[[1L]],
+    as.numeric(ref$statistic),
+    tolerance = 1e-12
+  )
+  expect_equal(out$statistic[[1L]], -2.108989847792919203, tolerance = 1e-12)
+  expect_equal(out$df1[[1L]], 13)
+  expect_equal(out$p.value[[1L]], 0.054908817089046651, tolerance = 1e-12)
+  # The column is alive: without `droplevels()` it is entirely NA.
+  expect_false(is.na(out$p.value[[1L]]))
+})
+
 test_that("a group too thin to compare leaves the test columns empty", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
