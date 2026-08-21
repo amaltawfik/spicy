@@ -64,7 +64,7 @@ order_continuous_svy_tokens <- function(tokens) {
     c(
       "The \"med_ci\" token has no design-based version.",
       "i" = "The exact interval of `table_continuous()` inverts a binomial sign test on independent observations, which a clustered or stratified sample is not.",
-      "i" = "The design-based analogue is a different estimand: `survey::svyquantile(interval.type = )` on the design itself."
+      "i" = "For a design-based interval on the median, call `survey::svyquantile(interval.type = )` on the design itself: same estimand, a different interval construction."
     ),
     class = "spicy_invalid_input"
   )

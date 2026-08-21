@@ -27,7 +27,8 @@ recovered from a column of weights.
 
 spicy has two functions for that case, and they compute nothing
 themselves: `table_continuous_svy()` and `table_categorical_svy()`
-delegate every number to **survey** (Lumley) and put spicy's
+delegate every number to the **survey** package (Lumley, 2004, 2010)
+and put spicy's
 restitution layer around it -- the same columns, the same nine output
 routes, the same typed view, plus a footer that says what design
 produced the numbers.
@@ -71,8 +72,11 @@ confint(m, df = degf(dclus1)) # what the table reports
 ```
 
 `svyciprop()`, `svyquantile()`, `svyttest()` and `regTermTest()` all
-use `degf(design)`, so the tables do too, everywhere. The footer says
-so rather than leaving the reader to find out.
+take their degrees of freedom from the design, not from the row
+count, and so do the tables -- everywhere. (Each spends them as its
+statistic requires: `svyttest()` uses one on the estimated
+difference, so its *t* sits on `degf(design) - 1` -- 13 here.) The
+footer says so rather than leaving the reader to find out.
 
 ### Choosing the statistics
 
@@ -95,10 +99,12 @@ sample of 183 schools would have given. A table that ignored the
 design would report a standard error three times too small.
 
 `"med_ci"` is refused rather than approximated. The exact interval
-`table_continuous()` reports inverts a binomial sign test on
-independent observations, and a clustered sample is not that. The
-design-based analogue is `survey::svyquantile(interval.type = )`,
-which is a different estimand.
+`table_continuous()` reports inverts a binomial sign test, and its
+coverage guarantee rests on independent observations -- which a
+clustered or stratified sample is not. The estimand (the population
+median) is not the problem; the interval construction is. For a
+design-based interval on that same estimand, call
+`survey::svyquantile(interval.type = )` on the design itself.
 
 ### Groups
 
@@ -299,3 +305,10 @@ with a classed error rather than approximated: the delegation map was
 measured on `svydesign()` and `as.svrepdesign()` designs, and a
 plausible wrong number is worse than a refusal. Call survey directly
 for those, and say which design you need.
+
+## References
+
+* Lumley, T. (2004). Analysis of complex survey samples. *Journal of
+  Statistical Software*, 9(1), 1--19.
+* Lumley, T. (2010). *Complex surveys: A guide to analysis using R*.
+  John Wiley & Sons.
