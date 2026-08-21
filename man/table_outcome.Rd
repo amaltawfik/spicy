@@ -103,7 +103,7 @@ frame and the typed view attached. \code{output = "data.frame"} /
 \code{"long"} returns the compute frame unclassed.
 }
 \description{
-Summarises ONE continuous outcome across the levels of SEVERAL
+Summarises \emph{one} continuous outcome across the levels of \emph{several}
 categorical variables, one block of rows per variable. It is the
 inverse layout of \code{\link[=table_continuous]{table_continuous()}}, which puts several outcomes
 in rows and one grouping in columns.
@@ -113,7 +113,7 @@ own group comparison on the block's header row, and an \code{Overall} row
 gives the marginal summary of the whole analytic sample.
 }
 \section{Which shape do I need?}{
-Several continuous variables across ONE grouping is
+Several continuous variables across \emph{one} grouping is
 \code{\link[=table_continuous]{table_continuous()}} (\verb{select = }, \verb{by = }). One continuous variable
 across one or several groupings is this function. A single \code{by} is
 legitimate here -- it is the natural way in when you know more
@@ -158,7 +158,7 @@ order-statistic median interval is refused for the same reason.
 }
 
 \section{Blocks and the group comparison}{
-Every block is a separate ONE-WAY comparison of the outcome across
+Every block is a separate one-way comparison of the outcome across
 the levels of that variable. Nothing in this table adjusts one block
 for another, and the table note says so. Read the blocks as a set of
 bivariate descriptions, not as a model.

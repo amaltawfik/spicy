@@ -405,7 +405,7 @@
 #' Describe one continuous outcome across several groupings
 #'
 #' @description
-#' Summarises ONE continuous outcome across the levels of SEVERAL
+#' Summarises *one* continuous outcome across the levels of *several*
 #' categorical variables, one block of rows per variable. It is the
 #' inverse layout of [table_continuous()], which puts several outcomes
 #' in rows and one grouping in columns.
@@ -417,7 +417,7 @@
 #' @details
 #' # Which shape do I need?
 #'
-#' Several continuous variables across ONE grouping is
+#' Several continuous variables across *one* grouping is
 #' [table_continuous()] (`select = `, `by = `). One continuous variable
 #' across one or several groupings is this function. A single `by` is
 #' legitimate here -- it is the natural way in when you know more
@@ -463,7 +463,7 @@
 #'
 #' # Blocks and the group comparison
 #'
-#' Every block is a separate ONE-WAY comparison of the outcome across
+#' Every block is a separate one-way comparison of the outcome across
 #' the levels of that variable. Nothing in this table adjusts one block
 #' for another, and the table note says so. Read the blocks as a set of
 #' bivariate descriptions, not as a model.
