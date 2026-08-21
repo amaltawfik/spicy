@@ -465,3 +465,27 @@ COMPTAGE (label_total/header_margin_total, livré); « Overall » est la
 ligne de STATISTIQUES d'ensemble (moyennes/médianes — un total de
 moyennes ne veut rien dire), nouvelle clé row_overall. Familier aux
 utilisateurs tbl_continuous.
+
+## Décision 33 — Arbitrages survey P2 (2026-08-21, les 7 validés sur recommandation consolidée spec rev 2 + revue)
+
+- **A1** : df des classes design de régression = df.residual/degf.resid
+  du MODÈLE (extracteur robuste aux deux noms de slot via [[) ; la
+  décision 30 D2 est reformulée en conséquence (elle citait déjà
+  degf.resid dans son propre D3).
+- **A2** : GO correction AME svyglm (wrong number CRAN n°91) ; oracle
+  de variance withReplicates établi ; NEWS sans « design-based SE »
+  (elles l'étaient déjà).
+- **A3** : n ET Weighted n par défaut sur les classes design —
+  conditionné au lot 0 (n°93 corrigé d'abord).
+- **A4** : ligne de design dans le footer de table_regression (plan +
+  ddl du modèle, deux gardes, libellés D19) — cohérente avec l'en-tête
+  N = x (weighted y) des jumelles.
+- **A5** : estimands de survie sous design = refus classé en 0.13,
+  message nommant la cause (rééchantillonnage de lignes) et la feuille
+  de route (as.svrepdesign/withReplicates).
+- **A6** : la valeur AIC corrigée (dAIC Lumley & Scott 2015) ET le
+  jeton gardé dans les défauts de la classe ; eff.p opt-in sous son
+  propre nom (n°92).
+- **A7** : refus classé de chisq_statistic saddlepoint/lincom sur
+  design à réplication, citant le défaut survey signalé (pchisqsum
+  sans ddf), levé quand survey corrige (n°94).
