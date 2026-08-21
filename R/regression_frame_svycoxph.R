@@ -329,10 +329,20 @@ as_regression_frame.svycoxph <- function(
   if (is.null(cc) || !is.numeric(cc) || is.null(names(cc))) {
     return(NULL) # nocov
   }
-  c_stat <- unname(cc[["concordance"]] %||% NA_real_)
-  if (!is.finite(c_stat)) {
-    return(NULL) # nocov
+  # `[[` on a named ATOMIC vector whose name is absent throws
+  # "subscript out of bounds"; it does not return NULL, so `%||%` has
+  # nothing to substitute and cannot intercept it. The `is.null(names())`
+  # test above only covers a vector with no names at all -- a vector
+  # named but missing one of the two entries would have reached
+  # as_regression_frame() as an exception. Each name is asked for by
+  # membership instead.
+  pick <- function(nm) {
+    if (nm %in% names(cc)) unname(cc[[nm]]) else NA_real_
   }
-  se <- unname(cc[["std"]] %||% NA_real_)
+  c_stat <- pick("concordance")
+  if (!is.finite(c_stat)) {
+    return(NULL)
+  }
+  se <- pick("std")
   list(c = c_stat, se = if (is.finite(se)) se else NA_real_)
 }

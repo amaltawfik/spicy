@@ -510,3 +510,38 @@ test_that("svycoxph appears in the supported-models registry", {
   expect_identical(row[[4L]], "no")
   expect_match(row[[5L]], "HR", fixed = TRUE)
 })
+
+
+test_that("a concordance vector missing an entry degrades, it does not throw", {
+  # `[[` on a named atomic vector whose name is absent THROWS rather than
+  # returning NULL, so `%||%` cannot intercept it and the exception would
+  # have travelled out of as_regression_frame(). survival always sets
+  # both names, which is what makes this latent rather than live.
+  cc <- c(concordance = 0.81, std = 0.018)
+  expect_error(cc[["nope"]], "out of bounds")
+  fit <- .scox_fit()
+  # (a) the standard error alone is missing: the C statistic still gets
+  #     out, and its standard error is absent rather than invented.
+  no_se <- fit
+  no_se$concordance <- cc[c("concordance")]
+  got <- spicy:::.svycoxph_concordance(no_se)
+  expect_equal(got$c, 0.81, tolerance = 1e-12)
+  expect_true(is.na(got$se))
+  # (b) the C statistic itself is missing: no block at all.
+  no_c <- fit
+  no_c$concordance <- cc[c("std")]
+  expect_null(spicy:::.svycoxph_concordance(no_c))
+  # And both render: the footer carries C without a standard error in
+  # the first case, and drops the sentence in the second.
+  out <- paste(
+    utils::capture.output(print(table_regression(no_se, show_columns = "b"))),
+    collapse = "\n"
+  )
+  expect_match(out, "Concordance C = 0.81.", fixed = TRUE)
+  expect_false(grepl("SE = NA", out, fixed = TRUE))
+  out2 <- paste(
+    utils::capture.output(print(table_regression(no_c, show_columns = "b"))),
+    collapse = "\n"
+  )
+  expect_false(grepl("Concordance", out2, fixed = TRUE))
+})
