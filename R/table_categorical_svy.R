@@ -763,6 +763,7 @@ table_categorical_svy <- function(
   attr(result, "indent_text_excel_clipboard") <- indent_text_excel_clipboard
   attr(result, "note") <- note
   attr(result, "design_meta") <- meta
+  attr(result, "chisq_statistic") <- chisq_statistic
   class(result) <- c("spicy_categorical_svy_table", "data.frame")
 
   display_df <- .cat_svy_display_df(result)

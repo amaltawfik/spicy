@@ -89,7 +89,11 @@ unclass_spicy_categorical_svy_table <- function(x) {
     design_meta = attr(x, "design_meta", exact = TRUE),
     note = attr(x, "note", exact = TRUE)
   )
-  out <- as.data.frame(unclass(x))
+  # `check.names = FALSE`: the block keys of this frame ("Yes n",
+  # "Total % CI lower") are the FROZEN contract user code indexes into,
+  # and the default would quietly rewrite them to "Yes.n". A coercion
+  # that renames the columns it hands back is not a coercion.
+  out <- as.data.frame(unclass(x), check.names = FALSE)
   attributes(out) <- attributes(out)[
     names(attributes(out)) %in% c("names", "row.names", "class")
   ]
@@ -138,4 +142,112 @@ as_tibble.spicy_categorical_svy_table <- function(x, ...) {
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg") # nocov
   }
   tibble::as_tibble(unclass_spicy_categorical_svy_table(x), ...)
+}
+
+# ---- broom integration ----------------------------------------------------
+
+#' Tidying methods for a `spicy_categorical_svy_table`
+#'
+#' Standard [broom::tidy()] and [broom::glance()] interfaces for an
+#' object returned by [table_categorical_svy()].
+#'
+#' `tidy()` returns one row per (variable x level x column block), which
+#' is the LONG reading of a table whose blocks are columns. Columns:
+#' `variable`, `label`, `level`, `group` (the `by` level, or the margin,
+#' `NA` without `by`), `total` (whether that block is the margin),
+#' `n` (observed), `estimate` (the estimated percentage), `conf.low`,
+#' `conf.high`, `deff`. The header rows carry no level statistic and do
+#' not appear; their p-value is what `glance()` is for.
+#'
+#' `glance()` returns one row per variable: `variable`, `label`,
+#' `n_levels`, `p.value`, `statistic_type` (the `svychisq()` statistic
+#' asked for), `degf` (the design's own), `nobs`, `weighted.nobs`.
+#'
+#' `n_levels` counts the levels the TABLE displays, so a `(Missing)`
+#' display level counts; the test behind `p.value` runs on the complete
+#' cases and the observed levels only, as it does in
+#' [table_categorical()].
+#'
+#' @param x A `spicy_categorical_svy_table` returned by
+#'   [table_categorical_svy()].
+#' @param ... Ignored, for S3 compatibility.
+#'
+#' @return A `tbl_df` (or `data.frame` when tibble is not installed).
+#'
+#' @name tidy.spicy_categorical_svy_table
+#' @keywords internal
+NULL
+
+#' @rdname tidy.spicy_categorical_svy_table
+#' @exportS3Method broom::tidy
+tidy.spicy_categorical_svy_table <- function(x, ...) {
+  wide <- unclass_spicy_categorical_svy_table(x)
+  blocks <- attr(x, "blocks", exact = TRUE)
+  margin_key <- attr(x, "margin_key", exact = TRUE)
+  keep <- wide$.row_role != "factor_header"
+  body <- wide[keep, , drop = FALSE]
+  get <- function(key) {
+    if (is.null(body[[key]])) rep(NA_real_, nrow(body)) else body[[key]]
+  }
+  out <- lapply(blocks, function(b) {
+    data.frame(
+      variable = body$variable,
+      label = body$label,
+      level = body$level,
+      group = rep(if (is.na(b)) NA_character_ else b, nrow(body)),
+      # A one-way table has no margin: both keys are NA there, and
+      # `identical(NA, NA)` would have flagged its single block as the
+      # total of nothing.
+      total = rep(!is.na(b) && identical(b, margin_key), nrow(body)),
+      n = as.integer(get(.cat_svy_key_n(b))),
+      estimate = get(.cat_svy_key_pct(b)),
+      conf.low = get(.cat_key_prop_ci_ll(b)),
+      conf.high = get(.cat_key_prop_ci_ul(b)),
+      deff = get(.cat_key_deff(b)),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+  })
+  .svy_as_tbl(do.call(rbind, out))
+}
+
+#' @rdname tidy.spicy_categorical_svy_table
+#' @exportS3Method broom::glance
+glance.spicy_categorical_svy_table <- function(x, ...) {
+  wide <- unclass_spicy_categorical_svy_table(x)
+  meta <- attr(x, "design_meta", exact = TRUE)
+  blocks <- attr(x, "blocks", exact = TRUE)
+  margin <- if (is.na(blocks[[1L]])) NA_character_ else blocks[[length(blocks)]]
+  n_key <- .cat_svy_key_n(if (is.na(margin)) NA_character_ else margin)
+  headers <- wide$.row_role == "factor_header"
+  vars <- wide$variable[headers]
+  .svy_as_tbl(data.frame(
+    variable = vars,
+    label = wide$label[headers],
+    n_levels = vapply(
+      vars,
+      function(v) sum(!headers & wide$variable == v),
+      integer(1),
+      USE.NAMES = FALSE
+    ),
+    p.value = if (is.null(wide[[.CAT_KEY_P]])) {
+      rep(NA_real_, length(vars))
+    } else {
+      wide[[.CAT_KEY_P]][headers]
+    },
+    statistic_type = rep(
+      attr(x, "chisq_statistic", exact = TRUE) %||% NA_character_,
+      length(vars)
+    ),
+    degf = rep(meta$degf %||% NA_real_, length(vars)),
+    nobs = vapply(
+      vars,
+      function(v) sum(wide[[n_key]][!headers & wide$variable == v]),
+      numeric(1),
+      USE.NAMES = FALSE
+    ),
+    weighted.nobs = rep(meta$sum_weights %||% NA_real_, length(vars)),
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  ))
 }

@@ -77,7 +77,8 @@ without notice -- avoid calling directly from downstream code):
 
 The \code{broom::tidy()} and \code{broom::glance()} methods on
 \code{spicy_categorical_table}, \code{spicy_continuous_table},
-\code{spicy_continuous_lm_table}, and \code{spicy_regression_table} follow
+\code{spicy_continuous_lm_table}, \code{spicy_continuous_svy_table},
+\code{spicy_categorical_svy_table}, and \code{spicy_regression_table} follow
 the standard broom column conventions (\code{outcome}, \code{term},
 \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic},
 \code{p.value}, \code{df}, \code{df.residual}, \code{r.squared}, \code{adj.r.squared},

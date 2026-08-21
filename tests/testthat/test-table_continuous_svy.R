@@ -1083,6 +1083,57 @@ test_that("`output = \"data.frame\"` and `\"long\"` are the same frame", {
   expect_false(inherits(a, "spicy_continuous_svy_table"))
 })
 
+test_that("broom tidy() and glance() read a design table", {
+  # The five parent classes register both; the twins registered
+  # neither, so `broom::tidy()` fell through to the deprecated
+  # `tidy.data.frame` and died with a message naming neither spicy nor
+  # the class.
+  skip_if_not_installed("broom")
+  d <- .svyc_design("clus1")
+  tbl <- table_continuous_svy(
+    d,
+    select = c(api00, api99),
+    by = stype,
+    deff = TRUE
+  )
+  td <- broom::tidy(tbl)
+  expect_s3_class(td, "data.frame")
+  expect_identical(nrow(td), 6L)
+  expect_true(all(
+    c(
+      "variable",
+      "label",
+      "group",
+      "estimate",
+      "std.error",
+      "conf.low",
+      "conf.high",
+      "df",
+      "n",
+      "weighted.n",
+      "deff"
+    ) %in%
+      names(td)
+  ))
+  # `std.error` is survey's design-based SE, never `sd / sqrt(n)`:
+  # under a design those are different quantities.
+  expect_equal(td$std.error[[1L]], 22.362408893831887, tolerance = 1e-12)
+  expect_equal(td$estimate[[1L]], 648.86805555555554, tolerance = 1e-12)
+  expect_identical(td$df, c(14, 7, 11, 14, 7, 11))
+
+  gl <- broom::glance(tbl)
+  expect_identical(nrow(gl), 2L)
+  expect_equal(gl$p.value[[1L]], 0.31387976824321751, tolerance = 1e-12)
+  expect_identical(gl$test_type[[1L]], "design_f")
+  expect_identical(gl$degf, c(14, 14))
+  expect_identical(gl$nobs, c(183, 183))
+
+  # A one-way table has the same schema with the comparison columns NA.
+  gl1 <- broom::glance(table_continuous_svy(d, select = api00))
+  expect_true(all(is.na(c(gl1$p.value, gl1$statistic, gl1$test_type))))
+  expect_identical(gl1$nobs, 183)
+})
+
 test_that("coercion keeps the frame and the provenance markers", {
   d <- .svyc_design("clus1")
   tbl <- table_continuous_svy(d, select = api00, by = stype)

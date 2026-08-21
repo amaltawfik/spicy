@@ -798,6 +798,63 @@ test_that("`output = \"data.frame\"` and `\"long\"` are the same frame", {
   expect_false(inherits(a, "spicy_categorical_svy_table"))
 })
 
+test_that("broom tidy() and glance() read a design categorical table", {
+  skip_if_not_installed("broom")
+  d <- .svycat_design("clus1")
+  tbl <- table_categorical_svy(
+    d,
+    select = stype,
+    by = sch.wide,
+    proportion_ci = TRUE,
+    deff = TRUE
+  )
+  td <- broom::tidy(tbl)
+  # Long reading of a table whose blocks are columns: 3 levels x 3
+  # blocks, header rows excluded.
+  expect_identical(nrow(td), 9L)
+  expect_identical(unique(td$group), c("No", "Yes", "Total"))
+  expect_identical(td$total, rep(c(FALSE, FALSE, TRUE), each = 3L))
+  expect_identical(td$n[[1L]], 12L)
+  expect_equal(td$estimate[[1L]], 52.173913043478258, tolerance = 1e-10)
+  expect_false(any(is.na(td$conf.low)))
+  expect_false(any(is.na(td$deff)))
+
+  gl <- broom::glance(tbl)
+  expect_identical(nrow(gl), 1L)
+  expect_identical(gl$n_levels, 3L)
+  expect_equal(gl$p.value[[1L]], 0.021747462370796899, tolerance = 1e-12)
+  expect_identical(gl$statistic_type, "F")
+  expect_identical(gl$nobs, 183)
+
+  # One-way: one block, and it is not a margin of anything.
+  td1 <- broom::tidy(table_categorical_svy(d, select = stype))
+  expect_identical(nrow(td1), 3L)
+  expect_true(all(is.na(td1$group)))
+  expect_false(any(td1$total))
+})
+
+test_that("coercion does not rename the frozen block keys", {
+  # `as.data.frame(unclass(x))` defaults to `check.names = TRUE`, which
+  # rewrote "Yes n" to "Yes.n" -- a coercion silently renaming the
+  # contract user code indexes into.
+  d <- .svycat_design("clus1")
+  df <- as.data.frame(
+    table_categorical_svy(
+      d,
+      select = stype,
+      by = sch.wide,
+      proportion_ci = TRUE
+    )
+  )
+  expect_true(all(
+    c("No n", "No %", "Yes % CI lower", "Total n", "p") %in% names(df)
+  ))
+  # No block key came back with a dot where it had a space. (The
+  # identity column `.row_role` legitimately opens with one.)
+  stat_cols <- setdiff(names(df), c("variable", "label", "level", ".row_role"))
+  expect_false(any(grepl(".", stat_cols, fixed = TRUE)))
+})
+
 test_that("coercion keeps the frame and the provenance markers", {
   d <- .svycat_design("clus1")
   tbl <- table_categorical_svy(d, select = stype, by = sch.wide)

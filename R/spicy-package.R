@@ -69,7 +69,8 @@
 #' @section broom output shape:
 #' The `broom::tidy()` and `broom::glance()` methods on
 #' `spicy_categorical_table`, `spicy_continuous_table`,
-#' `spicy_continuous_lm_table`, and `spicy_regression_table` follow
+#' `spicy_continuous_lm_table`, `spicy_continuous_svy_table`,
+#' `spicy_categorical_svy_table`, and `spicy_regression_table` follow
 #' the standard broom column conventions (`outcome`, `term`,
 #' `estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`,
 #' `p.value`, `df`, `df.residual`, `r.squared`, `adj.r.squared`,
