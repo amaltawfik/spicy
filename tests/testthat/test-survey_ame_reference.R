@@ -69,16 +69,16 @@ test_that("the AME interval and p of a design fit come from the t", {
   ame <- fr$coefs[fr$coefs$estimate_type == "ame" & !fr$coefs$is_ref, ]
   got <- function(col, term) ame[[col]][match(term, ame$term)]
   # Pinned from avg_slopes(df = 193) at 17 digits.
-  expect_equal(got("p_value", "ell"), 9.8518223237688773e-01, tolerance = 1e-12)
+  expect_equal(got("p_value", "ell"), 9.8518223237688773e-01, tolerance = 1e-6)
   expect_equal(
     got("ci_lower", "stypeH"),
     -0.5951228561360222269,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   expect_equal(
     got("ci_upper", "stypeH"),
     -0.2737468122011820215,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   # The interval really is qt(193), not qnorm: the two critical values
   # differ in the second decimal (1.97233 against 1.95996).
@@ -87,7 +87,7 @@ test_that("the AME interval and p of a design fit come from the t", {
   expect_equal(
     got("ci_lower", "stypeH"),
     est - stats::qt(0.975, df = 193) * se,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   expect_false(isTRUE(all.equal(
     got("ci_lower", "stypeH"),

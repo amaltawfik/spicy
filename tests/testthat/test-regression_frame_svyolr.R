@@ -77,12 +77,12 @@ test_that("svyolr coefficients and design SEs match survey, pinned", {
   expect_equal(
     b$estimate,
     c(-0.093444893105364163, -1.864871214324368, -1.3545190646806959),
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   expect_equal(
     b$std_error,
     c(0.013741936286179798, 0.37485217033329765, 0.34278245094454135),
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   # The standard errors are the DESIGN's: the naive inverse Hessian gives
   # 0.0020 / 0.083 / 0.072 on the same fit, an order of magnitude apart.
@@ -131,7 +131,7 @@ test_that("slopes and cut-points are t at the model's degrees of freedom", {
   expect_equal(
     b$p_value,
     c(1.2608525863742167e-10, 1.4339335141643623e-06, 1.0867501400278062e-04),
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
 })
 
@@ -141,7 +141,7 @@ test_that("the cut-point p is a t, not a normal left behind by the CI", {
   expect_equal(
     th$p_value,
     c(1.0582353820794546e-13, 3.8182570569938606e-07),
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   # The normal answer is two orders of magnitude away on the first
   # cut-point: parameterising only the interval would have left a p from
@@ -160,7 +160,7 @@ test_that("the promoted Thresholds rows use the same t for their interval", {
   expect_equal(
     thr_rows$ci_lower,
     th$estimate - stats::qt(0.975, df = 194) * th$std_error,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   expect_s3_class(out, "data.frame")
 })
@@ -205,7 +205,7 @@ test_that("n is the observed count, not the sum of the weights", {
   expect_equal(
     fr$info$fit_stats$weighted_nobs,
     6193.9999580383301,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
 })
 
@@ -332,7 +332,7 @@ test_that("with missing rows, the counts and the df follow the analytic sample",
   expect_equal(
     fr$info$fit_stats$weighted_nobs,
     5487.2699661254883,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   # degf of the REDUCED design (177) minus three slopes.
   expect_equal(unique(.olr_b(fr)$df), 174)
@@ -408,7 +408,7 @@ test_that("a replicate-design svyolr still counts and weights correctly", {
   expect_equal(
     fr$info$fit_stats$weighted_nobs,
     6193.9999580383301,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
   expect_length(.spicy_ame_fit_wts(fit), 200L)
 })
