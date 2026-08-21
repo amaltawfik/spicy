@@ -515,3 +515,16 @@ moitié validé.
   Stata/SAS/SPSS et des packages R de standardisation) avant de
   trancher, avec disposition à REVOIR le choix Efron du moteur iid
   livré si le consensus expert l'exige. « Le plus pro pour 15 ans. »
+
+- **F acté (2026-08-21, sur dossier ties 58 citations)** : (i) LA
+  BASELINE SUIT LE TIES DU FIT — règle unique iid/design/futur ;
+  Efron en pratique (défaut R, consensus expert pour le fit ;
+  argument de principe Therneau sur les résidus de martingale ;
+  architecture fit-first de spicy rendant (ii)/(ii') incohérentes).
+  Avec les 4 compléments : (A) convention documentée, (B) opt-in
+  mince si demande, (C) « Efron sous poids » présenté comme un choix
+  (Stata interdit/SAS livre/littérature muette), (D) diagnostic
+  honnête (fraction de liés dans le risk set ; jamais « correct »).
+  La suggestion (ii') de Fable examinée et réfutée par le dossier
+  (re-fit dans le dos de l'utilisateur, ou tableau HR/ΔRMST à deux
+  vraisemblances).
