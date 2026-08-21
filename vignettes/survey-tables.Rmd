@@ -428,3 +428,6 @@ for those, and say which design you need.
   Statistical Software*, 9(1), 1--19.
 * Lumley, T. (2010). *Complex surveys: A guide to analysis using R*.
   John Wiley & Sons.
+* Lumley, T., & Scott, A. (2015). AIC and BIC for modeling with complex
+  survey data. *Journal of Survey Statistics and Methodology*, 3(1),
+  1--18.
