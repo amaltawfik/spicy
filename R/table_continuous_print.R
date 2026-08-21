@@ -14,6 +14,18 @@
 #' @keywords internal
 #' @export
 print.spicy_continuous_table <- function(x, ...) {
+  .continuous_console_render(x)
+}
+
+# Internal: the console rendering both continuous families share.
+#
+# `table_continuous_svy()` lays its rows out exactly as its
+# sibling does -- one row per variable, or one per (variable x
+# group) with a second stub column -- and carries the same
+# attributes, so the two print methods are one function. A second
+# copy would be a second place for the padding rule, the block
+# separators or the header resolution to drift.
+.continuous_console_render <- function(x) {
   # This method re-formats from the raw values, so a journal style used
   # to build the table has to be back in force here (see
   # `.style_stamp()`); with no style it is a no-op.

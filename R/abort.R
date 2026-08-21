@@ -189,6 +189,55 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 }
 
 
+# Internal: the `data` gate of the summary-table family.
+#
+# The four builders (`table_categorical()`, `table_continuous()`,
+# `table_continuous_lm()`, `table_outcome()`) all opened on the same
+# copied-and-pasted two lines. One helper on the
+# `.check_integer64_columns(data, cols, fn)` pattern -- it takes the
+# calling function's name too -- so the family's first refusal is
+# written once and every later branch enters it once as well.
+#
+# `fn` is the caller's name, for the messages the branches below add;
+# the plain non-data.frame message is deliberately unchanged and
+# unparameterised (`expect_error(..., "data. must be a data.frame")`
+# pins it as a literal in two test files).
+.check_data_frame <- function(data, fn) {
+  if (.is_survey_design(data)) {
+    # A survey design reaching a plain builder is not a type error, it
+    # is the wrong REGIME: the weights alone cannot reproduce the
+    # design-based standard errors, degrees of freedom and tests, so
+    # the answer is a different function rather than a coercion.
+    spicy_abort(
+      c(
+        sprintf(
+          "`%s()` expects a data.frame; it received a survey design object (`%s`).",
+          fn,
+          class(data)[1L]
+        ),
+        "i" = .DESIGN_REGIME_HINT[[fn]],
+        "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
+      ),
+      class = "spicy_wrong_regime"
+    )
+  }
+  if (!is.data.frame(data)) {
+    spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
+  }
+  invisible(data)
+}
+
+# Where each plain builder sends a caller who handed it a design. Two
+# of the four have a twin; the other two name the function that does
+# carry the design-based version of what they compute.
+.DESIGN_REGIME_HINT <- c(
+  table_continuous = "Use `table_continuous_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
+  table_categorical = "Use `table_categorical_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
+  table_continuous_lm = "There is no design twin of this table: fit the model on the design and tabulate it with `table_regression(survey::svyglm(y ~ group, design = ))`.",
+  table_outcome = "There is no design twin of this layout: use `table_continuous_svy(design, select = <outcome>, by = <variable>)` one grouping at a time."
+)
+
+
 # Internal: column-selection sibling of `.check_integer64()` for the
 # summary-table family (table_categorical / table_continuous /
 # table_continuous_lm). Checks the named columns of `data` and

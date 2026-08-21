@@ -608,9 +608,7 @@ table_outcome <- function(
   on.exit(.style_end(.style_pushed), add = TRUE)
 
   # --- scalar validation, shared with the sibling ------------------------
-  if (!is.data.frame(data)) {
-    spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
-  }
+  .check_data_frame(data, "table_outcome")
   if (
     !is.numeric(ci_level) ||
       length(ci_level) != 1L ||

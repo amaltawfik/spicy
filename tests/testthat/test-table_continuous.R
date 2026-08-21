@@ -3515,17 +3515,31 @@ test_that("the token order and the column vocabulary declare the same set", {
   # column the structured view never sees (`display_df[[nm]]` is NULL and
   # `as.character(NULL)[i]` is NA), which is exactly how `weighted_n`
   # entered the display frame in two edits instead of one.
-  expect_identical(
-    names(spicy:::.continuous_token_columns(0.95)),
-    spicy:::.continuous_column_tokens
-  )
-  # Thirteen tokens, fifteen columns: `ci` and `med_ci` expand to a pair.
+  #
+  # The vocabulary is now the UNION of TWO orders: `table_continuous()`
+  # and its design twin share the column declarations and each selects
+  # from them, so the guard is that every family's order is a
+  # SUBSEQUENCE of the vocabulary and that the difference between the
+  # two is exactly the three design-regime tokens. A token in an order
+  # and not in the vocabulary is still the silent-NA bug above; a token
+  # in the vocabulary and in neither order is dead weight.
+  spec <- names(spicy:::.continuous_token_columns(0.95))
+  plain <- spicy:::.continuous_column_tokens
+  svy <- spicy:::.continuous_svy_column_tokens
+  expect_identical(sort(spec), sort(union(plain, svy)))
+  expect_identical(plain, spec[spec %in% plain])
+  expect_identical(svy, spec[spec %in% svy])
+  # `se` and `deff` exist only under a design; `med_ci` exists only
+  # without one (no design-based order-statistic interval).
+  expect_identical(setdiff(svy, plain), c("se", "deff"))
+  expect_identical(setdiff(plain, svy), "med_ci")
+  # Fifteen tokens, seventeen columns: `ci` and `med_ci` expand to a pair.
   entries <- unlist(
     spicy:::.continuous_token_columns(0.95),
     recursive = FALSE,
     use.names = FALSE
   )
-  expect_length(entries, 15L)
+  expect_length(entries, 17L)
   # Every entry names a column and the compute-frame field behind it.
   expect_true(all(vapply(entries, function(e) nzchar(e$name), logical(1))))
   expect_true(all(vapply(entries, function(e) nzchar(e$field), logical(1))))

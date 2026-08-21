@@ -64,6 +64,8 @@ navbar:
           href: articles/table-continuous.html
         - text: One outcome across several groupings
           href: articles/table-outcome.html
+        - text: Summary tables from a survey design
+          href: articles/survey-tables.html
         - text: Model-based continuous summary tables
           href: articles/table-continuous-lm.html
         - text: Publication-ready regression tables
@@ -107,6 +109,7 @@ articles:
       - table-continuous
       - table-continuous-lm
       - table-outcome
+      - survey-tables
       - table-regression
       - table-regression-supported-models
       - as-structured
@@ -156,6 +159,8 @@ reference:
       - table_continuous
       - table_continuous_lm
       - table_outcome
+      - table_continuous_svy
+      - table_categorical_svy
       - table_regression
       - table_regression_uv
       - as_structured

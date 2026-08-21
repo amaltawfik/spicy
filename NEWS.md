@@ -146,6 +146,29 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New functions
 
+* `table_continuous_svy()` summarizes continuous variables from a
+  `survey` design object -- `survey::svydesign()` or
+  `survey::as.svrepdesign()` -- instead of a data frame. Every
+  statistic is computed by survey: `svymean()` for the mean, its
+  standard error and its design effect, `svyvar()` for the standard
+  deviation, `svyquantile()` for the quantiles, and `svyttest()` /
+  `regTermTest()` / `svyranktest()` for the group comparison. Intervals
+  and tests use the design degrees of freedom, `by =` gives each group
+  its own domain (and its own df), and the table note states the
+  design, the variance method and the sample size in both counts.
+  `show_columns` takes the tokens of `table_continuous()` plus `"se"`
+  and `"deff"`; every output engine, `as_structured()` and `inline()`
+  work as usual.
+
+* `table_categorical_svy()` is the categorical half of the same pair:
+  counts and estimated percentages from a `survey` design, with the
+  block layout of `table_categorical()`. `survey::svymean()` estimates
+  the percentages and their design effects, `survey::svyciprop()`
+  their confidence intervals (`proportion_ci = TRUE`, seven methods),
+  and `survey::svychisq()` tests the association -- Rao-Scott
+  corrected by default. `n` is the observed count; the note gives the
+  estimated population beside it.
+
 * `table_outcome()` summarizes one continuous outcome across the levels
   of several categorical variables, stacked as blocks -- the inverse
   layout of `table_continuous()`. Each block reports a group comparison
@@ -187,6 +210,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   and the official document they come from.
 
 ## New features
+
+* Handing a `survey` design object to `table_continuous()`,
+  `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now
+  errors with the function to call instead, rather than with
+  `` `data` must be a data.frame ``. The design-based standard errors,
+  degrees of freedom and tests cannot be recovered from the weights
+  alone, so the answer is a different function, not a coercion.
 
 * `table_continuous()` and `table_categorical()` gain `smd = TRUE`, an
   `SMD` column with the standardized mean difference between the two

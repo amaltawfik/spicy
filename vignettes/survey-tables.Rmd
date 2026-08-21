@@ -1,0 +1,301 @@
+---
+title: "Summary tables from a survey design"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Summary tables from a survey design}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+survey_ok <- requireNamespace("survey", quietly = TRUE)
+knitr::opts_chunk$set(eval = survey_ok)
+```
+
+```{r, echo = FALSE, eval = !survey_ok, results = "asis"}
+cat("The **survey** package is not installed, so the examples below are not run.\n")
+```
+
+When a sample is not a simple random sample -- when it is stratified,
+clustered, weighted to a population, or carried by replicate weights --
+the mean is still a weighted mean, but everything around it changes.
+The standard error depends on the strata and the clusters, the
+degrees of freedom are a count of sampling units rather than of rows,
+and the tests are corrected for the design. None of that can be
+recovered from a column of weights.
+
+spicy has two functions for that case, and they compute nothing
+themselves: `table_continuous_svy()` and `table_categorical_svy()`
+delegate every number to **survey** (Lumley) and put spicy's
+restitution layer around it -- the same columns, the same nine output
+routes, the same typed view, plus a footer that says what design
+produced the numbers.
+
+```{r setup}
+library(spicy)
+library(survey)
+data(api)
+```
+
+Three designs from survey's own `api` data, used throughout:
+
+```{r designs}
+dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+dstrat <- svydesign(
+  id = ~1, strata = ~stype, weights = ~pw, data = apistrat, fpc = ~fpc
+)
+rclus1 <- as.svrepdesign(dclus1)
+```
+
+## Continuous variables
+
+```{r cont-basic}
+table_continuous_svy(dclus1, select = c(api00, api99))
+```
+
+Three sentences under the table, and each is there because the number
+above it cannot be read without them. The design is a one-stage
+cluster sample of 15 school districts with a finite population
+correction; the standard errors come from Taylor linearisation; the
+interval is a *t* interval on 14 degrees of freedom -- the number of
+clusters minus one, not the 183 schools.
+
+That last point is worth dwelling on. `confint()` on a survey object
+uses the *normal* distribution by default:
+
+```{r cont-df}
+m <- svymean(~api00, dclus1)
+confint(m)                    # survey's default: normal
+confint(m, df = degf(dclus1)) # what the table reports
+```
+
+`svyciprop()`, `svyquantile()`, `svyttest()` and `regTermTest()` all
+use `degf(design)`, so the tables do too, everywhere. The footer says
+so rather than leaving the reader to find out.
+
+### Choosing the statistics
+
+`show_columns` takes the tokens of `table_continuous()`, plus `"se"`
+(the design-based standard error) and `"deff"` (the design effect),
+and minus `"med_ci"`:
+
+```{r cont-columns}
+table_continuous_svy(
+  dclus1,
+  select = api00,
+  show_columns = c("m", "se", "ci", "med_iqr", "n", "weighted_n", "deff"),
+  deff = TRUE
+)
+```
+
+The design effect of 9.35 is the point of the whole exercise: the
+variance of this cluster sample is nine times what a simple random
+sample of 183 schools would have given. A table that ignored the
+design would report a standard error three times too small.
+
+`"med_ci"` is refused rather than approximated. The exact interval
+`table_continuous()` reports inverts a binomial sign test on
+independent observations, and a clustered sample is not that. The
+design-based analogue is `survey::svyquantile(interval.type = )`,
+which is a different estimand.
+
+### Groups
+
+`by = ` cuts one domain per group. survey recomputes the degrees of
+freedom on the sampling units each domain retains, so a grouped table
+generally carries a different *df* per row, and the footer gives the
+span:
+
+```{r cont-by}
+table_continuous_svy(dclus1, select = api00, by = stype, statistic = TRUE)
+```
+
+The comparison is one design-based test on the whole design, not a set
+of pairwise ones: `svyttest()` with two observed groups, the Wald *F*
+of `regTermTest()` with three or more, and `svyranktest()` under
+`test = "nonparametric"`. Under a design there is no Welch / Student
+distinction -- the variance is the design's -- so `test = "student"`
+warns and behaves like the default.
+
+## Categorical variables
+
+```{r cat-basic}
+table_categorical_svy(dclus1, select = c(stype, awards))
+```
+
+`n` is the *observed* count: 144 schools of type E were sampled. The
+`78.7%` beside it is an *estimate* of the population share, and the two
+answer different questions -- which is why the table shows both and
+the footer gives the estimated population (6194) beside the sample
+size (183).
+
+```{r cat-ci}
+table_categorical_svy(
+  dclus1,
+  select = stype,
+  proportion_ci = TRUE,
+  deff = TRUE
+)
+```
+
+The percentage always comes from `svymean()` and the interval from
+`svyciprop()`. That is deliberate: `svyciprop()` estimates on the
+transformed scale its method names, so a percentage taken from there
+would move -- in the thirteenth decimal -- with `ci_method`, which is
+a property of the interval and not of the proportion.
+
+```{r cat-by}
+table_categorical_svy(dclus1, select = stype, by = sch.wide)
+```
+
+The `p` is `svychisq()`: Pearson's chi-square with the Rao-Scott
+second-order correction, referred to *F*(ndf, `degf(design)`).
+`chisq_statistic` offers `"Chisq"`, `"Wald"`, `"adjWald"` and
+`"saddlepoint"` as well. Two of survey's seven are refused:
+`"lincom"`, whose numerical integration `?pchisqsum` documents as
+failing when the upper tail approaches machine epsilon, and
+`"wls-score"`, which has no reporting convention here.
+
+Association measures -- Cramer's *V*, phi, tau-b/c, gamma, Somers'
+*D*, lambda -- are absent, and that absence is a decision. None has an
+established design-based variance, and the intervals
+`table_categorical()` gives them assume simple random sampling. The
+design-based measure of association is the test in the `p` column; for
+an effect size, model it:
+`table_regression(survey::svyglm(...))`.
+
+## Replicate weights
+
+A replicate-weights design goes through the same functions. The point
+estimates depend on the weights alone and are therefore identical; the
+standard errors are not, and should not be:
+
+```{r rep}
+table_continuous_svy(rclus1, select = api00)
+```
+
+## Weights, or a design?
+
+This is the question the two families answer differently, and the
+difference is an estimand rather than an approximation.
+
+`table_continuous(weights = )` implements the
+**frequency-expansion** convention of decision 17: a weight is a
+number of copies, and `SD` has denominator `sum(w) - 1`. With integer
+weights the statistics are exactly those of the data repeated that
+many times.
+
+`table_continuous_svy()` implements the **sampling-weight**
+convention: a weight is a number of units represented, and `SD` is
+`sqrt(survey::svyvar())`, whose denominator is `n - 1` on weights
+normalised to sum to `n`.
+
+`rescale = TRUE` is the bridge between them, and it is an identity.
+Writing `w' = w * n / sum(w)`, so that `sum(w') = n`:
+
+```
+sum(w' (x - xbar)^2) / (sum(w') - 1)
+  = (n / sum(w)) * sum(w (x - xbar)^2) / (n - 1)
+  = n / (n - 1) * sum(w (x - xbar)^2) / sum(w)
+```
+
+and the right-hand side is what `survey::svyvar()` computes. So on a
+design that declares nothing but weights, the two tables agree:
+
+```{r bridge}
+d_iid <- svydesign(id = ~1, weights = ~pw, data = apiclus1)
+
+svy <- table_continuous_svy(d_iid, select = api00, output = "long")
+wtd <- table_continuous(
+  apiclus1, select = api00, weights = pw, rescale = TRUE, output = "long"
+)
+c(svy = svy$sd, weighted_rescaled = wtd$sd)
+```
+
+Under the default `rescale = FALSE` they do not, and that is the
+estimand boundary, not a bug:
+
+```{r bridge-default}
+expanded <- table_continuous(
+  apiclus1, select = api00, weights = pw, output = "long"
+)
+c(svy = svy$sd, weighted_default = expanded$sd)
+```
+
+The *mean* is continuous across both regimes: `sum(w x) / sum(w)` does
+not move when the weights are rescaled.
+
+And the whole point of the design functions is that a design carries
+more than weights. On the real cluster design, the same mean has a
+standard error the weights alone cannot produce:
+
+```{r bridge-se}
+c(
+  iid_design = table_continuous_svy(d_iid, select = api00, output = "long")$se,
+  cluster_design = table_continuous_svy(dclus1, select = api00, output = "long")$se
+)
+```
+
+Passing a design to `table_continuous()`, or a data frame to
+`table_continuous_svy()`, is an error naming the other function. There
+is no silent coercion in either direction.
+
+## Quantiles
+
+`qrule` chooses the rule, and the footer always names the one in
+force. The default `"math"` estimates the quantile of the *population*,
+`inf{x : F(x) >= p}`. `"spicy"` switches to the type-7 interpolation
+`table_continuous()` uses, for a reader who needs the two tables to
+agree cell for cell; anything else -- including a function -- is
+handed to `survey::svyquantile()` untouched.
+
+```{r qrule}
+q <- function(rule) {
+  table_continuous_svy(
+    dclus1, select = api00, qrule = rule,
+    show_columns = c("med", "q1", "q3"), output = "long"
+  )[, c("q1", "median", "q3")]
+}
+rbind(math = q("math"), spicy = q("spicy"), hf7 = q("hf7"))
+```
+
+## Downstream
+
+Both tables carry the typed view the rest of the package uses, so
+`as_structured()` and `inline()` work as they do elsewhere:
+
+```{r structured}
+tbl <- table_categorical_svy(dclus1, select = stype, by = sch.wide)
+s <- as_structured(tbl)
+s$body[, c("Variable", "Yes n", "Yes %", "p", ".row_role")]
+names(s$spanners)
+```
+
+```{r inline}
+inline(tbl, "stype", level = "E", column = "pct", model = "Yes")
+inline(tbl, "stype", column = "p")
+```
+
+## Rendering
+
+Every engine of the family is available: `"tinytable"`, `"gt"`,
+`"flextable"`, `"word"`, `"excel"`, `"clipboard"`, plus
+`"data.frame"` / `"long"` for the raw frame.
+
+```{r gt, eval = survey_ok && requireNamespace("gt", quietly = TRUE)}
+table_continuous_svy(
+  dstrat,
+  select = c(api00, api99),
+  by = stype,
+  output = "gt"
+)
+```
+
+## What is not here yet
+
+Two-phase, pps, database-backed and multiframe designs are refused
+with a classed error rather than approximated: the delegation map was
+measured on `svydesign()` and `as.svrepdesign()` designs, and a
+plausible wrong number is worse than a refusal. Call survey directly
+for those, and say which design you need.

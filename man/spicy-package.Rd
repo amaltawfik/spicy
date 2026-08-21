@@ -56,6 +56,15 @@ changes):
 \item Omnibus association overview: \code{\link[=assoc_measures]{assoc_measures()}}
 }
 
+\strong{Experimental} (new in this cycle; the shape of the table and
+the names of the design-specific arguments may still move, with a
+\code{NEWS.md} entry, on their OWN clock rather than the parent
+family's):
+\itemize{
+\item Survey-design summary tables:
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}}
+}
+
 \strong{Internal API} (not part of the public surface; can change
 without notice -- avoid calling directly from downstream code):
 \itemize{
@@ -68,7 +77,8 @@ without notice -- avoid calling directly from downstream code):
 
 The \code{broom::tidy()} and \code{broom::glance()} methods on
 \code{spicy_categorical_table}, \code{spicy_continuous_table},
-\code{spicy_continuous_lm_table}, and \code{spicy_regression_table} follow
+\code{spicy_continuous_lm_table}, \code{spicy_continuous_svy_table},
+\code{spicy_categorical_svy_table}, and \code{spicy_regression_table} follow
 the standard broom column conventions (\code{outcome}, \code{term},
 \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic},
 \code{p.value}, \code{df}, \code{df.residual}, \code{r.squared}, \code{adj.r.squared},

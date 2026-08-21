@@ -227,6 +227,10 @@ sochealth |>
   several groupings, one block of rows per grouping.
 - `vignette("table-continuous-lm")` — model-based group comparisons
   (robust SE, weights, covariate adjustment).
+- `vignette("survey-tables")` — the same two tables from a
+  `survey` design: design-based standard errors, degrees of
+  freedom and tests (`table_continuous_svy()`,
+  `table_categorical_svy()`).
 
 **Regression tables**
 

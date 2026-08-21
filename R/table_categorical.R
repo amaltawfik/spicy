@@ -989,9 +989,7 @@ table_categorical <- function(
     rescale <- getOption("spicy.rescale", FALSE)
   }
 
-  if (!is.data.frame(data)) {
-    spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
-  }
+  .check_data_frame(data, "table_categorical")
   # `word_path` is a save path for `output = "word"` only (the contract
   # shared with the rest of the table family). Before 0.13.0,
   # `output = "flextable"` also wrote a .docx as a side effect when

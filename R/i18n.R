@@ -147,6 +147,20 @@
   note_expected_advice = ". Consider %s or set globally via %s.",
   note_kv_pair = "%s = %s",
 
+  # -- headers shared by more than one family --------------------------------
+  # The standard-error header. It lived in the `table_regression()`
+  # block until `table_continuous_svy()` displayed the same quantity
+  # under the same name: one key per ROLE, and the role here is "the
+  # header over a standard error", not "a column of the regression
+  # table". Duplicating it would let the two families drift into two
+  # translations of one word.
+  header_se = "SE",
+  # The design-effect header of the survey twins: the ratio of the
+  # design-based variance to the variance a simple random sample of the
+  # same size would give. Abbreviated, like `header_effect_size_short`,
+  # because it sits over a narrow numeric column; the note spells it out.
+  header_deff = "DEff",
+
   # -- mathematical glyphs: frozen, never translated ------------------------
   # One key per GLYPH, all roles confined -- except where the same glyph
   # names two different statistics (global vs partial), which the package
@@ -179,7 +193,6 @@
   header_n_upper = "N",
   header_events_n = "Events/N",
   header_b = "B",
-  header_se = "SE",
   header_p = "p",
   header_pd = "pd",
   header_rhat = "R-hat",
@@ -473,6 +486,82 @@
   # Why one column of the table has no sign while its neighbours do.
   # Only shown when a variable has more than two categories.
   note_gloss_smd_multinomial = "For a variable with more than two categories the %s is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.",
+
+  # -- survey twins: the self-documenting design footer ---------------------
+  # A design-based table must say what design produced it, or its
+  # standard errors are unreadable. Three sentences, assembled by
+  # `.design_note_lines()`: the scheme and its degrees of freedom, the
+  # variance method, and the reference distribution.
+  #
+  # `note_design_line` is the joiner of the first sentence -- the
+  # semicolon and the full stop are punctuation whose spacing is
+  # language-dependent, so they belong to the template.
+  note_design_line = "Design: %s; %s.",
+  note_design_stratified = "stratified (%s)",
+  note_design_cluster = "cluster (%s)",
+  note_design_srs = "simple random sample",
+  note_design_stages = "%d sampling stages",
+  note_design_psu = "%d PSU",
+  note_design_fpc = "with finite population correction",
+  note_design_calibrated = "calibrated / post-stratified",
+  # Two holes: the replicate type (JK1 / JKn / BRR / bootstrap -- an
+  # identifier from the design, never translated) and the count.
+  note_design_replicate = "replicate weights (%s), %d replicates",
+  note_design_degf = "%d degrees of freedom",
+  # A `by =` table has one domain per group, and survey recomputes the
+  # degrees of freedom on the PSU and strata each domain retains: the
+  # span is the honest summary of a column of numbers the footer cannot
+  # list.
+  note_design_degf_varying = "degrees of freedom vary by group (%d to %d)",
+  note_se_taylor = "Standard errors: Taylor linearisation (survey).",
+  note_se_replicate = "Standard errors: replicate weights (survey).",
+  note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
+  # Both counts, because neither alone is enough (decision 28): the
+  # first is the robustness information, the second is the population
+  # the estimates describe. Both are DISPLAYED numbers and therefore
+  # arrive already formatted under `decimal_mark`.
+  note_design_n = "N = %s (weighted %s).",
+  # What replaces `note_design_df_used` when the caller overrode the
+  # design's own degrees of freedom. It names the INTERVALS and nothing
+  # else, because that is all `df` reaches: `svyttest()`, `svychisq()`
+  # and `svyranktest()` have no `df` argument, so the tests keep the
+  # design's own. Promising both put three different numbers in one
+  # note -- the supplied df, the domain's, and the one the cell showed.
+  note_design_df_supplied = "Confidence intervals use %d degrees of freedom (supplied in `df`); the tests use the design's own.",
+  # The group comparison runs on the observed groups only, so its
+  # domain can carry degrees of freedom none of the displayed rows
+  # does. Said only when the two really differ.
+  note_design_df_test_differs = "The group comparison uses %d degrees of freedom (observed groups only).",
+  # One hole: the rule in force, an identifier from survey ("math",
+  # "hf7", ...) or "spicy" -- never translated.
+  note_quantile_rule = "Quantiles: qrule = \"%s\" (survey).",
+  note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
+  # Abbreviation glosses of the two design-only columns, each naming
+  # the header it glosses through a hole so a translated header can
+  # never leave the note quoting the English one.
+  note_gloss_deff = "%s = design effect (design-based variance / simple-random-sample variance at the same n).",
+  note_gloss_se = "%s = design-based standard error of the mean.",
+  # The design-based comparisons, named for `note_group_comparison`.
+  test_design_t = "design-based t-test",
+  test_design_wald = "design-based Wald test",
+  test_design_wilcoxon = "design-based Wilcoxon rank-sum test",
+  test_design_kruskal = "design-based Kruskal-Wallis test",
+  # The five `survey::svychisq()` statistics the categorical twin
+  # reports. Named apart rather than templated on a token: they are
+  # five different tests, and a sentence naming one must be
+  # translatable without carrying the other four.
+  test_design_rao_scott = "design-based Pearson chi-square (Rao-Scott second-order correction)",
+  test_design_rao_scott_chisq = "design-based Pearson chi-square (Rao-Scott correction, chi-square reference)",
+  test_design_wald_chisq = "design-based Wald test of the cell proportions",
+  test_design_adj_wald = "design-based adjusted Wald test of the cell proportions",
+  test_design_saddlepoint = "design-based saddlepoint chi-square",
+  # One hole: the method name, a survey identifier ("logit",
+  # "wilson", ...), never translated.
+  note_ci_prop_method = "Percentage CIs: %s (survey::svyciprop).",
+  # The two glosses a design categorical table owes its reader: the
+  # percentage is an ESTIMATE and the count is not.
+  note_gloss_pct_svy = "%s = estimated percentage within the column (survey::svymean).",
+  note_gloss_n_svy = "%s = observed (unweighted) count.",
 
   # -- table_regression(): standard-error and interval notes ----------------
   note_adjusted_for = "Adjusted for %s (%s).",
