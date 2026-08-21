@@ -454,7 +454,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #' # Quantiles
 #'
 #' `qrule = "math"` is the default and estimates `inf{x : F(x) >= p}`,
-#' the quantile of the POPULATION. `qrule = "spicy"` switches to the
+#' the quantile of the *population*. `qrule = "spicy"` switches to the
 #' type-7 interpolation `table_continuous()` uses, for a reader who
 #' needs the two tables to agree cell for cell; any other value --
 #' including a function -- is handed to `survey::svyquantile()`
@@ -465,7 +465,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #' `by = ` cuts one domain per group with `[` on the design. survey
 #' recomputes the degrees of freedom on the primary sampling units and
 #' strata each domain retains, so a grouped table generally carries a
-#' DIFFERENT df per row; the note gives the span when they differ.
+#' *different* df per row; the note gives the span when they differ.
 #'
 #' A group with a missing value is a domain like any other:
 #' `drop_na = FALSE` gives it a `(Missing)` row, with its own degrees
@@ -483,7 +483,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #'
 #' # What is absent, and why
 #'
-#' `weights` and `rescale` (the weighting IS the design), `effect_size`
+#' `weights` and `rescale` (the weighting *is* the design), `effect_size`
 #' and `smd` (no established design-based variance), and `data`.
 #'
 #' @param design A survey design: `survey::svydesign()` or

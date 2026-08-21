@@ -237,9 +237,9 @@
 #' @details
 #' # What the columns are
 #'
-#' `n` is the OBSERVED count -- the number of rows in the sample, not
+#' `n` is the *observed* count -- the number of rows in the sample, not
 #' an estimated population size. `%` is the estimated percentage
-#' WITHIN its column: without `by` it is the distribution of the
+#' *within* its column: without `by` it is the distribution of the
 #' variable in the population, with `by` the distribution inside that
 #' domain. The table note gives the sample size and the estimated
 #' population together, because neither alone tells the reader what
@@ -258,7 +258,7 @@
 #' referred to F(ndf, `survey::degf(design)`). It is survey's own
 #' default and the one Stata's `svy: tabulate` reports.
 #'
-#' It runs on the COMPLETE CASES of the two variables, and on their
+#' It runs on the *complete cases* of the two variables, and on their
 #' observed levels: a `(Missing)` row and a declared-but-unobserved
 #' level are descriptive, and neither belongs to the null hypothesis.
 #' The p-value is therefore the same whether `drop_na` shows those rows
@@ -275,7 +275,7 @@
 #'
 #' # What is absent, and why
 #'
-#' `weights` and `rescale` (the weighting IS the design). `correct`
+#' `weights` and `rescale` (the weighting *is* the design). `correct`
 #' (Yates), `simulate_p` and `simulate_B`, which have no meaning once
 #' the reference distribution is Rao-Scott's. And the association
 #' measures: Cramer's V, phi, tau-b/c, gamma, Somers' D and lambda

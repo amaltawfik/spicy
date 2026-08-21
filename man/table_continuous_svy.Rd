@@ -169,7 +169,7 @@ or stratified sample is not.
 
 \section{Quantiles}{
 \code{qrule = "math"} is the default and estimates \verb{inf\{x : F(x) >= p\}},
-the quantile of the POPULATION. \code{qrule = "spicy"} switches to the
+the quantile of the \emph{population}. \code{qrule = "spicy"} switches to the
 type-7 interpolation \code{table_continuous()} uses, for a reader who
 needs the two tables to agree cell for cell; any other value --
 including a function -- is handed to \code{survey::svyquantile()}
@@ -180,7 +180,7 @@ untouched. The note always says which rule produced the numbers.
 \verb{by = } cuts one domain per group with \code{[} on the design. survey
 recomputes the degrees of freedom on the primary sampling units and
 strata each domain retains, so a grouped table generally carries a
-DIFFERENT df per row; the note gives the span when they differ.
+\emph{different} df per row; the note gives the span when they differ.
 
 A group with a missing value is a domain like any other:
 \code{drop_na = FALSE} gives it a \code{(Missing)} row, with its own degrees
@@ -198,7 +198,7 @@ like \code{"welch"}.
 }
 
 \section{What is absent, and why}{
-\code{weights} and \code{rescale} (the weighting IS the design), \code{effect_size}
+\code{weights} and \code{rescale} (the weighting \emph{is} the design), \code{effect_size}
 and \code{smd} (no established design-based variance), and \code{data}.
 }
 

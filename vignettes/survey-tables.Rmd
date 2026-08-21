@@ -62,7 +62,7 @@ interval is a *t* interval on 14 degrees of freedom -- the number of
 clusters minus one, not the 183 schools.
 
 That last point is worth dwelling on. `confint()` on a survey object
-uses the NORMAL distribution by default:
+uses the *normal* distribution by default:
 
 ```{r cont-df}
 m <- svymean(~api00, dclus1)
@@ -124,8 +124,8 @@ warns and behaves like the default.
 table_categorical_svy(dclus1, select = c(stype, awards))
 ```
 
-`n` is the OBSERVED count: 144 schools of type E were sampled. The
-`78.7%` beside it is an ESTIMATE of the population share, and the two
+`n` is the *observed* count: 144 schools of type E were sampled. The
+`78.7%` beside it is an *estimate* of the population share, and the two
 answer different questions -- which is why the table shows both and
 the footer gives the estimated population (6194) beside the sample
 size (183).
@@ -217,11 +217,13 @@ Under the default `rescale = FALSE` they do not, and that is the
 estimand boundary, not a bug:
 
 ```{r bridge-default}
-freq <- table_continuous(apiclus1, select = api00, weights = pw, output = "long")
-c(svy = svy$sd, weighted_default = freq$sd)
+expanded <- table_continuous(
+  apiclus1, select = api00, weights = pw, output = "long"
+)
+c(svy = svy$sd, weighted_default = expanded$sd)
 ```
 
-The MEAN is continuous across both regimes: `sum(w x) / sum(w)` does
+The *mean* is continuous across both regimes: `sum(w x) / sum(w)` does
 not move when the weights are rescaled.
 
 And the whole point of the design functions is that a design carries
@@ -242,7 +244,7 @@ is no silent coercion in either direction.
 ## Quantiles
 
 `qrule` chooses the rule, and the footer always names the one in
-force. The default `"math"` estimates the quantile of the POPULATION,
+force. The default `"math"` estimates the quantile of the *population*,
 `inf{x : F(x) >= p}`. `"spicy"` switches to the type-7 interpolation
 `table_continuous()` uses, for a reader who needs the two tables to
 agree cell for cell; anything else -- including a function -- is

@@ -118,9 +118,9 @@ association, Rao-Scott corrected and referred to the design degrees
 of freedom.
 }
 \section{What the columns are}{
-\code{n} is the OBSERVED count -- the number of rows in the sample, not
+\code{n} is the \emph{observed} count -- the number of rows in the sample, not
 an estimated population size. \verb{\%} is the estimated percentage
-WITHIN its column: without \code{by} it is the distribution of the
+\emph{within} its column: without \code{by} it is the distribution of the
 variable in the population, with \code{by} the distribution inside that
 domain. The table note gives the sample size and the estimated
 population together, because neither alone tells the reader what
@@ -139,7 +139,7 @@ Pearson chi-square with the Rao-Scott second-order correction,
 referred to F(ndf, \code{survey::degf(design)}). It is survey's own
 default and the one Stata's \code{svy: tabulate} reports.
 
-It runs on the COMPLETE CASES of the two variables, and on their
+It runs on the \emph{complete cases} of the two variables, and on their
 observed levels: a \code{(Missing)} row and a declared-but-unobserved
 level are descriptive, and neither belongs to the null hypothesis.
 The p-value is therefore the same whether \code{drop_na} shows those rows
@@ -156,7 +156,7 @@ because it has no reporting convention here.
 }
 
 \section{What is absent, and why}{
-\code{weights} and \code{rescale} (the weighting IS the design). \code{correct}
+\code{weights} and \code{rescale} (the weighting \emph{is} the design). \code{correct}
 (Yates), \code{simulate_p} and \code{simulate_B}, which have no meaning once
 the reference distribution is Rao-Scott's. And the association
 measures: Cramer's V, phi, tau-b/c, gamma, Somers' D and lambda
