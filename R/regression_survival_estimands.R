@@ -840,6 +840,13 @@
 
 # Table note for the estimand columns, read from
 # extras$survival_estimands (set by the coxph frame builder).
+#
+# The sentences come from the display-string registry (R/i18n.R): a
+# table footnote is a string a reader of the table sees, which is what
+# the registry is for, and the estimand column HEADERS are keyed there
+# already. The method clause is two whole templates rather than one
+# template with a "(within-stratum baselines)" hole, because a hole is
+# for data and that parenthesis is words.
 build_survival_estimand_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
@@ -853,26 +860,17 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
       }
       parts <- character(0)
       if (!is.null(es$tau)) {
-        parts <- c(
-          parts,
-          sprintf(
-            "dRMST = difference in restricted mean survival time over [0, %s]",
-            format(es$tau)
-          )
-        )
+        parts <- c(parts, spicy_fmt("note_estimand_rmst", format(es$tau)))
       }
       if (!is.null(es$at_time)) {
         parts <- c(
           parts,
-          sprintf(
-            "dRisk = difference in cumulative incidence at %s",
-            format(es$at_time)
-          )
+          spicy_fmt("note_estimand_risk_diff", format(es$at_time))
         )
       }
       skipped_note <- if (length(es$skipped_terms %||% character(0)) > 0L) {
-        sprintf(
-          " Transformed terms (%s) have no absolute-effect row: the contrast is defined per raw variable; rescale the variable in the data instead of the formula.",
+        spicy_fmt(
+          "note_estimand_skipped_terms",
           paste(es$skipped_terms, collapse = ", ")
         )
       } else {
@@ -883,20 +881,20 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
           if (nzchar(skipped_note)) trimws(skipped_note) else NA_character_
         )
       }
+      replicates <- if (es$boot_valid < es$boot_n) {
+        spicy_fmt("note_estimand_boot_range", es$boot_valid, es$boot_n)
+      } else {
+        format(es$boot_n)
+      }
       paste0(
         paste(parts, collapse = "; "),
-        sprintf(
-          "; adjusted by g-computation from the fitted model%s, SEs by nonparametric bootstrap (%s replicates).",
+        spicy_fmt(
           if (isTRUE(es$stratified)) {
-            " (within-stratum baselines)"
+            "note_estimand_method_stratified"
           } else {
-            ""
+            "note_estimand_method"
           },
-          if (es$boot_valid < es$boot_n) {
-            sprintf("%d-%d", es$boot_valid, es$boot_n)
-          } else {
-            format(es$boot_n)
-          }
+          replicates
         ),
         skipped_note
       )

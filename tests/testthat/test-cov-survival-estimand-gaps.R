@@ -43,7 +43,8 @@
   boot_n = 500L,
   boot_valid = 500L,
   skipped_terms = character(0),
-  model_label = NULL
+  model_label = NULL,
+  stratified = FALSE
 ) {
   list(
     info = list(
@@ -54,7 +55,7 @@
           at_time = at_time,
           boot_n = boot_n,
           boot_valid = boot_valid,
-          stratified = FALSE,
+          stratified = stratified,
           skipped_terms = skipped_terms
         )
       )
@@ -226,6 +227,81 @@ test_that("identical estimand notes collapse to a single unprefixed line", {
   expect_match(out, "^dRMST = difference in restricted mean")
   expect_false(grepl("Model 1", out, fixed = TRUE))
 })
+
+test_that("the estimand footnote reads word for word off the registry", {
+  # The footnote moved from hard-coded sprintf() calls into
+  # .spicy_strings. These are the sentences it produced before, pinned
+  # in full rather than by fragment, so the move is provably a move.
+  one <- function(...) {
+    spicy:::build_survival_estimand_footer_block_from_frames(
+      list(.gap_estimand_frame(...))
+    )
+  }
+
+  expect_identical(
+    one(tau = 365, boot_n = 1000L, boot_valid = 1000L),
+    paste0(
+      "dRMST = difference in restricted mean survival time over ",
+      "[0, 365]; adjusted by g-computation from the fitted model, ",
+      "SEs by nonparametric bootstrap (1000 replicates)."
+    )
+  )
+  # Both estimands, a stratified fit, and a bootstrap that lost
+  # replicates: the three optional pieces at once.
+  expect_identical(
+    one(
+      tau = 365,
+      at_time = 200,
+      boot_n = 500L,
+      boot_valid = 480L,
+      stratified = TRUE
+    ),
+    paste0(
+      "dRMST = difference in restricted mean survival time over ",
+      "[0, 365]; dRisk = difference in cumulative incidence at 200; ",
+      "adjusted by g-computation from the fitted model ",
+      "(within-stratum baselines), SEs by nonparametric bootstrap ",
+      "(480-500 replicates)."
+    )
+  )
+  # The transformed-term note, appended and standing alone.
+  expect_identical(
+    one(tau = 365, skipped_terms = "I(age/10)"),
+    paste0(
+      "dRMST = difference in restricted mean survival time over ",
+      "[0, 365]; adjusted by g-computation from the fitted model, ",
+      "SEs by nonparametric bootstrap (500 replicates). Transformed ",
+      "terms (I(age/10)) have no absolute-effect row: the contrast ",
+      "is defined per raw variable; rescale the variable in the data ",
+      "instead of the formula."
+    )
+  )
+  expect_identical(
+    one(skipped_terms = c("I(age/10)", "log(x)")),
+    paste0(
+      "Transformed terms (I(age/10), log(x)) have no absolute-effect ",
+      "row: the contrast is defined per raw variable; rescale the ",
+      "variable in the data instead of the formula."
+    )
+  )
+
+  # And the keys hold exactly the fragments the footnote is made of, so
+  # editing the registry moves the footnote and nothing else has to be
+  # touched. (What forbids drifting BACK to a hard-coded sprintf() is
+  # the dead-key guard in test-i18n.R: an unconsumed key fails there.)
+  expect_identical(
+    one(tau = 365, boot_n = 1000L, boot_valid = 1000L),
+    paste0(
+      spicy:::spicy_fmt("note_estimand_rmst", "365"),
+      spicy:::spicy_fmt("note_estimand_method", "1000")
+    )
+  )
+  expect_identical(
+    spicy:::spicy_fmt("note_estimand_boot_range", 480L, 500L),
+    "480-500"
+  )
+})
+
 
 test_that("differing estimand notes cite user model labels when present", {
   # Same "notes differ" arm, resolved through info$model_label rather
