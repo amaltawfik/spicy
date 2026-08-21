@@ -105,18 +105,36 @@ as_regression_frame.svycoxph <- function(
 # Absolute survival estimands (RMST difference, risk difference) under a
 # sampling design: refused, with the cause named and a route out.
 #
-# The estimand is not what breaks. The RMST and risk-difference columns
-# were validated against exact adjustedCurves / riskRegression oracles,
-# and the g-computation step is unchanged under a design. What breaks is
-# the INFERENCE: `.coxph_baseline()` resamples SUBJECTS to get the
-# uncertainty of the baseline hazard, and resampling rows ignores the
-# strata and clusters the design declares -- the same mechanism
-# compute_model_vcov() already refuses for these classes, measured there
-# at a factor of ~0.4 (anti-conservative).
+# The estimand is not what is wrong -- the RMST and risk-difference
+# columns were validated against exact adjustedCurves /
+# riskRegression oracles. Two OTHER things break, and only the second
+# is about inference.
 #
-# The replacement is a component swap, not a new project: the design's
-# own replication (as.svrepdesign() / withReplicates()) in place of the
-# row bootstrap, with the validated g-computation kept as it is.
+# 1. The g-computation does not run on this class at all.
+#    `.coxph_baseline()` calls survival::basehaz(), basehaz() goes
+#    through survfit(), and survey's method for the class is
+#
+#      survfit.svycoxph <- function(formula, ...)
+#        stop("No survfit method for survey models")
+#
+#    so the baseline step stops before computing anything (measured on
+#    survey 4.5: "No survfit method for survey models"). The route out
+#    is to declass the fit to plain `coxph` for the baseline, which
+#    does run -- a path of its own, not a component swap.
+#
+# 2. The inference breaks separately. `.survival_estimand_rows()`
+#    resamples SUBJECTS, and a row bootstrap ignores the strata and
+#    clusters the design declares. What that costs is
+#    design-dependent, not a constant: over five designs and three
+#    data seeds, a between-cluster contrast is understated by roughly
+#    1.5x to 6x, ordered by cluster count and cluster size, while a
+#    within-cluster contrast and a zero-ICC control both sit at ~1x.
+#    And it is not specific to these columns: the estimand-level
+#    ratios track the coefficient-level ones design by design. This is
+#    the ordinary Cox design effect transported onto the estimand.
+#
+# The design's own replication (as.svrepdesign() / withReplicates())
+# is what replaces the row bootstrap.
 .svycoxph_refuse_estimands <- function(show_columns, model_id) {
   tokens <- c(
     "rmst",
@@ -140,14 +158,17 @@ as_regression_frame.svycoxph <- function(
       ),
       "x" = paste0(
         "Their uncertainty comes from resampling subjects to rebuild the ",
-        "baseline hazard, and resampling rows ignores the strata and ",
-        "clusters the survey design declares."
+        "baseline hazard, and a row bootstrap ignores the strata and ",
+        "clusters the survey design declares. For a contrast between ",
+        "clusters, that understates the standard error by roughly ",
+        "1.5x-6x depending on cluster count and size (~3x on a 30 x 25 ",
+        "design with moderate ICC); for a contrast within clusters, or ",
+        "with no clustering, it is about right."
       ),
       "i" = paste0(
         "The estimands themselves are not in question: the RMST and risk ",
         "differences are validated against exact oracles for an ",
-        "unweighted Cox fit. A design-correct version -- the design's own ",
-        "replicate weights in place of the row bootstrap -- is planned."
+        "unweighted Cox fit."
       ),
       "i" = paste0(
         "For a marginal survival curve under the design, use ",
