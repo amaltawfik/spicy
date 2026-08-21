@@ -231,14 +231,19 @@ What is refused, and why: every model-derived variance (\verb{HC*},
 \verb{CR*}, bootstrap, jackknife) -- the design is the variance
 authority, and the way to change the estimator is to change the
 design; every likelihood statistic (AIC, BIC, logLik, deviance,
-pseudo-R-squared, \code{nested = TRUE}) for \code{svyolr} and \code{svycoxph} --
-there is no likelihood, and survey's own \code{deviance()} returns a
-sign-flipped likelihood-ratio statistic on one Cox engine and a bare
-zero on the other; the AME for \code{svycoxph}, on the same ground as for
-a plain Cox fit; and the \code{"rmst"} / \code{"risk_diff"} columns for
-\code{svycoxph}, whose uncertainty comes from resampling subjects and so
-ignores the strata and clusters the design declares (use
-\code{\link[survey:svykm]{survey::svykm()}} for a marginal curve).
+pseudo-R-squared) for \code{svyolr} and \code{svycoxph} -- there is no
+likelihood, and survey's own \code{deviance()} returns a sign-flipped
+likelihood-ratio statistic on one Cox engine and a bare zero on the
+other; the AME for \code{svycoxph}, on the same ground as for a plain Cox
+fit; and the \code{"rmst"} / \code{"risk_diff"} columns for \code{svycoxph}, whose
+uncertainty comes from resampling subjects and so ignores the strata
+and clusters the design declares (use \code{\link[survey:svykm]{survey::svykm()}} for a
+marginal curve).
+
+\code{nested = TRUE} is not refused, and does not compare: it puts the
+models side by side and adds no change statistic, because there is no
+likelihood to compare. To test a term under the design, use
+\code{\link[survey:regTermTest]{survey::regTermTest()}}.
 
 \code{svyglm} keeps an \code{AIC} row: survey's \code{extractAIC.svyglm} computes
 the design-based AIC of Lumley & Scott (2015), the one information
