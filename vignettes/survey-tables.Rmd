@@ -33,7 +33,7 @@ restitution layer around it -- the same columns, the same nine output
 routes, the same typed view, plus a footer that says what design
 produced the numbers.
 
-```{r setup}
+```{r setup, message = FALSE}
 library(spicy)
 library(survey)
 data(api)
