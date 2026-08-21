@@ -1,10 +1,11 @@
 ---
 title: "Summary tables for reporting"
 description: >
-  Learn when to use table_categorical(), table_continuous(),
-  table_continuous_lm(), and table_regression() for reporting in R,
-  how their shared arguments fit together, and which output format
-  to choose for console, Quarto, Word, or Excel workflows.
+  Learn when to use each function of the spicy table family --
+  from table_categorical() to table_regression(), including
+  table_outcome() and the survey-design twins -- how their shared
+  arguments fit together, and which output format to choose for
+  console, Quarto, Word, or Excel workflows.
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -30,7 +31,7 @@ source("_pkgdown-helpers.R")
 library(spicy)
 ```
 
-spicy's four reporting helpers cover the full APA Manual 7 table
+spicy's reporting helpers cover the full APA Manual 7 table
 sequence used in empirical articles:
 
 - `table_categorical()` and `table_continuous()` build **Table 1**
@@ -41,6 +42,11 @@ sequence used in empirical articles:
   families take `weights =` natively for the estimates themselves,
   and `table_continuous()` points here the moment weighted *means*
   are to be tested;
+- `table_continuous_svy()` and `table_categorical_svy()` build the
+  same Tables 1 and 2 from a `survey::svydesign` object, when the
+  sample is stratified, clustered, or carried by replicate weights —
+  design-based SEs and CIs, design degrees of freedom, design tests
+  (see `vignette("survey-tables")`);
 - `table_regression()` builds **Table 3** (the coefficient table) from
   one or several fitted models — `lm()` / `glm()` through the 36
   supported classes listed by `table_regression_models()`.
@@ -65,7 +71,8 @@ Use the function that matches the unit you want to report:
 | `table_categorical()` | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared test, association measure (`phi`, `cramer_v`, `tau_b`, ...), confidence interval |
 | `table_continuous()` | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges' *g*, η², rank-biserial *r*, ε²) |
 | `table_continuous_lm()` | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
-| `table_outcome()` | ONE numeric outcome across the levels of SEVERAL categorical variables | `outcome` (one), `by` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as `table_continuous()` |
+| `table_outcome()` | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `by` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as `table_continuous()` |
+| `table_continuous_svy()`, `table_categorical_svy()` | The same descriptive tables from a `survey::svydesign` (stratified, clustered, replicate-weight samples) | design-first: `design`, then `select`, `by` | Design-based SE and CI, design df, Rao–Scott and design *t*/*F* tests, design effects, observed and weighted counts |
 | `table_regression()` | One or several fitted models — 36 classes, from `lm()` / `glm()` to mixed, ordinal, survival and Bayesian engines (see `vignette("table-regression-supported-models")`) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
 In practice, follow the APA sequence:
@@ -74,10 +81,14 @@ In practice, follow the APA sequence:
   activity — APA Table 1 categorical descriptors;
 - use `table_continuous()` for BMI, well-being, or income — Table 1
   continuous descriptors and Table 2 unadjusted group comparisons;
-- transpose to `table_outcome()` when the question is about ONE
+- transpose to `table_outcome()` when the question is about *one*
   outcome and many groupings rather than many outcomes and one
   grouping -- a well-being score described by sex, by education and
   by region, block after block;
+- move to `table_continuous_svy()` / `table_categorical_svy()` when
+  the data are a survey design rather than a plain sample -- the
+  numbers then come from the survey package, with the design's SEs,
+  degrees of freedom and tests;
 - switch to `table_continuous_lm()` when the same comparison must
   account for case weights, robust SE, or covariate adjustment;
 - finish with `table_regression()` once the substantive model is
@@ -85,10 +96,11 @@ In practice, follow the APA sequence:
   reference rows, and (optionally) standardised coefficients,
   marginal effects, or nested model comparisons.
 
-The first four functions live inside a data-frame selection
-grammar; `table_regression()` is **fit-first** — you build the model
+The descriptive functions share one selection grammar — on a data
+frame, or on a `survey::svydesign` for the `_svy` twins;
+`table_regression()` is **fit-first** — you build the model
 the usual R way (`lm()`, `glm()`, or any other supported engine) and
-hand the object in. All five share the post-construction grammar
+hand the object in. All of them share the post-construction grammar
 (`output`, `labels`, `decimal_mark`, `align`, and the digits
 controls), so swapping functions never breaks your rendering
 pipeline.
@@ -531,6 +543,13 @@ The dedicated articles go deeper into each function:
   variance, case weights, additive covariate adjustment
   (G-computation or equal-weight), and four effect-size measures
   with noncentral CIs.
+- `table_outcome()` covers the outcome-first layout: block
+  structure, the `Overall` row, per-block comparisons and effect
+  sizes, and the comparison with `gtsummary::tbl_continuous()`.
+- `table_continuous_svy()` and `table_categorical_svy()` cover the
+  survey-design regime: delegation to the survey package, design
+  degrees of freedom, quantile rules, and the weights-vs-design
+  estimand boundary.
 - `table_regression()` covers single- and multi-model coefficient
   tables across 36 model classes (the map is
   `vignette("table-regression-supported-models")`), five
