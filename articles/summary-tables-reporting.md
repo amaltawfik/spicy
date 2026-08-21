@@ -5,8 +5,8 @@
 library(spicy)
 ```
 
-spicy’s four reporting helpers cover the full APA Manual 7 table
-sequence used in empirical articles:
+spicy’s reporting helpers cover the full APA Manual 7 table sequence
+used in empirical articles:
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
@@ -20,6 +20,15 @@ sequence used in empirical articles:
   natively for the estimates themselves, and
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   points here the moment weighted *means* are to be tested;
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  build the same Tables 1 and 2 from a
+  [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)
+  object, when the sample is stratified, clustered, or carried by
+  replicate weights — design-based SEs and CIs, design degrees of
+  freedom, design tests (see
+  [`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md));
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   builds **Table 3** (the coefficient table) from one or several fitted
   models — [`lm()`](https://rdrr.io/r/stats/lm.html) /
@@ -46,7 +55,8 @@ Use the function that matches the unit you want to report:
 | [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared test, association measure (`phi`, `cramer_v`, `tau_b`, …), confidence interval |
 | [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges’ *g*, η², rank-biserial *r*, ε²) |
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
-| [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | ONE numeric outcome across the levels of SEVERAL categorical variables | `outcome` (one), `by` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
+| [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `by` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
+| [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md), [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md) | The same descriptive tables from a [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html) (stratified, clustered, replicate-weight samples) | design-first: `design`, then `select`, `by` | Design-based SE and CI, design df, Rao–Scott and design *t*/*F* tests, design effects, observed and weighted counts |
 | [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted models — 36 classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed, ordinal, survival and Bayesian engines (see [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
 In practice, follow the APA sequence:
@@ -61,9 +71,16 @@ In practice, follow the APA sequence:
   Table 2 unadjusted group comparisons;
 - transpose to
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  when the question is about ONE outcome and many groupings rather than
-  many outcomes and one grouping – a well-being score described by sex,
-  by education and by region, block after block;
+  when the question is about *one* outcome and many groupings rather
+  than many outcomes and one grouping – a well-being score described by
+  sex, by education and by region, block after block;
+- move to
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  /
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  when the data are a survey design rather than a plain sample – the
+  numbers then come from the survey package, with the design’s SEs,
+  degrees of freedom and tests;
 - switch to
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   when the same comparison must account for case weights, robust SE, or
@@ -75,12 +92,15 @@ In practice, follow the APA sequence:
   standardised coefficients, marginal effects, or nested model
   comparisons.
 
-The first four functions live inside a data-frame selection grammar;
+The descriptive functions share one selection grammar — on a data frame,
+or on a
+[`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html) for
+the `_svy` twins;
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 is **fit-first** — you build the model the usual R way
 ([`lm()`](https://rdrr.io/r/stats/lm.html),
 [`glm()`](https://rdrr.io/r/stats/glm.html), or any other supported
-engine) and hand the object in. All five share the post-construction
+engine) and hand the object in. All of them share the post-construction
 grammar (`output`, `labels`, `decimal_mark`, `align`, and the digits
 controls), so swapping functions never breaks your rendering pipeline.
 
@@ -951,6 +971,16 @@ The dedicated articles go deeper into each function:
   cluster-robust / bootstrap / jackknife variance, case weights,
   additive covariate adjustment (G-computation or equal-weight), and
   four effect-size measures with noncentral CIs.
+- [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  covers the outcome-first layout: block structure, the `Overall` row,
+  per-block comparisons and effect sizes, and the comparison with
+  `gtsummary::tbl_continuous()`.
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  cover the survey-design regime: delegation to the survey package,
+  design degrees of freedom, quantile rules, and the weights-vs-design
+  estimand boundary.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   covers single- and multi-model coefficient tables across 36 model
   classes (the map is

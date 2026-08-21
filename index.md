@@ -40,6 +40,16 @@ row-wise summaries.
   marginal `Overall` row – the transpose of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   with the same statistic vocabulary and output engines.
+- **Design-based summary tables** with
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  on a
+  [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)
+  object: estimates, SEs and CIs from the `survey` package (Taylor
+  linearisation or replicate weights), design degrees of freedom,
+  observed and weighted counts – the design twins of the two families
+  above, with the same statistic vocabulary and output engines.
 - **Model-based continuous summary tables** with
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   for linear-model reporting: classical / HC\* / cluster-robust /

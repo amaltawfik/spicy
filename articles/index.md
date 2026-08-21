@@ -208,7 +208,8 @@
 - [Summary tables for
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 
-  Learn when to use table_categorical(), table_continuous(),
-  table_continuous_lm(), and table_regression() for reporting in R, how
-  their shared arguments fit together, and which output format to choose
-  for console, Quarto, Word, or Excel workflows.
+  Learn when to use each function of the spicy table family – from
+  table_categorical() to table_regression(), including table_outcome()
+  and the survey-design twins – how their shared arguments fit together,
+  and which output format to choose for console, Quarto, Word, or Excel
+  workflows.

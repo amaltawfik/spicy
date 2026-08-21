@@ -40,6 +40,16 @@ row-wise summaries.
   marginal `Overall` row – the transpose of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   with the same statistic vocabulary and output engines.
+- **Design-based summary tables** with
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  on a
+  [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)
+  object: estimates, SEs and CIs from the `survey` package (Taylor
+  linearisation or replicate weights), design degrees of freedom,
+  observed and weighted counts – the design twins of the two families
+  above, with the same statistic vocabulary and output engines.
 - **Model-based continuous summary tables** with
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   for linear-model reporting: classical / HC\* / cluster-robust /
@@ -1151,7 +1161,8 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [Summary tables for
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md):
 
-  Learn when to use table_categorical(), table_continuous(),
-  table_continuous_lm(), and table_regression() for reporting in R, how
-  their shared arguments fit together, and which output format to choose
-  for console, Quarto, Word, or Excel workflows.
+  Learn when to use each function of the spicy table family – from
+  table_categorical() to table_regression(), including table_outcome()
+  and the survey-design twins – how their shared arguments fit together,
+  and which output format to choose for console, Quarto, Word, or Excel
+  workflows.
