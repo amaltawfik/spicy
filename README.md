@@ -45,6 +45,12 @@ row-wise summaries.
   rows per grouping variable, a group comparison per block, and a
   marginal `Overall` row – the transpose of `table_continuous()`, with
   the same statistic vocabulary and output engines.
+- **Design-based summary tables** with `table_continuous_svy()` and
+  `table_categorical_svy()` on a `survey::svydesign` object: estimates,
+  SEs and CIs from the `survey` package (Taylor linearisation or
+  replicate weights), design degrees of freedom, observed and weighted
+  counts – the design twins of the two families above, with the same
+  statistic vocabulary and output engines.
 - **Model-based continuous summary tables** with `table_continuous_lm()`
   for linear-model reporting: classical / HC\* / cluster-robust /
   bootstrap / jackknife variance, four effect-size families (f², Cohen’s
