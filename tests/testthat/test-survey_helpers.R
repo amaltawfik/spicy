@@ -101,6 +101,56 @@ test_that("an unsupported design gets a classed refusal naming its class", {
   expect_match(conditionMessage(err), "table_continuous_svy", fixed = TRUE)
 })
 
+test_that("the pps refusal names the specification, not a supported class", {
+  # `pps = "brewer"` leaves a plain `survey.design2`, so printing
+  # `class(design)[1L]` refused the very class the next line offered as
+  # supported -- and told the caller nothing they could act on.
+  skip_if_not_installed("survey")
+  pps <- .svy_fixture("pps")
+  expect_identical(class(pps)[[1L]], "survey.design2")
+  err <- expect_error(
+    table_continuous_svy(pps, select = api00),
+    class = "spicy_unsupported"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "without-replacement pps design", fixed = TRUE)
+  expect_false(grepl("of class `survey.design2`", msg, fixed = TRUE))
+  # A design that DOES carry a class marker still shows it.
+  expect_match(
+    conditionMessage(expect_error(
+      table_continuous_svy(.svy_fixture("twophase"), select = api00),
+      class = "spicy_unsupported"
+    )),
+    "twophase2",
+    fixed = TRUE
+  )
+})
+
+test_that("the survey version floor is checked, not merely declared", {
+  # A Suggests floor is not resolved at install time: `DESCRIPTION` can
+  # say `>= 4.5` and the session still load 4.4. The two features the
+  # floor exists for fail QUIETLY there -- `ci_method = "wilson"` would
+  # come back as a column of dashes -- so the door has to refuse.
+  skip_if_not_installed("survey")
+  err <- with_mocked_bindings(
+    expect_error(
+      .require_survey("table_continuous_svy"),
+      class = "spicy_unsupported"
+    ),
+    .SURVEY_MIN_VERSION = "99.0",
+    .package = "spicy"
+  )
+  expect_match(conditionMessage(err), "requires survey >= 99.0", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    format(utils::packageVersion("survey")),
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(err), "wilson", fixed = TRUE)
+  # The installed version passes the same door.
+  expect_null(.require_survey("table_continuous_svy"))
+})
+
 test_that("a data.frame at a `_svy` entry point is a regime error", {
   err <- expect_error(
     .abort_needs_design("table_continuous_svy", "table_continuous"),

@@ -88,6 +88,16 @@
 
 # survey is a Suggests: the twins are the only entry points that need
 # it, and they say so with the package's usual missing-Suggests error.
+#
+# The VERSION is checked here too, because a Suggests floor is not
+# resolved at install time: `DESCRIPTION` may say `>= 4.5` and the
+# session still load 4.4 without a word. The two features the floor
+# exists for fail quietly rather than loudly -- `svyciprop(method =
+# "wilson")` is a 4.5 addition and would land in `.svy_try()` as a
+# column of dashes, and `svyby(covmat = TRUE)` is only correct from 4.5
+# on designs where `subset()` drops rows. A refusal naming the version
+# found is the only thing that turns those into something a caller can
+# act on.
 .require_survey <- function(fn) {
   if (!spicy_pkg_available("survey")) {
     spicy_abort(
@@ -101,19 +111,46 @@
       class = "spicy_missing_pkg"
     )
   }
+  found <- utils::packageVersion("survey")
+  if (found < .SURVEY_MIN_VERSION) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`%s()` requires survey >= %s; %s is installed.",
+          fn,
+          .SURVEY_MIN_VERSION,
+          format(found)
+        ),
+        "i" = "Below that version `ci_method = \"wilson\"` does not exist and domain estimates are not reliable, so the table would be silently wrong rather than absent.",
+        "i" = "Update with `install.packages(\"survey\")`."
+      ),
+      class = "spicy_unsupported"
+    )
+  }
   invisible(NULL)
 }
 
-# The classed refusal a design class outside P1 gets.
+# The classed refusal a design outside P1 gets.
+#
+# A pps design carries NO class marker -- `pps = "brewer"` leaves a
+# plain `survey.design2` -- so naming `class(design)[1L]` produced a
+# message that refused the very class the next line said was
+# supported, and left the caller nothing to act on. The pps branch
+# names the SPECIFICATION instead, which is the thing the caller wrote.
 .abort_unsupported_design <- function(design, fn) {
+  what <- if (
+    !inherits(design, "svyrep.design") &&
+      inherits(design, "survey.design2") &&
+      !isFALSE(design$pps)
+  ) {
+    "a without-replacement pps design (`svydesign(pps = )`)"
+  } else {
+    sprintf("survey designs of class `%s`", class(design)[1L])
+  }
   spicy_abort(
     c(
-      sprintf(
-        "`%s()` does not support survey designs of class `%s`.",
-        fn,
-        class(design)[1L]
-      ),
-      "i" = "Supported: `survey::svydesign()` designs and `survey::as.svrepdesign()` replicate-weight designs.",
+      sprintf("`%s()` does not support %s.", fn, what),
+      "i" = "Supported: `survey::svydesign()` designs sampled with replacement (`pps = FALSE`, the default) and `survey::as.svrepdesign()` replicate-weight designs.",
       "i" = "For any other design, call survey directly (`survey::svymean()`, `survey::svyby()`) and open an issue saying which design you need."
     ),
     class = "spicy_unsupported"
