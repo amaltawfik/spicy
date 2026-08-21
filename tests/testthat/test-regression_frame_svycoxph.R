@@ -154,6 +154,35 @@ test_that("the residual df is read exactly, not by prefix match", {
   expect_null(stats::df.residual(cx))
 })
 
+test_that("the residual df is read by name, and never by prefix", {
+  # The `[[` chain of `.design_model_df()` is not observable on survey
+  # 4.5: `degf.resid` is a unique prefix of `degf.residual`, so `$`
+  # partial-matches to the same number on a svrepcoxph and to NULL on the
+  # two non-Cox classes, and a `$`-based accessor answers identically on
+  # all four. What it protects against is the prefix ceasing to be
+  # unique, which nothing in survey guarantees -- so it is pinned on
+  # objects where the two operators genuinely disagree.
+  #
+  # (a) a slot that merely SHARES the prefix answers `$`, and a
+  #     `$`-based accessor would publish it as the residual df:
+  odd <- structure(
+    list(degf.residuals.scaled = 999, df.residual = 42),
+    class = c("svycoxph", "coxph")
+  )
+  expect_equal(odd$degf.resid, 999)
+  expect_null(odd[["degf.resid"]])
+  expect_null(odd[["degf.residual"]])
+  expect_equal(spicy:::.design_model_df(odd), 42)
+  # (b) two slots sharing it make `$` AMBIGUOUS, so it returns NULL and a
+  #     `$`-based accessor loses the number survey did write:
+  amb <- structure(
+    list(degf.residual = 307, degf.residual.adj = 1),
+    class = c("svycoxph", "coxph")
+  )
+  expect_null(amb$degf.resid)
+  expect_equal(spicy:::.design_model_df(amb), 307)
+})
+
 test_that("the rows are t at that df, with the p recomputed", {
   fr <- as_regression_frame(.scox_fit())
   b <- .scox_b(fr)

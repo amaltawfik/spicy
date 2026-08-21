@@ -344,10 +344,14 @@
 # Harmonising the formulas across classes is a regression, not a
 # tidy-up.
 #
-# Two slot names, one per Cox engine, and `$` cannot tell them apart:
-# `degf.resid` is a unique PREFIX of `degf.residual`, so `$` on a
-# replicate Cox fit silently partial-matches. `[[` is exact -- and
-# returns NULL on the other engine, which is why both are tried.
+# Two slot names, one per Cox engine, read with `[[` and both tried by
+# name. On survey 4.5 that is a precaution rather than a repair: `$`
+# would partial-match `degf.resid` to `degf.residual` and land on the
+# same number. The precaution is what survives the prefix ceasing to be
+# unique -- a slot that merely shares it answers `$` and would be
+# published as the residual df, and two such slots make `$` ambiguous
+# and return NULL. Nothing in survey promises otherwise, and the two
+# cases are under test.
 #
 # Never a silent fall back to `Inf`: that would publish normal p-values
 # and intervals under a footer declaring a t.
