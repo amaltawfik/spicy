@@ -297,13 +297,12 @@ as_regression_frame.svycoxph <- function(fit, ...) {
   # We catch them defensively (the values are reported as NA when the
   # method isn't applicable) and suppress the noise so the renderer
   # footer stays clean.
+  n_obs <- as.integer(stats::nobs(fit))
   fit_stats <- list(
     r_squared = NA_real_,
     adj_r_squared = NA_real_,
     pseudo_r2 = NULL,
-    aic = tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) {
-      NA_real_
-    }),
+    aic = .svyglm_aic(fit),
     bic = tryCatch(suppressWarnings(stats::BIC(fit)), error = function(e) {
       NA_real_
     }),
@@ -320,11 +319,11 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     sigma = tryCatch(suppressWarnings(stats::sigma(fit)), error = function(e) {
       NA_real_
     }),
-    nobs = as.integer(stats::nobs(fit)),
+    nobs = n_obs,
     # Sum of design weights: makes the "weighted_nobs" token render
     # (it was silently swallowed -- extras carried the value but the
     # fit-stats materialiser only reads fit_stats).
-    weighted_nobs = .svyglm_weighted_n(fit)
+    weighted_nobs = .design_weighted_n(fit, n_obs)
   )
 
   if (is.null(ci_method)) {
@@ -359,7 +358,7 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     has_singular = FALSE,
     singular_terms = character(0),
     has_weights = TRUE,
-    weighted_n = .svyglm_weighted_n(fit),
+    weighted_n = fit_stats$weighted_nobs,
     title_prefix = title_prefix,
     exp_applied = FALSE,
     exp_header = NA_character_,
@@ -371,7 +370,7 @@ as_regression_frame.svycoxph <- function(fit, ...) {
     family = family_info,
     dv = dv,
     dv_label = dv_label,
-    n_obs = as.integer(stats::nobs(fit)),
+    n_obs = n_obs,
     n_groups = NULL,
     weights_kind = "sampling",
     random_effects = empty_random_effects(),
@@ -415,24 +414,35 @@ as_regression_frame.svycoxph <- function(fit, ...) {
 }
 
 
-# Sum of design weights for the analytic sample. Returns NA when the
-# design object cannot be accessed (e.g., serialised fits with detached
-# design).
-.svyglm_weighted_n <- function(fit) {
-  tryCatch(
-    {
-      des <- fit$survey.design
-      if (is.null(des)) {
-        return(NA_real_)
-      }
-      w <- stats::weights(des)
-      if (is.null(w) || length(w) == 0L) {
-        return(NA_real_)
-      }
-      sum(w)
-    },
-    error = function(e) NA_real_
-  )
+# The information criterion of a design-based glm, as a SCALAR.
+#
+# `AIC.svyglm` does not honour the `stats::AIC` contract: it returns
+# survey's `extractAIC.svyglm` verbatim, a named vector of length three
+# -- `c(eff.p, AIC, deltabar)`. Stored whole, the downstream compactor
+# takes element 1, so the table printed the effective number of design
+# parameters (4.6) under the header "AIC" where the criterion itself is
+# 2002.2. The element is therefore read BY NAME, here, once.
+#
+# The value named "AIC" is Lumley & Scott's design-based AIC (deviance
+# plus k times the sum of the Rao-Scott eigenvalues), the criterion
+# written for model comparison under a complex design and the only
+# quantity of its kind published for this class. `BIC.svyglm` is not
+# its counterpart -- it requires a `maximal =` model and errors without
+# one -- so bic stays NA.
+.svyglm_aic <- function(fit) {
+  a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
+  if (is.null(a) || !is.numeric(a) || length(a) == 0L) {
+    return(NA_real_) # nocov
+  }
+  if ("AIC" %in% names(a)) {
+    return(as.numeric(a[["AIC"]]))
+  }
+  # A future survey that honours the contract returns a scalar; anything
+  # else is not an AIC we can name.
+  if (length(a) == 1L) {
+    return(as.numeric(a)) # nocov
+  }
+  NA_real_ # nocov
 }
 
 

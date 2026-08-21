@@ -419,6 +419,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* Average marginal effects for survey-weighted models are now averaged over
+  the population (design weights) instead of over the sample.
+
+* The model-fit AIC reported for `survey::svyglm()` models is now the AIC,
+  not the effective number of parameters.
+
+* The weighted sample size reported for replicate-weight designs is now the
+  sum of the sampling weights, not of the replicate weights.
+
 * `output = "gt"` tables carry their table note into the saved file.
   `gt::gtsave()`, `gt::as_raw_html()` and a non-interactive `print()` used
   to produce a table without the missing-value disclosure, the test note or

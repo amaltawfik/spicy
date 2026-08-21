@@ -203,6 +203,96 @@
   stats::weights(design, type = "sampling")
 }
 
+# The design object restricted to the rows the FIT actually used.
+#
+# The four design-fitting functions do not agree on what they attach.
+# `svyglm()` and `svyolr()` drop the incomplete rows before storing the
+# design, so `fit$survey.design` already IS the analytic sample;
+# `svycoxph()` stores the design first and reduces a local copy
+# afterwards, so it hands back the COMPLETE design -- 200 rows for a fit
+# on 180. Reading the weights or the degrees of freedom off that object
+# gives a number that is plausible, wrong, and about the wrong
+# population (6194 against 5487.27 on the apistrat fixture with 20
+# missing `ell`).
+#
+# So the alignment is checked, never assumed, against the row count the
+# caller knows (`n_obs`, the analytic n):
+#   * the attached design already has `n_obs` rows -> take it as it is
+#     (svyglm / svyolr / svrepglm), and never re-drop, which would
+#     remove the missing rows a SECOND time (180 -> 160);
+#   * a CALIBRATED design keeps its rows and sets their weight to zero
+#     (`[.survey.design2` on a calibrated object sets `prob = Inf`), so
+#     the count that matters is the number of non-zero sampling weights;
+#   * otherwise drop the fit's `na.action` rows and re-check;
+#   * if the result still does not line up, NULL -- the callers turn
+#     that into `NA`, never into a plausible wrong number.
+.design_analytic <- function(fit, n_obs) {
+  des <- tryCatch(fit$survey.design, error = function(e) NULL)
+  if (is.null(des) || !.is_survey_design(des)) {
+    return(NULL)
+  }
+  if (.design_aligns(des, n_obs)) {
+    return(des)
+  }
+  nas <- tryCatch(stats::na.action(fit), error = function(e) NULL)
+  if (length(nas) == 0L) {
+    return(NULL)
+  }
+  out <- tryCatch(.design_subset(des, -nas), error = function(e) NULL)
+  if (is.null(out) || !.design_aligns(out, n_obs)) {
+    return(NULL)
+  }
+  out
+}
+
+# Does this design describe exactly `n_obs` observations? Either by row
+# count, or -- on a calibrated design, whose subsetting zeroes weights
+# instead of dropping rows -- by the count of non-zero sampling weights.
+.design_aligns <- function(des, n_obs) {
+  n_obs <- suppressWarnings(as.integer(n_obs))
+  if (length(n_obs) != 1L || is.na(n_obs)) {
+    return(FALSE)
+  }
+  if (identical(as.integer(nrow(des)), n_obs)) {
+    return(TRUE)
+  }
+  w <- tryCatch(.design_weights(des), error = function(e) NULL)
+  !is.null(w) && identical(sum(w != 0), n_obs)
+}
+
+# The sampling weights of the analytic sample, one per estimation row,
+# or NULL when they cannot be aligned. On a calibrated design the
+# zero-weight rows are the dropped ones, so removing them restores the
+# estimation-row order.
+.design_analytic_weights <- function(fit, n_obs) {
+  des <- .design_analytic(fit, n_obs)
+  if (is.null(des)) {
+    return(NULL)
+  }
+  w <- tryCatch(as.numeric(.design_weights(des)), error = function(e) NULL)
+  if (is.null(w) || length(w) == 0L) {
+    return(NULL)
+  }
+  if (length(w) != n_obs) {
+    w <- w[w != 0]
+  }
+  if (length(w) != n_obs || !all(is.finite(w))) {
+    return(NULL)
+  }
+  w
+}
+
+# Sum of the SAMPLING weights over the analytic sample: the population
+# the model describes. `NA_real_` when the design is detached or cannot
+# be aligned -- a weighted n is either the right population or absent.
+.design_weighted_n <- function(fit, n_obs) {
+  w <- .design_analytic_weights(fit, n_obs)
+  if (is.null(w)) {
+    return(NA_real_)
+  }
+  sum(w)
+}
+
 # The display domains of a `by =` variable, and the vector that keys
 # them.
 #

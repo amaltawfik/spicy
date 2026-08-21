@@ -363,9 +363,6 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 #
 # Returns the prior-weights vector (aligned on the estimation rows)
 # or NULL when:
-#   * the fit is a svyglm / svrepglm: marginaleffects reads the survey
-#     design natively, so passing wts on top would interfere with the
-#     design-based mechanics;
 #   * the fit carries no weights, or non-numeric / non-finite ones
 #     (nlme's varFunc "weights" are a structure, not case weights);
 #   * the weights are constant (a constant-weight average equals the
@@ -382,8 +379,22 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 #     model frame's "(weights)" column, which is already
 #     estimation-row aligned.
 .spicy_ame_fit_wts <- function(fit) {
-  if (inherits(fit, c("svyglm", "svrepglm"))) {
-    return(NULL)
+  # Survey-design fits average over the POPULATION, not over the
+  # sample: the AME under a design is the Horvitz-Thompson estimator of
+  # the mean unit-level effect, so the averaging step carries the
+  # sampling weights of the analytic sample. marginaleffects does not
+  # read them from the design -- its own default is equal weights, and
+  # it says so in a warning -- so they are supplied here. Measured on
+  # apistrat (weights 15.10 / 20.36 / 44.21), the two averages differ by
+  # 3.45% on a continuous predictor. The variance is unaffected: it
+  # comes from the delta method on the design vcov either way, which
+  # reproduces the replicate variance of the whole AME to under 1%.
+  if (.is_design_fit(fit)) {
+    n_obs <- tryCatch(nrow(stats::model.frame(fit)), error = function(e) NULL)
+    if (is.null(n_obs)) {
+      return(NULL) # nocov
+    }
+    return(.design_analytic_weights(fit, n_obs))
   }
   w <- tryCatch(stats::weights(fit), error = function(e) NULL)
   if (is.numeric(w) && length(w) > 0L && anyNA(w)) {
@@ -882,8 +893,8 @@ extract_ame_glm <- function(
           df = Inf,
           vcov = vcarg,
           # Weighted fit: the AME is the weighted average of the
-          # unit-level slopes (Rd Weights section). NULL (equal
-          # weights) for svyglm, whose design weighting is native.
+          # unit-level slopes (Rd Weights section) -- the fit's prior
+          # weights, or the sampling weights of a design fit.
           wts = .spicy_ame_fit_wts(fit) %||% FALSE
         )
       ))
