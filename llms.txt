@@ -786,6 +786,10 @@ details.
   : Continuous-outcome linear-model table
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   : Describe one continuous outcome across several groupings
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  : Descriptive statistics from a survey design
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  : Categorical summary table from a survey design
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -1009,6 +1013,9 @@ Documented here for direct invocation with custom arguments (e.g.,
   variables, one block of rows per variable, a group comparison per
   block, and a marginal Overall row — with the same statistic vocabulary
   and the same output engines as table_continuous().
+
+- [Summary tables from a survey
+  design](https://amaltawfik.github.io/spicy/articles/survey-tables.md):
 
 - [Publication-ready regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.md):

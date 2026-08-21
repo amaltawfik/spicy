@@ -516,6 +516,11 @@ sochealth |>
 - [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
   — model-based group comparisons (robust SE, weights, covariate
   adjustment).
+- [`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md)
+  — the same two tables from a `survey` design: design-based standard
+  errors, degrees of freedom and tests
+  ([`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)).
 
 **Regression tables**
 

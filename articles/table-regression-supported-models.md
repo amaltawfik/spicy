@@ -323,7 +323,7 @@ zero components as labelled blocks and a combined-response AME. See
 **Survival.**
 [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) and
 [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html) (hazard ratios,
-`strata()` supported),
+[`strata()`](https://rdrr.io/pkg/survival/man/strata.html) supported),
 [`survival::survreg`](https://rdrr.io/pkg/survival/man/survreg.html)
 (time ratios) and
 [`flexsurv::flexsurvreg`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md).

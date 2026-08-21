@@ -71,6 +71,9 @@
   block, and a marginal Overall row — with the same statistic vocabulary
   and the same output engines as table_continuous().
 
+- [Summary tables from a survey
+  design](https://amaltawfik.github.io/spicy/articles/survey-tables.md):
+
 - [Publication-ready regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.md):
 

@@ -207,6 +207,45 @@ instead of rendering an empty column.
 
 ### New functions
 
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  summarizes continuous variables from a `survey` design object –
+  [`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
+  or
+  [`survey::as.svrepdesign()`](https://rdrr.io/pkg/survey/man/as.svrepdesign.html)
+  – instead of a data frame. Every statistic is computed by survey:
+  [`svymean()`](https://rdrr.io/pkg/survey/man/surveysummary.html) for
+  the mean, its standard error and its design effect,
+  [`svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html) for
+  the standard deviation,
+  [`svyquantile()`](https://rdrr.io/pkg/survey/man/svyquantile.html) for
+  the quantiles, and
+  [`svyttest()`](https://rdrr.io/pkg/survey/man/svyttest.html) /
+  [`regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html) /
+  [`svyranktest()`](https://rdrr.io/pkg/survey/man/svyranktest.html) for
+  the group comparison. Intervals and tests use the design degrees of
+  freedom, `by =` gives each group its own domain (and its own df), and
+  the table note states the design, the variance method and the sample
+  size in both counts. `show_columns` takes the tokens of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  plus `"se"` and `"deff"`; every output engine,
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  work as usual.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  is the categorical half of the same pair: counts and estimated
+  percentages from a `survey` design, with the block layout of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  [`survey::svymean()`](https://rdrr.io/pkg/survey/man/surveysummary.html)
+  estimates the percentages and their design effects,
+  [`survey::svyciprop()`](https://rdrr.io/pkg/survey/man/svyciprop.html)
+  their confidence intervals (`proportion_ci = TRUE`, seven methods),
+  and
+  [`survey::svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html)
+  tests the association – Rao-Scott corrected by default. `n` is the
+  observed count; the note gives the estimated population beside it.
+
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   summarizes one continuous outcome across the levels of several
   categorical variables, stacked as blocks – the inverse layout of
@@ -217,6 +256,7 @@ instead of rendering an empty column.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   and every output engine is available. See
   [`vignette("table-outcome")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md).
+
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites one table cell in running Quarto / R Markdown text: the returned
   string is exactly the displayed cell – same decimals, *p* style,
@@ -233,27 +273,32 @@ instead of rendering an empty column.
   A variable carrying a real level named `"(Missing)"` is addressed by
   that name, and the auto-renamed missing category by its own
   (`"(Missing_1)"`).
+
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
   univariable screening tables – one fit per predictor, one row block
   each, merged side by side with the multivariable model. Supports `lm`
   (the linear default), `glm` (selected by `family`, in any form
   [`glm()`](https://rdrr.io/r/stats/glm.html) accepts), and `coxph`
   (`outcome = Surv(time, status)`).
+
 - In the linear screen, a binary-looking outcome proceeds as a linear
   probability model, in a classed warning pointing to `vcov = "HC3"` and
   `method = "glm"`. A per-predictor `N` column shows by default, with a
   note when Ns differ, and `complete_cases = TRUE` forces the common
   sample.
+
 - Univariable intercepts are hidden by default; `show_intercept = TRUE`
   adds each fit’s own. `p_adjust` covers the whole screen, and
   `exponentiate`, `vcov` / `cluster` (the footer names the cluster
   column), `labels`, the output engines and
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) work as in
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md):
   the machine-readable registry of supported model classes (family,
   engine, AME, exponentiate semantics); its help page is the per-family
   reference.
+
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md):
   build a table style, or fetch one of the named journal themes.
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
@@ -261,6 +306,17 @@ instead of rendering an empty column.
   document they come from.
 
 ### New features
+
+- Handing a `survey` design object to
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  or
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  now errors with the function to call instead, rather than with
+  `` `data` must be a data.frame ``. The design-based standard errors,
+  degrees of freedom and tests cannot be recovered from the weights
+  alone, so the answer is a different function, not a coercion.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
@@ -280,6 +336,7 @@ instead of rendering an empty column.
   [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+
 - The grouped raw outputs of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   (`"data.frame"` / `"long"`) always carry `smd_type` and `smd_value`,
@@ -290,10 +347,12 @@ instead of rendering an empty column.
   position. The categorical `"long"` output gains `smd` / `smd_type`
   only when they are requested, as its association columns do;
   `glance()` on a `spicy_categorical_table` does not carry the SMD.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   weighted group comparisons now say that they refuse tests and effect
   sizes specifically, and point at `smd = TRUE`, which passes under
   weights.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `weights` and `rescale`: weighted mean, SD, quantiles, extremes
   and mean CI under a documented convention (integer weights reproduce
@@ -309,6 +368,7 @@ instead of rendering an empty column.
   is the weighted-comparison tool. See the Weights section of
   [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   for the formulas and the cross-software correspondence.
+
 - New `style` argument on
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -321,16 +381,20 @@ instead of rendering an empty column.
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   – numeric formatting conformity, not full editorial conformity. An
   unknown name errors and names the ones that exist.
+
 - Themes move defaults only. Any formatting argument you pass wins over
   the theme, even at its own default value.
+
 - New `options(spicy.style = )` for document-wide scope, like the
   language of a report. The `style` argument overrides it per call.
+
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   composes a style by hand – p-value decimals, bands or significant
   figures, the `<` floor, the leading zero, decimal mark, interval
   separator and brackets, stars, per-family digits – and can start from
   a theme: `spicy_style("lancet", ci_sep = " to ")`. Every field is
   validated; a misspelt lever errors instead of being ignored.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
@@ -338,6 +402,7 @@ instead of rendering an empty column.
   accept any single character as `decimal_mark`, like
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   already did. This is what lets `"lancet"` set the midline dot.
+
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   now reads the descriptive tables –
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -349,12 +414,14 @@ instead of rendering an empty column.
   a numeric body carrying the identity of every row in `.variable` /
   `.level` / `.row_role` / `.indent`. New roles `"summary"`, `"group"`
   and `"missing"` name the descriptive rows.
+
 - Table notes rendered by the `"tinytable"` engine are set one size down
   (`0.9em`, black), like the notes of the other engines. New
   `options(spicy.note_style)`: `"none"` leaves the note to the document
   template, and any other string is added to the Typst
   [`text()`](https://rdrr.io/r/graphics/text.html) call around it,
   e.g. `"fill: luma(89)"` for a grey note.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `show_columns`: pick the statistics the table shows – `"med"`,
   `"q1"`, `"q3"`, `"iqr"`, the compact `"med_iqr"` (`Med [Q1, Q3]`), and
@@ -365,128 +432,160 @@ instead of rendering an empty column.
   Kruskal-Wallis with the matching rank effect size, per variable, and
   the note says which test each variable carries. The default display is
   unchanged.
+
 - New `show_columns` tokens `"r2"` and `"adj_r2"` for linear
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   screens: the share of outcome variance each predictor explains on its
   own, one value per predictor block. The multivariable model keeps
   reporting its R-squared in the fit-statistics rows; `glm` and `coxph`
   screens are refused.
+
 - New `show_columns` token families `"rmst"` and `"risk_diff"` for
   `coxph` and `survreg`: covariate-adjusted differences in restricted
   mean survival time over `[0, tau]` and in cumulative incidence at
   `at_time`, by g-computation, with bootstrap SEs, CIs, and p-values.
+
 - The horizon is explicit and required (`tau = "minmax"` picks the
   smallest per-group maximum follow-up, and is refused in the
   univariable screen, which takes both families at one shared horizon);
   factors get one row per level, continuous predictors the +1-unit
   contrast.
+
 - Stratified Cox fits keep each subject’s own stratum baseline;
   stratified `survreg` fits are refused.
+
 - New `show_columns` token `"n_events"`: event counts as `events/N` next
   to the estimates – per factor level (reference row included), model
   totals on continuous rows – for binomial outcomes (`glm`, `glmer`,
   `glmmTMB`) and right-censored `coxph` fits.
+
 - Heteroskedasticity- and cluster-robust `vcov` for the supported
   classes. Resampling footers report the valid replicate count, and a
   bootstrap / jackknife whose replicates nearly all fail raises
   `spicy_resampling_failed`.
+
 - `vcov = "CR1S"` for `lm` fits reproduces Stata’s
   `regress, vce(cluster)` exactly (CR1S scaling with `t(G - 1)`
   inference, named in the footer); `"CR2"` stays the recommended modern
   choice, and `"CR1S"` on a `glm` is refused.
+
 - Cluster-robust `vcov` (`"CR0"`-`"CR3"`) for `multinom`, AME columns
   included (needs sandwich \>= 3.1-2); `HC*` stays refused. `glmmTMB`
   and `svyglm` are classical-only – for survey fits, declare the
   clustering in `svydesign(ids = )`.
+
 - `rq` fits get their own `vcov` family: the robust `"nid"` sandwich by
   default, with `"iid"`, `"ker"`, `"rank"` (rank-inversion CIs, no SE /
   t /
+
   16. and a native `"bootstrap"` opt-in; `cluster` runs the wild
       gradient cluster bootstrap, and `HC*`, `CR*` and `"jackknife"` are
       refused.
+
 - `ci_method = "profile"` gives profile-likelihood CIs for `glm`,
   `polr`, and `clm`; new `ci_method = "boot_percentile"` (with
   `vcov = "bootstrap"`) reports percentile bootstrap CIs from the same
   replicates as the SEs.
+
 - `re_ci = "profile"` gives profile-likelihood CIs for the variance
   components of `lmer` / `glmer` fits (no SE column; the footer
   discloses the method), and `re_test = "lrt"` / `"rlrt"` fills the test
   columns of the `Random effects` rows.
+
 - Variance-component SEs are omitted on large mixed fits, above
   `options("spicy.re_se_max_n")` (default 1000), with a note and a
   warning giving the override.
+
 - `glmmTMB` and `lme` fits report a singular (boundary) random-effect
   structure the way `lmer` / `glmer` ones do: a table note, a warning,
   and no SE or CI on the collapsed variance components. For `glmmTMB`
   the check covers the zero-inflation and dispersion components too.
+
 - Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
   `clm`) takes its SEs, z, p and CIs from the same sandwich as the
   slopes.
+
 - AME columns are available for many more classes, and per outcome
   category for `polr` / `clm` / `multinom`; their SEs, CIs, and p-values
   honour a robust `vcov`. Classes with no AME backend are refused with a
   pointer to
   [`?table_regression_models`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md).
+
 - `nested = TRUE` works for `multinom` (LR chi-square rows), defaults to
   LRT rows for Cox comparisons, and compares nested `rq` fits through a
   Wald-type F (all fits at one tau; mixing taus or classes is refused).
+
 - `fixest` tables show their absorbed fixed effects by default: a
   `Fixed effects:` block with a Yes / No row per factor (blank for
   non-fixest models), plus the within R-squared `"within_r2"` for
   `feols` and McFadden’s pseudo-R² for `feglm` / `fepois`.
+
 - The `"n_groups"` token renders one `N (<factor>)` row per grouping
   factor – absorbed fixed effects and crossed or nested random effects
   alike.
+
 - Two-part models show their full model: the zero component of
   `zeroinfl` / `hurdle` and the `ziformula` / `dispformula` components
   of `glmmTMB` render as labelled row blocks (`show_components = FALSE`
   to opt out), exponentiated only when the link yields a ratio.
+
 - Class-aware fit-statistics defaults: McFadden’s and Nagelkerke’s
   pseudo-R² for ordinal and multinomial fits, `nobs` and `AIC` for every
   other class instead of a blank block, and plain counts
   (e.g. `N (Subject)`) in the `N (groups)` row when models share one
   grouping factor.
+
 - New opt-in `show_fit_stats` dispersion tokens: `"theta"` (the NB2
   dispersion) and `"alpha"` (its reciprocal) for `glm.nb`, and `"phi"`
   for `betareg`. Refused for other families, and `"phi"` also when the
   precision has covariates (`y ~ x | z`).
+
 - Bayesian tables run a sampler-diagnostics guard (R-hat, ESS,
   divergences, E-BFMI) whose failures add a footer line and a
   `spicy_bayes_diagnostics` warning; `"rhat"` / `"ess_bulk"` /
   `"ess_tail"` / `"mcse"` are available as per-coefficient columns.
+
 - All-Bayesian tables drop the p column from the defaults, refuse an
   explicit `"p"` / `"t"` request, expand the `"all_b*"` presets without
   them, and carry no `ame_p`; mixed frequentist + Bayesian tables keep
   the shared `95% CI` label and dash the Bayesian p cells.
+
 - `p_adjust` and likelihood-based fit statistics are refused for
   all-Bayesian tables, standardized betas are limited to `"posthoc"` /
   `"basic"` / `"smart"` on fixed-effects fits, and variational /
   optimizing fits are refused with a refit hint.
+
 - When a `β` column is displayed, the table note names the
   standardisation method and its factor-dummy convention, states the
   interaction convention, and is fallback-aware.
+
 - [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
   gains an `outcome_level` column naming the response category of
   per-category rows (ordinal and multinomial AMEs).
+
 - `select` is optional in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
   when omitted, every eligible categorical column is tabulated (factor,
   character, logical, labelled), excluding `by`. An explicit `select` is
   taken verbatim, so numeric-coded categoricals can be tabulated by
   naming them.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `drop_na`: the default `TRUE` keeps the historical behavior,
   `FALSE` shows rows with a missing `by` value as a `"(Missing)"` group,
   with the test and effect size still computed on the observed groups.
   Both modes disclose removed values in a table note.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   reads `options(spicy.rescale)` like
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md);
   an explicitly supplied `rescale` still wins.
+
 - Seven new vignettes: *Mixed-effects*, *GEE (population-averaged)*,
   *Multinomial*, *Count and two-part*, *Survival*, *Ordinal regression
   tables*, and *Categorical predictors*, a guide to dummy coding,
   reference levels, joint tests of a factor, and contrast codings.
+
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   carries everything the printed table shows, so a custom renderer no
   longer has to reconstruct it: significance markers and their cutoffs
@@ -495,6 +594,7 @@ instead of rendering an empty column.
   absorbed fixed-effects block as a header row plus one row per factor.
   A new `version` field names the contract, and a view built by a newer
   version than the one reading it is refused instead of mis-read.
+
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   also gives every row an identity that does not depend on where the row
   sits: `body$.variable` (the source variable, or the fit-statistic

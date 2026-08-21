@@ -67,6 +67,10 @@
   : Continuous-outcome linear-model table
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   : Describe one continuous outcome across several groupings
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  : Descriptive statistics from a survey design
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  : Categorical summary table from a survey design
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)

@@ -51,6 +51,7 @@ export."><meta property="og:image" content="https://amaltawfik.github.io/spicy/l
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
+    <li><a class="dropdown-item" href="../articles/survey-tables.html">Summary tables from a survey design</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
@@ -133,6 +134,11 @@ changes):</p><ul><li><p>Summary table builders: <code><a href="table_categorical
 <li><p>Inline citation: <code><a href="inline.html">inline()</a></code></p></li>
 <li><p>Table styles: <code><a href="spicy_style.html">spicy_style()</a></code>, <code><a href="spicy_style.html">spicy_style_names()</a></code></p></li>
 <li><p>Omnibus association overview: <code><a href="assoc_measures.html">assoc_measures()</a></code></p></li>
+</ul><p><strong>Experimental</strong> (new in this cycle; the shape of the table and
+the names of the design-specific arguments may still move, with a
+<code>NEWS.md</code> entry, on their OWN clock rather than the parent
+family's):</p><ul><li><p>Survey-design summary tables:
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code></p></li>
 </ul><p><strong>Internal API</strong> (not part of the public surface; can change
 without notice – avoid calling directly from downstream code):</p><ul><li><p>ASCII rendering primitive: <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
 (<code><a href="build_ascii_table.html">build_ascii_table()</a></code> is no longer exported)</p></li>
@@ -143,7 +149,8 @@ without notice – avoid calling directly from downstream code):</p><ul><li><p>A
 
 <p>The <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods on
 <code>spicy_categorical_table</code>, <code>spicy_continuous_table</code>,
-<code>spicy_continuous_lm_table</code>, and <code>spicy_regression_table</code> follow
+<code>spicy_continuous_lm_table</code>, <code>spicy_continuous_svy_table</code>,
+<code>spicy_categorical_svy_table</code>, and <code>spicy_regression_table</code> follow
 the standard broom column conventions (<code>outcome</code>, <code>term</code>,
 <code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>, <code>statistic</code>,
 <code>p.value</code>, <code>df</code>, <code>df.residual</code>, <code>r.squared</code>, <code>adj.r.squared</code>,

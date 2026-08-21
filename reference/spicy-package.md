@@ -76,6 +76,14 @@ on the **stable** surface.
 - Omnibus association overview:
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
 
+**Experimental** (new in this cycle; the shape of the table and the
+names of the design-specific arguments may still move, with a `NEWS.md`
+entry, on their OWN clock rather than the parent family's):
+
+- Survey-design summary tables:
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+
 **Internal API** (not part of the public surface; can change without
 notice – avoid calling directly from downstream code):
 
@@ -90,7 +98,8 @@ The [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
 and
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
 methods on `spicy_categorical_table`, `spicy_continuous_table`,
-`spicy_continuous_lm_table`, and `spicy_regression_table` follow the
+`spicy_continuous_lm_table`, `spicy_continuous_svy_table`,
+`spicy_categorical_svy_table`, and `spicy_regression_table` follow the
 standard broom column conventions (`outcome`, `term`, `estimate`,
 `std.error`, `conf.low`, `conf.high`, `statistic`, `p.value`, `df`,
 `df.residual`, `r.squared`, `adj.r.squared`, `nobs`, ...). The set of
