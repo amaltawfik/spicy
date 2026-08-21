@@ -227,10 +227,27 @@
   at_time
 ) {
   bl <- .coxph_baseline(fit)
-  times <- bl$times
+  # The baseline grid runs to the last event time, but nothing beyond
+  # max(tau, at_time) can reach a result: .step_rmst() opens with
+  # `keep <- times <= tau` and .step_surv_at() is a findInterval() at
+  # `at_time`. Truncating here removes grid points that are provably
+  # discarded downstream, so the estimands are unchanged EXACTLY
+  # (max|d| = 0, not "small") -- a simplification, not an optimisation.
+  # What it saves is the fraction of the grid past the horizon, and
+  # nothing more: a third of it on the vignette's own lung fit at
+  # tau = 365, three quarters when tau sits at the lower quartile of
+  # follow-up. Never an order of magnitude, so no speed is promised.
+  #
+  # `H0` is a grid x n_strata MATRIX, so the truncation subsets ROWS,
+  # with `drop = FALSE`. `s_idx` maps each subject to a stratum COLUMN
+  # and must not be touched.
+  horizon <- max(c(if (want_rmst) tau, if (want_risk) at_time))
+  keep <- bl$times <= horizon
+  times <- bl$times[keep]
+  H0 <- bl$H0[keep, , drop = FALSE]
 
   curve_stats <- function(newdata) {
-    s <- .coxph_standardized_survival(fit, newdata, bl$H0, bl$s_idx)
+    s <- .coxph_standardized_survival(fit, newdata, H0, bl$s_idx)
     c(
       rmst = if (want_rmst) .step_rmst(times, s, tau) else NA_real_,
       risk = if (want_risk) {

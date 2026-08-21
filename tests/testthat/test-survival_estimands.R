@@ -81,6 +81,90 @@ test_that("point estimates match the pinned g-computation oracles", {
 })
 
 
+test_that("truncating the baseline grid at the horizon changes nothing", {
+  skip_if_not_installed("survival")
+  d <- .est_lung()
+  fit <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = d)
+  dat <- spicy:::.coxph_estimand_data(fit)
+
+  # The engine as it stood before the grid was cut at max(tau, at_time):
+  # the whole baseline grid, every point evaluated, the ones past the
+  # horizon discarded by .step_rmst() / .step_surv_at() afterwards.
+  # Rebuilt from the same helpers, so the comparison is the truncation
+  # and nothing else -- and it is `identical()`, not a tolerance: a
+  # point beyond the horizon cannot enter either reader, so removing it
+  # is exact by construction.
+  untruncated <- function(tau, at_time) {
+    bl <- spicy:::.coxph_baseline(fit)
+    curve_stats <- function(newdata) {
+      s <- spicy:::.coxph_standardized_survival(fit, newdata, bl$H0, bl$s_idx)
+      c(
+        rmst = spicy:::.step_rmst(bl$times, s, tau),
+        risk = 1 - spicy:::.step_surv_at(bl$times, s, at_time)
+      )
+    }
+    spicy:::.estimand_contrast_rows(dat, c("age", "sex"), curve_stats)
+  }
+  shipped <- function(tau, at_time) {
+    got <- spicy:::.coxph_estimand_points(
+      fit,
+      dat,
+      want_rmst = TRUE,
+      want_risk = TRUE,
+      tau = tau,
+      at_time = at_time
+    )
+    attr(got, "skipped_terms") <- NULL
+    got
+  }
+
+  # (a) the horizon the fixtures use: most of the grid survives.
+  expect_identical(shipped(365, 365), untruncated(365, 365))
+  # (b) a low horizon: about a quarter of the grid survives.
+  q1 <- unname(stats::quantile(d$time, 0.25))
+  expect_identical(shipped(q1, q1), untruncated(q1, q1))
+  # (c) at_time beyond tau -- the cut is at the MAX of the two, so a
+  # landmark past the RMST horizon still reads the right step.
+  expect_identical(shipped(200, 700), untruncated(200, 700))
+  # (d) the horizon sitting exactly ON a grid point: the cut is `<=`,
+  # so that point is kept and the landmark still reads it. (`<` would
+  # drop it and .step_surv_at() would fall back to the previous step --
+  # invisible on the RMST integral, whose last width is then 0, and
+  # visible only here.)
+  on_grid <- spicy:::.coxph_baseline(fit)$times[50L]
+  expect_identical(shipped(on_grid, on_grid), untruncated(on_grid, on_grid))
+  # (e) both horizons before the first event time: the grid empties and
+  # the standardized curve is 1 throughout.
+  t1 <- min(spicy:::.coxph_baseline(fit)$times)
+  expect_identical(shipped(t1 / 2, t1 / 2), untruncated(t1 / 2, t1 / 2))
+  expect_true(all(shipped(t1 / 2, t1 / 2)$rmst == 0))
+
+  # Only rmst is asked for: at_time is NULL and must not enter max().
+  bl <- spicy:::.coxph_baseline(fit)
+  only_rmst <- spicy:::.coxph_estimand_points(
+    fit,
+    dat,
+    want_rmst = TRUE,
+    want_risk = FALSE,
+    tau = 200,
+    at_time = NULL
+  )
+  expect_identical(only_rmst$rmst, shipped(200, 700)$rmst)
+  expect_true(all(is.na(only_rmst$risk)))
+  # ... and symmetrically, tau = NULL with only the landmark asked for.
+  only_risk <- spicy:::.coxph_estimand_points(
+    fit,
+    dat,
+    want_rmst = FALSE,
+    want_risk = TRUE,
+    tau = NULL,
+    at_time = 700
+  )
+  expect_identical(only_risk$risk, shipped(200, 700)$risk)
+  expect_true(all(is.na(only_risk$rmst)))
+})
+
+
 test_that("the step-function integral and landmark reader are exact", {
   # S = 1 on [0,2), 0.8 on [2,5), 0.5 on [5,9), 0.2 from 9.
   times <- c(2, 5, 9)
