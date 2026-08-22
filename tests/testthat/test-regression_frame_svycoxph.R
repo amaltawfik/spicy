@@ -478,8 +478,20 @@ test_that("marginaleffects still cannot compute an AME for this class", {
     suppressWarnings(marginaleffects::avg_slopes(fit)),
     error = function(e) e
   )
-  expect_s3_class(res, "nodeStackOverflowError")
-  expect_s3_class(res, "error")
+  # The infinite recursion is a STACK-LIMIT failure, so whether it
+  # overflows is platform-dependent: Windows and the Ubuntu releases
+  # overflow, macOS and R-devel terminate (CI, 2026-08-21). Either
+  # way spicy's refusal stands -- it is decision-based (no natural
+  # response scale for a Cox model), not crash-based. The sentinel
+  # only documents the upstream state where the crash occurs.
+  if (inherits(res, "error")) {
+    expect_s3_class(res, "nodeStackOverflowError")
+  } else {
+    skip(paste(
+      "avg_slopes() terminates on this platform --",
+      "revisit register n. 95 if this becomes the norm"
+    ))
+  }
   # The session is intact afterwards.
   expect_equal(
     unname(stats::coef(fit))[1L],
