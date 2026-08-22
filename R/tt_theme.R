@@ -92,6 +92,17 @@
   if (isTRUE(.spicy_note_style()$resize)) "font-size: 0.9em; " else ""
 }
 
+# Minimal HTML text-content escape: the three characters that change
+# how a parser reads ELEMENT CONTENT. Quotes are deliberately absent --
+# nothing here is interpolated into an attribute value, and escaping
+# them would turn every apostrophe in a note into an entity.
+.spicy_html_escape <- function(s) {
+  s <- gsub("&", "&amp;", s, fixed = TRUE)
+  s <- gsub("<", "&lt;", s, fixed = TRUE)
+  s <- gsub(">", "&gt;", s, fixed = TRUE)
+  s
+}
+
 # HTML: a note carries one disclosure per line, and HTML collapses the
 # newlines that separate them into spaces -- the per-model standard-
 # error attributions ran together into one sentence. Convert the line
@@ -229,13 +240,7 @@
 # then forces the rendered note to fill the wrapper, which is exactly
 # the table's content width.
 .spicy_tt_note_div <- function(note) {
-  html_escape <- function(s) {
-    s <- gsub("&", "&amp;", s, fixed = TRUE)
-    s <- gsub("<", "&lt;", s, fixed = TRUE)
-    s <- gsub(">", "&gt;", s, fixed = TRUE)
-    s
-  }
-  note_html <- html_escape(note)
+  note_html <- .spicy_html_escape(note)
   # APA Manual 7 Section 7.14: the "Note." prefix is italicised. Wrap it
   # in <em> AFTER escaping (the prefix itself contains no special
   # chars, so the <em> is safe to insert). The substitution is anchored
