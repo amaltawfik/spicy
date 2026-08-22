@@ -21,6 +21,23 @@
 # Plus metadata fields consumed by the multi-model alignment,
 # rendering, and footer-generation layers.
 
+# ---- Weights: is this fit weighted at all? --------------------------------
+#
+# `stats::weights()` on an lm or a glm returns the PRIOR weights, which
+# are a vector of ones on an unweighted fit -- never NULL. So a
+# `!is.null()` test says "weighted" about every fit there is, and
+# `sum()` of it is the observed count wearing the name of a population.
+# Constant weights are no weights, which is the same rule
+# `.weights_kind_from_fit()` applies for the variance label.
+.has_real_weights <- function(weights) {
+  !is.null(weights) && length(weights) > 0L && length(unique(weights)) > 1L
+}
+
+.weighted_n_or_na <- function(weights) {
+  if (.has_real_weights(weights)) sum(weights) else NA_real_
+}
+
+
 # ---- Public-internal entry point ------------------------------------------
 
 extract_lm_phase1 <- function(
@@ -221,8 +238,8 @@ extract_lm_phase1 <- function(
     } else {
       character(0)
     },
-    has_weights = !is.null(weights) && length(unique(weights)) > 1L,
-    weighted_n = if (!is.null(weights)) sum(weights) else NA_real_,
+    has_weights = .has_real_weights(weights),
+    weighted_n = .weighted_n_or_na(weights),
     nobs = stats::nobs(fit),
     is_glm = is_glm,
     title_prefix = if (!is.null(family_info)) {
@@ -1144,9 +1161,20 @@ extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
   deviance_v <- stats::deviance(fit)
   df_resid <- stats::df.residual(fit)
 
-  # Counts
+  # Counts.
+  #
+  # `!is.null(weights)` is not the test. `stats::weights()` on an lm or
+  # a glm returns the PRIOR weights, a vector of ones on an unweighted
+  # fit -- never NULL -- so the sum was `n`, and "Weighted n" printed
+  # the observed count as if it were a population. In a table that also
+  # holds a design fit, where the row is queued for every model, it
+  # read as `6194 | 200`: the second number literally true and entirely
+  # misleading. The predicate that says whether a fit is weighted
+  # already exists (`.weights_kind_from_fit()`, used by the GEE frame
+  # for exactly this field); an unweighted fit has no weighted count,
+  # and the row drops itself when no model in the table has one.
   nobs_v <- stats::nobs(fit)
-  weighted_nobs_v <- if (!is.null(weights)) sum(weights) else NA_real_
+  weighted_nobs_v <- .weighted_n_or_na(weights)
 
   data.frame(
     model_id = model_id,

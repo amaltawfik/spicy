@@ -317,6 +317,52 @@ test_that("a table with no design fit is untouched", {
   expect_false(grepl("Weighted n", out, fixed = TRUE))
 })
 
+test_that("an unweighted fit has no weighted count, and does not invent one", {
+  # `stats::weights()` on a glm returns the prior weights -- ones on an
+  # unweighted fit, never NULL -- so a `!is.null()` test made the sum
+  # equal `n`. The row is queued for EVERY model as soon as one design
+  # fit is in the table, which is where the observed count used to
+  # print under "Weighted n": `6194 | 200`, the second number literally
+  # true and entirely misleading.
+  g <- stats::glm(mpg ~ wt, data = mtcars)
+  fr <- as_regression_frame(g, model_id = "M1")
+  expect_true(is.na(fr$info$fit_stats$weighted_nobs))
+  expect_true(is.na(fr$info$extras$weighted_n))
+  expect_false(fr$info$extras$has_weights)
+
+  # Asked for by name on its own, the row still does not appear: no
+  # model in the table has a value for it.
+  out <- .fsf_render(
+    g,
+    show_columns = c("b"),
+    show_fit_stats = c("nobs", "weighted_nobs")
+  )
+  expect_false(grepl("Weighted n", out, fixed = TRUE))
+
+  # A real weight vector is still counted.
+  set.seed(1)
+  d <- mtcars
+  d$w <- seq_len(nrow(d))
+  gw <- stats::glm(mpg ~ wt, data = d, weights = w)
+  frw <- as_regression_frame(gw, model_id = "M1")
+  expect_equal(frw$info$fit_stats$weighted_nobs, sum(d$w))
+  expect_true(frw$info$extras$has_weights)
+})
+
+test_that("a design fit beside an unweighted glm keeps the count to itself", {
+  # The mixed table the row order was designed for. The design fit
+  # names its population; its neighbour leaves the cell undefined
+  # instead of repeating its own `n`.
+  d <- .fsf_designs()
+  f1 <- survey::svyglm(api00 ~ ell, design = d$strat)
+  g <- stats::glm(api00 ~ ell, data = d$apistrat)
+  out <- .fsf_render(list(f1, g), show_columns = c("b"))
+  row <- grep("Weighted n", .fsf_rows(out), value = TRUE)
+  expect_length(row, 1L)
+  expect_match(row, "6194", fixed = TRUE)
+  expect_false(grepl("200", row, fixed = TRUE))
+})
+
 
 test_that("a design Cox beside an lm does not drag in the Cox AIC", {
   # The observable half of the exclusion. Without it `any_coxph` is true
