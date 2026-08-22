@@ -285,14 +285,21 @@
 # by whoever prints the table, and a condition is what a script can
 # catch. ONE condition per table call, not one per variable -- the fact
 # is a property of the design, and the footer says how far it reached.
-# The message is the registry sentence the footer carries, so the two
-# cannot say different things.
-.warn_negative_weights_no_test <- function(refused) {
-  if (!isTRUE(refused)) {
+# The message is the registry sentence the footer carries -- the SAME
+# one per regime, so the two cannot say different things: a mixed table
+# warns with the scoped sentence, not the flat one.
+.warn_negative_weights_no_test <- function(test_refused) {
+  msg <- switch(
+    test_refused,
+    all = spicy_str("note_negative_weights_no_test"),
+    some = spicy_str("note_negative_weights_no_test_some"),
+    NULL
+  )
+  if (is.null(msg)) {
     return(invisible(FALSE))
   }
   spicy_warn(
-    spicy_str("note_negative_weights_no_test"),
+    msg,
     class = c("spicy_negative_weights_no_test", "spicy_undefined_stat")
   )
   invisible(TRUE)

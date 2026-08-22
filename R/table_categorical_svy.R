@@ -778,6 +778,7 @@ table_categorical_svy <- function(
   )
   rownames(result) <- NULL
 
+  test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
   note <- .cat_svy_note(
     meta = meta,
     degf_dom_used = degf_dom_used,
@@ -793,9 +794,9 @@ table_categorical_svy <- function(
     p_value = p_value,
     chisq_statistic = chisq_statistic,
     n_negative_weights = .design_negative_weights(design),
-    test_refused = .design_refusal_regime(n_test_refused, n_test_attempted)
+    test_refused = test_refused
   )
-  .warn_negative_weights_no_test(n_test_refused > 0L)
+  .warn_negative_weights_no_test(test_refused)
 
   if (output %in% c("data.frame", "long")) {
     attr(result, "note") <- note

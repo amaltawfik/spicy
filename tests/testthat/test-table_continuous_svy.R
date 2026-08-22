@@ -496,7 +496,8 @@ test_that("the refusal clause says how far the refusal reached", {
   d$variables$api00b <- d$variables$api00
   d$variables$api00b[w < 0] <- NA
 
-  # (c) MIXED: one comparison served, one refused.
+  # (c) MIXED: one comparison served, one refused. The condition says
+  # the same scoped sentence the footer says -- not the flat one.
   expect_warning(
     mixed <- table_continuous_svy(
       d,
@@ -504,6 +505,8 @@ test_that("the refusal clause says how far the refusal reached", {
       by = stype,
       output = "long"
     ),
+    regexp = "For variables whose complete cases include negatively weighted rows",
+    fixed = TRUE,
     class = "spicy_negative_weights_no_test"
   )
   served <- mixed$p.value[mixed$variable == "api00b"]

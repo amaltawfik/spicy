@@ -785,6 +785,7 @@ test_that("the categorical refusal clause says how far it reached", {
   # `droplevels()` as an all-zero row and `svychisq()` returns NaN --
   # a defect of its own, older than this test and not what this test
   # is about.
+  # The condition says the same scoped sentence the footer says.
   expect_warning(
     mixed <- table_categorical_svy(
       neg,
@@ -793,6 +794,8 @@ test_that("the categorical refusal clause says how far it reached", {
       drop_na = TRUE,
       output = "long"
     ),
+    regexp = "For variables whose complete cases include negatively weighted rows",
+    fixed = TRUE,
     class = "spicy_negative_weights_no_test"
   )
   expect_true(all(is.na(mixed$p[mixed$variable == "awards"])))
