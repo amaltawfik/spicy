@@ -757,7 +757,8 @@ table_categorical_svy <- function(
     ci_method = ci_method,
     deff = deff,
     p_value = p_value,
-    chisq_statistic = chisq_statistic
+    chisq_statistic = chisq_statistic,
+    n_negative_weights = .design_negative_weights(design)
   )
 
   if (output %in% c("data.frame", "long")) {

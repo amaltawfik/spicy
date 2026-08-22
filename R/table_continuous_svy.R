@@ -280,8 +280,15 @@ order_continuous_svy_tokens <- function(tokens) {
   x <- design$variables[[var]]
   g <- design$variables[[group_var]]
   w <- .design_weights(design)
-  keep <- !is.na(x) & !is.na(g) & !is.na(w) & w > 0
-  if (!any(keep)) {
+  # `!= 0`, the same predicate the cells use -- see `.svy_var_stats()`.
+  # It used to be `> 0`, which quietly cut the test to a sub-sample the
+  # table above it did not describe: on a linear-calibrated api design
+  # the cells were computed on 183 rows and the p-value on 96, under a
+  # footer saying "N = 183". Refusing is the alternative to a silent
+  # subset (decision 36 / ARB-2): the cells stay complete, the test is
+  # not attempted, and the footer says why.
+  keep <- !is.na(x) & !is.na(g) & !is.na(w) & w != 0
+  if (!any(keep) || any(w[keep] < 0)) {
     return(list(row = empty, label = NA_character_, k = NA_integer_))
   }
   sub <- .design_subset(design, keep)
@@ -969,7 +976,9 @@ table_continuous_svy <- function(
     } else {
       NA_character_
     },
-    test_ddf = test_ddf
+    test_ddf = test_ddf,
+    n_negative_weights = .design_negative_weights(design),
+    test_requested = do_test && (p_value || statistic)
   )
 
   if (output %in% c("data.frame", "long")) {
@@ -1292,7 +1301,9 @@ table_continuous_svy <- function(
   qrule,
   deff,
   test_label,
-  test_ddf
+  test_ddf,
+  n_negative_weights = 0L,
+  test_requested = FALSE
 ) {
   parts <- c(
     .svy_missing_note(na_dropped, "note_missing_removed"),
@@ -1334,6 +1345,14 @@ table_continuous_svy <- function(
     )
   }
   parts <- c(parts, lines)
+  parts <- c(
+    parts,
+    .design_negative_weights_note(
+      n_negative_weights,
+      meta$n_obs,
+      test_refused = test_requested
+    )
+  )
   if (any(c("med", "med_iqr", "q1", "q3", "iqr") %in% tokens)) {
     parts <- c(parts, spicy_fmt("note_quantile_rule", .svy_qrule_label(qrule)))
   }

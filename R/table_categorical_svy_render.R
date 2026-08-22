@@ -444,7 +444,8 @@
   ci_method,
   deff,
   p_value,
-  chisq_statistic
+  chisq_statistic,
+  n_negative_weights = 0L
 ) {
   parts <- c(
     .svy_missing_note(na_dropped, "note_missing_removed"),
@@ -485,6 +486,14 @@
     )
   }
   parts <- c(parts, lines)
+  # No test clause here: `svychisq()` is handed the whole design and
+  # nothing subsets it on the sign of the weights, so there is no
+  # refusal to explain -- unlike the continuous twin, whose group
+  # comparison is refused outright (decision 36 / ARB-2).
+  parts <- c(
+    parts,
+    .design_negative_weights_note(n_negative_weights, meta$n_obs)
+  )
   if (isTRUE(proportion_ci)) {
     parts <- c(parts, spicy_fmt("note_ci_prop_method", ci_method))
   }

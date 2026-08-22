@@ -212,6 +212,39 @@
   stats::weights(design, type = "sampling")
 }
 
+# How many rows of the ANALYTIC sample carry a negative weight.
+#
+# Linear calibration produces them -- that is what
+# `survey::calibrate(bounds = )` exists to prevent -- and they are rows
+# the sampler drew, so nothing hides them (see `.svy_var_stats()`).
+# But they stop the weighted mean from being a convex combination, so
+# it can land outside the observed range, and they let a domain
+# variance come out negative. Both are facts a reader is owed, and the
+# footer says them only when the fact is there (decision 36 / ARB-3).
+#
+# Counted on non-zero weights, the same predicate every count of the
+# twins uses: a row at weight zero is one `[` retained on a calibrated
+# design, not an observation.
+.design_negative_weights <- function(design) {
+  w <- .design_weights(design)
+  sum(!is.na(w) & w < 0)
+}
+
+# The one sentence-block the fact earns, or nothing at all. `n_obs` is
+# the count the footer has just announced, so the two agree. The
+# refusal clause is appended rather than said separately: one fact, one
+# block (decision 36 / ARB-3).
+.design_negative_weights_note <- function(k, n_obs, test_refused = FALSE) {
+  if (k <= 0L) {
+    return(character(0))
+  }
+  txt <- spicy_fmt("note_negative_weights", as.integer(k), as.integer(n_obs))
+  if (isTRUE(test_refused)) {
+    txt <- paste(txt, spicy_str("note_negative_weights_no_test"))
+  }
+  txt
+}
+
 # The number of observations a design fit actually used.
 #
 # Each class misreports it in its own direction, so none of them is asked

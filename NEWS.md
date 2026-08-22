@@ -250,6 +250,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   degrees of freedom its tests use, so the table can be read without the
   design object at hand.
 
+* A design whose calibration produced negative weights says so. The note
+  gives the exact count, warns that a weighted mean can then fall outside
+  the observed range and a variance come out negative, and -- in
+  `table_continuous_svy()` -- explains that the group comparison is not
+  reported, because a design-based test is not defined when the weights
+  change sign. The comparison used to be computed on the positive-weight
+  rows only, a smaller sample than the cells above it, with nothing said.
+  Calibrated designs whose weights stay positive are unaffected.
+
 * A design table and a survey regression name the variance the same way.
   Both now read `Std. errors: Design-based (Taylor linearisation)` -- or
   `(replicate weights, JK1)` -- where `table_continuous_svy()` and

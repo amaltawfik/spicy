@@ -575,6 +575,15 @@
   # One hole: the rule in force, an identifier from survey ("math",
   # "hf7", ...) or "spicy" -- never translated.
   note_quantile_rule = "Quantiles: qrule = \"%s\" (survey).",
+  # Linear calibration can drive a weight below zero. The rows were
+  # sampled, so they stay in every count and every estimate; what
+  # changes is what the estimates can do. Two holes: the count and the
+  # sample size, in that order (decision 36 / ARB-3 -- one note
+  # carrying the fact, its consequence and, when a test was asked for,
+  # the refusal).
+  note_negative_weights = "Calibration gave %d of %d rows a negative weight: a weighted mean can fall outside the observed range, and a variance can come out negative, leaving its cell undefined.",
+  # Appended to the sentence above, never on its own.
+  note_negative_weights_no_test = "The group comparison is not reported: a design-based test is not defined when the weights change sign.",
   note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
   # Abbreviation glosses of the two design-only columns, each naming
   # the header it glosses through a hole so a translated header can

@@ -695,6 +695,44 @@ test_that("`df` overrides the design df, and the footer changes with it", {
   expect_false(grepl("100 degrees of freedom.", note, fixed = TRUE))
 })
 
+test_that("negative weights are disclosed once, with the exact count", {
+  # Decision 36 / ARB-3: the note is conditional on the FACT, and it
+  # carries no test clause here -- `svychisq()` is handed the whole
+  # design and nothing subsets it on the sign of the weights.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  neg <- survey::calibrate(
+    survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = apiclus1,
+      fpc = ~fpc
+    ),
+    ~api99,
+    c(`(Intercept)` = 6194, api99 = 6194 * 500),
+    calfun = "linear"
+  )
+  note <- attr(table_categorical_svy(neg, select = stype), "note")
+  expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
+  expect_false(grepl("group comparison is not reported", note, fixed = TRUE))
+
+  # A calibrated design whose weights all stay positive says nothing:
+  # "calibrated" is already on the design line.
+  pos <- survey::calibrate(
+    survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = apiclus1,
+      fpc = ~fpc
+    ),
+    ~stype,
+    pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+  )
+  expect_identical(.design_negative_weights(pos), 0L)
+  note2 <- attr(table_categorical_svy(pos, select = stype), "note")
+  expect_match(note2, "calibrated / post-stratified", fixed = TRUE)
+  expect_false(grepl("negative weight", note2, fixed = TRUE))
+})
 
 # ---- restitution ----------------------------------------------------------
 
