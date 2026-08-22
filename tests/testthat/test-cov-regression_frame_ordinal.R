@@ -380,7 +380,7 @@ test_that("ordered (polynomial-contrast) predictor also skips ref rows in clm", 
   expect_identical(nrow(rr), 0L)
 })
 
-test_that("has_weights detects non-uniform prior weights for polr AND clm", {
+test_that("has_weights detects supplied prior weights for polr AND clm", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("ordinal")
   data(housing, package = "MASS")
@@ -394,4 +394,26 @@ test_that("has_weights detects non-uniform prior weights for polr AND clm", {
   expect_false(as_regression_frame(p_nw)$info$extras$has_weights)
   expect_true(as_regression_frame(c_w)$info$extras$has_weights)
   expect_false(as_regression_frame(c_nw)$info$extras$has_weights)
+
+  # The question is "did the user supply weights", not "are the weights
+  # non-uniform": a fit weighted by a constant 3 counts three times as
+  # many observations, and the field said unweighted. All-1 weights are
+  # the default and stay FALSE.
+  h <- housing
+  h$w1 <- 1
+  h$w3 <- 3
+  p_k <- MASS::polr(Sat ~ Infl, weights = w3, data = h, Hess = TRUE)
+  c_k <- ordinal::clm(Sat ~ Infl, weights = w3, data = h)
+  expect_true(as_regression_frame(p_k)$info$extras$has_weights)
+  expect_true(as_regression_frame(c_k)$info$extras$has_weights)
+  expect_false(
+    as_regression_frame(
+      MASS::polr(Sat ~ Infl, weights = w1, data = h, Hess = TRUE)
+    )$info$extras$has_weights
+  )
+  expect_false(
+    as_regression_frame(
+      ordinal::clm(Sat ~ Infl, weights = w1, data = h)
+    )$info$extras$has_weights
+  )
 })
