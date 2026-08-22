@@ -314,7 +314,6 @@ as_regression_frame.svycoxph <- function(
     # Read off the fit, never through summary(): survey's method prints
     # the design on every access.
     concordance = .svycoxph_concordance(fit),
-    design_class = .svyglm_design_class(fit),
     # Footer disclosure: the sampling scheme, read off the ANALYTIC
     # design, and the degrees of freedom the table's own tests use.
     design_meta = .design_meta_or_null(.design_analytic(fit, n_obs)),

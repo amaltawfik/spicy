@@ -7,7 +7,7 @@
 #   * Quasipoisson svyglm (count)
 #   * Schema validity in all paths
 #   * Design-specific metadata: vcov_kind, vcov_label, weights_kind,
-#     weighted_n, design_class
+#     weighted_n
 #   * Factor predictor with reference rows
 #   * Oracle cross-validation against parameters::model_parameters()
 # ---------------------------------------------------------------------------
@@ -244,16 +244,6 @@ test_that("svyglm poisson: schema validity", {
   fit <- .fit_svyglm_poisson()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
-})
-
-
-# ---- 8. design_class metadata in info$extras ----------------------------
-
-test_that("svyglm: extras$design_class names the survey design class", {
-  fit <- .fit_svyglm_gaussian()
-  fr <- as_regression_frame(fit, model_id = "M1")
-  # apistrat is a stratified design -> "survey.design2" or similar.
-  expect_match(fr$info$extras$design_class, "design", fixed = TRUE)
 })
 
 
