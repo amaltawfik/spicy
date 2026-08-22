@@ -789,6 +789,77 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           class = "spicy_unsupported_vcov"
         )
       }
+      # quantreg::rq: every refusal here is STATISTICAL, so each names
+      # its own reason rather than the generic "being added" list, which
+      # would promise a wiring job that is never coming. The three
+      # families fail for three different reasons, and two of them have
+      # an actionable route:
+      #   * HC*: no working residuals and no hat values, so the meat
+      #     cannot be formed. The message must not let "nid" read as an
+      #     HC variant under another name -- it is a different estimator
+      #     family (sparsity-based, Hendricks-Koenker), which happens to
+      #     be the heteroskedasticity-robust choice for this class.
+      #   * CR*: no clubSandwich / estfun backend. The one defensible
+      #     cluster route is the wild gradient bootstrap, so point at it
+      #     (the Step-8 carve-out below blesses that exact pair).
+      #   * jackknife: leave-one-out is inconsistent for non-smooth
+      #     estimators (Efron 1982; Shao & Wu 1989) -- the quantile
+      #     objective is not differentiable, so deleting one observation
+      #     moves the fit discontinuously.
+      if (inherits(models[[i]], "rq")) {
+        why_rq <- if (grepl("^HC", vt)) {
+          c(
+            "i" = paste0(
+              "Quantile regression has no working residuals or hat ",
+              "values, so the HC* meat cannot be formed."
+            ),
+            "i" = paste0(
+              "It carries its own sandwich family instead: \"nid\" ",
+              "(the default) is the heteroskedasticity-robust ",
+              "estimator here -- a sparsity-based quantile sandwich, ",
+              "not an HC variant under another name. \"iid\", ",
+              "\"ker\" and \"rank\" are the other estimators."
+            )
+          )
+        } else if (grepl("^CR", vt)) {
+          c(
+            "i" = paste0(
+              "There is no cluster-robust sandwich for quantile ",
+              "regression: clubSandwich has no method for `rq`, and ",
+              "no estimating functions are available to build one."
+            ),
+            "i" = paste0(
+              "Use `vcov = \"bootstrap\"` with `cluster =` -- the ",
+              "wild gradient cluster bootstrap (Hagemann 2017), the ",
+              "one defensible cluster route for this class."
+            )
+          )
+        } else {
+          c(
+            "i" = paste0(
+              "The leave-one-out jackknife is inconsistent for ",
+              "non-smooth estimators: the quantile objective is not ",
+              "differentiable, so dropping one observation can move ",
+              "the fit discontinuously."
+            ),
+            "i" = paste0(
+              "Use `vcov = \"bootstrap\"` (quantreg's own xy-pair ",
+              "resampling), or the analytic \"nid\" / \"ker\" ",
+              "sandwiches."
+            )
+          )
+        }
+        spicy_abort(
+          c(
+            sprintf(
+              "`vcov = \"%s\"` is not available for `rq` models.",
+              vt
+            ),
+            why_rq
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
       # Survey fits are refused on the same principle: the design-based
       # Taylor / replicate variance IS the robust variance, and clustering
       # belongs in the design (clubSandwich has no vcovCR.svyglm; the call

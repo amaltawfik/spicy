@@ -274,6 +274,47 @@ test_that("rq refuses HC*, CR*, jackknife; other classes refuse rq tokens", {
 })
 
 
+test_that("each rq refusal names its own reason, not a pending-wiring list", {
+  skip_if_not_installed("quantreg")
+  fit <- .rq_engel()
+  msg <- function(v, cl = NULL) {
+    conditionMessage(tryCatch(
+      table_regression(fit, vcov = v, cluster = cl),
+      condition = function(c) c
+    ))
+  }
+  # None of the three is a not-yet-wired gap, so none may borrow the
+  # generic "being added" wording.
+  for (v in c("HC1", "CR2", "jackknife")) {
+    expect_no_match(
+      msg(v, cl = if (v == "CR2") rep(1:47, each = 5)),
+      "being added",
+      fixed = TRUE
+    )
+  }
+  # HC*: the reason (no working residuals / hat values), and "nid"
+  # offered WITHOUT letting it read as an HC variant renamed.
+  hc <- msg("HC3")
+  expect_match(hc, "hat values", fixed = TRUE)
+  expect_match(hc, "not an HC variant", fixed = TRUE)
+  # CR*: the actionable route is the wild gradient cluster bootstrap,
+  # never the generic "set vcov to CR0-CR3" advice.
+  cr <- msg("CR1", cl = rep(1:47, each = 5))
+  expect_match(cr, "wild gradient cluster bootstrap", fixed = TRUE)
+  expect_match(cr, "Hagemann", fixed = TRUE)
+  # CR1S is an lm-only token but still a CR* request: same route.
+  expect_match(
+    msg("CR1S", cl = rep(1:47, each = 5)),
+    "wild gradient cluster bootstrap",
+    fixed = TRUE
+  )
+  # jackknife: the reason is non-smoothness, not a missing backend.
+  jk <- msg("jackknife")
+  expect_match(jk, "not\\s+differentiable")
+  expect_match(jk, "bootstrap", fixed = TRUE)
+})
+
+
 test_that("rq AME rows share the coefficient rows' vcov", {
   skip_if_not_installed("quantreg")
   skip_if_not_installed("marginaleffects")
