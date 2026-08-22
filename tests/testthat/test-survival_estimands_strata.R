@@ -98,8 +98,10 @@ test_that("the horizon truncation subsets H0 rows, not its cells", {
 
   # The stratified shape is where the truncation can go wrong silently:
   # `H0` is grid x n_strata and `s_idx` indexes its COLUMNS, so the cut
-  # is a ROW subset with `drop = FALSE`. Linear-indexing the matrix
-  # (`H0[keep]`) would keep the wrong cells and reshape the grid.
+  # is a ROW subset with `drop = FALSE`. Integer-indexing the matrix
+  # (`H0[which(keep)]`) linear-indexes the cells and reshapes the
+  # grid; the logical form happens to recycle per column and survive,
+  # which is why the witness pins the integer mutant.
   bl <- spicy:::.coxph_baseline(fit)
   expect_identical(dim(bl$H0), c(length(bl$times), 2L))
   expect_identical(length(bl$s_idx), nrow(d))

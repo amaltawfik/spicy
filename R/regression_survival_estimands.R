@@ -243,6 +243,10 @@
 # One fit -> the estimand contrasts for every predictor variable.
 # Returns a data.frame: term, parent_var, label, factor_level_pos,
 # estimand ("rmst" / "risk_diff"), estimate.
+# Callers must request at least one estimand: with both `want_*`
+# FALSE the internal `max()` would warn on an empty vector. The sole
+# caller today guards this in `.survival_estimand_rows()`; a second
+# caller (volet 0.14) must keep that guard on its own side.
 .coxph_estimand_points <- function(
   fit,
   data,
