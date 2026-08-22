@@ -496,7 +496,10 @@ test_that("marginaleffects still cannot compute an AME for this class", {
   # response scale for a Cox model), not crash-based. The sentinel
   # only documents the upstream state where the crash occurs.
   if (inherits(res, "error")) {
-    expect_s3_class(res, "nodeStackOverflowError")
+    # The overflow flavour is platform-specific -- nodeStackOverflowError
+    # (R eval stack) on Windows/Linux, CStackOverflowError (C stack) on
+    # macOS -- so the sentinel pins their common parent.
+    expect_s3_class(res, "stackOverflowError")
   } else {
     skip(paste(
       "avg_slopes() terminates on this platform --",
