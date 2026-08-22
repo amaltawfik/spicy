@@ -250,20 +250,17 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   degrees of freedom its tests use, so the table can be read without the
   design object at hand.
 
-* A design whose calibration produced negative weights says so. The note
-  gives the exact count, warns that a weighted mean can then fall outside
-  the observed range and a variance come out negative, and -- in
-  `table_continuous_svy()` -- explains that the group comparison is not
-  reported, because a design-based test is not defined when the weights
-  change sign. The comparison used to be computed on the positive-weight
-  rows only, a smaller sample than the cells above it, with nothing said.
-  Calibrated designs whose weights stay positive are unaffected.
+* A design whose calibration produced negative weights says so in the
+  note: the exact count, and what follows from it -- a weighted mean can
+  fall outside the observed range, and a variance can come out negative.
+  In `table_continuous_svy()` the group comparison is then not reported,
+  because a design-based test is not defined when the weights change
+  sign, and the note says that too. Calibrated designs whose weights all
+  stay positive are not affected.
 
-* A design table and a survey regression name the variance the same way.
-  Both now read `Std. errors: Design-based (Taylor linearisation)` -- or
-  `(replicate weights, JK1)` -- where `table_continuous_svy()` and
-  `table_categorical_svy()` used to say `Standard errors: Taylor
-  linearisation (survey)` and drop the replicate scheme.
+* A design table and a survey regression name the variance the same way:
+  `Std. errors: Design-based (Taylor linearisation)`, or
+  `(replicate weights, JK1)` on a replicate design.
 
 * `show_fit_stats = "eff_p"` reports the effective number of parameters of a
   `survey::svyglm()` design.
