@@ -192,13 +192,22 @@
 # The SAMPLING weights of a design, always asked for by name.
 #
 # `weights(design)` is not the same function on the two supported
-# classes: on a linearised design it returns the sampling weights,
-# while on a replicate design it defaults to `type = "analysis"` and
-# returns the FIRST REPLICATE's weights -- on the api JK1 fixture,
-# 2745 against the 6194.0003242492676 the design actually carries, with
-# the dropped cluster sitting at weight zero. Every weighted count of
-# the twins goes through this accessor, so the bare default can never
-# reach one.
+# classes. On a replicate design it defaults to `type = "replication"`
+# and returns the whole REPLICATION MATRIX -- 183 x 15 on the api JK1
+# fixture, summing to 2745 against the 6194.0003242492676 the design
+# actually carries. Every weighted count of the twins goes through this
+# accessor, so that default can never reach one.
+#
+# On a `survey.design` the argument is right BY ACCIDENT:
+# `weights.survey.design` has no `type` formal at all, so the request
+# is swallowed by `...` and the method returns `1 / prob` whatever
+# anyone asks for. Six of the nine classes this accessor can be handed
+# inherit that method (survey.design, survey.design2, pps,
+# DBIsvydesign, twophase / twophase2), and `weights.multiframe` ignores
+# `type` too; only `svyrep.design` and `multiphase` read it. A test in
+# test-survey_helpers.R pins the absence of that formal, so the day
+# survey gives the method a `type` vocabulary of its own this call gets
+# read again instead of changing meaning in silence.
 .design_weights <- function(design) {
   stats::weights(design, type = "sampling")
 }

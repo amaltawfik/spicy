@@ -240,6 +240,32 @@ test_that("`.design_subset()` keeps rows at weight zero on a calibrated design",
   expect_equal(sum(stats::weights(sub)), 4420.99999999999, tolerance = 1e-8)
 })
 
+test_that("`.design_weights()` asks by name, and survey still means it", {
+  skip_if_not_installed("survey")
+  # On a replicate design the argument is load-bearing: the bare
+  # default is `type = "replication"` and returns the whole 183 x 15
+  # replication matrix, which sums to 2745 -- not a weight total at
+  # all.
+  r <- .svy_fixture("rep1")
+  expect_equal(sum(.design_weights(r)), 6194.0003242492676, tolerance = 1e-12)
+  expect_identical(dim(stats::weights(r)), c(183L, 15L))
+  expect_equal(sum(stats::weights(r)), 2745, tolerance = 1e-9)
+
+  # On a `survey.design` it is right BY ACCIDENT: the method has no
+  # `type` formal, so the request is swallowed by `...` and `1 / prob`
+  # comes back whatever anyone asks for. This is the tripwire -- the
+  # day survey gives that method a `type` vocabulary of its own, the
+  # accessor changes meaning and this goes red first.
+  m <- utils::getS3method(
+    "weights",
+    "survey.design",
+    envir = asNamespace("survey")
+  )
+  expect_false("type" %in% names(formals(m)))
+  d <- .svy_fixture("clus1")
+  expect_equal(unname(.design_weights(d)), unname(1 / d$prob))
+})
+
 # ---- design metadata ------------------------------------------------------
 
 test_that("`.design_meta()` reads a linearised design through public slots", {
