@@ -49,7 +49,7 @@
 # sentences, glosses, test names, the undefined glyph.
 .SVY_ENGLISH_LEAKS <- c(
   "Design:",
-  "Standard errors:",
+  "Std. errors:",
   "degrees of freedom",
   "Taylor linearisation",
   "replicate weights",

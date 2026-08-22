@@ -548,8 +548,13 @@
   # the degrees of freedom are the part that makes the table
   # reproducible.
   note_design_degf_resid_only = "Tests use %d residual degrees of freedom.",
-  note_se_taylor = "Standard errors: Taylor linearisation (survey).",
-  note_se_replicate = "Standard errors: replicate weights (survey).",
+  # No key of its own for the variance sentence: the twins print the
+  # regression footer's, `note_std_errors_single` filled with one of the
+  # `note_vcov_design_*` labels below. Two spellings of one fact
+  # ("Standard errors: Taylor linearisation (survey)." here against
+  # "Std. errors: Design-based (Taylor linearisation)." three lines
+  # down in a regression table) is a difference the reader has to
+  # resolve for nothing.
   note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
   # Both counts, because neither alone is enough (decision 28): the
   # first is the robustness information, the second is the population

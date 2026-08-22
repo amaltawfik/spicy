@@ -10,7 +10,7 @@
        api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
        api99    │ 606.98  112.85  365.00  890.00   555.02     658.94    183 
       
-      N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom.
+      N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom.
 
 ---
 
@@ -31,7 +31,7 @@
                 │ H                            
                 │ M                            
       
-      N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).
+      N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).
 
 ---
 
@@ -45,5 +45,5 @@
       ──────────┼───────────────────────────────────────────────────────────────
        api00    │ 644.17  23.54  652.00 [552.00, 719.00]  183   6194.00    9.35 
       
-      N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Quantiles: qrule = "math" (survey). Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
+      N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Quantiles: qrule = "math" (survey). Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
 

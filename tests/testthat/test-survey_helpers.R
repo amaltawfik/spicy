@@ -292,7 +292,7 @@ test_that("the design footer says what the design is, in three sentences", {
     .design_note_lines(.design_meta(.svy_fixture("strat"))),
     c(
       "Design: stratified (stype), with finite population correction; 197 degrees of freedom.",
-      "Standard errors: Taylor linearisation (survey).",
+      "Std. errors: Design-based (Taylor linearisation).",
       "Confidence intervals and tests use the design degrees of freedom."
     )
   )
@@ -314,11 +314,29 @@ test_that("the design footer says what the design is, in three sentences", {
     "Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom."
   )
   # The variance sentence is the one thing that must differ between the
-  # two regimes: a replicate design does not linearise anything.
+  # two regimes: a replicate design does not linearise anything. It
+  # names the scheme, because the same sentence in a regression footer
+  # does.
   expect_identical(
     rep_lines[[2L]],
-    "Standard errors: replicate weights (survey)."
+    "Std. errors: Design-based (replicate weights, JK1)."
   )
+})
+
+test_that("both families print the SAME variance sentence for one design", {
+  # A reader who puts a design table and a regression on the same page
+  # sees one fact, said once. The two used to spell it two ways
+  # ("Standard errors: Taylor linearisation (survey)." against "Std.
+  # errors: Design-based (Taylor linearisation).") and the difference
+  # carried no information.
+  skip_if_not_installed("survey")
+  for (nm in c("clus1", "rep1")) {
+    des <- .svy_fixture(nm)
+    twin <- .design_note_lines(.design_meta(des))[[2L]]
+    fit <- suppressWarnings(survey::svyglm(api00 ~ ell, design = des))
+    regression <- spicy_fmt("note_std_errors_single", .design_vcov_label(fit))
+    expect_identical(twin, regression, info = nm)
+  }
 })
 
 test_that("a design with neither strata nor clusters is named as such", {

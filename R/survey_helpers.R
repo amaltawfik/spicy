@@ -399,6 +399,22 @@
   "mrbbootstrap"
 )
 
+# The variance label of a replicate design, read off its scheme -- bare
+# when the scheme is absent or `"other"`, a legal `svrepdesign(type = )`
+# value that names nothing.
+#
+# One rule with two callers, on purpose: the regression footer and the
+# descriptive twins print the SAME sentence for the same design, and a
+# second copy of this test is how the two drifted apart in the first
+# place.
+.design_replicate_label <- function(rep_type) {
+  type <- as.character(rep_type %||% NA_character_)
+  if (length(type) != 1L || is.na(type) || !type %in% .SVYREP_TYPES) {
+    return(spicy_str("note_vcov_design_replicate_bare"))
+  }
+  spicy_fmt("note_vcov_design_replicate", type)
+}
+
 # The variance estimator a design fit actually uses, as the footer names
 # it. Indexed on the MECHANISM, which is the only thing the label is
 # about:
@@ -421,11 +437,7 @@
     return(spicy_str("note_vcov_design_twophase"))
   }
   if (inherits(des, "svyrep.design")) {
-    type <- as.character(des$type %||% NA_character_)
-    if (length(type) != 1L || is.na(type) || !type %in% .SVYREP_TYPES) {
-      return(spicy_str("note_vcov_design_replicate_bare"))
-    }
-    return(spicy_fmt("note_vcov_design_replicate", type))
+    return(.design_replicate_label(des$type))
   }
   if (inherits(des, "survey.design")) {
     return(spicy_str("note_vcov_design_taylor"))
@@ -606,13 +618,20 @@
   } else {
     spicy_fmt("note_design_degf", as.integer(meta$degf))
   }
+  # The variance sentence is the regression footer's, built from the
+  # same template and the same labels: one table calling it "Standard
+  # errors: Taylor linearisation (survey)." while its regression
+  # neighbour called it "Std. errors: Design-based (Taylor
+  # linearisation)." made the reader work out that the two were the
+  # same fact.
+  vcov_label <- if (identical(meta$kind, "replicate")) {
+    .design_replicate_label(meta$rep_type)
+  } else {
+    spicy_str("note_vcov_design_taylor")
+  }
   c(
     spicy_fmt("note_design_line", scheme, df_clause),
-    if (identical(meta$kind, "replicate")) {
-      spicy_str("note_se_replicate")
-    } else {
-      spicy_str("note_se_taylor")
-    },
+    spicy_fmt("note_std_errors_single", vcov_label),
     spicy_str("note_design_df_used")
   )
 }

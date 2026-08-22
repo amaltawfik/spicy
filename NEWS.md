@@ -250,6 +250,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   degrees of freedom its tests use, so the table can be read without the
   design object at hand.
 
+* A design table and a survey regression name the variance the same way.
+  Both now read `Std. errors: Design-based (Taylor linearisation)` -- or
+  `(replicate weights, JK1)` -- where `table_continuous_svy()` and
+  `table_categorical_svy()` used to say `Standard errors: Taylor
+  linearisation (survey)` and drop the replicate scheme.
+
 * `show_fit_stats = "eff_p"` reports the effective number of parameters of a
   `survey::svyglm()` design.
 

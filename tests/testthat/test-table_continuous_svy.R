@@ -302,7 +302,7 @@ test_that("a replicate design gives the same point estimate, its own SE", {
   expect_match(note, "replicate weights (JK1), 15 replicates", fixed = TRUE)
   expect_match(
     note,
-    "Standard errors: replicate weights (survey).",
+    "Std. errors: Design-based (replicate weights, JK1).",
     fixed = TRUE
   )
 })
