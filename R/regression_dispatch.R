@@ -3129,7 +3129,11 @@ print.spicy_regression_table <- function(x, ...) {
         center_headers = TRUE,
         spanners = spanners,
         display_labels = display_labels,
-        fit_stats_start = fit_stats_start
+        fit_stats_start = fit_stats_start,
+        # The one layout where `SE` / `p` / an interval really is the
+        # companion of the estimate column on its left, so an orphaned
+        # one can name its carrier ("95% CI (B)").
+        qualify_companions = TRUE
       ),
       dot_args
     )
