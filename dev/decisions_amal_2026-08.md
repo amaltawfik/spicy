@@ -528,3 +528,22 @@ moitié validé.
   La suggestion (ii') de Fable examinée et réfutée par le dossier
   (re-fit dans le dos de l'utilisateur, ou tableau HR/ΔRMST à deux
   vraisemblances).
+
+## Décision 36 — Arbitrages P3 ARB-1/2/3/5 (2026-08-22)
+
+- **ARB-1** : contournement pps sur COPIE INTERNE du design — jamais
+  de mutation de l'objet utilisateur.
+- **ARB-2** : sous poids de calibration négatifs, le TEST est un refus
+  classé (les cellules restent complètes sur w != 0) — jamais de
+  sous-ensemble silencieux.
+- **ARB-3 (raffiné par Amal + Fable)** : note de pied CONDITIONNELLE au
+  fait — any(w < 0) dans l'échantillon ANALYTIQUE — et UNIFIÉE :
+  une seule note portant le décompte (k de n), la conséquence sur les
+  estimations (moyenne hors étendue possible), et l'explication du
+  refus de test quand il s'applique. Pas de note sur les calibrés à
+  poids positifs ; « calibré » est déjà dit par la ligne de design.
+- **ARB-5** : la différence descriptives (servies) / estimands 0.14
+  (refusés) sur les calibrés est ASSUMÉE et documentée de part et
+  d'autre — deux frontières techniques distinctes, nommées.
+- ARB-4 (structure des lots 0.14) : décision d'ingénierie déléguée à
+  Fable.
