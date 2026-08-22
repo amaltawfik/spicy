@@ -582,8 +582,16 @@
   # carrying the fact, its consequence and, when a test was asked for,
   # the refusal).
   note_negative_weights = "Calibration gave %d of %d rows a negative weight: a weighted mean can fall outside the observed range, and a variance can come out negative, leaving its cell undefined.",
-  # Appended to the sentence above, never on its own.
+  # Appended to the sentence above, never on its own. Said when EVERY
+  # comparison the table attempted was refused, so no method line
+  # stands above it.
   note_negative_weights_no_test = "The group comparison is not reported: a design-based test is not defined when the weights change sign.",
+  # The scoped form of the sentence above, for a table where some
+  # variables were tested and some were not: a variable whose missing
+  # values cover the negatively weighted rows has a testable domain.
+  # The method line above it is true of the comparisons that ran, and
+  # this names the ones that did not.
+  note_negative_weights_no_test_some = "For variables whose complete cases include negatively weighted rows, the group comparison is not reported: a design-based test is not defined when the weights change sign.",
   note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
   # Abbreviation glosses of the two design-only columns, each naming
   # the header it glosses through a hole so a translated header can

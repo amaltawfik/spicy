@@ -230,19 +230,72 @@
   sum(!is.na(w) & w < 0)
 }
 
+# The refusal predicate itself, in one place for both twins: does this
+# set of weights change sign? Applied per VARIABLE, on the weights of
+# that variable's complete-case domain -- a variable whose missing
+# values happen to cover the negatively weighted rows is testable, and
+# is tested (decision 36 / ARB-2).
+.weights_go_negative <- function(w) {
+  any(!is.na(w) & w < 0)
+}
+
+# Which of a table's group comparisons the negative weights refused,
+# and therefore which sentence the footer owes:
+#   "none" -- nothing was refused. A comparison missing for another
+#             reason (fewer than two observed groups, a survey error)
+#             is not the weights' doing and is not explained by them.
+#   "all"  -- every comparison that was attempted was refused. The flat
+#             sentence, and no method line above it.
+#   "some" -- a mixed table. Some variables were tested and their
+#             p-values are printed, so the refusal has to name who it
+#             applies to instead of speaking for the whole table.
+.design_refusal_regime <- function(n_refused, n_attempted) {
+  if (n_refused <= 0L) {
+    "none"
+  } else if (n_refused >= n_attempted) {
+    "all"
+  } else {
+    "some"
+  }
+}
+
 # The one sentence-block the fact earns, or nothing at all. `n_obs` is
 # the count the footer has just announced, so the two agree. The
 # refusal clause is appended rather than said separately: one fact, one
-# block (decision 36 / ARB-3).
-.design_negative_weights_note <- function(k, n_obs, test_refused = FALSE) {
+# block (decision 36 / ARB-3). `test_refused` is a regime from
+# `.design_refusal_regime()`.
+.design_negative_weights_note <- function(k, n_obs, test_refused = "none") {
   if (k <= 0L) {
     return(character(0))
   }
   txt <- spicy_fmt("note_negative_weights", as.integer(k), as.integer(n_obs))
-  if (isTRUE(test_refused)) {
-    txt <- paste(txt, spicy_str("note_negative_weights_no_test"))
+  clause <- switch(
+    test_refused,
+    all = spicy_str("note_negative_weights_no_test"),
+    some = spicy_str("note_negative_weights_no_test_some"),
+    NULL
+  )
+  if (!is.null(clause)) {
+    txt <- paste(txt, clause)
   }
   txt
+}
+
+# The classed half of the refusal (decision 36 / ARB-2): a note is read
+# by whoever prints the table, and a condition is what a script can
+# catch. ONE condition per table call, not one per variable -- the fact
+# is a property of the design, and the footer says how far it reached.
+# The message is the registry sentence the footer carries, so the two
+# cannot say different things.
+.warn_negative_weights_no_test <- function(refused) {
+  if (!isTRUE(refused)) {
+    return(invisible(FALSE))
+  }
+  spicy_warn(
+    spicy_str("note_negative_weights_no_test"),
+    class = c("spicy_negative_weights_no_test", "spicy_undefined_stat")
+  )
+  invisible(TRUE)
 }
 
 # The number of observations a design fit actually used.

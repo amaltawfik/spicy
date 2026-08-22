@@ -467,10 +467,13 @@ test_that("negative weights refuse the test, keep the cells, and say so", {
   # The test is refused, not computed on a sub-sample.
   expect_true(all(is.na(out$p)))
 
-  note <- attr(
-    table_continuous_svy(d, select = api00, by = stype),
-    "missing_note"
+  # The refusal is CLASSED (ARB-2): a note is read by whoever prints
+  # the table, a condition is what a script can catch.
+  expect_warning(
+    tbl <- table_continuous_svy(d, select = api00, by = stype),
+    class = "spicy_negative_weights_no_test"
   )
+  note <- attr(tbl, "missing_note")
   # One block: the exact count, the consequence, and the refusal.
   expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
   expect_match(note, "fall outside the observed range", fixed = TRUE)
@@ -478,6 +481,96 @@ test_that("negative weights refuse the test, keep the cells, and say so", {
   # And the test sentence a normal table carries is absent -- the note
   # never claims a comparison it refused.
   expect_false(grepl("Group comparison:", note, fixed = TRUE))
+})
+
+test_that("the refusal clause says how far the refusal reached", {
+  # The footer clause used to be decided per TABLE ("was a test asked
+  # for?") while the refusal is decided per VARIABLE. A variable whose
+  # missing values happen to cover the negatively weighted rows has a
+  # testable domain and IS tested -- and the note carried the flat
+  # "The group comparison is not reported" over a printed p-value.
+  skip_if_not_installed("survey")
+  d <- .svycneg_design()
+  w <- .design_weights(d)
+  # The second variable: api00 with NA on exactly the 28 negative rows.
+  d$variables$api00b <- d$variables$api00
+  d$variables$api00b[w < 0] <- NA
+
+  # (c) MIXED: one comparison served, one refused.
+  expect_warning(
+    mixed <- table_continuous_svy(
+      d,
+      select = c(api00, api00b),
+      by = stype,
+      output = "long"
+    ),
+    class = "spicy_negative_weights_no_test"
+  )
+  served <- mixed$p.value[mixed$variable == "api00b"]
+  expect_false(all(is.na(served)))
+  expect_true(all(is.na(mixed$p.value[mixed$variable == "api00"])))
+  note <- attr(mixed, "note")
+  # The method line is TRUE of the comparison that ran, so it stays --
+  # and the refusal names who it applies to instead of contradicting it.
+  expect_match(note, "Group comparison:", fixed = TRUE)
+  expect_match(
+    note,
+    "For variables whose complete cases include negatively weighted rows",
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "The group comparison is not reported",
+    note,
+    fixed = TRUE
+  ))
+
+  # (b) ALL REFUSED, two variables: the flat sentence, no method line,
+  # and ONE condition for the table -- not one per variable.
+  n_signalled <- 0L
+  all_ref <- withCallingHandlers(
+    table_continuous_svy(
+      d,
+      select = c(api00, api99),
+      by = stype,
+      output = "long"
+    ),
+    spicy_negative_weights_no_test = function(cnd) {
+      n_signalled <<- n_signalled + 1L
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_identical(n_signalled, 1L)
+  expect_true(all(is.na(all_ref$p.value)))
+  note_all <- attr(all_ref, "note")
+  expect_match(note_all, "The group comparison is not reported", fixed = TRUE)
+  expect_false(grepl("Group comparison:", note_all, fixed = TRUE))
+  expect_false(grepl("For variables whose", note_all, fixed = TRUE))
+})
+
+test_that("a comparison absent for another reason is not blamed on the weights", {
+  # The milder half of the same defect: with negative weights present
+  # AND fewer than two usable groups, the comparison is missing for a
+  # reason that has nothing to do with the sign of the weights. The
+  # note used to explain it by them anyway.
+  skip_if_not_installed("survey")
+  d <- .svycneg_design()
+  w <- .design_weights(d)
+  # One group after the complete cases: nothing to compare.
+  d$variables$one <- factor("only")
+  d$variables$api00b <- d$variables$api00
+  d$variables$api00b[w < 0] <- NA
+
+  out <- withCallingHandlers(
+    table_continuous_svy(d, select = api00b, by = one, output = "long"),
+    spicy_negative_weights_no_test = function(cnd) {
+      stop("the weights refused nothing here")
+    }
+  )
+  expect_true(all(is.na(out$p.value)))
+  note <- attr(out, "note")
+  # The fact is still disclosed; the refusal clause is not.
+  expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
+  expect_false(grepl("is not reported", note, fixed = TRUE))
 })
 
 test_that("a calibrated design with no negative weight says nothing", {
