@@ -90,6 +90,100 @@ test_that("stratified curves equal an independent recomputation", {
 })
 
 
+test_that("the horizon truncation subsets H0 rows, not its cells", {
+  skip_if_not_installed("survival")
+  s <- .strata_fit()
+  fit <- s$fit
+  d <- spicy:::.coxph_estimand_data(fit)
+
+  # The stratified shape is where the truncation can go wrong silently:
+  # `H0` is grid x n_strata and `s_idx` indexes its COLUMNS, so the cut
+  # is a ROW subset with `drop = FALSE`. Integer-indexing the matrix
+  # (`H0[which(keep)]`) linear-indexes the cells and reshapes the
+  # grid; the logical form happens to recycle per column and survive,
+  # which is why the witness pins the integer mutant.
+  bl <- spicy:::.coxph_baseline(fit)
+  expect_identical(dim(bl$H0), c(length(bl$times), 2L))
+  expect_identical(length(bl$s_idx), nrow(d))
+
+  untruncated <- function(tau, at_time) {
+    curve_stats <- function(newdata) {
+      s <- spicy:::.coxph_standardized_survival(fit, newdata, bl$H0, bl$s_idx)
+      c(
+        rmst = spicy:::.step_rmst(bl$times, s, tau),
+        risk = 1 - spicy:::.step_surv_at(bl$times, s, at_time)
+      )
+    }
+    spicy:::.estimand_contrast_rows(d, c("age", "group"), curve_stats)
+  }
+  shipped <- function(tau, at_time) {
+    got <- spicy:::.coxph_estimand_points(
+      fit,
+      d,
+      want_rmst = TRUE,
+      want_risk = TRUE,
+      tau = tau,
+      at_time = at_time
+    )
+    attr(got, "skipped_terms") <- NULL
+    got
+  }
+  expect_identical(shipped(500, 500), untruncated(500, 500))
+  q1 <- unname(stats::quantile(d$time, 0.25))
+  expect_identical(shipped(q1, q1), untruncated(q1, q1))
+})
+
+
+test_that("the weighted standardization keeps within-stratum baselines", {
+  skip_if_not_installed("survival")
+  s <- .strata_fit()
+  fit <- s$fit
+  d <- spicy:::.coxph_estimand_data(fit)
+  bl <- spicy:::.coxph_baseline(fit)
+
+  # NULL is the row mean it always was.
+  expect_identical(
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, bl$s_idx),
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, bl$s_idx, w = NULL)
+  )
+
+  # Integer weights are duplication -- and here the duplication has to
+  # carry `s_idx` with it, because each subject keeps their OWN stratum
+  # baseline. That is what the matrix-times-weights form must respect.
+  set.seed(9)
+  w <- sample(1:4, nrow(d), replace = TRUE)
+  idx <- rep(seq_len(nrow(d)), w)
+  expect_equal(
+    spicy:::.coxph_standardized_survival(fit, d, bl$H0, bl$s_idx, w = w),
+    spicy:::.coxph_standardized_survival(
+      fit,
+      d[idx, , drop = FALSE],
+      bl$H0,
+      bl$s_idx[idx]
+    ),
+    tolerance = 1e-12
+  )
+  # Concentrating the weight on the first subject of each stratum
+  # gives that subject's stratum curve, not a blend of the two.
+  for (k in seq_along(levels(d$sex))) {
+    j <- which(bl$s_idx == k)[1L]
+    one <- numeric(nrow(d))
+    one[j] <- 1
+    elp <- exp(stats::predict(
+      fit,
+      newdata = d,
+      type = "lp",
+      reference = "zero"
+    ))
+    expect_equal(
+      spicy:::.coxph_standardized_survival(fit, d, bl$H0, bl$s_idx, w = one),
+      exp(-bl$H0[, k] * elp[[j]]),
+      tolerance = 1e-12
+    )
+  }
+})
+
+
 test_that("strata variables get no contrast row and minmax skips them", {
   skip_if_not_installed("survival")
   s <- .strata_fit()

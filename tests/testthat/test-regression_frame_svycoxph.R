@@ -420,6 +420,17 @@ test_that("the survival estimands are refused before any row is built", {
     # and it hands over a route.
     expect_match(msg, "survey::svykm()", fixed = TRUE)
     expect_match(msg, "survey::regTermTest", fixed = TRUE)
+    # The size of the problem is a MEASURED RANGE conditional on the
+    # design and the contrast, never one figure: a between-cluster
+    # contrast is understated 1.5x-6x, a within-cluster contrast is
+    # not understated at all. A single number would be wrong on four
+    # designs out of five.
+    expect_match(msg, "1.5x-6x", fixed = TRUE)
+    expect_match(msg, "30 x 25", fixed = TRUE)
+    expect_match(msg, "within clusters", fixed = TRUE)
+    expect_match(msg, "about right", fixed = TRUE)
+    # A refusal carries no roadmap promise -- the survey vignette does.
+    expect_false(grepl("is planned", msg, fixed = TRUE))
   }
   # A plain Cox fit still gets its estimand columns.
   plain <- survival::coxph(

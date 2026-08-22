@@ -176,17 +176,42 @@
 # fit, evaluated at the baseline grid. `H0` is the per-stratum matrix
 # from .coxph_baseline(); `s_idx` maps each row of `newdata` to its
 # stratum column (NULL = unstratified). Returns a vector S(times).
-.coxph_standardized_survival <- function(fit, newdata, H0, s_idx = NULL) {
+#
+# `w` are the weights of the standardization POPULATION -- the mix the
+# per-subject curves are averaged over, not the weights of the fit.
+# NULL is the unweighted average, and takes the same two expressions it
+# always did: a sampling design changes which population the estimand
+# is standardized to, and that is a separate argument from the one the
+# fit already carries.
+.coxph_standardized_survival <- function(
+  fit,
+  newdata,
+  H0,
+  s_idx = NULL,
+  w = NULL
+) {
   lp <- stats::predict(fit, newdata = newdata, type = "lp", reference = "zero")
   elp <- exp(lp)
   if (is.null(s_idx)) {
     # S matrix would be length(times) x n; average over subjects
     # without materializing it.
-    return(vapply(H0[, 1L], function(h) mean(exp(-h * elp)), numeric(1)))
+    if (is.null(w)) {
+      return(vapply(H0[, 1L], function(h) mean(exp(-h * elp)), numeric(1)))
+    }
+    sw <- sum(w)
+    return(vapply(
+      H0[, 1L],
+      function(h) sum(w * exp(-h * elp)) / sw,
+      numeric(1)
+    ))
   }
   # Stratified: each subject's curve uses their own stratum baseline.
   M <- H0[, s_idx, drop = FALSE]
-  rowMeans(exp(-sweep(M, 2L, elp, "*")))
+  S <- exp(-sweep(M, 2L, elp, "*"))
+  if (is.null(w)) {
+    return(rowMeans(S))
+  }
+  as.vector(S %*% w) / sum(w)
 }
 
 
@@ -218,6 +243,10 @@
 # One fit -> the estimand contrasts for every predictor variable.
 # Returns a data.frame: term, parent_var, label, factor_level_pos,
 # estimand ("rmst" / "risk_diff"), estimate.
+# Callers must request at least one estimand: with both `want_*`
+# FALSE the internal `max()` would warn on an empty vector. The sole
+# caller today guards this in `.survival_estimand_rows()`; a second
+# caller (volet 0.14) must keep that guard on its own side.
 .coxph_estimand_points <- function(
   fit,
   data,
@@ -227,10 +256,27 @@
   at_time
 ) {
   bl <- .coxph_baseline(fit)
-  times <- bl$times
+  # The baseline grid runs to the last event time, but nothing beyond
+  # max(tau, at_time) can reach a result: .step_rmst() opens with
+  # `keep <- times <= tau` and .step_surv_at() is a findInterval() at
+  # `at_time`. Truncating here removes grid points that are provably
+  # discarded downstream, so the estimands are unchanged EXACTLY
+  # (max|d| = 0, not "small") -- a simplification, not an optimisation.
+  # What it saves is the fraction of the grid past the horizon, and
+  # nothing more: a third of it on the vignette's own lung fit at
+  # tau = 365, three quarters when tau sits at the lower quartile of
+  # follow-up. Never an order of magnitude, so no speed is promised.
+  #
+  # `H0` is a grid x n_strata MATRIX, so the truncation subsets ROWS,
+  # with `drop = FALSE`. `s_idx` maps each subject to a stratum COLUMN
+  # and must not be touched.
+  horizon <- max(c(if (want_rmst) tau, if (want_risk) at_time))
+  keep <- bl$times <= horizon
+  times <- bl$times[keep]
+  H0 <- bl$H0[keep, , drop = FALSE]
 
   curve_stats <- function(newdata) {
-    s <- .coxph_standardized_survival(fit, newdata, bl$H0, bl$s_idx)
+    s <- .coxph_standardized_survival(fit, newdata, H0, bl$s_idx)
     c(
       rmst = if (want_rmst) .step_rmst(times, s, tau) else NA_real_,
       risk = if (want_risk) {
@@ -512,13 +558,34 @@
 # live in an environment attached to the formula -- a plain
 # `coxph(f, data = data[idx, ])` leaves every replicate's basehaz()
 # unable to find `data` / `idx` and fails silently.
-.coxph_refit_on <- function(f, dboot) {
+#
+# `wboot` takes the same route, and it has to: replacing the formula's
+# environment is the whole mechanism here, so EVERYTHING the call
+# refers to must live in the replacement. coxph() resolves `weights`
+# through model.frame(), which evaluates the extra arguments in
+# `environment(formula)` -- a weights vector left in the caller's frame
+# is simply not there, and the replicate dies at the FIT step with
+# "object '<name>' not found" (measured), before any baseline is
+# computed. Two slots in the one environment, or neither: passing NULL
+# reproduces the unweighted call exactly, down to the call object the
+# fit records.
+.coxph_refit_on <- function(f, dboot, wboot = NULL) {
   env <- new.env(parent = environment(f) %||% baseenv())
   env$.spicy_boot_data. <- dboot
   f2 <- f
   environment(f2) <- env
+  if (is.null(wboot)) {
+    return(eval(
+      substitute(survival::coxph(FF, data = .spicy_boot_data.), list(FF = f2)),
+      env
+    ))
+  }
+  env$.spicy_boot_w. <- wboot
   eval(
-    substitute(survival::coxph(FF, data = .spicy_boot_data.), list(FF = f2)),
+    substitute(
+      survival::coxph(FF, data = .spicy_boot_data., weights = .spicy_boot_w.),
+      list(FF = f2)
+    ),
     env
   )
 }
@@ -582,6 +649,14 @@
 # estimand paths: gates, data recovery, point estimates, and the
 # resample-refit-recompute loop are identical; only the four hooks
 # differ per class.
+#
+# `df` are the degrees of freedom of the estimand rows' own test. The
+# default Inf is the normal-approximation layering the iid bootstrap
+# uses: `qt(p, Inf)` and `pt(q, Inf)` are `qnorm(p)` and `pnorm(q)` to
+# the last bit, so the parameterisation costs nothing at the default
+# (pinned by a witness, since it is arithmetic and not an API promise).
+# A finite value gives a Wald-t instead, and the rows say so through
+# `test_type`.
 .survival_estimand_rows <- function(
   fit,
   model_id,
@@ -590,6 +665,7 @@
   at_time = NULL,
   ci_level = 0.95,
   boot_n = 1000L,
+  df = Inf,
   gates_fn,
   data_fn,
   points_fn,
@@ -697,7 +773,10 @@
     boot_est[b, , "risk"] <- rep_pts$risk[m]
   }
 
-  z_crit <- stats::qnorm(0.5 + ci_level / 2)
+  # Spelling follows the AME precedent (regression_ame.R): the same two
+  # calls, so the two families' intervals cannot drift apart.
+  crit <- stats::qt(1 - (1 - ci_level) / 2, df = df)
+  test_type <- if (is.finite(df)) "t" else "z"
   build <- function(estimand_key, estimate_type) {
     est <- pts[[estimand_key]]
     reps <- matrix(boot_est[,, estimand_key], nrow = boot_n)
@@ -723,12 +802,13 @@
       estimate_type = estimate_type,
       estimate = est,
       std_error = unname(se),
-      df = Inf,
+      df = df,
       statistic = unname(stat),
-      p_value = 2 * stats::pnorm(-abs(unname(stat))),
-      ci_lower = est - z_crit * unname(se),
-      ci_upper = est + z_crit * unname(se),
-      test_type = "z",
+      p_value = 2 *
+        stats::pt(abs(unname(stat)), df = df, lower.tail = FALSE),
+      ci_lower = est - crit * unname(se),
+      ci_upper = est + crit * unname(se),
+      test_type = test_type,
       stringsAsFactors = FALSE
     )
   }
@@ -764,6 +844,13 @@
 
 # Table note for the estimand columns, read from
 # extras$survival_estimands (set by the coxph frame builder).
+#
+# The sentences come from the display-string registry (R/i18n.R): a
+# table footnote is a string a reader of the table sees, which is what
+# the registry is for, and the estimand column HEADERS are keyed there
+# already. The method clause is two whole templates rather than one
+# template with a "(within-stratum baselines)" hole, because a hole is
+# for data and that parenthesis is words.
 build_survival_estimand_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
@@ -777,26 +864,17 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
       }
       parts <- character(0)
       if (!is.null(es$tau)) {
-        parts <- c(
-          parts,
-          sprintf(
-            "dRMST = difference in restricted mean survival time over [0, %s]",
-            format(es$tau)
-          )
-        )
+        parts <- c(parts, spicy_fmt("note_estimand_rmst", format(es$tau)))
       }
       if (!is.null(es$at_time)) {
         parts <- c(
           parts,
-          sprintf(
-            "dRisk = difference in cumulative incidence at %s",
-            format(es$at_time)
-          )
+          spicy_fmt("note_estimand_risk_diff", format(es$at_time))
         )
       }
       skipped_note <- if (length(es$skipped_terms %||% character(0)) > 0L) {
-        sprintf(
-          " Transformed terms (%s) have no absolute-effect row: the contrast is defined per raw variable; rescale the variable in the data instead of the formula.",
+        spicy_fmt(
+          "note_estimand_skipped_terms",
           paste(es$skipped_terms, collapse = ", ")
         )
       } else {
@@ -807,20 +885,20 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
           if (nzchar(skipped_note)) trimws(skipped_note) else NA_character_
         )
       }
+      replicates <- if (es$boot_valid < es$boot_n) {
+        spicy_fmt("note_estimand_boot_range", es$boot_valid, es$boot_n)
+      } else {
+        format(es$boot_n)
+      }
       paste0(
         paste(parts, collapse = "; "),
-        sprintf(
-          "; adjusted by g-computation from the fitted model%s, SEs by nonparametric bootstrap (%s replicates).",
+        spicy_fmt(
           if (isTRUE(es$stratified)) {
-            " (within-stratum baselines)"
+            "note_estimand_method_stratified"
           } else {
-            ""
+            "note_estimand_method"
           },
-          if (es$boot_valid < es$boot_n) {
-            sprintf("%d-%d", es$boot_valid, es$boot_n)
-          } else {
-            format(es$boot_n)
-          }
+          replicates
         ),
         skipped_note
       )

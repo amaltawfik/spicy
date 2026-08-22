@@ -329,6 +329,26 @@
   # One hole: the undefined-cell glyph the note is pointing at.
   note_rank_deficient = "Rank-deficient model: dropped coefficient(s) shown as %s.",
 
+  # -- table_regression(): the absolute survival estimands -------------------
+  # The footnote of the RMST-difference and risk-difference columns.
+  # One hole each: the horizon and the landmark, on the outcome's own
+  # time scale. DATA.
+  note_estimand_rmst = "dRMST = difference in restricted mean survival time over [0, %s]",
+  note_estimand_risk_diff = "dRisk = difference in cumulative incidence at %s",
+  # The method clause, in two whole sentences rather than one sentence
+  # with a translatable hole: a stratified fit standardizes within each
+  # subject's own stratum baseline, and an inflected language may need
+  # to say so somewhere other than where English parenthesises it. One
+  # hole in each: the replicate count. DATA.
+  note_estimand_method = "; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (%s replicates).",
+  note_estimand_method_stratified = "; adjusted by g-computation from the fitted model (within-stratum baselines), SEs by nonparametric bootstrap (%s replicates).",
+  # Two holes: the replicates that produced a usable estimate, and the
+  # replicates asked for. Written as a range only when they differ.
+  note_estimand_boot_range = "%d-%d",
+  # One hole: the transformed term labels that got no estimand row.
+  # Appended to the sentence above, hence the leading space.
+  note_estimand_skipped_terms = " Transformed terms (%s) have no absolute-effect row: the contrast is defined per raw variable; rescale the variable in the data instead of the formula.",
+
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = odds ratio",
   note_abbrev_irr = "IRR = incidence rate ratio",
