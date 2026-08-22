@@ -253,10 +253,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * A design whose calibration produced negative weights says so in the
   note: the exact count, and what follows from it -- a weighted mean can
   fall outside the observed range, and a variance can come out negative.
-  In `table_continuous_svy()` the group comparison is then not reported,
-  because a design-based test is not defined when the weights change
-  sign, and the note says that too. Calibrated designs whose weights all
-  stay positive are not affected.
+  `table_continuous_svy()` and `table_categorical_svy()` then do not
+  report the group comparison of the variables concerned, because a
+  design-based test is not defined when the weights change sign; the
+  note says which comparisons were withheld and the call warns
+  (`spicy_negative_weights_no_test`). Estimates and counts are
+  unaffected, and so are calibrated designs whose weights all stay
+  positive.
 
 * A design table and a survey regression name the variance the same way:
   `Std. errors: Design-based (Taylor linearisation)`, or

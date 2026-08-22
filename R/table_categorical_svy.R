@@ -193,7 +193,27 @@
 # display level, or a declared level nobody chose, is descriptive and
 # does not enter the null hypothesis -- the convention
 # `table_categorical()` has always applied.
+#
+# Negative calibration weights refuse the test, exactly as they do in
+# the continuous twin (decision 36 / ARB-2, applied twin-symmetrically
+# 2026-08-22). The Rao-Scott correction is a function of the design
+# variance, and a design variance that can come out negative -- which
+# is what this table's own footer says about these weights -- gives no
+# reference distribution to refer a statistic to. The cells stay
+# complete on `w != 0`; only the test is withheld, and it is withheld
+# with a classed condition rather than silently.
+#
+# Returns the p-value and whether the refusal fired, because the two
+# empty answers -- refused, and survey declined -- owe the reader
+# different sentences.
 .cat_svy_test <- function(design, var, group_var, statistic) {
+  # `design` is already this variable's complete-case domain, and `[`
+  # on a calibrated design leaves the excluded rows at weight ZERO --
+  # so this reads the sign of the weights the test would use, the same
+  # per-variable question the continuous twin asks.
+  if (.weights_go_negative(.design_weights(design))) {
+    return(list(p = NA_real_, refused = TRUE))
+  }
   design$variables[[var]] <- droplevels(as.factor(design$variables[[var]]))
   design$variables[[group_var]] <- droplevels(
     as.factor(design$variables[[group_var]])
@@ -201,9 +221,9 @@
   form <- stats::as.formula(paste0("~`", var, "` + `", group_var, "`"))
   r <- .svy_try(survey::svychisq(form, design, statistic = statistic))
   if (is.null(r)) {
-    return(NA_real_)
+    return(list(p = NA_real_, refused = FALSE))
   }
-  as.numeric(r$p.value)[[1L]]
+  list(p = as.numeric(r$p.value)[[1L]], refused = FALSE)
 }
 
 # Reader-facing name of the test that ran.
@@ -325,7 +345,12 @@
 #'   reference distribution keeps the design's own degrees of freedom
 #'   and the note says so.
 #' @param p_value Show the p-value column (defaults to `TRUE` with
-#'   `by`).
+#'   `by`). A variable whose complete cases include negatively weighted
+#'   rows is not tested: the Rao-Scott correction is a function of the
+#'   design variance, which is not defined when the weights change
+#'   sign. Its percentages are still reported, the note says which
+#'   tests were withheld, and the call warns
+#'   (`spicy_negative_weights_no_test`).
 #' @param percent_digits,p_digits,decimal_mark Number formatting.
 #' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
 #'   `"right"`.
@@ -616,6 +641,11 @@ table_categorical_svy <- function(
 
   rows <- list()
   na_dropped <- integer(0)
+  # Counted, not inferred: the refusal is decided per VARIABLE, on that
+  # variable's complete-case domain, so the footer's clause has to know
+  # how far it reached (see `.design_refusal_regime()`).
+  n_test_attempted <- 0L
+  n_test_refused <- 0L
   for (i in seq_along(select_names)) {
     nm <- select_names[[i]]
     lv <- .svy_by_levels(.tab_factor(vars[[nm]]), drop_na)
@@ -670,12 +700,13 @@ table_categorical_svy <- function(
       )
       domains[[.cat_svy_block_id(b)]] <- dom
     }
-    p_i <- if (p_value) {
+    p_i <- NA_real_
+    if (p_value) {
       # `vars` is the snapshot taken BEFORE the missing category was
       # promoted to a level, so this mask is the genuine complete-case
       # one: the `(Missing)` row is displayed and not tested, exactly as
       # `table_categorical()` does it.
-      .cat_svy_test(
+      tr <- .cat_svy_test(
         .design_subset(
           design,
           !is.na(vars[[nm]]) & !is.na(vars[[group_col_name]])
@@ -684,8 +715,11 @@ table_categorical_svy <- function(
         group_col_name,
         chisq_statistic
       )
-    } else {
-      NA_real_
+      n_test_attempted <- n_test_attempted + 1L
+      if (isTRUE(tr$refused)) {
+        n_test_refused <- n_test_refused + 1L
+      }
+      p_i <- tr$p
     }
     header <- .cat_svy_row(nm, var_labels[[i]], NA_character_, "factor_header")
     header[[.CAT_KEY_P]] <- p_i
@@ -758,8 +792,10 @@ table_categorical_svy <- function(
     deff = deff,
     p_value = p_value,
     chisq_statistic = chisq_statistic,
-    n_negative_weights = .design_negative_weights(design)
+    n_negative_weights = .design_negative_weights(design),
+    test_refused = .design_refusal_regime(n_test_refused, n_test_attempted)
   )
+  .warn_negative_weights_no_test(n_test_refused > 0L)
 
   if (output %in% c("data.frame", "long")) {
     attr(result, "note") <- note

@@ -445,7 +445,8 @@
   deff,
   p_value,
   chisq_statistic,
-  n_negative_weights = 0L
+  n_negative_weights = 0L,
+  test_refused = "none"
 ) {
   parts <- c(
     .svy_missing_note(na_dropped, "note_missing_removed"),
@@ -486,13 +487,17 @@
     )
   }
   parts <- c(parts, lines)
-  # No test clause here: `svychisq()` is handed the whole design and
-  # nothing subsets it on the sign of the weights, so there is no
-  # refusal to explain -- unlike the continuous twin, whose group
-  # comparison is refused outright (decision 36 / ARB-2).
+  # The same three regimes as the continuous twin, from the same
+  # helper: `svychisq()` is refused under negative weights too
+  # (decision 36 / ARB-2, applied twin-symmetrically), and the clause
+  # says whether it reached every variable or only some of them.
   parts <- c(
     parts,
-    .design_negative_weights_note(n_negative_weights, meta$n_obs)
+    .design_negative_weights_note(
+      n_negative_weights,
+      meta$n_obs,
+      test_refused = test_refused
+    )
   )
   if (isTRUE(proportion_ci)) {
     parts <- c(parts, spicy_fmt("note_ci_prop_method", ci_method))
@@ -500,7 +505,12 @@
   if (identical(deff, "replace")) {
     parts <- c(parts, spicy_str("note_deff_replace"))
   }
-  if (isTRUE(p_value)) {
+  # The method line names the test that RAN. When every comparison was
+  # refused there is none, and the sentence above has already said so;
+  # in a mixed table it is true of the ones that were served, and the
+  # scoped refusal names the rest. Same division as the continuous
+  # twin, where the line is driven by `test_label`.
+  if (isTRUE(p_value) && !identical(test_refused, "all")) {
     parts <- c(
       parts,
       spicy_fmt("note_group_comparison", .cat_svy_test_label(chisq_statistic))

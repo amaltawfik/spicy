@@ -695,13 +695,10 @@ test_that("`df` overrides the design df, and the footer changes with it", {
   expect_false(grepl("100 degrees of freedom.", note, fixed = TRUE))
 })
 
-test_that("negative weights are disclosed once, with the exact count", {
-  # Decision 36 / ARB-3: the note is conditional on the FACT, and it
-  # carries no test clause here -- `svychisq()` is handed the whole
-  # design and nothing subsets it on the sign of the weights.
+.svycat_neg_design <- function() {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
-  neg <- survey::calibrate(
+  survey::calibrate(
     survey::svydesign(
       id = ~dnum,
       weights = ~pw,
@@ -712,6 +709,15 @@ test_that("negative weights are disclosed once, with the exact count", {
     c(`(Intercept)` = 6194, api99 = 6194 * 500),
     calfun = "linear"
   )
+}
+
+test_that("negative weights are disclosed once, with the exact count", {
+  # Decision 36 / ARB-3: the note is conditional on the FACT. With no
+  # `by` no comparison was asked for, so the fact is disclosed and
+  # nothing is said about a test.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  neg <- .svycat_neg_design()
   note <- attr(table_categorical_svy(neg, select = stype), "note")
   expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
   expect_false(grepl("group comparison is not reported", note, fixed = TRUE))
@@ -732,6 +738,94 @@ test_that("negative weights are disclosed once, with the exact count", {
   note2 <- attr(table_categorical_svy(pos, select = stype), "note")
   expect_match(note2, "calibrated / post-stratified", fixed = TRUE)
   expect_false(grepl("negative weight", note2, fixed = TRUE))
+})
+
+test_that("negative weights refuse svychisq too, and say so", {
+  # Decision 36 / ARB-2 applied twin-symmetrically (2026-08-22). The
+  # Rao-Scott correction is a function of the design variance, and the
+  # footer of this very table says that variance can come out negative
+  # here -- so the twin used to print 0.188 under a sentence saying the
+  # variance is undefined. The cells stay complete on `w != 0`; only
+  # the test is withheld, and it is withheld with a classed condition.
+  skip_if_not_installed("survey")
+  neg <- .svycat_neg_design()
+  expect_warning(
+    out <- table_categorical_svy(
+      neg,
+      select = awards,
+      by = stype,
+      output = "long"
+    ),
+    class = "spicy_negative_weights_no_test"
+  )
+  expect_true(all(is.na(out$p)))
+  # The percentages are all there: the refusal is the test's, not the
+  # sample's.
+  expect_identical(sum(out[["Total n"]], na.rm = TRUE), 183L)
+  note <- attr(out, "note")
+  expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
+  expect_match(note, "The group comparison is not reported", fixed = TRUE)
+  # And no method line above it: no test ran to be named.
+  expect_false(grepl("Group comparison:", note, fixed = TRUE))
+})
+
+test_that("the categorical refusal clause says how far it reached", {
+  # The mixed regime, same rule as the continuous twin: a variable
+  # whose complete cases exclude the negatively weighted rows is
+  # tested, and the note scopes the refusal instead of speaking for the
+  # table.
+  skip_if_not_installed("survey")
+  neg <- .svycat_neg_design()
+  w <- .design_weights(neg)
+  neg$variables$awardsb <- neg$variables$awards
+  neg$variables$awardsb[w < 0] <- NA
+
+  # `drop_na = TRUE` here: on a CALIBRATED design the excluded rows
+  # stay at weight zero, so a displayed `(Missing)` level survives
+  # `droplevels()` as an all-zero row and `svychisq()` returns NaN --
+  # a defect of its own, older than this test and not what this test
+  # is about.
+  expect_warning(
+    mixed <- table_categorical_svy(
+      neg,
+      select = c(awards, awardsb),
+      by = stype,
+      drop_na = TRUE,
+      output = "long"
+    ),
+    class = "spicy_negative_weights_no_test"
+  )
+  expect_true(all(is.na(mixed$p[mixed$variable == "awards"])))
+  expect_false(all(is.na(mixed$p[mixed$variable == "awardsb"])))
+  note <- attr(mixed, "note")
+  expect_match(note, "Group comparison:", fixed = TRUE)
+  expect_match(
+    note,
+    "For variables whose complete cases include negatively weighted rows",
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "The group comparison is not reported",
+    note,
+    fixed = TRUE
+  ))
+
+  # Two refusals, ONE condition: the fact is a property of the design.
+  n_signalled <- 0L
+  all_ref <- withCallingHandlers(
+    table_categorical_svy(
+      neg,
+      select = c(awards, sch.wide),
+      by = stype,
+      output = "long"
+    ),
+    spicy_negative_weights_no_test = function(cnd) {
+      n_signalled <<- n_signalled + 1L
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_identical(n_signalled, 1L)
+  expect_true(all(is.na(all_ref$p)))
 })
 
 # ---- restitution ----------------------------------------------------------
