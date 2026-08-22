@@ -490,12 +490,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
-* `weighted_nobs` is `NA` for an unweighted `lm()` or `glm()`, in
-  `table_regression()` and in `glance()`. It used to equal `n`: R returns
-  a vector of ones as the prior weights of an unweighted fit, and their
-  sum was reported as a weighted count. In a table holding a survey
-  regression, where the row shows for every model, the observed count
-  read as a population.
+* `weighted_nobs` is `NA` for an unweighted `glm()`, in
+  `table_regression()` and in `glance()`. It used to equal `n`:
+  `stats::weights()` returns the prior weights of a `glm()`, a vector of
+  ones on an unweighted fit, and their sum was reported as a weighted
+  count. In a table holding a survey regression, where the row shows for
+  every model, the observed count read as a population. An unweighted
+  `lm()` was already `NA`, because `stats::weights()` returns `NULL` for
+  it.
 
 * `output = "gt"` tables carry their table note into the saved file.
   `gt::gtsave()`, `gt::as_raw_html()` and a non-interactive `print()` used

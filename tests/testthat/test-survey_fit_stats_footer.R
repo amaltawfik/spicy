@@ -323,30 +323,80 @@ test_that("an unweighted fit has no weighted count, and does not invent one", {
   # equal `n`. The row is queued for EVERY model as soon as one design
   # fit is in the table, which is where the observed count used to
   # print under "Weighted n": `6194 | 200`, the second number literally
-  # true and entirely misleading.
-  g <- stats::glm(mpg ~ wt, data = mtcars)
-  fr <- as_regression_frame(g, model_id = "M1")
-  expect_true(is.na(fr$info$fit_stats$weighted_nobs))
-  expect_true(is.na(fr$info$extras$weighted_n))
-  expect_false(fr$info$extras$has_weights)
+  # true and entirely misleading. On an unweighted `lm()` the same call
+  # returns NULL, so that half was already NA.
+  #
+  # The predicate is "supplied weights": non-NULL and not all 1. The
+  # full matrix, one row per case, is pinned below.
+  wn <- function(fit) {
+    fr <- as_regression_frame(fit, model_id = "M1")
+    # The fit-stat column and the extras field are the same number by
+    # construction (one named pair feeds both); assert it here rather
+    # than repeating the pair seven times.
+    expect_identical(
+      fr$info$fit_stats$weighted_nobs,
+      as.numeric(fr$info$extras$weighted_n)
+    )
+    list(n = fr$info$fit_stats$weighted_nobs, has = fr$info$extras$has_weights)
+  }
+
+  d <- mtcars
+  d$w1 <- rep(1, nrow(d))
+  d$w2 <- rep(2, nrow(d))
+  d$wv <- seq_len(nrow(d))
+
+  # lm, no weights: `stats::weights()` is NULL.
+  r <- wn(stats::lm(mpg ~ wt, data = d))
+  expect_true(is.na(r$n))
+  expect_false(r$has)
+
+  # lm, weights all 1: supplied, but indistinguishable from none.
+  r <- wn(stats::lm(mpg ~ wt, data = d, weights = w1))
+  expect_true(is.na(r$n))
+  expect_false(r$has)
+
+  # lm, constant weights: a supplied vector, and its sum is a true
+  # number. Reported, as it was on 0.12.0.
+  r <- wn(stats::lm(mpg ~ wt, data = d, weights = w2))
+  expect_equal(r$n, sum(d$w2))
+  expect_true(r$has)
+
+  # lm, varying weights.
+  r <- wn(stats::lm(mpg ~ wt, data = d, weights = wv))
+  expect_equal(r$n, sum(d$wv))
+  expect_true(r$has)
+
+  # glm, unweighted: the fix. The ones came back as `n`.
+  r <- wn(stats::glm(mpg ~ wt, data = d))
+  expect_true(is.na(r$n))
+  expect_false(r$has)
 
   # Asked for by name on its own, the row still does not appear: no
   # model in the table has a value for it.
   out <- .fsf_render(
-    g,
+    stats::glm(mpg ~ wt, data = d),
     show_columns = c("b"),
     show_fit_stats = c("nobs", "weighted_nobs")
   )
   expect_false(grepl("Weighted n", out, fixed = TRUE))
 
-  # A real weight vector is still counted.
-  set.seed(1)
-  d <- mtcars
-  d$w <- seq_len(nrow(d))
-  gw <- stats::glm(mpg ~ wt, data = d, weights = w)
-  frw <- as_regression_frame(gw, model_id = "M1")
-  expect_equal(frw$info$fit_stats$weighted_nobs, sum(d$w))
-  expect_true(frw$info$extras$has_weights)
+  # Binomial glm weighted by the number of trials. Varying trials, and
+  # -- the case a "constant weights are no weights" rule would lose --
+  # a constant number of trials, which genuinely multiplies the data.
+  set.seed(3)
+  db <- data.frame(x = stats::rnorm(20))
+  db$tv <- sample(5:20, 20, replace = TRUE)
+  db$tc <- rep(10L, 20)
+  db$yv <- stats::rbinom(20, db$tv, 0.4) / db$tv
+  db$yc <- stats::rbinom(20, db$tc, 0.4) / db$tc
+
+  r <- wn(stats::glm(yv ~ x, family = stats::binomial, data = db, weights = tv))
+  expect_equal(r$n, sum(db$tv))
+  expect_true(r$has)
+
+  r <- wn(stats::glm(yc ~ x, family = stats::binomial, data = db, weights = tc))
+  expect_equal(r$n, 200)
+  expect_true(r$has)
 })
 
 test_that("a design fit beside an unweighted glm keeps the count to itself", {
