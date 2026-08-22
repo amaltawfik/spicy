@@ -415,18 +415,6 @@ table_categorical_svy <- function(
   output <- spicy_match_arg(output)
   align <- spicy_match_arg(align)
   ci_method <- spicy_match_arg(ci_method)
-  # The two refused statistics answer by NAME before `match.arg()`
-  # turns them into "must be one of ...": a caller who asked for
-  # `"lincom"` is owed the reason, not a list.
-  if (
-    is.character(chisq_statistic) &&
-      length(chisq_statistic) == 1L &&
-      chisq_statistic %in% .CAT_SVY_CHISQ_REFUSED
-  ) {
-    .abort_cat_svy_statistic(chisq_statistic)
-  }
-  chisq_statistic <- spicy_match_arg(chisq_statistic)
-  .check_cat_svy_statistic_design(chisq_statistic, design)
   cfg <- .svy_validate_common(
     design = design,
     fn = "table_categorical_svy",
@@ -440,6 +428,23 @@ table_categorical_svy <- function(
     excel_sheet = excel_sheet,
     excel_key = "excel_sheet_categorical"
   )
+  # This function's own argument, checked AFTER the design gates. The
+  # two refused statistics answer by NAME before `match.arg()` turns
+  # them into "must be one of ...": a caller who asked for `"lincom"`
+  # is owed the reason, not a list. But a data.frame handed to a `_svy`
+  # entry point is the first thing wrong with the call, and being
+  # lectured about a statistic on an object that is not a design sends
+  # the caller the wrong way -- `table_continuous_svy()` checks nothing
+  # of its own before `.svy_validate_common()` either.
+  if (
+    is.character(chisq_statistic) &&
+      length(chisq_statistic) == 1L &&
+      chisq_statistic %in% .CAT_SVY_CHISQ_REFUSED
+  ) {
+    .abort_cat_svy_statistic(chisq_statistic)
+  }
+  chisq_statistic <- spicy_match_arg(chisq_statistic)
+  .check_cat_svy_statistic_design(chisq_statistic, design)
   excel_sheet <- cfg$excel_sheet
   p_digits <- cfg$p_digits
   df_user <- cfg$df

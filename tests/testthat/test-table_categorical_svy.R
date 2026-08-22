@@ -590,6 +590,19 @@ test_that("the design-only refusals fire, one per branch", {
     table_categorical_svy(tw, select = stype),
     class = "spicy_unsupported"
   )
+  # The cross-product one-argument-at-a-time tests cannot see: a
+  # data.frame WITH a refused statistic is still, first, not a design.
+  # The order used to be the other way round, and the caller was told
+  # to fix a statistic on an object that is not a design at all.
+  expect_error(
+    table_categorical_svy(mtcars, select = cyl, chisq_statistic = "lincom"),
+    class = "spicy_wrong_regime"
+  )
+  err <- expect_error(
+    table_categorical_svy(tw, select = stype, chisq_statistic = "lincom"),
+    class = "spicy_unsupported"
+  )
+  expect_match(conditionMessage(err), "twophase2", fixed = TRUE)
   expect_error(
     table_categorical_svy(d, select = stype, deff = "nope"),
     class = "spicy_invalid_input"
@@ -669,6 +682,7 @@ test_that("`df` overrides the design df, and the footer changes with it", {
   )
   expect_match(note, "supplied in `df`", fixed = TRUE)
 })
+
 
 # ---- restitution ----------------------------------------------------------
 
