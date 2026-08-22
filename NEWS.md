@@ -273,6 +273,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   denominator degrees of freedom and it comes out too small. The same option
   on a `survey::svydesign()` design is correct and still accepted.
 
+* `table_categorical_svy()` tests the same table on a calibrated design as
+  on any other: the displayed `"(Missing)"` category is descriptive and does
+  not enter the comparison, so `drop_na = FALSE` gives the p-value of
+  `drop_na = TRUE` instead of `NaN`.
+
 * `vignette("survey-tables")` gains a section on regression under a design,
   and `?table_continuous_svy` / `?table_categorical_svy` state that the two
   are experimental.

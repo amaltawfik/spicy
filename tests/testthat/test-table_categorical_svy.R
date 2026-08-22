@@ -400,6 +400,53 @@ test_that("the p tests the rows the percentages describe", {
   expect_false("(Missing)" %in% dropped$level)
 })
 
+test_that("a calibrated design tests the same table, and not NaN", {
+  # The same rule, on the design where `droplevels()` alone could not
+  # apply it. `[` on a CALIBRATED design keeps the excluded rows at
+  # weight zero instead of dropping them, so with `drop_na = FALSE` the
+  # `(Missing)` level was still IN the data of the complete-case
+  # domain, survived `droplevels()`, and reached `svychisq()` as an
+  # all-zero row of the weighted table -- whose Rao-Scott correction is
+  # 0/0. The p-value shipped as NaN.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$stype[1:20] <- NA
+  cal <- survey::calibrate(
+    survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc),
+    ~sch.wide,
+    pop = c(`(Intercept)` = 6194, sch.wideYes = 5000)
+  )
+  # The fixture is the trap itself: no weight goes negative (so the
+  # test is not refused for another reason), and the domain cut keeps
+  # every row.
+  expect_identical(.design_negative_weights(cal), 0L)
+  mask <- !is.na(dat$stype) & !is.na(dat$sch.wide)
+  expect_identical(nrow(.design_subset(cal, mask)$variables), nrow(dat))
+
+  # The oracle is survey's own, on the observed-values domain.
+  dom <- .design_subset(cal, mask)
+  dom$variables$stype <- droplevels(as.factor(dom$variables$stype))
+  dom$variables$sch.wide <- droplevels(as.factor(dom$variables$sch.wide))
+  oracle <- as.numeric(
+    survey::svychisq(~ stype + sch.wide, dom, statistic = "F")$p.value
+  )
+  expect_equal(oracle, 0.064102060782059461, tolerance = 1e-12)
+
+  kept <- .svycat_long(cal, select = stype, by = sch.wide, drop_na = FALSE)
+  expect_false(is.nan(kept$p[[1L]]))
+  expect_equal(kept$p[[1L]], oracle, tolerance = 1e-12)
+
+  # The control: the row is DISPLAYED, and the 20 rows behind it were
+  # not part of what was tested -- the p is the one `drop_na = TRUE`
+  # gives, which never saw them.
+  expect_identical(kept$level[[5L]], "(Missing)")
+  expect_identical(kept[["Total n"]][[5L]], 20L)
+  dropped <- .svycat_long(cal, select = stype, by = sch.wide, drop_na = TRUE)
+  expect_false("(Missing)" %in% dropped$level)
+  expect_equal(kept$p[[1L]], dropped$p[[1L]], tolerance = 1e-12)
+})
+
 test_that("a declared level nobody chose does not enter the test", {
   # Same rule, the other way in: `droplevels()` inside the test keeps a
   # ghost level out of the table being tested, so a level added to the

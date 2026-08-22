@@ -188,11 +188,13 @@
 # denominator degrees of freedom went from 15.68 to 19.95 and the
 # p-value from 0.06186 to 0.05710, silently.
 #
-# `droplevels()` on both variables is the other half of that rule, and
-# the reason the two families now test the same table: a `(Missing)`
-# display level, or a declared level nobody chose, is descriptive and
-# does not enter the null hypothesis -- the convention
-# `table_categorical()` has always applied.
+# Dropping the empty levels of both variables is the other half of that
+# rule, and the reason the two families now test the same table: a
+# `(Missing)` display level, or a declared level nobody chose, is
+# descriptive and does not enter the null hypothesis -- the convention
+# `table_categorical()` has always applied. Empty is read on the
+# WEIGHTS, not on the rows, because a calibrated domain keeps the rows
+# it excluded (`.drop_unweighted_levels()`).
 #
 # Negative calibration weights refuse the test, exactly as they do in
 # the continuous twin (decision 36 / ARB-2, applied twin-symmetrically
@@ -211,12 +213,17 @@
   # on a calibrated design leaves the excluded rows at weight ZERO --
   # so this reads the sign of the weights the test would use, the same
   # per-variable question the continuous twin asks.
-  if (.weights_go_negative(.design_weights(design))) {
+  w <- .design_weights(design)
+  if (.weights_go_negative(w)) {
     return(list(p = NA_real_, refused = TRUE))
   }
-  design$variables[[var]] <- droplevels(as.factor(design$variables[[var]]))
-  design$variables[[group_var]] <- droplevels(
-    as.factor(design$variables[[group_var]])
+  # `design` is this function's own copy -- R copied `$variables` on the
+  # first assignment below, and the caller's design is untouched
+  # (decision 36 / ARB-1).
+  design$variables[[var]] <- .drop_unweighted_levels(design$variables[[var]], w)
+  design$variables[[group_var]] <- .drop_unweighted_levels(
+    design$variables[[group_var]],
+    w
   )
   form <- stats::as.formula(paste0("~`", var, "` + `", group_var, "`"))
   r <- .svy_try(survey::svychisq(form, design, statistic = statistic))
