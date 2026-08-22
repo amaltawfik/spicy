@@ -1412,6 +1412,38 @@ family is the model's full coefficient set (intercept and reference rows
 excluded), not the displayed subset – filtering is a display choice and
 must not change the inferential family.
 
+## Tied event times and the survival estimands
+
+A Cox model has to decide what to do when several events share the same
+time, and
+[`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html)
+decides with `ties = "efron"` by default. The absolute estimands do not
+make a second decision:
+
+**The baseline hazard behind the RMST-difference and risk-difference
+columns follows the tie-handling convention of the fit, exactly as
+[`survival::survfit()`](https://rdrr.io/pkg/survival/man/survfit.html)
+and
+[`survival::basehaz()`](https://rdrr.io/pkg/survival/man/basehaz.html)
+do.** A `ties = "breslow"` fit gives a Breslow baseline; the default
+Efron fit gives an Efron baseline. One rule, so the hazard-ratio column
+and the dRMST column always come from the same likelihood. To change the
+convention, change the fit.
+
+When the choice matters is not simply "when there are many ties". What
+governs it is the fraction of tied events *within the risk set*,
+together with the effect size and the spread of the covariates: a large
+risk set dilutes a tied block, a small one – fine strata, matched or
+nested case-control designs – does not. A file with hundreds of tied
+days can be insensitive to the convention while a small stratified one
+with a handful of ties is not.
+
+And Efron is the better default, not the correct answer: the
+approximations are all biased at finite sample size and agree
+asymptotically, and Efron's virtue is a much smaller small-sample bias
+(Hertz-Picciotto & Rockhill 1997). Efron himself, quoting Peto, put it
+as "it probably doesn't make much difference" (Efron 1977).
+
 ## Output formats and broom integration
 
 `output` selects the return type:
@@ -1522,9 +1554,17 @@ multiple regression / correlation analysis for the behavioral sciences*
 Davison, A.C. & Hinkley, D.V. (1997). *Bootstrap methods and their
 application*. Cambridge University Press.
 
+Efron, B. (1977). The efficiency of Cox's likelihood function for
+censored data. *Journal of the American Statistical Association*,
+72(359), 557-565.
+
 Friedrich, R.J. (1982). In defense of multiplicative terms in multiple
 regression equations. *American Journal of Political Science*, 26(4),
 797-833.
+
+Hertz-Picciotto, I. & Rockhill, B. (1997). Validity and efficiency of
+approximation methods for tied survival times in Cox regression.
+*Biometrics*, 53(3), 1151-1156.
 
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in fixed

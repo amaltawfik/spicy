@@ -548,8 +548,22 @@ table_regression(gl, vcov = "HC3")
 The RMST and risk-difference columns are refused for a design-based Cox
 fit. The estimands are not what is in question – they are validated
 against exact oracles for an unweighted Cox model – but their
-uncertainty comes from resampling subjects, and resampling rows ignores
-the strata and the clusters the design declares. Use
+uncertainty comes from resampling subjects, and a row bootstrap ignores
+the strata and the clusters the design declares.
+
+How much that costs depends on the design and on the contrast, so no
+single figure describes it. Measured over five designs and three data
+seeds: a contrast **between** clusters has its standard error
+understated by roughly 1.5x-6x depending on cluster count and size (~3x
+on a 30 x 25 design with moderate intra-cluster correlation), while a
+contrast **within** clusters, and any design without clustering, come
+out about right. Nothing here is peculiar to these columns – the
+estimand-level ratios track the coefficient-level ones design by design,
+so this is the ordinary design effect of the Cox coefficient carried
+onto them.
+
+Putting the design’s own replicate weights in place of the row bootstrap
+is on the roadmap. Until then, use
 [`survey::svykm()`](https://rdrr.io/pkg/survey/man/svykm.html) for a
 marginal survival curve, and
 [`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)

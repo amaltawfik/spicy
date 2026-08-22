@@ -330,7 +330,13 @@ zero components as labelled blocks and a combined-response AME. See
 (time ratios) and
 [`flexsurv::flexsurvreg`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md).
 Absolute effects come as covariate-adjusted RMST and risk differences by
-g-computation for `coxph` and `survreg` fits. See
+g-computation for `coxph` and `survreg` fits. The baseline hazard those
+estimands standardize follows the tie-handling convention of the fit,
+exactly as [`survfit()`](https://rdrr.io/pkg/survival/man/survfit.html)
+and [`basehaz()`](https://rdrr.io/pkg/survival/man/basehaz.html) do – a
+`ties = "breslow"` fit gives a Breslow baseline, the default Efron fit
+an Efron one – so the hazard-ratio column and the dRMST column always
+come from the same likelihood. See
 [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
 
 **Survey-weighted.**

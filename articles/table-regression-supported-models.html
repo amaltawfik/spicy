@@ -886,7 +886,12 @@ See <code><a href="../articles/table-regression-counts.html">vignette("table-reg
 <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg</a></code> (time ratios) and
 <code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg</a></code>. Absolute effects come as
 covariate-adjusted RMST and risk differences by g-computation for
-<code>coxph</code> and <code>survreg</code> fits. See
+<code>coxph</code> and <code>survreg</code> fits. The baseline hazard
+those estimands standardize follows the tie-handling convention of the
+fit, exactly as <code><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit()</a></code> and <code><a href="https://rdrr.io/pkg/survival/man/basehaz.html" class="external-link">basehaz()</a></code> do – a
+<code>ties = "breslow"</code> fit gives a Breslow baseline, the default
+Efron fit an Efron one – so the hazard-ratio column and the dRMST column
+always come from the same likelihood. See
 <code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code>.</p>
 <p><strong>Survey-weighted.</strong> <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code>:
 design-based inference; the unweighted n is a default fit statistic and

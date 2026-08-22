@@ -274,6 +274,36 @@ level against reference for factor predictors and a +1-unit shift for
 continuous predictors, mirroring the AME convention for other model
 families — so the columns read the same way across your tables.
 
+A third decision is inherited rather than made, and it is worth stating
+because it is otherwise invisible. A Cox model has to decide what to do
+when several events land on the same time, and
+[`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) decides with
+`ties = "efron"` by default. **The baseline hazard behind the
+standardized curves follows the tie-handling convention of the fit,
+exactly as [`survfit()`](https://rdrr.io/pkg/survival/man/survfit.html)
+and [`basehaz()`](https://rdrr.io/pkg/survival/man/basehaz.html) do**: a
+`ties = "breslow"` fit gives a Breslow baseline, the default Efron fit
+gives an Efron baseline. One rule, and it keeps the hazard-ratio column
+and the dRMST column coming from the same likelihood. To change the
+convention — to reproduce a Stata or SAS table, say — change it on the
+fit; the estimands follow.
+
+When does it matter? Not simply “when there are many ties”. What governs
+it is the fraction of tied events *within the risk set*, together with
+the effect size and the spread of the covariates: a large risk set
+dilutes a tied block, a small one — fine strata, matched or nested
+case-control designs — does not. A file with hundreds of tied days can
+be quite insensitive to the convention while a small stratified one with
+a handful of ties is not.
+
+And Efron is the better default, not the correct answer. All the
+approximations are biased at finite sample size and agree
+asymptotically; Efron’s virtue is a much smaller small-sample bias, and
+it is why the simulation literature recommends it (Hertz-Picciotto &
+Rockhill 1997). Efron himself, quoting Peto, put the practical case as
+“it probably doesn’t make much difference” (Efron 1977). Change the
+convention when you have a reason, not on principle.
+
 ## Multi-centre data: cluster-robust variance
 
 The `lung` patients were enrolled by 18 institutions, and outcomes
@@ -640,8 +670,14 @@ broom::tidy(table_regression(cx, exponentiate = TRUE))
 
 - Cox, D. R. (1972). Regression models and life-tables. *Journal of the
   Royal Statistical Society, Series B*, 34(2), 187–220.
+- Efron, B. (1977). The efficiency of Cox’s likelihood function for
+  censored data. *Journal of the American Statistical Association*,
+  72(359), 557–565.
 - Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
   Springer.
+- Hertz-Picciotto, I., & Rockhill, B. (1997). Validity and efficiency of
+  approximation methods for tied survival times in Cox regression.
+  *Biometrics*, 53(3), 1151–1156.
 - Jackson, C. H. (2016). `flexsurv`: A platform for parametric survival
   modeling in R. *Journal of Statistical Software*, 70(8).
 - Lin, D. Y., & Wei, L. J. (1989). The robust inference for the Cox

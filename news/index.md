@@ -518,6 +518,16 @@ instead of rendering an empty column.
 - Stratified Cox fits keep each subject’s own stratum baseline;
   stratified `survreg` fits are refused.
 
+- The baseline hazard behind these columns follows the tie handling of
+  the fit, as
+  [`survfit()`](https://rdrr.io/pkg/survival/man/survfit.html) and
+  [`basehaz()`](https://rdrr.io/pkg/survival/man/basehaz.html) do: a
+  `ties = "breslow"` fit gives a Breslow baseline, the default Efron fit
+  an Efron one. Documented in
+  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
+
 - New `show_columns` token `"n_events"`: event counts as `events/N` next
   to the estimates – per factor level (reference row included), model
   totals on continuous rows – for binomial outcomes (`glm`, `glmer`,

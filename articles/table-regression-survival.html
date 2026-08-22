@@ -376,6 +376,32 @@ disclosed in the table note). Second, the contrast is level against
 reference for factor predictors and a +1-unit shift for continuous
 predictors, mirroring the AME convention for other model families — so
 the columns read the same way across your tables.</p>
+<p>A third decision is inherited rather than made, and it is worth
+stating because it is otherwise invisible. A Cox model has to decide
+what to do when several events land on the same time, and
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph()</a></code> decides with <code>ties = "efron"</code> by
+default. <strong>The baseline hazard behind the standardized curves
+follows the tie-handling convention of the fit, exactly as
+<code><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit()</a></code> and <code><a href="https://rdrr.io/pkg/survival/man/basehaz.html" class="external-link">basehaz()</a></code> do</strong>: a
+<code>ties = "breslow"</code> fit gives a Breslow baseline, the default
+Efron fit gives an Efron baseline. One rule, and it keeps the
+hazard-ratio column and the dRMST column coming from the same
+likelihood. To change the convention — to reproduce a Stata or SAS
+table, say — change it on the fit; the estimands follow.</p>
+<p>When does it matter? Not simply “when there are many ties”. What
+governs it is the fraction of tied events <em>within the risk set</em>,
+together with the effect size and the spread of the covariates: a large
+risk set dilutes a tied block, a small one — fine strata, matched or
+nested case-control designs — does not. A file with hundreds of tied
+days can be quite insensitive to the convention while a small stratified
+one with a handful of ties is not.</p>
+<p>And Efron is the better default, not the correct answer. All the
+approximations are biased at finite sample size and agree
+asymptotically; Efron’s virtue is a much smaller small-sample bias, and
+it is why the simulation literature recommends it (Hertz-Picciotto &amp;
+Rockhill 1997). Efron himself, quoting Peto, put the practical case as
+“it probably doesn’t make much difference” (Efron 1977). Change the
+convention when you have a reason, not on principle.</p>
 </div>
 <div class="section level2">
 <h2 id="multi-centre-data-cluster-robust-variance">Multi-centre data: cluster-robust variance<a class="anchor" aria-label="anchor" href="#multi-centre-data-cluster-robust-variance"></a>
@@ -1081,8 +1107,14 @@ estimates and CI bounds are on the ratio scale, as displayed:</p>
 <ul>
 <li>Cox, D. R. (1972). Regression models and life-tables. <em>Journal of
 the Royal Statistical Society, Series B</em>, 34(2), 187–220.</li>
+<li>Efron, B. (1977). The efficiency of Cox’s likelihood function for
+censored data. <em>Journal of the American Statistical Association</em>,
+72(359), 557–565.</li>
 <li>Harrell, F. E. (2015). <em>Regression Modeling Strategies</em> (2nd
 ed.). Springer.</li>
+<li>Hertz-Picciotto, I., &amp; Rockhill, B. (1997). Validity and
+efficiency of approximation methods for tied survival times in Cox
+regression. <em>Biometrics</em>, 53(3), 1151–1156.</li>
 <li>Jackson, C. H. (2016). <code>flexsurv</code>: A platform for
 parametric survival modeling in R. <em>Journal of Statistical
 Software</em>, 70(8).</li>
