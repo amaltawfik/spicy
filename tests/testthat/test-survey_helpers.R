@@ -240,6 +240,29 @@ test_that("`.design_subset()` keeps rows at weight zero on a calibrated design",
   expect_equal(sum(stats::weights(sub)), 4420.99999999999, tolerance = 1e-8)
 })
 
+test_that("`.drop_unweighted_levels()` reads the weights, not the rows", {
+  f <- factor(c("a", "b", "c", "c"), levels = c("a", "b", "c", "z"))
+  # Never observed, and observed only at weight zero: both go, and the
+  # rows behind the second become NA rather than a level nobody weighs.
+  out <- .drop_unweighted_levels(f, c(2, 3, 0, 0))
+  expect_identical(levels(out), c("a", "b"))
+  expect_identical(as.character(out), c("a", "b", NA, NA))
+
+  # With every weight positive it is `droplevels()` and nothing more,
+  # which is why an ordinary design cannot see this function.
+  same <- .drop_unweighted_levels(f, c(2, 3, 1, 1))
+  expect_identical(levels(same), c("a", "b", "c"))
+  expect_identical(as.character(same), as.character(f))
+
+  # A character vector arrives here from a `by` column, and an
+  # all-unweighted variable comes back empty rather than erroring.
+  expect_identical(
+    levels(.drop_unweighted_levels(c("x", "y"), c(1, 0))),
+    "x"
+  )
+  expect_identical(nlevels(.drop_unweighted_levels(f, c(0, 0, 0, 0))), 0L)
+})
+
 test_that("`.design_weights()` asks by name, and survey still means it", {
   skip_if_not_installed("survey")
   # On a replicate design the argument is load-bearing: the bare

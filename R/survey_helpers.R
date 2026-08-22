@@ -239,6 +239,46 @@
   any(!is.na(w) & w < 0)
 }
 
+# The levels a design actually weighs.
+#
+# `droplevels()` reads the DATA, and on a calibrated design the data is
+# not the sample: `[` retains the excluded rows at weight ZERO instead
+# of dropping them (see `.design_subset()`), so every level of the full
+# design survives a domain cut. The case that bites is the `(Missing)`
+# display level -- with `drop_na = FALSE` the variable carries it, the
+# complete-case domain gives it weight zero and nothing else,
+# `droplevels()` cannot see that, and `svychisq()` is handed a weighted
+# table with an all-zero row. Its Rao-Scott correction is then 0/0 and
+# the p-value comes back NaN.
+#
+# So a level with no weight behind it is emptied first, which makes the
+# test read the same table as `drop_na = TRUE` -- statistics on
+# observed values, the rule the two families share.
+#
+# The predicate is a SUM, and it is only safe because the negative
+# weights refuse the test upstream (`.weights_go_negative()`): with
+# every weight >= 0, a zero total means no observation and never
+# cancellation. On a design that retains no row at weight zero this is
+# `droplevels()` and nothing more, because a level of a sampled row has
+# a positive weight behind it.
+.drop_unweighted_levels <- function(v, w) {
+  f <- droplevels(as.factor(v))
+  if (nlevels(f) == 0L) {
+    return(f)
+  }
+  total <- vapply(
+    levels(f),
+    function(l) sum(w[!is.na(f) & f == l], na.rm = TRUE),
+    numeric(1)
+  )
+  dead <- names(total)[total == 0]
+  if (length(dead) > 0L) {
+    f[f %in% dead] <- NA
+    f <- droplevels(f)
+  }
+  f
+}
+
 # Which of a table's group comparisons the negative weights refused,
 # and therefore which sentence the footer owes:
 #   "none" -- nothing was refused. A comparison missing for another

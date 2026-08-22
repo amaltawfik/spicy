@@ -72,6 +72,25 @@ test_that("nls: nls_formula string in extras", {
   expect_match(fr$info$extras$nls_formula, "conc ~", fixed = TRUE)
 })
 
+test_that("nls: has_weights is the supplied-weights rule", {
+  # `nls()` fits with a vector of ones when nobody asked for weights,
+  # and `weights(fit)` hands it back. Reading only `!is.null()` --
+  # which is what this field did -- reported the default as a weighted
+  # fit; the answer is the one `.has_real_weights()` gives everywhere
+  # else.
+  data(Indometh, package = "datasets", envir = environment())
+  d <- Indometh
+  d$w1 <- 1
+  d$wv <- seq(0.5, 2, length.out = nrow(d))
+  frm <- conc ~ A * exp(-k * time)
+  st <- list(A = 2, k = 0.5)
+  ex <- function(fit) as_regression_frame(fit, model_id = "M1")$info$extras
+
+  expect_false(ex(nls(frm, data = d, start = st))$has_weights)
+  expect_false(ex(nls(frm, data = d, start = st, weights = w1))$has_weights)
+  expect_true(ex(nls(frm, data = d, start = st, weights = wv))$has_weights)
+})
+
 
 # ---- 2. No intercept / factor / reference rows ---------------------------
 

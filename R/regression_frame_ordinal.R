@@ -1164,15 +1164,22 @@ as_regression_frame.clm <- function(
 }
 
 
-# Non-trivial prior weights for polr / clm. Neither class stores a
-# `$weights` component (the previous polr check `!is.null(fit$weights)`
-# was therefore always FALSE, and clm hardcoded FALSE); the weights live
-# in the model frame's "(weights)" column. Mirrors the lm convention:
-# has_weights means NON-UNIFORM weights.
+# Prior weights for polr / clm. Neither class stores a `$weights`
+# component (the previous polr check `!is.null(fit$weights)` was
+# therefore always FALSE, and clm hardcoded FALSE); the weights live in
+# the model frame's "(weights)" column.
+#
+# The question `extras$has_weights` asks is "did the user supply
+# weights", so the answer is `.has_real_weights()`'s, the one every
+# other frame gives -- and NOT "are the weights non-uniform", which was
+# the rule here and reported a fit weighted by a constant 3 as
+# unweighted. That other rule is right for exactly one thing, the
+# variance LABEL (`.weights_kind_from_fit()`), because a constant
+# factor does not change the fit.
 .ordinal_has_weights <- function(fit) {
   w <- tryCatch(
     stats::model.weights(stats::model.frame(fit)),
     error = function(e) NULL
   )
-  !is.null(w) && length(unique(w)) > 1L
+  .has_real_weights(w)
 }

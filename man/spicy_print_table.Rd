@@ -21,6 +21,7 @@ spicy_print_table(
   total_row_idx = attr(x, "total_row_idx"),
   display_labels = NULL,
   fit_stats_start = NULL,
+  qualify_companions = FALSE,
   ...
 )
 }
@@ -93,6 +94,16 @@ visible data cell is blank -- model-level statistics print once,
 under the panel that carries their values, instead of leaving
 empty \code{n} / \code{AIC} stub rows on every continuation panel. \code{NULL}
 (default) keeps all rows on all panels.}
+
+\item{qualify_companions}{Logical. When the table splits into stacked
+panels, should a companion column (\code{SE}, \code{p}, an interval) that a
+width split separated from its carrier name that carrier in its
+header -- \verb{95\% CI} becoming \verb{95\% CI (B)}? Set it \code{TRUE} only for a
+layout where those headers really are companions of the estimate
+column on their left, as in a coefficient table. In a layout whose
+\code{p} is the omnibus test of a whole block it has no carrier, and
+qualifying it would attribute it to whichever column happened to
+sit before it. Defaults to \code{FALSE}.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }

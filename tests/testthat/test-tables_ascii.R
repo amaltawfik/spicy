@@ -250,14 +250,109 @@ test_that("continuation panels name the estimand of an orphaned companion column
   names(x)[c(4L, 6L)] <- c("95% CI", "95% CI")
   op <- options(width = 66)
   on.exit(options(op), add = TRUE)
-  out <- capture.output(spicy_print_table(x, align_left_cols = 1L))
+  qp <- function() {
+    capture.output(spicy_print_table(
+      x,
+      align_left_cols = 1L,
+      qualify_companions = TRUE
+    ))
+  }
+  out <- qp()
   expect_true(any(grepl("95% CI (dRisk (365))", out, fixed = TRUE)))
+  # Off by default: a layout whose `p` is a block omnibus has no
+  # carrier to name, so the caller has to say it has one.
+  bare <- capture.output(spicy_print_table(x, align_left_cols = 1L))
+  expect_false(any(grepl("95% CI (dRisk", bare, fixed = TRUE)))
+  expect_true(any(grepl("95% CI", bare, fixed = TRUE)))
   # Carrier travelling WITH its companion: short header preserved.
   options(width = 58)
-  out2 <- capture.output(spicy_print_table(x, align_left_cols = 1L))
+  out2 <- qp()
   hdr2 <- grep("dRisk", out2, value = TRUE)
   expect_true(any(grepl("dRisk (365)", hdr2, fixed = TRUE)))
   expect_false(any(grepl("95% CI (dRisk", out2, fixed = TRUE)))
+})
+
+test_that("a block omnibus p is not attributed to its neighbour", {
+  # Register n. 89. The carrier search is "the nearest data column on my
+  # left", which is the estimate only in a coefficient layout. In the
+  # descriptive families the `p` is the test of the whole block, and a
+  # width split handed it whatever column happened to precede it: the
+  # console said "p (Total %)" of a chi-squared test, "p (Test)" of a
+  # Kruskal-Wallis, "p (Total DEff)" of a Rao-Scott -- each a false
+  # claim about what was compared.
+  skip_if_not_installed("survey")
+  d <- mtcars
+  for (v in c("cyl", "gear", "am", "carb")) d[[v]] <- factor(d[[v]])
+  hdr <- function(expr, w) {
+    op <- options(width = w)
+    on.exit(options(op), add = TRUE)
+    out <- capture.output(print(expr))
+    paste(grep("Variable", out, value = TRUE), collapse = "\n")
+  }
+
+  # One width per family, each of them a width that used to compose.
+  cat_h <- hdr(table_categorical(d, c(cyl, gear), by = carb), 100)
+  con_h <- hdr(
+    table_continuous(
+      d,
+      c(mpg, disp, hp, wt),
+      by = carb,
+      show_columns = c("n", "m", "sd", "ci", "med", "iqr"),
+      p_value = TRUE,
+      statistic = TRUE,
+      effect_size = TRUE
+    ),
+    82
+  )
+  out_h <- hdr(
+    table_outcome(
+      d,
+      mpg,
+      c(cyl, gear, carb),
+      show_columns = c("n", "m", "sd", "ci", "med", "iqr"),
+      p_value = TRUE,
+      statistic = TRUE,
+      effect_size = TRUE
+    ),
+    90
+  )
+  lm_h <- hdr(table_continuous_lm(d, c(mpg, disp, hp), by = carb), 62)
+
+  for (h in list(cat_h, con_h, out_h, lm_h)) {
+    # The orphan reads "p", and the panel it landed on still shows it.
+    expect_false(grepl("p (", h, fixed = TRUE))
+    expect_match(h, "p", fixed = TRUE)
+  }
+  expect_false(grepl("p (Total %)", cat_h, fixed = TRUE))
+  expect_false(grepl("p (Test)", con_h, fixed = TRUE))
+  expect_false(grepl("p (Test)", out_h, fixed = TRUE))
+
+  data(api, package = "survey", envir = environment())
+  des <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = apiclus1,
+    fpc = ~fpc
+  )
+  svy_h <- hdr(
+    suppressWarnings(table_categorical_svy(
+      des,
+      c(stype, awards),
+      by = sch.wide,
+      deff = TRUE,
+      proportion_ci = TRUE
+    )),
+    102
+  )
+  expect_false(grepl("p (", svy_h, fixed = TRUE))
+
+  # And the coefficient table, which asked for the qualification,
+  # still gets it: there `p` really does follow its estimate.
+  reg_h <- hdr(
+    table_regression(lm(mpg ~ wt + hp + disp + drat, data = mtcars)),
+    46
+  )
+  expect_true(grepl("p (B)", reg_h, fixed = TRUE))
 })
 
 

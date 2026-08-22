@@ -472,3 +472,31 @@ test_that("AICc for lm and gaussian glm uses k = length(coef) + 1 (estimated dis
   )
   expect_equal(fs_gg$AICc, expected_lm, tolerance = 1e-8)
 })
+
+
+test_that("the two weight predicates answer two different questions", {
+  # `.has_real_weights()` asks whether the user SUPPLIED weights, and
+  # is what `extras$has_weights` and `weighted_n` are built on: a fit
+  # weighted by a constant 3 counts three times as many observations,
+  # and losing that would be losing a true number.
+  #
+  # `.weights_kind_from_fit()` asks how to NAME the variance, and there
+  # the uniform rule is the right one -- a constant factor does not
+  # change the fit, so it does not change the estimator. The divergence
+  # is deliberate, and this is the witness that keeps one from being
+  # "aligned" onto the other.
+  fit_k <- lm(mpg ~ wt, data = mtcars, weights = rep(3, nrow(mtcars)))
+  fit_v <- lm(mpg ~ wt, data = mtcars, weights = seq_len(nrow(mtcars)))
+  fit_0 <- lm(mpg ~ wt, data = mtcars)
+
+  expect_true(.has_real_weights(stats::weights(fit_k)))
+  expect_identical(.weights_kind_from_fit(fit_k), "none")
+  expect_equal(.weighted_n_or_na(stats::weights(fit_k)), 96)
+
+  expect_true(.has_real_weights(stats::weights(fit_v)))
+  expect_identical(.weights_kind_from_fit(fit_v), "case")
+
+  expect_false(.has_real_weights(stats::weights(fit_0)))
+  expect_identical(.weights_kind_from_fit(fit_0), "none")
+  expect_identical(.weighted_n_or_na(stats::weights(fit_0)), NA_real_)
+})

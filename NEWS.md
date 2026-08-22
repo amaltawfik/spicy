@@ -273,6 +273,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   denominator degrees of freedom and it comes out too small. The same option
   on a `survey::svydesign()` design is correct and still accepted.
 
+* `table_categorical_svy()` tests the same table on a calibrated design as
+  on any other: the displayed `"(Missing)"` category is descriptive and does
+  not enter the comparison, so `drop_na = FALSE` gives the p-value of
+  `drop_na = TRUE` instead of `NaN`.
+
 * `vignette("survey-tables")` gains a section on regression under a design,
   and `?table_continuous_svy` / `?table_categorical_svy` state that the two
   are experimental.
@@ -923,6 +928,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
 ## Minor improvements
 
+* `spicy_print_table()` gains `qualify_companions`. When a width split
+  pushes an `SE`, a `p` or an interval onto a continuation panel, this
+  says whether that column should name the estimate it belongs to
+  (`95% CI` becoming `95% CI (B)`). It is `FALSE` by default, because a
+  `p` that tests a whole block belongs to no column and naming one for
+  it would say something false about what was compared; the coefficient
+  tables, where the neighbour on the left really is the carrier, ask
+  for it.
 * `as_structured()` no longer carries a `measure` field in the
   `col_meta` of a `table_categorical()` association column. It was
   undocumented and its value was the name of the element holding it

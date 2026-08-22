@@ -333,10 +333,12 @@ test_that("`smd = FALSE` changes nothing, and `smd = TRUE` only appends", {
     by = g,
     smd = TRUE
   )))
-  # The column goes LAST -- a constraint, not a preference: the console
-  # re-labels an orphaned companion column by looking LEFT for its
-  # carrier, so an SMD inserted between `Test` and `p` would re-label an
-  # orphaned `p` as "p (SMD)".
+  # The column goes LAST. It used to be a constraint rather than a
+  # preference -- the console re-labelled an orphaned companion column
+  # by looking LEFT for a carrier, so an SMD inserted between `Test` and
+  # `p` would have re-labelled an orphaned `p` as "p (SMD)". That search
+  # is now opt-in and this family does not ask for it (register n. 89),
+  # so the position is a preference again.
   keys_off <- names(
     as_structured(table_continuous(
       d,

@@ -996,11 +996,10 @@ table_continuous_svy <- function(
     digits = digits,
     qrule = qrule,
     deff = deff,
-    test_label = if (do_test && (p_value || statistic)) {
-      test_label
-    } else {
-      NA_character_
-    },
+    # `do_test` IS `(p_value || statistic) && has_group` (above), so the
+    # second half of the old conjunction only asked the same question
+    # twice.
+    test_label = if (do_test) test_label else NA_character_,
     test_ddf = test_ddf,
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused

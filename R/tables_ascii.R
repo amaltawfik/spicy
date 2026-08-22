@@ -691,6 +691,15 @@ ascii_table_panels <- function(
 #'   under the panel that carries their values, instead of leaving
 #'   empty `n` / `AIC` stub rows on every continuation panel. `NULL`
 #'   (default) keeps all rows on all panels.
+#' @param qualify_companions Logical. When the table splits into stacked
+#'   panels, should a companion column (`SE`, `p`, an interval) that a
+#'   width split separated from its carrier name that carrier in its
+#'   header -- `95% CI` becoming `95% CI (B)`? Set it `TRUE` only for a
+#'   layout where those headers really are companions of the estimate
+#'   column on their left, as in a coefficient table. In a layout whose
+#'   `p` is the omnibus test of a whole block it has no carrier, and
+#'   qualifying it would attribute it to whichever column happened to
+#'   sit before it. Defaults to `FALSE`.
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return
@@ -733,6 +742,7 @@ spicy_print_table <- function(
   total_row_idx = attr(x, "total_row_idx"),
   display_labels = NULL,
   fit_stats_start = NULL,
+  qualify_companions = FALSE,
   ...
 ) {
   if (!is.data.frame(x)) {
@@ -890,7 +900,16 @@ spicy_print_table <- function(
       # short header. Duplicate columns arrive uniquified ("95% CI.2"),
       # so matching goes through the base name; the display label (what
       # build_ascii_table actually prints) is edited when present.
-      if (panel_i > 1L) {
+      #
+      # Opt-in, because "the column on my left" is only the carrier in a
+      # coefficient layout. In a descriptive table the `p` is the
+      # omnibus test of the whole block and belongs to no column at all,
+      # and the search silently attributed it to whichever neighbour the
+      # split had left behind -- "p (Total %)", "p (Test)",
+      # "p (Total DEff)". A statistic of a block named after a column is
+      # a false claim about what was tested, so those families leave
+      # this off (register n. 89).
+      if (panel_i > 1L && isTRUE(qualify_companions)) {
         base_nm <- function(nm) sub("[.][0-9]+$", "", nm)
         shown <- if (!is.null(panel_display_labels)) {
           as.character(panel_display_labels)
