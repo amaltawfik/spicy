@@ -48,7 +48,7 @@ table_continuous_svy(dclus1, select = c(api00, api99))
 #>  api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
 #>  api99    │ 606.98  112.85  365.00  890.00   555.02     658.94    183 
 #> 
-#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom.
+#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom.
 ```
 
 Three sentences under the table, and each is there because the number
@@ -109,7 +109,7 @@ table_continuous_svy(
 #> ──────────┼──────────────────
 #>  api00    │  6194.00    9.35 
 #> 
-#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Quantiles: qrule = "math" (survey). Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
+#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Quantiles: qrule = "math" (survey). Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
 ```
 
 The design effect of 9.35 is the point of the whole exercise: the
@@ -150,7 +150,7 @@ table_continuous_svy(dclus1, select = api00, by = stype, statistic = TRUE)
 #>           │ H                            
 #>           │ M                            
 #> 
-#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).
+#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).
 ```
 
 The comparison is one design-based test on the whole design, not a set
@@ -191,7 +191,7 @@ table_categorical_svy(dclus1, select = c(stype, awards))
 #>    No       │   53    29.0  
 #>    Yes      │  130    71.0  
 #> 
-#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
+#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
 ```
 
 `n` is the *observed* count: 144 schools of type E were sampled. The
@@ -217,7 +217,7 @@ table_categorical_svy(
 #>    H        │   14     7.7       3.5         15.8       1.91  
 #>    M        │   25    13.7       8.4         21.3       1.40  
 #> 
-#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. DEff = design effect (design-based variance / simple-random-sample variance at the same n).
+#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. DEff = design effect (design-based variance / simple-random-sample variance at the same n).
 ```
 
 The percentage always comes from
@@ -242,7 +242,7 @@ table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #>    H        │    3     13.0      11      6.9        14        7.7            
 #>    M        │    8     34.8      17     10.6        25       13.7            
 #> 
-#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-square (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
+#> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-square (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
 ```
 
 The `p` is [`svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html):
@@ -277,7 +277,7 @@ table_continuous_svy(rclus1, select = api00)
 #> ──────────┼───────────────────────────────────────────────────────────
 #>  api00    │ 644.17  105.75  411.00  905.00   587.70     700.64    183 
 #> 
-#> N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Standard errors: replicate weights (survey). Confidence intervals and tests use the design degrees of freedom.
+#> N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom.
 ```
 
 ## Weights, or a design?
@@ -647,8 +647,8 @@ table_continuous_svy(
 [TABLE]
 
 N = 200 (weighted 6194). Design: stratified (stype), with finite
-population correction; degrees of freedom vary by group (49 to 99).
-Standard errors: Taylor linearisation (survey). Confidence intervals and
+population correction; degrees of freedom vary by group (49 to 99). Std.
+errors: Design-based (Taylor linearisation). Confidence intervals and
 tests use the design degrees of freedom. Group comparison: design-based
 Wald test. The group comparison uses 195 degrees of freedom (observed
 groups only).

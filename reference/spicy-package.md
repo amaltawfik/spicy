@@ -188,6 +188,15 @@ parent class plus a leaf class describing the specific cause:
     this input; result is `NA` (e.g., Tau-b on a table with all-zero
     marginals).
 
+  - `spicy_negative_weights_no_test` – signaled together with
+    `spicy_undefined_stat` when
+    [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+    or
+    [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+    withholds a group comparison because the analytic sample carries
+    negatively weighted rows; the estimates are still reported and the
+    table note says so.
+
   - `spicy_dropped_na` – `NA` observations were silently excluded from
     the computation (e.g., `NA` weights).
 

@@ -193,7 +193,12 @@ freedom and the note says so.</p></dd>
 
 <dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
 <dd><p>Group comparison: <code>"welch"</code> (default), <code>"student"</code>
-(warns; identical under a design) or <code>"nonparametric"</code>.</p></dd>
+(warns; identical under a design) or <code>"nonparametric"</code>. A
+variable whose complete cases include negatively weighted rows is
+not compared: a design-based test is not defined when the weights
+change sign. Its estimates are still reported, the note says which
+comparisons were withheld, and the call warns
+(<code>spicy_negative_weights_no_test</code>).</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
@@ -361,7 +366,7 @@ and <code>smd</code> (no established design-based variance), and <code>data</cod
 <span class="r-out co"><span class="r-pr">#&gt;</span>  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   593.68     694.66    183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  api99    <span style="color: #9E9E9E;">│</span> 606.98  112.85  365.00  890.00   555.02     658.94    183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom.</span></span>
 <span class="r-in"><span><span class="fu">table_continuous_svy</span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">api00</span>, by <span class="op">=</span> <span class="va">stype</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by stype</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -377,7 +382,7 @@ and <code>smd</code> (no established design-based variance), and <code>data</cod
 <span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> H            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> M            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).</span></span>
 <span class="r-in"><span><span class="fu">table_continuous_svy</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">dclus1</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="va">api00</span>,</span></span>
@@ -390,7 +395,7 @@ and <code>smd</code> (no established design-based variance), and <code>data</cod
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  api00      <span style="color: #9E9E9E;">│</span>  644.17    23.54     593.68       694.66      183    9.35  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

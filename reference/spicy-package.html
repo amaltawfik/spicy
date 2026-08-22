@@ -228,6 +228,12 @@ same name for the renderable case).</p></li>
 Leaves:</p><ul><li><p><code>spicy_undefined_stat</code> – the requested
 statistic is undefined for this input; result is <code>NA</code>
 (e.g., Tau-b on a table with all-zero marginals).</p></li>
+<li><p><code>spicy_negative_weights_no_test</code> – signaled
+together with <code>spicy_undefined_stat</code> when
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> or <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>
+withholds a group comparison because the analytic sample
+carries negatively weighted rows; the estimates are still
+reported and the table note says so.</p></li>
 <li><p><code>spicy_dropped_na</code> – <code>NA</code> observations were
 silently excluded from the computation (e.g., <code>NA</code>
 weights).</p></li>

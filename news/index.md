@@ -353,6 +353,23 @@ instead of rendering an empty column.
   residual degrees of freedom its tests use, so the table can be read
   without the design object at hand.
 
+- A design whose calibration produced negative weights says so in the
+  note: the exact count, and what follows from it – a weighted mean can
+  fall outside the observed range, and a variance can come out negative.
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  then do not report the group comparison of the variables concerned,
+  because a design-based test is not defined when the weights change
+  sign; the note says which comparisons were withheld and the call warns
+  (`spicy_negative_weights_no_test`). Estimates and counts are
+  unaffected, and so are calibrated designs whose weights all stay
+  positive.
+
+- A design table and a survey regression name the variance the same way:
+  `Std. errors: Design-based (Taylor linearisation)`, or
+  `(replicate weights, JK1)` on a replicate design.
+
 - `show_fit_stats = "eff_p"` reports the effective number of parameters
   of a [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html)
   design.
@@ -485,6 +502,11 @@ instead of rendering an empty column.
   template, and any other string is added to the Typst
   [`text()`](https://rdrr.io/r/graphics/text.html) call around it,
   e.g. `"fill: luma(89)"` for a grey note.
+
+- Table notes rendered by the `"tinytable"` engine escape the labels
+  they interpolate when the output is HTML. A variable or level label
+  containing markup used to reach the footer as markup. Typst and LaTeX
+  output is unchanged.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   gains `show_columns`: pick the statistics the table shows – `"med"`,
@@ -681,6 +703,19 @@ instead of rendering an empty column.
   out.
 
 ### Bug fixes
+
+- `weighted_nobs` is `NA` for an unweighted
+  [`glm()`](https://rdrr.io/r/stats/glm.html), in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and in `glance()`. It used to equal `n`:
+  [`stats::weights()`](https://rdrr.io/r/stats/weights.html) returns the
+  prior weights of a [`glm()`](https://rdrr.io/r/stats/glm.html), a
+  vector of ones on an unweighted fit, and their sum was reported as a
+  weighted count. In a table holding a survey regression, where the row
+  shows for every model, the observed count read as a population. An
+  unweighted [`lm()`](https://rdrr.io/r/stats/lm.html) was already `NA`,
+  because [`stats::weights()`](https://rdrr.io/r/stats/weights.html)
+  returns `NULL` for it.
 
 - `output = "gt"` tables carry their table note into the saved file.
   [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html),

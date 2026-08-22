@@ -146,7 +146,7 @@ throughout:</p>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   593.68     694.66    183 </span></span>
 <span><span class="co">#&gt;  api99    <span style="color: #9E9E9E;">│</span> 606.98  112.85  365.00  890.00   555.02     658.94    183 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom.</span></span></span></code></pre></div>
 <p>Three sentences under the table, and each is there because the number
 above it cannot be read without them. The design is a one-stage cluster
 sample of 15 school districts with a finite population correction; the
@@ -194,7 +194,7 @@ effect), and minus <code>"med_ci"</code>:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────</span></span></span>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span>  6194.00    9.35 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Quantiles: qrule = "math" (survey). Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Quantiles: qrule = "math" (survey). Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.</span></span></span></code></pre></div>
 <p>The design effect of 9.35 is the point of the whole exercise: the
 variance of this cluster sample is nine times what a simple random
 sample of 183 schools would have given. A table that ignored the design
@@ -231,7 +231,7 @@ footer gives the span:</p>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> H                            </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> M                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).</span></span></span></code></pre></div>
 <p>The comparison is one design-based test on the whole design, not a
 set of pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> with two observed groups,
 the Wald <em>F</em> of <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> with three or more,
@@ -269,7 +269,7 @@ design’s.</p>
 <span><span class="co">#&gt;    No       <span style="color: #9E9E9E;">│</span>   53    29.0  </span></span>
 <span><span class="co">#&gt;    Yes      <span style="color: #9E9E9E;">│</span>  130    71.0  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p><code>n</code> is the <em>observed</em> count: 144 schools of type E
 were sampled. The <code>78.7%</code> beside it is an <em>estimate</em>
 of the population share, and the two answer different questions – which
@@ -291,7 +291,7 @@ population (6194) beside the sample size (183).</p>
 <span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   14     7.7       3.5         15.8       1.91  </span></span>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   25    13.7       8.4         21.3       1.40  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span></span></code></pre></div>
 <p>The percentage always comes from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> and the
 interval from <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code>. That is deliberate:
 <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code> estimates on the transformed scale its method
@@ -309,7 +309,7 @@ interval and not of the proportion.</p>
 <span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>    3     13.0      11      6.9        14        7.7            </span></span>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>    8     34.8      17     10.6        25       13.7            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Standard errors: Taylor linearisation (survey). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-square (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-square (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p>The <code>p</code> is <code><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">svychisq()</a></code>: Pearson’s chi-square
 with the Rao-Scott second-order correction, referred to <em>F</em>(ndf,
 <code>degf(design)</code>). <code>chisq_statistic</code> offers
@@ -341,7 +341,7 @@ standard errors are not, and should not be:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   587.70     700.64    183 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Standard errors: replicate weights (survey). Confidence intervals and tests use the design degrees of freedom.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="weights-or-a-design">Weights, or a design?<a class="anchor" aria-label="anchor" href="#weights-or-a-design"></a>
@@ -1090,8 +1090,8 @@ M
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 N = 200 (weighted 6194). Design: stratified (stype), with finite
-population correction; degrees of freedom vary by group (49 to 99).
-Standard errors: Taylor linearisation (survey). Confidence intervals and
+population correction; degrees of freedom vary by group (49 to 99). Std.
+errors: Design-based (Taylor linearisation). Confidence intervals and
 tests use the design degrees of freedom. Group comparison: design-based
 Wald test. The group comparison uses 195 degrees of freedom (observed
 groups only).
