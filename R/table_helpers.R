@@ -217,7 +217,7 @@ decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   # the same internal position. Defaults to ASCII space U+0020 for
   # ASCII / clipboard / data.frame output (`trimws()` strips it
   # naturally). HTML / Word renderers (`gt`, `tinytable`,
-  # `flextable`, `word`) should pass `" "` (FIGURE SPACE,
+  # `flextable`, `word`) should pass `"\u2007"` (FIGURE SPACE,
   # digit-width): HTML collapses runs of ASCII space and markdown
   # table cells strip leading / trailing ASCII whitespace, which
   # silently undoes the padding; U+2007 is preserved by both HTML
