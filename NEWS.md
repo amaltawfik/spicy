@@ -336,6 +336,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `options(spicy.note_style)`: `"none"` leaves the note to the document
   template, and any other string is added to the Typst `text()` call around
   it, e.g. `"fill: luma(89)"` for a grey note.
+* Table notes rendered by the `"tinytable"` engine escape the labels they
+  interpolate when the output is HTML. A variable or level label containing
+  markup used to reach the footer as markup. Typst and LaTeX output is
+  unchanged.
 * `table_continuous()` gains `show_columns`: pick the statistics the table
   shows -- `"med"`, `"q1"`, `"q3"`, `"iqr"`, the compact `"med_iqr"`
   (`Med [Q1, Q3]`), and `"med_ci"` (exact order-statistic CI of the median)

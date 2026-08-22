@@ -129,7 +129,7 @@ test_that("the three rich engines carry the same label content", {
   expect_identical(norm(ft$body$dataset[[1L]]), sub("^  ", "", stub))
 })
 
-test_that("a tag-shaped caption is escaped, and the note is not", {
+test_that("a tag-shaped caption and the note are both escaped", {
   skip_if_not_installed("tinytable")
   d <- .esc_hostile()
   tt <- .esc_quiet(table_outcome(
@@ -145,21 +145,99 @@ test_that("a tag-shaped caption is escaped, and the note is not", {
   expect_true(grepl("&lt;sub&gt;", caption, fixed = TRUE))
   expect_false(grepl("<sub>kg</sub>", caption, fixed = TRUE))
 
-  # The NOTE is deliberately outside the escape set, family-wide:
-  # escaping it broke Typst compilation (the typst escape set covers
-  # the brackets a `#text(8pt)[...]` note needs), and the note is
-  # package prose. It does interpolate the outcome label, so a
-  # tag-shaped label still reaches the footer raw -- pinned here as a
-  # KNOWN residual rather than left to be discovered, and harmless to
-  # the geometry because `<tfoot>` sits outside `<tbody>`.
+  # The note is package prose, but it INTERPOLATES the outcome label,
+  # so a tag-shaped label used to reach the `<tfoot>` live. It is now
+  # escaped on the HTML branch of the finalizer only -- see the Typst
+  # counterpart below, which must stay untouched.
   foot <- sub(".*<tfoot>", "", html)
-  expect_true(grepl("<sub>kg</sub>", foot, fixed = TRUE))
+  expect_false(grepl("<sub>kg</sub>", foot, fixed = TRUE))
+  expect_true(grepl("&lt;sub&gt;kg&lt;/sub&gt;", foot, fixed = TRUE))
   expect_identical(
     .esc_body_rows(html),
     .esc_body_rows(.esc_tt_html(.esc_quiet(
       table_outcome(d, y, by = g, labels = c(y = "BMI"), output = "tinytable")
     )))
   )
+})
+
+test_that("no live script survives in the note", {
+  skip_if_not_installed("tinytable")
+  d <- .esc_hostile()
+  html <- .esc_tt_html(.esc_quiet(table_outcome(
+    d,
+    y,
+    by = g,
+    labels = c(y = "<script>alert(1)</script>"),
+    output = "tinytable"
+  )))
+  foot <- sub(".*<tfoot>", "", html)
+  expect_false(grepl("<script>", foot, fixed = TRUE))
+  # Escaping is not deletion: the label is still legible in the note.
+  expect_true(grepl(
+    "&lt;script&gt;alert(1)&lt;/script&gt;",
+    foot,
+    fixed = TRUE
+  ))
+})
+
+test_that("a note carrying a cell boundary does not survive the escape", {
+  # The escape substitutes the note the table was BUILT with, not the
+  # rendered cell text. A label carrying `</td>` is why: it is
+  # indistinguishable from the real cell boundary the styling pass
+  # splits on, so a text-level escape would hand it back untouched as
+  # the separator that re-joins the pieces.
+  skip_if_not_installed("tinytable")
+  d <- .esc_hostile()
+  html <- .esc_tt_html(.esc_quiet(table_outcome(
+    d,
+    y,
+    by = g,
+    labels = c(y = "</td></tr><tr><td>PWNED"),
+    output = "tinytable"
+  )))
+  foot <- regmatches(
+    html,
+    regexpr("<tfoot>[\\s\\S]*?</tfoot>", html, perl = TRUE)
+  )
+  expect_length(foot, 1L)
+  expect_false(grepl("<tr>", sub("^<tfoot><tr>", "", foot), fixed = TRUE))
+  expect_true(grepl("&lt;/td&gt;&lt;/tr&gt;", foot, fixed = TRUE))
+})
+
+test_that("the note escape is engine-aware: Typst output is untouched", {
+  # Escaping the note upstream, where it is composed, is not an option:
+  # the same string feeds Typst, whose escape set covers the brackets a
+  # `#text(8pt)[...]` note needs. The escape therefore lives in the
+  # finalizer branch that only sees HTML.
+  skip_if_not_installed("tinytable")
+  d <- .esc_hostile()
+  obj <- .esc_quiet(table_outcome(
+    d,
+    y,
+    by = g,
+    labels = c(y = "BMI [kg] <sub>x</sub>"),
+    output = "tinytable"
+  ))
+  # One object, two backends: the same note comes out raw in Typst and
+  # escaped in HTML. The Typst note is the `table.cell(align: left,
+  # colspan: N, text([...]))` line -- read it alone, because the CELLS
+  # around it carry the same label and ARE escaped.
+  typ <- strsplit(
+    as.character(tinytable::save_tt(obj, "typst")),
+    "\n",
+    fixed = TRUE
+  )[[1L]]
+  note_line <- grep("table.cell(align: left, colspan:", typ, fixed = TRUE)
+  expect_length(note_line, 1L)
+  note_typ <- typ[[note_line]]
+  expect_true(grepl("<sub>x</sub>", note_typ, fixed = TRUE))
+  expect_false(grepl("&lt;", note_typ, fixed = TRUE))
+  # The brackets are the reason the note stays out of tinytable's own
+  # escape set: `\[` leaves a Typst `text()` without a body.
+  expect_true(grepl("BMI [kg]", note_typ, fixed = TRUE))
+  expect_false(grepl("\\[kg\\]", note_typ, fixed = TRUE))
+  foot <- sub(".*<tfoot>", "", .esc_tt_html(obj))
+  expect_true(grepl("&lt;sub&gt;x&lt;/sub&gt;", foot, fixed = TRUE))
 })
 
 test_that("the linear-model family escapes its tinytable cells too", {
