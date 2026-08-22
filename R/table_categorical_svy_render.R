@@ -433,7 +433,7 @@
 # bounded, and how the association was tested.
 .cat_svy_note <- function(
   meta,
-  degf_used,
+  degf_dom_used,
   df_user,
   na_dropped,
   user_na_dropped,
@@ -465,17 +465,24 @@
       decimal_mark = decimal_mark
     )
   )
+  # The df span the DOMAINS carry, never the caller's `df`: the design
+  # line states a fact about the design, and the caller cannot change
+  # it. What `df` moves is the reference distribution of the intervals,
+  # and the third sentence names the number it moved to -- the same
+  # division of labour as `table_continuous_svy()`.
   lines <- .design_note_lines(
     meta,
-    degf_range = if (length(degf_used) > 0L) range(degf_used) else NULL
+    degf_range = if (length(degf_dom_used) > 0L) {
+      range(degf_dom_used)
+    } else {
+      NULL
+    }
   )
   if (!is.null(df_user)) {
-    lines[[1L]] <- spicy_fmt(
-      "note_design_line",
-      .design_scheme_parts(meta),
-      spicy_fmt("note_design_degf", as.integer(df_user))
+    lines[[3L]] <- spicy_fmt(
+      "note_design_df_supplied",
+      as.integer(df_user)
     )
-    lines[[3L]] <- spicy_str("note_design_df_supplied")
   }
   parts <- c(parts, lines)
   if (isTRUE(proportion_ci)) {

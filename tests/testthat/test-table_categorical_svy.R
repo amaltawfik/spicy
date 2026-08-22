@@ -680,7 +680,19 @@ test_that("`df` overrides the design df, and the footer changes with it", {
     table_categorical_svy(d, select = stype, proportion_ci = TRUE, df = 100),
     "note"
   )
-  expect_match(note, "supplied in `df`", fixed = TRUE)
+  # The WHOLE sentence, not the tail after the hole: this key carries a
+  # `%d`, and reading it with `spicy_str()` shipped the hole itself.
+  expect_match(
+    note,
+    "Confidence intervals use 100 degrees of freedom (supplied in `df`)",
+    fixed = TRUE
+  )
+  expect_false(grepl("%d", note, fixed = TRUE))
+  # And the design line still states the DESIGN's own df -- 14 on this
+  # fixture. `df` moves the reference distribution of the intervals and
+  # nothing else, which is what the twin does and what `?df` promises.
+  expect_match(note, "14 degrees of freedom.", fixed = TRUE)
+  expect_false(grepl("100 degrees of freedom.", note, fixed = TRUE))
 })
 
 

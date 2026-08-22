@@ -591,7 +591,14 @@ table_categorical_svy <- function(
     NA_character_
   }
   domains <- list()
-  degf_used <- numeric(0)
+  # The DOMAIN's own degrees of freedom, kept as themselves. The footer
+  # reads them for the design line, which states a fact about the
+  # design: `df` moves the reference distribution of the intervals and
+  # nothing else (see `?table_categorical_svy`), so pre-empting this
+  # vector with the caller's `df` made the design line say the design
+  # had a number the caller had chosen. Same convention as
+  # `table_continuous_svy()`'s `degf_dom_used`.
+  degf_dom_used <- numeric(0)
   for (b in blocks) {
     dom <- if (is.na(b) || identical(b, margin_key)) {
       design
@@ -599,7 +606,7 @@ table_categorical_svy <- function(
       .design_subset(design, geom$values == b)
     }
     domains[[.cat_svy_block_id(b)]] <- dom
-    degf_used <- c(degf_used, df_user %||% .design_degf(dom))
+    degf_dom_used <- c(degf_dom_used, .design_degf(dom))
   }
   meta <- .design_meta(design)
 
@@ -739,7 +746,7 @@ table_categorical_svy <- function(
 
   note <- .cat_svy_note(
     meta = meta,
-    degf_used = degf_used,
+    degf_dom_used = degf_dom_used,
     df_user = df_user,
     na_dropped = na_dropped,
     user_na_dropped = user_na_dropped,
