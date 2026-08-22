@@ -280,15 +280,30 @@ order_continuous_svy_tokens <- function(tokens) {
   x <- design$variables[[var]]
   g <- design$variables[[group_var]]
   w <- .design_weights(design)
-  keep <- !is.na(x) & !is.na(g) & !is.na(w) & w > 0
-  if (!any(keep)) {
-    return(list(row = empty, label = NA_character_, k = NA_integer_))
+  # `!= 0`, the same predicate the cells use -- see `.svy_var_stats()`.
+  # It used to be `> 0`, which quietly cut the test to a sub-sample the
+  # table above it did not describe: on a linear-calibrated api design
+  # the cells were computed on 183 rows and the p-value on 96, under a
+  # footer saying "N = 183". Refusing is the alternative to a silent
+  # subset (decision 36 / ARB-2): the cells stay complete, the test is
+  # not attempted, and the footer says why.
+  keep <- !is.na(x) & !is.na(g) & !is.na(w) & w != 0
+  if (!any(keep) || .weights_go_negative(w[keep])) {
+    # `refused` separates THIS branch from the two empty returns below:
+    # the footer explains an absence by the weights only when the
+    # weights are what caused it.
+    return(list(
+      row = empty,
+      label = NA_character_,
+      k = NA_integer_,
+      refused = .weights_go_negative(w[keep])
+    ))
   }
   sub <- .design_subset(design, keep)
   gv <- droplevels(as.factor(sub$variables[[group_var]]))
   k <- nlevels(gv)
   if (k < 2L || any(table(gv) < 2L)) {
-    return(list(row = empty, label = NA_character_, k = k))
+    return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
   }
   ddf <- .design_degf(sub)
   form <- stats::as.formula(paste0("`", var, "` ~ `", group_var, "`"))
@@ -346,7 +361,7 @@ order_continuous_svy_tokens <- function(tokens) {
     }
   )
   if (is.null(res)) {
-    return(list(row = empty, label = NA_character_, k = k))
+    return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
   }
   # The df the TEST used, read off the row it produced -- not the
   # domain's `degf`. `svyttest()` refers its t to `degf - 1` (13 where
@@ -356,6 +371,7 @@ order_continuous_svy_tokens <- function(tokens) {
     row = res,
     label = .svy_test_label(test, k),
     k = k,
+    refused = FALSE,
     ddf = if (identical(res$test_type, "design_t")) res$df1 else res$df2
   )
 }
@@ -518,7 +534,12 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   no `df` argument, so the test keeps the design's own degrees of
 #'   freedom and the note says so.
 #' @param test Group comparison: `"welch"` (default), `"student"`
-#'   (warns; identical under a design) or `"nonparametric"`.
+#'   (warns; identical under a design) or `"nonparametric"`. A
+#'   variable whose complete cases include negatively weighted rows is
+#'   not compared: a design-based test is not defined when the weights
+#'   change sign. Its estimates are still reported, the note says which
+#'   comparisons were withheld, and the call warns
+#'   (`spicy_negative_weights_no_test`).
 #' @param p_value Show the p-value column (defaults to `TRUE` with
 #'   `by`).
 #' @param statistic Show the test-statistic column.
@@ -866,11 +887,21 @@ table_continuous_svy <- function(
   rows <- list()
   test_label <- NA_character_
   test_ddf <- NA_real_
+  # Counted, not inferred: the footer's refusal clause has to say what
+  # actually happened, and the refusal is decided per VARIABLE. A table
+  # where one variable's missing values cover the negatively weighted
+  # rows serves that comparison and refuses the others.
+  n_test_attempted <- 0L
+  n_test_refused <- 0L
   for (i in seq_along(numeric_cols)) {
     nm <- numeric_cols[[i]]
     test_row <- NULL
     if (do_test) {
       tr <- .svy_group_test(design, nm, group_col_name, test)
+      n_test_attempted <- n_test_attempted + 1L
+      if (isTRUE(tr$refused)) {
+        n_test_refused <- n_test_refused + 1L
+      }
       test_row <- tr$row
       if (!is.na(tr$label)) {
         test_label <- tr$label
@@ -948,6 +979,7 @@ table_continuous_svy <- function(
   result <- do.call(rbind, rows)
   rownames(result) <- NULL
 
+  test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
   note <- .svy_continuous_note(
     meta = meta,
     degf_used = degf_used,
@@ -969,8 +1001,11 @@ table_continuous_svy <- function(
     } else {
       NA_character_
     },
-    test_ddf = test_ddf
+    test_ddf = test_ddf,
+    n_negative_weights = .design_negative_weights(design),
+    test_refused = test_refused
   )
+  .warn_negative_weights_no_test(test_refused)
 
   if (output %in% c("data.frame", "long")) {
     attr(result, "note") <- note
@@ -1292,7 +1327,9 @@ table_continuous_svy <- function(
   qrule,
   deff,
   test_label,
-  test_ddf
+  test_ddf,
+  n_negative_weights = 0L,
+  test_refused = "none"
 ) {
   parts <- c(
     .svy_missing_note(na_dropped, "note_missing_removed"),
@@ -1334,6 +1371,14 @@ table_continuous_svy <- function(
     )
   }
   parts <- c(parts, lines)
+  parts <- c(
+    parts,
+    .design_negative_weights_note(
+      n_negative_weights,
+      meta$n_obs,
+      test_refused = test_refused
+    )
+  )
   if (any(c("med", "med_iqr", "q1", "q3", "iqr") %in% tokens)) {
     parts <- c(parts, spicy_fmt("note_quantile_rule", .svy_qrule_label(qrule)))
   }

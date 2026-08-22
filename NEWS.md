@@ -250,6 +250,21 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   degrees of freedom its tests use, so the table can be read without the
   design object at hand.
 
+* A design whose calibration produced negative weights says so in the
+  note: the exact count, and what follows from it -- a weighted mean can
+  fall outside the observed range, and a variance can come out negative.
+  `table_continuous_svy()` and `table_categorical_svy()` then do not
+  report the group comparison of the variables concerned, because a
+  design-based test is not defined when the weights change sign; the
+  note says which comparisons were withheld and the call warns
+  (`spicy_negative_weights_no_test`). Estimates and counts are
+  unaffected, and so are calibrated designs whose weights all stay
+  positive.
+
+* A design table and a survey regression name the variance the same way:
+  `Std. errors: Design-based (Taylor linearisation)`, or
+  `(replicate weights, JK1)` on a replicate design.
+
 * `show_fit_stats = "eff_p"` reports the effective number of parameters of a
   `survey::svyglm()` design.
 
@@ -336,6 +351,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `options(spicy.note_style)`: `"none"` leaves the note to the document
   template, and any other string is added to the Typst `text()` call around
   it, e.g. `"fill: luma(89)"` for a grey note.
+* Table notes rendered by the `"tinytable"` engine escape the labels they
+  interpolate when the output is HTML. A variable or level label containing
+  markup used to reach the footer as markup. Typst and LaTeX output is
+  unchanged.
 * `table_continuous()` gains `show_columns`: pick the statistics the table
   shows -- `"med"`, `"q1"`, `"q3"`, `"iqr"`, the compact `"med_iqr"`
   (`Med [Q1, Q3]`), and `"med_ci"` (exact order-statistic CI of the median)
@@ -473,6 +492,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   it -- so a renderer never has to read an en-dash back to find out.
 
 ## Bug fixes
+
+* `weighted_nobs` is `NA` for an unweighted `glm()`, in
+  `table_regression()` and in `glance()`. It used to equal `n`:
+  `stats::weights()` returns the prior weights of a `glm()`, a vector of
+  ones on an unweighted fit, and their sum was reported as a weighted
+  count. In a table holding a survey regression, where the row shows for
+  every model, the observed count read as a population. An unweighted
+  `lm()` was already `NA`, because `stats::weights()` returns `NULL` for
+  it.
 
 * `output = "gt"` tables carry their table note into the saved file.
   `gt::gtsave()`, `gt::as_raw_html()` and a non-interactive `print()` used

@@ -7,8 +7,8 @@
 #   * no-intercept factor model -> reference NOT dropped -> empty ref frame
 #   * .svyglm_family_title() arms: poisson / Gamma / inverse.gaussian /
 #     gaussian (identity) / default fall-through
-#   * .design_weighted_n() / .svyglm_design_class() defensive NA branches
-#     for fits whose survey.design has been detached or stripped of weights
+#   * .design_weighted_n() defensive NA branches for fits whose
+#     survey.design has been detached or stripped of weights
 # ---------------------------------------------------------------------------
 
 # ---- Fixtures -------------------------------------------------------------
@@ -118,19 +118,6 @@ test_that(".design_weighted_n returns NA when the design carries no weights", {
   des$prob <- numeric(0)
   fit$survey.design <- des
   expect_identical(spicy:::.design_weighted_n(fit, n), NA_real_)
-})
-
-test_that(".svyglm_design_class returns NA when survey.design is detached", {
-  d <- .cov_svy_design()
-  fit <- survey::svyglm(api00 ~ ell, design = d)
-  fit$survey.design <- NULL
-  expect_identical(spicy:::.svyglm_design_class(fit), NA_character_)
-})
-
-test_that(".svyglm_design_class names the design class for an attached design", {
-  d <- .cov_svy_design()
-  fit <- survey::svyglm(api00 ~ ell, design = d)
-  expect_match(spicy:::.svyglm_design_class(fit), "design", fixed = TRUE)
 })
 
 

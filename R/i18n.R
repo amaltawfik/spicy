@@ -548,8 +548,13 @@
   # the degrees of freedom are the part that makes the table
   # reproducible.
   note_design_degf_resid_only = "Tests use %d residual degrees of freedom.",
-  note_se_taylor = "Standard errors: Taylor linearisation (survey).",
-  note_se_replicate = "Standard errors: replicate weights (survey).",
+  # No key of its own for the variance sentence: the twins print the
+  # regression footer's, `note_std_errors_single` filled with one of the
+  # `note_vcov_design_*` labels below. Two spellings of one fact
+  # ("Standard errors: Taylor linearisation (survey)." here against
+  # "Std. errors: Design-based (Taylor linearisation)." three lines
+  # down in a regression table) is a difference the reader has to
+  # resolve for nothing.
   note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
   # Both counts, because neither alone is enough (decision 28): the
   # first is the robustness information, the second is the population
@@ -570,6 +575,23 @@
   # One hole: the rule in force, an identifier from survey ("math",
   # "hf7", ...) or "spicy" -- never translated.
   note_quantile_rule = "Quantiles: qrule = \"%s\" (survey).",
+  # Linear calibration can drive a weight below zero. The rows were
+  # sampled, so they stay in every count and every estimate; what
+  # changes is what the estimates can do. Two holes: the count and the
+  # sample size, in that order (decision 36 / ARB-3 -- one note
+  # carrying the fact, its consequence and, when a test was asked for,
+  # the refusal).
+  note_negative_weights = "Calibration gave %d of %d rows a negative weight: a weighted mean can fall outside the observed range, and a variance can come out negative, leaving its cell undefined.",
+  # Appended to the sentence above, never on its own. Said when EVERY
+  # comparison the table attempted was refused, so no method line
+  # stands above it.
+  note_negative_weights_no_test = "The group comparison is not reported: a design-based test is not defined when the weights change sign.",
+  # The scoped form of the sentence above, for a table where some
+  # variables were tested and some were not: a variable whose missing
+  # values cover the negatively weighted rows has a testable domain.
+  # The method line above it is true of the comparisons that ran, and
+  # this names the ones that did not.
+  note_negative_weights_no_test_some = "For variables whose complete cases include negatively weighted rows, the group comparison is not reported: a design-based test is not defined when the weights change sign.",
   note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
   # Abbreviation glosses of the two design-only columns, each naming
   # the header it glosses through a hole so a translated header can

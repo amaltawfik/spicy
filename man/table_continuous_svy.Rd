@@ -71,7 +71,12 @@ no \code{df} argument, so the test keeps the design's own degrees of
 freedom and the note says so.}
 
 \item{test}{Group comparison: \code{"welch"} (default), \code{"student"}
-(warns; identical under a design) or \code{"nonparametric"}.}
+(warns; identical under a design) or \code{"nonparametric"}. A
+variable whose complete cases include negatively weighted rows is
+not compared: a design-based test is not defined when the weights
+change sign. Its estimates are still reported, the note says which
+comparisons were withheld, and the call warns
+(\code{spicy_negative_weights_no_test}).}
 
 \item{p_value}{Show the p-value column (defaults to \code{TRUE} with
 \code{by}).}

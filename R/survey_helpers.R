@@ -192,15 +192,117 @@
 # The SAMPLING weights of a design, always asked for by name.
 #
 # `weights(design)` is not the same function on the two supported
-# classes: on a linearised design it returns the sampling weights,
-# while on a replicate design it defaults to `type = "analysis"` and
-# returns the FIRST REPLICATE's weights -- on the api JK1 fixture,
-# 2745 against the 6194.0003242492676 the design actually carries, with
-# the dropped cluster sitting at weight zero. Every weighted count of
-# the twins goes through this accessor, so the bare default can never
-# reach one.
+# classes. On a replicate design it defaults to `type = "replication"`
+# and returns the whole REPLICATION MATRIX -- 183 x 15 on the api JK1
+# fixture, summing to 2745 against the 6194.0003242492676 the design
+# actually carries. Every weighted count of the twins goes through this
+# accessor, so that default can never reach one.
+#
+# On a `survey.design` the argument is right BY ACCIDENT:
+# `weights.survey.design` has no `type` formal at all, so the request
+# is swallowed by `...` and the method returns `1 / prob` whatever
+# anyone asks for. Six of the nine classes this accessor can be handed
+# inherit that method (survey.design, survey.design2, pps,
+# DBIsvydesign, twophase / twophase2), and `weights.multiframe` ignores
+# `type` too; only `svyrep.design` and `multiphase` read it. A test in
+# test-survey_helpers.R pins the absence of that formal, so the day
+# survey gives the method a `type` vocabulary of its own this call gets
+# read again instead of changing meaning in silence.
 .design_weights <- function(design) {
   stats::weights(design, type = "sampling")
+}
+
+# How many rows of the ANALYTIC sample carry a negative weight.
+#
+# Linear calibration produces them -- that is what
+# `survey::calibrate(bounds = )` exists to prevent -- and they are rows
+# the sampler drew, so nothing hides them (see `.svy_var_stats()`).
+# But they stop the weighted mean from being a convex combination, so
+# it can land outside the observed range, and they let a domain
+# variance come out negative. Both are facts a reader is owed, and the
+# footer says them only when the fact is there (decision 36 / ARB-3).
+#
+# Counted on non-zero weights, the same predicate every count of the
+# twins uses: a row at weight zero is one `[` retained on a calibrated
+# design, not an observation.
+.design_negative_weights <- function(design) {
+  w <- .design_weights(design)
+  sum(!is.na(w) & w < 0)
+}
+
+# The refusal predicate itself, in one place for both twins: does this
+# set of weights change sign? Applied per VARIABLE, on the weights of
+# that variable's complete-case domain -- a variable whose missing
+# values happen to cover the negatively weighted rows is testable, and
+# is tested (decision 36 / ARB-2).
+.weights_go_negative <- function(w) {
+  any(!is.na(w) & w < 0)
+}
+
+# Which of a table's group comparisons the negative weights refused,
+# and therefore which sentence the footer owes:
+#   "none" -- nothing was refused. A comparison missing for another
+#             reason (fewer than two observed groups, a survey error)
+#             is not the weights' doing and is not explained by them.
+#   "all"  -- every comparison that was attempted was refused. The flat
+#             sentence, and no method line above it.
+#   "some" -- a mixed table. Some variables were tested and their
+#             p-values are printed, so the refusal has to name who it
+#             applies to instead of speaking for the whole table.
+.design_refusal_regime <- function(n_refused, n_attempted) {
+  if (n_refused <= 0L) {
+    "none"
+  } else if (n_refused >= n_attempted) {
+    "all"
+  } else {
+    "some"
+  }
+}
+
+# The one sentence-block the fact earns, or nothing at all. `n_obs` is
+# the count the footer has just announced, so the two agree. The
+# refusal clause is appended rather than said separately: one fact, one
+# block (decision 36 / ARB-3). `test_refused` is a regime from
+# `.design_refusal_regime()`.
+.design_negative_weights_note <- function(k, n_obs, test_refused = "none") {
+  if (k <= 0L) {
+    return(character(0))
+  }
+  txt <- spicy_fmt("note_negative_weights", as.integer(k), as.integer(n_obs))
+  clause <- switch(
+    test_refused,
+    all = spicy_str("note_negative_weights_no_test"),
+    some = spicy_str("note_negative_weights_no_test_some"),
+    NULL
+  )
+  if (!is.null(clause)) {
+    txt <- paste(txt, clause)
+  }
+  txt
+}
+
+# The classed half of the refusal (decision 36 / ARB-2): a note is read
+# by whoever prints the table, and a condition is what a script can
+# catch. ONE condition per table call, not one per variable -- the fact
+# is a property of the design, and the footer says how far it reached.
+# The message is the registry sentence the footer carries -- the SAME
+# one per regime, so the two cannot say different things: a mixed table
+# warns with the scoped sentence, not the flat one.
+.warn_negative_weights_no_test <- function(test_refused) {
+  msg <- switch(
+    test_refused,
+    all = spicy_str("note_negative_weights_no_test"),
+    some = spicy_str("note_negative_weights_no_test_some"),
+    NULL
+  )
+  if (is.null(msg)) {
+    return(invisible(FALSE))
+  }
+  spicy_warn(
+    msg,
+    class = c("spicy_negative_weights_no_test", "spicy_undefined_stat")
+  )
+  invisible(TRUE)
 }
 
 # The number of observations a design fit actually used.
@@ -399,6 +501,22 @@
   "mrbbootstrap"
 )
 
+# The variance label of a replicate design, read off its scheme -- bare
+# when the scheme is absent or `"other"`, a legal `svrepdesign(type = )`
+# value that names nothing.
+#
+# One rule with two callers, on purpose: the regression footer and the
+# descriptive twins print the SAME sentence for the same design, and a
+# second copy of this test is how the two drifted apart in the first
+# place.
+.design_replicate_label <- function(rep_type) {
+  type <- as.character(rep_type %||% NA_character_)
+  if (length(type) != 1L || is.na(type) || !type %in% .SVYREP_TYPES) {
+    return(spicy_str("note_vcov_design_replicate_bare"))
+  }
+  spicy_fmt("note_vcov_design_replicate", type)
+}
+
 # The variance estimator a design fit actually uses, as the footer names
 # it. Indexed on the MECHANISM, which is the only thing the label is
 # about:
@@ -421,11 +539,7 @@
     return(spicy_str("note_vcov_design_twophase"))
   }
   if (inherits(des, "svyrep.design")) {
-    type <- as.character(des$type %||% NA_character_)
-    if (length(type) != 1L || is.na(type) || !type %in% .SVYREP_TYPES) {
-      return(spicy_str("note_vcov_design_replicate_bare"))
-    }
-    return(spicy_fmt("note_vcov_design_replicate", type))
+    return(.design_replicate_label(des$type))
   }
   if (inherits(des, "survey.design")) {
     return(spicy_str("note_vcov_design_taylor"))
@@ -606,13 +720,20 @@
   } else {
     spicy_fmt("note_design_degf", as.integer(meta$degf))
   }
+  # The variance sentence is the regression footer's, built from the
+  # same template and the same labels: one table calling it "Standard
+  # errors: Taylor linearisation (survey)." while its regression
+  # neighbour called it "Std. errors: Design-based (Taylor
+  # linearisation)." made the reader work out that the two were the
+  # same fact.
+  vcov_label <- if (identical(meta$kind, "replicate")) {
+    .design_replicate_label(meta$rep_type)
+  } else {
+    spicy_str("note_vcov_design_taylor")
+  }
   c(
     spicy_fmt("note_design_line", scheme, df_clause),
-    if (identical(meta$kind, "replicate")) {
-      spicy_str("note_se_replicate")
-    } else {
-      spicy_str("note_se_taylor")
-    },
+    spicy_fmt("note_std_errors_single", vcov_label),
     spicy_str("note_design_df_used")
   )
 }

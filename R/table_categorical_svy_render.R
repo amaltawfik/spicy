@@ -433,7 +433,7 @@
 # bounded, and how the association was tested.
 .cat_svy_note <- function(
   meta,
-  degf_used,
+  degf_dom_used,
   df_user,
   na_dropped,
   user_na_dropped,
@@ -444,7 +444,9 @@
   ci_method,
   deff,
   p_value,
-  chisq_statistic
+  chisq_statistic,
+  n_negative_weights = 0L,
+  test_refused = "none"
 ) {
   parts <- c(
     .svy_missing_note(na_dropped, "note_missing_removed"),
@@ -465,26 +467,50 @@
       decimal_mark = decimal_mark
     )
   )
+  # The df span the DOMAINS carry, never the caller's `df`: the design
+  # line states a fact about the design, and the caller cannot change
+  # it. What `df` moves is the reference distribution of the intervals,
+  # and the third sentence names the number it moved to -- the same
+  # division of labour as `table_continuous_svy()`.
   lines <- .design_note_lines(
     meta,
-    degf_range = if (length(degf_used) > 0L) range(degf_used) else NULL
+    degf_range = if (length(degf_dom_used) > 0L) {
+      range(degf_dom_used)
+    } else {
+      NULL
+    }
   )
   if (!is.null(df_user)) {
-    lines[[1L]] <- spicy_fmt(
-      "note_design_line",
-      .design_scheme_parts(meta),
-      spicy_fmt("note_design_degf", as.integer(df_user))
+    lines[[3L]] <- spicy_fmt(
+      "note_design_df_supplied",
+      as.integer(df_user)
     )
-    lines[[3L]] <- spicy_str("note_design_df_supplied")
   }
   parts <- c(parts, lines)
+  # The same three regimes as the continuous twin, from the same
+  # helper: `svychisq()` is refused under negative weights too
+  # (decision 36 / ARB-2, applied twin-symmetrically), and the clause
+  # says whether it reached every variable or only some of them.
+  parts <- c(
+    parts,
+    .design_negative_weights_note(
+      n_negative_weights,
+      meta$n_obs,
+      test_refused = test_refused
+    )
+  )
   if (isTRUE(proportion_ci)) {
     parts <- c(parts, spicy_fmt("note_ci_prop_method", ci_method))
   }
   if (identical(deff, "replace")) {
     parts <- c(parts, spicy_str("note_deff_replace"))
   }
-  if (isTRUE(p_value)) {
+  # The method line names the test that RAN. When every comparison was
+  # refused there is none, and the sentence above has already said so;
+  # in a mixed table it is true of the ones that were served, and the
+  # scoped refusal names the rest. Same division as the continuous
+  # twin, where the line is driven by `test_label`.
+  if (isTRUE(p_value) && !identical(test_refused, "all")) {
     parts <- c(
       parts,
       spicy_fmt("note_group_comparison", .cat_svy_test_label(chisq_statistic))

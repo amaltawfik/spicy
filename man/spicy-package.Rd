@@ -159,6 +159,12 @@ Leaves:
 \item \code{spicy_undefined_stat} -- the requested
 statistic is undefined for this input; result is \code{NA}
 (e.g., Tau-b on a table with all-zero marginals).
+\item \code{spicy_negative_weights_no_test} -- signaled
+together with \code{spicy_undefined_stat} when
+\code{\link[=table_continuous_svy]{table_continuous_svy()}} or \code{\link[=table_categorical_svy]{table_categorical_svy()}}
+withholds a group comparison because the analytic sample
+carries negatively weighted rows; the estimates are still
+reported and the table note says so.
 \item \code{spicy_dropped_na} -- \code{NA} observations were
 silently excluded from the computation (e.g., \code{NA}
 weights).

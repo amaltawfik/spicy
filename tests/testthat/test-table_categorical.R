@@ -199,6 +199,25 @@ test_that("table_categorical renames generated missing labels when needed", {
   expect_true("(Missing_1)" %in% out$level)
 })
 
+test_that("de-duplication leaves each Missing row with its own count", {
+  # The names were pinned; the VALUES were not. `.add_missing_level()`
+  # appends the RESOLVED label, so the literal level keeps "(Missing)"
+  # and the real NAs take "(Missing_1)" -- and that direction is what a
+  # values witness has to fix. The three counts are deliberately
+  # different, so a regression that swapped the two rows cannot pass by
+  # having them agree with each other.
+  df <- data.frame(
+    x = factor(
+      c("(Missing)", "(Missing)", "(Missing)", "Yes", "Yes", NA),
+      levels = c("(Missing)", "Yes")
+    )
+  )
+  out <- table_categorical(df, select = x, drop_na = FALSE, output = "long")
+  expect_identical(out$n[out$level == "(Missing)"], 3)
+  expect_identical(out$n[out$level == "(Missing_1)"], 1)
+  expect_identical(out$n[out$level == "Yes"], 2)
+})
+
 test_that("a declared-but-unobserved '(Missing)' level does not crash", {
   # Audit phase 2 delta, R2/R3/R8: the collision guard scanned only
   # observed values, so a factor DECLARING a "(Missing)" level with no

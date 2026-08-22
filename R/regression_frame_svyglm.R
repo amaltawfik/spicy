@@ -317,7 +317,6 @@ as_regression_frame.svyglm <- function(
     title_prefix = title_prefix,
     exp_applied = FALSE,
     exp_header = NA_character_,
-    design_class = .svyglm_design_class(fit),
     # Footer disclosure: the sampling scheme, read off the ANALYTIC
     # design, and the degrees of freedom the table's own tests use.
     design_meta = .design_meta_or_null(.design_analytic(fit, n_obs)),
@@ -423,21 +422,4 @@ as_regression_frame.svyglm <- function(
     return(as.numeric(a)) # nocov
   }
   NA_real_ # nocov
-}
-
-
-# Class of the survey design object (e.g., "twophase" / "svyrep.design" /
-# "survey.design2"). Surfaced in info$extras for renderers that want to
-# document the design type in the footer.
-.svyglm_design_class <- function(fit) {
-  tryCatch(
-    {
-      des <- fit$survey.design
-      if (is.null(des)) {
-        return(NA_character_)
-      }
-      class(des)[1L]
-    },
-    error = function(e) NA_character_
-  )
 }

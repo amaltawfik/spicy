@@ -35,7 +35,7 @@
       )
       tbl@table_string <- .spicy_tt_note_typst(tbl@table_string)
     } else if (identical(tbl@output, "html")) {
-      tbl@table_string <- .spicy_tt_note_tfoot(tbl@table_string)
+      tbl@table_string <- .spicy_tt_note_tfoot(tbl@table_string, tbl@notes)
     }
     tbl
   })
@@ -92,6 +92,17 @@
   if (isTRUE(.spicy_note_style()$resize)) "font-size: 0.9em; " else ""
 }
 
+# Minimal HTML text-content escape: the three characters that change
+# how a parser reads ELEMENT CONTENT. Quotes are deliberately absent --
+# nothing here is interpolated into an attribute value, and escaping
+# them would turn every apostrophe in a note into an entity.
+.spicy_html_escape <- function(s) {
+  s <- gsub("&", "&amp;", s, fixed = TRUE)
+  s <- gsub("<", "&lt;", s, fixed = TRUE)
+  s <- gsub(">", "&gt;", s, fixed = TRUE)
+  s
+}
+
 # HTML: a note carries one disclosure per line, and HTML collapses the
 # newlines that separate them into spaces -- the per-model standard-
 # error attributions ran together into one sentence. Convert the line
@@ -120,17 +131,60 @@
   paste(parts, collapse = "<br>")
 }
 
-# HTML: restyle the `<tfoot>` note cell tinytable renders (the route
-# taken by the descriptive families; table_regression() and
-# table_continuous_lm() lift the note out of the table grid instead,
-# see `.spicy_tt_note_div()`).
-.spicy_tt_note_tfoot <- function(s) {
+# The note strings a tinytable was built with, as a plain character
+# vector. `tt(notes = )` accepts a string, a (possibly named) list of
+# strings, or a list of `list(text = , i = , j = )` entries; the slot
+# keeps whichever shape it was given. Only the TEXT is of interest
+# here, so recurse and keep the character leaves.
+.spicy_note_texts <- function(notes) {
+  if (is.null(notes)) {
+    return(character(0))
+  }
+  if (is.character(notes)) {
+    return(notes)
+  }
+  if (is.list(notes)) {
+    if (!is.null(notes$text)) {
+      return(.spicy_note_texts(notes$text))
+    }
+    return(unlist(lapply(notes, .spicy_note_texts), use.names = FALSE))
+  }
+  character(0)
+}
+
+# HTML: escape the note, then restyle the `<tfoot>` note cell tinytable
+# renders (the route taken by the descriptive families;
+# table_regression() and table_continuous_lm() lift the note out of the
+# table grid instead, see `.spicy_tt_note_div()`).
+#
+# The note is package prose, but it INTERPOLATES user data -- the
+# outcome label, the grouping variable's name, the levels a measure was
+# computed on -- so a label shaped like a tag reached the `<tfoot>`
+# live. Escaping it upstream, where the note is composed, is not an
+# option: the same string feeds the Typst and LaTeX backends, whose own
+# escape sets cover the brackets a note such as `#text(8pt)[...]`
+# needs, and running it through tinytable's escaper left `text()`
+# without a body. So the escape is ENGINE-AWARE: it happens here, in
+# the finalizer branch that only ever sees HTML output, and the Typst
+# and LaTeX strings are untouched.
+#
+# It is applied by exact substitution of each note the table was built
+# with, rather than to the rendered cell text: a label carrying
+# `</td>` would otherwise be indistinguishable from the cell boundary
+# the styling loop below splits on, and would survive the escape as
+# the separator that re-joins the pieces.
+.spicy_tt_note_tfoot <- function(s, notes = NULL) {
   m <- regexpr("<tfoot>[\\s\\S]*?</tfoot>", s, perl = TRUE)
   if (m < 0L) {
     return(s)
   }
   css <- .spicy_note_css()
   block <- regmatches(s, m)
+  for (note in .spicy_note_texts(notes)) {
+    if (nzchar(note)) {
+      block <- sub(note, .spicy_html_escape(note), block, fixed = TRUE)
+    }
+  }
   # Split on cell boundaries so the transformation applies to note
   # TEXT only: everything after the last `<td ...>` of each piece.
   pieces <- strsplit(block, "</td>", fixed = TRUE)[[1L]]
@@ -229,13 +283,7 @@
 # then forces the rendered note to fill the wrapper, which is exactly
 # the table's content width.
 .spicy_tt_note_div <- function(note) {
-  html_escape <- function(s) {
-    s <- gsub("&", "&amp;", s, fixed = TRUE)
-    s <- gsub("<", "&lt;", s, fixed = TRUE)
-    s <- gsub(">", "&gt;", s, fixed = TRUE)
-    s
-  }
-  note_html <- html_escape(note)
+  note_html <- .spicy_html_escape(note)
   # APA Manual 7 Section 7.14: the "Note." prefix is italicised. Wrap it
   # in <em> AFTER escaping (the prefix itself contains no special
   # chars, so the <em> is safe to insert). The substitution is anchored

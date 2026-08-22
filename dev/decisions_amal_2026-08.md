@@ -547,3 +547,32 @@ moitié validé.
   d'autre — deux frontières techniques distinctes, nommées.
 - ARB-4 (structure des lots 0.14) : décision d'ingénierie déléguée à
   Fable.
+
+### Décision 36 / ARB-2 — application (Fable, 2026-08-22) — CONFIRMÉE PAR AMAL
+
+Application proposée par Fable en réponse au point I4 de la revue
+adversariale de `polish-013`, expliquée à Amal (refus symétrique vs
+déférence à l'upstream qui sert svychisq) et confirmée par lui le
+2026-08-22 (« parfait »).
+
+- **Symétrie des jumelles.** Le texte d'ARB-2 dit « le TEST », sans le
+  restreindre à la jumelle continue. La proposition que le package
+  imprime lui-même sous ces poids — « a design-based test is not
+  defined when the weights change sign » — porte sur les tests
+  design-based en général, et la statistique de Rao-Scott est une
+  fonction de la même variance de plan que la note déclare pouvoir
+  sortir négative. La première livraison ne refusait que
+  `svyttest()` / `regTermTest()` : `table_categorical_svy()` servait un
+  p de 0.188 sur la fixture api à 28 lignes négatives, sous une note
+  disant que la variance est indéfinie. `.cat_svy_test()` refuse
+  désormais `svychisq()` sous le même prédicat par variable.
+- **Refus classé.** ARB-2 dit « classé » : le refus signale une
+  condition `spicy_negative_weights_no_test` (sous
+  `spicy_undefined_stat`, taxonomie de `?spicy`), une par appel de
+  table et non une par variable, avec pour message la phrase même du
+  pied de page.
+- **Portée dite.** Le refus est décidé par variable (domaine complet-cas
+  de la variable) ; le pied de page distingue donc trois régimes —
+  aucun refus, tous refusés, refus partiel — au lieu de l'ancienne
+  clause décidée par table. Une variable dont les manquants recouvrent
+  les lignes à poids négatif est testable, et elle est testée.

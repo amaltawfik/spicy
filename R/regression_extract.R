@@ -21,6 +21,36 @@
 # Plus metadata fields consumed by the multi-model alignment,
 # rendering, and footer-generation layers.
 
+# ---- Weights: is this fit weighted at all? --------------------------------
+#
+# The rule is "the fit carries SUPPLIED weights": non-NULL, and not all
+# 1. `stats::weights()` returns the PRIOR weights of a glm, which are a
+# vector of ones on an unweighted fit -- never NULL -- so a `!is.null()`
+# test called every glm weighted and reported its observed count wearing
+# the name of a population. On an unweighted `lm()` it returns NULL, so
+# `!is.null()` already answered that case correctly.
+#
+# The rule is deliberately NOT "constant weights are no weights". That
+# one is right for the variance label (`.weights_kind_from_fit()`: a
+# constant factor does not change the fit) and wrong for a count -- a
+# binomial glm weighted by a constant number of trials has a real
+# weighted total, and losing it would be losing a true number. The pscl
+# frame already applies this same non-NULL-and-not-all-1 rule to the
+# same field.
+.has_real_weights <- function(weights) {
+  !is.null(weights) &&
+    length(weights) > 0L &&
+    any(weights != 1, na.rm = TRUE)
+}
+
+.weighted_n_or_na <- function(weights) {
+  # `as.numeric()`, not `sum()` alone: a glm weighted by an integer
+  # vector of trials sums to an integer, and the column is documented as
+  # a double.
+  if (.has_real_weights(weights)) as.numeric(sum(weights)) else NA_real_
+}
+
+
 # ---- Public-internal entry point ------------------------------------------
 
 extract_lm_phase1 <- function(
@@ -221,8 +251,8 @@ extract_lm_phase1 <- function(
     } else {
       character(0)
     },
-    has_weights = !is.null(weights) && length(unique(weights)) > 1L,
-    weighted_n = if (!is.null(weights)) sum(weights) else NA_real_,
+    has_weights = .has_real_weights(weights),
+    weighted_n = .weighted_n_or_na(weights),
     nobs = stats::nobs(fit),
     is_glm = is_glm,
     title_prefix = if (!is.null(family_info)) {
@@ -1144,9 +1174,20 @@ extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
   deviance_v <- stats::deviance(fit)
   df_resid <- stats::df.residual(fit)
 
-  # Counts
+  # Counts.
+  #
+  # `!is.null(weights)` is not the test. `stats::weights()` returns the
+  # PRIOR weights of a glm, a vector of ones on an unweighted fit --
+  # never NULL -- so the sum was `n`, and "Weighted n" printed the
+  # observed count as if it were a population. In a table that also
+  # holds a design fit, where the row is queued for every model, it
+  # read as `6194 | 200`: the second number literally true and entirely
+  # misleading. On an unweighted `lm()` the same call returns NULL, so
+  # that half was already `NA`. `.has_real_weights()` asks for supplied
+  # weights (non-NULL and not all 1); an unweighted fit has no weighted
+  # count, and the row drops itself when no model in the table has one.
   nobs_v <- stats::nobs(fit)
-  weighted_nobs_v <- if (!is.null(weights)) sum(weights) else NA_real_
+  weighted_nobs_v <- .weighted_n_or_na(weights)
 
   data.frame(
     model_id = model_id,

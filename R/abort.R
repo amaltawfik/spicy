@@ -49,6 +49,10 @@ spicy_abort <- function(
 #   |- spicy_undefined_stat    (statistic is undefined for this input,
 #                               returning NA -- e.g., Tau-b on a table
 #                               with all-zero marginals)
+#      |- spicy_negative_weights_no_test (a design table withheld its
+#                               group comparison because the analytic
+#                               sample carries negatively weighted
+#                               rows; decision 36 / ARB-2)
 #   |- spicy_dropped_na        (NA observations silently excluded from
 #                               the computation, e.g., NA weights)
 #   |- spicy_ignored_arg       (an argument is ignored due to context,

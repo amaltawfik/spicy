@@ -21,7 +21,17 @@
 
 # The spanner ids gt was told to align LEFT -- the machine state the
 # stub keys write, read back through the style ledger rather than
-# through the spanner list (every spanner also carries the top rule).
+# through the spanner list.
+#
+# `tbl[["_spanners"]]` cannot answer the question at all.
+# `desc_spanner_groups()` emits one group per COLUMN, so every column
+# carries a one-wide `spn_<key>` spanner -- stub columns included, even
+# when there is only one of them -- and the gt arm then puts the header
+# text INTO the spanner and leaves the column label empty. The list
+# therefore looks identical over a stub and over a value column; only
+# `_styles` (locname == "columns_groups") records which spanners were
+# aligned left. Every spanner also carries the top rule, so the list
+# would not separate them on that either.
 .edt_left_spanners <- function(tbl) {
   styles <- tbl[["_styles"]]
   rows <- styles[styles$locname == "columns_groups", , drop = FALSE]
@@ -90,8 +100,9 @@ test_that("stub_keys drives the gt stub, by name", {
 
 test_that("a one-column stub leaves the group column to the numbers", {
   # The other half of the same property: with one stub key, the second
-  # column is a value column -- centred with the rest, and carrying no
-  # left spanner.
+  # column is a value column -- centred with the rest, and absent from
+  # the LEFT-ALIGNED spanner ids. It still has a spanner of its own:
+  # every column does. See `.edt_left_spanners()` above.
   skip_if_not_installed("gt")
   df <- .edt_frame()
   tbl <- export_desc_table(

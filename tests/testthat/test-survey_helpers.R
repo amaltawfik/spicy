@@ -240,6 +240,32 @@ test_that("`.design_subset()` keeps rows at weight zero on a calibrated design",
   expect_equal(sum(stats::weights(sub)), 4420.99999999999, tolerance = 1e-8)
 })
 
+test_that("`.design_weights()` asks by name, and survey still means it", {
+  skip_if_not_installed("survey")
+  # On a replicate design the argument is load-bearing: the bare
+  # default is `type = "replication"` and returns the whole 183 x 15
+  # replication matrix, which sums to 2745 -- not a weight total at
+  # all.
+  r <- .svy_fixture("rep1")
+  expect_equal(sum(.design_weights(r)), 6194.0003242492676, tolerance = 1e-12)
+  expect_identical(dim(stats::weights(r)), c(183L, 15L))
+  expect_equal(sum(stats::weights(r)), 2745, tolerance = 1e-9)
+
+  # On a `survey.design` it is right BY ACCIDENT: the method has no
+  # `type` formal, so the request is swallowed by `...` and `1 / prob`
+  # comes back whatever anyone asks for. This is the tripwire -- the
+  # day survey gives that method a `type` vocabulary of its own, the
+  # accessor changes meaning and this goes red first.
+  m <- utils::getS3method(
+    "weights",
+    "survey.design",
+    envir = asNamespace("survey")
+  )
+  expect_false("type" %in% names(formals(m)))
+  d <- .svy_fixture("clus1")
+  expect_equal(unname(.design_weights(d)), unname(1 / d$prob))
+})
+
 # ---- design metadata ------------------------------------------------------
 
 test_that("`.design_meta()` reads a linearised design through public slots", {
@@ -292,7 +318,7 @@ test_that("the design footer says what the design is, in three sentences", {
     .design_note_lines(.design_meta(.svy_fixture("strat"))),
     c(
       "Design: stratified (stype), with finite population correction; 197 degrees of freedom.",
-      "Standard errors: Taylor linearisation (survey).",
+      "Std. errors: Design-based (Taylor linearisation).",
       "Confidence intervals and tests use the design degrees of freedom."
     )
   )
@@ -314,11 +340,29 @@ test_that("the design footer says what the design is, in three sentences", {
     "Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom."
   )
   # The variance sentence is the one thing that must differ between the
-  # two regimes: a replicate design does not linearise anything.
+  # two regimes: a replicate design does not linearise anything. It
+  # names the scheme, because the same sentence in a regression footer
+  # does.
   expect_identical(
     rep_lines[[2L]],
-    "Standard errors: replicate weights (survey)."
+    "Std. errors: Design-based (replicate weights, JK1)."
   )
+})
+
+test_that("both families print the SAME variance sentence for one design", {
+  # A reader who puts a design table and a regression on the same page
+  # sees one fact, said once. The two used to spell it two ways
+  # ("Standard errors: Taylor linearisation (survey)." against "Std.
+  # errors: Design-based (Taylor linearisation).") and the difference
+  # carried no information.
+  skip_if_not_installed("survey")
+  for (nm in c("clus1", "rep1")) {
+    des <- .svy_fixture(nm)
+    twin <- .design_note_lines(.design_meta(des))[[2L]]
+    fit <- suppressWarnings(survey::svyglm(api00 ~ ell, design = des))
+    regression <- spicy_fmt("note_std_errors_single", .design_vcov_label(fit))
+    expect_identical(twin, regression, info = nm)
+  }
 })
 
 test_that("a design with neither strata nor clusters is named as such", {

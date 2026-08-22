@@ -81,7 +81,12 @@ reference distribution keeps the design's own degrees of freedom
 and the note says so.}
 
 \item{p_value}{Show the p-value column (defaults to \code{TRUE} with
-\code{by}).}
+\code{by}). A variable whose complete cases include negatively weighted
+rows is not tested: the Rao-Scott correction is a function of the
+design variance, which is not defined when the weights change
+sign. Its percentages are still reported, the note says which
+tests were withheld, and the call warns
+(\code{spicy_negative_weights_no_test}).}
 
 \item{percent_digits, p_digits, decimal_mark}{Number formatting.}
 

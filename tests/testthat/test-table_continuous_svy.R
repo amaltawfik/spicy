@@ -50,7 +50,38 @@
         y = c(10, 14, 12, 22, 26, 30),
         w = c(5, 5, 5, 2, 2, 2)
       )
+    ),
+    # Raking-style calibration on a factor: every weight stays
+    # positive. The control for the fixture below.
+    cal = survey::calibrate(
+      survey::svydesign(
+        id = ~dnum,
+        weights = ~pw,
+        data = apiclus1,
+        fpc = ~fpc
+      ),
+      ~stype,
+      pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
     )
+  )
+}
+
+# LINEAR calibration on a continuous total: 28 of the 183 weights come
+# out below zero. The only fixture that separates `w != 0` from
+# `w > 0`, and the one the negative-weight disclosure is measured on.
+.svycneg_design <- function() {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  survey::calibrate(
+    survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = apiclus1,
+      fpc = ~fpc
+    ),
+    ~api99,
+    c(`(Intercept)` = 6194, api99 = 6194 * 500),
+    calfun = "linear"
   )
 }
 
@@ -302,7 +333,7 @@ test_that("a replicate design gives the same point estimate, its own SE", {
   expect_match(note, "replicate weights (JK1), 15 replicates", fixed = TRUE)
   expect_match(
     note,
-    "Standard errors: replicate weights (survey).",
+    "Std. errors: Design-based (replicate weights, JK1).",
     fixed = TRUE
   )
 })
@@ -419,6 +450,148 @@ test_that("a negative calibration weight is an observation, not a hole", {
     "N = 183 (weighted 6194).",
     fixed = TRUE
   )
+})
+
+test_that("negative weights refuse the test, keep the cells, and say so", {
+  # Decision 36 / ARB-2 and ARB-3. The group comparison used to filter
+  # on `w > 0`: the cells were computed on 183 rows and the p-value on
+  # 96, under a footer saying "N = 183" and no word about either.
+  skip_if_not_installed("survey")
+  d <- .svycneg_design()
+  w <- .design_weights(d)
+  expect_identical(sum(w < 0), 28L)
+
+  out <- .svyc_long(d, select = api00, by = stype, show_columns = c("m", "n"))
+  # The cells are complete: every row with a non-zero weight.
+  expect_identical(sum(out$n), 183L)
+  # The test is refused, not computed on a sub-sample.
+  expect_true(all(is.na(out$p)))
+
+  # The refusal is CLASSED (ARB-2): a note is read by whoever prints
+  # the table, a condition is what a script can catch.
+  expect_warning(
+    tbl <- table_continuous_svy(d, select = api00, by = stype),
+    class = "spicy_negative_weights_no_test"
+  )
+  note <- attr(tbl, "missing_note")
+  # One block: the exact count, the consequence, and the refusal.
+  expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
+  expect_match(note, "fall outside the observed range", fixed = TRUE)
+  expect_match(note, "group comparison is not reported", fixed = TRUE)
+  # And the test sentence a normal table carries is absent -- the note
+  # never claims a comparison it refused.
+  expect_false(grepl("Group comparison:", note, fixed = TRUE))
+})
+
+test_that("the refusal clause says how far the refusal reached", {
+  # The footer clause used to be decided per TABLE ("was a test asked
+  # for?") while the refusal is decided per VARIABLE. A variable whose
+  # missing values happen to cover the negatively weighted rows has a
+  # testable domain and IS tested -- and the note carried the flat
+  # "The group comparison is not reported" over a printed p-value.
+  skip_if_not_installed("survey")
+  d <- .svycneg_design()
+  w <- .design_weights(d)
+  # The second variable: api00 with NA on exactly the 28 negative rows.
+  d$variables$api00b <- d$variables$api00
+  d$variables$api00b[w < 0] <- NA
+
+  # (c) MIXED: one comparison served, one refused. The condition says
+  # the same scoped sentence the footer says -- not the flat one.
+  expect_warning(
+    mixed <- table_continuous_svy(
+      d,
+      select = c(api00, api00b),
+      by = stype,
+      output = "long"
+    ),
+    regexp = "For variables whose complete cases include negatively weighted rows",
+    fixed = TRUE,
+    class = "spicy_negative_weights_no_test"
+  )
+  served <- mixed$p.value[mixed$variable == "api00b"]
+  expect_false(all(is.na(served)))
+  expect_true(all(is.na(mixed$p.value[mixed$variable == "api00"])))
+  note <- attr(mixed, "note")
+  # The method line is TRUE of the comparison that ran, so it stays --
+  # and the refusal names who it applies to instead of contradicting it.
+  expect_match(note, "Group comparison:", fixed = TRUE)
+  expect_match(
+    note,
+    "For variables whose complete cases include negatively weighted rows",
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "The group comparison is not reported",
+    note,
+    fixed = TRUE
+  ))
+
+  # (b) ALL REFUSED, two variables: the flat sentence, no method line,
+  # and ONE condition for the table -- not one per variable.
+  n_signalled <- 0L
+  all_ref <- withCallingHandlers(
+    table_continuous_svy(
+      d,
+      select = c(api00, api99),
+      by = stype,
+      output = "long"
+    ),
+    spicy_negative_weights_no_test = function(cnd) {
+      n_signalled <<- n_signalled + 1L
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_identical(n_signalled, 1L)
+  expect_true(all(is.na(all_ref$p.value)))
+  note_all <- attr(all_ref, "note")
+  expect_match(note_all, "The group comparison is not reported", fixed = TRUE)
+  expect_false(grepl("Group comparison:", note_all, fixed = TRUE))
+  expect_false(grepl("For variables whose", note_all, fixed = TRUE))
+})
+
+test_that("a comparison absent for another reason is not blamed on the weights", {
+  # The milder half of the same defect: with negative weights present
+  # AND fewer than two usable groups, the comparison is missing for a
+  # reason that has nothing to do with the sign of the weights. The
+  # note used to explain it by them anyway.
+  skip_if_not_installed("survey")
+  d <- .svycneg_design()
+  w <- .design_weights(d)
+  # One group after the complete cases: nothing to compare.
+  d$variables$one <- factor("only")
+  d$variables$api00b <- d$variables$api00
+  d$variables$api00b[w < 0] <- NA
+
+  out <- withCallingHandlers(
+    table_continuous_svy(d, select = api00b, by = one, output = "long"),
+    spicy_negative_weights_no_test = function(cnd) {
+      stop("the weights refused nothing here")
+    }
+  )
+  expect_true(all(is.na(out$p.value)))
+  note <- attr(out, "note")
+  # The fact is still disclosed; the refusal clause is not.
+  expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
+  expect_false(grepl("is not reported", note, fixed = TRUE))
+})
+
+test_that("a calibrated design with no negative weight says nothing", {
+  # The note is conditional on the FACT, not on the design being
+  # calibrated: "calibrated" is already said by the design line.
+  skip_if_not_installed("survey")
+  d <- .svyc_design("cal")
+  expect_identical(.design_negative_weights(d), 0L)
+  note <- attr(
+    table_continuous_svy(d, select = api00, by = stype),
+    "missing_note"
+  )
+  expect_match(note, "calibrated / post-stratified", fixed = TRUE)
+  expect_false(grepl("negative weight", note, fixed = TRUE))
+  # And the comparison still runs.
+  expect_match(note, "Group comparison:", fixed = TRUE)
+  out <- .svyc_long(d, select = api00, by = stype, show_columns = c("m", "n"))
+  expect_false(all(is.na(out$p)))
 })
 
 test_that("the footer gives the df span when the groups disagree", {
