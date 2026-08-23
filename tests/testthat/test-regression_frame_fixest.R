@@ -207,15 +207,40 @@ test_that("fixest fits keep their own estimator: spicy HC*/CR* tokens are refuse
     table_regression(fit, vcov = "bootstrap", output = "data.frame"),
     class = "spicy_unsupported_vcov"
   )
-  # The refusal is a settled policy, so it names the fit-time argument
-  # instead of the generic "being added" wording.
+  # The refusal is a settled policy, so it names fixest's own vcov
+  # interface instead of the generic "being added" wording. It must NOT
+  # claim fixest clusters by default: fixest >= 0.12 defaults to IID
+  # (getFixest_vcov() is "iid" for every slot, and summary() prints
+  # "Standard-errors: IID"), so clustering is something the user asks
+  # for at estimation or in summary().
   err <- tryCatch(
     table_regression(fit, vcov = "HC3", output = "data.frame"),
     spicy_unsupported_vcov = function(e) e
   )
   msg <- paste(conditionMessage(err), collapse = " ")
   expect_match(msg, "feols", fixed = TRUE)
+  expect_match(msg, "vcov = ~cluster_var", fixed = TRUE)
   expect_false(grepl("being added", msg, fixed = TRUE))
+  expect_false(grepl("by default", msg, fixed = TRUE))
+})
+
+
+# `cluster` alone on a fixest fit used to advise "set vcov to CR0-CR3",
+# which the capability gate then refuses. Point at fixest's own route.
+test_that("cluster alone on fixest points at fixest's own vcov interface", {
+  fit <- .fit_feols_basic()
+  w <- tryCatch(
+    table_regression(
+      fit,
+      cluster = seq_len(stats::nobs(fit)),
+      output = "data.frame"
+    ),
+    spicy_ignored_arg = function(c) c
+  )
+  expect_s3_class(w, "spicy_ignored_arg")
+  msg <- paste(conditionMessage(w), collapse = " ")
+  expect_match(msg, "vcov = ~cluster_var", fixed = TRUE)
+  expect_false(grepl("Set `vcov` to", msg, fixed = TRUE))
 })
 
 

@@ -336,10 +336,12 @@
 #'     the design itself (`survey::svydesign(ids = )`), not in the
 #'     table call.}
 #'   \item{`estimatr` (`lm_robust`/`iv_robust`) and `fixest`}{these
-#'     fits carry the variance they were fitted with -- estimatr's
-#'     `se_type =` and fixest's own (FE-clustered by default)
-#'     estimator -- and spicy never overwrites it. A `vcov` request is
-#'     refused; choose the estimator at fit time instead.}
+#'     fits carry the variance they were computed with -- estimatr's
+#'     `se_type =`, and whatever fixest's own `vcov` interface
+#'     produced -- and spicy never overwrites it. A `vcov` request is
+#'     refused; set the estimator through the fitting package instead
+#'     (`se_type =` for estimatr; `vcov =` at estimation or in
+#'     `summary()` for fixest).}
 #'   \item{Other classes (`glmer`, `glmmTMB`,
 #'     `rstanarm`/`brms`, ...)}{`classical` (model-based) only
 #'     (\pkg{clubSandwich} has no working backend for `glmer` /

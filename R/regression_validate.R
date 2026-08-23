@@ -911,14 +911,24 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           class = "spicy_unsupported_vcov"
         )
       }
-      # estimatr and fixest carry the variance they were FITTED with:
-      # estimatr bakes se_type into the fit object, fixest defaults to
-      # clustering on its absorbed fixed effects. spicy never overwrites
-      # either. The refusal is a settled policy, so it must not inherit
+      # estimatr and fixest carry the variance they were COMPUTED with:
+      # estimatr bakes se_type into the fit object, and fixest owns its
+      # own vcov interface (IID unless the user asked otherwise at
+      # estimation or in summary()). spicy never overwrites either.
+      # The refusal is a settled policy, so it must not inherit
       # the generic "being added" wording below, which would promise a
       # wiring job that is never coming and hide the one thing the user
       # can actually do: choose the estimator at fit time.
       if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
+        # Name the fit's OWN estimatr function. Pointing an iv_robust
+        # user at lm_robust() would swap the estimator (2SLS -> OLS) to
+        # change the variance -- a different model, not a different
+        # standard error.
+        estimatr_fn <- if (inherits(models[[i]], "iv_robust")) {
+          "estimatr::iv_robust"
+        } else {
+          "estimatr::lm_robust"
+        }
         spicy_abort(
           c(
             sprintf(
@@ -930,10 +940,13 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "estimatr fixes the variance estimator at fit time and ",
               "spicy reports the fit's own standard errors unchanged."
             ),
-            "i" = paste0(
-              "Refit with the estimator you want: ",
-              "estimatr::lm_robust(..., se_type = \"HC3\"), or ",
-              "se_type = \"CR2\" with `clusters =`."
+            "i" = sprintf(
+              paste0(
+                "Refit with the standard errors you want: ",
+                "%s(..., se_type = \"HC3\"), or ",
+                "se_type = \"CR2\" with `clusters =`."
+              ),
+              estimatr_fn
             )
           ),
           class = "spicy_unsupported_vcov"
@@ -948,14 +961,15 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               class(models[[i]])[1L]
             ),
             "i" = paste0(
-              "fixest fits keep their own variance (clustered on the ",
-              "absorbed fixed effects by default), which spicy reports ",
-              "unchanged; the footer names it."
+              "fixest computes its own standard errors, which spicy ",
+              "reports unchanged; the footer names the estimator the ",
+              "fit carries."
             ),
             "i" = paste0(
-              "Choose the estimator on the fit: ",
-              "fixest::feols(..., vcov = \"hetero\") or ",
-              "vcov = ~cluster_var."
+              "Choose it through fixest: at estimation with ",
+              "fixest::feols(..., vcov = ~cluster_var) or ",
+              "vcov = \"hetero\", or afterwards with ",
+              "summary(fit, vcov = ~cluster_var)."
             )
           ),
           class = "spicy_unsupported_vcov"
@@ -1103,6 +1117,36 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     # Cluster supplied but vcov is not CR* -- silent ignore would be a
     # forgotten-vcov mistake. Warn explicitly so the user notices.
     if (!is.null(c_i) && !is_cr) {
+      # Own-estimator classes get their own route, like the rq carve-out
+      # above. The generic "set `vcov` to CR0-CR3" advice would send an
+      # estimatr / fixest user straight into the hard refusal that Step
+      # 6c raises for exactly those tokens -- advice that cannot be
+      # followed. Their clustering lives in the fitting call.
+      hint <- if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
+        estimatr_fn <- if (inherits(models[[i]], "iv_robust")) {
+          "estimatr::iv_robust"
+        } else {
+          "estimatr::lm_robust"
+        }
+        sprintf(
+          paste0(
+            "estimatr clusters at fit time: ",
+            "%s(..., clusters = <var>, se_type = \"CR2\")."
+          ),
+          estimatr_fn
+        )
+      } else if (inherits(models[[i]], "fixest")) {
+        paste0(
+          "fixest clusters through its own `vcov` interface: ",
+          "fixest::feols(..., vcov = ~cluster_var), or ",
+          "summary(fit, vcov = ~cluster_var)."
+        )
+      } else {
+        paste0(
+          "Set `vcov` to `\"CR0\"`, `\"CR1\"`, `\"CR2\"`, or `\"CR3\"` ",
+          "to use the cluster vector for cluster-robust SE."
+        )
+      }
       spicy_warn(
         c(
           sprintf(
@@ -1114,10 +1158,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
             i,
             v_i
           ),
-          "i" = paste0(
-            "Set `vcov` to `\"CR0\"`, `\"CR1\"`, `\"CR2\"`, or `\"CR3\"` ",
-            "to use the cluster vector for cluster-robust SE."
-          )
+          "i" = hint
         ),
         class = "spicy_ignored_arg"
       )

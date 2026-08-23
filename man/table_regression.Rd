@@ -1123,10 +1123,12 @@ variance for the declared design, and clustering belongs in
 the design itself (\code{survey::svydesign(ids = )}), not in the
 table call.}
 \item{\code{estimatr} (\code{lm_robust}/\code{iv_robust}) and \code{fixest}}{these
-fits carry the variance they were fitted with -- estimatr's
-\verb{se_type =} and fixest's own (FE-clustered by default)
-estimator -- and spicy never overwrites it. A \code{vcov} request is
-refused; choose the estimator at fit time instead.}
+fits carry the variance they were computed with -- estimatr's
+\verb{se_type =}, and whatever fixest's own \code{vcov} interface
+produced -- and spicy never overwrites it. A \code{vcov} request is
+refused; set the estimator through the fitting package instead
+(\verb{se_type =} for estimatr; \verb{vcov =} at estimation or in
+\code{summary()} for fixest).}
 \item{Other classes (\code{glmer}, \code{glmmTMB},
 \code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only
 (\pkg{clubSandwich} has no working backend for \code{glmer} /
