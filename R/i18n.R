@@ -328,6 +328,12 @@
   note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",
   # One hole: the undefined-cell glyph the note is pointing at.
   note_rank_deficient = "Rank-deficient model: dropped coefficient(s) shown as %s.",
+  # The fitting engine reports that its optimizer did not converge. One
+  # hole: the engine's own diagnosis (its return message, the
+  # non-positive-definite Hessian, or both), which is DATA. The note
+  # states what the printed numbers are, because the estimates are still
+  # shown -- they are what the object holds.
+  note_nonconvergence = "Model convergence problem: %s. The estimates are the values the optimizer stopped at, not a converged fit.",
 
   # -- table_regression(): the absolute survival estimands -------------------
   # The footnote of the RMST-difference and risk-difference columns.

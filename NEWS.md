@@ -422,6 +422,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   structure the way `lmer` / `glmer` ones do: a table note, a warning, and
   no SE or CI on the collapsed variance components. For `glmmTMB` the check
   covers the zero-inflation and dispersion components too.
+* Nested `lme` fits (`random = ~ 1 | A/B`) show one `Random effects` row
+  per level, each with its own label, SE and CI, plus one `N (<factor>)`
+  row per grouping factor. Levels are named the way `lmer` names them
+  (`B:A`), so the same nested model fitted with either engine lines up in
+  a multi-model table.
+* A `glmmTMB` fit whose optimizer did not converge says so: a table note
+  names the engine's own diagnosis and a `spicy_nonconvergence` warning
+  (under `spicy_caveat`) fires. The estimates still print -- they are what
+  the model object holds.
 * Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
   `clm`) takes its SEs, z, p and CIs from the same sandwich as the slopes.
 * AME columns are available for many more classes, and per outcome category

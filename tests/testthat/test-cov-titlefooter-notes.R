@@ -13,7 +13,7 @@
 #   * build_exponentiate_footer_block_from_frames(): the all-Bayesian and
 #     mixed SE glosses (1963, 1965-1968) and the HDI CI gloss (1980),
 #   * build_loo_footer_block_from_frames() (2387-2408) and
-#     build_stan_convergence_footer_block_from_frames() (2435-2444):
+#     build_convergence_footer_block_from_frames() (2435-2444):
 #     the bare "all models share the note" arm and the "notes differ ->
 #     Model k:" arm.
 #
@@ -332,7 +332,7 @@ test_that("LOO footer per-model lines use the custom model label", {
 })
 
 
-# ---- Stan convergence footer: the differing-notes arm (2435-2444) ---------
+# ---- Convergence footer: the differing-notes arm (2435-2444) -------------
 # Same convention as the LOO builder: divergence / R-hat warnings are
 # per-model facts, so a table where the models disagree keeps the prefix.
 
@@ -349,7 +349,7 @@ test_that("LOO footer per-model lines use the custom model label", {
 }
 
 test_that("convergence footer prefixes 'Model k:' when the warnings differ", {
-  out <- spicy:::build_stan_convergence_footer_block_from_frames(
+  out <- spicy:::build_convergence_footer_block_from_frames(
     list(
       .mk_conv_frame("Convergence: max R-hat 1.02."),
       .mk_conv_frame("Convergence: 3 divergent transitions.")
@@ -365,13 +365,13 @@ test_that("convergence footer prefixes 'Model k:' when the warnings differ", {
 })
 
 test_that("convergence footer prefixes the single flagged model in a mixed table", {
-  out <- spicy:::build_stan_convergence_footer_block_from_frames(
+  out <- spicy:::build_convergence_footer_block_from_frames(
     list(.mk_conv_frame(), .mk_conv_frame("Convergence: min ESS 180."))
   )
   expect_identical(out, "Model 2: Convergence: min ESS 180.")
   # A clean posterior contributes nothing at all.
   expect_null(
-    spicy:::build_stan_convergence_footer_block_from_frames(
+    spicy:::build_convergence_footer_block_from_frames(
       list(.mk_conv_frame(), .mk_conv_frame())
     )
   )

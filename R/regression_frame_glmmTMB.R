@@ -360,6 +360,10 @@ as_regression_frame.glmmTMB <- function(
     # model-level, not per-coefficient.
     has_singular = .glmmTMB_is_singular(fit),
     singular_terms = character(0),
+    # Non-converged fit (see .glmmTMB_convergence_note): NULL, and so
+    # invisible, for a clean fit. Same extras slot -- and the same footer
+    # builder -- as the Bayesian sampler-diagnostics note.
+    convergence_note = .glmmTMB_convergence_note(fit, dv),
     has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = .glmmTMB_title_prefix(fam, has_zi),
@@ -624,6 +628,85 @@ as_regression_frame.glmmTMB <- function(
     isTRUE(is.finite(sc)) &&
     isTRUE(sc > 0)
   if (use_sc) sc^2 else 1
+}
+
+
+# Non-convergence disclosure. Returns the footer note -- and raises a
+# classed warning (spicy_nonconvergence, nested under spicy_caveat, so
+# generic caveat handlers still catch it while scripts can mute this
+# guard selectively) -- when the engine says the fit did not converge;
+# NULL, and therefore silent, otherwise.
+#
+# The criterion is glmmTMB's OWN. finalizeTMB() -- the last step of
+# glmmTMB() -- has three "Model convergence problem" warning sites, of
+# which two fire under the default conv_check = "warning"; the third
+# (eigval_check, on extreme eigenvalues of cov.fixed) sits in the else
+# branch of a test the default never takes, so it is unreachable unless
+# the user turns conv_check off. The two reachable states both survive
+# on the returned object:
+#   * fit$fit$convergence != 0: the optimizer's return code, with its
+#     own diagnosis in fit$fit$message;
+#   * isFALSE(fit$sdr$pdHess): a non-positive-definite Hessian. This is
+#     the POST-rescue verdict -- finalizeTMB() first retries the Hessian
+#     through numDeriv::jacobian() and writes pdHess back to TRUE when
+#     that one is positive definite -- so reading the stored flag agrees
+#     with the warning the user saw at fit time, not with a fresh
+#     sdreport().
+# summary.glmmTMB() keys on neither, which is why a non-converged fit
+# otherwise prints its starting values in full and in silence.
+# fit$sdr is NULL under se = FALSE: there is then no Hessian to be
+# non-positive-definite, and only the return code applies.
+#
+# glmmTMBControl(conv_check = "skip") mutes the FIT-time warning but
+# leaves both flags standing. The note is a statement about the numbers
+# printed in THIS table, not a replay of the fit-time diagnostic, so it
+# is not gated on that control.
+.glmmTMB_convergence_note <- function(fit, dv = NA_character_) {
+  problems <- character(0)
+
+  code <- fit$fit$convergence
+  if (length(code) == 1L && !is.na(code) && !identical(as.numeric(code), 0)) {
+    msg <- fit$fit$message
+    problems <- c(
+      problems,
+      if (is.character(msg) && length(msg) == 1L && nzchar(msg)) {
+        msg
+      } else {
+        sprintf("optimizer returned code %s", as.character(code)) # nocov
+      }
+    )
+  }
+
+  pd_hess <- fit$sdr$pdHess
+  if (length(pd_hess) == 1L && isFALSE(pd_hess)) {
+    problems <- c(problems, "non-positive-definite Hessian matrix")
+  }
+
+  if (length(problems) == 0L) {
+    return(NULL)
+  }
+
+  note <- spicy_fmt("note_nonconvergence", paste(problems, collapse = "; "))
+  spicy_warn(
+    c(
+      sprintf(
+        "Model convergence problem (outcome: %s) -- %s",
+        if (is.character(dv) && length(dv) == 1L && !is.na(dv)) {
+          dv
+        } else {
+          "unknown" # nocov
+        },
+        paste(problems, collapse = "; ")
+      ),
+      "i" = paste0(
+        "The table reports what the object holds. See ",
+        "`help(\"diagnose\", package = \"glmmTMB\")` and ",
+        "`vignette(\"troubleshooting\", package = \"glmmTMB\")`."
+      )
+    ),
+    class = c("spicy_nonconvergence", "spicy_caveat")
+  )
+  note
 }
 
 
